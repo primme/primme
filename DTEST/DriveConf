@@ -1,0 +1,32 @@
+// ///////////////////////////////////////////////////////////////////
+// 		Driver configuration file
+// ///////////////////////////////////////////////////////////////////
+// Matrix file  (matlab format)
+driver.matrixFile    = LUNDA.mtx
+
+// Output file name
+driver.outputFile    = sample.out
+
+// ///////////////////////////////////////////////////////////////////
+// Preconditioning parameters for ILUT for sparskit
+//     .PrecChoice can be 
+//      0    no preconditioner 
+//	1    K = Diagonal of A
+// 	2    K = (Diagonal_of_A - primme.shift_i I)
+// 	3    K = ILUT(A-driver.shift,level,threshold)
+//	4    K = Parasails(A-driver.shift,isymm,filter,threshold)
+//	   (4 works only with par_primme parallel program)
+// ///////////////////////////////////////////////////////////////////
+driver.PrecChoice = 2 
+driver.shift      = 0.0e3
+driver.level      = 2
+driver.threshold  = 0.01
+driver.isymm      = 0
+driver.filter     = 0.00
+
+// ///////////////////////////////////////////////////////////////////
+// parallel partioning information
+// ///////////////////////////////////////////////////////////////////
+// driver.partId    = none
+// driver.partDir   = none 
+// ///////////////////////////////////////////////////////////////////

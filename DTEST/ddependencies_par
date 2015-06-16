@@ -1,0 +1,7 @@
+readuc.o: readuc.c shared_utils.h \
+  ../PRIMMESRC/COMMONSRC/primme.h \
+  ../PRIMMESRC/COMMONSRC/Complex.h
+shared_utils.o: shared_utils.c shared_utils.h \
+  ../PRIMMESRC/COMMONSRC/primme.h \
+  ../PRIMMESRC/COMMONSRC/Complex.h
+ssrcsr.o: ssrcsr.c

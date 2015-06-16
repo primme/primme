@@ -1,0 +1,78 @@
+# include the environment and compilation flags
+
+include ../Make_flags
+include ../Link_flags
+
+#------------------------------------------------
+# Reset to parallel compilers. 
+#------------------------------------------------
+
+CC = mpicc
+F77 = mpif77
+LDR = mpif77
+
+#------------------------------------------------
+#  Linking & Library flags for the parallel matvec
+#  and precond libs (here, Parasails)
+#------------------------------------------------
+
+INCLUDE += -I/sciclone/home00/andreas/PSAIL
+
+LIBDIRS += -L/sciclone/home10/mccombjr/lib/
+
+#------------------------------------------------
+# Sun with LAM mpi
+LIBS += -lParaSailslam32 -xlic_lib=sunperf
+# Sun with MPICH
+#LIBS += -lParaSailsmpich32 -xlic_lib=sunperf
+#LIBS += -lParaSailsmpich32
+# Sun with Myrinet 32
+#LIBS += -lParaSailsgm32 -xlic_lib=sunperf
+#LIBS += -lParaSailsgm32
+# Sun with Myrinet 
+#LIBS += -lParaSailsgm -xlic_lib=sunperf
+#LIBS += -lParaSailsgm
+# Sun with custom ATLAS blas and lapack
+#LIBS += -lParaSailslam32 -llapack -lf77blas -lcblas -latlas 
+#------------------------------------------------
+# Linux with LAM mpi
+#
+# Linux with MPICH mpi
+#------------------------------------------------
+
+CSOURCE = driver_par.c readuc.c shared_utils.c ssrcsr.c 
+
+COBJS = driver_par.o readuc.o shared_utils.o ssrcsr.o 
+
+DRIVEROBJECTS = $(COBJS)
+
+.PHONY: clean veryclean
+
+par_dprimme: $(COBJS) ddependencies_par $(TOP)/libdprimme.a
+	$(LDR) -o par_dprimme $(DRIVEROBJECTS) $(LIBDIRS) $(LIBS)
+
+driver_par.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c driver_par.c
+
+readuc.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c readuc.c
+
+shared_utils.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c shared_utils.c
+
+ssrcsr.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c ssrcsr.c
+
+
+clean :
+	- rm -f *.o
+
+veryclean :
+	- rm -f par_dprimme *.o core
+
+ddependencies_par:
+	gcc -MM $(INCLUDE) $(CSOURCE) > ddependencies_par
+
+all: par_dprimme
+par_dprimme: $(DRIVEROBJECTS)
+include ddependencies_par

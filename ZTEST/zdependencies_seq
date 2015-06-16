@@ -1,0 +1,10 @@
+driver_seq.o: driver_seq.c driver_seq.h shared_utils.h \
+  ../PRIMMESRC/COMMONSRC/primme.h \
+  ../PRIMMESRC/COMMONSRC/Complex.h \
+  ../PRIMMESRC/COMMONSRC/wtime.h
+readuc.o: readuc.c shared_utils.h \
+  ../PRIMMESRC/COMMONSRC/primme.h \
+  ../PRIMMESRC/COMMONSRC/Complex.h
+shared_utils.o: shared_utils.c shared_utils.h \
+  ../PRIMMESRC/COMMONSRC/primme.h \
+  ../PRIMMESRC/COMMONSRC/Complex.h

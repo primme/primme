@@ -1,0 +1,78 @@
+#---------------------------------------------------------------
+#         ENVIRONMENT VARIABLES AND COMPILATION FLAGS
+#       for building the library and compiling the tests
+#---------------------------------------------------------------
+#---------------------------------------------------------------
+#  Name of the library/directories
+#---------------------------------------------------------------
+
+# Modify this to show the path of the installed PRIMME directory
+TOP = /home/f85/andreas/RESEARCH/SEND/PRIMME/
+
+# Define the path to the source code
+SRC = $(TOP)/PRIMMESRC
+COMMONDIR = $(SRC)/COMMONSRC
+DPRIMMEDIR = $(SRC)/DSRC
+ZPRIMMEDIR = $(SRC)/ZSRC
+
+# Define the path to the created primme library(-ies)
+LIBRARY = $(TOP)/libprimme.a
+DLIBRARY = $(TOP)/libdprimme.a
+ZLIBRARY = $(TOP)/libzprimme.a
+
+# Define where the tests for double/complex are
+DTESTDIR = $(TOP)/DTEST
+ZTESTDIR = $(TOP)/ZTEST
+
+#---------------------------------------------------------------
+#  Compilers
+#
+# If C++ must be used, make sure the DEFINES below are updated
+# On Suse Linux use gfortran, NOT g77 (BLAS/LAPACK made with gfortran) 
+# On Opteron CentOS use g77 
+#---------------------------------------------------------------
+CC = cc
+F77 = f77
+
+#---------------------------------------------------------------
+#  Compiling flags for the PRIMME library
+#---------------------------------------------------------------
+# Sun various architectures
+# whirlwind
+#CFLAGS =  -xtarget=ultra2e -xarch=v8plusa -xcache=16/32/1:512/64/4
+# twister
+#CFLAGS =  -xtarget=ultra3cu -xarch=v8plusa -xcache=64/32/4:8192/512/2
+# typhoon
+#CFLAGS =  -xtarget=ultra2i -xarch=v8plusa -xcache=16/32/1:2048/64/1
+# tornado
+#CFLAGS =  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
+# hurricane
+#CFLAGS =  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
+#CFLAGS = -xtarget=generic -xarch=v8plusa
+#---------------------------------------------------------------
+# MAC OSX
+CFLAGS = 
+#---------------------------------------------------------------
+# Linux 
+#CFLAGS = 
+#---------------------------------------------------------------
+
+FFLAGS = -O  -fno-second-underscore
+LOW_OPT = -O
+HIGH_OPT = -O
+
+#---------------------------------------------------------------
+# Preprocessor definition for using F77 under various OS/compilers
+#---------------------------------------------------------------
+
+DEFINES = -DF77UNDERSCORE
+# If a C++ compiler is used instead of C add this
+ifeq ($(CC),c++)
+DEFINES += -DCplusplus
+endif
+
+#---------------------------------------------------------------
+#  Creating the library
+#---------------------------------------------------------------
+
+RANLIB = ranlib

@@ -1,0 +1,48 @@
+convergence_z.o: convergence_z.c ../COMMONSRC/primme.h \
+  ../COMMONSRC/Complex.h ../COMMONSRC/const.h ../COMMONSRC/wtime.h \
+  convergence_z.h convergence_private_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+correction_z.o: correction_z.c ../COMMONSRC/primme.h \
+  ../COMMONSRC/Complex.h ../COMMONSRC/const.h correction_z.h \
+  correction_private_z.h inner_solve_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+factorize_z.o: factorize_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  factorize_z.h numerical_z.h ../COMMONSRC/common_numerical.h
+init_z.o: init_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  ../COMMONSRC/const.h init_z.h init_private_z.h update_projection_z.h \
+  update_W_z.h ortho_z.h factorize_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h ../COMMONSRC/wtime.h
+inner_solve_z.o: inner_solve_z.c ../COMMONSRC/primme.h \
+  ../COMMONSRC/Complex.h ../COMMONSRC/wtime.h inner_solve_z.h \
+  inner_solve_private_z.h factorize_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+locking_z.o: locking_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  ../COMMONSRC/wtime.h ../COMMONSRC/const.h locking_z.h \
+  locking_private_z.h ortho_z.h update_projection_z.h update_W_z.h \
+  solve_H_z.h restart_z.h factorize_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+main_iter_z.o: main_iter_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  ../COMMONSRC/const.h ../COMMONSRC/wtime.h main_iter_z.h \
+  main_iter_private_z.h convergence_z.h correction_z.h init_z.h ortho_z.h \
+  restart_z.h locking_z.h solve_H_z.h update_projection_z.h update_W_z.h \
+  numerical_z.h ../COMMONSRC/common_numerical.h
+numerical_z.o: numerical_z.c ../COMMONSRC/Complex.h numerical_private_z.h \
+  numerical_z.h ../COMMONSRC/common_numerical.h
+ortho_z.o: ortho_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  numerical_z.h ../COMMONSRC/common_numerical.h ortho_z.h
+primme_z.o: primme_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  ../COMMONSRC/const.h ../COMMONSRC/wtime.h main_iter_z.h ortho_z.h \
+  solve_H_z.h correction_z.h primme_private_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+restart_z.o: restart_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  ../COMMONSRC/const.h restart_z.h restart_private_z.h ortho_z.h \
+  factorize_z.h update_projection_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+solve_H_z.o: solve_H_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  solve_H_z.h solve_H_private_z.h numerical_z.h \
+  ../COMMONSRC/common_numerical.h
+update_W_z.o: update_W_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
+  update_W_z.h
+update_projection_z.o: update_projection_z.c ../COMMONSRC/primme.h \
+  ../COMMONSRC/Complex.h ../COMMONSRC/const.h update_projection_z.h \
+  numerical_z.h ../COMMONSRC/common_numerical.h

@@ -1,0 +1,8 @@
+Complex.o: Complex.c Complex.h
+common_numerical.o: common_numerical.c common_numerical_private.h \
+  common_numerical.h
+errors.o: errors.c primme.h Complex.h errors_private.h
+primme_f77.o: primme_f77.c primme.h Complex.h primme_f77_private.h
+primme_interface.o: primme_interface.c primme.h Complex.h \
+  common_numerical.h const.h
+wtime.o: wtime.c
