@@ -57,7 +57,7 @@ libz:
 	make libz;\
 	)
 #------------------- DOUBLE TEST PROGRAMS ------------------------
-par_dprimme:
+par_dprimme: ddepends_par
 	@(\
 	cd $(DTESTDIR) ;\
 	echo "----------------------------------------------"; \
@@ -66,7 +66,7 @@ par_dprimme:
 	make -f Makefile_par par_dprimme; \
 	)
 
-seq_dprimme:
+seq_dprimme: ddepends_seq 
 	@(\
 	cd $(DTESTDIR) ;\
 	echo "------------------------------------------------"; \
@@ -85,7 +85,7 @@ seqf77_dprimme:
 	)
 
 #------------------- COMMPLEX TEST PROGRAMS ----------------------
-seq_zprimme:
+seq_zprimme: zdepends_seq
 	@(\
 	cd $(ZTESTDIR) ;\
 	echo "------------------------------------------------"; \
@@ -151,6 +151,9 @@ clean:
 	make -f Makefile_f77seq clean;\
 	echo "--------------------------------------------------"; \
 	)
+
+check_style:
+	( grep $$'\t' -R . --include='*.[chf]' && echo "Please don't use tabs!" ) || true
 
 backup: 
 	@(\
