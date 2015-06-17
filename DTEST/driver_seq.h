@@ -28,11 +28,7 @@ double frobeniusNorm(int n, int *IA, double *AElts);
 void shiftCSRMatrix(double shift, int n, int *IA, int *JA, double *AElts);
 
 int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors, 
-#ifdef Cplusplus     /* C++ has a stricter type checking */
    void (**precond_function)(void *, void *, int *, primme_params *),
-#else
-   void **precond_function,
-#endif
      int n, int nnz, driver_params driver);
 
 #ifdef Cplusplus

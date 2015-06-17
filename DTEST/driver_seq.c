@@ -77,11 +77,7 @@ int main (int argc, char *argv[]) {
    driver_params driver;
    primme_params primme;
    primme_preset_method method;
-#ifdef Cplusplus     /* C++ has a stricter type checking */
    void (*precond_function)(void *, void *, int *, primme_params *);
-#else
-   void *precond_function;
-#endif
 
    /* Other miscellaneous items */
    int i;
@@ -116,7 +112,7 @@ int main (int argc, char *argv[]) {
 
 
    if (!strcmp("mtx", &driver.matrixFileName[strlen(driver.matrixFileName)-3]))
-   {  // coordinate format storing both lower and upper triangular parts
+   {  /* coordinate format storing both lower and upper triangular parts */
       ret = readfullMTX(driver.matrixFileName, &matrix.AElts, &matrix.JA, 
          &matrix.IA, &n, &nnz);
       if (ret < 0) {
@@ -125,7 +121,7 @@ int main (int argc, char *argv[]) {
       }
    }
    else if (driver.matrixFileName[strlen(driver.matrixFileName)-1] == 'U') {
-      // coordinate format storing only upper triangular part
+      /* coordinate format storing only upper triangular part */
       ret = readUpperMTX(driver.matrixFileName, &matrix.AElts, &matrix.JA,
          &matrix.IA, &n, &nnz);
       if (ret < 0) {
@@ -134,8 +130,8 @@ int main (int argc, char *argv[]) {
       }
    }
    else {  
-      //Harwell Boeing format NOT IMPLEMENTED
-      //ret = readmt()
+      /* Harwell Boeing format NOT IMPLEMENTED */
+      /* ret = readmt() */
       ret = -1;
       if (ret < 0) {
          fprintf(stderr, "ERROR: Could not read matrix file\n");
@@ -339,7 +335,6 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    int i;
    double *xvec, *yvec;
    CSRMatrix *matrix;
-   //double tempo[70000], shift=-13.6;
    
    matrix = (CSRMatrix *)primme->matrix;
    xvec = (double *)x;
@@ -348,17 +343,6 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    for (i=0;i<*blockSize;i++) {
       amux_(&primme->n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
                       matrix->AElts, matrix->JA, matrix->IA);
-
-// Brute force implementing (A-sigme)^2
-// yvec = ax  tempo = aax
-// y=(a-sI)(a-sI)x=(aa+ss-2sa)x = tempo + ss*x -2s(yvec). 
-/*
-      amux_(&primme->n, &yvec[primme->nLocal*i], tempo,
-                      matrix->AElts, matrix->JA, matrix->IA);
-      Num_axpy_dprimme(primme->n, shift*shift, &xvec[primme->nLocal*i], 1, tempo, 1);
-      Num_axpy_dprimme(primme->n, -2*shift, &yvec[primme->nLocal*i], 1, tempo, 1);
-      Num_dcopy_primme(primme->n, tempo, 1, &yvec[primme->nLocal*i],1);
-*/
    }
 
 }
@@ -393,11 +377,7 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
  *
 ******************************************************************************/
 int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors, 
-#ifdef Cplusplus     /* C++ has a stricter type checking */
    void (**precond_function)(void *, void *, int *, primme_params *),
-#else
-   void **precond_function,
-#endif
    int n, int nnz, driver_params driver) {
 
    int lenFactors;
@@ -405,10 +385,10 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
    *precond_function = NULL;
 
    switch (driver.PrecChoice) {
-      case 0:  // No preconditioner created
+      case 0:  /* No preconditioner created */
          break;
       case 1: case 2:
-         // Diagonal: K = diag(A-shift I), shift can be primme provided
+         /* Diagonal: K = diag(A-shift I), shift can be primme provided */
          Factors->AElts = (double *)primme_calloc(n, sizeof(double), 
                                                              "Factors.AElts");
          Factors->IA = (int *)primme_calloc(n+1, sizeof(int), "Factors.IA");
@@ -428,7 +408,7 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
             *precond_function = Apply_Diagonal_Shifted_Prec;
             break;
          }
-      case 3: { // ILUT(A-shift I) 
+      case 3: { /* ILUT(A-shift I) */
          int ierr;
          int precondlfil = driver.level;
          double precondTol = driver.threshold;
@@ -439,16 +419,16 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
             shiftCSRMatrix(-driver.shift, n, matrix.IA,matrix.JA,matrix.AElts);
          }
 
-         // Work arrays
+         /* Work arrays */
          W1 = (double *)primme_calloc( n+1,  sizeof(double), "W1");
          W2 = (double *)primme_calloc( n,  sizeof(double), "W2");
          iW1 = (int *)primme_calloc( n,  sizeof(int), "iW1");
          iW2 = (int *)primme_calloc( n,  sizeof(int), "iW2");
          iW3 = (int *)primme_calloc( n,  sizeof(int), "iW2");
-         //---------------------------------------------------
-         // Max size of factorization                       //
-         lenFactors = 9*nnz;                                    //
-         //---------------------------------------------------
+         /* --------------------------------------------------- */
+         /* Max size of factorization                           */
+         lenFactors = 9*nnz;
+         /* --------------------------------------------------- */
          Factors->AElts = (double *)primme_calloc(lenFactors,
                                                           sizeof(double), "iluElts");
          Factors->JA = (int *)primme_calloc(lenFactors, sizeof(int), "Jilu");
@@ -466,13 +446,13 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
           if (driver.shift != 0.0L) {
             shiftCSRMatrix(driver.shift, n, matrix.IA,matrix.JA,matrix.AElts);
          }
-         // free workspace
+         /* free workspace */
          free(W1); free(W2); free(iW1); free(iW2); free(iW3);
          }
          *precond_function = Apply_ILUT_Prec;
          break;
-      case 4:  // Parasails(A - shift I)
-         // not implemented yet
+      case 4:  /* Parasails(A - shift I) */
+         /* not implemented yet */
          break;
    }
    return 0;
@@ -514,7 +494,7 @@ void Apply_Diagonal_Shifted_Prec(void *x, void *y, int *blockSize,
       index = primme->nLocal*j;
       shift = primme->ShiftsForPreconditioner[j];
 
-      // Apply shifted diagonal preconditioner
+      /* Apply shifted diagonal preconditioner */
       for (i=0;i<primme->nLocal;i++) {
            denominator = diagPrecond->AElts[i] - shift;
 

@@ -17,8 +17,8 @@ typedef struct driver_params {
 
    int weightedPart;
 
-   // Preconditioning paramaters for various preconditioners
-   int PrecChoice;       // 0, 1, 2, or 3 for the moment (see driver)
+   /* Preconditioning paramaters for various preconditioners */
+   int PrecChoice;       /* 0, 1, 2, or 3 for the moment (see driver) */
    int isymm;
    int level;
    double threshold;

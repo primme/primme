@@ -47,7 +47,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
       return(-1);
    }
 
-   *method = (primme_preset_method) -1;   // Set it as undefined
+   *method = (primme_preset_method) -1;   /* Set it as undefined */
 
    line = 1;
    while (EOF != fscanf(configFile, "%s", ident)) {
@@ -308,7 +308,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
       }
    }
 
-   // Set up the output file in primme, from the filename read in driverConfig
+   /* Set up the output file in primme, from the filename read in driverConfig */
    if (primme->procID == 0) {
       if (strcmp(outputFileName, "stdout") != 0) {
          if ((primme->outputFile = fopen(outputFileName, "w+")) == NULL) {
@@ -365,7 +365,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
       }
 
       if (strcmp(op, "=") == 0) {
-         // Matrix, partitioning and I/O params 
+         /* Matrix, partitioning and I/O params  */
          if (strcmp(ident, "driver.outputFile") == 0) {
             ret = fscanf(configFile, "%s\n", driver->outputFileName);
          }
@@ -378,7 +378,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
          else if (strcmp(ident, "driver.matrixFile") == 0) {
             ret = fscanf(configFile, "%s\n", driver->matrixFileName);
          }
-         // Preconditioning parameters
+         /* Preconditioning parameters */
          else if (strcmp(ident, "driver.PrecChoice") == 0) {
             ret = fscanf(configFile, "%d\n", &driver->PrecChoice);
          }
