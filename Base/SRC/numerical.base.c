@@ -45,7 +45,7 @@ void Num_@(pre)copy_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int in
 }
 /******************************************************************************/
 
-void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_@(pre)primme(const char *transa, const char *transb, int m, int n, int k, 
    @(type) alpha, @(type) *a, int lda, @(type) *b, int ldb, 
    @(type) beta, @(type) *c, int ldc) {
 
@@ -74,7 +74,7 @@ void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k,
 }
 
 /******************************************************************************/
-void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha, 
+void Num_symm_@(pre)primme(const char *side, const char *uplo, int m, int n, @(type) alpha, 
    @(type) *a, int lda, @(type) *b, int ldb, @(type) beta, 
    @(type) *c, int ldc) {
 
@@ -114,7 +114,7 @@ void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx,
 }
 
 /******************************************************************************/
-void Num_gemv_@(pre)primme(char *transa, int m, int n, @(type) alpha, @(type) *a,
+void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(type) *a,
    int lda, @(type) *x, int incx, @(type) beta, @(type) *y, int incy) {
 
 #ifdef NUM_CRAY
@@ -239,7 +239,7 @@ int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
 #else
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFREAL
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
@@ -260,7 +260,7 @@ void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda,
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFCPLX
-void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, int lda,
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
 
 #ifdef NUM_CRAY
@@ -283,7 +283,7 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
 
 #ifdefarithm L_DEFREAL
 /******************************************************************************/
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
@@ -302,7 +302,7 @@ void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot,
 
 #ifdefarithm L_DEFCPLX
 /******************************************************************************/
-void Num_zhetrf_zprimme(char *uplo, int n, @(type) *a, int lda, int *ipivot,
+void Num_zhetrf_zprimme(const char *uplo, int n, @(type) *a, int lda, int *ipivot,
    @(type) *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
@@ -321,7 +321,7 @@ void Num_zhetrf_zprimme(char *uplo, int n, @(type) *a, int lda, int *ipivot,
 
 #ifdefarithm L_DEFREAL
 /******************************************************************************/
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info) {
 
 #ifdef NUM_CRAY
@@ -339,7 +339,7 @@ void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda,
 
 #ifdefarithm L_DEFCPLX
 /******************************************************************************/
-void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, @(type) *a, int lda, 
+void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, @(type) *a, int lda, 
    int *ipivot, @(type) *b, int ldb, int *info) {
 
 #ifdef NUM_CRAY

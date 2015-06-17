@@ -37,7 +37,7 @@ void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy) {
 }
 /******************************************************************************/
 
-void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int k, 
    double alpha, double *a, int lda, double *b, int ldb, 
    double beta, double *c, int ldc) {
 
@@ -55,7 +55,7 @@ void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k,
 }
 
 /******************************************************************************/
-void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha, 
+void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double alpha, 
    double *a, int lda, double *b, int ldb, double beta, 
    double *c, int ldc) {
 
@@ -80,7 +80,7 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
 }
 
 /******************************************************************************/
-void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,
+void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
    int lda, double *x, int incx, double beta, double *y, int incy) {
 
 #ifdef NUM_CRAY
@@ -138,7 +138,7 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #else
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
@@ -161,7 +161,7 @@ void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda,
 #endif
 
 /******************************************************************************/
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
@@ -179,7 +179,7 @@ void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot,
 
 
 /******************************************************************************/
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info) {
 
 #ifdef NUM_CRAY

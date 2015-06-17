@@ -3,7 +3,9 @@
 
 #include "shared_utils.h"
 #include "primme.h"
-#define max(a, b) (a > b ? a : b)
+#ifndef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 typedef struct {
    int *JA;
@@ -29,13 +31,13 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
    void (**precond_function)(void *, void *, int *, primme_params *),
    int n, int nnz, driver_params driver);
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C" {
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 void zamux_(int *n, Complex_Z *x, Complex_Z *y, Complex_Z *AElts, int *JA, int *IA);
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 
 
 #endif /* DRIVER_H */

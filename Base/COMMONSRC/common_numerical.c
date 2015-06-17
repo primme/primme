@@ -36,7 +36,7 @@ void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy) {
 }
 
 /******************************************************************************/
-double Num_dlamch_primme(char *cmach) {
+double Num_dlamch_primme(const char *cmach) {
 #ifdef NUM_CRAY
    _fcd cmach_fcd;
 

@@ -1,3 +1,6 @@
+#ifndef PRIMME_F77_PRIVATE_H
+#define PRIMME_F77_PRIVATE_H
+
 /*-------------------------------------------------------*/
 /*     Defining easy to remember labels for setting the  */
 /*     method in primme_set_method from Fortran          */
@@ -94,7 +97,7 @@
 
 /* Prototypes for Fortran-C interface */
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -134,7 +137,8 @@ void primmetop_get_prec_shift_f77(primme_params **primme, int *i,
                                   double *shift);
 #endif
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
 #endif
 
+#endif /* PRIMME_F77_PRIVATE_H */

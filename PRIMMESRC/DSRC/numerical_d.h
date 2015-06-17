@@ -31,31 +31,39 @@
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux);
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info);
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info);
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info);
 
 void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy);
-void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int k, 
    double alpha, double *a, int lda, double *b, int ldb, 
    double beta, double *c, int ldc);
-void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha, 
+void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double alpha, 
    double *a, int lda, double *b, int ldb, double beta, 
    double *c, int ldc);
 void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
    double *y, int incy);
-void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,
+void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
    int lda, double *x, int incx, double beta, double *y, int incy);
 void Num_larnv_dprimme(int idist, int *iseed, int length, double *x);
 void Num_scal_dprimme(int n, double alpha, double *x, int incx);
 void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

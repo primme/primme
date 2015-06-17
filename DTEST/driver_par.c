@@ -90,11 +90,7 @@ int main (int argc, char *argv[]) {
    driver_params driver;
    primme_params primme;
    primme_preset_method method;
-#ifdef Cplusplus     /* C++ has a stricter type checking */
    void (*precond_function)(void *, void *, int *, primme_params *);
-#else
-   void *precond_function;
-#endif
 
    /* Other miscellaneous items */
    int i,j;

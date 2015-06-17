@@ -29,8 +29,8 @@
  * Date             : %G%
  ******************************************************************************/
 
-#ifndef NUMERICAL_H
-#define NUMERICAL_H
+#ifndef NUMERICAL_PRIVATE_H
+#define NUMERICAL_PRIVATE_H
 
 #if !defined(NUM_SUN) && !defined(NUM_IBM) && !defined(NUM_CRAY)
 #define NUM_SUN
@@ -128,43 +128,43 @@
 #define DSYTRS DSYTRS
 
 #endif
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C" {
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 
 #ifndef NUM_CRAY
 
 void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
 void DSWAP(int *n, double *x, int *incx, double *y, int *incy);
-void DGEMM(char *transa, char *transb, int *m, int *n, int *k, double *alpha, 
+void DGEMM(const char *transa, const char *transb, int *m, int *n, int *k, double *alpha, 
    double *a, int *lda, double *b, int *ldb, double *beta, double *c, int *ldc);
-void DSYMM(char *side, char *uplo, int *m, int *n, double *alpha, double *a,
+void DSYMM(const char *side, const char *uplo, int *m, int *n, double *alpha, double *a,
    int *lda, double *b, int *ldb, double *beta, double *c, int *ldc);
 void DAXPY(int *n, double *alpha, double *x, int *incx, double *y, int *incy);
-void DGEMV(char *transa, int *m, int *n, double *alpha, double *a, int *lda, 
+void DGEMV(const char *transa, int *m, int *n, double *alpha, double *a, int *lda, 
    double *x, int *incx, double *beta, double *y, int *incy);
 double DDOT(int *n, double *x, int *incx, double *y, int *incy);
-double DLAMCH(char *cmach);
+double DLAMCH(const char *cmach);
 void DSCAL(int *n, double *alpha, double *x, int *incx);
 void DLARNV(int *idist, int *iseed, int *n, double *x);
-void DSYEV(char *jobz, char *uplo, int *n, double *a, int *lda, double *w,
+void DSYEV(const char *jobz, const char *uplo, int *n, double *a, int *lda, double *w,
    double *work, int *ldwork, int *info);
-void DSYTRF(char *uplo, int *n, double *a, int *lda, int *ipivot, double *work,
+void DSYTRF(const char *uplo, int *n, double *a, int *lda, int *ipivot, double *work,
    int *ldwork, int *info);
-void DSYTRS(char *uplo, int *n, int *nrhs, double *a, int *lda, int *ipivot,
+void DSYTRS(const char *uplo, int *n, int *nrhs, double *a, int *lda, int *ipivot,
    double *b, int *ldb, int *info);
 
 void   ZCOPY(int *n, void *x, int *incx, void *y, int *incy);
 void   ZSWAP(int *n, void *x, int *incx, void *y, int *incy);
-void   ZGEMM(char *transa, char *transb, int *m, int *n, int *k, void *alpha, void *a, int *lda, void *b, int *ldb, void *beta, void *c, int *ldc);
-void   ZHEMM(char *side, char *uplo, int *m, int *n, void *alpha, void *a, int *lda, void *b, int *ldb, void *beta, void *c, int *ldc);
+void   ZGEMM(const char *transa, const char *transb, int *m, int *n, int *k, void *alpha, void *a, int *lda, void *b, int *ldb, void *beta, void *c, int *ldc);
+void   ZHEMM(const char *side, const char *uplo, int *m, int *n, void *alpha, void *a, int *lda, void *b, int *ldb, void *beta, void *c, int *ldc);
 void   ZAXPY(int *n, void *alpha, void *x, int *incx, void *y, int *incy);
-void   ZGEMV(char *transa, int *m, int *n, void *alpha, void *a, int *lda, void *x, int *incx, void *beta, void *y, int *incy);
+void   ZGEMV(const char *transa, int *m, int *n, void *alpha, void *a, int *lda, void *x, int *incx, void *beta, void *y, int *incy);
 void   ZSCAL(int *n, void *alpha, void *x, int *incx);
 void   ZLARNV(int *idist, int *iseed, int *n, void *x);
-void   ZHEEV(char *jobz, char *uplo, int *n, void *a, int *lda, double *w, void *work, int *ldwork, double *rwork, int *info);
-void   ZHETRF(char *uplo, int *n, void *a, int *lda, int *ipivot, void *work, int *ldwork, int *info);
-void   ZHETRS(char *uplo, int *n, int *nrhs, void *a, int *lda, int *ipivot, void *b, int *ldb, int *info);
+void   ZHEEV(const char *jobz, const char *uplo, int *n, void *a, int *lda, double *w, void *work, int *ldwork, double *rwork, int *info);
+void   ZHETRF(const char *uplo, int *n, void *a, int *lda, int *ipivot, void *work, int *ldwork, int *info);
+void   ZHETRS(const char *uplo, int *n, int *nrhs, void *a, int *lda, int *ipivot, void *b, int *ldb, int *info);
 void   ZDOTCSUB(void *dot, int *n, void *x, int *incx, void *y, int *incy);
 
 #ifdef NUM_ESSL
@@ -212,8 +212,8 @@ void   ZHETRS(_fcd uplo, int *n, int *nrhs, void *a, int *lda, int *ipivot, void
 
 #endif /* else (if not cray)*/
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 
-#endif /* NUMERICAL_H */
+#endif /* NUMERICAL_PRIVATE_H */

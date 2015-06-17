@@ -3,7 +3,9 @@
 
 #include "shared_utils.h"
 #include "primme.h"
-#define max(a, b) (a > b ? a : b)
+#ifndef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 typedef struct {
    int *JA;
@@ -31,16 +33,16 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
    void (**precond_function)(void *, void *, int *, primme_params *),
      int n, int nnz, driver_params driver);
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C" {
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 void amux_(int *n, double *x, double *y, double *AElts, int *JA, int *IA);
 void ilut_(int *n, double *AElts, int *JA, int *IA, int *lfil, double *tol,
    double *PAElts, int *PJA, int *PIA, int *lenFactors, double *W1, double *W2,
    int *iW1, int *iW2, int *iW3, int *ierr); 
 void lusol0_(int *n, double *x, double *y, double *AElts, int *JA, int *IA);
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 
 #endif /* DRIVER_H */

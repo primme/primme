@@ -71,10 +71,6 @@ HIGH_OPT = -g # -O3
 #---------------------------------------------------------------
 
 DEFINES = -DF77UNDERSCORE 
-# If a C++ compiler is used instead of C add this
-ifeq ($(CC),c++)
-DEFINES = -DF77UNDERSCORE -DCplusplus
-endif
 
 #---------------------------------------------------------------
 #  Creating the library

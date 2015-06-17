@@ -27,15 +27,23 @@
 #ifndef COMMON_NUMERICAL_H
 #define COMMON_NUMERICAL_H
 
-#define max(a, b) (a > b ? a : b)
-#define min(a, b) (a < b ? a : b)
+#ifndef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy);
-double Num_dlamch_primme(char *cmach);
+double Num_dlamch_primme(const char *cmach);
 int Num_imax_primme(int numArgs, int val1, int val2, ...);
 double Num_fmin_primme(int numArgs, double val1, double val2, ...);
 double Num_fmax_primme(int numArgs, double val1, double val2, ...);
 
+#ifdef __cplusplus
+}
 #endif
 
-
+#endif /* COMMON_NUMERICAL_H */

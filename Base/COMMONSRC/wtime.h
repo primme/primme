@@ -17,8 +17,22 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+#ifndef WTIME_H
+#define WTIME_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 double primme_wTimer(int zeroTimer);
 extern double primme_get_wtime();
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-void primme_get_time(double *, double *);
+double primme_get_time(double *, double *);
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* WTIME_H */

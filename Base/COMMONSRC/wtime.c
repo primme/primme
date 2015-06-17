@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include "sys/resource.h"
+#include "wtime.h"
+
 #ifdef RUSAGE_SELF
 #else
 #define   RUSAGE_SELF     0      /*needed in osx*/

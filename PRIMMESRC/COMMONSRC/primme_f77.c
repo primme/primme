@@ -22,7 +22,7 @@
  */
 #include "primme.h"
 #include "primme_f77_private.h"
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -636,6 +636,6 @@ void primmetop_get_prec_shift_f77(primme_params **primme, int *i, double *shift)
 #endif
 /*************************************************************************/
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
 #endif

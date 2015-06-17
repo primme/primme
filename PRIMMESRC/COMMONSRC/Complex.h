@@ -8,6 +8,9 @@
  *
  */
 
+#ifndef COMPLEX_H
+#define COMPLEX_H
+
 typedef struct { 
         double r, i; 
 } Complex_Z;
@@ -55,3 +58,5 @@ double z_abs1_primme(Complex_Z);    /* approximate  |r|+|i| */
 void   z_exp_primme(Complex_Z *, Complex_Z *);
 void   d_cnjg_primme(Complex_Z *r, Complex_Z *z);
 double d_imag_primme(Complex_Z *);
+
+#endif  /* COMPLEX_H */
