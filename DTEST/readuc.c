@@ -80,8 +80,8 @@ int readfullMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz) 
       (*JA)[k]=tja;
       (*A)[k] = ta;
       if (i != row-1) {
-	 for (j=i+1;j<row;j++) (*IA)[j]=k+1;
-	 i=row-1;
+         for (j=i+1;j<row;j++) (*IA)[j]=k+1;
+         i=row-1;
       }
    }
 

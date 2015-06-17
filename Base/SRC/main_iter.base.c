@@ -867,7 +867,7 @@ void check_reset_flags_@(pre)primme(int *flag, int *numConverged,
    for (i=0;i<primme->numEvals;i++) {
       if (i >= numPrevRitzVals) break;
       if ((flag[i] == CONVERGED) && (fabs(hVals[i]-prevRitzVals[i]) > tol)) {
-         *numConverged--;
+         (*numConverged)--;
          flag[i] = UNCONVERGED;
       }
    }
@@ -1530,6 +1530,8 @@ static void initializeModel(primme_CostModel *model, primme_params *primme) {
    model->accum_gdk      = 0.0L;
    model->accum_jdq_gdk  = 1.0L;
 }
+
+#if 0
 /******************************************************************************
  *
  * Function to display the model parameters --- For debugging purposes only
@@ -1565,3 +1567,4 @@ static void displayModel(primme_CostModel *model){
       model->numIt_0,model->timer_0,model->time_in_inner, model->resid_0);
    fprintf(stdout," ------------------------------\n");
 }
+#endif

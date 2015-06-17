@@ -29,7 +29,11 @@
  *
  **********************************************************************/
 
+/* valloc and gethostname may need this 
+#define _XOPEN_SOURCE 500 */
+
 #include <stdlib.h>   /* mallocs, free */
+#include <malloc.h>
 #include <unistd.h>   /* gethostname */
 #include <stdio.h>    
 #include "primme.h"

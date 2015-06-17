@@ -15,7 +15,7 @@ FILE *output;
 
 void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme);
 void Apply_Diagonal_Shifted_Prec(void *x, void *y, int *blockSize, 
-		            primme_params *primme);
+                            primme_params *primme);
 void Apply_Inv_Diagonal_Prec(void *x, void *y, int *blockSize, 
                             primme_params *primme);
 void generate_Inv_Diagonal_Prec(int n, double shift, 
@@ -26,11 +26,7 @@ double frobeniusNorm(int n, int *IA, Complex_Z *AElts);
 void shiftCSRMatrix(double shift, int n, int *IA, int *JA, Complex_Z *AElts);
 
 int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors, 
-#ifdef Cplusplus     /* C++ has a stricter type checking */
    void (**precond_function)(void *, void *, int *, primme_params *),
-#else
-   void **precond_function,
-#endif
    int n, int nnz, driver_params driver);
 
 #ifdef Cplusplus

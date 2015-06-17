@@ -22,23 +22,23 @@
  *
  *  Sequential driver for dprimme. Calling format:
  *
- * 	    seq_dprimme DriverConfigFileName SolverConfigFileName
+ *             seq_dprimme DriverConfigFileName SolverConfigFileName
  *
  *  DriverConfigFileName  includes the path and filename of the matrix
- *  			  as well as preconditioning information (eg., 
- *  			  ILUT parameters).
- *  			  Currently, for reading the input matrix,
- *  			  full coordinate format (.mtx) and upper triangular 
- *  			  coordinate format (.U) are supported.
+ *                            as well as preconditioning information (eg., 
+ *                            ILUT parameters).
+ *                            Currently, for reading the input matrix,
+ *                            full coordinate format (.mtx) and upper triangular 
+ *                            coordinate format (.U) are supported.
  *
- *     	   Example file:  DriverConf 
+ *                Example file:  DriverConf 
  *
  *  SolverConfigFileName  includes all dprimme required information
- *  			  as stored in primme data structure.
+ *                            as stored in primme data structure.
  *
- *     	   Example files: FullConf  Full customization of primme
- *  		          LeanConf  Use a preset method and some customization
- *  		          MinConf   Provide ONLY a preset method and numEvals
+ *                Example files: FullConf  Full customization of primme
+ *                            LeanConf  Use a preset method and some customization
+ *                            MinConf   Provide ONLY a preset method and numEvals
  *
  ******************************************************************************/
 #include <stdlib.h>
@@ -46,6 +46,7 @@
 #include <strings.h>
 #include <string.h>
 #include <math.h>
+#include "../PRIMMESRC/DSRC/numerical_d.h"
 #include "driver_seq.h"
 
 /* primme.h header file is required to run primme */
@@ -178,7 +179,7 @@ int main (int argc, char *argv[]) {
    primme.aNorm = fnorm; /* ||A||_frobenius. A configFile entry overwrites it */
 
    if (read_solver_params(SolverConfigFileName, driver.outputFileName, 
-			   &primme, &method) < 0) {
+                           &primme, &method) < 0) {
       fprintf(stderr, "Reading solver parameters failed\n");
       return(-1);
    }
@@ -223,14 +224,14 @@ int main (int argc, char *argv[]) {
    primme_display_params(primme);
 
    /* --------------------------------------------------------------------- */
-   /* 	                   Run the dprimme solver                           */
+   /*                      Run the dprimme solver                           */
    /* --------------------------------------------------------------------- */
 
    /* Allocate space for converged Ritz values and residual norms */
 
    evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
    evecs = (double *)primme_calloc(
-		primme.n*primme.numEvals,sizeof(double), "evecs");
+                primme.n*primme.numEvals,sizeof(double), "evecs");
    rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
@@ -278,16 +279,16 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
 
       fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-		      				      primme.aNorm*primme.eps);
+                                                            primme.aNorm*primme.eps);
       fprintf(primme.outputFile, "Iterations: %-d\n", 
-		      			      primme.stats.numOuterIterations); 
+                                                    primme.stats.numOuterIterations); 
       fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
       if (primme.locking && primme.intWork[0] == 1) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme.outputFile, 
-	    "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
          fprintf(primme.outputFile, 
             "However, the subspace of evecs is accurate to the required tolerance.\n");
       }
@@ -298,11 +299,11 @@ int main (int argc, char *argv[]) {
 
       switch (primme.dynamicMethodSwitch) {
          case -1: fprintf(primme.outputFile, 
-	       "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+               "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
          case -2: fprintf(primme.outputFile, 
-	       "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+               "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
          case -3: fprintf(primme.outputFile, 
-	       "Recommended method for next run: DYNAMIC (close call)\n"); break;
+               "Recommended method for next run: DYNAMIC (close call)\n"); break;
       }
 
    }
@@ -346,14 +347,14 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 
    for (i=0;i<*blockSize;i++) {
       amux_(&primme->n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
-		      matrix->AElts, matrix->JA, matrix->IA);
+                      matrix->AElts, matrix->JA, matrix->IA);
 
 // Brute force implementing (A-sigme)^2
 // yvec = ax  tempo = aax
 // y=(a-sI)(a-sI)x=(aa+ss-2sa)x = tempo + ss*x -2s(yvec). 
 /*
       amux_(&primme->n, &yvec[primme->nLocal*i], tempo,
-		      matrix->AElts, matrix->JA, matrix->IA);
+                      matrix->AElts, matrix->JA, matrix->IA);
       Num_axpy_dprimme(primme->n, shift*shift, &xvec[primme->nLocal*i], 1, tempo, 1);
       Num_axpy_dprimme(primme->n, -2*shift, &yvec[primme->nLocal*i], 1, tempo, 1);
       Num_dcopy_primme(primme->n, tempo, 1, &yvec[primme->nLocal*i],1);
@@ -374,17 +375,17 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
  *   choice = 3  K=ILUT(A-shift)  , shift provided once by user         
  *
  * on return:
- *    Factors:		pointer to the preconditioner CSR structure
+ *    Factors:                pointer to the preconditioner CSR structure
  *    precond_function: pointer to the function that applies the preconditioner
  *
  * For each choice we have:
  *
- *		   generated by function:             Applied by function
- *		 -------------------------           -------------------
- *   choice = 0  	   -				   NULL
- *   choice = 1   generate_Inv_Diagonal_Prec	   Apply_Inv_Diagonal_Prec
+ *                   generated by function:             Applied by function
+ *                 -------------------------           -------------------
+ *   choice = 0             -                                   NULL
+ *   choice = 1   generate_Inv_Diagonal_Prec           Apply_Inv_Diagonal_Prec
  *   choice = 2   generate_Diagonal_Prec           Apply_Diagonal_Shifted_Prec
- *   choice = 3   ilut				   Apply_ILUT_Prec
+ *   choice = 3   ilut                                   Apply_ILUT_Prec
  *
  * The user is cautioned that ILUT is a nonsymmetric preconditioner, 
  * which could potentially prevent the QMR inner solver from converging.
@@ -407,36 +408,36 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
       case 0:  // No preconditioner created
          break;
       case 1: case 2:
-	 // Diagonal: K = diag(A-shift I), shift can be primme provided
+         // Diagonal: K = diag(A-shift I), shift can be primme provided
          Factors->AElts = (double *)primme_calloc(n, sizeof(double), 
                                                              "Factors.AElts");
          Factors->IA = (int *)primme_calloc(n+1, sizeof(int), "Factors.IA");
          Factors->JA = (int *)primme_calloc(n, sizeof(int),"Factors.JA");
          printf("Generating diagonal preconditioner");
-	 if (driver.PrecChoice == 1) {
-	    printf(" with the user provided shift %e\n",driver.shift);
+         if (driver.PrecChoice == 1) {
+            printf(" with the user provided shift %e\n",driver.shift);
             generate_Inv_Diagonal_Prec(n, driver.shift, matrix.IA, matrix.JA, 
-	       matrix.AElts, Factors->IA, Factors->JA, Factors->AElts);
+               matrix.AElts, Factors->IA, Factors->JA, Factors->AElts);
             *precond_function = Apply_Inv_Diagonal_Prec;
-	    break;
-	 } 
-	 else {
-	    printf(" that will use solver provided shifts\n");
-	    generate_Diagonal_Prec(n, matrix.IA, matrix.JA, matrix.AElts, 
-	       Factors->IA, Factors->JA, Factors->AElts);
+            break;
+         } 
+         else {
+            printf(" that will use solver provided shifts\n");
+            generate_Diagonal_Prec(n, matrix.IA, matrix.JA, matrix.AElts, 
+               Factors->IA, Factors->JA, Factors->AElts);
             *precond_function = Apply_Diagonal_Shifted_Prec;
             break;
-	 }
+         }
       case 3: { // ILUT(A-shift I) 
-	 int ierr;
+         int ierr;
          int precondlfil = driver.level;
          double precondTol = driver.threshold;
          double *W1, *W2;
          int *iW1, *iW2, *iW3;
 
-	 if (driver.shift != 0.0L) {
-	    shiftCSRMatrix(-driver.shift, n, matrix.IA,matrix.JA,matrix.AElts);
-	 }
+         if (driver.shift != 0.0L) {
+            shiftCSRMatrix(-driver.shift, n, matrix.IA,matrix.JA,matrix.AElts);
+         }
 
          // Work arrays
          W1 = (double *)primme_calloc( n+1,  sizeof(double), "W1");
@@ -446,32 +447,32 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
          iW3 = (int *)primme_calloc( n,  sizeof(int), "iW2");
          //---------------------------------------------------
          // Max size of factorization                       //
-         lenFactors = 9*nnz;				    //
+         lenFactors = 9*nnz;                                    //
          //---------------------------------------------------
          Factors->AElts = (double *)primme_calloc(lenFactors,
-		       		                   sizeof(double), "iluElts");
+                                                          sizeof(double), "iluElts");
          Factors->JA = (int *)primme_calloc(lenFactors, sizeof(int), "Jilu");
          Factors->IA = (int *)primme_calloc(n+1, sizeof(int), "Iilu");
       
          ilut_(&n,matrix.AElts,matrix.JA,matrix.IA,&precondlfil,&precondTol,
-	             Factors->AElts, Factors->JA, Factors->IA, &lenFactors, 
-	             W1,W2,iW1,iW2,iW3,&ierr);
+                     Factors->AElts, Factors->JA, Factors->IA, &lenFactors, 
+                     W1,W2,iW1,iW2,iW3,&ierr);
       
          if (ierr != 0)  {
             fprintf(stderr, "ILUT factorization could not be completed\n");
             return(-1);
          }
 
- 	 if (driver.shift != 0.0L) {
-	    shiftCSRMatrix(driver.shift, n, matrix.IA,matrix.JA,matrix.AElts);
-	 }
-	 // free workspace
+          if (driver.shift != 0.0L) {
+            shiftCSRMatrix(driver.shift, n, matrix.IA,matrix.JA,matrix.AElts);
+         }
+         // free workspace
          free(W1); free(W2); free(iW1); free(iW2); free(iW3);
-	 }
+         }
          *precond_function = Apply_ILUT_Prec;
          break;
       case 4:  // Parasails(A - shift I)
-	 // not implemented yet
+         // not implemented yet
          break;
    }
    return 0;
@@ -482,7 +483,7 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
  * Applies a Davidson type preconditioner
  *
  *    x(i) = (Diag(A) - primme.Shifts(i) I)^(-1) * y(i),   i=1:blockSize
- * 	
+ *         
  * NOTE that each block vector may have its own shift provided by dprimme
  * in the array primme->ShiftsForPreconditioner
  *
@@ -492,7 +493,7 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
 ******************************************************************************/
 
 void Apply_Diagonal_Shifted_Prec(void *x, void *y, int *blockSize, 
-		            primme_params *primme) {
+                            primme_params *primme) {
 
    int i, j, index;
    double shift, denominator, minDenominator, NormEstimate;
@@ -515,14 +516,14 @@ void Apply_Diagonal_Shifted_Prec(void *x, void *y, int *blockSize,
 
       // Apply shifted diagonal preconditioner
       for (i=0;i<primme->nLocal;i++) {
-	   denominator = diagPrecond->AElts[i] - shift;
+           denominator = diagPrecond->AElts[i] - shift;
 
-	   minDenominator = 1e-14*NormEstimate;
-	   if (fabs(denominator) < minDenominator) {
-	      if (denominator < 0) denominator = -minDenominator;
-	      else denominator = minDenominator;
-	   }
-	   yvec[index+i] = xvec[index+i]/denominator;
+           minDenominator = 1e-14*NormEstimate;
+           if (fabs(denominator) < minDenominator) {
+              if (denominator < 0) denominator = -minDenominator;
+              else denominator = minDenominator;
+           }
+           yvec[index+i] = xvec[index+i]/denominator;
       }
    }
 }
@@ -531,13 +532,13 @@ void Apply_Diagonal_Shifted_Prec(void *x, void *y, int *blockSize,
 /******************************************************************************
  * Applies the (already inverted) diagonal preconditioner
  *
- * 	y(i) = P*x(i), i=1:blockSize, 
- * 	with P = (Diag(A)-shift)^(-1)
+ *         y(i) = P*x(i), i=1:blockSize, 
+ *         with P = (Diag(A)-shift)^(-1)
  *
 ******************************************************************************/
 
 void Apply_Inv_Diagonal_Prec(void *x, void *y, int *blockSize, 
-		                                  primme_params *primme) {
+                                                  primme_params *primme) {
    int i;
    double *xvec, *yvec;
    CSRMatrix *prec;
@@ -556,8 +557,8 @@ void Apply_Inv_Diagonal_Prec(void *x, void *y, int *blockSize,
 /******************************************************************************
  * Applies the ILUT preconditioner 
  *
- * 	y(i) = U^(-1)*( L^(-1)*x(i)), i=1:blockSize, 
- * 	with L,U = ilut(A-shift) 
+ *         y(i) = U^(-1)*( L^(-1)*x(i)), i=1:blockSize, 
+ *         with L,U = ilut(A-shift) 
  * 
  * It calls the SPARSKIT lusol0 function for each block vector.
  *
@@ -575,7 +576,7 @@ void Apply_ILUT_Prec(void *x, void *y, int *blockSize, primme_params *primme) {
 
    for (i=0;i<*blockSize;i++) {
       lusol0_(&primme->n,&xvec[primme->n*i],&yvec[primme->n*i],
-		      prec->AElts, prec->JA,prec->IA);
+                      prec->AElts, prec->JA,prec->IA);
    }
 
 }
@@ -583,7 +584,7 @@ void Apply_ILUT_Prec(void *x, void *y, int *blockSize, primme_params *primme) {
 /******************************************************************************
  * Computed the Frobenius norm of a CSR matrix 
  *
- * 	||A||_frob = sqrt( \sum_{i,j} A_ij^2 )
+ *         ||A||_frob = sqrt( \sum_{i,j} A_ij^2 )
  *
 ******************************************************************************/
 double frobeniusNorm(int n, int *IA, double *AElts) {
@@ -610,7 +611,7 @@ double frobeniusNorm(int n, int *IA, double *AElts) {
 /******************************************************************************
  * Shifts a CSR matrix by a shift
  *
- * 	A = A + shift I
+ *         A = A + shift I
  *
 ******************************************************************************/
 void shiftCSRMatrix(double shift, int n, int *IA, int *JA, double *AElts) {
@@ -636,7 +637,7 @@ void shiftCSRMatrix(double shift, int n, int *IA, int *JA, double *AElts) {
 /******************************************************************************
  * Generates a shifted and inverted diagonal preconditioner
  *
- * 	P = (Diag(A)-shift)^(-1)
+ *         P = (Diag(A)-shift)^(-1)
  *
  * If A_ii - shift is too close to zero in a relative to Frob norm sense,
  * a small value is replaced. 
@@ -659,10 +660,10 @@ void generate_Inv_Diagonal_Prec(int n, double shift,
       for (j=IA[i]; j <= IA[i+1]-1; j++) {
 
          if (JA[j-1]-1 == i) {
-	    temp = AElts[j-1]-shift;
-	    atemp = fabs(temp);
-	    atemp = max(1e-15*frobNorm, atemp);
-	    if (temp < 0 ) atemp = -atemp;
+            temp = AElts[j-1]-shift;
+            atemp = fabs(temp);
+            atemp = max(1e-15*frobNorm, atemp);
+            if (temp < 0 ) atemp = -atemp;
             PElts[i] = 1.0L/atemp;
             PIA[i] = i+1;
             PJA[i] = i+1;
@@ -676,7 +677,7 @@ void generate_Inv_Diagonal_Prec(int n, double shift,
 /******************************************************************************
  * Generates the diagonal of A.
  *
- * 	P = Diag(A)
+ *         P = Diag(A)
  *
  * This will be used with solver provided shifts as (P-shift_i)^(-1) 
 ******************************************************************************/

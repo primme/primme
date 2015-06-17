@@ -83,7 +83,7 @@ typedef enum {
    primme_full_LTolerance,
    primme_decreasing_LTolerance,
    primme_adaptive_ETolerance,
-   primme_adaptive,
+   primme_adaptive
 } primme_convergencetest;
 
 

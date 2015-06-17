@@ -33,7 +33,7 @@
  *
 ******************************************************************************/
 int read_solver_params(char *configFileName, char *outputFileName,
-		primme_params *primme, primme_preset_method *method) {
+                primme_params *primme, primme_preset_method *method) {
 
    int line, ret, i;
    char ident[128];
@@ -70,49 +70,49 @@ int read_solver_params(char *configFileName, char *outputFileName,
             ret = fscanf(configFile, "%s\n", stringValue);
             if (ret == 1) {
                if (strcmp(stringValue,      "DYNAMIC") == 0) {
-		       *method = DYNAMIC;
+                       *method = DYNAMIC;
                }
-	       else if (strcmp(stringValue, "DEFAULT_MIN_TIME") == 0) {
-		       *method = DEFAULT_MIN_TIME;
+               else if (strcmp(stringValue, "DEFAULT_MIN_TIME") == 0) {
+                       *method = DEFAULT_MIN_TIME;
                }
                else if (strcmp(stringValue, "DEFAULT_MIN_MATVECS") == 0) {
-		       *method = DEFAULT_MIN_MATVECS;
+                       *method = DEFAULT_MIN_MATVECS;
                }
                else if (strcmp(stringValue, "Arnoldi") == 0) {
-		       *method = Arnoldi;
+                       *method = Arnoldi;
                }
                else if (strcmp(stringValue, "GD") == 0) {
-		       *method = GD;
+                       *method = GD;
                }
                else if (strcmp(stringValue, "GD_plusK") == 0) {
-		       *method = GD_plusK;
+                       *method = GD_plusK;
                }
                else if (strcmp(stringValue, "GD_Olsen_plusK") == 0) {
-		       *method = GD_Olsen_plusK;
+                       *method = GD_Olsen_plusK;
                }
                else if (strcmp(stringValue, "JD_Olsen_plusK") == 0) {
-		       *method = JD_Olsen_plusK;
+                       *method = JD_Olsen_plusK;
                }
                else if (strcmp(stringValue, "RQI") == 0) {
-		       *method = RQI;
+                       *method = RQI;
                }
                else if (strcmp(stringValue, "JDQR") == 0) {
-		       *method = JDQR;
+                       *method = JDQR;
                }
                else if (strcmp(stringValue, "JDQMR") == 0) {
-		       *method = JDQMR;
+                       *method = JDQMR;
                }
                else if (strcmp(stringValue, "JDQMR_ETol") == 0) {
-		       *method = JDQMR_ETol;
+                       *method = JDQMR_ETol;
                }
                else if (strcmp(stringValue, "SUBSPACE_ITERATION") == 0) {
-		       *method = SUBSPACE_ITERATION;
+                       *method = SUBSPACE_ITERATION;
                }
                else if (strcmp(stringValue, "LOBPCG_OrthoBasis") == 0) {
-		       *method = LOBPCG_OrthoBasis;
+                       *method = LOBPCG_OrthoBasis;
                }
                else if (strcmp(stringValue, "LOBPCG_OrthoBasis_Window") == 0) {
-		       *method = LOBPCG_OrthoBasis_Window;
+                       *method = LOBPCG_OrthoBasis_Window;
                }
                else {
                   printf("Invalid target value\n");
@@ -123,7 +123,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
          else if (strcmp(ident, "primme.numEvals") == 0) {
             ret = fscanf(configFile, "%d\n", &primme->numEvals);
          }
-	 else if (strcmp(ident, "primme.eps") == 0) {
+         else if (strcmp(ident, "primme.eps") == 0) {
             ret = fscanf(configFile, "%le\n", &primme->eps);
          }
          else if (strcmp(ident, "primme.aNorm") == 0) {
@@ -208,17 +208,17 @@ int read_solver_params(char *configFileName, char *outputFileName,
          else if (strcmp(ident, "primme.targetShifts") == 0) {
             ret = 1;
             if (primme->numTargetShifts >0) {
-	       primme->targetShifts = (double *)primme_calloc(
-	          primme->numTargetShifts, sizeof(double), "targetShifts");
-	       for (i=0;i<primme->numTargetShifts; i++) {
+               primme->targetShifts = (double *)primme_calloc(
+                  primme->numTargetShifts, sizeof(double), "targetShifts");
+               for (i=0;i<primme->numTargetShifts; i++) {
                   ret = fscanf(configFile, "%le", &primme->targetShifts[i]);
-	          if (ret != 1) break;
-	       }
-	    }
-	    if (ret == 1) {
+                  if (ret != 1) break;
+               }
+            }
+            if (ret == 1) {
                fgets(ident, 2048, configFile);
-	    }
-	 }
+            }
+         }
          else if (strcmp(ident, "primme.correction.projectors.LeftQ") == 0) {
             ret = fscanf(configFile, "%d\n", 
                      &primme->correctionParams.projectors.LeftQ );
@@ -253,8 +253,8 @@ int read_solver_params(char *configFileName, char *outputFileName,
                   primme->correctionParams.convTest = primme_adaptive;
                }
                else if (strcmp(stringValue,"primme_decreasing_LTolerance") == 0)
-	       {  primme->correctionParams.convTest = 
-		       				 primme_decreasing_LTolerance;
+               {  primme->correctionParams.convTest = 
+                                                 primme_decreasing_LTolerance;
                }
                else if (strcmp(stringValue,"primme_adaptive_ETolerance") == 0) {
                  primme->correctionParams.convTest = primme_adaptive_ETolerance;
@@ -279,17 +279,17 @@ int read_solver_params(char *configFileName, char *outputFileName,
          }
          else if (strcmp(ident, "primme.iseed") == 0) {
             ret = 1;
-	    for (i=0;i<4; i++) {
+            for (i=0;i<4; i++) {
                ret = fscanf(configFile, "%d", &primme->iseed[i]);
-	       if (ret != 1) break;
-	    }
-	    if (ret == 1) {
+               if (ret != 1) break;
+            }
+            if (ret == 1) {
                fgets(ident, 2048, configFile);
-	    }
-	 }
+            }
+         }
          else {
             fprintf(stderr, 
-	       "ERROR(read_solver_params): Invalid parameter '%s'\n", ident);
+               "ERROR(read_solver_params): Invalid parameter '%s'\n", ident);
             return(-1);
          }
 
@@ -297,13 +297,13 @@ int read_solver_params(char *configFileName, char *outputFileName,
       }
       else {
          fprintf(stderr, 
-	    "ERROR(read_solver_params): Invalid operator on %d\n", line);
+            "ERROR(read_solver_params): Invalid operator on %d\n", line);
          return(-1);
       }
 
       if (ret != 1) {
          fprintf(stderr, 
-	 "ERROR(read_solver_params): Could not read value on line %d\n", line);
+         "ERROR(read_solver_params): Could not read value on line %d\n", line);
          return(-1);
       }
    }
@@ -313,7 +313,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
       if (strcmp(outputFileName, "stdout") != 0) {
          if ((primme->outputFile = fopen(outputFileName, "w+")) == NULL) {
             fprintf(stderr, 
-		   "ERROR(read_solver_params): Could not open output file\n");
+                   "ERROR(read_solver_params): Could not open output file\n");
          }
       }
       else {
@@ -365,7 +365,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
       }
 
       if (strcmp(op, "=") == 0) {
-	 // Matrix, partitioning and I/O params 
+         // Matrix, partitioning and I/O params 
          if (strcmp(ident, "driver.outputFile") == 0) {
             ret = fscanf(configFile, "%s\n", driver->outputFileName);
          }
@@ -378,7 +378,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
          else if (strcmp(ident, "driver.matrixFile") == 0) {
             ret = fscanf(configFile, "%s\n", driver->matrixFileName);
          }
-	 // Preconditioning parameters
+         // Preconditioning parameters
          else if (strcmp(ident, "driver.PrecChoice") == 0) {
             ret = fscanf(configFile, "%d\n", &driver->PrecChoice);
          }
@@ -396,10 +396,10 @@ int read_driver_params(char *configFileName, driver_params *driver) {
          }
          else if (strcmp(ident, "driver.filter") == 0) {
             ret = fscanf(configFile, "%lf\n", &driver->filter);
-	 }
+         }
          else {
             fprintf(stderr, 
-	      "ERROR(read_driver_params): Invalid parameter '%s'\n", ident);
+              "ERROR(read_driver_params): Invalid parameter '%s'\n", ident);
             return(-1);
          }
 
@@ -407,13 +407,13 @@ int read_driver_params(char *configFileName, driver_params *driver) {
       }
       else {
          fprintf(stderr, "ERROR(read_driver_params): Invalid operator on %d\n",
-		 line);
+                 line);
          return(-1);
       }
 
       if (ret != 1) {
          fprintf(stderr, 
-	  "ERROR(read_driver_params): Could not read value on line %d\n", line);
+          "ERROR(read_driver_params): Could not read value on line %d\n", line);
          return(-1);
       }
    }

@@ -3,7 +3,7 @@
 #include "shared_utils.h"
 
 int readfullMTX(char *mtfile, Complex_Z **A, int **JA, int **IA, int *n, 
-		int *nnz) { 
+                int *nnz) { 
 
    int i,j, k, row, nzmax, tja;
    int firstFast;
@@ -77,8 +77,8 @@ int readfullMTX(char *mtfile, Complex_Z **A, int **JA, int **IA, int *n,
       (*A)[k].r = ta.r;
       (*A)[k].i = ta.i;
       if (i != row-1) {
-	 for (j=i+1;j<row;j++) (*IA)[j]=k+1;
-	 i=row-1;
+         for (j=i+1;j<row;j++) (*IA)[j]=k+1;
+         i=row-1;
       }
    }
 

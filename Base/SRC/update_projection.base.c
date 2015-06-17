@@ -71,38 +71,12 @@ void update_projection_@(pre)primme(@(type) *X, @(type) *Y, @(type) *Z,
    }
 
    /* --------------------------------------------------------------------- */
-   /* Grow Z by blockSize number of rows and columns                        */
-   /*    Compute the first numCols rows of the new blockSize columns        */
-   /* --------------------------------------------------------------------- */
-
-#ifdefarithm L_DEFREAL
-   /* --------------------------------------------------------------------- */
-   /* Alternative (more efficient for certain block sizes)                  */
    /* Grow Z by blockSize number of rows and columns all at once            */
    /* --------------------------------------------------------------------- */
 
    Num_gemm_@(pre)primme("C", "N", numCols+blockSize, blockSize, primme->nLocal, tpone, 
       X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
       tzero, rwork, maxCols);
-#endifarithm
-#ifdefarithm L_DEFCPLX
-   Num_gemm_@(pre)primme("C", "N", numCols, blockSize, primme->nLocal, tpone, 
-      X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
-      tzero, rwork, maxCols);
-
-   /* -------------------------------------------------------------- */
-   /*    Compute next the additional rows of each new column vector. */
-   /*    Only the upper triangular portion is computed and stored.   */
-   /* -------------------------------------------------------------- */
-
-
-   for (j = numCols; j < numCols+blockSize; j++) {
-      Num_gemv_@(pre)primme("C", primme->nLocal, j-numCols+1, tpone,
-         &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
-         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
-   }
-
-#endifarithm
    
 #ifdefarithm L_DEFCPLX
    count = 2*maxCols*blockSize;

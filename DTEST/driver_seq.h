@@ -15,11 +15,11 @@ FILE *output;
 
 void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme);
 void Apply_Diagonal_Shifted_Prec(void *x, void *y, int *blockSize, 
-		            primme_params *primme);
+                            primme_params *primme);
 void Apply_Inv_Diagonal_Prec(void *x, void *y, int *blockSize, 
                             primme_params *primme);
 void Apply_ILUT_Prec(void *x, void *y, int *blockSize, 
-			    primme_params *primme);
+                            primme_params *primme);
 void generate_Inv_Diagonal_Prec(int n, double shift, 
    int *IA, int *JA, double *AElts, int *PIA, int *PJA, double *PElts);
 void generate_Diagonal_Prec(int n, int *IA, int *JA, double *AElts, 

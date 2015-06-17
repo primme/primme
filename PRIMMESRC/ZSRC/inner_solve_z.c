@@ -131,7 +131,6 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    int rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
-   int workSpaceSize; /* Size of local work array.                           */
    int numIts;        /* Number of inner iterations                          */
    int ret;           /* Return value used for error checking.               */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
@@ -161,7 +160,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    double LTolerance, ETolerance;
 
    /* Some constants                                                          */
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
+   Complex_Z tzero = {+0.0e+00,+0.0e00};
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -172,8 +171,6 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
    workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
-   
-   workSpaceSize = rworkSize - (workSpace - rwork);
    
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */
