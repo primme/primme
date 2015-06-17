@@ -141,6 +141,7 @@ clean:
 	echo "--------------------------------------------------"; \
 	cd $(SRC) ;\
 	make -f Makefile clean;\
+	rm -f libprimme.a;\
 	echo " From Test directories";\
 	cd $(DTESTDIR);\
 	make -f Makefile_seq clean;\
