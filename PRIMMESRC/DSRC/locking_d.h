@@ -32,11 +32,12 @@
 #define LOCKING_H
 
 int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol, 
-   int *basisSize, int *numLocked, int *numGuesses, int *nextGuess, 
+   int *basisSize, int *numLocked, int *numGuesses, int *nextGuess,
    double *V, double *W, double *H, double *evecsHat, double *M, 
    double *UDU, int *ipivot, double *hVals, double *hVecs, 
    double *evecs, double *evals, int *perm, double machEps, 
-   double *resNorms, int *flag, double *rwork, int rworkSize, 
-   int *iwork, primme_params *primme);
+   double *resNorms, int *numPrevRitzVals, double *prevRitzVals, 
+   int *flag, double *rwork, int rworkSize, int *iwork, 
+   int *LockingProblem, primme_params *primme);
 
 #endif

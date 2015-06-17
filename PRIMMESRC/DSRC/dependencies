@@ -2,6 +2,10 @@ convergence_d.o: convergence_d.c ../COMMONSRC/primme.h \
   ../COMMONSRC/Complex.h ../COMMONSRC/const.h ../COMMONSRC/wtime.h \
   convergence_d.h convergence_private_d.h numerical_d.h \
   ../COMMONSRC/common_numerical.h
+convergence_d_orig.o: convergence_d_orig.c ../COMMONSRC/primme.h \
+  ../COMMONSRC/Complex.h ../COMMONSRC/const.h ../COMMONSRC/wtime.h \
+  convergence_d.h convergence_private_d.h numerical_d.h \
+  ../COMMONSRC/common_numerical.h
 correction_d.o: correction_d.c ../COMMONSRC/primme.h \
   ../COMMONSRC/Complex.h ../COMMONSRC/const.h correction_d.h \
   correction_private_d.h inner_solve_d.h numerical_d.h \
@@ -21,11 +25,16 @@ locking_d.o: locking_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
   locking_private_d.h ortho_d.h update_projection_d.h update_W_d.h \
   solve_H_d.h restart_d.h factorize_d.h numerical_d.h \
   ../COMMONSRC/common_numerical.h
+locking_d_original.o: locking_d_original.c ../COMMONSRC/primme.h \
+  ../COMMONSRC/Complex.h ../COMMONSRC/wtime.h ../COMMONSRC/const.h \
+  locking_d.h locking_private_d.h ortho_d.h update_projection_d.h \
+  update_W_d.h solve_H_d.h restart_d.h factorize_d.h numerical_d.h \
+  ../COMMONSRC/common_numerical.h
 main_iter_d.o: main_iter_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
   ../COMMONSRC/const.h ../COMMONSRC/wtime.h main_iter_d.h \
-  main_iter_private_d.h convergence_d.h correction_d.h init_d.h ortho_d.h \
-  restart_d.h locking_d.h solve_H_d.h update_projection_d.h update_W_d.h \
-  numerical_d.h ../COMMONSRC/common_numerical.h
+  main_iter_private_d.h convergence_d.h correction_d.h init_d.h \
+  ortho_d.h restart_d.h locking_d.h solve_H_d.h update_projection_d.h \
+  update_W_d.h numerical_d.h ../COMMONSRC/common_numerical.h
 numerical_d.o: numerical_d.c numerical_private_d.h numerical_d.h \
   ../COMMONSRC/common_numerical.h
 ortho_d.o: ortho_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \

@@ -21,10 +21,10 @@
  * File: ortho.c
  *
  * Purpose - Othonormalizes a block of vectors, vector by vector, 
- *  	     against two bases and among themselves. Gram-Scmidt is used 
- *   	     with reorthogonalization based on Daniel's test. 
- *  	     For the purpose of the test, the norm of the resulting vector 
- *  	     is computed without synchronizations. Because of floating point,
+ *           against two bases and among themselves. Gram-Scmidt is used 
+ *           with reorthogonalization based on Daniel's test. 
+ *           For the purpose of the test, the norm of the resulting vector 
+ *           is computed without synchronizations. Because of floating point,
  *           this norm is not accurate if reortho is needed, but it is more 
  *           than sufficient for the test. If at least one reortho has been
  *           performed, the actual norm must be computed. 
@@ -34,8 +34,8 @@
  *                    O( machineEps * (s0/s1)^2 ), 
  *           so when Daniel's test succeeds error(s1) = O(2*machineEps)).
  *
- * 	     For almost linearly dependent vectors a large error in s1
- * 	     might fail to detect a problem during the second reortho.
+ *           For almost linearly dependent vectors a large error in s1
+ *           might fail to detect a problem during the second reortho.
  *           Let s1 = s1hat*(1+err), with err = O(macheps*(s0/s1)^2).
  *              eg. s0/s1 = 1e8 => (s1-s1hat)/s1hat = O(1)
  *              eg. s0/s1 = 1e7 => (s1-s1hat)/s1hat = O(1e-2)
@@ -97,7 +97,7 @@
  * -1  - some size or leading dimension was < 0
  * -2  - b1 > b2
  * -3  - A limit number of randomizations has been performed without
- *  	 yielding an orthogonal direction
+ *       yielding an orthogonal direction
  * 
  **********************************************************************/
 
@@ -105,16 +105,16 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
    Complex_Z *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
    double machEps, Complex_Z *rwork, int rworkSize, primme_params *primme) {
               
-   int i;                   // Loop indices
+   int i;                   /* Loop indices */
    int count;
    int returnValue;
    int minWorkSize;         
    int nOrth, reorth;
    int randomizations;
-   int messages = 0;        // messages = 1 prints the intermediate results
-   int maxNumOrthos = 2;    // We let 2 reorthogonalization before we randomize
-   int maxNumRandoms = 10;  // We do not allow more than 10 randomizations
-   double tol = sqrt(2.0L)/2.0L; // We set Daniel et al. test to .707
+   int messages = 0;        /* messages = 1 prints the intermediate results */
+   int maxNumOrthos = 2;    /* We let 2 reorthogonalizations before randomize */
+   int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
+   double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
    double s0, s02, s1;
    double temp;
    Complex_Z ztmp;
@@ -122,15 +122,15 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, tmone = {-1.0e+00,+0.0e00};
    FILE *outputFile;
 
-   // messages = (primme->procID == 0 && primme->printLevel >= 5);
-   // outputFile = primme->outputFile;
+   /* messages = (primme->procID == 0 && primme->printLevel >= 5); */
+   /* outputFile = primme->outputFile; */
    outputFile = stderr;
 
    returnValue = 0;
 
-   //----------------------------------
-   // input and workspace verification 
-   //----------------------------------
+   /*----------------------------------*/
+   /* input and workspace verification */
+   /*----------------------------------*/
    if (ldBasis <= 0 || nLocal <= 0 || b1 < 0 || b2 < 0 || numLocked < 0
       || rworkSize < 0)
    {
@@ -152,9 +152,9 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
    
    tol = sqrt(2.0L)/2.0L;
 
-   //---------------------------------------------------
-   // main loop to orthogonalize new vectors one by one
-   //---------------------------------------------------
+   /*---------------------------------------------------*/
+   /* main loop to orthogonalize new vectors one by one */
+   /*---------------------------------------------------*/
 
    for(i=b1; i <= b2; i++) {
     
@@ -166,14 +166,14 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
 
          if (nOrth >= maxNumOrthos) {
             if (randomizations >= maxNumRandoms) {
-	       return -3;
-	    }
-	    if (messages){
+               return -3;
+            }
+            if (messages){
                fprintf(outputFile, "Randomizing in ortho:\n");
-	    }
+            }
 
             Num_larnv_zprimme(2, iseed, nLocal, &basis[ldBasis*i]); 
-	    randomizations++;
+            randomizations++;
             nOrth = 0;
          }
 
@@ -181,7 +181,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
 
          if (nOrth == 1) {
             ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1, 
-			                   &basis[ldBasis*i], 1);
+                                           &basis[ldBasis*i], 1);
          }
             
          if (i > 0) {
@@ -196,47 +196,47 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
 
          rwork[i+numLocked] = ztmp;
          overlaps = &rwork[i+numLocked+1];
-         // In Complex, the size of the array to globalSum is twice as large
-	 count = 2*(i + numLocked + 1);
+         /* In Complex, the size of the array to globalSum is twice as large */
+         count = 2*(i + numLocked + 1);
          (*primme->globalSumDouble)(rwork, overlaps, &count, primme);
 
-         if (numLocked > 0) { // locked array most recently accessed
+         if (numLocked > 0) { /* locked array most recently accessed */
             Num_gemv_zprimme("N", nLocal, numLocked, tmone, locked, ldLocked, 
                &overlaps[i], 1, tpone, &basis[ldBasis*i], 1); 
          }
 
          if (i > 0) {
             Num_gemv_zprimme("N", nLocal, i, tmone, basis, ldBasis, 
-	       overlaps, 1, tpone, &basis[ldBasis*i], 1);
+               overlaps, 1, tpone, &basis[ldBasis*i], 1);
          }
  
          if (nOrth == 1) {
-	    s02 = overlaps[i+numLocked].r;
+            s02 = overlaps[i+numLocked].r;
             s0 = sqrt(s02);
          }
 
-	 // Compute the norm of the resulting vector implicitly
-	 
-	 ztmp = Num_dot_zprimme(i+numLocked,overlaps,1,overlaps,1);
-	 temp = ztmp.r;
-	 s1 = sqrt(max(0.0L, s02-temp));
-	 
-	 // s1 decreased too much. Numerical problems expected 
-         // with its implicit computation. Compute s1 explicitly
-	 
-	 if ( s1 < s0*sqrt(machEps) || nOrth > 1) {  
-	    ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1, 
-			                   &basis[ldBasis*i], 1);
-	    temp = ztmp.r;
-	    count = 1;
-	    (*primme->globalSumDouble)(&temp, &s1, &count, primme);
-	    s1 = sqrt(s1);
-	 }
+         /* Compute the norm of the resulting vector implicitly */
+         
+         ztmp = Num_dot_zprimme(i+numLocked,overlaps,1,overlaps,1);
+         temp = ztmp.r;
+         s1 = sqrt(max(0.0L, s02-temp));
+         
+         /* s1 decreased too much. Numerical problems expected   */
+         /* with its implicit computation. Compute s1 explicitly */
+         
+         if ( s1 < s0*sqrt(machEps) || nOrth > 1) {  
+            ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1, 
+                                           &basis[ldBasis*i], 1);
+            temp = ztmp.r;
+            count = 1;
+            (*primme->globalSumDouble)(&temp, &s1, &count, primme);
+            s1 = sqrt(s1);
+         }
 
          if (s1 <= machEps*s0) {
             if (messages) {
                fprintf(outputFile, 
-		 "Vector %d lost all significant digits in ortho\n", i-b1);
+                 "Vector %d lost all significant digits in ortho\n", i-b1);
             }
             nOrth = maxNumOrthos;
          }
@@ -244,22 +244,12 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
             if (messages) {
                fprintf(outputFile, "Reorthogonalizing: %d\n", i-b1);
             }
-	    // No numerical benefit in normalizing the vector before reortho
+            /* No numerical benefit in normalizing the vector before reortho */
             s0 = s1;
-	    s02 = s1*s1;
+            s02 = s1*s1;
          }
          else {
-	    if (nOrth > 1) {
-	       // Previous reorthogonalizaton implies inaccurate norm s1 of 
-	       // resulting vector. Compute the numerically accurate one.
-	       ztmp = Num_dot_zprimme(nLocal,&basis[ldBasis*i], 1,
-			                     &basis[ldBasis*i], 1); 
-	       temp = ztmp.r;
-	       count = 1;
-               (*primme->globalSumDouble)(&temp, &s1, &count, primme);
-               s1 = sqrt(s1);
-	    }
-	    {ztmp.r = 1.0L/s1; ztmp.i = 0.0L;}
+            {ztmp.r = 1.0L/s1; ztmp.i = 0.0L;}
             Num_scal_zprimme(nLocal, ztmp, &basis[ldBasis*i], 1);
             reorth = 0;
          } 
@@ -293,7 +283,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
  * Input/Output parameters
  * -----------------------
  * previousVectors The coefficient vectors obtained from the previous iteration
- * 		   Note that their leading dimension is primme->maxBasisSize.
+ *                 Note that their leading dimension is primme->maxBasisSize.
  *
  * numPrevious     The number of previous vectors to retain
  *
@@ -316,8 +306,8 @@ int ortho_retained_vectors_zprimme (Complex_Z *currentVectors,
    int nOrths;  /* Number of times a vector has been orthogonalized */
    int zeroed;  /* True if the vector norm was reduced below 1e-14  */
    double norm; /* Vector norm.                                     */
-   Complex_Z ztmp;/* Temp accumulation var  			    */
-   		/* and some constants				    */
+   Complex_Z ztmp;/* Temp accumulation var                            */
+                /* and some constants                               */
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, tmone = {-1.0e+00,+0.0e00};
 
    /* Orthogonalize each of the numPrevious vectors against the current */
@@ -335,45 +325,45 @@ int ortho_retained_vectors_zprimme (Complex_Z *currentVectors,
          /* Orthogonalize versus the numVectors current vectors */
 
          Num_gemv_zprimme("C", length, numVectors, tpone, currentVectors, 
-	    length, &previousVectors[length*i], 1, tzero, rwork, 1);
+            length, &previousVectors[length*i], 1, tzero, rwork, 1);
 
          Num_gemv_zprimme("N", length, numVectors, tmone, currentVectors, 
-	    length, rwork, 1, tpone, &previousVectors[length*i], 1);
+            length, rwork, 1, tpone, &previousVectors[length*i], 1);
 
          /* Orthogonalize against the i previous vectors that have */
          /* been orthogonalized thus far.                          */
 
          if (i > 0) {
             Num_gemv_zprimme("C", length, i, tpone, previousVectors, 
-	       length, &previousVectors[length*i], 1, tzero, rwork, 1);
+               length, &previousVectors[length*i], 1, tzero, rwork, 1);
 
             Num_gemv_zprimme("N", length, i, tmone, previousVectors, 
-	       length, rwork, 1, tpone, &previousVectors[length*i], 1);
-	 }
+               length, rwork, 1, tpone, &previousVectors[length*i], 1);
+         }
 
          ztmp = Num_dot_zprimme(length, &previousVectors[length*i], 1,
-            			        &previousVectors[length*i], 1);
-	 norm = ztmp.r;
+                                        &previousVectors[length*i], 1);
+         norm = ztmp.r;
          norm = sqrt(norm);
 
          if (norm < 5.0L*machEps) {
             numPrevious--;
             Num_zcopy_zprimme(length*(numPrevious-i), 
-	      &previousVectors[length*(i+1)], 1, &previousVectors[length*i], 1);
+              &previousVectors[length*(i+1)], 1, &previousVectors[length*i], 1);
             zeroed = 1;
             break;
          }
 
-	    {ztmp.r = 1.0L/norm; ztmp.i = 0.0L;}
+            {ztmp.r = 1.0L/norm; ztmp.i = 0.0L;}
          Num_scal_zprimme(length, ztmp, &previousVectors[length*i], 1);
 
-      } // for 3 reorthos
+      } /* for 3 reorthos */
 
       if (!zeroed) {
          i++;
       }
 
-   } // main while loop
+   } /* main while loop */
 
    return numPrevious;
 }

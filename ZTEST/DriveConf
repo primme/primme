@@ -5,6 +5,7 @@
 driver.matrixFile    = HA.mtx
 
 // Output file name
+driver.outputFile    = stdout
 driver.outputFile    = sample.out
 
 // ///////////////////////////////////////////////////////////////////
@@ -14,7 +15,7 @@ driver.outputFile    = sample.out
 //	1    K = Diagonal of (A-driver.shift I)
 // 	2    K = (Diagonal_of_A - primme.shift_i I)
 // ///////////////////////////////////////////////////////////////////
-driver.PrecChoice = 1 
+driver.PrecChoice = 0 
 driver.shift      = -0.7
 
 // ///////////////////////////////////////////////////////////////////

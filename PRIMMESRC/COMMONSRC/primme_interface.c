@@ -22,25 +22,25 @@
  * File: primme_interface.c
  *
  * Purpose - Contains interface functions to PRIMME named primme_* 
- * 	     If desired, the user can call any of these functions for 
- * 	     initializing parameters, setting up the method, 
- * 	     allocating memory, or even checking a given set of parameters. 
- * 	   
+ *           If desired, the user can call any of these functions for 
+ *           initializing parameters, setting up the method, 
+ *           allocating memory, or even checking a given set of parameters. 
+ * 
  *
  **********************************************************************/
 
-#include <stdlib.h>   // mallocs, free
-#include <unistd.h>   // gethostname
+#include <stdlib.h>   /* mallocs, free */
+#include <unistd.h>   /* gethostname */
 #include <stdio.h>    
 #include "primme.h"
 #include "common_numerical.h"
 #include "const.h"
 
-//**************************************************************************
-//
-// Initialize the primme data structure
-//
-//**************************************************************************
+/***************************************************************************
+
+   Initialize the primme data structure
+  
+***************************************************************************/
 void primme_initialize(primme_params *primme) {
 
    /* Essential parameters */
@@ -71,15 +71,15 @@ void primme_initialize(primme_params *primme) {
    primme->numOrthoConst           = 0;
 
    /* Eigensolver parameters (outer) */
-   primme->locking			       = 0;
-   primme->dynamicMethodSwitch		       = 0;
+   primme->locking                             = 0;
+   primme->dynamicMethodSwitch                 = 0;
    primme->maxBasisSize                        = 0;
    primme->minRestartSize                      = 0;
    primme->maxBlockSize                        = 1;
    primme->maxMatvecs                          = INT_MAX;
    primme->maxOuterIterations                  = INT_MAX;
    primme->restartingParams.scheme             = primme_thick;
-   primme->restartingParams.maxPrevRetain      = 1;
+   primme->restartingParams.maxPrevRetain      = 0;
 
    /* correction parameters (inner) */
    primme->correctionParams.precondition       = 0;
@@ -96,7 +96,7 @@ void primme_initialize(primme_params *primme) {
 
    /* Printing and reporting */
    primme->outputFile              = stdout;
-   primme->printLevel		   = 1;
+   primme->printLevel              = 1;
    primme->stats.numOuterIterations= 0;
    primme->stats.numRestarts       = 0;
    primme->stats.numMatvecs        = 0;
@@ -108,7 +108,10 @@ void primme_initialize(primme_params *primme) {
    primme->preconditioner          = NULL;
 
    /* Internally used variables */
-   primme->iseed[0]                = -1;
+   primme->iseed[0] = -1;   /* To set iseed, we first need procID           */
+   primme->iseed[1] = -1;   /* Thus we set all iseeds to -1                 */
+   primme->iseed[2] = -1;   /* Unless users provide their own iseeds,       */
+   primme->iseed[3] = -1;   /* PRIMME will set thse later uniquely per proc */
    primme->intWorkSize             = 0;
    primme->realWorkSize            = 0;
    primme->intWork                 = NULL;
@@ -118,11 +121,11 @@ void primme_initialize(primme_params *primme) {
 
 }
 
-//**************************************************************************
-// wrappers for allocating and freeing space in a more friendly way
-//**************************************************************************
+/***************************************************************************
+   wrappers for allocating and freeing space in a more friendly way
+***************************************************************************/
 
-// Memory alignment at page boundary
+/* Memory alignment at page boundary */
 void *primme_valloc(size_t byteSize, const char *target) {
 
    void *ptr;
@@ -130,12 +133,12 @@ void *primme_valloc(size_t byteSize, const char *target) {
 
    if ( (ptr = valloc(byteSize)) == NULL) {
       if (gethostname(machineName, 256) < 0) {
-         fprintf(stderr, "ERROR(primme_calloc): Could not get host name\n");
+         fprintf(stderr, "ERROR(primme_valloc): Could not get host name\n");
       }
 
       perror("primme_alloc");
       fprintf(stderr,
-         "ERROR(primme_alloc): %s Could not allocate %d elements for: %s\n",
+         "ERROR(primme_alloc): %s Could not allocate %lu bytes for: %s\n",
          machineName, byteSize, target);
       fflush(stderr);
       exit(EXIT_FAILURE);
@@ -145,7 +148,7 @@ void *primme_valloc(size_t byteSize, const char *target) {
 
 }
 
-// Memory allocation with zeroing
+/* Memory allocation with zeroing */
 void *primme_calloc(size_t nelem, size_t elsize, const char *target) {
 
    void *ptr;
@@ -158,7 +161,7 @@ void *primme_calloc(size_t nelem, size_t elsize, const char *target) {
 
       perror("primme_calloc");
       fprintf(stderr, 
-	 "ERROR(primme_calloc): %s Could not allocate %d elements for: %s\n",
+         "ERROR(primme_calloc): %s Could not allocate %lu elements for: %s\n",
          machineName, nelem, target);
       fflush(stderr);
       exit(EXIT_FAILURE);
@@ -175,44 +178,49 @@ void primme_Free(primme_params *params) {
    params->intWorkSize  = 0;
    params->realWorkSize = 0;
 
-} //**************************************************************************
+} /**************************************************************************/
 
 /******************************************************************************
  * int primme_set_method(primme_preset_method method,primme_params *params)
  *
  *    Set the eigensolver parameters to implement a method requested by the user
- *    A choice of 12 preset methods is provided, as well as two defaults 
- *    to let the primme choose which method would occur the minimum number of 
- *    matvec operations or minimum time. 
+ *    A choice of 15 preset methods is provided. These implement 12 well 
+ *    known methods. The two default methods are shells for easy access to
+ *    the best performing GD+k and JDQMR_ETol with expertly chosen parameters.
+ *    
+ *    The DYNAMIC method makes runtime measurements and switches dynamically
+ *    between DEFAULT_MIN_TIME and DEFAULT_MIN_MATVEC keeping the one that
+ *    performs the best. Because it usually achieves best runtime over all 
+ *    methods, it is recommended for the general user.
  *
  *    For most methods the user may specify the maxBasisSize, restart size, 
  *    block size, etc. If any (or all) of these parameters are not specified, 
  *    they will be given default values that are appropriate for the method.
  *
- *    Future: DEFAULT_MIN_TIME can experiment with various choice at runtime
- *    to choose the most efficient parameters.
+ *    primme_set_method() will override those parameters in primme that 
+ *    are needed to implement the method.
  *
  *    Note: Spectral transformations can be applied by simply providing
- * 	   (A-shift I)^{-1} as the matvec.
+ *         (A-shift I)^{-1} as the matvec.
  *    
  *    For additional information see the readme file
  *
  * INPUT
  * -----
- *    method  	One of the following 12 enum methods:
+ *    method    One of the following 12 enum methods:
  *
- *        DYNAMIC,        	   : Switches dynamically to the best method
+ *        DYNAMIC,                 : Switches dynamically to the best method
  *        DEFAULT_MIN_TIME,        : Currently set at JDQMR_ETol
  *        DEFAULT_MIN_MATVECS,     : Currently set at GD+block
  *        Arnoldi,                 : obviously not an efficient choice 
- *        GD,		           : classical block Generalized Davidson 
- *        GD_plusK,		   : GD+k block GD with recurrence restarting
+ *        GD,                      : classical block Generalized Davidson 
+ *        GD_plusK,                : GD+k block GD with recurrence restarting
  *        GD_Olsen_plusK,          : GD+k with approximate Olsen precond.
  *        JD_Olsen_plusK,          : GD+k, exact Olsen (two precond per step)
- *        RQI,          	   : Rayleigh Quotient Iteration. Also INVIT,
- *     			           :   but for INVIT provide targetShifts
- *        JDQR,          	   : Original block, Jacobi Davidson
- *        JDQMR,          	   : Our block JDQMR method (similar to JDCG)
+ *        RQI,                     : Rayleigh Quotient Iteration. Also INVIT,
+ *                                 :   but for INVIT provide targetShifts
+ *        JDQR,                    : Original block, Jacobi Davidson
+ *        JDQMR,                   : Our block JDQMR method (similar to JDCG)
  *        JDQMR_ETol,              : Slight, but efficient JDQMR modification
  *        SUBSPACE_ITERATION,      : equiv. to GD(block,2*block)
  *        LOBPCG_OrthoBasis,       : equiv. to GD(nev,3*nev)+nev
@@ -221,16 +229,16 @@ void primme_Free(primme_params *params) {
  *
  * INPUT/OUTPUT
  * ------
- *    params	The main structure to be used by Primme, with parameters
- *    		reflecting the user's choice of method 
+ *    params    The main structure to be used by Primme, with parameters
+ *              reflecting the user's choice of method 
  *
  *
- * return value 	Note: the return value is a LONG INT
+ * return value         Note: the return value is a LONG INT
  *
- * 	= 0 parameters for "method" have been set.
+ *      = 0 parameters for "method" have been set.
  *
  *      < 0 no such method exists. If not defined by the user, defaults have
- * 	    been set for maxBasisSize, minRestartSize, and maxBlockSize.
+ *          been set for maxBasisSize, minRestartSize, and maxBlockSize.
  *
  ******************************************************************************/
 int primme_set_method(primme_preset_method method, primme_params *params) {
@@ -238,50 +246,19 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    /* From our experience, these two methods yield the smallest matvecs/time */
    /* DYNAMIC will make some timings before it settles on one of the two     */
    if (method == DEFAULT_MIN_MATVECS) {
-	   method = GD_Olsen_plusK;
+           method = GD_Olsen_plusK;
    }
    else if (method == DEFAULT_MIN_TIME) {
-	   method = JDQMR_ETol;
+           method = JDQMR_ETol;
    }
    else if (method == DYNAMIC) {
-	   method = JDQMR_ETol;
-	   params->dynamicMethodSwitch = 1;
+           method = JDQMR_ETol;
+           params->dynamicMethodSwitch = 1;
    }
   
-   /* Set defaults for basisSize, restartSize, blockSize           */
-   /* For interior, larger basisSize and restartSize are advisable */
-   if (params->maxBasisSize == 0) {
-      if (params->target==primme_smallest || params->target==primme_largest)
-         params->maxBasisSize   = min(params->n, 15);
-      else
-         params->maxBasisSize   = min(params->n, 35);
-   }
-
-   if (params->minRestartSize == 0) {
-      if (params->target==primme_smallest || params->target==primme_largest)
-         params->minRestartSize = (int) (0.5 + 0.4*params->maxBasisSize);
-      else
-         params->minRestartSize = (int) (0.5 + 0.6*params->maxBasisSize);
-
-      /* Adjust so that an integer number of blocks are added between restarts*/
-      /* restart=basis-block*ceil((basis-restart-prevRetain)/block)-prevRetain*/
-      if (params->maxBlockSize > 1) {
-	 if (params->restartingParams.maxPrevRetain > 0) 
-	    params->minRestartSize = params->maxBasisSize-params->maxBlockSize*
-	    (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1 
-	                 -params->restartingParams.maxPrevRetain ) / (double) 
-	    params->maxBlockSize) ) - params->restartingParams.maxPrevRetain ;
-         else
-	    params->minRestartSize = params->maxBasisSize-params->maxBlockSize*
-            (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1)
-	                /(double) params->maxBlockSize) );
-      }
-   }
-
    if (params->maxBlockSize == 0) {
       params->maxBlockSize = 1;
    }
-
 
    if (method == Arnoldi) {
       params->locking                             = 0;
@@ -298,11 +275,13 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_plusK) {
-      if (params->maxBlockSize == 1 && params->numEvals > 1) {
-         params->restartingParams.maxPrevRetain = 2;
-      }
-      else {
-         params->restartingParams.maxPrevRetain = params->maxBlockSize;
+      if (params->restartingParams.maxPrevRetain == 0) {
+         if (params->maxBlockSize == 1 && params->numEvals > 1) {
+            params->restartingParams.maxPrevRetain = 2;
+         }
+         else {
+            params->restartingParams.maxPrevRetain = params->maxBlockSize;
+         }
       }
       params->locking                             = 0;
       params->correctionParams.maxInnerIterations = 0;
@@ -310,11 +289,13 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_Olsen_plusK) {
-      if (params->maxBlockSize == 1 && params->numEvals > 1) {
-         params->restartingParams.maxPrevRetain = 2;
-      }
-      else {
-         params->restartingParams.maxPrevRetain = params->maxBlockSize;
+      if (params->restartingParams.maxPrevRetain == 0) {
+         if (params->maxBlockSize == 1 && params->numEvals > 1) {
+            params->restartingParams.maxPrevRetain = 2;
+         }
+         else {
+            params->restartingParams.maxPrevRetain = params->maxBlockSize;
+         }
       }
       params->locking                             = 0;
       params->correctionParams.maxInnerIterations = 0;
@@ -322,11 +303,13 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == JD_Olsen_plusK) {
-      if (params->maxBlockSize == 1 && params->numEvals > 1) {
-         params->restartingParams.maxPrevRetain = 2;
-      }
-      else {
-         params->restartingParams.maxPrevRetain = params->maxBlockSize;
+      if (params->restartingParams.maxPrevRetain == 0) {
+         if (params->maxBlockSize == 1 && params->numEvals > 1) {
+            params->restartingParams.maxPrevRetain = 2;
+         }
+         else {
+            params->restartingParams.maxPrevRetain = params->maxBlockSize;
+         }
       }
       params->locking                             = 0;
       params->correctionParams.robustShifts       = 1;
@@ -356,7 +339,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->restartingParams.maxPrevRetain      = 1;
       params->correctionParams.robustShifts       = 0;
       if (params->correctionParams.maxInnerIterations == 0) {
-	 params->correctionParams.maxInnerIterations = 10;
+         params->correctionParams.maxInnerIterations = 10;
       }
       params->correctionParams.projectors.LeftQ   = 0;
       params->correctionParams.projectors.LeftX   = 1;
@@ -369,7 +352,9 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQMR) {
       params->locking                             = 0;
-      params->restartingParams.maxPrevRetain      = 1;
+      if (params->restartingParams.maxPrevRetain == 0) {
+         params->restartingParams.maxPrevRetain   = 1;
+      }
       params->correctionParams.maxInnerIterations = -1;
       if (params->correctionParams.precondition) {
          params->correctionParams.projectors.LeftQ   = 1;
@@ -386,7 +371,9 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQMR_ETol) {
       params->locking                             = 0;
-      params->restartingParams.maxPrevRetain      = 1;
+      if (params->restartingParams.maxPrevRetain == 0) {
+         params->restartingParams.maxPrevRetain   = 1;
+      }
       params->correctionParams.maxInnerIterations = -1;
       if (params->correctionParams.precondition) {
          params->correctionParams.projectors.LeftQ   = 1;
@@ -440,11 +427,49 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       return -1;
    }
 
+   /* Now that most of the parameters have been set, set defaults  */
+   /* for basisSize, restartSize (for those methods that need it)  */
+   /* For interior, larger basisSize and restartSize are advisable */
+   /* If maxBlockSize is provided, assign at least 4*blocksize     */
+   /* and consider also minRestartSize and maxPrevRetain           */
+   if (params->maxBasisSize == 0) {
+      if (params->target==primme_smallest || params->target==primme_largest)
+         params->maxBasisSize   = min(params->n, max(
+            max(15, 4*params->maxBlockSize+params->restartingParams.maxPrevRetain), 
+            (int) 2.5*params->minRestartSize+params->restartingParams.maxPrevRetain));
+      else
+         params->maxBasisSize   = min(params->n, max(
+            max(35, 5*params->maxBlockSize+params->restartingParams.maxPrevRetain),
+            (int) 1.7*params->minRestartSize+params->restartingParams.maxPrevRetain));
+   }
+
+   if (params->minRestartSize == 0) {
+      if (params->target==primme_smallest || params->target==primme_largest)
+         params->minRestartSize = (int) (0.5 + 0.4*params->maxBasisSize);
+      else
+         params->minRestartSize = (int) (0.5 + 0.6*params->maxBasisSize);
+
+      /* Adjust so that an integer number of blocks are added between restarts*/
+      /* restart=basis-block*ceil((basis-restart-prevRetain)/block)-prevRetain*/
+      if (params->maxBlockSize > 1) {
+         if (params->restartingParams.maxPrevRetain > 0) 
+            params->minRestartSize = params->maxBasisSize-params->maxBlockSize*
+            (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1 
+                         -params->restartingParams.maxPrevRetain ) / (double) 
+            params->maxBlockSize) ) - params->restartingParams.maxPrevRetain ;
+         else 
+            params->minRestartSize = params->maxBasisSize-params->maxBlockSize*
+            (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1)
+                        /(double) params->maxBlockSize) );
+      }
+   }
+
+
    return 0;
 
-  //**************************************************************************
-} // end of primme_set_method
-  //**************************************************************************
+  /**************************************************************************/
+} /* end of primme_set_method */
+  /**************************************************************************/
 
 /******************************************************************************
  *
@@ -478,7 +503,7 @@ fprintf(outputFile, "primme.maxBasisSize = %d \n",primme.maxBasisSize);
 fprintf(outputFile, "primme.minRestartSize = %d \n",primme.minRestartSize);
 fprintf(outputFile, "primme.maxBlockSize = %d\n",primme.maxBlockSize);
 fprintf(outputFile,
-		"primme.maxOuterIterations = %d\n",primme.maxOuterIterations);
+                "primme.maxOuterIterations = %d\n",primme.maxOuterIterations);
 fprintf(outputFile, "primme.maxMatvecs = %d\n",primme.maxMatvecs);
 switch (primme.target){
    case primme_smallest:
@@ -508,7 +533,7 @@ if (primme.numTargetShifts > 0) {
 }
 
 fprintf(outputFile, "primme.dynamicMethodSwitch = %d\n",
-					        primme.dynamicMethodSwitch);
+                                                primme.dynamicMethodSwitch);
 fprintf(outputFile, "primme.locking = %d\n",primme.locking);
 fprintf(outputFile, "primme.initSize = %d\n",primme.initSize);
 fprintf(outputFile, "primme.numOrthoConst = %d\n",primme.numOrthoConst);
@@ -528,17 +553,17 @@ else {
 }
 
 fprintf(outputFile, "primme.restarting.maxPrevRetain = %d\n",
-	             primme.restartingParams.maxPrevRetain);
+                     primme.restartingParams.maxPrevRetain);
 
 fprintf(outputFile, "\n// Correction parameters\n");
 fprintf(outputFile, "primme.correction.precondition = %d\n",
-	             primme.correctionParams.precondition);
+                     primme.correctionParams.precondition);
 fprintf(outputFile, "primme.correction.robustShifts = %d\n",
-	             primme.correctionParams.robustShifts);
+                     primme.correctionParams.robustShifts);
 fprintf(outputFile, "primme.correction.maxInnerIterations = %d\n",
-	             primme.correctionParams.maxInnerIterations);
+                     primme.correctionParams.maxInnerIterations);
 fprintf(outputFile, "primme.correction.relTolBase = %g\n",
-	             primme.correctionParams.relTolBase);
+                     primme.correctionParams.relTolBase);
 
 fprintf(outputFile, "primme.correction.convTest = ");
 switch (primme.correctionParams.convTest) {
@@ -558,23 +583,23 @@ switch (primme.correctionParams.convTest) {
 
 fprintf(outputFile, "\n// projectors for JD cor.eq.\n");
 fprintf(outputFile, "primme.correction.projectors.LeftQ = %d\n",
-	             primme.correctionParams.projectors.LeftQ);
+                     primme.correctionParams.projectors.LeftQ);
 fprintf(outputFile, "primme.correction.projectors.LeftX = %d\n",
-	             primme.correctionParams.projectors.LeftX);
+                     primme.correctionParams.projectors.LeftX);
 fprintf(outputFile, "primme.correction.projectors.RightQ = %d\n",
-	             primme.correctionParams.projectors.RightQ);
+                     primme.correctionParams.projectors.RightQ);
 fprintf(outputFile, "primme.correction.projectors.SkewQ = %d\n",
-	             primme.correctionParams.projectors.SkewQ);
+                     primme.correctionParams.projectors.SkewQ);
 fprintf(outputFile, "primme.correction.projectors.RightX = %d\n",
-	             primme.correctionParams.projectors.RightX);
+                     primme.correctionParams.projectors.RightX);
 fprintf(outputFile, "primme.correction.projectors.SkewX = %d\n",
-	             primme.correctionParams.projectors.SkewX);
+                     primme.correctionParams.projectors.SkewX);
 fprintf(outputFile, "// ---------------------------------------------------\n");
 fflush(outputFile);
 
-  //**************************************************************************
-} // end of display params
-  //**************************************************************************
+  /**************************************************************************/
+} /* end of display params */
+  /**************************************************************************/
 
 /******************************************************************************
  * function 
@@ -585,11 +610,11 @@ fflush(outputFile);
  * function to the primme.globalSumDouble 
  * 
  ******************************************************************************
- * 	  NOTE: The count and the copying refers to double datatypes
+ *        NOTE: The count and the copying refers to double datatypes
  ******************************************************************************/
 
 void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-		      primme_params *params) {
+                      primme_params *params) {
 
    Num_dcopy_primme(*count, (double *) sendBuf, 1, (double *) recvBuf, 1);
 

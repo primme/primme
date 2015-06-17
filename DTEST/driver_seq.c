@@ -229,14 +229,18 @@ int main (int argc, char *argv[]) {
    /* Allocate space for converged Ritz values and residual norms */
 
    evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
-   evecs = (double *)primme_calloc(primme.n*
-	   (primme.numEvals+primme.maxBlockSize), sizeof(double), "evecs");
+   evecs = (double *)primme_calloc(
+		primme.n*primme.numEvals,sizeof(double), "evecs");
    rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
    /* Initial guess (optional) */
    /* ------------------------ */
-       for (i=0;i<primme.n;i++) evecs[i]=1/sqrt(primme.n);
+   for (i=0;i<primme.nLocal;i++) evecs[i]=1.0/sqrt(primme.n);
+   if (primme.initSize > 0) {
+      Num_larnv_dprimme(2, primme.iseed, primme.initSize*primme.nLocal, evecs);
+   }
+
 
    /* ------------- */
    /*  Call primme  */
@@ -254,11 +258,17 @@ int main (int argc, char *argv[]) {
    /* Reporting                                                             */
    /* --------------------------------------------------------------------- */
 
+   /* --------------------------------------------------------------------- */
+   /* Check how PRIMME may have changed some input parameters               */
+   /* primme_display_params(primme); */
+   /* --------------------------------------------------------------------- */
+
    primme_PrintStackTrace(primme);
 
    fprintf(primme.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
    fprintf(primme.outputFile, "User Time           : %f seconds\n", ut2-ut1);
    fprintf(primme.outputFile, "Syst Time           : %f seconds\n", st2-st1);
+
 
    if (primme.procID == 0) {
       for (i=0; i < primme.numEvals; i++) {
@@ -274,6 +284,14 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
+      if (primme.locking && primme.intWork[0] == 1) {
+         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme.outputFile, 
+	    "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+         fprintf(primme.outputFile, 
+            "However, the subspace of evecs is accurate to the required tolerance.\n");
+      }
+
 
       fprintf(primme.outputFile, "\n\n#,%d,%.1f\n\n", primme.stats.numMatvecs,
          wt2-wt1); 
@@ -320,6 +338,7 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    int i;
    double *xvec, *yvec;
    CSRMatrix *matrix;
+   //double tempo[70000], shift=-13.6;
    
    matrix = (CSRMatrix *)primme->matrix;
    xvec = (double *)x;
@@ -328,6 +347,17 @@ void MatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    for (i=0;i<*blockSize;i++) {
       amux_(&primme->n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
 		      matrix->AElts, matrix->JA, matrix->IA);
+
+// Brute force implementing (A-sigme)^2
+// yvec = ax  tempo = aax
+// y=(a-sI)(a-sI)x=(aa+ss-2sa)x = tempo + ss*x -2s(yvec). 
+/*
+      amux_(&primme->n, &yvec[primme->nLocal*i], tempo,
+		      matrix->AElts, matrix->JA, matrix->IA);
+      Num_axpy_dprimme(primme->n, shift*shift, &xvec[primme->nLocal*i], 1, tempo, 1);
+      Num_axpy_dprimme(primme->n, -2*shift, &yvec[primme->nLocal*i], 1, tempo, 1);
+      Num_dcopy_primme(primme->n, tempo, 1, &yvec[primme->nLocal*i],1);
+*/
    }
 
 }

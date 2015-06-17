@@ -72,18 +72,18 @@
  * aNormEsimate if (primme->aNorm<=0), use tol*aNormEstimate (=largestRitzValue)
  *
  * maxConvTol The maximum residual norm > tol, of any locked Ritz vectors.
- * 	      Vectors with ||r|| > tol can be locked if an accuracy problem 
- * 	      has been detected in check_convergence(). Accuracy is not lost
- * 	      however, because the missing components can be recovered from 
- * 	      the rest of the locked vectors with a Rayleigh Ritz at the end.
+ *            Vectors with ||r|| > tol can be locked if an accuracy problem 
+ *            has been detected in check_convergence(). Accuracy is not lost
+ *            however, because the missing components can be recovered from 
+ *            the rest of the locked vectors with a Rayleigh Ritz at the end.
  *
  * machEps    Double machine precision
  *
  * rwork      Real work array
  *
  * rworkSize  Size of rwork.  Must be at least: 
- * 		2*maxBasisSize + MAX( orthoSize, 3*maxBasisSize, 
- * 		  (primme->numOrthoConst+primme->numEvals)*maxBasisSize)
+ *              2*maxBasisSize + MAX( orthoSize, 3*maxBasisSize, 
+ *                (primme->numOrthoConst+primme->numEvals)*maxBasisSize)
  *
  * iwork      Integer work array of size maxBasisSize used as perm in solve_H
  *
@@ -127,11 +127,19 @@
  *
  * resNorms   Residual norms of the locked Ritz vectors
  *
+ * numPrevRitzVals  Number of Ritz values from iteration (current-1) 
+ *
+ * prevRitzVals The Ritz values of iteration (current-1) closest to locked ones 
+ *            will be removed.
+ *
+ * LockingProblem Set to 1 if some evector "practically" converged, ie, some of 
+ *            its components are in evecs. A Rayleigh-Ritz may be needed.
+ *
  * flag       Flag array indicating the status of the restart vectors:
  *               UNCONVERGED  : A Ritz vector that is unconverged
  *               LOCK_IT      : A Ritz vector that is to be locked
  *               UNCONDITIONAL_LOCK_IT : A Ritz vector that is to be locked
- *               		without checking its norm.
+ *                              without checking its norm.
  *               INITIAL_GUESS: A new initial guess that must be orthogonalized
  *
  * Return value
@@ -145,12 +153,13 @@
  ******************************************************************************/
 
 int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol, 
-   int *basisSize, int *numLocked, int *numGuesses, int *nextGuess, 
+   int *basisSize, int *numLocked, int *numGuesses, int *nextGuess,
    double *V, double *W, double *H, double *evecsHat, double *M, 
    double *UDU, int *ipivot, double *hVals, double *hVecs, 
    double *evecs, double *evals, int *perm, double machEps, 
-   double *resNorms, int *flag, double *rwork, int rworkSize, 
-   int *iwork, primme_params *primme) {
+   double *resNorms, int *numPrevRitzVals, double *prevRitzVals, 
+   int *flag, double *rwork, int rworkSize, int *iwork, 
+   int *LockingProblem, primme_params *primme) {
 
    int i;             /* Loop counter                                       */
    int numCandidates; /* Number of targeted Ritz vectors converged before   */
@@ -167,6 +176,8 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
                       /* the number of locked vectors.                      */
    int ret;           /* Used to store return values.                       */
    int workinW;       /* Flag whether an active W vector is used as tempwork*/
+   int entireSpace = (*basisSize+*numLocked >= primme->n); /* bool if entire*/
+                      /* space is built, so current ritzvecs are accurate.  */
 
    double *norms, *tnorms; /* Array of residual norms, and temp array       */
    double attainableTol;   /* Used to verify a practical convergence problem*/
@@ -202,8 +213,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
    if (primme->aNorm <= 0.0L) {
       tol = tol * (*aNormEstimate);
    }
-   attainableTol = sqrt(primme->numOrthoConst+*numLocked)*(*maxConvTol);
-
+   attainableTol=max(tol,sqrt(primme->numOrthoConst+*numLocked)*(*maxConvTol));
 
    /* -------------------------------------------------------- */
    /* Determine how many Ritz vectors converged before restart */
@@ -227,8 +237,8 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
    tnorms = (double *) rwork;
    norms  = tnorms + numCandidates;
 
-   for (i = *basisSize - numCandidates, candidate = 0; i < *basisSize; i++, 
-      candidate++) {
+   for (i = *basisSize-1, candidate = numCandidates-1;  
+      i >= *basisSize-numCandidates; i--, candidate--) {
       Num_dcopy_dprimme(primme->nLocal, &W[primme->nLocal*i], 1, residual, 1);
       ztmp = -hVals[i];
       Num_axpy_dprimme(primme->nLocal, ztmp, &V[primme->nLocal*i],1,residual,1);
@@ -252,33 +262,34 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
       /* If the vector has become (regularly or practically) unconverged, */
       /* then flag it, else lock it and replace it with an initial guess, */
-      /* if one is available. Expection: If the entire space is spanned,  */
-      /* we can't do better, so lock it.			          */
+      /* if one is available. Exception: If the entire space is spanned,  */
+      /* we can't do better, so lock it.                                  */
 
 
       if ((flag[i]!=UNCONDITIONAL_LOCK_IT && norms[candidate] >= tol 
-			           && *basisSize+*numLocked < primme->n ) ||
+                                   && !entireSpace ) ||
           (flag[i]==UNCONDITIONAL_LOCK_IT && norms[candidate] >= attainableTol
-	   			   && *basisSize+*numLocked < primme->n )) {
-	 flag[i] = UNCONVERGED;
+                                   && !entireSpace )) {
+         flag[i] = UNCONVERGED;
       }
       else {
         /* If an unconditional lock has become converged, show it and */
-	/* record the max converged tolerance accordingly             */
-	if (norms[candidate]<tol) {
-	   flag[i]=LOCK_IT;
-	   *maxConvTol = max(*maxConvTol, tol);
-	}
-	else {
-	   *maxConvTol = max(*maxConvTol, norms[candidate]);
-	}
+        /* record the max converged tolerance accordingly             */
+        if (norms[candidate]<tol) {
+           flag[i]=LOCK_IT;
+           *maxConvTol = max(*maxConvTol, tol);
+        }
+        else {
+           *maxConvTol = max(*maxConvTol, norms[candidate]);
+           *LockingProblem = 1;
+        }
 
          if (primme->printLevel >= 2 && primme->procID == 0) { 
-	    fprintf(primme->outputFile, 
+            fprintf(primme->outputFile, 
             "Lock epair[ %d ]= %e norm %.4e Mvecs %d Time %.4e Flag %d\n",
-	          *numLocked+1, hVals[i], norms[candidate], 
-		   primme->stats.numMatvecs,primme_wTimer(0),flag[i]);
-	    fflush(primme->outputFile);
+                  *numLocked+1, hVals[i], norms[candidate], 
+                   primme->stats.numMatvecs,primme_wTimer(0),flag[i]);
+            fflush(primme->outputFile);
          }
 
          /* Copy the converged Ritz vector to the evecs array and  */
@@ -288,7 +299,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
          Num_dcopy_dprimme(primme->nLocal, &V[primme->nLocal*i], 1, 
             &evecs[primme->nLocal*(primme->numOrthoConst + *numLocked)], 1);
          insertionSort(hVals[i], evals, norms[candidate], resNorms, perm, 
-	    *numLocked, primme);
+            *numLocked, primme);
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis, else flag the vector as locked so it may */
@@ -296,7 +307,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
          if (*numGuesses > 0) {
             Num_dcopy_dprimme(primme->nLocal, 
-       	       &evecs[primme->nLocal*(*nextGuess)], 1, &V[primme->nLocal*i], 1);
+               &evecs[primme->nLocal*(*nextGuess)], 1, &V[primme->nLocal*i], 1);
             flag[i] = INITIAL_GUESS;
             *numGuesses = *numGuesses - 1;
             *nextGuess = *nextGuess + 1;
@@ -336,7 +347,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
       newStart = primme->nLocal*(evecsSize - numRecentlyLocked);
       (*primme->applyPreconditioner)( &evecs[newStart], &evecsHat[newStart], 
-				    &numRecentlyLocked, primme);
+                                    &numRecentlyLocked, primme);
       primme->stats.numPreconds += numRecentlyLocked;
 
       /* Update the projection evecs'*evecsHat now that evecs and evecsHat   */
@@ -346,10 +357,10 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
       update_projection_dprimme(evecs, evecsHat, M, 
          evecsSize-numRecentlyLocked, primme->numOrthoConst+primme->numEvals, 
-	 numRecentlyLocked, rwork, primme);
+         numRecentlyLocked, rwork, primme);
 
       ret = UDUDecompose_dprimme(M, UDU, ipivot, evecsSize, rwork, 
-	 rworkSize, primme);
+         rworkSize, primme);
 
       if (ret != 0) {
          primme_PushErrorMessage(Primme_lock_vectors, Primme_ududecompose, ret,
@@ -380,7 +391,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
    if (primme->printLevel >= 5 && primme->procID == 0) {
       fprintf(primme->outputFile, "numDeflated: %d numReplaced: %d \
-	      basisSize: %d\n", numDeflated, numReplaced, *basisSize);
+              basisSize: %d\n", numDeflated, numReplaced, *basisSize);
    }
 
    /* ---------------------------------------------------------------------- */
@@ -389,12 +400,12 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
    if (numReplaced > 0) {
       ret = ortho_dprimme(V, primme->nLocal, *basisSize, 
-	 *basisSize+numReplaced-1, evecs, primme->nLocal, evecsSize, 
-	 primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+         *basisSize+numReplaced-1, evecs, primme->nLocal, evecsSize, 
+         primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
 
       if (ret < 0) {
          primme_PushErrorMessage(Primme_lock_vectors, Primme_ortho, ret, 
-			 __FILE__, __LINE__, primme);
+                         __FILE__, __LINE__, primme);
          return ORTHO_FAILURE;
       }   
 
@@ -415,7 +426,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
    if (numNewVectors > 0) {
       update_projection_dprimme(V, W, H, *basisSize, primme->maxBasisSize, 
-	 numNewVectors, hVecs, primme);
+         numNewVectors, hVecs, primme);
       *basisSize = *basisSize + numNewVectors;
    }
 
@@ -430,9 +441,22 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
 
    if (ret < 0) {
       primme_PushErrorMessage(Primme_lock_vectors, Primme_solve_h, ret, 
-		      __FILE__, __LINE__, primme);
+                      __FILE__, __LINE__, primme);
       return SOLVE_H_FAILURE;
    } 
+
+   /* ----------------------------------------------------------------- */
+   /* Remove locked evals from prevRitzVals. This is difficult since    */
+   /* some may have converged out of order. Also, if numReplaced>0 they */
+   /* don't match hVals. Their role is not critical (Olsen eps), so     */
+   /* easier to assume the first ones (1:numRecentlyLocked) are locked. */
+   /* ----------------------------------------------------------------- */
+
+   if (numRecentlyLocked>0) {
+      *numPrevRitzVals = *numPrevRitzVals-numRecentlyLocked ;
+      for(i=0;i<*numPrevRitzVals;i++)
+         prevRitzVals[i] = prevRitzVals[i+numRecentlyLocked];
+   }
 
    return 0;
 }
@@ -485,13 +509,13 @@ static void insertionSort(double newVal, double *evals, double newNorm,
    if ( primme->target == primme_smallest ) {
 
       for (i = numLocked; i > 0; i--) {
-	 if (newVal >= evals[i-1]) break; 
+         if (newVal >= evals[i-1]) break; 
       }
    }
    else if ( primme->target == primme_largest ) {
 
       for (i = numLocked; i > 0; i--) {
-	 if (newVal <= evals[i-1]) break; 
+         if (newVal <= evals[i-1]) break; 
       }
    }
    else {
@@ -503,24 +527,24 @@ static void insertionSort(double newVal, double *evals, double newNorm,
         primme->targetShifts[min(primme->numTargetShifts-1, numLocked)];
 
       if ( primme->target == primme_closest_geq ) {
-	 for (i = numLocked; i > 0; i--) {
-	    ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
-	    if ( ithShift != currentShift || 
-	    newVal-currentShift >= evals[i-1]-currentShift ) break; 
+         for (i = numLocked; i > 0; i--) {
+            ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
+            if ( ithShift != currentShift || 
+            newVal-currentShift >= evals[i-1]-currentShift ) break; 
          }
       }
       else if ( primme->target == primme_closest_leq ) {
          for (i = numLocked; i > 0; i--) {
-	    ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
-	    if ( ithShift != currentShift || 
-	    currentShift-newVal >= currentShift-evals[i-1] ) break; 
+            ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
+            if ( ithShift != currentShift || 
+            currentShift-newVal >= currentShift-evals[i-1] ) break; 
          }
       }
       else if ( primme->target == primme_closest_abs ) {
          for (i = numLocked; i > 0; i--) {
-	    ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
-	    if ( ithShift != currentShift || 
-	    fabs(newVal-currentShift) >= fabs(evals[i-1]-currentShift) ) break; 
+            ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
+            if ( ithShift != currentShift || 
+            fabs(newVal-currentShift) >= fabs(evals[i-1]-currentShift) ) break; 
          }
       }
    }
@@ -617,9 +641,9 @@ static int swap_flagVecs_toEnd(int basisSize, int flagValue, double *V,
       /* Swap the two columns of V and W */
 
       Num_swap_dprimme(primme->nLocal, &V[primme->nLocal*left], 1, 
-		                       &V[primme->nLocal*right], 1);
+                                       &V[primme->nLocal*right], 1);
       Num_swap_dprimme(primme->nLocal, &W[primme->nLocal*left], 1, 
-		      	               &W[primme->nLocal*right], 1);
+                                       &W[primme->nLocal*right], 1);
 
       /* Swap Ritz values */
 

@@ -217,8 +217,8 @@ int main (int argc, char *argv[]) {
    /* Allocate space for converged Ritz values and residual norms */
 
    evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
-   evecs = (Complex_Z *)primme_valloc(primme.n*
-	   (primme.numEvals+primme.maxBlockSize)*sizeof(Complex_Z), "evecs");
+   evecs = (Complex_Z *)primme_valloc(
+		primme.n*primme.numEvals*sizeof(Complex_Z), "evecs");
    rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
@@ -265,6 +265,13 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
+      if (primme.locking && primme.intWork[0] == 1) {
+         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme.outputFile,
+            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+         fprintf(primme.outputFile,
+            "However, the subspace of evecs is accurate to the required tolerance.\n");
+      }
 
       fprintf(primme.outputFile, "\n\n#,%d,%.1f\n\n", primme.stats.numMatvecs,
          wt2-wt1); 

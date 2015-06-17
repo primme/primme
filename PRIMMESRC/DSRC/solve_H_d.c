@@ -48,12 +48,12 @@
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hVecs  	     The eigenvectors of H
- * hVals  	     The eigenvalues of H
+ * hVecs             The eigenvectors of H
+ * hVals             The eigenvalues of H
  * largestRitzValue  Maintains the largest in absolute value Ritz value seen
- * rwork  	     Must be of size at least 3*maxBasisSize
- * iwork  	     Permutation array for evecs/evals with desired targeting 
- * 		     order. hVecs/hVals are permuted in the right order.
+ * rwork             Must be of size at least 3*maxBasisSize
+ * iwork             Permutation array for evecs/evals with desired targeting 
+ *                   order. hVecs/hVals are permuted in the right order.
  *
  * Return Value
  * ------------
@@ -93,7 +93,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
 #ifdef NUM_ESSL
    idx = 0;
 
-   if (primme->target != primme_largest) { // smallest or any of closest_XXX
+   if (primme->target != primme_largest) { /* smallest or any of closest_XXX */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) {
             rwork[idx] = H[maxBasisSize*j+i];
@@ -101,7 +101,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
          }
       }
    }
-   else // (primme->target == primme_largest) 
+   else { /* (primme->target == primme_largest)  */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) {
             rwork[idx] = -H[maxBasisSize*j+i];
@@ -130,7 +130,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
          }
       }      
    }
-   else { // (primme->target == primme_largest) 
+   else { /* (primme->target == primme_largest) */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) { 
             hVecs[basisSize*j+i] = -H[maxBasisSize*j+i];
@@ -139,7 +139,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
    }
 
    Num_dsyev_dprimme("V", "U", basisSize, hVecs, basisSize, hVals, rwork, 
-        	lrwork, &info);
+                lrwork, &info);
 
    if (info != 0) {
       primme_PushErrorMessage(Primme_solve_h, Primme_num_dsyev, info, __FILE__, 
@@ -150,10 +150,10 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
 #endif
 
    /* ----------------------------------------------------------------------- */
-   // Update the largest absolute Ritz value ever seen as an estimate of ||A||
-   /* ----------------------------------------------------------------------- */
+   /* Update the largest absolute Ritz value ever seen as an estimate of ||A||
+    * ----------------------------------------------------------------------- */
    *largestRitzValue = Num_fmax_primme(3, 
-	   *largestRitzValue, fabs(hVals[0]), fabs(hVals[basisSize-1]));
+           *largestRitzValue, fabs(hVals[0]), fabs(hVals[basisSize-1]));
 
    /* ---------------------------------------------------------------------- */
    /* ORDER the eigenvalues and their eigenvectors according to the desired  */
@@ -177,7 +177,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
       /* ---------------------------------------------------------------- */
 
       targetShift = 
-	primme->targetShifts[min(primme->numTargetShifts-1, numLocked)];
+        primme->targetShifts[min(primme->numTargetShifts-1, numLocked)];
 
       if (primme->target == primme_closest_geq) {
    
@@ -185,33 +185,33 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
          /* find hVal closest to the right of targetShift, i.e., closest_geq */
          /* ---------------------------------------------------------------- */
          for (j=0;j<basisSize;j++) 
- 	     if (hVals[j]>=targetShift) break;
-	   
+              if (hVals[j]>=targetShift) break;
+           
          /* figure out this ordering */
          index = 0;
    
          for (i=j; i<basisSize; i++) {
-	    permu[index++]=i;
+            permu[index++]=i;
          }
          for (i=0; i<j; i++) {
-	    permu[index++]=i;
+            permu[index++]=i;
          }
       }
       else if (primme->target == primme_closest_leq) {
          /* ---------------------------------------------------------------- */
-	 /* find hVal closest_leq to targetShift                             */
+         /* find hVal closest_leq to targetShift                             */
          /* ---------------------------------------------------------------- */
-	 for (j=basisSize-1; j>=0 ;j--) 
- 	     if (hVals[j]<=targetShift) break;
-	   
+         for (j=basisSize-1; j>=0 ;j--) 
+             if (hVals[j]<=targetShift) break;
+           
          /* figure out this ordering */
          index = 0;
    
          for (i=j; i>=0; i--) {
-	    permu[index++]=i;
+            permu[index++]=i;
          }
          for (i=basisSize-1; i>j; i--) {
-	    permu[index++]=i;
+            permu[index++]=i;
          }
       }
       else if (primme->target == primme_closest_abs) {
@@ -220,31 +220,31 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
          /* find hVal closest but geq than targetShift                       */
          /* ---------------------------------------------------------------- */
          for (j=0;j<basisSize;j++) 
- 	     if (hVals[j]>=targetShift) break;
+             if (hVals[j]>=targetShift) break;
 
-	 i = j-1;
-	 index = 0;
-	 while (i>=0 && j<basisSize) {
-	    if (fabs(hVals[i]-targetShift) < fabs(hVals[j]-targetShift)) 
-	       permu[index++] = i--;
-	    else 
-	       permu[index++] = j++;
-	 }
-	 if (i<0) {
-	    for (i=j;i<basisSize;i++) 
-		    permu[index++] = i;
-	 }
-	 else if (j>=basisSize) {
-	    for (j=i;j>=0;j--)
-		    permu[index++] = j;
-	 }
+         i = j-1;
+         index = 0;
+         while (i>=0 && j<basisSize) {
+            if (fabs(hVals[i]-targetShift) < fabs(hVals[j]-targetShift)) 
+               permu[index++] = i--;
+            else 
+               permu[index++] = j++;
+         }
+         if (i<0) {
+            for (i=j;i<basisSize;i++) 
+                    permu[index++] = i;
+         }
+         else if (j>=basisSize) {
+            for (j=i;j>=0;j--)
+                    permu[index++] = j;
+         }
       }
 
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
       for (i=0;i<basisSize;i++) 
-	  permw[i] = permu[i];
+          permw[i] = permu[i];
       permute_evecs_dprimme(hVals, permu, rwork, basisSize, 1);
       permute_evecs_dprimme(hVecs, permw, rwork, basisSize, basisSize);
    }
@@ -255,9 +255,9 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
 
 /******************************************************************************
  * Subroutine permute_evecs- This routine permutes a set of vectors according
- * 	      to a permutation array perm. It is supposed to be called on 
- * 	      the eigenvectors after the eigenvalues have been sorted, so that 
- * 	      the vectors are in the same order as the sorted eigenvalues.
+ *            to a permutation array perm. It is supposed to be called on 
+ *            the eigenvectors after the eigenvalues have been sorted, so that 
+ *            the vectors are in the same order as the sorted eigenvalues.
  *
  *
  * INPUT ARRAYS AND PARAMETERS
@@ -322,7 +322,7 @@ void permute_evecs_dprimme(double *evecs, int *perm, double *rwork, int nev,
       currentIndex++;
    }
 
-  //**************************************************************************
-} // end of permute_evecs
-  //**************************************************************************
+  /***************************************************************************/
+} /* end of permute_evecs
+   ***************************************************************************/
 

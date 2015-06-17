@@ -2,7 +2,7 @@
 -----------------------------------------------------------------------------
         PRIMME: PReconditioned Iterative MultiMethod Eigensolver
    
-      Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+      Copyright (C) 2005  Andreas Stathopoulos, James R. McCombs
 -----------------------------------------------------------------------------
  
    This file is part of PRIMME.
@@ -32,36 +32,77 @@ P.O. Box 8795                                 Fax:    757-221-1717
 Williamsburg, VA 23187-8795                   http://www.cs.wm.edu/~andreas
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
-PRIMME Version 1.1   (October 18, 2006)
+PRIMME Version 1.2   (December 21, 2014)
 Purpose:
 
 Finds a number of eigenvalues and their corresponding eigenvectors of a 
 real symmetric, or complex hermitian matrix A. Largest, smallest and interior 
 eigenvalues are supported. Preconditioning can be used to accelarate 
 convergence. 
-PRIMME is written in C, but a complete Fortran77 interface is provided.
+PRIMME is written in C, but a complete Fortran77 interface is also provided.
 
 Pronounced as "prime"
 -----------------------------------------------------------------------------
 How to cite this code. 
 -----------------------------------------------------------------------------
-A software paper describing the code does not exist yet. The code includes
-techniques and algorithms that have or will appear in the following papers.
-For the moment, please cite the following two papers.
+To cite PRIMME, please cite paper [1].
+More information on the algorithms and research that led to this
+software can be found in the rest of the papers. The work has been
+supported by a number of grants from the National Science Foundation.
 
-[1]  A. Stathopoulos, Nearly optimal preconditioned methods for hermitian
-     eigenproblems under limited memory. Part I: Seeking one eigenvalue,
-     Tech Report: WM-CS-2005-03, July, 2005. To appear in SIAM J. Sci. Comput.
-[2]  A. Stathopoulos and J. R. McCombs, Nearly optimal preconditioned methods
-     for hermitian eigenproblems under limited memory. Part II: Seeking many
-     eigenvalues, Tech Report: WM-CS-2006-02, June, 2006.
+[1] A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned Iterative
+    MultiMethod Eigensolver: Methods and software description, ACM
+    Transaction on Mathematical Software Vol. 37, No. 2, (2010),
+    21:1--21:30.
 
-Additional information on the algorithms appears in:
-[3]  J. R. McCombs and A. Stathopoulos, Iterative Validation of Eigensolvers:
-     A Scheme for Improving the Reliability of Hermitian Eigenvalue Solvers
-     Tech Report: WM-CS-2005-02, July, 2005, to appear in SISC.
-[4]  A. Stathopoulos, Locking issues for finding a large number of eigenvectors
-     of hermitian matrices, Tech Report: WM-CS-2005-03, July, 2005.
+[2] A. Stathopoulos, Nearly optimal preconditioned methods for hermitian
+    eigenproblems under limited memory. Part I: Seeking one eigenvalue, SIAM
+    J. Sci. Comput., Vol. 29, No. 2, (2007), 481--514.
+
+[3] A. Stathopoulos and J. R. McCombs, Nearly optimal preconditioned
+    methods for hermitian eigenproblems under limited memory. Part II:
+    Seeking many eigenvalues, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
+    2162-2188.
+
+[4] J. R. McCombs and A. Stathopoulos, Iterative Validation of
+    Eigensolvers: A Scheme for Improving the Reliability of Hermitian
+    Eigenvalue Solvers SIAM J. Sci. Comput., Vol. 28, No. 6, (2006),
+    2337--2358.
+
+[5] A. Stathopoulos, Locking issues for finding a large number of eigenvectors
+    of hermitian matrices, Tech Report: WM-CS-2005-03, July, 2005.
+-----------------------------------------------------------------------------
+Changes in Version 1.2
+
+Version 1.2 implements performance improvements and bug fixes that have been 
+reported over the years by PRIMME's users, who the authors are indebted to.
+
+* A Fortran compiler is no longer required for building the PRIMME library.
+  Fortran programs can still be linked to PRIMME's F77 interface.
+
+* Fixed some uncommon issues with the F77 interface
+
+* PRIMME can be called now multiple times from the same program.
+
+* Performance improvements in the QMR inner solver, especially for 
+  complex arithmetic
+
+* Fixed a couple of bugs with the locking functionality. 
+  - In certain extreme cases where all eigenvalues of a matrix were needed.
+  - The order of selecting interior eigenvalues.
+  The above fixes have improved robustness and performance. 
+
+* PRIMME now assigns unique random seeds per parallel process 
+  for up to 4096^3  (140 trillion processes)
+
+* For the DYNAMIC method, fixed issues with initialization and 
+  synchronization decisions across multiple processes.
+
+* Fixed uncommon library interface bugs, coordinated better the
+  set_method() and the user setting of parameters, and improved 
+  the interface in the sample programs and makefiles
+
+* Other performance and documentation improvements
 
 -----------------------------------------------------------------------------
 What this file contains beyond this point:
@@ -87,7 +128,7 @@ COPYING.txt  	<- LGPL License
 Make_flags	<- flags to be used by makefiles to compile library and tests
 Link_flags	<- flags needed in making and linking the test programs
 PRIMMESRC/	<- Directory with source code in the following subdirectories:
-   COMMONSRC/   <- Interface and oommon functions used by all precision versions
+   COMMONSRC/   <- Interface and common functions used by all precision versions
    DSRC/   	<- The source code for the double precision dprimme
    ZSRC/   	<- The source code for the double complex precision zprimme
 DTEST/	        <- dprimme sample C and F77 drivers, both seq and parallel 
@@ -95,6 +136,9 @@ ZTEST/	        <- zprimme sample C and F77 drivers, sequential only
 libprimme.a	<- The PRIMME library (to be made)
 makefile        <- makes the libraries, and the sequential/parallel tests
 readme.txt      <- this file
+readme.html     <- the same documentation organized with hyperlinks
+primmestyle.css <- an html style file for readme.html
+doc.pdf         <- a printable version of the html documentation
 
 -----------------------------------------------------------------------------
 Making & Linking
@@ -155,8 +199,8 @@ The driver_par.c is the driver for the parallel test. It follows closely the
 structure of driver_seq.c. It uses MPI for communication and performs matrix-
 vector multiplications and Sparse Approximate Inverse preconditioning using 
 the ParaSails library. Makefile_par specifies parallel compilation/linking.
-** ParaSails is NOT provided, but can be freely downloaded at
-   http://www.llnl.gov/CASC/parasails/
+ParaSails can be downloaded from:
+   http://computation.llnl.gov/casc/parasails
 
 The driver_f77seq.f is a sample f77 program made with Makefile_f77seq.
 It calls the Fortran interface provided by PRIMME. This interface includes 
@@ -172,16 +216,26 @@ preconditioners can be used, but no ILUT or Parasails.
         --------------------------------------------------------------
 	The comments in the sample drivers show how to run executables
         --------------------------------------------------------------
+--------------------------------------------------------------------------------
+ Note: these sample drivers are meant to be expository and not high performance
+--------------------------------------------------------------------------------
 
   Systems where the code has been tested.
   --------------------------------------------------------------------------
+  Primary development with GNU gcc, g++, and gfortran (Versions 4.2 and later)
+  Many users have reported builds on several other platforms/compilers
+
+  Compatible with LP64 BLAS and LAPACK libraries.
+  ILP64 possible with other compilers but not tested.
+
   SUSE Linux 2.6.13-15.12-smp SMP (64 bit) dual core, dual Intel Xeon 3.73GHz
   SUSE Linux 2.6.13-15.12-default (32 bit) Intel Pentium 4, 2.40GHz
   CentOS Linux 2.6.9-22.ELsmp (64 bit) dual processor AMD Opteron 250
-  Darwin 8.8.0 Darwin Kernel Version 8.8.0 PowerPC dual Mac G5, 2 GHz
-  Darwin 8.8.0 Darwin Kernel Version 8.8.0 PowerPC Mac G4, 1.67 GHz
   SunOS 5.9, quad processor Sun-Fire-280R, and several other UltraSparcs
   AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at nersc.gov)
+  PowerPC dual Mac G5, 2 GHz Darwin Kernel Version 8.8.0 
+  PowerPC Mac G4, 1.67 GHz Darwin Kernel Version 8.8.0 
+  Macbook Pro, Intel i7, Darwin Kernel Version 12.5.0
 
 -----------------------------------------------------------------------------
 C Library Interface
@@ -236,38 +290,13 @@ rNorms a double array of size primme.numEvals 		           OUTPUT
 primme the above struct. Some members return values	   INPUT / OUTPUT
 ret    error return code 					   OUTPUT
 
+* Before exiting or running primme again free the work arrays in primme:
+
+  primme_Free(&primme);
+
 --------------------------------------------------------------------------------
-Preset parameter setting
+Parameter Setting
 --------------------------------------------------------------------------------
-To use one of the default methods call 
-
-   ret = primme_set_method(method, &primme);
-
-with method one of the following:
-primme_preset_method method;
-
-typedef enum {
-   DYNAMIC,  		    // Switches to the best method dynamically 
-   DEFAULT_MIN_TIME,        // Currently set as JDQMR_ETol
-   DEFAULT_MIN_MATVECS,     // Currently set as GD_Olsen_plusK
-   Arnoldi,      	    // Anoldi implented a la Generalized Davidson
-   GD,       	    	    // Generalized Davidson 
-   GD_plusK,      	    // GD+k with locally optimal restarting for k evals
-   GD_Olsen_plusK,          // GD+k, preconditioner applied to (r+deltaeps*x)
-   JD_Olsen_plusK,     	    // As above, only deltaeps computed as in JD
-   RQI,      	     	    // (accelerated) Rayleigh Quotient Iteration
-   JDQR,      	     	    // Jacobi-Davidson with const number of inner steps
-   JDQMR,      	    	    // JDQMR adaptive stopping criterion for inner QMR
-   JDQMR_ETol,      	    // JDQMR + stops after resid reduces by a 0.1 factor
-   SUBSPACE_ITERATION,      // Subspace iteration
-   LOBPCG_OrthoBasis,       // A LOBPCG implementation with orthogonal basis
-   LOBPCG_OrthoBasis_Window // As above, only finds evals a Window at a time
-} primme_preset_method;     
-
-See primme_set_method in COMMONSRC/primme_interface.c for exact description of
-how each method sets the members of the primme structure. If the chosen method 
-does not exist, the function tries to give reasonable values to the parameters.
-
 PRIMME requires the user to set at least the following members of the primme 
 struct, as they define the problem to be solved:
 
@@ -286,12 +315,56 @@ and provide a preconditioner (if available), a mass matrix matvec function
    	void (*massMatrixMatvec)
         (void *x, void *y, int *blockSize, struct primme_params *primme);
         void (*globalSumDouble)		(only if it is parallel program)
-	(double *sendBuf, double *recvBuf, int *count, primme_params *primme);
+	(void *sendBuf, void *recvBuf, int *count, primme_params *primme);
 
-It is useful to have set all these before calling primme_set_method. 
+It is useful to have set all these before calling primme_set_method (see below).
 Also, if users have a preference on basisSize, blockSize, etc, they should 
 also provide them into primme prior to the primme_set_method() call.
 This helps primme_set_method make the right choice on other parameters.
+
+--------------------------------------------------------------------------------
+Preset parameter setting
+--------------------------------------------------------------------------------
+To use one of the default methods call 
+
+   ret = primme_set_method(method, &primme);
+
+with method one of the following:
+primme_preset_method method;
+
+typedef enum {
+   DYNAMIC,  		    // Switches to the best method dynamically 
+   DEFAULT_MIN_TIME,        // Currently set as JDQMR_ETol
+   DEFAULT_MIN_MATVECS,     // Currently set as GD_Olsen_plusK
+   Arnoldi,      	    // Anoldi implemented a la Generalized Davidson
+   GD,       	    	    // Generalized Davidson 
+   GD_plusK,      	    // GD+k with locally optimal restarting for k evals
+   GD_Olsen_plusK,          // GD+k, preconditioner applied to (r+deltaeps*x)
+   JD_Olsen_plusK,     	    // As above, only deltaeps computed as in JD
+   RQI,      	     	    // (accelerated) Rayleigh Quotient Iteration
+   JDQR,      	     	    // Jacobi-Davidson with const number of inner steps
+   JDQMR,      	    	    // JDQMR adaptive stopping criterion for inner QMR
+   JDQMR_ETol,      	    // JDQMR + stops after resid reduces by a 0.1 factor
+   SUBSPACE_ITERATION,      // Subspace iteration
+   LOBPCG_OrthoBasis,       // LOBPCG with orthogonal basis. Only set numEvals)
+   LOBPCG_OrthoBasis_Window // LOBPCG with sliding window of maxBlockSize<numEvals
+} primme_preset_method;     
+
+In the absense of preset values in the primme structure, primme_set_method() 
+uses expertly tuned default values for all parameters so that users can set 
+a method with minimum or no input. 
+
+Users can control any parameter before or after calling primme_set_method().
+Example: if primme.maxBasisSize is set before calling primme_set_method(),
+other parameters (restart size, maximum block size) are computed accordingly.
+Example: Only primme.maxBlockSize and primme.numEvals need be set before calling 
+LOBPCG_OrthoBasis_Window, and only primme.numEvals if calling LOBPCG_OrthoBasis.
+Example: Expert users may decide to modify some choices made by
+primme_set_method(), e.g., increasing the maxBasisSize afterwards and
+before calling (z)dprimme().
+
+See primme_set_method in COMMONSRC/primme_interface.c for exact description of
+how each method sets the members of the primme structure. 
 
 --------------------------------------------------------------------------------
 Displaying the primme configuration
@@ -377,7 +450,7 @@ primme is the following structure: (indicating also OUTPUT members)
    void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count,
 			   primme_params *primme);
 
-	Global sum function for parallel programs. No need to set for sequential
+	Global sum function for parallel programs. No need to set for sequential.
 	recvBuf(i) = sum_over_all_processors( sendBuf(i) ), for all i=1,count
 	When MPI is used this is simply a wrapper to MPI_Allereduce()
 	primme is needed only for primme->commInfo (eg, MPI communicator)
@@ -473,6 +546,9 @@ primme is the following structure: (indicating also OUTPUT members)
 	   grep INN outpufile | awk '{print $3" "$11}' > inn
 	Then in Matlab:
 	   plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
+
+	In parallel programs, printLevels 0 to 4 are only printed by procID=0
+	Attention: printLevel 5 is printed by all processors.
 
 
    double aNorm;           [default = 0.0]			(OUTPUT)
@@ -587,11 +663,11 @@ primme is the following structure: (indicating also OUTPUT members)
 	sufficient, the code will free *intWork and allocate its own workspace 
         to match the space requirements of the requested method or the 
 	primme parameters. 
-	On output, the first numEvals positions contain the convergence flag 
-	for each pair. Using locking for large numEvals may, in some rare cases,
-	cause some pairs to be practically converged (intWork[i] == 7), in the 
-	sense that their components are in the basis of evecs. If required, a 
-	Rayleigh Ritz on evecs will provide the accurate eigenvector (see [4]).
+	On output, the first element shows if a Locking problem has occurred.
+	Using locking for large numEvals may, in some rare cases, cause some 
+  	pairs to be practically converged, in the sense that their components 
+	are in the basis of evecs. If intWork[0] == 1, and if required, a 
+	Rayleigh Ritz on evecs will provide the accurate eigenvectors (see [4]).
 
    void *realWork;  	   [default = NULL]			(INPUT/OUTPUT)
 
@@ -727,9 +803,6 @@ primme is the following structure: (indicating also OUTPUT members)
    	struct stackTraceNode *nextNode;
 
 
-} primme_params;
-
-
    -----------------------------------------------------------------------------
    Some notes on the inner QMR convergence tests: 
    -----------------------------------------------------------------------------
@@ -783,9 +856,11 @@ Notice the appendix _f77.
 
       call primme_initialize_f77(primme_params **primme);
 
+      call primme_free_f77(primme_params **primme);
+
       call primme_display_params_f77(primme_params **primme);
 
-      call primme_PrintStackTrace_f77(primme_params **primme);
+      call primme_printstacktrace_f77(primme_params **primme);
 
       call primme_set_method_f77(primme_params **primme, int *method,int *ierr);
 
@@ -849,7 +924,7 @@ A preset method is chosen in a similar way:
 	METHOD has the name of the preset method as above, prepended 
 	by PRIMMEF77_  All these are defined in primme_f77. 
 
-      call primme_set_method_f77(primme, PRIMEF77_JDQMR_ETol, ierr)
+      call primme_set_method_f77(primme, PRIMMEF77_JDQMR_ETol, ierr)
 
 *----------------------------------
 Then call dprimme:

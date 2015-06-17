@@ -141,13 +141,15 @@ clean:
 	echo "--------------------------------------------------"; \
 	cd $(SRC) ;\
 	make -f Makefile clean;\
-	cd $(DTESTDIR) ; \
+	echo " From Test directories";\
+	cd $(DTESTDIR);\
+	make -f Makefile_seq clean;\
 	make -f Makefile_par clean;\
+	make -f Makefile_f77seq clean;\
+	cd $(ZTESTDIR) ;\
 	make -f Makefile_seq clean;\
 	make -f Makefile_f77seq clean;\
-	cd $(ZTESTDIR) ; \
-	make -f Makefile_seq clean;\
-	make -f Makefile_f77seq clean;\
+	echo "--------------------------------------------------"; \
 	)
 
 backup: 
@@ -160,10 +162,12 @@ backup:
 distribution:
 	@(\
 	cd $(TOP)/../ ;\
-	tar cvf primme_v1.1.tar \
+	tar cvf primme_v1.11.tar \
 	PRIMME/PRIMMESRC PRIMME/DTEST  PRIMME/ZTEST  \
 	PRIMME/readme.txt PRIMME/COPYING.txt \
+	PRIMME/readme.html PRIMME/doc.pdf PRIMME/primmestyle.css \
+	PRIMME/Abstract_stathopoulos.pdf PRIMME/Paper_stathopoulos.pdf \
 	PRIMME/Make_flags PRIMME/Link_flags PRIMME/makefile;\
-	gzip primme_v1.1.tar;\
+	gzip primme_v1.11.tar;\
 	)
 

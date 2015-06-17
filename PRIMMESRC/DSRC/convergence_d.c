@@ -54,11 +54,11 @@
  * evecs          
  * tol            Tolerance used to determine convergence of residual norms
  * maxConvTol     The max residual norm > tol for any locked eigenpair 
- *  		  that has been determined to have an accuracy problem 
+ *                that has been determined to have an accuracy problem 
  * aNormEstimate  If primme->aNorm<=0, use tol*aNormEstimate (=largestRitzValue)
  * rwork          Real work array that must be of size 
- * 		  MAX(2*maxEvecsSize*primme->maxBlockSize, primme->maxBlockSize+
- * 		      primme->maxBasisSize*primme->maxBlockSize);
+ *                MAX(2*maxEvecsSize*primme->maxBlockSize, primme->maxBlockSize+
+ *                    primme->maxBasisSize*primme->maxBlockSize);
  * primme           Structure containing various solver parameters
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
@@ -144,7 +144,7 @@ int check_convergence_dprimme(double *V, double *W, double *hVecs,
 
       if (primme->stats.numOuterIterations % 1 == 0 && 1) {
           print_residuals(hVals, blockNorms, numConverged, numLocked, iev, 
-	     left, right, primme);
+             left, right, primme);
       }
 
       /* ----------------------------------------------------------------- */
@@ -161,31 +161,31 @@ int check_convergence_dprimme(double *V, double *W, double *hVecs,
             numVacancies++;
 
             if ((!primme->locking && iev[i] < primme->numEvals) || 
-	       (primme->locking && ((numLocked + iev[i]) < primme->numEvals))) {
+               (primme->locking && ((numLocked + iev[i]) < primme->numEvals))) {
 
                recentlyConverged++;
 
-	       if (!primme->locking && primme->procID == 0 && 
-		   primme->printLevel >= 2) { fprintf(primme->outputFile, 
+               if (!primme->locking && primme->procID == 0 && 
+                   primme->printLevel >= 2) { fprintf(primme->outputFile, 
                   "#Converged %d eval[ %d ]= %e norm %e Mvecs %d Time %g\n",
-	          numConverged+recentlyConverged, iev[i], hVals[iev[i]], 
-		  blockNorms[i], primme->stats.numMatvecs,primme_wTimer(0));
-		  fflush(primme->outputFile);
-	       } // printf
-            } //if 
-         } //if converged
+                  numConverged+recentlyConverged, iev[i], hVals[iev[i]], 
+                  blockNorms[i], primme->stats.numMatvecs,primme_wTimer(0));
+                  fflush(primme->outputFile);
+               } /* printf */
+            } /*if */
+         } /*if converged */
          /* ---------------------------------------------------------------- */
-	 /* If locking there may be an accuracy problem close to convergence */
-	 /* Check if there is danger and set these Ritz vecs for projection  */
+         /* If locking there may be an accuracy problem close to convergence */
+         /* Check if there is danger and set these Ritz vecs for projection  */
          /* ---------------------------------------------------------------- */
-	 else if (primme->locking && numLocked > 0 &&
-		  blockNorms[i] < attainableTol ) {
+         else if (primme->locking && numLocked > 0 &&
+                  blockNorms[i] < attainableTol ) {
 
             flags[iev[i]] = TO_BE_PROJECTED;
             numToProject++;
-	 }
+         }
 
-      } //for 
+      } /* for */
 
       /* ---------------------------------------------------------------- */
       /* If some of the Ritz vectors in the block have converged, or need */
@@ -196,21 +196,21 @@ int check_convergence_dprimme(double *V, double *W, double *hVecs,
       if (numVacancies > 0 || numToProject > 0) {
 
          swap_UnconvVecs(V, W, primme->nLocal, basisSize, iev, flags, 
-	    blockNorms, primme->numOrthoConst + numLocked, *blockSize, left);
+            blockNorms, primme->numOrthoConst + numLocked, *blockSize, left);
       }
       /* --------------------------------------------------------------- */
       /* Project the TO_BE_PROJECTED residuals and check for practical   */
       /* convergence among them. Those practically converged evecs are   */
       /* swapped just before the converged ones at the end of the block. */
-      /* numVacancies and recentlyConverged are also updated		 */
+      /* numVacancies and recentlyConverged are also updated             */
       /* --------------------------------------------------------------- */
       if (numToProject > 0) {
 
-	 start = *blockSize - numVacancies - numToProject;
+         start = *blockSize - numVacancies - numToProject;
 
-	 check_practical_convergence(V, W, evecs, numLocked, basisSize, 
-  	    *blockSize, start, numToProject, iev, flags, blockNorms, tol, 
-	    &recentlyConverged, &numVacancies, rwork, primme);
+         check_practical_convergence(V, W, evecs, numLocked, basisSize, 
+            *blockSize, start, numToProject, iev, flags, blockNorms, tol, 
+            &recentlyConverged, &numVacancies, rwork, primme);
       }
 
       /* ---------------------------------------------------------------- */
@@ -220,12 +220,12 @@ int check_convergence_dprimme(double *V, double *W, double *hVecs,
 
       if (numVacancies > 0) {
          replace_vectors(iev, flags, *blockSize, basisSize, numVacancies, 
-			 &left, &right, ievMax); 
+                         &left, &right, ievMax); 
          numVacancies = right - left + 1;
          *blockSize = left + numVacancies;
       }
 
-   } // while there are vacancies
+   } /* while there are vacancies */
 
    return recentlyConverged;
 }
@@ -263,7 +263,7 @@ static void compute_resnorms(double *V, double *W, double *hVecs,
    int i;            /* Loop variable                             */
    int numResiduals; /* Number of residual vectors to be computed */
    double *dwork = (double *) rwork;  /* pointer casting rwork to double */
-   double ztmp;     /* temp var holding shift 			  */
+   double ztmp;     /* temp var holding shift                    */
    double tpone = +1.0e+00, tzero = +0.0e+00;       /* constants */
 
    numResiduals = right - left + 1;
@@ -299,7 +299,7 @@ static void compute_resnorms(double *V, double *W, double *hVecs,
    }
    
    (*primme->globalSumDouble)(&dwork[left], &blockNorms[left], &numResiduals,
-			      primme);
+                              primme);
 
    for (i=left; i <= right; i++) {
       blockNorms[i] = sqrt(blockNorms[i]);
@@ -337,13 +337,13 @@ static void print_residuals(double *ritzValues, double *blockNorms,
       if (primme->locking) 
          found = numLocked;
       else 
-	 found = numConverged;
+         found = numConverged;
 
       for (i=left; i <= right; i++) {
          fprintf(primme->outputFile, 
             "OUT %d conv %d blk %d MV %d Sec %E EV %13E |r| %.3E\n",
          primme->stats.numOuterIterations, found, i, primme->stats.numMatvecs,
-	 primme_wTimer(0), ritzValues[iev[i]], blockNorms[i]);
+         primme_wTimer(0), ritzValues[iev[i]], blockNorms[i]);
       }
 
       fflush(primme->outputFile);
@@ -426,8 +426,8 @@ static void swap_UnconvVecs(double *V, double *W, int nLocal,
          /* An unconverged Ritz vector was found and should */
          /* replace or be swapped with block vector left.   */
 
-	 if (flags[iev[left]] != TO_BE_PROJECTED) { 
-		/* replace */
+         if (flags[iev[left]] != TO_BE_PROJECTED) { 
+                /* replace */
             Num_dcopy_dprimme(nLocal, &V[nLocal*(basisSize+right)], 1,
                &V[nLocal*(basisSize+left)], 1);
             Num_dcopy_dprimme(nLocal, &W[nLocal*(basisSize+right)], 1,
@@ -435,26 +435,26 @@ static void swap_UnconvVecs(double *V, double *W, int nLocal,
             temp = iev[left];
             iev[left] = iev[right];
             iev[right] = temp;
-	    blockNorms[left] = blockNorms[right];
-	 }
-	 else { /* swap */
-      	    Num_swap_dprimme(nLocal, &V[nLocal*(basisSize+left)], 1, 
-		              &V[nLocal*(basisSize+right)], 1);
-      	    Num_swap_dprimme(nLocal, &W[nLocal*(basisSize+left)], 1, 
-		      	      &W[nLocal*(basisSize+right)], 1);
+            blockNorms[left] = blockNorms[right];
+         }
+         else { /* swap */
+            Num_swap_dprimme(nLocal, &V[nLocal*(basisSize+left)], 1, 
+                              &V[nLocal*(basisSize+right)], 1);
+            Num_swap_dprimme(nLocal, &W[nLocal*(basisSize+left)], 1, 
+                              &W[nLocal*(basisSize+right)], 1);
             temp = iev[left];
             iev[left] = iev[right];
             iev[right] = temp;
-	    dtemp = blockNorms[left];
-	    blockNorms[left] = blockNorms[right];
-	    blockNorms[right] = dtemp;
-	 } /* end of swaps */
+            dtemp = blockNorms[left];
+            blockNorms[left] = blockNorms[right];
+            blockNorms[right] = dtemp;
+         } /* end of swaps */
 
-	 left++;
+         left++;
 
-      }  // looking for replacement
+      }  /* looking for replacement */
 
-   } //while left < blockSize
+   } /* while left < blockSize */
 }
 
 
@@ -530,26 +530,26 @@ static void replace_vectors(int *iev, int *flags, int blockSize, int basisSize,
  *                    
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * evecs	   The locked eigenvectors
- * numLocked	   The number of locked eigenvectors
+ * evecs           The locked eigenvectors
+ * numLocked       The number of locked eigenvectors
  * basisSize       Number of vectors in the basis
  * blockSize       The number of block vectors
- * start 	   Starting index in V,W of vectors converged or to be projected
- * numToProject	   The number of vectors to project. 
- * tol 		   The required convergence tolerance
- * rwork	   real work array of size: 2*maxEvecsSize*primme->maxBlockSize
+ * start           Starting index in V,W of vectors converged or to be projected
+ * numToProject    The number of vectors to project. 
+ * tol             The required convergence tolerance
+ * rwork           real work array of size: 2*maxEvecsSize*primme->maxBlockSize
  * primme          Structure containing various solver parameters
  *
  *
  * OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------
- * V		   The basis vectors
- * W 		   A*V
+ * V               The basis vectors
+ * W               A*V
  * iev             Indicates which Ritz value each block vector corresponds to
  * flags           Indicates which Ritz pairs have converged
  * blockNorms      The norms of the block vectors to be targeted
  * recentlyConverged Number of converged vectors in the whole basis V
- * 		     = converged+practicallyConverged 
+ *                   = converged+practicallyConverged 
  * numVacancies    Number of Ritz values between left and right that were
  *                 declared converged or practicallyConverged. [left, right]
  *                 can be smaller than the whole V. See while-loop in 
@@ -582,7 +582,7 @@ static void check_practical_convergence(double *V, double *W,
    /* again CONVERGED flags toward the end of the block. Now swapping */
    /* occurs in the block basisSize+[start:blockSize]:                */
    /*        [ . . . . . . . P P P P C C C C ]     blockSize          */
-   /*        	        start^       ^start+numToProject              */
+   /*                   start^       ^start+numToProject              */
    /* --------------------------------------------------------------- */
 
    for (i=start; i < blockSize; i++)
@@ -591,7 +591,7 @@ static void check_practical_convergence(double *V, double *W,
 
    if (*numVacancies > 0)
       swap_UnconvVecs(V, W, primme->nLocal, basisSize, iev, flags, 
-		   blockNorms, dimEvecs, blockSize, start);
+                   blockNorms, dimEvecs, blockSize, start);
 
    /* ------------------------------------------------------------------ */
    /* Project the numToProject residuals agaist (I-evecs*evecs')         */
@@ -600,7 +600,7 @@ static void check_practical_convergence(double *V, double *W,
    /* overlaps = evecs'*residuals */
 
    Num_gemm_dprimme("C", "N", dimEvecs, numToProject, n, tpone, evecs, n, 
-		  &W[(basisSize+start)*n], n, tzero, rwork, dimEvecs);
+                  &W[(basisSize+start)*n], n, tzero, rwork, dimEvecs);
 
    count = dimEvecs*numToProject;
    (*primme->globalSumDouble)(rwork, overlaps, &count, primme);
@@ -608,7 +608,7 @@ static void check_practical_convergence(double *V, double *W,
    /* residuals = residuals - evecs*overlaps */
 
    Num_gemm_dprimme("N", "N", n, numToProject, dimEvecs, tmone, evecs, n, 
-		  overlaps, dimEvecs, tpone, &W[(basisSize+start)*n], n);
+                  overlaps, dimEvecs, tpone, &W[(basisSize+start)*n], n);
 
    /* ------------------------------------------------------------------ */
    /* Compute norms^2 of the projected res and the differences from res  */ 
@@ -618,10 +618,10 @@ static void check_practical_convergence(double *V, double *W,
    for (i=0; i < numToProject; i++) {
       /* || res - (I-QQ')res || */
       rwork[i] = Num_dot_dprimme(dimEvecs, &overlaps[dimEvecs*i], 1, 
-				&overlaps[dimEvecs*i], 1);
+                                &overlaps[dimEvecs*i], 1);
       /* || (I-QQ')res || */
       rwork[i+numToProject] = Num_dot_dprimme(n, &W[(basisSize+start+i)*n], 1,
-				&W[(basisSize+start+i)*n], 1);
+                                &W[(basisSize+start+i)*n], 1);
    }
    /* global sum ||overlaps|| and ||(I-QQ')r|| */
    count = 2*numToProject;
@@ -640,23 +640,23 @@ static void check_practical_convergence(double *V, double *W,
       normDiff = sqrt(rwork[i-start]);
       normPr   = sqrt(rwork[i-start+numToProject]);
 
-      //printf(" R Pr |R-Pr| %e %e %e \n", blockNorms[i],normPr,normDiff); 
+      /* printf(" R Pr |R-Pr| %e %e %e \n", blockNorms[i],normPr,normDiff); */
 
       if (normDiff >= tol && normPr < tol*tol/blockNorms[i]/2) {
-	 if (primme->printLevel >= 5 && primme->procID == 0) {
-	    fprintf(primme->outputFile, 
-	       " PRACTICALLY_CONVERGED %d norm(I-QQt)r %e bound %e\n",
-		iev[i],normPr,tol*tol/normDiff);
-		  fflush(primme->outputFile);
-	 }
-	 flags[iev[i]] = PRACTICALLY_CONVERGED;
-  	 (*numVacancies)++;
-	 if (numLocked + iev[i] < primme->numEvals){
-	    recentlyConverged++;
-	 }
-      } // if practically converged
+         if (primme->printLevel >= 5 && primme->procID == 0) {
+            fprintf(primme->outputFile, 
+               " PRACTICALLY_CONVERGED %d norm(I-QQt)r %e bound %e\n",
+                iev[i],normPr,tol*tol/normDiff);
+                  fflush(primme->outputFile);
+         }
+         flags[iev[i]] = PRACTICALLY_CONVERGED;
+         (*numVacancies)++;
+         if (numLocked + iev[i] < primme->numEvals){
+            recentlyConverged++;
+         }
+      } /* if practically converged */
 
-   } // for each projected residual 
+   } /* for each projected residual */
 
    /* ------------------------------------------------------------------ */
    /* Finally swap all practically converged toward the end of the block */
@@ -666,6 +666,6 @@ static void check_practical_convergence(double *V, double *W,
    start = blockSize - *numVacancies;
 
    swap_UnconvVecs(V, W, primme->nLocal, basisSize, iev, flags, blockNorms, 
-			 dimEvecs, blockSize, start);
+                         dimEvecs, blockSize, start);
 
 }

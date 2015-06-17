@@ -44,13 +44,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
+#include <string.h>
 #include <unistd.h>
 #include <math.h>
 #include <mpi.h>
 #include "driver_par.h"
 
 /* Parasails library headers */
-#include <ParaSails.h>
+#include "ParaSails.h"
 
 /* primme.h header file is required to run primme */
 #include "primme.h"
@@ -216,23 +217,24 @@ int main (int argc, char *argv[]) {
    fg2or = (int *)primme_calloc(n, sizeof(int), "fg2or");
    or2fg = (int *)primme_calloc(n, sizeof(int), "or2fg");
       
-//   /* * * * * * * * * * * * * * * * * *
-//    * Read the partition from a file
-//    * * * * * * * * * * * * * * * * * */
-//   sprintf(partFileName, "%s/%s", driver.partDir, driver.partId);
-//   partFile = fopen(partFileName, "r");
-//
-//   if (partFile == 0) {
-//      fprintf(stderr, "ERROR: Could not open '%s'\n", partFileName);
-//      MPI_Finalize();
-//      return(-1);
-//   }
-//
-//   for (i = 0; i < n; i++) {
-//      fscanf(partFile, "%d", &mask[i]);
-//   }
-//
-//   fclose(partFile);
+   /* * * * * * * * * * * * * * * * * *
+    * Read the partition from a file
+    * * * * * * * * * * * * * * * * * */
+/*    sprintf(partFileName, "%s/%s", driver.partDir, driver.partId);
+*    partFile = fopen(partFileName, "r");
+* 
+*    if (partFile == 0) {
+*       fprintf(stderr, "ERROR: Could not open '%s'\n", partFileName);
+*       MPI_Finalize();
+*       return(-1);
+*    }
+* 
+*    for (i = 0; i < n; i++) {
+*       fscanf(partFile, "%d", &mask[i]);
+*    }
+* 
+*    fclose(partFile);
+*/
 
    /* * * * * * * * * * * * * * * * * * * * * * * */
    /* Simplistic assignment of processors to rows */
@@ -309,7 +311,7 @@ int main (int argc, char *argv[]) {
    // Send read common primme members to all processors
    // Setup the primme members local to this processor  
    /* ------------------------------------------------- */
-   broadCast(&primme, &method, comm);
+   broadCast(&primme, &method, procID, comm);
 
    primme.procID = procID;
    primme.numProcs = numProcs;
@@ -367,8 +369,8 @@ int main (int argc, char *argv[]) {
    /* Allocate space for converged Ritz values and residual norms */
 
    evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
-   evecs = (double *)primme_calloc(primme.nLocal*
-	   (primme.numEvals+primme.maxBlockSize), sizeof(double), "evecs");
+   evecs = (double *)primme_calloc(primme.nLocal*primme.numEvals, 
+				sizeof(double), "evecs");
    rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
@@ -414,6 +416,13 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
+      if (primme.locking && primme.intWork[0] == 1) {
+         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme.outputFile,
+            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+         fprintf(primme.outputFile,
+            "However, the subspace of evecs is accurate to the required tolerance.\n");
+      }
 
       fprintf(primme.outputFile, "\n\n#,%d,%.1f\n\n", primme.stats.numMatvecs,
          wt2-wt1); 
@@ -512,9 +521,11 @@ void shiftCSRMatrix(double shift, int n, int *IA, int *JA, double *AElts) {
 /******************************************************************************
  * Function to broadcast the primme data structure to all processors
  *
+ * EXCEPTIONS: procID and seed[] are not copied from processor 0. 
+ *             Each process creates their own.
 ******************************************************************************/
 void broadCast(primme_params *primme, primme_preset_method *method, 
-   MPI_Comm comm){
+   int procID, MPI_Comm comm){
 
    int i;
 
@@ -538,9 +549,6 @@ void broadCast(primme_params *primme, primme_preset_method *method,
    MPI_Bcast(&(primme->maxBlockSize), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme->maxMatvecs), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme->maxOuterIterations), 1, MPI_INT, 0, comm);
-   for (i=0;i<4;i++) {
-      MPI_Bcast(&(primme->iseed[i]), 1, MPI_DOUBLE, 0, comm);
-   }
    MPI_Bcast(&(primme->aNorm), 1, MPI_DOUBLE, 0, comm);
    MPI_Bcast(&(primme->eps), 1, MPI_DOUBLE, 0, comm);
    MPI_Bcast(&(primme->printLevel), 1, MPI_INT, 0, comm);

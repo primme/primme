@@ -26,7 +26,7 @@ primme.printLevel         = 4                      // Choices 0, ..., 5
 // Solver parameters
 primme.numEvals           = 10
 primme.aNorm		  = 0.0                    // if aNorm <= 0 dynamic
-primme.eps                = 1.0e-14
+primme.eps                = 1.0e-12
 primme.maxBasisSize       = 15
 primme.minRestartSize     = 7
 primme.maxBlockSize       = 2

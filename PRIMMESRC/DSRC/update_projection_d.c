@@ -74,21 +74,29 @@ void update_projection_dprimme(double *X, double *Y, double *Z,
    /* Grow Z by blockSize number of rows and columns                        */
    /*    Compute the first numCols rows of the new blockSize columns        */
    /* --------------------------------------------------------------------- */
-
+/*
    Num_gemm_dprimme("C", "N", numCols, blockSize, primme->nLocal, tpone, 
       X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
       tzero, rwork, maxCols);
+*/
 
+   Num_gemm_dprimme("C", "N", numCols+blockSize, blockSize, primme->nLocal, tpone, 
+      X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
+      tzero, rwork, maxCols);
    /* -------------------------------------------------------------- */
    /*    Compute next the additional rows of each new column vector. */
    /*    Only the upper triangular portion is computed and stored.   */
    /* -------------------------------------------------------------- */
 
+/*
    for (j = numCols; j < numCols+blockSize; j++) {
       Num_gemv_dprimme("C", primme->nLocal, j-numCols+1, tpone,
          &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
-	 tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
+         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
    }
+*/
+
+//for (j=0;j<maxCols*blockSize;j++) printf("%22.16e ",rwork[j]);
 
    count = maxCols*blockSize;
    (*primme->globalSumDouble)(rwork, &Z[maxCols*numCols], &count, primme);

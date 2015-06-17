@@ -7,7 +7,8 @@
 #---------------------------------------------------------------
 
 # Modify this to show the path of the installed PRIMME directory
-TOP = /home/f85/andreas/RESEARCH/SEND/PRIMME/
+#TOP = /home/f85/andreas/BTsync/RESEARCH/PRIMME/DEVELOP/PRIMME_1.2
+TOP = /Users/andreas/BTsync/RESEARCH/PRIMME/DEVELOP/PRIMME_1.2
 
 # Define the path to the source code
 SRC = $(TOP)/PRIMMESRC
@@ -31,8 +32,12 @@ ZTESTDIR = $(TOP)/ZTEST
 # On Suse Linux use gfortran, NOT g77 (BLAS/LAPACK made with gfortran) 
 # On Opteron CentOS use g77 
 #---------------------------------------------------------------
-CC = cc
-F77 = f77
+#CC = gcc-mp-4.9
+#F77 = gfortran-mp-4.9
+
+# Parallel MPI
+ CC = mpicc
+ F77 = mpif77
 
 #---------------------------------------------------------------
 #  Compiling flags for the PRIMME library
@@ -51,24 +56,24 @@ F77 = f77
 #CFLAGS = -xtarget=generic -xarch=v8plusa
 #---------------------------------------------------------------
 # MAC OSX
-CFLAGS = 
+CFLAGS = -fPIC
 #---------------------------------------------------------------
 # Linux 
 #CFLAGS = 
 #---------------------------------------------------------------
 
-FFLAGS = -O  -fno-second-underscore
-LOW_OPT = -O
-HIGH_OPT = -O
+FFLAGS =  -fno-second-underscore -fPIC
+LOW_OPT = -g #-O3  
+HIGH_OPT = -g # -O3
 
 #---------------------------------------------------------------
 # Preprocessor definition for using F77 under various OS/compilers
 #---------------------------------------------------------------
 
-DEFINES = -DF77UNDERSCORE
+DEFINES = -DF77UNDERSCORE 
 # If a C++ compiler is used instead of C add this
 ifeq ($(CC),c++)
-DEFINES += -DCplusplus
+DEFINES = -DF77UNDERSCORE -DCplusplus
 endif
 
 #---------------------------------------------------------------

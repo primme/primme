@@ -1,7 +1,7 @@
-//-------------------------------------------------------
-//     Defining easy to remember labels for setting the 
-//     method in primme_set_method from Fortran
-//-------------------------------------------------------
+/*-------------------------------------------------------*/
+/*     Defining easy to remember labels for setting the  */
+/*     method in primme_set_method from Fortran          */
+/*-------------------------------------------------------*/
 #define PRIMMEF77_DYNAMIC  0
 #define PRIMMEF77_DEFAULT_MIN_TIME  1
 #define PRIMMEF77_DEFAULT_MIN_MATVECS  2
@@ -17,10 +17,10 @@
 #define PRIMMEF77_SUBSPACE_ITERATION  12
 #define PRIMMEF77_LOBPCG_OrthoBasis  13
 #define PRIMMEF77_LOBPCG_OrthoBasis_Window  14
-//-------------------------------------------------------
-//     Defining easy to remember labels for setting the 
-//     members of the primme structure from Fortran
-//-------------------------------------------------------
+/*-------------------------------------------------------*/
+/*     Defining easy to remember labels for setting the  */
+/*     members of the primme structure from Fortran      */
+/*-------------------------------------------------------*/
 #define PRIMMEF77_n  0
 #define PRIMMEF77_matrixMatvec  1
 #define PRIMMEF77_applyPreconditioner  2
@@ -73,26 +73,26 @@
 #define PRIMMEF77_dynamicMethodSwitch 49
 #define PRIMMEF77_massMatrixMatvec  50
 
-//-------------------------------------------------------
-//     Defining easy to remember labels for setting the 
-//     enum members for targeting, restarting and innertest
-//-------------------------------------------------------
+/*----------------------------------------------------------*/
+/*     Defining easy to remember labels for setting the     */
+/*     enum members for targeting, restarting and innertest */
+/*----------------------------------------------------------*/
 #define PRIMMEF77_smallest  0
 #define PRIMMEF77_largest  1
 #define PRIMMEF77_closest_geq  2
 #define PRIMMEF77_closest_leq  3
 #define PRIMMEF77_closest_abs  4
-//-------------------------------------------------------
+/*-------------------------------------------------------*/
 #define PRIMMEF77_thick  0
 #define PRIMMEF77_dt  1
-//-------------------------------------------------------
+/*-------------------------------------------------------*/
 #define PRIMMEF77_full_LTolerance  0
 #define PRIMMEF77_decreasing_LTolerance  1
 #define PRIMMEF77_adaptive_ETolerance  2
 #define PRIMMEF77_adaptive  3
 
 
-// Prototypes for Fortran-C interface
+/* Prototypes for Fortran-C interface */
 
 #ifdef Cplusplus
 extern "C" {
@@ -100,12 +100,13 @@ extern "C" {
 
 #ifdef F77UNDERSCORE
 void dprimme_f77_(double *evals, double *evecs, double *rnorms, 
-		  primme_params **primme, int *ierr);
+                  primme_params **primme, int *ierr);
 void zprimme_f77_(double *evals, Complex_Z *evecs, double *rnorms, 
-		  primme_params **primme, int *ierr);
+                  primme_params **primme, int *ierr);
 void primme_initialize_f77_(primme_params **primme);
+void primme_free_f77_(primme_params **primme);
 void primme_display_params_f77_(primme_params **primme);
-void primme_PrintStackTrace_f77_(primme_params **primme);
+void primme_printstacktrace_f77_(primme_params **primme);
 void primme_set_method_f77_(primme_params **primme, int *method,int *returnVal);
 void primme_set_member_f77_(primme_params **primme, int *label, void *ptr);
 
@@ -113,15 +114,16 @@ void primme_get_prec_shift_f77_(primme_params *primme, int *i, double *shift);
 void primme_get_member_f77_(primme_params *primme, int *label, void *ptr);
 void primmetop_get_member_f77_(primme_params **primme, int *label, void *ptr);
 void primmetop_get_prec_shift_f77_(primme_params **primme, int *i, 
-				   double *shift);
+                                   double *shift);
 #else
 void dprimme_f77(double *evals, double *evecs, double *rnorms, 
-		 primme_params **primme, int *ierr);
+                 primme_params **primme, int *ierr);
 void zprimme_f77(double *evals, Complex_Z *evecs, double *rnorms, 
-		  primme_params **primme, int *ierr);
+                  primme_params **primme, int *ierr);
 void primme_initialize_f77(primme_params **primme);
+void primme_free_f77(primme_params **primme);
 void primme_display_params_f77(primme_params **primme);
-void primme_PrintStackTrace_f77(primme_params **primme);
+void primme_printstacktrace_f77(primme_params **primme);
 void primme_set_method_f77(primme_params **primme, int *method, int *returnVal);
 void primme_set_member_f77(primme_params **primme, int *label, void *ptr);
 
@@ -129,7 +131,7 @@ void primme_get_prec_shift_f77(primme_params *primme, int *i, double *shift);
 void primme_get_member_f77(primme_params *primme, int *label, void *ptr);
 void primmetop_get_member_f77(primme_params **primme, int *label, void *ptr);
 void primmetop_get_prec_shift_f77(primme_params **primme, int *i, 
-				  double *shift);
+                                  double *shift);
 #endif
 
 #ifdef Cplusplus

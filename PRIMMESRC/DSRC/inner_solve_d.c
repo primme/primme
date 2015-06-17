@@ -71,13 +71,13 @@
  * xKinvx      The value x'*Kinv*x needed if skew-X projection
  *
  * Lprojector  Points to an array that includes all the left projector.
- * 		Can be any combination of [evecs x], [evecs], [x], NULL.
+ *             Can be any combination of [evecs x], [evecs], [x], NULL.
  *
  * RprojectorQ Points to an array that includes the right skew projector for Q:
- * 		It can be [evecsHat] or Null
+ *             It can be [evecsHat] or Null
  *
  * RprojectorX Points to an array that includes the right skew projector for x:
- * 		It can be [Kinvx] or Null
+ *             It can be [Kinvx] or Null
  *
  * sizeLprojector   Number of colums of Lprojector
  *
@@ -88,7 +88,7 @@
  * eval        The current Ritz value 
  *
  * shift       Correction eq. shift. The closer the shift is to the target 
- * 		eigenvalue, the more accurate the correction will be.
+ *             eigenvalue, the more accurate the correction will be.
  *
  * eresTol     The convergence tolerance for the eigenpair residual
  *
@@ -97,7 +97,7 @@
  * machEps     machine precision
  *
  * rwork       Real workspace of size 
- * 	       4*primme->nLocal + 2*(primme->numOrthoConst+primme->numEvals)
+ *             4*primme->nLocal + 2*(primme->numOrthoConst+primme->numEvals)
  *
  * rworkSize   Size of the rwork array
  *
@@ -109,18 +109,16 @@
  * r       The residual with respect to the Ritz vector.  May be altered upon
  *         return.
  * rnorm   On input, the 2 norm of r. No need to recompute it initially.
- * 	   On output, the estimated 2 norm of the updated eigenvalue residual
- *
+ *         On output, the estimated 2 norm of the updated eigenvalue residual
  * 
  * Output parameters
  * -----------------
  * sol   The solution (correction) of the correction equation
- * 
  *
  * Return Value
  * ------------
  * Error code: 0 upon success
- * 	      -1 apply_projected_preconditioner failed
+ *            -1 apply_projected_preconditioner failed
  *
  ******************************************************************************/
 
@@ -132,25 +130,23 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    double eresTol, double aNormEstimate, double machEps, double *rwork, 
    int rworkSize, primme_params *primme) {
 
-   int i;             /* loop variable                                      */
-   int workSpaceSize; /* Size of local work array.                          */
-   int numIts;        /* Number of inner iterations                         */
-   int ret;           /* Return value used for error checking.              */
-   int maxIterations; /* The maximum # iterations allowed. Depends on primme  */
+   int i;             /* loop variable                                       */
+   int workSpaceSize; /* Size of local work array.                           */
+   int numIts;        /* Number of inner iterations                          */
+   int ret;           /* Return value used for error checking.               */
+   int maxIterations; /* The maximum # iterations allowed. Depends on primme */
 
    double *workSpace; /* Workspace needed by UDU routine */
 
    /* QMR parameters */
 
-   double *g, *d, *delta, *w;
+   double *g, *d, *delta, *w, *ptmp;
    double alpha_prev, beta, rho_prev, rho;
-   double ztmp;
    double Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
+   double ztmp;
 
    /* Parameters used to dynamically update eigenpair */
-   double Beta, Delta, Psi, Beta_prev, Delta_prev, Psi_prev;
-   double eta;
-
+   double Beta, Delta, Psi, Beta_prev, Delta_prev, Psi_prev, eta;
    double dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated, R;
    double Gamma_prev, Phi_prev;
    double Gamma, Phi;
@@ -164,7 +160,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    double absoluteTolerance;
    double LTolerance, ETolerance;
 
-   /* Some constants 							      */
+   /* Some constants                                                          */
    double tpone = +1.0e+00, tzero = +0.0e+00;
 
    /* -------------------------------------------*/
@@ -175,7 +171,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    d      = g + primme->nLocal;
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
-   workSpace = w + primme->nLocal;  // This needs at least 2*numOrth+NumEvals)
+   workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
    
    workSpaceSize = rworkSize - (workSpace - rwork);
    
@@ -193,8 +189,8 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    tau_prev = tau_init = *rnorm;       /* Assumes zero initial guess */
    LTolerance = eresTol;
 
-   // Andreas: note that eigenresidual tol may not be achievable, because we
-   // iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P.
+   /* Andreas: note that eigenresidual tol may not be achievable, because we */
+   /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
    if (primme->correctionParams.convTest == primme_adaptive) {
       ETolerance = max(eresTol/1.8L, absoluteTolerance);
       LTolerance = ETolerance;
@@ -207,9 +203,9 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
       relativeTolerance = pow(primme->correctionParams.relTolBase, 
          (double)-primme->stats.numOuterIterations);
       LTolerance = relativeTolerance * tau_init 
-	           + absoluteTolerance + eresTol;
-     //printf(" RL %e INI %e abso %e LToler %e aNormEstimate %e \n",
-     //relativeTolerance, tau_init, absoluteTolerance,LTolerance,aNormEstimate);
+                   + absoluteTolerance + eresTol;
+   /*printf(" RL %e INI %e abso %e LToler %e aNormEstimate %e \n", */
+   /*relativeTolerance, tau_init, absoluteTolerance,LTolerance,aNormEstimate);*/
    }
    
    /* --------------------------------------------------------*/
@@ -224,7 +220,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    if (primme->correctionParams.maxInnerIterations > 0) {
 
       maxIterations = min(primme->correctionParams.maxInnerIterations, 
-		          maxIterations);
+                          maxIterations);
    }
 
    /* --------------------------------------------------------*/
@@ -235,8 +231,8 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    Num_dcopy_dprimme(primme->nLocal, r, 1, g, 1);
 
    ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
-	   x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
-	   xKinvx, UDU, ipivot, d, workSpace, primme);
+           x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
+           xKinvx, UDU, ipivot, d, workSpace, primme);
 
    if (ret != 0) {
       primme_PushErrorMessage(Primme_inner_solve, 
@@ -251,7 +247,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
       
    /* Initialize recurrences used to dynamically update the eigenpair */
 
-   Beta_prev = Delta_prev = Psi_prev = tzero;
+   Beta_prev = Delta_prev = Psi_prev = 0.0L;
    Gamma_prev = Phi_prev = 0.0L;
 
    /* other initializations */
@@ -269,7 +265,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    while (numIts < maxIterations) {
 
       apply_projected_matrix(d, shift, Lprojector, sizeLprojector, 
-		             w, workSpace, primme);
+                             w, workSpace, primme);
       sigma_prev = dist_dot(d, 1, w, 1, primme);
 
       if (sigma_prev == 0.0L) {
@@ -284,7 +280,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because ALPHA %e\n",alpha_prev);
          }
-	 break;
+         break;
       }
 
       Num_axpy_dprimme(primme->nLocal, -alpha_prev, w, 1, g, 1);
@@ -297,15 +293,16 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
       gamma = c*c*Theta_prev*Theta_prev;
       eta = alpha_prev*c*c;
-      Num_scal_dprimme(primme->nLocal, gamma, delta, 1);
-      Num_axpy_dprimme(primme->nLocal, eta, d, 1, delta, 1);
-      Num_axpy_dprimme(primme->nLocal, tpone, delta, 1, sol, 1);
+      for (i = 0; i < primme->nLocal; i++) {
+          delta[i] = gamma*delta[i] + eta*d[i];
+          sol[i] = delta[i]+sol[i];
+      }
       numIts++;
 
       if (fabs(rho_prev) == 0.0L ) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because abs(rho) %e\n",
-	       fabs(rho_prev));
+               fabs(rho_prev));
          }
          break;
       }
@@ -317,9 +314,9 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
          break;
       }
       else if (primme->correctionParams.convTest == primme_adaptive_ETolerance
-	    || primme->correctionParams.convTest == primme_adaptive) {
+            || primme->correctionParams.convTest == primme_adaptive) {
          /* --------------------------------------------------------*/
-	 /* Adaptive stopping based on dynamic monitoring of eResid */
+         /* Adaptive stopping based on dynamic monitoring of eResid */
          /* --------------------------------------------------------*/
 
          /* Update the Ritz value and eigenresidual using the */
@@ -330,50 +327,50 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
          Phi = gamma*gamma*Phi_prev + eta*eta*sigma_prev;
          Psi = gamma*Psi_prev + gamma*Phi_prev;
          Gamma = Gamma_prev + 2.0L*Psi + Phi;
-
+        
          /* Perform the update: update the eigenvalue and the square of the  */
          /* residual norm.                                                   */
-      
+         
          dot_sol = dist_dot(sol, 1, sol, 1, primme);
          eval_updated = shift + (eval - shift + 2*Beta + Gamma)/(1 + dot_sol);
          eres2_updated = (tau*tau)/(1 + dot_sol) + 
             ((eval - shift + Beta)*(eval - shift + Beta))/(1 + dot_sol) - 
             (eval_updated - shift)*(eval_updated - shift);
 
-	 /* If numerical problems, let eres about the same as tau */
-	 if (eres2_updated < 0){
+         /* If numerical problems, let eres about the same as tau */
+         if (eres2_updated < 0){
             eres_updated = sqrt( (tau*tau)/(1 + dot_sol) );
-	 }
-	 else 
+         }
+         else 
             eres_updated = sqrt(eres2_updated);
 
          /* --------------------------------------------------------*/
-	 /* Stopping criteria                                       */
+         /* Stopping criteria                                       */
          /* --------------------------------------------------------*/
 
          R = max(0.9878, sqrt(tau/tau_prev))*sqrt(1+dot_sol);
         
-	 if ( tau <= R*eres_updated || eres_updated <= tau*R ) {
+         if ( tau <= R*eres_updated || eres_updated <= tau*R ) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, " tau < R eres \n");
             }
-	    break;
-	 }
+            break;
+         }
 
-	 if (primme->target == primme_smallest && eval_updated > eval_prev) {
+         if (primme->target == primme_smallest && eval_updated > eval_prev) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eval_updated > eval_prev\n");
             }
-	    break;
-	 }
-	 else if (primme->target == primme_largest && eval_updated < eval_prev){
+            break;
+         }
+         else if (primme->target == primme_largest && eval_updated < eval_prev){
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eval_updated < eval_prev\n");
-	    }
-	    break;
-	 }
-	 
-         if (eres_updated < ETolerance) {    // tau < LTol has been checked
+            }
+            break;
+         }
+         
+         if (eres_updated < ETolerance) {    /* tau < LTol has been checked */
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eres < eresTol %e \n",eres_updated);
             }
@@ -385,38 +382,40 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
          if (primme->printLevel >= 4 && primme->procID == 0) {
             fprintf(primme->outputFile,
            "INN MV %d Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n", primme->stats.
-	    numMatvecs, primme_wTimer(0), eval_updated, tau, eres_updated);
-	    fflush(primme->outputFile);
+            numMatvecs, primme_wTimer(0), eval_updated, tau, eres_updated);
+            fflush(primme->outputFile);
          }
 
         /* --------------------------------------------------------*/
       } /* End of if adaptive JDQMR section                        */
         /* --------------------------------------------------------*/
       else if (primme->printLevel >= 4 && primme->procID == 0) {
-        // Report for non adaptive inner iterations
+        /* Report for non adaptive inner iterations */
         fprintf(primme->outputFile,
            "INN MV %d Sec %e Lin|r| %e\n", primme->stats.numMatvecs,
            primme_wTimer(0),tau);
-	fflush(primme->outputFile);
+        fflush(primme->outputFile);
       }
 
       if (numIts < maxIterations) {
 
-	 ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
-	   x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
-	   xKinvx, UDU, ipivot, w, workSpace, primme);
+         ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
+            x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
+            xKinvx, UDU, ipivot, w, workSpace, primme);
 
          if (ret != 0) {
             primme_PushErrorMessage(Primme_inner_solve, 
                Primme_apply_projected_preconditioner, ret, __FILE__, __LINE__, 
                primme);
                ret = APPLYPROJECTEDPRECONDITIONER_FAILURE;
-	       break;
+               break;
          }
          rho = dist_dot(g, 1, w, 1, primme);
          beta = rho/rho_prev;
-         Num_scal_dprimme(primme->nLocal, beta, d, 1);
-         Num_axpy_dprimme(primme->nLocal, tpone, w, 1, d, 1);
+         Num_axpy_dprimme(primme->nLocal, beta, d, 1, w, 1);
+         /* Alternate between w and d buffers in successive iterations
+          * This saves a memory copy. */
+         ptmp = d; d = w; w = ptmp;
       
          rho_prev = rho; 
          tau_prev = tau;
@@ -454,7 +453,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
  * Q      The matrix evecs where evecs are the locked/converged eigenvectors
  *
  * RprojectorQ     The matrix K^{-1}Q (often called Qhat), Q, or nothing,
- * 	           as determined by setup_JD_projectors.
+ *                 as determined by setup_JD_projectors.
  *
  * x               The current Ritz vector.
  *
@@ -502,7 +501,7 @@ static int apply_projected_preconditioner(double *v, double *Q,
    }
 
    ret = apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
-		           result, rwork, primme);
+                           result, rwork, primme);
    if (ret != 0) {
          primme_PushErrorMessage(Primme_apply_projected_preconditioner, 
             Primme_apply_skew_projector, ret, __FILE__, __LINE__, primme);
@@ -510,7 +509,7 @@ static int apply_projected_preconditioner(double *v, double *Q,
    }
 
    apply_skew_projector(x, RprojectorX, xKinvx, ipivot, sizeRprojectorX,
-		           result, rwork, primme);
+                           result, rwork, primme);
    if (ret != 0) {
          primme_PushErrorMessage(Primme_apply_projected_preconditioner, 
             Primme_apply_skew_projector, ret, __FILE__, __LINE__, primme);
@@ -571,15 +570,15 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
          /* Compute workspace = Q'*v */
          overlaps[0] = dist_dot(Q, 1, v, 1, primme);
 
-	 /* Backsolve only if there is a skew projector */
-	 if (UDU != NULL) {
-	    if (UDU[0] == 0.0L) {
-	       return UDUSOLVE_FAILURE;
-	    }
-	    overlaps[0] = overlaps[0]/UDU[0];
-	 }
+         /* Backsolve only if there is a skew projector */
+         if (UDU != NULL) {
+            if (UDU[0] == 0.0L) {
+               return UDUSOLVE_FAILURE;
+            }
+            overlaps[0] = overlaps[0]/UDU[0];
+         }
          /* Compute v=v-Qhat*overlaps */
-	 Num_axpy_dprimme(primme->nLocal, -overlaps[0], Qhat, 1, v, 1);
+         Num_axpy_dprimme(primme->nLocal, -overlaps[0], Qhat, 1, v, 1);
       }
       else {
          /* ------------------------------------------------------*/
@@ -587,7 +586,7 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
          /* ------------------------------------------------------*/
          /* Compute workspace = Q'*v */
          Num_gemv_dprimme("C", primme->nLocal, numCols, tpone, Q, 
-		      primme->nLocal, v, 1, tzero, workSpace, 1);
+                      primme->nLocal, v, 1, tzero, workSpace, 1);
 
          /* Global sum: overlaps = Q'*v */
          count = numCols;
@@ -598,7 +597,7 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
          /* --------------------------------------------*/
          if (UDU != NULL) {
             /* Solve (Q'Qhat)^{-1}*workSpace = overlaps = Q'*v for alpha by */
-	    /* backsolving  with the UDU decomposition.                 */
+            /* backsolving  with the UDU decomposition.                 */
    
             ret = UDUSolve_dprimme(UDU, ipivot, numCols, overlaps, workSpace);
             if (ret != 0) {
@@ -608,15 +607,15 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
             }
             /* Compute v=v-Qhat*workspace */
             Num_gemv_dprimme("N", primme->nLocal, numCols, tmone, Qhat, 
-			 primme->nLocal, workSpace, 1, tpone, v, 1);
-	 }
+                         primme->nLocal, workSpace, 1, tpone, v, 1);
+         }
          else  {
             /* Compute v=v-Qhat*overlaps  */
             Num_gemv_dprimme("N", primme->nLocal, numCols, tmone, Qhat, 
-			 primme->nLocal, overlaps, 1, tpone, v, 1);
-	 } // UDU==null
-      } // numCols != 1
-   } // numCols > 0
+                         primme->nLocal, overlaps, 1, tpone, v, 1);
+         } /* UDU==null */
+      } /* numCols != 1 */
+   } /* numCols > 0 */
 
    return 0;
 }
@@ -686,7 +685,7 @@ static void apply_projected_matrix(double *v, double shift, double *Q,
 static void apply_projector(double *Q, int numCols, double *v, 
    double *rwork, primme_params *primme) {
 
-   int count;          /* globalSum counter		    */
+   int count;          /* globalSum counter                 */
    double *overlaps;  /* overlaps of v with columns of Q   */
    double *workSpace; /* Used for computing local overlaps */
 

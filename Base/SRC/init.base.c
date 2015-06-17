@@ -39,7 +39,7 @@
 #include "ortho_@(pre).h"
 #include "factorize_@(pre).h"
 #include "numerical_@(pre).h"
-#include "wtime.h"   			// Needed for CostModel
+#include "wtime.h"                       /* Needed for CostModel */
 
 
 /*******************************************************************************
@@ -86,7 +86,7 @@
  *            by initialize_basis
  *
  * rworkSize  At most the maximum of (maximum size required by the 
- *  	      orthogonalization routine, maximum worksize by UDUDecompose)
+ *            orthogonalization routine, maximum worksize by UDUDecompose)
  *
  * primme       Structure containing various solver parameters
  * 
@@ -101,7 +101,7 @@
  * *numGuesses  When locking is enabled, the number of remaining initial guesses
  * 
  * *timeForMV   Time estimate for applying the matvec operator.
- * 		Measured only if primme.dynamicMethodSwitch is on.
+ *              Measured only if primme.dynamicMethodSwitch is on.
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
@@ -114,9 +114,9 @@
  * M            evecs'*evecsHat.  Its dimension is as large as 
  *              (primme->numOrthoConst + primme->numEvals).
  *
- * UDU 		The factorization of M
+ * UDU          The factorization of M
  *
- * ipivot	The pivots of the UDU factorization
+ * ipivot       The pivots of the UDU factorization
  *
  * Return value
  * ------------
@@ -145,13 +145,13 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
    if (primme->numOrthoConst > 0) {
       ret = ortho_@(pre)primme(evecs, primme->nLocal, 0, 
-	primme->numOrthoConst - 1, NULL, 0, 0, primme->nLocal, 
-	primme->iseed, machEps, rwork, rworkSize, primme);
+        primme->numOrthoConst - 1, NULL, 0, 0, primme->nLocal, 
+        primme->iseed, machEps, rwork, rworkSize, primme);
 
       /* Push an error message onto the stack trace if an error occured */
       if (ret < 0) {
          primme_PushErrorMessage(Primme_init_basis, Primme_ortho, ret, 
-			 __FILE__, __LINE__, primme);
+                         __FILE__, __LINE__, primme);
          return ORTHO_FAILURE;
       }
 
@@ -159,20 +159,20 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
       /* allows the orthogonalization constraints to be included in the   */
       /* projector (I-QQ'). Only needed if there is preconditioning, and  */
       /* JDqmr inner iterations with a right, skew projector. Only in     */
-      /* that case, is UDU not NULL 					  */
+      /* that case, is UDU not NULL                                       */
 
       if (UDU != NULL) {
 
          (*primme->applyPreconditioner)
-	    (evecs, evecsHat, &primme->numOrthoConst, primme); 
-	 primme->stats.numPreconds += primme->numOrthoConst;
+            (evecs, evecsHat, &primme->numOrthoConst, primme); 
+         primme->stats.numPreconds += primme->numOrthoConst;
 
          update_projection_@(pre)primme(evecs, evecsHat, M, 0, 
             primme->numOrthoConst+primme->numEvals, primme->numOrthoConst, 
-	    rwork, primme);
+            rwork, primme);
 
          ret = UDUDecompose_@(pre)primme(M, UDU, ipivot, primme->numOrthoConst, 
-	    rwork, rworkSize, primme);
+            rwork, rworkSize, primme);
 
          if (ret != 0) {
             primme_PushErrorMessage(Primme_init_basis, Primme_ududecompose, ret,
@@ -180,9 +180,9 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
             return UDUDECOMPOSE_FAILURE;
          }
 
-      }  // if evecsHat and M=evecs'evecsHat, UDU are needed
+      }  /* if evecsHat and M=evecs'evecsHat, UDU are needed */
 
-   }  // if numOrthoCont >0
+   }  /* if numOrthoCont >0 */
 
 
    /*-----------------------------------------------------------------------*/
@@ -194,12 +194,12 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
       if (primme->initSize == 0) {
 
          ret = init_block_krylov(V, W, 0, primme->minRestartSize - 1, evecs, 
-	    primme->numOrthoConst, machEps, rwork, rworkSize, primme); 
+            primme->numOrthoConst, machEps, rwork, rworkSize, primme); 
 
          /* Push an error message onto the stack trace if an error occured */
          if (ret < 0) {
             primme_PushErrorMessage(Primme_init_basis, Primme_init_block_krylov,
-			    ret, __FILE__, __LINE__, primme);
+                            ret, __FILE__, __LINE__, primme);
             return INIT_BLOCK_KRYLOV_FAILURE;
          }
 
@@ -212,18 +212,18 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
          /* Copy over the initial guesses provided by the user */
          Num_@(pre)copy_@(pre)primme(primme->nLocal*primme->initSize, 
-	    &evecs[primme->numOrthoConst*primme->nLocal], 1, V, 1);
+            &evecs[primme->numOrthoConst*primme->nLocal], 1, V, 1);
 
          /* Orthonormalize the guesses provided by the user */ 
 
          ret = ortho_@(pre)primme(V, primme->nLocal, 0, primme->initSize-1, 
-	    evecs, primme->nLocal, primme->numOrthoConst, primme->nLocal, 
-	    primme->iseed, machEps, rwork, rworkSize, primme);
+            evecs, primme->nLocal, primme->numOrthoConst, primme->nLocal, 
+            primme->iseed, machEps, rwork, rworkSize, primme);
 
          /* Push an error message onto the stack trace if an error occured */
          if (ret < 0) {
             primme_PushErrorMessage(Primme_init_basis, Primme_ortho, ret, 
-			    __FILE__, __LINE__, primme);
+                            __FILE__, __LINE__, primme);
             return ORTHO_FAILURE;
          }
 
@@ -237,12 +237,12 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
             ret = init_block_krylov(V, W, primme->initSize, 
                primme->minRestartSize - 1, evecs, primme->numOrthoConst, 
-	       machEps, rwork, rworkSize, primme);
+               machEps, rwork, rworkSize, primme);
 
             /* Push an error message onto the stack trace if an error occured */
             if (ret < 0) {
                primme_PushErrorMessage(Primme_init_basis, 
-	          Primme_init_block_krylov, ret, __FILE__, __LINE__, primme);
+                  Primme_init_block_krylov, ret, __FILE__, __LINE__, primme);
                return INIT_KRYLOV_FAILURE;
             }
 
@@ -273,15 +273,15 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
       if (primme->initSize > 0) {
          currentSize = min(primme->initSize, primme->minRestartSize);
          Num_@(pre)copy_@(pre)primme(primme->nLocal*currentSize, 
-	    &evecs[primme->numOrthoConst*primme->nLocal], 1, V, 1);
+            &evecs[primme->numOrthoConst*primme->nLocal], 1, V, 1);
 
          ret = ortho_@(pre)primme(V, primme->nLocal, 0, currentSize-1, evecs,
-	    primme->nLocal, primme->numOrthoConst, primme->nLocal,
-	    primme->iseed, machEps, rwork, rworkSize, primme);
+            primme->nLocal, primme->numOrthoConst, primme->nLocal,
+            primme->iseed, machEps, rwork, rworkSize, primme);
 
          if (ret < 0) {
             primme_PushErrorMessage(Primme_init_basis, Primme_ortho, ret,
-		   __FILE__, __LINE__, primme);
+                   __FILE__, __LINE__, primme);
             return ORTHO_FAILURE;
          }
       
@@ -300,11 +300,11 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
       if (currentSize < primme->minRestartSize) {
          
          ret = init_block_krylov(V, W, currentSize, primme->minRestartSize - 1,
-	    evecs, primme->numOrthoConst, machEps, rwork, rworkSize, primme);
+            evecs, primme->numOrthoConst, machEps, rwork, rworkSize, primme);
 
          if (ret < 0) {
             primme_PushErrorMessage(Primme_init_basis, Primme_init_block_krylov,
-			    ret, __FILE__, __LINE__, primme);
+                            ret, __FILE__, __LINE__, primme);
             return INIT_BLOCK_KRYLOV_FAILURE;
          }
 
@@ -385,8 +385,8 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
 
       Num_larnv_@(pre)primme(2, primme->iseed,primme->nLocal,&V[primme->nLocal*dv1]);
       ret = ortho_@(pre)primme(V, primme->nLocal, dv1, dv1, locked, 
-	 primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps, 
-	 rwork, rworkSize, primme);
+         primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps, 
+         rwork, rworkSize, primme);
 
       if (ret < 0) {
          primme_PushErrorMessage(Primme_init_block_krylov, Primme_ortho, ret, 
@@ -398,16 +398,16 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
 
       for (i = dv1; i < dv2; i++) {
          (*primme->matrixMatvec)
-	   (&V[primme->nLocal*i], &V[primme->nLocal*(i+1)], &ONE, primme);
+           (&V[primme->nLocal*i], &V[primme->nLocal*(i+1)], &ONE, primme);
          Num_@(pre)copy_@(pre)primme(primme->nLocal, &V[primme->nLocal*(i+1)], 1,
-	    &W[primme->nLocal*i], 1);
+            &W[primme->nLocal*i], 1);
          ret = ortho_@(pre)primme(V, primme->nLocal, i+1, i+1, locked, 
-	    primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
-	    rwork, rworkSize, primme);
+            primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
+            rwork, rworkSize, primme);
       
          if (ret < 0) {
             primme_PushErrorMessage(Primme_init_block_krylov, Primme_ortho, 
-			    ret, __FILE__, __LINE__, primme);
+                            ret, __FILE__, __LINE__, primme);
             return ORTHO_FAILURE;
          }
       }
@@ -424,8 +424,8 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
       Num_larnv_@(pre)primme(2, primme->iseed, primme->nLocal*primme->maxBlockSize,
          &V[primme->nLocal*dv1]);
       ret = ortho_@(pre)primme(V, primme->nLocal, dv1, 
-	 dv1+primme->maxBlockSize-1, locked, primme->nLocal, numLocked, 
-	 primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+         dv1+primme->maxBlockSize-1, locked, primme->nLocal, numLocked, 
+         primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
 
       /* Generate the remaining vectors in the sequence */
 
@@ -436,12 +436,12 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
             &W[primme->nLocal*(i-primme->maxBlockSize)], 1);
 
          ret = ortho_@(pre)primme(V, primme->nLocal, i, i, locked, 
-	    primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
-	    rwork, rworkSize, primme);
+            primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
+            rwork, rworkSize, primme);
 
          if (ret < 0) {
             primme_PushErrorMessage(Primme_init_block_krylov, Primme_ortho, 
-			    ret, __FILE__, __LINE__, primme);
+                            ret, __FILE__, __LINE__, primme);
             return ORTHO_FAILURE;
          }
 

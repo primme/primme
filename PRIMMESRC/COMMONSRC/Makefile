@@ -13,10 +13,6 @@ CSOURCE =  Complex.c common_numerical.c errors.c primme_f77.c \
 COBJS = Complex.o common_numerical.o  errors.o  primme_f77.o  \
 	primme_interface.o wtime.o
 
-FOBJS = zdotcsub.o
-
-FSOURCE = zdotcsub.c
-
 # 
 # Compilation
 #
@@ -37,9 +33,6 @@ primme_interface.o: primme_interface.c
 
 wtime.o: wtime.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c wtime.c
-
-zdotcsub.o: zdotcsub.f
-	$(F77) $(FFLAGS) $(DEFINES) -c zdotcsub.f
 
 #
 # Archive common object files in the target full library

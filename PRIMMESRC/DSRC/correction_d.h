@@ -30,13 +30,12 @@
 #ifndef CORRECTION_H
 #define CORRECTION_H
 
-
-int solve_correction_dprimme(double *V, double *W, double *evecs, 
-   double *evecsHat, double *UDU, int *ipivot, double *lockedEvals, 
-   int numLocked, int numConvergedStored, double *ritzVals, 
-   double *prevRitzVals, int *flags, int basisSize, double *blockNorms, 
-   int *iev, int blockSize, double eresTol, double machEps, 
-   double aNormEstimate, double *rwork, int *iwork, int rworkSize, 
-   primme_params *primme);
+int solve_correction_dprimme(double *V, double *W, double *evecs,
+   double *evecsHat, double *UDU, int *ipivot, double *lockedEvals,
+   int numLocked, int numConvergedStored, double *ritzVals,
+   double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+   double *blockNorms, int *iev, int blockSize, double eresTol,
+   double machEps, double aNormEstimate, double *rwork, int *iwork,
+   int rworkSize, primme_params *primme);
 
 #endif

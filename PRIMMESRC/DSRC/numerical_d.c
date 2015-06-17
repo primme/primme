@@ -47,7 +47,7 @@ void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k,
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
    DGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-	 c, &ldc);
+         c, &ldc);
 #else
    DGEMM(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
 #endif
@@ -123,7 +123,7 @@ void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy) {
 }
 
 /******************************************************************************/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux) {
@@ -133,11 +133,11 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
    ret = dspev(iopt, ap, w, z, ldz, n, aux, naux);
    return (ret);
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #else
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
 
@@ -156,7 +156,7 @@ void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda,
 #endif
 }
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 #endif
 

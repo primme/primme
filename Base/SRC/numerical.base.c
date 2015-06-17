@@ -56,11 +56,11 @@ void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k,
    transb_fcd = _cptofcd(transb, strlen(transb));
 #ifdefarithm L_DEFCPLX
    ZGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-	 c, &ldc);
+         c, &ldc);
 #endifarithm
 #ifdefarithm L_DEFREAL
    DGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-	 c, &ldc);
+         c, &ldc);
 #endifarithm
 #else
 #ifdefarithm L_DEFCPLX
@@ -143,9 +143,31 @@ void Num_gemv_@(pre)primme(char *transa, int m, int n, @(type) alpha, @(type) *a
 @(type) Num_dot_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
 
 #ifdefarithm L_DEFCPLX
-   Complex_Z zdotc_r;
-   ZDOTCSUB(&zdotc_r, &n, x, &incx, y, &incy);
-   return(zdotc_r);
+/* ---- Explicit implementation of the zdotc() --- */
+   int i;
+   Complex_Z zdotc = {+0.0e+00,+0.0e00};
+   if (n <= 0) return(zdotc);
+   if (incx==1 && incy==1) {
+      for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+        zdotc.r += x[i].r*y[i].r + x[i].i*y[i].i;
+        zdotc.i += x[i].r*y[i].i - x[i].i*y[i].r;
+      }
+   }
+   else {
+      int ix,iy;
+      ix = 0;
+      iy = 0;
+      if(incx <= 0) ix = (-n+1)*incx;
+      if(incy <= 0) iy = (-n+1)*incy;
+      for (i=0;i<n;i++) {
+        zdotc.r += x[ix].r*y[iy].r + x[ix].i*y[iy].i;
+        zdotc.i += x[ix].r*y[iy].i - x[ix].i*y[iy].r;
+        ix += incx;
+        iy += incy;
+      }
+   }
+   return(zdotc);
+/* -- end of explicit implementation of the zdotc() - */
 #endifarithm
 #ifdefarithm L_DEFREAL
    return(DDOT(&n, x, &incx, y, &incy));
@@ -189,7 +211,7 @@ void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
 }
 
 /******************************************************************************/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
 #ifdefarithm L_DEFREAL
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
@@ -201,7 +223,7 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
    return (ret);
 }
 #endifarithm
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFCPLX
 int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    int n, Complex_Z *aux, int naux) {
@@ -212,10 +234,10 @@ int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    return (ret);
 }
 #endifarithm
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #else
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFREAL
 void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
@@ -236,7 +258,7 @@ void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda,
 }
 #endifarithm
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFCPLX
 void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
@@ -284,13 +306,13 @@ void Num_zhetrf_zprimme(char *uplo, int n, @(type) *a, int lda, int *ipivot,
    @(type) *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
-	_fcd uplo_fcd;
+        _fcd uplo_fcd;
 
-	uplo_fcd = _cptofcd(uplo, strlen(uplo));
-	ZHETRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
+        uplo_fcd = _cptofcd(uplo, strlen(uplo));
+        ZHETRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
 #else
 
-	ZHETRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
+        ZHETRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
 
 #endif
 
@@ -321,13 +343,13 @@ void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, @(type) *a, int lda,
    int *ipivot, @(type) *b, int ldb, int *info) {
 
 #ifdef NUM_CRAY
-	_fcd uplo_fcd;
+        _fcd uplo_fcd;
 
-	uplo_fcd = _cptofcd(uplo, strlen(uplo));
-	ZHETRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+        uplo_fcd = _cptofcd(uplo, strlen(uplo));
+        ZHETRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
 #else
 
-	ZHETRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+        ZHETRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
 #endif
 
 }

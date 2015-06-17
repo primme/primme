@@ -43,8 +43,8 @@
 !       Pointer to the PRIMME data structure used internally by PRIMME
 !
 !       Note that for 64 bit systems, pointers are 8 bytes so use:
-        ! integer*8 primme
-        integer primme
+        integer*8 primme
+        !integer primme
         include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Problem setup, parameters, filenames etc.
@@ -62,7 +62,7 @@
         real*8 ilutTOL
         integer PrecChoice
         parameter (
-     :            PrecChoice      = 0,
+     :            PrecChoice      = 1,
      :            ilutFILL        = 2,
      :            ilutTOL         = 0.01,
      :            shift           = 0.0
@@ -122,8 +122,7 @@
 
 !       External subroutines
         external MV, Apply_Inv_Diag_Prec, Apply_Diag_Shifted_Prec,
-     :  Apply_ILUT_Prec, lnblnk
-        integer lnblnk
+     :  Apply_ILUT_Prec 
 
 
 !-----------------------------------------------------------------------
@@ -138,9 +137,9 @@
         ! Read any initial comments from an MTX format
  10     read(infile, '(A)', END=996) title
         if (title(1:1) .eq. '%') goto 10
-        i = lnblnk(title)
+        i = len_trim(title)
         print*, i
-        read (title(1:i), *), n
+        read (title(1:i), *) n
         print*, title(1:i), '    ',n
 
         ia(1) = 1
@@ -319,23 +318,23 @@
         subroutine MV(x,y,k,primme)
 !       ----------------------------------------------------------------
         real*8 x(*), y(*)
-        integer k, primme
+        integer*8 primme
+        integer k
         parameter(Nmax = 147, NZmax = 2449)
         integer n, ja(NZmax),ia(Nmax+1),iau(Nmax+1)
         real*8   a(NZmax)
         common /Matrix/ a,ja,ia,iau,n
         external amux
-
         do i=1,k
            call amux(n, x(n*(i-1)+1), y(n*(i-1)+1), A, JA, IA)
         enddo
         end
-
 !       ----------------------------------------------------------------
         subroutine Apply_Inv_Diag_Prec(x,y,k,primme)
 !       ----------------------------------------------------------------
         real*8 x(*), y(*) 
-        integer k, primme
+        integer k
+        integer*8 primme
         integer Nmax,NZmax
         parameter(Nmax = 147, NZmax = 2449)
         integer lenFactmax

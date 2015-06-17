@@ -42,7 +42,7 @@
 
 /*******************************************************************************
  * Subroutine: restart - This routine replaces V with V*c, some subset
- * 	       of the Ritz vectors, corresponding to the restartSize chosen
+ *             of the Ritz vectors, corresponding to the restartSize chosen
  *             eigenvalues of V'*A*V. It may include components from the 
  *             Ritz vectors from the (maxBasisSize-1) step (i.e., recurrence
  *             restarting).
@@ -60,7 +60,7 @@
  *
  * numLocked        The number of Ritz vectors that have been locked 
  *
- * numGuesses  	    Number of remaining initial guesses
+ * numGuesses       Number of remaining initial guesses
  *
  * previousHVecs    Coefficient vectors retained from the previous iteration
  *
@@ -69,9 +69,9 @@
  * rwork            Real work array
  *
  * rworkSize        Must be of size 
- * 		    (primme->restartingParams.maxPrevRetain)^2 + 
- * 		    MAX(
- * 		    primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
+ *                  (primme->restartingParams.maxPrevRetain)^2 + 
+ *                  MAX(
+ *                  primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
  *                  3*primme->maxPrevRetain, primme->maxBasisSize^2)
  *                  
  * primme           Structure containing various solver parameters
@@ -80,30 +80,30 @@
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
  * V                The orthonormal basis. After restart, contains Ritz vectors
- * 		    plus the orthogonal components from numPrevRetained Ritz 
- * 		    vectors from the penultimate step.
+ *                  plus the orthogonal components from numPrevRetained Ritz 
+ *                  vectors from the penultimate step.
  *
- * W     	    A*V
+ * W                A*V
  *
- * H     	    The projection V'*A*V
+ * H                The projection V'*A*V
  *
- * hVecs 	    The eigenvectors of H
+ * hVecs            The eigenvectors of H
  *
- * hVals 	    The eigenvalues of H
+ * hVals            The eigenvalues of H
  *
- * flags 	    Array indicating the convergence of the Ritz vectors
+ * flags            Array indicating the convergence of the Ritz vectors
  *
- * evecs 	    The converged Ritz vectors. Without locking, all converged
- * 	 	    eigenvectors are copied from V to evecs if skew projections
- * 	 	    are required.
+ * evecs            The converged Ritz vectors. Without locking, all converged
+ *                  eigenvectors are copied from V to evecs if skew projections
+ *                  are required.
  *
- * evecsHat  	    K^{-1}evecs
+ * evecsHat         K^{-1}evecs
  *
- * M     	    evecs'*evecsHat
+ * M                evecs'*evecsHat
  *
- * UDU   	    The factorization of M
+ * UDU              The factorization of M
  *
- * ipivot 	    The pivot array of the UDU factorization
+ * ipivot           The pivot array of the UDU factorization
  *
  * numConvergedStored The # of converged vectors copied to evecs w/o locking
  *
@@ -130,7 +130,7 @@ int restart_dprimme(double *V, double *W, double *H, double *hVecs,
    int restartSize;         /* The number of vectors to restart with          */
    int indexOfPreviousVecs; /* Position within hVecs array the previous       */
                             /* coefficient vectors will be stored             */
-   int i, n, eStart; 	    /* various variables			      */
+   int i, n, eStart;        /* various variables                              */
    int ret;                 /* Return value                                   */
 
    numPacked = 0;
@@ -146,7 +146,7 @@ int restart_dprimme(double *V, double *W, double *H, double *hVecs,
    if (primme->restartingParams.scheme == primme_dtr) {
       numFree = numPrevRetained+max(3, primme->maxBlockSize);
       restartSize = dtr(numLocked, hVecs, hVals, flags, basisSize, numFree, 
-		        iev, rwork, primme);
+                        iev, rwork, primme);
    }
    else {
       restartSize = min(basisSize, primme->minRestartSize);
@@ -218,12 +218,12 @@ int restart_dprimme(double *V, double *W, double *H, double *hVecs,
    /* We recommend against this type of usage. It's better to use locking.  */
    /* --------------------------------------------------------------------- */
 
-   // Andreas NOTE: is done inefficiently for the moment. We should only 
-   // add the recently converged. But we need to differentiate them
-   // from flags... 
+   /* Andreas NOTE: is done inefficiently for the moment. We should only */
+   /* add the recently converged. But we need to differentiate them      */
+   /* from flags...                                                      */
 
    if (!primme->locking && primme->correctionParams.maxInnerIterations != 0 && 
-	numConverged > 0 &&
+        numConverged > 0 &&
         (primme->correctionParams.projectors.LeftQ ||
          primme->correctionParams.projectors.RightQ )  ) {
 
@@ -232,43 +232,41 @@ int restart_dprimme(double *V, double *W, double *H, double *hVecs,
        eStart = primme->numOrthoConst;
 
        for (i=0;i<primme->numEvals;i++) {
-	   if (flags[i] == CONVERGED) {
-	      if (*numConvergedStored < numConverged) {
-      	         Num_dcopy_dprimme(n, &V[i*n], 1, 
-		              &evecs[(eStart+*numConvergedStored)*n], 1);
+           if (flags[i] == CONVERGED) {
+              if (*numConvergedStored < numConverged) {
+                 Num_dcopy_dprimme(n, &V[i*n], 1, 
+                              &evecs[(eStart+*numConvergedStored)*n], 1);
                  (*numConvergedStored)++;
-	      }
-	   } // if converged
-       } //for
+              }
+           } /* if converged */
+       } /* for */
        if (*numConvergedStored != numConverged) {
-	  if (primme->printLevel >= 1 && primme->procID == 0) {
-	     fprintf(primme->outputFile, 
-	     "Flags and converged eigenpairs do not correspond %d %d\n",
-	  	numConverged, *numConvergedStored);
-	  }
-	  return PSEUDOLOCK_FAILURE;
+          if (primme->printLevel >= 1 && primme->procID == 0) {
+             fprintf(primme->outputFile, 
+             "Flags and converged eigenpairs do not correspond %d %d\n",
+                numConverged, *numConvergedStored);
+          }
+          return PSEUDOLOCK_FAILURE;
        }
 
-      // Update also the M = K^{-1}evecs and its udu factorization if needed
+      /* Update also the M = K^{-1}evecs and its udu factorization if needed */
       if (UDU != NULL) {
 
          apply_preconditioner_block(&evecs[eStart*n], &evecsHat[eStart*n], 
-			            numConverged, primme );
-	 // Andreas: POTENTIAL MEMORY PROBLEM... 
-	 // rwork must be maxEvecsSize*numEvals!
-	 // make sure we have enough
-	 update_projection_dprimme(evecs, evecsHat, M, eStart*n,
+                                    numConverged, primme );
+         /* rwork must be maxEvecsSize*numEvals! */
+         update_projection_dprimme(evecs, evecsHat, M, eStart*n,
            primme->numOrthoConst+primme->numEvals, numConverged, rwork, primme);
 
          ret = UDUDecompose_dprimme(M, UDU, ipivot, eStart+numConverged, 
-			 rwork, rworkSize, primme);
+                         rwork, rworkSize, primme);
          if (ret != 0) {
             primme_PushErrorMessage(Primme_lock_vectors,Primme_ududecompose,ret,
                __FILE__, __LINE__, primme);
             return UDUDECOMPOSE_FAILURE;
          }
-      } // if UDU factorization is needed
-   } // if this pseudo locking should take place
+      } /* if UDU factorization is needed */
+   } /* if this pseudo locking should take place */
 
    return restartSize;
 }
@@ -289,9 +287,9 @@ int restart_dprimme(double *V, double *W, double *H, double *hVecs,
  * rwork        Work array that must be at least of size restartSize
  *
  * rworkSize    The size availble in rwork. Matrix multiply blocks of X with 
- * 		hVecs, producing blocks of the new X of size
- * 		(AvailRows * restartSize) = rworkSize
- * 		Therefore rworkSize must be at least restartSize.
+ *              hVecs, producing blocks of the new X of size
+ *              (AvailRows * restartSize) = rworkSize
+ *              Therefore rworkSize must be at least restartSize.
  *
  * INPUT/OUTPUT ARRAYS
  * -------------------
@@ -529,7 +527,7 @@ static int dtr(int numLocked, double *hVecs, double *hVals, int *flags,
 
       for (l = 0; l < basisSize; l++) {
          if (  (flags[l] == CONVERGED || flags[l] == PRACTICALLY_CONVERGED) 
-	     && (numLocked + l < primme->numEvals)) {
+             && (numLocked + l < primme->numEvals)) {
             lMin = l;
          }
       }
@@ -620,7 +618,9 @@ static int dtr(int numLocked, double *hVecs, double *hVals, int *flags,
  *    The routine is ONLY called if locking is used.
  *
  *    Note: to guarantee restartSize vectors will be in the basis after lacking
- *    and restart have occurred, we should restart with  restartSize+numFlagged
+ *    and restart have occurred, we should restart with 
+ *    restartSize+numFlagged-anyInitialGuessesStillAvailable. 
+ *    All converged vectors are retained beyond that.
  *
  *    Note: if too many vectors have converged, and adding numPrevRetained
  *    ones may increase the basisSize, then we simply do not add any previous
@@ -682,7 +682,7 @@ static int pack_converged_coefficients(int *restartSize, int basisSize,
          numFlagged++;
       }
       else if (flag[i] == PRACTICALLY_CONVERGED && 
-		                  (numLocked + i < primme->numEvals)) {
+                                  (numLocked + i < primme->numEvals)) {
          flag[i] = UNCONDITIONAL_LOCK_IT;
          numFlagged++;
       }
@@ -691,13 +691,13 @@ static int pack_converged_coefficients(int *restartSize, int basisSize,
    /* ----------------------------------------------------------- */
    /* Special case: If (basisSize+numLocked) is the entire space, */
    /* then everything should be converged. Do not test, just flag */
-   /* everything as converged to be locked.			  */
+   /* everything as converged to be locked.                       */
    /* ----------------------------------------------------------- */
 
    if (basisSize + numLocked + primme->numOrthoConst == primme->n) {
       for (numFlagged = 0; 
            numFlagged < min(primme->numEvals-numLocked, basisSize); 
-	   numFlagged++) {
+           numFlagged++) {
       flag[numFlagged] = LOCK_IT;
       }
    }
@@ -736,7 +736,7 @@ static int pack_converged_coefficients(int *restartSize, int basisSize,
       /* Find a vector that is not to be locked */
  
       while (right >= 0 && (flag[right] == LOCK_IT || 
-			    flag[right] == UNCONDITIONAL_LOCK_IT) ) {
+                            flag[right] == UNCONDITIONAL_LOCK_IT) ) {
          right--;
       }
 
@@ -745,7 +745,7 @@ static int pack_converged_coefficients(int *restartSize, int basisSize,
       /* Find a vector that is to be locked */
 
       while (left >= 0 && flag[left] != LOCK_IT && 
-		          flag[left] != UNCONDITIONAL_LOCK_IT) { 
+                          flag[left] != UNCONDITIONAL_LOCK_IT) { 
          left--;
       }
 
@@ -858,8 +858,8 @@ static int combine_retained_vectors(double *hVals, int *flags, double *hVecs,
          &hVecs[basisSize*(*restartSize-numPacked+*numPrevRetained)], -1);
       */
       for (i=1;i<=numPacked;i++) Num_dcopy_dprimme(basisSize,
-		     &hVecs[basisSize*(*restartSize-i)],1,
-	             &hVecs[basisSize*(*restartSize+*numPrevRetained-i)],1);
+                     &hVecs[basisSize*(*restartSize-i)],1,
+                     &hVecs[basisSize*(*restartSize+*numPrevRetained-i)],1);
 
       /* Move the Ritz values and flag values forward as well */
 
@@ -998,7 +998,7 @@ static int insert_submatrix(double *H, double *hVals, double *hVecs,
       for (i = indexOfPreviousVecs; i <= j; i++) {
          H[primme->maxBasisSize*j+i] = 
          subMatrix[numPrevRetained*(j-indexOfPreviousVecs)
-		              +(i-indexOfPreviousVecs)];
+                              +(i-indexOfPreviousVecs)];
       }
    }
 
@@ -1023,7 +1023,7 @@ static int insert_submatrix(double *H, double *hVals, double *hVecs,
 
    for (j = indexOfPreviousVecs; j < indexOfPreviousVecs+numPrevRetained; j++) {
       for (i = indexOfPreviousVecs; 
-	   i < indexOfPreviousVecs + numPrevRetained; i++) 
+           i < indexOfPreviousVecs + numPrevRetained; i++) 
       {
          hVecs[restartSize*j+i] = 
          subMatrix[numPrevRetained*(j-indexOfPreviousVecs)+
@@ -1084,8 +1084,8 @@ void reset_flags_dprimme(int *flag, int first, int last) {
  ******************************************************************************/
 
 static void apply_preconditioner_block(double *v, double *result, 
-		int blockSize, primme_params *primme) {
-	 
+                int blockSize, primme_params *primme) {
+         
    if (primme->correctionParams.precondition) {
 
       (*primme->applyPreconditioner)(v, result, &blockSize, primme);

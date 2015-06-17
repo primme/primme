@@ -130,23 +130,23 @@ typedef struct restarting_params {
 } restarting_params;
    
 
-//-----------------------------------------------------------------------------
+/*--------------------------------------------------------------------------*/
 typedef struct primme_params {
 
-   // The user must input at least the following two arguments 
+   /* The user must input at least the following two arguments */
    int n;
    void (*matrixMatvec)
       ( void *x,  void *y, int *blockSize, struct primme_params *primme);
 
-   // Preconditioner applied on block of vectors (if available) 
+   /* Preconditioner applied on block of vectors (if available) */
    void (*applyPreconditioner)
       ( void *x,  void *y, int *blockSize, struct primme_params *primme);
 
-   // Matrix times a multivector for mass matrix B for generalized Ax = xBl
+   /* Matrix times a multivector for mass matrix B for generalized Ax = xBl */
    void (*massMatrixMatvec)
       ( void *x,  void *y, int *blockSize, struct primme_params *primme);
 
-   // input for the following is only required for parallel programs 
+   /* input for the following is only required for parallel programs */
    int numProcs;
    int procID;
    int nLocal;
@@ -154,11 +154,11 @@ typedef struct primme_params {
    void (*globalSumDouble)
       (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme );
 
-   // Though primme_initialize will assign defaults, most users will set these
+   /*Though primme_initialize will assign defaults, most users will set these */
    int numEvals;          
    primme_target target; 
-   int numTargetShifts;              // For targeting interior epairs,
-   double *targetShifts;             // at least one shift must also be set
+   int numTargetShifts;              /* For targeting interior epairs,      */
+   double *targetShifts;             /* at least one shift must also be set */
 
    /* the following will be given default values depending on the method */
    int dynamicMethodSwitch;
@@ -191,7 +191,7 @@ typedef struct primme_params {
    struct stackTraceNode *stackTrace;
    
 } primme_params;
-//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
 
 typedef enum {
    DYNAMIC,
@@ -224,7 +224,7 @@ void *primme_valloc(size_t byteSize, const char *target);
 void *primme_calloc(size_t nelem, size_t elsize, const char *target);
 void primme_Free(primme_params *primme);
 void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
-					           primme_params *params);
+                                                   primme_params *params);
 void primme_PushErrorMessage(const primme_function callingFunction, 
      const primme_function failedFunction, const int errorCode, 
      const char *fileName, const int lineNumber, primme_params *primme);

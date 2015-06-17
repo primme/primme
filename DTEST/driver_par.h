@@ -1,7 +1,7 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include <ParaSails.h>
+#include "ParaSails.h"
 #include "shared_utils.h"
 #include "primme.h"
 
@@ -14,7 +14,7 @@ typedef struct {
 FILE *output;
 
 void broadCast(primme_params *primme, primme_preset_method *method, 
-   MPI_Comm comm);
+   int procID, MPI_Comm comm);
 ParaSails* generate_precond(CSRMatrix *matrix, double shift, int n, int procID,
    int *map, int *fg2or, int *or2fg, int rangeStart, int rangeEnd, int isymm, 
    int level, double threshold, double filter, MPI_Comm comm);

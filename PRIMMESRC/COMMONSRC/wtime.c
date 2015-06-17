@@ -22,7 +22,7 @@
 #include "sys/resource.h"
 #ifdef RUSAGE_SELF
 #else
-#define   RUSAGE_SELF     0      //needed in osx
+#define   RUSAGE_SELF     0      /*needed in osx*/
 #endif
 
 double primme_wTimer(int zeroTimer) {
@@ -38,7 +38,7 @@ double primme_wTimer(int zeroTimer) {
    else {
       gettimeofday(&tv, &tz); 
       return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6
-	   - StartingTime;
+           - StartingTime;
    }
 }
 
@@ -60,7 +60,7 @@ double primme_wTimer(int zeroTimer) {
    else {
       clock_gettime(CLOCK_REALTIME, &ts);
       return ((double) ts.tv_sec) + ((double) ts.tv_nsec ) / (double) 1E9;
-	   - StartingTime;
+           - StartingTime;
    }
 }
 */
@@ -78,6 +78,7 @@ double primme_get_wtime() {
    return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6;
 }
 
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 /* Return user/system times */
 double primme_get_time(double *utime, double *stime) {
    struct rusage usage;
@@ -92,3 +93,4 @@ double primme_get_time(double *utime, double *stime) {
 
    return *utime + *stime;
 }
+#endif

@@ -5,7 +5,7 @@ include ../../Make_flags
 
 # Include the primme.h and common_numerical.h header files
 #
-INCLUDE += -I../COMMONSRC
+INCLUDE = -I../COMMONSRC
 
 .PHONY: clean lib libd
 

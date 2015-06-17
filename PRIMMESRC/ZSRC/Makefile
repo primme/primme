@@ -5,7 +5,7 @@ include ../../Make_flags
 
 # Include the primme.h and common_numerical.h header files
 #
-INCLUDE +=  -I../COMMONSRC/
+INCLUDE =  -I../COMMONSRC/
 
 .PHONY: clean lib libz
 
@@ -16,10 +16,6 @@ CSOURCE = convergence_z.c correction_z.c primme_z.c init_z.c \
 COBJS = convergence_z.o correction_z.o primme_z.o init_z.o \
         inner_solve_z.o main_iter_z.o factorize_z.o numerical_z.o ortho_z.o \
 	restart_z.o locking_z.o solve_H_z.o update_projection_z.o update_W_z.o 
-
-FOBJS = zdotcsub.o 
-
-FSOURCE = zdotcsub.f
 
 convergence_z.o: convergence_z.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c convergence_z.c
@@ -62,9 +58,6 @@ update_projection_z.o: update_projection_z.c
 
 update_W_z.o: update_W_z.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c update_W_z.c
-
-zdotcsub.o: zdotcsub.f
-	$(F77) $(FFLAGS) $(DEFINES) -c zdotcsub.f
 
 #
 # Archive complex precision object files in full library

@@ -42,12 +42,12 @@
  *
  *   Some papers to be listed here. For the moment contact the author:
  *
- * 			 andreas@cs.wm.edu
+ *                       andreas@cs.wm.edu
  *
  **********************************************************************/
 
-#include <stdlib.h>   // mallocs, free
-#include <unistd.h>   // gethostname
+#include <stdlib.h>   /* mallocs, free */
+#include <unistd.h>   /* gethostname */
 #include <stdio.h>    
 #include "primme.h"
 #include "const.h"
@@ -66,8 +66,8 @@
  *
  *    Calling dprimme with all evals, evecs, resNorms set to NULL
  *    returns the int and real memory required in the following primme fields:
- *	      int primme->intWorkSize : bytes of int workspace needed
- *	 long int primme->realWorkSize: bytes of real workspace needed
+ *            int primme->intWorkSize : bytes of int workspace needed
+ *       long int primme->realWorkSize: bytes of real workspace needed
  * 
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
@@ -81,7 +81,7 @@
  *           size primme->numEvals
  *  
  * primme  Structure containing various solver parameters and statistics
- * 	   See readme.txt for INPUT/OUTPUT variables in primme
+ *         See readme.txt for INPUT/OUTPUT variables in primme
  *
  * Return Value
  * ------------
@@ -91,7 +91,7 @@
  * -2 - Malloc failure in allocating a permutation integer array
  * -3 - main_iter encountered a problem
  * -4 ...-32 - Invalid input (parameters or primme struct) returned 
- *  	       by check_input()
+ *             by check_input()
  *
  ******************************************************************************/
  
@@ -137,7 +137,7 @@ int dprimme(double *evals, double *evecs, double *resNorms,
    }
    else {
       if (primme->locking == 0) {
-	 /* use locking when not enough vectors to restart with */
+         /* use locking when not enough vectors to restart with */
          primme->locking = (primme->numEvals > primme->minRestartSize);   
       }
    }
@@ -148,15 +148,19 @@ int dprimme(double *evals, double *evecs, double *resNorms,
    if (evals == NULL && evecs == NULL && resNorms == NULL)
        return allocate_workspace(primme, FALSE);
 
-   /* ----------------------------- */
-   /* Initialize random number seed */
-   /* ----------------------------- */
-   if (primme->iseed[0] == -1) {
-      primme->iseed[0] = 1 ;//% (primme->procID+1);
-      primme->iseed[1] = 2 ;//% (primme->procID+2);
-      primme->iseed[2] = 3 ;//% (primme->procID+3);
-      primme->iseed[3] = 5;
-   }
+   /* ----------------------------------------------------- */
+   /* Reset random number seed if inappropriate for DLARENV */
+   /* Yields unique quadruples per proc if procID < 4096^3  */
+   /* ----------------------------------------------------- */
+
+   if (primme->iseed[0]<0 || primme->iseed[0]>4095) primme->iseed[0] = 
+      primme->procID % 4096;
+   if (primme->iseed[1]<0 || primme->iseed[1]>4095) primme->iseed[1] = 
+      (int)(primme->procID/4096+1) % 4096;
+   if (primme->iseed[2]<0 || primme->iseed[2]>4095) primme->iseed[2] = 
+      (int)((primme->procID/4096)/4096+2) % 4096;
+   if (primme->iseed[3]<0 || primme->iseed[3]>4095) primme->iseed[3] = 
+      (2*(int)(((primme->procID/4096)/4096)/4096)+1) % 4096;
 
    /* ------------------------------------------------------- */
    /* Check primme input data for bounds, correct values etc. */
@@ -166,7 +170,7 @@ int dprimme(double *evals, double *evecs, double *resNorms,
 
    if (ret != 0) {
       primme_PushErrorMessage(Primme_dprimme, Primme_check_input, ret,
-		      __FILE__, __LINE__, primme);
+                      __FILE__, __LINE__, primme);
       primme->stats.elapsedTime = primme_wTimer(0);
       return ret;
    }
@@ -179,7 +183,7 @@ int dprimme(double *evals, double *evecs, double *resNorms,
 
    if (ret != 0) {
       primme_PushErrorMessage(Primme_dprimme, Primme_allocate_workspace, ret,
-		      __FILE__, __LINE__, primme);
+                      __FILE__, __LINE__, primme);
       primme->stats.elapsedTime = primme_wTimer(0);
       return ALLOCATE_WORKSPACE_FAILURE;
    }
@@ -191,7 +195,7 @@ int dprimme(double *evals, double *evecs, double *resNorms,
 
    if (perm == NULL) {
       primme_PushErrorMessage(Primme_dprimme, Primme_malloc, 0, 
-		      __FILE__, __LINE__, primme);
+                      __FILE__, __LINE__, primme);
       primme->stats.elapsedTime = primme_wTimer(0);
       return MALLOC_FAILURE;
    }
@@ -201,11 +205,11 @@ int dprimme(double *evals, double *evecs, double *resNorms,
    /*----------------------------------------------------------------------*/
 
    ret = main_iter_dprimme(evals, perm, evecs, resNorms, machEps, 
-		   primme->intWork, primme->realWork, primme);
+                   primme->intWork, primme->realWork, primme);
 
    if (ret < 0) {
       primme_PushErrorMessage(Primme_dprimme, Primme_main_iter, 
-		      ret, __FILE__, __LINE__, primme);
+                      ret, __FILE__, __LINE__, primme);
       primme->stats.elapsedTime = primme_wTimer(0);
       return MAIN_ITER_FAILURE;
    }
@@ -233,10 +237,10 @@ int dprimme(double *evals, double *evecs, double *resNorms,
  *
  * Input: 
  *   allocate  If false, no allocation occurs, but the amounts of int and real 
- *   			 workspaces in BYTES are returned in the primme fields 
- *   		         primme.intWorkSize, and primme.realWorkSize 
- *	       If  true, and if the user-provided space is not sufficient,
- *	       		 allocation is also performed.
+ *                       workspaces in BYTES are returned in the primme fields 
+ *                       primme.intWorkSize, and primme.realWorkSize 
+ *             If  true, and if the user-provided space is not sufficient,
+ *                       allocation is also performed.
  *
  * Output
  *  primme.intWorkSize   Size of integer space allocated in bytes
@@ -248,7 +252,7 @@ int dprimme(double *evals, double *evecs, double *resNorms,
  * Return value
  * ------------
  * int -  0 if (allocate == true) and the given workspaces are large enough or
- * 	       have been allocated successfully
+ *             have been allocated successfully
  *       -1 if (allocate == true) and memory allocation has failed
  *        1 if (allocate==false) 
  *
@@ -262,7 +266,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    int dataSize;     /* Number of double positions allocated, excluding */
                      /* doubles (see doubleSize below) and work space.  */
    int doubleSize;   /* Number of doubles allocated exclusively to the  */
-   		     /* double arrays: hVals, prevRitzVals, blockNorms  */
+                     /* double arrays: hVals, prevRitzVals, blockNorms  */
    int maxEvecsSize; /* Maximum number of vectors in evecs and evecsHat */
    int intWorkSize;  /* Size of integer work space in bytes             */
    int orthoSize;    /* Amount of work space required by ortho routine  */
@@ -281,7 +285,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       + primme->maxBasisSize*primme->maxBasisSize  /* Size of H            */
       + primme->maxBasisSize*primme->maxBasisSize  /* Size of hVecs        */
       + primme->restartingParams.maxPrevRetain*primme->maxBasisSize;
-					           /* size of prevHVecs    */
+                                                   /* size of prevHVecs    */
 
    /*----------------------------------------------------------------------*/
    /* Add also memory needed for JD skew projectors                        */
@@ -304,12 +308,12 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    if (primme->locking) {
       orthoSize = ortho_dprimme(NULL, primme->nLocal, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
-	 maxEvecsSize, primme->nLocal, NULL, 0.0, NULL, 0, primme);
+         maxEvecsSize, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
    else {
       orthoSize = ortho_dprimme(NULL, primme->nLocal, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
-	 primme->numOrthoConst+1, primme->nLocal, NULL, 0.0, NULL, 0, primme);
+         primme->numOrthoConst+1, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
 
    /*----------------------------------------------------------------------*/
@@ -317,9 +321,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
 
    solveCorSize = solve_correction_dprimme(NULL, NULL, NULL, NULL, NULL, 
-		  NULL, NULL, maxEvecsSize, 0, NULL, NULL, NULL, 
-		  primme->maxBasisSize, NULL, NULL, primme->maxBlockSize, 
-		  1.0, 0.0, 1.0, NULL, NULL, 0, primme);
+                  NULL, NULL, maxEvecsSize, 0, NULL, NULL, NULL, NULL, 
+                  primme->maxBasisSize, NULL, NULL, primme->maxBlockSize, 
+                  1.0, 0.0, 1.0, NULL, NULL, 0, primme);
 
    /*----------------------------------------------------------------------*/
    /* Workspace is reused in many functions. Allocate the max needed by any*/
@@ -349,9 +353,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       primme->restartingParams.maxPrevRetain*
       primme->restartingParams.maxPrevRetain  /* for submatrix of prev hvecs */
       + Num_imax_primme(4, primme->maxBasisSize, 
-	   3*primme->restartingParams.maxPrevRetain,
-	   primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
-	   primme->maxBasisSize*primme->maxBasisSize,     /* for DTR copying */
+           3*primme->restartingParams.maxPrevRetain,
+           primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
+           primme->maxBasisSize*primme->maxBasisSize,     /* for DTR copying */
            maxEvecsSize*primme->numEvals), /*this one is for UDU w/o locking */
 
       /* Workspace needed by function verify_norms */
@@ -359,7 +363,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
       /* space needed by lock vectors (no need w/o lock but doesn't add any) */
       (2*primme->maxBasisSize) + Num_imax_primme(3, 
-	  maxEvecsSize*primme->maxBasisSize, orthoSize, 3*primme->maxBasisSize),
+          maxEvecsSize*primme->maxBasisSize, orthoSize, 3*primme->maxBasisSize),
 
       /* maximum workspace needed by ortho */ 
       orthoSize);
@@ -382,11 +386,11 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       + 2*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
 
    /*----------------------------------------------------------------------*/
-   /* byte sizes: 							   */
+   /* byte sizes:                                                          */
    /*----------------------------------------------------------------------*/
    
    rworkByteSize = (dataSize + realWorkSize)*sizeof(double)
-	      	                + doubleSize*sizeof(double); 
+                                + doubleSize*sizeof(double); 
 
    /*----------------------------------------------------------------------*/
    /* If only the amount of required workspace is needed return it in bytes*/
@@ -408,7 +412,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       primme->realWorkSize = rworkByteSize;
       primme->realWork = (void *) primme_valloc(rworkByteSize,"Real Alloc");
       if (primme->printLevel >= 5) fprintf(primme->outputFile, 
-	 "Allocating real workspace: %ld bytes\n", primme->realWorkSize);
+         "Allocating real workspace: %ld bytes\n", primme->realWorkSize);
    }
 
    if (primme->intWorkSize < intWorkSize*sizeof(int) || primme->intWork==NULL) {
@@ -418,7 +422,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       primme->intWorkSize = intWorkSize*sizeof(int);
       primme->intWork= (int *)primme_valloc(primme->intWorkSize ,"Int Alloc");
       if (primme->printLevel >= 5) fprintf(primme->outputFile, 
-	 "Allocating integer workspace: %d bytes\n", primme->intWorkSize);
+         "Allocating integer workspace: %d bytes\n", primme->intWorkSize);
    }
 
    if (primme->intWork == NULL || primme->realWork == NULL) {
@@ -430,26 +434,26 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       
    return 0;
 
-  //**************************************************************************
-} // end of allocate workspace
-  //**************************************************************************
+  /***************************************************************************/
+} /* end of allocate workspace
+  ****************************************************************************/
 
 /******************************************************************************
  *
  * static int check_input(double *evals, double *evecs, double *resNorms, 
- * 			  primme_params *primme) 
+ *                        primme_params *primme) 
  *
  * INPUT
  * -----
  *  evals, evecs, resNorms   Output arrays for primme
- *  primme  		     the main structure of parameters 
+ *  primme                   the main structure of parameters 
  *
  * return value -   0    If input parameters in primme are appropriate
  *              -4..-32  Inappropriate input parameters were found
  *
  ******************************************************************************/
 static int check_input(double *evals, double *evecs, double *resNorms, 
-		       primme_params *primme) {
+                       primme_params *primme) {
    int ret;
    ret = 0;
 
@@ -482,10 +486,10 @@ static int check_input(double *evals, double *evecs, double *resNorms,
              primme->target == primme_closest_leq ||
              primme->target == primme_closest_abs   ) {
       if (primme->numTargetShifts <= 0) {
-	 ret = -14;
+         ret = -14;
       }
       else if (primme->targetShifts == NULL ) {
-	 ret = -15;
+         ret = -15;
       }
    }
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst >=primme->n)
@@ -508,7 +512,7 @@ static int check_input(double *evals, double *evecs, double *resNorms,
    else if (primme->locking && primme->initSize > primme->numEvals)
       ret = -24;
    else if (primme->minRestartSize + primme->restartingParams.maxPrevRetain 
-		   >= primme->maxBasisSize)
+                   >= primme->maxBasisSize)
       ret = -25;
    else if (primme->minRestartSize >= primme->n)
       ret = -26;
@@ -530,6 +534,6 @@ static int check_input(double *evals, double *evecs, double *resNorms,
       ret = -32;
 
    return ret;
-  //**************************************************************************
-} // end of check_input
-  //**************************************************************************
+  /***************************************************************************/
+} /* end of check_input
+   ***************************************************************************/

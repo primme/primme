@@ -113,9 +113,7 @@
         character*256 title
 
 !       External subroutines
-        external MV, Apply_Inv_Diag_Prec, Apply_Diag_Shifted_Prec,lnblnk
-!     :  Apply_ILUT_Prec
-        integer lnblnk
+        external MV, Apply_Inv_Diag_Prec, Apply_Diag_Shifted_Prec
 
 
 !-----------------------------------------------------------------------
@@ -130,9 +128,9 @@
         ! Read any initial comments from an MTX format
  10     read(infile, '(A)', END=996) title
         if (title(1:1) .eq. '%') goto 10
-        i = lnblnk(title)
+        i = len_trim(title)
         print*, i
-        read (title(1:i), *), n
+        read (title(1:i), *) n
         print*, title(1:i), '    ',n
 
         ia(1) = 1

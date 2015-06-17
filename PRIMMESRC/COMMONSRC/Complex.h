@@ -9,18 +9,18 @@
  */
 
 typedef struct { 
-	double r, i; 
+        double r, i; 
 } Complex_Z;
 
 /* Macro definitions */
 
 /* Complex Addition c = a + b */
 #define z_add_primme(c, a, b) { (c).r = (a).r + (b).r; \
-			 (c).i = (a).i + (b).i; }
+                         (c).i = (a).i + (b).i; }
 
 /* Complex Subtraction c = a - b */
 #define z_sub_primme(c, a, b) { (c).r = (a).r - (b).r; \
-			 (c).i = (a).i - (b).i; }
+                         (c).i = (a).i - (b).i; }
 
 /* Complex-Double Multiplication */
 #define zd_mult_primme(c, a, b) { (c).r = (a).r * (b); \
@@ -28,11 +28,20 @@ typedef struct {
 
 /* Complex-Complex Multiplication */
 #define zz_mult_primme(c, a, b) { \
-	double cr, ci; \
-    	cr = (a).r * (b).r - (a).i * (b).i; \
-    	ci = (a).i * (b).r + (a).r * (b).i; \
-    	(c).r = cr; \
-    	(c).i = ci; \
+        double cr, ci; \
+        cr = (a).r * (b).r - (a).i * (b).i; \
+        ci = (a).i * (b).r + (a).r * (b).i; \
+        (c).r = cr; \
+        (c).i = ci; \
+    }
+
+/* Complex conjugate-Complex Multiplication */
+#define zconjz_mult_primme(c, a, b) { \
+        double cr, ci; \
+        cr = (a).r * (b).r + (a).i * (b).i; \
+        ci = (a).r * (b).i - (a).i * (b).r; \
+        (c).r = cr; \
+        (c).i = ci; \
     }
 
 /* Complex equality testing */

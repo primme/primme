@@ -51,7 +51,7 @@ void update_W_dprimme(double *V, double *W, int basisSize, int blockSize,
    primme_params *primme) {
 
    (*primme->matrixMatvec)(&V[primme->nLocal*basisSize],
-         		 &W[primme->nLocal*basisSize], &blockSize, primme);
+                         &W[primme->nLocal*basisSize], &blockSize, primme);
 
    primme->stats.numMatvecs += blockSize;
 

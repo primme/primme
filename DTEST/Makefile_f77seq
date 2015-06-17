@@ -18,10 +18,10 @@ DRIVEROBJECTS = $(COBJS) $(FOBJS)
 .PHONY: clean veryclean
 
 seqf77_dprimme: $(FOBJS) $(TOP)/libprimme.a
-	$(LDR) -o seqf77_dprimme $(DRIVEROBJECTS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(FLDR) -o seqf77_dprimme $(DRIVEROBJECTS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 driver_f77seq.o: driver_f77seq.f
-	$(F77) $(HIGH_OPT) $(FFLAGS) $(INCLUDE) -c driver_f77seq.f
+	$(F77) -g $(FFLAGS) $(INCLUDE) -c driver_f77seq.f
 
 ilut.o: ilut.f
 	$(F77) $(HIGH_OPT) $(FFLAGS) -c ilut.f

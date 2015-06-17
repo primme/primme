@@ -23,9 +23,9 @@ locking_z.o: locking_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
   ../COMMONSRC/common_numerical.h
 main_iter_z.o: main_iter_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
   ../COMMONSRC/const.h ../COMMONSRC/wtime.h main_iter_z.h \
-  main_iter_private_z.h convergence_z.h correction_z.h init_z.h ortho_z.h \
-  restart_z.h locking_z.h solve_H_z.h update_projection_z.h update_W_z.h \
-  numerical_z.h ../COMMONSRC/common_numerical.h
+  main_iter_private_z.h convergence_z.h correction_z.h init_z.h \
+  ortho_z.h restart_z.h locking_z.h solve_H_z.h update_projection_z.h \
+  update_W_z.h numerical_z.h ../COMMONSRC/common_numerical.h
 numerical_z.o: numerical_z.c ../COMMONSRC/Complex.h numerical_private_z.h \
   numerical_z.h ../COMMONSRC/common_numerical.h
 ortho_z.o: ortho_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \

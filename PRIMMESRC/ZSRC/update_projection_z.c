@@ -87,7 +87,7 @@ void update_projection_zprimme(Complex_Z *X, Complex_Z *Y, Complex_Z *Z,
    for (j = numCols; j < numCols+blockSize; j++) {
       Num_gemv_zprimme("C", primme->nLocal, j-numCols+1, tpone,
          &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
-	 tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
+         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
    }
 
    count = 2*maxCols*blockSize;

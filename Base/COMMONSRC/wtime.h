@@ -19,4 +19,6 @@
  */
 double primme_wTimer(int zeroTimer);
 extern double primme_get_wtime();
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 void primme_get_time(double *, double *);
+#endif

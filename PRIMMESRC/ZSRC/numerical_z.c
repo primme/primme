@@ -48,7 +48,7 @@ void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k,
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
    ZGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-	 c, &ldc);
+         c, &ldc);
 #else
    ZGEMM(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
 #endif
@@ -99,9 +99,31 @@ void Num_gemv_zprimme(char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
 /******************************************************************************/
 Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
 
-   Complex_Z zdotc_r;
-   ZDOTCSUB(&zdotc_r, &n, x, &incx, y, &incy);
-   return(zdotc_r);
+/* ---- Explicit implementation of the zdotc() --- */
+   int i;
+   Complex_Z zdotc = {+0.0e+00,+0.0e00};
+   if (n <= 0) return(zdotc);
+   if (incx==1 && incy==1) {
+      for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+        zdotc.r += x[i].r*y[i].r + x[i].i*y[i].i;
+        zdotc.i += x[i].r*y[i].i - x[i].i*y[i].r;
+      }
+   }
+   else {
+      int ix,iy;
+      ix = 0;
+      iy = 0;
+      if(incx <= 0) ix = (-n+1)*incx;
+      if(incy <= 0) iy = (-n+1)*incy;
+      for (i=0;i<n;i++) {
+        zdotc.r += x[ix].r*y[iy].r + x[ix].i*y[iy].i;
+        zdotc.i += x[ix].r*y[iy].i - x[ix].i*y[iy].r;
+        ix += incx;
+        iy += incy;
+      }
+   }
+   return(zdotc);
+/* -- end of explicit implementation of the zdotc() - */
 
 }
 
@@ -126,9 +148,9 @@ void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
 }
 
 /******************************************************************************/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    int n, Complex_Z *aux, int naux) {
 
@@ -137,12 +159,12 @@ int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    ret = zhpev(iopt, ap, w, z, ldz, n, aux, naux);
    return (ret);
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #else
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
 
@@ -169,13 +191,13 @@ void Num_zhetrf_zprimme(char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
    Complex_Z *work, int ldwork, int *info) {
 
 #ifdef NUM_CRAY
-	_fcd uplo_fcd;
+        _fcd uplo_fcd;
 
-	uplo_fcd = _cptofcd(uplo, strlen(uplo));
-	ZHETRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
+        uplo_fcd = _cptofcd(uplo, strlen(uplo));
+        ZHETRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
 #else
 
-	ZHETRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
+        ZHETRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
 
 #endif
 
@@ -187,13 +209,13 @@ void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, Complex_Z *a, int lda,
    int *ipivot, Complex_Z *b, int ldb, int *info) {
 
 #ifdef NUM_CRAY
-	_fcd uplo_fcd;
+        _fcd uplo_fcd;
 
-	uplo_fcd = _cptofcd(uplo, strlen(uplo));
-	ZHETRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+        uplo_fcd = _cptofcd(uplo, strlen(uplo));
+        ZHETRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
 #else
 
-	ZHETRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+        ZHETRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
 #endif
 
 }

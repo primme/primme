@@ -47,20 +47,20 @@
  * evecs          The converged Ritz vectors.  Array is of dimension numLocked.
  *
  * evecsHat       K^{-1}evecs given a preconditioner K. 
- * 		  (accessed only if skew projector is requested)
+ *                (accessed only if skew projector is requested)
  *
  * UDU            The factorization of the matrix evecs'*evecsHat
  * ipivot         The pivots for the UDU factorization
- * 		  (UDU, ipivot accessed only if skew projector is requested)
+ *                (UDU, ipivot accessed only if skew projector is requested)
  *
  * lockedEvals    The locked eigenvalues
  *
  * numLocked      The number of locked eigenvalues (zero if not locking)
  *
  * numConvergedStored  Number of converged eigenvectors in V that have been
- * 		  copied in evecs when no locking is employed, to accommodate 
- * 		  for a requested skew projection with evecs. 
- * 		  
+ *                copied in evecs when no locking is employed, to accommodate 
+ *                for a requested skew projection with evecs. 
+ *                   
  * ritzVals       Array of size basisSize. The Ritz values corresponding to 
  *                the current basis V
  *
@@ -75,19 +75,19 @@
  *
  * eresTol        the eigenvalue residual tolerance
  *
- * machEps 	  machine precision 
+ * machEps        machine precision 
  *
  * aNormEstimate if primme->aNorm<=0, eresTol*aNormEstimate (=largestRitzValue)
  *
  * rwork          Real workspace of size          
- *     		  3*maxEvecsSize + 2*primme->maxBlockSize 
- *     		  + (primme->numEvals+primme->maxBasisSize)
- *     		  	  *----------------------------------------------------*
- *     			  | The following are optional and mutually exclusive: |
- *     		  	  *------------------------------+                     |
- *     		  + 4*primme->nLocal + primme->nLocal    | For QMR work and sol|
- *     		  + primme->nLocal*primme->maxBlockSize  | OLSEN for Kinvx     |
- *     		  			                 *---------------------*
+ *                3*maxEvecsSize + 2*primme->maxBlockSize 
+ *                + (primme->numEvals+primme->maxBasisSize)
+ *                        *----------------------------------------------------*
+ *                        | The following are optional and mutually exclusive: |
+ *                        *------------------------------+                     |
+ *                + 4*primme->nLocal + primme->nLocal    | For QMR work and sol|
+ *                + primme->nLocal*primme->maxBlockSize  | OLSEN for Kinvx     |
+ *                                                       *---------------------*
  *
  * rworkSize      the size of rwork. If less than needed, func returns needed.
  *
@@ -102,20 +102,22 @@
  *                contain the Ritz vectors
  *
  * blockNorms     On input, residual norms of the Ritz vectors computed 
- * 		  during the current outer iteration.
- * 		  On output, the approximate residual norms of the corrected
- * 		  Ritz vectors (through JDQMR only).
+ *                during the current outer iteration.
+ *                On output, the approximate residual norms of the corrected
+ *                Ritz vectors (through JDQMR only).
  *
  *
  * prevRitzVals   Array of size numPrevRitzVals.  The Ritz values from the
  *                previous iteration and converged Ritz values
  *
+ * numPrevRitzVals  The of size prevRitzVals updated every outer step
+ *
  *
  * Return Value
  * ------------
  * int  Error code: 0 upon success, nonzero otherwise
- * 		   -1 innner solver failure
- * 		   >0 the needed rworkSize, if the given was not enough
+ *                 -1 innner solver failure
+ *                 >0 the needed rworkSize, if the given was not enough
  *
  ******************************************************************************/
  
@@ -123,46 +125,45 @@
 int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs, 
    Complex_Z *evecsHat, Complex_Z *UDU, int *ipivot, double *lockedEvals, 
    int numLocked, int numConvergedStored, double *ritzVals, 
-   double *prevRitzVals, int *flags, int basisSize, double *blockNorms, 
-   int *iev, int blockSize, double eresTol, double machEps, 
-   double aNormEstimate, Complex_Z *rwork, int *iwork, int rworkSize, 
-   primme_params *primme) {
+   double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
+   double *blockNorms, int *iev, int blockSize, double eresTol, 
+   double machEps, double aNormEstimate, Complex_Z *rwork, int *iwork, 
+   int rworkSize, primme_params *primme) {
 
    int blockIndex;         /* Loop index.  Ranges from 0..blockSize-1.       */
    int ritzIndex;          /* Ritz value index blockIndex corresponds to.    */
                            /* Possible values range from 0..basisSize-1.     */
    int sortedIndex;        /* Ritz value index in sortedRitzVals, blockIndex */
-   			   /* corresponds to. Range 0..numLocked+basisSize-1 */
+                           /* corresponds to. Range 0..numLocked+basisSize-1 */
    int neededRsize;        /* Needed size for rwork. If not enough return    */
    int linSolverRWorkSize; /* Size of the linSolverRWork array.              */
    int *ilev;              /* Array of size blockSize.  Maps the target Ritz */
                            /* values to their positions in the sortedEvals   */
                            /* array.                                         */
    int sizeLprojector;     /* Sizes of the various left/right projectors     */
-   int sizeRprojectorQ;	   /* These will be 0/1/or numOrthConstr+numLocked   */
+   int sizeRprojectorQ;    /* These will be 0/1/or numOrthConstr+numLocked   */
    int sizeRprojectorX;    /* or numOrthConstr+numConvergedStored w/o locking*/
 
-   static int numPrevRitzVals = 0; /* Size of prevRitzVals                   */
    int ret;                /* Return code.                                   */
    Complex_Z *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
    Complex_Z *linSolverRWork;/* Workspace needed by linear solver.            */
    double *sortedRitzVals; /* Sorted array of current and converged Ritz     */
-			   /* values.  Size of array is numLocked+basisSize. */
+                           /* values.  Size of array is numLocked+basisSize. */
    double *blockOfShifts;  /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
    double *approxOlsenEps; /* Shifts for approximate Olsen implementation    */
-   Complex_Z *Kinvx;	   /* Workspace to store K^{-1}x                     */
+   Complex_Z *Kinvx;         /* Workspace to store K^{-1}x                     */
    Complex_Z *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
    Complex_Z *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
    Complex_Z *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
 
    Complex_Z xKinvx;                        /* Stores x'*K^{-1}x if needed    */
    double eval, shift, robustShift;       /* robust shift values.           */
-   Complex_Z tmpShift;			  /* Temp shift for daxpy           */
+   Complex_Z tmpShift;                      /* Temp shift for daxpy           */
 
-   //------------------------------------------------------------
-   // Subdivide the workspace with pointers, and figure out 
-   // the total amount of needed real workspace (neededRsize)
-   //------------------------------------------------------------
+   /*------------------------------------------------------------*/
+   /* Subdivide the workspace with pointers, and figure out      */
+   /* the total amount of needed real workspace (neededRsize)    */
+   /*------------------------------------------------------------*/
 
    /* needed worksize */
    neededRsize = 0;
@@ -174,10 +175,10 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
       /* OLSEN's method requires a block, but JDQMR is vector by vector */
       if (primme->correctionParams.maxInnerIterations == 0) {    
-	 sol = Kinvx + primme->nLocal*blockSize;
+         sol = Kinvx + primme->nLocal*blockSize;
          neededRsize = neededRsize + primme->nLocal*blockSize;
       }
-      else { 					         
+      else {
          sol = Kinvx + primme->nLocal;
          neededRsize = neededRsize + primme->nLocal;
       }
@@ -186,14 +187,14 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
       sol = Kinvx + 0;
    }
    if (primme->correctionParams.maxInnerIterations == 0) {    
-      linSolverRWork = sol + 0; 		  /* sol not needed for GD */
-      linSolverRWorkSize = 0;			  /* No inner solver used  */
+      linSolverRWork = sol + 0;                   /* sol not needed for GD */
+      linSolverRWorkSize = 0;                     /* No inner solver used  */
    }
    else {
       linSolverRWork = sol + primme->nLocal;      /* sol needed in innerJD */
       neededRsize = neededRsize + primme->nLocal;
-      linSolverRWorkSize = 			  /* Inner solver worksize */
-	      4*primme->nLocal + 2*(primme->numOrthoConst+primme->numEvals);
+      linSolverRWorkSize =                        /* Inner solver worksize */
+              4*primme->nLocal + 2*(primme->numOrthoConst+primme->numEvals);
       neededRsize = neededRsize + linSolverRWorkSize;
    }
    sortedRitzVals = (double *)(linSolverRWork + linSolverRWorkSize);
@@ -205,35 +206,37 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
       return(neededRsize);
    }
 
-   // Subdivide also the integer work space
-   ilev = iwork;          // of size blockSize
+   /* Subdivide also the integer work space */
+   ilev = iwork;       /* of size blockSize */
 
-   //------------------------------------------------------------
-   //  Figuring out preconditioning shifts  (robust, Olsen, etc)
-   //------------------------------------------------------------
+   /*------------------------------------------------------------*/
+   /*  Figuring out preconditioning shifts  (robust, Olsen, etc) */
+   /*------------------------------------------------------------*/
    /* blockOfShifts will contain the preconditioning shifts:               */
    /* either Ritz values or robustShifts computed below. These shifts      */
    /* will be used in the correction equations or in inverting (K-sigma I) */
    /* approxOlsenEps will contain error approximations for eigenavalues    */
    /* to be used for Olsen's method (when innerIterations =0).             */
     
-   if (primme->locking) {
+   if (primme->locking && 
+      (primme->target == primme_smallest || primme->target == primme_largest)) {
       /* Combine the sorted list of locked Ritz values with the sorted  */
       /* list of current Ritz values, ritzVals.  The merging of the two */
       /* lists lockedEvals and ritzVals is stored in sortedRitzVals.    */
 
       mergeSort(lockedEvals, numLocked, ritzVals, flags, basisSize, 
-         	   sortedRitzVals, ilev, blockSize, primme);
+                   sortedRitzVals, ilev, blockSize, primme);
    }
    else {
-      /* Then the sorted evals are simply the ritzVals, targeted as iev */
+      /* In the case of soft-locking or when we look for interior ones  */
+      /* the sorted evals are simply the ritzVals, targeted as iev      */
 
       sortedRitzVals = ritzVals;
       ilev = iev;
    }
 
    /*-----------------------------------------------------------------*/
-   /* For interior eigenpairs, use the user provided shifts           */
+   /* For interior pairs use not the robust, but user provided shifts */
    /*-----------------------------------------------------------------*/
 
    if (primme->target != primme_smallest && primme->target != primme_largest) {
@@ -241,8 +244,8 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
       for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
          sortedIndex = ilev[blockIndex];
          blockOfShifts[blockIndex] = 
-	    primme->targetShifts[ min(primme->numTargetShifts-1, sortedIndex) ];
-         if (sortedIndex < numPrevRitzVals) {
+            primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ];
+         if (sortedIndex < *numPrevRitzVals) {
             approxOlsenEps[blockIndex] = 
             fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
          }  
@@ -250,6 +253,10 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
             approxOlsenEps[blockIndex] = blockNorms[blockIndex];
          }  
       } /* for loop */
+
+      /* Remember the previous ritz values*/
+      *numPrevRitzVals = basisSize;
+      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
 
    } /* user provided shifts */
    else {    
@@ -265,27 +272,27 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
          /* Find the robust shift for each block vector */
          for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
    
-	    sortedIndex = ilev[blockIndex];
-	    eval = sortedRitzVals[sortedIndex];
+            sortedIndex = ilev[blockIndex];
+            eval = sortedRitzVals[sortedIndex];
    
             robustShift = computeRobustShift(blockIndex, 
-	      blockNorms[blockIndex], prevRitzVals, numPrevRitzVals, 
-	      sortedRitzVals, &approxOlsenEps[blockIndex], 
-	      numLocked+basisSize, ilev, primme);
+              blockNorms[blockIndex], prevRitzVals, *numPrevRitzVals, 
+              sortedRitzVals, &approxOlsenEps[blockIndex], 
+              numLocked+basisSize, ilev, primme);
    
             /* Subtract/add the shift if looking for the smallest/largest  */
-	    /* eigenvalues, Do not go beyond the previous computed eigval  */
+            /* eigenvalues, Do not go beyond the previous computed eigval  */
        
             if (primme->target == primme_smallest) {
                blockOfShifts[blockIndex] = eval - robustShift;
-	       if (sortedIndex > 0) blockOfShifts[blockIndex] = 
-	          max(blockOfShifts[blockIndex], sortedRitzVals[sortedIndex-1]);
-	    }
-	    else {
+               if (sortedIndex > 0) blockOfShifts[blockIndex] = 
+                  max(blockOfShifts[blockIndex], sortedRitzVals[sortedIndex-1]);
+            }
+            else {
                blockOfShifts[blockIndex] = eval + robustShift;
-	       if (sortedIndex > 0) blockOfShifts[blockIndex] = 
-		  min(blockOfShifts[blockIndex], sortedRitzVals[sortedIndex-1]);
-            } // robust shifting 
+               if (sortedIndex > 0) blockOfShifts[blockIndex] = 
+                  min(blockOfShifts[blockIndex], sortedRitzVals[sortedIndex-1]);
+            } /* robust shifting */
    
          }  /* for loop */
    
@@ -295,75 +302,74 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
          /* Otherwise, the shifts for both preconditioner and correction */
          /* equation should be just the Ritz values. For Olsen's method, */
          /* the shifts for r-eps*x, are chosen as the difference in Ritz */
-	 /* value between successive iterations.                         */
+         /* value between successive iterations.                         */
          /*--------------------------------------------------------------*/
    
          for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
             ritzIndex   =  iev[blockIndex];
-	    sortedIndex = ilev[blockIndex];
+            sortedIndex = ilev[blockIndex];
             blockOfShifts[blockIndex] = ritzVals[ritzIndex];
- 	    if (sortedIndex < numPrevRitzVals) {
+            if (sortedIndex < *numPrevRitzVals) {
                approxOlsenEps[blockIndex] = 
                fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
-	    }
-	    else {
+            }
+            else {
                approxOlsenEps[blockIndex] = blockNorms[blockIndex]; 
-	    }
+            }
          } /* for loop */
       } /* else no robust shifts */
+
+      /* Remember the previous ritz values*/
+      *numPrevRitzVals = numLocked+basisSize;
+      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
+
    } /* else primme_smallest or primme_largest */
 
-   
-   /* Remember the previous ritz values*/
-
-   numPrevRitzVals = numLocked+basisSize;
-   Num_dcopy_primme(numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
-
-   // Equip the primme struct with the blockOfShifts, in case the user
-   // wants to precondition (K-sigma_i I)^{-1} with a different shift 
-   // for each vector
+   /* Equip the primme struct with the blockOfShifts, in case the user */
+   /* wants to precondition (K-sigma_i I)^{-1} with a different shift  */
+   /* for each vector                                                  */
 
    primme->ShiftsForPreconditioner = blockOfShifts;
 
-   //------------------------------------------------------------
-   //  Generalized Davidson variants -- No inner iterations
-   //------------------------------------------------------------
+   /*------------------------------------------------------------ */
+   /*  Generalized Davidson variants -- No inner iterations       */
+   /*------------------------------------------------------------ */
    if (primme->correctionParams.maxInnerIterations == 0) {
-      // This is Generalized Davidson or approximate Olsen's method. 
-      // Perform block preconditioning (with or without projections)
+      /* This is Generalized Davidson or approximate Olsen's method. */
+      /* Perform block preconditioning (with or without projections) */
       
-      r = &W[primme->nLocal*basisSize];    // All the block residuals
-      x = &V[primme->nLocal*basisSize];    // All the block Ritz vectors
+      r = &W[primme->nLocal*basisSize];    /* All the block residuals    */
+      x = &V[primme->nLocal*basisSize];    /* All the block Ritz vectors */
       
       if ( primme->correctionParams.projectors.RightX &&
-	   primme->correctionParams.projectors.SkewX    ) {    
- 	  // Compute exact Olsen's projected preconditioner. This is 
-	  // expensive and rarely improves anything! Included for completeness.
-	  
-	  Olsen_preconditioner_block(r, x, blockSize, Kinvx, primme);
+           primme->correctionParams.projectors.SkewX    ) {    
+           /* Compute exact Olsen's projected preconditioner. This is */
+          /* expensive and rarely improves anything! Included for completeness*/
+          
+          Olsen_preconditioner_block(r, x, blockSize, Kinvx, primme);
       }
       else {
          if ( primme->correctionParams.projectors.RightX ) {   
-            // Compute a cheap approximation to OLSENS, where (x'Kinvr)/xKinvx 
-	    // is approximated by e: Kinvr-e*Kinvx=Kinv(r-e*x)=Kinv(I-ct*x*x')r
+            /*Compute a cheap approximation to OLSENS, where (x'Kinvr)/xKinvx */
+            /*is approximated by e: Kinvr-e*Kinvx=Kinv(r-e*x)=Kinv(I-ct*x*x')r*/
 
-    	    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
-	       // Compute r_i = r_i - err_i * x_i 
-      	       {tmpShift.r = -approxOlsenEps[blockIndex]; tmpShift.i = 0.0L;}
+            for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
+               /* Compute r_i = r_i - err_i * x_i */
+               {tmpShift.r = -approxOlsenEps[blockIndex]; tmpShift.i = 0.0L;}
                Num_axpy_zprimme(primme->nLocal, tmpShift,
-	       &x[primme->nLocal*blockIndex],1,&r[primme->nLocal*blockIndex],1);
-	    } //for
-	 }
+               &x[primme->nLocal*blockIndex],1,&r[primme->nLocal*blockIndex],1);
+            } /* for */
+         }
 
-	 // GD: compute K^{-1}r , or approx.Olsen: K^{-1}(r-ex) 
+         /* GD: compute K^{-1}r , or approx.Olsen: K^{-1}(r-ex) */
 
          apply_preconditioner_block(r, x, blockSize, primme );
       }
    }
-   //------------------------------------------------------------
-   //  JDQMR --- JD inner-outer variants
-   //------------------------------------------------------------
-   else {  // maxInnerIterations > 0  We perform inner-outer JDQMR.
+   /* ------------------------------------------------------------ */
+   /*  JDQMR --- JD inner-outer variants                           */
+   /* ------------------------------------------------------------ */
+   else {  /* maxInnerIterations > 0  We perform inner-outer JDQMR */
 
       /* Solve the correction for each block vector. */
 
@@ -372,40 +378,40 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
          r = &W[primme->nLocal*(basisSize+blockIndex)];
          x = &V[primme->nLocal*(basisSize+blockIndex)];
 
-	 /* Set up the left/right/skew projectors for JDQMR.        */
-	 /* The pointers Lprojector, Rprojector(Q/X) point to the   */
-	 /* appropriate arrays for use in the projection step       */
+         /* Set up the left/right/skew projectors for JDQMR.        */
+         /* The pointers Lprojector, Rprojector(Q/X) point to the   */
+         /* appropriate arrays for use in the projection step       */
 
-	 setup_JD_projectors(x, r, evecs, evecsHat, Kinvx, &xKinvx, 
-   	    &Lprojector, &RprojectorQ, &RprojectorX, 
-	    &sizeLprojector, &sizeRprojectorQ, &sizeRprojectorX,
-   	    numLocked, numConvergedStored, primme);
+         setup_JD_projectors(x, r, evecs, evecsHat, Kinvx, &xKinvx, 
+            &Lprojector, &RprojectorQ, &RprojectorX, 
+            &sizeLprojector, &sizeRprojectorQ, &sizeRprojectorX,
+            numLocked, numConvergedStored, primme);
 
          /* Map the index of the block vector to its corresponding eigenvalue */
          /* index, and the shift for the correction equation. Also make the   */
-	 /* shift available to primme, in case (K-shift I)^-1 is needed       */
+         /* shift available to primme, in case (K-shift I)^-1 is needed       */
 
          ritzIndex = iev[blockIndex];
          shift = blockOfShifts[blockIndex];
          primme->ShiftsForPreconditioner = &blockOfShifts[blockIndex];
 
          ret = inner_solve_zprimme(x, r, &blockNorms[blockIndex], evecs, 
-	    evecsHat, UDU, ipivot, &xKinvx, Lprojector, RprojectorQ, 
-	    RprojectorX, sizeLprojector, sizeRprojectorQ, sizeRprojectorX,
-	    sol, ritzVals[ritzIndex], shift, eresTol, aNormEstimate, 
-	    machEps, linSolverRWork, linSolverRWorkSize, primme);
+            evecsHat, UDU, ipivot, &xKinvx, Lprojector, RprojectorQ, 
+            RprojectorX, sizeLprojector, sizeRprojectorQ, sizeRprojectorX,
+            sol, ritzVals[ritzIndex], shift, eresTol, aNormEstimate, 
+            machEps, linSolverRWork, linSolverRWorkSize, primme);
 
          if (ret != 0) {
             primme_PushErrorMessage(Primme_solve_correction, Primme_inner_solve,
-			    ret, __FILE__, __LINE__, primme);
+                            ret, __FILE__, __LINE__, primme);
             return (INNER_SOLVE_FAILURE);
          }
 
          Num_zcopy_zprimme(primme->nLocal, sol, 1, 
             &V[primme->nLocal*(basisSize+blockIndex)], 1);
 
-      } // end for each block vector
-   } // JDqmr variants
+      } /* end for each block vector */
+   } /* JDqmr variants */
 
    return 0;
 
@@ -517,8 +523,8 @@ static double computeRobustShift(int blockIndex, double resNorm,
 
    *approxOlsenShift = Num_fmin_primme(2, delta, epsilon);
 
-   // If the above is too large a shift set it to a milder shift
-   // epsilon = min(delta, epsilon);
+   /* If the above is too large a shift set it to a milder shift */
+   /* epsilon = min(delta, epsilon); */
 
    return epsilon;
 
@@ -528,6 +534,8 @@ static double computeRobustShift(int blockIndex, double resNorm,
 /*******************************************************************************
  * Subroutine mergeSort -- This routine merges the sorted lockedEvals array and 
  *   the sorted ritzVals array into a single sorted array, sortedRitzVals.
+ *   It is only called for extreme (largest, smallest) eigenvalues, not for 
+ *   interior ones. Thus it does not cover the interior case. 
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -637,8 +645,8 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
  ******************************************************************************/
 
 static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result, 
-		int blockSize, primme_params *primme) {
-	 
+                int blockSize, primme_params *primme) {
+         
    if (primme->correctionParams.precondition) {
 
       (*primme->applyPreconditioner)(v, result, &blockSize, primme);
@@ -672,7 +680,7 @@ static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result,
  ******************************************************************************/
 
 static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
-		int blockSize, Complex_Z *rwork, primme_params *primme) {
+                int blockSize, Complex_Z *rwork, primme_params *primme) {
 
    int blockIndex, count;
    Complex_Z alpha;
@@ -680,24 +688,24 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
    Complex_Z ztmp;
    Complex_Z tzero = {+0.0e+00,+0.0e00};
 
-   //------------------------------------------------------------------
-   // Subdivide workspace
-   //------------------------------------------------------------------
+   /*------------------------------------------------------------------*/
+   /* Subdivide workspace                                              */
+   /*------------------------------------------------------------------*/
    Kinvx = rwork;
    xKinvx_local = Kinvx + primme->nLocal*blockSize;
    xKinvr_local = xKinvx_local + blockSize;
    xKinvx       = xKinvr_local + blockSize;
    xKinvr       = xKinvx + blockSize;
           
-   //------------------------------------------------------------------
-   // Compute K^{-1}x for block x. Kinvx memory requirement (blockSize*nLocal)
-   //------------------------------------------------------------------
+   /*------------------------------------------------------------------ */
+   /* Compute K^{-1}x for block x. Kinvx memory requirement (blockSize*nLocal)*/
+   /*------------------------------------------------------------------ */
 
    apply_preconditioner_block(x, Kinvx, blockSize, primme );
 
-   //------------------------------------------------------------------
-   // Compute local x^TK^{-1}x and x^TK^{-1}r = (K^{-1}x)^Tr for each vector
-   //------------------------------------------------------------------
+   /*------------------------------------------------------------------ */
+   /* Compute local x^TK^{-1}x and x^TK^{-1}r = (K^{-1}x)^Tr for each vector */
+   /*------------------------------------------------------------------ */
 
    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
       xKinvx_local[blockIndex] =
@@ -710,31 +718,31 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
    count = 4*blockSize;
    (*primme->globalSumDouble)(xKinvx_local, xKinvx, &count, primme);
 
-   //------------------------------------------------------------------
-   // Compute K^{-1}r
-   //------------------------------------------------------------------
+   /*------------------------------------------------------------------*/
+   /* Compute K^{-1}r                                                  */
+   /*------------------------------------------------------------------*/
 
    apply_preconditioner_block(r, x, blockSize, primme );
 
-   //------------------------------------------------------------------
-   // Compute K^(-1)r  - ( xKinvr/xKinvx ) K^(-1)r for each vector
-   //------------------------------------------------------------------
+   /*------------------------------------------------------------------*/
+   /* Compute K^(-1)r  - ( xKinvr/xKinvx ) K^(-1)r for each vector     */
+   /*------------------------------------------------------------------*/
 
    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
       if (z_abs_primme(xKinvx[blockIndex]) > 0.0L) 
       {
-	 ztmp.r = -xKinvr[blockIndex].r;
-	 ztmp.i = -xKinvr[blockIndex].i;
+         ztmp.r = -xKinvr[blockIndex].r;
+         ztmp.i = -xKinvr[blockIndex].i;
          z_div_primme(&alpha, &ztmp, &xKinvx[blockIndex]);
       }
       else   
          alpha = tzero;
 
       Num_axpy_zprimme(primme->nLocal,alpha,&Kinvx[primme->nLocal*blockIndex],
-		      		       1, &x[primme->nLocal*blockIndex],1);
-   } //for
+                                       1, &x[primme->nLocal*blockIndex],1);
+   } /*for*/
 
-} // of Olsen_preconditiner_block
+} /* of Olsen_preconditiner_block */
 
 /*******************************************************************************
  *   subroutine setup_JD_projectors()
@@ -744,13 +752,13 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
  *
  *  INPUT
  *  -----
- *   x		      The Ritz vector
- *   r		      The residual vector for x
- *   evecs	      Converged locked eigenvectors (denoted as Q herein)
- *   evecsHat	      K^{-1}*evecs
+ *   x                The Ritz vector
+ *   r                The residual vector for x
+ *   evecs            Converged locked eigenvectors (denoted as Q herein)
+ *   evecsHat         K^{-1}*evecs
  *   numLocked        Number of locked eigenvectors (if locking)
  *   numConverged     Number of converged e-vectors copied in evecs (no locking)
- *   primme	      The main data structures that contains the choices for
+ *   primme           The main data structures that contains the choices for
  *
  *       primme->LeftQ  : evecs in the left projector
  *       primme->LeftX  : x in the left projector
@@ -758,7 +766,7 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
  *       primme->RightX : x in the right projector
  *       primme->SkewQ  : evecs in the right one, should be skewed
  *       primme->SkewX  : x in the right one, should be skewed
- *   			
+ *                   
  *  OUTPUT
  *  ------
  *  *Kinvx            The result of K^{-1}x (if needed, otherwise NULL)
@@ -796,15 +804,15 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
  *
  * Examples
  * Lq,Lx,Rx,Sx,Rq,Sq
- *  1  1  1  1  1  1  (the above equation)		     full, expensive JD
+ *  1  1  1  1  1  1  (the above equation)                   full, expensive JD
  *  0  0  1  1  1  1  (I-Kx(x'Kx)^(-1)x')(I-KQ(Q'K Q)^(-1)Q')        classic JD
  *  0  1  1  1  0  0  (I-xx')(A-shift I)(I-Kx(x'Kx)^(-1)x')     JD w/o deflaton
- *  0  0  0  0  0  0  (A-shift I) K   				     classic GD
+ *  0  0  0  0  0  0  (A-shift I) K                                  classic GD
  *  1  1  1  1  0  0  (I-QQ')(I-xx')(A-shift I)(I-Kx(x'Kx)^(-1)x')  RECOMMENDED
  *  1  1  0  0  0  0  (I-QQ')(I-xx')(A-shift I)                         similar
  *      Others...
- *      	      Researchers can experiment with other projection schemes,
- *      	      although our experience says they are rarely beneficial
+ *                    Researchers can experiment with other projection schemes,
+ *                    although our experience says they are rarely beneficial
  *
  * The left orthogonal projector for x and Q can be performed as one block
  * containing [Q x]. However, the right projections (if either is skew)
@@ -822,7 +830,7 @@ static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs,
 
    int n, sizeEvecs;
    int ONE = 1;
-   // In Complex, the size of the array to globalSum is twice as large
+   /* In Complex, the size of the array to globalSum is twice as large */
    int count = 2;
    Complex_Z xKinvx_local;
    Complex_Z tpone = {+1.0e+00,+0.0e00};
@@ -870,9 +878,9 @@ static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs,
    if (primme->correctionParams.projectors.RightQ) {
    
       if (primme->correctionParams.precondition    &&
-	  primme->correctionParams.projectors.SkewQ) {
+          primme->correctionParams.projectors.SkewQ) {
          *RprojectorQ = evecsHat;       /* Use the K^(-1)evecs array */
-      }				       
+      }                               
       else {  /* Right Q but not SkewQ */
          *RprojectorQ = evecs;          /* Use just the evecs array. */
       }
@@ -891,9 +899,9 @@ static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs,
    if (primme->correctionParams.projectors.RightX) {
    
       if (primme->correctionParams.precondition   &&
-	  primme->correctionParams.projectors.SkewX) {
+          primme->correctionParams.projectors.SkewX) {
          (*primme->applyPreconditioner)(x, Kinvx, &ONE, primme);
-	 primme->stats.numPreconds += 1;
+         primme->stats.numPreconds += 1;
          *RprojectorX  = Kinvx;
          xKinvx_local = Num_dot_zprimme(primme->nLocal, x, 1, Kinvx, 1);
          (*primme->globalSumDouble)(&xKinvx_local, xKinvx, &count, primme);

@@ -30,13 +30,12 @@
 #ifndef CORRECTION_H
 #define CORRECTION_H
 
-
-int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs, 
-   Complex_Z *evecsHat, Complex_Z *UDU, int *ipivot, double *lockedEvals, 
-   int numLocked, int numConvergedStored, double *ritzVals, 
-   double *prevRitzVals, int *flags, int basisSize, double *blockNorms, 
-   int *iev, int blockSize, double eresTol, double machEps, 
-   double aNormEstimate, Complex_Z *rwork, int *iwork, int rworkSize, 
-   primme_params *primme);
+int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
+   Complex_Z *evecsHat, Complex_Z *UDU, int *ipivot, double *lockedEvals,
+   int numLocked, int numConvergedStored, double *ritzVals,
+   double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+   double *blockNorms, int *iev, int blockSize, double eresTol,
+   double machEps, double aNormEstimate, Complex_Z *rwork, int *iwork,
+   int rworkSize, primme_params *primme);
 
 #endif

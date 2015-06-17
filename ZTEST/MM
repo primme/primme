@@ -21,13 +21,14 @@
 // ///////////////////////////////////////////////////////////////////
 
 // Preset method
-method 		          = DEFAULT_MIN_TIME
+method 		          = DEFAULT_MIN_MATVECS
 
 // Solver parameters
-primme.numEvals           = 1
-primme.target           = primme_smallest
-primme.printLevel           = 3
+primme.numEvals           = 4
+primme.target           = primme_closest_geq
+primme.numTargetShifts    = 1
+primme.targetShifts       = 1e-3
+primme.printLevel           = 5
 
 // Correction parameters
-primme.correction.precondition  = 0
 primme.correction.precondition  = 0

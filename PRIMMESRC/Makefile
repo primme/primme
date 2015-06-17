@@ -50,13 +50,13 @@ libz:
 clean: 
 	@(\
 	echo "--------------------------------------------------"; \
-	echo " Cleaning .o, and archives from all directories   "; \
+	echo " From PRIMME library directories"; \
+	cd $(COMMONDIR) ; echo "   "$(COMMONDIR);\
+	make -f Makefile clean;\
+	cd $(DPRIMMEDIR) ; echo "   "$(DPRIMMEDIR);\
+	make -f Makefile clean;\
+	cd $(ZPRIMMEDIR) ; echo "   "$(ZPRIMMEDIR);\
+	make -f Makefile clean;\
 	echo "--------------------------------------------------"; \
-	cd $(COMMONDIR) ;\
-	make -f Makefile clean;\
-	cd $(DPRIMMEDIR) ;\
-	make -f Makefile clean;\
-	cd $(ZPRIMMEDIR) ;\
-	make -f Makefile clean;\
 	)
 
