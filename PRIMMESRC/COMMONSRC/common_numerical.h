@@ -42,6 +42,16 @@ int Num_imax_primme(int numArgs, int val1, int val2, ...);
 double Num_fmin_primme(int numArgs, double val1, double val2, ...);
 double Num_fmax_primme(int numArgs, double val1, double val2, ...);
 
+#if !defined(PRIMME_BLASINT_SIZE)
+#  define PRIMME_BLASINT int
+#else
+#  include <stdint.h>
+#  define GENERIC_INT(N) int ## N ## _t
+#  define XGENERIC_INT(N) GENERIC_INT(N)
+#  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif

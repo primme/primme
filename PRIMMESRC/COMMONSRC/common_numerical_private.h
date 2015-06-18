@@ -29,6 +29,8 @@
 #ifndef COMMON_NUMERICAL_PRIVATE_H
 #define COMMON_NUMERICAL_PRIVATE_H
 
+#include "common_numerical.h"
+
 #if !defined(NUM_SUN) && !defined(NUM_IBM) && !defined(NUM_CRAY)
 #define NUM_SUN
 #endif
@@ -63,7 +65,7 @@ extern "C"
 
 #ifndef NUM_CRAY
 
-void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
+void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 double DLAMCH(const char *cmach);
 
 #ifdef NUM_ESSL
@@ -71,7 +73,7 @@ double DLAMCH(const char *cmach);
 
 #else
 
-void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
+void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 double DLAMCH(_fcd cmach_fcd);
 
 #endif
