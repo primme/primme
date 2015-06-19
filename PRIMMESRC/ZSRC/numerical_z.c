@@ -25,32 +25,41 @@
  *
  ******************************************************************************/
 
-
+#include "primme.h"
 #include <stdarg.h>
-#include "Complex.h"
+/*#include "Complex.h"*/
 #include "numerical_private_z.h"
 #include "numerical_z.h"
 
 /******************************************************************************/
 void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
+   long long int ln = n;
+   long long int lincx = incx;
+   long long int lincy = incy;
 
-   ZCOPY(&n, x, &incx, y, &incy);
+   ZCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
 
 void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k, 
    Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb, 
    Complex_Z beta, Complex_Z *c, int ldc) {
+   long long int lm = m;
+   long long int ln = n;
+   long long int lk = k;
+   long long int llda = lda;
+   long long int lldb = ldb;
+   long long int lldc = ldc;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
 
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
-   ZGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-         c, &ldc);
+   ZGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
+	 c, &lldc);
 #else
-   ZGEMM(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   ZGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif
 
 }
@@ -59,15 +68,20 @@ void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k,
 void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha, 
    Complex_Z *a, int lda, Complex_Z *b, int ldb, Complex_Z beta, 
    Complex_Z *c, int ldc) {
+   long long int lm = m;
+   long long int ln = n;
+   long long int llda = lda;
+   long long int lldb = ldb;
+   long long int lldc = ldc;
 
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
 
    side_fcd = _cptofcd(side, strlen(side));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   ZHEMM(side_fcd, uplo_fcd, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   ZHEMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #else
-   ZHEMM(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   ZHEMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif   
 
 }
@@ -75,22 +89,30 @@ void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha,
 /******************************************************************************/
 void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx, 
    Complex_Z *y, int incy) {
+   long long int ln = n;
+   long long int lincx = incx;
+   long long int lincy = incy;
 
-   ZAXPY(&n, &alpha, x, &incx, y, &incy);
+   ZAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
 void Num_gemv_zprimme(char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
    int lda, Complex_Z *x, int incx, Complex_Z beta, Complex_Z *y, int incy) {
+   long long int lm = m;
+   long long int ln = n;
+   long long int llda = lda;
+   long long int lincx = incx;
+   long long int lincy = incy;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
 
    transa_fcd = _cptofcd(transa, strlen(transa));
-   ZGEMV(transa_fcd, &m, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+   ZGEMV(transa_fcd, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #else
-   ZGEMV(transa, &m, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+   ZGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 
 #endif
 
@@ -129,44 +151,73 @@ Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy)
 
 /******************************************************************************/
 void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x) {
-   ZLARNV(&idist, iseed, &length, x);
+   long long int lidist = idist;
+   long long int llength = length;
+   long long int *liseed;
+   long long int temp[4];
+   int i;
+   for(i=0;i<4;i++)
+   {
+      temp[i] = iseed[i];
+   }
+   liseed = temp;
+
+   ZLARNV(&lidist, liseed, &llength, x);
+
+   for(i=0;i<4;i++)
+   {
+      iseed[i] = liseed[i];
+   }
 
 }
 
 /******************************************************************************/
 void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
+   long long int ln = n;
+   long long int lincx = incx;
 
-   ZSCAL(&n, &alpha, x, &incx);
+   ZSCAL(&ln, &alpha, x, &lincx);
 
 }
 
 /******************************************************************************/
 void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
+   long long int ln = n;
+   long long int lincx = incx;
+   long long int lincy = incy;
 
-   ZSWAP(&n, x, &incx, y, &incy);
+   ZSWAP(&ln, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #ifdef NUM_ESSL
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    int n, Complex_Z *aux, int naux) {
+   long long int liopt = iopt;
+   long long int lldz = ldz;
+   long long int ln = n;
+   long long int lnaux = naux;
 
    int ret;
 
-   ret = zhpev(iopt, ap, w, z, ldz, n, aux, naux);
+   ret = zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
    return (ret);
 }
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #else
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
+   long long int ln = n;
+   long long int llda = lda;
+   long long int lldwork = ldwork;
+   long long int linfo = (long long int)*info;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -174,13 +225,14 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   ZHEEV(jobz_fcd, uplo_fcd, &n, a, &lda, w, work, &ldwork, rwork, info); 
+   ZHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
 
 #else
 
-   ZHEEV(jobz, uplo, &n, a, &lda, w, work, &ldwork, rwork, info); 
+   ZHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
 
 #endif
+    *info = (int) linfo;
 }
 
 #endif
@@ -189,17 +241,35 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
 /******************************************************************************/
 void Num_zhetrf_zprimme(char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
    Complex_Z *work, int ldwork, int *info) {
+   long long int ln = n;
+   long long int llda = lda;
+
+   long long int *lipivot = (long long int *)primme_calloc(n, sizeof(long long int), "lipivot array");
+   int i;
+   for(i=0;i<n;i++)
+   {
+      lipivot[i] = ipivot[i];
+   }
+   
+   long long int lldwork = ldwork;
+   long long int linfo = (long long int)*info;
 
 #ifdef NUM_CRAY
-        _fcd uplo_fcd;
+	_fcd uplo_fcd;
 
-        uplo_fcd = _cptofcd(uplo, strlen(uplo));
-        ZHETRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
+	uplo_fcd = _cptofcd(uplo, strlen(uplo));
+	ZHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 #else
 
-        ZHETRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
+	ZHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 
 #endif
+
+   for(i=0;i<n;i++)
+   {
+      ipivot[i] = lipivot[i];
+   }
+    *info = (int) linfo;
 
 }
 
@@ -207,16 +277,35 @@ void Num_zhetrf_zprimme(char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
 /******************************************************************************/
 void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
    int *ipivot, Complex_Z *b, int ldb, int *info) {
+   long long int ln = n;
+   long long int lnrhs = nrhs;
+   long long int llda = lda;
+
+   long long int *lipivot = (long long int *)primme_calloc(n, sizeof(long long int), "lipivot array");
+   int i;
+   for(i=0;i<n;i++)
+   {
+      lipivot[i] = ipivot[i];
+   }
+   
+   long long int lldb = ldb;
+   long long int linfo = (long long int)*info;
 
 #ifdef NUM_CRAY
-        _fcd uplo_fcd;
+	_fcd uplo_fcd;
 
-        uplo_fcd = _cptofcd(uplo, strlen(uplo));
-        ZHETRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+	uplo_fcd = _cptofcd(uplo, strlen(uplo));
+	ZHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #else
 
-        ZHETRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+	ZHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
+
+    for(i=0;i<n;i++)
+   {
+      ipivot[i] = lipivot[i];
+   }
+    *info = (int) linfo;
 
 }
   

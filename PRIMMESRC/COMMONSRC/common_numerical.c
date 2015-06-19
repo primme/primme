@@ -30,8 +30,11 @@
 
 /******************************************************************************/
 void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy) {
+   long long int ln = n;
+   long long int lincx = incx;
+   long long int lincy = incy;
 
-   DCOPY(&n, x, &incx, y, &incy);
+   DCOPY(&ln, x, &lincx, y, &lincy);
 
 }
 
