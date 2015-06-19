@@ -317,7 +317,9 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    /* ---------------------------------------------------------------------- */
    while (!converged &&
           ( primme->maxMatvecs == 0 || 
-            primme->stats.numMatvecs < primme->maxMatvecs ) ) {
+            primme->stats.numMatvecs < primme->maxMatvecs ) &&
+          ( primme->maxOuterIterations == 0 ||
+            primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
       /* Reset convergence flags. This may only reoccur without locking */
 
@@ -342,8 +344,10 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
       /* required eigenpairs have been found (no verification)          */
       /* -------------------------------------------------------------- */
       while (numConverged < primme->numEvals &&
-             (primme->maxMatvecs == 0 || 
-              primme->stats.numMatvecs < primme->maxMatvecs)) {
+             ( primme->maxMatvecs == 0 || 
+               primme->stats.numMatvecs < primme->maxMatvecs ) &&
+             ( primme->maxOuterIterations == 0 ||
+               primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
@@ -351,8 +355,12 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* maximum size or the basis plus the locked vectors span the entire */
          /* space. Once this happens, restart with a smaller basis.           */
          /* ----------------------------------------------------------------- */
-         while (basisSize < primme->maxBasisSize 
-             && basisSize < primme->n - primme->numOrthoConst - numLocked ) {
+         while (basisSize < primme->maxBasisSize &&
+                basisSize < primme->n - primme->numOrthoConst - numLocked &&
+                ( primme->maxMatvecs == 0 || 
+                  primme->stats.numMatvecs < primme->maxMatvecs) &&
+                ( primme->maxOuterIterations == 0 ||
+                  primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
             primme->stats.numOuterIterations++;
             numPrevRetained = 0;
