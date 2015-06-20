@@ -58,3 +58,21 @@ ddependencies_seq:
 all: seq_dprimme
 seq_dprimme: $(DRIVEROBJECTS)
 include ddependencies_seq
+
+all_tests: seq_dprimme
+	@ok="0";echo "Please wait, this could take a while...";\
+	for i in tests/test_??? ; do \
+		echo "********** Test $$i ***********"; \
+		./seq_dprimme $$i || ok="1"; \
+	done > tests.log 2>&1;\
+	if test $$ok -eq 0 ; then \
+		echo "All tests passed!"; \
+	else\
+		cat tests.log;\
+		echo "Some tests fail. Please consider to send us the file";\
+		echo "DTEST/tests.log if the software doesn't work as expected.";\
+		exit 1;\
+	fi
+
+test: seq_dprimme
+	./seq_dprimme tests/test_003

@@ -51,7 +51,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
 
    line = 1;
    while (EOF != fscanf(configFile, "%s", ident)) {
-      if (strcmp(ident, "//") == 0) {
+      if (strncmp(ident, "//", 2) == 0) {
          fgets(ident, 2048, configFile);
          line++;
          continue;
@@ -67,7 +67,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
 
       if (strcmp(op, "=") == 0) {
          if (strcmp(ident, "method") == 0) {
-            ret = fscanf(configFile, "%s\n", stringValue);
+            ret = fscanf(configFile, "%s", stringValue);
             if (ret == 1) {
                if (strcmp(stringValue,      "DYNAMIC") == 0) {
                        *method = DYNAMIC;
@@ -121,46 +121,46 @@ int read_solver_params(char *configFileName, char *outputFileName,
             }
          }
          else if (strcmp(ident, "primme.numEvals") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->numEvals);
+            ret = fscanf(configFile, "%d", &primme->numEvals);
          }
          else if (strcmp(ident, "primme.eps") == 0) {
-            ret = fscanf(configFile, "%le\n", &primme->eps);
+            ret = fscanf(configFile, "%le", &primme->eps);
          }
          else if (strcmp(ident, "primme.aNorm") == 0) {
-            ret = fscanf(configFile, "%le\n", &primme->aNorm);
+            ret = fscanf(configFile, "%le", &primme->aNorm);
          }
          else if (strcmp(ident, "primme.maxBasisSize") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->maxBasisSize);
+            ret = fscanf(configFile, "%d", &primme->maxBasisSize);
          }
          else if (strcmp(ident, "primme.minRestartSize") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->minRestartSize);
+            ret = fscanf(configFile, "%d", &primme->minRestartSize);
          }
          else if (strcmp(ident, "primme.locking") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->locking);
+            ret = fscanf(configFile, "%d", &primme->locking);
          }
          else if (strcmp(ident, "primme.dynamicMethodSwitch") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->dynamicMethodSwitch);
+            ret = fscanf(configFile, "%d", &primme->dynamicMethodSwitch);
          }
          else if (strcmp(ident, "primme.maxBlockSize") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->maxBlockSize);
+            ret = fscanf(configFile, "%d", &primme->maxBlockSize);
          }
          else if (strcmp(ident, "primme.initSize") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->initSize);
+            ret = fscanf(configFile, "%d", &primme->initSize);
          }
          else if (strcmp(ident, "primme.numOrthoConst") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->numOrthoConst);
+            ret = fscanf(configFile, "%d", &primme->numOrthoConst);
          }
          else if (strcmp(ident, "primme.maxOuterIterations") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->maxOuterIterations);
+            ret = fscanf(configFile, "%d", &primme->maxOuterIterations);
          }
          else if (strcmp(ident, "primme.maxMatvecs") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->maxMatvecs);
+            ret = fscanf(configFile, "%d", &primme->maxMatvecs);
          }
          else if (strcmp(ident, "primme.printLevel") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->printLevel);
+            ret = fscanf(configFile, "%d", &primme->printLevel);
          }
          else if (strcmp(ident, "primme.restarting.scheme") == 0) {
-            ret = fscanf(configFile, "%s\n", stringValue); 
+            ret = fscanf(configFile, "%s", stringValue); 
             if (ret == 1) {
                if (strcmp(stringValue, "primme_thick") == 0) {
                   primme->restartingParams.scheme = primme_thick;
@@ -175,11 +175,11 @@ int read_solver_params(char *configFileName, char *outputFileName,
             }
          }
          else if (strcmp(ident, "primme.restarting.maxPrevRetain") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->restartingParams.maxPrevRetain);
          }
          else if (strcmp(ident, "primme.target") == 0) {
-            ret = fscanf(configFile, "%s\n", stringValue);
+            ret = fscanf(configFile, "%s", stringValue);
             if (ret == 1) {
                if (strcmp(stringValue, "primme_smallest") == 0) {
                   primme->target = primme_smallest;
@@ -203,7 +203,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
             }
          }
          else if (strcmp(ident, "primme.numTargetShifts") == 0) {
-            ret = fscanf(configFile, "%d\n", &primme->numTargetShifts);
+            ret = fscanf(configFile, "%d", &primme->numTargetShifts);
          }
          else if (strcmp(ident, "primme.targetShifts") == 0) {
             ret = 1;
@@ -220,31 +220,31 @@ int read_solver_params(char *configFileName, char *outputFileName,
             }
          }
          else if (strcmp(ident, "primme.correction.projectors.LeftQ") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->correctionParams.projectors.LeftQ );
          }
          else if (strcmp(ident, "primme.correction.projectors.LeftX") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->correctionParams.projectors.LeftX );
          }
          else if (strcmp(ident, "primme.correction.projectors.RightQ") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->correctionParams.projectors.RightQ );
          }
          else if (strcmp(ident, "primme.correction.projectors.RightX") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->correctionParams.projectors.RightX );
          }
          else if (strcmp(ident, "primme.correction.projectors.SkewQ") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->correctionParams.projectors.SkewQ );
          }
          else if (strcmp(ident, "primme.correction.projectors.SkewX") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                      &primme->correctionParams.projectors.SkewX );
          }
          else if (strcmp(ident, "primme.correction.convTest") == 0) {
-            ret = fscanf(configFile, "%s\n", stringValue);
+            ret = fscanf(configFile, "%s", stringValue);
             if (ret == 1) {
                if (strcmp(stringValue, "primme_full_LTolerance") == 0) {
                   primme->correctionParams.convTest = primme_full_LTolerance;
@@ -262,19 +262,19 @@ int read_solver_params(char *configFileName, char *outputFileName,
             }
          }
          else if (strcmp(ident, "primme.correction.precondition") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                          &primme->correctionParams.precondition);
          }
          else if (strcmp(ident, "primme.correction.robustShifts") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                &primme->correctionParams.robustShifts);
          }
          else if (strcmp(ident, "primme.correction.maxInnerIterations") == 0) {
-            ret = fscanf(configFile, "%d\n", 
+            ret = fscanf(configFile, "%d", 
                &primme->correctionParams.maxInnerIterations);
          }
          else if (strcmp(ident, "primme.correction.relTolBase") == 0) {
-            ret = fscanf(configFile, "%lf\n", 
+            ret = fscanf(configFile, "%lf", 
                &primme->correctionParams.relTolBase);
          }
          else if (strcmp(ident, "primme.iseed") == 0) {
@@ -287,10 +287,13 @@ int read_solver_params(char *configFileName, char *outputFileName,
                fgets(ident, 2048, configFile);
             }
          }
-         else {
+         else if (strncmp(ident, "primme.", 7) == 0) {
             fprintf(stderr, 
                "ERROR(read_solver_params): Invalid parameter '%s'\n", ident);
             return(-1);
+         }
+         else {
+            fgets(ident, 2048, configFile);
          }
 
          line++;
@@ -310,7 +313,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
 
    /* Set up the output file in primme, from the filename read in driverConfig */
    if (primme->procID == 0) {
-      if (strcmp(outputFileName, "stdout") != 0) {
+      if (outputFileName[0] && strcmp(outputFileName, "stdout") != 0) {
          if ((primme->outputFile = fopen(outputFileName, "w+")) == NULL) {
             fprintf(stderr, 
                    "ERROR(read_solver_params): Could not open output file\n");
@@ -342,6 +345,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
    FILE *configFile;
 
 
+   bzero(driver, sizeof(*driver));
    if ((configFile = fopen(configFileName, "r")) == NULL) {
       fprintf(stderr,"Error(read_driver_params): Could not open config file\n");
       fprintf(stderr,"Driver config file: %s\n", configFileName);
@@ -350,7 +354,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
 
    line = 1;
    while (EOF != fscanf(configFile, "%s", ident)) {
-      if (strcmp(ident, "//") == 0) {
+      if (strncmp(ident, "//", 2) == 0) {
          fgets(ident, 2048, configFile);
          line++;
          continue;
@@ -367,40 +371,55 @@ int read_driver_params(char *configFileName, driver_params *driver) {
       if (strcmp(op, "=") == 0) {
          /* Matrix, partitioning and I/O params  */
          if (strcmp(ident, "driver.outputFile") == 0) {
-            ret = fscanf(configFile, "%s\n", driver->outputFileName);
+            fscanf(configFile, "%s", driver->outputFileName);
          }
          else if (strcmp(ident, "driver.partId") == 0) {
-            ret = fscanf(configFile, "%s\n", driver->partId);
+            ret = fscanf(configFile, "%s", driver->partId);
          }
          else if (strcmp(ident, "driver.partDir") == 0) {
-            ret = fscanf(configFile, "%s\n", driver->partDir);
+            ret = fscanf(configFile, "%s", driver->partDir);
          }
          else if (strcmp(ident, "driver.matrixFile") == 0) {
-            ret = fscanf(configFile, "%s\n", driver->matrixFileName);
+            fscanf(configFile, "%s", driver->matrixFileName);
+         }
+         else if (strcmp(ident, "driver.initialGuessesFile") == 0) {
+            fscanf(configFile, "%s", driver->initialGuessesFileName);
+         }
+         else if (strcmp(ident, "driver.initialGuessesPert") == 0) {
+            ret = fscanf(configFile, "%le", &driver->initialGuessesPert);
+         }
+         else if (strcmp(ident, "driver.saveXFile") == 0) {
+            fscanf(configFile, "%s", driver->saveXFileName);
+         }
+         else if (strcmp(ident, "driver.checkXFile") == 0) {
+            fscanf(configFile, "%s", driver->checkXFileName);
          }
          /* Preconditioning parameters */
          else if (strcmp(ident, "driver.PrecChoice") == 0) {
-            ret = fscanf(configFile, "%d\n", &driver->PrecChoice);
+            ret = fscanf(configFile, "%d", &driver->PrecChoice);
          }
          else if (strcmp(ident, "driver.shift") == 0) {
-            ret = fscanf(configFile, "%le\n", &driver->shift);
+            ret = fscanf(configFile, "%le", &driver->shift);
          }
          else if (strcmp(ident, "driver.isymm") == 0) {
-            ret = fscanf(configFile, "%d\n", &driver->isymm);
+            ret = fscanf(configFile, "%d", &driver->isymm);
          }
          else if (strcmp(ident, "driver.level") == 0) {
-            ret = fscanf(configFile, "%d\n", &driver->level);
+            ret = fscanf(configFile, "%d", &driver->level);
          }
          else if (strcmp(ident, "driver.threshold") == 0) {
-            ret = fscanf(configFile, "%lf\n", &driver->threshold);
+            ret = fscanf(configFile, "%lf", &driver->threshold);
          }
          else if (strcmp(ident, "driver.filter") == 0) {
-            ret = fscanf(configFile, "%lf\n", &driver->filter);
+            ret = fscanf(configFile, "%lf", &driver->filter);
          }
-         else {
+         else if (strncmp(ident, "driver.", 7) == 0) {
             fprintf(stderr, 
               "ERROR(read_driver_params): Invalid parameter '%s'\n", ident);
             return(-1);
+         }
+         else {
+            fgets(ident, 2048, configFile);
          }
 
          line++;
@@ -421,3 +440,53 @@ int read_driver_params(char *configFileName, driver_params *driver) {
    return (0);
 }
 
+void driver_display_params(driver_params driver, FILE *outputFile) {
+
+const char *helpPrecChoice[] = {"no preconditioner",
+                          "K = Diagonal of A",
+                          "K = (Diagonal_of_A - primme.shift_i I)",
+                          "K = ILUT(A-driver.shift,level,threshold)",
+                          "K = Parasails(A-driver.shift,isymm,filter,threshold)"};
+ 
+fprintf(outputFile, "// ---------------------------------------------------\n"
+                    "//                 driver configuration               \n"
+                    "// ---------------------------------------------------\n");
+
+fprintf(outputFile, "driver.partId        = %s\n", driver.partId);
+fprintf(outputFile, "driver.partDir       = %s\n", driver.partDir);
+fprintf(outputFile, "driver.matrixFile    = %s\n", driver.matrixFileName);
+fprintf(outputFile, "driver.initialGuessesFile = %s\n", driver.initialGuessesFileName);
+fprintf(outputFile, "driver.initialGuessesPert = %e\n", driver.initialGuessesPert);
+fprintf(outputFile, "driver.saveXFile     = %s\n", driver.saveXFileName);
+fprintf(outputFile, "driver.checkXFile    = %s\n", driver.checkXFileName);
+fprintf(outputFile, "driver.PrecChoice    = %d  // %s\n", driver.PrecChoice,
+                                                         helpPrecChoice[driver.PrecChoice]);
+fprintf(outputFile, "driver.shift         = %e\n", driver.shift);
+fprintf(outputFile, "driver.isymm         = %d\n", driver.isymm);
+fprintf(outputFile, "driver.level         = %d\n", driver.level);
+fprintf(outputFile, "driver.threshold     = %f\n", driver.threshold);
+fprintf(outputFile, "driver.filter        = %f\n\n", driver.filter);
+
+}
+
+void driver_display_method(primme_preset_method method, FILE *outputFile) {
+
+const char *strMethod[] = {"DYNAMIC",
+                           "DEFAULT_MIN_TIME",
+                           "DEFAULT_MIN_MATVECS",
+                           "Arnoldi",
+                           "GD",
+                           "GD_plusK",
+                           "GD_Olsen_plusK",
+                           "JD_Olsen_plusK",
+                           "RQI",
+                           "JDQR",
+                           "JDQMR",
+                           "JDQMR_ETol",
+                           "SUBSPACE_ITERATION",
+                           "LOBPCG_OrthoBasis",
+                           "LOBPCG_OrthoBasis_Window"};
+ 
+fprintf(outputFile, "method               = %s\n", strMethod[method]);
+
+}
