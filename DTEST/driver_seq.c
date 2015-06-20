@@ -795,7 +795,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
        primme0.correctionParams.projectors.SkewX  == primme->correctionParams.projectors.SkewX  &&
        primme0.correctionParams.convTest == primme->correctionParams.convTest &&
        primme0.correctionParams.relTolBase == primme->correctionParams.relTolBase) {
-      if (abs(primme0.stats.numOuterIterations - primme->stats.numOuterIterations) > primme->stats.numOuterIterations/100+1) {
+      if (abs(primme0.stats.numOuterIterations - primme->stats.numOuterIterations) > primme->stats.numOuterIterations*3/100+1) {
          fprintf(stderr, "Warning: discrepancy in numOuterIterations, %d should be close to %d\n", primme->stats.numOuterIterations, primme0.stats.numOuterIterations);
          retX = 1;
       }
