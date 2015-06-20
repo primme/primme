@@ -386,16 +386,12 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* their convergence, lock them if necessary, and return.    */
             /* For locking interior, restart and lock now any converged. */
 
-            if (primme->locking) {
-               if ((numLocked + recentlyConverged) >= primme->numEvals ||
-                   (recentlyConverged > 0 && primme->target != primme_smallest
-                    && primme->target != primme_largest))
-                  break;
-            }
-            else {
-               numConverged += recentlyConverged;
-               primme->initSize = numConverged;
-               if (numConverged >= primme->numEvals) 
+            numConverged += recentlyConverged;
+
+            if (numConverged >= primme->numEvals ||
+                (primme->locking && recentlyConverged > 0
+                    && primme->target != primme_smallest
+                    && primme->target != primme_largest)) {
                   break;
             }
 
