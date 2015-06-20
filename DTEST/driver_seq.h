@@ -33,6 +33,8 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
    void (**precond_function)(void *, void *, int *, primme_params *),
      int n, int nnz, driver_params driver);
 
+int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
+                   double *evecs, double *rnorms, CSRMatrix *matrix);
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

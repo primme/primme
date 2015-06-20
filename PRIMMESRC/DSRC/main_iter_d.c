@@ -312,7 +312,9 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    /* ---------------------------------------------------------------------- */
    while (!converged &&
           ( primme->maxMatvecs == 0 || 
-            primme->stats.numMatvecs < primme->maxMatvecs ) ) {
+            primme->stats.numMatvecs < primme->maxMatvecs ) &&
+          ( primme->maxOuterIterations == 0 ||
+            primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
       /* Reset convergence flags. This may only reoccur without locking */
 
@@ -337,8 +339,10 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
       /* required eigenpairs have been found (no verification)          */
       /* -------------------------------------------------------------- */
       while (numConverged < primme->numEvals &&
-             (primme->maxMatvecs == 0 || 
-              primme->stats.numMatvecs < primme->maxMatvecs)) {
+             ( primme->maxMatvecs == 0 || 
+               primme->stats.numMatvecs < primme->maxMatvecs ) &&
+             ( primme->maxOuterIterations == 0 ||
+               primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
@@ -346,8 +350,12 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* maximum size or the basis plus the locked vectors span the entire */
          /* space. Once this happens, restart with a smaller basis.           */
          /* ----------------------------------------------------------------- */
-         while (basisSize < primme->maxBasisSize 
-             && basisSize < primme->n - primme->numOrthoConst - numLocked ) {
+         while (basisSize < primme->maxBasisSize &&
+                basisSize < primme->n - primme->numOrthoConst - numLocked &&
+                ( primme->maxMatvecs == 0 || 
+                  primme->stats.numMatvecs < primme->maxMatvecs) &&
+                ( primme->maxOuterIterations == 0 ||
+                  primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
             primme->stats.numOuterIterations++;
             numPrevRetained = 0;
@@ -373,16 +381,12 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             /* their convergence, lock them if necessary, and return.    */
             /* For locking interior, restart and lock now any converged. */
 
-            if (primme->locking) {
-               if ((numLocked + recentlyConverged) >= primme->numEvals ||
-                   (recentlyConverged > 0 && primme->target != primme_smallest
-                    && primme->target != primme_largest))
-                  break;
-            }
-            else {
-               numConverged += recentlyConverged;
-               primme->initSize = numConverged;
-               if (numConverged >= primme->numEvals) 
+            numConverged += recentlyConverged;
+
+            if (numConverged >= primme->numEvals ||
+                (primme->locking && recentlyConverged > 0 
+                    && primme->target != primme_smallest
+                    && primme->target != primme_largest)) {
                   break;
             }
 

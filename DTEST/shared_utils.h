@@ -14,6 +14,10 @@ typedef struct driver_params {
    char testId[256];
    char partDir[1024];
    char matrixFileName[1024];
+   char initialGuessesFileName[1024];
+   char saveXFileName[1024];
+   double initialGuessesPert;
+   char checkXFileName[1024];
 
    int weightedPart;
 
@@ -31,6 +35,8 @@ typedef struct driver_params {
 int read_solver_params(char *configFileName, char *outputFileName,
                 primme_params *primme, primme_preset_method *method);
 int read_driver_params(char *configFileName, driver_params *driver);
+void driver_display_params(driver_params driver, FILE *outputFile);
+void driver_display_method(primme_preset_method method, FILE *outputFile);
 int readfullMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
 int readUpperMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
 int readmtx(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);

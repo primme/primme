@@ -48,6 +48,7 @@
 #include <math.h>
 #include "../PRIMMESRC/DSRC/numerical_d.h"
 #include "driver_seq.h"
+#include <assert.h>
 
 /* primme.h header file is required to run primme */
 #include "primme.h"
@@ -70,7 +71,7 @@ int main (int argc, char *argv[]) {
    CSRMatrix Factors;
 
    /* Files */
-   char *DriverConfigFileName, *SolverConfigFileName;
+   char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
    
    /* Driver and solver I/O arrays and parameters */
    double *evals, *evecs, *rnorms;
@@ -81,7 +82,7 @@ int main (int argc, char *argv[]) {
 
    /* Other miscellaneous items */
    int i;
-   int ret;
+   int ret, retX=0;
 
    /* --------------------------------------------------------------------- */
    /*   Read matrix and driver setup                                        */
@@ -91,9 +92,15 @@ int main (int argc, char *argv[]) {
    /* Get from command line the names for the 2 config files  */
    /* ------------------------------------------------------- */
 
-   if (argc == 3) {
+   if (argc == 2) {
+      DriverConfigFileName = argv[1];
+      SolverConfigFileName = argv[1];
+   } else if (argc == 3) {
       DriverConfigFileName = argv[1];
       SolverConfigFileName = argv[2];
+   } else {
+      fprintf(stderr, "Invalid number of arguments.\n");
+      return(-1);
    }
 
    /* ----------------------------- */
@@ -216,8 +223,9 @@ int main (int argc, char *argv[]) {
    /* any changes dprimme() made to primme    */
    /* --------------------------------------- */
 
-   fprintf(primme.outputFile," Matrix: %s\n",driver.matrixFileName);
+   driver_display_params(driver, primme.outputFile); 
    primme_display_params(primme);
+   driver_display_method(method, primme.outputFile);
 
    /* --------------------------------------------------------------------- */
    /*                      Run the dprimme solver                           */
@@ -233,9 +241,38 @@ int main (int argc, char *argv[]) {
    /* ------------------------ */
    /* Initial guess (optional) */
    /* ------------------------ */
-   for (i=0;i<primme.nLocal;i++) evecs[i]=1.0/sqrt(primme.n);
-   if (primme.initSize > 0) {
+
+   /* Read initial guess from a file */
+   if (driver.initialGuessesFileName[0] && primme.initSize != 0) {
+      FILE *f = fopen(driver.initialGuessesFileName, "rb");
+      double d;
+      int cols;
+      assert(f);
+      ret = fread(&d, sizeof(d), 1, f); assert(ret); assert(((int)d) == sizeof(d));
+      fread(&d, sizeof(d), 1, f); assert(ret); assert(((int)d) == primme.n);
+      fread(&d, sizeof(d), 1, f); assert(ret); cols = d;
+      for (i=0; i<min(cols, primme.initSize); i++) {
+         ret = fread(&evecs[primme.nLocal*i], sizeof(d), primme.nLocal, f); assert(ret == primme.nLocal);
+      }
+
+      /* Perturb the initial guesses by a vector with some norm  */
+      if (driver.initialGuessesPert > 0) {
+         double *r = (double *)primme_calloc(primme.nLocal,sizeof(double), "random");
+         double norm;
+         int j;
+         for (i=0; i<min(cols, primme.initSize); i++) {
+            Num_larnv_dprimme(2, primme.iseed, primme.nLocal, r);
+            norm = sqrt(Num_dot_dprimme(primme.nLocal, r, 1, r, 1));
+            for (j=0; j<primme.nLocal; j++) evecs[primme.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
+         }
+         free(r);
+      }
+      Num_larnv_dprimme(2, primme.iseed, (primme.initSize-i)*primme.nLocal, &evecs[primme.nLocal*i]);
+      fclose(f);
+   } else if (primme.initSize > 0) {
       Num_larnv_dprimme(2, primme.iseed, primme.initSize*primme.nLocal, evecs);
+   } else {
+      Num_larnv_dprimme(2, primme.iseed, primme.nLocal, evecs);
    }
 
 
@@ -250,6 +287,29 @@ int main (int argc, char *argv[]) {
 
    wt2 = primme_get_wtime();
    primme_get_time(&ut2,&st2);
+
+   if (driver.checkXFileName[0]) {
+      retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms,
+                            &matrix);
+   }
+
+   /* --------------------------------------------------------------------- */
+   /* Save evecs (optional)                                                 */
+   /* --------------------------------------------------------------------- */
+   if (driver.saveXFileName[0]) {
+      FILE *f = fopen(driver.saveXFileName, "wb");
+      double d;
+      int ret;
+      assert(f);
+      d = sizeof(d); ret = fwrite(&d, sizeof(double), 1, f); assert(ret);
+      d = primme.n; ret = fwrite(&d, sizeof(double), 1, f); assert(ret);
+      d = primme.initSize; ret = fwrite(&d, sizeof(double), 1, f); assert(ret);
+      for (i=0; i<primme.initSize; i++) {
+         ret = fwrite(&evecs[primme.nLocal*i], sizeof(d), primme.nLocal, f); assert(ret == primme.nLocal);
+      }
+      ret = fwrite(&primme, sizeof(primme), 1, f); assert(ret);
+      fclose(f);
+   }
 
    /* --------------------------------------------------------------------- */
    /* Reporting                                                             */
@@ -281,7 +341,7 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
-      if (primme.locking && primme.intWork[0] == 1) {
+      if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme.outputFile, 
             "Some eigenpairs do not have a residual norm less than the tolerance.\n");
@@ -309,6 +369,13 @@ int main (int argc, char *argv[]) {
          "Error: dprimme returned with nonzero exit status\n");
       return -1;
    }
+
+   if (retX != 0) {
+      fprintf(primme.outputFile, 
+         "Error: found some issues in the solution return by dprimme\n");
+      return -1;
+   }
+
 
    fclose(primme.outputFile);
    primme_Free(&primme);
@@ -393,16 +460,13 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
                                                              "Factors.AElts");
          Factors->IA = (int *)primme_calloc(n+1, sizeof(int), "Factors.IA");
          Factors->JA = (int *)primme_calloc(n, sizeof(int),"Factors.JA");
-         printf("Generating diagonal preconditioner");
          if (driver.PrecChoice == 1) {
-            printf(" with the user provided shift %e\n",driver.shift);
             generate_Inv_Diagonal_Prec(n, driver.shift, matrix.IA, matrix.JA, 
                matrix.AElts, Factors->IA, Factors->JA, Factors->AElts);
             *precond_function = Apply_Inv_Diagonal_Prec;
             break;
          } 
          else {
-            printf(" that will use solver provided shifts\n");
             generate_Diagonal_Prec(n, matrix.IA, matrix.JA, matrix.AElts, 
                Factors->IA, Factors->JA, Factors->AElts);
             *precond_function = Apply_Diagonal_Shifted_Prec;
@@ -682,4 +746,104 @@ void generate_Diagonal_Prec(int n, int *IA, int *JA, double *AElts,
    }
 
    PIA[n] = n+1;
+}
+
+int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
+                   double *evecs, double *rnorms, CSRMatrix *matrix) {
+
+   double *Ax, eval0, rnorm0, prod, *r, d, *X, *h;
+   int i, j, cols, ret, retX;
+   FILE *f;
+   primme_params primme0;
+
+   /* Read stored eigenvectors */
+   f = fopen(checkXFileName, "rb");
+   assert(f);
+   ret = fread(&d, sizeof(d), 1, f); assert(ret); assert(((int)d) == sizeof(d));
+   fread(&d, sizeof(d), 1, f); assert(ret); assert(((int)d) == primme->n);
+   fread(&d, sizeof(d), 1, f); assert(ret); cols = d;
+   X = (double *)primme_calloc(primme->n*cols, sizeof(double), "X");
+   for (i=0; i<cols; i++) {
+      ret = fread(&X[primme->nLocal*i], sizeof(d), primme->nLocal, f); assert(ret == primme->nLocal);
+   }
+
+   /* Read stored primme_params */
+   ret = fread(&primme0, sizeof(primme0), 1, f); assert(ret);
+
+   /* Check primme_params */
+   assert(primme0.n == primme->n);
+   if (primme0.numEvals == primme->numEvals &&
+       primme0.target == primme->target &&
+       primme0.numTargetShifts == primme->numTargetShifts &&
+       primme0.dynamicMethodSwitch == primme->dynamicMethodSwitch &&
+       primme0.locking == primme->locking &&
+       primme0.numOrthoConst == primme->numOrthoConst &&
+       primme0.maxBasisSize == primme->maxBasisSize &&
+       primme0.minRestartSize == primme->minRestartSize &&
+       primme0.aNorm == primme->aNorm &&
+       primme0.eps == primme->eps &&
+       primme0.restartingParams.scheme == primme->restartingParams.scheme &&
+       primme0.restartingParams.maxPrevRetain == primme->restartingParams.maxPrevRetain &&
+       primme0.correctionParams.precondition == primme->correctionParams.precondition &&
+       primme0.correctionParams.robustShifts == primme->correctionParams.robustShifts &&
+       primme0.correctionParams.maxInnerIterations == primme->correctionParams.maxInnerIterations &&
+       primme0.correctionParams.projectors.LeftQ  == primme->correctionParams.projectors.LeftQ  &&
+       primme0.correctionParams.projectors.LeftX  == primme->correctionParams.projectors.LeftX  &&
+       primme0.correctionParams.projectors.RightQ == primme->correctionParams.projectors.RightQ &&
+       primme0.correctionParams.projectors.RightX == primme->correctionParams.projectors.RightX &&
+       primme0.correctionParams.projectors.SkewQ  == primme->correctionParams.projectors.SkewQ  &&
+       primme0.correctionParams.projectors.SkewX  == primme->correctionParams.projectors.SkewX  &&
+       primme0.correctionParams.convTest == primme->correctionParams.convTest &&
+       primme0.correctionParams.relTolBase == primme->correctionParams.relTolBase) {
+      if (abs(primme0.stats.numOuterIterations - primme->stats.numOuterIterations) > primme->stats.numOuterIterations/100+1) {
+         fprintf(stderr, "Warning: discrepancy in numOuterIterations, %d should be close to %d\n", primme->stats.numOuterIterations, primme0.stats.numOuterIterations);
+         retX = 1;
+      }
+      if (primme0.initSize != primme->initSize) {
+         fprintf(stderr, "Warning: discrepancy in the number of converged pairs, %d should be close to %d\n", primme->initSize, primme0.initSize);
+         retX = 1;
+      }
+   }
+   else {
+      fprintf(stderr, "Warning: discrepancy in some member of primme\n");
+      retX = 1;
+   }
+
+   h = (double *)primme_calloc(cols, sizeof(double), "h");
+   Ax = (double *)primme_calloc(primme->nLocal, sizeof(double), "Ax");
+   r = (double *)primme_calloc(primme->n*primme->initSize, sizeof(double), "rwork");
+   
+   for (i=0; i < primme->initSize; i++) {
+      /* Check |V(:,i)'A*V(:,i) - evals[i]| < |r|*|A| */
+      amux_(&primme->n, &evecs[primme->nLocal*i], Ax, matrix->AElts, matrix->JA, matrix->IA);
+      eval0 = Num_dot_dprimme(primme->nLocal, &evecs[primme->nLocal*i], 1, Ax, 1);
+      if (fabs(evals[i] - eval0) > rnorms[i]*primme->aNorm) {
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E should be close to %-22.1E\n", i, evals[i], eval0);
+         retX = 1;
+      }
+      /* Check |A*V(:,i) - (V(:,i)'A*V(:,i))*V(:,i)| < |r| */
+      for (j=0; j<primme->nLocal; j++) r[j] = Ax[j] - evals[i]*evecs[primme->nLocal*i+j];
+      rnorm0 = sqrt(Num_dot_dprimme(primme->nLocal, r, 1, r, 1));
+      if (rnorms[i] > primme->eps*primme->aNorm*sqrt((double)(i+1))) {
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E, residual %5E is larger than expected %5E\n", i, evals[i], rnorms[i], primme->eps*primme->aNorm*sqrt((double)(i+1)));
+         retX = 1;
+      }
+      if (rnorm0 > primme->eps*primme->aNorm*sqrt((double)(i+1))) {
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E, RR residual %5E is larger than tolerance %5E\n", i, evals[i], rnorm0, primme->eps*primme->aNorm*sqrt((double)(i+1)));
+         retX = 1;
+      }
+      /* Check X'V(:,i) >= sqrt(1-2|r|), assuming residual of X is less than the tolerance */
+      Num_gemv_dprimme("C", primme->n, cols, 1.0, X, primme->n, &evecs[primme->nLocal*i], 1, 0., h, 1);
+      prod = Num_dot_dprimme(primme->nLocal, h, 1, h, 1);
+      if (prod < sqrt(1.-2.*rnorms[i])) {
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X\n", i, evals[i]);
+         retX = 1;
+      }
+   }
+   free(h);
+   free(X);
+   free(r);
+   free(Ax);
+
+   return retX; 
 }
