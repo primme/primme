@@ -345,7 +345,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
    FILE *configFile;
 
 
-   bzero(driver, sizeof(*driver));
+   memset(driver, 0, sizeof(*driver));
    if ((configFile = fopen(configFileName, "r")) == NULL) {
       fprintf(stderr,"Error(read_driver_params): Could not open config file\n");
       fprintf(stderr,"Driver config file: %s\n", configFileName);

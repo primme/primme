@@ -752,7 +752,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
                    double *evecs, double *rnorms, CSRMatrix *matrix) {
 
    double *Ax, eval0, rnorm0, prod, *r, d, *X, *h;
-   int i, j, cols, ret, retX;
+   int i, j, cols, ret, retX=0;
    FILE *f;
    primme_params primme0;
 
