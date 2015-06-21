@@ -415,7 +415,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          "Allocating real workspace: %ld bytes\n", primme->realWorkSize);
    }
 
-   if (primme->intWorkSize < intWorkSize*sizeof(int) || primme->intWork==NULL) {
+   if (primme->intWorkSize < intWorkSize*(int)sizeof(int) || primme->intWork==NULL) {
       if (primme->intWork != NULL) {
          free(primme->intWork);
       }

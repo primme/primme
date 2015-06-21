@@ -27,6 +27,10 @@
 #ifndef PRIMME_H
 #define PRIMME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <limits.h>
@@ -83,7 +87,7 @@ typedef enum {
    primme_full_LTolerance,
    primme_decreasing_LTolerance,
    primme_adaptive_ETolerance,
-   primme_adaptive,
+   primme_adaptive
 } primme_convergencetest;
 
 
@@ -230,5 +234,10 @@ void primme_PushErrorMessage(const primme_function callingFunction,
      const char *fileName, const int lineNumber, primme_params *primme);
 void primme_PrintStackTrace(const primme_params primme);
 void primme_DeleteStackTrace(primme_params *primme);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* PRIMME_H */

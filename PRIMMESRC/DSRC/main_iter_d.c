@@ -280,16 +280,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    /* -------------------- */
    /* Initialize the basis */
    /* -------------------- */
-/*
-	for (i=0;i<primme->maxBasisSize-1;i++) {
-	tstart = primme_wTimer(0);
-            update_projection_dprimme(V, W, H, i, 
-               primme->maxBasisSize, 1, hVecs, primme);
-	tstart = primme_wTimer(0)-tstart;
-	printf("basisSize %3d time %g\n",i,tstart);
-     	}
-	return(-1);
-*/
 
    ret = init_basis_dprimme(V, W, evecs, evecsHat, M, UDU, ipivot, machEps,
            rwork, rworkSize, &basisSize, &nextGuess, &numGuesses, &timeForMV,
@@ -872,7 +862,7 @@ void check_reset_flags_dprimme(int *flag, int *numConverged,
    for (i=0;i<primme->numEvals;i++) {
       if (i >= numPrevRitzVals) break;
       if ((flag[i] == CONVERGED) && (fabs(hVals[i]-prevRitzVals[i]) > tol)) {
-         *numConverged--;
+         (*numConverged)--;
          flag[i] = UNCONVERGED;
       }
    }
@@ -1524,6 +1514,8 @@ static void initializeModel(primme_CostModel *model, primme_params *primme) {
    model->accum_gdk      = 0.0L;
    model->accum_jdq_gdk  = 1.0L;
 }
+
+#if 0
 /******************************************************************************
  *
  * Function to display the model parameters --- For debugging purposes only
@@ -1559,3 +1551,4 @@ static void displayModel(primme_CostModel *model){
       model->numIt_0,model->timer_0,model->time_in_inner, model->resid_0);
    fprintf(stdout," ------------------------------\n");
 }
+#endif

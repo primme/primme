@@ -18,8 +18,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <stdlib.h>
 #include <sys/time.h>
 #include "sys/resource.h"
+#include "wtime.h"
+
 #ifdef RUSAGE_SELF
 #else
 #define   RUSAGE_SELF     0      /*needed in osx*/
@@ -27,16 +30,15 @@
 
 double primme_wTimer(int zeroTimer) {
    static struct timeval tv;
-   static struct timezone tz;
    static double StartingTime;
    
    if (zeroTimer) {
-      gettimeofday(&tv, &tz); 
+      gettimeofday(&tv, NULL); 
       StartingTime = ((double) tv.tv_sec) + ((double) tv.tv_usec )/(double) 1E6;
       return StartingTime;
    }
    else {
-      gettimeofday(&tv, &tz); 
+      gettimeofday(&tv, NULL); 
       return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6
            - StartingTime;
    }
@@ -72,9 +74,8 @@ double primme_wTimer(int zeroTimer) {
 /* Simply return the microseconds time of day */
 double primme_get_wtime() {
    static struct timeval tv;
-   static struct timezone tz;
 
-   gettimeofday(&tv, &tz); 
+   gettimeofday(&tv, NULL); 
    return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6;
 }
 

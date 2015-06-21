@@ -128,7 +128,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *H, Complex_Z *hVecs,
    int numPacked;           /* The number of coefficient vectors moved to the */
                             /* end of the hVecs array.                        */
    int restartSize;         /* The number of vectors to restart with          */
-   int indexOfPreviousVecs; /* Position within hVecs array the previous       */
+   int indexOfPreviousVecs=0; /* Position within hVecs array the previous       */
                             /* coefficient vectors will be stored             */
    int i, n, eStart;        /* various variables                              */
    int ret;                 /* Return value                                   */

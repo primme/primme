@@ -131,7 +131,6 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
    int rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
-   int workSpaceSize; /* Size of local work array.                           */
    int numIts;        /* Number of inner iterations                          */
    int ret;           /* Return value used for error checking.               */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
@@ -143,7 +142,9 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
    @(type) *g, *d, *delta, *w, *ptmp;
    double alpha_prev, beta, rho_prev, rho;
    double Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
+#ifdefarithm L_DEFCPLX
    @(type) ztmp;
+#endifarithm
 
    /* Parameters used to dynamically update eigenpair */
    double Beta, Delta, Psi, Beta_prev, Delta_prev, Psi_prev, eta;
@@ -161,7 +162,7 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
    double LTolerance, ETolerance;
 
    /* Some constants                                                          */
-   @(type) tpone = @(tpone), tzero = @(tzero);
+   @(type) tzero = @(tzero);
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -172,8 +173,6 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
    workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
-   
-   workSpaceSize = rworkSize - (workSpace - rwork);
    
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */

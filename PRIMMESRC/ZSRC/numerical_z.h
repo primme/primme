@@ -31,31 +31,39 @@
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz, 
    int n, Complex_Z *aux, double *rwork, int naux);
-void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda, 
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, int lda, 
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info);
-void Num_zhetrf_zprimme(char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
+void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
    Complex_Z *work, int ldwork, int *info);
-void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
+void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
    int *ipivot, Complex_Z *b, int ldb, int *info);
 
 
 void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
 Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
-void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int k, 
    Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb, 
    Complex_Z beta, Complex_Z *c, int ldc);
-void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha, 
+void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, Complex_Z alpha, 
    Complex_Z *a, int lda, Complex_Z *b, int ldb, Complex_Z beta, 
    Complex_Z *c, int ldc);
 void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx, 
    Complex_Z *y, int incy);
-void Num_gemv_zprimme(char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
+void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
    int lda, Complex_Z *x, int incx, Complex_Z beta, Complex_Z *y, int incy);
 void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x);
 void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx);
 void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -26,6 +26,11 @@
  *
  ******************************************************************************/
 
+#ifndef COMMON_NUMERICAL_PRIVATE_H
+#define COMMON_NUMERICAL_PRIVATE_H
+
+#include "common_numerical.h"
+
 #if !defined(NUM_SUN) && !defined(NUM_IBM) && !defined(NUM_CRAY)
 #define NUM_SUN
 #endif
@@ -53,26 +58,28 @@
 
 #endif
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C"
 {
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 
 #ifndef NUM_CRAY
 
-void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
-double DLAMCH(char *cmach);
+void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
+double DLAMCH(const char *cmach);
 
 #ifdef NUM_ESSL
 #endif
 
 #else
 
-void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
+void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 double DLAMCH(_fcd cmach_fcd);
 
 #endif
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
-#endif /* Cplusplus */
+#endif /* __cplusplus */
+
+#endif /* COMMON_NUMERICAL_PRIVATE_H */

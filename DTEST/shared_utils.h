@@ -17,8 +17,8 @@ typedef struct driver_params {
 
    int weightedPart;
 
-   // Preconditioning paramaters for various preconditioners
-   int PrecChoice;       // 0, 1, 2, or 3 for the moment (see driver)
+   /* Preconditioning paramaters for various preconditioners */
+   int PrecChoice;       /* 0, 1, 2, or 3 for the moment (see driver) */
    int isymm;
    int level;
    double threshold;
@@ -29,7 +29,7 @@ typedef struct driver_params {
 
 
 int read_solver_params(char *configFileName, char *outputFileName,
-		primme_params *primme, primme_preset_method *method);
+                primme_params *primme, primme_preset_method *method);
 int read_driver_params(char *configFileName, driver_params *driver);
 int readfullMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
 int readUpperMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);

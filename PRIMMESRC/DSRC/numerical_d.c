@@ -25,30 +25,35 @@
  *
  ******************************************************************************/
 
-#include "primme.h"
+
 #include <stdarg.h>
 #include "numerical_private_d.h"
 #include "numerical_d.h"
+#include "primme.h"
+#include <stdlib.h>   /* free */
 
 /******************************************************************************/
 void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    DCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
 
-void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int k, 
    double alpha, double *a, int lda, double *b, int ldb, 
    double beta, double *c, int ldc) {
-   long long int lm = m;
-   long long int ln = n;
-   long long int lk = k;
-   long long int llda = lda;
-   long long int lldb = ldb;
-   long long int lldc = ldc;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lk = k;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldc = ldc;
+
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -56,7 +61,7 @@ void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k,
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
    DGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
-	 c, &lldc);
+         c, &lldc);
 #else
    DGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif
@@ -64,14 +69,15 @@ void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k,
 }
 
 /******************************************************************************/
-void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha, 
+void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double alpha, 
    double *a, int lda, double *b, int ldb, double beta, 
    double *c, int ldc) {
-   long long int lm = m;
-   long long int ln = n;
-   long long int llda = lda;
-   long long int lldb = ldb;
-   long long int lldc = ldc;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldc = ldc;
 
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
@@ -81,29 +87,31 @@ void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha,
    DSYMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #else
    DSYMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
-#endif   
+#endif 
 
 }
 
 /******************************************************************************/
 void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
    double *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    DAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
-void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,
+void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
    int lda, double *x, int incx, double beta, double *y, int incy) {
-   long long int lm = m;
-   long long int ln = n;
-   long long int llda = lda;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
@@ -119,9 +127,10 @@ void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,
 
 /******************************************************************************/
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    return(DDOT(&ln, x, &lincx, y, &lincy));
 
@@ -129,30 +138,34 @@ double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
 
 /******************************************************************************/
 void Num_larnv_dprimme(int idist, int *iseed, int length, double *x) {
-   long long int lidist = idist;
-   long long int llength = length;
-   long long int *liseed;
-   long long int temp[4];
+
+   PRIMME_BLASINT lidist = idist;
+   PRIMME_BLASINT llength = length;
+   PRIMME_BLASINT temp[4];
+   PRIMME_BLASINT *liseed = temp;
    int i;
-   for(i=0;i<4;i++)
-   {
-      temp[i] = iseed[i];
+
+   if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
+      liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
+   } else {
+      liseed = temp;
+      for(i=0; i<4; i++)
+         liseed[i] = (PRIMME_BLASINT)iseed[i];
    }
-   liseed = temp;
 
    DLARNV(&lidist, liseed, &llength, x);
-   
-   for(i=0;i<4;i++)
-   {
-      iseed[i] = liseed[i];
-   }
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT))
+      for(i=0; i<4; i++)
+         iseed[i] = (int)liseed[i];
 
 }
 
 /******************************************************************************/
 void Num_scal_dprimme(int n, double alpha, double *x, int incx) {
-   long long int ln = n;
-   long long int lincx = incx;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
 
    DSCAL(&ln, &alpha, x, &lincx);
 
@@ -160,78 +173,77 @@ void Num_scal_dprimme(int n, double alpha, double *x, int incx) {
 
 /******************************************************************************/
 void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    DSWAP(&ln, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux) {
-   long long int liopt = iopt;
-   long long int lldz = ldz;
-   long long int ln = n;
-   long long int lnaux = naux;
 
-   int ret;
+   PRIMME_BLASINT liopt = iopt;
+   PRIMME_BLASINT lldz = ldz;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnaux = naux;
 
-   ret = dspev(liopt, ap, w, z, lldz, ln, aux, lnaux);
-   return (ret);
+   return dspev(liopt, ap, w, z, lldz, ln, aux, lnaux);
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #else
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
-   long long int ln = n;
-   long long int llda = lda;
-   long long int lldwork = ldwork;
-   long long int linfo = (long long int) *info;
-   
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
+ 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
 
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   DSYEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo); 
+   DSYEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo);
 
 #else
 
-   DSYEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo); 
+   DSYEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo);
 
 #endif
-    *info = (int)linfo;
-
+   *info = linfo;
 }
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 #endif
 
 /******************************************************************************/
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info) {
-   long long int ln = n;
-   long long int llda = lda;
 
-   long long int *lipivot = (long long int *)primme_calloc(n, sizeof(long long int), "lipivot array");
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0; 
    int i;
-   for(i=0;i<n;i++)
-   {
-      lipivot[i] = ipivot[i];
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
-   
-   long long int lldwork = ldwork;
-   long long int linfo = (long long int) *info;   
 
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
@@ -244,30 +256,33 @@ void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot,
 
 #endif
 
-   for(i=0;i<n;i++)
-   {
-      ipivot[i] = lipivot[i];
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
    }
-   *info = (int) linfo;
+   *info = (int)linfo;
+
 }
 
 
 /******************************************************************************/
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info) {
-   long long int ln = n;
-   long long int lnrhs = nrhs;
-   long long int llda = lda;
 
-   long long int *lipivot = (long long int *)primme_calloc(n, sizeof(long long int), "lipivot array");
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnrhs = nrhs;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT linfo = 0; 
    int i;
-   for(i=0;i<n;i++)
-   {
-      lipivot[i] = ipivot[i];
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
-   
-   long long int lldb = ldb;
-   long long int linfo = (long long int) *info;
 
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
@@ -279,10 +294,12 @@ void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda,
    DSYTRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
 
-    for(i=0;i<n;i++)
-   {
-      ipivot[i] = lipivot[i];
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
    }
-    *info = (int) linfo;
+   *info = (int)linfo;
+
 }
 

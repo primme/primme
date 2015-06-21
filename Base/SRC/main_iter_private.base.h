@@ -115,6 +115,8 @@ static double ratio_JDQMR_GDpk(primme_CostModel *CostModel, int numLocked,
    double estimate_slowdown, double estimate_ratio_outer_MV);
 static void update_slowdown(primme_CostModel *model);
 
+#if 0
 static void displayModel(primme_CostModel *model);
+#endif
 
 #endif

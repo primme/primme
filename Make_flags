@@ -62,6 +62,9 @@ CFLAGS = -fPIC
 #CFLAGS = 
 #---------------------------------------------------------------
 
+# Add this to build Matlab interface
+CFLAGS += -DPRIMME_BLASINT_SIZE=64
+
 FFLAGS =  -fno-second-underscore -fPIC
 LOW_OPT = -g #-O3  
 HIGH_OPT = -g # -O3
@@ -71,10 +74,6 @@ HIGH_OPT = -g # -O3
 #---------------------------------------------------------------
 
 DEFINES = -DF77UNDERSCORE 
-# If a C++ compiler is used instead of C add this
-ifeq ($(CC),c++)
-DEFINES = -DF77UNDERSCORE -DCplusplus
-endif
 
 #---------------------------------------------------------------
 #  Creating the library

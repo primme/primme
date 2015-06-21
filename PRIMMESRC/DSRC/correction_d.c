@@ -685,7 +685,6 @@ static void Olsen_preconditioner_block(double *r, double *x,
    int blockIndex, count;
    double alpha;
    double *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
-   double ztmp;
    double tzero = +0.0e+00;
 
    /*------------------------------------------------------------------*/

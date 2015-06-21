@@ -690,7 +690,9 @@ static void Olsen_preconditioner_block(@(type) *r, @(type) *x,
    int blockIndex, count;
    @(type) alpha;
    @(type) *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
+#ifdefarithm L_DEFCPLX
    @(type) ztmp;
+#endifarithm
    @(type) tzero = @(tzero);
 
    /*------------------------------------------------------------------*/

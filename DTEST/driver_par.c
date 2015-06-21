@@ -22,23 +22,23 @@
  *
  *  Parallel driver for dprimme. Calling format:
  *
- * 	    par_dprimme DriverConfigFileName SolverConfigFileName
+ *          par_dprimme DriverConfigFileName SolverConfigFileName
  *
  *  DriverConfigFileName  includes the path and filename of the matrix
- *  			  as well as preconditioning information (eg., 
- *  			  ParaSails parameters).
- *  			  Currently, for reading the input matrix,
- *  			  full coordinate format (.mtx) and upper triangular 
- *  			  coordinate format (.U) are supported.
+ *                        as well as preconditioning information (eg., 
+ *                        ParaSails parameters).
+ *                        Currently, for reading the input matrix,
+ *                        full coordinate format (.mtx) and upper triangular 
+ *                        coordinate format (.U) are supported.
  *
  *         Example file:  DriverConf
  *
  *  SolverConfigFileName  includes all dprimme required information
- *  			  as stored in primme data structure.
+ *                        as stored in primme data structure.
  *
- *  	   Example files: FullConf  Full customization of primme
- *  		          LeanConf  Use a preset method and some customization
- *  		          MinConf   Provide ONLY a preset method and numEvals.
+ *         Example files: FullConf  Full customization of primme
+ *                        LeanConf  Use a preset method and some customization
+ *                        MinConf   Provide ONLY a preset method and numEvals.
  *
  ******************************************************************************/
 #include <stdlib.h>
@@ -68,7 +68,7 @@ int main (int argc, char *argv[]) {
    /* Matrix */
    int n, nLocal, nnz;
    double fnorm;
-   CSRMatrix matrix; 	     // The matrix in simple SPARSKIT CSR format
+   CSRMatrix matrix;         // The matrix in simple SPARSKIT CSR format
    Matrix *Par_matrix;       // Pointer to the matrix in Parasails CSR format
 
    /* Permutation/partitioning stuff */
@@ -80,19 +80,17 @@ int main (int argc, char *argv[]) {
 
    /* Files */
    char *DriverConfigFileName, *SolverConfigFileName;
+   /*
    char partFileName[512];
    FILE *partFile;
+   */
    
    /* Driver and solver I/O arrays and parameters */
    double *evals, *evecs, *rnorms;
    driver_params driver;
    primme_params primme;
    primme_preset_method method;
-#ifdef Cplusplus     /* C++ has a stricter type checking */
    void (*precond_function)(void *, void *, int *, primme_params *);
-#else
-   void *precond_function;
-#endif
 
    /* Other miscellaneous items */
    int i,j;
@@ -103,7 +101,7 @@ int main (int argc, char *argv[]) {
    MPI_Comm comm;
 
    /* --------------------------------------------------------------------- */
-   /* MPI INITIALIZATION						    */
+   /* MPI INITIALIZATION                                                    */
    /* --------------------------------------------------------------------- */
    MPI_Init(&argc, &argv);
    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
@@ -133,7 +131,7 @@ int main (int argc, char *argv[]) {
    /* ----------------------------- */
    if (read_driver_params(DriverConfigFileName, &driver) < 0) {
       fprintf(stderr, "Reading driver parameters failed\n");
-	fflush(stderr);
+        fflush(stderr);
       MPI_Finalize();
       return(-1);
    }
@@ -144,16 +142,16 @@ int main (int argc, char *argv[]) {
    if (procID == 0) {
 
       fprintf(stdout," Matrix: %s\n",driver.matrixFileName);
-	fflush(stdout);
+        fflush(stdout);
 
       if (!strcmp("mtx", 
-		&driver.matrixFileName[strlen(driver.matrixFileName)-3])) {  
+                &driver.matrixFileName[strlen(driver.matrixFileName)-3])) {  
          // coordinate format storing both lower and upper triangular parts
          ret = readfullMTX(driver.matrixFileName, &matrix.AElts, &matrix.JA, 
             &matrix.IA, &n, &nnz);
          if (ret < 0) {
             fprintf(stderr, "ERROR: Could not read matrix file\n");
-	    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             return(-1);
          }
       }
@@ -163,7 +161,7 @@ int main (int argc, char *argv[]) {
             &matrix.IA, &n, &nnz);
          if (ret < 0) {
             fprintf(stderr, "ERROR: Could not read matrix file\n");
-	    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             return(-1);
          }
       }
@@ -173,7 +171,7 @@ int main (int argc, char *argv[]) {
          ret = -1;
          if (ret < 0) {
             fprintf(stderr, "ERROR: Could not read matrix file\n");
-	    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             return(-1);
          }
       }
@@ -255,7 +253,7 @@ int main (int argc, char *argv[]) {
    rangeEnd = map[procID+1]-1;
    nLocal = rangeEnd - rangeStart+1;
    Par_matrix = csrToParaSails(procID, map, fg2or, or2fg, 
-		               matrix.IA, matrix.JA, matrix.AElts, comm);
+                               matrix.IA, matrix.JA, matrix.AElts, comm);
 
 /* ------------------------------------------------------------------------- */
 /*  Set up preconditioner if needed. For parallel programs the only choice   */
@@ -268,8 +266,8 @@ int main (int argc, char *argv[]) {
    if (driver.PrecChoice == 4) {
 
       Par_Factors = generate_precond(&matrix, driver.shift, n,
-	 procID, map, fg2or, or2fg, rangeStart, rangeEnd, driver.isymm, 
-	 driver.level, driver.threshold, driver.filter, comm);
+         procID, map, fg2or, or2fg, rangeStart, rangeEnd, driver.isymm, 
+         driver.level, driver.threshold, driver.filter, comm);
       precond_function = par_ApplyParasailsPrec;
    }
    else {
@@ -300,9 +298,9 @@ int main (int argc, char *argv[]) {
 
    if (procID == 0) {
       if (read_solver_params(SolverConfigFileName, driver.outputFileName, 
-			   &primme, &method) < 0) {
+                           &primme, &method) < 0) {
          fprintf(stderr, "Reading solver parameters failed\n");
-	 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
          return(-1);
       }
    }
@@ -334,9 +332,9 @@ int main (int argc, char *argv[]) {
    ret = dprimme(NULL,NULL,NULL,&primme);
    fprintf(primme.outputFile,"PRIMME will allocate the following memory:\n");
    fprintf(primme.outputFile," processor %d, real workspace, %ld bytes\n",
-		   		procID, primme.realWorkSize);
+                                procID, primme.realWorkSize);
    fprintf(primme.outputFile," processor %d, int  workspace, %d bytes\n",
-		   		procID, primme.intWorkSize);
+                                procID, primme.intWorkSize);
 
    /* --------------------------------------- */
    /* Set up matrix vector and preconditioner */
@@ -363,14 +361,14 @@ int main (int argc, char *argv[]) {
    }
 
    /* --------------------------------------------------------------------- */
-   /* 	                   Run the dprimme solver                           */
+   /*                      Run the dprimme solver                           */
    /* --------------------------------------------------------------------- */
 
    /* Allocate space for converged Ritz values and residual norms */
 
    evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
    evecs = (double *)primme_calloc(primme.nLocal*primme.numEvals, 
-				sizeof(double), "evecs");
+                                sizeof(double), "evecs");
    rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
@@ -410,9 +408,9 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
 
       fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-		      				      primme.aNorm*primme.eps);
+                                                      primme.aNorm*primme.eps);
       fprintf(primme.outputFile, "Iterations: %-d\n", 
-		      			      primme.stats.numOuterIterations); 
+                                              primme.stats.numOuterIterations); 
       fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
@@ -463,7 +461,7 @@ int main (int argc, char *argv[]) {
 /******************************************************************************
  * Computed the Frobenius norm of a CSR matrix 
  *
- * 	||A||_frob = sqrt( \sum_{i,j} A_ij^2 )
+ *      ||A||_frob = sqrt( \sum_{i,j} A_ij^2 )
  *
 ******************************************************************************/
 double frobeniusNorm(int n, int *IA, double *AElts) {
@@ -490,7 +488,7 @@ double frobeniusNorm(int n, int *IA, double *AElts) {
 /******************************************************************************
  * Shifts a CSR matrix by a shift
  *
- * 	A = A + shift I
+ *      A = A + shift I
  *
 ******************************************************************************/
 void shiftCSRMatrix(double shift, int n, int *IA, int *JA, double *AElts) {
@@ -637,7 +635,7 @@ ParaSails* generate_precond(CSRMatrix *matrix, double shift, int n, int procID,
 
    // Change A to Parasails format
    shiftedMatrix = csrToParaSails(procID, map, fg2or, or2fg, 
-		            matrix->IA, matrix->JA, matrix->AElts, comm);
+                            matrix->IA, matrix->JA, matrix->AElts, comm);
 
    // Free A to make room for preconditioner
    free(matrix->AElts); free(matrix->IA); free(matrix->JA);
@@ -687,7 +685,7 @@ void par_MatrixMatvec(void *x, void *y, int *blockSize,
 
    for (i=0;i<*blockSize;i++) {
       MatrixMatvec(primme->matrix, &xvec[primme->nLocal*i], 
-		      		   &yvec[primme->nLocal*i]);
+                                   &yvec[primme->nLocal*i]);
    }
 
 }
@@ -708,7 +706,7 @@ void par_ApplyParasailsPrec(void *x, void *y, int *blockSize,
 
    for (i=0;i<*blockSize;i++) {
      ParaSailsApply(primme->preconditioner, &xvec[primme->nLocal*i], 
-		     			    &yvec[primme->nLocal*i]);
+                                            &yvec[primme->nLocal*i]);
    }
 
 }

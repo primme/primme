@@ -31,43 +31,51 @@
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdefarithm L_DEFCPLX
 int Num_zhpev_zprimme(int iopt, @(type) *ap, double *w, @(type) *z, int ldz, 
    int n, @(type) *aux, double *rwork, int naux);
-void Num_zheev_zprimme(char *jobz, char *uplo, int n, @(type) *a, int lda, 
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, @(type) *a, int lda, 
    double *w, @(type) *work, int ldwork, double *rwork, int *info);
-void Num_zhetrf_zprimme(char *uplo, int n, @(type) *a, int lda, int *ipivot,
+void Num_zhetrf_zprimme(const char *uplo, int n, @(type) *a, int lda, int *ipivot,
    @(type) *work, int ldwork, int *info);
-void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, @(type) *a, int lda, 
+void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, @(type) *a, int lda, 
    int *ipivot, @(type) *b, int ldb, int *info);
 #endifarithm
 
 #ifdefarithm L_DEFREAL
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux);
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info);
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info);
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info);
 #endifarithm
 
 void Num_@(pre)copy_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
 @(type) Num_dot_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
-void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_@(pre)primme(const char *transa, const char *transb, int m, int n, int k, 
    @(type) alpha, @(type) *a, int lda, @(type) *b, int ldb, 
    @(type) beta, @(type) *c, int ldc);
-void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha, 
+void Num_symm_@(pre)primme(const char *side, const char *uplo, int m, int n, @(type) alpha, 
    @(type) *a, int lda, @(type) *b, int ldb, @(type) beta, 
    @(type) *c, int ldc);
 void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx, 
    @(type) *y, int incy);
-void Num_gemv_@(pre)primme(char *transa, int m, int n, @(type) alpha, @(type) *a,
+void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(type) *a,
    int lda, @(type) *x, int incx, @(type) beta, @(type) *y, int incy);
 void Num_larnv_@(pre)primme(int idist, int *iseed, int length, @(type) *x);
 void Num_scal_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx);
 void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

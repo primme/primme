@@ -30,16 +30,15 @@
 
 /******************************************************************************/
 void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    DCOPY(&ln, x, &lincx, y, &lincy);
-
 }
 
 /******************************************************************************/
-double Num_dlamch_primme(char *cmach) {
+double Num_dlamch_primme(const char *cmach) {
 #ifdef NUM_CRAY
    _fcd cmach_fcd;
 

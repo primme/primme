@@ -29,6 +29,11 @@
  *
  **********************************************************************/
 
+#if !(defined (__APPLE__) && defined (__MACH__))
+/* valloc and gethostname may need this */
+#define _XOPEN_SOURCE 500
+#include <malloc.h>
+#endif
 #include <stdlib.h>   /* mallocs, free */
 #include <unistd.h>   /* gethostname */
 #include <stdio.h>    

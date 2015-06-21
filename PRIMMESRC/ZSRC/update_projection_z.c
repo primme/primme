@@ -35,10 +35,10 @@
 #include "numerical_z.h"
 
 /*******************************************************************************
- * Subroutine update_projection - This routine assumes Z is a hermitian matrix 
+ * Subroutine update_projection - Z = X'*Y. It assumes Z is a hermitian matrix 
  *    whose columns will be updated with blockSize vectors.  Even though space 
  *    for the entire Z is allocated, only the upper triangular portion is 
- *    stored.
+ *    stored. 
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -71,25 +71,13 @@ void update_projection_zprimme(Complex_Z *X, Complex_Z *Y, Complex_Z *Z,
    }
 
    /* --------------------------------------------------------------------- */
-   /* Grow Z by blockSize number of rows and columns                        */
-   /*    Compute the first numCols rows of the new blockSize columns        */
+   /* Grow Z by blockSize number of rows and columns all at once            */
    /* --------------------------------------------------------------------- */
 
-   Num_gemm_zprimme("C", "N", numCols, blockSize, primme->nLocal, tpone, 
+   Num_gemm_zprimme("C", "N", numCols+blockSize, blockSize, primme->nLocal, tpone, 
       X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
       tzero, rwork, maxCols);
-
-   /* -------------------------------------------------------------- */
-   /*    Compute next the additional rows of each new column vector. */
-   /*    Only the upper triangular portion is computed and stored.   */
-   /* -------------------------------------------------------------- */
-
-   for (j = numCols; j < numCols+blockSize; j++) {
-      Num_gemv_zprimme("C", primme->nLocal, j-numCols+1, tpone,
-         &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
-         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
-   }
-
+   
    count = 2*maxCols*blockSize;
    (*primme->globalSumDouble)(rwork, &Z[maxCols*numCols], &count, primme);
 }

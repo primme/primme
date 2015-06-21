@@ -42,6 +42,7 @@
 #include "restart_z.h"
 #include "factorize_z.h"
 #include "numerical_z.h"
+#include <assert.h>
 
 /******************************************************************************
  * Function lock_vectors - This subroutine locks converged Ritz pairs.  The
@@ -547,6 +548,11 @@ static void insertionSort(double newVal, double *evals, double newNorm,
             if ( ithShift != currentShift || 
             fabs(newVal-currentShift) >= fabs(evals[i-1]-currentShift) ) break; 
          }
+      }
+      else {
+         /* This should never happen */
+         assert(0);
+         i = 0; /* Avoid warning */
       }
    }
 

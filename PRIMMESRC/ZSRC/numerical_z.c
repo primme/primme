@@ -25,31 +25,36 @@
  *
  ******************************************************************************/
 
-#include "primme.h"
+
 #include <stdarg.h>
-/*#include "Complex.h"*/
+#include "Complex.h"
 #include "numerical_private_z.h"
 #include "numerical_z.h"
+#include "primme.h"
+#include <stdlib.h>   /* free */
 
 /******************************************************************************/
 void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    ZCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
 
-void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int k, 
    Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb, 
    Complex_Z beta, Complex_Z *c, int ldc) {
-   long long int lm = m;
-   long long int ln = n;
-   long long int lk = k;
-   long long int llda = lda;
-   long long int lldb = ldb;
-   long long int lldc = ldc;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lk = k;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldc = ldc;
+
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -57,7 +62,7 @@ void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k,
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
    ZGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
-	 c, &lldc);
+         c, &lldc);
 #else
    ZGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif
@@ -65,14 +70,15 @@ void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k,
 }
 
 /******************************************************************************/
-void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha, 
+void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, Complex_Z alpha, 
    Complex_Z *a, int lda, Complex_Z *b, int ldb, Complex_Z beta, 
    Complex_Z *c, int ldc) {
-   long long int lm = m;
-   long long int ln = n;
-   long long int llda = lda;
-   long long int lldb = ldb;
-   long long int lldc = ldc;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldc = ldc;
 
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
@@ -82,29 +88,31 @@ void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha,
    ZHEMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #else
    ZHEMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
-#endif   
+#endif 
 
 }
 
 /******************************************************************************/
 void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx, 
    Complex_Z *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    ZAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
-void Num_gemv_zprimme(char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
+void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
    int lda, Complex_Z *x, int incx, Complex_Z beta, Complex_Z *y, int incy) {
-   long long int lm = m;
-   long long int ln = n;
-   long long int llda = lda;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
@@ -151,30 +159,34 @@ Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy)
 
 /******************************************************************************/
 void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x) {
-   long long int lidist = idist;
-   long long int llength = length;
-   long long int *liseed;
-   long long int temp[4];
+
+   PRIMME_BLASINT lidist = idist;
+   PRIMME_BLASINT llength = length;
+   PRIMME_BLASINT temp[4];
+   PRIMME_BLASINT *liseed = temp;
    int i;
-   for(i=0;i<4;i++)
-   {
-      temp[i] = iseed[i];
+
+   if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
+      liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
+   } else {
+      liseed = temp;
+      for(i=0; i<4; i++)
+         liseed[i] = (PRIMME_BLASINT)iseed[i];
    }
-   liseed = temp;
 
    ZLARNV(&lidist, liseed, &llength, x);
 
-   for(i=0;i<4;i++)
-   {
-      iseed[i] = liseed[i];
-   }
+   if (sizeof(int) != sizeof(PRIMME_BLASINT))
+      for(i=0; i<4; i++)
+         iseed[i] = (int)liseed[i];
 
 }
 
 /******************************************************************************/
 void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
-   long long int ln = n;
-   long long int lincx = incx;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
 
    ZSCAL(&ln, &alpha, x, &lincx);
 
@@ -182,42 +194,42 @@ void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
 
 /******************************************************************************/
 void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
-   long long int ln = n;
-   long long int lincx = incx;
-   long long int lincy = incy;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
    ZSWAP(&ln, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    int n, Complex_Z *aux, int naux) {
-   long long int liopt = iopt;
-   long long int lldz = ldz;
-   long long int ln = n;
-   long long int lnaux = naux;
 
-   int ret;
+   PRIMME_BLASINT liopt = iopt;
+   PRIMME_BLASINT lldz = ldz;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnaux = naux;
 
-   ret = zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
-   return (ret);
+   return zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #else
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, int lda,
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
-   long long int ln = n;
-   long long int llda = lda;
-   long long int lldwork = ldwork;
-   long long int linfo = (long long int)*info;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -229,83 +241,87 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
 
 #else
 
-   ZHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
+   ZHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo);
 
 #endif
-    *info = (int) linfo;
+   *info = linfo;
 }
 
 #endif
 
 
 /******************************************************************************/
-void Num_zhetrf_zprimme(char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
+void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
    Complex_Z *work, int ldwork, int *info) {
-   long long int ln = n;
-   long long int llda = lda;
 
-   long long int *lipivot = (long long int *)primme_calloc(n, sizeof(long long int), "lipivot array");
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0; 
    int i;
-   for(i=0;i<n;i++)
-   {
-      lipivot[i] = ipivot[i];
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
-   
-   long long int lldwork = ldwork;
-   long long int linfo = (long long int)*info;
 
 #ifdef NUM_CRAY
-	_fcd uplo_fcd;
+        _fcd uplo_fcd;
 
-	uplo_fcd = _cptofcd(uplo, strlen(uplo));
-	ZHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
+        uplo_fcd = _cptofcd(uplo, strlen(uplo));
+        ZHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 #else
 
-	ZHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
+        ZHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 
 #endif
 
-   for(i=0;i<n;i++)
-   {
-      ipivot[i] = lipivot[i];
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
    }
-    *info = (int) linfo;
+   *info = (int)linfo;
 
 }
 
 
 /******************************************************************************/
-void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
+void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
    int *ipivot, Complex_Z *b, int ldb, int *info) {
-   long long int ln = n;
-   long long int lnrhs = nrhs;
-   long long int llda = lda;
 
-   long long int *lipivot = (long long int *)primme_calloc(n, sizeof(long long int), "lipivot array");
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnrhs = nrhs;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT linfo = 0; 
    int i;
-   for(i=0;i<n;i++)
-   {
-      lipivot[i] = ipivot[i];
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
-   
-   long long int lldb = ldb;
-   long long int linfo = (long long int)*info;
 
 #ifdef NUM_CRAY
-	_fcd uplo_fcd;
+        _fcd uplo_fcd;
 
-	uplo_fcd = _cptofcd(uplo, strlen(uplo));
-	ZHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+        uplo_fcd = _cptofcd(uplo, strlen(uplo));
+        ZHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #else
 
-	ZHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+        ZHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
 
-    for(i=0;i<n;i++)
-   {
-      ipivot[i] = lipivot[i];
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
    }
-    *info = (int) linfo;
+   *info = (int)linfo;
 
 }
-  
+ 

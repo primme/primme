@@ -32,22 +32,36 @@
 #endifarithm
 #include "numerical_private_@(pre).h"
 #include "numerical_@(pre).h"
+#include "primme.h"
+#include <stdlib.h>   /* free */
 
 /******************************************************************************/
 void Num_@(pre)copy_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
+
 #ifdefarithm L_DEFCPLX
-   ZCOPY(&n, x, &incx, y, &incy);
+   ZCOPY(&ln, x, &lincx, y, &lincy);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DCOPY(&n, x, &incx, y, &incy);
+   DCOPY(&ln, x, &lincx, y, &lincy);
 #endifarithm
 }
 /******************************************************************************/
 
-void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_@(pre)primme(const char *transa, const char *transb, int m, int n, int k, 
    @(type) alpha, @(type) *a, int lda, @(type) *b, int ldb, 
    @(type) beta, @(type) *c, int ldc) {
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lk = k;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldc = ldc;
+
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -55,28 +69,34 @@ void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k,
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
 #ifdefarithm L_DEFCPLX
-   ZGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-         c, &ldc);
+   ZGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
+         c, &lldc);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DGEMM(transa_fcd, transb_fcd, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, 
-         c, &ldc);
+   DGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
+         c, &lldc);
 #endifarithm
 #else
 #ifdefarithm L_DEFCPLX
-   ZGEMM(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   ZGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DGEMM(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   DGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endifarithm
 #endif
 
 }
 
 /******************************************************************************/
-void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha, 
+void Num_symm_@(pre)primme(const char *side, const char *uplo, int m, int n, @(type) alpha, 
    @(type) *a, int lda, @(type) *b, int ldb, @(type) beta, 
    @(type) *c, int ldc) {
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldc = ldc;
 
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
@@ -84,19 +104,19 @@ void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha,
    side_fcd = _cptofcd(side, strlen(side));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 #ifdefarithm L_DEFCPLX
-   ZHEMM(side_fcd, uplo_fcd, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   ZHEMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DSYMM(side_fcd, uplo_fcd, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   DSYMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endifarithm
 #else
 #ifdefarithm L_DEFCPLX
-   ZHEMM(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   ZHEMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DSYMM(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+   DSYMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endifarithm
-#endif   
+#endif 
 
 }
 
@@ -104,35 +124,45 @@ void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha,
 void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx, 
    @(type) *y, int incy) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
+
 #ifdefarithm L_DEFCPLX
-   ZAXPY(&n, &alpha, x, &incx, y, &incy);
+   ZAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DAXPY(&n, &alpha, x, &incx, y, &incy);
+   DAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 #endifarithm
 
 }
 
 /******************************************************************************/
-void Num_gemv_@(pre)primme(char *transa, int m, int n, @(type) alpha, @(type) *a,
+void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(type) *a,
    int lda, @(type) *x, int incx, @(type) beta, @(type) *y, int incy) {
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
 
    transa_fcd = _cptofcd(transa, strlen(transa));
 #ifdefarithm L_DEFCPLX
-   ZGEMV(transa_fcd, &m, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+   ZGEMV(transa_fcd, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DGEMV(transa_fcd, &m, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+   DGEMV(transa_fcd, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #endifarithm
 #else
 #ifdefarithm L_DEFCPLX
-   ZGEMV(transa, &m, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+   ZGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DGEMV(transa, &m, &n, &alpha, a, &lda, x, &incx, &beta, y, &incy);
+   DGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #endifarithm
 
 #endif
@@ -170,30 +200,56 @@ void Num_gemv_@(pre)primme(char *transa, int m, int n, @(type) alpha, @(type) *a
 /* -- end of explicit implementation of the zdotc() - */
 #endifarithm
 #ifdefarithm L_DEFREAL
-   return(DDOT(&n, x, &incx, y, &incy));
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
+
+   return(DDOT(&ln, x, &lincx, y, &lincy));
 #endifarithm
 
 }
 
 /******************************************************************************/
 void Num_larnv_@(pre)primme(int idist, int *iseed, int length, @(type) *x) {
+
+   PRIMME_BLASINT lidist = idist;
+   PRIMME_BLASINT llength = length;
+   PRIMME_BLASINT temp[4];
+   PRIMME_BLASINT *liseed = temp;
+   int i;
+
+   if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
+      liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
+   } else {
+      liseed = temp;
+      for(i=0; i<4; i++)
+         liseed[i] = (PRIMME_BLASINT)iseed[i];
+   }
+
 #ifdefarithm L_DEFCPLX
-   ZLARNV(&idist, iseed, &length, x);
+   ZLARNV(&lidist, liseed, &llength, x);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DLARNV(&idist, iseed, &length, x);
+   DLARNV(&lidist, liseed, &llength, x);
 #endifarithm
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT))
+      for(i=0; i<4; i++)
+         iseed[i] = (int)liseed[i];
 
 }
 
 /******************************************************************************/
 void Num_scal_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+
 #ifdefarithm L_DEFCPLX
-   ZSCAL(&n, &alpha, x, &incx);
+   ZSCAL(&ln, &alpha, x, &lincx);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DSCAL(&n, &alpha, x, &incx);
+   DSCAL(&ln, &alpha, x, &lincx);
 #endifarithm
 
 }
@@ -201,11 +257,15 @@ void Num_scal_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx) {
 /******************************************************************************/
 void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
+
 #ifdefarithm L_DEFCPLX
-   ZSWAP(&n, x, &incx, y, &incy);
+   ZSWAP(&ln, x, &lincx, y, &lincy);
 #endifarithm
 #ifdefarithm L_DEFREAL
-   DSWAP(&n, x, &incx, y, &incy);
+   DSWAP(&ln, x, &lincx, y, &lincy);
 #endifarithm
 
 }
@@ -217,10 +277,12 @@ void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux) {
 
-   int ret;
+   PRIMME_BLASINT liopt = iopt;
+   PRIMME_BLASINT lldz = ldz;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnaux = naux;
 
-   ret = dspev(iopt, ap, w, z, ldz, n, aux, naux);
-   return (ret);
+   return dspev(liopt, ap, w, z, lldz, ln, aux, lnaux);
 }
 #endifarithm
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -228,10 +290,12 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
 int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
    int n, Complex_Z *aux, int naux) {
 
-   int ret;
+   PRIMME_BLASINT liopt = iopt;
+   PRIMME_BLASINT lldz = ldz;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnaux = naux;
 
-   ret = zhpev(iopt, ap, w, z, ldz, n, aux, naux);
-   return (ret);
+   return zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
 }
 #endifarithm
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -239,29 +303,40 @@ int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
 #else
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFREAL
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
+ 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
 
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   DSYEV(jobz_fcd, uplo_fcd, &n, a, &lda, w, work, &ldwork, info); 
+   DSYEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo);
 
 #else
 
-   DSYEV(jobz, uplo, &n, a, &lda, w, work, &ldwork, info); 
+   DSYEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo);
 
 #endif
+   *info = linfo;
 }
 #endifarithm
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFCPLX
-void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, int lda,
    double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -269,13 +344,14 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   ZHEEV(jobz_fcd, uplo_fcd, &n, a, &lda, w, work, &ldwork, rwork, info); 
+   ZHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
 
 #else
 
-   ZHEEV(jobz, uplo, &n, a, &lda, w, work, &ldwork, rwork, info); 
+   ZHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo);
 
 #endif
+   *info = linfo;
 }
 #endifarithm
 
@@ -283,75 +359,157 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
 
 #ifdefarithm L_DEFREAL
 /******************************************************************************/
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0; 
+   int i;
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
+   }
+
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
 
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   DSYTRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
+   DSYTRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 #else
 
-   DSYTRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
+   DSYTRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 
 #endif
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
+   }
+   *info = (int)linfo;
 
 }
 #endifarithm
 
 #ifdefarithm L_DEFCPLX
 /******************************************************************************/
-void Num_zhetrf_zprimme(char *uplo, int n, @(type) *a, int lda, int *ipivot,
+void Num_zhetrf_zprimme(const char *uplo, int n, @(type) *a, int lda, int *ipivot,
    @(type) *work, int ldwork, int *info) {
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0; 
+   int i;
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
+   }
 
 #ifdef NUM_CRAY
         _fcd uplo_fcd;
 
         uplo_fcd = _cptofcd(uplo, strlen(uplo));
-        ZHETRF(uplo_fcd, &n, a, &lda, ipivot, work, &ldwork, info);
+        ZHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 #else
 
-        ZHETRF(uplo, &n, a, &lda, ipivot, work, &ldwork, info);
+        ZHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 
 #endif
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
+   }
+   *info = (int)linfo;
 
 }
 #endifarithm
 
 #ifdefarithm L_DEFREAL
 /******************************************************************************/
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info) {
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnrhs = nrhs;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT linfo = 0; 
+   int i;
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
+   }
 
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
 
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   DSYTRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+   DSYTRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #else
 
-   DSYTRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+   DSYTRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
+   }
+   *info = (int)linfo;
 
 }
 #endifarithm
 
 #ifdefarithm L_DEFCPLX
 /******************************************************************************/
-void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, @(type) *a, int lda, 
+void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, @(type) *a, int lda, 
    int *ipivot, @(type) *b, int ldb, int *info) {
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnrhs = nrhs;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT linfo = 0; 
+   int i;
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
+   }
 
 #ifdef NUM_CRAY
         _fcd uplo_fcd;
 
         uplo_fcd = _cptofcd(uplo, strlen(uplo));
-        ZHETRS(uplo_fcd, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+        ZHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #else
 
-        ZHETRS(uplo, &n, &nrhs, a, &lda, ipivot, b, &ldb, info);
+        ZHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
 
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
+   }
+   *info = (int)linfo;
+
 }
-  
+ 
 #endifarithm
