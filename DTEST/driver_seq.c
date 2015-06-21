@@ -780,8 +780,8 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
        primme0.numOrthoConst == primme->numOrthoConst &&
        primme0.maxBasisSize == primme->maxBasisSize &&
        primme0.minRestartSize == primme->minRestartSize &&
-       primme0.aNorm == primme->aNorm &&
-       primme0.eps == primme->eps &&
+       DOUBLE_EQ(primme0.aNorm, primme->aNorm) &&
+       DOUBLE_EQ(primme0.eps, primme->eps) &&
        primme0.restartingParams.scheme == primme->restartingParams.scheme &&
        primme0.restartingParams.maxPrevRetain == primme->restartingParams.maxPrevRetain &&
        primme0.correctionParams.precondition == primme->correctionParams.precondition &&
@@ -793,7 +793,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
        primme0.correctionParams.projectors.RightX == primme->correctionParams.projectors.RightX &&
        primme0.correctionParams.projectors.SkewQ  == primme->correctionParams.projectors.SkewQ  &&
        primme0.correctionParams.projectors.SkewX  == primme->correctionParams.projectors.SkewX  &&
-       primme0.correctionParams.convTest == primme->correctionParams.convTest &&
+       DOUBLE_EQ(primme0.correctionParams.convTest, primme->correctionParams.convTest) &&
        primme0.correctionParams.relTolBase == primme->correctionParams.relTolBase) {
       if (abs(primme0.stats.numOuterIterations - primme->stats.numOuterIterations) > primme->stats.numOuterIterations*3/100+1) {
          fprintf(stderr, "Warning: discrepancy in numOuterIterations, %d should be close to %d\n", primme->stats.numOuterIterations, primme0.stats.numOuterIterations);
