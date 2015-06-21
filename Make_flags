@@ -62,8 +62,10 @@ CFLAGS = -fPIC
 #CFLAGS = 
 #---------------------------------------------------------------
 
-# Add this to build Matlab interface
-CFLAGS += -DPRIMME_BLASINT_SIZE=64
+#---------------------------------------------------------------
+# Comment out this to build Matlab interface
+# CFLAGS += -DPRIMME_BLASINT_SIZE=64
+#---------------------------------------------------------------
 
 FFLAGS =  -fno-second-underscore -fPIC
 LOW_OPT = -g #-O3  
