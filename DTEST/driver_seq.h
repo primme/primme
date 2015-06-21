@@ -6,6 +6,7 @@
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
+#define DOUBLE_EQ(a,b) (((a)==0. && (b)==0.) || fabs(((a)-(b))/(b)) < 1e-15)
 
 typedef struct {
    int *JA;
@@ -33,6 +34,8 @@ int create_preconditioner(CSRMatrix matrix, CSRMatrix *Factors,
    void (**precond_function)(void *, void *, int *, primme_params *),
      int n, int nnz, driver_params driver);
 
+int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
+                   double *evecs, double *rnorms, CSRMatrix *matrix);
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

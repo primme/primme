@@ -153,6 +153,16 @@ clean:
 	echo "--------------------------------------------------"; \
 	)
 
+test:
+	@(\
+	cd $(DTESTDIR) ;\
+	echo "------------------------------------------------"; \
+	echo " Test double sequential C                       "; \
+	echo "------------------------------------------------"; \
+	make -f Makefile_seq test; \
+	)
+
+
 check_style:
 	( grep $$'\t' -R . --include='*.[chf]' && echo "Please don't use tabs!" ) || true
 
