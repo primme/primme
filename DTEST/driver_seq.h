@@ -6,7 +6,6 @@
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
-#define DOUBLE_EQ(a,b) (((a)==0. && (b)==0.) || fabs(((a)-(b))/(b)) < 1e-15)
 
 typedef struct {
    int *JA;

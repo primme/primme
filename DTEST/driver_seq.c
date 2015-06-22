@@ -65,10 +65,10 @@ int main (int argc, char *argv[]) {
    /* Matrix */
    int n, nnz;
    double fnorm;
-   CSRMatrix matrix;
+   CSRMatrix matrix = {NULL, NULL, NULL};
 
    /* Preconditioner */
-   CSRMatrix Factors;
+   CSRMatrix Factors = {NULL, NULL, NULL};
 
    /* Files */
    char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
@@ -379,6 +379,17 @@ int main (int argc, char *argv[]) {
 
    fclose(primme.outputFile);
    primme_Free(&primme);
+   free(evals);
+   free(evecs);
+   free(rnorms);
+   free(matrix.AElts);
+   free(matrix.IA);
+   free(matrix.JA);
+   if (Factors.AElts) {
+      free(Factors.AElts);
+      free(Factors.IA);
+      free(Factors.JA);
+   }
 
    return(0);
 
@@ -771,47 +782,52 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
    ret = fread(&primme0, sizeof(primme0), 1, f); assert(ret);
 
    /* Check primme_params */
-   assert(primme0.n == primme->n);
-   if (primme0.numEvals == primme->numEvals &&
-       primme0.target == primme->target &&
-       primme0.numTargetShifts == primme->numTargetShifts &&
-       primme0.dynamicMethodSwitch == primme->dynamicMethodSwitch &&
-       primme0.locking == primme->locking &&
-       primme0.numOrthoConst == primme->numOrthoConst &&
-       primme0.maxBasisSize == primme->maxBasisSize &&
-       primme0.minRestartSize == primme->minRestartSize &&
-       DOUBLE_EQ(primme0.aNorm, primme->aNorm) &&
-       DOUBLE_EQ(primme0.eps, primme->eps) &&
-       primme0.restartingParams.scheme == primme->restartingParams.scheme &&
-       primme0.restartingParams.maxPrevRetain == primme->restartingParams.maxPrevRetain &&
-       primme0.correctionParams.precondition == primme->correctionParams.precondition &&
-       primme0.correctionParams.robustShifts == primme->correctionParams.robustShifts &&
-       primme0.correctionParams.maxInnerIterations == primme->correctionParams.maxInnerIterations &&
-       primme0.correctionParams.projectors.LeftQ  == primme->correctionParams.projectors.LeftQ  &&
-       primme0.correctionParams.projectors.LeftX  == primme->correctionParams.projectors.LeftX  &&
-       primme0.correctionParams.projectors.RightQ == primme->correctionParams.projectors.RightQ &&
-       primme0.correctionParams.projectors.RightX == primme->correctionParams.projectors.RightX &&
-       primme0.correctionParams.projectors.SkewQ  == primme->correctionParams.projectors.SkewQ  &&
-       primme0.correctionParams.projectors.SkewX  == primme->correctionParams.projectors.SkewX  &&
-       DOUBLE_EQ(primme0.correctionParams.convTest, primme->correctionParams.convTest) &&
-       primme0.correctionParams.relTolBase == primme->correctionParams.relTolBase) {
-      if (abs(primme0.stats.numOuterIterations - primme->stats.numOuterIterations) > primme->stats.numOuterIterations*9/100+1) {
-         fprintf(stderr, "Warning: discrepancy in numOuterIterations, %d should be close to %d\n", primme->stats.numOuterIterations, primme0.stats.numOuterIterations);
-         retX = 1;
+#define CHECK_PRIMME_PARAM(F) \
+      if (primme0. F != primme-> F ) { \
+         fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", primme-> F , primme0. F ); \
+         retX = 1; \
       }
-      if (primme0.initSize != primme->initSize) {
-         fprintf(stderr, "Warning: discrepancy in the number of converged pairs, %d should be close to %d\n", primme->initSize, primme0.initSize);
-         retX = 1;
+#define CHECK_PRIMME_PARAM_DOUBLE(F) \
+      if (fabs(primme0. F - primme-> F) > primme-> F * 1e-14) { \
+         fprintf(stderr, "Warning: discrepancy in primme." #F ", %g should be close to %g\n", primme-> F , primme0. F ); \
+         retX = 1; \
       }
-   }
-   else {
-      fprintf(stderr, "Warning: discrepancy in some member of primme\n");
-      retX = 1;
-   }
+#define CHECK_PRIMME_PARAM_TOL(F, T) \
+      if (abs(primme0. F - primme-> F ) > primme-> F * T /100+1) { \
+         fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", primme-> F , primme0. F ); \
+         retX = 1; \
+      }
+
+   CHECK_PRIMME_PARAM(n);
+   CHECK_PRIMME_PARAM(numEvals);
+   CHECK_PRIMME_PARAM(target);
+   CHECK_PRIMME_PARAM(numTargetShifts);
+   CHECK_PRIMME_PARAM(dynamicMethodSwitch);
+   CHECK_PRIMME_PARAM(locking);
+   CHECK_PRIMME_PARAM(numOrthoConst);
+   CHECK_PRIMME_PARAM(maxBasisSize);
+   CHECK_PRIMME_PARAM(minRestartSize);
+   CHECK_PRIMME_PARAM(restartingParams.scheme);
+   CHECK_PRIMME_PARAM(restartingParams.maxPrevRetain);
+   CHECK_PRIMME_PARAM(correctionParams.precondition);
+   CHECK_PRIMME_PARAM(correctionParams.robustShifts);
+   CHECK_PRIMME_PARAM(correctionParams.maxInnerIterations);
+   CHECK_PRIMME_PARAM(correctionParams.projectors.LeftQ);
+   CHECK_PRIMME_PARAM(correctionParams.projectors.LeftX);
+   CHECK_PRIMME_PARAM(correctionParams.projectors.RightQ);
+   CHECK_PRIMME_PARAM(correctionParams.projectors.RightX);
+   CHECK_PRIMME_PARAM(correctionParams.projectors.SkewQ);
+   CHECK_PRIMME_PARAM(correctionParams.projectors.SkewX);
+   CHECK_PRIMME_PARAM(correctionParams.convTest);
+   CHECK_PRIMME_PARAM_DOUBLE(aNorm);
+   CHECK_PRIMME_PARAM_DOUBLE(eps);
+   CHECK_PRIMME_PARAM_DOUBLE(correctionParams.relTolBase);
+   CHECK_PRIMME_PARAM(initSize);
+   CHECK_PRIMME_PARAM_TOL(stats.numOuterIterations, 9);
 
    h = (double *)primme_calloc(cols, sizeof(double), "h");
    Ax = (double *)primme_calloc(primme->nLocal, sizeof(double), "Ax");
-   r = (double *)primme_calloc(primme->n*primme->initSize, sizeof(double), "rwork");
+   r = (double *)primme_calloc(primme->nLocal, sizeof(double), "r");
    
    for (i=0; i < primme->initSize; i++) {
       /* Check |V(:,i)'A*V(:,i) - evals[i]| < |r|*|A| */
@@ -834,7 +850,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       }
       /* Check X'V(:,i) >= sqrt(1-2|r|), assuming residual of X is less than the tolerance */
       Num_gemv_dprimme("C", primme->n, cols, 1.0, X, primme->n, &evecs[primme->nLocal*i], 1, 0., h, 1);
-      prod = Num_dot_dprimme(primme->nLocal, h, 1, h, 1);
+      prod = Num_dot_dprimme(cols, h, 1, h, 1);
       if (prod < sqrt(1.-2.*rnorms[i])) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X\n", i, evals[i]);
          retX = 1;
