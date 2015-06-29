@@ -27,9 +27,10 @@
  * Date             : %G%
  ******************************************************************************/
 
-#include "common_numerical.h"
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
+
+#include "common_numerical.h"
 
 #ifdef __cplusplus
 extern "C" {

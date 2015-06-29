@@ -26,8 +26,9 @@ main_iter_d.o: main_iter_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
  main_iter_private_d.h convergence_d.h correction_d.h init_d.h ortho_d.h \
  restart_d.h locking_d.h solve_H_d.h update_projection_d.h update_W_d.h \
  numerical_d.h ../COMMONSRC/common_numerical.h
-numerical_d.o: numerical_d.c numerical_private_d.h numerical_d.h \
- ../COMMONSRC/common_numerical.h
+numerical_d.o: numerical_d.c numerical_private_d.h \
+ ../COMMONSRC/common_numerical.h numerical_d.h ../COMMONSRC/primme.h \
+ ../COMMONSRC/Complex.h
 ortho_d.o: ortho_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \
  numerical_d.h ../COMMONSRC/common_numerical.h ortho_d.h
 primme_d.o: primme_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complex.h \

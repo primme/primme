@@ -57,81 +57,32 @@ libz:
 	make libz;\
 	)
 #------------------- DOUBLE TEST PROGRAMS ------------------------
-par_dprimme: ddepends_par
+primme_double:
 	@(\
-	cd $(DTESTDIR) ;\
+	cd $(TESTDIR) ;\
 	echo "----------------------------------------------"; \
 	echo " Making the executable for the double parallel C"; \
 	echo "----------------------------------------------"; \
-	make -f Makefile_par par_dprimme; \
-	)
-
-seq_dprimme: ddepends_seq 
-	@(\
-	cd $(DTESTDIR) ;\
-	echo "------------------------------------------------"; \
-	echo " Making the executable for double sequential C"; \
-	echo "------------------------------------------------"; \
-	make -f Makefile_seq seq_dprimme; \
+	make primme_double; \
 	)
 
 seqf77_dprimme:
 	@(\
-	cd $(DTESTDIR) ;\
+	cd $(TESTDIR) ;\
 	echo "------------------------------------------------"; \
 	echo " Making the executable for double sequential f77 "; \
 	echo "------------------------------------------------"; \
-	make -f Makefile_f77seq seqf77_dprimme; \
+	make seqf77_dprimme; \
 	)
 
-#------------------- COMMPLEX TEST PROGRAMS ----------------------
-seq_zprimme: zdepends_seq
-	@(\
-	cd $(ZTESTDIR) ;\
-	echo "------------------------------------------------"; \
-	echo " Making the executable for complex sequential C"; \
-	echo "------------------------------------------------"; \
-	make -f Makefile_seq seq_zprimme; \
-	)
-
+#------------------- COMPLEX TEST PROGRAMS ----------------------
 seqf77_zprimme:
 	@(\
-	cd $(ZTESTDIR) ;\
+	cd $(TESTDIR) ;\
 	echo "------------------------------------------------"; \
 	echo " Making executable for complex sequential f77 "; \
 	echo "------------------------------------------------"; \
-	make -f Makefile_f77seq seqf77_zprimme; \
-	)
-
-#------------------------- Test dependencies -----------------------
-ddepends_seq: 
-	@(\
-	cd $(DTESTDIR);\
-	rm -f ddependencies_seq;\
-	echo "----------------------------------"; \
-	echo " Creating double seq dependencies "; \
-	echo "----------------------------------"; \
-	make -f Makefile_seq ddependencies_seq;\
-	)
-
-ddepends_par: 
-	@(\
-	cd $(DTESTDIR);\
-	rm -f ddependencies_par;\
-	echo "----------------------------------"; \
-	echo " Creating double par dependencies "; \
-	echo "----------------------------------"; \
-	make -f Makefile_par ddependencies_par;\
-	)
-
-zdepends_seq: 
-	@(\
-	cd $(ZTESTDIR);\
-	rm -f zdependencies_seq;\
-	echo "-----------------------------------"; \
-	echo " Creating complex seq dependencies "; \
-	echo "-----------------------------------"; \
-	make -f Makefile_seq zdependencies_seq;\
+	make seqf77_zprimme; \
 	)
 
 clean: 
@@ -143,23 +94,18 @@ clean:
 	make -f Makefile clean;\
 	rm -f libprimme.a;\
 	echo " From Test directories";\
-	cd $(DTESTDIR);\
-	make -f Makefile_seq clean;\
-	make -f Makefile_par clean;\
-	make -f Makefile_f77seq clean;\
-	cd $(ZTESTDIR) ;\
-	make -f Makefile_seq clean;\
-	make -f Makefile_f77seq clean;\
+	cd $(TESTDIR);\
+	make clean;\
 	echo "--------------------------------------------------"; \
 	)
 
 test:
 	@(\
-	cd $(DTESTDIR) ;\
+	cd $(TESTDIR) ;\
 	echo "------------------------------------------------"; \
 	echo " Test double sequential C                       "; \
 	echo "------------------------------------------------"; \
-	make -f Makefile_seq test; \
+	make test_double; \
 	)
 
 

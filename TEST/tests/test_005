@@ -1,0 +1,59 @@
+// Test GD+k with preconditioner solving interior problem
+
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = LUNDA.mtx
+driver.initialGuessesPert = 0.000000e+00
+driver.checkXFile    = tests/sol_005
+driver.PrecChoice    = jacobi
+driver.shift         = 0.000000e+00
+driver.isymm         = 0
+driver.level         = 2
+driver.threshold     = 0.010000
+driver.filter        = 0.000000
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 50
+primme.aNorm = 1.389726e+09
+primme.eps = 1.000000e-12
+primme.maxBasisSize = 0
+primme.minRestartSize = 0
+primme.maxBlockSize = 0
+primme.maxOuterIterations = 7500
+primme.maxMatvecs = 0
+primme.target = primme_closest_abs
+primme.numTargetShifts = 1
+primme.targetShifts = 0
+primme.dynamicMethodSwitch = 0
+primme.locking = 0
+primme.initSize = 0
+primme.numOrthoConst = 0
+primme.iseed = -1 -1 -1 -1
+
+// Restarting
+primme.restarting.scheme = primme_thick
+primme.restarting.maxPrevRetain = 0
+
+// Correction parameters
+primme.correction.precondition = 0
+primme.correction.robustShifts = 0
+primme.correction.maxInnerIterations = 0
+primme.correction.relTolBase = 0
+primme.correction.convTest = primme_adaptive_ETolerance
+
+// projectors for JD cor.eq.
+primme.correction.projectors.LeftQ = 0
+primme.correction.projectors.LeftX = 0
+primme.correction.projectors.RightQ = 0
+primme.correction.projectors.SkewQ = 0
+primme.correction.projectors.RightX = 0
+primme.correction.projectors.SkewX = 0
+
+method               = GD_Olsen_plusK

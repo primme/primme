@@ -22,8 +22,7 @@ DLIBRARY = $(TOP)/libdprimme.a
 ZLIBRARY = $(TOP)/libzprimme.a
 
 # Define where the tests for double/complex are
-DTESTDIR = $(TOP)/DTEST
-ZTESTDIR = $(TOP)/ZTEST
+TESTDIR = $(TOP)/TEST
 
 #---------------------------------------------------------------
 #  Compilers
