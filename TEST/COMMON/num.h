@@ -31,4 +31,10 @@
 #endif
 #define MACHINE_EPSILON 1.11e-16
 
+#ifdef F77UNDERSCORE
+#define FORTRAN_FUNCTION(X) X ## _
+#else
+#define FORTRAN_FUNCTION(X) X
 #endif
+
+#endif /* NUM_H */

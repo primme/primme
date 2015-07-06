@@ -31,32 +31,30 @@
 
 #include "common_numerical.h"
 
-#if !defined(NUM_SUN) && !defined(NUM_IBM) && !defined(NUM_CRAY)
-#define NUM_SUN
+#ifdef F77UNDERSCORE
+#define FORTRAN_FUNCTION(X) X ## _
+#else
+#define FORTRAN_FUNCTION(X) X
 #endif
 
-#ifdef NUM_SUN
+#ifndef NUM_CRAY
 
-#define DCOPY  dcopy_
-#define DLAMCH dlamch_
-
-#elif defined(NUM_IBM)
-
-#define DCOPY  dcopy
-#define DLAMCH dlamch
+#define DCOPY  FORTRAN_FUNCTION(dcopy)
+#define DLAMCH FORTRAN_FUNCTION(dlamch)
 
 #ifdef NUM_ESSL
 #include <essl.h>
 #endif
 
-#elif defined(NUM_CRAY)
+#else /* NUM_CRAY */
+
 #include <fortran.h>
 #include <string.h>
 
 #define DCOPY  SCOPY
 #define DLAMCH SLAMCH
 
-#endif
+#endif /* NUM_CRAY */
 
 #ifdef __cplusplus
 extern "C"
@@ -67,9 +65,6 @@ extern "C"
 
 void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 double DLAMCH(const char *cmach);
-
-#ifdef NUM_ESSL
-#endif
 
 #else
 

@@ -34,71 +34,46 @@
 
 #include "common_numerical.h"
 
-#if !defined(NUM_SUN) && !defined(NUM_IBM) && !defined(NUM_CRAY)
-#define NUM_SUN
+#ifdef F77UNDERSCORE
+#define FORTRAN_FUNCTION(X) X ## _
+#else
+#define FORTRAN_FUNCTION(X) X
 #endif
 
-#ifdef NUM_SUN
+#ifndef NUM_CRAY
 
-#define ZDOTCSUB  zdotcsub_
-#define ZCOPY  zcopy_
-#define ZSWAP  zswap_
-#define ZGEMM  zgemm_
-#define ZHEMM  zhemm_
-#define ZAXPY  zaxpy_
-#define ZGEMV  zgemv_
-#define ZSCAL  zscal_
-#define ZLARNV zlarnv_
-#define ZHEEV  zheev_
-#define ZHETRF zhetrf_
-#define ZHETRS zhetrs_
+#define ZDOTCSUB  FORTRAN_FUNCTION(zdotcsub)
+#define ZCOPY     FORTRAN_FUNCTION(zcopy)
+#define ZSWAP     FORTRAN_FUNCTION(zswap)
+#define ZGEMM     FORTRAN_FUNCTION(zgemm)
+#define ZHEMM     FORTRAN_FUNCTION(zhemm)
+#define ZAXPY     FORTRAN_FUNCTION(zaxpy)
+#define ZGEMV     FORTRAN_FUNCTION(zgemv)
+#define ZSCAL     FORTRAN_FUNCTION(zscal)
+#define ZLARNV    FORTRAN_FUNCTION(zlarnv)
+#define ZHEEV     FORTRAN_FUNCTION(zheev)
+#define ZHETRF    FORTRAN_FUNCTION(zhetrf)
+#define ZHETRS    FORTRAN_FUNCTION(zhetrs)
 
-#define DCOPY  dcopy_
-#define DSWAP  dswap_
-#define DGEMM  dgemm_
-#define DSYMM  dsymm_
-#define DAXPY  daxpy_
-#define DGEMV  dgemv_
-#define DDOT   ddot_
-#define DSCAL  dscal_
-#define DLARNV dlarnv_
-#define DSYEV  dsyev_
-#define DSYTRF dsytrf_
-#define DSYTRS dsytrs_
-
-#elif defined(NUM_IBM)
-
-#define ZDOTCSUB  zdotcsub
-#define ZCOPY  zcopy
-#define ZSWAP  zswap
-#define ZGEMM  zgemm
-#define ZHEMM  zhemm
-#define ZAXPY  zaxpy
-#define ZGEMV  zgemv
-#define ZSCAL  zscal
-#define ZLARNV zlarnv
-#define ZHEEV  zheev
-#define ZHETRF zhetrf
-#define ZHETRS zhetrs
-
-#define DCOPY  dcopy
-#define DSWAP  dswap
-#define DGEMM  dgemm
-#define DSYMM  dsymm
-#define DAXPY  daxpy
-#define DGEMV  dgemv
-#define DDOT   ddot
-#define DSCAL  dscal
-#define DLARNV dlarnv
-#define DSYEV  dsyev
-#define DSYTRF dsytrf
-#define DSYTRS dsytrs
+#define DCOPY  	  FORTRAN_FUNCTION(dcopy)
+#define DSWAP  	  FORTRAN_FUNCTION(dswap)
+#define DGEMM  	  FORTRAN_FUNCTION(dgemm)
+#define DSYMM  	  FORTRAN_FUNCTION(dsymm)
+#define DAXPY  	  FORTRAN_FUNCTION(daxpy)
+#define DGEMV  	  FORTRAN_FUNCTION(dgemv)
+#define DDOT   	  FORTRAN_FUNCTION(ddot)
+#define DSCAL  	  FORTRAN_FUNCTION(dscal)
+#define DLARNV 	  FORTRAN_FUNCTION(dlarnv)
+#define DSYEV  	  FORTRAN_FUNCTION(dsyev)
+#define DSYTRF 	  FORTRAN_FUNCTION(dsytrf)
+#define DSYTRS 	  FORTRAN_FUNCTION(dsytrs)
 
 #ifdef NUM_ESSL
 #include <essl.h>
 #endif
 
-#elif defined(NUM_CRAY)
+#else /* NUM_CRAY */
+
 #include <fortran.h>
 #include <string.h>
 
@@ -129,7 +104,8 @@
 #define DSYTRF DSYTRF
 #define DSYTRS DSYTRS
 
-#endif
+#endif /* NUM_CRAY */
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -174,7 +150,7 @@ PRIMME_BLASINT dspev(PRIMME_BLASINT iopt, double *ap, double *w, double *z, PRIM
 PRIMME_BLASINT zhpev(PRIMME_BLASINT iopt, void *ap, double *w, void *z, PRIMME_BLASINT ldz, PRIMME_BLASINT n, void *aux, PRIMME_BLASINT naux);
 #endif
 
-#else
+#else /* NUM_CRAY */
 
 void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 void DSWAP(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
@@ -212,7 +188,7 @@ void   ZDOTCSUB(void *dot, PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, voi
 void   ZHETRF(_fcd uplo, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, void *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
 void   ZHETRS(_fcd uplo, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, void *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, void *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
 
-#endif /* else (if not cray)*/
+#endif /* NUM_CRAY */
 
 #ifdef __cplusplus
 }

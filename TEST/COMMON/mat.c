@@ -28,12 +28,12 @@
 static void getDiagonal(const CSRMatrix *matrix, double *diag);
 
 #ifndef USE_DOUBLECOMPLEX
-void amux_(int*, double*, double*, double*, int*, int*);
-void ilut_(int*, double*, int*, int*, int*, double*, double*, int*, int*, int*, double*,
-           double*, int*, int*, int*, int*);
-void lusol0_(int*, double*, double*, double*, int*, int*);
+void FORTRAN_FUNCTION(amux)(int*, double*, double*, double*, int*, int*);
+void FORTRAN_FUNCTION(ilut)(int*, double*, int*, int*, int*, double*, double*, int*, int*, int*,
+                            double*, double*, int*, int*, int*, int*);
+void FORTRAN_FUNCTION(lusol0)(int*, double*, double*, double*, int*, int*);
 #else
-void zamux_(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
+void FORTRAN_FUNCTION(zamux)(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
 #endif
 
 /******************************************************************************
