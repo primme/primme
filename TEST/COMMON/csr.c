@@ -248,7 +248,7 @@ double frobeniusNorm(const CSRMatrix *matrix) {
 
    for (i=0; i < matrix->m; i++) {
       for (j=matrix->IA[i]; j <= matrix->IA[i+1]-1; j++) {
-         fnorm = fnorm + matrix->AElts[j-1]*matrix->AElts[j-1];
+         fnorm = fnorm + REAL_PART(CONJ(matrix->AElts[j-1])*matrix->AElts[j-1]);
       }
    }
 

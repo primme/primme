@@ -258,7 +258,7 @@ static void getDiagonal(const CSRMatrix *matrix, double *diag) {
       diag[i] = 0.;
       for (j=matrix->IA[i]; j <= matrix->IA[i+1]-1; j++) {
          if (matrix->JA[j-1]-1 == i) {
-            diag[i] = matrix->AElts[j-1];
+            diag[i] = REAL_PART(matrix->AElts[j-1]);
          }
       }
    }

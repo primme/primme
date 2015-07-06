@@ -68,11 +68,6 @@
 /* wtime.h header file is included so primme's timimg functions can be used */
 #include "wtime.h"
 
-#ifndef max
-#  define max(a, b) ((a) > (b) ? (a) : (b))
-#  define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
 #define ASSERT_MSG(COND, RETURN, ...) { if (!(COND)) {fprintf(stderr, "Error in " __FUNCT__ ": " __VA_ARGS__); return (RETURN);} }
 
 static int real_main (int argc, char *argv[]);
@@ -831,7 +826,7 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
    /* Check number size */
    /* NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith */
    FREAD(&d, sizeof(d), 1, f);
-   ASSERT_MSG(((int)(REAL_PART(d)*(2.*IMAGINARY*IMAGINARY + 1.))) == sizeof(d),
+   ASSERT_MSG((int)(REAL_PART(d*(2.*IMAGINARY*IMAGINARY + 1.))) == (int)sizeof(d),
                   -1, "Mismatch arithmetic in file %s\n", fileName);
    /* Check matrix size */
    FREAD(&d, sizeof(d), 1, f);

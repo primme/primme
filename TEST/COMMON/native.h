@@ -20,6 +20,7 @@
  */
 
 #ifndef NATIVE_H
+#define NATIVE_H
 
 #include "csr.h"
 #include "primme.h"
@@ -35,6 +36,5 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
                          double threshold, double filter, CSRMatrix **prec);
 void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme);
 
-#define NATIVE_H
 #endif
 
