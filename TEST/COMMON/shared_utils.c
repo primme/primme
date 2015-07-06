@@ -399,7 +399,10 @@ int read_driver_params(char *configFileName, driver_params *driver) {
          else if (strcmp(ident, "driver.matrixChoice") == 0) {
             ret = fscanf(configFile, "%s", stringValue);
             if (ret == 1) {
-               if (strcmp(stringValue, "native") == 0) {
+               if (strcmp(stringValue, "default") == 0) {
+                  driver->matrixChoice = driver_default;
+               }
+               else if (strcmp(stringValue, "native") == 0) {
                   driver->matrixChoice = driver_native;
                }
                else if (strcmp(stringValue, "parasails") == 0) {
@@ -418,10 +421,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
          else if (strcmp(ident, "driver.PrecChoice") == 0) {
             ret = fscanf(configFile, "%s", stringValue);
             if (ret == 1) {
-               if (strcmp(stringValue, "default") == 0) {
-                  driver->PrecChoice = driver_default;
-               }
-               else if (strcmp(stringValue, "noprecond") == 0) {
+               if (strcmp(stringValue, "noprecond") == 0) {
                   driver->PrecChoice = driver_noprecond;
                }
                else if (strcmp(stringValue, "jacobi") == 0) {
