@@ -77,7 +77,7 @@ c           ierr  = -5   --> zero row encountered.
 c           
 c work arrays:
 c=============
-c jr,jwu,jwl 	  = integer work arrays of length n.
+c jr,jwu,jwl      = integer work arrays of length n.
 c wu, wl          = real work arrays of length n+1, and n resp.
 c
 c Notes:
@@ -89,18 +89,18 @@ c-------------------------------
 c initialize ju0 (points to next element to be added to alu,jlu)
 c and pointer.
 c
-	ju0 = n+2
-	jlu(1) = ju0
+        ju0 = n+2
+        jlu(1) = ju0
 c
 c  integer double pointer array. 
 c 
-	do 1 j=1, n
-		jr(j)  = 0
+        do 1 j=1, n
+                jr(j)  = 0
  1           continue
 c-----------------------------------------------------------------------
 c  beginning of main loop. 
 c-----------------------------------------------------------------------
-	do 500 ii = 1, n
+        do 500 ii = 1, n
            j1 = ia(ii)
            j2 = ia(ii+1) - 1
            tnorm = 0.0d0
@@ -135,7 +135,7 @@ c
               wu(lenu) = t 
               jr(k) = lenu
            endif
- 170	continue
+ 170    continue
         tnorm = tnorm/real(j2-j1+1) 
         lenl0 = lenl
         lenu0 = lenu
@@ -230,24 +230,24 @@ c     no fill-in element --
                  wl(jpos) = wl(jpos) - s
               endif
            endif
- 203	continue
+ 203    continue
         nl = nl+1
         wl(nl) = fact
         jwl(nl)  = jrow
-	goto 150
+        goto 150
 c----------------------------------------------------------
 c------------ update l-matrix -----------------------------
 c----------------------------------------------------------
  160    len = min0(nl,lenl0+lfil) 
 c 160    len = min0(nl,lfil) 
 
-  	call qsplit (wl,jwl,nl,len) 
+        call qsplit (wl,jwl,nl,len) 
 c
         do 204 k=1, len
            if (ju0 .gt. iwk) goto 996
            alu(ju0) =  wl(k)
            jlu(ju0) =  jwl(k)
-           ju0 = ju0+1	
+           ju0 = ju0+1  
  204    continue
 c
 c  save pointer to beginning of row ii of U 
@@ -256,12 +256,12 @@ c
 c
 c  reset double-pointer jr to zero (L-part - except first 
 c  jj-1 elements which have already been reset)
-	do 306 k= jj, lenl
+        do 306 k= jj, lenl
               jr(jwl(k)) = 0
- 306	continue
+ 306    continue
         len = min0(lenu,lenu0+lfil)
 c        len = min0(lenu,lfil) 
-	call qsplit (wu(2), jwu(2), lenu-1,len) 
+        call qsplit (wu(2), jwu(2), lenu-1,len) 
 c----------------------------------------------------------
 c------------ update u-matrix -----------------------------
 c----------------------------------------------------------
@@ -272,7 +272,7 @@ c----------------------------------------------------------
            alu(ju0) = wu(k)
            t = t + abs(wu(k) ) 
            ju0 = ju0+1 
- 302	continue
+ 302    continue
 c     
 c     save norm in wu (backwards). Norm is in fact average abs value
 c       
@@ -286,13 +286,13 @@ c
 c
 c     update pointer to beginning of next row of U.
 c
-	jlu(ii+1) = ju0
+        jlu(ii+1) = ju0
 c
 c     reset double-pointer jr to zero (U-part) 
 c
-	do 308 k=1, lenu
+        do 308 k=1, lenu
            jr(jwu(k)) = 0
- 308	continue
+ 308    continue
 c-----------------------------------------------------------------------
 c     end main loop
 c-----------------------------------------------------------------------
@@ -330,11 +330,11 @@ c
  999    ierr = -5
         return
 c---------------- end of ilut  ----------------------------------------- 
-	end
+        end
 c---------------- routine lusol0---------------------------------------- 
-	subroutine lusol0 (n, y, x, alu, jlu, ju) 
+        subroutine lusol0 (n, y, x, alu, jlu, ju) 
         real*8 x(n), y(n), alu(*)
-	integer n, jlu(*), ju(*)
+        integer n, jlu(*), ju(*)
 c-----------------------------------------------------------------------
 c
 c performs a forward followed by a backward solve 
@@ -356,17 +356,17 @@ c
 c     
 c     backward solve.
 c     
-	do 90 i = n, 1, -1 
-	   do 91 k=ju(i),jlu(i+1)-1 
+        do 90 i = n, 1, -1 
+           do 91 k=ju(i),jlu(i+1)-1 
               x(i) = x(i) - alu(k)*x(jlu(k))
- 91	   continue
+ 91        continue
            x(i) = alu(i)*x(i)
  90     continue
 c
-  	return
+        return
 c----------------end of lusol0 -----------------------------------------
 c-----------------------------------------------------------------------
-	end
+        end
 c----------------------------------------------------------------------- 
         subroutine qsplit  (a, ind, n, ncut) 
         real*8 a(n) 
