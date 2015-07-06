@@ -819,7 +819,7 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
                                           int n, int Xcols, int *Xcolsout, int nLocal,
                                           int *perm, primme_params *primme_out) {
 
-#  define FREAD(A, B, C, D) { ASSERT_MSG(fread(A, B, C, D) == C, -1, "Unexpected end of file\n"); }
+#  define FREAD(A, B, C, D) { ASSERT_MSG(fread(A, B, C, D) == (size_t)C, -1, "Unexpected end of file\n"); }
 
    FILE *f;
    PRIMME_NUM d;
@@ -841,7 +841,7 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
    /* Read X */
    FREAD(&d, sizeof(d), 1, f); cols = REAL_PART(d);
    if (Xcols > 0 && (X || Xout)) {
-      if (!X) *Xout = X = malloc(sizeof(PRIMME_NUM)*min(cols, Xcols)*nLocal);
+      if (!X) *Xout = X = (PRIMME_NUM*)malloc(sizeof(PRIMME_NUM)*min(cols, Xcols)*nLocal);
       if (Xcolsout) *Xcolsout = min(cols, Xcols);
       if (!perm) {
          for (i=0; i<min(cols, Xcols); i++) {
@@ -874,7 +874,7 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
 static int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *perm,
                                            primme_params *primme) {
 
-#  define FWRITE(A, B, C, D) { ASSERT_MSG(fwrite(A, B, C, D) == C, -1, "Unexpected error writing on %s\n", fileName); }
+#  define FWRITE(A, B, C, D) { ASSERT_MSG(fwrite(A, B, C, D) == (size_t)C, -1, "Unexpected error writing on %s\n", fileName); }
 
    FILE *f;
    PRIMME_NUM d;
