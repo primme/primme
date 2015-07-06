@@ -828,17 +828,17 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
    ASSERT_MSG((f = fopen(fileName, "rb")),
                   -1, "Could not open file %s\n", fileName);
 
-   // Check number size
-   // NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith
+   /* Check number size */
+   /* NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith */
    FREAD(&d, sizeof(d), 1, f);
    ASSERT_MSG(((int)(REAL_PART(d)*(2.*IMAGINARY*IMAGINARY + 1.))) == sizeof(d),
                   -1, "Mismatch arithmetic in file %s\n", fileName);
-   // Check matrix size
+   /* Check matrix size */
    FREAD(&d, sizeof(d), 1, f);
    ASSERT_MSG(((int)REAL_PART(d)) == n,
                   -1, "Mismatch matrix size in file %s\n", fileName);
 
-   // Read X
+   /* Read X */
    FREAD(&d, sizeof(d), 1, f); cols = REAL_PART(d);
    if (Xcols > 0 && (X || Xout)) {
       if (!X) *Xout = X = malloc(sizeof(PRIMME_NUM)*min(cols, Xcols)*nLocal);
@@ -860,7 +860,7 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
    }
    fseek(f, (cols*n + 3)*sizeof(d), SEEK_SET);
 
-   // Read primme_params
+   /* Read primme_params */
    if (primme_out) {
       FREAD(primme_out, sizeof(*primme_out), 1, f);
    }
@@ -883,20 +883,20 @@ static int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, 
    ASSERT_MSG((f = fopen(fileName, "wb")),
                   -1, "Could not open file %s\n", fileName);
 
-   // Write number size
+   /* Write number size */
    if (primme->procID == 0) {
-      // NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith
+      /* NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith */
       d = (2.*IMAGINARY*IMAGINARY + 1.)*sizeof(d);
       FWRITE(&d, sizeof(d), 1, f);
-      // Write matrix size
+      /* Write matrix size */
       d = primme->n;
       FWRITE(&d, sizeof(d), 1, f);
-      // Write number of columns
+      /* Write number of columns */
       d = primme->initSize;
       FWRITE(&d, sizeof(d), 1, f);
    }
 
-   // Write X
+   /* Write X */
    if (!perm) {
       for (i=0; i<primme->initSize; i++) {
          fseek(f, (i*primme->n + 3)*sizeof(d), SEEK_SET);
@@ -912,7 +912,7 @@ static int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, 
       }
    }
 
-   // Write primme_params
+   /* Write primme_params */
    if (primme->procID == 0) {
       fseek(f, sizeof(d)*(primme->n*primme->initSize + 3), SEEK_SET);
       FWRITE(primme, sizeof(*primme), 1, f);
