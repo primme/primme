@@ -65,7 +65,7 @@ primme_$(REAL): clean $(OBJS) $(TOP)/libprimme.a Makefile
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o:
-	$(F77) $(HIGH_OPT) $(FFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+	$(F77) $(HIGH_OPT) $(FFLAGS) $(INCLUDE) -c $< -o $@
 
 all: primme_$(REAL)
 
