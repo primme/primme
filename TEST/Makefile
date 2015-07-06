@@ -58,7 +58,7 @@ OBJS = $(sort $(SOBJS))
 
 .PHONY: clean veryclean
 
-primme_$(REAL): $(OBJS) $(TOP)/libprimme.a Makefile
+primme_$(REAL): clean $(OBJS) $(TOP)/libprimme.a Makefile
 	$(CLDR) -o primme_$(REAL) $(OBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 .c.o:

@@ -15,18 +15,15 @@
 include Make_flags
 
 # Build the libprimme library, as well as all TESTS
-all: lib depends seqs pars 
+all: lib primme_double primme_complex
 
 # The following are sequential executables of the test programs
-seqs: seq_dprimme seq_zprimme seqf77_dprimme seqf77_zprimme
+seqs: primme_double primme_complex seqf77_dprimme seqf77_zprimme
 
 # The following builds the parallel executables
-pars: par_dprimme 
+pars: primme_double primme_complex
 
-# Build the dependencies for .c and .h files in the test directories
-depends: ddepends_seq zdepends_seq ddepends_par 
-
-.PHONY: lib libd libz clean backup ddepends_seq ddepends_par zdepends_seq 
+.PHONY: lib libd libz clean backup
 
 #------------------------ Libraries ------------------------------
 lib:
@@ -61,9 +58,9 @@ primme_double:
 	@(\
 	cd $(TESTDIR) ;\
 	echo "----------------------------------------------"; \
-	echo " Making the executable for the double parallel C"; \
+	echo " Making the executable for the double C       "; \
 	echo "----------------------------------------------"; \
-	make primme_double; \
+	make primme_double REAL=double; \
 	)
 
 seqf77_dprimme:
@@ -76,6 +73,15 @@ seqf77_dprimme:
 	)
 
 #------------------- COMPLEX TEST PROGRAMS ----------------------
+primme_complex:
+	@(\
+	cd $(TESTDIR) ;\
+	echo "----------------------------------------------"; \
+	echo " Making the executable for the complex C      "; \
+	echo "----------------------------------------------"; \
+	make primme_doublecomplex REAL=doublecomplex; \
+	)
+
 seqf77_zprimme:
 	@(\
 	cd $(TESTDIR) ;\
