@@ -7,7 +7,8 @@ include ../Link_flags
 
 
 SOBJS= driver.o COMMON/shared_utils.o
-INCLUDE += -I./COMMON
+INCLUDE += -I./COMMON -I../PRIMMESRC/COMMONSRC
+LIBDIRS += -L../
 
 REAL          ?= double
 USE_NATIVE    ?= yes
@@ -58,7 +59,7 @@ OBJS = $(sort $(SOBJS))
 
 .PHONY: clean veryclean
 
-primme_$(REAL): clean $(OBJS) $(TOP)/libprimme.a Makefile
+primme_$(REAL): clean $(OBJS) ../libprimme.a Makefile
 	$(CLDR) -o primme_$(REAL) $(OBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 .c.o:
@@ -134,11 +135,11 @@ test: test_$(REAL)
 
 
 seqf77_dprimme_FOBJS = driver_f77seq.o COMMON/ilut.o COMMON/amux.o
-seqf77_dprimme: $(seqf77_dprimme_FOBJS) $(TOP)/libprimme.a
+seqf77_dprimme: $(seqf77_dprimme_FOBJS) ../libprimme.a
 	$(FLDR) -o seqf77_dprimme $(seqf77_dprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 seqf77_zprimme_FOBJS = driver_f77seqz.o COMMON/zamux.o
-seqf77_zprimme: $(seqf77_zprimme_FOBJS) $(TOP)/libprimme.a
+seqf77_zprimme: $(seqf77_zprimme_FOBJS) ../libprimme.a
 	$(FLDR) -o seqf77_zprimme $(seqf77_zprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 clean:
