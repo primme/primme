@@ -150,3 +150,15 @@ clean:
 veryclean: clean
 	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme
 
+
+COMMON/csr.c: COMMON/csr.h COMMON/mmio.h
+COMMON/csr.h: COMMON/num.h
+COMMON/mat.c: COMMON/native.h
+COMMON/mmio.c: COMMON/mmio.h
+COMMON/native.h: COMMON/csr.h
+COMMON/parasailsw.c: COMMON/parasailsw.h COMMON/csr.h
+COMMON/parasailsw.h: COMMON/csr.h
+COMMON/petscw.c: COMMON/petscw.h COMMON/mmio.h
+COMMON/petscw.h: COMMON/num.h
+COMMON/shared_utils.c: COMMON/shared_utils.h
+COMMON/driver.c: COMMON/shared_utils.h COMMON/native.h COMMON/parasailsw.h COMMON/petscw.h
