@@ -92,7 +92,7 @@ all_tests_doublecomplex: primme_doublecomplex
 	@echo "Please wait, this could take a while...";\
 	ok="0";	for i in tests/test_??? ; do \
 		echo "********** Test $$i complex ***********"; \
-		sed -r 's/sol_.../\0.complex/' $$i > ._test00;\
+		sed 's/sol_.../\0.complex/' $$i > ._test00;\
 		$(MPIRUN) ./primme_doublecomplex ._test00 || ok="1"; \
 		rm ._test00;\
 	done > tests.log 2>&1;\
@@ -126,7 +126,7 @@ test_double: primme_double
 	./primme_double tests/test_003
 
 test_doublecomplex: primme_doublecomplex
-	sed -r 's/sol_.../\0.complex/' tests/test_003 > ._test00;\
+	sed 's/sol_.../\0.complex/' tests/test_003 > ._test00;\
 	./primme_doublecomplex ._test00;\
 	rm -f ._test00
 
