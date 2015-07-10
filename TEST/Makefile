@@ -9,7 +9,6 @@ include ../Link_flags
 SOBJS= driver.o COMMON/shared_utils.o
 INCLUDE += -I./COMMON
 
-REAL          ?= double
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined, $(origin PETSC_DIR)), no, yes)
 USE_PARASAILS ?= $(if $(findstring undefined, $(origin PARASAILS_LIB_DIR)), no, yes)
@@ -19,18 +18,11 @@ ifeq ($(USE_MPI), yes)
   DEFINES += -DUSE_MPI
 endif
 
-ifeq ($(REAL), doublecomplex)
-  DEFINES += -DUSE_DOUBLECOMPLEX
-endif
-
 ifeq ($(USE_NATIVE), yes)
   DEFINES += -DUSE_NATIVE
   SOBJS += COMMON/csr.o COMMON/mat.o COMMON/ssrcsr.o COMMON/mmio.o
-  ifeq ($(REAL), double)
-    SOBJS += COMMON/ilut.o COMMON/amux.o
-  else ifeq ($(REAL), doublecomplex)
-    SOBJS += COMMON/zilut.o COMMON/zamux.o
-  endif
+  SOBJSdouble += COMMON/ilut.o COMMON/amux.o
+  SOBJSdoublecomplex += COMMON/zilut.o COMMON/zamux.o
 endif
 
 ifeq ($(USE_PARASAILS), yes)
@@ -55,11 +47,22 @@ endif
 
 
 OBJS = $(sort $(SOBJS))
+OBJSdouble = $(sort $(SOBJSdouble)) $(patsubst %.o,%double.o,$(OBJS))
+OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.o,$(OBJS))
 
 .PHONY: clean veryclean
 
-primme_$(REAL): clean $(OBJS) $(TOP)/libprimme.a Makefile
-	$(CLDR) -o primme_$(REAL) $(OBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+primme_double: $(OBJSdouble) $(TOP)/libprimme.a Makefile
+	$(CLDR) -o primme_double $(OBJSdouble) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+primme_doublecomplex: $(OBJSdoublecomplex) $(TOP)/libprimme.a Makefile
+	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+%double.o: %.c
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+
+%doublecomplex.o: %.c
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 .c.o:
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -67,7 +70,7 @@ primme_$(REAL): clean $(OBJS) $(TOP)/libprimme.a Makefile
 .f.o:
 	$(F77) $(HIGH_OPT) $(FFLAGS) $(INCLUDE) -c $< -o $@
 
-all: primme_$(REAL)
+all: primme_double primme_doublecomplex
 
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
@@ -130,7 +133,7 @@ test_doublecomplex: primme_doublecomplex
 	./primme_doublecomplex ._test00;\
 	rm -f ._test00
 
-test: test_$(REAL)
+test: test_double test_doublecomplex
 
 
 seqf77_dprimme_FOBJS = driver_f77seq.o COMMON/ilut.o COMMON/amux.o
@@ -142,9 +145,8 @@ seqf77_zprimme: $(seqf77_zprimme_FOBJS) $(TOP)/libprimme.a
 	$(FLDR) -o seqf77_zprimme $(seqf77_zprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 clean:
-	rm -f *.o COMMON/*.o $(OBJS)
+	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) $(seqf77_dprimme_FOBJS) $(seqf77_zprimme_FOBJS)
 
 veryclean: clean
 	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme
-
 

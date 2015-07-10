@@ -60,7 +60,7 @@ primme_double:
 	echo "----------------------------------------------"; \
 	echo " Making the executable for the double C       "; \
 	echo "----------------------------------------------"; \
-	make primme_double REAL=double; \
+	make primme_double; \
 	)
 
 seqf77_dprimme:
@@ -79,7 +79,7 @@ primme_complex:
 	echo "----------------------------------------------"; \
 	echo " Making the executable for the complex C      "; \
 	echo "----------------------------------------------"; \
-	make primme_doublecomplex REAL=doublecomplex; \
+	make primme_doublecomplex; \
 	)
 
 seqf77_zprimme:
