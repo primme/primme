@@ -31,7 +31,7 @@
 #define NUMERICAL_H
 
 #include "common_numerical.h"
-#include "Complex.h"
+#include "Complexz.h"
 
 #ifdef __cplusplus
 extern "C" {

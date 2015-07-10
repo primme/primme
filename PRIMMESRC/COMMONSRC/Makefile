@@ -7,17 +7,17 @@ include ../../Make_flags
 
 .PHONY: clean lib libd libz
 
-CSOURCE =  Complex.c common_numerical.c errors.c primme_f77.c \
+CSOURCE =  Complexz.c common_numerical.c errors.c primme_f77.c \
 	primme_interface.c wtime.c
 
-COBJS = Complex.o common_numerical.o  errors.o  primme_f77.o  \
+COBJS = Complexz.o common_numerical.o  errors.o  primme_f77.o  \
 	primme_interface.o wtime.o
 
 # 
 # Compilation
 #
-Complex.o: Complex.c
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c Complex.c
+Complexz.o: Complexz.c
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c Complexz.c
 
 common_numerical.o: common_numerical.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c common_numerical.c
