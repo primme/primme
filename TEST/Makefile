@@ -58,6 +58,9 @@ primme_double: $(OBJSdouble) $(TOP)/libprimme.a Makefile
 primme_doublecomplex: $(OBJSdoublecomplex) $(TOP)/libprimme.a Makefile
 	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
+ex_dseq: ex_dseq.o $(TOP)/libprimme.a Makefile
+	$(CLDR) -o ex_dseq ex_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
 %double.o: %.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
