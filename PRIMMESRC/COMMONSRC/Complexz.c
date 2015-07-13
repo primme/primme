@@ -13,7 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "Complex.h"
+#include "Complexz.h"
 
 
 /* Complex Division c = a/b */

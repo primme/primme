@@ -10,7 +10,6 @@ SOBJS= driver.o COMMON/shared_utils.o
 INCLUDE += -I./COMMON -I../PRIMMESRC/COMMONSRC
 LIBDIRS += -L../
 
-REAL          ?= double
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined, $(origin PETSC_DIR)), no, yes)
 USE_PARASAILS ?= $(if $(findstring undefined, $(origin PARASAILS_LIB_DIR)), no, yes)
@@ -20,18 +19,11 @@ ifeq ($(USE_MPI), yes)
   DEFINES += -DUSE_MPI
 endif
 
-ifeq ($(REAL), doublecomplex)
-  DEFINES += -DUSE_DOUBLECOMPLEX
-endif
-
 ifeq ($(USE_NATIVE), yes)
   DEFINES += -DUSE_NATIVE
   SOBJS += COMMON/csr.o COMMON/mat.o COMMON/ssrcsr.o COMMON/mmio.o
-  ifeq ($(REAL), double)
-    SOBJS += COMMON/ilut.o COMMON/amux.o
-  else ifeq ($(REAL), doublecomplex)
-    SOBJS += COMMON/zilut.o COMMON/zamux.o
-  endif
+  SOBJSdouble += COMMON/ilut.o COMMON/amux.o
+  SOBJSdoublecomplex += COMMON/zilut.o COMMON/zamux.o
 endif
 
 ifeq ($(USE_PARASAILS), yes)
@@ -56,11 +48,25 @@ endif
 
 
 OBJS = $(sort $(SOBJS))
+OBJSdouble = $(sort $(SOBJSdouble)) $(patsubst %.o,%double.o,$(OBJS))
+OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.o,$(OBJS))
 
 .PHONY: clean veryclean
 
-primme_$(REAL): clean $(OBJS) ../libprimme.a Makefile
-	$(CLDR) -o primme_$(REAL) $(OBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+primme_double: $(OBJSdouble) ../libprimme.a Makefile
+	$(CLDR) -o primme_double $(OBJSdouble) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+primme_doublecomplex: $(OBJSdoublecomplex) ../libprimme.a Makefile
+	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+ex_dseq: ex_dseq.o ../libprimme.a Makefile
+	$(CLDR) -o ex_dseq ex_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+%double.o: %.c
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+
+%doublecomplex.o: %.c
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 .c.o:
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -68,7 +74,7 @@ primme_$(REAL): clean $(OBJS) ../libprimme.a Makefile
 .f.o:
 	$(F77) $(HIGH_OPT) $(FFLAGS) $(INCLUDE) -c $< -o $@
 
-all: primme_$(REAL)
+all: primme_double primme_doublecomplex
 
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
@@ -93,7 +99,7 @@ all_tests_doublecomplex: primme_doublecomplex
 	@echo "Please wait, this could take a while...";\
 	ok="0";	for i in tests/test_??? ; do \
 		echo "********** Test $$i complex ***********"; \
-		sed -r 's/sol_.../\0.complex/' $$i > ._test00;\
+		sed 's/sol_.../&.complex/' $$i > ._test00;\
 		$(MPIRUN) ./primme_doublecomplex ._test00 || ok="1"; \
 		rm ._test00;\
 	done > tests.log 2>&1;\
@@ -117,7 +123,7 @@ all_tests_double_save: primme_double
 
 all_tests_doublecomplex_save: primme_doublecomplex
 	@for i in tests/test_??? ; do \
-		sed 's/checkXFile/saveXFile/;s/sol_.../\0.complex/' $$i > ._test00;\
+		sed 's/checkXFile/saveXFile/;s/sol_.../&.complex/' $$i > ._test00;\
 		echo "********** Test $$i complex ***********"; \
 		./primme_doublecomplex ._test00 || ok="1"; \
 	done > tests.log 2>&1;\
@@ -127,11 +133,11 @@ test_double: primme_double
 	./primme_double tests/test_003
 
 test_doublecomplex: primme_doublecomplex
-	sed -r 's/sol_.../\0.complex/' tests/test_003 > ._test00;\
+	sed 's/sol_.../\0.complex/' tests/test_003 > ._test00;\
 	./primme_doublecomplex ._test00;\
 	rm -f ._test00
 
-test: test_$(REAL)
+test: test_double test_doublecomplex
 
 
 seqf77_dprimme_FOBJS = driver_f77seq.o COMMON/ilut.o COMMON/amux.o
@@ -143,9 +149,20 @@ seqf77_zprimme: $(seqf77_zprimme_FOBJS) ../libprimme.a
 	$(FLDR) -o seqf77_zprimme $(seqf77_zprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 clean:
-	rm -f *.o COMMON/*.o $(OBJS)
+	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) $(seqf77_dprimme_FOBJS) $(seqf77_zprimme_FOBJS)
 
 veryclean: clean
 	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme
 
 
+COMMON/csr.c: COMMON/csr.h COMMON/mmio.h
+COMMON/csr.h: COMMON/num.h
+COMMON/mat.c: COMMON/native.h
+COMMON/mmio.c: COMMON/mmio.h
+COMMON/native.h: COMMON/csr.h
+COMMON/parasailsw.c: COMMON/parasailsw.h COMMON/csr.h
+COMMON/parasailsw.h: COMMON/csr.h
+COMMON/petscw.c: COMMON/petscw.h COMMON/mmio.h
+COMMON/petscw.h: COMMON/num.h
+COMMON/shared_utils.c: COMMON/shared_utils.h
+COMMON/driver.c: COMMON/shared_utils.h COMMON/native.h COMMON/parasailsw.h COMMON/petscw.h

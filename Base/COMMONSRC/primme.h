@@ -34,7 +34,7 @@ extern "C" {
 #include <stdio.h>
 #include <sys/types.h>
 #include <limits.h>
-#include "Complex.h"
+#include "Complexz.h"
 
 #define PRIMME_MAX_NAME_LENGTH 128
 

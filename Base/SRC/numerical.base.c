@@ -28,7 +28,7 @@
 
 #include <stdarg.h>
 #ifdefarithm L_DEFCPLX
-#include "Complex.h"
+#include "Complexz.h"
 #endifarithm
 #include "numerical_private_@(pre).h"
 #include "numerical_@(pre).h"
