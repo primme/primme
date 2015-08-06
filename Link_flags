@@ -25,15 +25,15 @@ FLDR ?= $(F77)
 # LDFLAGS = -framework Accelerate
 # LIBS = -lprimme -lm -llapack -lblas
 #---------------------------------------------------------------
-# SUSE Linux, Centos
-#
- LDFLAGS =
- LIBS = -lprimme -lm -llapack -lblas -lgfortran -lg2c
-#---------------------------------------------------------------
-# Debian, Ubuntu
+# SuSE Linux (<= 13.1), Centos
 #
 # LDFLAGS =
-# LIBS = -lprimme -lm -llapack -lblas -lgfortran
+# LIBS = -lprimme -lm -llapack -lblas -lgfortran -lg2c
+#---------------------------------------------------------------
+# Debian, Ubuntu, SuSE Linux (>= 13.2)
+#
+LDFLAGS ?=
+LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
 #---------------------------------------------------------------
 # Using ACML for lapack/blas
 #
