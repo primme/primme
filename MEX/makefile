@@ -48,7 +48,6 @@ MEXFLAGS += -v -O -largeArrayDims
 #       and LAPACK libraries  
 #------------------------------------------------------------
 # Modify this to show the path of the installed PRIMME directory
-#TOP = /Users/teddy/Dropbox/Lingfei/MyWork/LWERAS/PRIMME_MEX/PRIMME
 TOP = ../
  
 LIBS = -lprimme -lm  -lmwlapack -lmwblas

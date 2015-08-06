@@ -9,41 +9,34 @@ libs: libd libz
 
 lib: 
 	@(\
-	rm -f $(LIBRARY);\
+	rm -f ../$(LIBRARY);\
 	echo " Making common .o files"; \
-	cd $(COMMONDIR) ;\
-	make lib;\
+	make -C COMMONSRC lib;\
 	echo " Making complex precision .o files"; \
-	cd $(ZPRIMMEDIR) ;\
-	make lib;\
+	make -C ZSRC lib;\
 	echo " Making double precision .o files"; \
-	cd $(DPRIMMEDIR) ;\
-	make lib;\
-	$(RANLIB) $(LIBRARY);\
+	make -C DSRC lib;\
+	$(RANLIB) ../$(LIBRARY);\
 	)
 
 libd:
 	@(\
-	rm -f $(DLIBRARY);\
+	rm -f ../$(DLIBRARY);\
 	echo " Making common .o files"; \
-	cd $(COMMONDIR) ;\
-	make libd;\
+	make -C COMMONSRC libd;\
 	echo " Making double precision .o files"; \
-	cd $(DPRIMMEDIR) ;\
-	make libd;\
-	$(RANLIB) $(DLIBRARY);\
+	make -C DSRC lib;\
+	$(RANLIB) ../$(DLIBRARY);\
 	)
 
 libz:
 	@(\
-	rm -f $(ZLIBRARY);\
+	rm -f ../$(ZLIBRARY);\
 	echo " Making common .o files"; \
-	cd $(COMMONDIR) ;\
-	make libz;\
+	make -C COMMONSRC libz;\
 	echo " Making double precision .o files"; \
-	cd $(ZPRIMMEDIR) ;\
-	make libz;\
-	$(RANLIB) $(ZLIBRARY);\
+	make -C ZSRC lib;\
+	$(RANLIB) ../$(ZLIBRARY);\
 	)
 #-----------------------------------------------------------------
 
@@ -51,12 +44,12 @@ clean:
 	@(\
 	echo "--------------------------------------------------"; \
 	echo " From PRIMME library directories"; \
-	cd $(COMMONDIR) ; echo "   "$(COMMONDIR);\
-	make -f Makefile clean;\
-	cd $(DPRIMMEDIR) ; echo "   "$(DPRIMMEDIR);\
-	make -f Makefile clean;\
-	cd $(ZPRIMMEDIR) ; echo "   "$(ZPRIMMEDIR);\
-	make -f Makefile clean;\
+	echo "   "COMMONSRC;\
+	make -C COMMONSRC clean;\
+	echo "   "DSRC;\
+	make -C DSRC clean;\
+	echo "   "ZSRC;\
+	make -C ZSRC clean;\
 	echo "--------------------------------------------------"; \
 	)
 

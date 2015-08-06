@@ -7,7 +7,8 @@ include ../Link_flags
 
 
 SOBJS= driver.o COMMON/shared_utils.o
-INCLUDE += -I./COMMON
+INCLUDE += -I./COMMON -I../PRIMMESRC/COMMONSRC
+LIBDIRS += -L../
 
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
@@ -52,13 +53,13 @@ OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.
 
 .PHONY: clean veryclean
 
-primme_double: $(OBJSdouble) $(TOP)/libprimme.a Makefile
+primme_double: $(OBJSdouble) ../libprimme.a Makefile
 	$(CLDR) -o primme_double $(OBJSdouble) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-primme_doublecomplex: $(OBJSdoublecomplex) $(TOP)/libprimme.a Makefile
+primme_doublecomplex: $(OBJSdoublecomplex) ../libprimme.a Makefile
 	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-ex_dseq: ex_dseq.o $(TOP)/libprimme.a Makefile
+ex_dseq: ex_dseq.o ../libprimme.a Makefile
 	$(CLDR) -o ex_dseq ex_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
@@ -140,11 +141,11 @@ test: test_double test_doublecomplex
 
 
 seqf77_dprimme_FOBJS = driver_f77seq.o COMMON/ilut.o COMMON/amux.o
-seqf77_dprimme: $(seqf77_dprimme_FOBJS) $(TOP)/libprimme.a
+seqf77_dprimme: $(seqf77_dprimme_FOBJS) ../libprimme.a
 	$(FLDR) -o seqf77_dprimme $(seqf77_dprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 seqf77_zprimme_FOBJS = driver_f77seqz.o COMMON/zamux.o
-seqf77_zprimme: $(seqf77_zprimme_FOBJS) $(TOP)/libprimme.a
+seqf77_zprimme: $(seqf77_zprimme_FOBJS) ../libprimme.a
 	$(FLDR) -o seqf77_zprimme $(seqf77_zprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 clean:
