@@ -12,13 +12,13 @@ ZLIBRARY = libzprimme.a
 #---------------------------------------------------------------
 # Valid configuration for many POSIX systems
 #---------------------------------------------------------------
-CC       = cc
-F77      = gfortran
-DEFINES  = -DF77UNDERSCORE 
-CFLAGS   =
-FFLAGS   = -fno-second-underscore
-LOW_OPT  = -O2
-HIGH_OPT = -O2
+CC       ?= cc
+F77      ?= gfortran
+DEFINES  ?= -DF77UNDERSCORE 
+CFLAGS   ?=
+FFLAGS   ?= -fno-second-underscore
+LOW_OPT  ?= -O2
+HIGH_OPT ?= -O2
 #---------------------------------------------------------------
 # IBM architectures (thanks for creating FORTRAN)
 #CC       = xlc
