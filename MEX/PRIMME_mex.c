@@ -102,7 +102,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double *read_initialevecsimag = NULL;
     
     /* Timing vars */
-    double ut1,ut2,st1,st2,wt1,wt2;
+    double wt1,wt2;
 	
     /* check: The number of input arguments are between 1 and 6 */
     if (nrhs == 0)
@@ -503,12 +503,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
  	   /* ------------- */
 
   	    wt1 = primme_get_wtime(); 
- 	    primme_get_time(&ut1,&st1);
 
  	    ret = dprimme(evals, evecs, rnorms, &primme);
 
   	    wt2 = primme_get_wtime();
-  	    primme_get_time(&ut2,&st2);
 
 	    
 	    if(ret == 0)
@@ -517,8 +515,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	       mexPrintf("dprimme return value is %d, fail\n", ret);
 
 	    mexPrintf("Wallclock Runtime   : %f seconds\n", wt2-wt1);
- 	    mexPrintf("User Time           : %f seconds\n", ut2-ut1);
-  	    mexPrintf("Syst Time           : %f seconds\n", st2-st1);
   	    mexPrintf("Matvec_MEX Time     : %f seconds\n", Matvec_mex_timer);
         
   	      
@@ -544,8 +540,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
            }
                
            fprintf(primme.outputFile, "Wallclock Runtime : %f seconds\n", wt2-wt1);
- 	       fprintf(primme.outputFile, "User Time         : %f seconds\n", ut2-ut1);
-  	       fprintf(primme.outputFile, "Syst Time         : %f seconds\n", st2-st1);
   	       fprintf(primme.outputFile, "Matvec_MEX Time   : %f seconds\n", Matvec_mex_timer);
 /*           primme_display_params(primme);*/
            fclose(primme.outputFile);           
@@ -670,12 +664,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
  	   /* ------------- */
 
   	    wt1 = primme_get_wtime(); 
- 	    primme_get_time(&ut1,&st1);
 
  	    ret = zprimme(evals, evecs, rnorms, &primme);
 
   	    wt2 = primme_get_wtime();
-  	    primme_get_time(&ut2,&st2);	    
 
 
  	    if(ret == 0)
@@ -684,8 +676,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	       mexPrintf("zprimme return value is %d, fail\n", ret);
 
 	    mexPrintf("Wallclock Runtime   : %f seconds\n", wt2-wt1);
- 	    mexPrintf("User Time           : %f seconds\n", ut2-ut1);
-  	    mexPrintf("Syst Time           : %f seconds\n", st2-st1);
   	    mexPrintf("Matvec_MEX Time     : %f seconds\n", Matvec_mex_timer);
   	    
   	    
@@ -700,8 +690,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
            }
                
            fprintf(primme.outputFile, "Wallclock Runtime : %f seconds\n", wt2-wt1);
- 	       fprintf(primme.outputFile, "User Time         : %f seconds\n", ut2-ut1);
-  	       fprintf(primme.outputFile, "Syst Time         : %f seconds\n", st2-st1);
   	       fprintf(primme.outputFile, "Matvec_MEX Time   : %f seconds\n", Matvec_mex_timer);
            fclose(primme.outputFile);
 	    }

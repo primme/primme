@@ -19,11 +19,6 @@
  *
  */
 
-/* Required by qsort_r */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -84,14 +79,11 @@ int readMatrixNative(const char* matrixFileName, CSRMatrix **matrix_, double *fn
    return 0;
 }
 
-#if defined (__APPLE__) && defined (__MACH__)
-static int my_comp(void *ctx, const void *a, const void *b)
-#else
-static int my_comp(const void *a, const void *b, void *ctx)
-#endif
+static int *my_comp_ctx[2];
+static int my_comp(const void *a, const void *b)
 {
    const int ia = *(int*)a, ib = *(int*)b;
-   int **p = (int **)ctx;
+   int **p = my_comp_ctx;
    return p[0][ia] != p[0][ib] ? p[0][ia] - p[0][ib] : p[1][ia] - p[1][ib];
 }
 
@@ -142,14 +134,9 @@ static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, 
    /* Sort COO by columns */
    perm = (int *)primme_calloc(nzmax, sizeof(int), "perm");
    for (i=0; i<nzmax; i++) perm[i] = i;
-   {
-      int *ctx[2] = {I, J};
-#if defined (__APPLE__) && defined (__MACH__)
-      qsort_r(perm, nzmax, sizeof(int), ctx, my_comp);
-#else
-      qsort_r(perm, nzmax, sizeof(int), my_comp, ctx);
-#endif
-   }
+   my_comp_ctx[0] = I;
+   my_comp_ctx[1] = J;
+   qsort(perm, nzmax, sizeof(int), my_comp);
 
    /* Collapse columns */
    *IA = (int *)primme_calloc(*m+1, sizeof(int), "IA");
