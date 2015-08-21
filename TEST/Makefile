@@ -11,9 +11,9 @@ INCLUDE += -I./COMMON -I../PRIMMESRC/COMMONSRC
 LIBDIRS += -L../
 
 USE_NATIVE    ?= yes
-USE_PETSC     ?= $(if $(findstring undefined, $(origin PETSC_DIR)), no, yes)
-USE_PARASAILS ?= $(if $(findstring undefined, $(origin PARASAILS_LIB_DIR)), no, yes)
-USE_MPI       ?= $(if $(findstring mpi, $(CC)), yes, no)
+USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
+USE_PARASAILS ?= $(if $(findstring undefined,$(origin PARASAILS_LIB_DIR)),no,yes)
+USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,no)
 
 ifeq ($(USE_MPI), yes)
   DEFINES += -DUSE_MPI
