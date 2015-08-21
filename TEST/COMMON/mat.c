@@ -89,7 +89,7 @@ int createInvDiagPrecNative(const CSRMatrix *matrix, double shift, double **prec
    for (i=0; i<matrix->n; i++)
       diag[i] -= shift;
    for (i=0; i<matrix->n; i++)
-      if (abs(diag[i]) < minDenominator)
+      if (fabs(diag[i]) < minDenominator)
          diag[i] = copysign(minDenominator, diag[i]);
    *prec = diag;
    return 1;

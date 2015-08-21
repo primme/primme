@@ -124,7 +124,10 @@ int main (int argc, char *argv[]) {
 static int real_main (int argc, char *argv[]) {
 
    /* Timing vars */
-   double ut1,ut2,st1,st2,wt1,wt2;
+   double wt1,wt2;
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+   double ut1,ut2,st1,st2;
+#endif
 
    /* Files */
    char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
@@ -289,12 +292,16 @@ static int real_main (int argc, char *argv[]) {
    /* ------------- */
 
    wt1 = primme_get_wtime(); 
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
    primme_get_time(&ut1,&st1);
+#endif
 
    ret = PREFIX(primme)(evals, COMPLEXZ(evecs), rnorms, &primme);
 
    wt2 = primme_get_wtime();
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
    primme_get_time(&ut2,&st2);
+#endif
 
    if (driver.checkXFileName[0]) {
       retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms, permutation);
@@ -315,8 +322,10 @@ static int real_main (int argc, char *argv[]) {
       primme_PrintStackTrace(primme);
 
       fprintf(primme.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
       fprintf(primme.outputFile, "User Time           : %f seconds\n", ut2-ut1);
       fprintf(primme.outputFile, "Syst Time           : %f seconds\n", st2-st1);
+#endif
 
       for (i=0; i < primme.numEvals; i++) {
          fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
@@ -732,32 +741,34 @@ static int check_solution(const char *checkXFileName, primme_params *primme, dou
            retX = 1; \
         }
 
-   CHECK_PRIMME_PARAM(n);
-   CHECK_PRIMME_PARAM(numEvals);
-   CHECK_PRIMME_PARAM(target);
-   CHECK_PRIMME_PARAM(numTargetShifts);
-   CHECK_PRIMME_PARAM(dynamicMethodSwitch);
-   CHECK_PRIMME_PARAM(locking);
-   CHECK_PRIMME_PARAM(numOrthoConst);
-   CHECK_PRIMME_PARAM(maxBasisSize);
-   CHECK_PRIMME_PARAM(minRestartSize);
-   CHECK_PRIMME_PARAM(restartingParams.scheme);
-   CHECK_PRIMME_PARAM(restartingParams.maxPrevRetain);
-   CHECK_PRIMME_PARAM(correctionParams.precondition);
-   CHECK_PRIMME_PARAM(correctionParams.robustShifts);
-   CHECK_PRIMME_PARAM(correctionParams.maxInnerIterations);
-   CHECK_PRIMME_PARAM(correctionParams.projectors.LeftQ);
-   CHECK_PRIMME_PARAM(correctionParams.projectors.LeftX);
-   CHECK_PRIMME_PARAM(correctionParams.projectors.RightQ);
-   CHECK_PRIMME_PARAM(correctionParams.projectors.RightX);
-   CHECK_PRIMME_PARAM(correctionParams.projectors.SkewQ);
-   CHECK_PRIMME_PARAM(correctionParams.projectors.SkewX);
-   CHECK_PRIMME_PARAM(correctionParams.convTest);
-   CHECK_PRIMME_PARAM_DOUBLE(aNorm);
-   CHECK_PRIMME_PARAM_DOUBLE(eps);
-   CHECK_PRIMME_PARAM_DOUBLE(correctionParams.relTolBase);
-   CHECK_PRIMME_PARAM(initSize);
-   CHECK_PRIMME_PARAM_TOL(stats.numOuterIterations, 40);
+   if (primme0.n) {
+      CHECK_PRIMME_PARAM(n);
+      CHECK_PRIMME_PARAM(numEvals);
+      CHECK_PRIMME_PARAM(target);
+      CHECK_PRIMME_PARAM(numTargetShifts);
+      CHECK_PRIMME_PARAM(dynamicMethodSwitch);
+      CHECK_PRIMME_PARAM(locking);
+      CHECK_PRIMME_PARAM(numOrthoConst);
+      CHECK_PRIMME_PARAM(maxBasisSize);
+      CHECK_PRIMME_PARAM(minRestartSize);
+      CHECK_PRIMME_PARAM(restartingParams.scheme);
+      CHECK_PRIMME_PARAM(restartingParams.maxPrevRetain);
+      CHECK_PRIMME_PARAM(correctionParams.precondition);
+      CHECK_PRIMME_PARAM(correctionParams.robustShifts);
+      CHECK_PRIMME_PARAM(correctionParams.maxInnerIterations);
+      CHECK_PRIMME_PARAM(correctionParams.projectors.LeftQ);
+      CHECK_PRIMME_PARAM(correctionParams.projectors.LeftX);
+      CHECK_PRIMME_PARAM(correctionParams.projectors.RightQ);
+      CHECK_PRIMME_PARAM(correctionParams.projectors.RightX);
+      CHECK_PRIMME_PARAM(correctionParams.projectors.SkewQ);
+      CHECK_PRIMME_PARAM(correctionParams.projectors.SkewX);
+      CHECK_PRIMME_PARAM(correctionParams.convTest);
+      CHECK_PRIMME_PARAM_DOUBLE(aNorm);
+      CHECK_PRIMME_PARAM_DOUBLE(eps);
+      CHECK_PRIMME_PARAM_DOUBLE(correctionParams.relTolBase);
+      CHECK_PRIMME_PARAM(initSize);
+      CHECK_PRIMME_PARAM_TOL(stats.numOuterIterations, 40);
+   }
 
    h = (PRIMME_NUM *)primme_calloc(cols*2, sizeof(PRIMME_NUM), "h"); h0 = &h[cols];
    Ax = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "Ax");
@@ -857,7 +868,12 @@ static int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, P
 
    /* Read primme_params */
    if (primme_out) {
-      FREAD(primme_out, sizeof(*primme_out), 1, f);
+      FREAD(&d, sizeof(d), 1, f);
+      if ((int)REAL_PART(d) == (int)sizeof(*primme_out)) {
+         FREAD(primme_out, sizeof(*primme_out), 1, f);
+      }
+      else
+         primme_out->n = 0;
    }
 
    fclose(f);
@@ -910,6 +926,8 @@ static int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, 
    /* Write primme_params */
    if (primme->procID == 0) {
       fseek(f, sizeof(d)*(primme->n*primme->initSize + 3), SEEK_SET);
+      d = sizeof(*primme);
+      FWRITE(&d, sizeof(d), 1, f);
       FWRITE(primme, sizeof(*primme), 1, f);
    }
 
