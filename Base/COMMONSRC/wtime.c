@@ -20,7 +20,9 @@
  */
 #include <stdlib.h>
 #include <sys/time.h>
-#include "sys/resource.h"
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#  include <sys/resource.h>
+#endif
 #include "wtime.h"
 
 #ifdef RUSAGE_SELF

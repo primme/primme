@@ -13,7 +13,6 @@ Making & Linking
 
 `Make_flags` has the flags and compilers used to make `libprimme.a`. Set at minimum:
 
-* `TOP`, path where the PRIMME directory is located.
 * `CC`, compiler program like `gcc`, `clang` or `icc`. 
 
 Then do this to generate `libprimme.a`::

@@ -28,7 +28,7 @@ pars: primme_double primme_complex
 #------------------------ Libraries ------------------------------
 lib:
 	@(\
-	cd $(SRC) ;\
+	cd PRIMMESRC;\
 	echo "-----------------------------------"; \
 	echo "     Making the PRIMME library     "; \
 	echo "  Includes both double and complex "; \
@@ -38,7 +38,7 @@ lib:
 
 libd:
 	@(\
-	cd $(SRC) ;\
+	cd PRIMMESRC;\
 	echo "---------------------------------------"; \
 	echo " Making the double-only PRIMME library "; \
 	echo "---------------------------------------"; \
@@ -47,7 +47,7 @@ libd:
 
 libz:
 	@(\
-	cd $(SRC) ;\
+	cd PRIMMESRC;\
 	echo "----------------------------------------"; \
 	echo " Making the complex-only PRIMME library "; \
 	echo "----------------------------------------"; \
@@ -56,16 +56,16 @@ libz:
 #------------------- DOUBLE TEST PROGRAMS ------------------------
 primme_double:
 	@(\
-	cd $(TESTDIR) ;\
+	cd TEST ;\
 	echo "----------------------------------------------"; \
 	echo " Making the executable for the double C       "; \
 	echo "----------------------------------------------"; \
-	make primme_double REAL=double; \
+	make primme_double; \
 	)
 
 seqf77_dprimme:
 	@(\
-	cd $(TESTDIR) ;\
+	cd TEST ;\
 	echo "------------------------------------------------"; \
 	echo " Making the executable for double sequential f77 "; \
 	echo "------------------------------------------------"; \
@@ -75,16 +75,16 @@ seqf77_dprimme:
 #------------------- COMPLEX TEST PROGRAMS ----------------------
 primme_complex:
 	@(\
-	cd $(TESTDIR) ;\
+	cd TEST ;\
 	echo "----------------------------------------------"; \
 	echo " Making the executable for the complex C      "; \
 	echo "----------------------------------------------"; \
-	make primme_doublecomplex REAL=doublecomplex; \
+	make primme_doublecomplex; \
 	)
 
 seqf77_zprimme:
 	@(\
-	cd $(TESTDIR) ;\
+	cd TEST ;\
 	echo "------------------------------------------------"; \
 	echo " Making executable for complex sequential f77 "; \
 	echo "------------------------------------------------"; \
@@ -96,18 +96,15 @@ clean:
 	echo "--------------------------------------------------"; \
 	echo " Cleaning .o, a.out, cores, from all directories "; \
 	echo "--------------------------------------------------"; \
-	cd $(SRC) ;\
-	make -f Makefile clean;\
-	rm -f libprimme.a;\
+	make -C PRIMMESRC clean;\
 	echo " From Test directories";\
-	cd $(TESTDIR);\
-	make clean;\
+	make -C TEST clean;\
 	echo "--------------------------------------------------"; \
 	)
 
 test:
 	@(\
-	cd $(TESTDIR) ;\
+	cd TEST ;\
 	echo "------------------------------------------------"; \
 	echo " Test double sequential C                       "; \
 	echo "------------------------------------------------"; \
@@ -120,14 +117,14 @@ check_style:
 
 backup: 
 	@(\
-	cd $(TOP)/../ ;\
+	cd .. ;\
 	tar cvf back_$(shell date "+%m_%d_%y_%H_%M").tar PRIMME;\
 	gzip back_*.tar;\
 	)
 
 distribution:
 	@(\
-	cd $(TOP)/../ ;\
+	cd .. ;\
 	tar cvf primme_v1.11.tar \
 	PRIMME/PRIMMESRC PRIMME/DTEST  PRIMME/ZTEST  \
 	PRIMME/readme.txt PRIMME/COPYING.txt \

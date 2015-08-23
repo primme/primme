@@ -32,7 +32,7 @@
 
 #include "common_numerical.h"
 #ifdefarithm L_DEFCPLX
-#include "Complex.h"
+#include "Complexz.h"
 #endifarithm
 
 #ifdef __cplusplus

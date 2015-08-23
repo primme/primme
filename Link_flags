@@ -2,62 +2,55 @@
 #             LINKING FLAGS FOR THE TEST PROGRAMS
 # 	      in ZTEST and DTEST test directories
 #     Linking primme, BLAS/LAPACK for various architectures. 
-#    Makefiles in ZTEST and DTEST must also include Make_flags
+#        Makefiles in TEST must also include Make_flags
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
-# Loader by default f77
-# On Suse Linux use gfortran, NOT g77 (BLAS/LAPACK made with gfortran) 
-# LDR = gfortran
+# Loaders
 #---------------------------------------------------------------
-CLDR = g++-mp-4.9
-FLDR = gfortran-mp-4.9
-#LDR = c++
+CLDR ?= $(CC)
+FLDR ?= $(F77)
 
-INCLUDE = -I$(COMMONDIR)
-LIBDIRS = -L$(TOP)
-
-#---------------------------------------------------------------
-# MPI installation flags
-#INCLUDE += -I/Volumes/scratch/Applications/include/
-#LIBDIRS += -L/Volumes/scratch/Applications/lib/
-#---------------------------------------------------------------
-#
 #---------------------------------------------------------------
 #  Basic Link flags for LAPACK/BLAS and math
 #---------------------------------------------------------------
-# Mac OSX 10.4 using veclib for BLAS/LAPACK
+# Mac OS X
 #
- LDFLAGS = -Wl,-framework -Wl,vecLib -m64
- LIBS = -lprimme -lm
+# LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
+# LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
+# LIBS = -lprimme -lm
 #---------------------------------------------------------------
-# LINUX 2.6.13-15.11-smp (32 bit image)
+# Cray
 #
-#LIBS = -lprimme -lm -L/usr/lib/ -llapack -lblas -lgfortran -lg2c
-#ifeq ($(CC),c++)
-#LIBS += -lstdc++
-#endif
+# LDFLAGS = -framework Accelerate
+# LIBS = -lprimme -lm -llapack -lblas
 #---------------------------------------------------------------
-# Linux 2.6.13-15.12-smp (64 bit image)
-#LIBS = -lprimme -lm -L/usr/lib64/ -llapack -lblas -lgfortran -lg2c
-#ifeq ($(CC),c++)
-#LIBS += -lstdc++
-#endif
+# SuSE Linux (<= 13.1), Centos
+#
+# LDFLAGS =
+# LIBS = -lprimme -lm -llapack -lblas -lgfortran -lg2c
 #---------------------------------------------------------------
-# CentOS AMD Opteron (64 bit) using g77 and ACML for lapack/blas
-#LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv -lg2c
-#ifeq ($(CC),c++)
-#LIBS += -lstdc++
-#endif
+# Debian, Ubuntu, SuSE Linux (>= 13.2)
+#
+LDFLAGS ?=
+LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
+#---------------------------------------------------------------
+# Using ACML for lapack/blas
+#
+# LDFLAGS =
+# LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv
+# LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv -lg2c
+#---------------------------------------------------------------
+# IBM architectures (thanks for creating FORTRAN)
+#
+# LDFLAGS =
+# LIBS = -lprimme -lm /sp/vwe/lib/liblapack342_ppc7_xl_15.1.2-32.a /sp/vwe/lib/libblas342_ppc7_xl_15.1.2-32.a -L/opt/ibm/xlf/15.1.0/lib -lxlf90 -lxl -lxlfmath
+#
 #---------------------------------------------------------------
 # Sun Solaris, SunOS 5.9  using sunperf math library
 #
-#LDFLAGS = 
-#LIBS = -lprimme -lm -lrt -xlic_lib=sunperf
-#---------------------------------------------------------------
-# custom
-#LDFLAGS = 
-#LIBS = -lprimme -L/usr/lib/ -llapack -lblas -lm  -lg2c
+# LDFLAGS = 
+# LIBS = -lprimme -lm -lrt -xlic_lib=sunperf
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
