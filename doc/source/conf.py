@@ -226,7 +226,9 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'primme', u'PRIMME Documentation',
+    ('primmec', 'primmec', u'PRIMME Documentation for C Interface',
+     [u'Andreas Stathopuolos'], 1),
+    ('primmef77', 'primmef77', u'PRIMME Documentation for F77 Interface',
      [u'Andreas Stathopuolos'], 1)
 ]
 

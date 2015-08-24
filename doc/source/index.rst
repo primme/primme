@@ -9,7 +9,9 @@ Welcome to PRIMME's documentation!
 .. toctree::
    :maxdepth: 2
 
-   doc
+   intro
+   primmec
+   primmef77
 
 Indices and tables
 ==================
