@@ -11,13 +11,19 @@ PRIMME is written in C, but a complete Fortran 77 interface is also provided.
 Making & Linking
 ----------------
 
-`Make_flags` has the flags and compilers used to make `libprimme.a`. Set at minimum:
+`Make_flags` has the flags and compilers used to make `libprimme.a`:
 
-* `CC`, compiler program like `gcc`, `clang` or `icc`. 
+* `CC`, compiler program like ``gcc``, ``clang`` or ``icc``.
+* `CFLAGS`, compiler options like ``-g`` or ``-O3``.
 
 Then do this to generate `libprimme.a`::
 
     make lib
+
+Also you can do::
+
+    make lib CC=clang CFLAGS='-O3'
+
 
 C Library Interface
 -------------------
@@ -71,6 +77,25 @@ supported by a number of grants from the National Science Foundation.
 
 * A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
   of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
+
+
+License Information
+-------------------
+
+PRIMME is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+PRIMME is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 
 Contact Information 
 -------------------
