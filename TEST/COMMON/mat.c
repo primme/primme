@@ -38,6 +38,9 @@ void FORTRAN_FUNCTION(ilut)(int*, double*, int*, int*, int*, double*, double*, i
 void FORTRAN_FUNCTION(lusol0)(int*, double*, double*, double*, int*, int*);
 #else
 void FORTRAN_FUNCTION(zamux)(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
+void FORTRAN_FUNCTION(zilut)(int*, PRIMME_NUM*, int*, int*, int*, double*, PRIMME_NUM*, int*, int*, int*,
+                             PRIMME_NUM*, int*, int*);
+void FORTRAN_FUNCTION(zlusol)(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
 #endif
 
 #ifdef __cplusplus
@@ -63,9 +66,9 @@ void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 
    for (i=0;i<*blockSize;i++) {
 #ifndef USE_DOUBLECOMPLEX
-      amux_
+      FORTRAN_FUNCTION(amux)
 #else
-      zamux_
+      FORTRAN_FUNCTION(zamux)
 #endif
             (&primme->n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
              matrix->AElts, matrix->JA, matrix->IA);
@@ -168,8 +171,50 @@ void ApplyInvDavidsonDiagPrecNative(void *x, void *y, int *blockSize,
 int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
                          double threshold, double filter, CSRMatrix **prec) {
 #ifdef USE_DOUBLECOMPLEX
-   fprintf(stderr, "ERROR: ILUT precoditioner is not supported  in complex.\n");
-   return -1;
+   int ierr;
+   int lenFactors;
+   PRIMME_NUM *W;
+   int *iW;
+   CSRMatrix *factors;
+
+   if (shift != 0.0) {
+      shiftCSRMatrix(-shift, (CSRMatrix*)matrix);
+   }
+
+   /* Work arrays */
+   W = (PRIMME_NUM *)primme_calloc(matrix->n+1, sizeof(PRIMME_NUM), "W");
+   iW = (int *)primme_calloc(matrix->n*2, sizeof(int), "iW");
+
+   /* Max size of factorization */
+   lenFactors = 9*matrix->nnz;
+
+   factors = (CSRMatrix *)primme_calloc(1,  sizeof(CSRMatrix), "factors");
+   factors->AElts = (PRIMME_NUM *)primme_calloc(lenFactors,
+                                sizeof(PRIMME_NUM), "iluElts");
+   factors->JA = (int *)primme_calloc(lenFactors, sizeof(int), "Jilu");
+   factors->IA = (int *)primme_calloc(matrix->n+1, sizeof(int), "Iilu");
+   factors->n = matrix->n;
+   factors->nnz = lenFactors;
+   
+   FORTRAN_FUNCTION(zilut)
+         ((int*)&matrix->n, (PRIMME_NUM*)matrix->AElts, (int*)matrix->JA,
+          (int*)matrix->IA, &level, &threshold,
+          factors->AElts, factors->JA, factors->IA, &lenFactors, W, iW, &ierr);
+   
+   if (ierr != 0)  {
+      fprintf(stderr, "ZILUT factorization could not be completed\n");
+      return(-1);
+   }
+
+   if (shift != 0.0L) {
+      shiftCSRMatrix(shift, (CSRMatrix*)matrix);
+   }
+
+   /* free workspace */
+   free(W); free(iW);
+
+   *prec = factors;
+   return 0;
 #else
    int ierr;
    int lenFactors;
@@ -197,7 +242,8 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
    factors->n = matrix->n;
    factors->nnz = lenFactors;
    
-   ilut_((int*)&matrix->n, (double*)matrix->AElts, (int*)matrix->JA,
+   FORTRAN_FUNCTION(ilut)
+        ((int*)&matrix->n, (double*)matrix->AElts, (int*)matrix->JA,
          (int*)matrix->IA, &level, &threshold,
          factors->AElts, factors->JA, factors->IA, &lenFactors, 
          W1, W2, iW1, iW2, iW3, &ierr);
@@ -220,23 +266,23 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
 }
 
 void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme) {
-#ifdef USE_DOUBLECOMPLEX
-   fprintf(stderr, "ERROR: ILUT precoditioner is not supported  in complex.\n");
-   return;
-#else
    int i;
-   double *xvec, *yvec;
+   PRIMME_NUM *xvec, *yvec;
    CSRMatrix *prec;
    
    prec = (CSRMatrix *)primme->preconditioner;
-   xvec = (double *)x;
-   yvec = (double *)y;
+   xvec = (PRIMME_NUM *)x;
+   yvec = (PRIMME_NUM *)y;
 
    for (i=0; i<*blockSize; i++) {
-      lusol0_(&primme->n, &xvec[primme->n*i], &yvec[primme->n*i],
+#ifdef USE_DOUBLECOMPLEX
+      FORTRAN_FUNCTION(zlusol)
+#else
+      FORTRAN_FUNCTION(lusol0)
+#endif
+             (&primme->n, &xvec[primme->n*i], &yvec[primme->n*i],
               prec->AElts, prec->JA, prec->IA);
    }
-#endif
 }
 
 
