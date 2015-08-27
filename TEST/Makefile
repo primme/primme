@@ -62,6 +62,12 @@ primme_doublecomplex: $(OBJSdoublecomplex) ../libprimme.a Makefile
 ex_dseq: ex_dseq.o ../libprimme.a Makefile
 	$(CLDR) -o ex_dseq ex_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
+ex_zseq: ex_zseq.o ../libprimme.a Makefile
+	$(CLDR) -o ex_zseq ex_zseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+ex_petsc: ex_petsc.o ../libprimme.a Makefile
+	$(CLDR) -o ex_petsc ex_petsc.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
 %double.o: %.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
@@ -149,10 +155,10 @@ seqf77_zprimme: $(seqf77_zprimme_FOBJS) ../libprimme.a
 	$(FLDR) -o seqf77_zprimme $(seqf77_zprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 clean:
-	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) $(seqf77_dprimme_FOBJS) $(seqf77_zprimme_FOBJS)
+	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) $(seqf77_dprimme_FOBJS) $(seqf77_zprimme_FOBJS) *.o
 
 veryclean: clean
-	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme
+	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme ex_dseq ex_zseq ex_petsc
 
 
 COMMON/csr.c: COMMON/csr.h COMMON/mmio.h
@@ -166,3 +172,12 @@ COMMON/petscw.c: COMMON/petscw.h COMMON/mmio.h
 COMMON/petscw.h: COMMON/num.h
 COMMON/shared_utils.c: COMMON/shared_utils.h
 COMMON/driver.c: COMMON/shared_utils.h COMMON/native.h COMMON/parasailsw.h COMMON/petscw.h
+
+ex_dseq.c: ex_c.m4
+	m4 ex_c.m4 > $@
+
+ex_zseq.c: ex_c.m4
+	m4 -D USE_COMPLEX ex_c.m4 > $@
+
+ex_petsc.c: ex_c.m4
+	m4 -D USE_PETSC ex_c.m4 > $@
