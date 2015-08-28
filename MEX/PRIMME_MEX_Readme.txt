@@ -1,6 +1,6 @@
 
 -----------------------------------------------------------------------------
-        PRIMME MEX: A MATLAB Interface for PRIMME
+           PRIMME MEX: A MATLAB Interface for PRIMME
    
       Copyright (C) 2012  Lingfei Wu,  Andreas Stathopoulos
 -----------------------------------------------------------------------------
@@ -9,22 +9,19 @@ Iterative MultiMethod Eigensolver) which finds a number of eigenvalues and
 their corresponding eigenvectors of a real symmetric, or complex hermitian
 matrix A. It is a useful tool for both non-experts and experts to easily 
 call PRIMME. Largest, smallest and interior eigenvalues are supported. 
-Preconditioning can be used to accelerate convergence. PRIMME is written 
-in C, but a complete Fortran77 interface is provided.
+Preconditioning can be used to accelerate convergence. 
 
 -----------------------------------------------------------------------------
 	Contents 
 -----------------------------------------------------------------------------
 
-1.	Directory Structure
-2. 	PRIMME Changes for Supporting MATLAB MEX Interface
-3.	PRIMME Making & Linking
-4.	PRIMME MEX Compilation
-5.	Workflow in PRIMME MEX
-6.  MATLAB Function Call for solving eigenpair problems
-7.  MATLAB Function Call for solving singular value problems
-8.  Input and Output Descriptions of PRIMME MEX-file
-9.	Examples
+1.  Directory Structure
+2.  PRIMME Making & Linking
+3.  PRIMME MEX Compilation
+4.  Workflow in PRIMME MEX
+5.  MATLAB Function primme_eigs
+6.  Input and Output Descriptions of PRIMME MEX-file
+7.  Examples
 	
 -----------------------------------------------------------------------------
 1.	Directory Structure 
@@ -35,251 +32,79 @@ PRIMME_MEX/
 PIRMME_mex.c          <- C language source MEX-file of PRIMME MEX
 PIRMME_mex.mexa64     <- executable mex file of PRIMME MEX in linux SUSE
 primme_eigs.m         <- MATLAB function for solving eigenpair problems
-primme_svds.m         <- MATLAB function for solving singluar value problems
 getMatvecHandle.m     <- perform matvec operations or get user's matvec function handle
 getPrecondHandle.m    <- perform preconditioning or get user's preconditioner 
 eigsMatvec.m	      <- test case of user's matvec function for primme_eigs 
 eigsPrecond.m         <- test case of user's preconditioner for primme_eigs
-svdsMatvec.m	      <- test case of user's matvec function for primme_svds 
-svdsPrecond.m         <- test case of user's preconditioner for primme_svds
 Primme_eigsTest1-9.m  <- total 9 test cases for primme_eigs
-Primme_svdsTest1-9.m  <- total 9 test cases for primme_svds
 PRIMME_MEX_Readme.txt <- this file
 
 -----------------------------------------------------------------------------
-2.	PRIMME Changes for Supporting MATLAB MEX Interface 
+2.	PRIMME Making & Linking 
 -----------------------------------------------------------------------------
-PRIMME and PRIMME MEX interface both utilize BLAS and LAPACK libraries. MATLAB
-2012a provides the mwlapack and mwblas libraries in MATLABroot/extern/lib, which 
-only support 64-bit integers for matrix dimensions. In order to call mwlapck
-and mwblas libraries in the PRIMME, several functions in the common_numerical.c,
-numerical_d.c, and numerical_z.c need to be changed. In these files, int type 
-variables or pointer variables have changed to long long int type ones. The 
-related functions are as follows:
+Users first must generate the libprimme.a library in the PRIMME root directory.
+For more information about Making and Linking in PRIMME, please refer to the 
+readme, Make_flags, Link_flags, makefile files in the PRIMME root directory.
 
-   void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy);   
-   int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
-   int n, double *aux, int naux);
-   void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
-   double *w, double *work, int ldwork, int *info);
-   void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
-   double *work, int ldwork, int *info);
-   void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
-   int *ipivot, double *b, int ldb, int *info);
-   void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
-   double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy);
-   void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k, 
-   double alpha, double *a, int lda, double *b, int ldb, 
-   double beta, double *c, int ldc);
-   void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha, 
-   double *a, int lda, double *b, int ldb, double beta, 
-   double *c, int ldc);
-   void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
-   double *y, int incy);
-   void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,
-   int lda, double *x, int incx, double beta, double *y, int incy);
-   void Num_larnv_dprimme(int idist, int *iseed, int length, double *x);
-   void Num_scal_dprimme(int n, double alpha, double *x, int incx);
-   void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy);
-   
-   int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz, 
-   int n, Complex_Z *aux, double *rwork, int naux);
-   void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda, 
-   double *w, Complex_Z *work, int ldwork, double *rwork, int *info);
-   void Num_zhetrf_zprimme(char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
-   Complex_Z *work, int ldwork, int *info);
-   void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
-   int *ipivot, Complex_Z *b, int ldb, int *info);
-   void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
-   Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
-   void Num_gemm_zprimme(char *transa, char *transb, int m, int n, int k, 
-   Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb, 
-   Complex_Z beta, Complex_Z *c, int ldc);
-   void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha, 
-   Complex_Z *a, int lda, Complex_Z *b, int ldb, Complex_Z beta, 
-   Complex_Z *c, int ldc);
-   void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx, 
-   Complex_Z *y, int incy);
-   void Num_gemv_zprimme(char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
-   int lda, Complex_Z *x, int incx, Complex_Z beta, Complex_Z *y, int incy);
-   void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x);
-   void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx);
-   void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
+PRIMME and PRIMME MEX interface both require the BLAS and LAPACK libraries.
+MATLAB 2012a provides the mwlapack and mwblas libraries in 
+   MATLABroot/extern/lib
+These only support 64-bit integers and pointers (ILP64) so to work with PRIMME
+on LP64 systems, the compilation flags in Make_flags in the top directory of 
+PRIMME distribution must include the following definition:
 
-In all functions listed above, "int" is replaced by "long long int" so that 
-PRIMME MEX can work correctly. Otherwise, it is suffered by different kinds
-of memory violation reports when running PRIMME MEX. 
-   
-In the future version of PRIMME, the more elegant solution may be defining a 
-generic int type such as primme_integer type which represents 4 Byte int type 
-or 8 Byte int type depending on different systems and MATLAB versions.
+   CFLAGS += -DPRIMME_BLASINT_SIZE=64
 
 -----------------------------------------------------------------------------
-3.	PRIMME Making & Linking 
------------------------------------------------------------------------------
-Users must customize Make_flags to create the library. 
-Users may customize Link_flags to create the test programs.
-
-To support PRIMME MEX interface, the first thing is to change all single 
-line comments with "//..." by using "/*...*/" in primme.h file since MATLAB
-MEX-file compilation only supports this comment method. For customizing the 
-Make_flags and Link_flags files, please refer to readme file in the PRIMME.
-Overall, you may change several important things in the Make_flags file and
-the Link_flags file depending on your systems. 
-
-Firstly, modify the path of the installed PRIMME directory. Secondly, for 
-Make_flags file, you need change "F77 = f77" to "F77 = gfortran" if you 
-OS is Suse Linux. You also need change "CFLAGS =" to "CFLAGS = -fPIC". 
-In addtion, "FFLAGS = -O -fno-second-underscore" is replaced to "FFLAGS 
-= -O -fno-second-underscore -fPIC". For Link_flags file, change "LDR = 
-f77" to "LDR = gfortran" if your OS is Suse Linux.
-
-makefile can perform the following functions:
-
-make all  		builds: lib depends seqs pars
- make lib 		builds libprimme.a in PRIMME/. Alternatively:
- make libd 		  if only dprimme is of interest build libdprimme.a
- make libz 		  if only zprimme is of interest build libzprimme.a
- make depends		builds the dependencies files in (D)ZTEST/
-   make ddepends_seq       builds only the ddependencies_seq in DTEST
-   make zdepends_seq       builds only the zdependencies_seq in ZTEST
-   make ddepends_par       builds only the ddependencies_par in DTEST
- make seqs		builds all sequential executables in (D)ZTEST
-   make seq_dprimme 	   builds only the seq real C executable in DTEST
-   make seqf77_dprimme 	   builds only the seq real F77 executable in DTEST
-   make seq_zprimme 	   builds only the seq herm C executable in ZTEST
-   make seqf77_zprimme	   builds only the seq herm F77 executable in ZTEST
- make pars		builds all the parallel executables in DTEST
-   make par_dprimme	   currently the only parallel C executable in DTEST
- make clean             removes all *.o, a.out, and core files from all dirs
- make backup		makes a tar.gz dated archive of entire PRIMME directory
-
-To build PRIMME MEX interface, you need generate libprimme.a library in the 
-PRIMME root directory. For more information about Making and Linking in PRIMME, 
-please refer to readme file in the PRIMME root directory.
-
------------------------------------------------------------------------------
-4.	PRIMME MEX Compilation 
+3.	PRIMME MEX Compilation 
 -----------------------------------------------------------------------------
 For general information about building a MATLAB MEX file, please refer to 
 www.mathworks.com/help/MATLAB/MATLAB_external/building-mex-files.html.
-
-It is not necessary to build PRIMME MEX file if you don't have any special
-modifications. For experts, if the PRIMME_mex.c file is modified or other
-files are changed, Generally, there are two steps to build a MATLAB MEX file.
+There are two steps to build a MATLAB MEX file.
  
-Firstly, make sure that proper gcc versions supported by current MATLAB version
-are installed in your operating system. At present, PRIMME MEX has been tested
-in SUSE linux. MATLAB 2012a supports gcc 4.4.6 version while MATLAB 2010a 
-supports gcc 4.2.5 version. However, if you have older gcc version in your 
-linux system, MATLAB should support them too. It is recommended to install 
-the required gcc version in your linux system.
+1. confirm that your compiler is supported by your current MATLAB version.
+   http://www.mathworks.com/support/compilers/R2015a/
+   http://www.mathworks.com/support/compilers/R2014a/
+   http://www.mathworks.com/support/compilers/R2012a/
+   http://www.mathworks.com/support/compilers/R2010a/
+   We have tested PRIMME MEX on SUSE Linux with R2012a and R2010a. 
 
-Secondly, after right gcc version is installed, you can build PRIMME_mex.c 
-mex-file in the terminal at the root directory of the PRIMME MEX or in the 
-MATLAB command prompt. Recommended command is as follows:
+2. build the PRIMME_mex.c using the makefile in the root directory of 
+   PRIMME MEX. Alternatively, if $TOP is the path to the PRIMME installation, 
+   in the MATLAB command prompt type:
 
-mex -v -O -largeArrayDims PRIMME_mex.c -L/$TOP/PRIMME -I/$TOP/PRIMME/PRIMMESRC/
-COMMONSRC -lprimme -lm  -lmwlapack -lmwblas 
+   mex -v -O -largeArrayDims PRIMME_mex.c -L/$TOP/PRIMME ...
+	-I/$TOP/PRIMME/PRIMMESRC/COMMONSRC -lprimme -lm  -lmwlapack -lmwblas 
 
-In the mex command, "$TOP" is your path that PRIMME is installed. For 64 bit 
-Suse linux, it generates PRIMME_mex binary MEX-file which is like M-file in 
-the MATLAB. 
 
 -----------------------------------------------------------------------------
-5.	Workflow in PRIMME MEX 
+4.	Workflow in PRIMME MEX 
 -----------------------------------------------------------------------------
-Our MATLAB MEX interface is just as simple as MATLAB build-in eigs function
-and svds function. Thus, it is very easy to use PRIMME MEX which is a
-powerful tool to solve eigenpair problems and singular value problems. 
-There are currently three-layers function call in MATLAB as shown below:
+Although the generated PRIMME_mex binary could be called directly as an M-file
+in MATLAB, users typically call the primme_eigs M-file. This presents a user 
+interface that extends the interface of the built-in eigs function, performs 
+initializations, sets up the MATLAB matvec/preconditioning functions from 
+the user input, and calls PRIMME_mex. 
 
-1) MATLAB users' function call
-
-2) primme_eigs or primme_svds MATLAB function calls
-
-3) PRIMME_mex MEX function call 
-
-Frist layer is user's MATLAB script or a MATLAB function in which there is 
-at least a large sparse symmetric or hermitian matirx as input argument. Also, 
-users can specify more input arguments in this layer so as to obtain desired 
-results from PRIMME MEX. You can refer to our examples to see how to set input 
-arguments and call primme_eigs or primme_svds functions. 
-
-Second layer is primme_eigs or primme_svds MATLAB functions which serve 
-as MATLAB interface between PRIMME_mex function and users' function, which 
-calls PRIMME_mex function and returns the outputs to users's function. These
-functions perform the initializations, specify the matvec function, call 
-PRIMME_mex MEX function and return the outputs to users. It is recommended 
-to call primme_eigs and primme_svd functions to solve the eigenpair 
-problems and singular value problems.
- 
-Third layer is PRIMME_mex MEX function. It receives the inputs from the 
-primme_eigs or primme_svds MATLAB function calls and then transforms the 
-MATLAB inputs into C inputs in order to call PRIMME library. After PRIMME 
-returns the results to PRIMME_mex MEX function, it transforms C outputs 
-into MATLAB outputs so as to return them to MATLAB. 
-
-Its classical workflow can be illustrated simply as follows:
-
-1) In a MATLAB function call or MATLAB script, user speficy appropriate input
-arguments such as Matrix, number of eigenvalues, target, method and other opts.
-Then call primme_eigs or primme_svds functions.
-
-2) The primme_eigs or primme_svds functions receives the inputs from
-users' function call, performs the initialization, specifies the matvec
-function, and then calls PRIMME_mex MEX function. 
-
-3) The PRIMME_mex MEX function receives the inputs from the primme_eigs 
-or primme_svds function call and then transforms the MATLAB inputs into 
-C inputs in order to call dprimme function or zprimme function in PIRMME.
-
-4) The dprimme function or zprimme function calls other functions in PRIMME.
-When PRIMME needs blocked matrix-vector calculation or applies preconditioner,
-it calls back PRIMME_mex MEX function to call subroutines like MatrixMatvec_d, 
-MatrixMatvec_z, Preconditioner_d, and Preconditioner_z.
-
-5) In these subroutines, C inputs are translated into MATLAB inputs and then
-call corresponding default or user-defined MATLAB matvec function or user-
-defined preconditioner function. After finishing execution, it returned MATLAB
-outputs back to these subrotines, where MATLAB outputs are translated into 
-C inputs to return intermediate results to PRIMME. Depending to the dimensions
-of Matrix and number of eigenvalues, it usually performs hundreds of thousands
-of times matvec and precondition operations.
-
-6) When dprimme function or zprimme function returns outputs back to 
-PRIMME_mex MEX function, it transforms C outputs into MATLAB outputs so 
-as to return them to primme_eigs or primme_svds functions. At the same
-time, if user specifies outputFileName, it saves the primme configuration and
-corresponding results into this file.
-
-7) When primme_eigs or primme_svds functions received the MATLAB outputs
-from PRIMME_egis MEX function, they return these results to user's function. 
-
-8) When MATLAB function call or MATLAB script receives the results returned
-from primme_eigs or primme_svds function, processes them and saves them 
-into the same text or binary file. (option)
+The PRIMME_mex MEX function converts the MATLAB inputs into C inputs as
+expected by the PRIMME library and calls PRIMME. Moreover, it sets up
+the matvec/preconditioning C functions to be passed to PRIMME. When these 
+functions are called, they propagate the information back to their MATLAB
+counterparts so that the operations are performed in MATLAB.
+After PRIMME returns, PRIMME_mex returns the C output to MATLAB primme_eigs,
+which returns it to the user.
 
 -----------------------------------------------------------------------------
-6.   MATLAB Function Call for solving eigenpair problems 
+5.   MATLAB Function primme_eigs
 -----------------------------------------------------------------------------  
-PRIMME MEX contains two parts: 1) primme_eigs: seek a few of eigenvalues
-and eigenvectors; 2) primme_svds: find a few of singular values and vectors.
-
-The primme_eigs is a MATLAB function call which is served as MATLAB inter-
-face between PRIMME_mex amd users' function calls, which calls PRIMME_mex
-and returns the outputs to users. If A is M-by-N, a few eigenvalues and 
-eigenvectors of A are returned by PRIMME_mex(flag,dim,...), where implicit 
-input matrix is A. 
-
-Like eigs() function in the matlab, we provide different level function
-calls to satisfy users' demands:
+Typically users will call the primme_eigs MATLAB function. 
+The matrix A must be real symmetric or complex Hermitian.
 
 Input: [A, numEvals, target, opts, eigsMethod, P]
 
 Output: [evals, evecs, norms, primmeout]
 
-Function call:  
+Accepted function calls:  
 primme_eigs(A)
 primme_eigs(A, numEvals)
 primme_eigs(A, numEvals, target)
@@ -288,207 +113,84 @@ primme_eigs(A, numEvals, target, opts, eigsMethod)
 primme_eigs(A, numEvals, target, opts, eigsMethod, P)
 primme_eigs(A, numEvals, target, opts, eigsMethod, P1,P2)
 primme_eigs(A, numEvals, target, opts, eigsMethod, Pfun)
+
 primme_eigs(Afun, dim,...)
+Instead of a matrix, the user can provide a function handle Afun()
+where Afun(x) returns the matrix-vector product y=A*x, where x,y are vectors
+of length dim. See examples Primme_eigsTest6, 7, 8, and 9 later in this file.
 
-primme_D = primme_eigs(A) returns a vector of A's 6 largest algebraic
-eigenvalues. A must be real symmetric or complex hermitian and should
-be large and sparse. The primme_eigs(Afun, dim) accepts a function 
-AFUN instead of the matrix A. AFUN is a function handle and y = Afun(x) 
-returns the matrix-vector product A*x. In all these primme_eigs
-function syntaxes, primme_eigs(A,...) could be replaced by
-primme_eigs(Afun, dim,...). More examples about how to use function Afun
-are presented in the Primme_eigsTest6, 7, 8, and 9 in the root directory
-of PRIMME_MEX folder.
+primme_D = primme_eigs(A) returns a vector of the 6 largest algebraic
+eigenvalues of A for the parameter defaults shown below.
 
-[primme_V, primme_D] = primme_eigs(A) returns a diagonal matrix of
-primme_D of A's 6 largest algebraic eigenvalues and a matrix primme_V
-whose columns are the corresponding eigenvectors. 
+[primme_V, primme_D] = primme_eigs(A) returns a diagonal matrix primme_D of 
+the 6 largest algebraic eigenvalues and a matrix primme_V whose columns 
+are the corresponding eigenvectors. 
 
 [primme_V, primme_D, norms, primmeout] = primme_eigs(A, numEvals)
-returns a diagonal matrix of primme_D of A's numEvals largest algebraic 
-eigenvalues, a matrix primme_V whose columns are the corresponding 
-eigenvectors, a double array of the residual norm of eigenvalues  and
-a struct to report statistical information about numOuterIterations,
-numRestarts, numMatvecs and numPreconds. numEvals is the number of 
-eigenvalues that users want to find. It must be less than dimention of 
-the matrix A.
+returns in addition a double array of the residual norms of the eigenpairs,
+and a struct to report statistical information about numOuterIterations,
+numRestarts, numMatvecs and numPreconds. 
 
-primme_eigs(A, numEvals, target) returns numEvals target eigenvlaues.
-target could be a string like below:
+numEvals is the number of eigenvalues that the user wants to compute.
+It must be less than the dimension of the matrix A.
+
+primme_eigs(A, numEvals, target) returns numEvals target eigenvalues.
+target should be one of the strings below. See PRIMME's readme for details.
  'LA' ------ primme_largest (default)
  'SA' ------ primme_smallest    
  'CGT'------ primme_closest_geq  
  'CLT'------ primme_closest_leq  
  'CT' ------ primme_closest_abs   
 
-primme_eigs(A, numEvals, target, opts, eigsMethod) specify options that 
-are listed and explained in the last. eigsMethod is the solver method
-the PRIMME uses to find eigenvalues and eigenvectors. eigsMethod could
-be:
-typedef enum{
-DYNAMIC, (default)        ---0: Switches dynamically to the best method
-DEFAULT_MIN_TIME,         ---1: Currently set at JDQMR_ETol
-DEFAULT_MIN_MATVECS,      ---2: Currently set at GD+block
-Arnoldi,                  ---3: obviously not an efficient choice 
-GD,                       ---4: classical block Generalized Davidson 
-GD_plusK,                 ---5: GD+k block GD with recurrence restarting
-GD_Olsen_plusK,           ---6: GD+k with approximate Olsen precond.
-JD_Olsen_plusK,           ---7: GD+k, exact Olsen (two precond per step)
-RQI,                      ---8: Rayleigh Quotient Iteration. Also INVIT,
-                            :   but for INVIT provide targetShifts
-JDQR,                     ---9: Original block, Jacobi Davidson
-JDQMR,                   ---10: Our block JDQMR method (similar to JDCG)
-JDQMR_ETol,              ---11: Slight, but efficient JDQMR modification
-SUBSPACE_ITERATION,      ---12: equiv. to GD(block,2*block)
-LOBPCG_OrthoBasis,       ---13: equiv. to GD(nev,3*nev)+nev
-LOBPCG_OrthoBasis_Window ---14: equiv. to GD(block,3*block)+block nev>block
+primme_eigs(A, numEvals, target, opts) specifies various options
+for PRIMME parameters (see below).
 
-primme_eigs(A, numEvals, target, opts, eigsMethod, P) uses preconditioner 
-P or P = P1*P2 to solve eigenvalue problem for large sparse matrix.
-If P is [] then a preconditioner is not applied. P may be a function 
-handle Pfun such that Pfun(x) returns P\x.
+primme_eigs(A, numEvals, target, opts, eigsMethod) specifies in addition 
+the eigensolver method in PRIMME. The integer eigsMethod should take one 
+of the values:
 
-The opts contains 31 different options which can be used by experts to
-achieve the best performance. The most used options are:
-opts.aNorm: the estimate norm value of matrix A [{0.0}|scaler]
-opts.eps: desired computing accuracy [{1e-12}|scaler]
-opts.maxBlockSize: maximum block size the PRIMME uses [{1}|scaler]
-opts.printLevel: different level reporting(0-5) [{1}|scaler]
-opts.outputFile: output file name where user wants to save results
-opts.precondition: set to 1 if use preconditioner [{0}|1]
-opts.isreal: the complexity of A represented by afun [{ture}|false]
-opts.numTargetShifts: number of shifts for interior eigenvalues [{0}|scaler]
-opts.targetShifts: shifts for interior eigenvalues [{}|vector]
+eigsMethod	corresponding PRIMME method
+  0:	   DYNAMIC, (default)        Switches dynamically to the best method
+  1: 	   DEFAULT_MIN_TIME,         Currently set at JDQMR_ETol
+  2:	   DEFAULT_MIN_MATVECS,      Currently set at GD+block
+  3:	   Arnoldi,                  obviously not an efficient choice 
+  4:	   GD,                       classical block Generalized Davidson 
+  5:	   GD_plusK,                 GD+k block GD with recurrence restarting
+  6:	   GD_Olsen_plusK,           GD+k with approximate Olsen precond.
+  7:	   JD_Olsen_plusK,           GD+k, exact Olsen (two precond per step)
+  8:	   RQI,                      Rayleigh Quotient Iteration. Also INVIT,
+                                     but for INVIT provide targetShifts
+  9:	   JDQR,                     Original block, Jacobi Davidson
+  10:	   JDQMR,                    Our block JDQMR method (similar to JDCG)
+  11:	   JDQMR_ETol,               Slight, but efficient JDQMR modification
+  12:	   SUBSPACE_ITERATION,       equiv. to GD(block,2*block)
+  13:	   LOBPCG_OrthoBasis,        equiv. to GD(nev,3*nev)+nev
+  14:	   LOBPCG_OrthoBasis_Window  equiv. to GD(block,3*block)+block nev>block
+
+primme_eigs(A, numEvals, target, opts, eigsMethod, P) uses preconditioner P
+or factorized P = P1*P2. If P is [] or omitted, no preconditioner is applied. 
+P may be a function handle Pfun such that Pfun(x) returns P\x.
+
+The opts contains 31 different parameters which can be used to fine tune
+the execution of PRIMME as described in PRIMME's readme file.
+The most common options are:
+
+opts.aNorm: the estimate norm value of matrix A [{0.0}|scalar]
+opts.eps: desired computing accuracy [{1e-12}|scalar]
+opts.maxBlockSize: maximum block size in PRIMME [{1}|integer]
+opts.printLevel: different level reporting(0-5) [{1}|integer]
+opts.outputFile: file name where the user wants to save the results
+opts.precondition: set to 1 if preconditioner is to be used [{0}|1]
+opts.isreal: Whether afun represents a real/complex matrix [{true}|false]
+opts.numTargetShifts: number of shifts for interior eigenvalues [{0}|integer]
+opts.targetShifts: shifts for interior eigenvalues [{}|scalar vector]
  
 -----------------------------------------------------------------------------
-7.   MATLAB Function Call for solving singular value problems 
------------------------------------------------------------------------------      
-PRIMME_mex MEX file can also be used to solve singular value problem. There
-are two different shemes in primme_svds: 1) primme_svds_ATA; 2) primme_svds_OAAO. 
-The primme_svds_ATA is a faster scheme while the primme_svds_OAAO is more 
-accurate one. Users can specify primme_svds scheme by setting svdsMethod.  
-
-The primme_svds_OAAO is a more robust scheme that finds a few singular 
-values and vectors. If A is M-by-N, a few singular values and vectors of A 
-are obtained by seeking a few eigenvalues and eigenvectors returned by 
-PRIMME_mex(flag,dim,...), where implicit input matrix = [sparse(N,N) A'; 
-A sparse(M,M)].
-
-The primme_svds_ATA is a more faster scheme that finds a few singular 
-values and vectors. If A is M-by-N, a few singular values and vectors of A 
-are obtained by seeking a few eigenvalues and eigenvectors returned by 
-PRIMME_mex(flag,dim,...), where implicit input matrix = A'*A. This 
-implementation assumes M > N. If M < N, simply seek the singular values 
-of transpose of A and then obtain corresponding singular values of A.
-
-primme_svds is an interface between user function call and PRIMME_mex 
-function. The primme_svds function requires at least one input (input 
-matrix A) and output at least singular values of A.
-
-Like svds() function in the Matlab, we provide different level function 
-calls to satisfy users' demands:
-
-Input: [A, numSvds, target, opts, eigsMethod, svdsMethod, P]
-
-Output: [PRIMME_U, PRIMME_S, PRIMME_V , norms, primmeout]
-
-Function call:  
-primme_svds(A)
-primme_svds(A, numSvds)
-primme_svds(A, numSvds, target)
-primme_svds(A, numSvds, target, opts)
-primme_svds(A, numSvds, target, opts, eigsMethod)
-primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod)
-primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod, P)
-primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod, P1,P2)
-primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod, Pfun)       
-primme_svds(Afun, M, N,...)
-
-primme_S = primme_svds(A) returns the 6 largest singular values of A.
-A could be any matrix and should be large and sparse. The 
-primme_svds(Afun, M, N) accepts a function AFUN instead of the matrix A. 
-AFUN(X,'notransp') accepts a vector input X and returns the matrix-vector 
-product A*X while AFUN(X,'transp') returns A'*X. In all these primme_svds
-function syntaxes, primme_svds(A,...) could be replaced by 
-primme_svds(Afun, M, N,...). More examples about how to use function Afun
-are presented in the Primme_svdsTest6, 7, 8, and 9 in the root directory
-of PRIMME_MEX folder.
-
-[primme_U, primme_S, primme_V] = primme_svds(A,...) seeks the singular
-vectors as well. If A is M-by-N and numSvds singular values are sought,
-then the left singular vecotr primme_U is M-by-numSvds with orthonormal 
-columns, primme_S is numSvds-by-numSvds diagonal matrix with singular 
-values in decreasing order, and the right singular vector primme_V is 
-N-by-numSvds with orthonormal columns. 
-
-[primme_U, primme_S, primme_V, norms, primmeout] = primme_svds(A,numSvds)
-also returns a double array of the residual norm of singular values and
-a struct to report statistical information about numOuterIterations,
-numRestarts, numMatvecs and numPreconds. numSvds is the number of 
-singular values that usrs want. It must be less than minimum dimention 
-of the matrix A.
-
-primme_svds(A, numSvds, target) returns numSvds target singular values.
-target could be a string like below:
- 'LA' ------ primme_largest (default)
- 'SA' ------ primme_smallest    
- 'CGT'------ primme_closest_geq  
- 'CLT'------ primme_closest_leq  
- 'CT' ------ primme_closest_abs   
-
-primme_svds(A, numSvds, target, opts, eigsMethod) specify options that 
-are listed and explained in the last. eigsMethod is the solver method
-the PRIMME uses to find eigenvalues and eigenvectors for implicit input
-matrix A'*A. eigsMethod could
-be:
-typedef enum{
-DYNAMIC, (default)        ---0: Switches dynamically to the best method
-DEFAULT_MIN_TIME,         ---1: Currently set at JDQMR_ETol
-DEFAULT_MIN_MATVECS,      ---2: Currently set at GD+block
-Arnoldi,                  ---3: obviously not an efficient choice 
-GD,                       ---4: classical block Generalized Davidson 
-GD_plusK,                 ---5: GD+k block GD with recurrence restarting
-GD_Olsen_plusK,           ---6: GD+k with approximate Olsen precond.
-JD_Olsen_plusK,           ---7: GD+k, exact Olsen (two precond per step)
-RQI,                      ---8: Rayleigh Quotient Iteration. Also INVIT,
-                            :   but for INVIT provide targetShifts
-JDQR,                     ---9: Original block, Jacobi Davidson
-JDQMR,                   ---10: Our block JDQMR method (similar to JDCG)
-JDQMR_ETol,              ---11: Slight, but efficient JDQMR modification
-SUBSPACE_ITERATION,      ---12: equiv. to GD(block,2*block)
-LOBPCG_OrthoBasis,       ---13: equiv. to GD(nev,3*nev)+nev
-LOBPCG_OrthoBasis_Window ---14: equiv. to GD(block,3*block)+block nev>block
-
-primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod) also
-choose which scheme to solve singular triplet problem. Currently,
-svdsMethod could be a sting like below:
-1) svdsMethod = 'ATA' : choose primme_svds_ATA scheme (default)
-2) svdsMethod = 'OAAO': choose primme_svds_OAAO scheme
-
-primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod, P) uses 
-preconditioner P or P = P1*P2 to solve singular triplet problem for 
-large sparse matrix. If P is [] then a preconditioner is not applied. 
-P may be a function handle Pfun such that Pfun(X,'notransp')returns P\X 
-and Pfun(X,'transp') returns P'\X.             
-
-The opts contains 32 different options which can be used by experts to
-get the best performance. The most used options are:
-opts.aNorm: the estimate norm value of matrix A [{0.0}|scaler]
-opts.eps: desired computing accuracy [{1e-12}|scaler]
-opts.maxBlockSize: maximum block size the PRIMME uses [{1}|scaler]
-opts.printLevel: different level reporting(0-5) [{1}|scaler]
-opts.outputFile: output file name where user wants to save results
-opts.precondition: set to 1 if use preconditioner [{0}|1]
-opts.isreal: the complexity of A represented by afun [{ture}|false]
-opts.svdsPrecondType: specify if preconditioner is provided directly for 
-ATA or OAAO. [true|{false}]
-opts.numTargetShifts: number of shifts for interior eigenvalues [{0}|scaler]
-opts.targetShifts: shifts for interior eigenvalues [{}|vector]
- 
+6.	Input and Output Descriptions of PRIMME MEX-file
 -----------------------------------------------------------------------------
- 8.	Input and Output Descriptions of PRIMME MEX-file
------------------------------------------------------------------------------
- PRIMME MEX-file provides different level function calls to satisfy users' demands:
+If PRIMME_mex(flag,dim,...) is called directly, it returns a few eigenvalues
+and eigenvectors of the current Hermitian matrix A. Its interface is closer to
+PRIMME functions d/zprimme.
 
  Syntax:
  
@@ -496,7 +198,7 @@ opts.targetShifts: shifts for interior eigenvalues [{}|vector]
   
   evals = PRIMME_mex(flag, dim) 
   evals = PRIMME_mex(flag, dim, numEvals)
-  evals = RRIMME_eigs(flag, dim, numEvals, target)
+  evals = RRIMME_mex(flag, dim, numEvals, target)
   evals = PRIMME_mex(flag, dim, numEvals, target, method)
   evals = PRIMME_mex(flag, dim, numEvals, target, method, opts)
  [evals,evecs] = PRIMME_mex(flag, dim, numEvals, target, method, opts)
@@ -505,27 +207,27 @@ opts.targetShifts: shifts for interior eigenvalues [{}|vector]
 
  Output desciption: [evals, evecs, norms, primmeout]
 
- [1] evals: a double array of the target eigenvalues returned to MATLAB
+  evals: a double array of the target eigenvalues returned to MATLAB
 
- [2] evecs: a double array of the corresponding eigenvectors returned to MATLAB
+  evecs: a double array of the corresponding eigenvectors returned to MATLAB
 
- [3] norms: a double array of the residual norm of the eigenvalues
+  norms: a double array of the residual norms of the eigenvalues
 
- [4] primmeout: a struct to report statistics which contains four members:
-    (1) numOuterIterations
-    (2) numRestarts
-    (3) numMatvecs
-    (4) numPreconds
+  primmeout: a struct to report statistics which contains four members:
+     numOuterIterations
+     numRestarts
+     numMatvecs
+     numPreconds
 
  Input description: (flag, dim, numEvals, target, method, opts) 
 
- [1] flag: mark the input matrix is real or complex
+  flag: mark the input matrix is real or complex
  
- [2] dim: the dimension of large and sparse symmetric and hermitian matrix.
+  dim: the dimension of large and sparse symmetric and hermitian matrix.
  
- [3] numEvals: number of eigenvalues required
+  numEvals: number of eigenvalues required
 
- [4] target: Which eigenpairs to find.  target can be any of the following enum:
+  target: Which eigenpairs to find.  target can be any of the following enum:
  
     primme_smallest --- 'SA':Smallest algebraic eigenvalues. Target shifts ignored
     primme_largest  --- 'LA':Largest  algebraic eigenvalues. Target shifts ignored
@@ -533,73 +235,65 @@ opts.targetShifts: shifts for interior eigenvalues [{}|vector]
     primme_closest_leq -'CLT':Closest to, but less or equal than a set of shifts
     primme_closest_abs - 'CT':Closest in absolute value to a set of shifts
 
- [5] method: which solver method to choose. method is an enum type below:
+  method: which solver method to choose. method is an enum type below:
  
-    typedef enum{
-    DYNAMIC,                  ---0: Switches dynamically to the best method
-    DEFAULT_MIN_TIME,         ---1: Currently set at JDQMR_ETol
-    DEFAULT_MIN_MATVECS,      ---2: Currently set at GD+block
-    Arnoldi,                  ---3: obviously not an efficient choice 
-    GD,		              ---4: classical block Generalized Davidson 
-    GD_plusK,		      ---5: GD+k block GD with recurrence restarting
-    GD_Olsen_plusK,           ---6: GD+k with approximate Olsen precond.
-    JD_Olsen_plusK,           ---7: GD+k, exact Olsen (two precond per step)
-    RQI,          	      ---8: Rayleigh Quotient Iteration. Also INVIT,
-     			          :   but for INVIT provide targetShifts
-    JDQR,          	      ---9: Original block, Jacobi Davidson
-    JDQMR,          	      ---10: Our block JDQMR method (similar to JDCG)
-    JDQMR_ETol,               ---11: Slight, but efficient JDQMR modification
-    SUBSPACE_ITERATION,       ---12: equiv. to GD(block,2*block)
-    LOBPCG_OrthoBasis,        ---13: equiv. to GD(nev,3*nev)+nev
-    LOBPCG_OrthoBasis_Window  ---14: equiv. to GD(block,3*block)+block nev>block
-    } primme_preset_method; 
+  method	corresponding PRIMME method
+    0:	   DYNAMIC, (default)        Switches dynamically to the best method
+    1: 	   DEFAULT_MIN_TIME,         Currently set at JDQMR_ETol
+    2:	   DEFAULT_MIN_MATVECS,      Currently set at GD+block
+    3:	   Arnoldi,                  obviously not an efficient choice 
+    4:	   GD,                       classical block Generalized Davidson 
+    5:	   GD_plusK,                 GD+k block GD with recurrence restarting
+    6:	   GD_Olsen_plusK,           GD+k with approximate Olsen precond.
+    7:	   JD_Olsen_plusK,           GD+k, exact Olsen (two precond per step)
+    8:	   RQI,                      Rayleigh Quotient Iteration. Also INVIT,
+                                       but for INVIT provide targetShifts
+    9:	   JDQR,                     Original block, Jacobi Davidson
+    10:	   JDQMR,                    Our block JDQMR method (similar to JDCG)
+    11:	   JDQMR_ETol,               Slight, but efficient JDQMR modification
+    12:	   SUBSPACE_ITERATION,       equiv. to GD(block,2*block)
+    13:	   LOBPCG_OrthoBasis,        equiv. to GD(nev,3*nev)+nev
+    14:	   LOBPCG_OrthoBasis_Window  equiv. to GD(block,3*block)+block nev>block
 
- [6] 'opts' is an option structure which contain following parameters in the 
+  'opts' is an option structure which contain following parameters of the 
      primme_params structure: 
-    (0) opts.aNorm: the estimate norm value of matrix A [default = 0]
-    (1) opts.eps: desired computing accuracy [default = 1e-12]
-    (2) opts.numTargetShifts: shifts for interior eigenvalues [default = 0]
-    (3) opts.targetShifts: pointer to get each shift for interior eigenvalues
-    (4) opts.initSize: initial guesses/constraints [default = 0]
-    (5) opts.numOrthoConst: [default = 0]
-    (6) opts.locking: 0 or 1 
-    (7) opts.dynamicMethodSwitch: from -3 to 1
-    (8) opts.maxBasisSize: maximum basis size allowed in the main iteration
-    (9) opts.minRestartSize: minimum Ritz vectors to restart
-   (10) opts.maxBlockSize:  [default = 1]
-   (11) opts.maxMatvecs: [default = INT_MAX]
-   (12) opts.maxOuterIterations: [default = INT_MAX]
-   (13) opts.restartingParams.scheme: [default = primme_thick]
-   (14) opts.restartingParams.maxPrevRetain: [default = 1]
-   (15) opts.precondition: set to 1 if preconditioning is to be performed,
+
+    opts.aNorm: the estimate norm value of matrix A [default = 0]
+    opts.eps: desired computing accuracy [default = 1e-12]
+    opts.numTargetShifts: shifts for interior eigenvalues [default = 0]
+    opts.targetShifts: pointer to get each shift for interior eigenvalues
+    opts.initSize: initial guesses/constraints [default = 0]
+    opts.numOrthoConst: [default = 0]
+    opts.locking: 0 or 1 
+    opts.dynamicMethodSwitch: from -3 to 1
+    opts.maxBasisSize: maximum basis size allowed in the main iteration
+    opts.minRestartSize: minimum Ritz vectors to restart
+    opts.maxBlockSize:  [default = 1]
+    opts.maxMatvecs: [default = INT_MAX]
+    opts.maxOuterIterations: [default = INT_MAX]
+    opts.restartingParams.scheme: [default = primme_thick]
+    opts.restartingParams.maxPrevRetain: [default = 1]
+    opts.precondition: set to 1 if preconditioning is to be performed,
         make sure the applyPreconditioner is not NULL [default = 0]
-   (16) opts.robustShifts: set to 1 to use robustShifting
-   (17) opts.maxInnerIterations: 0 (no inner iterations), = k (perform 
+    opts.robustShifts: set to 1 to use robustShifting
+    opts.maxInnerIterations: 0 (no inner iterations), = k (perform 
         at most k inner iterations per outer step)
-   (18) opts.LeftQ: 0 or 1
-   (19) opts.LeftX: 0 or 1
-   (20) opts.RightQ: 0 or 1
-   (21) opts.RightX: 0 or 1
-   (22) opts.SkewQ: 0 or 1
-   (23) opts.SkewX: 0 or 1
-   (24) opts.relTolBase: a legacy from calssical JDQR
-   (25) opts.convTest: how to stop the inner QMR method
-   (26) opts.printLevel: 0-5 (different level reporting) [default = 1]
-   (27) opts.outputFile: output file name where user wants to save results
-   (28) opts.iseed: set iseed value for initialization
-   (29) opts.intWorkSize: memory size for int workspace
-   (30) opts.realWorkSize: memory size for real workspace        
+    opts.LeftQ: 0 or 1
+    opts.LeftX: 0 or 1
+    opts.RightQ: 0 or 1
+    opts.RightX: 0 or 1
+    opts.SkewQ: 0 or 1
+    opts.SkewX: 0 or 1
+    opts.relTolBase: a legacy from calssical JDQR
+    opts.convTest: how to stop the inner QMR method
+    opts.printLevel: 0-5 (different level reporting) [default = 1]
+    opts.outputFile: output file name where user wants to save results
+    opts.iseed: set iseed value for initialization
+    opts.intWorkSize: memory size for int workspace
+    opts.realWorkSize: memory size for real workspace        
 
 -----------------------------------------------------------------------------
-9.	Examples 
------------------------------------------------------------------------------
-In order to illustrate how to use PRIMME MEX interface, we provide eighteen 
-examples in two parts. The first part is to use primme_eigs() function to seek
-a few of eigenvalues and eigenvectors for eigenpair problems. Nine test case 
-examples are provided.
-
------------------------------------------------------------------------------
- Part I: sovling eigenpair problems
+7.	Examples on how to call primme_eigs()
 -----------------------------------------------------------------------------
 
 Example 1: Primme_eigsTest.m
@@ -912,7 +606,7 @@ eigs_numMatvec =
 
 Example 5: Primme_eigsTest5.m
 %
-% Senior test case for user to provide matrix function instread of the 
+% Senior test case for user to provide matrix function instead of the 
 % matrix A to find a few of eigenvalues and eigenvectors. The eigsMatvec  
 % is a matrix function handle and Y = Afun(x) should return the result 
 % y = A*x. 
@@ -1253,7 +947,7 @@ eigs_numMatvec =
 
 Example 9: Primme_eigsTest9.m
 %
-% Senior test case for user to provide function handle instread of the 
+% Senior test case for user to provide function handle instead of the 
 % matrix A to find a few of eigenvalues and eigenvectors. The eigsMatvec  
 % is a matrix function handle and Y = Afun(x) should return the result 
 % y = A*x. Also, the eigsPrecond is a function handle as preconditioner. Y
@@ -1334,607 +1028,3 @@ eigs_telapsed =
 eigs_numMatvec =
 
         6675
-
-
------------------------------------------------------------------------------
- Part II: sovling singular value problems
------------------------------------------------------------------------------
-The second part is to use primme_svds_ATA() or primme_svds_OAAO() function to 
-seek a few of singular values and vectors for singular value problems. Nine test 
-case examples are provided.
-
-Example 10: Primme_svdsTest.m
-
-%
-% Simple test case for primme_svds (using default ATA eigsMethod) to seek
-% largest singular triplets
-% Function call: primme_svds(A, numSvds, target)
-%
-       clear all
-       load Andrews.mat;
-       
-       if (exist('A','var') == 0)
-          A = Problem.A;
-       end
-      
-       primme_start = tic; 
-       numSvds = 5;
-       target = 'LA';
-      
-       [primme_U, primme_S, primme_V]= primme_svds(A, numSvds, target);  
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-
-       svds_start = tic;
-       OPTIONS.tol = 1e-12;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)      
-       
-Results:
-
-primme_S =
-
-   36.4853         0         0         0         0
-         0   36.4492         0         0         0
-         0         0   36.4179         0         0
-         0         0         0   36.1741         0
-         0         0         0         0   36.0190
-
-
-primme_svds_telapsed =
-
-    2.4846
-
-
-S =
-
-   36.4853         0         0         0         0
-         0   36.4492         0         0         0
-         0         0   36.4179         0         0
-         0         0         0   36.1741         0
-         0         0         0         0   36.0190
-
-
-svds_telapsed =
-
-    3.9968
-
-
-Example 11: Primme_svdsTest2.m
-
-%
-% Simple test case for primme_svds using OAAO eigsMethod to seek smallest singular
-% triplets
-% Function call: primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod)
-%
-       
-       clear all
-       load Andrews.mat; 
-       if (exist('A') == 0)
-           A = Problem.A;
-       end
-
-       primme_start = tic;
-       numSvds = 5;
-       target = 'SA';
-       eigsMethod = 0;
-       svdsMethod = 'OAAO';
-       
-       opts = struct('aNorm', 0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'printLevel', 2, 'outputFileName', {'sampleout'}); 
-     
-       [primme_U, primme_S, primme_V]= primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod);
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-       
-
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 0, OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-       
-Results:
-
-primme_S =
-
-   1.1839e-01            0            0            0            0
-            0   1.1192e-01            0            0            0
-            0            0   8.8282e-02            0            0
-            0            0            0   6.6916e-02            0
-            0            0            0            0   1.0570e-15
-
-
-primme_svds_telapsed =
-
-  595.9585
-
-Warning: NORMEST did not converge for 100 iterations with tolerance 1e-06 
-> In normest at 41
-  In svds at 146
-  In Primme_svdsTest2 at 35 
-
-S =
-
-   1.1839e-01            0            0            0            0
-            0   1.1192e-01            0            0            0
-            0            0   8.8282e-02            0            0
-            0            0            0   6.6916e-02            0
-            0            0            0            0   1.7463e-14
-
-
-svds_telapsed =
-
-  235.2963
-
-
-Example 12: Primme_svdsTest3.m
-%
-% Senior test case for user to provide matrix function instread of the 
-% matrix A using ATA eigsMethod to seek singular triplets. The primme_svds  
-% accepts a function handle AFUN instead of the matrix A. AFUN(X,'notransp')
-% accepts a vector input X and returns the matrix-vector product A*X 
-% while AFUN(X,'transp') returns A'*X. A Could be any matrix.
-% Function call: primme_svds(Afun, M, N, numSvds, target, opts, eigsMethod)
-%
-
-       clear all
-       k = 1000;
-       on = ones(k,1); 
-       
-       primme_start = tic; 
-       m = k;
-       n = k;
-       numSvds = 5;
-       target = 'LA';
-       eigsMethod = 2;
-       
-       opts = struct('aNorm',0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'printLevel', 2, 'outputFileName', {'sampleout'});
-      
-       [primme_U, primme_S, primme_V]= primme_svds(@(x,tflag)svdsMatvec(x,on,k,tflag), m, n, numSvds, target, opts, eigsMethod);     
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-       
-       A = spdiags([-2*on 4*on -2*on],-1:1,k,k);
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-        S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-primme_svds_telapsed =
-
-   2.1293e+00
-
-
-S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-svds_telapsed =
-
-   4.2368e+00
-
-Example 13: Primme_svdsTest4.m
-%
-% Senior test case for user to provide matrix function instread of the 
-% matrix A using OAAO eigsMethod to seek singular triplets. The primme_svds 
-% accepts a function handle AFUN instead of the matrix A. AFUN(X,'notransp')
-% accepts a vector input X and returns the matrix-vector product A*X 
-% while AFUN(X,'transp') returns A'*X. A Could be any matrix.
-% Function call: primme_svds(Afun, M, N, numSvds, target, opts, eigsMethod, svdsMethod)
-%
-
-       clear all
-       k = 1000;
-       on = ones(k,1); 
-       
-       primme_start = tic; 
-       m = k;
-       n = k;
-       numSvds = 5;
-       target = 'LA';
-       eigsMethod = 2;
-       svdsMethod = 'OAAO';
-       
-       opts = struct('aNorm',0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'printLevel', 2, 'outputFileName', {'sampleout'});
-      
-       [primme_U, primme_S, primme_V]= primme_svds(@(x,tflag)svdsMatvec(x,on,k,tflag), m, n, numSvds, target, opts, eigsMethod, svdsMethod); 
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-       
-       A = spdiags([-2*on 4*on -2*on],-1:1,k,k);
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-primme_svds_telapsed =
-
-   4.5547e+00
-
-
-S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-svds_telapsed =
-
-   4.4275e+00
-
-
-Example 14: Primme_svdsTest5.m
-%
-% Simple test case for primme_svds using ATA eigsMethod to seek singlar
-% triplets of complex hermitian matrix 3Dspectralwave2 from university of
-% florida. If the input is function handle instead of a matrix, the usrs
-% must specify opts.isreal feild. Set to 1 if the input is real; set to 0
-% if the input is complex. If the user does not specify opts.isreal, the
-% default case is the real input matrix or function handle.
-% Function call: primme_svds(A, numSvds, target, opts)
-%
-       
-       clear all
-       load 3Dspectralwave2.mat;
-       
-       if (exist('A','var') == 0)
-          A = Problem.A;
-       end
-
-       primme_start = tic;
-       numSvds = 5;
-       target = 'LA';
-       
-       opts = struct('aNorm', 0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'printLevel', 2, 'outputFileName', {'sampleout'}); 
-     
-       [primme_U, primme_S, primme_V]= primme_svds(A, numSvds, target, opts);
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-       
-
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   6.9065e+01            0            0            0            0
-            0   6.8789e+01            0            0            0
-            0            0   6.7348e+01            0            0
-            0            0            0   6.7217e+01            0
-            0            0            0            0   6.7111e+01
-
-
-primme_svds_telapsed =
-
-   5.2051e+01
-
-
-S =
-
-   6.9065e+01            0            0            0            0
-            0   6.8789e+01            0            0            0
-            0            0   6.7348e+01            0            0
-            0            0            0   6.7217e+01            0
-            0            0            0            0   6.7111e+01
-
-
-svds_telapsed =
-
-   1.0423e+02
-
-
-Example 15: Primme_svdsTest6.m
-%
-% Senior test case for user to provide their preconditioner to speed up the
-% whole process. The input A is a matrix and preconditioner P is also a
-% matrix.
-% Function call: primme_svds(A, numSvds, target, opts, eigsMethod, P)
-%
-       clear all
-       k = 1000;
-       on = ones(k,1); 
-       A = spdiags([-2*on 4*on -2*on],-1:1,k,k);
-       
-
-       numSvds = 5;
-       target = 'LA';
-       eigsMethod = 1;
-       svdsMethod = 'ATA';
-       
-       opts = struct('aNorm', 0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'precondition', 1,'printLevel', 2, 'outputFileName', {'sampleout'}); 
-       
-       P = spdiags(4*on,0,k,k);
-
-       primme_start = tic;
-       [primme_U, primme_S, primme_V]= primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod, P);
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-    
- 
-        
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-primme_svds_telapsed =
-
-   6.5965e-01
-
-
-S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-svds_telapsed =
-
-   5.2035e+00
-
-
-Example 16: Primme_svdsTest7.m
-%
-% Senior test case for user to provide their preconditioner to speed up the
-% whole process. The input A is a matrix and preconditioner P1 and P2 are
-% both preconditioners.
-% Function call: primme_svds(A, numSvds, target, opts, eigsMethod, P1,P2)
-%
-       clear all
-       k = 1000;
-       on = ones(k,1); 
-       A = spdiags([-2*on 4*on -2*on],-1:1,k,k);
-       
-
-       numSvds = 5;
-       target = 'LA';
-       eigsMethod = 2;
-       svdsMethod = 'ATA';
-       
-       opts = struct('aNorm', 0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'precondition', 1,'printLevel', 2, 'outputFileName', {'sampleout'}); 
-       
-       P1 = spdiags([on/(-2) on],-1:0,k,k); 
-       P2 = spdiags([4*on -on],0:1,k,k);
-
-       primme_start = tic;
-       [primme_U, primme_S, primme_V]= primme_svds(A, numSvds, target, opts, eigsMethod, svdsMethod, P1, P2);
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-    
- 
-        
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-primme_svds_telapsed =
-
-   3.1477e+00
-
-
-S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-svds_telapsed =
-
-   4.6079e+00
-
-
-Example 17: Primme_svdsTest8.m
-%
-% Senior test case for user to provide their preconditioner to speed up the
-% whole process. The matrix P is provided as preconditioner. The primme_svds 
-% accepts a function handle AFUN instead of the matrix A. AFUN(X,'notransp')
-% accepts a vector input X and returns the matrix-vector product A*X 
-% while AFUN(X,'transp') returns A'*X.
-% Function call: primme_svds(Afun, M, N, numSvds, target, opts, eigsMethod, P)
-%
-       clear all
-       k = 1000;
-       on = ones(k,1); 
-
-       m = k;
-       n = k;
-       numSvds = 5;
-       target = 'LA';
-       eigsMethod = 2;
-       svdsMethod = 'ATA';
-       
-       opts = struct('aNorm', 0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'precondition', 1,'printLevel', 2, 'outputFileName', {'sampleout'}); 
-       
-       P = spdiags(4*on,0,k,k);
-
-       primme_start = tic;
-       [primme_U, primme_S, primme_V]= primme_svds(@(x,tflag)svdsMatvec(x,on,k,tflag), m, n, numSvds, target, opts, eigsMethod, svdsMethod, P);
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-    
- 
-       A = spdiags([-2*on 4*on -2*on],-1:1,k,k);
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-primme_svds_telapsed =
-
-   2.3180e+00
-
-
-S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-svds_telapsed =
-
-   4.2569e+00
-
-
-Example 18: Primme_svdsTest9.m
-%
-% Senior test case for user to provide their preconditioner to speed up the
-% whole process. The primme_svds accepts a function handle AFUN instead of 
-% the matrix A. AFUN(X,'notransp') accepts a vector input X and returns the 
-% matrix-vector product A*X while AFUN(X,'transp') returns A'*X. The
-% primme_svds also accepts a function handle Pfun as a preconditioner
-% instead of the matrix P. PFUN(X,'notransp') accepts a vector input X and 
-% returns P\X while AFUN(X,'transp') returns P'\X.
-% Function call: primme_svds(Afun, M, N, numSvds, target, opts, eigsMethod, Pfun)
-%
-       clear all
-       k = 1000;
-       on = ones(k,1); 
-
-       m = k;
-       n = k;
-       numSvds = 5;
-       target = 'LA';
-       eigsMethod = 2;
-       svdsMethod = 'ATA';
-       
-       opts = struct('aNorm', 0.0, 'eps', 1e-10, 'maxBlockSize', 1, 'initSize', 1, 'iseed', {[-1, 0, 1, 327221]}, 'precondition', 1,'printLevel', 2, 'outputFileName', {'sampleout'}); 
-
-       primme_start = tic;
-       [primme_U, primme_S, primme_V]= primme_svds(@(x,tflag)svdsMatvec(x,on,k,tflag), m, n, numSvds, target, opts, eigsMethod, svdsMethod, @(x,tflag)svdsPrecond(x,on,k,tflag));
-       primme_S
-       primme_svds_telapsed = toc(primme_start)
-    
- 
-       A = spdiags([-2*on 4*on -2*on],-1:1,k,k);
-       svds_start = tic;
-       OPTIONS.tol = 1e-10;
-       OPTIONS.maxit = 65536;
-       [U, S, V] = svds(A, numSvds, 'L', OPTIONS);
-       S
-       svds_telapsed = toc(svds_start)
-
-Results:
-
-primme_S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-primme_svds_telapsed =
-
-   2.9495e+00
-
-
-S =
-
-   8.0000e+00            0            0            0            0
-            0   7.9999e+00            0            0            0
-            0            0   7.9998e+00            0            0
-            0            0            0   7.9997e+00            0
-            0            0            0            0   7.9995e+00
-
-
-svds_telapsed =
-
-   4.6180e+00
-
-
-
-
-
