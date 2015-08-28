@@ -63,7 +63,7 @@ int main (int argc, char *argv[]) {
    int i;
 ifdef(`USE_PETSC', `   Mat A; /* problem matrix */
    PC pc;            /* preconditioner */
-   PetscInt ierr;
+   PetscErrorCode ierr;
    int numProcs;
    MPI_Comm comm;
 
@@ -87,6 +87,7 @@ ifdef(`USE_PETSC', `   ierr = generateLaplacian1D(100, &A); CHKERRQ(ierr);
 ifdef(`USE_PETSC', `   ierr = MatGetSize(A, &primme.n, NULL); CHKERRQ(ierr);',
                    `   primme.n = 100;') /* set problem dimension */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
+   primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
    primme.target = primme_smallest;
                            /* Wanted the smallest eigenvalues */
    /* IF you want the closest to a target, do */
@@ -215,7 +216,7 @@ ifdef(`USE_PETSC', `   ierr = PetscFinalize(); CHKERRQ(ierr);
 */
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLaplacian1D(int n, Mat *A) {
-   PetscScalar    kr,ki,value[3] = {-1.0, 2.0, -1.0};
+   PetscScalar    value[3] = {-1.0, 2.0, -1.0};
    PetscInt       i,Istart,Iend,col[3];
    PetscBool      FirstBlock=PETSC_FALSE,LastBlock=PETSC_FALSE;
    PetscErrorCode ierr;

@@ -7,7 +7,7 @@ include ../Link_flags
 
 
 SOBJS= driver.o COMMON/shared_utils.o
-INCLUDE += -I./COMMON -I../PRIMMESRC/COMMONSRC
+COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC
 LIBDIRS += -L../
 
 USE_NATIVE    ?= yes
@@ -42,6 +42,7 @@ ifeq ($(USE_PETSC), yes)
   DEFINES += -DUSE_PETSC
   SOBJS += COMMON/petscw.o COMMON/mmio.o
   INCLUDE += $(PETSC_CCPPFLAGS)
+  FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
 endif
@@ -68,6 +69,16 @@ ex_zseq: ex_zseq.o ../libprimme.a Makefile
 ex_petsc: ex_petsc.o ../libprimme.a Makefile
 	$(CLDR) -o ex_petsc ex_petsc.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
+ex_dseqf77: ex_dseqf77.o ../libprimme.a Makefile
+	$(FLDR) -o ex_dseqf77 ex_dseqf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+ex_zseqf77: ex_zseqf77.o ../libprimme.a Makefile
+	$(FLDR) -o ex_zseqf77 ex_zseqf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+ex_petscf77: ex_petscf77.o ../libprimme.a Makefile
+	$(FLDR) -o ex_petscf77 ex_petscf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+
 %double.o: %.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
@@ -75,10 +86,10 @@ ex_petsc: ex_petsc.o ../libprimme.a Makefile
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 .c.o:
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
-.f.o:
-	$(F77) $(HIGH_OPT) $(FFLAGS) $(INCLUDE) -c $< -o $@
+.f.o .F.o:
+	$(F77) $(HIGH_OPT) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
 all: primme_double primme_doublecomplex
 
@@ -145,17 +156,8 @@ test_doublecomplex: primme_doublecomplex
 
 test: test_double test_doublecomplex
 
-
-seqf77_dprimme_FOBJS = driver_f77seq.o COMMON/ilut.o COMMON/amux.o
-seqf77_dprimme: $(seqf77_dprimme_FOBJS) ../libprimme.a
-	$(FLDR) -o seqf77_dprimme $(seqf77_dprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
-seqf77_zprimme_FOBJS = driver_f77seqz.o COMMON/zamux.o
-seqf77_zprimme: $(seqf77_zprimme_FOBJS) ../libprimme.a
-	$(FLDR) -o seqf77_zprimme $(seqf77_zprimme_FOBJS) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
 clean:
-	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) $(seqf77_dprimme_FOBJS) $(seqf77_zprimme_FOBJS) *.o
+	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o
 
 veryclean: clean
 	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme ex_dseq ex_zseq ex_petsc
@@ -181,3 +183,12 @@ ex_zseq.c: ex_c.m4
 
 ex_petsc.c: ex_c.m4
 	m4 -D USE_PETSC ex_c.m4 > $@
+
+ex_dseqf77.f: ex_f77.m4
+	m4 ex_f77.m4 > $@
+
+ex_zseqf77.f: ex_f77.m4
+	m4 -D USE_COMPLEX ex_f77.m4 > $@
+
+ex_petscf77.F: ex_f77.m4
+	m4 -D USE_PETSC ex_f77.m4 > $@
