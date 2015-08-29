@@ -2,7 +2,8 @@
 -----------------------------------------------------------------------------
         PRIMME: PReconditioned Iterative MultiMethod Eigensolver
    
-      Copyright (C) 2005  Andreas Stathopoulos, James R. McCombs
+                Copyright (C) 2015 College of William & Mary,
+   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
 -----------------------------------------------------------------------------
  
    This file is part of PRIMME.

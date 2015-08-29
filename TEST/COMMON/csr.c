@@ -1,5 +1,7 @@
-/*  PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+/*******************************************************************************
+ *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -17,7 +19,13 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
+ *******************************************************************************
+ * File: csr.c
+ * 
+ * Purpose - Functions to read MatrixMarket format matrices and other CSR
+ *           auxiliary functions.
+ * 
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>

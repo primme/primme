@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,10 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: numerical.c
  *
- * Purpose - This file contains for the most part C wrapper routines for
- *    calling various BLAS and LAPACK FORTRAN routines.
+ * Purpose - This file contains for the most C wrapper routines for
+ *           calling various BLAS and LAPACK FORTRAN routines.
  *
  ******************************************************************************/
 

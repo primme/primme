@@ -1,6 +1,7 @@
-/******************************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: main_iter.c
  *
  * Purpose - This is the main Davidson-type iteration 
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <stdlib.h>
@@ -384,7 +383,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             numConverged += recentlyConverged;
 
             if (numConverged >= primme->numEvals ||
-                (primme->locking && recentlyConverged > 0 
+                (primme->locking && recentlyConverged > 0
                     && primme->target != primme_smallest
                     && primme->target != primme_largest)) {
                   break;

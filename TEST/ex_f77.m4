@@ -1,6 +1,7 @@
-************************************************************************
+*******************************************************************************
 *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
-*   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+*   Copyright (C) 2015 College of William & Mary,
+*   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
 *
 *   This file is part of PRIMME.
 *
@@ -19,11 +20,11 @@
 *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 *   02110-1301  USA
 *
-* ----------------------------------------------------------------------
+*******************************************************************************
 *
 *  Example to compute the k largest eigenvalues in a 1-D Laplacian matrix.
 *
-* ----------------------------------------------------------------------
+*******************************************************************************
 define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex*16', `real*8')))dnl
 
         Program primmeF77Example

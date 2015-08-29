@@ -1,6 +1,7 @@
-/**********************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -25,9 +26,8 @@
  *           If desired, the user can call any of these functions for 
  *           initializing parameters, setting up the method, 
  *           allocating memory, or even checking a given set of parameters. 
- * 
  *
- **********************************************************************/
+ ******************************************************************************/
 
 #if !(defined (__APPLE__) && defined (__MACH__))
 #include <malloc.h>

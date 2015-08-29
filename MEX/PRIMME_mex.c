@@ -1,15 +1,39 @@
-/*================================================================================================================================
- * C file that acts as an interface to PRIMME.
+/*******************************************************************************
+ *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
+ *
+ *   This file is part of PRIMME.
+ *
+ *   PRIMME is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *
+ *   PRIMME is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *******************************************************************************
+ * File: PRIMME_mex.c
+ * 
+ * Purpose - PRIMME MEX interface.
+ * 
  * Currently, we only support sequentially computing. The PRIMME MEX
  * reads the inputs from MATLAB, constructs the necessary structures
  * and then calls PRIMME. The desired results are then returned to MATLAB.
  * 
- * Also offered are matvec and precodition functions that act as an 
+ * Also offered are matvec and precondition functions that act as an 
  * interface to MATLAB for the given functions. It is free for users
  * to provide their matvec and precondition functions to satisfy their
  * special requirements. 
  *
- * Like eigs() function in the matlab, we provide different level 
+ * Like eigs() function in the MATLAB, we provide different level 
  * function calls to satisfy users' demands:
  *
  * Output: [evals, evecs, norms, primmeout]
@@ -28,7 +52,7 @@
  *[4] 'target' is largest, smallest, closest_geq, closest_leq, and 
  *     closest_abs. [default = primme_smallest]
  *[5] 'Method' is DYNAMIC, DEFAULT_MIN_TIME, DEFAULT_MIN_MATVECS, Arnoldi,
- *     GD, .. and so on. [default = DYNMAIC]
+ *     GD, .. and so on. [default = DYNAMIC]
  *[6] 'opts' is an option structure which contain following parameters 
        in the primme_params structure: 
  *   (0) opts.aNorm: the estimate norm value of matrix A [default = 0]
@@ -64,7 +88,8 @@
  *  (28) opts.iseed: set iseed value for initialization
  *  (29) opts.intWorkSize: memory size for int workspace
  *  (30) opts.realWorkSize: memory size for real workspace  
- *=============================================================================================================================*/
+ *
+ ******************************************************************************/
 
 
 #include "mex.h"

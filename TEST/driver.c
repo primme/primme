@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,11 +19,15 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * --------------------------------------------------------------------------
+ *******************************************************************************
+ * File: driver.c
  *
- *  Parallel driver for dprimme. Calling format:
+ * Purpose - driver that can read a matrix from a file and compute some
+ *           eigenvalues using PRIMME.
  *
- *             par_dprimme DriverConfigFileName SolverConfigFileName
+ *  Parallel driver for PRIMME. Calling format:
+ *
+ *             primme DriverConfigFileName SolverConfigFileName
  *
  *  DriverConfigFileName  includes the path and filename of the matrix
  *                            as well as preconditioning information (eg., 
@@ -33,14 +38,15 @@
  *
  *         Example file:  DriverConf
  *
- *  SolverConfigFileName  includes all dprimme required information
- *                            as stored in primme data structure.
+ *  SolverConfigFileName  includes all d/zprimme required information
+ *                            as stored in primme_params data structure.
  *
- *             Example files: FullConf  Full customization of primme
+ *             Example files: FullConf  Full customization of PRIMME
  *                            LeanConf  Use a preset method and some customization
  *                            MinConf   Provide ONLY a preset method and numEvals.
  *
  ******************************************************************************/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
