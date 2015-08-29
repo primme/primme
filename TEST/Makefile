@@ -179,7 +179,7 @@ ex_dseq.c: ex_c.m4
 	m4 ex_c.m4 > $@
 
 ex_zseq.c: ex_c.m4
-	m4 -D USE_COMPLEX ex_c.m4 > $@
+	m4 -D USE_COMPLEX -D ADVANCED ex_c.m4 > $@
 
 ex_petsc.c: ex_c.m4
 	m4 -D USE_PETSC ex_c.m4 > $@
