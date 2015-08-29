@@ -62,7 +62,7 @@ ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
      :            method          = PRIMMEF77_DYNAMIC
      :  )
         real*8 TargetShifts(numTargetShifts)
-        data TargetShifts /3.0, 5.1/
+        data TargetShifts /3.0D0, 5.1D0/
 ifdef(`USE_PETSC', `
         external generateLaplacian1D, PETScMatvec, ApplyPCPrecPETSC,
      :           par_GlobalSumDouble
@@ -82,7 +82,7 @@ ifdef(`USE_PETSC', `        Mat A
         COMMON A, pc
         PetscErrorCode ierr
         integer i,numProcs,procID,nLocal
-', `       integer i,ierr
+', `        integer i,ierr
 ')dnl
         real*8  epsil, aNorm
 
@@ -113,7 +113,7 @@ ifdef(`USE_PETSC', `        call generateLaplacian1D(n, A, ierr)
         call primme_set_member_f77(primme, PRIMMEF77_matrix, A)
         call primme_set_member_f77(primme, PRIMMEF77_matrixMatvec,
      :                                                     PETScMatvec)
-', `         call primme_set_member_f77(primme, PRIMMEF77_matrixMatvec, MV)
+', `        call primme_set_member_f77(primme, PRIMMEF77_matrixMatvec, MV)
 ')dnl
         
 ifdef(`USE_PETSC', `!       Set parallel parameters

@@ -57,7 +57,8 @@ int main (int argc, char *argv[]) {
                         third vector starts in evecs[primme.n*2]...  */
    primme_params primme;
                      /* PRIMME configuration struct */
-   double targetShifts[1];
+ifdef(`ADVANCED', `   double targetShifts[1];
+')dnl
 
    /* Other miscellaneous items */
    int ret;
@@ -65,7 +66,6 @@ int main (int argc, char *argv[]) {
 ifdef(`USE_PETSC', `   Mat A; /* problem matrix */
    PC pc;            /* preconditioner */
    PetscErrorCode ierr;
-   int numProcs;
    MPI_Comm comm;
 
    PetscInitialize(&argc, &argv, NULL, NULL);
@@ -91,13 +91,6 @@ ifdef(`USE_PETSC', `   ierr = MatGetSize(A, &primme.n, NULL); CHKERRQ(ierr);',
    primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
    primme.target = primme_smallest;
                            /* Wanted the smallest eigenvalues */
-   /* IF you want the closest to a target, do */
-   /*
-   primme.numTargetShifts = 1;
-   targetShifts[0] = .5;
-   primme.targetShifts = targetShifts;
-   primme.target = primme_closest_abs;
-   */
 
    /* Set preconditioner (optional) */
 ifdef(`USE_PETSC', `   ierr = PCCreate(PETSC_COMM_WORLD, &pc); CHKERRQ(ierr);
@@ -134,8 +127,8 @@ ifdef(`USE_PETSC', `   /* Set parallel parameters */
 
 ')dnl
    /* Display PRIMME configuration struct (optional) */
-   if (primme.procID == 0) /* Reports process with ID 0 */
-      primme_display_params(primme);
+ifdef(`USE_PETSC', `   if (primme.procID == 0) /* Reports process with ID 0 */
+   ')   primme_display_params(primme);
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
@@ -143,7 +136,7 @@ ifdef(`USE_PETSC', `   /* Set parallel parameters */
                                 sizeof(PRIMME_NUM), "evecs");
    rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
 
-   /* Call primme  */
+define(`CALL_PRIMME', `   /* Call primme  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
    ret = zprimme(evals, (Complex_Z*)evecs, rnorms, &primme);
 #else
@@ -153,50 +146,84 @@ ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
 `   ret = ifdef(`USE_COMPLEX',`z', `d')primme(evals, ifdef(`USE_COMPLEX', `(Complex_Z*)')evecs, rnorms, &primme);
 ')dnl
 
-   if (primme.procID == 0) { /* Reports process with ID 0 */
-      /* Reporting (optional) */
-      primme_PrintStackTrace(primme);
-
-      for (i=0; i < primme.initSize; i++) {
-         fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
-            evals[i], rnorms[i]); 
-      }
-      fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
-      fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-                                                            primme.aNorm*primme.eps);
-      fprintf(primme.outputFile, "Iterations: %-d\n", 
-                                                    primme.stats.numOuterIterations); 
-      fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
-      fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
-      fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
-      if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
-         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
-         fprintf(primme.outputFile,
-            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
-         fprintf(primme.outputFile,
-            "However, the subspace of evecs is accurate to the required tolerance.\n");
-      }
-
-      switch (primme.dynamicMethodSwitch) {
-         case -1: fprintf(primme.outputFile,
-               "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
-         case -2: fprintf(primme.outputFile,
-               "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
-         case -3: fprintf(primme.outputFile,
-               "Recommended method for next run: DYNAMIC (close call)\n"); break;
-      }
+   if (ret != 0) {
+      fprintf(primme.outputFile, 
+         "Error: primme returned with nonzero exit status: %d \n",ret);
+      return -1;
    }
 
+ifdef(`USE_PETSC', ``   if (primme.procID == 0) { /* Reports process with ID 0 */
+' define(sp, `   ')', `define(sp, `')')dnl
+   sp()/* Reporting (optional) */
+   sp()primme_PrintStackTrace(primme);
+
+   sp()for (i=0; i < primme.initSize; i++) {
+   sp()   fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+   sp()      evals[i], rnorms[i]); 
+   sp()}
+   sp()fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+   sp()fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+   sp()                                                      primme.aNorm*primme.eps);
+   sp()fprintf(primme.outputFile, "Iterations: %-d\n", 
+   sp()                                              primme.stats.numOuterIterations); 
+   sp()fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
+   sp()fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
+   sp()fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
+   sp()if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
+   sp()   fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+   sp()   fprintf(primme.outputFile,
+   sp()      "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+   sp()   fprintf(primme.outputFile,
+   sp()      "However, the subspace of evecs is accurate to the required tolerance.\n");
+   sp()}
+
+   sp()switch (primme.dynamicMethodSwitch) {
+   sp()   case -1: fprintf(primme.outputFile,
+   sp()         "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+   sp()   case -2: fprintf(primme.outputFile,
+   sp()         "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+   sp()   case -3: fprintf(primme.outputFile,
+   sp()         "Recommended method for next run: DYNAMIC (close call)\n"); break;
+   sp()}
+ifdef(`USE_PETSC', `   }
+')dnl
+')dnl end of CALL_PRIMME
+CALL_PRIMME
+ifdef(`ADVANCED', `
+   /* Note that d/zprimme can be called more than once before call primme_Free. */
+   /* Find the 5 eigenpairs closest to .5 */
+   primme.numTargetShifts = 1;
+   targetShifts[0] = .5;
+   primme.targetShifts = targetShifts;
+   primme.target = primme_closest_abs;
+   primme.numEvals = 5;
+   primme.initSize = 0; /* primme.initSize may be not zero after a d/zprimme;
+                           so set it to zero to avoid the already converged eigenvectors
+                           being used as initial vectors. */
+
+CALL_PRIMME
+
+   /* Perturb the 5 approximate eigenvectors in evecs and used them as initial solution.
+      This time the solver should converge faster than the last one. */
+   for (i=0; i<primme.n*5; i++)
+      evecs[i] += rand()/(double)RAND_MAX*1e-4;
+   primme.initSize = 5;
+   primme.numEvals = 5;
+
+CALL_PRIMME
+
+   /* Find the next 5 eigenpairs closest to .5 */
+   primme.initSize = 0;
+   primme.numEvals = 5;
+   primme.numOrthoConst = 5; /* solver will find solutions orthogonal to the already
+                                5 approximate eigenvectors in evecs */
+
+CALL_PRIMME
+')dnl
    primme_Free(&primme);
    free(evals);
    free(evecs);
    free(rnorms);
-
-   if (ret != 0) {
-      fprintf(primme.outputFile, 
-         "Error: dprimme returned with nonzero exit status: %d \n",ret);
-      return -1;
-   }
 
 ifdef(`USE_PETSC', `   ierr = PetscFinalize(); CHKERRQ(ierr);
 
