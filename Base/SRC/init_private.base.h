@@ -25,11 +25,6 @@
  * Purpose - Definitions used exclusively by init.c
  *
  ******************************************************************************/
- *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
- ******************************************************************************/
 
 #ifndef INIT_PRIVATE_H
 #define INIT_PRIVATE_H
