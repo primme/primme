@@ -100,7 +100,6 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_applyPreconditioner``,                   in field :c:member:`primme_params.applyPreconditioner`.
       * ``PRIMMEF77_numProcs``,                              in field :c:member:`primme_params.numProcs`.
       * ``PRIMMEF77_procID``,                                in field :c:member:`primme_params.procID`.
-      * ``PRIMMEF77_commInfo``,                              in field :c:member:`primme_params.commInfo`.
       * ``PRIMMEF77_nLocal``,                                in field :c:member:`primme_params.nLocal`.
       * ``PRIMMEF77_globalSumDouble``,                       in field :c:member:`primme_params.globalSumDouble`.
       * ``PRIMMEF77_numEvals``,                              in field :c:member:`primme_params.numEvals`.
@@ -124,8 +123,6 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_eps``,                                   in field :c:member:`primme_params.eps`.
       * ``PRIMMEF77_printLevel``,                            in field :c:member:`primme_params.printLevel`.
       * ``PRIMMEF77_outputFile``,                            in field :c:member:`primme_params.outputFile`.
-      * ``PRIMMEF77_matrix``,                                in field :c:member:`primme_params.matrix`.
-      * ``PRIMMEF77_preconditioner``,                        in field :c:member:`primme_params.preconditioner`.
       * ``PRIMMEF77_restartingParams_scheme``,               in field :c:member:`primme_params.restartingParams.scheme`.
       * ``PRIMMEF77_restartingParams_maxPrevRetain``,        in field :c:member:`primme_params.restartingParams.maxPrevRetain`.
       * ``PRIMMEF77_correctionParams_precondition``,         in field :c:member:`primme_params.correctionParams.precondition`.
@@ -183,7 +180,6 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_applyPreconditioner``,                   in field :c:member:`primme_params.applyPreconditioner`.
       * ``PRIMMEF77_numProcs``,                              in field :c:member:`primme_params.numProcs`.
       * ``PRIMMEF77_procID``,                                in field :c:member:`primme_params.procID`.
-      * ``PRIMMEF77_commInfo``,                              in field :c:member:`primme_params.commInfo`.
       * ``PRIMMEF77_nLocal``,                                in field :c:member:`primme_params.nLocal`.
       * ``PRIMMEF77_globalSumDouble``,                       in field :c:member:`primme_params.globalSumDouble`.
       * ``PRIMMEF77_numEvals``,                              in field :c:member:`primme_params.numEvals`.
@@ -207,8 +203,6 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_eps``,                                   in field :c:member:`primme_params.eps`.
       * ``PRIMMEF77_printLevel``,                            in field :c:member:`primme_params.printLevel`.
       * ``PRIMMEF77_outputFile``,                            in field :c:member:`primme_params.outputFile`.
-      * ``PRIMMEF77_matrix``,                                in field :c:member:`primme_params.matrix`.
-      * ``PRIMMEF77_preconditioner``,                        in field :c:member:`primme_params.preconditioner`.
       * ``PRIMMEF77_restartingParams_scheme``,               in field :c:member:`primme_params.restartingParams.scheme`.
       * ``PRIMMEF77_restartingParams_maxPrevRetain``,        in field :c:member:`primme_params.restartingParams.maxPrevRetain`.
       * ``PRIMMEF77_correctionParams_precondition``,         in field :c:member:`primme_params.correctionParams.precondition`.
