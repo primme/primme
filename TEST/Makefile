@@ -8,6 +8,7 @@ include ../Link_flags
 
 SOBJS= driver.o COMMON/shared_utils.o
 COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC
+INCLUDE += $(COMMON_INCLUDE)
 LIBDIRS += -L../
 
 USE_NATIVE    ?= yes
@@ -86,7 +87,7 @@ ex_petscf77: ex_petscf77.o ../libprimme.a Makefile
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 .c.o:
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
 	$(F77) $(HIGH_OPT) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
