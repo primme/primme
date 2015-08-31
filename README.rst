@@ -42,7 +42,7 @@ The call arguments are:
 
 * `evals`, array to return the found eigenvalues;
 * `evecs`, array to return the found eigenvectors;
-* `rNorms`, array to return the residual of the found eigenpairs; and
+* `resNorms`, array to return the residual norms of the found eigenpairs; and
 * `primme`, structure that specify the matrix problem, which eigenvalues are wanted and several method options.
 
 See documentation in `readme.txt` and `doc.pdf`.
