@@ -101,6 +101,145 @@ The next enumerations and functions are declared in ``primme.h``.
 
    :param primme_params* primme: parameters structure.
 
+   Depending on the method some fields in ``primme`` are changed:
+
+   * |DEFAULT_MIN_TIME| is like |JDQMR_ETol|.
+   * |DEFAULT_MIN_MATVECS| is like |GD_Olsen_plusK|.
+   * |DYNAMIC| is like |JDQMR_ETol| and changes |dynamicMethodSwitch| to 1.
+   * |Arnoldi| changes:
+
+     .. hlist::
+
+        * |locking| = 0;
+        * |maxPrevRetain| = 0;
+        * |precondition| = 0;
+        * |maxInnerIterations| = 0.
+
+   * |GD| changes:
+
+     .. hlist::
+
+        * |locking| = 0;
+        * |maxPrevRetain| = 0;
+        * |robustShifts| = 1;
+        * |maxInnerIterations| = 0;
+        * |RightX| = 0;
+        * |SkewX| = 0.
+
+   * |GD_plusK|  changes:
+
+     * |maxPrevRetain| to 2 if |maxBlockSize| is 1 and |numEvals| > 1; otherwise set |maxPrevRetain| to |maxBlockSize|.
+
+     .. hlist::
+
+        * |locking| = 0;
+        * |maxInnerIterations| = 0;
+        * |RightX| = 0;
+        * |SkewX| = 0.
+
+   * |GD_Olsen_plusK| is like |GD_plusK| and changes |RightX| to 1.
+   * |JD_Olsen_plusK| is like |GD_plusK| and changes:
+
+     .. hlist::
+
+        * |robustShifts| = 1;
+        * |RightX| to 1;
+        * |SkewX| to 1;
+
+   * |RQI| changes:
+
+     .. hlist::
+
+        * |locking| = 1;
+        * |maxPrevRetain| = 0;
+        * |robustShifts|  = 1;
+        * |maxInnerIterations| = -1;
+        * |LeftQ|   = 1;
+        * |LeftX|   = 1;
+        * |RightQ|  = 0;
+        * |RightX|  = 1;
+        * |SkewQ|   = 0;
+        * |SkewX|   = 0;
+        * |convTest| = |primme_full_LTolerance|.
+
+   * |JDQR| changes:
+
+     .. hlist::
+
+        * |locking|     = 1;
+        * |maxPrevRetain|      = 1;
+        * |robustShifts|       = 0;
+        * |maxInnerIterations| = 10 if it is 0;
+        * |LeftQ|   = 0;
+        * |LeftX|   = 1;
+        * |RightQ|  = 1;
+        * |RightX|  = 1;
+        * |SkewQ|   = 1;
+        * |SkewX|   = 1;
+        * |relTolBase| = 1.5;
+        * |convTest| = |primme_full_LTolerance|.
+
+   * |JDQMR| changes:
+
+     .. hlist::
+
+        * |locking| = 0;
+        * |maxPrevRetain| = 1 if it is 0
+        * |maxInnerIterations| = -1;
+        * |LeftQ|   = |precondition|;
+        * |LeftX|   = 1;
+        * |RightQ|  = 0;
+        * |RightX|  = 0;
+        * |SkewQ|   = 0;
+        * |SkewX|   = 1;
+        * |convTest|  = |primme_adaptive|.
+
+   * |JDQMR_ETol| is like |JDQMR| and changes |convTest| = |primme_adaptive_ETolerance|.
+   * |SUBSPACE_ITERATION| changes:
+
+     .. hlist::
+
+        * |locking|    = 1;
+        * |maxBasisSize| = |numEvals| `*` 2;
+        * |minRestartSize| = |numEvals|;
+        * |maxBlockSize| = |numEvals|;
+        * |scheme|  = |primme_thick|;
+        * |maxPrevRetain|      = 0;
+        * |robustShifts|       = 0;
+        * |maxInnerIterations| = 0;
+        * |RightX|  = 1;
+        * |SkewX|   = 0.
+
+   * |LOBPCG_OrthoBasis| changes:
+
+     .. hlist::
+
+        * |locking|    = 0;
+        * |maxBasisSize| = |numEvals| `*` 3;
+        * |minRestartSize| = |numEvals|;
+        * |maxBlockSize| = |numEvals|;
+        * |scheme|  = |primme_thick|;
+        * |maxPrevRetain|      = |numEvals|;
+        * |robustShifts|       = 0;
+        * |maxInnerIterations| = 0;
+        * |RightX|  = 1;
+        * |SkewX|   = 0.
+
+   * |LOBPCG_OrthoBasis_Window| changes:
+
+     .. hlist::
+
+        * |locking|    = 0;
+        * |maxBasisSize| = |maxBlockSize| `*` 3;
+        * |minRestartSize| = |maxBlockSize|;
+        * |maxBlockSize| = |numEvals|;
+        * |scheme|  = |primme_thick|;
+        * |maxPrevRetain|      = |maxBlockSize|;
+        * |robustShifts|       = 0;
+        * |maxInnerIterations| = 0;
+        * |RightX|  = 1;
+        * |SkewX|   = 0.
+
    :return: if 0, successful; if negative, something went wrong.
 
 .. c:function:: void primme_Free(primme_params *primme)
@@ -692,17 +831,17 @@ The next enumerations and functions are declared in ``primme.h``.
       The correction :math:`D` appended to the basis in GD
       (when |maxInnerIterations| is 0) is:
 
-      +--------+-------+-----------------------------------------------------------------------+
-      | RightX | SkewX |        :math:`D`                                                      |
-      +========+=======+=======================================================================+
-      |    0   |   0   | :math:`M^{-1}R` (Classic GD)                                          |
-      +--------+-------+-----------------------------------------------------------------------+
-      |    1   |   0   | :math:`M^{-1}(R-\Delta X)` (cheap Olsen's Method)                     |
-      +--------+-------+-----------------------------------------------------------------------+
-      |    1   |   1   | :math:`(I- M^{-1}X(X^*M^{-1}X)^{-1}X^*)M^{-1}R` (Olsen's Method)      |
-      +--------+-------+-----------------------------------------------------------------------+
-      |    0   |   1   | error                                                                 |
-      +--------+-------+-----------------------------------------------------------------------+
+      +--------+-------+------------------------------------------------------------------+
+      | RightX | SkewX |        :math:`D`                                                 |
+      +========+=======+==================================================================+
+      |    0   |   0   | :math:`M^{-1}R` (Classic GD)                                     |
+      +--------+-------+------------------------------------------------------------------+
+      |    1   |   0   | :math:`M^{-1}(R-\Delta X)` (cheap Olsen's Method)                |
+      +--------+-------+------------------------------------------------------------------+
+      |    1   |   1   | :math:`(I- M^{-1}X(X^*M^{-1}X)^{-1}X^*)M^{-1}R` (Olsen's Method) |
+      +--------+-------+------------------------------------------------------------------+
+      |    0   |   1   | error                                                            |
+      +--------+-------+------------------------------------------------------------------+
 
       Where :math:`\Delta` is a diagonal matrix that :math:`\Delta_{i,i}` holds an estimation
       of the error of the approximate eigenvalue :math:`\Lambda_{i,i}`.
