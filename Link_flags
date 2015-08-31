@@ -14,43 +14,42 @@ FLDR ?= $(F77)
 #---------------------------------------------------------------
 #  Basic Link flags for LAPACK/BLAS and math
 #---------------------------------------------------------------
-# Mac OS X
+# Debian, Ubuntu, SuSE Linux (>= 13.2)
 #
-# LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
-# LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
-# LIBS = -lprimme -lm
-#---------------------------------------------------------------
-# Cray
-#
-# LDFLAGS = -framework Accelerate
-# LIBS = -lprimme -lm -llapack -lblas
+LDFLAGS ?=
+LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
 #---------------------------------------------------------------
 # SuSE Linux (<= 13.1), Centos
 #
 # LDFLAGS =
 # LIBS = -lprimme -lm -llapack -lblas -lgfortran -lg2c
 #---------------------------------------------------------------
-# Debian, Ubuntu, SuSE Linux (>= 13.2)
+# IBM architectures
 #
-LDFLAGS ?=
-LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
+# LDFLAGS =
+# LIBS = -lprimme -lm /sp/vwe/lib/liblapack342_ppc7_xl_15.1.2-32.a /sp/vwe/lib/libblas342_ppc7_xl_15.1.2-32.a -L/opt/ibm/xlf/15.1.0/lib -lxlf90 -lxl -lxlfmath
+#---------------------------------------------------------------
+# Mac OS X
+#
+# LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
+# LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
+# LIBS = -lprimme -lm
+#---------------------------------------------------------------
+# Sun Solaris, SunOS 5.9  using sunperf math library
+#
+# LDFLAGS = 
+# LIBS = -lprimme -lm -lrt -xlic_lib=sunperf
+#---------------------------------------------------------------
+# Cray
+#
+# LDFLAGS = -framework Accelerate
+# LIBS = -lprimme -lm -llapack -lblas
 #---------------------------------------------------------------
 # Using ACML for lapack/blas
 #
 # LDFLAGS =
 # LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv
 # LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv -lg2c
-#---------------------------------------------------------------
-# IBM architectures (thanks for creating FORTRAN)
-#
-# LDFLAGS =
-# LIBS = -lprimme -lm /sp/vwe/lib/liblapack342_ppc7_xl_15.1.2-32.a /sp/vwe/lib/libblas342_ppc7_xl_15.1.2-32.a -L/opt/ibm/xlf/15.1.0/lib -lxlf90 -lxl -lxlfmath
-#
-#---------------------------------------------------------------
-# Sun Solaris, SunOS 5.9  using sunperf math library
-#
-# LDFLAGS = 
-# LIBS = -lprimme -lm -lrt -xlic_lib=sunperf
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
