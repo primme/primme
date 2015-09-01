@@ -39,6 +39,15 @@ HIGH_OPT ?= -O2
 #LOW_OPT  = -O2
 #HIGH_OPT = -O2
 #---------------------------------------------------------------
+# Using Intel compilers
+#CC       = icc
+#F77      = ifort
+#DEFINES  = -DF77UNDERSCORE
+#CFLAGS   =
+#FFLAGS   =
+#LOW_OPT  = -O2  
+#HIGH_OPT = -O2
+#---------------------------------------------------------------
 # Sun various architectures
 # whirlwind
 #CFLAGS +=  -xtarget=ultra2e -xarch=v8plusa -xcache=16/32/1:512/64/4
