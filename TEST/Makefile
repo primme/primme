@@ -79,6 +79,8 @@ ex_zseqf77: ex_zseqf77.o ../libprimme.a Makefile
 ex_petscf77: ex_petscf77.o ../libprimme.a Makefile
 	$(FLDR) -o ex_petscf77 ex_petscf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
+ex_petscf77ptr: ex_petscf77ptr.o ../libprimme.a Makefile
+	$(FLDR) -o ex_petscf77ptr ex_petscf77ptr.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
 	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -193,3 +195,6 @@ ex_zseqf77.f: ex_f77.m4
 
 ex_petscf77.F: ex_f77.m4
 	m4 -D USE_PETSC ex_f77.m4 > $@
+
+ex_petscf77ptr.F: ex_f77.m4
+	m4 -D USE_PETSC -D USE_POINTER ex_f77.m4 > $@
