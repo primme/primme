@@ -114,8 +114,9 @@ ifdef(`USE_PETSC', `   ierr = PCCreate(PETSC_COMM_WORLD, &pc); CHKERRQ(ierr);
 
    /* Set method to solve the problem */
    primme_set_method(DYNAMIC, &primme);
-   /* DYNAMIC uses a runtime heuristic to choose the fastest method.
-      Also you can set a method like JD_Olsen_plusK or LOBPCG_OrthoBasis */
+   /* DYNAMIC uses a runtime heuristic to choose the fastest method between
+       DEFAULT_MIN_TIME and DEFAULT_MIN_MATVECS. But you can set another
+       method, such as LOBPCG_OrthoBasis_Window, directly */
 
 ifdef(`USE_PETSC', `   /* Set parallel parameters */
    ierr = MatGetLocalSize(A, &primme.nLocal, NULL); CHKERRQ(ierr);
