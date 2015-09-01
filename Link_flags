@@ -35,6 +35,10 @@ LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
 # LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
 # LIBS = -lprimme -lm
 #---------------------------------------------------------------
+# Using Intel compilers
+#
+# LIBS = -lprimme -mkl
+#---------------------------------------------------------------
 # Sun Solaris, SunOS 5.9  using sunperf math library
 #
 # LDFLAGS = 
