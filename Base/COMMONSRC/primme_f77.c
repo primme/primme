@@ -238,6 +238,9 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
       case PRIMMEF77_procID:
               (*primme)->procID = *v.int_v;
       break;
+      case PRIMMEF77_commInfo:
+              (*primme)->commInfo = v.ptr_v;
+      break;
       case PRIMMEF77_nLocal:
               (*primme)->nLocal = *v.int_v;
       break;
@@ -311,6 +314,12 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
       break;
       case PRIMMEF77_outputFile:
               (*primme)->outputFile = v.file_v;
+      break;
+      case PRIMMEF77_matrix:
+              (*primme)->matrix = v.ptr_v;
+      break;
+      case PRIMMEF77_preconditioner:
+              (*primme)->preconditioner = v.ptr_v;
       break;
       case PRIMMEF77_restartingParams_scheme:
               (*primme)->restartingParams.scheme = *v.restartscheme_v;
@@ -425,6 +434,9 @@ void primme_get_member_f77(primme_params *primme, int *label, union f77_value_pt
       case PRIMMEF77_procID:
               v->int_v = primme->procID;
       break;
+      case PRIMMEF77_commInfo:
+              v->ptr_v = primme->commInfo;
+      break;
       case PRIMMEF77_nLocal:
               v->int_v = primme->nLocal;
       break;
@@ -500,6 +512,12 @@ void primme_get_member_f77(primme_params *primme, int *label, union f77_value_pt
       break;
       case PRIMMEF77_outputFile:
               v->file_v = primme->outputFile;
+      break;
+      case PRIMMEF77_matrix:
+              v->ptr_v = primme->matrix;
+      break;
+      case PRIMMEF77_preconditioner:
+              v->ptr_v = primme->preconditioner;
       break;
       case PRIMMEF77_restartingParams_scheme:
               v->restartscheme_v = primme->restartingParams.scheme;

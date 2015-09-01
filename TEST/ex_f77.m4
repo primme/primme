@@ -77,9 +77,14 @@ ifdef(`USE_PETSC', `
 
 !       Other vars
 !
-ifdef(`USE_PETSC', `        Mat A
+ifdef(`USE_PETSC', `ifdef(`USE_POINTER',
+`        Mat, target :: A
+        PC, target :: pc
+        MPI_Comm, target :: comm
+', `        Mat A
         PC pc
         COMMON A, pc
+')dnl
         PetscErrorCode ierr
         integer i,numProcs,procID,nLocal
 ', `        integer i,ierr
@@ -110,7 +115,8 @@ ifdef(`USE_PETSC', `        call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
 
 !       Set matvec 
 ifdef(`USE_PETSC', `        call generateLaplacian1D(n, A, ierr)
-        call primme_set_member_f77(primme, PRIMMEF77_matrix, A)
+ifdef(`USE_POINTER', `        call primme_set_member_f77(primme, PRIMMEF77_matrix, A)
+')dnl
         call primme_set_member_f77(primme, PRIMMEF77_matrixMatvec,
      :                                                     PETScMatvec)
 ', `        call primme_set_member_f77(primme, PRIMMEF77_matrixMatvec, MV)
@@ -123,6 +129,9 @@ ifdef(`USE_PETSC', `!       Set parallel parameters
         call primme_set_member_f77(primme, PRIMMEF77_numProcs, numProcs)
         call MPI_Comm_rank(PETSC_COMM_WORLD, procID, ierr);
         call primme_set_member_f77(primme, PRIMMEF77_procID, procID)
+ifdef(`USE_POINTER', `        comm = PETSC_COMM_WORLD
+        call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+')dnl
         call primme_set_member_f77(primme, PRIMMEF77_globalSumDouble,
      :                                              par_GlobalSumDouble)
 ')dnl
@@ -133,15 +142,16 @@ ifdef(`USE_PETSC', `        call PCCreate(PETSC_COMM_WORLD, pc, ierr)
         call PCSetOperators(pc, A, A, ierr)
         call PCSetFromOptions(pc, ierr)
         call PCSetUp(pc, ierr)
-        call primme_set_member_f77(primme, 
+ifdef(`USE_POINTER', `        call primme_set_member_f77(primme, 
      :       PRIMMEF77_preconditioner, pc)
+')dnl
         call primme_set_member_f77(primme, 
      :       PRIMMEF77_applyPreconditioner, ApplyPCPrecPETSC)
 ', `        call primme_set_member_f77(primme, 
      :       PRIMMEF77_applyPreconditioner, ApplyPrecon)
 ')dnl
         call primme_set_member_f77(primme, 
-     :       PRIMMEF77_correctionParams_precondition, 1)
+     :       PRIMMEF77_correctionParams_precondition, 0)
 !
 !       Set a few other solver parameters (optional) 
 !
@@ -269,6 +279,8 @@ ifdef([USE_PETSC], [
         end
         subroutine PETScMatvec(x,y,k,primme)
 !       ----------------------------------------------------------------
+ifdef([USE_POINTER], [        use iso_c_binding
+])dnl
         implicit none
         include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
@@ -277,12 +289,18 @@ ifdef([USE_PETSC], [
         PRIMME_NUM x(*), y(*)
         integer*8 primme
         integer k,j,nLocal
-        Mat A
+ifdef([USE_POINTER], [        Mat, pointer :: A
+        type(c_ptr) :: pA
+], [        Mat A
         COMMON A
+])dnl
         Vec xvec,yvec
         PetscErrorCode ierr
 
         call primme_get_member_f77(primme, PRIMMEF77_nLocal, nLocal)
+ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMMEF77_matrix, pA)
+        call c_f_pointer(pA, A)
+])
         call MatCreateVecs(A, xvec, yvec, ierr)
         do j=0,k-1
            call VecPlaceArray(xvec, x(j*nLocal+1), ierr)
@@ -296,6 +314,8 @@ ifdef([USE_PETSC], [
         end
         subroutine ApplyPCPrecPETSc(x,y,k,primme)
 !       ----------------------------------------------------------------
+ifdef([USE_POINTER], [        use iso_c_binding
+])dnl
         implicit none
         include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
@@ -305,13 +325,23 @@ ifdef([USE_PETSC], [
         PRIMME_NUM x(*), y(*)
         integer*8 primme
         integer k,j,nLocal
-        Mat A
+ifdef([USE_POINTER], [        Mat, pointer :: A
+        PC, pointer :: pc
+        type(c_ptr) :: pA, ppc
+], [        Mat A
         PC pc
         COMMON A, pc
+])dnl
         Vec xvec,yvec
         PetscErrorCode ierr
 
         call primme_get_member_f77(primme, PRIMMEF77_nLocal, nLocal)
+ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMMEF77_matrix, pA)
+        call primme_get_member_f77(primme, PRIMMEF77_preconditioner,
+     :                                                          ppc)
+        call c_f_pointer(pA, A)
+        call c_f_pointer(ppc, pc)
+])
         call MatCreateVecs(A, xvec, yvec, ierr)
         do j=0,k-1
            call VecPlaceArray(xvec, x(j*nLocal+1), ierr)
@@ -325,14 +355,22 @@ ifdef([USE_PETSC], [
         end
         subroutine par_GlobalSumDouble(x,y,k,primme)
 !       ----------------------------------------------------------------
+ifdef([USE_POINTER], [        use iso_c_binding
+])dnl
         implicit none
+        include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
         real*8 x(*), y(*)
         integer*8 primme
         integer k, ierr
+ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
+        type(c_ptr) :: pcomm
 
+        call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+        call c_f_pointer(pcomm, comm)
+])dnl
         call MPI_Allreduce(x, y, k, MPI_DOUBLE, MPI_SUM,
-     :                                          PETSC_COMM_WORLD, ierr)
+     :                                 ifdef([USE_POINTER], [comm], [PETSC_COMM_WORLD]), ierr)
         end
 ], [
 !       1-D Laplacian block matrix-vector product, Y = A * X, where

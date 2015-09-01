@@ -100,6 +100,7 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_applyPreconditioner``,                   in field :c:member:`primme_params.applyPreconditioner`.
       * ``PRIMMEF77_numProcs``,                              in field :c:member:`primme_params.numProcs`.
       * ``PRIMMEF77_procID``,                                in field :c:member:`primme_params.procID`.
+      * ``PRIMMEF77_commInfo``,                              in field :c:member:`primme_params.commInfo`.
       * ``PRIMMEF77_nLocal``,                                in field :c:member:`primme_params.nLocal`.
       * ``PRIMMEF77_globalSumDouble``,                       in field :c:member:`primme_params.globalSumDouble`.
       * ``PRIMMEF77_numEvals``,                              in field :c:member:`primme_params.numEvals`.
@@ -123,6 +124,8 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_eps``,                                   in field :c:member:`primme_params.eps`.
       * ``PRIMMEF77_printLevel``,                            in field :c:member:`primme_params.printLevel`.
       * ``PRIMMEF77_outputFile``,                            in field :c:member:`primme_params.outputFile`.
+      * ``PRIMMEF77_matrix``,                                in field :c:member:`primme_params.matrix`.
+      * ``PRIMMEF77_preconditioner``,                        in field :c:member:`primme_params.preconditioner`.
       * ``PRIMMEF77_restartingParams_scheme``,               in field :c:member:`primme_params.restartingParams.scheme`.
       * ``PRIMMEF77_restartingParams_maxPrevRetain``,        in field :c:member:`primme_params.restartingParams.maxPrevRetain`.
       * ``PRIMMEF77_correctionParams_precondition``,         in field :c:member:`primme_params.correctionParams.precondition`.
@@ -157,6 +160,32 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
    :param value: (output) value of the field.
 
+
+   .. note::
+
+      When ``label`` is one of ``PRIMMEF77_matrixMatvec``, ``PRIMMEF77_applyPreconditioner``, ``PRIMMEF77_commInfo``,
+      ``PRIMMEF77_intWork``, ``PRIMMEF77_realWork``, ``PRIMMEF77_matrix`` and ``PRIMMEF77_preconditioner``,
+      the returned ``value`` is a C pointer (``void*``). Use Fortran pointer or other extensions to deal with it.
+      For instance::
+
+         use iso_c_binding
+         MPI_Comm comm
+
+         comm = MPI_COMM_WORLD
+         call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+         ...
+         subroutine par_GlobalSumDouble(x,y,k,primme)
+         use iso_c_binding
+         implicit none
+         ...
+         MPI_Comm, pointer :: comm
+         type(c_ptr) :: pcomm
+
+         call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+         call c_f_pointer(pcomm, comm)
+         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+          
+         
 .. c:function:: primmetop_get_prec_shift_f77(primme, index, value)
 
    Get the value in some position of the array |ShiftsForPreconditioner|.
@@ -180,6 +209,7 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_applyPreconditioner``,                   in field :c:member:`primme_params.applyPreconditioner`.
       * ``PRIMMEF77_numProcs``,                              in field :c:member:`primme_params.numProcs`.
       * ``PRIMMEF77_procID``,                                in field :c:member:`primme_params.procID`.
+      * ``PRIMMEF77_commInfo``,                              in field :c:member:`primme_params.commInfo`.
       * ``PRIMMEF77_nLocal``,                                in field :c:member:`primme_params.nLocal`.
       * ``PRIMMEF77_globalSumDouble``,                       in field :c:member:`primme_params.globalSumDouble`.
       * ``PRIMMEF77_numEvals``,                              in field :c:member:`primme_params.numEvals`.
@@ -203,6 +233,8 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       * ``PRIMMEF77_eps``,                                   in field :c:member:`primme_params.eps`.
       * ``PRIMMEF77_printLevel``,                            in field :c:member:`primme_params.printLevel`.
       * ``PRIMMEF77_outputFile``,                            in field :c:member:`primme_params.outputFile`.
+      * ``PRIMMEF77_matrix``,                                in field :c:member:`primme_params.matrix`.
+      * ``PRIMMEF77_preconditioner``,                        in field :c:member:`primme_params.preconditioner`.
       * ``PRIMMEF77_restartingParams_scheme``,               in field :c:member:`primme_params.restartingParams.scheme`.
       * ``PRIMMEF77_restartingParams_maxPrevRetain``,        in field :c:member:`primme_params.restartingParams.maxPrevRetain`.
       * ``PRIMMEF77_correctionParams_precondition``,         in field :c:member:`primme_params.correctionParams.precondition`.
@@ -247,6 +279,30 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       Use this function exclusively inside the function |matrixMatvec|, |massMatrixMatvec|, or |applyPreconditioner|.
       Otherwise use the function :c:func:`primmetop_get_member_f77`.
 
+   .. note::
+
+      When ``label`` is one of ``PRIMMEF77_matrixMatvec``, ``PRIMMEF77_applyPreconditioner``, ``PRIMMEF77_commInfo``,
+      ``PRIMMEF77_intWork``, ``PRIMMEF77_realWork``, ``PRIMMEF77_matrix`` and ``PRIMMEF77_preconditioner``,
+      the returned ``value`` is a C pointer (``void*``). Use Fortran pointer or other extensions to deal with it.
+      For instance::
+
+         use iso_c_binding
+         MPI_Comm comm
+
+         comm = MPI_COMM_WORLD
+         call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+         ...
+         subroutine par_GlobalSumDouble(x,y,k,primme)
+         use iso_c_binding
+         implicit none
+         ...
+         MPI_Comm, pointer :: comm
+         type(c_ptr) :: pcomm
+
+         call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+         call c_f_pointer(pcomm, comm)
+         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+ 
 .. c:function:: primme_get_prec_shift_f77(primme, index, value)
 
    Get the value in some position of the array |ShiftsForPreconditioner|.
