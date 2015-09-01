@@ -49,7 +49,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
