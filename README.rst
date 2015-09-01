@@ -6,21 +6,21 @@ PRIMME, pronounced as *prime*, finds a number of eigenvalues and their correspon
 real symmetric, or complex hermitian matrix A. Largest, smallest and interior 
 eigenvalues are supported. Preconditioning can be used to accelerate 
 convergence. 
-PRIMME is written in C, but a complete Fortran 77 interface is also provided.
+PRIMME is written in C, but complete interfaces are provided for Fortran 77 and MATLAB.
   
-Making & Linking
-----------------
+Making and Linking
+------------------
 
 `Make_flags` has the flags and compilers used to make `libprimme.a`:
 
-* `CC`, compiler program like ``gcc``, ``clang`` or ``icc``.
-* `CFLAGS`, compiler options like ``-g`` or ``-O3``.
+* `CC`, compiler program such as ``gcc``, ``clang`` or ``icc``.
+* `CFLAGS`, compiler options such as ``-g`` or ``-O3``.
 
-Then do this to generate `libprimme.a`::
+After customizing `Make_flags`, type this to generate `libprimme.a`::
 
     make lib
 
-Also you can do::
+Making can be also done at the command line::
 
     make lib CC=clang CFLAGS='-O3'
 
