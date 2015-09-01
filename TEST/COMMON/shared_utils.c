@@ -55,7 +55,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
       return(-1);
    }
 
-   *method = (primme_preset_method) -1;   /* Set it as undefined */
+   *method = DYNAMIC;   /* Set as default */
 
    line = 1;
    while (EOF != fscanf(configFile, "%s", ident)) {

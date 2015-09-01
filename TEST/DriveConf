@@ -1,28 +1,34 @@
 // ///////////////////////////////////////////////////////////////////
 // 		Driver configuration file
 // ///////////////////////////////////////////////////////////////////
-// Matrix file  (matlab format)
+// Matrix file  (MatrixMarket format or PETSc binary)
 driver.matrixFile    = LUNDA.mtx
+driver.matrixChoice = default
+//    .MatrixChoice can be
+//     default      select native when numProcs == 1 and petsc otherwise
+//     native       use sequential CSR matrix-vector product and
+//                  preconditioners.
+//     petsc        use matrix-vector and preconditioners from PETSc.
+//     parasails    use matrix-vector and preconditioners from Parasails.
 
 // Output file name
 driver.outputFile    = sample.out
 
 // ///////////////////////////////////////////////////////////////////
-// Preconditioning parameters for ILUT for sparskit
+// Preconditioning parameters
 //     .PrecChoice can be 
-//      0    no preconditioner 
-//	1    K = Diagonal of A
-// 	2    K = (Diagonal_of_A - primme.shift_i I)
-// 	3    K = ILUT(A-driver.shift,level,threshold)
-//	4    K = Parasails(A-driver.shift,isymm,filter,threshold)
-//	   (4 works only with par_primme parallel program)
+//      noprecond        no preconditioner 
+//	jacobi           K = Diagonal of A
+// 	davidsonjacobi   K = (Diagonal_of_A - primme.shift_i I)
+// 	ilut             K = ILUT(A-driver.shift,level,threshold,isymm,
+//                                filter)
 // NOTE
 //   ILUT produces a typically a non-symmetric preconditioner that
 //        will not work with a symmetric Krylov solver like QMR.
 //        Thus we only recommend its use with outer methods
 //        (DEFAULT_MIN_MATVECS, etc). Do NOT use with DYNAMIC.
 // ///////////////////////////////////////////////////////////////////
-driver.PrecChoice = 0 
+driver.PrecChoice = jacobi
 driver.shift      = 0.0
 driver.level      = 2
 driver.threshold  = 0.01
