@@ -3,7 +3,9 @@ This directory has the test programs as well as usage examples of PRIMME.
 It should have:
 
 - Makefile             makefile to build the programs.
-- driver.c             reads MTX and PETSc, and can be configured to run
+- driver.c             reads MTX (http://math.nist.gov/MatrixMarket/mmio-c.html)
+                       and PETSc (http://www.mcs.anl.gov/petsc/) matrices,
+                       and can be configured to run
                        in parallel or sequential, double or double complex,
                        w/ or w/o preconditioning, and with a variety of
                        preconditioners. For simpler examples see below.
@@ -12,34 +14,36 @@ It should have:
     mmio.h, mmio.c     MatrixMarket IO routines.
     native.h, mat.c    wrapper for CSR matrix and sequential ILUT.
     num.h              constants
-    parasailsw.h, .c   wrapper for Parasails matrix and preconditioner.
+    parasailsw.h, .c   wrapper for ParaSails matrix and preconditioner.
     petscw.h, .c       wrapper for PETSc matrices and preconditioners.
     shared_utils.h, .c IO routines for primme_params and driver options.
-    ssrcsr.c           routine to convert from Sym Sparse Row to CSR.
-    amux.f             routine for CSR matrix-vector product.
-    ilut.f             routine for sequential ILUT.
-    zamux.f            routine for complex CSR matrix-vector product.
-    zilut.f            routine for complex sequential ILUT.
+    ssrcsr.c           routine to convert from Sym Sparse Row to CSR (from Sparskit).
+    amux.f             routine for CSR matrix-vector product (from Sparskit).
+    ilut.f             routine for sequential ILUT (from Sparskit).
+    zamux.f            routine for complex CSR matrix-vector product (from Sparskit).
+    zilut.f            routine for complex sequential ILUT (from Sparskit).
 - DriverConf           example of driver configuration file used by the driver.
 - MinConf, LeanConf,
   FullConf             examples of PRIMME configuration file used by the driver.
 - LUNDA.mtx            matrix used for testing and in DriverConf as an example.
 - tests/               configuration files for testing purpose.
-- ex_dseq.c            example of sequential program calling PRIMME.
-- ex zseq.c            example of sequential complex program.
-- ex_petsc.c           example of PETSc program.
+- ex_dseq{.c,f77.f}    examples of sequential program calling PRIMME.
+- ex zseq{.c,f77.f}    examples of sequential complex program.
+- ex_petsc{.c,f77.F}   examples of PETSc program.
+- ex_petscf77ptr.F     examples of PETSc program using Fortran pointers.
 
 The Makefile can perform the next actions:
 
 make primme_double          build driver in double floats.
 make primme_doublecomplex     "     "    in complex double floats.
-make ex_dseq                build example in C
-make ex_zseq                  "     "
-make ex_petsc                 "     "
-make ex_dseqf77             build example in Fortran
-make ex_zseqf77               "     "
-make ex_petscf77              "     "
-make ex_petscf77ptr           "     "
+make simple_examples        build the next examples
+  make ex_dseq              build example in C
+  make ex_zseq                "     "
+  make ex_petsc               "     "
+  make ex_dseqf77           build example in Fortran
+  make ex_zseqf77             "     "
+  make ex_petscf77            "     "
+  make ex_petscf77ptr         "     "
 make test                   build and execute a simple example of double and complex.
 make all_tests_double       test all configurations in "tests" for doubles.
 make all_tests_doublecomplex  "   "          "      "     "    for complex.
@@ -59,7 +63,7 @@ If not (this is rare), run
    make primme_double USE_PETSC=yes USE_MPI=no
 
 
-* Compile driver with Parasails
+* Compile driver with ParaSails (https://computation.llnl.gov/casc/parasails/)
 
 Set PARASAILS_INCLUDE_DIR and PARASAILS_LIB_DIR to the corresponding include path
 and library path. Then run  
