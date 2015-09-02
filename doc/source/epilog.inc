@@ -81,3 +81,4 @@
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/
 .. _LAPACK: http://www.netlib.org/lapack/
 .. _BLAS: http://www.netlib.org/blas/
+.. _Sphinx: http://sphinx-doc.org/

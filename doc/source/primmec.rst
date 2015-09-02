@@ -764,7 +764,7 @@ The next enumerations and functions are declared in ``primme.h``.
    .. c:member:: int correctionParams.robustShifts
 
       Set to 1 to use robust shifting. It tries to avoid stagnation and 
-      missconvergence by providing as shifts in |ShiftsForPreconditioner|
+      misconvergence by providing as shifts in |ShiftsForPreconditioner|
       the Ritz values displaced by an approximation of the eigenvalue error.
 
       The default value depends on method.

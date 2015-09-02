@@ -6,38 +6,29 @@ PRIMME, pronounced as *prime*, finds a number of eigenvalues and their correspon
 real symmetric, or complex hermitian matrix A. Largest, smallest and interior 
 eigenvalues are supported. Preconditioning can be used to accelerate 
 convergence. 
-PRIMME is written in C, but a complete Fortran 77 interface is also provided.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77 and MATLAB.
   
-Making & Linking
-----------------
-
-`Make_flags` has the flags and compilers used to make `libprimme.a`:
-
-* `CC`, compiler program like ``gcc``, ``clang`` or ``icc``.
-* `CFLAGS`, compiler options like ``-g`` or ``-O3``.
-
-Then do this to generate `libprimme.a`::
-
-    make lib
-
-Also you can do::
-
-    make lib CC=clang CFLAGS='-O3'
-
-`Link_flags` has the flags for linking with external libraries and making the executables
-located in `TEST`:
-
-* `LDFLAGS`, linker flags like ``-framework Accelerate``.
-* `LIBS`, flags to link with libraries (BLAS_ and LAPACK_ are required), like ``-lprimme -llapack -lblas -lgfortran -lm``.
-
-Then you can do to compile and execute a simple test::
-
-    make test 
-
-and compile other examples in `TEST`.
-
 Changelog
 ---------
+
+Changes in PRIMME 1.2.1:
+
+* Added MATLAB interface to full PRIMME functionality.
+
+* Support for BLAS_/LAPACK_ with 64bits integers (``-DPRIMME_BLASINT_SIZE=64``).
+
+* Simplified configuration of Make_flags and Make_links (removed ``TOP`` variable 
+  and replaced defines ``NUM_SUM`` and ``NUM_IBM`` by ``F77UNDERSCORE``).
+
+* Replaced directories ``DTEST`` and ``ZTEST`` by ``TEST``, that has:
+
+  * ``driver.c``: read matrices in MatrixMarket format and PETSc binary and
+    call PRIMME with the parameters specified in a file; support
+    complex arithmetic and MPI and can use PETSc preconditioners.
+  * ``ex*.c`` and ``ex*.f``: small, didactic examples of usage in C and Fortran
+    and in parallel (with PETSc).
+
+* Using Sphinx_ to manage documentation. Detailed Fortran 77 interface.
 
 Changes in PRIMME 1.2:
 
@@ -124,5 +115,84 @@ Contact Information
 -------------------
 
 For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_
+
+Directory Structure
+-------------------
+
+The next directories and files should be available:
+
+* ``COPYING.txt``, LGPL License;
+* ``Make_flags``,  flags to be used by makefiles to compile library and tests;
+* ``Link_flags``,  flags needed in making and linking the test programs;
+* ``PRIMMESRC/``,  directory with source code in the following subdirectories:
+
+   * ``COMMONSRC/``, interface and common functions used by all precision versions;
+   * ``DSRC/``,      the source code for the double precision :c:func:`dprimme`;
+   * ``ZSRC/``,      the source code for the double complex precision :c:func:`zprimme`;
+
+* ``MEX/``,          MATLAB interface for PRIMME;
+* ``TEST/``,         driver and samples in C and F77, both sequential and parallel;
+* ``libprimme.a``,   the PRIMME library (to be made);
+* ``makefile``       main make file;
+* ``readme.txt``     text version of the documentation;
+* ``doc/``           directory with the HTML and PDF versions of the documentation.
+
+
+Making and Linking
+------------------
+
+``Make_flags`` has the flags and compilers used to make ``libprimme.a``:
+
+* `CC`, compiler program such as ``gcc``, ``clang`` or ``icc``.
+* `CFLAGS`, compiler options such as ``-g`` or ``-O3``. Also include some of these
+  options if the BLAS_ and LAPACK_ that will be linked:
+
+  * ``-DF77UNDERSCORE``, the Fortran function names has appended an underscore
+    (usually they does).
+  * ``-DPRIMME_BLASINT_SIZE=64``, integers are 64-bit integer (``kind=8``) type
+    (usually they doesn't).
+
+After customizing ``Make_flags``, type this to generate ``libprimme.a``::
+
+    make lib
+
+Making can be also done at the command line::
+
+    make lib CC=clang CFLAGS='-O3'
+
+``Link_flags`` has the flags for linking with external libraries and making the executables
+located in ``TEST``:
+
+* `LDFLAGS`, linker flags such as ``-framework Accelerate``.
+* `LIBS`, flags to link with libraries (BLAS_ and LAPACK_ are required), such as ``-lprimme -llapack -lblas -lgfortran -lm``.
+
+After that type this to compile and execute a simple test::
+
+    make test 
+
+If it worked, try with other examples in ``TEST`` (see ``README`` in ``TEST`` for more
+information about how to compile the driver and the examples).
+
+Full description of actions that `make` can take:
+
+* `make lib`, builds ``libprimme.a``; alternatively:
+* `make libd`, if only :c:func:`dprimme` is of interest, build ``libdprimme.a``:
+* `make libz`, if only :c:func:`zprimme` is of interest, build ``libzprimme.a``;
+* `make test`, build and execute a simple example; 
+* `make clean`, removes all ``*.o``, ``a.out``, and core files from all directories.
+
+Tested Systems
+--------------
+
+PRIMME is primary developed with GNU gcc, g++ and gfortran (versions 4.8 and later).
+Many users have reported builds on several other platforms/compilers:
+
+* SUSE 13.1 & 13.2
+* CentOS 6.6
+* Ubuntu 14.04
+* MacOS X 10.9 & 10.10 
+* Cray XC30
+* SunOS 5.9, quad processor Sun-Fire-280R, and several other UltraSparcs
+* AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at nersc.gov)
 
 .. include:: epilog.inc
