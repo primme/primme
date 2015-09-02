@@ -3,7 +3,10 @@ This directory has the test programs as well as usage examples of PRIMME.
 It should have:
 
 - Makefile             makefile to build the programs.
-- driver.c             driver that can read MTX and PETSc binary matrices.
+- driver.c             reads MTX and PETSc, and can be configured to run
+                       in parallel or sequential, double or double complex,
+                       w/ or w/o preconditioning, and with a variety of
+                       preconditioners. For simpler examples see below.
 - COMMON/              with source used by driver.c.
     csr.h, csr.c       routines for matrices CSR
     mmio.h, mmio.c     MatrixMarket IO routines.
@@ -37,7 +40,7 @@ make ex_dseqf77             build example in Fortran
 make ex_zseqf77               "     "
 make ex_petscf77              "     "
 make ex_petscf77ptr           "     "
-make test                   build and execute a simple example in double and complex.
+make test                   build and execute a simple example of double and complex.
 make all_tests_double       test all configurations in "tests" for doubles.
 make all_tests_doublecomplex  "   "          "      "     "    for complex.
 make clean                  remove object files.
@@ -51,7 +54,7 @@ If PETSc is using MPI (probably it is), run
 
   make primme_double USE_PETSC=yes
 
-If not (really? quite unusual), run
+If not (this is rare), run
 
    make primme_double USE_PETSC=yes USE_MPI=no
 
