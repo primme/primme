@@ -58,8 +58,14 @@ If not (really? quite unusual), run
 
 * Compile driver with Parasails
 
-Set PARASAILS_INCLUDE_DIR and PARASAILS_LUB_DIR to the corresponding include path
+Set PARASAILS_INCLUDE_DIR and PARASAILS_LIB_DIR to the corresponding include path
 and library path. Then run  
 
   make primme_double USE_PARASAILS=yes USE_MPI=yes
 
+        --------------------------------------------------------------
+	The comments in the sample drivers show how to run executables
+        --------------------------------------------------------------
+--------------------------------------------------------------------------------
+ Note: these sample drivers are meant to be expository and not high performance
+--------------------------------------------------------------------------------
