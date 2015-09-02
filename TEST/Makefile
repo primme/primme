@@ -96,6 +96,12 @@ ex_petscf77ptr: ex_petscf77ptr.o ../libprimme.a Makefile
 
 all: primme_double primme_doublecomplex
 
+ifeq ($(USE_PETSC), yes)
+simple_examples: ex_dseq ex_zseq ex_petsc ex_dseqf77 ex_zseqf77 ex_petscf77 ex_petscf77ptr
+else
+simple_examples: ex_dseq ex_zseq ex_dseqf77 ex_zseqf77
+endif
+
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
 endif
