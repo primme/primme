@@ -3,25 +3,10 @@
 #   lib	      makes the libprimme.a library (both double and complex)
 #   libd      makes the libdprimme.a library (only double)
 #   libz      makes the libzprimme.a library (only complex)
-#   seqs      makes sequential test programs in DTEST and ZTEST
-#   pars      makes parallel test programs (only in DTEST currently)
-#   depends   builds the dependencies needed for making the test programs
-#   		ddepends_seq  (double precision sequential)
-#   		ddepends_par  (double precision parallel)
-#   		zdepends_seq  (Complex sequential)
 #   clean     removes all .o a.out and core files
-#   all       makes main library and all test programs
+#   test      build and execute a simple example
 #-----------------------------------------------------------------
 include Make_flags
-
-# Build the libprimme library, as well as all TESTS
-all: lib primme_double primme_complex
-
-# The following are sequential executables of the test programs
-seqs: primme_double primme_complex seqf77_dprimme seqf77_zprimme
-
-# The following builds the parallel executables
-pars: primme_double primme_complex
 
 .PHONY: lib libd libz clean backup
 
@@ -53,44 +38,6 @@ libz:
 	echo "----------------------------------------"; \
 	make libz;\
 	)
-#------------------- DOUBLE TEST PROGRAMS ------------------------
-primme_double:
-	@(\
-	cd TEST ;\
-	echo "----------------------------------------------"; \
-	echo " Making the executable for the double C       "; \
-	echo "----------------------------------------------"; \
-	make primme_double; \
-	)
-
-seqf77_dprimme:
-	@(\
-	cd TEST ;\
-	echo "------------------------------------------------"; \
-	echo " Making the executable for double sequential f77 "; \
-	echo "------------------------------------------------"; \
-	make seqf77_dprimme; \
-	)
-
-#------------------- COMPLEX TEST PROGRAMS ----------------------
-primme_complex:
-	@(\
-	cd TEST ;\
-	echo "----------------------------------------------"; \
-	echo " Making the executable for the complex C      "; \
-	echo "----------------------------------------------"; \
-	make primme_doublecomplex; \
-	)
-
-seqf77_zprimme:
-	@(\
-	cd TEST ;\
-	echo "------------------------------------------------"; \
-	echo " Making executable for complex sequential f77 "; \
-	echo "------------------------------------------------"; \
-	make seqf77_zprimme; \
-	)
-
 clean: 
 	@(\
 	echo "--------------------------------------------------"; \
