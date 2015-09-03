@@ -402,7 +402,9 @@ primme_params
 
       The ``int iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
 
-      The default value is an array with values -1, -1, -1 and -1.
+      The default value is an array with values -1, -1, -1 and -1. In that case, ``iseed``
+      is set based on the value of |procID| to avoid every process generating the same
+      sequence of pseudorandom numbers.
 
    .. c:member:: void *matrix
 
