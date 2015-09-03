@@ -7,7 +7,7 @@
 C Library Interface
 -------------------
 
-The PRIMME interface is composed by the next functions.
+The PRIMME interface is composed of the following functions.
 To solve real symmetric and Hermitian standard eigenproblems call
 respectively:
 
@@ -17,7 +17,7 @@ respectively:
 
       int :c:func:`dprimme <dprimme>` (double \*evals, double \*evecs, double \*resNorms,
                               primme_params \*primme)
-      int :c:func:`zprimme <zprimme>` (double \*evals, double \*evecs, double \*resNorms,
+      int :c:func:`zprimme <zprimme>` (double \*evals, Complex_Z \*evecs, double \*resNorms,
                               primme_params \*primme)
 
 .. only:: text
@@ -81,7 +81,7 @@ To use PRIMME, follow this basic steps.
          
          primme_initialize(&primme);
    
-#. Set problem parameters (see also :ref:`guide-params`); and,
+#. Set problem parameters (see also :ref:`guide-params`), and,
    optionally, set one of the :c:type:`preset methods <primme_preset_method>`:
 
    .. only:: not text
@@ -139,7 +139,7 @@ To use PRIMME, follow this basic steps.
    * `resNorms`, array to return the residual norms of the found eigenpairs; and
    * `ret`, returned error code.
 
-#. Before exiting free the work arrays in PRIMME:
+#. Before exiting, free the work arrays in PRIMME:
 
    .. only:: not text
   
@@ -173,6 +173,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       |
       | *For parallel programs*
       | ``int`` |numProcs|
+      | ``int`` |procID|
       | ``int`` |nLocal|
       | ``void (*`` |globalSumDouble| ``)(...)``
       |
@@ -184,7 +185,6 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``int`` |maxBlockSize|
       |
       | *User data*
-      | ``int`` |procID|
       | ``void *`` |commInfo|
       | ``void *`` |matrix|
       | ``void *`` |preconditioner|
@@ -224,6 +224,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       
       /* For parallel programs */
       int numProcs;
+      int procID;
       int nLocal;
       void (*globalSumDouble)(...);
       
@@ -235,7 +236,6 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       int maxBlockSize;
       
       /* User data */
-      int procID;
       void *commInfo;
       void *matrix;
       void *preconditioner;
@@ -260,9 +260,9 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       struct primme_stats stats;
       struct stackTraceNode *stackTrace
  
-PRIMME requires the user to set at least the dimension of the matrix,
-the matrix-vector product, as they define the problem to be solved.
-For parallel programs, |nLocal| and |globalSumDouble| are also required.
+PRIMME requires the user to set at least the dimension of the matrix (|n|),
+the matrix-vector product (|matrixMatvec|), as they define the problem to be solved.
+For parallel programs, |nLocal|, |procID| and |globalSumDouble| are also required.
 
 In addition, most users would want to specify how many eigenpairs to find,
 and provide a preconditioner (if available).
@@ -310,10 +310,11 @@ zprimme
 
       PRIMME uses a structure called ``Complex_Z`` to define complex numbers.
       ``Complex_Z`` is defined in :file:`PRIMMESRC/COMMONSRC/Complexz.h`.
-      In future versions of PRIMME, ``Complex_Z`` will be replaced by C99 complex double.
-      Therefore we strongly recommend to use standard C99 because it is binary
-      compatible with ``Complex_Z``. See examples in :file:`TEST` such as :file:`ex_zseq.c` and
-      :file:`ex_zseqf77.c`.
+      In future versions of PRIMME, ``Complex_Z`` will be replaced by ``complex double`` from
+      the C99 standard.
+      Because the two types are binary compatible, we strongly recommend that calling
+      programs use the C99 type to maintain future compatibility.
+      See examples in :file:`TEST` such as :file:`ex_zseq.c` and :file:`ex_zseqf77.c`.
 
 primme_initialize
 """""""""""""""""

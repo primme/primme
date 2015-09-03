@@ -235,8 +235,8 @@ The next directories and files should be available:
 
 * "MEX/",          MATLAB interface for PRIMME;
 
-* "TEST/",         driver and samples in C and F77, both sequential
-  and parallel;
+* "TEST/",         sample test programs in C and F77, both
+  sequential and parallel;
 
 * "libprimme.a",   the PRIMME library (to be made);
 
@@ -256,13 +256,14 @@ Making and Linking
 * *CC*, compiler program such as "gcc", "clang" or "icc".
 
 * *CFLAGS*, compiler options such as "-g" or "-O3". Also include
-  some of these options if the BLAS and LAPACK that will be linked:
+  some of the following options if required for the BLAS and LAPACK
+  libraries to be linked:
 
-  * "-DF77UNDERSCORE", the Fortran function names has appended an
-    underscore (usually they does).
+  * "-DF77UNDERSCORE", if Fortran appends an underscore to function
+    names (usually they does).
 
-  * "-DPRIMME_BLASINT_SIZE=64", integers are 64-bit integer
-    ("kind=8") type (usually they doesn't).
+  * "-DPRIMME_BLASINT_SIZE=64", if the library integers are 64-bit
+    integer ("kind=8") type (usually they are not).
 
 Note: When "-DPRIMME_BLASINT_SIZE=64" is set the code uses the type
   "int64_t" supported by the standard C99. In case the compiler
@@ -299,13 +300,22 @@ making the executables located in "TEST":
 * *LIBS*, flags to link with libraries (BLAS and LAPACK are
   required), such as "-lprimme -llapack -lblas -lgfortran -lm".
 
-After that type this to compile and execute a simple test:
+After that, type this to compile and execute a simple test:
 
-   make test
+   $ make test
+   ...
+   Test passed!
+   ...
+   Test passed!
 
 If it worked, try with other examples in "TEST" (see "README" in
 "TEST" for more information about how to compile the driver and the
 examples).
+
+In case of linking problems check flags in *LDFLAGS* and *LIBS* and
+consider to add/remove "-DF77UNDERSCORE" from *CFLAGS*. If the
+execution fails consider to add/remove "-DPRIMME_BLASINT_SIZE=64" from
+*CFLAGS*.
 
 Full description of actions that *make* can take:
 
@@ -351,8 +361,8 @@ platforms/compilers:
 C Library Interface
 *******************
 
-The PRIMME interface is composed by the next functions. To solve real
-symmetric and Hermitian standard eigenproblems call respectively:
+The PRIMME interface is composed of the following functions. To solve
+real symmetric and Hermitian standard eigenproblems call respectively:
 
    int dprimme(double *evals, double *evecs, double *resNorms,
                primme_params *primme);
@@ -387,7 +397,7 @@ To use PRIMME, follow this basic steps.
 
       primme_initialize(&primme);
 
-3. Set problem parameters (see also Parameters Guide); and,
+3. Set problem parameters (see also Parameters Guide), and,
    optionally, set one of the "preset methods":
 
       primme.matrixMatvec = LaplacianMatrixMatvec; /* MV product */
@@ -415,7 +425,7 @@ To use PRIMME, follow this basic steps.
 
    * *ret*, returned error code.
 
-5. Before exiting free the work arrays in PRIMME:
+5. Before exiting, free the work arrays in PRIMME:
 
       primme_Free(&primme);
 
@@ -437,6 +447,7 @@ next fields:
 
    /* For parallel programs */
    int numProcs;
+   int procID;
    int nLocal;
    void (*globalSumDouble)(...);
 
@@ -448,7 +459,6 @@ next fields:
    int maxBlockSize;
 
    /* User data */
-   int procID;
    void *commInfo;
    void *matrix;
    void *preconditioner;
@@ -473,10 +483,10 @@ next fields:
    struct primme_stats stats;
    struct stackTraceNode *stackTrace
 
-PRIMME requires the user to set at least the dimension of the matrix,
-the matrix-vector product, as they define the problem to be solved.
-For parallel programs, "nLocal" and "globalSumDouble" are also
-required.
+PRIMME requires the user to set at least the dimension of the matrix
+("n"), the matrix-vector product ("matrixMatvec"), as they define the
+problem to be solved. For parallel programs, "nLocal", "procID" and
+"globalSumDouble" are also required.
 
 In addition, most users would want to specify how many eigenpairs to
 find, and provide a preconditioner (if available).
@@ -530,9 +540,10 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params�
    Note: PRIMME uses a structure called "Complex_Z" to define
      complex numbers. "Complex_Z" is defined in
      "PRIMMESRC/COMMONSRC/Complexz.h". In future versions of PRIMME,
-     "Complex_Z" will be replaced by C99 complex double. Therefore we
-     strongly recommend to use standard C99 because it is binary
-     compatible with "Complex_Z". See examples in "TEST" such as
+     "Complex_Z" will be replaced by "complex double" from the C99
+     standard. Because the two types are binary compatible, we
+     strongly recommend that calling programs use the C99 type to
+     maintain future compatibility. See examples in "TEST" such as
      "ex_zseq.c" and "ex_zseqf77.c".
 
 
@@ -851,6 +862,11 @@ primmetop_set_member_f77(primme, label, value)
 
       * **value** -- (input) value to set.
 
+   Note: **Not use** this function inside PRIMME's callback
+     functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
+     functions called by these functions. In those cases use
+     "primme_set_member_f77()".
+
 
 primmetop_get_member_f77
 ========================
@@ -866,6 +882,11 @@ primmetop_get_member_f77(primme, label, value)
         One of the detailed in function "primmetop_set_member_f77()".
 
       * **value** -- (output) value of the field.
+
+   Note: **Not use** this function inside PRIMME's callback
+     functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
+     functions called by these functions. In those cases use
+     "primme_get_member_f77()".
 
    Note: When "label" is one of "PRIMMEF77_matrixMatvec",
      "PRIMMEF77_applyPreconditioner", "PRIMMEF77_commInfo",
@@ -924,9 +945,10 @@ primme_set_member_f77(primme, label, value)
 
       * **value** -- (input) value to set.
 
-   Note: Use this function exclusively inside the function
-     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
-     Otherwise use the function "primmetop_set_member_f77()".
+   Note: Use this function exclusively inside PRIMME's callback
+     functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
+     functions called by these functions. Otherwise, e.g., from the
+     main program, use the function "primmetop_set_member_f77()".
 
 
 primme_get_member_f77
@@ -944,9 +966,10 @@ primme_get_member_f77(primme, label, value)
 
       * **value** -- (output) value of the field.
 
-   Note: Use this function exclusively inside the function
-     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
-     Otherwise use the function "primmetop_get_member_f77()".
+   Note: Use this function exclusively inside PRIMME's callback
+     functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
+     functions called by these functions. Otherwise, e.g., from the
+     main program, use the function "primmetop_get_member_f77()".
 
    Note: When "label" is one of "PRIMMEF77_matrixMatvec",
      "PRIMMEF77_applyPreconditioner", "PRIMMEF77_commInfo",

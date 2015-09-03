@@ -117,7 +117,7 @@ all_tests_double: primme_double
 	else\
 		cat tests.log;\
 		echo "Some tests fail. Please consider to send us the file";\
-		echo "DTEST/tests.log if the software doesn't work as expected.";\
+		echo "TEST/tests.log if the software doesn't work as expected.";\
 		exit 1;\
 	fi
 
@@ -134,7 +134,7 @@ all_tests_doublecomplex: primme_doublecomplex
 	else\
 		cat tests.log;\
 		echo "Some tests fail. Please consider to send us the file";\
-		echo "DTEST/tests.log if the software doesn't work as expected.";\
+		echo "TEST/tests.log if the software doesn't work as expected.";\
 		exit 1;\
 	fi
 
@@ -155,13 +155,19 @@ all_tests_doublecomplex_save: primme_doublecomplex
 	done > tests.log 2>&1;\
 	rm -f ._test00
 
-test_double: primme_double
-	./primme_double tests/test_003
+test_double: ex_dseq
+	@./ex_dseq &> tests.log && grep -q "10 eigenpairs converged" tests.log \
+	    && echo "Test passed!" || \
+	       (cat tests.log; echo "Something went wrong. Please consider to send us the file";\
+                echo "TEST/tests.log if the software doesn't work as expected.";\
+                exit 1;)
 
-test_doublecomplex: primme_doublecomplex
-	sed 's/sol_.../\0.complex/' tests/test_003 > ._test00;\
-	./primme_doublecomplex ._test00;\
-	rm -f ._test00
+test_doublecomplex: ex_zseq
+	@./ex_zseq &> tests.log && grep -q "10 eigenpairs converged" tests.log \
+	    && echo "Test passed!" || \
+	       (cat tests.log; echo "Something went wrong. Please consider to send us the file";\
+                echo "TEST/tests.log if the software doesn't work as expected.";\
+                exit 1;)
 
 test: test_double test_doublecomplex
 
