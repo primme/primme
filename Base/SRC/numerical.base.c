@@ -22,7 +22,7 @@
  *******************************************************************************
  * File: numerical.c
  *
- * Purpose - This file contains for the most C wrapper routines for
+ * Purpose - This file contains mostly C wrapper routines for
  *           calling various BLAS and LAPACK FORTRAN routines.
  *
  ******************************************************************************/

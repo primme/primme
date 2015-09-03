@@ -76,6 +76,20 @@ void update_projection_zprimme(Complex_Z *X, Complex_Z *Y, Complex_Z *Z,
    Num_gemm_zprimme("C", "N", numCols+blockSize, blockSize, primme->nLocal, tpone, 
       X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
       tzero, rwork, maxCols);
+
+   /* -------------------------------------------------------------- */
+   /* Alternative to the previous call:                              */
+   /*    Compute next the additional rows of each new column vector. */
+   /*    Only the upper triangular portion is computed and stored.   */
+   /* -------------------------------------------------------------- */
+
+   /*
+   for (j = numCols; j < numCols+blockSize; j++) {
+      Num_gemv_zprimme("C", primme->nLocal, j-numCols+1, tpone,
+         &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
+         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
+   }
+   */
    
    count = 2*maxCols*blockSize;
    (*primme->globalSumDouble)(rwork, &Z[maxCols*numCols], &count, primme);

@@ -22,7 +22,7 @@
  *******************************************************************************
  * File: ortho.c
  *
- * Purpose - Othonormalizes a block of vectors, vector by vector, 
+ * Purpose - Orthonormalizes a block of vectors, vector by vector, 
  *           against two bases and among themselves. Gram-Scmidt is used 
  *           with reorthogonalization based on Daniel's test. 
  *           For the purpose of the test, the norm of the resulting vector 
@@ -58,8 +58,10 @@
  
 
 /**********************************************************************
- * Function ortho - This routine orthonormalizes a block of of vectors 
- * against other vectors in the same array, against a set of locked vectors,
+ * Function ortho - This routine orthonormalizes
+ * a block of of vectors (from b1 to including b2 in basis)
+ * against other vectors in the same array (from 0 to b1-1 in basis),
+ * against a set of locked vectors (from 0 to numLocked-1 in locked),
  * and themselves.
  *
  * The following conditions must always be met: 
