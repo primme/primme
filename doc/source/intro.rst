@@ -20,12 +20,12 @@ Changes in PRIMME 1.2.1 (released on ???):
 * Simplified configuration of Make_flags and Make_links (removed ``TOP`` variable 
   and replaced defines ``NUM_SUM`` and ``NUM_IBM`` by ``F77UNDERSCORE``).
 
-* Replaced directories ``DTEST`` and ``ZTEST`` by ``TEST``, that has:
+* Replaced directories :file:`DTEST` and :file:`ZTEST` by :file:`TEST`, that has:
 
-  * ``driver.c``: read matrices in MatrixMarket format and PETSc binary and
+  * :file:`driver.c`: read matrices in MatrixMarket format and PETSc binary and
     call PRIMME with the parameters specified in a file; support
     complex arithmetic and MPI and can use PETSc preconditioners.
-  * ``ex*.c`` and ``ex*.f``: small, didactic examples of usage in C and Fortran
+  * :file:`ex*.c` and :file:`ex*.f`: small, didactic examples of usage in C and Fortran
     and in parallel (with PETSc).
 
 * Fixed a few minor bugs and improved documentation (specially the F77 interface).
@@ -126,36 +126,36 @@ Directory Structure
 
 The next directories and files should be available:
 
-* ``COPYING.txt``, LGPL License;
-* ``Make_flags``,  flags to be used by makefiles to compile library and tests;
-* ``Link_flags``,  flags needed in making and linking the test programs;
-* ``PRIMMESRC/``,  directory with source code in the following subdirectories:
+* :file:`COPYING.txt`, LGPL License;
+* :file:`Make_flags`,  flags to be used by makefiles to compile library and tests;
+* :file:`Link_flags`,  flags needed in making and linking the test programs;
+* :file:`PRIMMESRC/`,  directory with source code in the following subdirectories:
 
-   * ``COMMONSRC/``, interface and common functions used by all precision versions;
-   * ``DSRC/``,      the source code for the double precision :c:func:`dprimme`;
-   * ``ZSRC/``,      the source code for the double complex precision :c:func:`zprimme`;
+   * :file:`COMMONSRC/`, interface and common functions used by all precision versions;
+   * :file:`DSRC/`,      the source code for the double precision :c:func:`dprimme`;
+   * :file:`ZSRC/`,      the source code for the double complex precision :c:func:`zprimme`;
 
-* ``MEX/``,          MATLAB interface for PRIMME;
-* ``TEST/``,         driver and samples in C and F77, both sequential and parallel;
-* ``libprimme.a``,   the PRIMME library (to be made);
-* ``makefile``       main make file;
-* ``readme.txt``     text version of the documentation;
-* ``doc/``           directory with the HTML and PDF versions of the documentation.
+* :file:`MEX/`,          MATLAB interface for PRIMME;
+* :file:`TEST/`,         sample test programs in C and F77, both sequential and parallel;
+* :file:`libprimme.a`,   the PRIMME library (to be made);
+* :file:`makefile`       main make file;
+* :file:`readme.txt`     text version of the documentation;
+* :file:`doc/`           directory with the HTML and PDF versions of the documentation.
 
 
 Making and Linking
 ------------------
 
-``Make_flags`` has the flags and compilers used to make ``libprimme.a``:
+:file:`Make_flags` has the flags and compilers used to make :file:`libprimme.a`:
 
 * `CC`, compiler program such as ``gcc``, ``clang`` or ``icc``.
-* `CFLAGS`, compiler options such as ``-g`` or ``-O3``. Also include some of these
-  options if the BLAS_ and LAPACK_ that will be linked:
+* `CFLAGS`, compiler options such as ``-g`` or ``-O3``. Also include some of the following
+  options if required for the BLAS_ and LAPACK_ libraries to be linked:
 
-  * ``-DF77UNDERSCORE``, the Fortran function names has appended an underscore
+  * ``-DF77UNDERSCORE``, if Fortran appends an underscore to function names
     (usually they does).
-  * ``-DPRIMME_BLASINT_SIZE=64``, integers are 64-bit integer (``kind=8``) type
-    (usually they doesn't).
+  * ``-DPRIMME_BLASINT_SIZE=64``, if the library integers are 64-bit integer (``kind=8``) type
+    (usually they are not).
 
 .. note::
 
@@ -177,7 +177,7 @@ Making and Linking
       #define PRIMME_BLASINT __int64
 
 
-After customizing ``Make_flags``, type this to generate ``libprimme.a``::
+After customizing :file:`Make_flags`, type this to generate :file:`libprimme.a`::
 
     make lib
 
@@ -185,26 +185,34 @@ Making can be also done at the command line::
 
     make lib CC=clang CFLAGS='-O3'
 
-``Link_flags`` has the flags for linking with external libraries and making the executables
-located in ``TEST``:
+:file:`Link_flags` has the flags for linking with external libraries and making the executables
+located in :file:`TEST`:
 
 * `LDFLAGS`, linker flags such as ``-framework Accelerate``.
 * `LIBS`, flags to link with libraries (BLAS_ and LAPACK_ are required), such as ``-lprimme -llapack -lblas -lgfortran -lm``.
 
-After that type this to compile and execute a simple test::
+After that, type this to compile and execute a simple test::
 
-    make test 
+    $ make test
+    ...
+    Test passed!
+    ...
+    Test passed! 
 
-If it worked, try with other examples in ``TEST`` (see ``README`` in ``TEST`` for more
+If it worked, try with other examples in :file:`TEST` (see :file:`README` in :file:`TEST` for more
 information about how to compile the driver and the examples).
+
+In case of linking problems check flags in `LDFLAGS` and `LIBS` and consider
+to add/remove ``-DF77UNDERSCORE`` from `CFLAGS`. If the execution fails consider
+to add/remove ``-DPRIMME_BLASINT_SIZE=64`` from `CFLAGS`.
 
 Full description of actions that `make` can take:
 
-* `make lib`, builds ``libprimme.a``; alternatively:
-* `make libd`, if only :c:func:`dprimme` is of interest, build ``libdprimme.a``:
-* `make libz`, if only :c:func:`zprimme` is of interest, build ``libzprimme.a``;
+* `make lib`, builds :file:`libprimme.a`; alternatively:
+* `make libd`, if only :c:func:`dprimme` is of interest, build :file:`libdprimme.a`:
+* `make libz`, if only :c:func:`zprimme` is of interest, build :file:`libzprimme.a`;
 * `make test`, build and execute a simple example; 
-* `make clean`, removes all ``*.o``, ``a.out``, and core files from all directories.
+* `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from all directories.
 
 Tested Systems
 --------------

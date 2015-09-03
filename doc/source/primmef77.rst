@@ -167,6 +167,13 @@ primmetop_set_member_f77
 
    :param value: (input) value to set.
 
+   .. note::
+
+      **Not use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
+      |applyPreconditioner|, or in functions called by these functions. In those cases use
+      :c:func:`primme_set_member_f77`.
+
+
 primmetop_get_member_f77
 """"""""""""""""""""""""
 
@@ -180,6 +187,12 @@ primmetop_get_member_f77
       the detailed in function :c:func:`primmetop_set_member_f77`.
 
    :param value: (output) value of the field.
+
+   .. note::
+
+      **Not use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
+      |applyPreconditioner|, or in functions called by these functions. In those cases use
+      :c:func:`primme_get_member_f77`.
 
    .. note::
 
@@ -234,8 +247,9 @@ primme_set_member_f77
 
    .. note::
 
-      Use this function exclusively inside the function |matrixMatvec|, |massMatrixMatvec|, or |applyPreconditioner|.
-      Otherwise use the function :c:func:`primmetop_set_member_f77`.
+      Use this function exclusively inside PRIMME's callback functions, e.g., |matrixMatvec|
+      or |applyPreconditioner|, or in functions called by these functions. Otherwise, e.g.,
+      from the main program, use the function :c:func:`primmetop_set_member_f77`.
 
 primme_get_member_f77
 """""""""""""""""""""
@@ -253,8 +267,9 @@ primme_get_member_f77
 
    .. note::
 
-      Use this function exclusively inside the function |matrixMatvec|, |massMatrixMatvec|, or |applyPreconditioner|.
-      Otherwise use the function :c:func:`primmetop_get_member_f77`.
+      Use this function exclusively inside PRIMME's callback functions, e.g., |matrixMatvec|
+      or |applyPreconditioner|, or in functions called by these functions. Otherwise, e.g.,
+      from the main program, use the function :c:func:`primmetop_get_member_f77`.
 
    .. note::
 
