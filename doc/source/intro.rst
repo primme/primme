@@ -157,6 +157,26 @@ Making and Linking
   * ``-DPRIMME_BLASINT_SIZE=64``, integers are 64-bit integer (``kind=8``) type
     (usually they doesn't).
 
+.. note::
+
+   When ``-DPRIMME_BLASINT_SIZE=64`` is set the code uses the type ``int64_t``
+   supported by the starndard C99. In case the compiler doesn't honor the
+   standard, replace the next lines in :file:`PRIMMESRC/COMMONSRC/common_numerical.h`::
+
+      #if !defined(PRIMME_BLASINT_SIZE)
+      #  define PRIMME_BLASINT int
+      #else
+      #  include <stdint.h>
+      #  define GENERIC_INT(N) int ## N ## _t
+      #  define XGENERIC_INT(N) GENERIC_INT(N)
+      #  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
+      #endif
+
+   by the next macro definition with the proper type for an ``int`` of 64 bits::
+
+      #define PRIMME_BLASINT __int64
+
+
 After customizing ``Make_flags``, type this to generate ``libprimme.a``::
 
     make lib
