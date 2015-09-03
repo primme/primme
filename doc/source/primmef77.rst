@@ -9,11 +9,17 @@ The next enumerations and functions are declared in ``primme_f77.h``.
    Fortran datatype with the same size as a pointer.
    Use ``integer*4`` when compiling in 32 bits and ``integer*8`` in 64 bits.
 
+primme_initialize_f77
+"""""""""""""""""""""
+
 .. c:function:: primme_initialize_f77(primme)
 
    Set PRIMME parameters structure to the default values.
 
    :param ptr primme: (output) parameters structure.
+
+primme_set_method_f77
+"""""""""""""""""""""
 
 .. c:function:: primme_set_method_f77(method, primme, ierr)
 
@@ -43,11 +49,17 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
    :param integer ierr: (output) if 0, successful; if negative, something went wrong.
 
+primme_Free_f77
+"""""""""""""""
+
 .. c:function:: primme_Free_f77(primme)
 
    Free memory allocated by PRIMME.
 
    :param ptr primme: parameters structure.
+
+dprimme_f77
+"""""""""""
 
 .. c:function:: dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
@@ -67,7 +79,10 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
    :param ptr primme: parameters structure.
 
-   :param integer ierr: (output) error indicator; see the returned value of function :c:func:`dprimme`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes`.
+
+zprimme_f77
+"""""""""""
 
 .. c:function:: zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
@@ -85,7 +100,10 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
    :param ptr primme: (input) parameters structure.
 
-   :param integer ierr: (output) error indicator.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes`.
+
+primmetop_set_member_f77
+""""""""""""""""""""""""
 
 .. c:function:: primmetop_set_member_f77(primme, label, value)
 
@@ -95,59 +113,62 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
    :param integer label: field where to set value. One of:
 
-      * ``PRIMMEF77_n``,                                     in field :c:member:`primme_params.n`.
-      * ``PRIMMEF77_matrixMatvec``,                          in field :c:member:`primme_params.matrixMatvec`.
-      * ``PRIMMEF77_applyPreconditioner``,                   in field :c:member:`primme_params.applyPreconditioner`.
-      * ``PRIMMEF77_numProcs``,                              in field :c:member:`primme_params.numProcs`.
-      * ``PRIMMEF77_procID``,                                in field :c:member:`primme_params.procID`.
-      * ``PRIMMEF77_commInfo``,                              in field :c:member:`primme_params.commInfo`.
-      * ``PRIMMEF77_nLocal``,                                in field :c:member:`primme_params.nLocal`.
-      * ``PRIMMEF77_globalSumDouble``,                       in field :c:member:`primme_params.globalSumDouble`.
-      * ``PRIMMEF77_numEvals``,                              in field :c:member:`primme_params.numEvals`.
-      * ``PRIMMEF77_target``,                                in field :c:member:`primme_params.target`.
-      * ``PRIMMEF77_numTargetShifts``,                       in field :c:member:`primme_params.numTargetShifts`.
-      * ``PRIMMEF77_targetShifts``,                          in field :c:member:`primme_params.targetShifts`.
-      * ``PRIMMEF77_locking``,                               in field :c:member:`primme_params.locking`.
-      * ``PRIMMEF77_initSize``,                              in field :c:member:`primme_params.initSize`.
-      * ``PRIMMEF77_numOrthoConst``,                         in field :c:member:`primme_params.numOrthoConst`.
-      * ``PRIMMEF77_maxBasisSize``,                          in field :c:member:`primme_params.maxBasisSize`.
-      * ``PRIMMEF77_minRestartSize``,                        in field :c:member:`primme_params.minRestartSize`.
-      * ``PRIMMEF77_maxBlockSize``,                          in field :c:member:`primme_params.maxBlockSize`.
-      * ``PRIMMEF77_maxMatvecs``,                            in field :c:member:`primme_params.maxMatvecs`.
-      * ``PRIMMEF77_maxOuterIterations``,                    in field :c:member:`primme_params.maxOuterIterations`.
-      * ``PRIMMEF77_intWorkSize``,                           in field :c:member:`primme_params.intWorkSize`.
-      * ``PRIMMEF77_realWorkSize``,                          in field :c:member:`primme_params.realWorkSize`.
-      * ``PRIMMEF77_iseed``,                                 in field :c:member:`primme_params.iseed`.
-      * ``PRIMMEF77_intWork``,                               in field :c:member:`primme_params.intWork`.
-      * ``PRIMMEF77_realWork``,                              in field :c:member:`primme_params.realWork`.
-      * ``PRIMMEF77_aNorm``,                                 in field :c:member:`primme_params.aNorm`.
-      * ``PRIMMEF77_eps``,                                   in field :c:member:`primme_params.eps`.
-      * ``PRIMMEF77_printLevel``,                            in field :c:member:`primme_params.printLevel`.
-      * ``PRIMMEF77_outputFile``,                            in field :c:member:`primme_params.outputFile`.
-      * ``PRIMMEF77_matrix``,                                in field :c:member:`primme_params.matrix`.
-      * ``PRIMMEF77_preconditioner``,                        in field :c:member:`primme_params.preconditioner`.
-      * ``PRIMMEF77_restartingParams_scheme``,               in field :c:member:`primme_params.restartingParams.scheme`.
-      * ``PRIMMEF77_restartingParams_maxPrevRetain``,        in field :c:member:`primme_params.restartingParams.maxPrevRetain`.
-      * ``PRIMMEF77_correctionParams_precondition``,         in field :c:member:`primme_params.correctionParams.precondition`.
-      * ``PRIMMEF77_correctionParams_robustShifts``,         in field :c:member:`primme_params.correctionParams.robustShifts`.
-      * ``PRIMMEF77_correctionParams_maxInnerIterations``,   in field :c:member:`primme_params.correctionParams.maxInnerIterations`.
-      * ``PRIMMEF77_correctionParams_projectors_LeftQ``,     in field :c:member:`primme_params.correctionParams.projectors.LeftQ`.
-      * ``PRIMMEF77_correctionParams_projectors_LeftX``,     in field :c:member:`primme_params.correctionParams.projectors.LeftX`.
-      * ``PRIMMEF77_correctionParams_projectors_RightQ``,    in field :c:member:`primme_params.correctionParams.projectors.RightQ`.
-      * ``PRIMMEF77_correctionParams_projectors_RightX``,    in field :c:member:`primme_params.correctionParams.projectors.RightX`.
-      * ``PRIMMEF77_correctionParams_projectors_SkewQ``,     in field :c:member:`primme_params.correctionParams.projectors.SkewQ`.
-      * ``PRIMMEF77_correctionParams_projectors_SkewX``,     in field :c:member:`primme_params.correctionParams.projectors.SkewX`.
-      * ``PRIMMEF77_correctionParams_convTest``,             in field :c:member:`primme_params.correctionParams.convTest`.
-      * ``PRIMMEF77_correctionParams_relTolBase``,           in field :c:member:`primme_params.correctionParams.relTolBase`.
-      * ``PRIMMEF77_stats_numOuterIterations``,              in field :c:member:`primme_params.stats.numOuterIterations`.
-      * ``PRIMMEF77_stats_numRestarts``,                     in field :c:member:`primme_params.stats.numRestarts`.
-      * ``PRIMMEF77_stats_numMatvecs``,                      in field :c:member:`primme_params.stats.numMatvecs`.
-      * ``PRIMMEF77_stats_numPreconds``,                     in field :c:member:`primme_params.stats.numPreconds`.
-      * ``PRIMMEF77_stats_elapsedTime``,                     in field :c:member:`primme_params.stats.elapsedTime`.
-      * ``PRIMMEF77_dynamicMethodSwitch``,                   in field :c:member:`primme_params.dynamicMethodSwitch`.
-      * ``PRIMMEF77_massMatrixMatvec``,                      in field :c:member:`primme_params.massMatrixMatvec`.
+      * :c:member:`PRIMMEF77_n                                   <primme_params.n>`
+      * :c:member:`PRIMMEF77_matrixMatvec                        <primme_params.matrixMatvec>`
+      * :c:member:`PRIMMEF77_applyPreconditioner                 <primme_params.applyPreconditioner>`
+      * :c:member:`PRIMMEF77_numProcs                            <primme_params.numProcs>`
+      * :c:member:`PRIMMEF77_procID                              <primme_params.procID>`
+      * :c:member:`PRIMMEF77_commInfo                            <primme_params.commInfo>`
+      * :c:member:`PRIMMEF77_nLocal                              <primme_params.nLocal>`
+      * :c:member:`PRIMMEF77_globalSumDouble                     <primme_params.globalSumDouble>`
+      * :c:member:`PRIMMEF77_numEvals                            <primme_params.numEvals>`
+      * :c:member:`PRIMMEF77_target                              <primme_params.target>`
+      * :c:member:`PRIMMEF77_numTargetShifts                     <primme_params.numTargetShifts>`
+      * :c:member:`PRIMMEF77_targetShifts                        <primme_params.targetShifts>`
+      * :c:member:`PRIMMEF77_locking                             <primme_params.locking>`
+      * :c:member:`PRIMMEF77_initSize                            <primme_params.initSize>`
+      * :c:member:`PRIMMEF77_numOrthoConst                       <primme_params.numOrthoConst>`
+      * :c:member:`PRIMMEF77_maxBasisSize                        <primme_params.maxBasisSize>`
+      * :c:member:`PRIMMEF77_minRestartSize                      <primme_params.minRestartSize>`
+      * :c:member:`PRIMMEF77_maxBlockSize                        <primme_params.maxBlockSize>`
+      * :c:member:`PRIMMEF77_maxMatvecs                          <primme_params.maxMatvecs>`
+      * :c:member:`PRIMMEF77_maxOuterIterations                  <primme_params.maxOuterIterations>`
+      * :c:member:`PRIMMEF77_intWorkSize                         <primme_params.intWorkSize>`
+      * :c:member:`PRIMMEF77_realWorkSize                        <primme_params.realWorkSize>`
+      * :c:member:`PRIMMEF77_iseed                               <primme_params.iseed>`
+      * :c:member:`PRIMMEF77_intWork                             <primme_params.intWork>`
+      * :c:member:`PRIMMEF77_realWork                            <primme_params.realWork>`
+      * :c:member:`PRIMMEF77_aNorm                               <primme_params.aNorm>`
+      * :c:member:`PRIMMEF77_eps                                 <primme_params.eps>`
+      * :c:member:`PRIMMEF77_printLevel                          <primme_params.printLevel>`
+      * :c:member:`PRIMMEF77_outputFile                          <primme_params.outputFile>`
+      * :c:member:`PRIMMEF77_matrix                              <primme_params.matrix>`
+      * :c:member:`PRIMMEF77_preconditioner                      <primme_params.preconditioner>`
+      * :c:member:`PRIMMEF77_restartingParams_scheme             <primme_params.restartingParams.scheme>`.
+      * :c:member:`PRIMMEF77_restartingParams_maxPrevRetain      <primme_params.restartingParams.maxPrevRetain>`
+      * :c:member:`PRIMMEF77_correctionParams_precondition       <primme_params.correctionParams.precondition>`
+      * :c:member:`PRIMMEF77_correctionParams_robustShifts       <primme_params.correctionParams.robustShifts>`
+      * :c:member:`PRIMMEF77_correctionParams_maxInnerIterations <primme_params.correctionParams.maxInnerIterations>`
+      * :c:member:`PRIMMEF77_correctionParams_projectors_LeftQ   <primme_params.correctionParams.projectors.LeftQ>`
+      * :c:member:`PRIMMEF77_correctionParams_projectors_LeftX   <primme_params.correctionParams.projectors.LeftX>`
+      * :c:member:`PRIMMEF77_correctionParams_projectors_RightQ  <primme_params.correctionParams.projectors.RightQ>`
+      * :c:member:`PRIMMEF77_correctionParams_projectors_RightX  <primme_params.correctionParams.projectors.RightX>`
+      * :c:member:`PRIMMEF77_correctionParams_projectors_SkewQ   <primme_params.correctionParams.projectors.SkewQ>`
+      * :c:member:`PRIMMEF77_correctionParams_projectors_SkewX   <primme_params.correctionParams.projectors.SkewX>`
+      * :c:member:`PRIMMEF77_correctionParams_convTest           <primme_params.correctionParams.convTest>`
+      * :c:member:`PRIMMEF77_correctionParams_relTolBase         <primme_params.correctionParams.relTolBase>`
+      * :c:member:`PRIMMEF77_stats_numOuterIterations            <primme_params.stats.numOuterIterations>`
+      * :c:member:`PRIMMEF77_stats_numRestarts                   <primme_params.stats.numRestarts>`
+      * :c:member:`PRIMMEF77_stats_numMatvecs                    <primme_params.stats.numMatvecs>`
+      * :c:member:`PRIMMEF77_stats_numPreconds                   <primme_params.stats.numPreconds>`
+      * :c:member:`PRIMMEF77_stats_elapsedTime                   <primme_params.stats.elapsedTime>`
+      * :c:member:`PRIMMEF77_dynamicMethodSwitch                 <primme_params.dynamicMethodSwitch>`
+      * :c:member:`PRIMMEF77_massMatrixMatvec                    <primme_params.massMatrixMatvec>`
 
    :param value: (input) value to set.
+
+primmetop_get_member_f77
+""""""""""""""""""""""""
 
 .. c:function:: primmetop_get_member_f77(primme, label, value)
 
@@ -159,7 +180,6 @@ The next enumerations and functions are declared in ``primme_f77.h``.
       the detailed in function :c:func:`primmetop_set_member_f77`.
 
    :param value: (output) value of the field.
-
 
    .. note::
 
@@ -185,6 +205,8 @@ The next enumerations and functions are declared in ``primme_f77.h``.
          call c_f_pointer(pcomm, comm)
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
           
+primmetop_get_prec_shift_f77
+""""""""""""""""""""""""""""
          
 .. c:function:: primmetop_get_prec_shift_f77(primme, index, value)
 
@@ -196,65 +218,17 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
    :param value: (output) value of the array at that position.
 
+primme_set_member_f77
+"""""""""""""""""""""
+
 .. c:function:: primme_set_member_f77(primme, label, value)
 
    Set a value in some field of the parameter structure.
 
    :param ptr primme: (input) parameters structure.
 
-   :param integer label: field where to set value. One of:
-
-      * ``PRIMMEF77_n``,                                     in field :c:member:`primme_params.n`.
-      * ``PRIMMEF77_matrixMatvec``,                          in field :c:member:`primme_params.matrixMatvec`.
-      * ``PRIMMEF77_applyPreconditioner``,                   in field :c:member:`primme_params.applyPreconditioner`.
-      * ``PRIMMEF77_numProcs``,                              in field :c:member:`primme_params.numProcs`.
-      * ``PRIMMEF77_procID``,                                in field :c:member:`primme_params.procID`.
-      * ``PRIMMEF77_commInfo``,                              in field :c:member:`primme_params.commInfo`.
-      * ``PRIMMEF77_nLocal``,                                in field :c:member:`primme_params.nLocal`.
-      * ``PRIMMEF77_globalSumDouble``,                       in field :c:member:`primme_params.globalSumDouble`.
-      * ``PRIMMEF77_numEvals``,                              in field :c:member:`primme_params.numEvals`.
-      * ``PRIMMEF77_target``,                                in field :c:member:`primme_params.target`.
-      * ``PRIMMEF77_numTargetShifts``,                       in field :c:member:`primme_params.numTargetShifts`.
-      * ``PRIMMEF77_targetShifts``,                          in field :c:member:`primme_params.targetShifts`.
-      * ``PRIMMEF77_locking``,                               in field :c:member:`primme_params.locking`.
-      * ``PRIMMEF77_initSize``,                              in field :c:member:`primme_params.initSize`.
-      * ``PRIMMEF77_numOrthoConst``,                         in field :c:member:`primme_params.numOrthoConst`.
-      * ``PRIMMEF77_maxBasisSize``,                          in field :c:member:`primme_params.maxBasisSize`.
-      * ``PRIMMEF77_minRestartSize``,                        in field :c:member:`primme_params.minRestartSize`.
-      * ``PRIMMEF77_maxBlockSize``,                          in field :c:member:`primme_params.maxBlockSize`.
-      * ``PRIMMEF77_maxMatvecs``,                            in field :c:member:`primme_params.maxMatvecs`.
-      * ``PRIMMEF77_maxOuterIterations``,                    in field :c:member:`primme_params.maxOuterIterations`.
-      * ``PRIMMEF77_intWorkSize``,                           in field :c:member:`primme_params.intWorkSize`.
-      * ``PRIMMEF77_realWorkSize``,                          in field :c:member:`primme_params.realWorkSize`.
-      * ``PRIMMEF77_iseed``,                                 in field :c:member:`primme_params.iseed`.
-      * ``PRIMMEF77_intWork``,                               in field :c:member:`primme_params.intWork`.
-      * ``PRIMMEF77_realWork``,                              in field :c:member:`primme_params.realWork`.
-      * ``PRIMMEF77_aNorm``,                                 in field :c:member:`primme_params.aNorm`.
-      * ``PRIMMEF77_eps``,                                   in field :c:member:`primme_params.eps`.
-      * ``PRIMMEF77_printLevel``,                            in field :c:member:`primme_params.printLevel`.
-      * ``PRIMMEF77_outputFile``,                            in field :c:member:`primme_params.outputFile`.
-      * ``PRIMMEF77_matrix``,                                in field :c:member:`primme_params.matrix`.
-      * ``PRIMMEF77_preconditioner``,                        in field :c:member:`primme_params.preconditioner`.
-      * ``PRIMMEF77_restartingParams_scheme``,               in field :c:member:`primme_params.restartingParams.scheme`.
-      * ``PRIMMEF77_restartingParams_maxPrevRetain``,        in field :c:member:`primme_params.restartingParams.maxPrevRetain`.
-      * ``PRIMMEF77_correctionParams_precondition``,         in field :c:member:`primme_params.correctionParams.precondition`.
-      * ``PRIMMEF77_correctionParams_robustShifts``,         in field :c:member:`primme_params.correctionParams.robustShifts`.
-      * ``PRIMMEF77_correctionParams_maxInnerIterations``,   in field :c:member:`primme_params.correctionParams.maxInnerIterations`.
-      * ``PRIMMEF77_correctionParams_projectors_LeftQ``,     in field :c:member:`primme_params.correctionParams.projectors.LeftQ`.
-      * ``PRIMMEF77_correctionParams_projectors_LeftX``,     in field :c:member:`primme_params.correctionParams.projectors.LeftX`.
-      * ``PRIMMEF77_correctionParams_projectors_RightQ``,    in field :c:member:`primme_params.correctionParams.projectors.RightQ`.
-      * ``PRIMMEF77_correctionParams_projectors_RightX``,    in field :c:member:`primme_params.correctionParams.projectors.RightX`.
-      * ``PRIMMEF77_correctionParams_projectors_SkewQ``,     in field :c:member:`primme_params.correctionParams.projectors.SkewQ`.
-      * ``PRIMMEF77_correctionParams_projectors_SkewX``,     in field :c:member:`primme_params.correctionParams.projectors.SkewX`.
-      * ``PRIMMEF77_correctionParams_convTest``,             in field :c:member:`primme_params.correctionParams.convTest`.
-      * ``PRIMMEF77_correctionParams_relTolBase``,           in field :c:member:`primme_params.correctionParams.relTolBase`.
-      * ``PRIMMEF77_stats_numOuterIterations``,              in field :c:member:`primme_params.stats.numOuterIterations`.
-      * ``PRIMMEF77_stats_numRestarts``,                     in field :c:member:`primme_params.stats.numRestarts`.
-      * ``PRIMMEF77_stats_numMatvecs``,                      in field :c:member:`primme_params.stats.numMatvecs`.
-      * ``PRIMMEF77_stats_numPreconds``,                     in field :c:member:`primme_params.stats.numPreconds`.
-      * ``PRIMMEF77_stats_elapsedTime``,                     in field :c:member:`primme_params.stats.elapsedTime`.
-      * ``PRIMMEF77_dynamicMethodSwitch``,                   in field :c:member:`primme_params.dynamicMethodSwitch`.
-      * ``PRIMMEF77_massMatrixMatvec``,                      in field :c:member:`primme_params.massMatrixMatvec`.
+   :param integer label: field where to set value. One of the vales defined
+       in :c:func:`primmetop_set_member_f77`.
 
    :param value: (input) value to set.
 
@@ -262,6 +236,9 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 
       Use this function exclusively inside the function |matrixMatvec|, |massMatrixMatvec|, or |applyPreconditioner|.
       Otherwise use the function :c:func:`primmetop_set_member_f77`.
+
+primme_get_member_f77
+"""""""""""""""""""""
 
 .. c:function:: primme_get_member_f77(primme, label, value)
 
@@ -302,6 +279,9 @@ The next enumerations and functions are declared in ``primme_f77.h``.
          call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
          call c_f_pointer(pcomm, comm)
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+
+primme_get_prec_shift_f77
+"""""""""""""""""""""""""
  
 .. c:function:: primme_get_prec_shift_f77(primme, index, value)
 

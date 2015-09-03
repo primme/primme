@@ -6,15 +6,22 @@
 Welcome to PRIMME's documentation!
 ==================================
 
+.. only:: text
+
+   Table Of Contents:
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    intro
    primmec
    primmef77
+   appendix
 
-Indices and tables
-==================
+.. only:: not text and not singlehtml
 
-* :ref:`genindex`
-* :ref:`search`
+   Indices and tables
+   ==================
+   
+   * :ref:`genindex`
+   * :ref:`search`

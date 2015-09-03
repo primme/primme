@@ -2,7 +2,7 @@
 Welcome to PRIMME's documentation!
 **********************************
 
-Table of Contents:
+Table Of Contents:
 
 * PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 
@@ -22,8 +22,55 @@ Table of Contents:
 
 * C Library Interface
 
+  * Running
+
+  * Parameters Guide
+
+  * Interface Description
+
+    * dprimme
+
+    * zprimme
+
+    * primme_initialize
+
+    * primme_set_method
+
+    * primme_display_params
+
+    * primme_Free
+
 * FORTRAN Library Interface
 
+  * primme_initialize_f77
+
+  * primme_set_method_f77
+
+  * primme_Free_f77
+
+  * dprimme_f77
+
+  * zprimme_f77
+
+  * primmetop_set_member_f77
+
+  * primmetop_get_member_f77
+
+  * primmetop_get_prec_shift_f77
+
+  * primme_set_member_f77
+
+  * primme_get_member_f77
+
+  * primme_get_prec_shift_f77
+
+* Appendix
+
+  * primme_params
+
+  * Error Codes
+
+  * Preset Methods
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ********************************************************
@@ -39,7 +86,7 @@ and MATLAB.
 Changelog
 *********
 
-Changes in PRIMME 1.2.1:
+Changes in PRIMME 1.2.1 (released on ???):
 
 * Added MATLAB interface to full PRIMME functionality.
 
@@ -60,10 +107,12 @@ Changes in PRIMME 1.2.1:
   * "ex*.c" and "ex*.f": small, didactic examples of usage in C and
     Fortran and in parallel (with PETSc).
 
-* Using Sphinx to manage documentation. Detailed Fortran 77
-  interface.
+* Fixed a few minor bugs and improved documentation (specially the
+  F77 interface).
 
-Changes in PRIMME 1.2:
+* Using Sphinx to manage documentation.
+
+Changes in PRIMME 1.2 (released on December 21, 2014):
 
 * A Fortran compiler is no longer required for building the PRIMME
   library. Fortran programs can still be linked to PRIMME's F77
@@ -155,7 +204,8 @@ Contact Information
 *******************
 
 For reporting bugs or questions about functionality contact Andreas
-Stathopoulos
+Stathopoulos by email, *andreas* at *cs.wm.edu*. See further
+information in the webpage http://www.cs.wm.edu/~andreas .
 
 
 Directory Structure
@@ -269,6 +319,8 @@ platforms/compilers:
 
 * MacOS X 10.9 & 10.10
 
+* Cygwin & MinGW
+
 * Cray XC30
 
 * SunOS 5.9, quad processor Sun-Fire-280R, and several other
@@ -280,414 +332,654 @@ platforms/compilers:
 C Library Interface
 *******************
 
+The PRIMME interface is composed by the next functions. To solve real
+symmetric and Hermitian standard eigenproblems call respectively:
+
+   int dprimme(double *evals, double *evecs, double *resNorms,
+               primme_params *primme);
+
+   int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
+               primme_params *primme);
+
+Other useful functions:
+
+   void primme_initialize(primme_params *primme);
+   int primme_set_method(primme_preset_method method,
+                                        primme_params *params);
+   void primme_display_params(primme_params primme);
+   void primme_Free(primme_params primme);
+
+PRIMME stores its data on the structure "primme_params". See
+Parameters Guide for an introduction about its fields.
+
+
+Running
+=======
+
+To use PRIMME, follow this basic steps.
+
+1. Include:
+
+      #include "primme.h"   /* header file is required to run primme */
+
+2. Initialize a PRIMME parameters structure for default settings:
+
+      primme_params primme;
+
+      primme_initialize(&primme);
+
+3. Set problem parameters (see also Parameters Guide); and,
+   optionally, set one of the "preset methods":
+
+      primme.matrixMatvec = LaplacianMatrixMatvec; /* MV product */
+      primme.n = 100;                   /* set problem dimension */
+      primme.numEvals = 10;       /* Number of wanted eigenpairs */
+      ret = primme_set_method(method, &primme);
+      ...
+
+4. Then to solve a real symmetric standard eigenproblems call:
+
+      ret = dprimme(evals, evecs, resNorms, &primme);
+
+   To solve Hermitian standard eigenproblems call:
+
+      ret = zprimme(evals, evecs, resNorms, &primme);
+
+   The call arguments are:
+
+   * *evals*, array to return the found eigenvalues;
+
+   * *evecs*, array to return the found eigenvectors;
+
+   * *resNorms*, array to return the residual norms of the found
+     eigenpairs; and
+
+   * *ret*, returned error code.
+
+5. Before exiting free the work arrays in PRIMME:
+
+      primme_Free(&primme);
+
+
+Parameters Guide
+================
+
+PRIMME stores the data on the structure "primme_params", which has the
+next fields:
+
+   /* Basic */
+   int n;                                      // matrix dimension
+   void (*matrixMatvec)(...);             // matrix-vector product
+   int numEvals;                    // how many eigenpairs to find
+   primme_target target;              // which eigenvalues to find
+   int numTargetShifts;       // for targeting interior eigenpairs
+   double *targetShifts;
+   double eps;            // tolerance of the converged eigenpairs
+
+   /* For parallel programs */
+   int numProcs;
+   int nLocal;
+   void (*globalSumDouble)(...);
+
+   /* Accelerate the convergence */
+   void (*applyPreconditioner)(...);     // precond-vector product
+   int initSize;       // initial vectors as approximate solutions
+   int maxBasisSize;
+   int minRestartSize;
+   int maxBlockSize;
+
+   /* User data */
+   int procID;
+   void *commInfo;
+   void *matrix;
+   void *preconditioner;
+
+   /* Advanced options */
+   int numOrthoConst; // orthogonal constrains to the eigenvectors
+   int dynamicMethodSwitch;
+   int locking;
+   int maxMatvecs;
+   int maxOuterIterations;
+   int intWorkSize;
+   long int realWorkSize;
+   int iseed[4];
+   int *intWork;
+   void *realWork;
+   double aNorm;
+   int printLevel;
+   FILE *outputFile;
+   double *ShiftsForPreconditioner;
+   struct restarting_params restartingParams;
+   struct correction_params correctionParams;
+   struct primme_stats stats;
+   struct stackTraceNode *stackTrace
+
+PRIMME requires the user to set at least the dimension of the matrix,
+the matrix-vector product, as they define the problem to be solved.
+For parallel programs, "nLocal" and "globalSumDouble" are also
+required.
+
+In addition, most users would want to specify how many eigenpairs to
+find, and provide a preconditioner (if available).
+
+It is useful to have set all these before calling
+"primme_set_method()". Also, if users have a preference on
+"maxBasisSize", "maxBlockSize", etc, they should also provide them
+into "primme_params" prior to the "primme_set_method()" call. This
+helps "primme_set_method()" make the right choice on other parameters.
+
+
+Interface Description
+=====================
+
 The next enumerations and functions are declared in "primme.h".
 
-primme_preset_method
 
-   Enumeration of preset configurations.
-
-   DYNAMIC
-
-      Switches to the best method dynamically; currently, between
-      "JDQMR_ETol" and "GD_Olsen_plusK". Set "dynamicMethodSwitch" to
-      1.
-
-   DEFAULT_MIN_TIME
-
-      Currently set as "JDQMR_ETol"; this method is usually the
-      fastest if the cost of the matrix vector product is the order of
-      the matrix dimension.
-
-   DEFAULT_MIN_MATVECS
-
-      Currently set as "GD_Olsen_plusK"; this method usually spent
-      less matrix vector products than the others, so it's a good
-      choice when this operation is expensive.
-
-   Arnoldi
-
-      Arnoldi implemented à la Generalized Davidson.
-
-   GD
-
-      Generalized Davidson.
-
-   GD_plusK
-
-      GD with locally optimal restarting. See "maxPrevRetain".
-
-   GD_Olsen_plusK
-
-      GD+k and the cheap Olsen's Method (set "RightX" to 1 and "SkewX"
-      to 0). See "SkewX".
-
-   JD_Olsen_plusK
-
-      GD+k and Olsen's Method (set "RightX" to 1 and "SkewX" to 1).
-      See "SkewX".
-
-   RQI
-
-      (Accelerated) Rayleigh Quotient Iteration.
-
-   JDQR
-
-      Jacobi-Davidson with fixed number of inner steps. See
-      "maxInnerIterations".
-
-   JDQMR
-
-      Jacobi-Davidson with adaptive stopping criterion for inner Quasi
-      Minimum Residual (QMR). See "convTest".
-
-   JDQMR_ETol
-
-      JDQMR but QMR stops after residual norm reduces by a 0.1 factor.
-      See "convTest".
-
-   SUBSPACE_ITERATION
-
-      Subspace iteration.
-
-   LOBPCG_OrthoBasis
-
-      LOBPCG, the basis size is set to the number of wanted
-      eigenvalues "numEvals".
-
-   LOBPCG_OrthoBasis_Window
-
-      LOBPCG with sliding window of "maxBlockSize" < "numEvals".
-
-void primme_initialize(primme_params *primme)
-
-   Set PRIMME parameters structure to the default values.
-
-   Parameters:
-      * **primme** (*primme_params**) -- parameters structure.
-
-int primme_set_method(primme_preset_method method, primme_params *primme)
-
-   Set PRIMME parameters to one of the preset configurations.
-
-   Parameters:
-      * **method** (*primme_preset_method*) -- preset configuration.
-
-      * **primme** (*primme_params**) -- parameters structure.
-
-   Depending on the method some fields in "primme" are changed:
-
-   * "DEFAULT_MIN_TIME" is like "JDQMR_ETol".
-
-   * "DEFAULT_MIN_MATVECS" is like "GD_Olsen_plusK".
-
-   * "DYNAMIC" is like "JDQMR_ETol" and changes
-     "dynamicMethodSwitch" to 1.
-
-   * "Arnoldi" changes:
-
-     * "locking" = 0;
-
-     * "maxPrevRetain" = 0;
-
-     * "precondition" = 0;
-
-     * "maxInnerIterations" = 0.
-
-   * "GD" changes:
-
-     * "locking" = 0;
-
-     * "maxPrevRetain" = 0;
-
-     * "robustShifts" = 1;
-
-     * "maxInnerIterations" = 0;
-
-     * "RightX" = 0;
-
-     * "SkewX" = 0.
-
-   * "GD_plusK"  changes:
-
-     * "maxPrevRetain" to 2 if "maxBlockSize" is 1 and "numEvals" >
-       1; otherwise set "maxPrevRetain" to "maxBlockSize".
-
-     * "locking" = 0;
-
-     * "maxInnerIterations" = 0;
-
-     * "RightX" = 0;
-
-     * "SkewX" = 0.
-
-   * "GD_Olsen_plusK" is like "GD_plusK" and changes "RightX" to 1.
-
-   * "JD_Olsen_plusK" is like "GD_plusK" and changes:
-
-     * "robustShifts" = 1;
-
-     * "RightX" to 1;
-
-     * "SkewX" to 1;
-
-   * "RQI" changes:
-
-     * "locking" = 1;
-
-     * "maxPrevRetain" = 0;
-
-     * "robustShifts"  = 1;
-
-     * "maxInnerIterations" = -1;
-
-     * "LeftQ"   = 1;
-
-     * "LeftX"   = 1;
-
-     * "RightQ"  = 0;
-
-     * "RightX"  = 1;
-
-     * "SkewQ"   = 0;
-
-     * "SkewX"   = 0;
-
-     * "convTest" = "primme_full_LTolerance".
-
-   * "JDQR" changes:
-
-     * "locking"     = 1;
-
-     * "maxPrevRetain"      = 1;
-
-     * "robustShifts"       = 0;
-
-     * "maxInnerIterations" = 10 if it is 0;
-
-     * "LeftQ"   = 0;
-
-     * "LeftX"   = 1;
-
-     * "RightQ"  = 1;
-
-     * "RightX"  = 1;
-
-     * "SkewQ"   = 1;
-
-     * "SkewX"   = 1;
-
-     * "relTolBase" = 1.5;
-
-     * "convTest" = "primme_full_LTolerance".
-
-   * "JDQMR" changes:
-
-     * "locking" = 0;
-
-     * "maxPrevRetain" = 1 if it is 0
-
-     * "maxInnerIterations" = -1;
-
-     * "LeftQ"   = "precondition";
-
-     * "LeftX"   = 1;
-
-     * "RightQ"  = 0;
-
-     * "RightX"  = 0;
-
-     * "SkewQ"   = 0;
-
-     * "SkewX"   = 1;
-
-     * "convTest"  = "primme_adaptive".
-
-   * "JDQMR_ETol" is like "JDQMR" and changes "convTest" =
-     "primme_adaptive_ETolerance".
-
-   * "SUBSPACE_ITERATION" changes:
-
-     * "locking"    = 1;
-
-     * "maxBasisSize" = "numEvals" *** 2;
-
-     * "minRestartSize" = "numEvals";
-
-     * "maxBlockSize" = "numEvals";
-
-     * "scheme"  = "primme_thick";
-
-     * "maxPrevRetain"      = 0;
-
-     * "robustShifts"       = 0;
-
-     * "maxInnerIterations" = 0;
-
-     * "RightX"  = 1;
-
-     * "SkewX"   = 0.
-
-   * "LOBPCG_OrthoBasis" changes:
-
-     * "locking"    = 0;
-
-     * "maxBasisSize" = "numEvals" *** 3;
-
-     * "minRestartSize" = "numEvals";
-
-     * "maxBlockSize" = "numEvals";
-
-     * "scheme"  = "primme_thick";
-
-     * "maxPrevRetain"      = "numEvals";
-
-     * "robustShifts"       = 0;
-
-     * "maxInnerIterations" = 0;
-
-     * "RightX"  = 1;
-
-     * "SkewX"   = 0.
-
-   * "LOBPCG_OrthoBasis_Window" changes:
-
-     * "locking"    = 0;
-
-     * "maxBasisSize" = "maxBlockSize" *** 3;
-
-     * "minRestartSize" = "maxBlockSize";
-
-     * "maxBlockSize" = "numEvals";
-
-     * "scheme"  = "primme_thick";
-
-     * "maxPrevRetain"      = "maxBlockSize";
-
-     * "robustShifts"       = 0;
-
-     * "maxInnerIterations" = 0;
-
-     * "RightX"  = 1;
-
-     * "SkewX"   = 0.
-
-   Returns:
-      if 0, successful; if negative, something went wrong.
-
-void primme_Free(primme_params *primme)
-
-   Free memory allocated by PRIMME.
-
-   Parameters:
-      * **primme** (*primme_params**) -- parameters structure.
+dprimme
+-------
 
 int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 
    Solve a real symmetric standard eigenproblems.
 
    Parameters:
-      * **evals** (*double**) -- array at least of size "numEvals"
-        to store the computed eigenvalues; all parallel calls return
-        the same values in this array.
+      * **evals** -- array at least of size "numEvals" to store the
+        computed eigenvalues; all processes in a parallel run return
+        this local array with the same values.
 
-      * **resNorms** (*double**) -- array at least of size
-        "numEvals" to store the residual norms of the computed
-        eigenpairs; all parallel calls return the same value in this
-        array.
+      * **resNorms** -- array at least of size "numEvals" to store
+        the residual norms of the computed eigenpairs; all processes
+        in parallel run return this local array with the same values.
 
-      * **evecs** (*double**) -- array at least of size "nLocal"
-        times "numEvals" to store columnwise the (local part of the)
+      * **evecs** -- array at least of size "nLocal" times
+        "numEvals" to store columnwise the (local part of the)
         computed eigenvectors.
 
-      * **primme** (*primme_params**) -- parameters structure.
+      * **primme** -- parameters structure.
 
    Returns:
-      error indicator:
+      error indicator; see Error Codes.
 
-      * 0: success.
 
-      * 1: reported only amount of required memory.
+zprimme
+-------
 
-      * -1: failed in allocating int or real workspace.
-
-      * -2: malloc failed in allocating a permutation integer array.
-
-      * -3: main_iter() encountered problem; the calling stack of
-        the functions where the error occurred was printed in
-        "stderr".
-
-      * -4: if argument "primme" is NULL.
-
-      * -5: if "n" <= 0 or "nLocal" <= 0.
-
-      * -6: if "numProcs" < 1.
-
-      * -7: if "matrixMatvec" is NULL.
-
-      * -8: if "applyPreconditioner" is NULL and "precondition" is
-        not NULL.
-
-      * -9: if "globalSumDouble" is NULL.
-
-      * -10: if "numEvals" > "n".
-
-      * -11: if "numEvals" < 0.
-
-      * -12: if "eps" > 0 and "eps" < machine precision.
-
-      * -13: if "target" is not properly defined.
-
-      * -14: if "target" is one of "primme_closest_geq",
-        "primme_closest_leq" or "primme_closest_abs" but
-        "numTargetShifts" <= 0 (no shifts).
-
-      * -15: if "target" is one of "primme_closest_geq",
-        "primme_closest_leq" or "primme_closest_abs" but
-        "targetShifts" is NULL  (no shifts array).
-
-      * -16: if "numOrthoConst" < 0 or "numOrthoConst" >= "n". (no
-        free dimensions left).
-
-      * -17: if "maxBasisSize" < 2.
-
-      * -18: if "minRestartSize" <= 0.
-
-      * -19: if "maxBlockSize" <= 0.
-
-      * -20: if "maxPrevRetain" < 0.
-
-      * -21: if "scheme" is not one of *primme_thick* or
-        *primme_dtr*.
-
-      * -22: if "initSize" < 0.
-
-      * -23: if not "locking" and "initSize" > "maxBasisSize".
-
-      * -24: if "locking" and "initSize" > "numEvals".
-
-      * -25: if "maxPrevRetain" + "minRestartSize" >=
-        "maxBasisSize".
-
-      * -26: if "minRestartSize" >= "n".
-
-      * -27: if "printLevel" < 0 or "printLevel" > 5.
-
-      * -28: if "convTest" is not one of "primme_full_LTolerance",
-        "primme_decreasing_LTolerance", "primme_adaptive_ETolerance"
-        or "primme_adaptive".
-
-      * -29: if "convTest" == "primme_decreasing_LTolerance" and
-        "relTolBase" <= 1.
-
-      * -30: if "evals" is NULL, but not "evecs" and "resNorms".
-
-      * -31: if "evecs" is NULL, but not "evals" and "resNorms".
-
-      * -32: if "resNorms" is NULL, but not "evecs" and "evals".
-
-zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
+int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
 
    Solve a Hermitian standard eigenproblems; see function "dprimme()".
+
+   Note: PRIMME uses a structure called "Complex_Z" to define
+     complex numbers. "Complex_Z" is defined in
+     "PRIMMESRC/COMMONSRC/Complexz.h". In future versions of PRIMME,
+     "Complex_Z" will be replaced by C99 complex double. Therefore we
+     strongly recommend to use standard C99 because it is binary
+     compatible with "Complex_Z". See examples in "TEST" such as
+     "ex_zseq.c" and "ex_zseqf77.c".
+
+
+primme_initialize
+-----------------
+
+void primme_initialize(primme_params *primme)
+
+   Set PRIMME parameters structure to the default values.
+
+   Parameters:
+      * **primme** -- parameters structure.
+
+
+primme_set_method
+-----------------
+
+int primme_set_method(primme_preset_method method, primme_params *primme)
+
+   Set PRIMME parameters to one of the preset configurations.
+
+   Parameters:
+      * **method** --
+
+        preset configuration; one of
+
+           "DYNAMIC"
+           "DEFAULT_MIN_TIME"
+           "DEFAULT_MIN_MATVECS"
+           "Arnoldi"
+           "GD"
+           "GD_plusK"
+           "GD_Olsen_plusK"
+           "JD_Olsen_plusK"
+           "RQI"
+           "JDQR"
+           "JDQMR"
+           "JDQMR_ETol"
+           "SUBSPACE_ITERATION"
+           "LOBPCG_OrthoBasis"
+           "LOBPCG_OrthoBasis_Window"
+
+      * **primme** -- parameters structure.
+
+   See also Preset Methods.
+
+
+primme_display_params
+---------------------
+
+void primme_display_params(primme_params primme)
+
+   Display all printable settings of "primme" into the file descriptor
+   "outputFile".
+
+   Parameters:
+      * **primme** -- parameters structure.
+
+
+primme_Free
+-----------
+
+void primme_Free(primme_params *primme)
+
+   Free memory allocated by PRIMME.
+
+   Parameters:
+      * **primme** -- parameters structure.
+
+FORTRAN Library Interface
+*************************
+
+The next enumerations and functions are declared in "primme_f77.h".
+
+ptr
+
+   Fortran datatype with the same size as a pointer. Use "integer*4"
+   when compiling in 32 bits and "integer*8" in 64 bits.
+
+
+primme_initialize_f77
+=====================
+
+primme_initialize_f77(primme)
+
+   Set PRIMME parameters structure to the default values.
+
+   Parameters:
+      * **primme** (*ptr*) -- (output) parameters structure.
+
+
+primme_set_method_f77
+=====================
+
+primme_set_method_f77(method, primme, ierr)
+
+   Set PRIMME parameters to one of the preset configurations.
+
+   Parameters:
+      * **method** (*integer*) --
+
+        (input) preset configuration. One of:
+
+        * "PRIMMEF77_DYNAMIC"
+
+        * "PRIMMEF77_DEFAULT_MIN_TIME"
+
+        * "PRIMMEF77_DEFAULT_MIN_MATVECS"
+
+        * "PRIMMEF77_Arnoldi"
+
+        * "PRIMMEF77_GD"
+
+        * "PRIMMEF77_GD_plusK"
+
+        * "PRIMMEF77_GD_Olsen_plusK"
+
+        * "PRIMMEF77_JD_Olsen_plusK"
+
+        * "PRIMMEF77_RQI"
+
+        * "PRIMMEF77_JDQR"
+
+        * "PRIMMEF77_JDQMR"
+
+        * "PRIMMEF77_JDQMR_ETol"
+
+        * "PRIMMEF77_SUBSPACE_ITERATION"
+
+        * "PRIMMEF77_LOBPCG_OrthoBasis"
+
+        * "PRIMMEF77_LOBPCG_OrthoBasis_Window"
+
+        See "primme_preset_method".
+
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **ierr** (*integer*) -- (output) if 0, successful; if
+        negative, something went wrong.
+
+
+primme_Free_f77
+===============
+
+primme_Free_f77(primme)
+
+   Free memory allocated by PRIMME.
+
+   Parameters:
+      * **primme** (*ptr*) -- parameters structure.
+
+
+dprimme_f77
+===========
+
+dprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a real symmetric standard eigenproblems.
+
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output) array at least
+        of size "numEvals" to store the computed eigenvalues; all
+        parallel calls return the same value in this array.
+
+      * **resNorms(*)** (*double precision*) -- (output) array at
+        least of size "numEvals" to store the residual norms of the
+        computed eigenpairs; all parallel calls return the same value
+        in this array.
+
+      * **evecs(*)** (*double precision*) -- (input/output) array at
+        least of size "nLocal" times "numEvals" to store columnwise
+        the (local part of the) computed eigenvectors.
+
+      * **primme** (*ptr*) -- parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+
+zprimme_f77
+===========
+
+zprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a Hermitian standard eigenproblems. The arguments have the
+   same meaning like in function "dprimme_f77()".
+
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output)
+
+      * **resNorms(*)** (*double precision*) -- (output)
+
+      * **evecs(*)** (*complex double precision*) -- (input/output)
+
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+
+primmetop_set_member_f77
+========================
+
+primmetop_set_member_f77(primme, label, value)
+
+   Set a value in some field of the parameter structure.
+
+   Parameters:
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **label** (*integer*) --
+
+        field where to set value. One of:
+
+        * "PRIMMEF77_n"
+
+        * "PRIMMEF77_matrixMatvec"
+
+        * "PRIMMEF77_applyPreconditioner"
+
+        * "PRIMMEF77_numProcs"
+
+        * "PRIMMEF77_procID"
+
+        * "PRIMMEF77_commInfo"
+
+        * "PRIMMEF77_nLocal"
+
+        * "PRIMMEF77_globalSumDouble"
+
+        * "PRIMMEF77_numEvals"
+
+        * "PRIMMEF77_target"
+
+        * "PRIMMEF77_numTargetShifts"
+
+        * "PRIMMEF77_targetShifts"
+
+        * "PRIMMEF77_locking"
+
+        * "PRIMMEF77_initSize"
+
+        * "PRIMMEF77_numOrthoConst"
+
+        * "PRIMMEF77_maxBasisSize"
+
+        * "PRIMMEF77_minRestartSize"
+
+        * "PRIMMEF77_maxBlockSize"
+
+        * "PRIMMEF77_maxMatvecs"
+
+        * "PRIMMEF77_maxOuterIterations"
+
+        * "PRIMMEF77_intWorkSize"
+
+        * "PRIMMEF77_realWorkSize"
+
+        * "PRIMMEF77_iseed"
+
+        * "PRIMMEF77_intWork"
+
+        * "PRIMMEF77_realWork"
+
+        * "PRIMMEF77_aNorm"
+
+        * "PRIMMEF77_eps"
+
+        * "PRIMMEF77_printLevel"
+
+        * "PRIMMEF77_outputFile"
+
+        * "PRIMMEF77_matrix"
+
+        * "PRIMMEF77_preconditioner"
+
+        * "PRIMMEF77_restartingParams_scheme".
+
+        * "PRIMMEF77_restartingParams_maxPrevRetain"
+
+        * "PRIMMEF77_correctionParams_precondition"
+
+        * "PRIMMEF77_correctionParams_robustShifts"
+
+        * "PRIMMEF77_correctionParams_maxInnerIterations"
+
+        * "PRIMMEF77_correctionParams_projectors_LeftQ"
+
+        * "PRIMMEF77_correctionParams_projectors_LeftX"
+
+        * "PRIMMEF77_correctionParams_projectors_RightQ"
+
+        * "PRIMMEF77_correctionParams_projectors_RightX"
+
+        * "PRIMMEF77_correctionParams_projectors_SkewQ"
+
+        * "PRIMMEF77_correctionParams_projectors_SkewX"
+
+        * "PRIMMEF77_correctionParams_convTest"
+
+        * "PRIMMEF77_correctionParams_relTolBase"
+
+        * "PRIMMEF77_stats_numOuterIterations"
+
+        * "PRIMMEF77_stats_numRestarts"
+
+        * "PRIMMEF77_stats_numMatvecs"
+
+        * "PRIMMEF77_stats_numPreconds"
+
+        * "PRIMMEF77_stats_elapsedTime"
+
+        * "PRIMMEF77_dynamicMethodSwitch"
+
+        * "PRIMMEF77_massMatrixMatvec"
+
+      * **value** -- (input) value to set.
+
+
+primmetop_get_member_f77
+========================
+
+primmetop_get_member_f77(primme, label, value)
+
+   Get the value in some field of the parameter structure.
+
+   Parameters:
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **label** (*integer*) -- (input) field where to get value.
+        One of the detailed in function "primmetop_set_member_f77()".
+
+      * **value** -- (output) value of the field.
+
+   Note: When "label" is one of "PRIMMEF77_matrixMatvec",
+     "PRIMMEF77_applyPreconditioner", "PRIMMEF77_commInfo",
+     "PRIMMEF77_intWork", "PRIMMEF77_realWork", "PRIMMEF77_matrix" and
+     "PRIMMEF77_preconditioner", the returned "value" is a C pointer
+     ("void*"). Use Fortran pointer or other extensions to deal with
+     it. For instance:
+
+        use iso_c_binding
+        MPI_Comm comm
+
+        comm = MPI_COMM_WORLD
+        call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+        ...
+        subroutine par_GlobalSumDouble(x,y,k,primme)
+        use iso_c_binding
+        implicit none
+        ...
+        MPI_Comm, pointer :: comm
+        type(c_ptr) :: pcomm
+
+        call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+        call c_f_pointer(pcomm, comm)
+        call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+
+
+primmetop_get_prec_shift_f77
+============================
+
+primmetop_get_prec_shift_f77(primme, index, value)
+
+   Get the value in some position of the array
+   "ShiftsForPreconditioner".
+
+   Parameters:
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **index** (*integer*) -- (input) position of the array; the
+        first position is 1.
+
+      * **value** -- (output) value of the array at that position.
+
+
+primme_set_member_f77
+=====================
+
+primme_set_member_f77(primme, label, value)
+
+   Set a value in some field of the parameter structure.
+
+   Parameters:
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **label** (*integer*) -- field where to set value. One of
+        the vales defined in "primmetop_set_member_f77()".
+
+      * **value** -- (input) value to set.
+
+   Note: Use this function exclusively inside the function
+     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
+     Otherwise use the function "primmetop_set_member_f77()".
+
+
+primme_get_member_f77
+=====================
+
+primme_get_member_f77(primme, label, value)
+
+   Get the value in some field of the parameter structure.
+
+   Parameters:
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **label** (*integer*) -- (input) field where to get value.
+        One of the detailed in function "primmetop_set_member_f77()".
+
+      * **value** -- (output) value of the field.
+
+   Note: Use this function exclusively inside the function
+     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
+     Otherwise use the function "primmetop_get_member_f77()".
+
+   Note: When "label" is one of "PRIMMEF77_matrixMatvec",
+     "PRIMMEF77_applyPreconditioner", "PRIMMEF77_commInfo",
+     "PRIMMEF77_intWork", "PRIMMEF77_realWork", "PRIMMEF77_matrix" and
+     "PRIMMEF77_preconditioner", the returned "value" is a C pointer
+     ("void*"). Use Fortran pointer or other extensions to deal with
+     it. For instance:
+
+        use iso_c_binding
+        MPI_Comm comm
+
+        comm = MPI_COMM_WORLD
+        call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+        ...
+        subroutine par_GlobalSumDouble(x,y,k,primme)
+        use iso_c_binding
+        implicit none
+        ...
+        MPI_Comm, pointer :: comm
+        type(c_ptr) :: pcomm
+
+        call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+        call c_f_pointer(pcomm, comm)
+        call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+
+
+primme_get_prec_shift_f77
+=========================
+
+primme_get_prec_shift_f77(primme, index, value)
+
+   Get the value in some position of the array
+   "ShiftsForPreconditioner".
+
+   Parameters:
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **index** (*integer*) -- (input) position of the array; the
+        first position is 1.
+
+      * **value** -- (output) value of the array at that position.
+
+   Note: Use this function exclusively inside the function
+     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
+     Otherwise use the function "primmetop_get_prec_shift_f77()".
+
+Appendix
+********
+
+
+primme_params
+=============
 
 primme_params
 
@@ -703,17 +995,17 @@ primme_params
       = \lambda x or A x = \lambda B x.
 
       Parameters:
-         * **x** (*void**) --
+         * **x** --
 
-         * **y** (*void**) -- one dimensional array containing the
-           "blockSize" vectors packed one after the other (i.e., the
-           leading dimension is the vector size), each of size
-           "nLocal". The real type is "double*" and "Complex_Z*" when
-           called from "dprimme()" and "zprimme()" respectively.
+         * **y** -- one dimensional array containing the "blockSize"
+           vectors packed one after the other (i.e., the leading
+           dimension is the vector size), each of size "nLocal". The
+           real type is "double*" and "Complex_Z*" when called from
+           "dprimme()" and "zprimme()" respectively.
 
-         * **blockSize** (*int**) -- number of vectors in x and y.
+         * **blockSize** -- number of vectors in x and y.
 
-         * **primme** (*primme_params**) -- parameters structure.
+         * **primme** -- parameters structure.
 
       Note: Argument "blockSize" is passed by reference to make
         easier the interface to other languages (like Fortran).
@@ -764,16 +1056,16 @@ primme_params
       Global sum reduction function.
 
       Parameters:
-         * **sendBuf** (*double**) -- array of size count with the
-           input local values.
+         * **sendBuf** -- array of size count with the input local
+           values.
 
-         * **recvBuf** (*double**) -- array of size count with the
-           output global values so that i-th element of recvBuf is the
-           sum over all processes of the i-th element of sendBuf.
+         * **recvBuf** -- array of size count with the output global
+           values so that i-th element of recvBuf is the sum over all
+           processes of the i-th element of sendBuf.
 
-         * **count** (*int**) -- array size of sendBuf and recvBuf.
+         * **count** -- array size of sendBuf and recvBuf.
 
-         * **primme** (*primme_params**) -- parameters structure.
+         * **primme** -- parameters structure.
 
       The default value is NULL if "numProcs" is 1. When MPI this can
       be a simply wrapper to MPI_Allreduce().
@@ -989,12 +1281,13 @@ primme_params
       Number of external orthogonalization constraint vectors provided
       "evecs" argument in "dprimme()" or "zprimme()".
 
-      Then eigenvectors are found orthogonal to those constraints
+      PRIMME finds new eigenvectors orthogonal to these constraints
       (equivalent to solving the problem with (I-YY^*)A(I-YY^*) and
-      (I-YY^*)B(I-YY^*) instead where Y are the given constraint
-      vectors). This is a handy feature if some eigenvectors are
-      already known, or for finding more eigenvalues after a call to
-      "dprimme()" or "zprimme()".
+      (I-YY^*)B(I-YY^*) matrices instead where Y are the given
+      constraint vectors). This is a handy feature if some
+      eigenvectors are already known, or for finding more eigenvalues
+      after a call to "dprimme()" or "zprimme()" (possibly with
+      different parameters).
 
       The default value is 0.
 
@@ -1020,8 +1313,8 @@ primme_params
 
       The user should set this based on the architecture specifics of
       the target computer, as well as any a priori knowledge of
-      multiplicities. The code does *not* require to be greater than 1
-      to find multiple eigenvalues. For some methods, keeping to 1
+      multiplicities. The code does *not* require that "maxBlockSize"
+      > 1 to find multiple eigenvalues. For some methods, keeping to 1
       yields the best overall performance.
 
       The default value is 1.
@@ -1047,27 +1340,31 @@ primme_params
 
    int intWorkSize
 
-      If "dprimme()" or "zprimme()" are called with all arguments as
-      NULL but "primme_params" then it has the size *in bytes* of the
-      integer workspace that is required.
+      If "dprimme()" or "zprimme()" is called with all arguments as
+      NULL except for "primme_params" then PRIMME returns immediately
+      with "intWorkSize" containing the size *in bytes* of the integer
+      workspace that will be required by the parameters set in PRIMME.
 
-      Otherwise if not 0, it is the size of the integer work array *in
-      bytes* that the user provides in "intWork". If it is 0, the code
-      will allocate the required space and should be freed by calling
+      Otherwise if "intWorkSize" is not 0, it should be the size of
+      the integer work array *in bytes* that the user provides in
+      "intWork". If "intWorkSize" is 0, the code will allocate the
+      required space, which can be freed later by calling
       "primme_Free()".
 
       The default value is 0.
 
    long int realWorkSize
 
-      If "dprimme()" or "zprimme()" are called with all arguments as
-      NULL but "primme_params" then it has the size *in bytes* of the
-      real workspace that is required.
+      If "dprimme()" or "zprimme()" is called with all arguments as
+      NULL except for "primme_params" then PRIMME returns immediately
+      with "realWorkSize" containing the size *in bytes* of the real
+      workspace that will be required by the parameters set in PRIMME.
 
-      Otherwise if not 0, it is the size of the real work array *in
-      bytes* that the user provides in "realWork". If it is 0, the
-      code will allocate the required space and should be freed by
-      calling "primme_Free()".
+      Otherwise if "realWorkSize" is not 0, it should be the size of
+      the real work array *in bytes* that the user provides in
+      "realWork". If "realWorkSize" is 0, the code will allocate the
+      required space, which can be freed later by calling
+      "primme_Free()".
 
       The default value is 0.
 
@@ -1103,7 +1400,7 @@ primme_params
       The "int iseed[4]" is an array with the seeds needed by the
       LAPACK dlarnv and zlarnv.
 
-      The default value is an array with values 1, 2, 3 and 5.
+      The default value is an array with values -1, -1, -1 and -1.
 
    void *matrix
 
@@ -1312,505 +1609,347 @@ primme_params
       Hold the wall clock time spent by the call to "dprimme()" or
       "zprimme()". The value is available at the end of the execution.
 
-FORTRAN Library Interface
-*************************
 
-The next enumerations and functions are declared in "primme_f77.h".
+Error Codes
+===========
 
-ptr
+The functions "dprimme()" and "zprimme()" return one of the next
+values:
 
-   Fortran datatype with the same size as a pointer. Use "integer*4"
-   when compiling in 32 bits and "integer*8" in 64 bits.
+* 0: success.
 
-primme_initialize_f77(primme)
+* 1: reported only amount of required memory.
 
-   Set PRIMME parameters structure to the default values.
+* -1: failed in allocating int or real workspace.
 
-   Parameters:
-      * **primme** (*ptr*) -- (output) parameters structure.
+* -2: malloc failed in allocating a permutation integer array.
 
-primme_set_method_f77(method, primme, ierr)
+* -3: main_iter() encountered problem; the calling stack of the
+  functions where the error occurred was printed in "stderr".
 
-   Set PRIMME parameters to one of the preset configurations.
+* -4: if argument "primme" is NULL.
 
-   Parameters:
-      * **method** (*integer*) --
+* -5: if "n" <= 0 or "nLocal" <= 0.
 
-        (input) preset configuration. One of:
+* -6: if "numProcs" < 1.
 
-        * "PRIMMEF77_DYNAMIC"
+* -7: if "matrixMatvec" is NULL.
 
-        * "PRIMMEF77_DEFAULT_MIN_TIME"
+* -8: if "applyPreconditioner" is NULL and "precondition" is not
+  NULL.
 
-        * "PRIMMEF77_DEFAULT_MIN_MATVECS"
+* -9: if "globalSumDouble" is NULL.
 
-        * "PRIMMEF77_Arnoldi"
+* -10: if "numEvals" > "n".
 
-        * "PRIMMEF77_GD"
+* -11: if "numEvals" < 0.
 
-        * "PRIMMEF77_GD_plusK"
+* -12: if "eps" > 0 and "eps" < machine precision.
 
-        * "PRIMMEF77_GD_Olsen_plusK"
+* -13: if "target" is not properly defined.
 
-        * "PRIMMEF77_JD_Olsen_plusK"
+* -14: if "target" is one of "primme_closest_geq",
+  "primme_closest_leq" or "primme_closest_abs" but "numTargetShifts"
+  <= 0 (no shifts).
 
-        * "PRIMMEF77_RQI"
+* -15: if "target" is one of "primme_closest_geq",
+  "primme_closest_leq" or "primme_closest_abs" but "targetShifts" is
+  NULL  (no shifts array).
 
-        * "PRIMMEF77_JDQR"
+* -16: if "numOrthoConst" < 0 or "numOrthoConst" >= "n". (no free
+  dimensions left).
 
-        * "PRIMMEF77_JDQMR"
+* -17: if "maxBasisSize" < 2.
 
-        * "PRIMMEF77_JDQMR_ETol"
+* -18: if "minRestartSize" <= 0.
 
-        * "PRIMMEF77_SUBSPACE_ITERATION"
+* -19: if "maxBlockSize" <= 0.
 
-        * "PRIMMEF77_LOBPCG_OrthoBasis"
+* -20: if "maxPrevRetain" < 0.
 
-        * "PRIMMEF77_LOBPCG_OrthoBasis_Window"
+* -21: if "scheme" is not one of *primme_thick* or *primme_dtr*.
 
-        See "primme_preset_method".
+* -22: if "initSize" < 0.
 
-      * **primme** (*ptr*) -- (input) parameters structure.
+* -23: if not "locking" and "initSize" > "maxBasisSize".
 
-      * **ierr** (*integer*) -- (output) if 0, successful; if
-        negative, something went wrong.
+* -24: if "locking" and "initSize" > "numEvals".
 
-primme_Free_f77(primme)
+* -25: if "maxPrevRetain" + "minRestartSize" >= "maxBasisSize".
 
-   Free memory allocated by PRIMME.
+* -26: if "minRestartSize" >= "n".
 
-   Parameters:
-      * **primme** (*ptr*) -- parameters structure.
+* -27: if "printLevel" < 0 or "printLevel" > 5.
 
-dprimme_f77(evals, evecs, resNorms, primme, ierr)
+* -28: if "convTest" is not one of "primme_full_LTolerance",
+  "primme_decreasing_LTolerance", "primme_adaptive_ETolerance" or
+  "primme_adaptive".
 
-   Solve a real symmetric standard eigenproblems.
+* -29: if "convTest" == "primme_decreasing_LTolerance" and
+  "relTolBase" <= 1.
 
-   Parameters:
-      * **evals(*)** (*double precision*) -- (output) array at least
-        of size "numEvals" to store the computed eigenvalues; all
-        parallel calls return the same value in this array.
+* -30: if "evals" is NULL, but not "evecs" and "resNorms".
 
-      * **resNorms(*)** (*double precision*) -- (output) array at
-        least of size "numEvals" to store the residual norms of the
-        computed eigenpairs; all parallel calls return the same value
-        in this array.
+* -31: if "evecs" is NULL, but not "evals" and "resNorms".
 
-      * **evecs(*)** (*double precision*) -- (input/output) array at
-        least of size "nLocal" times "numEvals" to store columnwise
-        the (local part of the) computed eigenvectors.
+* -32: if "resNorms" is NULL, but not "evecs" and "evals".
 
-      * **primme** (*ptr*) -- parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see the
-        returned value of function "dprimme()".
+Preset Methods
+==============
 
-zprimme_f77(evals, evecs, resNorms, primme, ierr)
+primme_preset_method
 
-   Solve a Hermitian standard eigenproblems. The arguments have the
-   same meaning like in function "dprimme_f77()".
+   DEFAULT_MIN_TIME
 
-   Parameters:
-      * **evals(*)** (*double precision*) -- (output)
+      Set as "JDQMR_ETol"; this method is usually the fastest if the
+      cost of the matrix vector product is inexpensive.
 
-      * **resNorms(*)** (*double precision*) -- (output)
+   DEFAULT_MIN_MATVECS
 
-      * **evecs(*)** (*complex double precision*) -- (input/output)
+      Currently set as "GD_Olsen_plusK"; this method usually performs
+      fewer matrix vector products than other methods, so it's a good
+      choice when this operation is expensive.
 
-      * **primme** (*ptr*) -- (input) parameters structure.
+   DYNAMIC
 
-      * **ierr** (*integer*) -- (output) error indicator.
+      Switches to the best method dynamically; currently, between
+      methods "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS".
 
-primmetop_set_member_f77(primme, label, value)
+      With "DYNAMIC" "primme_set_method()" sets "dynamicMethodSwitch"
+      = 1 and makes the sames changes as for method "JDQMR_ETol".
 
-   Set a value in some field of the parameter structure.
+   Arnoldi
 
-   Parameters:
-      * **primme** (*ptr*) -- (input) parameters structure.
+         Arnoldi implemented à la Generalized Davidson.
 
-      * **label** (*integer*) --
+         With "Arnoldi" "primme_set_method()" sets:
 
-        field where to set value. One of:
+      * "locking" = 0;
 
-        * "PRIMMEF77_n",                                     in
-          field "primme_params.n".
+      * "maxPrevRetain" = 0;
 
-        * "PRIMMEF77_matrixMatvec",                          in
-          field "primme_params.matrixMatvec".
+      * "precondition" = 0;
 
-        * "PRIMMEF77_applyPreconditioner",                   in
-          field "primme_params.applyPreconditioner".
+      * "maxInnerIterations" = 0.
 
-        * "PRIMMEF77_numProcs",                              in
-          field "primme_params.numProcs".
+   GD
 
-        * "PRIMMEF77_procID",                                in
-          field "primme_params.procID".
+         Generalized Davidson.
 
-        * "PRIMMEF77_commInfo",                              in
-          field "primme_params.commInfo".
+         With "GD" "primme_set_method()" sets:
 
-        * "PRIMMEF77_nLocal",                                in
-          field "primme_params.nLocal".
+      * "locking" = 0;
 
-        * "PRIMMEF77_globalSumDouble",                       in
-          field "primme_params.globalSumDouble".
+      * "maxPrevRetain" = 0;
 
-        * "PRIMMEF77_numEvals",                              in
-          field "primme_params.numEvals".
+      * "robustShifts" = 1;
 
-        * "PRIMMEF77_target",                                in
-          field "primme_params.target".
+      * "maxInnerIterations" = 0;
 
-        * "PRIMMEF77_numTargetShifts",                       in
-          field "primme_params.numTargetShifts".
+      * "RightX" = 0;
 
-        * "PRIMMEF77_targetShifts",                          in
-          field "primme_params.targetShifts".
+      * "SkewX" = 0.
 
-        * "PRIMMEF77_locking",                               in
-          field "primme_params.locking".
+   GD_plusK
 
-        * "PRIMMEF77_initSize",                              in
-          field "primme_params.initSize".
+         GD with locally optimal restarting.
 
-        * "PRIMMEF77_numOrthoConst",                         in
-          field "primme_params.numOrthoConst".
+         With "GD_plusK" "primme_set_method()" sets "maxPrevRetain" =
+         2 if "maxBlockSize" is 1 and "numEvals" > 1; otherwise it
+         sets "maxPrevRetain" to "maxBlockSize". Also:
 
-        * "PRIMMEF77_maxBasisSize",                          in
-          field "primme_params.maxBasisSize".
+      * "locking" = 0;
 
-        * "PRIMMEF77_minRestartSize",                        in
-          field "primme_params.minRestartSize".
+      * "maxInnerIterations" = 0;
 
-        * "PRIMMEF77_maxBlockSize",                          in
-          field "primme_params.maxBlockSize".
+      * "RightX" = 0;
 
-        * "PRIMMEF77_maxMatvecs",                            in
-          field "primme_params.maxMatvecs".
+      * "SkewX" = 0.
 
-        * "PRIMMEF77_maxOuterIterations",                    in
-          field "primme_params.maxOuterIterations".
+   GD_Olsen_plusK
 
-        * "PRIMMEF77_intWorkSize",                           in
-          field "primme_params.intWorkSize".
+      GD+k and the cheap Olsen's Method.
 
-        * "PRIMMEF77_realWorkSize",                          in
-          field "primme_params.realWorkSize".
+      With "GD_Olsen_plusK" "primme_set_method()" makes the same
+      changes as for method "GD_plusK" and sets "RightX" = 1.
 
-        * "PRIMMEF77_iseed",                                 in
-          field "primme_params.iseed".
+   JD_Olsen_plusK
 
-        * "PRIMMEF77_intWork",                               in
-          field "primme_params.intWork".
+      GD+k and Olsen's Method.
 
-        * "PRIMMEF77_realWork",                              in
-          field "primme_params.realWork".
+      With "JD_Olsen_plusK" "primme_set_method()" makes the same
+      changes as for method "GD_plusK" and also sets "robustShifts" =
+      1, "RightX" to 1, and "SkewX" to 1.
 
-        * "PRIMMEF77_aNorm",                                 in
-          field "primme_params.aNorm".
+   RQI
 
-        * "PRIMMEF77_eps",                                   in
-          field "primme_params.eps".
+         (Accelerated) Rayleigh Quotient Iteration.
 
-        * "PRIMMEF77_printLevel",                            in
-          field "primme_params.printLevel".
+         With "RQI" "primme_set_method()" sets:
 
-        * "PRIMMEF77_outputFile",                            in
-          field "primme_params.outputFile".
+      * "locking" = 1;
 
-        * "PRIMMEF77_matrix",                                in
-          field "primme_params.matrix".
+      * "maxPrevRetain" = 0;
 
-        * "PRIMMEF77_preconditioner",                        in
-          field "primme_params.preconditioner".
+      * "robustShifts"  = 1;
 
-        * "PRIMMEF77_restartingParams_scheme",               in
-          field "primme_params.restartingParams.scheme".
+      * "maxInnerIterations" = -1;
 
-        * "PRIMMEF77_restartingParams_maxPrevRetain",        in
-          field "primme_params.restartingParams.maxPrevRetain".
+      * "LeftQ"   = 1;
 
-        * "PRIMMEF77_correctionParams_precondition",         in
-          field "primme_params.correctionParams.precondition".
+      * "LeftX"   = 1;
 
-        * "PRIMMEF77_correctionParams_robustShifts",         in
-          field "primme_params.correctionParams.robustShifts".
+      * "RightQ"  = 0;
 
-        * "PRIMMEF77_correctionParams_maxInnerIterations",   in
-          field "primme_params.correctionParams.maxInnerIterations".
+      * "RightX"  = 1;
 
-        * "PRIMMEF77_correctionParams_projectors_LeftQ",     in
-          field "primme_params.correctionParams.projectors.LeftQ".
+      * "SkewQ"   = 0;
 
-        * "PRIMMEF77_correctionParams_projectors_LeftX",     in
-          field "primme_params.correctionParams.projectors.LeftX".
+      * "SkewX"   = 0;
 
-        * "PRIMMEF77_correctionParams_projectors_RightQ",    in
-          field "primme_params.correctionParams.projectors.RightQ".
+      * "convTest" = "primme_full_LTolerance".
 
-        * "PRIMMEF77_correctionParams_projectors_RightX",    in
-          field "primme_params.correctionParams.projectors.RightX".
+   JDQR
 
-        * "PRIMMEF77_correctionParams_projectors_SkewQ",     in
-          field "primme_params.correctionParams.projectors.SkewQ".
+         Jacobi-Davidson with fixed number of inner steps.
 
-        * "PRIMMEF77_correctionParams_projectors_SkewX",     in
-          field "primme_params.correctionParams.projectors.SkewX".
+         With "JDQR" "primme_set_method()" sets:
 
-        * "PRIMMEF77_correctionParams_convTest",             in
-          field "primme_params.correctionParams.convTest".
+      * "locking"     = 1;
 
-        * "PRIMMEF77_correctionParams_relTolBase",           in
-          field "primme_params.correctionParams.relTolBase".
+      * "maxPrevRetain"      = 1;
 
-        * "PRIMMEF77_stats_numOuterIterations",              in
-          field "primme_params.stats.numOuterIterations".
+      * "robustShifts"       = 0;
 
-        * "PRIMMEF77_stats_numRestarts",                     in
-          field "primme_params.stats.numRestarts".
+      * "maxInnerIterations" = 10 if it is 0;
 
-        * "PRIMMEF77_stats_numMatvecs",                      in
-          field "primme_params.stats.numMatvecs".
+      * "LeftQ"   = 0;
 
-        * "PRIMMEF77_stats_numPreconds",                     in
-          field "primme_params.stats.numPreconds".
+      * "LeftX"   = 1;
 
-        * "PRIMMEF77_stats_elapsedTime",                     in
-          field "primme_params.stats.elapsedTime".
+      * "RightQ"  = 1;
 
-        * "PRIMMEF77_dynamicMethodSwitch",                   in
-          field "primme_params.dynamicMethodSwitch".
+      * "RightX"  = 1;
 
-        * "PRIMMEF77_massMatrixMatvec",                      in
-          field "primme_params.massMatrixMatvec".
+      * "SkewQ"   = 1;
 
-      * **value** -- (input) value to set.
+      * "SkewX"   = 1;
 
-primmetop_get_member_f77(primme, label, value)
+      * "relTolBase" = 1.5;
 
-   Get the value in some field of the parameter structure.
+      * "convTest" = "primme_full_LTolerance".
 
-   Parameters:
-      * **primme** (*ptr*) -- (input) parameters structure.
+   JDQMR
 
-      * **label** (*integer*) -- (input) field where to get value.
-        One of the detailed in function "primmetop_set_member_f77()".
+         Jacobi-Davidson with adaptive stopping criterion for inner
+         Quasi Minimum Residual (QMR).
 
-      * **value** -- (output) value of the field.
+         With "JDQMR" "primme_set_method()" sets:
 
-primmetop_get_prec_shift_f77(primme, index, value)
+      * "locking" = 0;
 
-   Get the value in some position of the array
-   "ShiftsForPreconditioner".
+      * "maxPrevRetain" = 1 if it is 0
 
-   Parameters:
-      * **primme** (*ptr*) -- (input) parameters structure.
+      * "maxInnerIterations" = -1;
 
-      * **index** (*integer*) -- (input) position of the array; the
-        first position is 1.
+      * "LeftQ"   = "precondition";
 
-      * **value** -- (output) value of the array at that position.
+      * "LeftX"   = 1;
 
-primme_set_member_f77(primme, label, value)
+      * "RightQ"  = 0;
 
-   Set a value in some field of the parameter structure.
+      * "RightX"  = 0;
 
-   Parameters:
-      * **primme** (*ptr*) -- (input) parameters structure.
+      * "SkewQ"   = 0;
 
-      * **label** (*integer*) --
+      * "SkewX"   = 1;
 
-        field where to set value. One of:
+      * "convTest"  = "primme_adaptive".
 
-        * "PRIMMEF77_n",                                     in
-          field "primme_params.n".
+   JDQMR_ETol
 
-        * "PRIMMEF77_matrixMatvec",                          in
-          field "primme_params.matrixMatvec".
+      JDQMR but QMR stops after residual norm reduces by a 0.1 factor.
 
-        * "PRIMMEF77_applyPreconditioner",                   in
-          field "primme_params.applyPreconditioner".
+      With "JDQMR_ETol" "primme_set_method()" makes the same changes
+      as for the method "JDQMR" and sets "convTest" =
+      "primme_adaptive_ETolerance".
 
-        * "PRIMMEF77_numProcs",                              in
-          field "primme_params.numProcs".
+   SUBSPACE_ITERATION
 
-        * "PRIMMEF77_procID",                                in
-          field "primme_params.procID".
+         Subspace iteration.
 
-        * "PRIMMEF77_commInfo",                              in
-          field "primme_params.commInfo".
+         With "SUBSPACE_ITERATION" "primme_set_method()" sets:
 
-        * "PRIMMEF77_nLocal",                                in
-          field "primme_params.nLocal".
+      * "locking"    = 1;
 
-        * "PRIMMEF77_globalSumDouble",                       in
-          field "primme_params.globalSumDouble".
+      * "maxBasisSize" = "numEvals" *** 2;
 
-        * "PRIMMEF77_numEvals",                              in
-          field "primme_params.numEvals".
+      * "minRestartSize" = "numEvals";
 
-        * "PRIMMEF77_target",                                in
-          field "primme_params.target".
+      * "maxBlockSize" = "numEvals";
 
-        * "PRIMMEF77_numTargetShifts",                       in
-          field "primme_params.numTargetShifts".
+      * "scheme"  = "primme_thick";
 
-        * "PRIMMEF77_targetShifts",                          in
-          field "primme_params.targetShifts".
+      * "maxPrevRetain"      = 0;
 
-        * "PRIMMEF77_locking",                               in
-          field "primme_params.locking".
+      * "robustShifts"       = 0;
 
-        * "PRIMMEF77_initSize",                              in
-          field "primme_params.initSize".
+      * "maxInnerIterations" = 0;
 
-        * "PRIMMEF77_numOrthoConst",                         in
-          field "primme_params.numOrthoConst".
+      * "RightX"  = 1;
 
-        * "PRIMMEF77_maxBasisSize",                          in
-          field "primme_params.maxBasisSize".
+      * "SkewX"   = 0.
 
-        * "PRIMMEF77_minRestartSize",                        in
-          field "primme_params.minRestartSize".
+   LOBPCG_OrthoBasis
 
-        * "PRIMMEF77_maxBlockSize",                          in
-          field "primme_params.maxBlockSize".
+         LOBPCG with orthogonal basis.
 
-        * "PRIMMEF77_maxMatvecs",                            in
-          field "primme_params.maxMatvecs".
+         With "LOBPCG_OrthoBasis" "primme_set_method()" sets:
 
-        * "PRIMMEF77_maxOuterIterations",                    in
-          field "primme_params.maxOuterIterations".
+      * "locking"    = 0;
 
-        * "PRIMMEF77_intWorkSize",                           in
-          field "primme_params.intWorkSize".
+      * "maxBasisSize" = "numEvals" *** 3;
 
-        * "PRIMMEF77_realWorkSize",                          in
-          field "primme_params.realWorkSize".
+      * "minRestartSize" = "numEvals";
 
-        * "PRIMMEF77_iseed",                                 in
-          field "primme_params.iseed".
+      * "maxBlockSize" = "numEvals";
 
-        * "PRIMMEF77_intWork",                               in
-          field "primme_params.intWork".
+      * "scheme"  = "primme_thick";
 
-        * "PRIMMEF77_realWork",                              in
-          field "primme_params.realWork".
+      * "maxPrevRetain"      = "numEvals";
 
-        * "PRIMMEF77_aNorm",                                 in
-          field "primme_params.aNorm".
+      * "robustShifts"       = 0;
 
-        * "PRIMMEF77_eps",                                   in
-          field "primme_params.eps".
+      * "maxInnerIterations" = 0;
 
-        * "PRIMMEF77_printLevel",                            in
-          field "primme_params.printLevel".
+      * "RightX"  = 1;
 
-        * "PRIMMEF77_outputFile",                            in
-          field "primme_params.outputFile".
+      * "SkewX"   = 0.
 
-        * "PRIMMEF77_matrix",                                in
-          field "primme_params.matrix".
+   LOBPCG_OrthoBasis_Window
 
-        * "PRIMMEF77_preconditioner",                        in
-          field "primme_params.preconditioner".
+         LOBPCG with sliding window of "maxBlockSize" < 3 ***
+         "numEvals".
 
-        * "PRIMMEF77_restartingParams_scheme",               in
-          field "primme_params.restartingParams.scheme".
+         With "LOBPCG_OrthoBasis_Window" "primme_set_method()" sets:
 
-        * "PRIMMEF77_restartingParams_maxPrevRetain",        in
-          field "primme_params.restartingParams.maxPrevRetain".
+      * "locking"    = 0;
 
-        * "PRIMMEF77_correctionParams_precondition",         in
-          field "primme_params.correctionParams.precondition".
+      * "maxBasisSize" = "maxBlockSize" *** 3;
 
-        * "PRIMMEF77_correctionParams_robustShifts",         in
-          field "primme_params.correctionParams.robustShifts".
+      * "minRestartSize" = "maxBlockSize";
 
-        * "PRIMMEF77_correctionParams_maxInnerIterations",   in
-          field "primme_params.correctionParams.maxInnerIterations".
+      * "maxBlockSize" = "numEvals";
 
-        * "PRIMMEF77_correctionParams_projectors_LeftQ",     in
-          field "primme_params.correctionParams.projectors.LeftQ".
+      * "scheme"  = "primme_thick";
 
-        * "PRIMMEF77_correctionParams_projectors_LeftX",     in
-          field "primme_params.correctionParams.projectors.LeftX".
+      * "maxPrevRetain"      = "maxBlockSize";
 
-        * "PRIMMEF77_correctionParams_projectors_RightQ",    in
-          field "primme_params.correctionParams.projectors.RightQ".
+      * "robustShifts"       = 0;
 
-        * "PRIMMEF77_correctionParams_projectors_RightX",    in
-          field "primme_params.correctionParams.projectors.RightX".
+      * "maxInnerIterations" = 0;
 
-        * "PRIMMEF77_correctionParams_projectors_SkewQ",     in
-          field "primme_params.correctionParams.projectors.SkewQ".
+      * "RightX"  = 1;
 
-        * "PRIMMEF77_correctionParams_projectors_SkewX",     in
-          field "primme_params.correctionParams.projectors.SkewX".
-
-        * "PRIMMEF77_correctionParams_convTest",             in
-          field "primme_params.correctionParams.convTest".
-
-        * "PRIMMEF77_correctionParams_relTolBase",           in
-          field "primme_params.correctionParams.relTolBase".
-
-        * "PRIMMEF77_stats_numOuterIterations",              in
-          field "primme_params.stats.numOuterIterations".
-
-        * "PRIMMEF77_stats_numRestarts",                     in
-          field "primme_params.stats.numRestarts".
-
-        * "PRIMMEF77_stats_numMatvecs",                      in
-          field "primme_params.stats.numMatvecs".
-
-        * "PRIMMEF77_stats_numPreconds",                     in
-          field "primme_params.stats.numPreconds".
-
-        * "PRIMMEF77_stats_elapsedTime",                     in
-          field "primme_params.stats.elapsedTime".
-
-        * "PRIMMEF77_dynamicMethodSwitch",                   in
-          field "primme_params.dynamicMethodSwitch".
-
-        * "PRIMMEF77_massMatrixMatvec",                      in
-          field "primme_params.massMatrixMatvec".
-
-      * **value** -- (input) value to set.
-
-   Note: Use this function exclusively inside the function
-     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
-     Otherwise use the function "primmetop_set_member_f77()".
-
-primme_get_member_f77(primme, label, value)
-
-   Get the value in some field of the parameter structure.
-
-   Parameters:
-      * **primme** (*ptr*) -- (input) parameters structure.
-
-      * **label** (*integer*) -- (input) field where to get value.
-        One of the detailed in function "primmetop_set_member_f77()".
-
-      * **value** -- (output) value of the field.
-
-   Note: Use this function exclusively inside the function
-     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
-     Otherwise use the function "primmetop_get_member_f77()".
-
-primme_get_prec_shift_f77(primme, index, value)
-
-   Get the value in some position of the array
-   "ShiftsForPreconditioner".
-
-   Parameters:
-      * **primme** (*ptr*) -- (input) parameters structure.
-
-      * **index** (*integer*) -- (input) position of the array; the
-        first position is 1.
-
-      * **value** -- (output) value of the array at that position.
-
-   Note: Use this function exclusively inside the function
-     "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
-     Otherwise use the function "primmetop_get_prec_shift_f77()".
+      * "SkewX"   = 0.

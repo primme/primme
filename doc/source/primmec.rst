@@ -2,919 +2,373 @@
 .. role:: ccode(code) 
    :language: c
 
+.. highlight:: c
+
 C Library Interface
 -------------------
 
+The PRIMME interface is composed by the next functions.
+To solve real symmetric and Hermitian standard eigenproblems call
+respectively:
+
+.. only:: not text
+
+   .. parsed-literal::
+
+      int :c:func:`dprimme <dprimme>` (double \*evals, double \*evecs, double \*resNorms,
+                              primme_params \*primme)
+      int :c:func:`zprimme <zprimme>` (double \*evals, double \*evecs, double \*resNorms,
+                              primme_params \*primme)
+
+.. only:: text
+
+   ::
+
+      int dprimme(double *evals, double *evecs, double *resNorms, 
+                  primme_params *primme);
+
+      int zprimme(double *evals, Complex_Z *evecs, double *resNorms, 
+                  primme_params *primme);
+
+Other useful functions:
+
+.. only:: not text
+
+   .. parsed-literal::
+
+      void :c:func:`primme_initialize <primme_initialize>` (primme_params \*primme)
+      int :c:func:`primme_set_method <primme_set_method>` (primme_preset_method method, primme_params \*params)
+      void :c:func:`primme_display_params <primme_display_params>` (primme_params primme)
+      void :c:func:`primme_Free <primme_Free>` (primme_params \*primme)
+
+.. only:: text
+
+   ::
+
+      void primme_initialize(primme_params *primme);
+      int primme_set_method(primme_preset_method method,
+                                           primme_params *params);
+      void primme_display_params(primme_params primme);
+      void primme_Free(primme_params primme);
+
+PRIMME stores its data on the structure :c:type:`primme_params`.
+See :ref:`guide-params` for an introduction about its fields.
+
+
+Running
+^^^^^^^
+
+To use PRIMME, follow this basic steps.
+
+#. Include::
+
+      #include "primme.h"   /* header file is required to run primme */
+
+#. Initialize a PRIMME parameters structure for default settings:
+
+   .. only:: not text
+   
+       .. parsed-literal::
+
+          :c:type:`primme_params` primme;
+          :c:func:`primme_initialize <primme_initialize>` (&primme);
+
+   .. only:: text
+   
+      ::
+   
+         primme_params primme;
+         
+         primme_initialize(&primme);
+   
+#. Set problem parameters (see also :ref:`guide-params`); and,
+   optionally, set one of the :c:type:`preset methods <primme_preset_method>`:
+
+   .. only:: not text
+
+      .. parsed-literal::
+
+         primme.\ |matrixMatvec| = LaplacianMatrixMatvec; /\* MV product \*/
+         primme.\ |n| = 100;                   /\* set problem dimension \*/
+         primme.\ |numEvals| = 10;       /\* Number of wanted eigenpairs \*/
+         ret = :c:func:`primme_set_method <primme_set_method>` (method, &primme);
+         ...
+
+   .. only:: text
+
+      ::
+
+         primme.matrixMatvec = LaplacianMatrixMatvec; /* MV product */
+         primme.n = 100;                   /* set problem dimension */
+         primme.numEvals = 10;       /* Number of wanted eigenpairs */
+         ret = primme_set_method(method, &primme);
+         ...
+
+#. Then to solve a real symmetric standard eigenproblems call:
+
+   .. only:: not text
+  
+      .. parsed-literal::
+ 
+         ret = :c:func:`dprimme <dprimme>` (evals, evecs, resNorms, &primme);
+   
+   .. only:: text
+   
+      ::
+   
+         ret = dprimme(evals, evecs, resNorms, &primme);
+
+   To solve Hermitian standard eigenproblems call:
+
+   .. only:: not text
+   
+      .. parsed-literal::
+
+         ret = :c:func:`zprimme <zprimme>` (evals, evecs, resNorms, &primme);
+   
+   .. only:: text
+   
+      ::
+   
+         ret = zprimme(evals, evecs, resNorms, &primme);
+
+   The call arguments are:
+
+   * `evals`, array to return the found eigenvalues;
+   * `evecs`, array to return the found eigenvectors;
+   * `resNorms`, array to return the residual norms of the found eigenpairs; and
+   * `ret`, returned error code.
+
+#. Before exiting free the work arrays in PRIMME:
+
+   .. only:: not text
+  
+      .. parsed-literal::
+ 
+         :c:func:`primme_Free <primme_Free>` (&primme);
+   
+   .. only:: text
+   
+      ::
+   
+         primme_Free(&primme);
+
+.. _guide-params:
+
+Parameters Guide
+^^^^^^^^^^^^^^^^
+
+PRIMME stores the data on the structure :c:type:`primme_params`, which has the next fields:
+   
+.. only:: not text
+
+      | *Basic*
+      | ``int`` |n|,  matrix dimension.
+      | ``void (*`` |matrixMatvec| ``)(...)``, matrix-vector product.
+      | ``int`` |numEvals|, how many eigenpairs to find.
+      | ``primme_target`` |target|, which eigenvalues to find.
+      | ``int`` |numTargetShifts|, for targeting interior eigenpairs.
+      | ``double *`` |targetShifts|
+      | ``double`` |eps|, tolerance of the residual norm of converged eigenpairs.
+      |
+      | *For parallel programs*
+      | ``int`` |numProcs|
+      | ``int`` |nLocal|
+      | ``void (*`` |globalSumDouble| ``)(...)``
+      |
+      | *Accelerate the convergence*
+      | ``void (*`` |applyPreconditioner| ``)(...)``, preconditioner-vector product.
+      | ``int`` |initSize|, initial vectors as approximate solutions.
+      | ``int`` |maxBasisSize|
+      | ``int`` |minRestartSize|
+      | ``int`` |maxBlockSize|
+      |
+      | *User data*
+      | ``int`` |procID|
+      | ``void *`` |commInfo|
+      | ``void *`` |matrix|
+      | ``void *`` |preconditioner|
+      |
+      | *Advanced options*
+      | ``int`` |numOrthoConst|, orthogonal constrains to the eigenvectors.
+      | ``int`` |dynamicMethodSwitch|
+      | ``int`` |locking|
+      | ``int`` |maxMatvecs|
+      | ``int`` |maxOuterIterations|
+      | ``int`` |intWorkSize|
+      | ``long int`` |realWorkSize|
+      | ``int`` |iseed| ``[4]``
+      | ``int *`` |intWork|
+      | ``void *`` |realWork|
+      | ``double`` |aNorm|
+      | ``int`` |printLevel|
+      | ``FILE *`` |outputFile|
+      | ``double *`` |ShiftsForPreconditioner|
+      | ``struct restarting_params`` :c:member:`restartingParams <primme_params.restartingParams.scheme>`
+      | ``struct correction_params`` :c:member:`correctionParams <primme_params.correctionParams.precondition>`
+      | ``struct primme_stats`` :c:member:`stats <primme_params.stats.numOuterIterations>`
+      | ``struct stackTraceNode *stackTrace``
+
+.. only:: text
+
+   ::
+
+      /* Basic */
+      int n;                                      // matrix dimension
+      void (*matrixMatvec)(...);             // matrix-vector product
+      int numEvals;                    // how many eigenpairs to find
+      primme_target target;              // which eigenvalues to find
+      int numTargetShifts;       // for targeting interior eigenpairs
+      double *targetShifts;
+      double eps;            // tolerance of the converged eigenpairs
+      
+      /* For parallel programs */
+      int numProcs;
+      int nLocal;
+      void (*globalSumDouble)(...);
+      
+      /* Accelerate the convergence */
+      void (*applyPreconditioner)(...);     // precond-vector product
+      int initSize;       // initial vectors as approximate solutions
+      int maxBasisSize;
+      int minRestartSize;
+      int maxBlockSize;
+      
+      /* User data */
+      int procID;
+      void *commInfo;
+      void *matrix;
+      void *preconditioner;
+      
+      /* Advanced options */
+      int numOrthoConst; // orthogonal constrains to the eigenvectors
+      int dynamicMethodSwitch;
+      int locking;
+      int maxMatvecs;
+      int maxOuterIterations;
+      int intWorkSize;
+      long int realWorkSize;
+      int iseed[4];
+      int *intWork;
+      void *realWork;
+      double aNorm;
+      int printLevel;
+      FILE *outputFile;
+      double *ShiftsForPreconditioner;
+      struct restarting_params restartingParams;
+      struct correction_params correctionParams;
+      struct primme_stats stats;
+      struct stackTraceNode *stackTrace
+ 
+PRIMME requires the user to set at least the dimension of the matrix,
+the matrix-vector product, as they define the problem to be solved.
+For parallel programs, |nLocal| and |globalSumDouble| are also required.
+
+In addition, most users would want to specify how many eigenpairs to find,
+and provide a preconditioner (if available).
+
+It is useful to have set all these before calling :c:func:`primme_set_method`.
+Also, if users have a preference on |maxBasisSize|, |maxBlockSize|, etc, they
+should also provide them into :c:type:`primme_params` prior to the
+:c:func:`primme_set_method` call. This helps :c:func:`primme_set_method` make
+the right choice on other parameters.
+
+Interface Description
+^^^^^^^^^^^^^^^^^^^^^
+
 The next enumerations and functions are declared in ``primme.h``.
 
-.. c:type:: primme_preset_method
-
-   Enumeration of preset configurations.
-
-   .. c:member:: DYNAMIC
-
-      Switches to the best method dynamically; currently, between
-      |JDQMR_ETol| and 
-      |GD_Olsen_plusK|.
-      Set |dynamicMethodSwitch| to 1.
-
-   .. c:member:: DEFAULT_MIN_TIME
-
-      Currently set as |JDQMR_ETol|; this method is usually the fastest if the cost of the matrix vector product is the order of the matrix dimension.
-
-   .. c:member:: DEFAULT_MIN_MATVECS
-
-      Currently set as |GD_Olsen_plusK|; this method usually spent less matrix vector products than the others, so it's a good choice when this operation is expensive.
-
-   .. c:member:: Arnoldi
-
-      Arnoldi implemented à la Generalized Davidson.
-
-   .. c:member:: GD
-
-      Generalized Davidson.
-
-   .. c:member:: GD_plusK
-
-      GD with locally optimal restarting. See |maxPrevRetain|.
-
-   .. c:member:: GD_Olsen_plusK
-
-      GD+k and the cheap Olsen's Method (set
-      |RightX| to 1 and
-      |SkewX| to 0).
-      See |SkewX|.
-
-   .. c:member:: JD_Olsen_plusK
-
-      GD+k and Olsen's Method (set
-      |RightX| to 1 and
-      |SkewX| to 1).
-      See |SkewX|.
-
-   .. c:member:: RQI
-
-      (Accelerated) Rayleigh Quotient Iteration.
-
-   .. c:member:: JDQR
-
-      Jacobi-Davidson with fixed number of inner steps.
-      See |maxInnerIterations|.
-
-   .. c:member:: JDQMR
-
-      Jacobi-Davidson with adaptive stopping criterion for inner Quasi Minimum Residual (QMR).
-      See |convTest|.
-
-   .. c:member:: JDQMR_ETol
-
-      JDQMR but QMR stops after residual norm reduces by a 0.1 factor.
-      See |convTest|.
-
-   .. c:member:: SUBSPACE_ITERATION
-
-      Subspace iteration.
-
-   .. c:member:: LOBPCG_OrthoBasis
-
-      LOBPCG, the basis size is set to the number of wanted eigenvalues
-      |numEvals|.
-
-   .. c:member:: LOBPCG_OrthoBasis_Window
-
-      LOBPCG with sliding window of 
-      |maxBlockSize| <
-      |numEvals|.
-
-.. c:function:: void primme_initialize(primme_params *primme)
-
-   Set PRIMME parameters structure to the default values.
-
-   :param primme_params* primme: parameters structure.
-
-
-.. c:function:: int primme_set_method(primme_preset_method method, primme_params *primme)
-
-   Set PRIMME parameters to one of the preset configurations.
-
-   :param primme_preset_method method: preset configuration.
-
-   :param primme_params* primme: parameters structure.
-
-   Depending on the method some fields in ``primme`` are changed:
-
-   * |DEFAULT_MIN_TIME| is like |JDQMR_ETol|.
-   * |DEFAULT_MIN_MATVECS| is like |GD_Olsen_plusK|.
-   * |DYNAMIC| is like |JDQMR_ETol| and changes |dynamicMethodSwitch| to 1.
-   * |Arnoldi| changes:
-
-     .. hlist::
-
-        * |locking| = 0;
-        * |maxPrevRetain| = 0;
-        * |precondition| = 0;
-        * |maxInnerIterations| = 0.
-
-   * |GD| changes:
-
-     .. hlist::
-
-        * |locking| = 0;
-        * |maxPrevRetain| = 0;
-        * |robustShifts| = 1;
-        * |maxInnerIterations| = 0;
-        * |RightX| = 0;
-        * |SkewX| = 0.
-
-   * |GD_plusK|  changes:
-
-     * |maxPrevRetain| to 2 if |maxBlockSize| is 1 and |numEvals| > 1; otherwise set |maxPrevRetain| to |maxBlockSize|.
-
-     .. hlist::
-
-        * |locking| = 0;
-        * |maxInnerIterations| = 0;
-        * |RightX| = 0;
-        * |SkewX| = 0.
-
-   * |GD_Olsen_plusK| is like |GD_plusK| and changes |RightX| to 1.
-   * |JD_Olsen_plusK| is like |GD_plusK| and changes:
-
-     .. hlist::
-
-        * |robustShifts| = 1;
-        * |RightX| to 1;
-        * |SkewX| to 1;
-
-   * |RQI| changes:
-
-     .. hlist::
-
-        * |locking| = 1;
-        * |maxPrevRetain| = 0;
-        * |robustShifts|  = 1;
-        * |maxInnerIterations| = -1;
-        * |LeftQ|   = 1;
-        * |LeftX|   = 1;
-        * |RightQ|  = 0;
-        * |RightX|  = 1;
-        * |SkewQ|   = 0;
-        * |SkewX|   = 0;
-        * |convTest| = |primme_full_LTolerance|.
-
-   * |JDQR| changes:
-
-     .. hlist::
-
-        * |locking|     = 1;
-        * |maxPrevRetain|      = 1;
-        * |robustShifts|       = 0;
-        * |maxInnerIterations| = 10 if it is 0;
-        * |LeftQ|   = 0;
-        * |LeftX|   = 1;
-        * |RightQ|  = 1;
-        * |RightX|  = 1;
-        * |SkewQ|   = 1;
-        * |SkewX|   = 1;
-        * |relTolBase| = 1.5;
-        * |convTest| = |primme_full_LTolerance|.
-
-   * |JDQMR| changes:
-
-     .. hlist::
-
-        * |locking| = 0;
-        * |maxPrevRetain| = 1 if it is 0
-        * |maxInnerIterations| = -1;
-        * |LeftQ|   = |precondition|;
-        * |LeftX|   = 1;
-        * |RightQ|  = 0;
-        * |RightX|  = 0;
-        * |SkewQ|   = 0;
-        * |SkewX|   = 1;
-        * |convTest|  = |primme_adaptive|.
-
-   * |JDQMR_ETol| is like |JDQMR| and changes |convTest| = |primme_adaptive_ETolerance|.
-   * |SUBSPACE_ITERATION| changes:
-
-     .. hlist::
-
-        * |locking|    = 1;
-        * |maxBasisSize| = |numEvals| `*` 2;
-        * |minRestartSize| = |numEvals|;
-        * |maxBlockSize| = |numEvals|;
-        * |scheme|  = |primme_thick|;
-        * |maxPrevRetain|      = 0;
-        * |robustShifts|       = 0;
-        * |maxInnerIterations| = 0;
-        * |RightX|  = 1;
-        * |SkewX|   = 0.
-
-   * |LOBPCG_OrthoBasis| changes:
-
-     .. hlist::
-
-        * |locking|    = 0;
-        * |maxBasisSize| = |numEvals| `*` 3;
-        * |minRestartSize| = |numEvals|;
-        * |maxBlockSize| = |numEvals|;
-        * |scheme|  = |primme_thick|;
-        * |maxPrevRetain|      = |numEvals|;
-        * |robustShifts|       = 0;
-        * |maxInnerIterations| = 0;
-        * |RightX|  = 1;
-        * |SkewX|   = 0.
-
-   * |LOBPCG_OrthoBasis_Window| changes:
-
-     .. hlist::
-
-        * |locking|    = 0;
-        * |maxBasisSize| = |maxBlockSize| `*` 3;
-        * |minRestartSize| = |maxBlockSize|;
-        * |maxBlockSize| = |numEvals|;
-        * |scheme|  = |primme_thick|;
-        * |maxPrevRetain|      = |maxBlockSize|;
-        * |robustShifts|       = 0;
-        * |maxInnerIterations| = 0;
-        * |RightX|  = 1;
-        * |SkewX|   = 0.
-
-   :return: if 0, successful; if negative, something went wrong.
-
-.. c:function:: void primme_Free(primme_params *primme)
-
-   Free memory allocated by PRIMME.
-
-   :param primme_params* primme: parameters structure.
+dprimme
+"""""""
 
 .. c:function:: int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 
    Solve a real symmetric standard eigenproblems.
 
-   :param double* evals: array at least of size |numEvals| to store the
-      computed eigenvalues; all parallel calls return the same values in this array.
+   :param evals: array at least of size |numEvals| to store the
+      computed eigenvalues; all processes in a parallel run return this local array with the same values.
 
-   :param double* resNorms: array at least of size |numEvals| to store the
-      residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
+   :param resNorms: array at least of size |numEvals| to store the
+      residual norms of the computed eigenpairs; all processes in parallel run return this local array with
+      the same values.
 
-   :param double* evecs: array at least of size |nLocal| times |numEvals|
+   :param evecs: array at least of size |nLocal| times |numEvals|
       to store columnwise the (local part of the) computed eigenvectors.
 
-   :param primme_params* primme: parameters structure.
+   :param primme: parameters structure.
 
-   :return: error indicator:
+   :return: error indicator; see :ref:`error-codes`.
 
-      *  0: success.
-      *  1: reported only amount of required memory.
-      * -1: failed in allocating int or real workspace.
-      * -2: malloc failed in allocating a permutation integer array.
-      * -3: main_iter() encountered problem; the calling stack of the
-        functions where the error occurred was printed in ``stderr``.
-      * -4: if argument ``primme`` is NULL.
-      * -5: if |n| <= 0 or |nLocal| <= 0.
-      * -6: if |numProcs| < 1.
-      * -7: if |matrixMatvec| is NULL.
-      * -8: if |applyPreconditioner| is NULL and 
-        |precondition| is not NULL.
-      * -9: if |globalSumDouble| is NULL.
-      * -10: if |numEvals| > |n|.
-      * -11: if |numEvals| < 0.
-      * -12: if |eps| > 0 and |eps| < machine precision.
-      * -13: if |target| is not properly defined.
-      * -14: if |target| is one of |primme_closest_geq|,
-        |primme_closest_leq| or |primme_closest_abs| but
-        |numTargetShifts| <= 0 (no shifts).
-      * -15: if |target| is one of |primme_closest_geq|,
-        |primme_closest_leq| or |primme_closest_abs| but
-        |targetShifts| is NULL  (no shifts array).
-      * -16: if |numOrthoConst| < 0 or
-        |numOrthoConst| >= |n|.
-        (no free dimensions left).
-      * -17: if |maxBasisSize| < 2.
-      * -18: if |minRestartSize| <= 0.
-      * -19: if |maxBlockSize| <= 0.
-      * -20: if |maxPrevRetain| < 0.
-      * -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
-      * -22: if |initSize| < 0.
-      * -23: if not |locking| and |initSize| > |maxBasisSize|.
-      * -24: if |locking| and |initSize| > |numEvals|.
-      * -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|.
-      * -26: if |minRestartSize| >= |n|.
-      * -27: if |printLevel| < 0 or |printLevel| > 5.
-      * -28: if |convTest| is not one of
-        |primme_full_LTolerance|, |primme_decreasing_LTolerance|,
-        |primme_adaptive_ETolerance| or |primme_adaptive|.
-      * -29: if |convTest| == |primme_decreasing_LTolerance| and |relTolBase| <= 1.
-      * -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
-      * -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
-      * -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
+zprimme
+"""""""
 
-.. c:function:: zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
+.. c:function:: int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
 
    Solve a Hermitian standard eigenproblems; see function :c:func:`dprimme`.
 
-.. c:type:: primme_params
+   .. note::
 
-   Structure to set the problem matrices and eigensolver options.
+      PRIMME uses a structure called ``Complex_Z`` to define complex numbers.
+      ``Complex_Z`` is defined in :file:`PRIMMESRC/COMMONSRC/Complexz.h`.
+      In future versions of PRIMME, ``Complex_Z`` will be replaced by C99 complex double.
+      Therefore we strongly recommend to use standard C99 because it is binary
+      compatible with ``Complex_Z``. See examples in :file:`TEST` such as :file:`ex_zseq.c` and
+      :file:`ex_zseqf77.c`.
 
-   .. c:member:: int n
+primme_initialize
+"""""""""""""""""
 
-      Dimension of the matrix.
+.. c:function:: void primme_initialize(primme_params *primme)
 
-   .. c:member:: void (*matrixMatvec) (void *x, void *y, int *blockSize, primme_params *primme)
+   Set PRIMME parameters structure to the default values.
 
-      Block matrix-multivector multiplication, :math:`y = A x` in solving :math:`A x = \lambda x` or :math:`A x = \lambda B x`.
-   
-      :param void* x:
-      :param void* y: one dimensional array containing the ``blockSize`` vectors 
-         packed one after the other (i.e., the leading dimension is the vector size), each of size |nLocal|.
-         The real type is ``double*`` and ``Complex_Z*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
-      :param int* blockSize: number of vectors in x and y.
-      :param primme_params* primme: parameters structure.
+   :param primme: parameters structure.
 
-      .. note::
+primme_set_method
+"""""""""""""""""
 
-         Argument ``blockSize`` is passed by reference to make easier the interface to other
-         languages (like Fortran).
+.. c:function:: int primme_set_method(primme_preset_method method, primme_params *primme)
 
-   .. c:member:: void (*applyPreconditioner)(void *x, void *y, int *blockSize, struct primme_params *primme)
+   Set PRIMME parameters to one of the preset configurations.
 
-      Block preconditioner-multivector application, :math:`y = M^{-1}x` where :math:`M` is usually an approximation of :math:`A - \sigma I` or :math:`A - \sigma B` for finding eigenvalues close to :math:`\sigma`.
-      The function follows the convention of |matrixMatvec|.
+   :param method: preset configuration; one of
 
- 
-   .. c:member:: void (*massMatrixMatvec)(void *x, void *y, int *blockSize, struct primme_params *primme)
+      | |DYNAMIC|
+      | |DEFAULT_MIN_TIME|
+      | |DEFAULT_MIN_MATVECS|
+      | |Arnoldi|
+      | |GD|
+      | |GD_plusK|
+      | |GD_Olsen_plusK|
+      | |JD_Olsen_plusK|
+      | |RQI|
+      | |JDQR|
+      | |JDQMR|
+      | |JDQMR_ETol|
+      | |SUBSPACE_ITERATION|
+      | |LOBPCG_OrthoBasis|
+      | |LOBPCG_OrthoBasis_Window|
 
-      Block matrix-multivector multiplication, :math:`y = B x` in solving :math:`A x = \lambda B x`.
-      The function follows the convention of |matrixMatvec|.
+   :param primme: parameters structure.
 
-      .. warning::
+   See also :ref:`methods`.
 
-         Generalized eigenproblems not implemented in current version.
-         This member is included for future compatibility.
+primme_display_params
+"""""""""""""""""""""
 
-   .. c:member:: int numProcs
+.. c:function:: void primme_display_params(primme_params primme)
 
-      Number of processes calling in parallel to :c:func:`dprimme` or :c:func:`zprimme`.
-      The default value is 1.
+   Display all printable settings of ``primme`` into the file descriptor |outputFile|.
 
-   .. c:member:: int procID
+   :param primme: parameters structure.
 
-      The identity of the process that is calling in parallel to :c:func:`dprimme` or
-      :c:func:`zprimme`.
-      Only the process with id 0 prints information.
-      The default value is 0.
+primme_Free
+"""""""""""
 
-   .. c:member:: int nLocal
+.. c:function:: void primme_Free(primme_params *primme)
 
-      Number of local rows on this process.
-      The default value is |n| if |numProcs| is 1.
+   Free memory allocated by PRIMME.
 
-   .. c:member:: void *commInfo
-
-      A pointer to whatever parallel environment structures needed.
-      For example, with MPI, it could be a pointer to the MPI communicator.
-      PRIMME does not use this. It is available for possible use in 
-      user functions defined in |matrixMatvec|,
-      |applyPreconditioner|, |massMatrixMatvec| and
-      |globalSumDouble|.
-      The default values is NULL.
-
-   .. c:member:: void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count, primme_params *primme)
-
-      Global sum reduction function. 
-
-      :param double* sendBuf: array of size count with the input local values.
-      :param double* recvBuf: array of size count with the output global values
-         so that i-th element of recvBuf is the sum over all processes of the i-th element
-         of sendBuf.
-      :param int* count: array size of sendBuf and recvBuf.
-      :param primme_params* primme: parameters structure.
-
-      The default value is NULL if |numProcs| is 1.
-      When MPI this can be a simply wrapper to MPI_Allreduce().
-
-      .. code:: c
-
-         void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                                  primme_params *primme) {
-            MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-            MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator);
-         }
-
-      .. note::
-
-         Argument ``count`` is passed by reference to make easier the interface to other
-         languages (like Fortran).
-
-      .. note::
-
-         The arguments ``sendBuf`` and ``recvBuf`` are always double arrays and ``count``
-         is always the number of double elements in both arrays, even for :c:func:`zprimme`.
-
-
-   .. c:member:: int numEvals
-
-      Number of eigenvalues wanted.
-      The default value is 1.
-
-   .. c:member:: primme_target target
-
-      Which eigenpairs to find:
-
-      ``primme_smallest``
-         Smallest algebraic eigenvalues; |targetShifts| is ignored.
-
-      ``primme_largest``
-         Largest algebraic eigenvalues; |targetShifts| is ignored.
-
-      ``primme_closest_geq``
-         Closest to, but greater or equal than the shifts in |targetShifts|.
-
-      ``primme_closest_leq``
-         Closest to, but less or equal than the shifts in |targetShifts|.
-
-      ``primme_closest_abs``
-         Closest in absolute value to than the shifts in |targetShifts|.
-
-      The default value is |primme_smallest|.
-
-      .. note::
-         * If some shift is close to the lower (higher) end of the spectrum,
-           use either |primme_closest_geq| (|primme_closest_leq|) or
-           |primme_closest_abs|.
-         * |primme_closest_leq| and |primme_closest_geq| are more efficient
-           than |primme_closest_abs|.
- 
-   .. c:member:: int numTargetShifts
- 
-      Size of the array |targetShifts|.
-      Used only when |target| is |primme_closest_geq|,
-      |primme_closest_leq| or |primme_closest_abs|.
-      The default values is 0.
-
-   .. c:member:: double *targetShifts
-
-      Array of shifts, at least of size |numTargetShifts|.
-      Used only when |target| is |primme_closest_geq|,
-      |primme_closest_leq| or |primme_closest_abs|.
-      The default values is NULL.
-
-      The i-th shift (or the last one, if it is not given) is taken into account in
-      finding the i-th eigenvalue.
-
-      .. note::
-
-         For code efficiency and robustness, the shifts should be ordered.
-         Order them in ascending (descending) order for shifts closer
-         to the lower (higher) end of the spectrum.
-
-      .. c:member:: int printLevel
-
-         The level of message reporting from the code.
-         One of:
- 
-         * 0: silent.
-         * 1: print some error messages when these occur.
-         * 2: as 1, and info about targeted eigenpairs when they are marked as converged::
-         
-               #Converged $1 eval[ $2 ]= $3 norm $4 Mvecs $5 Time $7
-
-           or locked::
-
-               #Lock epair[ $1 ]= $3 norm $4 Mvecs $5 Time $7
-
-         * 3: as 2, and info about targeted eigenpairs every outer iteration::
-         
-               OUT $6 conv $1 blk $8 MV $5 Sec $7 EV $3 |r| $4
-
-           Also, if it is used the dynamic method, show JDQMR/GDk performance ratio and
-           the current method in use.
-         * 4: as 3, and info about targeted eigenpairs every inner iteration::
-         
-               INN MV $5 Sec $7 Eval $3 Lin|r| $9 EV|r| $4
-         
-         * 5: as 4, and verbose info about certain choices of the algorithm.
-         
-         Output key:
-
-         * $1: Number of converged pairs up to now.
-         * $2: The index of the pair currently converged.
-         * $3: The eigenvalue.
-         * $4: Its residual norm.
-         * $5: The current number of matrix-vector products.
-         * $6: The current number of outer iterations.
-         * $7: The current elapsed time.
-         * $8: Index within the block of the targeted pair .
-         * $9: QMR norm of the linear system residual.
-
-         In parallel programs, output is produced in call with
-         |procID| 0 when |printLevel|
-         is from 0 to 4.
-         If |printLevel| is 5 output can be produced in any of
-         the parallel calls.
-
-      .. note::
-
-         Convergence history for plotting may be produced simply by::
-
-            grep OUT outpufile | awk '{print $8" "$14}' > out
-            grep INN outpufile | awk '{print $3" "$11}' > inn
-
-         Then in Matlab::
-
-            plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
-
-         Or in gnuplot::
-
-            plot 'out' w lp, 'inn' w lp
-
-   .. c:member:: double aNorm
-
-      An estimate of norm of the matrix A that is used in the convergence criterion
-      (see |eps|).
-      If it is less or equal to 0, it is used the largest absolute Ritz value seen.
-      And on return, it is replaced with that value.
-
-      The default value is 0.
-
-   .. c:member:: double eps
-
-      An eigenpairs is marked as converged when the 2-norm of the residual is less
-      than |eps| times |aNorm|.
-      The residual vector is :math:`A x - \lambda x` or :math:`A x - \lambda B x`.
-
-      The default value is :math:`10^{-12}`.
- 
-   .. c:member:: FILE *outputFile
-
-      Opened file to write down the output.
-
-      The default value is the standard output.
-
-   .. c:member:: int dynamicMethodSwitch
-
-      If this value is 1, it alternates dynamically between |DEFAULT_MIN_TIME|
-      and |DEFAULT_MIN_MATVECS|, trying to identify the fastest method.
-
-      On exit, it holds a recommended method for future runs on this problem:
-
-      * -1: use |DEFAULT_MIN_MATVECS| next time.
-      * -2: use |DEFAULT_MIN_TIME| next time.
-      * -3: close call, use |DYNAMIC| next time again.
-      
-      .. note::
-
-         Even for expert users we do not recommend setting |dynamicMethodSwitch|
-         directly, but through :c:func:`primme_set_method`.
-
-      .. note::
-
-         The code obtains timings by the ``gettimeofday`` Unix utility. If a cheaper, more
-         accurate timer is available, modify the ``PRIMMESRC/COMMONSRC/wtime.c``
-
-   .. c:member:: int locking
-
-      If set to 1, hard locking will be used (locking converged eigenvectors
-      out of the search basis). Otherwise the code will try to use soft
-      locking (à la ARPACK), when large enough |minRestartSize| is available.
-
-      The default depends on the method and the value of some options.
-
-   .. c:member:: int initSize
- 
-      On input, the number of initial vector guesses provided in ``evecs`` argument in :c:func:`dprimme`
-      or :c:func:`zprimme`.
-      On output, the number of converged eigenpairs.
-      During execution, it holds the current number of converged eigenpairs.
-      If in addition locking is used, these are accessible in ``evals`` and ``evecs``.
-
-      The default value is 0.
-      
-   .. c:member:: int numOrthoConst
-
-      Number of external orthogonalization constraint vectors provided ``evecs`` argument in
-      :c:func:`dprimme` or :c:func:`zprimme`.
-
-      Then eigenvectors are found orthogonal to those constraints (equivalent to solving
-      the problem with :math:`(I-YY^*)A(I-YY^*)` and :math:`(I-YY^*)B(I-YY^*)` instead
-      where :math:`Y` are the given constraint vectors).
-      This is a handy feature if some eigenvectors are already known, or 
-      for finding more eigenvalues after a call to :c:func:`dprimme` or :c:func:`zprimme`.
-
-      The default value is 0.
-
-   .. c:member:: int maxBasisSize
-
-      The maximum basis size allowed in the main iteration. This has memory
-      implications.
-
-      The default depends on method.
-
-      .. note::
-
-         For interior eigenvalues use a larger value than usual.
-
-   .. c:member:: int minRestartSize
-
-      Maximum Ritz vectors kept after restarting the basis.
-
-      The default depends on |maxBasisSize|,
-      |maxBlockSize| and method.
-
-   .. c:member:: int maxBlockSize
- 
-      The maximum block size the code will try to use.
-
-      The user should set
-      this based on the architecture specifics of the target computer, 
-      as well as any a priori knowledge of multiplicities. The code does 
-      *not* require to be greater than 1 to find multiple eigenvalues. For some 
-      methods, keeping to 1 yields the best overall performance.
-
-      The default value is 1.
-
-      .. note::
-
-         Inner iterations of QMR are not performed in a block fashion.
-         Every correction equation from a block is solved independently.
-
-   .. c:member:: int maxMatvecs
-
-      Maximum number of matrix vector multiplications (approximately equal to 
-      the number of preconditioning operations) that the code is allowed to 
-      perform before it exits.
-
-      The default value is ``INT_MAX``. 
-
-   .. c:member:: int maxOuterIterations
-
-      Maximum number of outer iterations that the code is allowed to perform 
-      before it exits.
-
-      The default value is ``INT_MAX``. 
-
-   .. c:member:: int intWorkSize
-
-      If :c:func:`dprimme` or :c:func:`zprimme` are called with all arguments as NULL
-      but :c:type:`primme_params` then it has the size *in bytes* of the integer
-      workspace that is required.
-
-      Otherwise if not 0, it is the size of the integer work array *in bytes* that
-      the user provides in |intWork|. If it is 0, the code
-      will allocate the required space and should be freed by calling :c:func:`primme_Free`.
-
-      The default value is 0.
-
-   .. c:member:: long int realWorkSize
-
-      If :c:func:`dprimme` or :c:func:`zprimme` are called with all arguments as NULL
-      but :c:type:`primme_params` then it has the size *in bytes* of the real
-      workspace that is required.
-
-      Otherwise if not 0, it is the size of the real work array *in bytes* that
-      the user provides in |realWork|. If it is 0, the code
-      will allocate the required space and should be freed by calling :c:func:`primme_Free`.
-
-      The default value is 0.
-
-   .. c:member:: int *intWork
-
-      Integer work array.
-
-      If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will free it and allocate a new space.
-
-      On exit, the first element shows if a locking problem has occurred.
-      Using locking for large |numEvals| may, in some rare cases,
-      cause some pairs to be practically converged, in the sense that their components 
-      are in the basis of ``evecs``. If this is the case, a Rayleigh Ritz on returned
-      ``evecs`` would provide the accurate eigenvectors (see [r4]_).
-
-      The default value is NULL. 
-
-   .. c:member:: void *realWork
-
-      Real work array.
-
-      If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will free it and allocate a new space.
-
-      The default value is NULL. 
-
-   .. c:member:: int iseed
-
-      The ``int iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
-
-      The default value is an array with values 1, 2, 3 and 5.
-
-   .. c:member:: void *matrix
-
-      This field may be used to pass any required information 
-      in the matrix-vector product |matrixMatvec|.
-
-      The default value is NULL.
-      
-   .. c:member:: void *preconditioner
-
-      This field may be used to pass any required information 
-      in the matrix-vector product |applyPreconditioner|.
-
-      The default value is NULL.
-
-   .. c:member:: double *ShiftsForPreconditioner
-
-      Array of size ``blockSize`` provided during execution of :c:member:dprimme and :c:member:zprimme holding
-      the shifts to be used (if needed) in the preconditioning operation.
-
-      For example if the block size is 3,
-      there will be an array of three shifts in |ShiftsForPreconditioner|.
-      Then the user can invert a shifted preconditioner for each of the 
-      block vectors :math:`(M-ShiftsForPreconditioner_i)^{-1} x_i`.
-      Classical Davidson (diagonal) preconditioning is an example of this.
-   
-   .. c:member:: primme_restartscheme restartingParams.scheme
-
-      Select a restarting strategy:
-
-      * ``primme_thick``, Thick restarting. This is the most efficient and robust
-        in the general case.
-      * ``primme_dtr``, Dynamic thick restarting. Helpful without 
-        preconditioning but it is expensive to implement.
-
-      The default value is |primme_thick|.
-
-   .. c:member:: int restartingParams.maxPrevRetain
-
-      Number of approximations from previous iteration to be retained
-      after restart (see [r2]_). The restart size is |minRestartSize|
-      plus |maxPrevRetain|.
-
-      The default value is 1.
-
-   .. c:member:: int correctionParams.precondition
-
-      Set to 1 to use preconditioning.
-      Make sure |applyPreconditioner| is not NULL then!
-
-      The default value is 0.
-
-   .. c:member:: int correctionParams.robustShifts
-
-      Set to 1 to use robust shifting. It tries to avoid stagnation and 
-      misconvergence by providing as shifts in |ShiftsForPreconditioner|
-      the Ritz values displaced by an approximation of the eigenvalue error.
-
-      The default value depends on method.
-
-   .. c:member:: int correctionParams.maxInnerIterations
-
-      Control the maximum number of inner QMR iterations:
-
-      * 0:  no inner iterations;
-      * >0: perform at most that number of inner iterations per outer step;
-      * <0: perform at most the rest of the remaining matrix-vector products
-        up to reach |maxMatvecs|.
-
-      The default value depends on method.
-
-      See also |convTest|.
-
-   .. c:member:: double correctionParams.relTolBase
-
-      Parameter used when |convTest|
-      is |primme_decreasing_LTolerance|.
-
-   .. c:member:: primme_convergencetest correctionParams.convTest
-
-      Set how to stop the inner QMR method:
-
-      * ``primme_full_LTolerance``: stop by iterations only;
-
-      * ``primme_decreasing_LTolerance``, stop when
-        :math:`\text{relTolBase}^{-\text{outIts}}` where outIts
-        is the number of outer iterations and retTolBase is set in
-        |relTolBase|;
-        This is a legacy option from classical JDQR and we recommend
-        **strongly** against its use.
-
-      * ``primme_adaptive``, stop when the estimated eigenvalue residual
-        has reached the required tolerance (based on Notay's JDCG).
-
-      * ``primme_adaptive_ETolerance``, as |primme_adaptive| but also
-        stopping when the estimated eigenvalue residual has reduced 10
-        times.
-
-      The default value depends on method.
-
-      .. note::
-
-         Avoid to set |maxInnerIterations| to -1 and |convTest| to |primme_full_LTolerance|.
-
-      See also |maxInnerIterations|.
-
-   .. c:member:: int correctionParams.projectors.LeftQ
-   .. c:member:: int correctionParams.projectors.LeftX
-   .. c:member:: int correctionParams.projectors.RightQ
-   .. c:member:: int correctionParams.projectors.RightX
-   .. c:member:: int correctionParams.projectors.SkewQ
-   .. c:member:: int correctionParams.projectors.SkewX
-
-      Control the projectors involved in the computation of the correction
-      appended to the basis every (outer) iteration.
-
-      Given the current selected Ritz value :math:`\Lambda` and vectors
-      :math:`X`, the residual associated vectors :math:`R=AX-X\Lambda`, the previous locked
-      vectors :math:`Q` and the preconditioner :math:`M^{-1}`.
-      The correction :math:`D` appended to the basis in GD
-      (when |maxInnerIterations| is 0) is:
-
-      +--------+-------+------------------------------------------------------------------+
-      | RightX | SkewX |        :math:`D`                                                 |
-      +========+=======+==================================================================+
-      |    0   |   0   | :math:`M^{-1}R` (Classic GD)                                     |
-      +--------+-------+------------------------------------------------------------------+
-      |    1   |   0   | :math:`M^{-1}(R-\Delta X)` (cheap Olsen's Method)                |
-      +--------+-------+------------------------------------------------------------------+
-      |    1   |   1   | :math:`(I- M^{-1}X(X^*M^{-1}X)^{-1}X^*)M^{-1}R` (Olsen's Method) |
-      +--------+-------+------------------------------------------------------------------+
-      |    0   |   1   | error                                                            |
-      +--------+-------+------------------------------------------------------------------+
-
-      Where :math:`\Delta` is a diagonal matrix that :math:`\Delta_{i,i}` holds an estimation
-      of the error of the approximate eigenvalue :math:`\Lambda_{i,i}`.
- 
-      The values of ``RightQ``, ``SkewQ``, ``LeftX`` and ``LeftQ`` are ignored.
-
-      The correction :math:`D` in JD
-      (when |maxInnerIterations| isn't 0)
-      results from solving:
-
-      .. math::
-
-         P_Q^l P_X^l (A-\sigma I) P_X^r P_Q^r M^{-1} D' = -R, \ \ \  D = P_X^r P_Q^l M^{-1}D'.
-
-      For ``LeftQ`` (and similarly for ``LeftX``):
-
-      * 0: :math:`P_Q^l = I`;
-      * 1: :math:`P_Q^l = I - QQ^*`.
-
-      For ``RightQ`` and ``SkewQ`` (and similarly for ``RightX`` and ``SkewX``):
-
-      +--------+-------+-------------------------------+
-      | RightQ | SkewQ |        :math:`P_Q^r`          |
-      +========+=======+===============================+
-      |    0   |   0   | :math:`I`                     |
-      +--------+-------+-------------------------------+
-      |    1   |   0   | :math:`I - QQ^*`              |
-      +--------+-------+-------------------------------+
-      |    1   |   1   | :math:`I - KQ(Q^*KQ)^{-1}Q^*` |
-      +--------+-------+-------------------------------+
-      |    0   |   1   | error                         |
-      +--------+-------+-------------------------------+
-
-      The default value depends on method.
-
-      See [r3]_ for a study about different projector configuration in JD.
-
-   .. c:member:: int stats.numOuterIterations
-
-      Hold the number of outer iterations. The value is available during execution and at the end.
-
-   .. c:member:: int stats.numRestarts
-
-      Hold the number of restarts during execution and at the end.
-
-   .. c:member:: int stats.numMatvecs
-
-      Hold how many vectors the operator in |matrixMatvec| has been applied on.
-      The value is available during execution and at the end.
-
-   .. c:member:: int stats.numPreconds
-
-      Hold how many vectors the operator in |applyPreconditioner| has been applied on.
-      The value is available during execution and at the end.
-
-   .. c:member:: int stats.elapsedTime
-
-      Hold the wall clock time spent by the call to :c:func:`dprimme` or :c:func:`zprimme`.
-      The value is available at the end of the execution.
-
-
-..   struct stackTraceNode *stackTrace;            (OUTPUT)
-..
-.. Struct with the following members. If an error occurs the function
-.. primme_PrintStackTrace(primme) prints the calling stack from top to the 
-..       function that caused the error. Nothing to set.
-..
-.. int callingFunction;
-..    int failedFunction;
-..    int errorCode;
-..    int lineNumber;
-..    char fileName[PRIMME_MAX_NAME_LENGTH];
-..    struct stackTraceNode *nextNode;
-..
+   :param primme: parameters structure.
 
 .. include:: epilog.inc

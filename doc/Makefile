@@ -126,6 +126,9 @@ text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
 	@echo
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
+	@cat $(BUILDDIR)/text/index.txt $(BUILDDIR)/text/intro.txt \
+	   $(BUILDDIR)/text/primmec.txt $(BUILDDIR)/text/primmef77.txt \
+	   $(BUILDDIR)/text/appendix.txt > ../readme.txt
 
 man:
 	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) $(BUILDDIR)/man

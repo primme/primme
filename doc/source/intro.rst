@@ -11,7 +11,7 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77 an
 Changelog
 ---------
 
-Changes in PRIMME 1.2.1:
+Changes in PRIMME 1.2.1 (released on ???):
 
 * Added MATLAB interface to full PRIMME functionality.
 
@@ -28,9 +28,11 @@ Changes in PRIMME 1.2.1:
   * ``ex*.c`` and ``ex*.f``: small, didactic examples of usage in C and Fortran
     and in parallel (with PETSc).
 
-* Using Sphinx_ to manage documentation. Detailed Fortran 77 interface.
+* Fixed a few minor bugs and improved documentation (specially the F77 interface).
 
-Changes in PRIMME 1.2:
+* Using Sphinx_ to manage documentation.
+
+Changes in PRIMME 1.2 (released on December 21, 2014):
 
 * A Fortran compiler is no longer required for building the PRIMME library.
   Fortran programs can still be linked to PRIMME's F77 interface.
@@ -114,7 +116,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Contact Information 
 -------------------
 
-For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_
+For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
+email, `andreas` at `cs.wm.edu`. See further information in
+the webpage http://www.cs.wm.edu/~andreas .
+
 
 Directory Structure
 -------------------
@@ -191,6 +196,7 @@ Many users have reported builds on several other platforms/compilers:
 * CentOS 6.6
 * Ubuntu 14.04
 * MacOS X 10.9 & 10.10 
+* Cygwin & MinGW
 * Cray XC30
 * SunOS 5.9, quad processor Sun-Fire-280R, and several other UltraSparcs
 * AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at nersc.gov)
