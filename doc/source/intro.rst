@@ -160,7 +160,7 @@ Making and Linking
 .. note::
 
    When ``-DPRIMME_BLASINT_SIZE=64`` is set the code uses the type ``int64_t``
-   supported by the starndard C99. In case the compiler doesn't honor the
+   supported by the standard C99. In case the compiler doesn't honor the
    standard, replace the next lines in :file:`PRIMMESRC/COMMONSRC/common_numerical.h`::
 
       #if !defined(PRIMME_BLASINT_SIZE)
