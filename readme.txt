@@ -647,35 +647,21 @@ primme_set_method_f77(method, primme, ierr)
 
         (input) preset configuration. One of:
 
-        * "PRIMMEF77_DYNAMIC"
-
-        * "PRIMMEF77_DEFAULT_MIN_TIME"
-
-        * "PRIMMEF77_DEFAULT_MIN_MATVECS"
-
-        * "PRIMMEF77_Arnoldi"
-
-        * "PRIMMEF77_GD"
-
-        * "PRIMMEF77_GD_plusK"
-
-        * "PRIMMEF77_GD_Olsen_plusK"
-
-        * "PRIMMEF77_JD_Olsen_plusK"
-
-        * "PRIMMEF77_RQI"
-
-        * "PRIMMEF77_JDQR"
-
-        * "PRIMMEF77_JDQMR"
-
-        * "PRIMMEF77_JDQMR_ETol"
-
-        * "PRIMMEF77_SUBSPACE_ITERATION"
-
-        * "PRIMMEF77_LOBPCG_OrthoBasis"
-
-        * "PRIMMEF77_LOBPCG_OrthoBasis_Window"
+           "PRIMMEF77_DYNAMIC"
+           "PRIMMEF77_DEFAULT_MIN_TIME"
+           "PRIMMEF77_DEFAULT_MIN_MATVECS"
+           "PRIMMEF77_Arnoldi"
+           "PRIMMEF77_GD"
+           "PRIMMEF77_GD_plusK"
+           "PRIMMEF77_GD_Olsen_plusK"
+           "PRIMMEF77_JD_Olsen_plusK"
+           "PRIMMEF77_RQI"
+           "PRIMMEF77_JDQR"
+           "PRIMMEF77_JDQMR"
+           "PRIMMEF77_JDQMR_ETol"
+           "PRIMMEF77_SUBSPACE_ITERATION"
+           "PRIMMEF77_LOBPCG_OrthoBasis"
+           "PRIMMEF77_LOBPCG_OrthoBasis_Window"
 
         See "primme_preset_method".
 
@@ -758,107 +744,57 @@ primmetop_set_member_f77(primme, label, value)
 
         field where to set value. One of:
 
-        * "PRIMMEF77_n"
-
-        * "PRIMMEF77_matrixMatvec"
-
-        * "PRIMMEF77_applyPreconditioner"
-
-        * "PRIMMEF77_numProcs"
-
-        * "PRIMMEF77_procID"
-
-        * "PRIMMEF77_commInfo"
-
-        * "PRIMMEF77_nLocal"
-
-        * "PRIMMEF77_globalSumDouble"
-
-        * "PRIMMEF77_numEvals"
-
-        * "PRIMMEF77_target"
-
-        * "PRIMMEF77_numTargetShifts"
-
-        * "PRIMMEF77_targetShifts"
-
-        * "PRIMMEF77_locking"
-
-        * "PRIMMEF77_initSize"
-
-        * "PRIMMEF77_numOrthoConst"
-
-        * "PRIMMEF77_maxBasisSize"
-
-        * "PRIMMEF77_minRestartSize"
-
-        * "PRIMMEF77_maxBlockSize"
-
-        * "PRIMMEF77_maxMatvecs"
-
-        * "PRIMMEF77_maxOuterIterations"
-
-        * "PRIMMEF77_intWorkSize"
-
-        * "PRIMMEF77_realWorkSize"
-
-        * "PRIMMEF77_iseed"
-
-        * "PRIMMEF77_intWork"
-
-        * "PRIMMEF77_realWork"
-
-        * "PRIMMEF77_aNorm"
-
-        * "PRIMMEF77_eps"
-
-        * "PRIMMEF77_printLevel"
-
-        * "PRIMMEF77_outputFile"
-
-        * "PRIMMEF77_matrix"
-
-        * "PRIMMEF77_preconditioner"
-
-        * "PRIMMEF77_restartingParams_scheme".
-
-        * "PRIMMEF77_restartingParams_maxPrevRetain"
-
-        * "PRIMMEF77_correctionParams_precondition"
-
-        * "PRIMMEF77_correctionParams_robustShifts"
-
-        * "PRIMMEF77_correctionParams_maxInnerIterations"
-
-        * "PRIMMEF77_correctionParams_projectors_LeftQ"
-
-        * "PRIMMEF77_correctionParams_projectors_LeftX"
-
-        * "PRIMMEF77_correctionParams_projectors_RightQ"
-
-        * "PRIMMEF77_correctionParams_projectors_RightX"
-
-        * "PRIMMEF77_correctionParams_projectors_SkewQ"
-
-        * "PRIMMEF77_correctionParams_projectors_SkewX"
-
-        * "PRIMMEF77_correctionParams_convTest"
-
-        * "PRIMMEF77_correctionParams_relTolBase"
-
-        * "PRIMMEF77_stats_numOuterIterations"
-
-        * "PRIMMEF77_stats_numRestarts"
-
-        * "PRIMMEF77_stats_numMatvecs"
-
-        * "PRIMMEF77_stats_numPreconds"
-
-        * "PRIMMEF77_stats_elapsedTime"
-
-        * "PRIMMEF77_dynamicMethodSwitch"
-
-        * "PRIMMEF77_massMatrixMatvec"
+           "PRIMMEF77_n"
+           "PRIMMEF77_matrixMatvec"
+           "PRIMMEF77_applyPreconditioner"
+           "PRIMMEF77_numProcs"
+           "PRIMMEF77_procID"
+           "PRIMMEF77_commInfo"
+           "PRIMMEF77_nLocal"
+           "PRIMMEF77_globalSumDouble"
+           "PRIMMEF77_numEvals"
+           "PRIMMEF77_target"
+           "PRIMMEF77_numTargetShifts"
+           "PRIMMEF77_targetShifts"
+           "PRIMMEF77_locking"
+           "PRIMMEF77_initSize"
+           "PRIMMEF77_numOrthoConst"
+           "PRIMMEF77_maxBasisSize"
+           "PRIMMEF77_minRestartSize"
+           "PRIMMEF77_maxBlockSize"
+           "PRIMMEF77_maxMatvecs"
+           "PRIMMEF77_maxOuterIterations"
+           "PRIMMEF77_intWorkSize"
+           "PRIMMEF77_realWorkSize"
+           "PRIMMEF77_iseed"
+           "PRIMMEF77_intWork"
+           "PRIMMEF77_realWork"
+           "PRIMMEF77_aNorm"
+           "PRIMMEF77_eps"
+           "PRIMMEF77_printLevel"
+           "PRIMMEF77_outputFile"
+           "PRIMMEF77_matrix"
+           "PRIMMEF77_preconditioner"
+           "PRIMMEF77_restartingParams_scheme".
+           "PRIMMEF77_restartingParams_maxPrevRetain"
+           "PRIMMEF77_correctionParams_precondition"
+           "PRIMMEF77_correctionParams_robustShifts"
+           "PRIMMEF77_correctionParams_maxInnerIterations"
+           "PRIMMEF77_correctionParams_projectors_LeftQ"
+           "PRIMMEF77_correctionParams_projectors_LeftX"
+           "PRIMMEF77_correctionParams_projectors_RightQ"
+           "PRIMMEF77_correctionParams_projectors_RightX"
+           "PRIMMEF77_correctionParams_projectors_SkewQ"
+           "PRIMMEF77_correctionParams_projectors_SkewX"
+           "PRIMMEF77_correctionParams_convTest"
+           "PRIMMEF77_correctionParams_relTolBase"
+           "PRIMMEF77_stats_numOuterIterations"
+           "PRIMMEF77_stats_numRestarts"
+           "PRIMMEF77_stats_numMatvecs"
+           "PRIMMEF77_stats_numPreconds"
+           "PRIMMEF77_stats_elapsedTime"
+           "PRIMMEF77_dynamicMethodSwitch"
+           "PRIMMEF77_massMatrixMatvec"
 
       * **value** -- (input) value to set.
 
@@ -1217,23 +1153,15 @@ primme_params
 
          Output key:
 
-         * $1: Number of converged pairs up to now.
-
-         * $2: The index of the pair currently converged.
-
-         * $3: The eigenvalue.
-
-         * $4: Its residual norm.
-
-         * $5: The current number of matrix-vector products.
-
-         * $6: The current number of outer iterations.
-
-         * $7: The current elapsed time.
-
-         * $8: Index within the block of the targeted pair .
-
-         * $9: QMR norm of the linear system residual.
+               $1: Number of converged pairs up to now.
+               $2: The index of the pair currently converged.
+               $3: The eigenvalue.
+               $4: Its residual norm.
+               $5: The current number of matrix-vector products.
+               $6: The current number of outer iterations.
+               $7: The current elapsed time.
+               $8: Index within the block of the targeted pair .
+               $9: QMR norm of the linear system residual.
 
          In parallel programs, output is produced in call with
          "procID" 0 when "printLevel" is from 0 to 4. If "printLevel"
@@ -1285,11 +1213,9 @@ primme_params
       On exit, it holds a recommended method for future runs on this
       problem:
 
-      * -1: use "DEFAULT_MIN_MATVECS" next time.
-
-      * -2: use "DEFAULT_MIN_TIME" next time.
-
-      * -3: close call, use "DYNAMIC" next time again.
+            -1: use "DEFAULT_MIN_MATVECS" next time.
+            -2: use "DEFAULT_MIN_TIME" next time.
+            -3: close call, use "DYNAMIC" next time again.
 
       Note: Even for expert users we do not recommend setting
         "dynamicMethodSwitch" directly, but through
@@ -1606,9 +1532,8 @@ primme_params
 
       For "LeftQ" (and similarly for "LeftX"):
 
-      * 0: P_Q^l = I;
-
-      * 1: P_Q^l = I - QQ^*.
+            0: P_Q^l = I;
+            1: P_Q^l = I - QQ^*.
 
       For "RightQ" and "SkewQ" (and similarly for "RightX" and
       "SkewX"):
