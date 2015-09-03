@@ -264,6 +264,25 @@ Making and Linking
   * "-DPRIMME_BLASINT_SIZE=64", integers are 64-bit integer
     ("kind=8") type (usually they doesn't).
 
+Note: When "-DPRIMME_BLASINT_SIZE=64" is set the code uses the type
+  "int64_t" supported by the standard C99. In case the compiler
+  doesn't honor the standard, replace the next lines in
+  "PRIMMESRC/COMMONSRC/common_numerical.h":
+
+     #if !defined(PRIMME_BLASINT_SIZE)
+     #  define PRIMME_BLASINT int
+     #else
+     #  include <stdint.h>
+     #  define GENERIC_INT(N) int ## N ## _t
+     #  define XGENERIC_INT(N) GENERIC_INT(N)
+     #  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
+     #endif
+
+  by the next macro definition with the proper type for an "int" of 64
+  bits:
+
+     #define PRIMME_BLASINT __int64
+
 After customizing "Make_flags", type this to generate "libprimme.a":
 
    make lib
@@ -1278,16 +1297,18 @@ primme_params
 
    int numOrthoConst
 
-      Number of external orthogonalization constraint vectors provided
-      "evecs" argument in "dprimme()" or "zprimme()".
+      Number of external orthogonalization constraints. These vectors
+      are provided in the first "numOrthoConst" positions of the
+      "evecs" argument in "dprimme()" or "zprimme()" and must be
+      orthonormal.
 
       PRIMME finds new eigenvectors orthogonal to these constraints
       (equivalent to solving the problem with (I-YY^*)A(I-YY^*) and
-      (I-YY^*)B(I-YY^*) matrices instead where Y are the given
-      constraint vectors). This is a handy feature if some
-      eigenvectors are already known, or for finding more eigenvalues
-      after a call to "dprimme()" or "zprimme()" (possibly with
-      different parameters).
+      (I-YY^*)B(I-YY^*) matrices where Y are the given constraint
+      vectors). This is a handy feature if some eigenvectors are
+      already known, or for finding more eigenvalues after a call to
+      "dprimme()" or "zprimme()", possibly with different parameters
+      (see an example in "TEST/ex_zseq.c").
 
       The default value is 0.
 
@@ -1400,7 +1421,10 @@ primme_params
       The "int iseed[4]" is an array with the seeds needed by the
       LAPACK dlarnv and zlarnv.
 
-      The default value is an array with values -1, -1, -1 and -1.
+      The default value is an array with values -1, -1, -1 and -1. In
+      that case, "iseed" is set based on the value of "procID" to
+      avoid every process generating the same sequence of pseudorandom
+      numbers.
 
    void *matrix
 
