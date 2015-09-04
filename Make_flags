@@ -59,7 +59,7 @@ FFLAGS   ?= -fno-second-underscore -O
 
 #---------------------------------------------------------------
 # Uncomment this when building MATLAB interface
-# CFLAGS += -DPRIMME_BLASINT_SIZE=64
+# CFLAGS += -DPRIMME_BLASINT_SIZE=64 -fPIC
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
