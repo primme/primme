@@ -49,13 +49,11 @@ PRIMME_MEX/
 
 > ls 
 PIRMME_mex.c          <- C language source MEX-file of PRIMME MEX
-PIRMME_mex.mexa64     <- executable mex file of PRIMME MEX in linux SUSE
+PIRMME_mex.mex???     <- PRIMME MEX interface (generated)
 primme_eigs.m         <- MATLAB function for solving eigenpair problems
 getMatvecHandle.m     <- perform matvec operations or get user's matvec function handle
 getPrecondHandle.m    <- perform preconditioning or get user's preconditioner 
-eigsMatvec.m	      <- test case of user's matvec function for primme_eigs 
-eigsPrecond.m         <- test case of user's preconditioner for primme_eigs
-Primme_eigsTest1-9.m  <- total 9 test cases for primme_eigs
+primme_eigs_example.m <- sample code using primme_eigs
 PRIMME_MEX_Readme.txt <- this file
 
 -----------------------------------------------------------------------------
