@@ -286,9 +286,9 @@ primme_params
       
    .. c:member:: int numOrthoConst
 
-      Number of external orthogonalization constraints. These vectors are provided
-      in the first |numOrthoConst| positions of the ``evecs`` argument in
-      :c:func:`dprimme` or :c:func:`zprimme` and must be orthonormal.
+      Number of vectors to be used as external orthogonalization constraints.
+      These vectors are provided in the first |numOrthoConst| positions of
+      the ``evecs`` argument in :c:func:`dprimme` or :c:func:`zprimme` and must be orthonormal.
 
       PRIMME finds new eigenvectors orthogonal to these constraints (equivalent to solving
       the problem with :math:`(I-YY^*)A(I-YY^*)` and :math:`(I-YY^*)B(I-YY^*)` matrices
