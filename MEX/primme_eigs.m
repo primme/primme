@@ -91,7 +91,7 @@ function [varargout] = primme_eigs(varargin)
 %  opts.printLevel: different level reporting(0-5) [{1}|scaler]
 %  opts.outputFile: output file name where user wants to save results
 %  opts.precondition: set to 1 if use preconditioner [{0}|1]
-%  opts.isreal: the complexity of A represented by afun [{ture}|false]
+%  opts.isreal: the complexity of A represented by AFUN [{ture}|false]
 %  opts.numTargetShifts: number of shifts for interior eigenvalues [{0}|scaler]
 %  opts.targetShifts: shifts for interior eigenvalues [{}|vector]
 %  opts.initSize: On INPUT, the number of initial guesses provided in evecs 
@@ -141,9 +141,9 @@ function [varargout] = primme_eigs(varargin)
    end
 
     global primmeA;  
-    global Amatrix;   % mark if A is a marix or matrix function 
+    global Amatrix;   % mark if A is a matrix or matrix function 
     global P1;  
-    global P1matrix;  % mark if the first preconditioner is a marix or a function
+    global P1matrix;  % mark if the first preconditioner is a matrix or a function
     global P2;  % P2 is the second preconditioner that must be a matrix
 
     if isfloat(varargin{1}) % check if the first input is matrix or matrix funtion
@@ -156,7 +156,7 @@ function [varargout] = primme_eigs(varargin)
         Amatrix = false;
     end
 
-   if (Amatrix == 1) % A is an matrix
+   if (Amatrix) % A is an matrix
        [M, N] = size(primmeA); % get the dimension of input matrix A
        if isequal(primmeA,primmeA')
           dim = M;
@@ -203,7 +203,7 @@ function [varargout] = primme_eigs(varargin)
            eigsMethod = 0; 
        end
 
-       if (nargin >= 6) % check if the sixth input is matrix or matrix funtion      
+       if (nargin >= 6) % check if the sixth input is matrix or matrix function      
             if isfloat(varargin{6}) % the sixth input is matrix
                 P1 = varargin{6};
                 P1matrix = true;
@@ -226,6 +226,17 @@ function [varargout] = primme_eigs(varargin)
        if ~isscalar(dim) || ~isreal(dim) || (dim<0) || ~isfinite(dim)
             error(message('The size of input matrix A must be an positive integer'));
        end            
+       % Test whether the given matvec function is valid
+       try
+          xvec = randn(dim,1);
+          yvev = primmeA(xvec);
+	  clear xvec, yvec;
+       catch ME
+          if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
+             disp('Matvec function AFUN does not exist.');
+             rethrow(ME);
+          end
+       end
        if (nargin >= 3)
             numEvals = varargin{3};
        else
@@ -278,18 +289,32 @@ function [varargout] = primme_eigs(varargin)
             end
        end
 
-       % if use does not specifies the field "opts.isreal"
+       % if the user does not specifies the field "opts.isreal"
        if(isfield(opts,'isreal') == 0) 
            flag = 1; % The complexity of matrix function is default real.
        else
-            if(opts.isreal == 1)
+            if(opts.isreal)
                 flag = 1;
             else
                 flag = 1+1i;
             end
        end
-
    end
+
+   if (~isempty(P1) && ~P1matrix)
+       % Test whether the given preconditioner function is valid
+       try
+          xvec = randn(dim,1);
+          yvev = P1(xvec);
+	  clear xvec, yvec;
+       catch ME
+          if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
+             disp('Preconditioner P1 function does not exist.');
+             rethrow(ME);
+          end
+       end
+   end
+
 
 
    [evals,evecs,norms,primmeout]= PRIMME_mex(flag, dim, numEvals, target, eigsMethod, opts); 
