@@ -107,15 +107,15 @@ double primme_get_time(double *utime, double *stime) {
 #else
 #include <Windows.h>
 double primme_wTimer(int zeroTimer) {
-	static DWORD StartingTime;
+   static DWORD StartingTime;
 
-	if (zeroTimer) {
-		StartingTime = GetTickCount();
-		return StartingTime;
-	}
-	else {
-		return GetTickCount() - StartingTime;
-	}
+   if (zeroTimer) {
+      StartingTime = GetTickCount();
+      return StartingTime;
+   }
+   else {
+      return GetTickCount() - StartingTime;
+   }
 }
 
 #endif
