@@ -27,8 +27,8 @@
  ******************************************************************************/
 
 #include <stdlib.h>
-#include <sys/time.h>
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
 #include "wtime.h"
@@ -38,6 +38,7 @@
 #define   RUSAGE_SELF     0      /*needed in osx*/
 #endif
 
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 double primme_wTimer(int zeroTimer) {
    static struct timeval tv;
    static double StartingTime;
@@ -89,7 +90,6 @@ double primme_get_wtime() {
    return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6;
 }
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 /* Return user/system times */
 double primme_get_time(double *utime, double *stime) {
    struct rusage usage;
@@ -104,4 +104,18 @@ double primme_get_time(double *utime, double *stime) {
 
    return *utime + *stime;
 }
+#else
+#include <Windows.h>
+double primme_wTimer(int zeroTimer) {
+	static DWORD StartingTime;
+
+	if (zeroTimer) {
+		StartingTime = GetTickCount();
+		return StartingTime;
+	}
+	else {
+		return GetTickCount() - StartingTime;
+	}
+}
+
 #endif

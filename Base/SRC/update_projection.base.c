@@ -26,7 +26,6 @@
  *
  ******************************************************************************/
 
-#include <strings.h>
 #include <stdlib.h>
 #include "primme.h"
 #include "const.h"

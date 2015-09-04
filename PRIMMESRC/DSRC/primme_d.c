@@ -48,7 +48,6 @@
  ******************************************************************************/
 
 #include <stdlib.h>   /* mallocs, free */
-#include <unistd.h>   /* gethostname */
 #include <stdio.h>    
 #include "primme.h"
 #include "const.h"

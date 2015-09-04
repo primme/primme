@@ -29,6 +29,7 @@
 #ifndef COMMON_NUMERICAL_H
 #define COMMON_NUMERICAL_H
 
+#include <stdlib.h>
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
