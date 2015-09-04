@@ -8,7 +8,7 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib libd libz clean backup
+.PHONY: lib libd libz clean backup test
 
 #------------------------ Libraries ------------------------------
 lib:
