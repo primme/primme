@@ -1,21 +1,15 @@
 function [varargout] = primme_eigs(varargin)
 
-%  primme_eigs finds a few eigenvalues and eigenvectors. If A is M-by-N, 
-%  a few eigenvalues and eigenvectors of A are returned by PRIMME_mex.
-%  (flag,dim,...), where input matrix is A.
-% 
-%  It is an interface between user function call and PRIMME_mex function. 
-%  The primme_eigs function requires at least one input (input matrix A) 
-%  and output at least eigenvalues of A.
-%  
-%  Like eigs() function in the matlab, we provide different level function
-%  calls to satisfy users' demands:
+%  primme_eigs finds a few eigenvalues and eigenvectors of a real symmetric
+%  or Hermitian matrix, A, by calling the function PRIMME_mex(flag,dim,...).
+%  This in turn calls PRIMME. Full PRIMME functionality is supported.
 %  
 %  Input: [A, numEvals, target, opts, eigsMethod, P]
 % 
 %  Output: [evals, evecs, norms, primmeout]
 %  
-%  Function call:  
+%  We provide different levels of function calls, similarly to MATLAB eigs():
+%
 %   primme_eigs(A)
 %   primme_eigs(A, numEvals)
 %   primme_eigs(A, numEvals, target)
@@ -26,30 +20,27 @@ function [varargout] = primme_eigs(varargin)
 %   primme_eigs(A, numEvals, target, opts, eigsMethod, Pfun)
 %   primme_eigs(Afun, dim,...)
 %
-%  primme_D = primme_eigs(A) returns a vector of A's 6 largest algebraic
-%  eigenvalues. A must be real symmetric or complex hermitian and should
-%  be large and sparse. The primme_eigs(Afun, dim) accepts a function 
-%  AFUN instead of the matrix A. AFUN is a function handle and y = Afun(x) 
-%  returns the matrix-vector product A*x. In all these primme_eigs
-%  function syntaxes, primme_eigs(A,...) could be replaced by
-%  primme_eigs(Afun, dim,...). More examples about how to use function Afun
-%  are presented in the Primme_eigsTest6, 7, 8, and 9 in the root directory
-%  of PRIMME_MEX folder.
+%  primme_eigs(A) returns a vector of A's 6 largest algebraic eigenvalues.
+%  A must be real symmetric or complex Hermitian and should be large and sparse.
 %
-%  [primme_V, primme_D] = primme_eigs(A) returns a diagonal matrix of
-%  primme_D of A's 6 largest algebraic eigenvalues and a matrix primme_V
-%  whose columns are the corresponding eigenvectors. 
+%  primme_eigs(Afun, dim) accepts a function AFUN instead of a matrix. AFUN is
+%  a function handle and y = Afun(x) returns the matrix-vector product A*x.
+%  primme_eigs(A,...) could be replaced by primme_eigs(Afun, dim,...) in any of
+%  above levels of function calls. Examples are given in PRIMME_MEX_Readme.txt
+%  in the root directory of PRIMME_MEX folder.
+%
+%  [V, D] = primme_eigs(A) returns a diagonal matrix D, of A's 6 largest 
+%  algebraic eigenvalues and a matrix V whose columns are the corresponding
+%  eigenvectors. 
 % 
-%  [primme_V, primme_D, norms, primmeout] = primme_eigs(A, numEvals)
-%  returns a diagonal matrix of primme_D of A's numEvals largest algebraic 
-%  eigenvalues, a matrix primme_V whose columns are the corresponding 
-%  eigenvectors, a double array of the residual norm of eigenvalues  and
-%  a struct to report statistical information about numOuterIterations,
-%  numRestarts, numMatvecs and numPreconds. numEvals is the number of 
-%  eigenvalues that users want to find. It must be less than dimention of 
-%  the matrix A.
+%  [V, D, norms, primmeout] = primme_eigs(A) also returns an array of the 
+%  residual norms of the computed eigenpairs, and a struct to report statistical
+%  information about numOuterIterations, numRestarts, numMatvecs and numPreconds.
 %
-%  primme_eigs(A, numEvals, target) returns numEvals target eigenvlaues.
+%  primme_eigs(A, numEvals) finds the numEvals largest algebraic eigenvalues.
+%  numEvals must be less than the dimension of the matrix A.
+%
+%  primme_eigs(A, numEvals, target) returns numEvals target eigenvalues.
 %  target could be a string like below:
 %     'LA' ------ primme_largest (default)
 %     'SA' ------ primme_smallest    
@@ -57,30 +48,31 @@ function [varargout] = primme_eigs(varargin)
 %     'CLT'------ primme_closest_leq  
 %     'CT' ------ primme_closest_abs   
 %
-%  primme_eigs(A, numEvals, target, opts, eigsMethod) specify options that 
-%  are listed and explained in the last. eigsMethod is the solver method
-%  the PRIMME uses to find eigenvalues and eigenvectors. eigsMethod could
-%  be:
-%  typedef enum{
-%  DYNAMIC, (default)        ---0: Switches dynamically to the best method
-%  DEFAULT_MIN_TIME,         ---1: Currently set at JDQMR_ETol
-%  DEFAULT_MIN_MATVECS,      ---2: Currently set at GD_Olsen_plusK
-%  Arnoldi,                  ---3: obviously not an efficient choice 
-%  GD,                       ---4: classical block Generalized Davidson 
-%  GD_plusK,                 ---5: GD+k block GD with recurrence restarting
-%  GD_Olsen_plusK,           ---6: GD+k with approximate Olsen precond.
-%  JD_Olsen_plusK,           ---7: GD+k, exact Olsen (two precond per step)
-%  RQI,                      ---8: Rayleigh Quotient Iteration. Also INVIT,
-%                                :   but for INVIT provide targetShifts
-%  JDQR,                     ---9: Original block, Jacobi Davidson
-%  JDQMR,                   ---10: Our block JDQMR method (similar to JDCG)
-%  JDQMR_ETol,              ---11: Slight, but efficient JDQMR modification
-%  SUBSPACE_ITERATION,      ---12: equiv. to GD(block,2*block)
-%  LOBPCG_OrthoBasis,       ---13: equiv. to GD(nev,3*nev)+nev
-%  LOBPCG_OrthoBasis_Window ---14: equiv. to GD(block,3*block)+block nev>block
+%  primme_eigs(A, numEvals, target, opts, eigsMethod) specifies any of a 
+%  set of possible options as explained below in the opts structure. 
 %
-%  primme_eigs(A, numEvals, target, opts, eigsMethod, P) uses preconditioner 
-%  P or P = P1*P2 to solve eigenvalue problem for large sparse matrix.
+%  eigsMethod is an integer specifying one of the preset methods in PRIMME:
+%  eigsMethod   corresponding PRIMME method
+%    0:    DYNAMIC, (default)        Switches dynamically to the best method
+%    1:    DEFAULT_MIN_TIME,         Currently set at JDQMR_ETol
+%    2:    DEFAULT_MIN_MATVECS,      Currently set at GD+block
+%    3:    Arnoldi,                  obviously not an efficient choice 
+%    4:    GD,                       classical block Generalized Davidson 
+%    5:    GD_plusK,                 GD+k block GD with recurrence restarting
+%    6:    GD_Olsen_plusK,           GD+k with approximate Olsen precond.
+%    7:    JD_Olsen_plusK,           GD+k, exact Olsen (two precond per step)
+%    8:    RQI,                      Rayleigh Quotient Iteration. Also INVIT,
+%                                    but for INVIT provide targetShifts
+%    9:    JDQR,                     Original block, Jacobi Davidson
+%    10:   JDQMR,                    Our block JDQMR method (similar to JDCG)
+%    11:   JDQMR_ETol,               Slight, but efficient JDQMR modification
+%    12:   SUBSPACE_ITERATION,       equiv. to GD(block,2*block)
+%    13:   LOBPCG_OrthoBasis,        equiv. to GD(nev,3*nev)+nev
+%    14:   LOBPCG_OrthoBasis_Window  equiv. to GD(block,3*block)+block nev>block
+%
+%  primme_eigs(A, numEvals, target, opts, eigsMethod, P) 
+%  primme_eigs(A, numEvals, target, opts, eigsMethod, P1, P2) uses 
+%  preconditioner P or P = P1*P2 to accelerate convergence of the methods.
 %  If P is [] then a preconditioner is not applied. P may be a function 
 %  handle Pfun such that Pfun(x) returns P\x.
 %
@@ -123,8 +115,10 @@ function [varargout] = primme_eigs(varargin)
 %  opts.iseed: set iseed value for initialization
 %  opts.intWorkSize: memory size for integer workspace
 %  opts.realWorkSize: memory size for real or complex workspace
+%
+%  See also PRIMME_MEX_Readme.txt
+%  For more details on PRIMME's functionality see PRIMMEtopdir/readme.txt 
 
-%  clear global;
    clear global eigsFunCallFlag;
    clear functions;
 
@@ -135,16 +129,16 @@ function [varargout] = primme_eigs(varargin)
    maxOutputs = 4;
    nargoutchk(minOutputs,maxOutputs);
 
-   global eigsFunCallFlag; % mark if user called primme_eigs function
+   global eigsFunCallFlag; % flag if user called primme_eigs function
    if isempty(eigsFunCallFlag) 
       eigsFunCallFlag = true;
    end
 
     global primmeA;  
-    global Amatrix;   % mark if A is a matrix or matrix function 
+    global Amatrix;   % flag if A is a matrix (otherwise a matrix function)
     global P1;  
-    global P1matrix;  % mark if the first preconditioner is a matrix or a function
-    global P2;  % P2 is the second preconditioner that must be a matrix
+    global P1matrix;  % flag if P1 preconditioner is a matrix (or a function)
+    global P2;        % if P2 second preconditioner is given it must be a matrix
 
     if isfloat(varargin{1}) % check if the first input is matrix or matrix funtion
         primmeA = varargin{1};
@@ -176,7 +170,7 @@ function [varargout] = primme_eigs(varargin)
             numEvals = min(6,dim);
        end
        if (nargin >= 3)
-           if(ischar(varargin{3}))
+           if (ischar(varargin{3}))
                 target = varargin{3};
            else
                 error('target must be a string');
@@ -214,10 +208,10 @@ function [varargout] = primme_eigs(varargin)
                         error('The second preconditioner must be a matrix');
                     end
                 end
-            else % the sixth input is matrix function
+            else% the sixth input is matrix function
                 % By checking the function P1 with fcnchk, we can now use direct
                 % function evaluation on the result, without resorting to feval
-                P1 = fcnchk(varargin{6}); % get the function handle of user's funciton
+                P1 = fcnchk(varargin{6}); % get the function handle of user's function
                 P1matrix = false;
             end
        end
@@ -230,7 +224,7 @@ function [varargout] = primme_eigs(varargin)
        try
           xvec = randn(dim,1);
           yvev = primmeA(xvec);
-	  clear xvec, yvec;
+          clear xvec, yvec;
        catch ME
           if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
              disp('Matvec function AFUN does not exist.');
@@ -243,7 +237,7 @@ function [varargout] = primme_eigs(varargin)
             numEvals = min(6,dim);
        end
        if (nargin >= 4)
-           if(ischar(varargin{4}))
+           if (ischar(varargin{4}))
                 target = varargin{4};
            else
                 error('target must be a string');
@@ -280,7 +274,7 @@ function [varargout] = primme_eigs(varargin)
                         error('The second preconditioner must be a matrix');
                     end
                 end
-            else % the seventh input is matrix function
+            else% the seventh input is matrix function
                 % By checking the function P1 with fcnchk, we can now use direct
                 % function evaluation on the result, without resorting to feval
                 % get the function handle of user's funciton
@@ -290,10 +284,10 @@ function [varargout] = primme_eigs(varargin)
        end
 
        % if the user does not specifies the field "opts.isreal"
-       if(isfield(opts,'isreal') == 0) 
+       if (isfield(opts,'isreal') == 0) 
            flag = 1; % The complexity of matrix function is default real.
        else
-            if(opts.isreal)
+            if (opts.isreal)
                 flag = 1;
             else
                 flag = 1+1i;
@@ -306,7 +300,7 @@ function [varargout] = primme_eigs(varargin)
        try
           xvec = randn(dim,1);
           yvev = P1(xvec);
-	  clear xvec, yvec;
+          clear xvec, yvec;
        catch ME
           if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
              disp('Preconditioner P1 function does not exist.');
@@ -315,10 +309,7 @@ function [varargout] = primme_eigs(varargin)
        end
    end
 
-
-
    [evals,evecs,norms,primmeout]= PRIMME_mex(flag, dim, numEvals, target, eigsMethod, opts); 
-
 
    if (nargout <= 1)
        varargout{1} = evals;

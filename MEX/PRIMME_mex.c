@@ -298,7 +298,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          tmp = mxGetField(prhs[5], 0, "targetShifts");
          if (tmp != NULL) {
             primme.targetShifts = mxGetPr(tmp);   
-            for (i=0; i< primme.numTargetShifts; i++)	               
+            for (i=0; i< primme.numTargetShifts; i++)               
                mexPrintf("primme.targetShifts[%d] is:%e\n", i, primme.targetShifts[i]);     
          }
          tmp = mxGetField(prhs[5], 0, "initSize");
@@ -438,7 +438,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          }
          tmp = mxGetField(prhs[5], 0, "realWorkSize");
          if (tmp != NULL) {
-            primme.realWorkSize = (int)mxGetScalar(tmp);    	
+            primme.realWorkSize = (int)mxGetScalar(tmp);
             mexPrintf("primme.realWorkSize is:%d\n",primme.realWorkSize);                    
          }
          tmp = mxGetField(prhs[5], 0, "initialevecs");
@@ -447,7 +447,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             read_initialevecsimag = mxGetPi(tmp); 
          }
       }
-   }	
+   }
 
    mexPrintf("finish reading input parameters...\n");
    mexPrintf("ready to judge if the matrix A is real or complex\n");
@@ -489,7 +489,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       if (nlhs >= 4) {
          plhs[3] = mxCreateDoubleMatrix(5,1,mxREAL);
          Outstates = mxGetPr(plhs[3]);
-      }	  	                
+      }     
 
       /* Show initial configurations */
       if (outputfilename != NULL)
@@ -502,18 +502,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mexPrintf("The intworksize is %d\n", primme.intWorkSize);
       mexPrintf("The realworksize is %d\n", primme.realWorkSize);
 
-      /* ------------------------ */	
+      /* ------------------------ */
       /* Initial guess (optional) */
       /* ------------------------ */
       if (read_initialevecs != NULL) {
          for (i =0;i<(primme.initSize+primme.numOrthoConst)*primme.n;i++) {
             evecs[i] = read_initialevecs[i];
          }
-      }
-      else { /* THIS SHOULD BE AVOIDED 
-         for (i=0;i<primme.n;i++) {
-            evecs[i]=1/sqrt(primme.n);
-         }	*/
       }
 
       /* ------------- */
@@ -568,7 +563,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       if (nlhs >= 2) {
-         for (i=0; i<(primme.n*num);i++) {	
+         for (i=0; i<(primme.n*num);i++) {
             Outevecs[i] = evecs[i];
          }
       }
@@ -633,7 +628,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       if (nlhs >= 4) {
          plhs[3] = mxCreateDoubleMatrix(4,1,mxREAL);
          Outstates = mxGetPr(plhs[3]);
-      }	  
+      }
 
       /* Show initial configuration */
       if (outputfilename != NULL)
@@ -656,14 +651,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             evecs[i].r = read_initialevecs[i];
             evecs[i].i = read_initialevecsimag[i];
          }
-      else {
-	      /* THIS SHOULD BE AVOIDED
-         for (i=0;i<primme.n;i++) {
-            evecs[i].r=1/sqrt(primme.n);
-            evecs[i].i=0.0L;
-         }	
-	 	*/
-      }
 
       /* ------------- */
       /*  Call primme  */
@@ -706,7 +693,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       if (nlhs >= 2) {
-         for (i=0; i<(primme.n*num);i++) {	
+         for (i=0; i<(primme.n*num);i++) {
             OutevecsR[i] = evecs[i].r;
             OutevecsI[i] = evecs[i].i;
          }
@@ -759,14 +746,6 @@ void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
    if (xvec == NULL) {
       mexErrMsgTxt("vector pointer x cannot be NULL pointer");
    }
-
-   /* It should be checking n*blockSize. However, it is too expensive
-   *for (k=0; k<n; k++) {	
-   *   if (mxIsNaN(xvec[k])) {
-   *      mexErrMsgTxt("vector pointer x cannot have NaN value");
-   *   }	
-   *}
-   */
 
    mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxREAL);
@@ -861,14 +840,6 @@ void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme)
    if (xvec == NULL) {
       mexErrMsgTxt("vector pointer x cannot be NULL pointer");
    }
-
-   /* It should be checking n*blockSize. However, it is too expensive
-   *for (k=0; k<n; k++) {	
-   *   if (mxIsNaN(xvec[k])) {
-   *      mexErrMsgTxt("vector pointer x cannot have NaN value");
-   *   }	
-   *}
-   */
 
    mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxREAL);
