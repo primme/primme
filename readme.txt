@@ -6,19 +6,19 @@ Table Of Contents:
 
 * PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 
-* Changelog
+  * Changelog
 
-* Citing this code
+  * Citing this code
 
-* License Information
+  * License Information
 
-* Contact Information
+  * Contact Information
 
-* Directory Structure
+  * Directory Structure
 
-* Making and Linking
+  * Making and Linking
 
-* Tested Systems
+  * Tested Systems
 
 * C Library Interface
 
@@ -84,7 +84,7 @@ and MATLAB.
 
 
 Changelog
-*********
+=========
 
 Changes in PRIMME 1.2.1 (released on ???):
 
@@ -148,7 +148,7 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 
 
 Citing this code
-****************
+================
 
 Please cite:
 
@@ -182,7 +182,7 @@ supported by a number of grants from the National Science Foundation.
 
 
 License Information
-*******************
+===================
 
 PRIMME is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published
@@ -201,7 +201,7 @@ USA
 
 
 Contact Information
-*******************
+===================
 
 For reporting bugs or questions about functionality contact Andreas
 Stathopoulos by email, *andreas* at *cs.wm.edu*. See further
@@ -209,7 +209,7 @@ information in the webpage http://www.cs.wm.edu/~andreas .
 
 
 Directory Structure
-*******************
+===================
 
 The next directories and files should be available:
 
@@ -249,7 +249,7 @@ The next directories and files should be available:
 
 
 Making and Linking
-******************
+==================
 
 "Make_flags" has the flags and compilers used to make "libprimme.a":
 
@@ -334,7 +334,7 @@ Full description of actions that *make* can take:
 
 
 Tested Systems
-**************
+==============
 
 PRIMME is primary developed with GNU gcc, g++ and gfortran (versions
 4.8 and later). Many users have reported builds on several other
