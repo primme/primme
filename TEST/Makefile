@@ -156,14 +156,14 @@ all_tests_doublecomplex_save: primme_doublecomplex
 	rm -f ._test00
 
 test_double: ex_dseq
-	@./ex_dseq &> tests.log && grep -q "10 eigenpairs converged" tests.log \
+	@./ex_dseq > tests.log 2>&1 && grep -q "10 eigenpairs converged" tests.log \
 	    && echo "Test passed!" || \
 	       (cat tests.log; echo "Something went wrong. Please consider to send us the file";\
                 echo "TEST/tests.log if the software doesn't work as expected.";\
                 exit 1;)
 
 test_doublecomplex: ex_zseq
-	@./ex_zseq &> tests.log && grep -q "10 eigenpairs converged" tests.log \
+	@./ex_zseq > tests.log 2>&1 && grep -q "10 eigenpairs converged" tests.log \
 	    && echo "Test passed!" || \
 	       (cat tests.log; echo "Something went wrong. Please consider to send us the file";\
                 echo "TEST/tests.log if the software doesn't work as expected.";\
