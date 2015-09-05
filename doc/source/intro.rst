@@ -9,7 +9,7 @@ convergence.
 PRIMME is written in C99, but complete interfaces are provided for Fortran 77 and MATLAB.
   
 Changelog
----------
+^^^^^^^^^
 
 Changes in PRIMME 1.2.1 (released on ???):
 
@@ -65,18 +65,33 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 
 
 Citing this code 
----------------- 
+^^^^^^^^^^^^^^^^ 
 
-Please cite:
+.. only:: latex
+
+   Please cite [r1]_.
+
+.. only:: not latex
+
+   Please cite:
 
 .. [r1] A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned Iterative
    MultiMethod Eigensolver: Methods and software description*, ACM
    Transaction on Mathematical Software Vol. 37, No. 2, (2010),
    21:1-21:30.
 
-More information on the algorithms and research that led to this
-software can be found in the rest of the papers. The work has been
-supported by a number of grants from the National Science Foundation.
+.. only:: latex
+
+   More information on the algorithms and research that led to this
+   software can be found in the rest of the papers [r2]_, [r3]_, [r4]_, [r5]_.
+   The work has been supported by a number of grants from the
+   National Science Foundation.
+
+.. only:: not latex
+
+   More information on the algorithms and research that led to this
+   software can be found in the rest of the papers. The work has been
+   supported by a number of grants from the National Science Foundation.
 
 .. [r2] A. Stathopoulos, *Nearly optimal preconditioned methods for hermitian
    eigenproblems under limited memory. Part I: Seeking one eigenvalue*, SIAM
@@ -96,7 +111,7 @@ supported by a number of grants from the National Science Foundation.
    of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
 License Information
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 PRIMME is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -114,7 +129,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 Contact Information 
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
 email, `andreas` at `cs.wm.edu`. See further information in
@@ -122,7 +137,7 @@ the webpage http://www.cs.wm.edu/~andreas .
 
 
 Directory Structure
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 The next directories and files should be available:
 
@@ -144,7 +159,7 @@ The next directories and files should be available:
 
 
 Making and Linking
-------------------
+^^^^^^^^^^^^^^^^^^
 
 :file:`Make_flags` has the flags and compilers used to make :file:`libprimme.a`:
 
@@ -215,7 +230,7 @@ Full description of actions that `make` can take:
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from all directories.
 
 Tested Systems
---------------
+^^^^^^^^^^^^^^
 
 PRIMME is primary developed with GNU gcc, g++ and gfortran (versions 4.8 and later).
 Many users have reported builds on several other platforms/compilers:
