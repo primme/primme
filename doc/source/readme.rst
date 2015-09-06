@@ -3,6 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. only:: text
+
+   .. note::
+
+      For hyperlinked html and pdf versions of this document see
+      directory :file:`doc`.
+
 Welcome to PRIMME's documentation!
 ==================================
 

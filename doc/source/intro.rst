@@ -28,7 +28,7 @@ Changes in PRIMME 1.2.1 (released on ???):
   * :file:`ex*.c` and :file:`ex*.f`: small, didactic examples of usage in C and Fortran
     and in parallel (with PETSc).
 
-* Fixed a few minor bugs and improved documentation (specially the F77 interface).
+* Fixed a few minor bugs and improved documentation (especially the F77 interface).
 
 * Using Sphinx_ to manage documentation.
 
@@ -52,7 +52,7 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
   The above fixes have improved robustness and performance. 
 
 * PRIMME now assigns unique random seeds per parallel process 
-  for up to 4096^3  (140 trillion processes).
+  for up to 4096^3  (140 trillion) processes.
 
 * For the DYNAMIC method, fixed issues with initialization and 
   synchronization decisions across multiple processes.
@@ -133,7 +133,7 @@ Contact Information
 
 For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
 email, `andreas` at `cs.wm.edu`. See further information in
-the webpage http://www.cs.wm.edu/~andreas .
+the webpage http://www.cs.wm.edu/~andreas/software .
 
 
 Directory Structure
@@ -175,7 +175,7 @@ Making and Linking
 .. note::
 
    When ``-DPRIMME_BLASINT_SIZE=64`` is set the code uses the type ``int64_t``
-   supported by the standard C99. In case the compiler doesn't honor the
+   supported by the C99 standard. In case the compiler doesn't honor the
    standard, replace the next lines in :file:`PRIMMESRC/COMMONSRC/common_numerical.h`::
 
       #if !defined(PRIMME_BLASINT_SIZE)
@@ -228,6 +228,20 @@ Full description of actions that `make` can take:
 * `make libz`, if only :c:func:`zprimme` is of interest, build :file:`libzprimme.a`;
 * `make test`, build and execute a simple example; 
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from all directories.
+
+Considerations using an IDE
+"""""""""""""""""""""""""""
+
+PRIMME can be built in other environments such as Anjuta, Eclipse, KDevelop, Qt Creator,
+Visual Studio and XCode. To build the PRIMME library do the following:
+
+#. Create a new project and include the source files under the directory :file:`PRIMMESRC`.
+#. Add the directory :file:`PRIMMESRC/COMMONSRC` as an include directory.
+
+To build an example code using PRIMME make sure:
+
+- to add a reference for PRIMME, BLAS and LAPACK libraries;
+- to add the directory :file:`PRIMMESRC/COMMONSRC` as an include directory.
 
 Tested Systems
 ^^^^^^^^^^^^^^

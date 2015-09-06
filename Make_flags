@@ -10,7 +10,7 @@ ZLIBRARY = libzprimme.a
 
 # Define compilers and flags
 #---------------------------------------------------------------
-# Valid configuration for many POSIX systems
+# POSIX systems (e.g., Linux, MinGW, Cygwin)
 #---------------------------------------------------------------
 CC       ?= cc
 F77      ?= gfortran
