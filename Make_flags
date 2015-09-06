@@ -15,38 +15,30 @@ ZLIBRARY = libzprimme.a
 CC       ?= cc
 F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?=
-FFLAGS   ?= -fno-second-underscore
-LOW_OPT  ?= -O2
-HIGH_OPT ?= -O2
+CFLAGS   ?= -O
+FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc
 #F77      = xlf
 #DEFINES  = -DF77UNDERSCORE -DNUM_ESSL
-#CFLAGS   =
-#FFLAGS   =
-#LOW_OPT  = -O2  
-#HIGH_OPT = -O2
+#CFLAGS   = -O2
+#FFLAGS   = -O2
 #---------------------------------------------------------------
 # Mac OS X
 #CC       = clang
 #CC       = gcc-mp-4.9
 #F77      = gfortran-mp-4.9
 #DEFINES  = -DF77UNDERSCORE 
-#CFLAGS   =
-#FFLAGS   = -fno-second-underscore
-#LOW_OPT  = -O2
-#HIGH_OPT = -O2
+#CFLAGS   = -O2
+#FFLAGS   = -fno-second-underscore -O2
 #---------------------------------------------------------------
 # Using Intel compilers
 #CC       = icc
 #F77      = ifort
 #DEFINES  = -DF77UNDERSCORE
-#CFLAGS   =
-#FFLAGS   =
-#LOW_OPT  = -O2  
-#HIGH_OPT = -O2
+#CFLAGS   = -O2
+#FFLAGS   = -O2
 #---------------------------------------------------------------
 # Sun various architectures
 # whirlwind
@@ -67,7 +59,7 @@ HIGH_OPT ?= -O2
 
 #---------------------------------------------------------------
 # Uncomment this when building MATLAB interface
-# CFLAGS += -DPRIMME_BLASINT_SIZE=64
+# CFLAGS += -DPRIMME_BLASINT_SIZE=64 -fPIC
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------

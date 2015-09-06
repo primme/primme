@@ -8,7 +8,7 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib libd libz clean backup
+.PHONY: lib libd libz clean backup test
 
 #------------------------ Libraries ------------------------------
 lib:
@@ -60,7 +60,7 @@ test:
 
 
 check_style:
-	( grep $$'\t' -R . --include='*.[chf]' && echo "Please don't use tabs!" ) || true
+	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 backup: 
 	@(\

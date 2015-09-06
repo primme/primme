@@ -256,15 +256,15 @@ primme_params
       
       Output key:
 
-      * $1: Number of converged pairs up to now.
-      * $2: The index of the pair currently converged.
-      * $3: The eigenvalue.
-      * $4: Its residual norm.
-      * $5: The current number of matrix-vector products.
-      * $6: The current number of outer iterations.
-      * $7: The current elapsed time.
-      * $8: Index within the block of the targeted pair .
-      * $9: QMR norm of the linear system residual.
+      | $1: Number of converged pairs up to now.
+      | $2: The index of the pair currently converged.
+      | $3: The eigenvalue.
+      | $4: Its residual norm.
+      | $5: The current number of matrix-vector products.
+      | $6: The current number of outer iterations.
+      | $7: The current elapsed time.
+      | $8: Index within the block of the targeted pair .
+      | $9: QMR norm of the linear system residual.
 
       In parallel programs, output is produced in call with
       |procID| 0 when |printLevel|
@@ -332,9 +332,9 @@ primme_params
 
       On exit, it holds a recommended method for future runs on this problem:
 
-      * -1: use |DEFAULT_MIN_MATVECS| next time.
-      * -2: use |DEFAULT_MIN_TIME| next time.
-      * -3: close call, use |DYNAMIC| next time again.
+         | -1: use |DEFAULT_MIN_MATVECS| next time.
+         | -2: use |DEFAULT_MIN_TIME| next time.
+         | -3: close call, use |DYNAMIC| next time again.
       
       Input/output:
 
@@ -741,8 +741,8 @@ primme_params
 
       For ``LeftQ`` (and similarly for ``LeftX``):
 
-      * 0: :math:`P_Q^l = I`;
-      * 1: :math:`P_Q^l = I - QQ^*`.
+         | 0: :math:`P_Q^l = I`;
+         | 1: :math:`P_Q^l = I - QQ^*`.
 
       For ``RightQ`` and ``SkewQ`` (and similarly for ``RightX`` and ``SkewX``):
 

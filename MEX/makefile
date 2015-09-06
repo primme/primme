@@ -1,65 +1,57 @@
 #--------------------------------------------------------------
-#	Makefile for building PRIMME MEX
+# Makefile for building PRIMME MEX
 #-------------------------------------------------------------
 
 #------------------------------------------------------------
-#	Name of MEX source file
+# Name of MEX source file
 #------------------------------------------------------------
   MEXNAME = PRIMME_mex
 
 #------------------------------------------------------------
-#   Modify suffix name of MEX binary file for different OS
+# MATLAB MEX compiler
 #------------------------------------------------------------
-# LINUX SUSE 64 BIT
-  MEXSUFFIX = mexa64
+MEX ?= mex
+# Linux
+# MEX = /usr/local/matlab/bin/mex
 #------------------------------------------------------------
-# MAC OXS 64 BIT
-# MEXSUFFIX = mexmaci64
-#------------------------------------------------------------
-
-#------------------------------------------------------------
-#    Modify home directory of MATLAB and show path of mex
-#------------------------------------------------------------
-# LINUX SUSE 64 BIT
-  MATLABHOME = /usr/local/matlab
-  MEX = $(MATLABHOME)/bin/mex
-#------------------------------------------------------------
-# MAC OXS 64 BIT
-# MATLABHOME = /Applications/MATLAB_R2014a.app
-# MEX = $(MATLABHOME)/bin/mex
+# Mac OS X
+# MEX = /Applications/MATLAB_R2014a.app/bin/mex
+# MEX = /Applications/MATLAB_R2015a.app/bin/mex
 #------------------------------------------------------------
 
-# Modify compiler users want to use, or use default ones.
-# For MATLAB 2012, the recommended compilers are gcc 4.4.x
-# but any older compilers should also been supported.
-# The details are refered to MATLAB supported compilers.
-CXX = /usr/bin/gcc
-#CXX = /home/scratch/lfwu/usr/local/gcc4.4.6/bin/gcc 
-#FC = gfortran
-#CC = gcc
-CFLAGS= -fPIC -m64
+#------------------------------------------------------------
+# MATLAB binary (only for testing)
+#------------------------------------------------------------
+MATLAB ?= matlab
 
-# Modify -O as -g to entre debug model
-MEXFLAGS = -cxx CC='$(CXX)' CXX='$(CXX)' LD='$(CXX)'
-MEXFLAGS += -v -O -largeArrayDims
+# Modify -O as -g to enter debug model
+MEXFLAGS += -O -largeArrayDims
 
 #------------------------------------------------------------
-#	Link to PRIMME liabray, math library, MATLAB BLAS
-#       and LAPACK libraries  
+# Link to PRIMME and MATLAB BLAS/LAPACK
 #------------------------------------------------------------
-# Modify this to show the path of the installed PRIMME directory
+# Set TOP to the path where PRIMME is installed
 TOP = ../
- 
-LIBS = -lprimme -lm  -lmwlapack -lmwblas
-LIB = -L$(TOP)
 
-INCLUDE = -I$(MATLABHOME)/extern/include/ -I$(TOP)/PRIMMESRC/COMMONSRC
+LIBS = -L$(TOP) -lprimme -lm  -lmwlapack -lmwblas
+INCLUDE = -I$(TOP)/PRIMMESRC/COMMONSRC
 
-$(MEXNAME).$(MEXSUFFIX): $(MEXNAME).o
-	$(MEX) $(MEXFLAGS) $(LIB) $(LIBS) -output $(MEXNAME) $^
+all:
+	$(MEX) $(MEXFLAGS) $(LIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).c
 
-$(MEXNAME).o: $(MEXNAME).c
-	$(CC) $(CFLAGS) $(INCLUDE) -c $^
+test:
+	$(MATLAB) -nodesktop -nodisplay -r "E=primme_eigs(diag(1:50),6);assert(norm(E-(50:-1:45)')<1e-9);exit" &> test.log < /dev/null
+	@if `grep -q 'Assertion failed' test.log` ; then \
+	   cat test.log;\
+	       echo;\
+	       echo "Something went wrong. Please consider to send us the file 'test.log'";\
+	       echo "if the software doesn't work as expected.";\
+	       exit 1;\
+	else\
+	  echo "Test passed!";\
+	fi
 
 clean:
-	rm -f *.o; rm -f *.mex*
+	rm -f $(MEXNAME).[^c]*
+
+.PHONY: all test clean

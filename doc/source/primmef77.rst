@@ -27,21 +27,21 @@ primme_set_method_f77
 
    :param integer method: (input) preset configuration. One of:
 
-      * ``PRIMMEF77_DYNAMIC``
-      * ``PRIMMEF77_DEFAULT_MIN_TIME``
-      * ``PRIMMEF77_DEFAULT_MIN_MATVECS``
-      * ``PRIMMEF77_Arnoldi``
-      * ``PRIMMEF77_GD``
-      * ``PRIMMEF77_GD_plusK``
-      * ``PRIMMEF77_GD_Olsen_plusK``
-      * ``PRIMMEF77_JD_Olsen_plusK``
-      * ``PRIMMEF77_RQI``
-      * ``PRIMMEF77_JDQR``
-      * ``PRIMMEF77_JDQMR``
-      * ``PRIMMEF77_JDQMR_ETol``
-      * ``PRIMMEF77_SUBSPACE_ITERATION``
-      * ``PRIMMEF77_LOBPCG_OrthoBasis``
-      * ``PRIMMEF77_LOBPCG_OrthoBasis_Window``
+      | ``PRIMMEF77_DYNAMIC``
+      | ``PRIMMEF77_DEFAULT_MIN_TIME``
+      | ``PRIMMEF77_DEFAULT_MIN_MATVECS``
+      | ``PRIMMEF77_Arnoldi``
+      | ``PRIMMEF77_GD``
+      | ``PRIMMEF77_GD_plusK``
+      | ``PRIMMEF77_GD_Olsen_plusK``
+      | ``PRIMMEF77_JD_Olsen_plusK``
+      | ``PRIMMEF77_RQI``
+      | ``PRIMMEF77_JDQR``
+      | ``PRIMMEF77_JDQMR``
+      | ``PRIMMEF77_JDQMR_ETol``
+      | ``PRIMMEF77_SUBSPACE_ITERATION``
+      | ``PRIMMEF77_LOBPCG_OrthoBasis``
+      | ``PRIMMEF77_LOBPCG_OrthoBasis_Window``
 
       See :c:type:`primme_preset_method`.
 
@@ -113,57 +113,57 @@ primmetop_set_member_f77
 
    :param integer label: field where to set value. One of:
 
-      * :c:member:`PRIMMEF77_n                                   <primme_params.n>`
-      * :c:member:`PRIMMEF77_matrixMatvec                        <primme_params.matrixMatvec>`
-      * :c:member:`PRIMMEF77_applyPreconditioner                 <primme_params.applyPreconditioner>`
-      * :c:member:`PRIMMEF77_numProcs                            <primme_params.numProcs>`
-      * :c:member:`PRIMMEF77_procID                              <primme_params.procID>`
-      * :c:member:`PRIMMEF77_commInfo                            <primme_params.commInfo>`
-      * :c:member:`PRIMMEF77_nLocal                              <primme_params.nLocal>`
-      * :c:member:`PRIMMEF77_globalSumDouble                     <primme_params.globalSumDouble>`
-      * :c:member:`PRIMMEF77_numEvals                            <primme_params.numEvals>`
-      * :c:member:`PRIMMEF77_target                              <primme_params.target>`
-      * :c:member:`PRIMMEF77_numTargetShifts                     <primme_params.numTargetShifts>`
-      * :c:member:`PRIMMEF77_targetShifts                        <primme_params.targetShifts>`
-      * :c:member:`PRIMMEF77_locking                             <primme_params.locking>`
-      * :c:member:`PRIMMEF77_initSize                            <primme_params.initSize>`
-      * :c:member:`PRIMMEF77_numOrthoConst                       <primme_params.numOrthoConst>`
-      * :c:member:`PRIMMEF77_maxBasisSize                        <primme_params.maxBasisSize>`
-      * :c:member:`PRIMMEF77_minRestartSize                      <primme_params.minRestartSize>`
-      * :c:member:`PRIMMEF77_maxBlockSize                        <primme_params.maxBlockSize>`
-      * :c:member:`PRIMMEF77_maxMatvecs                          <primme_params.maxMatvecs>`
-      * :c:member:`PRIMMEF77_maxOuterIterations                  <primme_params.maxOuterIterations>`
-      * :c:member:`PRIMMEF77_intWorkSize                         <primme_params.intWorkSize>`
-      * :c:member:`PRIMMEF77_realWorkSize                        <primme_params.realWorkSize>`
-      * :c:member:`PRIMMEF77_iseed                               <primme_params.iseed>`
-      * :c:member:`PRIMMEF77_intWork                             <primme_params.intWork>`
-      * :c:member:`PRIMMEF77_realWork                            <primme_params.realWork>`
-      * :c:member:`PRIMMEF77_aNorm                               <primme_params.aNorm>`
-      * :c:member:`PRIMMEF77_eps                                 <primme_params.eps>`
-      * :c:member:`PRIMMEF77_printLevel                          <primme_params.printLevel>`
-      * :c:member:`PRIMMEF77_outputFile                          <primme_params.outputFile>`
-      * :c:member:`PRIMMEF77_matrix                              <primme_params.matrix>`
-      * :c:member:`PRIMMEF77_preconditioner                      <primme_params.preconditioner>`
-      * :c:member:`PRIMMEF77_restartingParams_scheme             <primme_params.restartingParams.scheme>`.
-      * :c:member:`PRIMMEF77_restartingParams_maxPrevRetain      <primme_params.restartingParams.maxPrevRetain>`
-      * :c:member:`PRIMMEF77_correctionParams_precondition       <primme_params.correctionParams.precondition>`
-      * :c:member:`PRIMMEF77_correctionParams_robustShifts       <primme_params.correctionParams.robustShifts>`
-      * :c:member:`PRIMMEF77_correctionParams_maxInnerIterations <primme_params.correctionParams.maxInnerIterations>`
-      * :c:member:`PRIMMEF77_correctionParams_projectors_LeftQ   <primme_params.correctionParams.projectors.LeftQ>`
-      * :c:member:`PRIMMEF77_correctionParams_projectors_LeftX   <primme_params.correctionParams.projectors.LeftX>`
-      * :c:member:`PRIMMEF77_correctionParams_projectors_RightQ  <primme_params.correctionParams.projectors.RightQ>`
-      * :c:member:`PRIMMEF77_correctionParams_projectors_RightX  <primme_params.correctionParams.projectors.RightX>`
-      * :c:member:`PRIMMEF77_correctionParams_projectors_SkewQ   <primme_params.correctionParams.projectors.SkewQ>`
-      * :c:member:`PRIMMEF77_correctionParams_projectors_SkewX   <primme_params.correctionParams.projectors.SkewX>`
-      * :c:member:`PRIMMEF77_correctionParams_convTest           <primme_params.correctionParams.convTest>`
-      * :c:member:`PRIMMEF77_correctionParams_relTolBase         <primme_params.correctionParams.relTolBase>`
-      * :c:member:`PRIMMEF77_stats_numOuterIterations            <primme_params.stats.numOuterIterations>`
-      * :c:member:`PRIMMEF77_stats_numRestarts                   <primme_params.stats.numRestarts>`
-      * :c:member:`PRIMMEF77_stats_numMatvecs                    <primme_params.stats.numMatvecs>`
-      * :c:member:`PRIMMEF77_stats_numPreconds                   <primme_params.stats.numPreconds>`
-      * :c:member:`PRIMMEF77_stats_elapsedTime                   <primme_params.stats.elapsedTime>`
-      * :c:member:`PRIMMEF77_dynamicMethodSwitch                 <primme_params.dynamicMethodSwitch>`
-      * :c:member:`PRIMMEF77_massMatrixMatvec                    <primme_params.massMatrixMatvec>`
+      | :c:member:`PRIMMEF77_n                                   <primme_params.n>`
+      | :c:member:`PRIMMEF77_matrixMatvec                        <primme_params.matrixMatvec>`
+      | :c:member:`PRIMMEF77_applyPreconditioner                 <primme_params.applyPreconditioner>`
+      | :c:member:`PRIMMEF77_numProcs                            <primme_params.numProcs>`
+      | :c:member:`PRIMMEF77_procID                              <primme_params.procID>`
+      | :c:member:`PRIMMEF77_commInfo                            <primme_params.commInfo>`
+      | :c:member:`PRIMMEF77_nLocal                              <primme_params.nLocal>`
+      | :c:member:`PRIMMEF77_globalSumDouble                     <primme_params.globalSumDouble>`
+      | :c:member:`PRIMMEF77_numEvals                            <primme_params.numEvals>`
+      | :c:member:`PRIMMEF77_target                              <primme_params.target>`
+      | :c:member:`PRIMMEF77_numTargetShifts                     <primme_params.numTargetShifts>`
+      | :c:member:`PRIMMEF77_targetShifts                        <primme_params.targetShifts>`
+      | :c:member:`PRIMMEF77_locking                             <primme_params.locking>`
+      | :c:member:`PRIMMEF77_initSize                            <primme_params.initSize>`
+      | :c:member:`PRIMMEF77_numOrthoConst                       <primme_params.numOrthoConst>`
+      | :c:member:`PRIMMEF77_maxBasisSize                        <primme_params.maxBasisSize>`
+      | :c:member:`PRIMMEF77_minRestartSize                      <primme_params.minRestartSize>`
+      | :c:member:`PRIMMEF77_maxBlockSize                        <primme_params.maxBlockSize>`
+      | :c:member:`PRIMMEF77_maxMatvecs                          <primme_params.maxMatvecs>`
+      | :c:member:`PRIMMEF77_maxOuterIterations                  <primme_params.maxOuterIterations>`
+      | :c:member:`PRIMMEF77_intWorkSize                         <primme_params.intWorkSize>`
+      | :c:member:`PRIMMEF77_realWorkSize                        <primme_params.realWorkSize>`
+      | :c:member:`PRIMMEF77_iseed                               <primme_params.iseed>`
+      | :c:member:`PRIMMEF77_intWork                             <primme_params.intWork>`
+      | :c:member:`PRIMMEF77_realWork                            <primme_params.realWork>`
+      | :c:member:`PRIMMEF77_aNorm                               <primme_params.aNorm>`
+      | :c:member:`PRIMMEF77_eps                                 <primme_params.eps>`
+      | :c:member:`PRIMMEF77_printLevel                          <primme_params.printLevel>`
+      | :c:member:`PRIMMEF77_outputFile                          <primme_params.outputFile>`
+      | :c:member:`PRIMMEF77_matrix                              <primme_params.matrix>`
+      | :c:member:`PRIMMEF77_preconditioner                      <primme_params.preconditioner>`
+      | :c:member:`PRIMMEF77_restartingParams_scheme             <primme_params.restartingParams.scheme>`.
+      | :c:member:`PRIMMEF77_restartingParams_maxPrevRetain      <primme_params.restartingParams.maxPrevRetain>`
+      | :c:member:`PRIMMEF77_correctionParams_precondition       <primme_params.correctionParams.precondition>`
+      | :c:member:`PRIMMEF77_correctionParams_robustShifts       <primme_params.correctionParams.robustShifts>`
+      | :c:member:`PRIMMEF77_correctionParams_maxInnerIterations <primme_params.correctionParams.maxInnerIterations>`
+      | :c:member:`PRIMMEF77_correctionParams_projectors_LeftQ   <primme_params.correctionParams.projectors.LeftQ>`
+      | :c:member:`PRIMMEF77_correctionParams_projectors_LeftX   <primme_params.correctionParams.projectors.LeftX>`
+      | :c:member:`PRIMMEF77_correctionParams_projectors_RightQ  <primme_params.correctionParams.projectors.RightQ>`
+      | :c:member:`PRIMMEF77_correctionParams_projectors_RightX  <primme_params.correctionParams.projectors.RightX>`
+      | :c:member:`PRIMMEF77_correctionParams_projectors_SkewQ   <primme_params.correctionParams.projectors.SkewQ>`
+      | :c:member:`PRIMMEF77_correctionParams_projectors_SkewX   <primme_params.correctionParams.projectors.SkewX>`
+      | :c:member:`PRIMMEF77_correctionParams_convTest           <primme_params.correctionParams.convTest>`
+      | :c:member:`PRIMMEF77_correctionParams_relTolBase         <primme_params.correctionParams.relTolBase>`
+      | :c:member:`PRIMMEF77_stats_numOuterIterations            <primme_params.stats.numOuterIterations>`
+      | :c:member:`PRIMMEF77_stats_numRestarts                   <primme_params.stats.numRestarts>`
+      | :c:member:`PRIMMEF77_stats_numMatvecs                    <primme_params.stats.numMatvecs>`
+      | :c:member:`PRIMMEF77_stats_numPreconds                   <primme_params.stats.numPreconds>`
+      | :c:member:`PRIMMEF77_stats_elapsedTime                   <primme_params.stats.elapsedTime>`
+      | :c:member:`PRIMMEF77_dynamicMethodSwitch                 <primme_params.dynamicMethodSwitch>`
+      | :c:member:`PRIMMEF77_massMatrixMatvec                    <primme_params.massMatrixMatvec>`
 
    :param value: (input) value to set.
 

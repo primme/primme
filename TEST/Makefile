@@ -83,16 +83,16 @@ ex_petscf77ptr: ex_petscf77ptr.o ../libprimme.a Makefile
 	$(FLDR) -o ex_petscf77ptr ex_petscf77ptr.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 %doublecomplex.o: %.c
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 .c.o:
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
-	$(F77) $(HIGH_OPT) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
 all: primme_double primme_doublecomplex
 
@@ -156,14 +156,14 @@ all_tests_doublecomplex_save: primme_doublecomplex
 	rm -f ._test00
 
 test_double: ex_dseq
-	@./ex_dseq &> tests.log && grep -q "10 eigenpairs converged" tests.log \
+	@./ex_dseq > tests.log 2>&1 && grep -q "10 eigenpairs converged" tests.log \
 	    && echo "Test passed!" || \
 	       (cat tests.log; echo "Something went wrong. Please consider to send us the file";\
                 echo "TEST/tests.log if the software doesn't work as expected.";\
                 exit 1;)
 
 test_doublecomplex: ex_zseq
-	@./ex_zseq &> tests.log && grep -q "10 eigenpairs converged" tests.log \
+	@./ex_zseq > tests.log 2>&1 && grep -q "10 eigenpairs converged" tests.log \
 	    && echo "Test passed!" || \
 	       (cat tests.log; echo "Something went wrong. Please consider to send us the file";\
                 echo "TEST/tests.log if the software doesn't work as expected.";\

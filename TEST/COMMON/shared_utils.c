@@ -44,7 +44,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
                 primme_params *primme, primme_preset_method *method) {
 
    int line, ret, i;
-   char ident[128];
+   char ident[2048];
    char op[128];
    char stringValue[128];
    FILE *configFile;
@@ -60,7 +60,9 @@ int read_solver_params(char *configFileName, char *outputFileName,
    line = 1;
    while (EOF != fscanf(configFile, "%s", ident)) {
       if (strncmp(ident, "//", 2) == 0) {
-         fgets(ident, 2048, configFile);
+         if (fgets(ident, 2048, configFile) == NULL) {
+            break;
+         }
          line++;
          continue;
       }
@@ -224,7 +226,9 @@ int read_solver_params(char *configFileName, char *outputFileName,
                }
             }
             if (ret == 1) {
-               fgets(ident, 2048, configFile);
+               if (fgets(ident, 2048, configFile) == NULL) {
+                  break;
+               }
             }
          }
          else if (strcmp(ident, "primme.correction.projectors.LeftQ") == 0) {
@@ -292,7 +296,9 @@ int read_solver_params(char *configFileName, char *outputFileName,
                if (ret != 1) break;
             }
             if (ret == 1) {
-               fgets(ident, 2048, configFile);
+               if (fgets(ident, 2048, configFile) == NULL) {
+                  break;
+               }
             }
          }
          else if (strncmp(ident, "primme.", 7) == 0) {
@@ -301,7 +307,9 @@ int read_solver_params(char *configFileName, char *outputFileName,
             return(-1);
          }
          else {
-            fgets(ident, 2048, configFile);
+            if (fgets(ident, 2048, configFile) == NULL) {
+               break;
+            }
          }
 
          line++;
@@ -349,7 +357,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
 int read_driver_params(char *configFileName, driver_params *driver) {
 
    int line, ret;
-   char ident[128];
+   char ident[2048];
    char op[128];
    char stringValue[128];
    FILE *configFile;
@@ -365,7 +373,9 @@ int read_driver_params(char *configFileName, driver_params *driver) {
    line = 1;
    while (EOF != fscanf(configFile, "%s", ident)) {
       if (strncmp(ident, "//", 2) == 0) {
-         fgets(ident, 2048, configFile);
+         if (fgets(ident, 2048, configFile) == NULL) {
+            break;
+         }
          line++;
          continue;
       }
@@ -381,7 +391,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
       if (strcmp(op, "=") == 0) {
          /* Matrix, partitioning and I/O params  */
          if (strcmp(ident, "driver.outputFile") == 0) {
-            fscanf(configFile, "%s", driver->outputFileName);
+            ret = fscanf(configFile, "%s", driver->outputFileName);
          }
          else if (strcmp(ident, "driver.partId") == 0) {
             ret = fscanf(configFile, "%s", driver->partId);
@@ -390,19 +400,19 @@ int read_driver_params(char *configFileName, driver_params *driver) {
             ret = fscanf(configFile, "%s", driver->partDir);
          }
          else if (strcmp(ident, "driver.matrixFile") == 0) {
-            fscanf(configFile, "%s", driver->matrixFileName);
+            ret = fscanf(configFile, "%s", driver->matrixFileName);
          }
          else if (strcmp(ident, "driver.initialGuessesFile") == 0) {
-            fscanf(configFile, "%s", driver->initialGuessesFileName);
+            ret = fscanf(configFile, "%s", driver->initialGuessesFileName);
          }
          else if (strcmp(ident, "driver.initialGuessesPert") == 0) {
             ret = fscanf(configFile, "%le", &driver->initialGuessesPert);
          }
          else if (strcmp(ident, "driver.saveXFile") == 0) {
-            fscanf(configFile, "%s", driver->saveXFileName);
+            ret = fscanf(configFile, "%s", driver->saveXFileName);
          }
          else if (strcmp(ident, "driver.checkXFile") == 0) {
-            fscanf(configFile, "%s", driver->checkXFileName);
+            ret = fscanf(configFile, "%s", driver->checkXFileName);
          }
          else if (strcmp(ident, "driver.matrixChoice") == 0) {
             ret = fscanf(configFile, "%s", stringValue);
@@ -468,7 +478,9 @@ int read_driver_params(char *configFileName, driver_params *driver) {
             return(-1);
          }
          else {
-            fgets(ident, 2048, configFile);
+            if (fgets(ident, 2048, configFile) == NULL) {
+               break;
+            }
          }
 
          line++;
