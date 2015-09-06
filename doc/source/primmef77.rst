@@ -63,7 +63,7 @@ dprimme_f77
 
 .. c:function:: dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
-   Solve a real symmetric standard eigenproblems.
+   Solve a real symmetric standard eigenproblem.
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
@@ -86,8 +86,8 @@ zprimme_f77
 
 .. c:function:: zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
-   Solve a Hermitian standard eigenproblems. The arguments have the
-   same meaning like in function :c:func:`dprimme_f77`.
+   Solve a Hermitian standard eigenproblem. The arguments have the
+   same meaning as in function :c:func:`dprimme_f77`.
 
    :param evals(*): (output) 
    :type evals(*): double precision
@@ -169,7 +169,7 @@ primmetop_set_member_f77
 
    .. note::
 
-      **Not use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
+      **Don't use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
       |applyPreconditioner|, or in functions called by these functions. In those cases use
       :c:func:`primme_set_member_f77`.
 
@@ -190,7 +190,7 @@ primmetop_get_member_f77
 
    .. note::
 
-      **Not use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
+      **Don't use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
       |applyPreconditioner|, or in functions called by these functions. In those cases use
       :c:func:`primme_get_member_f77`.
 
@@ -217,7 +217,9 @@ primmetop_get_member_f77
          call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
          call c_f_pointer(pcomm, comm)
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
-          
+
+      Most users would not need to retrieve these pointers in their programs.
+    
 primmetop_get_prec_shift_f77
 """"""""""""""""""""""""""""
          
@@ -294,6 +296,8 @@ primme_get_member_f77
          call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
          call c_f_pointer(pcomm, comm)
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+
+      Most users would not need to retrieve these pointers in their programs.
 
 primme_get_prec_shift_f77
 """""""""""""""""""""""""

@@ -60,7 +60,7 @@ test:
 
 
 check_style:
-	( grep $$'\t' -R . --include='*.[chf]' && echo "Please don't use tabs!" ) || true
+	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 backup: 
 	@(\

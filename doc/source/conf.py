@@ -40,11 +40,11 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'readme'
 
 # General information about the project.
 project = u'PRIMME'
-copyright = u'2015, Andreas Stathopuolos'
+copyright = u'2015, College of William & Mary'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -197,7 +197,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'PRIMME.tex', u'PRIMME Documentation',
+  ('readme', 'PRIMME.tex', u'PRIMME Documentation',
    u'Andreas Stathopuolos', 'manual'),
 ]
 
@@ -243,7 +243,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PRIMME', u'PRIMME Documentation',
+  ('readme', 'PRIMME', u'PRIMME Documentation',
    u'Andreas Stathopuolos', 'PRIMME', 'One line description of project.',
    'Miscellaneous'),
 ]
