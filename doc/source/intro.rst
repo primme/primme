@@ -11,7 +11,7 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77 an
 Changelog
 ^^^^^^^^^
 
-Changes in PRIMME 1.2.1 (released on September 7th, 2015):
+Changes in PRIMME 1.2.1 (released on September 7, 2015):
 
 * Added MATLAB interface to full PRIMME functionality.
 
@@ -32,7 +32,7 @@ Changes in PRIMME 1.2.1 (released on September 7th, 2015):
 
 * Using Sphinx_ to manage documentation.
 
-Changes in PRIMME 1.2 (released on December 21st, 2014):
+Changes in PRIMME 1.2 (released on December 21, 2014):
 
 * A Fortran compiler is no longer required for building the PRIMME library.
   Fortran programs can still be linked to PRIMME's F77 interface.
