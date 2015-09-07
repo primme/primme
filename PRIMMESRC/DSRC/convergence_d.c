@@ -141,10 +141,8 @@ int check_convergence_dprimme(double *V, double *W, double *hVecs,
       compute_resnorms(V, W, rwork, hVals, basisSize, blockNorms,
          iev, left, right, &rwork[basisSize*(right-left+1)], primme);
 
-      if (primme->printLevel >= 3 && primme->procID == 0) {
-          print_residuals(hVals, blockNorms, numConverged, numLocked, iev, 
-             left, right, primme);
-      }
+      print_residuals(hVals, blockNorms, numConverged, numLocked, iev, 
+         left, right, primme);
 
       /* ----------------------------------------------------------------- */
       /* Determine which Ritz vectors have converged < tol and flag them.  */
