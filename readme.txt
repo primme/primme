@@ -91,7 +91,7 @@ and MATLAB.
 Changelog
 =========
 
-Changes in PRIMME 1.2.1 (released on ???):
+Changes in PRIMME 1.2.1 (released on September 7th, 2015):
 
 * Added MATLAB interface to full PRIMME functionality.
 
@@ -117,7 +117,7 @@ Changes in PRIMME 1.2.1 (released on ???):
 
 * Using Sphinx to manage documentation.
 
-Changes in PRIMME 1.2 (released on December 21, 2014):
+Changes in PRIMME 1.2 (released on December 21st, 2014):
 
 * A Fortran compiler is no longer required for building the PRIMME
   library. Fortran programs can still be linked to PRIMME's F77
