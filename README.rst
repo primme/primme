@@ -45,7 +45,7 @@ The call arguments are:
 * `resNorms`, array to return the residual norms of the found eigenpairs; and
 * `primme`, structure that specify the matrix problem, which eigenvalues are wanted and several method options.
 
-See documentation in `readme.txt` and `doc.pdf`.
+See documentation in `readme.txt` file and in ``doc`` directory.
 
 Citing this code 
 ----------------
@@ -100,6 +100,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Contact Information 
 -------------------
 
-For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_
+For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
+email, `andreas` at `cs.wm.edu`. See further information in
+the webpage http://www.cs.wm.edu/~andreas/software .
 
-.. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/
+.. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/software
