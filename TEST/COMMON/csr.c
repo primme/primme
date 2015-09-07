@@ -184,7 +184,7 @@ static int readUpperMTX(const char *mtfile, double **A, int **JA, int **IA, int 
 
    i = 0;
    nextRow = 0;
-   fscanf(matrixFile, "%d %d\n", n, nnz);
+   if (fscanf(matrixFile, "%d %d\n", n, nnz) != 2) return -1;
    fprintf(stderr, "%d %d\n", *n, *nnz);
 
    nzmax = 2*(*nnz) - *n;
@@ -197,7 +197,7 @@ static int readUpperMTX(const char *mtfile, double **A, int **JA, int **IA, int 
 
    for (k=1; k <= *nnz; k++) {
       int tja; double ta;
-      fscanf(matrixFile, "%d %d %lf\n", &row, &tja, &ta);
+      if (fscanf(matrixFile, "%d %d %lf\n", &row, &tja, &ta) != 3) return -1;
       (*JA)[k-1]=tja;
       (*A)[k-1] = ta;
       if (i != row) {

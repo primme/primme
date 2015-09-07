@@ -1,3 +1,6 @@
+Note: For hyperlinked html and pdf versions of this document see
+  directory "doc".
+
 
 Welcome to PRIMME's documentation!
 **********************************
@@ -6,19 +9,21 @@ Table Of Contents:
 
 * PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 
-* Changelog
+  * Changelog
 
-* Citing this code
+  * Citing this code
 
-* License Information
+  * License Information
 
-* Contact Information
+  * Contact Information
 
-* Directory Structure
+  * Directory Structure
 
-* Making and Linking
+  * Making and Linking
 
-* Tested Systems
+    * Considerations using an IDE
+
+  * Tested Systems
 
 * C Library Interface
 
@@ -84,7 +89,7 @@ and MATLAB.
 
 
 Changelog
-*********
+=========
 
 Changes in PRIMME 1.2.1 (released on ???):
 
@@ -107,7 +112,7 @@ Changes in PRIMME 1.2.1 (released on ???):
   * "ex*.c" and "ex*.f": small, didactic examples of usage in C and
     Fortran and in parallel (with PETSc).
 
-* Fixed a few minor bugs and improved documentation (specially the
+* Fixed a few minor bugs and improved documentation (especially the
   F77 interface).
 
 * Using Sphinx to manage documentation.
@@ -135,7 +140,7 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
   The above fixes have improved robustness and performance.
 
 * PRIMME now assigns unique random seeds per parallel process for up
-  to 4096^3  (140 trillion processes).
+  to 4096^3  (140 trillion) processes.
 
 * For the DYNAMIC method, fixed issues with initialization and
   synchronization decisions across multiple processes.
@@ -148,7 +153,7 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 
 
 Citing this code
-****************
+================
 
 Please cite:
 
@@ -182,7 +187,7 @@ supported by a number of grants from the National Science Foundation.
 
 
 License Information
-*******************
+===================
 
 PRIMME is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published
@@ -201,15 +206,15 @@ USA
 
 
 Contact Information
-*******************
+===================
 
 For reporting bugs or questions about functionality contact Andreas
 Stathopoulos by email, *andreas* at *cs.wm.edu*. See further
-information in the webpage http://www.cs.wm.edu/~andreas .
+information in the webpage http://www.cs.wm.edu/~andreas/software .
 
 
 Directory Structure
-*******************
+===================
 
 The next directories and files should be available:
 
@@ -249,7 +254,7 @@ The next directories and files should be available:
 
 
 Making and Linking
-******************
+==================
 
 "Make_flags" has the flags and compilers used to make "libprimme.a":
 
@@ -266,7 +271,7 @@ Making and Linking
     integer ("kind=8") type (usually they are not).
 
 Note: When "-DPRIMME_BLASINT_SIZE=64" is set the code uses the type
-  "int64_t" supported by the standard C99. In case the compiler
+  "int64_t" supported by the C99 standard. In case the compiler
   doesn't honor the standard, replace the next lines in
   "PRIMMESRC/COMMONSRC/common_numerical.h":
 
@@ -333,8 +338,28 @@ Full description of actions that *make* can take:
   directories.
 
 
+Considerations using an IDE
+---------------------------
+
+PRIMME can be built in other environments such as Anjuta, Eclipse,
+KDevelop, Qt Creator, Visual Studio and XCode. To build the PRIMME
+library do the following:
+
+1. Create a new project and include the source files under the
+   directory "PRIMMESRC".
+
+2. Add the directory "PRIMMESRC/COMMONSRC" as an include directory.
+
+To build an example code using PRIMME make sure:
+
+* to add a reference for PRIMME, BLAS and LAPACK libraries;
+
+* to add the directory "PRIMMESRC/COMMONSRC" as an include
+  directory.
+
+
 Tested Systems
-**************
+==============
 
 PRIMME is primary developed with GNU gcc, g++ and gfortran (versions
 4.8 and later). Many users have reported builds on several other
@@ -484,9 +509,9 @@ next fields:
    struct stackTraceNode *stackTrace
 
 PRIMME requires the user to set at least the dimension of the matrix
-("n"), the matrix-vector product ("matrixMatvec"), as they define the
-problem to be solved. For parallel programs, "nLocal", "procID" and
-"globalSumDouble" are also required.
+("n") and the matrix-vector product ("matrixMatvec"), as they define
+the problem to be solved. For parallel programs, "nLocal", "procID"
+and "globalSumDouble" are also required.
 
 In addition, most users would want to specify how many eigenpairs to
 find, and provide a preconditioner (if available).
@@ -496,6 +521,9 @@ It is useful to have set all these before calling
 "maxBasisSize", "maxBlockSize", etc, they should also provide them
 into "primme_params" prior to the "primme_set_method()" call. This
 helps "primme_set_method()" make the right choice on other parameters.
+It is sometimes useful to check the actual parameters that PRIMME is
+going to use (before calling it) or used (on return) by printing them
+with "primme_display_params()".
 
 
 Interface Description
@@ -509,7 +537,7 @@ dprimme
 
 int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 
-   Solve a real symmetric standard eigenproblems.
+   Solve a real symmetric standard eigenproblem.
 
    Parameters:
       * **evals** -- array at least of size "numEvals" to store the
@@ -535,7 +563,7 @@ zprimme
 
 int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
 
-   Solve a Hermitian standard eigenproblems; see function "dprimme()".
+   Solve a Hermitian standard eigenproblem; see function "dprimme()".
 
    Note: PRIMME uses a structure called "Complex_Z" to define
      complex numbers. "Complex_Z" is defined in
@@ -687,7 +715,7 @@ dprimme_f77
 
 dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
-   Solve a real symmetric standard eigenproblems.
+   Solve a real symmetric standard eigenproblem.
 
    Parameters:
       * **evals(*)** (*double precision*) -- (output) array at least
@@ -714,8 +742,8 @@ zprimme_f77
 
 zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
-   Solve a Hermitian standard eigenproblems. The arguments have the
-   same meaning like in function "dprimme_f77()".
+   Solve a Hermitian standard eigenproblem. The arguments have the
+   same meaning as in function "dprimme_f77()".
 
    Parameters:
       * **evals(*)** (*double precision*) -- (output)
@@ -798,7 +826,7 @@ primmetop_set_member_f77(primme, label, value)
 
       * **value** -- (input) value to set.
 
-   Note: **Not use** this function inside PRIMME's callback
+   Note: **Don't use** this function inside PRIMME's callback
      functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
      functions called by these functions. In those cases use
      "primme_set_member_f77()".
@@ -819,7 +847,7 @@ primmetop_get_member_f77(primme, label, value)
 
       * **value** -- (output) value of the field.
 
-   Note: **Not use** this function inside PRIMME's callback
+   Note: **Don't use** this function inside PRIMME's callback
      functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
      functions called by these functions. In those cases use
      "primme_get_member_f77()".
@@ -847,6 +875,9 @@ primmetop_get_member_f77(primme, label, value)
         call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
         call c_f_pointer(pcomm, comm)
         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
+
+     Most users would not need to retrieve these pointers in their
+     programs.
 
 
 primmetop_get_prec_shift_f77
@@ -931,6 +962,9 @@ primme_get_member_f77(primme, label, value)
         call c_f_pointer(pcomm, comm)
         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 
+     Most users would not need to retrieve these pointers in their
+     programs.
+
 
 primme_get_prec_shift_f77
 =========================
@@ -967,6 +1001,11 @@ primme_params
 
       Dimension of the matrix.
 
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
+
    void (*matrixMatvec)(void *x, void *y, int *blockSize, primme_params *primme)
 
       Block matrix-multivector multiplication, y = A x in solving A x
@@ -985,6 +1024,11 @@ primme_params
 
          * **primme** -- parameters structure.
 
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme()".
+
       Note: Argument "blockSize" is passed by reference to make
         easier the interface to other languages (like Fortran).
 
@@ -995,30 +1039,56 @@ primme_params
       for finding eigenvalues close to \sigma. The function follows
       the convention of "matrixMatvec".
 
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme()".
+
    void (*massMatrixMatvec)(void *x, void *y, int *blockSize, struct primme_params *primme)
 
       Block matrix-multivector multiplication, y = B x in solving A x
       = \lambda B x. The function follows the convention of
       "matrixMatvec".
 
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme()".
+
       Warning: Generalized eigenproblems not implemented in current
         version. This member is included for future compatibility.
 
    int numProcs
 
-      Number of processes calling in parallel to "dprimme()" or
-      "zprimme()". The default value is 1.
+      Number of processes calling "dprimme()" or "zprimme()" in
+      parallel.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 1;
+            this field is read by "dprimme()".
 
    int procID
 
-      The identity of the process that is calling in parallel to
-      "dprimme()" or "zprimme()". Only the process with id 0 prints
-      information. The default value is 0.
+      The identity of the local process within a parallel execution
+      calling "dprimme()" or "zprimme()". Only the process with id 0
+      prints information.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            "dprimme()" sets this field to 0 if "numProcs" is 1;
+            this field is read by "dprimme()".
 
    int nLocal
 
-      Number of local rows on this process. The default value is "n"
-      if "numProcs" is 1.
+      Number of local rows on this process.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            "dprimme()" sets this field to to "n" if "numProcs" is 1;
+            this field is read by "dprimme()".
 
    void *commInfo
 
@@ -1027,26 +1097,36 @@ primme_params
       communicator. PRIMME does not use this. It is available for
       possible use in user functions defined in "matrixMatvec",
       "applyPreconditioner", "massMatrixMatvec" and "globalSumDouble".
-      The default values is NULL.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
 
    void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count, primme_params *primme)
 
-      Global sum reduction function.
+      Global sum reduction function. No need to set for sequential
+      programs.
 
       Parameters:
-         * **sendBuf** -- array of size count with the input local
+         * **sendBuf** -- array of size "count" with the local input
            values.
 
-         * **recvBuf** -- array of size count with the output global
-           values so that i-th element of recvBuf is the sum over all
-           processes of the i-th element of sendBuf.
+         * **recvBuf** -- array of size "count" with the global
+           output values so that the i-th element of recvBuf is the
+           sum over all processes of the i-th element of "sendBuf".
 
-         * **count** -- array size of sendBuf and recvBuf.
+         * **count** -- array size of "sendBuf" and "recvBuf".
 
          * **primme** -- parameters structure.
 
-      The default value is NULL if "numProcs" is 1. When MPI this can
-      be a simply wrapper to MPI_Allreduce().
+      Input/output:
+
+            "primme_initialize()" sets this field to an internal function;
+            "dprimme()" sets this field to an internal function if "numProcs" is 1 and "globalSumDouble" is NULL;
+            this field is read by "dprimme()".
+
+      When MPI is used this can be a simply wrapper to
+      MPI_Allreduce().
 
          void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
                                   primme_params *primme) {
@@ -1064,7 +1144,12 @@ primme_params
 
    int numEvals
 
-      Number of eigenvalues wanted. The default value is 1.
+      Number of eigenvalues wanted.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 1;
+            this field is read by "primme_set_method()" (see Preset Methods) and "dprimme()".
 
    primme_target target
 
@@ -1088,16 +1173,10 @@ primme_params
          Closest in absolute value to than the shifts in
          "targetShifts".
 
-      The default value is "primme_smallest".
+      Input/output:
 
-      Note: * If some shift is close to the lower (higher) end of
-        the
-
-          spectrum, use either "primme_closest_geq"
-          ("primme_closest_leq") or "primme_closest_abs".
-
-        * "primme_closest_leq" and "primme_closest_geq" are more
-          efficient than "primme_closest_abs".
+            "primme_initialize()" sets this field to "primme_smallest";
+            this field is read by "dprimme()".
 
    int numTargetShifts
 
@@ -1105,104 +1184,143 @@ primme_params
       "primme_closest_geq", "primme_closest_leq" or
       "primme_closest_abs". The default values is 0.
 
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
+
    double *targetShifts
 
       Array of shifts, at least of size "numTargetShifts". Used only
       when "target" is "primme_closest_geq", "primme_closest_leq" or
-      "primme_closest_abs". The default values is NULL.
+      "primme_closest_abs".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme()".
 
       The i-th shift (or the last one, if it is not given) is taken
       into account in finding the i-th eigenvalue.
 
-      Note: For code efficiency and robustness, the shifts should be
-        ordered. Order them in ascending (descending) order for shifts
-        closer to the lower (higher) end of the spectrum.
+      Note: Considerations for interior problems:
 
-      int printLevel
+        * PRIMME will try to compute the eigenvalues in the order
+          given in the "targetShifts". However, for code efficiency
+          and robustness, the shifts should be ordered. Order them in
+          ascending (descending) order for shifts closer to the lower
+          (higher) end of the spectrum.
 
-         The level of message reporting from the code. One of:
+        * If some shift is close to the lower (higher) end of the
+          spectrum, use either "primme_closest_geq"
+          ("primme_closest_leq") or "primme_closest_abs".
 
-         * 0: silent.
+        * "primme_closest_leq" and "primme_closest_geq" are more
+          efficient than "primme_closest_abs".
 
-         * 1: print some error messages when these occur.
+        * For interior eigenvalues larger "maxBasisSize" is usually
+          more robust.
 
-         * 2: as 1, and info about targeted eigenpairs when they are
-           marked as converged:
+   int printLevel
 
-              #Converged $1 eval[ $2 ]= $3 norm $4 Mvecs $5 Time $7
+      The level of message reporting from the code. One of:
 
-           or locked:
+      * 0: silent.
 
-              #Lock epair[ $1 ]= $3 norm $4 Mvecs $5 Time $7
+      * 1: print some error messages when these occur.
 
-         * 3: as 2, and info about targeted eigenpairs every outer
-           iteration:
+      * 2: as 1, and info about targeted eigenpairs when they are
+        marked as converged:
 
-              OUT $6 conv $1 blk $8 MV $5 Sec $7 EV $3 |r| $4
+           #Converged $1 eval[ $2 ]= $3 norm $4 Mvecs $5 Time $7
 
-           Also, if it is used the dynamic method, show JDQMR/GDk
-           performance ratio and the current method in use.
+        or locked:
 
-         * 4: as 3, and info about targeted eigenpairs every inner
-           iteration:
+           #Lock epair[ $1 ]= $3 norm $4 Mvecs $5 Time $7
 
-              INN MV $5 Sec $7 Eval $3 Lin|r| $9 EV|r| $4
+      * 3: as 2, and info about targeted eigenpairs every outer
+        iteration:
 
-         * 5: as 4, and verbose info about certain choices of the
-           algorithm.
+           OUT $6 conv $1 blk $8 MV $5 Sec $7 EV $3 |r| $4
 
-         Output key:
+        Also, if it is used the dynamic method, show JDQMR/GDk
+        performance ratio and the current method in use.
 
-               $1: Number of converged pairs up to now.
-               $2: The index of the pair currently converged.
-               $3: The eigenvalue.
-               $4: Its residual norm.
-               $5: The current number of matrix-vector products.
-               $6: The current number of outer iterations.
-               $7: The current elapsed time.
-               $8: Index within the block of the targeted pair .
-               $9: QMR norm of the linear system residual.
+      * 4: as 3, and info about targeted eigenpairs every inner
+        iteration:
 
-         In parallel programs, output is produced in call with
-         "procID" 0 when "printLevel" is from 0 to 4. If "printLevel"
-         is 5 output can be produced in any of the parallel calls.
+           INN MV $5 Sec $7 Eval $3 Lin|r| $9 EV|r| $4
 
-      Note: Convergence history for plotting may be produced simply
-        by:
+      * 5: as 4, and verbose info about certain choices of the
+        algorithm.
 
-           grep OUT outpufile | awk '{print $8" "$14}' > out
-           grep INN outpufile | awk '{print $3" "$11}' > inn
+      Output key:
 
-        Then in Matlab:
+         $1: Number of converged pairs up to now.
+         $2: The index of the pair currently converged.
+         $3: The eigenvalue.
+         $4: Its residual norm.
+         $5: The current number of matrix-vector products.
+         $6: The current number of outer iterations.
+         $7: The current elapsed time.
+         $8: Index within the block of the targeted pair .
+         $9: QMR norm of the linear system residual.
 
-           plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
+      In parallel programs, output is produced in call with "procID" 0
+      when "printLevel" is from 0 to 4. If "printLevel" is 5 output
+      can be produced in any of the parallel calls.
 
-        Or in gnuplot:
+      Input/output:
 
-           plot 'out' w lp, 'inn' w lp
+            "primme_initialize()" sets this field to 1;
+            this field is read by "dprimme()".
+
+   Note: Convergence history for plotting may be produced simply by:
+
+        grep OUT outpufile | awk '{print $8" "$14}' > out
+        grep INN outpufile | awk '{print $3" "$11}' > inn
+
+     Then in Matlab:
+
+        plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
+
+     Or in gnuplot:
+
+        plot 'out' w lp, 'inn' w lp
 
    double aNorm
 
-      An estimate of norm of the matrix A that is used in the
-      convergence criterion (see "eps"). If it is less or equal to 0,
-      it is used the largest absolute Ritz value seen. And on return,
-      it is replaced with that value.
+      An estimate of the norm of A, which is used in the convergence
+      criterion (see "eps").
 
-      The default value is 0.
+      If "aNorm" is less than or equal to 0, the code uses the largest
+      absolute Ritz value seen. On return, "aNorm" is then replaced
+      with that value.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0.0;
+            this field is read and written by "dprimme()".
 
    double eps
 
       An eigenpairs is marked as converged when the 2-norm of the
-      residual is less than "eps" times "aNorm". The residual vector
-      is A x - \lambda x or A x - \lambda B x.
+      residual is less than "eps" * "aNorm". The residual vector is A
+      x - \lambda x or A x - \lambda B x.
 
-      The default value is 10^{-12}.
+      Input/output:
+
+            "primme_initialize()" sets this field to 10^{-12};
+            this field is read by "dprimme()".
 
    FILE *outputFile
 
       Opened file to write down the output.
 
-      The default value is the standard output.
+      Input/output:
+
+            "primme_initialize()" sets this field to the standard output;
+            this field is read by "dprimme()".
 
    int dynamicMethodSwitch
 
@@ -1216,6 +1334,12 @@ primme_params
             -1: use "DEFAULT_MIN_MATVECS" next time.
             -2: use "DEFAULT_MIN_TIME" next time.
             -3: close call, use "DYNAMIC" next time again.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
       Note: Even for expert users we do not recommend setting
         "dynamicMethodSwitch" directly, but through
@@ -1232,24 +1356,34 @@ primme_params
       try to use soft locking (à la ARPACK), when large enough
       "minRestartSize" is available.
 
-      The default depends on the method and the value of some options.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int initSize
 
       On input, the number of initial vector guesses provided in
-      "evecs" argument in "dprimme()" or "zprimme()". On output, the
-      number of converged eigenpairs. During execution, it holds the
-      current number of converged eigenpairs. If in addition locking
-      is used, these are accessible in "evals" and "evecs".
+      "evecs" argument in "dprimme()" or "zprimme()".
 
-      The default value is 0.
+      On output, the number of converged eigenpairs.
+
+      During execution, it holds the current number of converged
+      eigenpairs. In addition, if locking is used, these are
+      accessible in "evals" and "evecs".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "dprimme()".
 
    int numOrthoConst
 
-      Number of external orthogonalization constraints. These vectors
-      are provided in the first "numOrthoConst" positions of the
-      "evecs" argument in "dprimme()" or "zprimme()" and must be
-      orthonormal.
+      Number of vectors to be used as external orthogonalization
+      constraints. These vectors are provided in the first
+      "numOrthoConst" positions of the "evecs" argument in "dprimme()"
+      or "zprimme()" and must be orthonormal.
 
       PRIMME finds new eigenvectors orthogonal to these constraints
       (equivalent to solving the problem with (I-YY^*)A(I-YY^*) and
@@ -1259,23 +1393,31 @@ primme_params
       "dprimme()" or "zprimme()", possibly with different parameters
       (see an example in "TEST/ex_zseq.c").
 
-      The default value is 0.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
 
    int maxBasisSize
 
       The maximum basis size allowed in the main iteration. This has
       memory implications.
 
-      The default depends on method.
+      Input/output:
 
-      Note: For interior eigenvalues use a larger value than usual.
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int minRestartSize
 
       Maximum Ritz vectors kept after restarting the basis.
 
-      The default depends on "maxBasisSize", "maxBlockSize" and
-      method.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int maxBlockSize
 
@@ -1287,7 +1429,11 @@ primme_params
       > 1 to find multiple eigenvalues. For some methods, keeping to 1
       yields the best overall performance.
 
-      The default value is 1.
+      Input/output:
+
+            "primme_initialize()" sets this field to 1;
+            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
       Note: Inner iterations of QMR are not performed in a block
         fashion. Every correction equation from a block is solved
@@ -1299,14 +1445,20 @@ primme_params
       equal to the number of preconditioning operations) that the code
       is allowed to perform before it exits.
 
-      The default value is "INT_MAX".
+      Input/output:
+
+            "primme_initialize()" sets this field to "INT_MAX";
+            this field is read by "dprimme()".
 
    int maxOuterIterations
 
       Maximum number of outer iterations that the code is allowed to
       perform before it exits.
 
-      The default value is "INT_MAX".
+      Input/output:
+
+            "primme_initialize()" sets this field to "INT_MAX";
+            this field is read by "dprimme()".
 
    int intWorkSize
 
@@ -1321,7 +1473,10 @@ primme_params
       required space, which can be freed later by calling
       "primme_Free()".
 
-      The default value is 0.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "dprimme()".
 
    long int realWorkSize
 
@@ -1336,7 +1491,10 @@ primme_params
       required space, which can be freed later by calling
       "primme_Free()".
 
-      The default value is 0.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "dprimme()".
 
    int *intWork
 
@@ -1353,7 +1511,10 @@ primme_params
       is the case, a Rayleigh Ritz on returned "evecs" would provide
       the accurate eigenvectors (see [r4]).
 
-      The default value is NULL.
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read and written by "dprimme()".
 
    void *realWork
 
@@ -1363,7 +1524,10 @@ primme_params
       provided space is not enough, the code will free it and allocate
       a new space.
 
-      The default value is NULL.
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read and written by "dprimme()".
 
    int iseed
 
@@ -1372,34 +1536,45 @@ primme_params
 
       The default value is an array with values -1, -1, -1 and -1. In
       that case, "iseed" is set based on the value of "procID" to
-      avoid every process generating the same sequence of pseudorandom
-      numbers.
+      avoid every parallel process generating the same sequence of
+      pseudorandom numbers.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "[-1, -1, -1, -1]";
+            this field is read and written by "dprimme()".
 
    void *matrix
 
       This field may be used to pass any required information in the
       matrix-vector product "matrixMatvec".
 
-      The default value is NULL.
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
 
    void *preconditioner
 
       This field may be used to pass any required information in the
-      matrix-vector product "applyPreconditioner".
+      preconditioner function "applyPreconditioner".
 
-      The default value is NULL.
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
 
    double *ShiftsForPreconditioner
 
       Array of size "blockSize" provided during execution of
-      :c:member:dprimme and :c:member:zprimme holding the shifts to be
-      used (if needed) in the preconditioning operation.
+      "dprimme()" and "zprimme()" holding the shifts to be used (if
+      needed) in the preconditioning operation.
 
       For example if the block size is 3, there will be an array of
       three shifts in "ShiftsForPreconditioner". Then the user can
       invert a shifted preconditioner for each of the block vectors
       (M-ShiftsForPreconditioner_i)^{-1} x_i. Classical Davidson
       (diagonal) preconditioning is an example of this.
+
+         this field is read and written by "dprimme()".
 
    primme_restartscheme restartingParams.scheme
 
@@ -1411,22 +1586,35 @@ primme_params
       * "primme_dtr", Dynamic thick restarting. Helpful without
         preconditioning but it is expensive to implement.
 
-      The default value is "primme_thick".
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_thick";
+            written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int restartingParams.maxPrevRetain
 
       Number of approximations from previous iteration to be retained
-      after restart (see [r2]). The restart size is "minRestartSize"
-      plus "maxPrevRetain".
+      after restart (this is the locally optimal restarting, see
+      [r2]). The restart size is "minRestartSize" plus
+      "maxPrevRetain".
 
-      The default value is 1.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int correctionParams.precondition
 
       Set to 1 to use preconditioning. Make sure "applyPreconditioner"
       is not NULL then!
 
-      The default value is 0.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int correctionParams.robustShifts
 
@@ -1435,7 +1623,11 @@ primme_params
       "ShiftsForPreconditioner" the Ritz values displaced by an
       approximation of the eigenvalue error.
 
-      The default value depends on method.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    int correctionParams.maxInnerIterations
 
@@ -1449,7 +1641,11 @@ primme_params
       * <0: perform at most the rest of the remaining matrix-vector
         products up to reach "maxMatvecs".
 
-      The default value depends on method.
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
       See also "convTest".
 
@@ -1457,6 +1653,12 @@ primme_params
 
       Parameter used when "convTest" is
       "primme_decreasing_LTolerance".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
    primme_convergencetest correctionParams.convTest
 
@@ -1478,7 +1680,11 @@ primme_params
         stopping when the estimated eigenvalue residual has reduced 10
         times.
 
-      The default value depends on method.
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_adaptive_ETolerance";
+            written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
 
       Note: Avoid to set "maxInnerIterations" to -1 and "convTest"
         to "primme_full_LTolerance".
@@ -1500,22 +1706,24 @@ primme_params
       Control the projectors involved in the computation of the
       correction appended to the basis every (outer) iteration.
 
-      Given the current selected Ritz value \Lambda and vectors X, the
-      residual associated vectors R=AX-X\Lambda, the previous locked
-      vectors Q and the preconditioner M^{-1}. The correction D
-      appended to the basis in GD (when "maxInnerIterations" is 0) is:
+      Consider the current selected Ritz value \Lambda and vectors X,
+      the residual associated vectors R=AX-X\Lambda, the previous
+      locked vectors Q, and the preconditioner M^{-1}.
 
-      +----------+---------+--------------------------------------------------------------------+
-      | RightX   | SkewX   | D                                                                  |
-      +==========+=========+====================================================================+
-      | 0        | 0       | M^{-1}R (Classic GD)                                               |
-      +----------+---------+--------------------------------------------------------------------+
-      | 1        | 0       | M^{-1}(R-\Delta X) (cheap Olsen's Method)                          |
-      +----------+---------+--------------------------------------------------------------------+
-      | 1        | 1       | (I- M^{-1}X(X^*M^{-1}X)^{-1}X^*)M^{-1}R (Olsen's Method)           |
-      +----------+---------+--------------------------------------------------------------------+
-      | 0        | 1       | error                                                              |
-      +----------+---------+--------------------------------------------------------------------+
+      When "maxInnerIterations" is 0, the correction D appended to the
+      basis in GD is:
+
+      +----------+---------+------------------------------------------------------------+
+      | RightX   | SkewX   | D                                                          |
+      +==========+=========+============================================================+
+      | 0        | 0       | M^{-1}R (Classic GD)                                       |
+      +----------+---------+------------------------------------------------------------+
+      | 1        | 0       | M^{-1}(R-Delta X) (cheap Olsen's Method)                   |
+      +----------+---------+------------------------------------------------------------+
+      | 1        | 1       | (I- M^{-1}X(X^*M^{-1}X)^{-1}X^*)M^{-1}R (Olsen's Method)   |
+      +----------+---------+------------------------------------------------------------+
+      | 0        | 1       | error                                                      |
+      +----------+---------+------------------------------------------------------------+
 
       Where \Delta is a diagonal matrix that \Delta_{i,i} holds an
       estimation of the error of the approximate eigenvalue
@@ -1524,8 +1732,8 @@ primme_params
       The values of "RightQ", "SkewQ", "LeftX" and "LeftQ" are
       ignored.
 
-      The correction D in JD (when "maxInnerIterations" isn't 0)
-      results from solving:
+      When "maxInnerIterations" is not 0, the correction D in Jacobi-
+      Davidson results from solving:
 
          P_Q^l P_X^l (A-\sigma I) P_X^r P_Q^r M^{-1} D' = -R, \ \ \  D
          = P_X^r P_Q^l M^{-1}D'.
@@ -1550,9 +1758,13 @@ primme_params
       | 0        | 1       | error                           |
       +----------+---------+---------------------------------+
 
-      The default value depends on method.
+      Input/output:
 
-      See [r3] for a study about different projector configuration in
+            "primme_initialize()" sets all of them to 0;
+            this field is written by "primme_set_method()" (see Preset Methods);
+            this field is read by "dprimme()".
+
+      See [r3] for a study about different projector configurations in
       JD.
 
    int stats.numOuterIterations
@@ -1560,9 +1772,19 @@ primme_params
       Hold the number of outer iterations. The value is available
       during execution and at the end.
 
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
    int stats.numRestarts
 
       Hold the number of restarts during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
 
    int stats.numMatvecs
 
@@ -1570,16 +1792,31 @@ primme_params
       applied on. The value is available during execution and at the
       end.
 
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
    int stats.numPreconds
 
       Hold how many vectors the operator in "applyPreconditioner" has
       been applied on. The value is available during execution and at
       the end.
 
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
    int stats.elapsedTime
 
       Hold the wall clock time spent by the call to "dprimme()" or
       "zprimme()". The value is available at the end of the execution.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
 
 
 Error Codes
@@ -1689,13 +1926,13 @@ primme_preset_method
       methods "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS".
 
       With "DYNAMIC" "primme_set_method()" sets "dynamicMethodSwitch"
-      = 1 and makes the sames changes as for method "JDQMR_ETol".
+      = 1 and makes the same changes as for method "JDQMR_ETol".
 
    Arnoldi
 
-         Arnoldi implemented à la Generalized Davidson.
+      Arnoldi implemented à la Generalized Davidson.
 
-         With "Arnoldi" "primme_set_method()" sets:
+      With "Arnoldi" "primme_set_method()" sets:
 
       * "locking" = 0;
 
@@ -1707,9 +1944,9 @@ primme_preset_method
 
    GD
 
-         Generalized Davidson.
+      Generalized Davidson.
 
-         With "GD" "primme_set_method()" sets:
+      With "GD" "primme_set_method()" sets:
 
       * "locking" = 0;
 
@@ -1725,11 +1962,11 @@ primme_preset_method
 
    GD_plusK
 
-         GD with locally optimal restarting.
+      GD with locally optimal restarting.
 
-         With "GD_plusK" "primme_set_method()" sets "maxPrevRetain" =
-         2 if "maxBlockSize" is 1 and "numEvals" > 1; otherwise it
-         sets "maxPrevRetain" to "maxBlockSize". Also:
+      With "GD_plusK" "primme_set_method()" sets "maxPrevRetain" = 2
+      if "maxBlockSize" is 1 and "numEvals" > 1; otherwise it sets
+      "maxPrevRetain" to "maxBlockSize". Also:
 
       * "locking" = 0;
 
@@ -1756,9 +1993,9 @@ primme_preset_method
 
    RQI
 
-         (Accelerated) Rayleigh Quotient Iteration.
+      (Accelerated) Rayleigh Quotient Iteration.
 
-         With "RQI" "primme_set_method()" sets:
+      With "RQI" "primme_set_method()" sets:
 
       * "locking" = 1;
 
@@ -1782,11 +2019,16 @@ primme_preset_method
 
       * "convTest" = "primme_full_LTolerance".
 
+      Note: If "numTargetShifts" > 0 and "targetShifts" are
+        provided, the interior problem solved uses these shifts in the
+        correction equation. Therefore RQI becomes INVIT (inverse
+        iteration) in that case.
+
    JDQR
 
-         Jacobi-Davidson with fixed number of inner steps.
+      Jacobi-Davidson with fixed number of inner steps.
 
-         With "JDQR" "primme_set_method()" sets:
+      With "JDQR" "primme_set_method()" sets:
 
       * "locking"     = 1;
 
@@ -1814,10 +2056,10 @@ primme_preset_method
 
    JDQMR
 
-         Jacobi-Davidson with adaptive stopping criterion for inner
-         Quasi Minimum Residual (QMR).
+      Jacobi-Davidson with adaptive stopping criterion for inner Quasi
+      Minimum Residual (QMR).
 
-         With "JDQMR" "primme_set_method()" sets:
+      With "JDQMR" "primme_set_method()" sets:
 
       * "locking" = 0;
 
@@ -1849,9 +2091,9 @@ primme_preset_method
 
    SUBSPACE_ITERATION
 
-         Subspace iteration.
+      Subspace iteration.
 
-         With "SUBSPACE_ITERATION" "primme_set_method()" sets:
+      With "SUBSPACE_ITERATION" "primme_set_method()" sets:
 
       * "locking"    = 1;
 
@@ -1875,9 +2117,9 @@ primme_preset_method
 
    LOBPCG_OrthoBasis
 
-         LOBPCG with orthogonal basis.
+      LOBPCG with orthogonal basis.
 
-         With "LOBPCG_OrthoBasis" "primme_set_method()" sets:
+      With "LOBPCG_OrthoBasis" "primme_set_method()" sets:
 
       * "locking"    = 0;
 
@@ -1901,10 +2143,9 @@ primme_preset_method
 
    LOBPCG_OrthoBasis_Window
 
-         LOBPCG with sliding window of "maxBlockSize" < 3 ***
-         "numEvals".
+      LOBPCG with sliding window of "maxBlockSize" < 3 *** "numEvals".
 
-         With "LOBPCG_OrthoBasis_Window" "primme_set_method()" sets:
+      With "LOBPCG_OrthoBasis_Window" "primme_set_method()" sets:
 
       * "locking"    = 0;
 

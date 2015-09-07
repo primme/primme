@@ -260,7 +260,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       struct primme_stats stats;
       struct stackTraceNode *stackTrace
  
-PRIMME requires the user to set at least the dimension of the matrix (|n|),
+PRIMME requires the user to set at least the dimension of the matrix (|n|) and
 the matrix-vector product (|matrixMatvec|), as they define the problem to be solved.
 For parallel programs, |nLocal|, |procID| and |globalSumDouble| are also required.
 
@@ -271,7 +271,9 @@ It is useful to have set all these before calling :c:func:`primme_set_method`.
 Also, if users have a preference on |maxBasisSize|, |maxBlockSize|, etc, they
 should also provide them into :c:type:`primme_params` prior to the
 :c:func:`primme_set_method` call. This helps :c:func:`primme_set_method` make
-the right choice on other parameters.
+the right choice on other parameters. It is sometimes useful to check the actual
+parameters that PRIMME is going to use (before calling it) or used (on return)
+by printing them with :c:func:`primme_display_params`.
 
 Interface Description
 ^^^^^^^^^^^^^^^^^^^^^
@@ -283,7 +285,7 @@ dprimme
 
 .. c:function:: int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 
-   Solve a real symmetric standard eigenproblems.
+   Solve a real symmetric standard eigenproblem.
 
    :param evals: array at least of size |numEvals| to store the
       computed eigenvalues; all processes in a parallel run return this local array with the same values.
@@ -304,7 +306,7 @@ zprimme
 
 .. c:function:: int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
 
-   Solve a Hermitian standard eigenproblems; see function :c:func:`dprimme`.
+   Solve a Hermitian standard eigenproblem; see function :c:func:`dprimme`.
 
    .. note::
 
