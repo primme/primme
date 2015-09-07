@@ -1012,7 +1012,11 @@ primme_params
       = \lambda x or A x = \lambda B x.
 
       Parameters:
-         * **x** --
+         * **x** -- one dimensional array containing the "blockSize"
+           vectors packed one after the other (i.e., the leading
+           dimension is the vector size), each of size "nLocal". The
+           real type is "double*" and "Complex_Z*" when called from
+           "dprimme()" and "zprimme()" respectively.
 
          * **y** -- one dimensional array containing the "blockSize"
            vectors packed one after the other (i.e., the leading
@@ -1367,7 +1371,9 @@ primme_params
       On input, the number of initial vector guesses provided in
       "evecs" argument in "dprimme()" or "zprimme()".
 
-      On output, the number of converged eigenpairs.
+      On output, "initSize" holds the number of converged eigenpairs.
+      Without "locking" all "numEvals" approximations are in "evecs"
+      but only the "initSize" ones are converged.
 
       During execution, it holds the current number of converged
       eigenpairs. In addition, if locking is used, these are
@@ -1738,13 +1744,17 @@ primme_params
          P_Q^l P_X^l (A-\sigma I) P_X^r P_Q^r M^{-1} D' = -R, \ \ \  D
          = P_X^r P_Q^l M^{-1}D'.
 
-      For "LeftQ" (and similarly for "LeftX"):
+      For "LeftQ":
 
             0: P_Q^l = I;
             1: P_Q^l = I - QQ^*.
 
-      For "RightQ" and "SkewQ" (and similarly for "RightX" and
-      "SkewX"):
+      For "LeftX":
+
+            0: P_X^l = I;
+            1: P_X^l = I - XX^*.
+
+      For "RightQ" and "SkewQ":
 
       +----------+---------+---------------------------------+
       | RightQ   | SkewQ   | P_Q^r                           |
@@ -1754,6 +1764,20 @@ primme_params
       | 1        | 0       | I - QQ^*                        |
       +----------+---------+---------------------------------+
       | 1        | 1       | I - KQ(Q^*KQ)^{-1}Q^*           |
+      +----------+---------+---------------------------------+
+      | 0        | 1       | error                           |
+      +----------+---------+---------------------------------+
+
+      For "RightX" and "SkewX":
+
+      +----------+---------+---------------------------------+
+      | RightX   | SkewX   | P_X^r                           |
+      +==========+=========+=================================+
+      | 0        | 0       | I                               |
+      +----------+---------+---------------------------------+
+      | 1        | 0       | I - XX^*                        |
+      +----------+---------+---------------------------------+
+      | 1        | 1       | I - KX(X^*KX)^{-1}X^*           |
       +----------+---------+---------------------------------+
       | 0        | 1       | error                           |
       +----------+---------+---------------------------------+
