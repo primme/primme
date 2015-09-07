@@ -84,7 +84,8 @@ There are two steps to build a MATLAB MEX file.
    http://www.mathworks.com/support/compilers/R2014a/
    http://www.mathworks.com/support/compilers/R2012a/
    http://www.mathworks.com/support/compilers/R2010a/
-   We have tested PRIMME MEX on SUSE Linux with R2012a and R2010a. 
+   We have tested PRIMME MEX on SUSE Linux with R2012a, R2010a and R2015a;
+   and on MAC OSX 10.10 with R2015a. 
 
 2. build the PRIMME_mex.c using the makefile in the root directory of 
    PRIMME MEX. Alternatively, if $TOP is the path to the PRIMME installation, 
@@ -339,7 +340,8 @@ Example 1: Primme_eigsTest.m
        opts.maxit = 65536;
        opts.v0 = (1/sqrt(n))*ones(n,1);
        eigs_start = tic;
-       [V ,D] = eigs(@(x)test_eigs(x), n , numEvals, 'LA', opts);
+       [V ,D] = eigs(A , numEvals, 'SA', opts);
+       %[V ,D] = eigs(@(x)test_eigs(x), n , numEvals, 'LA', opts);
        eigs_evalues = D
        eigs_telapsed = toc(eigs_start)
        eigs_numMatvec = Matvec_counter
