@@ -8,7 +8,7 @@ include ../Link_flags
 
 SOBJS= driver.o COMMON/shared_utils.o
 COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC
-INCLUDE += $(COMMON_INCLUDE)
+override INCLUDE += $(COMMON_INCLUDE)
 LIBDIRS += -L../
 
 USE_NATIVE    ?= yes
