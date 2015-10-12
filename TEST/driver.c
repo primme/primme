@@ -594,8 +594,12 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
                   ierr = PCSetType(*pc, PCICC); CHKERRQ(ierr);
                }
                else {
-                  ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
-                  ierr = PCHYPRESetType(*pc, "parasails"); CHKERRQ(ierr);
+                  #ifdef PETSC_HAVE_HYPRE
+                     ierr = PCSetType(pc, PCHYPRE); CHKERRQ(ierr);
+                     ierr = PCHYPRESetType(*pc, "parasails"); CHKERRQ(ierr);
+                  #else
+                     ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
+                  #endif
                }
             }
 
