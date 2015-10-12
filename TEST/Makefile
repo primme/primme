@@ -33,7 +33,7 @@ ifeq ($(USE_PARASAILS), yes)
   endif
   DEFINES += -DUSE_PARASAILS
   SOBJS += COMMON/parasailsw.o COMMON/csr.o COMMON/ssrcsr.o COMMON/mmio.o
-  INCLUDE += -I$(PARASAILS_INCLUDE_DIR)
+  override INCLUDE += -I$(PARASAILS_INCLUDE_DIR)
   LIBDIRS += -L$(PARASAILS_LIB_DIR)
   LIBS += -lParaSails
 endif
@@ -42,7 +42,7 @@ ifeq ($(USE_PETSC), yes)
   include ${PETSC_DIR}/lib/petsc/conf/variables
   DEFINES += -DUSE_PETSC
   SOBJS += COMMON/petscw.o COMMON/mmio.o
-  INCLUDE += $(PETSC_CCPPFLAGS)
+  override INCLUDE += $(PETSC_CCPPFLAGS)
   FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
