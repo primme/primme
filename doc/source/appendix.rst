@@ -913,8 +913,9 @@ Preset Methods
 
    .. c:member:: DEFAULT_MIN_TIME
 
-      Set as |JDQMR_ETol|; this method is usually the fastest if
-      the cost of the matrix vector product is inexpensive.
+      Set as |JDQMR_ETol| when |target| is either ``primme_smallest`` or
+      ``primme_largest``, and as |JDQMR| otherwise. This method is usually
+      the fastest if the cost of the matrix vector product is inexpensive.
 
    .. c:member:: DEFAULT_MIN_MATVECS
 
@@ -929,7 +930,8 @@ Preset Methods
 
       With |DYNAMIC| :c:func:`primme_set_method` sets
       |dynamicMethodSwitch| = 1 and makes the same changes as
-      for method |JDQMR_ETol|.
+      for method |JDQMR_ETol| when |target| is either ``primme_smallest`` or
+      ``primme_largest``, or as for method |JDQMR| otherwise.
 
    .. c:member:: Arnoldi
 

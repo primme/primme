@@ -1935,8 +1935,10 @@ primme_preset_method
 
    DEFAULT_MIN_TIME
 
-      Set as "JDQMR_ETol"; this method is usually the fastest if the
-      cost of the matrix vector product is inexpensive.
+      Set as "JDQMR_ETol" when "target" is either "primme_smallest" or
+      "primme_largest", and as "JDQMR" otherwise. This method is
+      usually the fastest if the cost of the matrix vector product is
+      inexpensive.
 
    DEFAULT_MIN_MATVECS
 
@@ -1950,7 +1952,9 @@ primme_preset_method
       methods "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS".
 
       With "DYNAMIC" "primme_set_method()" sets "dynamicMethodSwitch"
-      = 1 and makes the same changes as for method "JDQMR_ETol".
+      = 1 and makes the same changes as for method "JDQMR_ETol" when
+      "target" is either "primme_smallest" or "primme_largest", or as
+      for method "JDQMR" otherwise.
 
    Arnoldi
 

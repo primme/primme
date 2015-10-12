@@ -238,14 +238,26 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    /* From our experience, these two methods yield the smallest matvecs/time */
    /* DYNAMIC will make some timings before it settles on one of the two     */
    if (method == DEFAULT_MIN_MATVECS) {
-           method = GD_Olsen_plusK;
+      method = GD_Olsen_plusK;
    }
    else if (method == DEFAULT_MIN_TIME) {
-           method = JDQMR_ETol;
+      /* JDQMR works better than JDQMR_ETol in interior problems. */
+      if (params->target == primme_smallest || params->target == primme_largest) {
+         method = JDQMR_ETol;
+      }
+      else {
+         method = JDQMR;
+      }
    }
    else if (method == DYNAMIC) {
-           method = JDQMR_ETol;
-           params->dynamicMethodSwitch = 1;
+      /* JDQMR works better than JDQMR_ETol in interior problems. */
+      if (params->target == primme_smallest || params->target == primme_largest) {
+         method = JDQMR_ETol;
+      }
+      else {
+         method = JDQMR;
+      }
+      params->dynamicMethodSwitch = 1;
    }
   
    if (params->maxBlockSize == 0) {
