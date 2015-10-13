@@ -25,7 +25,7 @@ libd:
 	echo " Making common .o files"; \
 	make -C COMMONSRC libd;\
 	echo " Making double precision .o files"; \
-	make -C DSRC lib;\
+	make -C DSRC libd;\
 	$(RANLIB) ../$(DLIBRARY);\
 	)
 
@@ -34,8 +34,8 @@ libz:
 	rm -f ../$(ZLIBRARY);\
 	echo " Making common .o files"; \
 	make -C COMMONSRC libz;\
-	echo " Making double precision .o files"; \
-	make -C ZSRC lib;\
+	echo " Making complex precision .o files"; \
+	make -C ZSRC libz;\
 	$(RANLIB) ../$(ZLIBRARY);\
 	)
 #-----------------------------------------------------------------
