@@ -930,8 +930,7 @@ Preset Methods
 
       With |DYNAMIC| :c:func:`primme_set_method` sets
       |dynamicMethodSwitch| = 1 and makes the same changes as
-      for method |JDQMR_ETol| when |target| is either ``primme_smallest`` or
-      ``primme_largest``, or as for method |JDQMR| otherwise.
+      for method |DEFAULT_MIN_TIME|.
 
    .. c:member:: Arnoldi
 

@@ -1952,9 +1952,7 @@ primme_preset_method
       methods "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS".
 
       With "DYNAMIC" "primme_set_method()" sets "dynamicMethodSwitch"
-      = 1 and makes the same changes as for method "JDQMR_ETol" when
-      "target" is either "primme_smallest" or "primme_largest", or as
-      for method "JDQMR" otherwise.
+      = 1 and makes the same changes as for method "DEFAULT_MIN_TIME".
 
    Arnoldi
 
