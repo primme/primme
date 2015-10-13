@@ -91,6 +91,20 @@ and MATLAB.
 Changelog
 =========
 
+Changes in PRIMME 1.2.2 (released on October 13, 2015):
+
+* Fixed wrong symbols in "libdprimme.a" and "libzprimme.a".
+
+* "primme_set_method()" sets "JDQMR" instead of "JDQMR_ETol" for
+  preset methods "DEFAULT_MIN_TIME" and "DYNAMIC" when seeking
+  interior values.
+
+* Fixed compilation of driver with a PETSc installation without
+  HYPRE.
+
+* Included the content of the environment variable "INCLUDE" for
+  compiling the driver.
+
 Changes in PRIMME 1.2.1 (released on September 7, 2015):
 
 * Added MATLAB interface to full PRIMME functionality.
@@ -142,7 +156,7 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 * PRIMME now assigns unique random seeds per parallel process for up
   to 4096^3  (140 trillion) processes.
 
-* For the DYNAMIC method, fixed issues with initialization and
+* For the "DYNAMIC" method, fixed issues with initialization and
   synchronization decisions across multiple processes.
 
 * Fixed uncommon library interface bugs, coordinated better setting
