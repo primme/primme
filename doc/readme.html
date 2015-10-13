@@ -49,6 +49,14 @@ convergence.
 PRIMME is written in C99, but complete interfaces are provided for Fortran 77 and MATLAB.</p>
 <div class="section" id="changelog">
 <h3>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h3>
+<p>Changes in PRIMME 1.2.2 (released on October 13, 2015):</p>
+<ul class="simple">
+<li>Fixed wrong symbols in <code class="file docutils literal"><span class="pre">libdprimme.a</span></code> and <code class="file docutils literal"><span class="pre">libzprimme.a</span></code>.</li>
+<li><a class="reference internal" href="readme.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> sets <a class="reference internal" href="readme.html#c.primme_preset_method.JDQMR" title="primme_preset_method.JDQMR"><code class="xref c c-member docutils literal"><span class="pre">JDQMR</span></code></a> instead of <a class="reference internal" href="readme.html#c.primme_preset_method.JDQMR_ETol" title="primme_preset_method.JDQMR_ETol"><code class="xref c c-member docutils literal"><span class="pre">JDQMR_ETol</span></code></a> for preset methods
+<a class="reference internal" href="readme.html#c.primme_preset_method.DEFAULT_MIN_TIME" title="primme_preset_method.DEFAULT_MIN_TIME"><code class="xref c c-member docutils literal"><span class="pre">DEFAULT_MIN_TIME</span></code></a> and <a class="reference internal" href="readme.html#c.primme_preset_method.DYNAMIC" title="primme_preset_method.DYNAMIC"><code class="xref c c-member docutils literal"><span class="pre">DYNAMIC</span></code></a> when seeking interior values.</li>
+<li>Fixed compilation of driver with a <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a> installation without HYPRE.</li>
+<li>Included the content of the environment variable <code class="docutils literal"><span class="pre">INCLUDE</span></code> for compiling the driver.</li>
+</ul>
 <p>Changes in PRIMME 1.2.1 (released on September 7, 2015):</p>
 <ul class="simple">
 <li>Added MATLAB interface to full PRIMME functionality.</li>
@@ -56,11 +64,11 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77 an
 <li>Simplified configuration of Make_flags and Make_links (removed <code class="docutils literal"><span class="pre">TOP</span></code> variable
 and replaced defines <code class="docutils literal"><span class="pre">NUM_SUM</span></code> and <code class="docutils literal"><span class="pre">NUM_IBM</span></code> by <code class="docutils literal"><span class="pre">F77UNDERSCORE</span></code>).</li>
 <li>Replaced directories <code class="file docutils literal"><span class="pre">DTEST</span></code> and <code class="file docutils literal"><span class="pre">ZTEST</span></code> by <code class="file docutils literal"><span class="pre">TEST</span></code>, that has:<ul>
-<li><code class="file docutils literal"><span class="pre">driver.c</span></code>: read matrices in MatrixMarket format and PETSc binary and
+<li><code class="file docutils literal"><span class="pre">driver.c</span></code>: read matrices in MatrixMarket format and <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a> binary and
 call PRIMME with the parameters specified in a file; support
-complex arithmetic and MPI and can use PETSc preconditioners.</li>
+complex arithmetic and MPI and can use <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a> preconditioners.</li>
 <li><code class="file docutils literal"><span class="pre">ex*.c</span></code> and <code class="file docutils literal"><span class="pre">ex*.f</span></code>: small, didactic examples of usage in C and Fortran
-and in parallel (with PETSc).</li>
+and in parallel (with <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a>).</li>
 </ul>
 </li>
 <li>Fixed a few minor bugs and improved documentation (especially the F77 interface).</li>
@@ -88,7 +96,7 @@ complex arithmetic.</p>
 <li><p class="first">PRIMME now assigns unique random seeds per parallel process
 for up to 4096^3  (140 trillion) processes.</p>
 </li>
-<li><p class="first">For the DYNAMIC method, fixed issues with initialization and
+<li><p class="first">For the <a class="reference internal" href="readme.html#c.primme_preset_method.DYNAMIC" title="primme_preset_method.DYNAMIC"><code class="xref c c-member docutils literal"><span class="pre">DYNAMIC</span></code></a> method, fixed issues with initialization and
 synchronization decisions across multiple processes.</p>
 </li>
 <li><p class="first">Fixed uncommon library interface bugs, coordinated better
@@ -280,7 +288,7 @@ Visual Studio and XCode. To build the PRIMME library do the following:</p>
 </ol>
 <p>To build an example code using PRIMME make sure:</p>
 <ul class="simple">
-<li>to add a reference for PRIMME, BLAS and LAPACK libraries;</li>
+<li>to add a reference for PRIMME, <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> libraries;</li>
 <li>to add the directory <code class="file docutils literal"><span class="pre">PRIMMESRC/COMMONSRC</span></code> as an include directory.</li>
 </ul>
 </div>
@@ -2136,8 +2144,9 @@ functions where the error occurred was printed in <code class="docutils literal"
 <dd><dl class="member">
 <dt id="c.primme_preset_method.DEFAULT_MIN_TIME">
 <code class="descname">DEFAULT_MIN_TIME</code><a class="headerlink" href="#c.primme_preset_method.DEFAULT_MIN_TIME" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set as <a class="reference internal" href="#c.primme_preset_method.JDQMR_ETol" title="primme_preset_method.JDQMR_ETol"><code class="xref c c-member docutils literal"><span class="pre">JDQMR_ETol</span></code></a>; this method is usually the fastest if
-the cost of the matrix vector product is inexpensive.</p>
+<dd><p>Set as <a class="reference internal" href="#c.primme_preset_method.JDQMR_ETol" title="primme_preset_method.JDQMR_ETol"><code class="xref c c-member docutils literal"><span class="pre">JDQMR_ETol</span></code></a> when <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is either <code class="docutils literal"><span class="pre">primme_smallest</span></code> or
+<code class="docutils literal"><span class="pre">primme_largest</span></code>, and as <a class="reference internal" href="#c.primme_preset_method.JDQMR" title="primme_preset_method.JDQMR"><code class="xref c c-member docutils literal"><span class="pre">JDQMR</span></code></a> otherwise. This method is usually
+the fastest if the cost of the matrix vector product is inexpensive.</p>
 </dd></dl>
 
 <dl class="member">
@@ -2155,7 +2164,8 @@ choice when this operation is expensive.</p>
 methods <a class="reference internal" href="#c.primme_preset_method.DEFAULT_MIN_TIME" title="primme_preset_method.DEFAULT_MIN_TIME"><code class="xref c c-member docutils literal"><span class="pre">DEFAULT_MIN_TIME</span></code></a> and <a class="reference internal" href="#c.primme_preset_method.DEFAULT_MIN_MATVECS" title="primme_preset_method.DEFAULT_MIN_MATVECS"><code class="xref c c-member docutils literal"><span class="pre">DEFAULT_MIN_MATVECS</span></code></a>.</p>
 <p>With <a class="reference internal" href="#c.primme_preset_method.DYNAMIC" title="primme_preset_method.DYNAMIC"><code class="xref c c-member docutils literal"><span class="pre">DYNAMIC</span></code></a> <a class="reference internal" href="readme.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> sets
 <a class="reference internal" href="#c.primme_params.dynamicMethodSwitch" title="primme_params.dynamicMethodSwitch"><code class="xref c c-member docutils literal"><span class="pre">dynamicMethodSwitch</span></code></a> = 1 and makes the same changes as
-for method <a class="reference internal" href="#c.primme_preset_method.JDQMR_ETol" title="primme_preset_method.JDQMR_ETol"><code class="xref c c-member docutils literal"><span class="pre">JDQMR_ETol</span></code></a>.</p>
+for method <a class="reference internal" href="#c.primme_preset_method.JDQMR_ETol" title="primme_preset_method.JDQMR_ETol"><code class="xref c c-member docutils literal"><span class="pre">JDQMR_ETol</span></code></a> when <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is either <code class="docutils literal"><span class="pre">primme_smallest</span></code> or
+<code class="docutils literal"><span class="pre">primme_largest</span></code>, or as for method <a class="reference internal" href="#c.primme_preset_method.JDQMR" title="primme_preset_method.JDQMR"><code class="xref c c-member docutils literal"><span class="pre">JDQMR</span></code></a> otherwise.</p>
 </dd></dl>
 
 <dl class="member">

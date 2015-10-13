@@ -91,6 +91,20 @@ and MATLAB.
 Changelog
 =========
 
+Changes in PRIMME 1.2.2 (released on October 13, 2015):
+
+* Fixed wrong symbols in "libdprimme.a" and "libzprimme.a".
+
+* "primme_set_method()" sets "JDQMR" instead of "JDQMR_ETol" for
+  preset methods "DEFAULT_MIN_TIME" and "DYNAMIC" when seeking
+  interior values.
+
+* Fixed compilation of driver with a PETSc installation without
+  HYPRE.
+
+* Included the content of the environment variable "INCLUDE" for
+  compiling the driver.
+
 Changes in PRIMME 1.2.1 (released on September 7, 2015):
 
 * Added MATLAB interface to full PRIMME functionality.
@@ -142,7 +156,7 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 * PRIMME now assigns unique random seeds per parallel process for up
   to 4096^3  (140 trillion) processes.
 
-* For the DYNAMIC method, fixed issues with initialization and
+* For the "DYNAMIC" method, fixed issues with initialization and
   synchronization decisions across multiple processes.
 
 * Fixed uncommon library interface bugs, coordinated better setting
@@ -1935,8 +1949,10 @@ primme_preset_method
 
    DEFAULT_MIN_TIME
 
-      Set as "JDQMR_ETol"; this method is usually the fastest if the
-      cost of the matrix vector product is inexpensive.
+      Set as "JDQMR_ETol" when "target" is either "primme_smallest" or
+      "primme_largest", and as "JDQMR" otherwise. This method is
+      usually the fastest if the cost of the matrix vector product is
+      inexpensive.
 
    DEFAULT_MIN_MATVECS
 
@@ -1950,7 +1966,9 @@ primme_preset_method
       methods "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS".
 
       With "DYNAMIC" "primme_set_method()" sets "dynamicMethodSwitch"
-      = 1 and makes the same changes as for method "JDQMR_ETol".
+      = 1 and makes the same changes as for method "JDQMR_ETol" when
+      "target" is either "primme_smallest" or "primme_largest", or as
+      for method "JDQMR" otherwise.
 
    Arnoldi
 
