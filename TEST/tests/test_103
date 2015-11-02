@@ -1,9 +1,10 @@
-// Test unrestarted configuration
+// Test default values
+
 // ---------------------------------------------------
 //                 driver configuration
 // ---------------------------------------------------
-driver.matrixFile    = LUNDA.mtx
-driver.checkXFile    = tests/sol_001
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_103
 driver.PrecChoice    = noprecond
 
 // ---------------------------------------------------
@@ -13,13 +14,9 @@ driver.PrecChoice    = noprecond
 primme.printLevel = 1
 
 // Solver parameters
-primme.numEvals = 5
+primme.numEvals = 50
 primme.eps = 1.000000e-12
-primme.maxBasisSize = 140
-primme.minRestartSize = 1
-primme.maxBlockSize = 1
-primme.maxMatvecs = 140
+primme.maxOuterIterations = 2500
 primme.target = primme_largest
-primme.locking = 1
 
 method               = GD_Olsen_plusK

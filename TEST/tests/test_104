@@ -1,9 +1,10 @@
-// Test unrestarted configuration
+// Test GD without preconditioner solving interior problem
+
 // ---------------------------------------------------
 //                 driver configuration
 // ---------------------------------------------------
-driver.matrixFile    = LUNDA.mtx
-driver.checkXFile    = tests/sol_001
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_104
 driver.PrecChoice    = noprecond
 
 // ---------------------------------------------------
@@ -13,13 +14,11 @@ driver.PrecChoice    = noprecond
 primme.printLevel = 1
 
 // Solver parameters
-primme.numEvals = 5
-primme.eps = 1.000000e-12
-primme.maxBasisSize = 140
-primme.minRestartSize = 1
-primme.maxBlockSize = 1
-primme.maxMatvecs = 140
-primme.target = primme_largest
-primme.locking = 1
+primme.numEvals = 2
+primme.eps = 1.000000e-6
+primme.maxMatvecs = 50000
+primme.target = primme_closest_abs
+primme.numTargetShifts = 1
+primme.targetShifts = 1e-2
 
-method               = GD_Olsen_plusK
+method               = DEFAULT_MIN_TIME

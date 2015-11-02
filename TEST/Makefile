@@ -108,7 +108,7 @@ endif
 
 all_tests_double: primme_double
 	@echo "Please wait, this could take a while...";\
-	ok="0";for i in tests/test_??? ; do \
+	ok="0";for i in tests/test_0?? ; do \
 		echo "********** Test $$i double ***********"; \
 		$(MPIRUN) ./primme_double $$i || ok="1"; \
 	done > tests.log 2>&1;\
@@ -140,7 +140,7 @@ all_tests_doublecomplex: primme_doublecomplex
 
 
 all_tests_double_save: primme_double
-	@for i in tests/test_??? ; do \
+	@for i in tests/test_0?? ; do \
 		sed 's/checkXFile/saveXFile/' $$i > ._test00;\
 		echo "********** Test $$i double ***********"; \
 		./primme_double ._test00 || ok="1"; \

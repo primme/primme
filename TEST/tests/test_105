@@ -3,11 +3,10 @@
 // ---------------------------------------------------
 //                 driver configuration
 // ---------------------------------------------------
-driver.matrixFile    = LUNDA.mtx
-driver.initialGuessesPert = 0.000000e+00
-driver.checkXFile    = tests/sol_005
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_105
 driver.PrecChoice    = jacobi
-driver.shift         = 0.000000e+00
+driver.shift         = -1e-2
 
 // ---------------------------------------------------
 //                 primme configuration
@@ -16,12 +15,12 @@ driver.shift         = 0.000000e+00
 primme.printLevel = 1
 
 // Solver parameters
-primme.numEvals = 50
-primme.eps = 1.000000e-12
-primme.maxOuterIterations = 7500
+primme.numEvals = 2
+primme.eps = 1.000000e-6
+primme.maxOuterIterations = 4000
 primme.target = primme_closest_abs
 primme.numTargetShifts = 1
-primme.targetShifts = 0
+primme.targetShifts = 1e-2
 
 // Correction parameters
 primme.correction.precondition = 1

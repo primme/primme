@@ -2,8 +2,8 @@
 // ---------------------------------------------------
 //                 driver configuration
 // ---------------------------------------------------
-driver.matrixFile    = LUNDA.mtx
-driver.checkXFile    = tests/sol_001
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_101
 driver.PrecChoice    = noprecond
 
 // ---------------------------------------------------
