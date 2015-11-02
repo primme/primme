@@ -122,7 +122,7 @@ static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, 
    if (mm_read_mtx_crd_size(matrixFile, m, n, nnz) != 0) return -1;
 
    nzmax = *nnz;
-   if (mm_is_symmetric(type)) nzmax *= 2;
+   if (mm_is_symmetric(type) || mm_is_hermitian(type)) nzmax *= 2;
    A = (PRIMME_NUM *)primme_calloc(nzmax, sizeof(PRIMME_NUM), "A");
    J = (int *)primme_calloc(nzmax, sizeof(int), "J");
    I = (int *)primme_calloc(nzmax, sizeof(int), "I");

@@ -469,7 +469,7 @@ static void broadCast(primme_params *primme, primme_preset_method *method,
 static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int **permutation) {
    int numProcs=1;
 
-#  if defined(USE_MPI)
+#  if defined(USE_MPI) || defined(USE_PETSC)
    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
    primme->commInfo = (MPI_Comm *)primme_calloc(1, sizeof(MPI_Comm), "MPI_Comm");
    *(MPI_Comm*)primme->commInfo = MPI_COMM_WORLD;
@@ -569,7 +569,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
 #else
       {
          PetscErrorCode ierr;
-         Mat *matrix;
+         Mat *matrix,A;
          PC *pc;
          Vec *vec;
          int m, mLocal;
@@ -591,7 +591,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
             }
             else if (driver->PrecChoice == driver_ilut) {
                if (primme->numProcs <= 1) {
-                  ierr = PCSetType(*pc, PCICC); CHKERRQ(ierr);
+                  ierr = PCSetType(*pc, PCILU); CHKERRQ(ierr);
                }
                else {
                   #ifdef PETSC_HAVE_HYPRE
@@ -602,10 +602,12 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
                   #endif
                }
             }
-
-            ierr = PCSetOperators(*pc, *matrix, *matrix); CHKERRQ(ierr);
+            ierr = MatDuplicate(*matrix, MAT_COPY_VALUES, &A);CHKERRQ(ierr);
+            ierr = MatShift(A, -driver->shift);CHKERRQ(ierr);
+            ierr = PCSetOperators(*pc, A, A); CHKERRQ(ierr);
             ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
             ierr = PCSetUp(*pc); CHKERRQ(ierr);
+            ierr = PCView(*pc,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
             primme->preconditioner = pc;
             primme->applyPreconditioner = ApplyPCPrecPETSC;
          }
