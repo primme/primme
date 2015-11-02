@@ -13,7 +13,7 @@ driver.PrecChoice    = noprecond
 primme.printLevel = 1
 
 // Solver parameters
-primme.numEvals = 30
+primme.numEvals = 27
 primme.eps = 1.000000e-12
 primme.maxBasisSize = 3
 primme.minRestartSize = 1

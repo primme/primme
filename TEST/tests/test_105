@@ -16,7 +16,7 @@ primme.printLevel = 1
 
 // Solver parameters
 primme.numEvals = 2
-primme.eps = 1.000000e-6
+primme.eps = 1.000000e-8
 primme.maxOuterIterations = 4000
 primme.target = primme_closest_abs
 primme.numTargetShifts = 1
