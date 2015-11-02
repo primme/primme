@@ -209,7 +209,12 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
    /* compute first total number of remaining matvecs */
 
-   maxIterations = primme->maxMatvecs - primme->stats.numMatvecs;
+   if (primme->maxMatvecs > 0) {
+      maxIterations = primme->maxMatvecs - primme->stats.numMatvecs;
+   }
+   else {
+      maxIterations = INT_MAX;
+   }
 
    /* Perform primme.maxInnerIterations, but do not exceed total remaining */
    if (primme->correctionParams.maxInnerIterations > 0) {
