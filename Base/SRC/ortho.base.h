@@ -33,7 +33,7 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_@(pre)primme(@(type) *basis, int ldBasis, int b1, int b2, 
+int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2, 
    @(type) *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
    double machEps, @(type) *rwork, int rworkSize, primme_params *primme);
 

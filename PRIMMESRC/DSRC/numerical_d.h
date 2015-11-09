@@ -36,6 +36,9 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
    int n, double *aux, int naux);
 void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info);
+void Num_dgesvd_dprimme(char *jobu, char *jobvt, int m, int n, double *a, int lda,
+    double *s, double *u, int ldu, double *vt, int ldvt, double *work,
+    int ldwork, int *info);
 void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info);
 void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
@@ -49,6 +52,9 @@ void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k,
 void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha, 
    double *a, int lda, double *b, int ldb, double beta, 
    double *c, int ldc);
+void Num_symv_dprimme(char *uplo, int n, double alpha, 
+   double *a, int lda, double *x, int lncx, double beta, 
+   double *y, int lncy); 
 void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
    double *y, int incy);
 void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,

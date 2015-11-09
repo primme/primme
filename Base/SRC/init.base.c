@@ -144,7 +144,8 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
    /*-----------------------------------------------------------------------*/
 
    if (primme->numOrthoConst > 0) {
-      ret = ortho_@(pre)primme(evecs, primme->nLocal, 0, 
+   /* lingfei: primme_svds. change ortho function for returning Q and R */
+      ret = ortho_@(pre)primme(evecs, NULL, primme->nLocal, 0, 
         primme->numOrthoConst - 1, NULL, 0, 0, primme->nLocal, 
         primme->iseed, machEps, rwork, rworkSize, primme);
 
@@ -216,7 +217,8 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
          /* Orthonormalize the guesses provided by the user */ 
 
-         ret = ortho_@(pre)primme(V, primme->nLocal, 0, primme->initSize-1, 
+        /* lingfei: primme_svds. change ortho function for returning Q and R */
+         ret = ortho_@(pre)primme(V, NULL, primme->nLocal, 0, primme->initSize-1, 
             evecs, primme->nLocal, primme->numOrthoConst, primme->nLocal, 
             primme->iseed, machEps, rwork, rworkSize, primme);
 
@@ -233,8 +235,11 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
          /* the user.  Generate a block Krylov space to fill the       */
          /* remaining vacancies.                                       */
 
-         if (primme->initSize < primme->minRestartSize) {
-
+        /*lingfei: did not build initial Lanczos basis for ATA stage 
+        if smallest eigenvalue is desired with a preconditioner*/
+         if ((primme->initSize < primme->minRestartSize) && 
+            (primme->InitBasisMode || primme->target || 
+            !primme->correctionParams.precondition)){            
             ret = init_block_krylov(V, W, primme->initSize, 
                primme->minRestartSize - 1, evecs, primme->numOrthoConst, 
                machEps, rwork, rworkSize, primme);
@@ -275,7 +280,8 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
          Num_@(pre)copy_@(pre)primme(primme->nLocal*currentSize, 
             &evecs[primme->numOrthoConst*primme->nLocal], 1, V, 1);
 
-         ret = ortho_@(pre)primme(V, primme->nLocal, 0, currentSize-1, evecs,
+        /* lingfei: primme_svds. change ortho function for returning Q and R */
+         ret = ortho_@(pre)primme(V, NULL, primme->nLocal, 0, currentSize-1, evecs,
             primme->nLocal, primme->numOrthoConst, primme->nLocal,
             primme->iseed, machEps, rwork, rworkSize, primme);
 
@@ -297,8 +303,11 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
       /* If an insufficient number of guesses was provided, then fill */
       /* the remaining vacancies with a block Krylov space.           */
 
-      if (currentSize < primme->minRestartSize) {
-         
+      /*lingfei: did not build initial Lanczos basis for ATA stage 
+        if smallest eigenvalue is desired with a preconditioner*/
+      if ((currentSize < primme->minRestartSize) &&
+          (primme->InitBasisMode || primme->target ||
+          !primme->correctionParams.precondition)) {
          ret = init_block_krylov(V, W, currentSize, primme->minRestartSize - 1,
             evecs, primme->numOrthoConst, machEps, rwork, rworkSize, primme);
 
@@ -307,12 +316,12 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
                             ret, __FILE__, __LINE__, primme);
             return INIT_BLOCK_KRYLOV_FAILURE;
          }
-
+        *basisSize = primme->minRestartSize;
       }
-
-      *basisSize = primme->minRestartSize;
+      else {
+        *basisSize = primme->initSize;
+      }
    }
-
    /* ----------------------------------------------------------- */
    /* If time measurements are needed, waste one MV + one Precond */
    /* Put dummy results in the first open space of W (currentSize)*/
@@ -384,7 +393,8 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
       /* Create and orthogonalize the inital vectors */
 
       Num_larnv_@(pre)primme(2, primme->iseed,primme->nLocal,&V[primme->nLocal*dv1]);
-      ret = ortho_@(pre)primme(V, primme->nLocal, dv1, dv1, locked, 
+     /* lingfei: primme_svds. change ortho function for returning Q and R */
+      ret = ortho_@(pre)primme(V, NULL, primme->nLocal, dv1, dv1, locked, 
          primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps, 
          rwork, rworkSize, primme);
 
@@ -401,7 +411,8 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
            (&V[primme->nLocal*i], &V[primme->nLocal*(i+1)], &ONE, primme);
          Num_@(pre)copy_@(pre)primme(primme->nLocal, &V[primme->nLocal*(i+1)], 1,
             &W[primme->nLocal*i], 1);
-         ret = ortho_@(pre)primme(V, primme->nLocal, i+1, i+1, locked, 
+        /* lingfei: primme_svds. change ortho function for returning Q and R */
+         ret = ortho_@(pre)primme(V, NULL, primme->nLocal, i+1, i+1, locked, 
             primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
             rwork, rworkSize, primme);
       
@@ -420,13 +431,26 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
    /*----------------------------------------------------------------------*/
    /* Generate the initial vectors.                                        */
    /*----------------------------------------------------------------------*/
-
-      Num_larnv_@(pre)primme(2, primme->iseed, primme->nLocal*primme->maxBlockSize,
-         &V[primme->nLocal*dv1]);
-      ret = ortho_@(pre)primme(V, primme->nLocal, dv1, 
-         dv1+primme->maxBlockSize-1, locked, primme->nLocal, numLocked, 
-         primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
-
+   /* lingfei: change the way for building the initial Krylov subspace. 
+      There are two cases: 
+      1) InitBasisMode == 2, build a random krylov subspace
+      2) InitBasisMode == 1, build a krylov subspace from first user initial guess */
+        if (primme->InitBasisMode == 2) {
+            Num_larnv_@(pre)primme(2, primme->iseed, primme->nLocal*primme->maxBlockSize,
+                &V[primme->nLocal*dv1]);
+            /* lingfei: primme_svds. change ortho function for returning Q and R */
+            ret = ortho_@(pre)primme(V, NULL, primme->nLocal, dv1, 
+                dv1+primme->maxBlockSize-1, locked, primme->nLocal, numLocked, 
+                primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+        }
+        else if (primme->InitBasisMode == 1){
+            (*primme->matrixMatvec)(V,&V[primme->nLocal*dv1],&primme->maxBlockSize,primme);
+            /* lingfei: primme_svds. change ortho function for returning Q and R */
+            ret = ortho_@(pre)primme(V, NULL, primme->nLocal, dv1, 
+                dv1+primme->maxBlockSize-1, locked, primme->nLocal, numLocked, 
+                primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+        }
+ 
       /* Generate the remaining vectors in the sequence */
 
       for (i = dv1+primme->maxBlockSize; i <= dv2; i++) {
@@ -435,7 +459,8 @@ static int init_block_krylov(@(type) *V, @(type) *W, int dv1, int dv2,
          Num_@(pre)copy_@(pre)primme(primme->nLocal, &V[primme->nLocal*i], 1,
             &W[primme->nLocal*(i-primme->maxBlockSize)], 1);
 
-         ret = ortho_@(pre)primme(V, primme->nLocal, i, i, locked, 
+          /* lingfei: primme_svds. change ortho function for returning Q and R */
+          ret = ortho_@(pre)primme(V, NULL, primme->nLocal, i, i, locked, 
             primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
             rwork, rworkSize, primme);
 

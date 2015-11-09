@@ -33,7 +33,7 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2, 
+int ortho_zprimme(Complex_Z *basis, Complex_Z *R, int ldBasis, int b1, int b2, 
    Complex_Z *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
    double machEps, Complex_Z *rwork, int rworkSize, primme_params *primme);
 

@@ -152,6 +152,17 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *H, Complex_Z *hVecs,
       restartSize = min(basisSize, primme->minRestartSize);
    }
 
+   /*lingfei: If the target is interior eigenvalues, the restartSize is 
+   set as basisSize when basisSize is smaller than primme->maxBasisSize
+   and primme->blockSize is 1. */
+   if (primme->target != primme_smallest &&
+       primme->target != primme_largest &&
+       basisSize < primme->maxBasisSize &&
+       primme->maxBlockSize == 1 &&
+       numPrevRetained == 0){
+       restartSize = basisSize;
+   }
+
    /* ----------------------------------------------------------------------- */
    /* If locking is engaged, then swap coefficient vectors corresponding to   */
    /* converged Ritz vectors to the end of the hVecs(:, restartSize) subarray.*/
@@ -200,8 +211,19 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *H, Complex_Z *hVecs,
    /* of the new matrix V'*A*V become the standard basis vectors.      */
    /* ---------------------------------------------------------------- */
 
-   ret = restart_H(H, hVecs, hVals, restartSize, basisSize, previousHVecs, 
+    /*lingfei: if any projection rather than the RayRitz projection
+    is used, H and WTW are restarted by using H = yT*H*y, WTW = yT*WTW*y.
+    However, when qr factorization is used for harmonic or refined 
+    , only H is restrarted by using H = yT*H*y.*/
+    if (primme->projectionParams.projection == primme_RR) {
+        ret = restart_H(H, hVecs, hVals, restartSize, basisSize, previousHVecs, 
       numPrevRetained, indexOfPreviousVecs, rworkSize, rwork, primme);
+    }
+    else {
+        ret = restart_H_Harmonic(H, NULL, hVecs, NULL, hVals,
+            restartSize, basisSize, previousHVecs, numPrevRetained, 
+            indexOfPreviousVecs, rworkSize, rwork, primme);
+    }
 
    if (ret != 0) {
       primme_PushErrorMessage(Primme_restart, Primme_restart_h, ret, __FILE__, 
@@ -457,6 +479,154 @@ static int restart_H(Complex_Z *H, Complex_Z *hVecs, double *hVals,
    return 0;
 }
 
+
+/*******************************************************************************
+ * Function restart_H_Harmonic 
+ * lingfei:  When the projection is not RayRitz projection, H and WTW can be computed 
+ *   alternatively, as H = yT*H*y, WTW = yT*WTW*y. Thus, there is no need to 
+ *   use submatrix to update H. However, after computing H, we need to copy
+ *   H[numPrevRetained, numPrevRetained] back to submatrix in order to compute
+ *   the corresponding numPrevRetained hVals and hVecs. 
+ *   
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * restartSize   Number of vectors the basis was restarted with
+ * 
+ * basisSize     Maximum size of the basis V
+ *
+ * previousHVecs   Coefficient vectors from the previous iteration.  They are
+ *                 orthonormal to the current coefficient vectors.
+ *
+ * numPrevRetained The number of vectors retained from the previous iteration
+ *
+ * indexOfPreviousVecs  The index within hVecs where the previous vectors were
+ *                      inserted.  Its also where the overlap matrix
+ *                      previousHVecs'*H*previousHvecs will be inserted within
+ *                      the restarted H.
+ *
+ * rwork         Work array.  Necessary only when coefficient vectors from the
+ *               previous iteration are retained.
+ *
+ * rworkSize     Can be zero if no previous vectors are retained.  Otherwise,
+ *               it must be at least 
+ *               numPrevRetained*numPrevRetained + 
+ *               max(basisSize*numPrevRetained, 3*numPrevRetained) 
+ *
+ *
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * H      Will contain H = V'*A*V given the restarted V.  H will be
+ *        diagonal since V will contain only Ritz vectors, unless previous
+ *        vectors are retained.  In that case, it will be diagonal except for
+ *        a numPrevRetained x numPrevRetained submatrix inserted at
+ *        H(numPrevRetained, numPrevRetained)
+ *
+ * hVecs  If the new H is diagonal, then it will contain the standard basis
+ *        vectors.  If previous coefficient vectors are retained, then 
+ *        restartSize - numPrevRetained of the vectors will be standard basis
+ *        vectors.  The remaining numPrevRetained vectors will contain
+ *        numPrevRetained non-zero elements corresponding to the 
+ *        numPrevRetined x numPrevRetained submatrix.
+ * 
+ * hVals  The eigenvalues of the restarted H
+ * 
+ * 
+ * Return value
+ * ------------
+ * Error code: 0 upon success
+ *            -1 eigenvalues of submatrix could not be computed
+ *
+ ******************************************************************************/
+
+static int restart_H_Harmonic(Complex_Z *H, Complex_Z *WTW, Complex_Z *hVecs, 
+   Complex_Z *wtwChol, double *hVals, int restartSize, int basisSize, 
+   Complex_Z *previousHVecs, int numPrevRetained, int indexOfPreviousVecs, 
+   int rworkSize, Complex_Z *rwork, primme_params *primme) {
+
+   int i, j;          /* Loop variables                                       */
+   int workSpaceSize; /* Workspace size needed by insert_submatrix            */
+   int ret;           /* Return value                                         */
+   Complex_Z *subMatrix;/* Contains the submatrix previousHVecs'*H*previousHvecs*/
+   Complex_Z *workSpace;/* Workspace size needed                              */
+   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}; /*constants*/
+   
+   /* ---------------------------------------------------------------------- 
+        compute H = hVecs'*H*hVecs, WTW = hVecs'*WTW*hVecsi, and then copy 
+        wtwChol into the upper part of WTW and H which are both maxBasisSize
+        *maxBasisSize dimensions. Note, wtwChol can be used as temp memory 
+        since it is going to be updated later. 
+      ---------------------------------------------------------------------- */
+   if (WTW != NULL && wtwChol != NULL){
+       compute_submatrix(hVecs, restartSize, WTW, basisSize, 
+            primme->maxBasisSize, wtwChol, rwork);
+       for (i=0;i<primme->maxBasisSize*primme->maxBasisSize;i++){
+           WTW[i] = tzero;
+       }
+       for (j=0; j < restartSize; j++) {
+            for (i=0; i <= j; i++) {
+                WTW[primme->maxBasisSize*j+i] = wtwChol[restartSize*j+i];
+            }
+        }
+    }
+   
+   workSpaceSize = rworkSize - primme->maxBasisSize*primme->maxBasisSize;
+   workSpace  = &rwork[workSpaceSize];
+   compute_submatrix(hVecs, restartSize, H, basisSize, 
+         primme->maxBasisSize, workSpace, rwork);
+   for (i=0;i<primme->maxBasisSize*primme->maxBasisSize;i++){
+       H[i] = tzero;
+   }
+   for (j=0; j < restartSize; j++) {
+      for (i=0; i <= j; i++) {
+         H[primme->maxBasisSize*j+i] = workSpace[restartSize*j+i];
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+   /* Given the above H, we know the eigenvectors of H will be the standard */
+   /* basis vectors if no previous coefficient vectors are retained         */
+   /* --------------------------------------------------------------------- */
+
+   for (j=0; j < restartSize; j++) {
+      for (i=0; i < j; i++) {
+          hVecs[restartSize*j+i] = tzero;
+          hVecs[restartSize*i+j] = tzero;
+      }
+      hVecs[restartSize*j+j] = tpone;
+   }      
+
+   /* ---------------------------------------------------------------------- */
+   /* If coefficient vectors from the previous iteration have been retained, */
+   /* then solve the resulting eigenproblem for the resulting submatrix to   */
+   /* update the corresponding numPrevRetained hVals and hVecs.              */ 
+   /* ---------------------------------------------------------------------- */
+
+   if (numPrevRetained > 0) {
+      subMatrix = rwork;
+      workSpace = &rwork[numPrevRetained*numPrevRetained];
+      workSpaceSize = rworkSize - numPrevRetained*numPrevRetained;
+
+      for(j = indexOfPreviousVecs; j < indexOfPreviousVecs+numPrevRetained; j++) {
+          for(i = indexOfPreviousVecs; i <= j; i++) {
+              subMatrix[numPrevRetained*(j-indexOfPreviousVecs)+
+                 (i-indexOfPreviousVecs)] = H[primme->maxBasisSize*j+i];
+          }
+      }
+       
+      ret = insert_submatrix(H, hVals, hVecs, restartSize, subMatrix, 
+        numPrevRetained, indexOfPreviousVecs, workSpaceSize, workSpace, primme);
+
+      if (ret != 0) {
+         primme_PushErrorMessage(Primme_restart_h, Primme_insert_submatrix, 
+            ret, __FILE__, __LINE__, primme);
+         return INSERT_SUBMATRIX_FAILURE;
+      }
+
+   }
+
+   return 0;
+}
 
 /*******************************************************************************
  * Function dtr - This function determines the number of coefficient vectors
@@ -935,8 +1105,11 @@ static void compute_submatrix(Complex_Z *previousHVecs, int numPrevRetained,
 
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
 
+   /*lingfei: for interior eigenvalues, change the first dimension
+     of of previousHVecs from maxBasisSize to basisSize. */
+
    Num_symm_zprimme("L", "U", basisSize, numPrevRetained, tpone, H, 
-      maxBasisSize, previousHVecs, maxBasisSize, tzero, rwork, basisSize);
+      maxBasisSize, previousHVecs, basisSize, tzero, rwork, basisSize);
    
    Num_gemm_zprimme("C", "N", numPrevRetained, numPrevRetained, basisSize,
       tpone, previousHVecs, basisSize, rwork, basisSize, tzero, subMatrix, 
@@ -993,17 +1166,20 @@ static int insert_submatrix(Complex_Z *H, double *hVals, Complex_Z *hVecs,
    double *doubleWork;
 
    /* ---------------------------------------------------------------------- */
-   /* Copy the submatrix into H with the upper right corner of the submatrix */
-   /* at H(indexOfPreviousVecs, indexOfPreviousVecs).                        */
+   /* lingfei: Copy the submatrix into H with the upper right corner of the submatrix */
+   /* at H(indexOfPreviousVecs, indexOfPreviousVecs) if the projection
+   is RR , otherwise there is no need to update H from the resulting
+   submatrix.                       */
    /* ---------------------------------------------------------------------- */
-
-   for (j = indexOfPreviousVecs; j < indexOfPreviousVecs+numPrevRetained; j++) {
-      for (i = indexOfPreviousVecs; i <= j; i++) {
-         H[primme->maxBasisSize*j+i] = 
-         subMatrix[numPrevRetained*(j-indexOfPreviousVecs)
+    if (primme->projectionParams.projection == primme_RR) {
+        for (j = indexOfPreviousVecs; j < indexOfPreviousVecs+numPrevRetained; j++) {
+            for (i = indexOfPreviousVecs; i <= j; i++) {
+                H[primme->maxBasisSize*j+i] = 
+                    subMatrix[numPrevRetained*(j-indexOfPreviousVecs)
                               +(i-indexOfPreviousVecs)];
-      }
-   }
+            }
+        }
+    }
 
    /* ----------------------------------------- */
    /* Solve the eigenproblrm for the submatrix. */

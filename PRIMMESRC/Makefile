@@ -13,11 +13,20 @@ lib:
 	echo " Making common .o files"; \
 	cd $(COMMONDIR) ;\
 	make lib;\
+	echo " Making SVDS common .o files"; \
+	cd $(SVDSCOMMONDIR) ;\
+	make lib;\
 	echo " Making complex precision .o files"; \
 	cd $(ZPRIMMEDIR) ;\
 	make lib;\
+	echo " Making SVDS complex precision .o files"; \
+	cd $(SVDSZPRIMMEDIR) ;\
+	make lib;\
 	echo " Making double precision .o files"; \
 	cd $(DPRIMMEDIR) ;\
+	make lib;\
+	echo " Making SVDS double precision .o files"; \
+	cd $(SVDSDPRIMMEDIR) ;\
 	make lib;\
 	$(RANLIB) $(LIBRARY);\
 	)
@@ -28,8 +37,14 @@ libd:
 	echo " Making common .o files"; \
 	cd $(COMMONDIR) ;\
 	make libd;\
+	echo " Making SVDS common .o files"; \
+	cd $(SVDSCOMMONDIR) ;\
+	make libd;\
 	echo " Making double precision .o files"; \
 	cd $(DPRIMMEDIR) ;\
+	make libd;\
+	echo " Making SVDS double precision .o files"; \
+	cd $(SVDSDPRIMMEDIR) ;\
 	make libd;\
 	$(RANLIB) $(DLIBRARY);\
 	)
@@ -40,8 +55,14 @@ libz:
 	echo " Making common .o files"; \
 	cd $(COMMONDIR) ;\
 	make libz;\
-	echo " Making double precision .o files"; \
+	echo " Making SVDS common .o files"; \
+	cd $(SVDSCOMMONDIR) ;\
+	make libz;\
+	echo " Making complex precision .o files"; \
 	cd $(ZPRIMMEDIR) ;\
+	make libz;\
+	echo " Making SVDS complex precision .o files"; \
+	cd $(SVDSZPRIMMEDIR) ;\
 	make libz;\
 	$(RANLIB) $(ZLIBRARY);\
 	)
@@ -50,13 +71,19 @@ libz:
 clean: 
 	@(\
 	echo "--------------------------------------------------"; \
-	echo " From PRIMME library directories"; \
-	cd $(COMMONDIR) ; echo "   "$(COMMONDIR);\
-	make -f Makefile clean;\
-	cd $(DPRIMMEDIR) ; echo "   "$(DPRIMMEDIR);\
-	make -f Makefile clean;\
-	cd $(ZPRIMMEDIR) ; echo "   "$(ZPRIMMEDIR);\
-	make -f Makefile clean;\
+	echo " Cleaning .o, and archives from all directories   "; \
 	echo "--------------------------------------------------"; \
+	cd $(COMMONDIR) ;\
+	make -f Makefile clean;\
+	cd $(DPRIMMEDIR) ;\
+	make -f Makefile clean;\
+	cd $(ZPRIMMEDIR) ;\
+	make -f Makefile clean;\
+	cd $(SVDSCOMMONDIR) ;\
+	make -f Makefile clean;\
+	cd $(SVDSDPRIMMEDIR) ;\
+	make -f Makefile clean;\
+	cd $(SVDSZPRIMMEDIR) ;\
+	make -f Makefile clean;\
 	)
 

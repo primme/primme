@@ -48,6 +48,7 @@
 #define ZSCAL  zscal_
 #define ZLARNV zlarnv_
 #define ZHEEV  zheev_
+#define ZGESVD zgesvd_
 #define ZHETRF zhetrf_
 #define ZHETRS zhetrs_
 
@@ -55,12 +56,14 @@
 #define DSWAP  dswap_
 #define DGEMM  dgemm_
 #define DSYMM  dsymm_
+#define DSYMV  dsymv_
 #define DAXPY  daxpy_
 #define DGEMV  dgemv_
 #define DDOT   ddot_
 #define DSCAL  dscal_
 #define DLARNV dlarnv_
 #define DSYEV  dsyev_
+#define DGESVD dgesvd_
 #define DSYTRF dsytrf_
 #define DSYTRS dsytrs_
 
@@ -71,11 +74,13 @@
 #define ZSWAP  zswap
 #define ZGEMM  zgemm
 #define ZHEMM  zhemm
+#define ZHEMV  zhemv
 #define ZAXPY  zaxpy
 #define ZGEMV  zgemv
 #define ZSCAL  zscal
 #define ZLARNV zlarnv
 #define ZHEEV  zheev
+#define ZGESVD zgesvd
 #define ZHETRF zhetrf
 #define ZHETRS zhetrs
 
@@ -83,12 +88,14 @@
 #define DSWAP  dswap
 #define DGEMM  dgemm
 #define DSYMM  dsymm
+#define DSYMV  dsymv
 #define DAXPY  daxpy
 #define DGEMV  dgemv
 #define DDOT   ddot
 #define DSCAL  dscal
 #define DLARNV dlarnv
 #define DSYEV  dsyev
+#define DGESVD dgesvd
 #define DSYTRF dsytrf
 #define DSYTRS dsytrs
 
@@ -105,6 +112,7 @@
 #define ZSWAP  zswap
 #define ZGEMM  zgemm
 #define ZHEMM  zhemm
+#define ZHEMV  zhemv
 #define ZAXPY  zaxpy
 #define ZGEMV  zgemv
 #define ZSCAL  zscal
@@ -140,6 +148,7 @@ void DGEMM(char *transa, char *transb, int *m, int *n, int *k, double *alpha,
    double *a, int *lda, double *b, int *ldb, double *beta, double *c, int *ldc);
 void DSYMM(char *side, char *uplo, int *m, int *n, double *alpha, double *a,
    int *lda, double *b, int *ldb, double *beta, double *c, int *ldc);
+void DSYMV(char *uplo, int *n, double *alpha, double *a, int *lda, double *x, int *lncx, double *beta, double *y, int *lncy);
 void DAXPY(int *n, double *alpha, double *x, int *incx, double *y, int *incy);
 void DGEMV(char *transa, int *m, int *n, double *alpha, double *a, int *lda, 
    double *x, int *incx, double *beta, double *y, int *incy);
@@ -149,6 +158,9 @@ void DSCAL(int *n, double *alpha, double *x, int *incx);
 void DLARNV(int *idist, int *iseed, int *n, double *x);
 void DSYEV(char *jobz, char *uplo, int *n, double *a, int *lda, double *w,
    double *work, int *ldwork, int *info);
+void DGESVD(char *jobu, char *jobvt, int *m, int *n, double *a, int *lda, 
+double *s, double *u, int *ldu, double *vt, int *ldvt, double *work,
+int *ldwork, int *info); 
 void DSYTRF(char *uplo, int *n, double *a, int *lda, int *ipivot, double *work,
    int *ldwork, int *info);
 void DSYTRS(char *uplo, int *n, int *nrhs, double *a, int *lda, int *ipivot,
@@ -158,11 +170,14 @@ void   ZCOPY(int *n, void *x, int *incx, void *y, int *incy);
 void   ZSWAP(int *n, void *x, int *incx, void *y, int *incy);
 void   ZGEMM(char *transa, char *transb, int *m, int *n, int *k, void *alpha, void *a, int *lda, void *b, int *ldb, void *beta, void *c, int *ldc);
 void   ZHEMM(char *side, char *uplo, int *m, int *n, void *alpha, void *a, int *lda, void *b, int *ldb, void *beta, void *c, int *ldc);
+void   ZHEMV(char *uplo, int *n, void *alpha, void *a, int *lda, void *x, int *lncx, void *beta, void *y, int *lncy);
 void   ZAXPY(int *n, void *alpha, void *x, int *incx, void *y, int *incy);
 void   ZGEMV(char *transa, int *m, int *n, void *alpha, void *a, int *lda, void *x, int *incx, void *beta, void *y, int *incy);
 void   ZSCAL(int *n, void *alpha, void *x, int *incx);
 void   ZLARNV(int *idist, int *iseed, int *n, void *x);
 void   ZHEEV(char *jobz, char *uplo, int *n, void *a, int *lda, double *w, void *work, int *ldwork, double *rwork, int *info);
+void   ZGESVD(char *jobu, char *jobvt, int *m, int *n, void *a, int *lda, double *s, void *u, int *ldu, void *vt, int *ldvt, void *work,
+int *ldwork, double *rwork, int *info);
 void   ZHETRF(char *uplo, int *n, void *a, int *lda, int *ipivot, void *work, int *ldwork, int *info);
 void   ZHETRS(char *uplo, int *n, int *nrhs, void *a, int *lda, int *ipivot, void *b, int *ldb, int *info);
 void   ZDOTCSUB(void *dot, int *n, void *x, int *incx, void *y, int *incy);

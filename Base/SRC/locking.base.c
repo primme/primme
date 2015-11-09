@@ -154,14 +154,14 @@
 
 int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConvTol, 
    int *basisSize, int *numLocked, int *numGuesses, int *nextGuess,
-   @(type) *V, @(type) *W, @(type) *H, @(type) *evecsHat, @(type) *M, 
+   @(type) *V, @(type) *W, @(type) *H, @(type) *Q, @(type) *R, @(type) *evecsHat, @(type) *M, 
    @(type) *UDU, int *ipivot, double *hVals, @(type) *hVecs, 
    @(type) *evecs, double *evals, int *perm, double machEps, 
    double *resNorms, int *numPrevRitzVals, double *prevRitzVals, 
    int *flag, @(type) *rwork, int rworkSize, int *iwork, 
    int *LockingProblem, primme_params *primme) {
 
-   int i;             /* Loop counter                                       */
+   int i,j;             /* Loop counter                                       */
    int numCandidates; /* Number of targeted Ritz vectors converged before   */
                       /* restart.                                           */
    int newStart;      /* Index in evecs where the locked vectors were added */
@@ -205,6 +205,38 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
       residual = &W[(*basisSize-1)*primme->nLocal];
       workinW = 1;
    }
+    
+    /*lingfei: dynamical tolerance adjusting for primme_svds_ATA*/
+    if (primme->DefineConvCriteria){
+        if (fabs(primme->currentEstimates.targetRitzVal) > 0.0L && 
+            (primme->target == 1 ||(primme->target == 0 && 
+            fabs(primme->currentEstimates.targetRitzVal) < 1.0))){
+            /*use both lambdaMin and lambdaMax to adjust user's tolerance. 
+            The recommended attainableTol is 1e-15 since lower attainableTol 
+            is possible to cause PRIMME stagnation due to float point error.*/
+            tol = tol*sqrt(fabs(primme->currentEstimates.targetRitzVal/
+                                        primme->currentEstimates.Anormest));
+            tol = Num_fmax_primme(2,tol,1e-15);
+            /*If aNorm is smaller than 1, make sure Res < 
+              primme.eps*primme.aNorm, which is set no lower 
+              than read_attainableTol. */
+            tol = Num_fmax_primme(2,tol,1e-15/fabs(primme->currentEstimates.Anormest));
+        }
+        else {
+            /*use only lambdaMax to adjust user's tolerance* since
+            lambdaMin is not accurate until now. If aNorm is smaller
+            than 1, don't use it to adjust user's tolerance.*/  
+            if (fabs(primme->currentEstimates.Anormest) >= 1)
+                tol = 2*tol/sqrt(fabs(primme->currentEstimates.Anormest));
+            else
+                tol = 2*tol;
+            tol = Num_fmax_primme(2,tol,1e-15);
+            tol = Num_fmax_primme(2,tol,1e-15/fabs(primme->currentEstimates.Anormest));
+        }
+        printf("Matvecs: %d, SVEst: %e,AnormEst: %e, AdjustedATATol: %e\n",
+                primme->stats.numMatvecs,primme->currentEstimates.targetRitzVal,
+                primme->currentEstimates.Anormest,tol);
+    }
 
    /* -------------------------------------*/
    /* Set the tolerance, and attainableTol */
@@ -324,6 +356,20 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
             flag[i] = LOCKED;
          }
 
+        /* lingfei: If two-stages SVD is used, then the next initial guess 
+           is brought into the basis when the last targeted eigenvalue 
+           converged. This strategy may be benefitial to any interior 
+           eigenvalue too. */
+        /*if (primme->projection == primme_RR_Refined && 
+            primme->AppForRef == primme_TwoStage_SVD &&
+            numGuesses == 0){*/
+        if(primme->ReIntroInitGuessToBasis && primme->target != primme_smallest 
+            && primme->target != primme_largest && *numGuesses == 0) {  
+            Num_@(pre)copy_@(pre)primme(primme->nLocal,   
+                &evecs[primme->nLocal*(*numLocked + 1)], 1, &V[primme->nLocal*i], 1);
+            flag[i] = INITIAL_GUESS;
+        }
+
          *numLocked = *numLocked + 1;
          numRecentlyLocked++;
             
@@ -407,7 +453,8 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
    /* ---------------------------------------------------------------------- */
 
    if (numReplaced > 0) {
-      ret = ortho_@(pre)primme(V, primme->nLocal, *basisSize, 
+     /*lingfei: modify ortho function for offering Q and R*/
+      ret = ortho_@(pre)primme(V, NULL, primme->nLocal, *basisSize, 
          *basisSize+numReplaced-1, evecs, primme->nLocal, evecsSize, 
          primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
 
@@ -442,9 +489,10 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
    /* Because vectors have been removed from the basis and possibly new */
    /* ones have been added, we must solve the eigenproblem for H.       */
    /* ----------------------------------------------------------------- */
-
-   ret = solve_H_@(pre)primme(H, hVecs, hVals, *basisSize, primme->maxBasisSize,
-      aNormEstimate, *numLocked, rworkSize, rwork, iwork, primme);
+   /*lingfei: if the RayRitz, Harmonic or Refined projections are used*/
+   ret = solve_H_@(pre)primme(H, hVecs, Q, R, hVals, *basisSize, primme->maxBasisSize,
+      aNormEstimate, *numLocked, machEps, rworkSize, rwork, iwork, primme,
+      V, W, 0);
    reset_flags_@(pre)primme(flag, 0, primme->maxBasisSize - 1);
 
    if (ret < 0) {
@@ -659,13 +707,22 @@ static int swap_flagVecs_toEnd(int basisSize, int flagValue, @(type) *V,
       hVals[left] = hVals[right];
       hVals[right] = dtemp;
 
+     
+     /*lingfei: Swap the two columns of H and WTW if any projection
+     rather than the RayRitz projection is used.     */ 
+     if (primme->projectionParams.projection ) {
+         Num_swap_@(pre)primme(primme->maxBasisSize,
+            &H[primme->maxBasisSize*left], 1,
+            &H[primme->maxBasisSize*right], 1);
+      }
+      else {
       /* After restarting, the eigenvectors of H are the standard */
       /* basis vectors (H is diagonal).  Thus, they don't need to */
       /* be swapped.  Just swap the diagonal elements of H.       */
-      
-      ztmp = H[primme->maxBasisSize*left+left];
-      H[primme->maxBasisSize*left+left] = H[primme->maxBasisSize*right+right];
-      H[primme->maxBasisSize*right+right] = ztmp;
+         ztmp = H[primme->maxBasisSize*left+left];
+         H[primme->maxBasisSize*left+left] = H[primme->maxBasisSize*right+right];
+         H[primme->maxBasisSize*right+right] = ztmp;
+      }/* The RayRitz projection is used */
 
       itemp = flag[left];
       flag[left] = flag[right];

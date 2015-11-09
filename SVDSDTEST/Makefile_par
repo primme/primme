@@ -1,0 +1,63 @@
+# include the environment and compilation flags
+
+include ../Make_flags
+include ../Link_flags
+
+#------------------------------------------------
+# Reset to parallel compilers. 
+#------------------------------------------------
+
+CC = mpicc
+F77 = mpif77
+LDR = mpif77
+
+#------------------------------------------------
+#  Linking & Library flags for the parallel matvec
+#  and precond libs (here, Parasails)
+#  NOTE: ParaSails must be downloaded independently
+#  and the path must be set accordingly.
+#  See readme.txt
+#------------------------------------------------
+
+INCLUDE += -I./ParaSails/ 
+LIBDIRS += -L./ParaSails/  -lParaSails
+# Add to current libraries
+LIBS += -lParaSails
+#------------------------------------------------
+
+CSOURCE = driver_par.c readuc.c shared_utils.c ssrcsr.c 
+
+COBJS = driver_par.o readuc.o shared_utils.o ssrcsr.o 
+
+DRIVEROBJECTS = $(COBJS)
+
+.PHONY: clean veryclean
+
+par_dprimme_svds: $(COBJS) svdsddependencies_par $(TOP)/libprimme.a
+	$(LDR) -o par_dprimme_svds $(DRIVEROBJECTS) $(INCLUDE) $(LIBDIRS) $(LIBS) $(LDFLAGS)
+
+driver_par.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c driver_par.c
+
+readuc.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c readuc.c
+
+shared_utils.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c shared_utils.c
+
+ssrcsr.o:
+	$(CC) $(LOW_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c ssrcsr.c
+
+
+clean :
+	- rm -f *.o
+
+veryclean :
+	- rm -f par_dprimme_svds *.o core
+
+svdsddependencies_par:
+	$(CC) -MM $(INCLUDE) $(CSOURCE) > svdsddependencies_par
+
+all: par_dprimme_svds
+par_dprimme_svds: $(DRIVEROBJECTS)
+include svdsddependencies_par

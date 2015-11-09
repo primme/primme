@@ -33,7 +33,7 @@
 
 int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConvTol, 
    int *basisSize, int *numLocked, int *numGuesses, int *nextGuess,
-   @(type) *V, @(type) *W, @(type) *H, @(type) *evecsHat, @(type) *M, 
+   @(type) *V, @(type) *W, @(type) *H, @(type) *Q, @(type) *R, @(type) *evecsHat, @(type) *M, 
    @(type) *UDU, int *ipivot, double *hVals, @(type) *hVecs, 
    @(type) *evecs, double *evals, int *perm, double machEps, 
    double *resNorms, int *numPrevRitzVals, double *prevRitzVals, 

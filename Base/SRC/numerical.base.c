@@ -101,6 +101,20 @@ void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha,
 }
 
 /******************************************************************************/
+void Num_symv_@(pre)primme(char *uplo, int n, @(type) alpha, 
+   @(type) *a, int lda, @(type) *x, int lncx, @(type) beta, 
+   @(type) *y, int lncy) {
+
+#ifdefarithm L_DEFCPLX
+   ZHEMV(uplo, &n, &alpha, a, &lda, x, &lncx, &beta, y, &lncy);
+#endifarithm
+#ifdefarithm L_DEFREAL
+   DSYMV(uplo, &n, &alpha, a, &lda, x, &lncx, &beta, y, &lncy);
+#endifarithm
+
+}
+
+/******************************************************************************/
 void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx, 
    @(type) *y, int incy) {
 
@@ -280,6 +294,31 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
 #endifarithm
 
 #endif
+
+
+#ifdefarithm L_DEFREAL
+/******************************************************************************/
+void Num_dgesvd_dprimme(char *jobu, char *jobvt, int m, int n, double *a,
+    int lda, double *s, double *u, int ldu, double *vt, int ldvt,
+    double *work, int ldwork, int *info){
+
+    DGESVD(jobu, jobvt, &m, &n, a, &lda, s, u, &ldu, vt, &ldvt, work,
+        &ldwork, info);
+
+}
+#endifarithm
+
+#ifdefarithm L_DEFCPLX
+/******************************************************************************/
+void Num_zgesvd_zprimme(char *jobu, char *jobvt, int m, int n, @(type) *a,
+    int lda, double *s, @(type) *u, int ldu, @(type) *vt, int ldvt,
+    @(type) *work, int ldwork, double *rwork, int *info){
+
+    ZGESVD(jobu, jobvt, &m, &n, a, &lda, s, u, &ldu, vt, &ldvt, work,
+        &ldwork, rwork, info);
+
+}
+#endifarithm
 
 #ifdefarithm L_DEFREAL
 /******************************************************************************/

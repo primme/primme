@@ -1,0 +1,68 @@
+// ///////////////////////////////////////////////////////////////////
+//
+//   	    Fully custom configuration of sequential SVDSDPRIMME 
+//
+// ///////////////////////////////////////////////////////////////////
+// The following must be assigned in the program after the matrix is read
+// primme_svds.n 
+// primme_svds.matrixMatvec
+// primme_svds.applyPreconditioner  (No need to set if primme_svds.precondition = 0)
+// ///////////////////////////////////////////////////////////////////
+// WORK ARRAYS
+// primme_svds.intWorkSize/realWorkSize   (better left for dprimme_svds to 
+// primme_svds.intWork/realWork             allocate these internally)
+// ///////////////////////////////////////////////////////////////////
+// With sequential runs, no need to set the folloing provided that
+// primme_svds_initialize() is called first
+// primme_svds.nLocal               
+// primme_svds.numProcs            
+// primme_svds.procID 	
+// primme_svds.globalSumDouble      
+// ///////////////////////////////////////////////////////////////////
+
+// Output and reporting
+primme_svds.printLevel              = 5    // Choices 0, ..., 5
+
+// Preset method 
+primme_svds.eigsMethod_stage1       = DEFAULT_MIN_MATVECS
+primme_svds.eigsMethod_stage2       = DEFAULT_MIN_MATVECS
+
+// DYNAMIC,
+// DEFAULT_MIN_TIME,
+// DEFAULT_MIN_MATVECS,
+// Arnoldi,
+// GD,
+// GD_plusK,
+// GD_Olsen_plusK,
+// JD_Olsen_plusK,
+// RQI,
+// JDQR,
+// JDQMR,
+// JDQMR_ETol,
+// SUBSPACE_ITERATION,
+// LOBPCG_OrthoBasis,
+// LOBPCG_OrthoBasis_Window
+
+// Solver parameters
+primme_svds.target                  = primme_svds_smallest
+// primme_svds_smallest    
+// primme_svds_largest     
+
+primme_svds.svdsMethod              = primme_svds_hybrid
+// primme_svds_hybrid    
+// primme_svds_normalequations     
+// primme_svds_augmented
+
+primme_svds.numSvals                = 3
+// primme_svds.numTargetShifts         = 3
+// primme_svds.targetShifts            = 0.016 0.019 0.023      //well1850
+// primme_svds.targetShifts            = 0.016 0.024 0.036         //pde2961
+primme_svds.aNorm		            = 0.0                       // if aNorm <= 0 dynamic
+primme_svds.eps                     = 1e-14
+primme_svds.maxBasisSize            = 35
+primme_svds.maxBlockSize            = 1
+primme_svds.maxMatvecs              = 50000
+primme_svds.initSize                = 1
+primme_svds.precondition            = 0
+primme_svds.iseed                   = 3 5 101 4027
+

@@ -32,6 +32,7 @@
 #include "solve_H_z.h"
 #include "solve_H_private_z.h"
 #include "numerical_z.h"
+#include "ortho_z.h"
 
 /*******************************************************************************
  * Subroutine solve_H - This procedure solves the eigenproblem for the
@@ -61,15 +62,22 @@
  *     - -1 Num_zheev was unsuccsessful
  ******************************************************************************/
 
-int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, double *hVals, 
-   int basisSize, int maxBasisSize, double *largestRitzValue, int numLocked, 
-   int lrwork, Complex_Z *rwork, int *iwork, primme_params *primme) {
+int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, Complex_Z *Q, Complex_Z *R, double *hVals, 
+   int basisSize, int maxBasisSize, double *largestRitzValue, int numLocked, double machEps, 
+   int lrwork, Complex_Z *rwork, int *iwork, primme_params *primme,
+   Complex_Z *V, Complex_Z *W, int recentlyConverged) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
    int index;
    int *permu, *permw;
    double targetShift;
+
+   /*lingfei: primme_svds. define temp variables for refined projection*/
+   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
+   int ret;
+   Complex_Z RefShift;
+   double theta, theta2, thetaSq;
 
    double  *doubleWork;
 
@@ -262,6 +270,117 @@ int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, double *hVals,
                             basisSize, basisSize);
    }
 
+   /*lingfei: primme_svds. if the refined projection is used after
+   the RayRitz projection.  It is designed for interior eigenvalue
+   problem, especially for singular value problem with augmented
+   method. In this case, we need compute:
+   1) hVecs = Vm**T*A**T*A*Vm - 2*theta*Vm**T*A*Vm + theta*theta*Im
+            = WTWm - 2*theta*Hm + theta*theta*Im;
+   2) Another approach is for two-stages SVD problem;
+      (AVm - theta*Vm) = Wm - thetaVm = QR; */
+   if (primme->projectionParams.projection == primme_RR_Refined &&
+            primme->projectionParams.refinedScheme == primme_OneAccuShift_QR) {
+       RefShift.r = -primme->targetShifts[numLocked+recentlyConverged];
+       RefShift.i = 0.0L;
+       /*printf("RefShift = %e\n",RefShift);*/
+       if (primme->qr_need == 1 && Q != NULL && R != NULL) {
+           for(i = 0; i < basisSize; i++){
+               Num_zcopy_zprimme(primme->nLocal, &W[primme->nLocal*i], 
+               1, &Q[primme->nLocal*i], 1);
+               Num_axpy_zprimme(primme->nLocal, RefShift, &V[primme->nLocal*i],
+               1, &Q[primme->nLocal*i], 1);
+           }
+
+
+        /* --------------------------------------------------------------------- */
+        /* Zero the R array to prevent floating point traps during all-reduce */
+           /* --------------------------------------------------------------------- */
+          for (i = 0; i < primme->maxBasisSize*primme->maxBasisSize; i++) {
+               R[i] = tzero;
+           }
+           /*printf("primme->qr_need = %d\n",primme->qr_need);*/
+           ret = ortho_zprimme(Q, R, primme->nLocal, 0,   
+                basisSize-1, NULL, 0, 0, primme->nLocal, 
+                primme->iseed, machEps, rwork, lrwork, primme);
+           if (ret < 0) {
+               primme_PushErrorMessage(Primme_solve_h, Primme_ortho,
+               ret, __FILE__, __LINE__, primme);
+               return ORTHO_FAILURE;
+           }
+           /*reset primme->qr_need = 0 to switch to one-colomn qr updating model*/
+           primme->qr_need = 0;
+       }
+       else { /*primme->qr_need == 0*/
+           /*printf("primme->qr_need = %d\n",primme->qr_need);*/
+           Num_zcopy_zprimme(primme->nLocal, &W[primme->nLocal*(basisSize-1)], 
+                1, &Q[primme->nLocal*(basisSize-1)], 1);
+           Num_axpy_zprimme(primme->nLocal, RefShift, &V[primme->nLocal*(basisSize-1)], 
+                1, &Q[primme->nLocal*(basisSize-1)], 1);
+           ret = ortho_zprimme(Q, R, primme->nLocal, basisSize-1,
+                basisSize-1, NULL, 0, 0, primme->nLocal,
+                primme->iseed, machEps, rwork, lrwork,primme);
+           if (ret < 0) {
+               primme_PushErrorMessage(Primme_solve_h, Primme_ortho,
+               ret, __FILE__, __LINE__, primme);
+               return ORTHO_FAILURE;
+            }
+       }
+    }
+         
+    if (primme->projectionParams.projection == primme_RR_Refined && 
+            primme->projectionParams.refinedScheme == primme_OneAccuShift_QR) {
+      for (i = 0; i < primme->maxBasisSize*primme->maxBasisSize; i++) {
+         hVecs[i] = tzero;
+      }
+      for (j=0; j < basisSize; j++) {
+         for (i=0; i <= j; i++) { 
+            hVecs[basisSize*j+i] = R[maxBasisSize*j+i];
+         }
+      }      
+      /*Since Ritz vectors in hVecs is not needed, we use hVecs to hold refined
+        Ritz vectors. Also, we use the last colomn of R to hold the singular 
+        value. Note, hvecs holds transpose(V) rather than V and sorted according
+        to the descending order*/
+
+/*lingfei: Assign also 5N double work space after the 3N complex rwork finishes */
+     doubleWork = (double *) (rwork+ 3*basisSize);  
+/*lingfei: you may want to use a temp memory to hold the singular
+value returned from zgesvd for debugging. It is in first NULL.*/
+     Num_zgesvd_zprimme("N","O", basisSize, basisSize, hVecs, basisSize,
+            NULL, NULL, basisSize, NULL,
+            basisSize, rwork, 3*basisSize, doubleWork, &info);
+
+      if (info != 0) {
+            primme_PushErrorMessage(Primme_solve_h, Primme_num_zgesvd, info, __FILE__, 
+                __LINE__, primme);
+            return NUM_ZGESVD_FAILURE;
+       }
+
+
+      /* zero the last colomn of R if reaching maxBasisSize-1 to get ready for
+         last colomn updating of R when performing one-colomn qr updating*/
+      if (basisSize == primme->maxBasisSize -1){
+          for(i=0; i< maxBasisSize; i++)
+              R[maxBasisSize*(maxBasisSize-1)+i] = tzero;
+      }
+
+      /*compute V from transpose(V) and rearrange V according to ascending order*/
+      for (j=0; j < basisSize; j++) {
+         for (i=0; i < basisSize; i++) { 
+            rwork[basisSize*j+i] = hVecs[basisSize*i+ (basisSize-1-j)];
+         }
+      }      
+      Num_zcopy_zprimme(basisSize*basisSize, rwork, 1, hVecs, 1);
+   
+      /* compute rayleigh quotient lambda(1) = y_1T*H*y_1 */
+      Num_symv_zprimme("U", basisSize, tpone, H, maxBasisSize, hVecs, 1, tzero, rwork, 1);
+      /*lingfei: in the future, if a block refined projection is developed, 
+      we may change Num_symv to Num_symm for computing blocked lamda values.*/
+     /* Num_symm_zprimme("L", "U", basisSize, 1, tpone, H, maxBasisSize, hVecs, 
+      basisSize, tzero, rwork, basisSize);*/
+      RefShift = Num_dot_zprimme(basisSize, hVecs, 1, rwork,1);
+      hVals[0] = RefShift.r;
+    }
 
    return 0;   
 }

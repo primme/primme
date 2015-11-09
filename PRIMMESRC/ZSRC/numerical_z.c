@@ -73,6 +73,15 @@ void Num_symm_zprimme(char *side, char *uplo, int m, int n, Complex_Z alpha,
 }
 
 /******************************************************************************/
+void Num_symv_zprimme(char *uplo, int n, Complex_Z alpha, 
+   Complex_Z *a, int lda, Complex_Z *x, int lncx, Complex_Z beta, 
+   Complex_Z *y, int lncy) {
+
+   ZHEMV(uplo, &n, &alpha, a, &lda, x, &lncx, &beta, y, &lncy);
+
+}
+
+/******************************************************************************/
 void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx, 
    Complex_Z *y, int incy) {
 
@@ -184,6 +193,18 @@ void Num_zheev_zprimme(char *jobz, char *uplo, int n, Complex_Z *a, int lda,
 }
 
 #endif
+
+
+
+/******************************************************************************/
+void Num_zgesvd_zprimme(char *jobu, char *jobvt, int m, int n, Complex_Z *a,
+    int lda, double *s, Complex_Z *u, int ldu, Complex_Z *vt, int ldvt,
+    Complex_Z *work, int ldwork, double *rwork, int *info){
+
+    ZGESVD(jobu, jobvt, &m, &n, a, &lda, s, u, &ldu, vt, &ldvt, work,
+        &ldwork, rwork, info);
+
+}
 
 
 /******************************************************************************/

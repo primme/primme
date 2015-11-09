@@ -15,6 +15,7 @@ FLDR = gfortran-mp-4.9
 #LDR = c++
 
 INCLUDE = -I$(COMMONDIR)
+SVDSINCLUDE = -I$(SVDSCOMMONDIR)
 LIBDIRS = -L$(TOP)
 
 #---------------------------------------------------------------

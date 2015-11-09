@@ -33,7 +33,7 @@
 
 int lock_vectors_zprimme(double tol, double *aNormEstimate, double *maxConvTol, 
    int *basisSize, int *numLocked, int *numGuesses, int *nextGuess,
-   Complex_Z *V, Complex_Z *W, Complex_Z *H, Complex_Z *evecsHat, Complex_Z *M, 
+   Complex_Z *V, Complex_Z *W, Complex_Z *H, Complex_Z *Q, Complex_Z *R, Complex_Z *evecsHat, Complex_Z *M, 
    Complex_Z *UDU, int *ipivot, double *hVals, Complex_Z *hVecs, 
    Complex_Z *evecs, double *evals, int *perm, double machEps, 
    double *resNorms, int *numPrevRitzVals, double *prevRitzVals, 

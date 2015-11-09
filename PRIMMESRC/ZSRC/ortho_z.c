@@ -101,7 +101,7 @@
  * 
  **********************************************************************/
 
-int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2, 
+int ortho_zprimme(Complex_Z *basis, Complex_Z *R, int ldBasis, int b1, int b2, 
    Complex_Z *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
    double machEps, Complex_Z *rwork, int rworkSize, primme_params *primme) {
               
@@ -200,6 +200,12 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
          count = 2*(i + numLocked + 1);
          (*primme->globalSumDouble)(rwork, overlaps, &count, primme);
 
+         /* lingfei: primme_svds. if Harmonic or Refined projection is used */
+         if (R != NULL){
+             Num_axpy_zprimme(count, tpone, overlaps, 1, 
+                &R[primme->maxBasisSize*i], 1);
+         }
+
          if (numLocked > 0) { /* locked array most recently accessed */
             Num_gemv_zprimme("N", nLocal, numLocked, tmone, locked, ldLocked, 
                &overlaps[i], 1, tpone, &basis[ldBasis*i], 1); 
@@ -249,6 +255,20 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2,
             s02 = s1*s1;
          }
          else {
+            /*lingfei:primme_svds. if Harmonic or Refined projection is used*/
+            if (R != NULL) {
+                if (nOrth == 1) {
+                    ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1,
+                                                   &basis[ldBasis*i], 1);   
+                    temp = ztmp.r;
+                    count = 1;
+                    (*primme->globalSumDouble)(&temp, &s1, &count, primme);
+                    s1 = sqrt(s1);
+                }
+                R[primme->maxBasisSize*i + i].r = s1;
+                R[primme->maxBasisSize*i + i].i = 0.0L;
+            }
+
             {ztmp.r = 1.0L/s1; ztmp.i = 0.0L;}
             Num_scal_zprimme(nLocal, ztmp, &basis[ldBasis*i], 1);
             reorth = 0;

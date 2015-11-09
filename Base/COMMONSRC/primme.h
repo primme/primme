@@ -47,9 +47,13 @@ typedef enum {
    Primme_solve_h,
    Primme_restart,
    Primme_restart_h,
+   Primme_combine_retained, /*lingfei: primme_svds*/
    Primme_insert_submatrix,
    Primme_lock_vectors,
    Primme_num_dsyev,
+   Primme_num_dsygv,/*lingfei: primme_svds*/
+   Primme_num_dgesvd,/*lingfei: primme_svds*/
+   Primme_num_zgesvd,/*lingfei: primme_svds*/
    Primme_num_zheev,
    Primme_num_dspev,
    Primme_num_zhpev,
@@ -72,6 +76,25 @@ typedef enum {
    primme_closest_abs
 } primme_target;
 
+/*lingfei: primme_svds. Define different projection methods.*/
+typedef enum {
+    primme_RR,
+    primme_RR_Refined,
+    primme_Har,
+    primme_Har_Refined,
+    primme_Refined
+} primme_projection;
+
+/*lingfei: primme_svds. if the refined projection is used, 
+choose one approach for the refined projection.*/
+typedef enum {
+    primme_DisableRef,
+    primme_MultiShifts_QR,
+    primme_MultiShifts_WTW,
+    primme_OneShift_QR,
+    primme_OneShift_WTW,
+    primme_OneAccuShift_QR
+ } primme_refinedscheme;
 
 typedef enum {
    primme_thick,
@@ -113,6 +136,20 @@ typedef struct JD_projectors {
    int SkewQ;
    int SkewX;
 } JD_projectors;
+
+/*lingfei: primme_svds. define projection schemes*/
+typedef struct projection_params {
+    primme_projection projection;
+    primme_refinedscheme refinedScheme;
+}projection_params;
+
+/*lingfei: primme_svds. some useful info for users.*/
+typedef struct currentestimates { 
+    double Anormest;
+    double targetRitzVal;
+    double targetRitzValNorm;
+    double *targetRitzVec;
+}currenterstimates;
 
 typedef struct correction_params {
    int precondition;
@@ -160,6 +197,12 @@ typedef struct primme_params {
    int numTargetShifts;              /* For targeting interior epairs,      */
    double *targetShifts;             /* at least one shift must also be set */
 
+   /* lingfei: primme_svds. The RR or Harmonic or Refined projection is used*/
+   projection_params projectionParams; 
+//   primme_projection projection;
+//   primme_AppForRef AppForRef;
+   int qr_need; /*indicate if qr factorziation is needed for current projection method*/
+   
    /* the following will be given default values depending on the method */
    int dynamicMethodSwitch;
    int locking;
@@ -184,7 +227,16 @@ typedef struct primme_params {
    void *matrix;
    void *preconditioner;
    double *ShiftsForPreconditioner;
-
+   /* lingfei: primme_svds. PRIMME MEX use largestRitzValForSVD to adjust tol for ATA method */
+   struct currentestimates currentEstimates;
+   /* lingfei: several new flags to control the way we perform in PRIMME*/
+   int DefineConvCriteria;
+   int InitBasisMode;  // 0 no Krylov init basis only user input (or a random one)
+   			           // 1 if use user init guesses to build a krylov space
+			           // 2 use init guesses and if room build a random krylov space
+   int ReIntroInitGuessToBasis;
+   int ForceVerificationOnExit;
+    
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;

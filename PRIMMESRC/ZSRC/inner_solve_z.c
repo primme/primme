@@ -192,11 +192,25 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    /* Andreas: note that eigenresidual tol may not be achievable, because we */
    /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
    if (primme->correctionParams.convTest == primme_adaptive) {
-      ETolerance = max(eresTol/1.8L, absoluteTolerance);
+   /*lingfei:primme_svds. if refine projection is used, there is 
+   no need to change eresTol*/
+      if(primme->correctionParams.precondition == 1 || 
+          primme->projectionParams.projection == primme_RR ||
+          primme->projectionParams.projection == primme_Har)
+          ETolerance = max(eresTol/1.8L, absoluteTolerance);
+      else
+          ETolerance = max(eresTol, absoluteTolerance);          
       LTolerance = ETolerance;
    }
    else if (primme->correctionParams.convTest == primme_adaptive_ETolerance) {
-      LTolerance = max(eresTol/1.8L, absoluteTolerance);
+   /*lingfei:primme_svds. if refine projection is used, there is 
+   no need to change eresTol*/
+      if(primme->correctionParams.precondition == 1 || 
+          primme->projectionParams.projection == primme_RR ||
+          primme->projectionParams.projection == primme_Har)
+          LTolerance = max(eresTol/1.8L, absoluteTolerance);
+      else
+          LTolerance = max(eresTol, absoluteTolerance);          
       ETolerance = max(tau_init*0.1L, LTolerance);
    }
    else if (primme->correctionParams.convTest == primme_decreasing_LTolerance) {

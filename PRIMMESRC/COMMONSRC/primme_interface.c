@@ -70,6 +70,28 @@ void primme_initialize(primme_params *primme) {
    primme->initSize                = 0;
    primme->numOrthoConst           = 0;
 
+   /* lingfei:primme_svds. The RR or Harmonic or Refined projection is used */
+   if (primme->target == primme_smallest ||
+            primme->target == primme_largest){
+       primme->projectionParams.projection = primme_RR;
+   }
+   else {
+       primme->projectionParams.projection = primme_RR_Refined;
+       primme->projectionParams.refinedScheme  = primme_OneAccuShift_QR;
+   }
+//   primme->callSvdsATA             = 0;
+//   primme->largestRitzValForSVD    = NULL;
+//   primme->targetRitzVal           = NULL;
+   primme->currentEstimates.Anormest           = 0;
+   primme->currentEstimates.targetRitzVal      = 0;
+   primme->currentEstimates.targetRitzValNorm  = 0;
+   primme->currentEstimates.targetRitzVec      = NULL;
+   primme->qr_need                             = 0;
+   primme->DefineConvCriteria                  = 0;
+   primme->InitBasisMode                       = 0;
+   primme->ReIntroInitGuessToBasis             = 0;
+   primme->ForceVerificationOnExit             = 0;
+
    /* Eigensolver parameters (outer) */
    primme->locking                             = 0;
    primme->dynamicMethodSwitch                 = 0;
@@ -522,6 +544,54 @@ switch (primme.target){
       fprintf(outputFile, "primme.target = primme_closest_geq\n");
       break;
 }
+
+/* lingfei: primme_svds. if the harmonic or refined projection is used */
+switch (primme.projectionParams.projection){                                                                          
+    case primme_RR:
+        fprintf(outputFile, "primme.projectionParams.projection = primme_RR\n");
+        break;
+    case primme_RR_Refined:
+        fprintf(outputFile, "primme.projectionParams.projection = primme_RR_Refined\n");
+        break;
+    case primme_Har:
+        fprintf(outputFile, "primme.projectionParams.projection = primme_Har\n");
+        break;
+    case primme_Har_Refined:
+        fprintf(outputFile, "primme.projectionParams.projection = primme_Har_Refined\n");
+        break;
+    case primme_Refined:
+        fprintf(outputFile, "primme.projectionParams.projection = primme_Refined\n");
+        break;
+}
+
+/* lingfei: primme_svds. if the harmonic or refined projection is used */
+switch (primme.projectionParams.refinedScheme){
+    case primme_DisableRef:
+        fprintf(outputFile, "primme.projectionParams.refinedScheme = disable Refine projection\n");
+        break;
+    case primme_OneAccuShift_QR:
+        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_OneAccuShift_QR\n");
+        break;
+    case primme_MultiShifts_QR:
+        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_MultiShifts_QR\n");
+        break;
+    case primme_OneShift_QR:
+        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_OneShift_QR\n");
+        break;
+    case primme_MultiShifts_WTW:
+        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_MultiShifts_WTW\n");
+        break;
+    case primme_OneShift_WTW:
+        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_OneShift_WTW\n");
+        break;
+}
+     
+/* lingfei: primme_svds. if the harmonic or refined projection is used */
+fprintf(outputFile, "primme.qr_need = %d \n",primme.qr_need);
+fprintf(outputFile, "primme.DefineConvCriteria = %d \n",primme.DefineConvCriteria);
+fprintf(outputFile, "primme.InitBasisMode = %d \n",primme.InitBasisMode);
+fprintf(outputFile, "primme.ReIntroInitGuessToBasis = %d \n",primme.ReIntroInitGuessToBasis);
+fprintf(outputFile, "primme.ForceVerificationOnExit = %d \n",primme.ForceVerificationOnExit);
 
 fprintf(outputFile, "primme.numTargetShifts = %d\n",primme.numTargetShifts);
 if (primme.numTargetShifts > 0) {

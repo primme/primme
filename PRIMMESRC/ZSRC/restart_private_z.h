@@ -45,6 +45,11 @@ static int restart_H(Complex_Z *H, Complex_Z *hVecs, double *hVals,
    int numPrevRetained, int indexOfPreviousVecs, int rworkSize, 
    Complex_Z *rwork, primme_params *primme);
 
+static int restart_H_Harmonic(Complex_Z *H, Complex_Z *WTW, Complex_Z *hVecs, 
+   Complex_Z *wtwChol, double *hVals, int restartSize, int basisSize, 
+   Complex_Z *previousHVecs, int numPrevRetained, int indexOfPreviousVecs, 
+   int rworkSize, Complex_Z *rwork, primme_params *primme);
+
 static int dtr(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
  int basisSize, int numFree, int *iev, Complex_Z *rwork, primme_params *primme);
 

@@ -101,7 +101,7 @@
  * 
  **********************************************************************/
 
-int ortho_@(pre)primme(@(type) *basis, int ldBasis, int b1, int b2, 
+int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2, 
    @(type) *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
    double machEps, @(type) *rwork, int rworkSize, primme_params *primme) {
               
@@ -205,6 +205,12 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, int b1, int b2,
 #endifarithm
          (*primme->globalSumDouble)(rwork, overlaps, &count, primme);
 
+         /* lingfei: primme_svds. if Harmonic or Refined projection is used */
+         if (R != NULL){
+             Num_axpy_@(pre)primme(count, tpone, overlaps, 1, 
+                &R[primme->maxBasisSize*i], 1);
+         }
+
          if (numLocked > 0) { /* locked array most recently accessed */
             Num_gemv_@(pre)primme("N", nLocal, numLocked, tmone, locked, ldLocked, 
                &overlaps[i], 1, tpone, &basis[ldBasis*i], 1); 
@@ -270,6 +276,31 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, int b1, int b2,
             s02 = s1*s1;
          }
          else {
+            /*lingfei:primme_svds. if Harmonic or Refined projection is used*/
+            if (R != NULL) {
+                if (nOrth == 1) {
+#ifdefarithm L_DEFCPLX
+                    ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1,
+                                                   &basis[ldBasis*i], 1);   
+                    temp = ztmp.r;
+#endifarithm    
+#ifdefarithm L_DEFREAL                                 
+                    temp = Num_dot_dprimme(nLocal,&basis[ldBasis*i], 1,
+                                                  &basis[ldBasis*i],1);
+#endifarithm 
+                    count = 1;
+                    (*primme->globalSumDouble)(&temp, &s1, &count, primme);
+                    s1 = sqrt(s1);
+                }
+#ifdefarithm L_DEFCPLX
+                R[primme->maxBasisSize*i + i].r = s1;
+                R[primme->maxBasisSize*i + i].i = 0.0L;
+#endifarithm
+#ifdefarithm L_DEFREAL
+                R[primme->maxBasisSize*i + i] = s1;
+#endifarithm
+            }
+
 #ifdefarithm L_DEFCPLX
             {ztmp.r = 1.0L/s1; ztmp.i = 0.0L;}
 #endifarithm

@@ -15,6 +15,9 @@ SRC = $(TOP)/PRIMMESRC
 COMMONDIR = $(SRC)/COMMONSRC
 DPRIMMEDIR = $(SRC)/DSRC
 ZPRIMMEDIR = $(SRC)/ZSRC
+SVDSCOMMONDIR = $(SRC)/SVDS/COMMONSRC
+SVDSDPRIMMEDIR = $(SRC)/SVDS/DSRC
+SVDSZPRIMMEDIR = $(SRC)/SVDS/ZSRC
 
 # Define the path to the created primme library(-ies)
 LIBRARY = $(TOP)/libprimme.a
@@ -24,6 +27,10 @@ ZLIBRARY = $(TOP)/libzprimme.a
 # Define where the tests for double/complex are
 DTESTDIR = $(TOP)/DTEST
 ZTESTDIR = $(TOP)/ZTEST
+
+# Define where the tests for primme_svds double/complex are
+SVDSDTESTDIR = $(TOP)/SVDSDTEST
+SVDSZTESTDIR = $(TOP)/SVDSZTEST
 
 #---------------------------------------------------------------
 #  Compilers

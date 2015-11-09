@@ -1,0 +1,29 @@
+// ///////////////////////////////////////////////////////////////////
+//
+//    Preset method with some lean customization of sequential DPRIMME 
+//
+// ///////////////////////////////////////////////////////////////////
+// The following must be assigned in the program after the matrix is read
+// primme.n 
+// primme.matrixMatvec
+// primme.applyPreconditioner  (No need to set if primme.precondition = 0)
+// ///////////////////////////////////////////////////////////////////
+// WORK ARRAYS
+// primme.intWorkSize/realWorkSize   (better left for dprimme to 
+// primme.intWork/realWork             allocate these internally)
+// ///////////////////////////////////////////////////////////////////
+// With sequential runs, no need to set the folloing provided that 
+// primme_initialize() is called first
+// primme.nLocal               
+// primme.numProcs            
+// primme.procID 	
+// primme.globalSumDouble      
+// ///////////////////////////////////////////////////////////////////
+
+// Solver parameters
+primme_svds.numSvals                = 3
+primme_svds.target                  = primme_svds_smallest    
+primme_svds.eps                     = 1e-14
+primme_svds.maxMatvecs              = 50000
+primme_svds.precondition            = 0
+primme_svds.printLevel              = 5    // Choices 0, ..., 5

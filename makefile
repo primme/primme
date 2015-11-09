@@ -18,13 +18,14 @@ include Make_flags
 all: lib depends seqs pars 
 
 # The following are sequential executables of the test programs
-seqs: seq_dprimme seq_zprimme seqf77_dprimme seqf77_zprimme
+seqs: seq_dprimme seq_zprimme seqf77_dprimme seqf77_zprimme \
+    seq_dprimme_svds seq_zprimme_svds seqf77_dprimme_svds seqf77_zprimme_svds
 
 # The following builds the parallel executables
-pars: par_dprimme 
+pars: par_dprimme par_dprimme_svds
 
 # Build the dependencies for .c and .h files in the test directories
-depends: ddepends_seq zdepends_seq ddepends_par 
+depends: svdsddepends_seq svdszdepends_seq svdsddepends_par 
 
 .PHONY: lib libd libz clean backup ddepends_seq ddepends_par zdepends_seq 
 
@@ -84,6 +85,33 @@ seqf77_dprimme:
 	make -f Makefile_f77seq seqf77_dprimme; \
 	)
 
+par_dprimme_svds:
+	@(\
+	cd $(SVDSDTESTDIR) ;\
+	echo "-----------------------------------------------------"; \
+	echo " Making the executable for the double parallel C SVDS"; \
+	echo "-----------------------------------------------------"; \
+	make -f Makefile_par par_dprimme_svds; \
+	)
+
+seq_dprimme_svds:
+	@(\
+	cd $(SVDSDTESTDIR) ;\
+	echo "---------------------------------------------------"; \
+	echo " Making the executable for double sequential C SVDS"; \
+	echo "---------------------------------------------------"; \
+	make -f Makefile_seq seq_dprimme_svds; \
+	)
+
+seqf77_dprimme_svds:
+	@(\
+	cd $(SVDSDTESTDIR) ;\
+	echo "-----------------------------------------------------"; \
+	echo " Making the executable for double sequential f77 SVDS"; \
+	echo "-----------------------------------------------------"; \
+	make -f Makefile_f77seq seqf77_dprimme_svds; \
+	)
+
 #------------------- COMMPLEX TEST PROGRAMS ----------------------
 seq_zprimme:
 	@(\
@@ -101,6 +129,24 @@ seqf77_zprimme:
 	echo " Making executable for complex sequential f77 "; \
 	echo "------------------------------------------------"; \
 	make -f Makefile_f77seq seqf77_zprimme; \
+	)
+
+seq_zprimme_svds:
+	@(\
+	cd $(SVDSZTESTDIR) ;\
+	echo "----------------------------------------------------"; \
+	echo " Making the executable for complex sequential C SVDS"; \
+	echo "----------------------------------------------------"; \
+	make -f Makefile_seq seq_zprimme_svds; \
+	)
+
+seqf77_zprimme_svds:
+	@(\
+	cd $(SVDSZTESTDIR) ;\
+	echo "--------------------------------------------------"; \
+	echo " Making executable for complex sequential f77 SVDS"; \
+	echo "--------------------------------------------------"; \
+	make -f Makefile_f77seq seqf77_zprimme_svds; \
 	)
 
 #------------------------- Test dependencies -----------------------
@@ -134,6 +180,37 @@ zdepends_seq:
 	make -f Makefile_seq zdependencies_seq;\
 	)
 
+svdsddepends_seq: 
+	@(\
+	cd $(SVDSDTESTDIR);\
+	rm -f svdsddependencies_seq;\
+	echo "----------------------------------"; \
+	echo " Creating double seq dependencies "; \
+	echo "----------------------------------"; \
+	make -f Makefile_seq svdsddependencies_seq;\
+	)
+
+svdsddepends_par: 
+	@(\
+	cd $(SVDSDTESTDIR);\
+	rm -f svdsddependencies_par;\
+	echo "----------------------------------"; \
+	echo " Creating double par dependencies "; \
+	echo "----------------------------------"; \
+	make -f Makefile_par svdsddependencies_par;\
+	)
+
+svdszdepends_seq: 
+	@(\
+	cd $(SVDSZTESTDIR);\
+	rm -f svdszdependencies_seq;\
+	echo "-----------------------------------"; \
+	echo " Creating complex seq dependencies "; \
+	echo "-----------------------------------"; \
+	make -f Makefile_seq svdszdependencies_seq;\
+	)
+
+
 clean: 
 	@(\
 	echo "--------------------------------------------------"; \
@@ -141,15 +218,20 @@ clean:
 	echo "--------------------------------------------------"; \
 	cd $(SRC) ;\
 	make -f Makefile clean;\
-	echo " From Test directories";\
-	cd $(DTESTDIR);\
-	make -f Makefile_seq clean;\
+	cd $(DTESTDIR) ; \
 	make -f Makefile_par clean;\
-	make -f Makefile_f77seq clean;\
-	cd $(ZTESTDIR) ;\
 	make -f Makefile_seq clean;\
 	make -f Makefile_f77seq clean;\
-	echo "--------------------------------------------------"; \
+	cd $(SVDSDTESTDIR) ; \
+	make -f Makefile_par clean;\
+	make -f Makefile_seq clean;\
+	make -f Makefile_f77seq clean;\
+	cd $(ZTESTDIR) ; \
+	make -f Makefile_seq clean;\
+	make -f Makefile_f77seq clean;\
+	cd $(SVDSZTESTDIR) ; \
+	make -f Makefile_seq clean;\
+	make -f Makefile_f77seq clean;\
 	)
 
 backup: 

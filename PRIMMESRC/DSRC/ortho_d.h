@@ -33,7 +33,7 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_dprimme(double *basis, int ldBasis, int b1, int b2, 
+int ortho_dprimme(double *basis, double *R, int ldBasis, int b1, int b2, 
    double *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
    double machEps, double *rwork, int rworkSize, primme_params *primme);
 

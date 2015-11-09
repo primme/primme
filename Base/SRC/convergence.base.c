@@ -86,6 +86,38 @@ int check_convergence_@(pre)primme(@(type) *V, @(type) *W, @(type) *hVecs,
    int numToProject;      /* Number of vectors with potential accuracy problem*/
    double attainableTol;  /* Used in locking to check near convergence problem*/
 
+    /*lingfei: dynamical tolerance adjusting for primme_svds_ATA*/
+    if (primme->DefineConvCriteria){
+        if (fabs(primme->currentEstimates.targetRitzVal) > 0.0L && 
+            (primme->target == 1 ||(primme->target == 0 && 
+            fabs(primme->currentEstimates.targetRitzVal) < 1.0))){
+            /*use both lambdaMin and lambdaMax to adjust user's tolerance. 
+            The recommended attainableTol is 1e-15 since lower attainableTol 
+            is possible to cause PRIMME stagnation due to float point error.*/
+            tol = tol*sqrt(fabs(primme->currentEstimates.targetRitzVal/
+                                            primme->currentEstimates.Anormest));
+            tol = Num_fmax_primme(2,tol,1e-15);
+            /*If aNorm is smaller than 1, make sure Res < 
+              primme.eps*primme.aNorm, which is set no lower 
+              than read_attainableTol. */
+            tol = Num_fmax_primme(2,tol,1e-15/fabs(primme->currentEstimates.Anormest));
+        }
+        else {
+            /*use only lambdaMax to adjust user's tolerance* since
+            lambdaMin is not accurate until now. If aNorm is smaller
+            than 1, don't use it to adjust user's tolerance.*/  
+            if (fabs(primme->currentEstimates.Anormest) >= 1)
+                tol = 2*tol/sqrt(fabs(primme->currentEstimates.Anormest));
+            else
+                tol = 2*tol;
+            tol = Num_fmax_primme(2,tol,1e-15);
+            tol = Num_fmax_primme(2,tol,1e-15/fabs(primme->currentEstimates.Anormest));
+        }
+        printf("Matvecs: %d, SVEst: %e,AnormEst: %e, AdjustedATATol: %e\n",
+            primme->stats.numMatvecs,primme->currentEstimates.targetRitzVal,
+            primme->currentEstimates.Anormest,tol);
+    }
+
    /* -------------------------------------------- */
    /* Tolerance based on our dynamic norm estimate */
    /* -------------------------------------------- */

@@ -36,6 +36,9 @@ int Num_zhpev_zprimme(int iopt, @(type) *ap, double *w, @(type) *z, int ldz,
    int n, @(type) *aux, double *rwork, int naux);
 void Num_zheev_zprimme(char *jobz, char *uplo, int n, @(type) *a, int lda, 
    double *w, @(type) *work, int ldwork, double *rwork, int *info);
+void Num_zgesvd_zprimme(char *jobu, char *jobvt, int m, int n, @(type) *a, int lda,
+    double *s, @(type) *u, int ldu, @(type) *vt, int ldvt, @(type) *work,
+    int ldwork, double *rwork, int *info);
 void Num_zhetrf_zprimme(char *uplo, int n, @(type) *a, int lda, int *ipivot,
    @(type) *work, int ldwork, int *info);
 void Num_zhetrs_zprimme(char *uplo, int n, int nrhs, @(type) *a, int lda, 
@@ -47,6 +50,9 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
    int n, double *aux, int naux);
 void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info);
+void Num_dgesvd_dprimme(char *jobu, char *jobvt, int m, int n, double *a, int lda,
+    double *s, double *u, int ldu, double *vt, int ldvt, double *work,
+    int ldwork, int *info);
 void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info);
 void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
@@ -61,6 +67,9 @@ void Num_gemm_@(pre)primme(char *transa, char *transb, int m, int n, int k,
 void Num_symm_@(pre)primme(char *side, char *uplo, int m, int n, @(type) alpha, 
    @(type) *a, int lda, @(type) *b, int ldb, @(type) beta, 
    @(type) *c, int ldc);
+void Num_symv_@(pre)primme(char *uplo, int n, @(type) alpha, 
+   @(type) *a, int lda, @(type) *x, int lncx, @(type) beta, 
+   @(type) *y, int lncy); 
 void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx, 
    @(type) *y, int incy);
 void Num_gemv_@(pre)primme(char *transa, int m, int n, @(type) alpha, @(type) *a,

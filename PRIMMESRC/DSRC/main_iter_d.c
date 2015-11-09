@@ -124,7 +124,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme) {
          
-   int i;                   /* Loop variable                                 */
+   int i,j;                 /* Loop variable                                 */
    int blockSize;           /* Current block size                            */
    int AvailableBlockSize;  /* There is enough space in basis for this block */
    int ievMax;              /* Index of next eigenvalue to be approximated   */
@@ -155,7 +155,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    int *iev;                /* Evalue index each block vector corresponds to */
    int ONE = 1;             /* To be passed by reference in matrixMatvec     */
 
-   double largestRitzValue; /* The largest modulus of any Ritz value computed*/
    double tol;              /* Required tolerance for residual norms         */
    double maxConvTol;       /* Max locked residual norm (see convergence.c)  */
    double *V;               /* Basis vectors                               */
@@ -170,6 +169,13 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    double *hVecs;          /* Eigenvectors of H                             */
    double *previousHVecs;   /* Coefficient vectors retained by            */
                             /* recurrence-based restarting                   */
+
+   /* lingfei: primme_svds. if the harmonic or refined projection is used */
+   double *WTW;             /* Upper triangular portion of W'*W            */ 
+   double *wtwChol;         /* Copy of WTW for sloving generalized eigenproblem */
+   double *Q;               /* (A-RefShifts(1)I)*V = W-RefShifts(1)*V = QR */
+   double *R;               /* (A-RefShifts(1)I)*V = W-RefShifts(1)*V = QR */                            
+
    double *hVals;           /* Eigenvalues of H                              */
    double *prevRitzVals;    /* Eigenvalues of H at previous outer iteration  */
                             /* by robust shifting algorithm in correction.c  */
@@ -195,6 +201,32 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    H             = W + primme->nLocal*primme->maxBasisSize;
    hVecs         = H + primme->maxBasisSize*primme->maxBasisSize;
    previousHVecs = hVecs + primme->maxBasisSize*primme->maxBasisSize;
+
+   /*lingfei:primme_svds. if the harmonic or refined projection is used */
+   if(primme->projectionParams.projection == primme_RR) {
+       WTW       = NULL;
+       wtwChol   = NULL;
+       Q         = NULL;
+       R         = NULL;
+   }
+   else if (primme->projectionParams.projection == primme_RR_Refined &&
+           (primme->projectionParams.refinedScheme == primme_OneAccuShift_QR ||
+            primme->projectionParams.refinedScheme == primme_MultiShifts_QR ||
+            primme->projectionParams.refinedScheme == primme_OneShift_QR)){
+       WTW       = NULL;
+       wtwChol   = NULL;
+       Q         = previousHVecs + primme->restartingParams.maxPrevRetain
+                        *primme->maxBasisSize;
+       R         = Q + primme->nLocal*primme->maxBasisSize;
+   }
+   else {
+       WTW       = previousHVecs + primme->restartingParams.maxPrevRetain
+                        *primme->maxBasisSize;
+       wtwChol   = WTW + primme->maxBasisSize*primme->maxBasisSize;
+       Q         = NULL;
+       R         = NULL;
+   }
+
    if (! (primme->correctionParams.precondition && 
           primme->correctionParams.maxInnerIterations != 0 &&
           primme->correctionParams.projectors.RightQ &&
@@ -202,12 +234,30 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
       evecsHat   = NULL;
       M          = NULL;
       UDU        = NULL;
-      rwork      = previousHVecs + primme->restartingParams.maxPrevRetain*
+      /*lingfei:primme_svds. if the harmonic or refined projection is used */
+      if (primme->projectionParams.projection && WTW != NULL && wtwChol != NULL){
+          rwork  = wtwChol + primme->maxBasisSize*primme->maxBasisSize;
+      }
+      else if (primme->projectionParams.projection && Q != NULL && R != NULL){
+          rwork  = R + primme->maxBasisSize*primme->maxBasisSize;
+      }
+      else {
+          rwork  = previousHVecs + primme->restartingParams.maxPrevRetain*
                            primme->maxBasisSize;
+      }
    }
    else {
-      evecsHat   = previousHVecs + primme->restartingParams.maxPrevRetain*
+       /*lingfei:primme_svds. if the harmonic or refined projection is used */
+      if (primme->projectionParams.projection && WTW != NULL && wtwChol != NULL){
+          evecsHat  = wtwChol + primme->maxBasisSize*primme->maxBasisSize;
+      }
+      else if (primme->projectionParams.projection && Q != NULL && R != NULL){
+          evecsHat  = R + primme->maxBasisSize*primme->maxBasisSize;
+      }
+      else {
+          evecsHat   = previousHVecs + primme->restartingParams.maxPrevRetain*
                            primme->maxBasisSize;
+      }
       M          = evecsHat + primme->nLocal*maxEvecsSize;
       UDU        = M + maxEvecsSize*maxEvecsSize; 
       rwork      = UDU + maxEvecsSize*maxEvecsSize; 
@@ -253,12 +303,21 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    /* Set the tolerance for the residual norms */
    /* ---------------------------------------- */
 
-   largestRitzValue = 0.0L;
+   /*lingfei: if call primme_svds_ATA, force primme->aNorm 0 
+     and keep tracking target and largest Ritz value for 
+     dynamical tolerance adjusting*/
+   printf("primme->DefineConvCriteria = %d\n",primme->DefineConvCriteria);
+   printf("primme->target = %d\n",primme->target);
+   if (primme->DefineConvCriteria && primme->aNorm > 0.0L){
+       primme->currentEstimates.Anormest = primme->aNorm;/*user provides the norm of matrix A*/
+       primme->aNorm = 0.0L;//reset primme->aNorm if calling ATA
+   }
+
    if (primme->aNorm > 0.0L) {
       tol = primme->eps*primme->aNorm;
    }
    else {
-      tol = primme->eps; /* tol*largestRitzValue will be checked */
+      tol = primme->eps; /* tol*primme->currentEstimates.Anormest will be checked */
    }
    maxConvTol = tol;
 
@@ -280,16 +339,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    /* -------------------- */
    /* Initialize the basis */
    /* -------------------- */
-/*
-	for (i=0;i<primme->maxBasisSize-1;i++) {
-	tstart = primme_wTimer(0);
-            update_projection_dprimme(V, W, H, i, 
-               primme->maxBasisSize, 1, hVecs, primme);
-	tstart = primme_wTimer(0)-tstart;
-	printf("basisSize %3d time %g\n",i,tstart);
-     	}
-	return(-1);
-*/
 
    ret = init_basis_dprimme(V, W, evecs, evecsHat, M, UDU, ipivot, machEps,
            rwork, rworkSize, &basisSize, &nextGuess, &numGuesses, &timeForMV,
@@ -333,8 +382,18 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    
       update_projection_dprimme(V, W, H, 0,primme->maxBasisSize,basisSize,
          hVecs,primme);
-      ret = solve_H_dprimme(H, hVecs, hVals, basisSize, primme->maxBasisSize,
-         &largestRitzValue, numLocked, rworkSize, rwork, iwork, primme);
+
+      /*lingfei:primme_svds. reset primme->qr_need = 1 to switch to full qr factorization model */
+      if (primme->qr_need == 0 && Q!= NULL && R!= NULL)
+          primme->qr_need = 1;
+      else if (Q == NULL && R == NULL) /*turn off qr_need if disable qr */
+          primme->qr_need = 0;
+
+      /*lingfei:primme_svds. if the RayRitz or Harmomic or Refined projections are used */
+      ret = solve_H_dprimme(H, hVecs, Q, R, hVals, basisSize, primme->maxBasisSize,
+         &primme->currentEstimates.Anormest, numLocked, machEps, rworkSize, rwork, iwork, primme, V, W, 0);
+      
+      primme->currentEstimates.targetRitzVal = hVals[0];
 
       if (ret != 0) {
          primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret, 
@@ -375,7 +434,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             recentlyConverged = check_convergence_dprimme(V, W, hVecs, 
                hVals, flag, basisSize, iev, &ievMax, blockNorms, &blockSize, 
                numConverged, numLocked, evecs, tol, maxConvTol, 
-               largestRitzValue, rwork, primme);
+               primme->currentEstimates.Anormest, rwork, primme);
 
             /* If the total number of converged pairs, including the     */
             /* recentlyConverged ones, are greater than or equal to the  */
@@ -428,7 +487,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                   {
                      ret = update_statistics(&CostModel, primme, tstart, 
                         recentlyConverged, 0, numConverged, blockNorms[0], 
-                        largestRitzValue); 
+                        primme->currentEstimates.Anormest); 
 
                      if (ret) switch (primme->dynamicMethodSwitch) {
                         /* for few evals (dyn=1) evaluate GD+k only at restart*/
@@ -442,7 +501,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                ret = solve_correction_dprimme(V, W, evecs, evecsHat, UDU, 
                  ipivot, evals, numLocked, numConvergedStored, hVals, 
                  prevRitzVals, &numPrevRitzVals, flag, basisSize, blockNorms, 
-                 iev, blockSize, tol, machEps, largestRitzValue, rwork, iwork, 
+                 iev, blockSize, tol, machEps, primme->currentEstimates.Anormest, rwork, iwork, 
                  rworkSize, primme);
 
                if (ret != 0) {
@@ -461,8 +520,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
 
             /* Orthogonalize the corrections with respect to each other */
             /* and the current basis.                                   */
-
-            ret = ortho_dprimme(V, primme->nLocal, basisSize, 
+            /* lingfei: primme_svds. change ortho function for returning Q and R*/
+            ret = ortho_dprimme(V, NULL, primme->nLocal, basisSize, 
                basisSize+blockSize-1, evecs, primme->nLocal, 
                primme->numOrthoConst+numLocked, primme->nLocal, primme->iseed, 
                machEps, rwork, rworkSize,primme);
@@ -485,9 +544,11 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             update_projection_dprimme(V, W, H, basisSize, 
                primme->maxBasisSize, blockSize, hVecs, primme);
             basisSize = basisSize + blockSize;
-            ret = solve_H_dprimme(H, hVecs, hVals, basisSize, 
-               primme->maxBasisSize, &largestRitzValue, numLocked, rworkSize, 
-               rwork, iwork, primme);
+            /*lingfei:primme_svds. if the RayRitz or Harmomic or Refined projections are used */
+            ret = solve_H_dprimme(H, hVecs, Q, R, hVals, basisSize, primme->maxBasisSize,
+            &primme->currentEstimates.Anormest, numLocked, machEps, rworkSize, rwork, iwork, primme, V, W, 0);
+
+            primme->currentEstimates.targetRitzVal = hVals[0];
 
             if (ret != 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret,
@@ -499,9 +560,18 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst-numLocked)
             * --------------------------------------------------------------- */
 
+        /* lingfei: primme_svds. reset primme->qr_need = 1 to switch 
+        to full qr factorization model */
+        if (primme->qr_need == 0 && Q!= NULL && R!= NULL) 
+            primme->qr_need = 1;
+
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
+         if(basisSize < primme->maxBasisSize) {
+             printf("before restart - basisSize = %d\n",basisSize);
+             printf("before restart - numPrevRetained = %d\n",numPrevRetained);
+         }
 
          basisSize = restart_dprimme(V, W, H, hVecs, hVals, flag, iev, 
             evecs, evecsHat, M, UDU, ipivot, basisSize, numConverged, 
@@ -520,12 +590,14 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* ----------------------------------------------------------- */
 
          if (primme->locking) {
-            ret = lock_vectors_dprimme(tol, &largestRitzValue, &maxConvTol,
-               &basisSize, &numLocked, &numGuesses, &nextGuess, V, W, H, 
+            ret = lock_vectors_dprimme(tol, &primme->currentEstimates.Anormest, &maxConvTol,
+               &basisSize, &numLocked, &numGuesses, &nextGuess, V, W, H, Q, R, 
                evecsHat, M, UDU, ipivot, hVals, hVecs, evecs, evals, perm, 
                machEps, resNorms, &numPrevRitzVals, prevRitzVals, flag, 
                rwork, rworkSize, iwork, &LockingProblem, primme);
             numConverged = primme->initSize = numLocked;
+      
+            primme->currentEstimates.targetRitzVal = hVals[0];
 
             if (ret < 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_lock_vectors,
@@ -537,7 +609,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          else {
             /* reset_flags_dprimme(flag, primme->numEvals, primme->maxBasisSize-1);*/
             check_reset_flags_dprimme(flag, &numConverged, hVals, 
-               prevRitzVals, numPrevRitzVals, tol, largestRitzValue, primme);
+               prevRitzVals, numPrevRitzVals, tol, primme->currentEstimates.Anormest, primme);
          }
 
          primme->stats.numRestarts++;
@@ -550,7 +622,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          if (primme->dynamicMethodSwitch == 1 ) {
             tstart = primme_wTimer(0);
             ret = update_statistics(&CostModel, primme, tstart, 0, 1,
-               numConverged, blockNorms[0], largestRitzValue); 
+               numConverged, blockNorms[0], primme->currentEstimates.Anormest); 
             switch_from_GDpk(&CostModel, primme);
          } /* ---------------------------------------------------------- */
 
@@ -585,7 +657,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* then return success, else return with a failure.     */
  
          if (numConverged == primme->numEvals) {
-            if (primme->aNorm <= 0.0L) primme->aNorm = largestRitzValue;
+            if (primme->aNorm <= 0.0L) primme->aNorm = primme->currentEstimates.Anormest;
             return 0;
          }
          else {
@@ -600,6 +672,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          restartLimitReached = primme->maxMatvecs > 0 && 
                                primme->stats.numMatvecs >= primme->maxMatvecs;
 
+
          /* ---------------------------------------------------------- */
          /* The norms of the converged Ritz vectors must be recomputed */
          /* before return.  This is because the restarting may cause   */
@@ -610,7 +683,22 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* ---------------------------------------------------------- */
 
          converged = verify_norms(V, W, hVecs, hVals, basisSize, resNorms, 
-            flag, tol, largestRitzValue, rwork, &numConverged, primme);
+            flag, tol, primme->currentEstimates.Anormest, rwork, &numConverged, primme);
+
+         /*lingfei: primme_svds. if PRIMME MEX is using ATA method 
+         to seek smallest eigenvalues, when second stage has to be 
+         used to refine the accuracy, force another RR to improve
+         quality of eigenvectors in ATA; othersie, there is no
+         need to perform another RR. */
+         if(primme->ForceVerificationOnExit == 1 &&
+             primme->target == primme_smallest && (primme->eps*
+             sqrt(fabs(primme->currentEstimates.targetRitzVal/
+              primme->currentEstimates.Anormest)) <= 1e-15)){
+             fprintf(primme->outputFile, 
+                "Force verification before return to improve the quality of Ritz pairs\n");
+             converged = 0;
+             primme->ForceVerificationOnExit = 2;// callSvdsATA only triggers RR once
+         }
 
          /* ---------------------------------------------------------- */
          /* If the convergence limit is reached or the target vectors  */
@@ -645,7 +733,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             }
 
             if (converged) {
-               if (primme->aNorm <= 0.0L) primme->aNorm = largestRitzValue;
+               if (primme->aNorm <= 0.0L) primme->aNorm = primme->currentEstimates.Anormest;
                return 0;
             }
             else {
@@ -658,8 +746,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             /* Reorthogonalize the basis, recompute W=AV, and continue the  */
             /* outer while loop, resolving the epairs. Slow, but robust!    */
             /* ------------------------------------------------------------ */
-
-            ret = ortho_dprimme(V, primme->nLocal,0, basisSize-1, evecs, 
+            /*lingfei: if harmonic or refined projection are used*/
+            ret = ortho_dprimme(V, NULL, primme->nLocal,0, basisSize-1, evecs, 
                primme->nLocal, primme->numOrthoConst+numLocked, primme->nLocal,
                primme->iseed, machEps, rwork, rworkSize, primme);
             if (ret < 0) {
@@ -689,7 +777,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    } /* while (!converged)  Outer verification loop
       * -------------------------------------------------------------- */
 
-   if (primme->aNorm <= 0.0L) primme->aNorm = largestRitzValue;
+   if (primme->aNorm <= 0.0L) primme->aNorm = primme->currentEstimates.Anormest;
 
    return 0;
 
@@ -872,7 +960,7 @@ void check_reset_flags_dprimme(int *flag, int *numConverged,
    for (i=0;i<primme->numEvals;i++) {
       if (i >= numPrevRitzVals) break;
       if ((flag[i] == CONVERGED) && (fabs(hVals[i]-prevRitzVals[i]) > tol)) {
-         *numConverged--;
+         (*numConverged)--;
          flag[i] = UNCONVERGED;
       }
    }

@@ -30,9 +30,10 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_@(pre)primme(@(type) *H, @(type) *hVecs, double *hVals, 
-   int basisSize, int maxBasisSize, double *largestEval, int numLocked,
-   int lrwork, @(type) *rwork, int *perm, primme_params *primme);
+int solve_H_@(pre)primme(@(type) *H, @(type) *hVecs, @(type) *Q, @(type) *R, double *hVals, 
+   int basisSize, int maxBasisSize, double *largestEval, int numLocked, double machEps,
+   int lrwork, @(type) *rwork, int *perm, primme_params *primme, 
+   @(type) *V, @(type) *W, int recentlyConverged);
 
 #ifdefarithm L_DEFCPLX
 void permute_evecs_zprimme(double *evecs, int elemSize, int *perm, 

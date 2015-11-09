@@ -35,6 +35,9 @@
 #else
 #define NUM_DSYEV_FAILURE -1
 #endif
+#define ORTHO_FAILURE       -2
+#define NUM_DGESVD_FAILURE  -3
+#define NUM_ZGESVD_FAILURE  -4
 
 #endif
 

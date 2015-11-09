@@ -72,6 +72,15 @@ void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha,
 }
 
 /******************************************************************************/
+void Num_symv_dprimme(char *uplo, int n, double alpha, 
+   double *a, int lda, double *x, int lncx, double beta, 
+   double *y, int lncy) {
+
+   DSYMV(uplo, &n, &alpha, a, &lda, x, &lncx, &beta, y, &lncy);
+
+}
+
+/******************************************************************************/
 void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
    double *y, int incy) {
 
@@ -159,6 +168,18 @@ void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda,
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 #endif
+
+
+/******************************************************************************/
+void Num_dgesvd_dprimme(char *jobu, char *jobvt, int m, int n, double *a,
+    int lda, double *s, double *u, int ldu, double *vt, int ldvt,
+    double *work, int ldwork, int *info){
+
+    DGESVD(jobu, jobvt, &m, &n, a, &lda, s, u, &ldu, vt, &ldvt, work,
+        &ldwork, info);
+
+}
+
 
 /******************************************************************************/
 void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 

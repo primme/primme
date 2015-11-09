@@ -294,6 +294,26 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                                                    /* size of prevHVecs    */
 
    /*----------------------------------------------------------------------*/
+   /* lingfei: primme_svds. Add memory for Harmonic or Refined projection  */
+   /*----------------------------------------------------------------------*/
+   if (primme->projectionParams.projection) {
+        if (primme->projectionParams.projection == primme_RR_Refined && 
+            (primme->projectionParams.refinedScheme == primme_OneAccuShift_QR || 
+            primme->projectionParams.refinedScheme == primme_MultiShifts_QR ||
+            primme->projectionParams.refinedScheme == primme_OneShift_QR)){
+            dataSize = dataSize 
+            + primme->nLocal*primme->maxBasisSize              /* Size of Q */
+            + primme->maxBasisSize*primme->maxBasisSize;       /* Size of R */
+        }
+        else{
+            dataSize = dataSize 
+            + primme->maxBasisSize*primme->maxBasisSize /* Size of WTW     */
+            + primme->maxBasisSize*primme->maxBasisSize;/* Size of wtwChol */
+        }
+   }
+
+
+   /*----------------------------------------------------------------------*/
    /* Add also memory needed for JD skew projectors                        */
    /*----------------------------------------------------------------------*/
    if ( (primme->correctionParams.precondition && 
@@ -311,13 +331,14 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* Determine orthogalization workspace with and without locking.        */
    /*----------------------------------------------------------------------*/
 
+   /*lingfei: primme_svds. Change ortho function to return Q and R */
    if (primme->locking) {
-      orthoSize = ortho_@(pre)primme(NULL, primme->nLocal, primme->maxBasisSize,
+      orthoSize = ortho_@(pre)primme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
          maxEvecsSize, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
    else {
-      orthoSize = ortho_@(pre)primme(NULL, primme->nLocal, primme->maxBasisSize,
+      orthoSize = ortho_@(pre)primme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
          primme->numOrthoConst+1, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
@@ -358,6 +379,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       /* Workspace needed by function restart*/
       primme->restartingParams.maxPrevRetain*
       primme->restartingParams.maxPrevRetain  /* for submatrix of prev hvecs */
+      + primme->maxBasisSize* 
+        primme->maxBasisSize /*lingfei: if harmonic projection for holding harmonic ritz vectors flagged CONVERGED or refined projection for computing yTHy */
       + Num_imax_primme(4, primme->maxBasisSize, 
 #ifdefarithm L_DEFCPLX
            5*primme->restartingParams.maxPrevRetain,
