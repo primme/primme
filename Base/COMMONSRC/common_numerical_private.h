@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,6 +19,7 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: common_numerical_private.h
  *
  * Purpose - Contains definitions and prototypes for exclusive use with 
@@ -26,53 +28,55 @@
  *
  ******************************************************************************/
 
-#if !defined(NUM_SUN) && !defined(NUM_IBM) && !defined(NUM_CRAY)
-#define NUM_SUN
+#ifndef COMMON_NUMERICAL_PRIVATE_H
+#define COMMON_NUMERICAL_PRIVATE_H
+
+#include "common_numerical.h"
+
+#ifdef F77UNDERSCORE
+#define FORTRAN_FUNCTION(X) X ## _
+#else
+#define FORTRAN_FUNCTION(X) X
 #endif
 
-#ifdef NUM_SUN
+#ifndef NUM_CRAY
 
-#define DCOPY  dcopy_
-#define DLAMCH dlamch_
-
-#elif defined(NUM_IBM)
-
-#define DCOPY  dcopy
-#define DLAMCH dlamch
+#define DCOPY  FORTRAN_FUNCTION(dcopy)
+#define DLAMCH FORTRAN_FUNCTION(dlamch)
 
 #ifdef NUM_ESSL
 #include <essl.h>
 #endif
 
-#elif defined(NUM_CRAY)
+#else /* NUM_CRAY */
+
 #include <fortran.h>
 #include <string.h>
 
 #define DCOPY  SCOPY
 #define DLAMCH SLAMCH
 
-#endif
+#endif /* NUM_CRAY */
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C"
 {
-#endif /* Cplusplus */
+#endif /* __cplusplus */
 
 #ifndef NUM_CRAY
 
-void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
-double DLAMCH(char *cmach);
-
-#ifdef NUM_ESSL
-#endif
+void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
+double DLAMCH(const char *cmach);
 
 #else
 
-void DCOPY(int *n, double *x, int *incx, double *y, int *incy);
+void DCOPY(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 double DLAMCH(_fcd cmach_fcd);
 
 #endif
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
-#endif /* Cplusplus */
+#endif /* __cplusplus */
+
+#endif /* COMMON_NUMERICAL_PRIVATE_H */

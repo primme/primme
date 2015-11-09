@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,19 +19,24 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: primme.h
  * 
- * Purpose - To be included in user applications that wish to call primme.
+ * Purpose - Main header with the PRIMME C interface functions.
  * 
  ******************************************************************************/
 
 #ifndef PRIMME_H
 #define PRIMME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <limits.h>
-#include "Complex.h"
+#include "Complexz.h"
 
 #define PRIMME_MAX_NAME_LENGTH 128
 
@@ -106,7 +112,7 @@ typedef enum {
    primme_full_LTolerance,
    primme_decreasing_LTolerance,
    primme_adaptive_ETolerance,
-   primme_adaptive,
+   primme_adaptive
 } primme_convergencetest;
 
 
@@ -282,5 +288,10 @@ void primme_PushErrorMessage(const primme_function callingFunction,
      const char *fileName, const int lineNumber, primme_params *primme);
 void primme_PrintStackTrace(const primme_params primme);
 void primme_DeleteStackTrace(primme_params *primme);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* PRIMME_H */

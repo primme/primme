@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: solve_H.c
  * 
- * Purpose - Solves the eigenproblem for the matrix V'*A*V
+ * Purpose - Solves the eigenproblem for the matrix V'*A*V.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <math.h>
@@ -77,7 +76,6 @@ int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, Complex_Z *Q, Complex_Z *R, 
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
    int ret;
    Complex_Z RefShift;
-   double theta, theta2, thetaSq;
 
    double  *doubleWork;
 

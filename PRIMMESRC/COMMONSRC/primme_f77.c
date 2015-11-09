@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,11 +19,16 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * --------------------------------------------------------------------------
- */
+ *******************************************************************************
+ * File: primme_f77.c
+ *
+ * Purpose - Implementation of PRIMME F77 interface functions.
+ *
+ ******************************************************************************/
+
 #include "primme.h"
 #include "primme_f77_private.h"
-#ifdef Cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -207,172 +213,167 @@ void primme_display_stats_f77(primme_params **primme)
  *
  *************************************************************************/
 #ifdef F77UNDERSCORE
-void primme_set_member_f77_(primme_params **primme, int *label, void *ptr){
+void primme_set_member_f77_(primme_params **primme, int *label, union f77_value v){
 #else
-void primme_set_member_f77(primme_params **primme, int *label, void *ptr){
+void primme_set_member_f77(primme_params **primme, int *label, union f77_value v){
 #endif
    int i;
 
    switch (*label) {
       case PRIMMEF77_n:
-              (*primme)->n = *(int*) ptr;
+              (*primme)->n = *v.int_v;
       break;
       case PRIMMEF77_matrixMatvec:
-              (*primme)->matrixMatvec = (void (*)
-                (void *,void *,int *,struct primme_params *) ) ptr;
+              (*primme)->matrixMatvec = v.matFunc_v;
       break;
       case PRIMMEF77_massMatrixMatvec:
-              (*primme)->massMatrixMatvec = (void (*)
-                (void *,void *,int *,struct primme_params *) ) ptr;
+              (*primme)->massMatrixMatvec = v.matFunc_v;
       break;
       case PRIMMEF77_applyPreconditioner:
-              (*primme)->applyPreconditioner = (void (*)
-                (void *,void *,int *,struct primme_params *) ) ptr;
+              (*primme)->applyPreconditioner = v.matFunc_v;
       break;
       case PRIMMEF77_numProcs:
-              (*primme)->numProcs = *(int*) ptr;
+              (*primme)->numProcs = *v.int_v;
       break;
       case PRIMMEF77_procID:
-              (*primme)->procID = *(int*) ptr;
+              (*primme)->procID = *v.int_v;
       break;
       case PRIMMEF77_commInfo:
-              (*primme)->commInfo =  ptr;
+              (*primme)->commInfo = v.ptr_v;
       break;
       case PRIMMEF77_nLocal:
-              (*primme)->nLocal = *(int*) ptr;
+              (*primme)->nLocal = *v.int_v;
       break;
       case PRIMMEF77_globalSumDouble:
-              (*primme)->globalSumDouble = (void (*)
-                (void *,void *,int *,struct primme_params *) ) ptr;
+              (*primme)->globalSumDouble = v.globalSumDoubleFunc_v;
       break;
       case PRIMMEF77_numEvals:
-              (*primme)->numEvals = *(int*) ptr;
+              (*primme)->numEvals = *v.int_v;
       break;
       case PRIMMEF77_target:
-              (*primme)->target = *(primme_target*) ptr;
+              (*primme)->target = *v.target_v;
       break;
       case PRIMMEF77_numTargetShifts:
-              (*primme)->numTargetShifts = *(int*) ptr;
+              (*primme)->numTargetShifts = *v.int_v;
       break;
       case PRIMMEF77_targetShifts:
-              (*primme)->targetShifts = (double*) ptr;
+              (*primme)->targetShifts = v.double_v;
       break;
       case PRIMMEF77_locking:
-              (*primme)->locking = *(int*) ptr;
+              (*primme)->locking = *v.int_v;
       break;
       case PRIMMEF77_initSize:
-              (*primme)->initSize = *(int*) ptr;
+              (*primme)->initSize = *v.int_v;
       break;
       case PRIMMEF77_numOrthoConst:
-              (*primme)->numOrthoConst = *(int*) ptr;
+              (*primme)->numOrthoConst = *v.int_v;
       break;
       case PRIMMEF77_dynamicMethodSwitch:
-              (*primme)->dynamicMethodSwitch = *(int*) ptr;
+              (*primme)->dynamicMethodSwitch = *v.int_v;
       break;
       case PRIMMEF77_maxBasisSize:
-              (*primme)->maxBasisSize = *(int*) ptr;
+              (*primme)->maxBasisSize = *v.int_v;
       break;
       case PRIMMEF77_minRestartSize:
-              (*primme)->minRestartSize = *(int*) ptr;
+              (*primme)->minRestartSize = *v.int_v;
       break;
       case PRIMMEF77_maxBlockSize:
-              (*primme)->maxBlockSize = *(int*) ptr;
+              (*primme)->maxBlockSize = *v.int_v;
       break;
       case PRIMMEF77_maxMatvecs:
-              (*primme)->maxMatvecs = *(int*) ptr;
+              (*primme)->maxMatvecs = *v.int_v;
       break;
       case PRIMMEF77_maxOuterIterations:
-              (*primme)->maxOuterIterations = *(int*) ptr;
+              (*primme)->maxOuterIterations = *v.int_v;
       break;
       case PRIMMEF77_intWorkSize:
-              (*primme)->intWorkSize = *(int*) ptr;
+              (*primme)->intWorkSize = *v.int_v;
       break;
       case PRIMMEF77_realWorkSize:
-              (*primme)->realWorkSize = *(long int*) ptr;
+              (*primme)->realWorkSize = *v.long_int_v;
       break;
       case PRIMMEF77_iseed:
          for (i=0; i< 4; i++) {
-            (*primme)->iseed[i] = ((int *) ptr)[i];
+            (*primme)->iseed[i] = v.int_v[i];
          }
       break;
       case PRIMMEF77_intWork:
-              (*primme)->intWork = (int*) ptr;
+              (*primme)->intWork = v.int_v;
       break;
       case PRIMMEF77_realWork:
-              (*primme)->realWork = (void*) ptr;
+              (*primme)->realWork = v.ptr_v;
       break;
       case PRIMMEF77_aNorm:
-              (*primme)->aNorm = *(double*) ptr;
+              (*primme)->aNorm = *v.double_v;
       break;
       case PRIMMEF77_eps:
-              (*primme)->eps = *(double*) ptr;
+              (*primme)->eps = *v.double_v;
       break;
       case PRIMMEF77_printLevel:
-              (*primme)->printLevel = *(int*) ptr;
+              (*primme)->printLevel = *v.int_v;
       break;
       case PRIMMEF77_outputFile:
-              (*primme)->outputFile = (FILE*) ptr;
+              (*primme)->outputFile = v.file_v;
       break;
       case PRIMMEF77_matrix:
-              (*primme)->matrix = ptr;
+              (*primme)->matrix = v.ptr_v;
       break;
       case PRIMMEF77_preconditioner:
-              (*primme)->preconditioner = ptr;
+              (*primme)->preconditioner = v.ptr_v;
       break;
       case PRIMMEF77_restartingParams_scheme:
-              (*primme)->restartingParams.scheme = *(primme_restartscheme*) ptr;
+              (*primme)->restartingParams.scheme = *v.restartscheme_v;
       break;
       case PRIMMEF77_restartingParams_maxPrevRetain:
-              (*primme)->restartingParams.maxPrevRetain = *(int*) ptr;
+              (*primme)->restartingParams.maxPrevRetain = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_precondition:
-              (*primme)->correctionParams.precondition = *(int*) ptr;
+              (*primme)->correctionParams.precondition = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_robustShifts:
-              (*primme)->correctionParams.robustShifts = *(int*) ptr;
+              (*primme)->correctionParams.robustShifts = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_maxInnerIterations:
-              (*primme)->correctionParams.maxInnerIterations = *(int*) ptr;
+              (*primme)->correctionParams.maxInnerIterations = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_LeftQ:
-              (*primme)->correctionParams.projectors.LeftQ = *(int*) ptr;
+              (*primme)->correctionParams.projectors.LeftQ = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_LeftX:
-              (*primme)->correctionParams.projectors.LeftX = *(int*) ptr;
+              (*primme)->correctionParams.projectors.LeftX = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_RightQ:
-              (*primme)->correctionParams.projectors.RightQ = *(int*) ptr;
+              (*primme)->correctionParams.projectors.RightQ = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_RightX:
-              (*primme)->correctionParams.projectors.RightX = *(int*) ptr;
+              (*primme)->correctionParams.projectors.RightX = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_SkewQ:
-              (*primme)->correctionParams.projectors.SkewQ = *(int*) ptr;
+              (*primme)->correctionParams.projectors.SkewQ = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_SkewX:
-              (*primme)->correctionParams.projectors.SkewX = *(int*) ptr;
+              (*primme)->correctionParams.projectors.SkewX = *v.int_v;
       break;
       case PRIMMEF77_correctionParams_convTest:
-              (*primme)->correctionParams.convTest = 
-                                        *(primme_convergencetest*) ptr;
+              (*primme)->correctionParams.convTest = *v.convergencetest_v;
       break;
       case PRIMMEF77_correctionParams_relTolBase:
-              (*primme)->correctionParams.relTolBase = *(double*) ptr;
+              (*primme)->correctionParams.relTolBase = *v.double_v;
       break;
       case PRIMMEF77_stats_numOuterIterations:
-              (*primme)->stats.numOuterIterations = *(int*) ptr;
+              (*primme)->stats.numOuterIterations = *v.int_v;
       break;
       case PRIMMEF77_stats_numRestarts:
-              (*primme)->stats.numRestarts = *(int*) ptr;
+              (*primme)->stats.numRestarts = *v.int_v;
       break;
       case PRIMMEF77_stats_numMatvecs:
-              (*primme)->stats.numMatvecs = *(int*) ptr;
+              (*primme)->stats.numMatvecs = *v.int_v;
       break;
       case PRIMMEF77_stats_numPreconds:
-              (*primme)->stats.numPreconds = *(int*) ptr;
+              (*primme)->stats.numPreconds = *v.int_v;
       break;
       case PRIMMEF77_stats_elapsedTime:
-              (*primme)->stats.elapsedTime = *(double*) ptr;
+              (*primme)->stats.elapsedTime = *v.double_v;
       break;
       default : 
       fprintf(stderr,"Requested member (%d) does not exist: consult primme_f77.h.",*label);
@@ -408,169 +409,169 @@ void primme_set_member_f77(primme_params **primme, int *label, void *ptr){
  *
  *************************************************************************/
 #ifdef F77UNDERSCORE
-void primme_get_member_f77_(primme_params *primme, int *label, void *ptr){
+void primme_get_member_f77_(primme_params *primme, int *label, union f77_value_ptr *v){
 #else
-void primme_get_member_f77(primme_params *primme, int *label, void *ptr){
+void primme_get_member_f77(primme_params *primme, int *label, union f77_value_ptr *v){
 #endif
    int i;
 
    switch (*label) {
       case PRIMMEF77_n:
-              *(int*) ptr = primme->n;
+              v->int_v = primme->n;
       break;
       case PRIMMEF77_matrixMatvec:
-              *(void **) ptr = (void *) primme->matrixMatvec;
+              v->matFunc_v = primme->matrixMatvec;
       break;
       case PRIMMEF77_massMatrixMatvec:
-              *(void **) ptr = (void *) primme->massMatrixMatvec;
+              v->matFunc_v = primme->massMatrixMatvec;
       break;
       case PRIMMEF77_applyPreconditioner:
-              *(void **) ptr = (void *) primme->applyPreconditioner;
+              v->matFunc_v = primme->applyPreconditioner;
       break;
       case PRIMMEF77_numProcs:
-              *(int*) ptr = primme->numProcs;
+              v->int_v = primme->numProcs;
       break;
       case PRIMMEF77_procID:
-              *(int*) ptr = primme->procID;
+              v->int_v = primme->procID;
       break;
       case PRIMMEF77_commInfo:
-              *(void **) ptr = primme->commInfo;
+              v->ptr_v = primme->commInfo;
       break;
       case PRIMMEF77_nLocal:
-              *(int*) ptr = primme->nLocal;
+              v->int_v = primme->nLocal;
       break;
       case PRIMMEF77_globalSumDouble:
-              *(void **) ptr = (void *) primme->globalSumDouble;
+              v->globalSumDoubleFunc_v = primme->globalSumDouble;
       break;
       case PRIMMEF77_numEvals:
-              *(int*) ptr = primme->numEvals;
+              v->int_v = primme->numEvals;
       break;
       case PRIMMEF77_target:
-              *(primme_target*) ptr = primme->target;
+              v->target_v = primme->target;
       break;
       case PRIMMEF77_numTargetShifts:
-              *(int*) ptr = primme->numTargetShifts;
+              v->int_v = primme->numTargetShifts;
       break;
       case PRIMMEF77_targetShifts:
          for (i=0; i< primme->numTargetShifts; i++) {
-             ((double*) ptr)[i] = primme->targetShifts[i];
+             (&v->double_v)[i] = primme->targetShifts[i];
          }
       break;
       case PRIMMEF77_locking:
-              *(int*) ptr = primme->locking;
+              v->int_v = primme->locking;
       break;
       case PRIMMEF77_initSize:
-              *(int*) ptr = primme->initSize;
+              v->int_v = primme->initSize;
       break;
       case PRIMMEF77_numOrthoConst:
-              *(int*) ptr = primme->numOrthoConst;
+              v->int_v = primme->numOrthoConst;
       break;
       case PRIMMEF77_dynamicMethodSwitch:
-              *(int*) ptr = primme->dynamicMethodSwitch;
+              v->int_v = primme->dynamicMethodSwitch;
       break;
       case PRIMMEF77_maxBasisSize:
-              *(int*) ptr = primme->maxBasisSize;
+              v->int_v = primme->maxBasisSize;
       break;
       case PRIMMEF77_minRestartSize:
-              *(int*) ptr = primme->minRestartSize;
+              v->int_v = primme->minRestartSize;
       break;
       case PRIMMEF77_maxBlockSize:
-              *(int*) ptr = primme->maxBlockSize;
+              v->int_v = primme->maxBlockSize;
       break;
       case PRIMMEF77_maxMatvecs:
-              *(int*) ptr = primme->maxMatvecs;
+              v->int_v = primme->maxMatvecs;
       break;
       case PRIMMEF77_maxOuterIterations:
-              *(int*) ptr = primme->maxOuterIterations;
+              v->int_v = primme->maxOuterIterations;
       break;
       case PRIMMEF77_intWorkSize:
-              *(int*) ptr = primme->intWorkSize;
+              v->int_v = primme->intWorkSize;
       break;
       case PRIMMEF77_realWorkSize:
-              *(long int*) ptr = primme->realWorkSize;
+              v->long_int_v = primme->realWorkSize;
       break;
       case PRIMMEF77_iseed:
          for (i=0; i< 4; i++) {
-            ((double*) ptr)[i] = primme->iseed[i];
+            (&v->int_v)[i] = primme->iseed[i];
          }
       break;
       case PRIMMEF77_intWork:
-              *(void **) ptr = (void *) primme->intWork;
+              v->ptr_v = primme->intWork;
       break;
       case PRIMMEF77_realWork:
-              *(void **) ptr = (void *) primme->realWork;
+              v->ptr_v = primme->realWork;
       break;
       case PRIMMEF77_aNorm:
-              *(double*) ptr = primme->aNorm;
+              v->double_v = primme->aNorm;
       break;
       case PRIMMEF77_eps:
-              *(double*) ptr = primme->eps;
+              v->double_v = primme->eps;
       break;
       case PRIMMEF77_printLevel:
-              *(int*) ptr = primme->printLevel;
+              v->int_v = primme->printLevel;
       break;
       case PRIMMEF77_outputFile:
-              *(void **) ptr = (void *) primme->outputFile;
+              v->file_v = primme->outputFile;
       break;
       case PRIMMEF77_matrix:
-              *(void **) ptr = primme->matrix;
+              v->ptr_v = primme->matrix;
       break;
       case PRIMMEF77_preconditioner:
-              *(void **) ptr = primme->preconditioner;
+              v->ptr_v = primme->preconditioner;
       break;
       case PRIMMEF77_restartingParams_scheme:
-              *(primme_restartscheme*) ptr = primme->restartingParams.scheme;
+              v->restartscheme_v = primme->restartingParams.scheme;
       break;
       case PRIMMEF77_restartingParams_maxPrevRetain:
-              *(int*) ptr = primme->restartingParams.maxPrevRetain;
+              v->int_v = primme->restartingParams.maxPrevRetain;
       break;
       case PRIMMEF77_correctionParams_precondition:
-              *(int*) ptr = primme->correctionParams.precondition;
+              v->int_v = primme->correctionParams.precondition;
       break;
       case PRIMMEF77_correctionParams_robustShifts:
-              *(int*) ptr = primme->correctionParams.robustShifts;
+              v->int_v = primme->correctionParams.robustShifts;
       break;
       case PRIMMEF77_correctionParams_maxInnerIterations:
-              *(int*) ptr = primme->correctionParams.maxInnerIterations;
+              v->int_v = primme->correctionParams.maxInnerIterations;
       break;
       case PRIMMEF77_correctionParams_projectors_LeftQ:
-              *(int*) ptr = primme->correctionParams.projectors.LeftQ;
+              v->int_v = primme->correctionParams.projectors.LeftQ;
       break;
       case PRIMMEF77_correctionParams_projectors_LeftX:
-              *(int*) ptr = primme->correctionParams.projectors.LeftX;
+              v->int_v = primme->correctionParams.projectors.LeftX;
       break;
       case PRIMMEF77_correctionParams_projectors_RightQ:
-              *(int*) ptr = primme->correctionParams.projectors.RightQ;
+              v->int_v = primme->correctionParams.projectors.RightQ;
       break;
       case PRIMMEF77_correctionParams_projectors_RightX:
-              *(int*) ptr = primme->correctionParams.projectors.RightX;
+              v->int_v = primme->correctionParams.projectors.RightX;
       break;
       case PRIMMEF77_correctionParams_projectors_SkewQ:
-              *(int*) ptr = primme->correctionParams.projectors.SkewQ;
+              v->int_v = primme->correctionParams.projectors.SkewQ;
       break;
       case PRIMMEF77_correctionParams_projectors_SkewX:
-              *(int*) ptr = primme->correctionParams.projectors.SkewX;
+              v->int_v = primme->correctionParams.projectors.SkewX;
       break;
       case PRIMMEF77_correctionParams_convTest:
-             *(primme_convergencetest*) ptr = primme->correctionParams.convTest;
+              v->convergencetest_v = primme->correctionParams.convTest;
       break;
       case PRIMMEF77_correctionParams_relTolBase:
-              *(double*) ptr = primme->correctionParams.relTolBase;
+              v->double_v = primme->correctionParams.relTolBase;
       break;
       case PRIMMEF77_stats_numOuterIterations:
-              *(int*) ptr = primme->stats.numOuterIterations;
+              v->int_v = primme->stats.numOuterIterations;
       break;
       case PRIMMEF77_stats_numRestarts:
-              *(int*) ptr = primme->stats.numRestarts;
+              v->int_v = primme->stats.numRestarts;
       break;
       case PRIMMEF77_stats_numMatvecs:
-              *(int*) ptr = primme->stats.numMatvecs;
+              v->int_v = primme->stats.numMatvecs;
       break;
       case PRIMMEF77_stats_numPreconds:
-              *(int*) ptr = primme->stats.numPreconds;
+              v->int_v = primme->stats.numPreconds;
       break;
       case PRIMMEF77_stats_elapsedTime:
-              *(double*) ptr = primme->stats.elapsedTime;
+              v->double_v = primme->stats.elapsedTime;
       break;
       default :
       fprintf(stderr,"Requested member (%d) does not exist: consult primme_f77.h.",*label);
@@ -614,11 +615,11 @@ void primme_get_prec_shift_f77(primme_params *primme, int *i, double *shift)
  *
  *************************************************************************/
 #ifdef F77UNDERSCORE
-void primmetop_get_member_f77_(primme_params **primme, int *label, void *ptr){
+void primmetop_get_member_f77_(primme_params **primme, int *label, union f77_value_ptr *ptr){
    primme_get_member_f77_(*primme, label, ptr);
 }
 #else
-void primmetop_get_member_f77(primme_params **primme, int *label, void *ptr){
+void primmetop_get_member_f77(primme_params **primme, int *label, union f77_value_ptr *ptr){
    primme_get_member_f77(*primme, label, ptr);
 }
 #endif
@@ -636,6 +637,6 @@ void primmetop_get_prec_shift_f77(primme_params **primme, int *i, double *shift)
 #endif
 /*************************************************************************/
 
-#ifdef Cplusplus
+#ifdef __cplusplus
 }
 #endif

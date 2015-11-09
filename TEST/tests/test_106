@@ -1,0 +1,28 @@
+// Test JDQMR with preconditioner solving extreme problem
+
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_106
+driver.PrecChoice    = jacobi
+driver.shift         = 3e8
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 5
+primme.eps = 1.000000e-12
+primme.maxBasisSize = 50
+primme.minRestartSize = 30
+primme.maxOuterIterations = 9000
+primme.target = primme_largest
+
+// Correction parameters
+primme.correction.precondition = 1
+
+method               = DEFAULT_MIN_TIME

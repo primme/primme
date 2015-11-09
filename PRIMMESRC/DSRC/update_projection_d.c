@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,16 +19,13 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: update_projection.c
  *
- * Purpose - Adds blockSize new columns and rows to H 
+ * Purpose - Adds blockSize new columns and rows to H.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
-#include <strings.h>
 #include <stdlib.h>
 #include "primme.h"
 #include "const.h"
@@ -71,18 +69,26 @@ void update_projection_dprimme(double *X, double *Y, double *Z,
    }
 
    /* --------------------------------------------------------------------- */
-   /* Grow Z by blockSize number of rows and columns                        */
-   /*    Compute the first numCols rows of the new blockSize columns        */
-   /* --------------------------------------------------------------------- */
-
-   /* --------------------------------------------------------------------- */
-   /* Alternative (more efficient for certain block sizes)                  */
    /* Grow Z by blockSize number of rows and columns all at once            */
    /* --------------------------------------------------------------------- */
 
    Num_gemm_dprimme("C", "N", numCols+blockSize, blockSize, primme->nLocal, tpone, 
       X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
       tzero, rwork, maxCols);
+
+   /* -------------------------------------------------------------- */
+   /* Alternative to the previous call:                              */
+   /*    Compute next the additional rows of each new column vector. */
+   /*    Only the upper triangular portion is computed and stored.   */
+   /* -------------------------------------------------------------- */
+
+   /*
+   for (j = numCols; j < numCols+blockSize; j++) {
+      Num_gemv_dprimme("C", primme->nLocal, j-numCols+1, tpone,
+         &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
+         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
+   }
+   */
    
    count = maxCols*blockSize;
    (*primme->globalSumDouble)(rwork, &Z[maxCols*numCols], &count, primme);

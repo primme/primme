@@ -1,0 +1,24 @@
+// Test GD without preconditioner solving interior problem
+
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = LUNDA.mtx
+driver.checkXFile    = tests/sol_004
+driver.PrecChoice    = noprecond
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 50
+primme.eps = 1.000000e-12
+primme.maxOuterIterations = 7500
+primme.target = primme_closest_abs
+primme.numTargetShifts = 1
+primme.targetShifts = 0
+
+method               = GD_Olsen_plusK

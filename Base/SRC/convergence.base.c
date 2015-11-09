@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boion, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: convergence.c
  *
- * Purpose - Checks for convergence of the block vectors
+ * Purpose - Checks for convergence of the block vectors.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <stdio.h>
@@ -174,10 +173,8 @@ int check_convergence_@(pre)primme(@(type) *V, @(type) *W, @(type) *hVecs,
       compute_resnorms(V, W, rwork, hVals, basisSize, blockNorms,
          iev, left, right, &rwork[basisSize*(right-left+1)], primme);
 
-      if (primme->stats.numOuterIterations % 1 == 0 && 1) {
-          print_residuals(hVals, blockNorms, numConverged, numLocked, iev, 
-             left, right, primme);
-      }
+      print_residuals(hVals, blockNorms, numConverged, numLocked, iev, 
+         left, right, primme);
 
       /* ----------------------------------------------------------------- */
       /* Determine which Ritz vectors have converged < tol and flag them.  */

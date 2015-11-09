@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,14 +19,12 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: init.c
  *
- *  Purpose - Generate the basis that will be used during the first
- *            iteration of the method.
+ * Purpose - Generate the basis that will be used during the first
+ *           iteration of the method.
  *  
- *  Module name      : %M%
- *  SID              : %I%
- *  Date             : %G%
  ******************************************************************************/
 
 #include <stdlib.h>
@@ -306,7 +305,7 @@ int init_basis_dprimme(double *V, double *W, double *evecs,
       /*lingfei: did not build initial Lanczos basis for ATA stage 
         if smallest eigenvalue is desired with a preconditioner*/
       if ((currentSize < primme->minRestartSize) &&
-          (primme->InitBasisMode || primme->target ||
+          (primme->InitBasisMode || primme->target != primme_smallest ||
           !primme->correctionParams.precondition)) {
          ret = init_block_krylov(V, W, currentSize, primme->minRestartSize - 1,
             evecs, primme->numOrthoConst, machEps, rwork, rworkSize, primme);
@@ -322,6 +321,24 @@ int init_basis_dprimme(double *V, double *W, double *evecs,
         *basisSize = min(primme->initSize, primme->minRestartSize);
       }
    }
+
+   if (*basisSize < primme->maxBlockSize) {
+      Num_larnv_dprimme(2, primme->iseed,primme->nLocal*(primme->maxBlockSize-*basisSize),&V[primme->nLocal*(*basisSize)]);
+      ret = ortho_dprimme(V, NULL, primme->nLocal, *basisSize, primme->maxBlockSize, evecs, 
+         primme->nLocal, primme->numOrthoConst, primme->nLocal, primme->iseed, machEps, 
+         rwork, rworkSize, primme);
+
+      if (ret < 0) {
+         primme_PushErrorMessage(Primme_init_basis, Primme_ortho, 
+                         ret, __FILE__, __LINE__, primme);
+         return ORTHO_FAILURE;
+      }
+
+      update_W_dprimme(V, W, *basisSize, primme->maxBlockSize, primme);
+
+      *basisSize = primme->maxBlockSize;
+   }
+
    /* ----------------------------------------------------------- */
    /* If time measurements are needed, waste one MV + one Precond */
    /* Put dummy results in the first open space of W (currentSize)*/

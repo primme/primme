@@ -1,0 +1,85 @@
+
+.. |n|                                     replace:: :c:member:`n                                  <primme_params.n>`
+.. |matrixMatvec|                          replace:: :c:member:`matrixMatvec                       <primme_params.matrixMatvec>`
+.. |applyPreconditioner|                   replace:: :c:member:`applyPreconditioner                <primme_params.applyPreconditioner>`
+.. |numProcs|                              replace:: :c:member:`numProcs                           <primme_params.numProcs>`
+.. |procID|                                replace:: :c:member:`procID                             <primme_params.procID>`
+.. |commInfo|                              replace:: :c:member:`commInfo                           <primme_params.commInfo>`
+.. |nLocal|                                replace:: :c:member:`nLocal                             <primme_params.nLocal>`
+.. |globalSumDouble|                       replace:: :c:member:`globalSumDouble                    <primme_params.globalSumDouble>`
+.. |numEvals|                              replace:: :c:member:`numEvals                           <primme_params.numEvals>`
+.. |target|                                replace:: :c:member:`target                             <primme_params.target>`
+.. |numTargetShifts|                       replace:: :c:member:`numTargetShifts                    <primme_params.numTargetShifts>`
+.. |targetShifts|                          replace:: :c:member:`targetShifts                       <primme_params.targetShifts>`
+.. |locking|                               replace:: :c:member:`locking                            <primme_params.locking>`
+.. |initSize|                              replace:: :c:member:`initSize                           <primme_params.initSize>`
+.. |numOrthoConst|                         replace:: :c:member:`numOrthoConst                      <primme_params.numOrthoConst>`
+.. |maxBasisSize|                          replace:: :c:member:`maxBasisSize                       <primme_params.maxBasisSize>`
+.. |minRestartSize|                        replace:: :c:member:`minRestartSize                     <primme_params.minRestartSize>`
+.. |maxBlockSize|                          replace:: :c:member:`maxBlockSize                       <primme_params.maxBlockSize>`
+.. |maxMatvecs|                            replace:: :c:member:`maxMatvecs                         <primme_params.maxMatvecs>`
+.. |maxOuterIterations|                    replace:: :c:member:`maxOuterIterations                 <primme_params.maxOuterIterations>`
+.. |intWorkSize|                           replace:: :c:member:`intWorkSize                        <primme_params.intWorkSize>`
+.. |realWorkSize|                          replace:: :c:member:`realWorkSize                       <primme_params.realWorkSize>`
+.. |iseed|                                 replace:: :c:member:`iseed                              <primme_params.iseed>`
+.. |intWork|                               replace:: :c:member:`intWork                            <primme_params.intWork>`
+.. |realWork|                              replace:: :c:member:`realWork                           <primme_params.realWork>`
+.. |aNorm|                                 replace:: :c:member:`aNorm                              <primme_params.aNorm>`
+.. |eps|                                   replace:: :c:member:`eps                                <primme_params.eps>`
+.. |printLevel|                            replace:: :c:member:`printLevel                         <primme_params.printLevel>`
+.. |outputFile|                            replace:: :c:member:`outputFile                         <primme_params.outputFile>`
+.. |matrix|                                replace:: :c:member:`matrix                             <primme_params.matrix>`
+.. |preconditioner|                        replace:: :c:member:`preconditioner                     <primme_params.preconditioner>`
+.. |ShiftsForPreconditioner|               replace:: :c:member:`ShiftsForPreconditioner            <primme_params.ShiftsForPreconditioner>`
+.. |scheme|               replace:: :c:member:`scheme                             <primme_params.restartingParams.scheme>`
+.. |maxPrevRetain|        replace:: :c:member:`maxPrevRetain                      <primme_params.restartingParams.maxPrevRetain>`
+.. |precondition|         replace:: :c:member:`precondition                       <primme_params.correctionParams.precondition>`
+.. |robustShifts|         replace:: :c:member:`robustShifts                       <primme_params.correctionParams.robustShifts>`
+.. |maxInnerIterations|   replace:: :c:member:`maxInnerIterations                 <primme_params.correctionParams.maxInnerIterations>`
+.. |LeftQ|     replace:: :c:member:`LeftQ                   <primme_params.correctionParams.projectors.LeftQ>`
+.. |LeftX|     replace:: :c:member:`LeftX                   <primme_params.correctionParams.projectors.LeftX>`
+.. |RightQ|    replace:: :c:member:`RightQ                  <primme_params.correctionParams.projectors.RightQ>`
+.. |RightX|    replace:: :c:member:`RightX                  <primme_params.correctionParams.projectors.RightX>`
+.. |SkewQ|     replace:: :c:member:`SkewQ                   <primme_params.correctionParams.projectors.SkewQ>`
+.. |SkewX|     replace:: :c:member:`SkewX                   <primme_params.correctionParams.projectors.SkewX>`
+.. |convTest|             replace:: :c:member:`convTest                           <primme_params.correctionParams.convTest>`
+.. |relTolBase|           replace:: :c:member:`relTolBase                         <primme_params.correctionParams.relTolBase>`
+.. |numOuterIterations|              replace:: :c:member:`numOuterIterations                 <primme_params.stats.numOuterIterations>`
+.. |numRestarts|                     replace:: :c:member:`numRestarts                        <primme_params.stats.numRestarts>`
+.. |numMatvecs|                      replace:: :c:member:`numMatvecs                         <primme_params.stats.numMatvecs>`
+.. |numPreconds|                     replace:: :c:member:`numPreconds                        <primme_params.stats.numPreconds>`
+.. |elapsedTime|                     replace:: :c:member:`elapsedTime                        <primme_params.stats.elapsedTime>`
+.. |dynamicMethodSwitch|                   replace:: :c:member:`dynamicMethodSwitch                <primme_params.dynamicMethodSwitch>`
+.. |massMatrixMatvec|                      replace:: :c:member:`massMatrixMatvec                   <primme_params.massMatrixMatvec>`
+.. |primme_smallest|       replace:: :c:member:`primme_smallest       <primme_params.target>`
+.. |primme_largest|        replace:: :c:member:`primme_largest        <primme_params.target>`
+.. |primme_closest_geq|    replace:: :c:member:`primme_closest_geq    <primme_params.target>`
+.. |primme_closest_leq|    replace:: :c:member:`primme_closest_leq    <primme_params.target>`
+.. |primme_closest_abs|    replace:: :c:member:`primme_closest_abs    <primme_params.target>`
+.. |primme_thick|                  replace:: :c:member:`primme_thick                  <primme_params.restartingParams.scheme>`
+.. |primme_dtr|                    replace:: :c:member:`primme_dtr                    <primme_params.restartingParams.scheme>`
+.. |primme_full_LTolerance|        replace:: :c:member:`primme_full_LTolerance        <primme_params.correctionParams.convTest>`
+.. |primme_decreasing_LTolerance|  replace:: :c:member:`primme_decreasing_LTolerance  <primme_params.correctionParams.convTest>`
+.. |primme_adaptive_ETolerance|    replace:: :c:member:`primme_adaptive_ETolerance    <primme_params.correctionParams.convTest>`
+.. |primme_adaptive|               replace:: :c:member:`primme_adaptive               <primme_params.correctionParams.convTest>`
+.. |DYNAMIC|                       replace:: :c:member:`DYNAMIC                       <primme_preset_method.DYNAMIC>`
+.. |DEFAULT_MIN_TIME|              replace:: :c:member:`DEFAULT_MIN_TIME              <primme_preset_method.DEFAULT_MIN_TIME>`
+.. |DEFAULT_MIN_MATVECS|           replace:: :c:member:`DEFAULT_MIN_MATVECS           <primme_preset_method.DEFAULT_MIN_MATVECS>`
+.. |Arnoldi|                       replace:: :c:member:`Arnoldi                       <primme_preset_method.Arnoldi>`
+.. |GD|                            replace:: :c:member:`GD                            <primme_preset_method.GD>`
+.. |GD_plusK|                      replace:: :c:member:`GD_plusK                      <primme_preset_method.GD_plusK>`
+.. |GD_Olsen_plusK|                replace:: :c:member:`GD_Olsen_plusK                <primme_preset_method.GD_Olsen_plusK>`
+.. |JD_Olsen_plusK|                replace:: :c:member:`JD_Olsen_plusK                <primme_preset_method.JD_Olsen_plusK>`
+.. |RQI|                           replace:: :c:member:`RQI                           <primme_preset_method.RQI>`
+.. |JDQR|                          replace:: :c:member:`JDQR                          <primme_preset_method.JDQR>`
+.. |JDQMR|                         replace:: :c:member:`JDQMR                         <primme_preset_method.JDQMR>`
+.. |JDQMR_ETol|                    replace:: :c:member:`JDQMR_ETol                    <primme_preset_method.JDQMR_ETol>`
+.. |SUBSPACE_ITERATION|            replace:: :c:member:`SUBSPACE_ITERATION            <primme_preset_method.SUBSPACE_ITERATION>`
+.. |LOBPCG_OrthoBasis|             replace:: :c:member:`LOBPCG_OrthoBasis             <primme_preset_method.LOBPCG_OrthoBasis>`
+.. |LOBPCG_OrthoBasis_Window|      replace:: :c:member:`LOBPCG_OrthoBasis_Window      <primme_preset_method.LOBPCG_OrthoBasis_Window>`
+
+.. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/
+.. _LAPACK: http://www.netlib.org/lapack/
+.. _BLAS: http://www.netlib.org/blas/
+.. _Sphinx: http://sphinx-doc.org/
+.. _PETSc: http://www.mcs.anl.gov/petsc/

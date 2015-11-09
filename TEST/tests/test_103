@@ -1,0 +1,22 @@
+// Test default values
+
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_103
+driver.PrecChoice    = noprecond
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 50
+primme.eps = 1.000000e-12
+primme.maxOuterIterations = 2500
+primme.target = primme_largest
+
+method               = GD_Olsen_plusK

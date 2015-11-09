@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: main_iter_private.h
  *
  * Purpose - Definitions used exclusively by main_iter.c
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #ifndef MAIN_ITER_PRIVATE_H
@@ -115,6 +114,8 @@ static double ratio_JDQMR_GDpk(primme_CostModel *CostModel, int numLocked,
    double estimate_slowdown, double estimate_ratio_outer_MV);
 static void update_slowdown(primme_CostModel *model);
 
+#if 0
 static void displayModel(primme_CostModel *model);
+#endif
 
 #endif

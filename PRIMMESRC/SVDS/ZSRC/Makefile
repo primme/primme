@@ -14,21 +14,21 @@ CSOURCE = primme_svds_z.c
 COBJS = primme_svds_z.o
 
 primme_svds_z.o: primme_svds_z.c
-	$(CC) $(HIGH_OPT) $(CFLAGS) $(DEFINES) $(INCLUDE) -c primme_svds_z.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c primme_svds_z.c
 
 
 #
 # Archive complex precision object files in full library
 #
 lib: $(COBJS) $(FOBJS)
-	ar rv $(LIBRARY) $(COBJS) $(FOBJS)
-	$(RANLIB) $(LIBRARY)
+	ar rv ../../$(LIBRARY) $(COBJS) $(FOBJS)
+	$(RANLIB) ../../$(LIBRARY)
 #
 # Archive complex precision object files in Complex-only library
 #
 libz: $(COBJS) $(FOBJS)
-	ar rv $(ZLIBRARY) $(COBJS) $(FOBJS)
-	$(RANLIB) $(ZLIBRARY)
+	ar rv ../../$(ZLIBRARY) $(COBJS) $(FOBJS)
+	$(RANLIB) ../../$(ZLIBRARY)
 
 #
 #  clean	- remove all object files

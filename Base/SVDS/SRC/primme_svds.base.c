@@ -48,7 +48,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
             primme_svds_params *primme_svds) {
       
    int ret;
-   int i,j;
+   int i;
    int one = 1; /*used for Matvec*/
    int At = 0;
    const char notransp[] = "notransp"; /*used for Matvec*/

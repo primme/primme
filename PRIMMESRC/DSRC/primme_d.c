@@ -1,6 +1,7 @@
-/**********************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,7 +19,7 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * ---------------------------------------------------------------------
+ *******************************************************************************
  * File: primme.c
  *
  * Purpose - Real, double precision front end to the multimethod eigensolver
@@ -44,10 +45,9 @@
  *
  *                       andreas@cs.wm.edu
  *
- **********************************************************************/
+ ******************************************************************************/
 
 #include <stdlib.h>   /* mallocs, free */
-#include <unistd.h>   /* gethostname */
 #include <stdio.h>    
 #include "primme.h"
 #include "const.h"
@@ -438,7 +438,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          "Allocating real workspace: %ld bytes\n", primme->realWorkSize);
    }
 
-   if (primme->intWorkSize < intWorkSize*sizeof(int) || primme->intWork==NULL) {
+   if (primme->intWorkSize < intWorkSize*(int)sizeof(int) || primme->intWork==NULL) {
       if (primme->intWork != NULL) {
          free(primme->intWork);
       }

@@ -1,6 +1,7 @@
- /*
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -17,26 +18,38 @@
  *   You should have received a copy of the GNU Lesser General Public
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- */
-#include <sys/time.h>
-#include "sys/resource.h"
+ *
+ *******************************************************************************
+ * File: wtime.c
+ *
+ * Purpose - Time functions.
+ *
+ ******************************************************************************/
+
+#include <stdlib.h>
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#  include <sys/time.h>
+#  include <sys/resource.h>
+#endif
+#include "wtime.h"
+
 #ifdef RUSAGE_SELF
 #else
 #define   RUSAGE_SELF     0      /*needed in osx*/
 #endif
 
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 double primme_wTimer(int zeroTimer) {
    static struct timeval tv;
-   static struct timezone tz;
    static double StartingTime;
    
    if (zeroTimer) {
-      gettimeofday(&tv, &tz); 
+      gettimeofday(&tv, NULL); 
       StartingTime = ((double) tv.tv_sec) + ((double) tv.tv_usec )/(double) 1E6;
       return StartingTime;
    }
    else {
-      gettimeofday(&tv, &tz); 
+      gettimeofday(&tv, NULL); 
       return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6
            - StartingTime;
    }
@@ -72,13 +85,11 @@ double primme_wTimer(int zeroTimer) {
 /* Simply return the microseconds time of day */
 double primme_get_wtime() {
    static struct timeval tv;
-   static struct timezone tz;
 
-   gettimeofday(&tv, &tz); 
+   gettimeofday(&tv, NULL); 
    return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6;
 }
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 /* Return user/system times */
 double primme_get_time(double *utime, double *stime) {
    struct rusage usage;
@@ -93,4 +104,18 @@ double primme_get_time(double *utime, double *stime) {
 
    return *utime + *stime;
 }
+#else
+#include <Windows.h>
+double primme_wTimer(int zeroTimer) {
+   static DWORD StartingTime;
+
+   if (zeroTimer) {
+      StartingTime = GetTickCount();
+      return StartingTime;
+   }
+   else {
+      return GetTickCount() - StartingTime;
+   }
+}
+
 #endif

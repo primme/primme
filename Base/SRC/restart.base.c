@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,14 +19,12 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: restart.c
  *
  * Purpose - Compute the Ritz vectors corresponding to the restartSize
  *           smallest eigenvalues.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <stdio.h>
@@ -133,7 +132,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, @(type) *H, @(type) *hVecs,
    int numPacked;           /* The number of coefficient vectors moved to the */
                             /* end of the hVecs array.                        */
    int restartSize;         /* The number of vectors to restart with          */
-   int indexOfPreviousVecs; /* Position within hVecs array the previous       */
+   int indexOfPreviousVecs=0; /* Position within hVecs array the previous       */
                             /* coefficient vectors will be stored             */
    int i, n, eStart;        /* various variables                              */
    int ret;                 /* Return value                                   */

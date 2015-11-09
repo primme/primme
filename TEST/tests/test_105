@@ -1,0 +1,28 @@
+// Test GD+k with preconditioner solving interior problem
+
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_105
+driver.PrecChoice    = jacobi
+driver.shift         = -1e-2
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 2
+primme.eps = 1.000000e-8
+primme.maxOuterIterations = 4000
+primme.target = primme_closest_abs
+primme.numTargetShifts = 1
+primme.targetShifts = 1e-2
+
+// Correction parameters
+primme.correction.precondition = 1
+
+method               = GD_Olsen_plusK

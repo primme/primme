@@ -1,6 +1,7 @@
-/******************************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: locking.c
  *
  * Purpose - This file contains routines for locking converged Ritz pairs.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <stdio.h>
@@ -42,6 +41,7 @@
 #include "restart_@(pre).h"
 #include "factorize_@(pre).h"
 #include "numerical_@(pre).h"
+#include <assert.h>
 
 /******************************************************************************
  * Function lock_vectors - This subroutine locks converged Ritz pairs.  The
@@ -161,7 +161,7 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
    int *flag, @(type) *rwork, int rworkSize, int *iwork, 
    int *LockingProblem, primme_params *primme) {
 
-   int i,j;             /* Loop counter                                       */
+   int i;             /* Loop counter                                       */
    int numCandidates; /* Number of targeted Ritz vectors converged before   */
                       /* restart.                                           */
    int newStart;      /* Index in evecs where the locked vectors were added */
@@ -603,6 +603,11 @@ static void insertionSort(double newVal, double *evals, double newNorm,
             if ( ithShift != currentShift || 
             fabs(newVal-currentShift) >= fabs(evals[i-1]-currentShift) ) break; 
          }
+      }
+      else {
+         /* This should never happen */
+         assert(0);
+         i = 0; /* Avoid warning */
       }
    }
 

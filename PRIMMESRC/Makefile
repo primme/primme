@@ -9,81 +9,57 @@ libs: libd libz
 
 lib: 
 	@(\
-	rm -f $(LIBRARY);\
+	rm -f ../$(LIBRARY);\
 	echo " Making common .o files"; \
-	cd $(COMMONDIR) ;\
-	make lib;\
-	echo " Making SVDS common .o files"; \
-	cd $(SVDSCOMMONDIR) ;\
-	make lib;\
+	make -C COMMONSRC lib;\
+	make -C SVDS/COMMONSRC lib;\
 	echo " Making complex precision .o files"; \
-	cd $(ZPRIMMEDIR) ;\
-	make lib;\
-	echo " Making SVDS complex precision .o files"; \
-	cd $(SVDSZPRIMMEDIR) ;\
-	make lib;\
+	make -C ZSRC lib;\
+	make -C SVDS/ZSRC lib;\
 	echo " Making double precision .o files"; \
-	cd $(DPRIMMEDIR) ;\
-	make lib;\
-	echo " Making SVDS double precision .o files"; \
-	cd $(SVDSDPRIMMEDIR) ;\
-	make lib;\
-	$(RANLIB) $(LIBRARY);\
+	make -C DSRC lib;\
+	make -C SVDS/DSRC lib;\
+	$(RANLIB) ../$(LIBRARY);\
 	)
 
 libd:
 	@(\
-	rm -f $(DLIBRARY);\
+	rm -f ../$(DLIBRARY);\
 	echo " Making common .o files"; \
-	cd $(COMMONDIR) ;\
-	make libd;\
-	echo " Making SVDS common .o files"; \
-	cd $(SVDSCOMMONDIR) ;\
-	make libd;\
+	make -C COMMONSRC libd;\
+	make -C SVDS/COMMONSRC libd;\
 	echo " Making double precision .o files"; \
-	cd $(DPRIMMEDIR) ;\
-	make libd;\
-	echo " Making SVDS double precision .o files"; \
-	cd $(SVDSDPRIMMEDIR) ;\
-	make libd;\
-	$(RANLIB) $(DLIBRARY);\
+	make -C DSRC libd;\
+	make -C SVDS/DSRC libd;\
+	$(RANLIB) ../$(DLIBRARY);\
 	)
 
 libz:
 	@(\
-	rm -f $(ZLIBRARY);\
+	rm -f ../$(ZLIBRARY);\
 	echo " Making common .o files"; \
-	cd $(COMMONDIR) ;\
-	make libz;\
-	echo " Making SVDS common .o files"; \
-	cd $(SVDSCOMMONDIR) ;\
-	make libz;\
+	make -C COMMONSRC libz;\
+	make -C SVDS/COMMONSRC libz;\
 	echo " Making complex precision .o files"; \
-	cd $(ZPRIMMEDIR) ;\
-	make libz;\
-	echo " Making SVDS complex precision .o files"; \
-	cd $(SVDSZPRIMMEDIR) ;\
-	make libz;\
-	$(RANLIB) $(ZLIBRARY);\
+	make -C ZSRC libz;\
+	make -C SVDS/ZSRC libz;\
+	$(RANLIB) ../$(ZLIBRARY);\
 	)
 #-----------------------------------------------------------------
 
 clean: 
 	@(\
 	echo "--------------------------------------------------"; \
-	echo " Cleaning .o, and archives from all directories   "; \
+	echo " From PRIMME library directories"; \
+	echo "   "COMMONSRC;\
+	make -C COMMONSRC clean;\
+	make -C SVDS/COMMONSRC clean;\
+	echo "   "DSRC;\
+	make -C DSRC clean;\
+	make -C SVDS/DSRC clean;\
+	echo "   "ZSRC;\
+	make -C ZSRC clean;\
+	make -C SVDS/ZSRC clean;\
 	echo "--------------------------------------------------"; \
-	cd $(COMMONDIR) ;\
-	make -f Makefile clean;\
-	cd $(DPRIMMEDIR) ;\
-	make -f Makefile clean;\
-	cd $(ZPRIMMEDIR) ;\
-	make -f Makefile clean;\
-	cd $(SVDSCOMMONDIR) ;\
-	make -f Makefile clean;\
-	cd $(SVDSDPRIMMEDIR) ;\
-	make -f Makefile clean;\
-	cd $(SVDSZPRIMMEDIR) ;\
-	make -f Makefile clean;\
 	)
 

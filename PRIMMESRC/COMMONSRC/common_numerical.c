@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,25 +19,29 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: numerical.c
  *
  * Purpose - This file contains C wrapper routines for certain numerical 
- *    routines to be used by programs of either precision.
+ *           routines to be used by programs of either precision.
  *
  ******************************************************************************/
+
 #include <stdarg.h>
 #include "common_numerical_private.h"
 #include "common_numerical.h"
 
 /******************************************************************************/
 void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy) {
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
 
-   DCOPY(&n, x, &incx, y, &incy);
-
+   DCOPY(&ln, x, &lincx, y, &lincy);
 }
 
 /******************************************************************************/
-double Num_dlamch_primme(char *cmach) {
+double Num_dlamch_primme(const char *cmach) {
 #ifdef NUM_CRAY
    _fcd cmach_fcd;
 

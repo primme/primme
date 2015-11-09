@@ -1,6 +1,7 @@
-/**********************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -25,10 +26,7 @@
  *           is to be included in user/developer source files that
  *           need to call these routines.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
- **********************************************************************/
+ ******************************************************************************/
 
 #ifndef ORTHO_H
 #define ORTHO_H

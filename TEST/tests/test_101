@@ -1,0 +1,25 @@
+// Test unrestarted configuration
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_101
+driver.PrecChoice    = noprecond
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 5
+primme.eps = 1.000000e-12
+primme.maxBasisSize = 140
+primme.minRestartSize = 1
+primme.maxBlockSize = 1
+primme.maxMatvecs = 140
+primme.target = primme_largest
+primme.locking = 1
+
+method               = GD_Olsen_plusK

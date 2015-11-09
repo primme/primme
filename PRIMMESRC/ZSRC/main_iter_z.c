@@ -1,6 +1,7 @@
-/******************************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: main_iter.c
  *
  * Purpose - This is the main Davidson-type iteration 
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <stdlib.h>
@@ -124,7 +123,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme) {
          
-   int i,j;                 /* Loop variable                                 */
+   int i;                   /* Loop variable                                 */
    int blockSize;           /* Current block size                            */
    int AvailableBlockSize;  /* There is enough space in basis for this block */
    int ievMax;              /* Index of next eigenvalue to be approximated   */
@@ -371,7 +370,9 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    /* ---------------------------------------------------------------------- */
    while (!converged &&
           ( primme->maxMatvecs == 0 || 
-            primme->stats.numMatvecs < primme->maxMatvecs ) ) {
+            primme->stats.numMatvecs < primme->maxMatvecs ) &&
+          ( primme->maxOuterIterations == 0 ||
+            primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
       /* Reset convergence flags. This may only reoccur without locking */
 
@@ -406,8 +407,10 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
       /* required eigenpairs have been found (no verification)          */
       /* -------------------------------------------------------------- */
       while (numConverged < primme->numEvals &&
-             (primme->maxMatvecs == 0 || 
-              primme->stats.numMatvecs < primme->maxMatvecs)) {
+             ( primme->maxMatvecs == 0 || 
+               primme->stats.numMatvecs < primme->maxMatvecs ) &&
+             ( primme->maxOuterIterations == 0 ||
+               primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
@@ -415,8 +418,12 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          /* maximum size or the basis plus the locked vectors span the entire */
          /* space. Once this happens, restart with a smaller basis.           */
          /* ----------------------------------------------------------------- */
-         while (basisSize < primme->maxBasisSize 
-             && basisSize < primme->n - primme->numOrthoConst - numLocked ) {
+         while (basisSize < primme->maxBasisSize &&
+                basisSize < primme->n - primme->numOrthoConst - numLocked &&
+                ( primme->maxMatvecs == 0 || 
+                  primme->stats.numMatvecs < primme->maxMatvecs) &&
+                ( primme->maxOuterIterations == 0 ||
+                  primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
             primme->stats.numOuterIterations++;
             numPrevRetained = 0;
@@ -442,16 +449,12 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             /* their convergence, lock them if necessary, and return.    */
             /* For locking interior, restart and lock now any converged. */
 
-            if (primme->locking) {
-               if ((numLocked + recentlyConverged) >= primme->numEvals ||
-                   (recentlyConverged > 0 && primme->target != primme_smallest
-                    && primme->target != primme_largest))
-                  break;
-            }
-            else {
-               numConverged += recentlyConverged;
-               primme->initSize = numConverged;
-               if (numConverged >= primme->numEvals) 
+            numConverged += recentlyConverged;
+
+            if (numConverged >= primme->numEvals ||
+                (primme->locking && recentlyConverged > 0
+                    && primme->target != primme_smallest
+                    && primme->target != primme_largest)) {
                   break;
             }
 
@@ -1615,6 +1618,8 @@ static void initializeModel(primme_CostModel *model, primme_params *primme) {
    model->accum_gdk      = 0.0L;
    model->accum_jdq_gdk  = 1.0L;
 }
+
+#if 0
 /******************************************************************************
  *
  * Function to display the model parameters --- For debugging purposes only
@@ -1650,3 +1655,4 @@ static void displayModel(primme_CostModel *model){
       model->numIt_0,model->timer_0,model->time_in_inner, model->resid_0);
    fprintf(stdout," ------------------------------\n");
 }
+#endif

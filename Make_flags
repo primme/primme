@@ -2,86 +2,65 @@
 #         ENVIRONMENT VARIABLES AND COMPILATION FLAGS
 #       for building the library and compiling the tests
 #---------------------------------------------------------------
-#---------------------------------------------------------------
-#  Name of the library/directories
-#---------------------------------------------------------------
-
-# Modify this to show the path of the installed PRIMME directory
-#TOP = /home/f85/andreas/BTsync/RESEARCH/PRIMME/DEVELOP/PRIMME_1.2
-TOP = /Users/andreas/BTsync/RESEARCH/PRIMME/DEVELOP/PRIMME_1.2
-
-# Define the path to the source code
-SRC = $(TOP)/PRIMMESRC
-COMMONDIR = $(SRC)/COMMONSRC
-DPRIMMEDIR = $(SRC)/DSRC
-ZPRIMMEDIR = $(SRC)/ZSRC
-SVDSCOMMONDIR = $(SRC)/SVDS/COMMONSRC
-SVDSDPRIMMEDIR = $(SRC)/SVDS/DSRC
-SVDSZPRIMMEDIR = $(SRC)/SVDS/ZSRC
 
 # Define the path to the created primme library(-ies)
-LIBRARY = $(TOP)/libprimme.a
-DLIBRARY = $(TOP)/libdprimme.a
-ZLIBRARY = $(TOP)/libzprimme.a
+LIBRARY = libprimme.a
+DLIBRARY = libdprimme.a
+ZLIBRARY = libzprimme.a
 
-# Define where the tests for double/complex are
-DTESTDIR = $(TOP)/DTEST
-ZTESTDIR = $(TOP)/ZTEST
-
-# Define where the tests for primme_svds double/complex are
-SVDSDTESTDIR = $(TOP)/SVDSDTEST
-SVDSZTESTDIR = $(TOP)/SVDSZTEST
-
+# Define compilers and flags
 #---------------------------------------------------------------
-#  Compilers
-#
-# If C++ must be used, make sure the DEFINES below are updated
-# On Suse Linux use gfortran, NOT g77 (BLAS/LAPACK made with gfortran) 
-# On Opteron CentOS use g77 
+# POSIX systems (e.g., Linux, MinGW, Cygwin)
 #---------------------------------------------------------------
-#CC = gcc-mp-4.9
-#F77 = gfortran-mp-4.9
-
-# Parallel MPI
- CC = mpicc
- F77 = mpif77
-
+CC       ?= cc
+F77      ?= gfortran
+DEFINES  ?= -DF77UNDERSCORE 
+CFLAGS   ?= -O
+FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
-#  Compiling flags for the PRIMME library
+# IBM architectures
+#CC       = xlc
+#F77      = xlf
+#DEFINES  = -DF77UNDERSCORE -DNUM_ESSL
+#CFLAGS   = -O2
+#FFLAGS   = -O2
+#---------------------------------------------------------------
+# Mac OS X
+#CC       = clang
+#CC       = gcc-mp-4.9
+#F77      = gfortran-mp-4.9
+#DEFINES  = -DF77UNDERSCORE 
+#CFLAGS   = -O2
+#FFLAGS   = -fno-second-underscore -O2
+#---------------------------------------------------------------
+# Using Intel compilers
+#CC       = icc
+#F77      = ifort
+#DEFINES  = -DF77UNDERSCORE
+#CFLAGS   = -O2
+#FFLAGS   = -O2
 #---------------------------------------------------------------
 # Sun various architectures
 # whirlwind
-#CFLAGS =  -xtarget=ultra2e -xarch=v8plusa -xcache=16/32/1:512/64/4
+#CFLAGS +=  -xtarget=ultra2e -xarch=v8plusa -xcache=16/32/1:512/64/4
 # twister
-#CFLAGS =  -xtarget=ultra3cu -xarch=v8plusa -xcache=64/32/4:8192/512/2
+#CFLAGS +=  -xtarget=ultra3cu -xarch=v8plusa -xcache=64/32/4:8192/512/2
 # typhoon
-#CFLAGS =  -xtarget=ultra2i -xarch=v8plusa -xcache=16/32/1:2048/64/1
+#CFLAGS +=  -xtarget=ultra2i -xarch=v8plusa -xcache=16/32/1:2048/64/1
 # tornado
-#CFLAGS =  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
+#CFLAGS +=  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
 # hurricane
-#CFLAGS =  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
-#CFLAGS = -xtarget=generic -xarch=v8plusa
+#CFLAGS +=  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
+#CFLAGS +=  -xtarget=generic -xarch=v8plusa
 #---------------------------------------------------------------
-# MAC OSX
-CFLAGS = -fPIC
-#---------------------------------------------------------------
-# Linux 
-#CFLAGS = 
-#---------------------------------------------------------------
+# Cray architectures
+# CFLAGS += -O3 -march=native -mtune=native -funroll-loops  -ffast-math -fstrict-aliasing  -std=gnu99 -msse2 -msse3
 
-FFLAGS =  -fno-second-underscore -fPIC
-LOW_OPT = -g #-O3  
-HIGH_OPT = -g # -O3
 
 #---------------------------------------------------------------
-# Preprocessor definition for using F77 under various OS/compilers
+# Uncomment this when building MATLAB interface
+# CFLAGS += -DPRIMME_BLASINT_SIZE=64 -fPIC
 #---------------------------------------------------------------
-
-DEFINES = -DF77UNDERSCORE 
-# If a C++ compiler is used instead of C add this
-ifeq ($(CC),c++)
-DEFINES = -DF77UNDERSCORE -DCplusplus
-endif
 
 #---------------------------------------------------------------
 #  Creating the library

@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,50 +19,57 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: numerical.h
  *
  * Purpose - Contains prototypes for fundamental numerical functions.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
-#include "common_numerical.h"
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
+
+#include "common_numerical.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux);
-void Num_dsyev_dprimme(char *jobz, char *uplo, int n, double *a, int lda, 
+void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info);
-void Num_dgesvd_dprimme(char *jobu, char *jobvt, int m, int n, double *a, int lda,
+void Num_dgesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, double *a, int lda,
     double *s, double *u, int ldu, double *vt, int ldvt, double *work,
     int ldwork, int *info);
-void Num_dsytrf_dprimme(char *uplo, int n, double *a, int lda, int *ipivot, 
+void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
    double *work, int ldwork, int *info);
-void Num_dsytrs_dprimme(char *uplo, int n, int nrhs, double *a, int lda, 
+void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info);
 
 void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy);
-void Num_gemm_dprimme(char *transa, char *transb, int m, int n, int k, 
+void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int k, 
    double alpha, double *a, int lda, double *b, int ldb, 
    double beta, double *c, int ldc);
-void Num_symm_dprimme(char *side, char *uplo, int m, int n, double alpha, 
+void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double alpha, 
    double *a, int lda, double *b, int ldb, double beta, 
    double *c, int ldc);
-void Num_symv_dprimme(char *uplo, int n, double alpha, 
+void Num_symv_dprimme(const char *uplo, int n, double alpha, 
    double *a, int lda, double *x, int lncx, double beta, 
    double *y, int lncy); 
 void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
    double *y, int incy);
-void Num_gemv_dprimme(char *transa, int m, int n, double alpha, double *a,
+void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
    int lda, double *x, int incx, double beta, double *y, int incy);
 void Num_larnv_dprimme(int idist, int *iseed, int length, double *x);
 void Num_scal_dprimme(int n, double alpha, double *x, int incx);
 void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

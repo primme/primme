@@ -1,0 +1,24 @@
+// Test GD without preconditioner solving interior problem
+
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = mhd1280b.mtx
+driver.checkXFile    = tests/sol_104
+driver.PrecChoice    = noprecond
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 2
+primme.eps = 1.000000e-8
+primme.maxMatvecs = 100000
+primme.target = primme_closest_abs
+primme.numTargetShifts = 1
+primme.targetShifts = 1e-2
+
+method               = DEFAULT_MIN_TIME

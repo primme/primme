@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: correction.c
  *
  * Purpose - Computes the correction corresponding to each block Ritz vectors.
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 #include <stdio.h>
@@ -690,7 +689,9 @@ static void Olsen_preconditioner_block(@(type) *r, @(type) *x,
    int blockIndex, count;
    @(type) alpha;
    @(type) *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
+#ifdefarithm L_DEFCPLX
    @(type) ztmp;
+#endifarithm
    @(type) tzero = @(tzero);
 
    /*------------------------------------------------------------------*/

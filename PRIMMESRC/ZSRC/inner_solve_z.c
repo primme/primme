@@ -1,6 +1,7 @@
- /*******************************************************************************
+/*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,13 +19,11 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: inner_solve.c
  *
- *  Purpose - Solves the correction equation using hermitian simplified QMR.
+ * Purpose - Solves the correction equation using hermitian simplified QMR.
  *  
- *  Module name      : %M%
- *  SID              : %I%
- *  Date             : %G%
  ******************************************************************************/
 
 #include <stdio.h>
@@ -131,7 +130,6 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    int rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
-   int workSpaceSize; /* Size of local work array.                           */
    int numIts;        /* Number of inner iterations                          */
    int ret;           /* Return value used for error checking.               */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
@@ -161,7 +159,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    double LTolerance, ETolerance;
 
    /* Some constants                                                          */
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
+   Complex_Z tzero = {+0.0e+00,+0.0e00};
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -172,8 +170,6 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
    workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
-   
-   workSpaceSize = rworkSize - (workSpace - rwork);
    
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */
@@ -228,7 +224,12 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
    /* compute first total number of remaining matvecs */
 
-   maxIterations = primme->maxMatvecs - primme->stats.numMatvecs;
+   if (primme->maxMatvecs > 0) {
+      maxIterations = primme->maxMatvecs - primme->stats.numMatvecs;
+   }
+   else {
+      maxIterations = INT_MAX;
+   }
 
    /* Perform primme.maxInnerIterations, but do not exceed total remaining */
    if (primme->correctionParams.maxInnerIterations > 0) {
