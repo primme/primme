@@ -50,6 +50,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
    int ret;
    int i,j;
    int one = 1; /*used for Matvec*/
+   int At = 0;
    const char notransp[] = "notransp"; /*used for Matvec*/
    const char transp[] = "transp"; /*used for Matvec*/
    Complex_Z ztmp;
@@ -73,12 +74,16 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
    /* -----------------------------------------------------------*/
    if (primme_svds->svdsMethod == primme_svds_normalequations ||
       primme_svds->svdsMethod == primme_svds_hybrid) {
+      
+      At = (primme_svds->n > primme_svds->m) ? 1 : 0;
       /* ----------------------------------------- */
       /* Set some defaults for sequential programs */
       /* ----------------------------------------- */
       if (primme_svds->numProcs == 1) {
-         primme_svds->nLocal = min(primme_svds->n,primme_svds->m); 
+         primme_svds->mLocal = primme_svds->m;
+         primme_svds->nLocal = primme_svds->n;
          primme_svds->procID = 0;
+         primme_svds->numProcs = 1;
       }
 
       /* -----------------------------------------------*/
@@ -110,12 +115,15 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* Set some parameters only for parallel programs */
       /* ---------------------------------------------- */
       if (primme_svds->numProcs > 1 && primme_svds->globalSumDouble != NULL) {
-           primme_svds->primme.nLocal = primme_svds->nLocal; // lingfei: may need modify later
            primme_svds->primme.procID = primme_svds->procID;
+           primme_svds->primme.numProcs = primme_svds->numProcs;
+           primme_svds->primme.commInfo = primme_svds->commInfo;
            primme_svds->primme.globalSumDouble = primme_svds->globalSumDouble;
       }
 
-      primme_svds->primme.n = min(primme_svds->m, primme_svds->n);
+      primme_svds->primme.n = At == 0 ? primme_svds->n : primme_svds->m;
+      primme_svds->primme.nLocal = At == 0 ? primme_svds->nLocal :     primme_svds->mLocal;
+      /*Lingfei: is this right? if m>n, primme.n = n then primme.nLocal should be also nLocal. n and nLocal, and m and mLocal should be consistently chosen.*/
       if (primme_svds->target == primme_svds_largest){
           primme_svds->primme.target = primme_largest;
       }
@@ -125,7 +133,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       method = primme_svds->eigsMethod_stage1;
       if (primme_set_method(method, &primme_svds->primme) < 0 ) {
          fprintf(primme_svds->primme.outputFile, 
-                        "No preset method. Using custom settings\n");
+                    "No preset method. Using custom settings\n");
       }
       primme_svds->primme.locking = 0;
       primme_svds->primme.projectionParams.projection = primme_RR;
@@ -153,7 +161,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* -------------------------------------------------- */
       /* Allocate realWork array for MV and Precond operations */
       primme_svds->realWork = (Complex_Z *)primme_valloc(
-        primme_svds->numSvals*max(primme_svds->m,primme_svds->n)
+        primme_svds->numSvals*max(primme_svds->mLocal,primme_svds->nLocal)
         *sizeof(Complex_Z), "primme_svds->realWork"); 
       if (primme_svds->realWork == NULL){
           fprintf(stderr,"primme_svds: realWork memory allocation failed\n");
@@ -169,43 +177,17 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* --------------------------------------------------------*/
       primme_display_params(primme_svds->primme);
      
-      /* When normal equations method is used, since we will 
+      /* Normal equations or hybrid method is used, since we will 
          arrange U and V in order so when m>=n, use second part of
-         memory for V; when m<n, use first part of memory for U. 
-         When hybrid method is used, always use second part of memory
-         for whatever U or V so that we can reduce memory moving. */
-      if (primme_svds->svdsMethod == primme_svds_normalequations){ 
-          if (primme_svds->m >= primme_svds->n){
-              /* Copy initial guesses to proper place of svecs */
-              Num_zcopy_zprimme(primme_svds->n*
-                    primme_svds->initSize, svecs, 1, &svecs[
-                    primme_svds->numSvals*primme_svds->m], 1);
-              ret = zprimme(svals, &svecs[primme_svds->numSvals*
-                    primme_svds->m], resNorms, &primme_svds->primme); 
-          }
-          else{ 
-              ret = zprimme(svals, svecs, resNorms, 
-                                             &primme_svds->primme); 
-          }
-      }
-      else if (primme_svds->svdsMethod == primme_svds_hybrid){ 
-          if (primme_svds->m >= primme_svds->n){
-              /* Copy initial guesses to proper place of svecs */
-              Num_zcopy_zprimme(primme_svds->n*
-                    primme_svds->initSize, svecs, 1, &svecs[
-                    primme_svds->numSvals*primme_svds->m], 1);
-              ret = zprimme(svals, &svecs[primme_svds->numSvals*
-                    primme_svds->m], resNorms, &primme_svds->primme);
-          }
-          else{
-              /* Copy initial guesses to proper place of svecs */
-              Num_zcopy_zprimme(primme_svds->m*
-                    primme_svds->initSize, svecs, 1, &svecs[
-                    primme_svds->numSvals*primme_svds->n], 1);
-              ret = zprimme(svals, &svecs[primme_svds->numSvals*
-                    primme_svds->n], resNorms, &primme_svds->primme);
-          }
-      }
+         memory for V; when m<n, use first part of memory for U.*/ 
+      if (primme_svds->m >= primme_svds->n){
+         ret = zprimme(svals, &svecs[primme_svds->numSvals*
+            primme_svds->mLocal], resNorms, &primme_svds->primme); 
+       }
+       else{ 
+          ret = zprimme(svals, svecs, resNorms, 
+            &primme_svds->primme); 
+       }
       if(ret != 0) {
         fprintf(stderr,"primme_svds: call PRIMME(ATA) failed - error code:%d\n",ret);
         return(CALL_PRIMME_ATA_FAILURE);
@@ -227,86 +209,36 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* 2) if use hybrid method in stage 1, pass the proper     */
       /*    initial guesses and shifts for hybrid in stage 2     */
       /* --------------------------------------------------------*/
-      if (primme_svds->svdsMethod == primme_svds_normalequations) {
-          if (primme_svds->m >= primme_svds->n){
-              for (i=0;i<primme_svds->numSvals;i++){
-                  svals[i] = sqrt(fabs(svals[i]));
-                  (* primme_svds->matrixMatvec)(&svecs[
-                  primme_svds->numSvals*primme_svds->m + i*primme_svds->n],
-                  &svecs[i*primme_svds->m], &one, primme_svds,notransp);
+      if (primme_svds->m >= primme_svds->n){
+          for (i=0;i<primme_svds->numSvals;i++){
+              svals[i] = sqrt(fabs(svals[i]));
+              (* primme_svds->matrixMatvec)(&svecs[
+                 primme_svds->numSvals*primme_svds->mLocal + i*primme_svds->nLocal],
+                  &svecs[i*primme_svds->mLocal], &one, primme_svds,notransp);
                   {ztmp.r = 1.0L/svals[i]; ztmp.i = 0.0L;}
-                  Num_scal_zprimme(primme_svds->m, ztmp, 
-                                        &svecs[i*primme_svds->m], 1);
-              }
+                  Num_scal_zprimme(primme_svds->mLocal, ztmp,
+                    &svecs[i*primme_svds->mLocal], 1);
           }
-          else {
-              for (i=0;i<primme_svds->numSvals;i++){
-                  svals[i] = sqrt(fabs(svals[i]));
-                  (* primme_svds->matrixMatvec)(&svecs
-                  [i*primme_svds->m], &svecs[primme_svds->numSvals*
-                  primme_svds->m + i*primme_svds->n], &one, primme_svds,transp);
+      }
+      else {
+          for (i=0;i<primme_svds->numSvals;i++){
+              svals[i] = sqrt(fabs(svals[i]));
+              (* primme_svds->matrixMatvec)(&svecs
+                [i*primme_svds->mLocal], &svecs[primme_svds->numSvals*
+                primme_svds->mLocal + i*primme_svds->nLocal], &one, primme_svds,transp);
                   {ztmp.r = 1.0L/svals[i]; ztmp.i = 0.0L;}
-                  Num_scal_zprimme(primme_svds->n, ztmp, 
-                            &svecs[primme_svds->numSvals*primme_svds->m 
-                            + i*primme_svds->n], 1);
-              }
-          }
-          primme_svds->aNorm = sqrt(primme_svds->primme.aNorm);
-          primme_display_params(primme_svds->primme);//lingfei: remove it later
-          primme_Free(&primme_svds->primme);
+                  Num_scal_zprimme(primme_svds->nLocal, ztmp, 
+                            &svecs[primme_svds->numSvals*primme_svds->mLocal 
+                            + i*primme_svds->nLocal], 1);
+           }
+      }
+      primme_svds->aNorm = sqrt(primme_svds->primme.aNorm);
+      primme_svds->initSize = primme_svds->primme.initSize;
+      primme_Free(&primme_svds->primme);
+      if (primme_svds->svdsMethod == primme_svds_normalequations){
           return 0;
       }
-      /* Formulate initial guesses for B = [0 A';A 0] in stage 2, we have 
-      to rearrange U and V to interweave them as long vectors [V U]^T . 
-      Also, we intentionaly put the target one as the last place so that 
-      we can build Krylov space toward the target eigenvalue. 
-      There are two cases: 
-      1) when m >= n, V=[v1 v2 v3 ... vk] is in the second part of svecs, 
-      we compute U = AV/sigma, and arrange initial guesses 
-      [v1 u1, v2 u2,...,v3 u3, vk uk]. 
-      2) when m < n, U=[u1 u2 u3 ... uk] is in the second part of svecs, 
-      we compute V = A'U/sigma, and arrange initial guesses 
-      [v1 u1, v2 u2,...,v3 u3, vk uk].  */
-      else if (primme_svds->svdsMethod == primme_svds_hybrid) {
-          if (primme_svds->m >= primme_svds->n){
-              for (i=0;i<primme_svds->numSvals;i++){
-                  svals[i] = sqrt(fabs(svals[i]));
-                  Num_zcopy_zprimme(primme_svds->n, &svecs[
-                        primme_svds->numSvals*primme_svds->m + 
-                        i*primme_svds->n], 1, &svecs[i*
-                        (primme_svds->m+primme_svds->n)], 1); 
-                  (* primme_svds->matrixMatvec)(&svecs[i*
-                        (primme_svds->m+primme_svds->n)], &svecs[i*
-                        (primme_svds->m+primme_svds->n) + 
-                        primme_svds->n], &one, primme_svds,notransp);
-                  {ztmp.r = 1.0L/svals[i]; ztmp.i = 0.0L;}
-                  Num_scal_zprimme(primme_svds->m, ztmp, &svecs[
-                        i*(primme_svds->m+primme_svds->n) + 
-                        primme_svds->n], 1);
-              }
-          }
-          else {
-              for (i=0;i<primme_svds->numSvals;i++){
-                  svals[i] = sqrt(fabs(svals[i]));
-                  (* primme_svds->matrixMatvec)(&svecs[
-                        primme_svds->numSvals*primme_svds->n + 
-                        i*primme_svds->m], &svecs[i*
-                        (primme_svds->m+primme_svds->n)], 
-                        &one, primme_svds, transp);
-                  {ztmp.r = 1.0L/svals[i]; ztmp.i = 0.0L;}
-                  Num_scal_zprimme(primme_svds->n, ztmp, &svecs[
-                    i*(primme_svds->m+primme_svds->n)], 1);
-                  Num_zcopy_zprimme(primme_svds->m, &svecs[
-                        primme_svds->numSvals*primme_svds->n + 
-                        i*primme_svds->m], 1, &svecs[i*(primme_svds->m
-                        +primme_svds->n) + primme_svds->n], 1); 
-              }
-          }
-          primme_svds->aNorm = sqrt(primme_svds->primme.aNorm);
-          primme_display_params(primme_svds->primme);//lingfei: remove it later
-          primme_Free(&primme_svds->primme);
-          primme_svds_Free(primme_svds);
-      }
+      primme_svds_Free(primme_svds);
    }
    
    /* ----------------------------------------------------------*/
@@ -319,8 +251,10 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* Set some defaults for sequential programs */
       /* ----------------------------------------- */
       if (primme_svds->numProcs == 1) {
-         primme_svds->nLocal = primme_svds->n + primme_svds->m; 
+         primme_svds->mLocal = primme_svds->m; 
+         primme_svds->nLocal = primme_svds->n; 
          primme_svds->procID = 0;
+         primme_svds->numProcs = 1;
       }
 
       /* -----------------------------------------------*/
@@ -359,25 +293,27 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* Set some parameters only for parallel programs */
       /* ---------------------------------------------- */
       if (primme_svds->numProcs > 1 && primme_svds->globalSumDouble != NULL) {
-           primme_svds->primme.nLocal = primme_svds->nLocal; // lingfei: may need modify later
            primme_svds->primme.procID = primme_svds->procID;
+           primme_svds->primme.numProcs = primme_svds->numProcs;
+           primme_svds->primme.commInfo = primme_svds->commInfo;
            primme_svds->primme.globalSumDouble = primme_svds->globalSumDouble;
       }
       
       primme_svds->primme.n = primme_svds->m+primme_svds->n;
+      primme_svds->primme.nLocal = primme_svds->mLocal+primme_svds->nLocal;
       if (primme_svds->target == primme_svds_largest) {
           primme_svds->primme.target = primme_largest;
           method = primme_svds->eigsMethod_stage2;
           if (primme_set_method(method, &primme_svds->primme) < 0 ) {
               fprintf(primme_svds->primme.outputFile, 
-                        "No preset method. Using custom settings\n");
+                    "No preset method. Using custom settings\n");
           }
           primme_svds->primme.projectionParams.projection = primme_RR;
           primme_svds->primme.projectionParams.refinedScheme = primme_DisableRef;
           primme_svds->primme.locking = 0;
           if (primme_svds->svdsMethod == primme_svds_hybrid){
              primme_svds->primme.InitBasisMode = 1;
-             primme_svds->primme.initSize = primme_svds->numSvals;
+//             primme_svds->primme.initSize = primme_svds->numSvals;
           }
       }
       else {
@@ -385,7 +321,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
           method = primme_svds->eigsMethod_stage2;
           if (primme_set_method(method, &primme_svds->primme) < 0 ) {
               fprintf(primme_svds->primme.outputFile, 
-                        "No preset method. Using custom settings\n");
+                    "No preset method. Using custom settings\n");
           }
           primme_svds->primme.locking = 1;
           primme_svds->primme.projectionParams.projection = primme_RR_Refined;
@@ -416,7 +352,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
               primme_svds->primme.qr_need = 1;
               primme_svds->primme.InitBasisMode = 1;
               primme_svds->primme.ReIntroInitGuessToBasis = 1;
-              primme_svds->primme.initSize = primme_svds->numSvals;
+//              primme_svds->primme.initSize = primme_svds->numSvals;
           }
       }
       /* ---------------------------------------------------*/
@@ -424,8 +360,8 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* -------------------------------------------------- */
       /* Allocate realWork array for MV and Precond operations */
       primme_svds->realWork = (Complex_Z *)primme_valloc(
-        primme_svds->numSvals*max(primme_svds->m,primme_svds->n)
-        *sizeof(Complex_Z), "primme_svds->realWork"); 
+        primme_svds->numSvals*(primme_svds->mLocal+primme_svds->nLocal)
+       *sizeof(Complex_Z), "primme_svds->realWork"); 
       if (primme_svds->realWork == NULL){
           fprintf(stderr,"primme_svds: realWork memory allocation failed\n");
           return MALLOC_FAILURE;
@@ -435,6 +371,23 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       primme_svds->primme.matrixMatvec = MatrixB_Matvec;
       primme_svds->primme.applyPreconditioner = MatrixB_Precond;
 
+      /* ---------------------------------------------------*/
+      /* Set up initial vectors for PRIMME                  */
+      /* -------------------------------------------------- */
+      int num = min(primme_svds->initSize, primme_svds->numSvals);
+      Num_zcopy_zprimme(num*(primme_svds->nLocal+primme_svds->mLocal), svecs, 1, realWork, 1);
+      for (i=0; i<num; i++) {
+          Num_zcopy_zprimme(primme_svds->nLocal,
+                &realWork[num*primme_svds->mLocal+i*primme_svds->nLocal], 1,
+                &svecs[i*(primme_svds->nLocal+primme_svds->mLocal)], 1);
+      }
+      for (i=0; i<num; i++) {
+          Num_zcopy_zprimme(primme_svds->mLocal, 
+                &realWork[i*primme_svds->mLocal], 1,
+                &svecs[i*(primme_svds->nLocal+primme_svds->mLocal) 
+                + primme_svds->nLocal], 1);
+      }
+      
       /* --------------------------------------------------------*/
       /* Call primme eigensolver for the second stage            */ 
       /* --------------------------------------------------------*/
@@ -462,7 +415,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
       /* vectors and formulate U and V in order                       */ 
       /* -------------------------------------------------------------*/
       {ztmp.r = sqrt(2.0L); ztmp.i = 0.0L;}
-      Num_scal_zprimme((primme_svds->m + primme_svds->n)*
+      Num_scal_zprimme((primme_svds->mLocal + primme_svds->nLocal)*
             primme_svds->numSvals, ztmp, svecs, 1);
 
       /* Suppose returned eigenvectors are [v1 u1 v2 u2 ... vk uk],
@@ -471,15 +424,15 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
          Then we move primme_svds->realWork to the second part of 
          svecs memory for V.  */
       for (i=0;i<primme_svds->numSvals;i++){
-          Num_zcopy_zprimme(primme_svds->n, &svecs[i*
-                (primme_svds->n + primme_svds->m)], 1, &realWork[i*
-                primme_svds->n], 1); 
-          Num_zcopy_zprimme(primme_svds->m, &svecs[i*
-                (primme_svds->m+primme_svds->n) + primme_svds->n], 1, 
-                &svecs[i*(primme_svds->n+ primme_svds->m)], 1); 
+          Num_zcopy_zprimme(primme_svds->nLocal, &svecs[i*
+                (primme_svds->nLocal + primme_svds->mLocal)], 1, &realWork[i*
+                primme_svds->nLocal], 1); 
+          Num_zcopy_zprimme(primme_svds->mLocal, &svecs[i*
+                (primme_svds->mLocal+primme_svds->nLocal) + primme_svds->nLocal], 1, 
+                &svecs[i*(primme_svds->nLocal+ primme_svds->mLocal)], 1); 
       }
-      Num_zcopy_zprimme(primme_svds->n*primme_svds->numSvals, 
-            realWork, 1, &svecs[primme_svds->numSvals*primme_svds->m], 1); 
+      Num_zcopy_zprimme(primme_svds->nLocal*primme_svds->numSvals, 
+            realWork, 1, &svecs[primme_svds->numSvals*primme_svds->mLocal], 1); 
       primme_svds->aNorm = primme_svds->primme.aNorm;
       primme_display_params(primme_svds->primme);//lingfei: remove it later
       primme_Free(&primme_svds->primme);
@@ -575,8 +528,8 @@ void MatrixATA_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
        reduce the possibilities for all kinds of memory issues. */
     if(primme_svds->m >= primme_svds->n){
         for (i=0;i<*blockSize;i++) {
-            xcopy = &xvec[i * min(primme_svds->m,primme_svds->n)];
-            ycopy = &yvec[i * min(primme_svds->m,primme_svds->n)];
+            xcopy = &xvec[i*primme->nLocal];
+            ycopy = &yvec[i*primme->nLocal];
             (* primme_svds->matrixMatvec)(xcopy, primme_svds->realWork, &one, 
                                                     primme_svds, notransp);
             (* primme_svds->matrixMatvec)(primme_svds->realWork, ycopy, &one, 
@@ -585,8 +538,8 @@ void MatrixATA_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
     }
     else{ /* primme_svds->m < primme_svds->n */
         for (i=0;i<*blockSize;i++) {
-            xcopy = &xvec[i * min(primme_svds->m,primme_svds->n)];
-            ycopy = &yvec[i * min(primme_svds->m,primme_svds->n)];
+            xcopy = &xvec[i*primme->nLocal];
+            ycopy = &yvec[i*primme->nLocal];
             (* primme_svds->matrixMatvec)(xcopy, primme_svds->realWork, &one, 
                                                     primme_svds, transp);
             (* primme_svds->matrixMatvec)(primme_svds->realWork, ycopy, &one, 
@@ -612,8 +565,8 @@ void MatrixB_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
 
     xvec = (Complex_Z *)x;
     yvec = (Complex_Z *)y;
-    xcopy = &xvec[primme_svds->n];
-    ycopy = &yvec[primme_svds->n];
+    xcopy = &xvec[primme_svds->mLocal];
+    ycopy = &yvec[primme_svds->nLocal];
     
     if((primme_svds->target == primme_svds_smallest && 
         primme_svds->maxBlockSize == 1) || 
@@ -652,8 +605,8 @@ void MatrixATA_Precond(void *x, void *y, int *blockSize, primme_params *primme){
        reduce the possibilities for all kinds of memory issues. */
     if(primme_svds->m >= primme_svds->n){
         for (i=0;i<*blockSize;i++) {
-            xcopy = &xvec[i * min(primme_svds->m,primme_svds->n)];
-            ycopy = &yvec[i * min(primme_svds->m,primme_svds->n)];
+            xcopy = &xvec[i*primme->nLocal];
+            ycopy = &yvec[i*primme->nLocal];
             (* primme_svds->applyPreconditioner)(xcopy, primme_svds->realWork, &one, 
                                                     primme_svds, transp);
             (* primme_svds->applyPreconditioner)(primme_svds->realWork, ycopy, &one, 
@@ -662,8 +615,8 @@ void MatrixATA_Precond(void *x, void *y, int *blockSize, primme_params *primme){
     }
     else{ /* primme_svds->m < primme_svds->n */
         for (i=0;i<*blockSize;i++) {
-            xcopy = &xvec[i * min(primme_svds->m,primme_svds->n)];
-            ycopy = &yvec[i * min(primme_svds->m,primme_svds->n)];
+            xcopy = &xvec[i*primme->nLocal];
+            ycopy = &yvec[i*primme->nLocal];
             (* primme_svds->applyPreconditioner)(xcopy, primme_svds->realWork, &one, 
                                                     primme_svds, notransp);
             (* primme_svds->applyPreconditioner)(primme_svds->realWork, ycopy, &one, 
@@ -689,8 +642,8 @@ void MatrixB_Precond(void *x, void *y, int *blockSize, primme_params *primme){
 
     xvec = (Complex_Z *)x;
     yvec = (Complex_Z *)y;
-    xcopy = &xvec[primme_svds->n];
-    ycopy = &yvec[primme_svds->n];
+    xcopy = &xvec[primme_svds->mLocal];
+    ycopy = &yvec[primme_svds->nLocal];
 
     if((primme_svds->target == primme_svds_smallest && 
         primme_svds->maxBlockSize == 1) || 

@@ -12,8 +12,8 @@
 void primme_svds_initialize(primme_svds_params *primme_svds) {
 
    /* Essential parameters */
-   primme_svds->n                       = 0;
    primme_svds->m                       = 0;
+   primme_svds->n                       = 0;
    primme_svds->numSvals                = 6;
    primme_svds->target                  = primme_svds_largest;
    primme_svds->eigsMethod_stage1       = DEFAULT_MIN_MATVECS;
@@ -27,6 +27,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    /* Parallel computing parameters */
    primme_svds->numProcs                = 1;
    primme_svds->procID                  = 0;
+   primme_svds->mLocal                  = 0;
    primme_svds->nLocal                  = 0;
    primme_svds->commInfo                = NULL;
    primme_svds->globalSumDouble         = NULL;
@@ -42,6 +43,10 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    /* Matvec and preconditioner */
    primme_svds->matrixMatvec            = NULL;
    primme_svds->applyPreconditioner     = NULL;
+   primme_svds->matrixATA_Matvec        = NULL;
+   primme_svds->applyATA_Preconditioner = NULL;
+   primme_svds->matrixAugmented_Matvec  = NULL;
+   primme_svds->applyAugmented_Preconditioner = NULL;
 
    /* Other important parameters users may set */
    primme_svds->aNorm                   = 0.0L;

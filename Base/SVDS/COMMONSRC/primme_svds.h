@@ -34,9 +34,22 @@ typedef struct primme_svds_params {
     void (*applyPreconditioner) 
         (void *x,  void *y, int *blockSize, struct primme_svds_params *primme_svds, const char *transpose);
 
+    /* The user may provide matrix-vector and apply 
+       preconditioning for normal equation matrix ATA or 
+       augmented matrix B directly, not implement yet.  */
+    void (*matrixATA_Matvec) 
+        (void *x,  void *y, int *blockSize, struct primme_svds_params *primme_svds);
+    void (*applyATA_Preconditioner) 
+        (void *x,  void *y, int *blockSize, struct primme_svds_params *primme_svds);
+    void (*matrixAugmented_Matvec) 
+        (void *x,  void *y, int *blockSize, struct primme_svds_params *primme_svds);
+    void (*applyAugmented_Preconditioner) 
+        (void *x,  void *y, int *blockSize, struct primme_svds_params *primme_svds);
+
     /* Input for the following is only required for parallel programs */
     int numProcs;
     int procID;
+    int mLocal;
     int nLocal;
     void *commInfo;
     void (*globalSumDouble)
