@@ -357,7 +357,8 @@ int lock_vectors_zprimme(double tol, double *aNormEstimate, double *maxConvTol,
             primme->AppForRef == primme_TwoStage_SVD &&
             numGuesses == 0){*/
         if(primme->ReIntroInitGuessToBasis && primme->target != primme_smallest 
-            && primme->target != primme_largest && *numGuesses == 0) {  
+            && primme->target != primme_largest && *numGuesses == 0
+            && *numLocked + 1 < primme->numEvals) {  
             Num_zcopy_zprimme(primme->nLocal,   
                 &evecs[primme->nLocal*(*numLocked + 1)], 1, &V[primme->nLocal*i], 1);
             flag[i] = INITIAL_GUESS;

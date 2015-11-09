@@ -364,7 +364,8 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
             primme->AppForRef == primme_TwoStage_SVD &&
             numGuesses == 0){*/
         if(primme->ReIntroInitGuessToBasis && primme->target != primme_smallest 
-            && primme->target != primme_largest && *numGuesses == 0) {  
+            && primme->target != primme_largest && *numGuesses == 0
+            && *numLocked + 1 < primme->numEvals) {  
             Num_@(pre)copy_@(pre)primme(primme->nLocal,   
                 &evecs[primme->nLocal*(*numLocked + 1)], 1, &V[primme->nLocal*i], 1);
             flag[i] = INITIAL_GUESS;
