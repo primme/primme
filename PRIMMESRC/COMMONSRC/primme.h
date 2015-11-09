@@ -205,8 +205,6 @@ typedef struct primme_params {
 
    /* lingfei: primme_svds. The RR or Harmonic or Refined projection is used*/
    projection_params projectionParams; 
-//   primme_projection projection;
-//   primme_AppForRef AppForRef;
    int qr_need; /*indicate if qr factorziation is needed for current projection method*/
    
    /* the following will be given default values depending on the method */
@@ -237,9 +235,9 @@ typedef struct primme_params {
    struct currentestimates currentEstimates;
    /* lingfei: several new flags to control the way we perform in PRIMME*/
    int DefineConvCriteria;
-   int InitBasisMode;  // 0 no Krylov init basis only user input (or a random one)
-   			           // 1 if use user init guesses to build a krylov space
-			           // 2 use init guesses and if room build a random krylov space
+   int InitBasisMode;  /* 0 no Krylov init basis only user input (or a random one)
+   			  1 if use user init guesses to build a krylov space
+			  2 use init guesses and if room build a random krylov space */
    int ReIntroInitGuessToBasis;
    int ForceVerificationOnExit;
     

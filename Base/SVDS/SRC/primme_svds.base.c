@@ -48,7 +48,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
             primme_svds_params *primme_svds) {
       
    int ret;
-   int i;
+   int i, num;
    int one = 1; /*used for Matvec*/
    int At = 0;
    const char notransp[] = "notransp"; /*used for Matvec*/
@@ -151,7 +151,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
           }
       }
       if (primme_svds->svdsMethod == primme_svds_hybrid){
-          primme_svds->primme.DefineConvCriteria = 1;//lingfei: may remove it later
+          primme_svds->primme.DefineConvCriteria = 1; /* lingfei: may remove it later */
           primme_svds->primme.ForceVerificationOnExit = 1;
       }
 
@@ -330,7 +330,6 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
           primme_svds->primme.locking = 0;
           if (primme_svds->svdsMethod == primme_svds_hybrid){
              primme_svds->primme.InitBasisMode = 1;
-//             primme_svds->primme.initSize = primme_svds->numSvals;
           }
       }
       else {
@@ -369,7 +368,6 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
               primme_svds->primme.qr_need = 1;
               primme_svds->primme.InitBasisMode = 1;
               primme_svds->primme.ReIntroInitGuessToBasis = 1;
-//              primme_svds->primme.initSize = primme_svds->numSvals;
           }
       }
       /* ---------------------------------------------------*/
@@ -398,7 +396,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       /* ---------------------------------------------------*/
       /* Set up initial vectors for PRIMME                  */
       /* -------------------------------------------------- */
-      int num = min(primme_svds->initSize, primme_svds->numSvals);
+      num = min(primme_svds->initSize, primme_svds->numSvals);
       Num_@(pre)copy_@(pre)primme(num*primme_svds->mLocal, svecs, 1, realWork, 1);
       Num_@(pre)copy_@(pre)primme(num*primme_svds->nLocal, &svecs[primme_svds->initSize*primme_svds->mLocal],
                                   1, &realWork[num*primme_svds->mLocal], 1);
@@ -467,7 +465,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
             realWork, 1, &svecs[primme_svds->numSvals*primme_svds->mLocal], 1); 
       primme_svds->aNorm = primme_svds->primme.aNorm;
       if (primme_svds->procID == 0)
-         primme_display_params(primme_svds->primme);//lingfei: remove it later
+         primme_display_params(primme_svds->primme); /* lingfei: remove it later */
       primme_Free(&primme_svds->primme);
    }
 
@@ -543,8 +541,6 @@ void MatrixATA_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
     const char notransp[] = "notransp"; /*used for Matvec*/
     const char transp[] = "transp"; /*used for Matvec*/
     primme_svds_params *primme_svds;
-    primme_svds = (primme_svds_params *) primme->matrix;
-
     int one = 1; 
     int i; 
     @(type) *xvec;
@@ -552,6 +548,7 @@ void MatrixATA_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
     void *xcopy;
     void *ycopy;
     
+    primme_svds = (primme_svds_params *) primme->matrix;
 #ifdefarithm L_DEFCPLX
     xvec = (Complex_Z *)x;
     yvec = (Complex_Z *)y;
@@ -596,12 +593,12 @@ void MatrixB_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
     const char notransp[] = "notransp"; /*used for Matvec*/
     const char transp[] = "transp"; /*used for Matvec*/
     primme_svds_params *primme_svds;
-    primme_svds = (primme_svds_params *) primme->matrix;
     @(type) *xvec;
     @(type) *yvec;
     void *xcopy;
     void *ycopy;
 
+    primme_svds = (primme_svds_params *) primme->matrix;
 #ifdefarithm L_DEFCPLX
     xvec = (Complex_Z *)x;
     yvec = (Complex_Z *)y;
@@ -632,8 +629,6 @@ void MatrixATA_Precond(void *x, void *y, int *blockSize, primme_params *primme){
    const char notransp[] = "notransp"; /*used for Matvec*/
    const char transp[] = "transp"; /*used for Matvec*/
     primme_svds_params *primme_svds;
-    primme_svds = (primme_svds_params *) primme->matrix;
-        
     int one = 1; 
     int i; 
     @(type) *xvec;
@@ -641,6 +636,7 @@ void MatrixATA_Precond(void *x, void *y, int *blockSize, primme_params *primme){
     void *xcopy;
     void *ycopy;
     
+    primme_svds = (primme_svds_params *) primme->matrix;
 #ifdefarithm L_DEFCPLX
     xvec = (Complex_Z *)x;
     yvec = (Complex_Z *)y;
@@ -685,12 +681,12 @@ void MatrixB_Precond(void *x, void *y, int *blockSize, primme_params *primme){
     const char notransp[] = "notransp"; /*used for Matvec*/
     const char transp[] = "transp"; /*used for Matvec*/
     primme_svds_params *primme_svds;
-    primme_svds = (primme_svds_params *) primme->matrix;
     @(type) *xvec;
     @(type) *yvec;
     void *xcopy;
     void *ycopy;
 
+    primme_svds = (primme_svds_params *) primme->matrix;
 #ifdefarithm L_DEFCPLX
     xvec = (Complex_Z *)x;
     yvec = (Complex_Z *)y;

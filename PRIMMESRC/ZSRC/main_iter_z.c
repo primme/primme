@@ -308,8 +308,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    printf("primme->DefineConvCriteria = %d\n",primme->DefineConvCriteria);
    printf("primme->target = %d\n",primme->target);
    if (primme->DefineConvCriteria && primme->aNorm > 0.0L){
-       primme->currentEstimates.Anormest = primme->aNorm;/*user provides the norm of matrix A*/
-       primme->aNorm = 0.0L;//reset primme->aNorm if calling ATA
+       primme->currentEstimates.Anormest = primme->aNorm; /*user provides the norm of matrix A*/
+       primme->aNorm = 0.0L; /* reset primme->aNorm if calling ATA */
    }
 
    if (primme->aNorm > 0.0L) {
@@ -700,7 +700,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
              fprintf(primme->outputFile, 
                 "Force verification before return to improve the quality of Ritz pairs\n");
              converged = 0;
-             primme->ForceVerificationOnExit = 2;// callSvdsATA only triggers RR once
+             primme->ForceVerificationOnExit = 2; /* callSvdsATA only triggers RR once */
          }
 
          /* ---------------------------------------------------------- */

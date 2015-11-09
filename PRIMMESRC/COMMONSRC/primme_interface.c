@@ -81,9 +81,6 @@ void primme_initialize(primme_params *primme) {
        primme->projectionParams.projection = primme_RR_Refined;
        primme->projectionParams.refinedScheme  = primme_OneAccuShift_QR;
    }
-//   primme->callSvdsATA             = 0;
-//   primme->largestRitzValForSVD    = NULL;
-//   primme->targetRitzVal           = NULL;
    primme->currentEstimates.Anormest           = 0;
    primme->currentEstimates.targetRitzVal      = 0;
    primme->currentEstimates.targetRitzValNorm  = 0;

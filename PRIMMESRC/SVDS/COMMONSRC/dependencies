@@ -1,3 +1,3 @@
 primme_svds_interface.o: primme_svds_interface.c primme_svds.h \
  ../../../PRIMMESRC/COMMONSRC/primme.h \
- ../../../PRIMMESRC/COMMONSRC/Complex.h
+ ../../../PRIMMESRC/COMMONSRC/Complexz.h
