@@ -122,8 +122,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       }
 
       primme_svds->primme.n = At == 0 ? primme_svds->n : primme_svds->m;
-      primme_svds->primme.nLocal = At == 0 ? primme_svds->nLocal :     primme_svds->mLocal;
-      /*Lingfei: is this right? if m>n, primme.n = n then primme.nLocal should be also nLocal. n and nLocal, and m and mLocal should be consistently chosen.*/
+      primme_svds->primme.nLocal = At == 0 ? primme_svds->nLocal : primme_svds->mLocal;
       if (primme_svds->target == primme_svds_largest){
           primme_svds->primme.target = primme_largest;
       }
@@ -182,7 +181,8 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       /* --------------------------------------------------------*/
       /* Call primme eigensolver for the first stage             */ 
       /* --------------------------------------------------------*/
-      primme_display_params(primme_svds->primme);
+      if (primme_svds->procID == 0)
+         primme_display_params(primme_svds->primme);
      
       /* Normal equations or hybrid method is used, since we will 
          arrange U and V in order so when m>=n, use second part of
@@ -216,11 +216,12 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       /* 2) if use hybrid method in stage 1, pass the proper     */
       /*    initial guesses and shifts for hybrid in stage 2     */
       /* --------------------------------------------------------*/
+      primme_svds->initSize = primme_svds->primme.initSize;
       if (primme_svds->m >= primme_svds->n){
-          for (i=0;i<primme_svds->numSvals;i++){
+          for (i=0;i<primme_svds->initSize;i++){
               svals[i] = sqrt(fabs(svals[i]));
               (* primme_svds->matrixMatvec)(&svecs[
-                 primme_svds->numSvals*primme_svds->mLocal + i*primme_svds->nLocal],
+                 primme_svds->initSize*primme_svds->mLocal + i*primme_svds->nLocal],
                   &svecs[i*primme_svds->mLocal], &one, primme_svds,notransp);
 #ifdefarithm L_DEFCPLX
                   {ztmp.r = 1.0L/svals[i]; ztmp.i = 0.0L;}
@@ -233,10 +234,10 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
           }
       }
       else {
-          for (i=0;i<primme_svds->numSvals;i++){
+          for (i=0;i<primme_svds->initSize;i++){
               svals[i] = sqrt(fabs(svals[i]));
               (* primme_svds->matrixMatvec)(&svecs
-                [i*primme_svds->mLocal], &svecs[primme_svds->numSvals*
+                [i*primme_svds->mLocal], &svecs[primme_svds->initSize*
                 primme_svds->mLocal + i*primme_svds->nLocal], &one, primme_svds,transp);
 #ifdefarithm L_DEFCPLX
                   {ztmp.r = 1.0L/svals[i]; ztmp.i = 0.0L;}
@@ -245,12 +246,11 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
                   ztmp = 1.0L/svals[i];
 #endifarithm
                   Num_scal_@(pre)primme(primme_svds->nLocal, ztmp, 
-                            &svecs[primme_svds->numSvals*primme_svds->mLocal 
+                            &svecs[primme_svds->initSize*primme_svds->mLocal 
                             + i*primme_svds->nLocal], 1);
            }
       }
       primme_svds->aNorm = sqrt(primme_svds->primme.aNorm);
-      primme_svds->initSize = primme_svds->primme.initSize;
       primme_Free(&primme_svds->primme);
       if (primme_svds->svdsMethod == primme_svds_normalequations){
           return 0;
@@ -399,7 +399,9 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       /* Set up initial vectors for PRIMME                  */
       /* -------------------------------------------------- */
       int num = min(primme_svds->initSize, primme_svds->numSvals);
-      Num_@(pre)copy_@(pre)primme(num*(primme_svds->nLocal+primme_svds->mLocal), svecs, 1, realWork, 1);
+      Num_@(pre)copy_@(pre)primme(num*primme_svds->mLocal, svecs, 1, realWork, 1);
+      Num_@(pre)copy_@(pre)primme(num*primme_svds->nLocal, &svecs[primme_svds->initSize*primme_svds->mLocal],
+                                  1, &realWork[num*primme_svds->mLocal], 1);
       for (i=0; i<num; i++) {
           Num_@(pre)copy_@(pre)primme(primme_svds->nLocal,
                 &realWork[num*primme_svds->mLocal+i*primme_svds->nLocal], 1,
@@ -415,7 +417,8 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       /* --------------------------------------------------------*/
       /* Call primme eigensolver for the second stage            */ 
       /* --------------------------------------------------------*/
-      primme_display_params(primme_svds->primme);
+      if (primme_svds->procID == 0)
+         primme_display_params(primme_svds->primme);
      
       ret = @(pre)primme(svals, svecs, resNorms, &primme_svds->primme); 
       
@@ -463,7 +466,8 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
       Num_@(pre)copy_@(pre)primme(primme_svds->nLocal*primme_svds->numSvals, 
             realWork, 1, &svecs[primme_svds->numSvals*primme_svds->mLocal], 1); 
       primme_svds->aNorm = primme_svds->primme.aNorm;
-      primme_display_params(primme_svds->primme);//lingfei: remove it later
+      if (primme_svds->procID == 0)
+         primme_display_params(primme_svds->primme);//lingfei: remove it later
       primme_Free(&primme_svds->primme);
    }
 
@@ -606,7 +610,7 @@ void MatrixB_Matvec(void *x, void *y, int *blockSize, primme_params *primme){
     xvec = (double *)x;
     yvec = (double *)y;
 #endifarithm
-    xcopy = &xvec[primme_svds->mLocal];
+    xcopy = &xvec[primme_svds->nLocal];
     ycopy = &yvec[primme_svds->nLocal];
     
     if((primme_svds->target == primme_svds_smallest && 
@@ -695,7 +699,7 @@ void MatrixB_Precond(void *x, void *y, int *blockSize, primme_params *primme){
     xvec = (double *)x;
     yvec = (double *)y;
 #endifarithm
-    xcopy = &xvec[primme_svds->mLocal];
+    xcopy = &xvec[primme_svds->nLocal];
     ycopy = &yvec[primme_svds->nLocal];
 
     if((primme_svds->target == primme_svds_smallest && 
