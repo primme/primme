@@ -435,7 +435,7 @@ static int init_block_krylov(Complex_Z *V, Complex_Z *W, int dv1, int dv2,
       There are two cases: 
       1) InitBasisMode == 2, build a random krylov subspace
       2) InitBasisMode == 1, build a krylov subspace from first user initial guess */
-        if (primme->InitBasisMode == 2) {
+        if (primme->InitBasisMode == 2 || dv1 < primme->maxBlockSize) {
             Num_larnv_zprimme(2, primme->iseed, primme->nLocal*primme->maxBlockSize,
                 &V[primme->nLocal*dv1]);
             /* lingfei: primme_svds. change ortho function for returning Q and R */
