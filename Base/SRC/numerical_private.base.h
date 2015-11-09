@@ -43,6 +43,7 @@
 #define ZSWAP  zswap_
 #define ZGEMM  zgemm_
 #define ZHEMM  zhemm_
+#define ZHEMV  zhemv_
 #define ZAXPY  zaxpy_
 #define ZGEMV  zgemv_
 #define ZSCAL  zscal_

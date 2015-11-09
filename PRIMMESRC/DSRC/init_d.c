@@ -319,7 +319,7 @@ int init_basis_dprimme(double *V, double *W, double *evecs,
         *basisSize = primme->minRestartSize;
       }
       else {
-        *basisSize = primme->initSize;
+        *basisSize = min(primme->initSize, primme->minRestartSize);
       }
    }
    /* ----------------------------------------------------------- */

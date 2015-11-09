@@ -319,7 +319,7 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
         *basisSize = primme->minRestartSize;
       }
       else {
-        *basisSize = primme->initSize;
+        *basisSize = min(primme->initSize, primme->minRestartSize);
       }
    }
    /* ----------------------------------------------------------- */

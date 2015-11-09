@@ -344,10 +344,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
             *numGuesses = *numGuesses - 1;
             *nextGuess = *nextGuess + 1;
          }
-         else {
-            flag[i] = LOCKED;
-         }
-
+         else
         /* lingfei: If two-stages SVD is used, then the next initial guess 
            is brought into the basis when the last targeted eigenvalue 
            converged. This strategy may be benefitial to any interior 
@@ -356,13 +353,16 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
             primme->AppForRef == primme_TwoStage_SVD &&
             numGuesses == 0){*/
         if(primme->ReIntroInitGuessToBasis && primme->target != primme_smallest 
-            && primme->target != primme_largest && *numGuesses == 0
+            && primme->target != primme_largest
             && *numLocked + 1 < primme->numEvals) {  
             Num_dcopy_dprimme(primme->nLocal,   
                 &evecs[primme->nLocal*(*numLocked + 1)], 1, &V[primme->nLocal*i], 1);
             flag[i] = INITIAL_GUESS;
         }
 
+         else {
+            flag[i] = LOCKED;
+         }
          *numLocked = *numLocked + 1;
          numRecentlyLocked++;
             

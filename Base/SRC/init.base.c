@@ -319,7 +319,7 @@ int init_basis_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
         *basisSize = primme->minRestartSize;
       }
       else {
-        *basisSize = primme->initSize;
+        *basisSize = min(primme->initSize, primme->minRestartSize);
       }
    }
    /* ----------------------------------------------------------- */
