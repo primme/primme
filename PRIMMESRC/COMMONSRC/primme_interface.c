@@ -104,6 +104,9 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numMatvecs        = 0;
    primme->stats.numPreconds       = 0;
    primme->stats.elapsedTime       = 0.0L;
+   primme->stats.estimateMaxEVal   = 0.0L;
+   primme->stats.estimateMinEVal   = 0.0L;
+   primme->stats.maxConvTol        = 0.0L;
 
    /* Optional user defined structures */
    primme->matrix                  = NULL;
@@ -120,6 +123,7 @@ void primme_initialize(primme_params *primme) {
    primme->realWork                = NULL;
    primme->stackTrace              = NULL;
    primme->ShiftsForPreconditioner = NULL;
+   primme->convTestFun             = NULL;
 
 }
 
@@ -622,4 +626,29 @@ void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
 
    Num_dcopy_primme(*count, (double *) sendBuf, 1, (double *) recvBuf, 1);
 
+}
+
+
+/*******************************************************************************
+ * Subroutine convTestFunAbsolute - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate).          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   *isConv = *rNorm < primme->eps * (
+            primme->aNorm != 0 ? primme->aNorm : primme->stats.estimateMaxEVal);
 }

@@ -162,6 +162,14 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
    if (primme->iseed[3]<0 || primme->iseed[3]>4095) primme->iseed[3] = 
       (2*(int)(((primme->procID/4096)/4096)/4096)+1) % 4096;
 
+   /* ----------------------- */
+   /* Set default convTetFun  */
+   /* ----------------------- */
+
+   if (!primme->convTestFun) {
+      primme->convTestFun = convTestFunAbsolute;
+   }
+
    /* ------------------------------------------------------- */
    /* Check primme input data for bounds, correct values etc. */
    /* ------------------------------------------------------- */

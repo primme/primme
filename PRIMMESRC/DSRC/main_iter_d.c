@@ -372,7 +372,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             recentlyConverged = check_convergence_dprimme(V, W, hVecs, 
                hVals, flag, basisSize, iev, &ievMax, blockNorms, &blockSize, 
                numConverged, numLocked, evecs, tol, maxConvTol, 
-               largestRitzValue, rwork, primme);
+               largestRitzValue, machEps, rwork, primme);
 
             /* If the total number of converged pairs, including the     */
             /* recentlyConverged ones, are greater than or equal to the  */

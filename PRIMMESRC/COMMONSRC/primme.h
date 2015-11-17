@@ -109,6 +109,9 @@ typedef struct primme_stats {
    int numMatvecs;
    int numPreconds;
    double elapsedTime; 
+   double estimateMaxEVal;
+   double estimateMinEVal;
+   double maxConvTol;
 } primme_stats;
    
 typedef struct JD_projectors {
@@ -195,7 +198,9 @@ typedef struct primme_params {
    struct correction_params correctionParams;
    struct primme_stats stats;
    struct stackTraceNode *stackTrace;
-   
+
+   void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
+                       struct primme_params *primme);
 } primme_params;
 /*---------------------------------------------------------------------------*/
 

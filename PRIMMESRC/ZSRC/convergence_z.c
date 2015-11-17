@@ -74,7 +74,7 @@ int check_convergence_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs,
    double *hVals, int *flags, int basisSize, int *iev, int *ievMax, 
    double *blockNorms, int *blockSize, int numConverged, int numLocked, 
    Complex_Z *evecs, double tol, double maxConvTol, double aNormEstimate, 
-   Complex_Z *rwork, primme_params *primme) {
+   double machEps, Complex_Z *rwork, primme_params *primme) {
 
    int i;             /* Loop variable                                        */
    int left, right;   /* Range of block vectors to be checked for convergence */
@@ -84,6 +84,14 @@ int check_convergence_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs,
                           /* since the last iteration                         */
    int numToProject;      /* Number of vectors with potential accuracy problem*/
    double attainableTol;  /* Used in locking to check near convergence problem*/
+   int isConv;            /* return of convTestFun                            */
+
+   /* -------------------------- */
+   /* Update some stats members  */
+   /* -------------------------- */
+
+   primme->stats.estimateMaxEVal = aNormEstimate;
+   primme->stats.maxConvTol = maxConvTol;
 
    /* -------------------------------------------- */
    /* Tolerance based on our dynamic norm estimate */
@@ -91,6 +99,9 @@ int check_convergence_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs,
 
    if (primme->aNorm <= 0.0L) {
       tol = tol * aNormEstimate;
+   }
+   if (tol < machEps) {
+      tol = machEps;
    }
 
    /* ---------------------------------------------------------------------- */
@@ -153,7 +164,9 @@ int check_convergence_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs,
          /* ------------------------------------*/
          /* If the vector is converged, flag it */
          /* ------------------------------------*/
-         if (blockNorms[i] < tol) {
+         primme->convTestFun(&hVals[iev[i]], &V[primme->nLocal*i], &blockNorms[i],
+                             &isConv, primme);
+         if (isConv) {
             flags[iev[i]] = CONVERGED;
             numVacancies++;
 
