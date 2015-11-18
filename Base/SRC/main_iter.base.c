@@ -154,7 +154,6 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    int *iev;                /* Evalue index each block vector corresponds to */
    int ONE = 1;             /* To be passed by reference in matrixMatvec     */
 
-   double largestRitzValue; /* The largest modulus of any Ritz value computed*/
    double tol;              /* Required tolerance for residual norms         */
    double maxConvTol;       /* Max locked residual norm (see convergence.c)  */
    @(type) *V;               /* Basis vectors                               */
@@ -252,12 +251,15 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    /* Set the tolerance for the residual norms */
    /* ---------------------------------------- */
 
-   largestRitzValue = 0.0L;
+   primme->stats.estimateMaxEVal   = -HUGE_VAL;
+   primme->stats.estimateMinEVal   = HUGE_VAL;
+   primme->stats.estimateLargestSVal = -HUGE_VAL;
+   primme->stats.maxConvTol        = 0.0L;
    if (primme->aNorm > 0.0L) {
       tol = primme->eps*primme->aNorm;
    }
    else {
-      tol = primme->eps; /* tol*largestRitzValue will be checked */
+      tol = primme->eps; /* tol*estimateLargestSVal will be checked */
    }
    maxConvTol = tol;
 
@@ -330,7 +332,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
       update_projection_@(pre)primme(V, W, H, 0,primme->maxBasisSize,basisSize,
          hVecs,primme);
       ret = solve_H_@(pre)primme(H, hVecs, hVals, basisSize, primme->maxBasisSize,
-         &largestRitzValue, numLocked, rworkSize, rwork, iwork, primme);
+         numLocked, rworkSize, rwork, iwork, primme);
 
       if (ret != 0) {
          primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret, 
@@ -377,7 +379,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             recentlyConverged = check_convergence_@(pre)primme(V, W, hVecs, 
                hVals, flag, basisSize, iev, &ievMax, blockNorms, &blockSize, 
                numConverged, numLocked, evecs, tol, maxConvTol, 
-               largestRitzValue, machEps, rwork, primme);
+               primme->stats.estimateLargestSVal, machEps, rwork, primme);
 
             /* If the total number of converged pairs, including the     */
             /* recentlyConverged ones, are greater than or equal to the  */
@@ -426,7 +428,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                   {
                      ret = update_statistics(&CostModel, primme, tstart, 
                         recentlyConverged, 0, numConverged, blockNorms[0], 
-                        largestRitzValue); 
+                        primme->stats.estimateLargestSVal); 
 
                      if (ret) switch (primme->dynamicMethodSwitch) {
                         /* for few evals (dyn=1) evaluate GD+k only at restart*/
@@ -440,8 +442,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                ret = solve_correction_@(pre)primme(V, W, evecs, evecsHat, UDU, 
                  ipivot, evals, numLocked, numConvergedStored, hVals, 
                  prevRitzVals, &numPrevRitzVals, flag, basisSize, blockNorms, 
-                 iev, blockSize, tol, machEps, largestRitzValue, rwork, iwork, 
-                 rworkSize, primme);
+                 iev, blockSize, tol, machEps, primme->stats.estimateLargestSVal,
+                 rwork, iwork, rworkSize, primme);
 
                if (ret != 0) {
                   primme_PushErrorMessage(Primme_main_iter, 
@@ -484,8 +486,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                primme->maxBasisSize, blockSize, hVecs, primme);
             basisSize = basisSize + blockSize;
             ret = solve_H_@(pre)primme(H, hVecs, hVals, basisSize, 
-               primme->maxBasisSize, &largestRitzValue, numLocked, rworkSize, 
-               rwork, iwork, primme);
+               primme->maxBasisSize, numLocked, rworkSize, rwork, iwork, primme);
 
             if (ret != 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret,
@@ -518,7 +519,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* ----------------------------------------------------------- */
 
          if (primme->locking) {
-            ret = lock_vectors_@(pre)primme(tol, &largestRitzValue, &maxConvTol,
+            ret = lock_vectors_@(pre)primme(tol, &primme->stats.estimateMaxEVal, &maxConvTol,
                &basisSize, &numLocked, &numGuesses, &nextGuess, V, W, H, 
                evecsHat, M, UDU, ipivot, hVals, hVecs, evecs, evals, perm, 
                machEps, resNorms, &numPrevRitzVals, prevRitzVals, flag, 
@@ -535,7 +536,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          else {
             /* reset_flags_@(pre)primme(flag, primme->numEvals, primme->maxBasisSize-1);*/
             check_reset_flags_@(pre)primme(flag, &numConverged, hVals, 
-               prevRitzVals, numPrevRitzVals, tol, largestRitzValue, primme);
+               prevRitzVals, numPrevRitzVals, tol, primme->stats.estimateMaxEVal, primme);
          }
 
          primme->stats.numRestarts++;
@@ -548,7 +549,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          if (primme->dynamicMethodSwitch == 1 ) {
             tstart = primme_wTimer(0);
             ret = update_statistics(&CostModel, primme, tstart, 0, 1,
-               numConverged, blockNorms[0], largestRitzValue); 
+               numConverged, blockNorms[0], primme->stats.estimateMaxEVal); 
             switch_from_GDpk(&CostModel, primme);
          } /* ---------------------------------------------------------- */
 
@@ -583,7 +584,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* then return success, else return with a failure.     */
  
          if (numConverged == primme->numEvals) {
-            if (primme->aNorm <= 0.0L) primme->aNorm = largestRitzValue;
+            if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateMaxEVal;
             return 0;
          }
          else {
@@ -608,7 +609,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* ---------------------------------------------------------- */
 
          converged = verify_norms(V, W, hVecs, hVals, basisSize, resNorms, 
-            flag, tol, largestRitzValue, rwork, &numConverged, primme);
+            flag, tol, primme->stats.estimateMaxEVal, rwork, &numConverged, primme);
 
          /* ---------------------------------------------------------- */
          /* If the convergence limit is reached or the target vectors  */
@@ -643,7 +644,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             }
 
             if (converged) {
-               if (primme->aNorm <= 0.0L) primme->aNorm = largestRitzValue;
+               if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateMaxEVal;
                return 0;
             }
             else {
@@ -687,7 +688,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    } /* while (!converged)  Outer verification loop
       * -------------------------------------------------------------- */
 
-   if (primme->aNorm <= 0.0L) primme->aNorm = largestRitzValue;
+   if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateMaxEVal;
 
    return 0;
 

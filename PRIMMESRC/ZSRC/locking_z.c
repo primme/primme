@@ -437,7 +437,7 @@ int lock_vectors_zprimme(double tol, double *aNormEstimate, double *maxConvTol,
    /* ----------------------------------------------------------------- */
 
    ret = solve_H_zprimme(H, hVecs, hVals, *basisSize, primme->maxBasisSize,
-      aNormEstimate, *numLocked, rworkSize, rwork, iwork, primme);
+     *numLocked, rworkSize, rwork, iwork, primme);
    reset_flags_zprimme(flag, 0, primme->maxBasisSize - 1);
 
    if (ret < 0) {

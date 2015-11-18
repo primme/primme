@@ -109,9 +109,10 @@ typedef struct primme_stats {
    int numMatvecs;
    int numPreconds;
    double elapsedTime; 
-   double estimateMaxEVal;
-   double estimateMinEVal;
-   double maxConvTol;
+   double estimateMinEVal;          /* the leftmost Ritz value seen */
+   double estimateMaxEVal;          /* the rightmost Ritz value seen */
+   double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
+   double maxConvTol;               /* largest norm residual of a locked eigenpair */
 } primme_stats;
    
 typedef struct JD_projectors {

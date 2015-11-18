@@ -49,7 +49,6 @@
  * -------------------
  * hVecs             The eigenvectors of H
  * hVals             The eigenvalues of H
- * largestRitzValue  Maintains the largest in absolute value Ritz value seen
  * rwork             Must be of size at least 3*maxBasisSize
  * iwork             Permutation array for evecs/evals with desired targeting 
  *                   order. hVecs/hVals are permuted in the right order.
@@ -61,8 +60,8 @@
  ******************************************************************************/
 
 int solve_H_dprimme(double *H, double *hVecs, double *hVals, 
-   int basisSize, int maxBasisSize, double *largestRitzValue, int numLocked, 
-   int lrwork, double *rwork, int *iwork, primme_params *primme) {
+   int basisSize, int maxBasisSize, int numLocked, int lrwork,
+   double *rwork, int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
@@ -148,11 +147,17 @@ int solve_H_dprimme(double *H, double *hVecs, double *hVals,
 
 #endif
 
-   /* ----------------------------------------------------------------------- */
-   /* Update the largest absolute Ritz value ever seen as an estimate of ||A||
-    * ----------------------------------------------------------------------- */
-   *largestRitzValue = Num_fmax_primme(3, 
-           *largestRitzValue, fabs(hVals[0]), fabs(hVals[basisSize-1]));
+   /* -------------------------------------------------------- */
+   /* Update the leftmost and rightmost Ritz values ever seen  */
+   /* -------------------------------------------------------- */
+   primme->stats.estimateMinEVal = min(primme->stats.estimateMinEVal,
+                                       primme->target == primme_largest ?
+                                          -hVals[basisSize-1] : hVals[0]); 
+   primme->stats.estimateMinEVal = max(primme->stats.estimateMinEVal,
+                                       primme->target == primme_largest ?
+                                          -hVals[0] : hVals[basisSize-1]); 
+   primme->stats.estimateLargestSVal = max(fabs(primme->stats.estimateMinEVal),
+                                           fabs(primme->stats.estimateMaxEVal));
 
    /* ---------------------------------------------------------------------- */
    /* ORDER the eigenvalues and their eigenvectors according to the desired  */

@@ -444,7 +444,7 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
    /* ----------------------------------------------------------------- */
 
    ret = solve_H_@(pre)primme(H, hVecs, hVals, *basisSize, primme->maxBasisSize,
-      aNormEstimate, *numLocked, rworkSize, rwork, iwork, primme);
+     *numLocked, rworkSize, rwork, iwork, primme);
    reset_flags_@(pre)primme(flag, 0, primme->maxBasisSize - 1);
 
    if (ret < 0) {

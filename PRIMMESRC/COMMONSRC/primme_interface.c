@@ -34,6 +34,7 @@
 #endif
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
+#include <math.h>    
 #include "primme.h"
 #include "common_numerical.h"
 #include "const.h"
@@ -104,8 +105,9 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numMatvecs        = 0;
    primme->stats.numPreconds       = 0;
    primme->stats.elapsedTime       = 0.0L;
-   primme->stats.estimateMaxEVal   = 0.0L;
-   primme->stats.estimateMinEVal   = 0.0L;
+   primme->stats.estimateMaxEVal   = -HUGE_VAL;
+   primme->stats.estimateMinEVal   = HUGE_VAL;
+   primme->stats.estimateLargestSVal = -HUGE_VAL;
    primme->stats.maxConvTol        = 0.0L;
 
    /* Optional user defined structures */
@@ -650,5 +652,5 @@ void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme) {
 
    *isConv = *rNorm < primme->eps * (
-            primme->aNorm != 0 ? primme->aNorm : primme->stats.estimateMaxEVal);
+            primme->aNorm != 0 ? primme->aNorm : primme->stats.estimateLargestSVal);
 }
