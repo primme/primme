@@ -40,4 +40,8 @@
 
 static int primme_svds_check_input(double *svals, double *svecs, 
         double *resNorms, primme_svds_params *primme_svds);
+static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme);
+static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme);
 #endif

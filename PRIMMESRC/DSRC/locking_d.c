@@ -205,38 +205,6 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
       residual = &W[(*basisSize-1)*primme->nLocal];
       workinW = 1;
    }
-    
-    /*lingfei: dynamical tolerance adjusting for primme_svds_ATA*/
-    if (primme->DefineConvCriteria){
-        if (fabs(primme->currentEstimates.targetRitzVal) > 0.0L && 
-            (primme->target == 1 ||(primme->target == 0 && 
-            fabs(primme->currentEstimates.targetRitzVal) < 1.0))){
-            /*use both lambdaMin and lambdaMax to adjust user's tolerance. 
-            The recommended attainableTol is 1e-15 since lower attainableTol 
-            is possible to cause PRIMME stagnation due to float point error.*/
-            tol = tol*sqrt(fabs(primme->currentEstimates.targetRitzVal/
-                                        primme->currentEstimates.Anormest));
-            tol = Num_fmax_primme(2,tol,1e-15);
-            /*If aNorm is smaller than 1, make sure Res < 
-              primme.eps*primme.aNorm, which is set no lower 
-              than read_attainableTol. */
-            tol = Num_fmax_primme(2,tol,1e-15/fabs(primme->currentEstimates.Anormest));
-        }
-        else {
-            /*use only lambdaMax to adjust user's tolerance* since
-            lambdaMin is not accurate until now. If aNorm is smaller
-            than 1, don't use it to adjust user's tolerance.*/  
-            if (fabs(primme->currentEstimates.Anormest) >= 1)
-                tol = 2*tol/sqrt(fabs(primme->currentEstimates.Anormest));
-            else
-                tol = 2*tol;
-            tol = Num_fmax_primme(2,tol,1e-15);
-            tol = Num_fmax_primme(2,tol,1e-15/fabs(primme->currentEstimates.Anormest));
-        }
-        printf("Matvecs: %d, SVEst: %e,AnormEst: %e, AdjustedATATol: %e\n",
-                primme->stats.numMatvecs,primme->currentEstimates.targetRitzVal,
-                primme->currentEstimates.Anormest,tol);
-    }
 
    /* -------------------------------------*/
    /* Set the tolerance, and attainableTol */
@@ -245,6 +213,7 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
    if (primme->aNorm <= 0.0L) {
       tol = tol * (*aNormEstimate);
    }
+   tol = max(machEps, tol);
    attainableTol=max(tol,sqrt(primme->numOrthoConst+*numLocked)*(*maxConvTol));
 
    /* -------------------------------------------------------- */
@@ -344,22 +313,16 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
             *numGuesses = *numGuesses - 1;
             *nextGuess = *nextGuess + 1;
          }
-         else
-        /* lingfei: If two-stages SVD is used, then the next initial guess 
-           is brought into the basis when the last targeted eigenvalue 
-           converged. This strategy may be benefitial to any interior 
-           eigenvalue too. */
-        /*if (primme->projection == primme_RR_Refined && 
-            primme->AppForRef == primme_TwoStage_SVD &&
-            numGuesses == 0){*/
-        if(primme->ReIntroInitGuessToBasis && primme->target != primme_smallest 
-            && primme->target != primme_largest
-            && *numLocked + 1 < primme->numEvals) {  
+         /* lingfei: If two-stages SVD is used, then the next initial guess 
+            is brought into the basis when the last targeted eigenvalue 
+            converged. This strategy may be beneficial to any interior 
+            eigenvalue too. */
+         else if(primme->ReIntroInitGuessToBasis && primme->target != primme_smallest 
+                 && primme->target != primme_largest && *numLocked + 1 < primme->numEvals) {  
             Num_dcopy_dprimme(primme->nLocal,   
                 &evecs[primme->nLocal*(*numLocked + 1)], 1, &V[primme->nLocal*i], 1);
             flag[i] = INITIAL_GUESS;
-        }
-
+         }
          else {
             flag[i] = LOCKED;
          }
@@ -484,8 +447,8 @@ int lock_vectors_dprimme(double tol, double *aNormEstimate, double *maxConvTol,
    /* ----------------------------------------------------------------- */
    /*lingfei: if the RayRitz, Harmonic or Refined projections are used*/
    ret = solve_H_dprimme(H, hVecs, Q, R, hVals, *basisSize, primme->maxBasisSize,
-      aNormEstimate, *numLocked, machEps, rworkSize, rwork, iwork, primme,
-      V, W, 0);
+                              *numLocked, machEps, rworkSize, rwork, iwork, primme,
+                              V, W, 0);
    reset_flags_dprimme(flag, 0, primme->maxBasisSize - 1);
 
    if (ret < 0) {

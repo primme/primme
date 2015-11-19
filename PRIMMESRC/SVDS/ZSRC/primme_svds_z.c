@@ -150,10 +150,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
                     primme_svds->primme.aNorm;
           }
       }
-      if (primme_svds->svdsMethod == primme_svds_hybrid){
-          primme_svds->primme.DefineConvCriteria = 1; /* lingfei: may remove it later */
-          primme_svds->primme.ForceVerificationOnExit = 1;
-      }
+      primme_svds->primme.convTestFun = convTestFunATA;
 
       /* ---------------------------------------------------*/
       /* Set up matrix vector and preconditioner for primme */
@@ -353,6 +350,7 @@ int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
               primme_svds->primme.ReIntroInitGuessToBasis = 1;
           }
       }
+      primme_svds->primme.convTestFun = convTestFunAugmented;
       /* ---------------------------------------------------*/
       /* Set up matrix vector and preconditioner for primme */
       /* -------------------------------------------------- */
@@ -657,3 +655,58 @@ void MatrixB_Precond(void *x, void *y, int *blockSize, primme_params *primme){
       fprintf(stderr,"primme_svds: maxBlockSize must be 1 when using primme_svds_smallest\n");
     
 }
+
+/*******************************************************************************
+ * Subroutine convTestFunATA - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps * sval / primme_svds.aNorm = eps * sqrt(eval/primme.aNorm)
+ *    resNorm is close to machineEpsilon * primme.aNorm.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps * sqrt(*eval / (
+                  primme->aNorm > 0 ? primme->aNorm : primme->stats.estimateLargestSVal)),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
+}
+
+/*******************************************************************************
+ * Subroutine convTestFunAugmented - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps / sqrt(2) / primme_svds.aNorm = eps / sqrt(2) / primme.aNorm.          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps / sqrt(2.0) * (
+                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
+} 

@@ -132,6 +132,10 @@ typedef struct primme_stats {
    int numMatvecs;
    int numPreconds;
    double elapsedTime; 
+   double estimateMinEVal;          /* the leftmost Ritz value seen */
+   double estimateMaxEVal;          /* the rightmost Ritz value seen */
+   double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
+   double maxConvTol;               /* largest norm residual of a locked eigenpair */
 } primme_stats;
    
 typedef struct JD_projectors {
@@ -234,18 +238,18 @@ typedef struct primme_params {
    /* lingfei: primme_svds. PRIMME MEX use largestRitzValForSVD to adjust tol for ATA method */
    struct currentestimates currentEstimates;
    /* lingfei: several new flags to control the way we perform in PRIMME*/
-   int DefineConvCriteria;
    int InitBasisMode;  /* 0 no Krylov init basis only user input (or a random one)
    			  1 if use user init guesses to build a krylov space
 			  2 use init guesses and if room build a random krylov space */
    int ReIntroInitGuessToBasis;
-   int ForceVerificationOnExit;
     
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
    struct stackTraceNode *stackTrace;
-   
+
+   void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
+                       struct primme_params *primme);
 } primme_params;
 /*---------------------------------------------------------------------------*/
 

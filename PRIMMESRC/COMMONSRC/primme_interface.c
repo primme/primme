@@ -34,6 +34,7 @@
 #endif
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
+#include <math.h>    
 #include "primme.h"
 #include "common_numerical.h"
 #include "const.h"
@@ -86,10 +87,8 @@ void primme_initialize(primme_params *primme) {
    primme->currentEstimates.targetRitzValNorm  = 0;
    primme->currentEstimates.targetRitzVec      = NULL;
    primme->qr_need                             = 0;
-   primme->DefineConvCriteria                  = 0;
    primme->InitBasisMode                       = 0;
    primme->ReIntroInitGuessToBasis             = 0;
-   primme->ForceVerificationOnExit             = 0;
 
    /* Eigensolver parameters (outer) */
    primme->locking                             = 0;
@@ -123,6 +122,10 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numMatvecs        = 0;
    primme->stats.numPreconds       = 0;
    primme->stats.elapsedTime       = 0.0L;
+   primme->stats.estimateMaxEVal   = -HUGE_VAL;
+   primme->stats.estimateMinEVal   = HUGE_VAL;
+   primme->stats.estimateLargestSVal = -HUGE_VAL;
+   primme->stats.maxConvTol        = 0.0L;
 
    /* Optional user defined structures */
    primme->matrix                  = NULL;
@@ -139,6 +142,7 @@ void primme_initialize(primme_params *primme) {
    primme->realWork                = NULL;
    primme->stackTrace              = NULL;
    primme->ShiftsForPreconditioner = NULL;
+   primme->convTestFun             = NULL;
 
 }
 
@@ -589,10 +593,8 @@ switch (primme.projectionParams.refinedScheme){
      
 /* lingfei: primme_svds. if the harmonic or refined projection is used */
 fprintf(outputFile, "primme.qr_need = %d \n",primme.qr_need);
-fprintf(outputFile, "primme.DefineConvCriteria = %d \n",primme.DefineConvCriteria);
 fprintf(outputFile, "primme.InitBasisMode = %d \n",primme.InitBasisMode);
 fprintf(outputFile, "primme.ReIntroInitGuessToBasis = %d \n",primme.ReIntroInitGuessToBasis);
-fprintf(outputFile, "primme.ForceVerificationOnExit = %d \n",primme.ForceVerificationOnExit);
 
 fprintf(outputFile, "primme.numTargetShifts = %d\n",primme.numTargetShifts);
 if (primme.numTargetShifts > 0) {
@@ -689,4 +691,33 @@ void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
 
    Num_dcopy_primme(*count, (double *) sendBuf, 1, (double *) recvBuf, 1);
 
+}
+
+
+/*******************************************************************************
+ * Subroutine convTestFunAbsolute - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate) or
+ *    resNorm is close to machineEpsilon * aNorm.          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps * (
+                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
 }
