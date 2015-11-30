@@ -6,6 +6,7 @@ CDOTH = ../../PRIMMESRC/COMMONSRC/common_numerical.h \
 	../../PRIMMESRC/COMMONSRC/const.h \
 	../../PRIMMESRC/COMMONSRC/errors_private.h  \
 	../../PRIMMESRC/COMMONSRC/primme.h \
+	../../PRIMMESRC/COMMONSRC/primme_interface.h \
 	../../PRIMMESRC/COMMONSRC/primme_f77.h  \
 	../../PRIMMESRC/COMMONSRC/primme_f77_private.h \
 	../../PRIMMESRC/COMMONSRC/wtime.h
@@ -38,6 +39,9 @@ all: $(CSOURCE) $(CDOTH) depends
 
 ../../PRIMMESRC/COMMONSRC/primme.h: primme.h
 	cp primme.h ../../PRIMMESRC/COMMONSRC/primme.h
+
+../../PRIMMESRC/COMMONSRC/primme_interface.h: primme_interface.h
+	cp primme_interface.h ../../PRIMMESRC/COMMONSRC/primme_interface.h
 
 ../../PRIMMESRC/COMMONSRC/primme_f77.h: primme_f77.h
 	cp primme_f77.h ../../PRIMMESRC/COMMONSRC/primme_f77.h

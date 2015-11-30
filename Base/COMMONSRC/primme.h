@@ -82,25 +82,31 @@ typedef enum {
    primme_closest_abs
 } primme_target;
 
-/*lingfei: primme_svds. Define different projection methods.*/
+/* projection methods for extraction */
 typedef enum {
-    primme_RR,
-    primme_RR_Refined,
-    primme_Har,
-    primme_Har_Refined,
-    primme_Refined
+   primme_proj_default,
+   primme_proj_RR,          /* Rayleigh-Ritz */
+   primme_proj_Har,         /* Harmonic Rayleigh-Ritz */
 } primme_projection;
 
-/*lingfei: primme_svds. if the refined projection is used, 
-choose one approach for the refined projection.*/
+/* refined projection method applied after the previous projection method */
 typedef enum {
-    primme_DisableRef,
-    primme_MultiShifts_QR,
-    primme_MultiShifts_WTW,
-    primme_OneShift_QR,
-    primme_OneShift_WTW,
-    primme_OneAccuShift_QR
- } primme_refinedscheme;
+   primme_ref_default,
+   primme_ref_none,
+   primme_ref_MultiShifts_QR,
+   primme_ref_MultiShifts_WTW,
+   primme_ref_OneShift_QR,
+   primme_ref_OneShift_WTW,
+   primme_ref_OneAccuShift_QR
+} primme_refinedscheme;
+
+typedef enum {         /* Initially fill up the search subspace with: */
+   primme_init_default,
+   primme_init_krylov, /* a) Krylov with the last vector provided by the user or random */
+   primme_init_random, /* b) just random vectors */
+   primme_init_user    /* c) provided vectors or a single random vector */
+} primme_init;
+
 
 typedef enum {
    primme_thick,
@@ -137,7 +143,7 @@ typedef struct primme_stats {
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
    double maxConvTol;               /* largest norm residual of a locked eigenpair */
 } primme_stats;
-   
+
 typedef struct JD_projectors {
    int LeftQ;
    int LeftX;
@@ -149,16 +155,16 @@ typedef struct JD_projectors {
 
 /*lingfei: primme_svds. define projection schemes*/
 typedef struct projection_params {
-    primme_projection projection;
-    primme_refinedscheme refinedScheme;
+   primme_projection projection;
+   primme_refinedscheme refinedScheme;
 }projection_params;
 
 /*lingfei: primme_svds. some useful info for users.*/
 typedef struct currentestimates { 
-    double Anormest;
-    double targetRitzVal;
-    double targetRitzValNorm;
-    double *targetRitzVec;
+   double Anormest;
+   double targetRitzVal;
+   double targetRitzValNorm;
+   double *targetRitzVec;
 }currenterstimates;
 
 typedef struct correction_params {
@@ -175,7 +181,7 @@ typedef struct restarting_params {
    primme_restartscheme scheme;
    int maxPrevRetain;
 } restarting_params;
-   
+
 
 /*--------------------------------------------------------------------------*/
 typedef struct primme_params {
@@ -209,8 +215,7 @@ typedef struct primme_params {
 
    /* lingfei: primme_svds. The RR or Harmonic or Refined projection is used*/
    projection_params projectionParams; 
-   int qr_need; /*indicate if qr factorziation is needed for current projection method*/
-   
+
    /* the following will be given default values depending on the method */
    int dynamicMethodSwitch;
    int locking;
@@ -231,25 +236,22 @@ typedef struct primme_params {
 
    int printLevel;
    FILE *outputFile;
-   
+
    void *matrix;
    void *preconditioner;
    double *ShiftsForPreconditioner;
    /* lingfei: primme_svds. PRIMME MEX use largestRitzValForSVD to adjust tol for ATA method */
    struct currentestimates currentEstimates;
-   /* lingfei: several new flags to control the way we perform in PRIMME*/
-   int InitBasisMode;  /* 0 no Krylov init basis only user input (or a random one)
-   			  1 if use user init guesses to build a krylov space
-			  2 use init guesses and if room build a random krylov space */
+   primme_init InitBasisMode;
    int ReIntroInitGuessToBasis;
-    
+
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
    struct stackTraceNode *stackTrace;
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
-                       struct primme_params *primme);
+         struct primme_params *primme);
 } primme_params;
 /*---------------------------------------------------------------------------*/
 
@@ -274,9 +276,9 @@ typedef enum {
 
 
 int dprimme(double *evals, double *evecs, double *resNorms, 
-            primme_params *primme);
+      primme_params *primme);
 int zprimme(double *evals, Complex_Z *evecs, double *resNorms, 
-            primme_params *primme);
+      primme_params *primme);
 void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
@@ -284,10 +286,10 @@ void *primme_valloc(size_t byteSize, const char *target);
 void *primme_calloc(size_t nelem, size_t elsize, const char *target);
 void primme_Free(primme_params *primme);
 void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
-                                                   primme_params *params);
+      primme_params *params);
 void primme_PushErrorMessage(const primme_function callingFunction, 
-     const primme_function failedFunction, const int errorCode, 
-     const char *fileName, const int lineNumber, primme_params *primme);
+      const primme_function failedFunction, const int errorCode, 
+      const char *fileName, const int lineNumber, primme_params *primme);
 void primme_PrintStackTrace(const primme_params primme);
 void primme_DeleteStackTrace(primme_params *primme);
 

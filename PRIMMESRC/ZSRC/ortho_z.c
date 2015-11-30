@@ -107,7 +107,6 @@ int ortho_zprimme(Complex_Z *basis, Complex_Z *R, int ldBasis, int b1, int b2,
               
    int i;                   /* Loop indices */
    int count;
-   int returnValue;
    int minWorkSize;         
    int nOrth, reorth;
    int randomizations;
@@ -126,22 +125,15 @@ int ortho_zprimme(Complex_Z *basis, Complex_Z *R, int ldBasis, int b1, int b2,
    /* outputFile = primme->outputFile; */
    outputFile = stderr;
 
-   returnValue = 0;
-
    /*----------------------------------*/
    /* input and workspace verification */
    /*----------------------------------*/
-   if (ldBasis <= 0 || nLocal <= 0 || b1 < 0 || b2 < 0 || numLocked < 0
-      || rworkSize < 0)
+   if (ldBasis <= 0 || nLocal <= 0 || numLocked < 0 || rworkSize < 0)
    {
-      returnValue = -1;
+      return -1;
    }
    else if (b1 > b2) {
-      returnValue = -2;
-   }
-
-   if (returnValue != 0) {
-      return(returnValue);
+      return 0;
    }
 
    minWorkSize = 2*(numLocked + b2 + 1);

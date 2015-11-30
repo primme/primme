@@ -20,30 +20,16 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *******************************************************************************
- * File: primme_svds_private.h
+ * File: primme_interface.h
  *
- * Purpose - Contains definitions for exclusive use by primme_svds.c
+ * Purpose - Definitions in primme_interface.c used in other modules.
  *
  ******************************************************************************/
 
+#ifndef PRIMME_INTERFACE_H
+#define PRIMME_INTERFACE_H
 
-#ifndef DPRIMME_SVDS_PRIVATE_H
-#define DPRIMME_SVDS_PRIVATE_H
+void primme_set_defaults(primme_params *params);
+void primme_display_params_prefix(const char* prefix, primme_params primme);
 
-#include "primme_svds.h"
-
-#define ALLOCATE_WORKSPACE_FAILURE -1
-#define MALLOC_FAILURE             -3
-
-static int primme_svds_check_input(double *svals, @(type) *svecs, 
-        double *resNorms, primme_svds_params *primme_svds);
-static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-                                           double *svals, @(type) *svecs);
-static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-                                     double *svals, @(type) *svecs, double *rnorms);
-static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
-static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
-static void Num_copy_@(type)matrix(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy);
-static void Num_scalInv_@(type)matrix(@(type) *x, int m, int n, int ldx, double *factors);
-static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
 #endif

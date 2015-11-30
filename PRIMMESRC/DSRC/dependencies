@@ -36,7 +36,7 @@ ortho_d.o: ortho_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
 primme_d.o: primme_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  ../COMMONSRC/const.h ../COMMONSRC/wtime.h main_iter_d.h ortho_d.h \
  solve_H_d.h correction_d.h primme_private_d.h numerical_d.h \
- ../COMMONSRC/common_numerical.h
+ ../COMMONSRC/common_numerical.h ../COMMONSRC/primme_interface.h
 restart_d.o: restart_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  ../COMMONSRC/const.h restart_d.h restart_private_d.h ortho_d.h \
  factorize_d.h update_projection_d.h numerical_d.h \

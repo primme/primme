@@ -1,6 +1,7 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2005  James R. McCombs,  Andreas Stathopoulos
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
  *
@@ -18,30 +19,31 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *******************************************************************************
  * File: primme_svds_private.h
  *
  * Purpose - Contains definitions for exclusive use by primme_svds.c
  *
- * Module name      : %M%
- * SID              : %I%
- * Date             : %G%
  ******************************************************************************/
 
 
 #ifndef DPRIMME_SVDS_PRIVATE_H
 #define DPRIMME_SVDS_PRIVATE_H
 
-#define CALL_PRIMME_ATA_FAILURE    -1
-#define CALL_PRIMME_B_FAILURE      -2
-#define MALLOC_FAILURE             -3
+#include "primme_svds.h"
 
-#define max(a, b) (a > b ? a : b)
-#define min(a, b) (a < b ? a : b)
+#define ALLOCATE_WORKSPACE_FAILURE -1
+#define MALLOC_FAILURE             -3
 
 static int primme_svds_check_input(double *svals, Complex_Z *svecs, 
         double *resNorms, primme_svds_params *primme_svds);
-static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
-static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
+static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
+                                           double *svals, Complex_Z *svecs);
+static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
+                                     double *svals, Complex_Z *svecs, double *rnorms);
+static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
+static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
+static void Num_copy_Complex_Zmatrix(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
+static void Num_scalInv_Complex_Zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors);
+static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
 #endif

@@ -202,16 +202,17 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    previousHVecs = hVecs + primme->maxBasisSize*primme->maxBasisSize;
 
    /*lingfei:primme_svds. if the harmonic or refined projection is used */
-   if(primme->projectionParams.projection == primme_RR) {
+   if(primme->projectionParams.projection == primme_proj_RR &&
+      primme->projectionParams.refinedScheme == primme_ref_none) {
        WTW       = NULL;
        wtwChol   = NULL;
        Q         = NULL;
        R         = NULL;
    }
-   else if (primme->projectionParams.projection == primme_RR_Refined &&
-           (primme->projectionParams.refinedScheme == primme_OneAccuShift_QR ||
-            primme->projectionParams.refinedScheme == primme_MultiShifts_QR ||
-            primme->projectionParams.refinedScheme == primme_OneShift_QR)){
+   else if (primme->projectionParams.projection == primme_proj_RR &&
+           (primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR ||
+            primme->projectionParams.refinedScheme == primme_ref_MultiShifts_QR ||
+            primme->projectionParams.refinedScheme == primme_ref_OneShift_QR)){
        WTW       = NULL;
        wtwChol   = NULL;
        Q         = previousHVecs + primme->restartingParams.maxPrevRetain
@@ -377,12 +378,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    
       update_projection_dprimme(V, W, H, 0,primme->maxBasisSize,basisSize,
          hVecs,primme);
-
-      /*lingfei:primme_svds. reset primme->qr_need = 1 to switch to full qr factorization model */
-      if (primme->qr_need == 0 && Q!= NULL && R!= NULL)
-          primme->qr_need = 1;
-      else if (Q == NULL && R == NULL) /*turn off qr_need if disable qr */
-          primme->qr_need = 0;
 
       /*lingfei:primme_svds. if the RayRitz or Harmomic or Refined projections are used */
       ret = solve_H_dprimme(H, hVecs, Q, R, hVals, basisSize, primme->maxBasisSize,
@@ -556,11 +551,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
            /* --------------------------------------------------------------- */
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst-numLocked)
             * --------------------------------------------------------------- */
-
-        /* lingfei: primme_svds. reset primme->qr_need = 1 to switch 
-        to full qr factorization model */
-        if (primme->qr_need == 0 && Q!= NULL && R!= NULL) 
-            primme->qr_need = 1;
 
          /* ------------------ */
          /* Restart the basis  */

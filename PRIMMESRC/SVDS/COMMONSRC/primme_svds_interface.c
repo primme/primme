@@ -1,8 +1,39 @@
+/*******************************************************************************
+ *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
+ *   Copyright (C) 2015 College of William & Mary,
+ *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
+ *
+ *   This file is part of PRIMME.
+ *
+ *   PRIMME is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *
+ *   PRIMME is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ **********************************************************************
+ * File: primme_svds_interface.c
+ *
+ * Purpose - Contains interface functions to PRIMME SVDS named primme_svds_*.
+ *
+ ******************************************************************************/
 
 #include <stdlib.h>   /* mallocs, free */
-#include <unistd.h>   /* gethostname */
 #include <stdio.h>    
+#include <math.h>    
 #include "primme_svds.h"
+#include "primme_svds_interface.h"
+#include "primme_interface.h"
+#include "common_numerical.h"
+#include "primme_svds_interface_private.h"
 
 /***************************************************************************
 
@@ -14,11 +45,10 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    /* Essential parameters */
    primme_svds->m                       = 0;
    primme_svds->n                       = 0;
-   primme_svds->numSvals                = 6;
+   primme_svds->numSvals                = 1;
    primme_svds->target                  = primme_svds_largest;
-   primme_svds->eigsMethod_stage1       = DEFAULT_MIN_MATVECS;
-   primme_svds->eigsMethod_stage2       = JDQMR;
-   primme_svds->svdsMethod              = primme_svds_hybrid;
+   primme_svds->method                  = primme_svds_default;
+   primme_svds->method0                 = primme_svds_default;
 
    /* Shifts for primme_svds_augmented method */
    primme_svds->numTargetShifts         = 0;
@@ -32,10 +62,6 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->commInfo                = NULL;
    primme_svds->globalSumDouble         = NULL;
 
-   /* Use these pointers for d/zprimme_svds function */
-   primme_svds->primme_svds_info        = NULL;
-   primme_svds->realWork                = NULL;
-
    /* Use these pointers to provide matrix/preconditioner */
    primme_svds->matrix                  = NULL;
    primme_svds->preconditioner          = NULL;
@@ -43,21 +69,19 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    /* Matvec and preconditioner */
    primme_svds->matrixMatvec            = NULL;
    primme_svds->applyPreconditioner     = NULL;
-   primme_svds->matrixATA_Matvec        = NULL;
-   primme_svds->applyATA_Preconditioner = NULL;
-   primme_svds->matrixAugmented_Matvec  = NULL;
-   primme_svds->applyAugmented_Preconditioner = NULL;
 
    /* Other important parameters users may set */
    primme_svds->aNorm                   = 0.0L;
    primme_svds->eps                     = 1e-12;
-   primme_svds->precondition            = 0;
+   primme_svds->precondition            = -1;
    primme_svds->initSize                = 0;
    primme_svds->maxBasisSize            = 0;
    primme_svds->maxBlockSize            = 1;
    primme_svds->maxMatvecs              = INT_MAX;
    primme_svds->printLevel              = 1;
    primme_svds->outputFile              = stdout;
+   primme_svds->locking                 = -1;
+   primme_svds->numOrthoConst           = 0;
 
    /* Reporting performance */
    primme_svds->stats.numOuterIterations= 0;
@@ -67,11 +91,173 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->stats.elapsedTime       = 0.0L;
 
    /* Internally used variables */
-   primme_svds->iseed[0] = -1;   /* To set iseed, we first need procID           */                                                
+   primme_svds->iseed[0] = -1;   /* To set iseed, we first need procID           */ 
    primme_svds->iseed[1] = -1;   /* Thus we set all iseeds to -1                 */
    primme_svds->iseed[2] = -1;   /* Unless users provide their own iseeds,       */
    primme_svds->iseed[3] = -1;   /* PRIMME will set thse later uniquely per proc */
+   primme_svds->intWorkSize             = 0;
+   primme_svds->realWorkSize            = 0;
+   primme_svds->intWork                 = NULL;
+   primme_svds->realWork                = NULL;
+ 
+}
 
+int primme_svds_set_method(primme_svds_preset_method method,
+      primme_svds_params *primme_svds) {
+
+   /* Set method and method0 in primme_svds_params */
+   switch(method) {
+   case primme_svds_default:
+   case primme_svds_hybrid:
+      primme_svds->method = primme_svds->n <= primme_svds->m ? primme_svds_op_AtA : primme_svds_op_AAt;
+      primme_svds->method0 = primme_svds_op_augmented;
+      break;
+   case primme_svds_normalequations:
+      primme_svds->method = primme_svds->n <= primme_svds->m ? primme_svds_op_AtA : primme_svds_op_AAt;
+      primme_svds->method0 = primme_svds_op_none;
+      break;
+   case primme_svds_augmented:
+      primme_svds->method = primme_svds_op_augmented;
+      primme_svds->method0 = primme_svds_op_none;
+      break;
+   }
+
+   primme_svds_set_defaults(primme_svds);
+
+   return 0;
+}
+
+void primme_svds_set_defaults(primme_svds_params *primme_svds) {
+
+   /* Set defaults for sequential programs */
+   if (primme_svds->numProcs <= 1) {
+      primme_svds->mLocal = primme_svds->m;
+      primme_svds->nLocal = primme_svds->n;
+      primme_svds->procID = 0;
+      primme_svds->numProcs = 1;
+   }
+
+   /* Configure the underneath eigensolver */
+   copy_params_from_svds(primme_svds, 0);
+   primme_set_defaults(&primme_svds->primme);
+
+   /* Configure the underneath eigensolver for second stage */
+   if (primme_svds->method0 != primme_svds_op_none) {
+      copy_params_from_svds(primme_svds, 1);
+      primme_set_defaults(&primme_svds->primme0);
+   }
+}
+
+static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
+   primme_params *primme;
+   primme_svds_operator method;
+
+   primme = stage == 0 ? &primme_svds->primme : &primme_svds->primme0;
+   method = stage == 0 ? primme_svds->method : primme_svds->method0;
+
+   if (method == primme_svds_op_none) {
+      primme->maxMatvecs = 1;
+      return;
+   }
+
+   /* -----------------------------------------------*/
+   /* Set important parameters for primme structure  */
+   /* -----------------------------------------------*/
+   primme->numEvals = primme_svds->numSvals;
+   if (primme_svds->aNorm > 0.0) {
+      switch(method) {
+      case primme_svds_op_AtA:
+      case primme_svds_op_AAt:
+         primme->aNorm = primme_svds->aNorm*primme_svds->aNorm;
+         break;
+      case primme_svds_op_augmented:
+         primme->aNorm = primme_svds->aNorm*sqrt(2.0);
+         break;
+      case primme_svds_op_none:
+         break;
+      }
+   }
+   primme->eps = primme_svds->eps;
+   primme->initSize = primme_svds->initSize;
+   if (primme_svds->maxBasisSize > 0)
+      primme->maxBasisSize = primme_svds->maxBasisSize;
+   if (primme_svds->maxBlockSize > 0)
+      primme->maxBlockSize = primme_svds->maxBlockSize;
+   primme->maxMatvecs = primme_svds->maxMatvecs;
+   primme->printLevel = primme_svds->printLevel;
+   primme->outputFile = primme_svds->outputFile;
+   primme->numOrthoConst = primme_svds->numOrthoConst;
+
+   /* ---------------------------------------------- */
+   /* Set some parameters only for parallel programs */
+   /* ---------------------------------------------- */
+   if (primme_svds->numProcs > 1 && primme_svds->globalSumDouble != NULL) {
+      primme->procID = primme_svds->procID;
+      primme->numProcs = primme_svds->numProcs;
+      primme->commInfo = primme_svds->commInfo;
+      primme->globalSumDouble = primme_svds->globalSumDouble;
+   }
+
+   switch(method) {
+   case primme_svds_op_AtA:
+      primme->n = primme_svds->n;
+      primme->nLocal = primme_svds->nLocal;
+      primme->convTestFun = convTestFunATA;
+      break;
+   case primme_svds_op_AAt:
+      primme->n = primme_svds->m;
+      primme->nLocal = primme_svds->mLocal;
+      primme->convTestFun = convTestFunATA;
+      break;
+   case primme_svds_op_augmented:
+      primme->n = primme_svds->m + primme_svds->n;
+      primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
+      primme->convTestFun = convTestFunAugmented;
+      break;
+   case primme_svds_op_none:
+      break;
+   }
+
+   if (stage == 0) {
+      switch (primme_svds->target) {
+      case primme_svds_largest:
+         primme->target = primme_largest;
+         break;
+      case primme_svds_smallest:
+         primme->target = primme_smallest;
+         break;
+      case primme_svds_closest_abs:
+         primme->target = method == primme_svds_op_augmented ?
+            primme_closest_geq : primme_closest_abs;
+         primme->numTargetShifts = primme_svds->numTargetShifts;
+         break;
+      }
+   }
+   else {
+      primme->target = primme_closest_geq;
+      primme->InitBasisMode = primme_init_user;
+   }
+      
+   if (primme->target == primme_smallest || primme->target == primme_largest){
+      if (primme->projectionParams.refinedScheme == primme_ref_default)
+         primme->projectionParams.refinedScheme = primme_ref_none;
+      if (primme_svds->locking >= 0)
+         primme->locking = primme_svds->locking;
+   }
+   else {
+      if (primme->projectionParams.refinedScheme == primme_ref_default)
+         primme->projectionParams.refinedScheme = primme_ref_OneAccuShift_QR;
+      if (primme_svds->locking >= 0)
+         primme->locking = primme_svds->locking;
+      else if (primme->locking < 0)
+         primme->locking = 1;
+      primme->numTargetShifts = primme_svds->numSvals;
+   }
+
+   if (primme_svds->precondition >= 0)
+      primme->correctionParams.precondition = primme_svds->precondition;
+   else if (primme->correctionParams.precondition < 0)
+      primme->correctionParams.precondition = primme_svds->applyPreconditioner ? 1 : 0;
 }
 
 /******************************************************************************
@@ -83,161 +269,86 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
  *****************************************************************************/
 void primme_svds_display_params(primme_svds_params primme_svds) {
 
-int i;
-FILE *outputFile = primme_svds.outputFile;
+   int i;
+   FILE *outputFile = primme_svds.outputFile;
 
-fprintf(outputFile, "// ---------------------------------------------------\n");
-fprintf(outputFile, "//            primme_svds configuration               \n");
-fprintf(outputFile, "// ---------------------------------------------------\n");
+#define PRINT(P,L) fprintf(outputFile, "primme_svds." #P " = " #L "\n", primme_svds. P);
+#define PRINTIF(P,V) if (primme_svds. P == V) fprintf(outputFile, "primme_svds." #P " = " #V "\n");
+#define PRINTParams(P,S,L) fprintf(outputFile, "primme_svds." #P "." #S " = " #L "\n", \
+                                    primme_svds. P ## Params. S);
+#define PRINTParamsIF(P,S,V) if (primme_svds. P ## Params. S == V) \
+                                 fprintf(outputFile, "primme_svds." #P "." #S " = " #V "\n");
 
-fprintf(outputFile, "primme_svds.m = %d \n",primme_svds.m);
-fprintf(outputFile, "primme_svds.n = %d \n",primme_svds.n);
-fprintf(outputFile, "primme_svds.nLocal = %d \n",primme_svds.nLocal);
-fprintf(outputFile, "primme_svds.numProcs = %d \n",primme_svds.numProcs);
-fprintf(outputFile, "primme_svds.procID = %d \n",primme_svds.procID);
+fprintf(outputFile, "// ---------------------------------------------------\n"
+                    "//            primme_svds configuration               \n"
+                    "// ---------------------------------------------------\n");
 
-fprintf(outputFile, "\n// Output and reporting\n");
-fprintf(outputFile, "primme_svds.printLevel = %d \n",primme_svds.printLevel);
+   PRINT(m, %d);
+   PRINT(n, %d);
+   PRINT(mLocal, %d);
+   PRINT(nLocal, %d);
+   PRINT(numProcs, %d);
+   PRINT(procID, %d);
 
-fprintf(outputFile, "\n// Solver parameters\n");
-fprintf(outputFile, "primme_svds.numSvals = %d \n",primme_svds.numSvals);
-switch (primme_svds.target){
-   case primme_svds_smallest:
-      fprintf(outputFile, "primme_svds.target = primme_svds_smallest\n");
-      break;
-   case primme_svds_largest:
-      fprintf(outputFile, "primme_svds.target = primme_svds_largest\n");
-      break;
-}
-switch (primme_svds.svdsMethod){
-   case primme_svds_hybrid:
-      fprintf(outputFile, "primme_svds.svdsMethod = primme_svds_hybrid\n");
-      break;
-   case primme_svds_normalequations:
-      fprintf(outputFile, "primme_svds.svdsMethod = primme_svds_normalequations\n");
-      break;
-   case primme_svds_augmented:
-      fprintf(outputFile, "primme_svds.svdsMethod = primme_svds_augmented\n");
-      break;
-}
-switch (primme_svds.eigsMethod_stage1){
-   case DYNAMIC: 
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = DYNAMIC\n");
-      break;
-   case DEFAULT_MIN_TIME:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = DEFAULT_MIN_TIME\n");
-      break;
-   case DEFAULT_MIN_MATVECS:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = DEFAULT_MIN_MATVECS\n");
-      break;
-   case Arnoldi:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = Arnoldi\n");
-      break;
-   case GD:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = GD\n");
-      break;
-   case GD_plusK:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = GD_plusK\n");
-      break;
-   case GD_Olsen_plusK:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = GD_Olsen_plusK\n");
-      break;
-   case JD_Olsen_plusK:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = JD_Olsen_plusK\n");
-      break;
-   case RQI:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = RQI\n");
-      break;
-   case JDQR:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = JDQR\n");
-      break;
-   case JDQMR:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = JDQMR\n");
-      break;
-   case JDQMR_ETol:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = JDQMR_ETol\n");
-      break;
-   case SUBSPACE_ITERATION:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = SUBSPACE_ITERATION\n");
-      break;
-   case LOBPCG_OrthoBasis:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = LOBPCG_OrthoBasis\n");
-      break;
-   case LOBPCG_OrthoBasis_Window:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage1 = LOBPCG_OrthoBasis_Window\n");
-      break;
-}
-switch (primme_svds.eigsMethod_stage2){
-   case DYNAMIC: 
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = DYNAMIC\n");
-      break;
-   case DEFAULT_MIN_TIME:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = DEFAULT_MIN_TIME\n");
-      break;
-   case DEFAULT_MIN_MATVECS:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = DEFAULT_MIN_MATVECS\n");
-      break;
-   case Arnoldi:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = Arnoldi\n");
-      break;
-   case GD:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = GD\n");
-      break;
-   case GD_plusK:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = GD_plusK\n");
-      break;
-   case GD_Olsen_plusK:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = GD_Olsen_plusK\n");
-      break;
-   case JD_Olsen_plusK:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = JD_Olsen_plusK\n");
-      break;
-   case RQI:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = RQI\n");
-      break;
-   case JDQR:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = JDQR\n");
-      break;
-   case JDQMR:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = JDQMR\n");
-      break;
-   case JDQMR_ETol:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = JDQMR_ETol\n");
-      break;
-   case SUBSPACE_ITERATION:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = SUBSPACE_ITERATION\n");
-      break;
-   case LOBPCG_OrthoBasis:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = LOBPCG_OrthoBasis\n");
-      break;
-   case LOBPCG_OrthoBasis_Window:
-      fprintf(outputFile, "primme_svds.eigsMethod_stage2 = LOBPCG_OrthoBasis_Window\n");
-      break;
-}
-fprintf(outputFile, "primme_svds.aNorm = %e \n",primme_svds.aNorm);
-fprintf(outputFile, "primme_svds.eps = %e \n",primme_svds.eps);
-fprintf(outputFile, "primme_svds.maxBasisSize = %d \n",primme_svds.maxBasisSize);
-fprintf(outputFile, "primme_svds.maxBlockSize = %d\n",primme_svds.maxBlockSize);
-fprintf(outputFile, "primme_svds.maxMatvecs = %d\n",primme_svds.maxMatvecs);
-fprintf(outputFile, "primme_svds.initSize = %d\n",primme_svds.initSize);
-fprintf(outputFile, "primme_svds.precondition = %d\n",primme_svds.precondition);
-fprintf(outputFile, "primme_svds.iseed =");
-for (i=0; i<4;i++) {
-    fprintf(outputFile, " %d",primme_svds.iseed[i]);
-}
-fprintf(outputFile, "\n");
-fprintf(outputFile, "primme_svds.numTargetShifts = %d\n",primme_svds.numTargetShifts);    
-if (primme_svds.numTargetShifts > 0) {
-    fprintf(outputFile, "primme_svds.targetShifts =");
-    for (i=0; i<primme_svds.numTargetShifts;i++) {
-        fprintf(outputFile, " %e",primme_svds.targetShifts[i]);
-    }   
-    fprintf(outputFile, "\n");
-}
+   fprintf(outputFile, "\n// Output and reporting\n");
+   PRINT(printLevel, %d);
 
-fprintf(outputFile, "\n");
-fprintf(outputFile, "// ---------------------------------------------------\n");
-fflush(outputFile);
+   fprintf(outputFile, "\n// Solver parameters\n");
+   PRINT(numSvals, %d);
+   PRINT(aNorm, %e);
+   PRINT(eps, %e);
+   PRINT(maxBasisSize, %d);
+   PRINT(maxBlockSize, %d);
+   PRINT(maxMatvecs, %d);
+
+   PRINTIF(target, primme_svds_smallest);
+   PRINTIF(target, primme_svds_largest);
+   PRINTIF(target, primme_svds_closest_abs);
+
+   PRINT(numTargetShifts, %d);
+   if (primme_svds.numTargetShifts > 0) {
+      fprintf(outputFile, "primme_svds.targetShifts =");
+      for (i=0; i<primme_svds.numTargetShifts;i++) {
+         fprintf(outputFile, " %e",primme_svds.targetShifts[i]);
+      }
+      fprintf(outputFile, "\n");
+   }
+
+   PRINT(locking, %d);
+   PRINT(initSize, %d);
+   PRINT(numOrthoConst, %d);
+   fprintf(outputFile, "primme_svds.iseed =");
+   for (i=0; i<4;i++) {
+      fprintf(outputFile, " %d",primme_svds.iseed[i]);
+   }
+   fprintf(outputFile, "\n");
+
+   PRINT(precondition, %d);
+
+   PRINTIF(method, primme_svds_op_none);
+   PRINTIF(method, primme_svds_op_AtA);
+   PRINTIF(method, primme_svds_op_AAt);
+   PRINTIF(method, primme_svds_op_augmented);
+
+   PRINTIF(method0, primme_svds_op_none);
+   PRINTIF(method0, primme_svds_op_AtA);
+   PRINTIF(method0, primme_svds_op_AAt);
+   PRINTIF(method0, primme_svds_op_augmented);
+
+   fprintf(outputFile, "\n"
+                       "// ---------------------------------------------------\n"
+                       "//            1st stage primme configuration          \n"
+                       "// ---------------------------------------------------\n");
+   primme_display_params_prefix("primme", primme_svds.primme);
+
+   if (primme_svds.method0 != primme_svds_op_none) {
+      fprintf(outputFile, "\n"
+                          "// ---------------------------------------------------\n"
+                          "//            2st stage primme configuration          \n"
+                          "// ---------------------------------------------------\n");
+      primme_display_params_prefix("primme0", primme_svds.primme0);
+   }
+   fflush(outputFile);
 
   /**************************************************************************/
 } /* end of display params */
@@ -245,6 +356,63 @@ fflush(outputFile);
 
 void primme_svds_Free(primme_svds_params *params) {
     
-    free(params->realWork);  
+   free(params->intWork);
+   free(params->realWork);
+   params->intWorkSize  = 0;
+   params->realWorkSize = 0;
 }
 
+/*******************************************************************************
+ * Subroutine convTestFunATA - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps * sval / primme_svds.aNorm = eps * sqrt(eval/primme.aNorm)
+ *    resNorm is close to machineEpsilon * primme.aNorm.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps * sqrt(*eval / (
+                  primme->aNorm > 0 ? primme->aNorm : primme->stats.estimateLargestSVal)),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
+}
+
+/*******************************************************************************
+ * Subroutine convTestFunAugmented - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps / sqrt(2) / primme_svds.aNorm = eps / sqrt(2) / primme.aNorm.          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps / sqrt(2.0) * (
+                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
+} 

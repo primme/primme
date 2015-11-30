@@ -214,7 +214,8 @@ int restart_dprimme(double *V, double *W, double *H, double *hVecs,
     is used, H and WTW are restarted by using H = yT*H*y, WTW = yT*WTW*y.
     However, when qr factorization is used for harmonic or refined 
     , only H is restrarted by using H = yT*H*y.*/
-    if (primme->projectionParams.projection == primme_RR) {
+    if (primme->projectionParams.projection == primme_proj_RR &&
+        primme->projectionParams.refinedScheme == primme_ref_none) {
         ret = restart_H(H, hVecs, hVals, restartSize, basisSize, previousHVecs, 
       numPrevRetained, indexOfPreviousVecs, rworkSize, rwork, primme);
     }
@@ -1167,7 +1168,8 @@ static int insert_submatrix(double *H, double *hVals, double *hVecs,
    is RR , otherwise there is no need to update H from the resulting
    submatrix.                       */
    /* ---------------------------------------------------------------------- */
-    if (primme->projectionParams.projection == primme_RR) {
+    if (primme->projectionParams.projection == primme_proj_RR &&
+        primme->projectionParams.refinedScheme == primme_ref_none) {
         for (j = indexOfPreviousVecs; j < indexOfPreviousVecs+numPrevRetained; j++) {
             for (i = indexOfPreviousVecs; i <= j; i++) {
                 H[primme->maxBasisSize*j+i] = 

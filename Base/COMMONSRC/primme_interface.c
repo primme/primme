@@ -37,6 +37,7 @@
 #include <math.h>    
 #include "primme.h"
 #include "common_numerical.h"
+#include "primme_interface.h"
 #include "const.h"
 
 /***************************************************************************
@@ -67,44 +68,37 @@ void primme_initialize(primme_params *primme) {
    primme->procID                  = 0;
    primme->nLocal                  = 0;
    primme->commInfo                = NULL;
-   primme->globalSumDouble         = primme_seq_globalSumDouble;
+   primme->globalSumDouble         = NULL;
 
    /* Initial guesses/constraints */
    primme->initSize                = 0;
    primme->numOrthoConst           = 0;
 
-   /* lingfei:primme_svds. The RR or Harmonic or Refined projection is used */
-   if (primme->target == primme_smallest ||
-            primme->target == primme_largest){
-       primme->projectionParams.projection = primme_RR;
-   }
-   else {
-       primme->projectionParams.projection = primme_RR_Refined;
-       primme->projectionParams.refinedScheme  = primme_OneAccuShift_QR;
-   }
+   primme->projectionParams.projection = primme_proj_default;
+   primme->projectionParams.refinedScheme  = primme_ref_default;
+
    primme->currentEstimates.Anormest           = 0;
    primme->currentEstimates.targetRitzVal      = 0;
    primme->currentEstimates.targetRitzValNorm  = 0;
    primme->currentEstimates.targetRitzVec      = NULL;
-   primme->qr_need                             = 0;
-   primme->InitBasisMode                       = 0;
+   primme->InitBasisMode                       = primme_init_default;
    primme->ReIntroInitGuessToBasis             = 0;
 
    /* Eigensolver parameters (outer) */
-   primme->locking                             = 0;
+   primme->locking                             = -1;
    primme->dynamicMethodSwitch                 = 0;
    primme->maxBasisSize                        = 0;
    primme->minRestartSize                      = 0;
-   primme->maxBlockSize                        = 1;
+   primme->maxBlockSize                        = 0;
    primme->maxMatvecs                          = INT_MAX;
    primme->maxOuterIterations                  = INT_MAX;
    primme->restartingParams.scheme             = primme_thick;
-   primme->restartingParams.maxPrevRetain      = 0;
+   primme->restartingParams.maxPrevRetain      = -1;
 
    /* correction parameters (inner) */
-   primme->correctionParams.precondition       = 0;
+   primme->correctionParams.precondition       = -1;
    primme->correctionParams.robustShifts       = 0;
-   primme->correctionParams.maxInnerIterations = 0;
+   primme->correctionParams.maxInnerIterations = -INT_MAX;
    primme->correctionParams.projectors.LeftQ   = 0;
    primme->correctionParams.projectors.LeftX   = 0;
    primme->correctionParams.projectors.RightQ  = 0;
@@ -283,18 +277,23 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->dynamicMethodSwitch = 1;
    }
   
+   if (params->dynamicMethodSwitch < 0) {
+      params->dynamicMethodSwitch = 0;
+   }
+
    if (params->maxBlockSize == 0) {
       params->maxBlockSize = 1;
    }
+   if (params->correctionParams.precondition == -1) {
+      params->correctionParams.precondition = params->applyPreconditioner ? 1 : 0;
+   }
 
    if (method == Arnoldi) {
-      params->locking                             = 0;
       params->restartingParams.maxPrevRetain      = 0;
       params->correctionParams.precondition       = 0;
       params->correctionParams.maxInnerIterations = 0;
    }
    else if (method == GD) {
-      params->locking                             = 0;
       params->restartingParams.maxPrevRetain      = 0;
       params->correctionParams.robustShifts       = 1;
       params->correctionParams.maxInnerIterations = 0;
@@ -302,7 +301,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_plusK) {
-      if (params->restartingParams.maxPrevRetain == 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -310,13 +309,12 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
             params->restartingParams.maxPrevRetain = params->maxBlockSize;
          }
       }
-      params->locking                             = 0;
       params->correctionParams.maxInnerIterations = 0;
       params->correctionParams.projectors.RightX  = 0;
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain == 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -324,13 +322,12 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
             params->restartingParams.maxPrevRetain = params->maxBlockSize;
          }
       }
-      params->locking                             = 0;
       params->correctionParams.maxInnerIterations = 0;
       params->correctionParams.projectors.RightX  = 1;
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == JD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain == 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -338,7 +335,6 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
             params->restartingParams.maxPrevRetain = params->maxBlockSize;
          }
       }
-      params->locking                             = 0;
       params->correctionParams.robustShifts       = 1;
       params->correctionParams.maxInnerIterations = 0;
       params->correctionParams.projectors.RightX  = 1;
@@ -365,7 +361,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->locking                             = 1;
       params->restartingParams.maxPrevRetain      = 1;
       params->correctionParams.robustShifts       = 0;
-      if (params->correctionParams.maxInnerIterations == 0) {
+      if (params->correctionParams.maxInnerIterations == -INT_MAX) {
          params->correctionParams.maxInnerIterations = 10;
       }
       params->correctionParams.projectors.LeftQ   = 0;
@@ -378,8 +374,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.convTest           = primme_full_LTolerance;
    }
    else if (method == JDQMR) {
-      params->locking                             = 0;
-      if (params->restartingParams.maxPrevRetain == 0) {
+      if (params->restartingParams.maxPrevRetain < 0) {
          params->restartingParams.maxPrevRetain   = 1;
       }
       params->correctionParams.maxInnerIterations = -1;
@@ -397,8 +392,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.convTest           = primme_adaptive;
    }
    else if (method == JDQMR_ETol) {
-      params->locking                             = 0;
-      if (params->restartingParams.maxPrevRetain == 0) {
+      if (params->restartingParams.maxPrevRetain < 0) {
          params->restartingParams.maxPrevRetain   = 1;
       }
       params->correctionParams.maxInnerIterations = -1;
@@ -428,7 +422,6 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == LOBPCG_OrthoBasis) {
-      params->locking                             = 0;
       params->maxBasisSize                        = params->numEvals*3;
       params->minRestartSize                      = params->numEvals;
       params->maxBlockSize                        = params->numEvals;
@@ -440,7 +433,6 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == LOBPCG_OrthoBasis_Window) {
-      params->locking                             = 0;
       params->maxBasisSize                        = params->maxBlockSize*3;
       params->minRestartSize                      = params->maxBlockSize;
       params->restartingParams.maxPrevRetain      = params->maxBlockSize;
@@ -454,6 +446,57 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       return -1;
    }
 
+   primme_set_defaults(params);
+
+   return 0;
+
+  /**************************************************************************/
+} /* end of primme_set_method */
+  /**************************************************************************/
+
+/******************************************************************************
+ * Subroutine primme_set_defaults - Set valid values for options that still
+ *    has the initial invalid value set in primme_initialize.
+ *
+ ******************************************************************************/
+
+void primme_set_defaults(primme_params *params) {
+   if (params->dynamicMethodSwitch < 0) {
+      primme_set_method(DYNAMIC, params);
+   }
+
+   /* ----------------------------------------- */
+   /* Set some defaults for sequential programs */
+   /* ----------------------------------------- */
+   if (params->numProcs <= 1) {
+      params->nLocal = params->n;
+      params->procID = 0;
+      if (params->globalSumDouble == NULL) 
+         params->globalSumDouble = primme_seq_globalSumDouble;
+   }
+
+   /* --------------------------------------------------------------------- */
+   /* Decide on whether to use locking (hard locking), or not (soft locking)*/
+   /* --------------------------------------------------------------------- */
+   if (params->target != primme_smallest && params->target != primme_largest ) {
+      /* Locking is necessary as interior Ritz values can cross shifts */
+      params->locking = 1;
+   }
+   else if (params->numEvals > params->minRestartSize) {
+      /* use locking when not enough vectors to restart with */
+      params->locking = 1;
+   }
+   else if (params->locking == -1) {
+      params->locking = 0;   
+   }
+
+   if (params->projectionParams.projection == primme_proj_default)
+      params->projectionParams.projection = primme_proj_RR;
+   if (params->projectionParams.refinedScheme == primme_ref_default)
+      params->projectionParams.refinedScheme = primme_ref_none;
+   if (params->InitBasisMode == primme_init_default)
+      params->InitBasisMode = primme_init_krylov;
+      
    /* Now that most of the parameters have been set, set defaults  */
    /* for basisSize, restartSize (for those methods that need it)  */
    /* For interior, larger basisSize and restartSize are advisable */
@@ -490,13 +533,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
                         /(double) params->maxBlockSize) );
       }
    }
-
-
-   return 0;
-
-  /**************************************************************************/
-} /* end of primme_set_method */
-  /**************************************************************************/
+}
 
 /******************************************************************************
  *
@@ -507,168 +544,118 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
  *****************************************************************************/
 void primme_display_params(primme_params primme) {
 
-int i;
-FILE *outputFile = primme.outputFile;
+   fprintf(primme.outputFile,
+           "// ---------------------------------------------------\n"
+           "//                 primme configuration               \n"
+           "// ---------------------------------------------------\n");
 
-fprintf(outputFile, "// ---------------------------------------------------\n");
-fprintf(outputFile, "//                 primme configuration               \n");
-fprintf(outputFile, "// ---------------------------------------------------\n");
-
-fprintf(outputFile, "primme.n = %d \n",primme.n);
-fprintf(outputFile, "primme.nLocal = %d \n",primme.nLocal);
-fprintf(outputFile, "primme.numProcs = %d \n",primme.numProcs);
-fprintf(outputFile, "primme.procID = %d \n",primme.procID);
-
-fprintf(outputFile, "\n// Output and reporting\n");
-fprintf(outputFile, "primme.printLevel = %d \n",primme.printLevel);
-
-fprintf(outputFile, "\n// Solver parameters\n");
-fprintf(outputFile, "primme.numEvals = %d \n",primme.numEvals);
-fprintf(outputFile, "primme.aNorm = %e \n",primme.aNorm);
-fprintf(outputFile, "primme.eps = %e \n",primme.eps);
-fprintf(outputFile, "primme.maxBasisSize = %d \n",primme.maxBasisSize);
-fprintf(outputFile, "primme.minRestartSize = %d \n",primme.minRestartSize);
-fprintf(outputFile, "primme.maxBlockSize = %d\n",primme.maxBlockSize);
-fprintf(outputFile,
-                "primme.maxOuterIterations = %d\n",primme.maxOuterIterations);
-fprintf(outputFile, "primme.maxMatvecs = %d\n",primme.maxMatvecs);
-switch (primme.target){
-   case primme_smallest:
-      fprintf(outputFile, "primme.target = primme_smallest\n");
-      break;
-   case primme_largest:
-      fprintf(outputFile, "primme.target = primme_largest\n");
-      break;
-   case primme_closest_leq:
-      fprintf(outputFile, "primme.target = primme_closest_leq\n");
-      break;
-   case primme_closest_abs:
-      fprintf(outputFile, "primme.target = primme_closest_abs\n");
-      break;
-   case primme_closest_geq:
-      fprintf(outputFile, "primme.target = primme_closest_geq\n");
-      break;
+   primme_display_params_prefix("primme", primme);
+   fflush(primme.outputFile);
 }
 
-/* lingfei: primme_svds. if the harmonic or refined projection is used */
-switch (primme.projectionParams.projection){                                                                          
-    case primme_RR:
-        fprintf(outputFile, "primme.projectionParams.projection = primme_RR\n");
-        break;
-    case primme_RR_Refined:
-        fprintf(outputFile, "primme.projectionParams.projection = primme_RR_Refined\n");
-        break;
-    case primme_Har:
-        fprintf(outputFile, "primme.projectionParams.projection = primme_Har\n");
-        break;
-    case primme_Har_Refined:
-        fprintf(outputFile, "primme.projectionParams.projection = primme_Har_Refined\n");
-        break;
-    case primme_Refined:
-        fprintf(outputFile, "primme.projectionParams.projection = primme_Refined\n");
-        break;
-}
+void primme_display_params_prefix(const char* prefix, primme_params primme) {
 
-/* lingfei: primme_svds. if the harmonic or refined projection is used */
-switch (primme.projectionParams.refinedScheme){
-    case primme_DisableRef:
-        fprintf(outputFile, "primme.projectionParams.refinedScheme = disable Refine projection\n");
-        break;
-    case primme_OneAccuShift_QR:
-        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_OneAccuShift_QR\n");
-        break;
-    case primme_MultiShifts_QR:
-        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_MultiShifts_QR\n");
-        break;
-    case primme_OneShift_QR:
-        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_OneShift_QR\n");
-        break;
-    case primme_MultiShifts_WTW:
-        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_MultiShifts_WTW\n");
-        break;
-    case primme_OneShift_WTW:
-        fprintf(outputFile, "primme.projectionParams.refinedScheme = primme_OneShift_WTW\n");
-        break;
-}
-     
-/* lingfei: primme_svds. if the harmonic or refined projection is used */
-fprintf(outputFile, "primme.qr_need = %d \n",primme.qr_need);
-fprintf(outputFile, "primme.InitBasisMode = %d \n",primme.InitBasisMode);
-fprintf(outputFile, "primme.ReIntroInitGuessToBasis = %d \n",primme.ReIntroInitGuessToBasis);
+   int i;
+   FILE *outputFile = primme.outputFile;
 
-fprintf(outputFile, "primme.numTargetShifts = %d\n",primme.numTargetShifts);
-if (primme.numTargetShifts > 0) {
-   fprintf(outputFile, "primme.targetShifts =");
-   for (i=0; i<primme.numTargetShifts;i++) {
-      fprintf(outputFile, " %e",primme.targetShifts[i]);
+#define PRINT(P,L) fprintf(outputFile, "%s." #P " = " #L "\n", prefix, primme. P);
+#define PRINTIF(P,V) if (primme. P == V) fprintf(outputFile, "%s." #P " = " #V "\n", prefix);
+#define PRINTParams(P,S,L) fprintf(outputFile, "%s." #P "." #S " = " #L "\n", \
+                                    prefix, primme. P ## Params. S);
+#define PRINTParamsIF(P,S,V) if (primme. P ## Params. S == V) \
+                                 fprintf(outputFile, "%s." #P "." #S " = " #V "\n", prefix);
+
+   PRINT(n, %d);
+   PRINT(nLocal, %d);
+   PRINT(numProcs, %d);
+   PRINT(procID, %d);
+
+   fprintf(outputFile, "\n// Output and reporting\n");
+   PRINT(printLevel, %d);
+
+   fprintf(outputFile, "\n// Solver parameters\n");
+   PRINT(numEvals, %d);
+   PRINT(aNorm, %e);
+   PRINT(eps, %e);
+   PRINT(maxBasisSize, %d);
+   PRINT(minRestartSize, %d);
+   PRINT(maxBlockSize, %d);
+   PRINT(maxOuterIterations, %d);
+   PRINT(maxMatvecs, %d);
+
+   PRINTIF(target, primme_smallest);
+   PRINTIF(target, primme_largest);
+   PRINTIF(target, primme_closest_geq);
+   PRINTIF(target, primme_closest_leq);
+   PRINTIF(target, primme_closest_abs);
+
+   PRINTParamsIF(projection, projection, primme_proj_default);
+   PRINTParamsIF(projection, projection, primme_proj_RR);
+   PRINTParamsIF(projection, projection, primme_proj_Har);
+
+   PRINTParamsIF(projection, refinedScheme, primme_ref_default);
+   PRINTParamsIF(projection, refinedScheme, primme_ref_none);
+   PRINTParamsIF(projection, refinedScheme, primme_ref_MultiShifts_QR);
+   PRINTParamsIF(projection, refinedScheme, primme_ref_MultiShifts_WTW);
+   PRINTParamsIF(projection, refinedScheme, primme_ref_OneShift_QR);
+   PRINTParamsIF(projection, refinedScheme, primme_ref_OneShift_WTW);
+   PRINTParamsIF(projection, refinedScheme, primme_ref_OneAccuShift_QR);
+
+   PRINTIF(InitBasisMode, primme_init_default);
+   PRINTIF(InitBasisMode, primme_init_krylov);
+   PRINTIF(InitBasisMode, primme_init_random);
+   PRINTIF(InitBasisMode, primme_init_user);
+   PRINT(ReIntroInitGuessToBasis, %d);
+
+   PRINT(numTargetShifts, %d);
+   if (primme.numTargetShifts > 0) {
+      fprintf(outputFile, "%s.targetShifts =", prefix);
+      for (i=0; i<primme.numTargetShifts;i++) {
+         fprintf(outputFile, " %e",primme.targetShifts[i]);
+      }
+      fprintf(outputFile, "\n");
+   }
+
+   PRINT(dynamicMethodSwitch, %d);
+   PRINT(locking, %d);
+   PRINT(initSize, %d);
+   PRINT(numOrthoConst, %d);
+   fprintf(outputFile, "%s.iseed =", prefix);
+   for (i=0; i<4;i++) {
+      fprintf(outputFile, " %d",primme.iseed[i]);
    }
    fprintf(outputFile, "\n");
-}
 
-fprintf(outputFile, "primme.dynamicMethodSwitch = %d\n",
-                                                primme.dynamicMethodSwitch);
-fprintf(outputFile, "primme.locking = %d\n",primme.locking);
-fprintf(outputFile, "primme.initSize = %d\n",primme.initSize);
-fprintf(outputFile, "primme.numOrthoConst = %d\n",primme.numOrthoConst);
-fprintf(outputFile, "primme.iseed =");
-for (i=0; i<4;i++) {
-   fprintf(outputFile, " %d",primme.iseed[i]);
-}
-fprintf(outputFile, "\n");
+   fprintf(outputFile, "\n// Restarting\n");
+   PRINTParamsIF(restarting, scheme, primme_thick);
+   PRINTParamsIF(restarting, scheme, primme_dtr);
 
-fprintf(outputFile, "\n// Restarting\n");
-fprintf(outputFile, "primme.restarting.scheme = ");
-if (primme.restartingParams.scheme == primme_thick) {
-  fprintf(outputFile, "primme_thick\n");
-}
-else {
-  fprintf(outputFile, "primme_dtr\n");
-}
+   PRINTParams(restarting, maxPrevRetain, %d);
 
-fprintf(outputFile, "primme.restarting.maxPrevRetain = %d\n",
-                     primme.restartingParams.maxPrevRetain);
+   fprintf(outputFile, "\n// Correction parameters\n");
+   PRINTParams(correction, precondition, %d);
+   PRINTParams(correction, robustShifts, %d);
+   PRINTParams(correction, maxInnerIterations, %d);
+   PRINTParams(correction, relTolBase, %g);
 
-fprintf(outputFile, "\n// Correction parameters\n");
-fprintf(outputFile, "primme.correction.precondition = %d\n",
-                     primme.correctionParams.precondition);
-fprintf(outputFile, "primme.correction.robustShifts = %d\n",
-                     primme.correctionParams.robustShifts);
-fprintf(outputFile, "primme.correction.maxInnerIterations = %d\n",
-                     primme.correctionParams.maxInnerIterations);
-fprintf(outputFile, "primme.correction.relTolBase = %g\n",
-                     primme.correctionParams.relTolBase);
+   PRINTParamsIF(correction, convTest, primme_full_LTolerance);
+   PRINTParamsIF(correction, convTest, primme_decreasing_LTolerance);
+   PRINTParamsIF(correction, convTest, primme_adaptive_ETolerance);
+   PRINTParamsIF(correction, convTest, primme_adaptive);
 
-fprintf(outputFile, "primme.correction.convTest = ");
-switch (primme.correctionParams.convTest) {
-   case primme_adaptive_ETolerance:
-      fprintf(outputFile, "primme_adaptive_ETolerance\n");
-      break;
-   case primme_adaptive:
-      fprintf(outputFile, "primme_adaptive\n");
-      break;
-   case primme_full_LTolerance:
-      fprintf(outputFile, "primme_full_LTolerance\n");
-      break;
-   case primme_decreasing_LTolerance:
-      fprintf(outputFile, "primme_decreasing_LTolerance\n");
-      break;
-}
+   fprintf(outputFile, "\n// projectors for JD cor.eq.\n");
+   PRINTParams(correction, projectors.LeftQ , %d);
+   PRINTParams(correction, projectors.LeftX , %d);
+   PRINTParams(correction, projectors.RightQ, %d);
+   PRINTParams(correction, projectors.SkewQ , %d);
+   PRINTParams(correction, projectors.RightX, %d);
+   PRINTParams(correction, projectors.SkewX , %d);
+   fprintf(outputFile, "// ---------------------------------------------------\n");
 
-fprintf(outputFile, "\n// projectors for JD cor.eq.\n");
-fprintf(outputFile, "primme.correction.projectors.LeftQ = %d\n",
-                     primme.correctionParams.projectors.LeftQ);
-fprintf(outputFile, "primme.correction.projectors.LeftX = %d\n",
-                     primme.correctionParams.projectors.LeftX);
-fprintf(outputFile, "primme.correction.projectors.RightQ = %d\n",
-                     primme.correctionParams.projectors.RightQ);
-fprintf(outputFile, "primme.correction.projectors.SkewQ = %d\n",
-                     primme.correctionParams.projectors.SkewQ);
-fprintf(outputFile, "primme.correction.projectors.RightX = %d\n",
-                     primme.correctionParams.projectors.RightX);
-fprintf(outputFile, "primme.correction.projectors.SkewX = %d\n",
-                     primme.correctionParams.projectors.SkewX);
-fprintf(outputFile, "// ---------------------------------------------------\n");
-fflush(outputFile);
+#undef PRINT
+#undef PRINTIF
+#undef PRINTParams
+#undef PRINTParamsIF
 
   /**************************************************************************/
 } /* end of display params */

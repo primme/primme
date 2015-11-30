@@ -281,12 +281,12 @@ int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, Complex_Z *Q, Complex_Z *R, 
             = WTWm - 2*theta*Hm + theta*theta*Im;
    2) Another approach is for two-stages SVD problem;
       (AVm - theta*Vm) = Wm - thetaVm = QR; */
-   if (primme->projectionParams.projection == primme_RR_Refined &&
-            primme->projectionParams.refinedScheme == primme_OneAccuShift_QR) {
+   if (primme->projectionParams.projection == primme_proj_RR &&
+       primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR) {
        RefShift.r = -primme->targetShifts[numLocked+recentlyConverged];
        RefShift.i = 0.0L;
        /*printf("RefShift = %e\n",RefShift);*/
-       if (primme->qr_need == 1 && Q != NULL && R != NULL) {
+       if (Q != NULL && R != NULL) {
            for(i = 0; i < basisSize; i++){
                Num_zcopy_zprimme(primme->nLocal, &W[primme->nLocal*i], 
                1, &Q[primme->nLocal*i], 1);
@@ -301,7 +301,6 @@ int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, Complex_Z *Q, Complex_Z *R, 
           for (i = 0; i < primme->maxBasisSize*primme->maxBasisSize; i++) {
                R[i] = tzero;
            }
-           /*printf("primme->qr_need = %d\n",primme->qr_need);*/
            ret = ortho_zprimme(Q, R, primme->nLocal, 0,   
                 basisSize-1, NULL, 0, 0, primme->nLocal, 
                 primme->iseed, machEps, rwork, lrwork, primme);
@@ -310,11 +309,8 @@ int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, Complex_Z *Q, Complex_Z *R, 
                ret, __FILE__, __LINE__, primme);
                return ORTHO_FAILURE;
            }
-           /*reset primme->qr_need = 0 to switch to one-colomn qr updating model*/
-           primme->qr_need = 0;
        }
-       else { /*primme->qr_need == 0*/
-           /*printf("primme->qr_need = %d\n",primme->qr_need);*/
+       else {
            Num_zcopy_zprimme(primme->nLocal, &W[primme->nLocal*(basisSize-1)], 
                 1, &Q[primme->nLocal*(basisSize-1)], 1);
            Num_axpy_zprimme(primme->nLocal, RefShift, &V[primme->nLocal*(basisSize-1)], 
@@ -330,8 +326,8 @@ int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, Complex_Z *Q, Complex_Z *R, 
        }
     }
          
-    if (primme->projectionParams.projection == primme_RR_Refined && 
-            primme->projectionParams.refinedScheme == primme_OneAccuShift_QR) {
+    if (primme->projectionParams.projection == primme_proj_RR && 
+        primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR) {
       for (i = 0; i < primme->maxBasisSize*primme->maxBasisSize; i++) {
          hVecs[i] = tzero;
       }

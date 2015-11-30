@@ -1,6 +1,8 @@
 #
 
-CDOTH = ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h 
+CDOTH = ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h  \
+        ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.h \
+        ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h 
 
 CSOURCE = ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.c 
 
@@ -11,6 +13,11 @@ all: $(CSOURCE) $(CDOTH) depends
 ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h: primme_svds.h
 	cp primme_svds.h ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h
 
+../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.h: primme_svds_interface.h
+	cp primme_svds_interface.h ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.h
+
+../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h: primme_svds_interface_private.h
+	cp primme_svds_interface_private.h ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h
 
 #---------  PRIMMESRC/SVDS/COMMONSRC   .c files -------------------------
 

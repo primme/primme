@@ -58,6 +58,7 @@
 #include "correction_d.h"
 #include "primme_private_d.h"
 #include "numerical_d.h"
+#include "primme_interface.h"
 
 /*******************************************************************************
  * Subroutine dprimme - This routine is a front end used to perform 
@@ -117,30 +118,10 @@ int dprimme(double *evals, double *evecs, double *resNorms,
    /* ----------------------- */
    machEps = Num_dlamch_primme("E");
 
-   /* ----------------------------------------- */
-   /* Set some defaults for sequential programs */
-   /* ----------------------------------------- */
-   if (primme->numProcs == 1) {
-      primme->nLocal = primme->n;
-      primme->procID = 0;
-      if (primme->globalSumDouble == NULL) 
-         primme->globalSumDouble = primme_seq_globalSumDouble;
-   }
-
-   /* --------------------------------------------------------------------- */
-   /* Decide on whether to use locking (hard locking), or not (soft locking)*/
-   /* --------------------------------------------------------------------- */
-   if (primme->target != primme_smallest &&
-       primme->target != primme_largest ) {
-      /* Locking is necessary as interior Ritz values can cross shifts */
-      primme->locking = 1;
-   }
-   else {
-      if (primme->locking == 0) {
-         /* use locking when not enough vectors to restart with */
-         primme->locking = (primme->numEvals > primme->minRestartSize);   
-      }
-   }
+   /* ------------------ */
+   /* Set some defaults  */
+   /* ------------------ */
+   primme_set_defaults(primme);
 
    /* -------------------------------------------------------------- */
    /* If needed, we are ready to estimate required memory and return */
@@ -299,10 +280,10 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* lingfei: primme_svds. Add memory for Harmonic or Refined projection  */
    /*----------------------------------------------------------------------*/
    if (primme->projectionParams.projection) {
-        if (primme->projectionParams.projection == primme_RR_Refined && 
-            (primme->projectionParams.refinedScheme == primme_OneAccuShift_QR || 
-            primme->projectionParams.refinedScheme == primme_MultiShifts_QR ||
-            primme->projectionParams.refinedScheme == primme_OneShift_QR)){
+        if (primme->projectionParams.projection == primme_proj_RR && 
+            (primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR || 
+            primme->projectionParams.refinedScheme == primme_ref_MultiShifts_QR ||
+            primme->projectionParams.refinedScheme == primme_ref_OneShift_QR)){
             dataSize = dataSize 
             + primme->nLocal*primme->maxBasisSize              /* Size of Q */
             + primme->maxBasisSize*primme->maxBasisSize;       /* Size of R */

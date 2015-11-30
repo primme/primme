@@ -190,8 +190,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    /*lingfei:primme_svds. if refine projection is used, there is 
    no need to change eresTol*/
       if(primme->correctionParams.precondition == 1 || 
-          primme->projectionParams.projection == primme_RR ||
-          primme->projectionParams.projection == primme_Har)
+          primme->projectionParams.refinedScheme == primme_ref_none)
           ETolerance = max(eresTol/1.8L, absoluteTolerance);
       else
           ETolerance = max(eresTol, absoluteTolerance);          
@@ -201,8 +200,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    /*lingfei:primme_svds. if refine projection is used, there is 
    no need to change eresTol*/
       if(primme->correctionParams.precondition == 1 || 
-          primme->projectionParams.projection == primme_RR ||
-          primme->projectionParams.projection == primme_Har)
+          primme->projectionParams.refinedScheme == primme_ref_none)
           LTolerance = max(eresTol/1.8L, absoluteTolerance);
       else
           LTolerance = max(eresTol, absoluteTolerance);          
