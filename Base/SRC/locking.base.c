@@ -221,13 +221,13 @@ int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConv
    /* -------------------------------------------------------- */
 
    i = *basisSize - 1;
-   while ((flag[i] == LOCK_IT ||flag[i] == UNCONDITIONAL_LOCK_IT) && i >= 0) {
+   while (i >= 0 && (flag[i] == LOCK_IT ||flag[i] == UNCONDITIONAL_LOCK_IT)) {
       i--;
    }
       
    numCandidates = *basisSize - i - 1;
 
-   if (numCandidates == 0) {
+   if (numCandidates <= 0) {
       return 0;
    }
 

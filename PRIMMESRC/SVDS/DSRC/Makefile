@@ -21,14 +21,14 @@ primme_svds_d.o: primme_svds_d.c
 # Archive double precision object files in the full library
 #
 lib: $(COBJS)
-	ar rv ../../$(LIBRARY) $(COBJS)
-	$(RANLIB) ../../$(LIBRARY)
+	ar rv ../../../$(LIBRARY) $(COBJS)
+	$(RANLIB) ../../../$(LIBRARY)
 #
 # Archive double precision object files in double-only library
 #
 libd: $(COBJS)
-	ar rv ../../$(DLIBRARY) $(COBJS)
-	$(RANLIB) ../../$(DLIBRARY)
+	ar rv ../../../$(DLIBRARY) $(COBJS)
+	$(RANLIB) ../../../$(DLIBRARY)
 
 #
 # Clean up

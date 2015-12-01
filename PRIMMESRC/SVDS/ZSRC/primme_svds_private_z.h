@@ -43,7 +43,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
                                      double *svals, Complex_Z *svecs, double *rnorms);
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
 static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
-static void Num_copy_Complex_Zmatrix(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
-static void Num_scalInv_Complex_Zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors);
+static void Num_copy_zmatrix(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
+static void Num_scalInv_zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors);
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
 #endif

@@ -76,7 +76,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->precondition            = -1;
    primme_svds->initSize                = 0;
    primme_svds->maxBasisSize            = 0;
-   primme_svds->maxBlockSize            = 1;
+   primme_svds->maxBlockSize            = 0;
    primme_svds->maxMatvecs              = INT_MAX;
    primme_svds->printLevel              = 1;
    primme_svds->outputFile              = stdout;
@@ -99,6 +99,9 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->realWorkSize            = 0;
    primme_svds->intWork                 = NULL;
    primme_svds->realWork                = NULL;
+
+   primme_initialize(&primme_svds->primme);
+   primme_initialize(&primme_svds->primme0);
  
 }
 
@@ -135,6 +138,10 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
       primme_svds->nLocal = primme_svds->n;
       primme_svds->procID = 0;
       primme_svds->numProcs = 1;
+   }
+
+   if (primme_svds->method == primme_svds_op_none) {
+      primme_svds_set_method(primme_svds_default, primme_svds);
    }
 
    /* Configure the underneath eigensolver */
@@ -335,17 +342,21 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
    PRINTIF(method0, primme_svds_op_AAt);
    PRINTIF(method0, primme_svds_op_augmented);
 
-   fprintf(outputFile, "\n"
-                       "// ---------------------------------------------------\n"
-                       "//            1st stage primme configuration          \n"
-                       "// ---------------------------------------------------\n");
-   primme_display_params_prefix("primme", primme_svds.primme);
+   if (primme_svds.method != primme_svds_op_none) {
+      fprintf(outputFile, "\n"
+                          "// ---------------------------------------------------\n"
+                          "//            1st stage primme configuration          \n"
+                          "// ---------------------------------------------------\n");
+      primme_svds.primme.outputFile = outputFile;
+      primme_display_params_prefix("primme", primme_svds.primme);
+   }
 
    if (primme_svds.method0 != primme_svds_op_none) {
       fprintf(outputFile, "\n"
                           "// ---------------------------------------------------\n"
                           "//            2st stage primme configuration          \n"
                           "// ---------------------------------------------------\n");
+      primme_svds.primme0.outputFile = outputFile;
       primme_display_params_prefix("primme0", primme_svds.primme0);
    }
    fflush(outputFile);

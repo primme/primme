@@ -25,20 +25,20 @@ primme_svds_interface.o: primme_svds_interface.c
 # Archive common object files in the target full library
 #
 lib: $(COBJS)
-	ar rv ../../$(LIBRARY) $(COBJS)
-	$(RANLIB) ../../$(LIBRARY)
+	ar rv ../../../$(LIBRARY) $(COBJS)
+	$(RANLIB) ../../../$(LIBRARY)
 #
 # Archive common object files in the target Double library
 #
 libd: $(COBJS)
-	ar rv ../../$(DLIBRARY) $(COBJS)
-	$(RANLIB) ../../$(DLIBRARY)
+	ar rv ../../../$(DLIBRARY) $(COBJS)
+	$(RANLIB) ../../../$(DLIBRARY)
 #
 # Archive common object files in the target Complex library
 #
 libz: $(COBJS)
-	ar rv ../../$(ZLIBRARY) $(COBJS)
-	$(RANLIB) ../../$(ZLIBRARY)
+	ar rv ../../../$(ZLIBRARY) $(COBJS)
+	$(RANLIB) ../../../$(ZLIBRARY)
 
 #
 #  clean	- remove all object files

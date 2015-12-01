@@ -7,7 +7,7 @@ include ../Link_flags
 
 
 SOBJS= driver.o COMMON/shared_utils.o
-COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC
+COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC -I../PRIMMESRC/SVDS/COMMONSRC
 override INCLUDE += $(COMMON_INCLUDE)
 LIBDIRS += -L../
 
@@ -81,6 +81,9 @@ ex_petscf77: ex_petscf77.o ../libprimme.a Makefile
 
 ex_petscf77ptr: ex_petscf77ptr.o ../libprimme.a Makefile
 	$(FLDR) -o ex_petscf77ptr ex_petscf77ptr.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+exsvd_dseq: exsvd_dseq.o ../libprimme.a Makefile
+	$(CLDR) -o exsvd_dseq exsvd_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -210,3 +213,9 @@ ex_petscf77.F: ex_f77.m4
 
 ex_petscf77ptr.F: ex_f77.m4
 	m4 -D USE_PETSC -D USE_POINTER ex_f77.m4 > $@
+
+exsvd_dseq.c: exsvd_c.m4
+	m4 exsvd_c.m4 > $@
+
+exsvd_dseq0.c: exsvd_c.m4
+	m4 -D ADVANCED_HYBRID exsvd_c.m4 > $@

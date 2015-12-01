@@ -86,7 +86,7 @@ void primme_initialize(primme_params *primme) {
 
    /* Eigensolver parameters (outer) */
    primme->locking                             = -1;
-   primme->dynamicMethodSwitch                 = 0;
+   primme->dynamicMethodSwitch                 = -1;
    primme->maxBasisSize                        = 0;
    primme->minRestartSize                      = 0;
    primme->maxBlockSize                        = 0;
@@ -266,7 +266,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
          method = JDQMR;
       }
    }
-   else if (method == DYNAMIC) {
+   if (method == DYNAMIC) {
       /* JDQMR works better than JDQMR_ETol in interior problems. */
       if (params->target == primme_smallest || params->target == primme_largest) {
          method = JDQMR_ETol;
@@ -276,8 +276,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       }
       params->dynamicMethodSwitch = 1;
    }
-  
-   if (params->dynamicMethodSwitch < 0) {
+   else {
       params->dynamicMethodSwitch = 0;
    }
 
@@ -608,7 +607,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINT(ReIntroInitGuessToBasis, %d);
 
    PRINT(numTargetShifts, %d);
-   if (primme.numTargetShifts > 0) {
+   if (primme.numTargetShifts > 0 && primme.targetShifts) {
       fprintf(outputFile, "%s.targetShifts =", prefix);
       for (i=0; i<primme.numTargetShifts;i++) {
          fprintf(outputFile, " %e",primme.targetShifts[i]);
