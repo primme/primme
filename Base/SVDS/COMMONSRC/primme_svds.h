@@ -83,7 +83,7 @@ typedef struct primme_svds_params {
    int nLocal;
    void *commInfo;
    void (*globalSumDouble)
-      (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme );
+      (void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds );
 
    /* Though primme_svds_initialize will assign defaults, most users will set these */
    int numSvals;

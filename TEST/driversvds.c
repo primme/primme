@@ -23,7 +23,7 @@
  * File: driver.c
  *
  * Purpose - driver that can read a matrix from a file and compute some
- *           eigenvalues using PRIMME.
+ *           singular values and vectors using PRIMME.
  *
  *  Parallel driver for PRIMME. Calling format:
  *
@@ -38,12 +38,12 @@
  *
  *         Example file:  DriverConf
  *
- *  SolverConfigFileName  includes all d/zprimme required information
- *                            as stored in primme_params data structure.
+ *  SolverConfigFileName  includes all d/zprimme_svds required information
+ *                            as stored in primme_svds_params data structure.
  *
- *             Example files: FullConf  Full customization of PRIMME
- *                            LeanConf  Use a preset method and some customization
- *                            MinConf   Provide ONLY a preset method and numEvals.
+ *             Example files: FullConfSvds  Full customization of PRIMME
+ *                            LeanConfSvds  Use a preset method and some customization
+ *                            MinConfSvds   Provide ONLY a preset method and numSvals.
  *
  ******************************************************************************/
 
@@ -72,15 +72,15 @@ PetscLogEvent PRIMME_GLOBAL_SUM;
 #endif
 
 /* primme.h header file is required to run primme */
-#include "primme.h"
+#include "primme_svds.h"
 #include "shared_utils.h"
 #include "ioandtest.h"
 /* wtime.h header file is included so primme's timimg functions can be used */
 #include "wtime.h"
 
 static int real_main (int argc, char *argv[]);
-static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int **permutation);
-static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme, int *permutation);
+static int setMatrixAndPrecond(driver_params *driver, primme_svds_params *primme_svds, int **permutation);
+static int destroyMatrixAndPrecond(driver_params *driver, primme_svds_params *primme_svds, int *permutation);
 
 
 
@@ -130,11 +130,11 @@ static int real_main (int argc, char *argv[]) {
    char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
    
    /* Driver and solver I/O arrays and parameters */
-   double *evals, *rnorms;
-   PRIMME_NUM *evecs;
+   double *svals, *svecs, *rnorms;
    driver_params driver;
-   primme_params primme;
-   primme_preset_method method=-1;
+   primme_svds_params primme_svds;
+   primme_svds_preset_method method=-1;
+   primme_preset_method primmemethod=-1, primmemethod0=-1;
    int *permutation = NULL;
 
    /* Other miscellaneous items */
@@ -153,7 +153,7 @@ static int real_main (int argc, char *argv[]) {
    master = (procID == 0);
 #endif
 
-   primme_initialize(&primme);
+   primme_svds_initialize(&primme_svds);
 
    if (master) {
       /* ------------------------------------------------------------ */
@@ -183,10 +183,11 @@ static int real_main (int argc, char *argv[]) {
       }
    
       /* --------------------------------------- */
-      /* Read in the PRIMME configuration file   */
+      /* Read in the PRIMME SVDS configuration file   */
       /* --------------------------------------- */
-      if (read_solver_params(SolverConfigFileName, driver.outputFileName, 
-                           &primme, "primme.", &method, "method") < 0) {
+      if (read_solver_params_svds(SolverConfigFileName, driver.outputFileName, 
+                           &primme_svds, "primme_svds.", &method, "method", &primmemethod,
+                           &primmemethod0) < 0) {
          fprintf(stderr, "Reading solver parameters failed\n");
          return(-1);
       }
@@ -197,103 +198,119 @@ static int real_main (int argc, char *argv[]) {
    /* Send read common primme members to all processors */ 
    /* Setup the primme members local to this processor  */ 
    /* ------------------------------------------------- */
-   broadCast(&primme, &method, &driver, master, comm);
+   broadCast_svds(&primme, &method, &primmemethod, &primmemethod0, &driver, master, comm);
 #endif
 
    /* --------------------------------------- */
    /* Set up matrix vector and preconditioner */
    /* --------------------------------------- */
-   if (setMatrixAndPrecond(&driver, &primme, &permutation) != 0) return -1;
+   if (setMatrixAndPrecond(&driver, &primme_svds, &permutation) != 0) return -1;
 
    /* --------------------------------------- */
    /* Pick one of the default methods(if set) */
    /* --------------------------------------- */
-   if (method > 100 || primme_set_method(method, &primme) < 0 ) {
-      fprintf(primme.outputFile, "No preset method. Using custom settings\n");
+   if (method > 100 || primme_svds_set_method(method, &primme_svds) < 0 ) {
+      fprintf(primme_svds.outputFile, "No preset method. Using custom settings\n");
    }
+   if (primmemethod < 100) primme_set_method(primmemethod, &primme_svds.primme);
+   if (primmemethod0 < 100) primme_set_method(primmemethod0, &primme_svds.primme0);
 
    /* --------------------------------------- */
    /* Optional: report memory requirements    */
    /* --------------------------------------- */
 
-   ret = PREFIX(primme)(NULL,NULL,NULL,&primme);
+   ret = PREFIX(primme_svds)(NULL,NULL,NULL,&primme_svds);
    if (master) {
-      fprintf(primme.outputFile,"PRIMME will allocate the following memory:\n");
-      fprintf(primme.outputFile," processor %d, real workspace, %ld bytes\n",
-                                      procID, primme.realWorkSize);
-      fprintf(primme.outputFile," processor %d, int  workspace, %d bytes\n",
-                                      procID, primme.intWorkSize);
+      fprintf(primme_svds.outputFile,"PRIMME SVDS will allocate the following memory:\n");
+      fprintf(primme_svds.outputFile," processor %d, real workspace, %ld bytes\n",
+                                      procID, primme_svds.realWorkSize);
+      fprintf(primme_svds.outputFile," processor %d, int  workspace, %d bytes\n",
+                                      procID, primme_svds.intWorkSize);
    }
 
-   /* --------------------------------------- */
-   /* Display given parameter configuration   */
-   /* Place this after the dprimme() to see   */
-   /* any changes dprimme() made to PRIMME    */
-   /* --------------------------------------- */
+   /* ---------------------------------------- */
+   /* Display given parameter configuration    */
+   /* Place this after the dprimme() to see    */
+   /* any changes primme_svds() made to PRIMME */
+   /* ---------------------------------------- */
 
    if (master) {
-      driver_display_params(driver, primme.outputFile); 
-      primme_display_params(primme);
-      driver_display_method(method, "method", primme.outputFile);
+      driver_display_params(driver, primme_svds.outputFile); 
+      primme_svds_display_params(primme_svds);
+      driver_display_methodsvd(method, "method", primme_svds.outputFile);
+      driver_display_method(primmemethod, "primme.method", primme_svds.outputFile);
+      driver_display_method(primmemethod0, "primme0.method", primme_svds.outputFile);
    }
 
    /* --------------------------------------------------------------------- */
-   /*                            Run the d/zprimme solver                   */
+   /*                            Run the d/zprimme_svds solver                   */
    /* --------------------------------------------------------------------- */
 
    /* Allocate space for converged Ritz values and residual norms */
 
-   evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
-   evecs = (PRIMME_NUM *)primme_calloc(primme.nLocal*primme.numEvals, 
-                                sizeof(PRIMME_NUM), "evecs");
-   rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
+   svals = (double *)primme_calloc(primme_svds.numSvals, sizeof(double), "svals");
+   svecs = (PRIMME_NUM *)primme_calloc((primme_svds.mLocal+primme_svds.nLocal)*
+                                       primme_svds.numSvals, sizeof(PRIMME_NUM), "svecs");
+   rnorms = (double *)primme_calloc(primme_svds.numSvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
    /* Initial guess (optional) */
    /* ------------------------ */
 
    /* Read initial guess from a file */
-   if (driver.initialGuessesFileName[0] && primme.initSize+primme.numOrthoConst > 0) {
-      int cols, i=0;
-      ASSERT_MSG(readBinaryEvecsAndPrimmeParams(driver.initialGuessesFileName, evecs, NULL, primme.n,
-                                                min(primme.initSize+primme.numOrthoConst, primme.numEvals),
-                                                &cols, primme.nLocal, permutation, &primme) != 0, 1, "");
-      primme.numOrthoConst = min(primme.numOrthoConst, cols);
+   if (driver.initialGuessesFileName[0] && primme_svds.initSize+primme_svds.numOrthoConst > 0) {
+      int cols, i=0, n;
+      ASSERT_MSG(readBinaryEvecsAndPrimmeSvdsParams(
+         driver.initialGuessesFileName, svecs, NULL, primme_svds.m, primme_svds.n,
+         min(primme_svds.initSize+primme_svds.numOrthoConst,
+             primme_svds.numSvals), &cols, primme_svds.mLocal, primme_svds.nLocal,
+         permutation, &primme_svds) != 0, 1, "");
+      primme_svds.numOrthoConst = min(primme_svds.numOrthoConst, cols);
+      primme_svds.initSize = min(primme_svds.initSize, cols - primme_svds.numOrthoConst);
+      n = primme_svds.initSize+primme_svds.numOrthoConst;
 
       /* Perturb the initial guesses by a vector with some norm  */
       if (driver.initialGuessesPert > 0) {
-         PRIMME_NUM *r = (PRIMME_NUM *)primme_calloc(primme.nLocal,sizeof(PRIMME_NUM), "random");
+         PRIMME_NUM *r = (PRIMME_NUM *)primme_calloc(max(primme_svds.nLocal,primme_svds.mLocal),sizeof(PRIMME_NUM), "random");
          double norm;
          int j;
-         for (i=primme.numOrthoConst; i<min(cols, primme.initSize+primme.numOrthoConst); i++) {
-            SUF(Num_larnv)(2, primme.iseed, primme.nLocal, COMPLEXZ(r));
-            norm = sqrt(REAL_PARTZ(SUF(Num_dot)(primme.nLocal, COMPLEXZ(r), 1, COMPLEXZ(r), 1)));
-            for (j=0; j<primme.nLocal; j++)
-               evecs[primme.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
+         assert(primme_svds.numProcs <= 1);
+         for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
+            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.mLocal, COMPLEXZ(r));
+            norm = sqrt(REAL_PARTZ(SUF(Num_dot)(primme_svds.mLocal, COMPLEXZ(r), 1, COMPLEXZ(r), 1)));
+            for (j=0; j<primme_svds.mLocal; j++)
+               svecs[primme_svds.mLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
+         }
+         for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
+            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.nLocal, COMPLEXZ(r));
+            norm = sqrt(REAL_PARTZ(SUF(Num_dot)(primme_svds.nLocal, COMPLEXZ(r), 1, COMPLEXZ(r), 1)));
+            for (j=0; j<primme_svds.nLocal; j++)
+               svecs[primme_svds.mLocal*n+primme_svds.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          free(r);
       }
-      SUF(Num_larnv)(2, primme.iseed, (primme.initSize+primme.numOrthoConst-i)*primme.nLocal,
-                     COMPLEXZ(&evecs[primme.nLocal*i]));
-   } else if (primme.numOrthoConst > 0) {
+      SUF(Num_larnv)(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
+                     COMPLEXZ(&svecs[primme_svds.mLocal*i]));
+      SUF(Num_larnv)(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
+                     COMPLEXZ(&svecs[primme_svds.mLocal*n+primme_svds.nLocal*i]));
+   } else if (primme_svds.numOrthoConst > 0) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
-   } else if (primme.initSize > 0) {
-      SUF(Num_larnv)(2, primme.iseed, primme.initSize*primme.nLocal, COMPLEXZ(evecs));
-   } else {
-      SUF(Num_larnv)(2, primme.iseed, primme.nLocal, COMPLEXZ(evecs));
+   } else if (primme_svds.initSize > 0) {
+      SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.initSize*(primme_svds.mLocal+primme_svds.nLocal),
+                     COMPLEXZ(svecs));
    }
 
 
-   /* ------------- */
-   /*  Call primme  */
-   /* ------------- */
+   /* ------------------ */
+   /*  Call svds_primme  */
+   /* ------------------ */
 
    wt1 = primme_get_wtime(); 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
    primme_get_time(&ut1,&st1);
 #endif
 
-   ret = PREFIX(primme)(evals, COMPLEXZ(evecs), rnorms, &primme);
+   ret = PREFIX(primme_svds)(svals, COMPLEXZ(svecs), rnorms, &primme_svds);
 
    wt2 = primme_get_wtime();
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
@@ -301,14 +318,15 @@ static int real_main (int argc, char *argv[]) {
 #endif
 
    if (driver.checkXFileName[0]) {
-      retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms, permutation);
+      retX = check_solution_svds(driver.checkXFileName, &primme_svds, svals, svecs, rnorms, permutation);
    }
 
    /* --------------------------------------------------------------------- */
-   /* Save evecs and primme params  (optional)                              */
+   /* Save svecs and primme_svds_params  (optional)                         */
    /* --------------------------------------------------------------------- */
    if (driver.saveXFileName[0]) {
-      ASSERT_MSG(writeBinaryEvecsAndPrimmeParams(driver.saveXFileName, evecs, permutation, &primme) == 0, 1, "");
+      ASSERT_MSG(writeBinaryEvecsAndPrimmeSvdsParams(driver.saveXFileName,
+         svecs, permutation, &primme_svds) == 0, 1, "");
    }
 
    /* --------------------------------------------------------------------- */
@@ -316,64 +334,62 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------------------------------------- */
 
    if (master) {
-      primme_PrintStackTrace(primme);
+      primme_PrintStackTrace(primme_svds.primme);
 
-      fprintf(primme.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
+      fprintf(primme_svds.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-      fprintf(primme.outputFile, "User Time           : %f seconds\n", ut2-ut1);
-      fprintf(primme.outputFile, "Syst Time           : %f seconds\n", st2-st1);
+      fprintf(primme_svds.outputFile, "User Time           : %f seconds\n", ut2-ut1);
+      fprintf(primme_svds.outputFile, "Syst Time           : %f seconds\n", st2-st1);
 #endif
 
-      for (i=0; i < primme.numEvals; i++) {
-         fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
-            evals[i], rnorms[i]); 
+      for (i=0; i < primme_svds.numSvals; i++) {
+         fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+            svals[i], rnorms[i]); 
       }
-      fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+      fprintf(primme_svds.outputFile, "%d singular triplets converged\n", primme_svds.primme.initSize);
 
-      fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-                                                            primme.aNorm*primme.eps);
-      fprintf(primme.outputFile, "Iterations: %-d\n", 
-                                                    primme.stats.numOuterIterations); 
-      fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
-      fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
-      fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
-      if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
-         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
-         fprintf(primme.outputFile,
+      fprintf(primme_svds.outputFile, "Tolerance : %-22.15E\n", 
+                                                            primme_svds.aNorm*primme_svds.eps);
+      #define PRINT_STATS(A, pre) { \
+         fprintf(primme_svds.outputFile, pre "Iterations  : %-d\n", (A).numOuterIterations); \
+         fprintf(primme_svds.outputFile, pre "Restarts    : %-d\n", (A).numRestarts);\
+         fprintf(primme_svds.outputFile, pre "Matvecs     : %-d\n", (A).numMatvecs);\
+         fprintf(primme_svds.outputFile, pre "Preconds    : %-d\n", (A).numPreconds);\
+         fprintf(primme_svds.outputFile, pre "ElapsedTime : %-f\n", (A).elapsedTime);}
+
+      if (primme_svds.method0 != primme_svds_op_none) {
+         PRINT_STATS(primme_svds.primme.stats, "1st ");
+         PRINT_STATS(primme_svds.primme0.stats, "2sd ");
+      }
+      PRINT_STATS(primme_svds.stats, "");
+      if (primme_svds.locking && primme_svds.intWork && primme_svds.intWork[0] == 1) {
+         fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme_svds.outputFile,
             "Some eigenpairs do not have a residual norm less than the tolerance.\n");
-         fprintf(primme.outputFile,
-            "However, the subspace of evecs is accurate to the required tolerance.\n");
+         fprintf(primme_svds.outputFile,
+            "However, the subspace of svecs is accurate to the required tolerance.\n");
       }
 
-      fprintf(primme.outputFile, "\n\n#,%d,%.1f\n\n", primme.stats.numMatvecs,
+      fprintf(primme_svds.outputFile, "\n\n#,%d,%.1f\n\n", primme_svds.stats.numMatvecs,
          wt2-wt1); 
-
-      switch (primme.dynamicMethodSwitch) {
-         case -1: fprintf(primme.outputFile,
-               "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
-         case -2: fprintf(primme.outputFile,
-               "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
-         case -3: fprintf(primme.outputFile,
-               "Recommended method for next run: DYNAMIC (close call)\n"); break;
-      }
    }
 
-   fclose(primme.outputFile);
-   destroyMatrixAndPrecond(&driver, &primme, permutation);
-   primme_Free(&primme);
-   free(evals);
-   free(evecs);
+   fclose(primme_svds.outputFile);
+   destroyMatrixAndPrecond(&driver, &primme_svds, permutation);
+   primme_svds_Free(&primme_svds);
+   free(svals);
+   free(svecs);
    free(rnorms);
 
    if (ret != 0 && master) {
-      fprintf(primme.outputFile, 
-         "Error: dprimme returned with nonzero exit status: %d \n",ret);
+      fprintf(primme_svds.outputFile, 
+         "Error: primme_svds returned with nonzero exit status: %d \n",ret);
       return -1;
    }
 
    if (retX != 0 && master) {
-      fprintf(primme.outputFile, 
-         "Error: found some issues in the solution return by dprimme\n");
+      fprintf(primme_svds.outputFile, 
+         "Error: found some issues in the solution return by primme_svds\n");
       return -1;
    }
 
@@ -392,13 +408,14 @@ static int real_main (int argc, char *argv[]) {
 #include <omp.h>
 #endif
 
-static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int **permutation) {
+static int setMatrixAndPrecond(driver_params *driver,
+      primme_svds_params *primme_svds, int **permutation) {
    int numProcs=1;
 
 #  if defined(USE_MPI) || defined(USE_PETSC)
    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-   primme->commInfo = (MPI_Comm *)primme_calloc(1, sizeof(MPI_Comm), "MPI_Comm");
-   *(MPI_Comm*)primme->commInfo = MPI_COMM_WORLD;
+   primme_svds->commInfo = (MPI_Comm *)primme_calloc(1, sizeof(MPI_Comm), "MPI_Comm");
+   *(MPI_Comm*)primme_svds->commInfo = MPI_COMM_WORLD;
 #  endif
 
    if (driver->matrixChoice == driver_default) {
@@ -430,41 +447,39 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          fprintf(stderr, "ERROR: MPI is not supported with NATIVE, use other!\n");
          return -1;
       }
-      *(MPI_Comm*)primme->commInfo = MPI_COMM_WORLD;
+      *(MPI_Comm*)primme_svds->commInfo = MPI_COMM_WORLD;
 #  endif
       {
-         CSRMatrix *matrix, *prec;
+         CSRMatrix *matrix;
          double *diag;
          /* Fix to use a single thread */
          #ifdef _OPENMP
          omp_set_num_threads(1);
          #endif
           
-         if (readMatrixNative(driver->matrixFileName, &matrix, &primme->aNorm) !=0 )
+         if (readMatrixNative(driver->matrixFileName, &matrix, &primme_svds->aNorm) !=0 )
             return -1;
-         primme->matrix = matrix;
-         primme->matrixMatvec = CSRMatrixMatvec;
-         primme->n = primme->nLocal = matrix->n;
+         primme_svds->matrix = matrix;
+         primme_svds->matrixMatvec = CSRMatrixMatvecSVD;
+         primme_svds->m = primme_svds->mLocal = matrix->m;
+         primme_svds->n = primme_svds->nLocal = matrix->n;
          switch(driver->PrecChoice) {
          case driver_noprecond:
-            primme->preconditioner = NULL;
-            primme->applyPreconditioner = NULL;
+            primme_svds->preconditioner = NULL;
+            primme_svds->applyPreconditioner = NULL;
             break;
          case driver_jacobi:
-            createInvDiagPrecNative(matrix, driver->shift, &diag);
-            primme->preconditioner = diag;
-            primme->applyPreconditioner = ApplyInvDiagPrecNative;
+            createInvNormalPrecNative(matrix, driver->shift, &diag);
+            primme_svds->preconditioner = diag;
+            primme_svds->applyPreconditioner = ApplyInvNormalPrecNative;
             break;
          case driver_jacobi_i:
-            createInvDiagPrecNative(matrix, 0.0, &diag);
-            primme->preconditioner = diag;
-            primme->applyPreconditioner = ApplyInvDavidsonDiagPrecNative;
+            createInvNormalPrecNative(matrix, 0, &diag);
+            primme_svds->preconditioner = diag;
+            primme_svds->applyPreconditioner = ApplyInvDavidsonNormalPrecNative;
          case driver_ilut:
-            createILUTPrecNative(matrix, driver->shift, driver->level, driver->threshold,
-                                 driver->filter, &prec);
-            primme->preconditioner = prec;
-            primme->applyPreconditioner = ApplyILUTPrecNative;
-            break;
+            fprintf(stderr, "ERROR: ilut preconditioner is not supported with NATIVE, use other!\n");
+            return -1;
          }
       }
 #endif
@@ -484,14 +499,14 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          ParaSails *precond=NULL;
          int m, mLocal;
          readMatrixAndPrecondParaSails(driver->matrixFileName, driver->shift, driver->level,
-               driver->threshold, driver->filter, driver->isymm, MPI_COMM_WORLD, &primme->aNorm,
-               &primme->n, &m, &primme->nLocal, &mLocal, &primme->numProcs, &primme->procID, &matrix,
+               driver->threshold, driver->filter, driver->isymm, MPI_COMM_WORLD, &primme_svds->aNorm,
+               &primme_svds->n, &m, &primme_svds->nLocal, &mLocal, &primme_svds->numProcs, &primme_svds->procID, &matrix,
                (driver->PrecChoice == driver_ilut) ? &precond : NULL);
-         *(MPI_Comm*)primme->commInfo = MPI_COMM_WORLD;
-         primme->matrix = matrix;
-         primme->matrixMatvec = ParaSailsMatrixMatvec;
-         primme->preconditioner = precond;
-         primme->applyPreconditioner = precond ? ApplyPrecParaSails : NULL;
+         *(MPI_Comm*)primme_svds->commInfo = MPI_COMM_WORLD;
+         primme_svds->matrix = matrix;
+         primme_svds->matrixMatvec = ParaSailsMatrixMatvec;
+         primme_svds->preconditioner = precond;
+         primme_svds->applyPreconditioner = precond ? ApplyPrecParaSails : NULL;
       }
 #endif
       break;
@@ -507,15 +522,15 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          PC *pc;
          Vec *vec;
          int m, mLocal;
-         if (readMatrixPetsc(driver->matrixFileName, &primme->n, &m, &primme->nLocal, &mLocal,
-                         &primme->numProcs, &primme->procID, &matrix, &primme->aNorm, permutation) != 0)
+         if (readMatrixPetsc(driver->matrixFileName, &primme_svds->n, &m, &primme_svds->nLocal, &mLocal,
+                         &primme_svds->numProcs, &primme_svds->procID, &matrix, &primme_svds->aNorm, permutation) != 0)
             return -1;
-         *(MPI_Comm*)primme->commInfo = PETSC_COMM_WORLD;
-         primme->matrix = matrix;
-         primme->matrixMatvec = PETScMatvec;
+         *(MPI_Comm*)primme_svds->commInfo = PETSC_COMM_WORLD;
+         primme_svds->matrix = matrix;
+         primme_svds->matrixMatvec = PETScMatvec;
          if (driver->PrecChoice == driver_noprecond) {
-            primme->preconditioner = NULL;
-            primme->applyPreconditioner = NULL;
+            primme_svds->preconditioner = NULL;
+            primme_svds->applyPreconditioner = NULL;
          }
          else if (driver->PrecChoice != driver_jacobi_i) {
             pc = (PC *)primme_calloc(1, sizeof(PC), "pc");
@@ -524,7 +539,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
                ierr = PCSetType(*pc, PCJACOBI); CHKERRQ(ierr);
             }
             else if (driver->PrecChoice == driver_ilut) {
-               if (primme->numProcs <= 1) {
+               if (primme_svds->numProcs <= 1) {
                   ierr = PCSetType(*pc, PCILU); CHKERRQ(ierr);
                }
                else {
@@ -542,15 +557,15 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
             ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
             ierr = PCSetUp(*pc); CHKERRQ(ierr);
             ierr = PCView(*pc,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-            primme->preconditioner = pc;
-            primme->applyPreconditioner = ApplyPCPrecPETSC;
+            primme_svds->preconditioner = pc;
+            primme_svds->applyPreconditioner = ApplyPCPrecPETSC;
          }
          else {
             vec = (Vec *)primme_calloc(1, sizeof(Vec), "Vec preconditioner");
             ierr = MatCreateVecs(*matrix, vec, NULL); CHKERRQ(ierr);
             ierr = MatGetDiagonal(*matrix, *vec); CHKERRQ(ierr);
-            primme->preconditioner = vec;
-            primme->applyPreconditioner = ApplyPCPrecPETSC;
+            primme_svds->preconditioner = vec;
+            primme_svds->applyPreconditioner = ApplyPCPrecPETSC;
          }
       }
 #endif
@@ -573,26 +588,27 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          double *diag;
          matrix = (blas_sparse_matrix *)primme_calloc(1, sizeof(blas_sparse_matrix), "matrix");
          
-         if (readMatrixRSB(driver->matrixFileName, matrix, &primme->aNorm) !=0 )
+         if (readMatrixRSB(driver->matrixFileName, matrix, &primme_svds->aNorm) !=0 )
             return -1;
-         primme->matrix = matrix;
-         primme->matrixMatvec = RSBMatvec;
-         primme->n = primme->nLocal = BLAS_usgp(*matrix, blas_num_rows);
+         primme_svds->matrix = matrix;
+         primme_svds->matrixMatvec = RSBMatvecSVD;
+         primme_svds->m = primme_svds->mLocal = BLAS_usgp(*matrix, blas_num_rows);
+         primme_svds->n = primme_svds->nLocal = BLAS_usgp(*matrix, blas_num_cols);
          switch(driver->PrecChoice) {
          case driver_noprecond:
-            primme->preconditioner = NULL;
-            primme->applyPreconditioner = NULL;
-            break;
+            primme_svds->preconditioner = NULL;
+            primme_svds->applyPreconditioner = NULL;
          case driver_jacobi:
-            createInvDiagPrecRSB(*matrix, driver->shift, &diag);
-            primme->preconditioner = diag;
-            primme->applyPreconditioner = ApplyInvDiagPrecNative;
+            createInvNormalPrecRSB(*matrix, driver->shift, &diag);
+            primme_svds->preconditioner = diag;
+            primme_svds->applyPreconditioner = ApplyInvNormalPrecNative;
             break;
          case driver_jacobi_i:
-            createInvDiagPrecRSB(*matrix, 0.0, &diag);
-            primme->preconditioner = diag;
-            primme->applyPreconditioner = ApplyInvDavidsonDiagPrecNative;
-          default:
+            createInvNormalPrecRSB(*matrix, 0.0, &diag);
+            primme_svds->preconditioner = diag;
+            primme_svds->applyPreconditioner = ApplyInvDavidsonNormalPrecNative;
+             break;
+         default:
             assert(0);
             break;
          }
@@ -603,12 +619,12 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
    }
 
 #if defined(USE_MPI)
-   primme->globalSumDouble = par_GlobalSumDouble;
+   primme_svds->globalSumDouble = par_GlobalSumDoubleSvd;
 #endif
    return 0;
 }
 
-static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme, int *permutation) {
+static int destroyMatrixAndPrecond(driver_params *driver, primme_svds_params *primme_svds, int *permutation) {
    switch(driver->matrixChoice) {
    case driver_default:
       assert(0);
@@ -618,19 +634,16 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme,
       fprintf(stderr, "ERROR: NATIVE is needed!\n");
       return -1;
 #else
-      freeCSRMatrix((CSRMatrix*)primme->matrix);
+      freeCSRMatrix((CSRMatrix*)primme_svds->matrix);
 
       switch(driver->PrecChoice) {
       case driver_noprecond:
          break;
       case driver_jacobi:
       case driver_jacobi_i:
-         free(primme->preconditioner);
+         free(primme_svds->preconditioner);
          break;
       case driver_ilut:
-         if (primme->preconditioner) {
-            freeCSRMatrix((CSRMatrix*)primme->preconditioner);
-         }
          break;
       }
 #endif
@@ -657,18 +670,18 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme,
 #else
       {
          PetscErrorCode ierr;
-         ierr = MatDestroy((Mat*)primme->matrix);CHKERRQ(ierr);
-         if (primme->preconditioner) {
+         ierr = MatDestroy((Mat*)primme_svds->matrix);CHKERRQ(ierr);
+         if (primme_svds->preconditioner) {
          }
          if (driver->PrecChoice == driver_noprecond) {
          }
          else if (driver->PrecChoice != driver_jacobi_i) {
-            ierr = PCDestroy((PC*)primme->preconditioner);CHKERRQ(ierr);
-            free(primme->preconditioner);
+            ierr = PCDestroy((PC*)primme_svds->preconditioner);CHKERRQ(ierr);
+            free(primme_svds->preconditioner);
          }
          else {
-            ierr = VecDestroy((Vec*)primme->preconditioner);CHKERRQ(ierr);
-            free(primme->preconditioner);
+            ierr = VecDestroy((Vec*)primme_svds->preconditioner);CHKERRQ(ierr);
+            free(primme_svds->preconditioner);
          }
       }
 #endif
@@ -680,7 +693,7 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme,
       return -1;
 #else
       {
-         blas_sparse_matrix *matrix = primme->matrix;
+         blas_sparse_matrix *matrix = primme_svds->matrix;
          BLAS_usds(*matrix);
          free(matrix);
 
@@ -689,7 +702,7 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme,
             break;
          case driver_jacobi:
          case driver_jacobi_i:
-            free(primme->preconditioner);
+            free(primme_svds->preconditioner);
             break;
          default:
             assert(0);
@@ -701,7 +714,7 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme,
 
    }
 #if defined(USE_MPI)
-   free(primme->commInfo);
+   free(primme_svds->commInfo);
 #endif
    if (permutation) free(permutation);
    return 0;

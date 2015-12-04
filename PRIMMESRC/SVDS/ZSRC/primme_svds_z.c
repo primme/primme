@@ -376,7 +376,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
 
    if (method == primme_svds_op_AtA || method == primme_svds_op_AAt) {
       for (i=0; i<primme->initSize; i++) {
-         svals[i] = sqrt(svals[i]);
+         svals[i] = sqrt(max(0.0, svals[i]));
       }
    }
  
@@ -392,7 +392,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
             &primme_svds->nLocal, &svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
             &primme_svds->mLocal, &primme_svds->initSize, &notrans, primme_svds);
       Num_scalInv_zmatrix(&svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
-            primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals);
+            primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals, primme_svds);
       Num_copy_zmatrix(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal, n,
             primme_svds->nLocal, &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
       break;
@@ -407,7 +407,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
             &primme_svds->nLocal, &primme_svds->initSize, &trans, primme_svds);
       Num_scalInv_zmatrix(
             &svecs[primme_svds->mLocal*n+primme->nLocal*primme_svds->numOrthoConst],
-            primme_svds->nLocal, primme_svds->initSize, primme_svds->nLocal, svals);
+            primme_svds->nLocal, primme_svds->initSize, primme_svds->nLocal, svals, primme_svds);
       break;
    case primme_svds_op_augmented:
       /* Scale svecs by sqrt(2) to obtain the left and right singular vectors */
@@ -459,6 +459,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    }
    if (stage == 1 && primme->targetShifts) {
       free(primme->targetShifts);
+      primme->targetShifts = NULL;
    }
 
    /* Update residual norms when final stage */
@@ -472,7 +473,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
          break;
       case primme_svds_op_augmented:
          for (i=0; i<primme_svds->initSize; i++) {
-            rnorms[i] /= sqrt(2.0);
+            rnorms[i] *= sqrt(2.0);
          }
          break;
       case primme_svds_op_none:
@@ -612,13 +613,26 @@ static void Num_copy_zmatrix(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, 
 
 }
 
-static void Num_scalInv_zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors) {
-   int i;
+static void Num_scalInv_zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors,
+                                       primme_svds_params *primme_svds) {
+   int i, ONE=1;
    Complex_Z ztmp;
+   double norm, norm0;
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
-      ztmp.r = 1.0L/factors[i]; ztmp.i = 0.0L;
+      if (isfinite(1.0L/factors[i])) {
+         ztmp.r = 1.0L/factors[i]; ztmp.i = 0.0L;
+      }
+      else {
+         ztmp = Num_dot_zprimme(m, &x[i*ldx], 1, &x[i*ldx], 1);
+         norm0 = ztmp.r;
+         if (primme_svds->globalSumDouble) {
+            primme_svds->globalSumDouble(&norm0, &norm, &ONE, primme_svds);
+         }
+         else norm = norm0;
+         ztmp.r = 1.0L/norm; ztmp.i = 0.0L;
+      }
       Num_scal_zprimme(m, ztmp, &x[i*ldx], 1);
    }
 }

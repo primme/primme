@@ -44,6 +44,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
 static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
 static void Num_copy_@(pre)matrix(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy);
-static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx, double *factors);
+static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx, double *factors,
+                                       primme_svds_params *primme_svds);
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
 #endif

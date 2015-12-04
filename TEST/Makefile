@@ -6,7 +6,7 @@ include ../Link_flags
 #------------------------------------------------
 
 
-SOBJS= driver.o COMMON/shared_utils.o
+SOBJS= COMMON/shared_utils.o COMMON/ioandtest.o
 COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC -I../PRIMMESRC/SVDS/COMMONSRC
 override INCLUDE += $(COMMON_INCLUDE)
 LIBDIRS += -L../
@@ -15,6 +15,7 @@ USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
 USE_PARASAILS ?= $(if $(findstring undefined,$(origin PARASAILS_LIB_DIR)),no,yes)
 USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,no)
+USE_RSB       ?= $(if $(findstring undefined,$(origin LIBRSB_LIB_DIR)),no,yes)
 
 ifeq ($(USE_MPI), yes)
   DEFINES += -DUSE_MPI
@@ -23,8 +24,8 @@ endif
 ifeq ($(USE_NATIVE), yes)
   DEFINES += -DUSE_NATIVE
   SOBJS += COMMON/csr.o COMMON/mat.o COMMON/ssrcsr.o COMMON/mmio.o
-  SOBJSdouble += COMMON/ilut.o COMMON/amux.o
-  SOBJSdoublecomplex += COMMON/zilut.o COMMON/zamux.o
+  SOBJSdouble += COMMON/ilut.o COMMON/matvec.o
+  SOBJSdoublecomplex += COMMON/zilut.o COMMON/zmatvec.o
 endif
 
 ifeq ($(USE_PARASAILS), yes)
@@ -48,6 +49,16 @@ ifeq ($(USE_PETSC), yes)
   LIBS += $(PETSC_LIB)
 endif
 
+ifeq ($(USE_RSB), yes)
+  DEFINES += -DUSE_RSB
+  SOBJS += COMMON/rsbw.o
+  override INCLUDE += -I$(LIBRSB_INCLUDE_DIR)
+  LIBDIRS += -L$(LIBRSB_LIB_DIR)
+  override LIBS += -lrsb
+  override LDFLAGS += -fopenmp
+  override CFLAGS += -fopenmp
+endif
+
 
 OBJS = $(sort $(SOBJS))
 OBJSdouble = $(sort $(SOBJSdouble)) $(patsubst %.o,%double.o,$(OBJS))
@@ -55,35 +66,24 @@ OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.
 
 .PHONY: clean veryclean
 
-primme_double: $(OBJSdouble) ../libprimme.a Makefile
-	$(CLDR) -o primme_double $(OBJSdouble) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+primme_double: $(OBJSdouble) driverdouble.o ../libprimme.a Makefile
+	$(CLDR) -o primme_double $(OBJSdouble) driverdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-primme_doublecomplex: $(OBJSdoublecomplex) ../libprimme.a Makefile
-	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+primme_doublecomplex: $(OBJSdoublecomplex) driverdoublecomplex.o ../libprimme.a Makefile
+	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) driverdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-ex_dseq: ex_dseq.o ../libprimme.a Makefile
-	$(CLDR) -o ex_dseq ex_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+ex_dseq ex_zseq ex_petsc exsvd_dseq: %: %.o ../libprimme.a Makefile
+	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-ex_zseq: ex_zseq.o ../libprimme.a Makefile
-	$(CLDR) -o ex_zseq ex_zseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+ex_dseqf77 ex_zseqf77 ex_petscf77 ex_petscf77ptr: % : %.o ../libprimme.a Makefile
+	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-ex_petsc: ex_petsc.o ../libprimme.a Makefile
-	$(CLDR) -o ex_petsc ex_petsc.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+primmesvds_double: $(OBJSdouble) driversvdsdouble.o ../libprimme.a Makefile
+	$(CLDR) -o primmesvds_double $(OBJSdouble) driversvdsdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-ex_dseqf77: ex_dseqf77.o ../libprimme.a Makefile
-	$(FLDR) -o ex_dseqf77 ex_dseqf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libprimme.a Makefile
+	$(CLDR) -o primmesvds_doublecomplex $(OBJSdoublecomplex) driversvdsdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-ex_zseqf77: ex_zseqf77.o ../libprimme.a Makefile
-	$(FLDR) -o ex_zseqf77 ex_zseqf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
-ex_petscf77: ex_petscf77.o ../libprimme.a Makefile
-	$(FLDR) -o ex_petscf77 ex_petscf77.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
-ex_petscf77ptr: ex_petscf77ptr.o ../libprimme.a Makefile
-	$(FLDR) -o ex_petscf77ptr ex_petscf77ptr.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
-exsvd_dseq: exsvd_dseq.o ../libprimme.a Makefile
-	$(CLDR) -o exsvd_dseq exsvd_dseq.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -191,6 +191,7 @@ COMMON/parasailsw.h: COMMON/csr.h
 COMMON/petscw.c: COMMON/petscw.h COMMON/mmio.h
 COMMON/petscw.h: COMMON/num.h
 COMMON/shared_utils.c: COMMON/shared_utils.h
+COMMON/ioandtest.c: COMMON/num.h COMMON/ioandtest.h
 COMMON/driver.c: COMMON/shared_utils.h COMMON/native.h COMMON/parasailsw.h COMMON/petscw.h
 
 ex_dseq.c: ex_c.m4

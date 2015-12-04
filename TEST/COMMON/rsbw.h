@@ -20,31 +20,25 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *******************************************************************************
- * File: primme_svds_private.h
- *
- * Purpose - Contains definitions for exclusive use by primme_svds.c
- *
+ * File: rsbw.h
+ * 
+ * Purpose - librsb wrapper.
+ * 
  ******************************************************************************/
 
+#ifndef RSBW_H
+#define RSBW_H
 
-#ifndef DPRIMME_SVDS_PRIVATE_H
-#define DPRIMME_SVDS_PRIVATE_H
-
+#include <rsb.h>
+#include <blas_sparse.h>
 #include "primme_svds.h"
 
-#define ALLOCATE_WORKSPACE_FAILURE -1
-#define MALLOC_FAILURE             -3
+int readMatrixRSB(const char* matrixFileName, blas_sparse_matrix *matrix, double *fnorm);
+void RSBMatvec(void *x, void *y, int *blockSize, primme_params *primme);
+void RSBMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+                  int *trans, primme_svds_params *primme_svds);
+int createInvDiagPrecRSB(blas_sparse_matrix matrix, double shift, double **prec);
+int createInvNormalPrecRSB(blas_sparse_matrix, double shift, double **prec);
 
-static int primme_svds_check_input(double *svals, Complex_Z *svecs, 
-        double *resNorms, primme_svds_params *primme_svds);
-static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-                                           double *svals, Complex_Z *svecs);
-static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-                                     double *svals, Complex_Z *svecs, double *rnorms);
-static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
-static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
-static void Num_copy_zmatrix(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
-static void Num_scalInv_zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors,
-                                       primme_svds_params *primme_svds);
-static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
 #endif
+

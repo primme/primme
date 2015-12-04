@@ -474,21 +474,6 @@ void primme_set_defaults(primme_params *params) {
          params->globalSumDouble = primme_seq_globalSumDouble;
    }
 
-   /* --------------------------------------------------------------------- */
-   /* Decide on whether to use locking (hard locking), or not (soft locking)*/
-   /* --------------------------------------------------------------------- */
-   if (params->target != primme_smallest && params->target != primme_largest ) {
-      /* Locking is necessary as interior Ritz values can cross shifts */
-      params->locking = 1;
-   }
-   else if (params->numEvals > params->minRestartSize) {
-      /* use locking when not enough vectors to restart with */
-      params->locking = 1;
-   }
-   else if (params->locking == -1) {
-      params->locking = 0;   
-   }
-
    if (params->projectionParams.projection == primme_proj_default)
       params->projectionParams.projection = primme_proj_RR;
    if (params->projectionParams.refinedScheme == primme_ref_default)
@@ -531,6 +516,21 @@ void primme_set_defaults(primme_params *params) {
             (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1)
                         /(double) params->maxBlockSize) );
       }
+   }
+
+   /* --------------------------------------------------------------------- */
+   /* Decide on whether to use locking (hard locking), or not (soft locking)*/
+   /* --------------------------------------------------------------------- */
+   if (params->target != primme_smallest && params->target != primme_largest ) {
+      /* Locking is necessary as interior Ritz values can cross shifts */
+      params->locking = 1;
+   }
+   else if (params->numEvals > params->minRestartSize) {
+      /* use locking when not enough vectors to restart with */
+      params->locking = 1;
+   }
+   else if (params->locking == -1) {
+      params->locking = 0;   
    }
 }
 

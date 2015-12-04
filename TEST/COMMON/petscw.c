@@ -96,7 +96,7 @@ static PetscErrorCode loadmtx(const char* filename, Mat *M, PetscBool *pattern) 
    FILE        *f;
    MM_typecode type;
    int         m,n,nz,i,j,k;
-   PetscInt    low,high,*d_nz,*o_nz;
+   PetscInt    low,high,lowj,highj,*d_nz,*o_nz;
    double      re,im;
    PetscScalar s;
    long        pos;
@@ -124,11 +124,12 @@ static PetscErrorCode loadmtx(const char* filename, Mat *M, PetscBool *pattern) 
    ierr = MatSetUp(*M);CHKERRQ(ierr);
 
    ierr = MatGetOwnershipRange(*M,&low,&high);CHKERRQ(ierr);  
+   ierr = MatGetOwnershipRangeColumn(*M,&lowj,&highj);CHKERRQ(ierr);  
    ierr = PetscMalloc(sizeof(PetscInt)*(high-low),&d_nz);CHKERRQ(ierr);
    ierr = PetscMalloc(sizeof(PetscInt)*(high-low),&o_nz);CHKERRQ(ierr);
    for (i=0; i<high-low;i++) {
-      d_nz[i] = 1;
-      o_nz[i] = 0;
+      d_nz[i] = (i+low>=lowj && i+low<highj) ? 1 : 0;
+      o_nz[i] = (i+low>=lowj && i+low<highj) ? 0 : 1;
    }
    for (k=0;k<nz;k++) {
       ierr = mm_read_mtx_crd_entry(f,&i,&j,&re,&im,type);CHKERRQ(ierr);
@@ -159,7 +160,7 @@ static PetscErrorCode loadmtx(const char* filename, Mat *M, PetscBool *pattern) 
    re = 1.0;
    im = 0.0;
    /* Set the diagonal to zero */
-   for (i=low; i<high; i++) {
+   for (i=low; i<PetscMin(high,n); i++) {
       ierr = MatSetValue(*M,i,i,0.0,INSERT_VALUES);CHKERRQ(ierr);
    }
    for (k=0;k<nz;k++) {
