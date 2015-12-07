@@ -396,7 +396,7 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 
    const double machEps = Num_dlamch_primme("E");
    *isConv = *rNorm < max(
-               primme->eps * sqrt(*eval / (
+               primme->eps * sqrt(*eval * (
                   primme->aNorm > 0 ? primme->aNorm : primme->stats.estimateLargestSVal)),
                machEps * 3.16 * primme->stats.estimateLargestSVal);
 }

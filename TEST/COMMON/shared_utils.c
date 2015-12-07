@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <assert.h>
 #include "shared_utils.h"
 
 
@@ -771,8 +772,6 @@ void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *
    primme_preset_method *primmemethod, primme_preset_method *primmemethod0,
    driver_params *driver, int master, MPI_Comm comm){
 
-   int i;
-
    MPI_Bcast(driver->outputFileName, 512, MPI_CHAR, 0, comm);
    MPI_Bcast(driver->matrixFileName, 1024, MPI_CHAR, 0, comm);
    MPI_Bcast(driver->initialGuessesFileName, 1024, MPI_CHAR, 0, comm);
@@ -814,6 +813,10 @@ void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *
    broadCast(&primme_svds->primme0, primmemethod0,  NULL, master, comm);
 }
 
+#ifdef USE_PETSC
+#include <petscmat.h>
+#endif
+
 /******************************************************************************
  * MPI globalSumDouble function
  *
@@ -825,7 +828,8 @@ void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
 #ifdef USE_PETSC
    extern PetscLogEvent PRIMME_GLOBAL_SUM;
    PetscLogEventBegin(PRIMME_GLOBAL_SUM,0,0,0,0);
-   MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
+   assert(MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator)
+      == MPI_SUCCESS);
    PetscLogEventEnd(PRIMME_GLOBAL_SUM,0,0,0,0);
 #else
    MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
@@ -833,13 +837,14 @@ void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
 }
 
 void par_GlobalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
-                         primme_svds_params *primme) {
+                         primme_svds_params *primme_svds) {
    MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
 
 #ifdef USE_PETSC
    extern PetscLogEvent PRIMME_GLOBAL_SUM;
    PetscLogEventBegin(PRIMME_GLOBAL_SUM,0,0,0,0);
-   MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
+   assert(MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator)
+      == MPI_SUCCESS);
    PetscLogEventEnd(PRIMME_GLOBAL_SUM,0,0,0,0);
 #else
    MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);

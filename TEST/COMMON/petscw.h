@@ -30,13 +30,18 @@
 
 #include <petscpc.h>
 #include <petscmat.h>
-#include "primme.h"
+#include "primme_svds.h"
 #include "num.h"
 
 int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int *nLocal,
                     int *numProcs, int *procID, Mat **matrix, double *fnorm_, int **perm);
 void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme);
 void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme);
+void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *trans,
+                    primme_svds_params *primme_svds);
+int createInvNormalPrecPETSC(Mat matrix, double shift, double **prec);
+void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
+                         int *mode, primme_svds_params *primme_svds);
 
 #define PETSCW_H
 #endif

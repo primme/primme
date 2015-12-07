@@ -35,7 +35,7 @@
 #include "mmio.h"
 #include <petscpc.h>
 #include <petscmat.h>
-#include "primme.h"
+#include "primme_svds.h"
 #include "petscw.h"
 
 static PetscErrorCode preallocation(Mat M,PetscInt *d_nz, PetscInt *o_nz);
@@ -227,8 +227,8 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
 {
    PetscErrorCode  ierr;
    MatPartitioning part;
-   IS              isn, is;
-   PetscInt        *nlocal;
+   IS              isn, is, iscols;
+   PetscInt        *nlocal,localCols,m,n;
    PetscMPIInt     size, rank;
    MPI_Comm        comm;
  
@@ -237,6 +237,7 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
    ierr = PetscObjectGetComm((PetscObject)Ain,&comm);CHKERRQ(ierr);
    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+   ierr = MatGetSize(Ain,&m,&n);CHKERRQ(ierr);
    ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
    ierr = MatPartitioningSetAdjacency(part,Ain);CHKERRQ(ierr);
    ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
@@ -253,26 +254,41 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
    ierr = ISInvertPermutation(isn,nlocal[rank],&is);CHKERRQ(ierr);
    ierr = ISDestroy(&isn);CHKERRQ(ierr);
    ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+   ierr = ISSort(is);CHKERRQ(ierr);
+
+   /* If matrix is square, the permutation is applied to rows and columns;
+      otherwise it is only applied to rows. */
+   if (m == n) {
+      iscols = is;
+      localCols = nlocal[rank];
+   } else {
+      ierr = MatGetOwnershipIS(Ain,NULL,&iscols);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Ain, NULL, &localCols); CHKERRQ(ierr);
+   }
 
    /* copy permutation */
    if (permIndices) {
       const PetscInt *indices;
       PetscInt i;
-      *permIndices = malloc(sizeof(int)*nlocal[rank]);
+      *permIndices = malloc(sizeof(int)*(nlocal[rank]+localCols));
       ierr = ISGetIndices(is, &indices);CHKERRQ(ierr);
       for (i=0; i<nlocal[rank]; i++) (*permIndices)[i] = indices[i];
       ierr = ISRestoreIndices(is, &indices);CHKERRQ(ierr);
+      ierr = ISGetIndices(iscols, &indices);CHKERRQ(ierr);
+      for (i=0; i<localCols; i++) (*permIndices)[i+nlocal[rank]] = indices[i];
+      ierr = ISRestoreIndices(iscols, &indices);CHKERRQ(ierr);
    }
  
    ierr = PetscFree(nlocal);CHKERRQ(ierr);
 
-   ierr = ISSort(is);CHKERRQ(ierr);
- 
-   ierr = MatGetSubMatrix(Ain,is,is,MAT_INITIAL_MATRIX,Aout);CHKERRQ(ierr);
+   ierr = MatGetSubMatrix(Ain,is,iscols,MAT_INITIAL_MATRIX,Aout);CHKERRQ(ierr);
    if (Bin && Bout) {
-      ierr = MatGetSubMatrix(Bin,is,is,MAT_INITIAL_MATRIX,Bout);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(Bin,is,iscols,MAT_INITIAL_MATRIX,Bout);CHKERRQ(ierr);
    }
    ierr = ISDestroy(&is);CHKERRQ(ierr);
+   if (m != n) {
+      ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+   }
  
    PetscFunctionReturn(0);
 }
@@ -303,28 +319,102 @@ void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
 }
 
-void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
+void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *trans,
+                    primme_svds_params *primme_svds) {
    int i;
    Mat *matrix;
-   PC *pc;
    Vec xvec, yvec;
    PetscErrorCode ierr;
    
-   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));   
-   matrix = (Mat *)primme->matrix;
-   pc = (PC *)primme->preconditioner;
-
-   ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   matrix = (Mat *)primme_svds->matrix;
+   #if PETSC_VERSION_LT(3,6,0)
+      ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   #else
+      ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   #endif
    for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = PCApply(*pc, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(xvec, ((PRIMME_NUM*)x) + (*ldx)*i); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+      ierr = VecPlaceArray(yvec, ((PRIMME_NUM*)y) + (*ldy)*i); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+      if (*trans == 0) {
+         ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+      } else {
+         ierr = MatMultTranspose(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+      }
+      ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+      ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    }
-   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
 }
+
+static void ApplyPCPrecPETSCGen(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
+                                int trans, Mat *matrix, PC *pc, MPI_Comm comm) {
+   int i;
+   Vec xvec, yvec;
+   PetscErrorCode ierr;
+   
+   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));
+   #if PETSC_VERSION_LT(3,6,0)
+      ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
+   #else
+      ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
+   #endif
+   for (i=0; i<*blockSize; i++) {
+      ierr = VecPlaceArray(xvec, ((PRIMME_NUM*)x) + (*ldx)*i); CHKERRABORT(comm, ierr);
+      ierr = VecPlaceArray(yvec, ((PRIMME_NUM*)y) + (*ldy)*i); CHKERRABORT(comm, ierr);
+      if (trans == 0) {
+         ierr = PCApply(*pc, xvec, yvec); CHKERRABORT(comm, ierr);
+      } else if (pc[1]) {
+         ierr = PCApply(pc[1], xvec, yvec); CHKERRABORT(comm, ierr);
+      } else {
+         ierr = PCApplyTranspose(pc[0], xvec, yvec);
+      }
+      ierr = VecResetArray(xvec); CHKERRABORT(comm, ierr);
+      ierr = VecResetArray(yvec); CHKERRABORT(comm, ierr);
+   }
+   ierr = VecDestroy(&xvec); CHKERRABORT(comm, ierr);
+   ierr = VecDestroy(&yvec); CHKERRABORT(comm, ierr);
+}
+
+
+void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
+   ApplyPCPrecPETSCGen(x, &primme->nLocal, y, &primme->nLocal, blockSize, 0,
+      (Mat *)primme->matrix, primme->preconditioner, *(MPI_Comm*)primme->commInfo);
+}
+
+void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
+                         int *mode, primme_svds_params *primme_svds) {
+   int i, one=1;
+   PRIMME_NUM *aux;
+
+   if (*mode == primme_svds_op_AtA) {
+      aux = (PRIMME_NUM *)primme_calloc(primme_svds->mLocal, sizeof(PRIMME_NUM), "aux");
+      for(i=0; i<*blockSize; i++) {
+         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 0,
+            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 1,
+            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+      }
+      free(aux);
+   }
+   else if (*mode == primme_svds_op_AAt) {
+      aux = (PRIMME_NUM *)primme_calloc(primme_svds->nLocal, sizeof(PRIMME_NUM), "aux");
+      for(i=0; i<*blockSize; i++) {
+         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 1,
+            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 0,
+            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+      }
+      free(aux);
+   }
+   else if (*mode == primme_svds_op_augmented) {
+      ApplyPCPrecPETSCGen((PRIMME_NUM*)x+primme_svds->nLocal, ldx, y, ldy, blockSize, 1,
+         (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+      ApplyPCPrecPETSCGen(x, ldx, (PRIMME_NUM*)y+primme_svds->nLocal, ldy, blockSize, 0,
+         (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+   }
+}
+
 
 void ApplyInvDavidsonDiagPrecPETSc(void *x, void *y, int *blockSize, 
                                         primme_params *primme) {
@@ -351,4 +441,71 @@ void ApplyInvDavidsonDiagPrecPETSc(void *x, void *y, int *blockSize,
       }
    }
    ierr = VecRestoreArrayRead(vec, &diag); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+}
+
+void ApplyInvDavidsonDiagPrecPETScSVD(void *x, void *y, int *blockSize, 
+                        primme_svds_params *primme_svds, const char *trans) {
+
+   ApplyInvDavidsonDiagPrecPETSc(x, y, blockSize, &primme_svds->primme);
+}
+
+/******************************************************************************
+ * Generates sum of square values per rows and then per columns 
+ *
+******************************************************************************/
+#undef __FUNCT__
+#define __FUNCT__ "getSumSquares"
+static PetscErrorCode getSumSquares(Mat matrix, double *diag) {
+   PetscErrorCode ierr;
+   int i, j;
+   double *sumr, *sumc;
+   PetscInt n, mLocal, nLocal, low, high;
+   PetscReal *aux;
+
+   PetscFunctionBegin;
+
+   ierr = MatGetSize(matrix, NULL, &n); CHKERRQ(ierr);
+   ierr = MatGetLocalSize(matrix, &mLocal, &nLocal); CHKERRQ(ierr);
+   sumr = diag; sumc = &diag[mLocal];
+
+   ierr = PetscMalloc1(n, &aux); CHKERRQ(ierr);
+   ierr = MatGetColumnNorms(matrix, NORM_2, aux); CHKERRQ(ierr);
+   ierr = MatGetOwnershipRangeColumn(matrix, &low, &high);CHKERRQ(ierr);  
+   for (i=low; i<high; i++) {
+      sumc[i-low] = aux[i]*aux[i];
+   }
+   ierr = PetscFree(aux); CHKERRQ(ierr);
+
+   ierr = MatGetOwnershipRange(matrix, &low, &high); CHKERRQ(ierr);
+   for (i=low; i<high; i++) {
+     PetscInt          ncols;
+     const PetscInt    *cols;
+     const PetscScalar *vals;
+
+     sumr[i-low] = 0.0;
+     ierr = MatGetRow(matrix, i, &ncols, &cols, &vals); CHKERRQ(ierr);
+     for (j = 0; j < ncols; j++) {
+       sumr[i-low] += PetscRealPart(vals[j]*PetscConj(vals[j]));
+     }
+     ierr = MatRestoreRow(matrix, i, &ncols, &cols, &vals); CHKERRQ(ierr);
+   }
+
+   PetscFunctionReturn(0);
+}
+
+int createInvNormalPrecPETSC(Mat matrix, double shift, double **prec) {
+   int i;
+   PetscInt mLocal, nLocal;
+   double *diag, minDenominator=1e-14;
+
+   MatGetLocalSize(matrix, &mLocal, &nLocal);
+   diag = (double*)primme_calloc(mLocal+nLocal, sizeof(double), "diag");
+   getSumSquares(matrix, diag);
+   for (i=0; i<mLocal+nLocal; i++) {
+      diag[i] -= shift*shift;
+      if (fabs(diag[i]) < minDenominator)
+         diag[i] = copysign(minDenominator, diag[i]);
+   }
+   *prec = diag;
+   return 1;
 }

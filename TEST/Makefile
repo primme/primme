@@ -14,7 +14,7 @@ LIBDIRS += -L../
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
 USE_PARASAILS ?= $(if $(findstring undefined,$(origin PARASAILS_LIB_DIR)),no,yes)
-USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,no)
+USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,$(USE_PETSC))
 USE_RSB       ?= $(if $(findstring undefined,$(origin LIBRSB_LIB_DIR)),no,yes)
 
 ifeq ($(USE_MPI), yes)
@@ -109,11 +109,18 @@ ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
 endif
 
-all_tests_double: primme_double
+TESTS_double = tests/test_0??
+TESTS_doublecomplex = tests/test_0?? tests/test_1??
+TESTSsvds_double = tests/test_2??
+TESTSsvds_doublecomplex = tests/test_2?? tests/test_3??
+
+all_tests_double all_tests_doublecomplex \
+all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme%
 	@echo "Please wait, this could take a while...";\
-	ok="0";for i in tests/test_0?? ; do \
-		echo "********** Test $$i double ***********"; \
-		$(MPIRUN) ./primme_double $$i || ok="1"; \
+	ok="0";for i in $(TESTS$*) ; do \
+		echo "********** Test $$i $* ***********"; \
+		sed 's/sol_.../&$*/' $$i > ._test00;\
+		$(MPIRUN) ./primme$* ._test00 || ok="1"; \
 	done > tests.log 2>&1;\
 	if test $$ok -eq 0 ; then \
 		echo "All tests passed!"; \
@@ -124,13 +131,13 @@ all_tests_double: primme_double
 		exit 1;\
 	fi
 
-all_tests_doublecomplex: primme_doublecomplex
+all_tests_double_save all_tests_doublecomplex_save \
+all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: primme%
 	@echo "Please wait, this could take a while...";\
-	ok="0";	for i in tests/test_??? ; do \
-		echo "********** Test $$i complex ***********"; \
-		sed 's/sol_.../&.complex/' $$i > ._test00;\
-		$(MPIRUN) ./primme_doublecomplex ._test00 || ok="1"; \
-		rm ._test00;\
+	ok="0";for i in $(TESTS$*) ; do \
+		echo "********** Test $$i $* ***********"; \
+		sed 's/sol_.../&$*/; s/checkXFile/saveXFile/' $$i > ._test00;\
+		$(MPIRUN) ./primme$* ._test00 || ok="1"; \
 	done > tests.log 2>&1;\
 	if test $$ok -eq 0 ; then \
 		echo "All tests passed!"; \
@@ -142,21 +149,6 @@ all_tests_doublecomplex: primme_doublecomplex
 	fi
 
 
-all_tests_double_save: primme_double
-	@for i in tests/test_0?? ; do \
-		sed 's/checkXFile/saveXFile/' $$i > ._test00;\
-		echo "********** Test $$i double ***********"; \
-		./primme_double ._test00 || ok="1"; \
-	done > tests.log 2>&1;\
-	rm -f ._test00
-
-all_tests_doublecomplex_save: primme_doublecomplex
-	@for i in tests/test_??? ; do \
-		sed 's/checkXFile/saveXFile/;s/sol_.../&.complex/' $$i > ._test00;\
-		echo "********** Test $$i complex ***********"; \
-		./primme_doublecomplex ._test00 || ok="1"; \
-	done > tests.log 2>&1;\
-	rm -f ._test00
 
 test_double: ex_dseq
 	@./ex_dseq > tests.log 2>&1 && grep -q "10 eigenpairs converged" tests.log \

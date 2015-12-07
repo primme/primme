@@ -141,8 +141,8 @@ int createInvDiagPrecNative(const CSRMatrix *matrix, double shift, double **prec
    return 1;
 }
 
-static void ApplyInvDiagPrecNativeGen(PRIMME_NUM *xvec, int ldx, PRIMME_NUM *yvec, int ldy, int nLocal,
-                                 int bs, double *diag, double *shifts, double aNorm) {
+static void ApplyInvDiagPrecNativeGen(PRIMME_NUM *xvec, int ldx, PRIMME_NUM *yvec,
+      int ldy, int nLocal, int bs, double *diag, double *shifts, double aNorm) {
    int i, j;
    const double minDenominator = 1e-14*(aNorm >= 0.0L ? aNorm : 1.);
 

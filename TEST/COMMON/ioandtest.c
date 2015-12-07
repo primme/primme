@@ -384,8 +384,8 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E, RR residual %5E is larger than tolerance %5E\n", i, svals[i], rnorm0, primme_svds->eps*primme_svds->aNorm*sqrt((double)(i+1)));
          retX = 1;
       }
-      /* Check X'V(:,i) >= sqrt(1-2|r|), assuming residual of X is less than the tolerance */
-      SUF(Num_gemv)("C", primme_svds->nLocal, cols, COMPLEXZV(1.0), COMPLEXZ(X), primme_svds->nLocal, COMPLEXZ(&svecs[primme_svds->nLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
+      /* Check X'U(:,i) >= sqrt(1-2|r|), assuming residual of X is less than the tolerance */
+      SUF(Num_gemv)("C", primme_svds->mLocal, cols, COMPLEXZV(1.0), COMPLEXZ(X), primme_svds->mLocal, COMPLEXZ(&svecs[primme_svds->mLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
       if (primme_svds->globalSumDouble) {
          int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
          primme_svds->globalSumDouble(h, h0, &cols0, primme_svds);

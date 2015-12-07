@@ -394,6 +394,7 @@ static int real_main (int argc, char *argv[]) {
 
 static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int **permutation) {
    int numProcs=1;
+   double aNorm;
 
 #  if defined(USE_MPI) || defined(USE_PETSC)
    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
@@ -440,7 +441,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          omp_set_num_threads(1);
          #endif
           
-         if (readMatrixNative(driver->matrixFileName, &matrix, &primme->aNorm) !=0 )
+         if (readMatrixNative(driver->matrixFileName, &matrix, &aNorm) !=0 )
             return -1;
          primme->matrix = matrix;
          primme->matrixMatvec = CSRMatrixMatvec;
@@ -459,6 +460,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
             createInvDiagPrecNative(matrix, 0.0, &diag);
             primme->preconditioner = diag;
             primme->applyPreconditioner = ApplyInvDavidsonDiagPrecNative;
+            break;
          case driver_ilut:
             createILUTPrecNative(matrix, driver->shift, driver->level, driver->threshold,
                                  driver->filter, &prec);
@@ -484,7 +486,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          ParaSails *precond=NULL;
          int m, mLocal;
          readMatrixAndPrecondParaSails(driver->matrixFileName, driver->shift, driver->level,
-               driver->threshold, driver->filter, driver->isymm, MPI_COMM_WORLD, &primme->aNorm,
+               driver->threshold, driver->filter, driver->isymm, MPI_COMM_WORLD, &aNorm,
                &primme->n, &m, &primme->nLocal, &mLocal, &primme->numProcs, &primme->procID, &matrix,
                (driver->PrecChoice == driver_ilut) ? &precond : NULL);
          *(MPI_Comm*)primme->commInfo = MPI_COMM_WORLD;
@@ -508,7 +510,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          Vec *vec;
          int m, mLocal;
          if (readMatrixPetsc(driver->matrixFileName, &primme->n, &m, &primme->nLocal, &mLocal,
-                         &primme->numProcs, &primme->procID, &matrix, &primme->aNorm, permutation) != 0)
+                         &primme->numProcs, &primme->procID, &matrix, &aNorm, permutation) != 0)
             return -1;
          *(MPI_Comm*)primme->commInfo = PETSC_COMM_WORLD;
          primme->matrix = matrix;
@@ -529,7 +531,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
                }
                else {
                   #ifdef PETSC_HAVE_HYPRE
-                     ierr = PCSetType(pc, PCHYPRE); CHKERRQ(ierr);
+                     ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
                      ierr = PCHYPRESetType(*pc, "parasails"); CHKERRQ(ierr);
                   #else
                      ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
@@ -541,7 +543,6 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
             ierr = PCSetOperators(*pc, A, A); CHKERRQ(ierr);
             ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
             ierr = PCSetUp(*pc); CHKERRQ(ierr);
-            ierr = PCView(*pc,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
             primme->preconditioner = pc;
             primme->applyPreconditioner = ApplyPCPrecPETSC;
          }
@@ -573,7 +574,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          double *diag;
          matrix = (blas_sparse_matrix *)primme_calloc(1, sizeof(blas_sparse_matrix), "matrix");
          
-         if (readMatrixRSB(driver->matrixFileName, matrix, &primme->aNorm) !=0 )
+         if (readMatrixRSB(driver->matrixFileName, matrix, &aNorm) !=0 )
             return -1;
          primme->matrix = matrix;
          primme->matrixMatvec = RSBMatvec;
@@ -592,6 +593,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
             createInvDiagPrecRSB(*matrix, 0.0, &diag);
             primme->preconditioner = diag;
             primme->applyPreconditioner = ApplyInvDavidsonDiagPrecNative;
+            break;
           default:
             assert(0);
             break;
@@ -601,6 +603,8 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
       break;
 
    }
+
+   if (primme->aNorm < 0) primme->aNorm = aNorm;
 
 #if defined(USE_MPI)
    primme->globalSumDouble = par_GlobalSumDouble;

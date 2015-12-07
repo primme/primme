@@ -198,7 +198,7 @@ static int real_main (int argc, char *argv[]) {
    /* Send read common primme members to all processors */ 
    /* Setup the primme members local to this processor  */ 
    /* ------------------------------------------------- */
-   broadCast_svds(&primme, &method, &primmemethod, &primmemethod0, &driver, master, comm);
+   broadCast_svds(&primme_svds, &method, &primmemethod, &primmemethod0, &driver, master, comm);
 #endif
 
    /* --------------------------------------- */
@@ -411,6 +411,7 @@ static int real_main (int argc, char *argv[]) {
 static int setMatrixAndPrecond(driver_params *driver,
       primme_svds_params *primme_svds, int **permutation) {
    int numProcs=1;
+   double aNorm;
 
 #  if defined(USE_MPI) || defined(USE_PETSC)
    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
@@ -457,7 +458,7 @@ static int setMatrixAndPrecond(driver_params *driver,
          omp_set_num_threads(1);
          #endif
           
-         if (readMatrixNative(driver->matrixFileName, &matrix, &primme_svds->aNorm) !=0 )
+         if (readMatrixNative(driver->matrixFileName, &matrix, &aNorm) !=0 )
             return -1;
          primme_svds->matrix = matrix;
          primme_svds->matrixMatvec = CSRMatrixMatvecSVD;
@@ -477,6 +478,7 @@ static int setMatrixAndPrecond(driver_params *driver,
             createInvNormalPrecNative(matrix, 0, &diag);
             primme_svds->preconditioner = diag;
             primme_svds->applyPreconditioner = ApplyInvDavidsonNormalPrecNative;
+            break;
          case driver_ilut:
             fprintf(stderr, "ERROR: ilut preconditioner is not supported with NATIVE, use other!\n");
             return -1;
@@ -499,7 +501,7 @@ static int setMatrixAndPrecond(driver_params *driver,
          ParaSails *precond=NULL;
          int m, mLocal;
          readMatrixAndPrecondParaSails(driver->matrixFileName, driver->shift, driver->level,
-               driver->threshold, driver->filter, driver->isymm, MPI_COMM_WORLD, &primme_svds->aNorm,
+               driver->threshold, driver->filter, driver->isymm, MPI_COMM_WORLD, &aNorm,
                &primme_svds->n, &m, &primme_svds->nLocal, &mLocal, &primme_svds->numProcs, &primme_svds->procID, &matrix,
                (driver->PrecChoice == driver_ilut) ? &precond : NULL);
          *(MPI_Comm*)primme_svds->commInfo = MPI_COMM_WORLD;
@@ -517,55 +519,66 @@ static int setMatrixAndPrecond(driver_params *driver,
       return -1;
 #else
       {
-         PetscErrorCode ierr;
          Mat *matrix,A;
          PC *pc;
-         Vec *vec;
-         int m, mLocal;
-         if (readMatrixPetsc(driver->matrixFileName, &primme_svds->n, &m, &primme_svds->nLocal, &mLocal,
-                         &primme_svds->numProcs, &primme_svds->procID, &matrix, &primme_svds->aNorm, permutation) != 0)
+         double *diag;
+         if (readMatrixPetsc(driver->matrixFileName, &primme_svds->m, &primme_svds->n, &primme_svds->mLocal,
+               &primme_svds->nLocal, &primme_svds->numProcs, &primme_svds->procID, &matrix, &aNorm, permutation) != 0)
             return -1;
          *(MPI_Comm*)primme_svds->commInfo = PETSC_COMM_WORLD;
          primme_svds->matrix = matrix;
-         primme_svds->matrixMatvec = PETScMatvec;
-         if (driver->PrecChoice == driver_noprecond) {
+         primme_svds->matrixMatvec = PETScMatvecSVD;
+         switch(driver->PrecChoice) {
+         case driver_noprecond:
             primme_svds->preconditioner = NULL;
             primme_svds->applyPreconditioner = NULL;
-         }
-         else if (driver->PrecChoice != driver_jacobi_i) {
-            pc = (PC *)primme_calloc(1, sizeof(PC), "pc");
-            ierr = PCCreate(PETSC_COMM_WORLD, pc); CHKERRQ(ierr);
-            if (driver->PrecChoice == driver_jacobi) {
-               ierr = PCSetType(*pc, PCJACOBI); CHKERRQ(ierr);
-            }
-            else if (driver->PrecChoice == driver_ilut) {
-               if (primme_svds->numProcs <= 1) {
-                  ierr = PCSetType(*pc, PCILU); CHKERRQ(ierr);
+            break;
+         case driver_jacobi:
+            createInvNormalPrecPETSC(*matrix, driver->shift, &diag);
+            primme_svds->preconditioner = diag;
+            primme_svds->applyPreconditioner = ApplyInvNormalPrecNative;
+            break;
+         case driver_jacobi_i:
+            createInvNormalPrecPETSC(*matrix, 0, &diag);
+            primme_svds->preconditioner = diag;
+            primme_svds->applyPreconditioner = ApplyInvDavidsonNormalPrecNative;
+            break;
+         case driver_ilut:
+            {
+               PetscErrorCode ierr;
+               pc = (PC *)primme_calloc(2, sizeof(PC), "pc");
+               pc[1] = NULL;
+               ierr = PCCreate(PETSC_COMM_WORLD, pc); CHKERRQ(ierr);
+               ierr = MatDuplicate(*matrix, MAT_COPY_VALUES, &A);CHKERRQ(ierr);
+               ierr = MatShift(A, -driver->shift);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_HYPRE
+               ierr = PCSetType(pc[0], PCHYPRE); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(pc[0], "parasails"); CHKERRQ(ierr);
+               ierr = PCCreate(PETSC_COMM_WORLD, &pc[1]); CHKERRQ(ierr);
+               ierr = PCSetType(pc[1], PCHYPRE); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(pc[1], "parasails"); CHKERRQ(ierr);
+#else
+               ierr = PCSetType(pc[0], PCBJACOBI); CHKERRQ(ierr);
+#  ifdef USE_DOUBLECOMPLEX
+               ierr = PCCreate(PETSC_COMM_WORLD, &pc[1]); CHKERRQ(ierr);
+               ierr = PCSetType(pc[1], PCBJACOBI); CHKERRQ(ierr);
+#  endif
+#endif
+               ierr = PCSetOperators(pc[0], A, A); CHKERRQ(ierr);
+               ierr = PCSetFromOptions(pc[0]); CHKERRQ(ierr);
+               ierr = PCSetUp(pc[0]); CHKERRQ(ierr);
+               ierr = MatDestroy(&A);CHKERRQ(ierr);
+               if (pc[1]) {
+                  ierr = MatHermitianTranspose(*matrix,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+                  ierr = MatShift(A, -driver->shift);CHKERRQ(ierr);
+                  ierr = PCSetOperators(pc[1], A, A); CHKERRQ(ierr);
+                  ierr = PCSetFromOptions(pc[1]); CHKERRQ(ierr);
+                  ierr = PCSetUp(pc[1]); CHKERRQ(ierr);
+                  ierr = MatDestroy(&A);CHKERRQ(ierr);
                }
-               else {
-                  #ifdef PETSC_HAVE_HYPRE
-                     ierr = PCSetType(pc, PCHYPRE); CHKERRQ(ierr);
-                     ierr = PCHYPRESetType(*pc, "parasails"); CHKERRQ(ierr);
-                  #else
-                     ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
-                  #endif
-               }
+               primme_svds->preconditioner = pc;
+               primme_svds->applyPreconditioner = ApplyPCPrecPETSCSVD;
             }
-            ierr = MatDuplicate(*matrix, MAT_COPY_VALUES, &A);CHKERRQ(ierr);
-            ierr = MatShift(A, -driver->shift);CHKERRQ(ierr);
-            ierr = PCSetOperators(*pc, A, A); CHKERRQ(ierr);
-            ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
-            ierr = PCSetUp(*pc); CHKERRQ(ierr);
-            ierr = PCView(*pc,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-            primme_svds->preconditioner = pc;
-            primme_svds->applyPreconditioner = ApplyPCPrecPETSC;
-         }
-         else {
-            vec = (Vec *)primme_calloc(1, sizeof(Vec), "Vec preconditioner");
-            ierr = MatCreateVecs(*matrix, vec, NULL); CHKERRQ(ierr);
-            ierr = MatGetDiagonal(*matrix, *vec); CHKERRQ(ierr);
-            primme_svds->preconditioner = vec;
-            primme_svds->applyPreconditioner = ApplyPCPrecPETSC;
          }
       }
 #endif
@@ -588,7 +601,7 @@ static int setMatrixAndPrecond(driver_params *driver,
          double *diag;
          matrix = (blas_sparse_matrix *)primme_calloc(1, sizeof(blas_sparse_matrix), "matrix");
          
-         if (readMatrixRSB(driver->matrixFileName, matrix, &primme_svds->aNorm) !=0 )
+         if (readMatrixRSB(driver->matrixFileName, matrix, &aNorm) !=0 )
             return -1;
          primme_svds->matrix = matrix;
          primme_svds->matrixMatvec = RSBMatvecSVD;
@@ -607,7 +620,7 @@ static int setMatrixAndPrecond(driver_params *driver,
             createInvNormalPrecRSB(*matrix, 0.0, &diag);
             primme_svds->preconditioner = diag;
             primme_svds->applyPreconditioner = ApplyInvDavidsonNormalPrecNative;
-             break;
+            break;
          default:
             assert(0);
             break;
@@ -618,8 +631,10 @@ static int setMatrixAndPrecond(driver_params *driver,
 
    }
 
+   if (primme_svds->aNorm < 0) primme_svds->aNorm = aNorm;
+
 #if defined(USE_MPI)
-   primme_svds->globalSumDouble = par_GlobalSumDoubleSvd;
+   primme_svds->globalSumDouble = par_GlobalSumDoubleSvds;
 #endif
    return 0;
 }
@@ -670,13 +685,15 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_svds_params *pr
 #else
       {
          PetscErrorCode ierr;
+         PC *pc = (PC*)primme_svds->preconditioner;
          ierr = MatDestroy((Mat*)primme_svds->matrix);CHKERRQ(ierr);
-         if (primme_svds->preconditioner) {
-         }
          if (driver->PrecChoice == driver_noprecond) {
          }
          else if (driver->PrecChoice != driver_jacobi_i) {
-            ierr = PCDestroy((PC*)primme_svds->preconditioner);CHKERRQ(ierr);
+            ierr = PCDestroy(&pc[0]);CHKERRQ(ierr);
+            if (pc[1]) {
+               ierr = PCDestroy(&pc[1]);CHKERRQ(ierr);
+            }
             free(primme_svds->preconditioner);
          }
          else {

@@ -90,6 +90,7 @@ void driver_display_params(driver_params driver, FILE *outputFile);
 void driver_display_method(primme_preset_method method, const char *methodstr, FILE *outputFile);
 void driver_display_methodsvd(primme_svds_preset_method method, const char *methodstr, FILE *outputFile);
 #ifdef USE_MPI
+#include <mpi.h>
 void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme);
 void par_GlobalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
