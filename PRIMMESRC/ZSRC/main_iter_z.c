@@ -859,6 +859,11 @@ void check_reset_flags_zprimme(int *flag, int *numConverged,
 
    reset_flags_zprimme(flag, primme->numEvals, primme->maxBasisSize-1);
 
+   /* If basis were full, the difference between the current and the previous
+      Ritz values could be too large; so this test isn't made */
+   if (numPrevRitzVals + primme->maxBlockSize >= primme->n)
+      return;
+
    if (primme->aNorm <= 0.0L) {
       tol = tol * aNormEstimate;
    }
