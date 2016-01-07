@@ -273,7 +273,17 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
       resNorms[0] = 0.0L;
       primme->stats.numMatvecs++;
+      primme->initSize = 1;
       return 0;
+   }
+
+   /* ------------------------------------------------ */
+   /* Especial configuration for matrix of dimension 2 */
+   /* ------------------------------------------------ */
+
+   if (primme->n == 2) {
+      primme->minRestartSize = 2;
+      primme->restartingParams.maxPrevRetain = 0;
    }
 
    /* -------------------- */

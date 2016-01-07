@@ -494,9 +494,9 @@ static int check_input(double *evals, double *evecs, double *resNorms,
    }
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst >=primme->n)
       ret = -16;
-   else if (primme->maxBasisSize < 2) 
+   else if (primme->maxBasisSize < 2 && primme->maxBasisSize != primme->n) 
       ret = -17;
-   else if (primme->minRestartSize <= 0) 
+   else if (primme->minRestartSize <= 0 && primme->n > 2) 
       ret = -18;
    else if (primme->maxBlockSize <= 0) 
       ret = -19;
@@ -512,7 +512,7 @@ static int check_input(double *evals, double *evecs, double *resNorms,
    else if (primme->locking && primme->initSize > primme->numEvals)
       ret = -24;
    else if (primme->minRestartSize + primme->restartingParams.maxPrevRetain 
-                   >= primme->maxBasisSize)
+                   >= primme->maxBasisSize && primme->n > 2)
       ret = -25;
    else if (primme->minRestartSize >= primme->n)
       ret = -26;
