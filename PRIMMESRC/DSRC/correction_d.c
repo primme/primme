@@ -203,7 +203,7 @@ int solve_correction_dprimme(double *V, double *W, double *evecs,
    sortedPrevRitzVals = sortedRitzVals + (numLocked+basisSize);
    blockOfShifts  = sortedPrevRitzVals + (numLocked+basisSize);
    approxOlsenEps = blockOfShifts  + blockSize;
-   neededRsize = neededRsize + numLocked+basisSize + 2*blockSize;
+   neededRsize = neededRsize + (numLocked+basisSize)*2 + 2*blockSize;
 
    if (neededRsize > rworkSize) {
       return(neededRsize);

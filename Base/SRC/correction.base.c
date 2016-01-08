@@ -203,7 +203,7 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
    sortedPrevRitzVals = sortedRitzVals + (numLocked+basisSize);
    blockOfShifts  = sortedPrevRitzVals + (numLocked+basisSize);
    approxOlsenEps = blockOfShifts  + blockSize;
-   neededRsize = neededRsize + numLocked+basisSize + 2*blockSize;
+   neededRsize = neededRsize + (numLocked+basisSize)*2 + 2*blockSize;
 
    if (neededRsize > rworkSize) {
       return(neededRsize);

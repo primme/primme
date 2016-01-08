@@ -203,7 +203,7 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
    sortedPrevRitzVals = sortedRitzVals + (numLocked+basisSize);
    blockOfShifts  = sortedPrevRitzVals + (numLocked+basisSize);
    approxOlsenEps = blockOfShifts  + blockSize;
-   neededRsize = neededRsize + numLocked+basisSize + 2*blockSize;
+   neededRsize = neededRsize + (numLocked+basisSize)*2 + 2*blockSize;
 
    if (neededRsize > rworkSize) {
       return(neededRsize);
