@@ -148,6 +148,9 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
    @(type) *linSolverRWork;/* Workspace needed by linear solver.            */
    double *sortedRitzVals; /* Sorted array of current and converged Ritz     */
                            /* values.  Size of array is numLocked+basisSize. */
+   double *sortedPrevRitzVals; /* Sorted array of previous and converged Ritz*/
+                           /* values.  Size of array is numLocked+basisSize. */
+   int numSortedPrevRitzVals;/* Size of sortedPrevRitzVals */
    double *blockOfShifts;  /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
    double *approxOlsenEps; /* Shifts for approximate Olsen implementation    */
    @(type) *Kinvx;         /* Workspace to store K^{-1}x                     */
@@ -197,7 +200,8 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
       neededRsize = neededRsize + linSolverRWorkSize;
    }
    sortedRitzVals = (double *)(linSolverRWork + linSolverRWorkSize);
-   blockOfShifts  = sortedRitzVals + (numLocked+basisSize);
+   sortedPrevRitzVals = sortedRitzVals + (numLocked+basisSize);
+   blockOfShifts  = sortedPrevRitzVals + (numLocked+basisSize);
    approxOlsenEps = blockOfShifts  + blockSize;
    neededRsize = neededRsize + numLocked+basisSize + 2*blockSize;
 
@@ -225,6 +229,9 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
       mergeSort(lockedEvals, numLocked, ritzVals, flags, basisSize, 
                    sortedRitzVals, ilev, blockSize, primme);
+      mergeSort(lockedEvals, numLocked, prevRitzVals, NULL, *numPrevRitzVals,
+                   sortedPrevRitzVals, NULL, 0, primme);
+      numSortedPrevRitzVals = *numPrevRitzVals + numLocked;
    }
    else {
       /* In the case of soft-locking or when we look for interior ones  */
@@ -232,6 +239,8 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
       sortedRitzVals = ritzVals;
       ilev = iev;
+      sortedPrevRitzVals = prevRitzVals;
+      numSortedPrevRitzVals = *numPrevRitzVals;
    }
 
    /*-----------------------------------------------------------------*/
@@ -244,18 +253,14 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
          sortedIndex = ilev[blockIndex];
          blockOfShifts[blockIndex] = 
             primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ];
-         if (sortedIndex < *numPrevRitzVals) {
+         if (sortedIndex < numSortedPrevRitzVals) {
             approxOlsenEps[blockIndex] = 
-            fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
+            fabs(sortedPrevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
          }  
          else {
             approxOlsenEps[blockIndex] = blockNorms[blockIndex];
          }  
       } /* for loop */
-
-      /* Remember the previous ritz values*/
-      *numPrevRitzVals = basisSize;
-      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
 
    } /* user provided shifts */
    else {    
@@ -275,7 +280,7 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
             eval = sortedRitzVals[sortedIndex];
    
             robustShift = computeRobustShift(blockIndex, 
-              blockNorms[blockIndex], prevRitzVals, *numPrevRitzVals, 
+              blockNorms[blockIndex], sortedPrevRitzVals, numSortedPrevRitzVals, 
               sortedRitzVals, &approxOlsenEps[blockIndex], 
               numLocked+basisSize, ilev, primme);
    
@@ -308,9 +313,9 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
             ritzIndex   =  iev[blockIndex];
             sortedIndex = ilev[blockIndex];
             blockOfShifts[blockIndex] = ritzVals[ritzIndex];
-            if (sortedIndex < *numPrevRitzVals) {
+            if (sortedIndex < numSortedPrevRitzVals) {
                approxOlsenEps[blockIndex] = 
-               fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
+               fabs(sortedPrevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
             }
             else {
                approxOlsenEps[blockIndex] = blockNorms[blockIndex]; 
@@ -318,11 +323,11 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
          } /* for loop */
       } /* else no robust shifts */
 
-      /* Remember the previous ritz values*/
-      *numPrevRitzVals = numLocked+basisSize;
-      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
-
    } /* else primme_smallest or primme_largest */
+
+   /* Remember the previous ritz values */
+   *numPrevRitzVals = basisSize;
+   Num_dcopy_primme(*numPrevRitzVals, ritzVals, 1, prevRitzVals, 1);
 
    /* Equip the primme struct with the blockOfShifts, in case the user */
    /* wants to precondition (K-sigma_i I)^{-1} with a different shift  */
@@ -608,7 +613,7 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
          /* enough in the block to target it, then keep track of its index */
          /* in the sorted list.                                            */
 
-         if (blockIndex < blockSize && flags[ritzVal] == UNCONVERGED) {
+         if (ilev && blockIndex < blockSize && flags[ritzVal] == UNCONVERGED) {
             ilev[blockIndex] = count;
             blockIndex++;
          }

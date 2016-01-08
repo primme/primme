@@ -39,6 +39,7 @@
 #define TO_BE_PROJECTED        5
 #define PRACTICALLY_CONVERGED  6
 #define UNCONDITIONAL_LOCK_IT  7
+#define UNCONDITIONAL_UNCONVERGED  8
 
 
 #endif /* CONST_H */

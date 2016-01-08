@@ -32,6 +32,7 @@
 int check_convergence_@(pre)primme(@(type) *V, @(type) *W, @(type) *hVecs,
    double *hVals, int *flags, int basisSize, int *iev, int *ievMax, 
    double *blockNorms, int *blockSize, int numConverged, int numLocked, 
+   double *prevRitzVals, int numPrevRitzVals,
    @(type) *evecs, double tol, double maxConvTol, double aNormEstimate, 
    @(type) *rwork, primme_params *primme);
 
