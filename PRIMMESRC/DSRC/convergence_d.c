@@ -50,6 +50,8 @@
  * numReqEvals    Total number of eigenpairs the user wants computed
  * numConverged   Number of vectors that have converged (not updated here)
  * numLocked      The number of vectors currently locked (if locking)
+ * prevRitzVals   The Ritz values in the previous iteration
+ * numPrevRitzVals The number of Ritz values in the previous iteration
  * evecs          
  * tol            Tolerance used to determine convergence of residual norms
  * maxConvTol     The max residual norm > tol for any locked eigenpair 
@@ -73,6 +75,7 @@
 int check_convergence_dprimme(double *V, double *W, double *hVecs, 
    double *hVals, int *flags, int basisSize, int *iev, int *ievMax, 
    double *blockNorms, int *blockSize, int numConverged, int numLocked, 
+   double *prevRitzVals, int numPrevRitzVals,
    double *evecs, double tol, double maxConvTol, double aNormEstimate, 
    double *rwork, primme_params *primme) {
 
@@ -150,10 +153,17 @@ int check_convergence_dprimme(double *V, double *W, double *hVecs,
 
       for (i=left; i <= right; i++) {
        
+         /* ----------------------------------------------------- */
+         /* If the vector is unconditional unconverged, unflag it */
+         /* ----------------------------------------------------- */
+         if (flags[iev[i]] == UNCONDITIONAL_UNCONVERGED) {
+            flags[iev[i]] = UNCONVERGED;
+         }
          /* ------------------------------------*/
          /* If the vector is converged, flag it */
          /* ------------------------------------*/
-         if (blockNorms[i] < tol) {
+         else if (blockNorms[i] < tol && (iev[i] >= numPrevRitzVals ||
+                             (fabs(hVals[iev[i]]-prevRitzVals[iev[i]]) < tol))) {
             flags[iev[i]] = CONVERGED;
             numVacancies++;
 

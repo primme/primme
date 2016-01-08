@@ -381,8 +381,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
 
             recentlyConverged = check_convergence_dprimme(V, W, hVecs, 
                hVals, flag, basisSize, iev, &ievMax, blockNorms, &blockSize, 
-               numConverged, numLocked, evecs, tol, maxConvTol, 
-               largestRitzValue, rwork, primme);
+               numConverged, numLocked, prevRitzVals, numPrevRitzVals, evecs,
+               tol, maxConvTol, largestRitzValue, rwork, primme);
 
             /* If the total number of converged pairs, including the     */
             /* recentlyConverged ones, are greater than or equal to the  */
@@ -743,7 +743,8 @@ static void adjust_blockSize(int *iev, int *flag, int *blockSize,
       (*ievMax < basisSize) &&
       (*blockSize < (matrixDimension - numLocked - basisSize)) ){
    
-      if (flag[*ievMax] == UNCONVERGED) {
+      if (flag[*ievMax] == UNCONVERGED ||
+          flag[*ievMax] == UNCONDITIONAL_UNCONVERGED) {
          *blockSize = *blockSize + 1;
          iev[*blockSize-1] = *ievMax;
       }
@@ -759,7 +760,7 @@ static void adjust_blockSize(int *iev, int *flag, int *blockSize,
  *    This function is called one iteration before restart so that the
  *    coefficients (eigenvectors of the projection H) corresponding to 
  *    a few of the target Ritz vectors may be retained at restart. 
- *    The desired coefficients are copied to a seperate storage space so
+ *    The desired coefficients are copied to a separate storage space so
  *    that they may be preserved until the restarting routine is called.
  *
  *
@@ -881,7 +882,7 @@ void check_reset_flags_dprimme(int *flag, int *numConverged,
       if (i >= numPrevRitzVals) break;
       if ((flag[i] == CONVERGED) && (fabs(hVals[i]-prevRitzVals[i]) > tol)) {
          (*numConverged)--;
-         flag[i] = UNCONVERGED;
+         flag[i] = UNCONDITIONAL_UNCONVERGED;
       }
    }
 
