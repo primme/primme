@@ -47,8 +47,8 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->n                       = 0;
    primme_svds->numSvals                = 1;
    primme_svds->target                  = primme_svds_largest;
-   primme_svds->method                  = primme_svds_default;
-   primme_svds->method0                 = primme_svds_default;
+   primme_svds->method                  = primme_svds_op_none;
+   primme_svds->method0                 = primme_svds_op_none;
 
    /* Shifts for primme_svds_augmented method */
    primme_svds->numTargetShifts         = 0;
@@ -140,17 +140,28 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
       primme_svds->numProcs = 1;
    }
 
+   /* Set svds method if none set */
    if (primme_svds->method == primme_svds_op_none) {
       primme_svds_set_method(primme_svds_default, primme_svds);
    }
 
-   /* Configure the underneath eigensolver */
+   /* Copy values set in primme_svds to the first stage underneath eigensolver */
    copy_params_from_svds(primme_svds, 0);
+
+   /* Set default values and method for the first state */
    primme_set_defaults(&primme_svds->primme);
 
-   /* Configure the underneath eigensolver for second stage */
    if (primme_svds->method0 != primme_svds_op_none) {
+      /* Copy values set in primme_svds to the second stage underneath eigensolver */
       copy_params_from_svds(primme_svds, 1);
+
+      /* NOTE: refined extraction seems to work better than RR */
+      if (primme_svds->primme0.projectionParams.projection == primme_proj_default)
+         primme_svds->primme0.projectionParams.projection = primme_proj_ref;
+
+      /* Set default values and method for the second state */
+      if (primme_svds->primme0.dynamicMethodSwitch < 0)
+         primme_set_method(JDQMR, &primme_svds->primme0);
       primme_set_defaults(&primme_svds->primme0);
    }
 }
@@ -202,7 +213,7 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       primme->procID = primme_svds->procID;
       primme->numProcs = primme_svds->numProcs;
       primme->commInfo = primme_svds->commInfo;
-      primme->globalSumDouble = primme_svds->globalSumDouble;
+      primme->globalSumDouble = globalSumDoubleSvds;
    }
 
    switch(method) {
@@ -246,14 +257,10 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    }
       
    if (primme->target == primme_smallest || primme->target == primme_largest){
-      if (primme->projectionParams.refinedScheme == primme_ref_default)
-         primme->projectionParams.refinedScheme = primme_ref_none;
       if (primme_svds->locking >= 0)
          primme->locking = primme_svds->locking;
    }
    else {
-      if (primme->projectionParams.refinedScheme == primme_ref_default)
-         primme->projectionParams.refinedScheme = primme_ref_OneAccuShift_QR;
       if (primme_svds->locking >= 0)
          primme->locking = primme_svds->locking;
       else if (primme->locking < 0)
@@ -265,6 +272,7 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       primme->correctionParams.precondition = primme_svds->precondition;
    else if (primme->correctionParams.precondition < 0)
       primme->correctionParams.precondition = primme_svds->applyPreconditioner ? 1 : 0;
+
 }
 
 /******************************************************************************
@@ -396,8 +404,8 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 
    const double machEps = Num_dlamch_primme("E");
    *isConv = *rNorm < max(
-               primme->eps * sqrt(*eval * (
-                  primme->aNorm > 0 ? primme->aNorm : primme->stats.estimateLargestSVal)),
+               primme->eps * sqrt(fabs(*eval * (
+                  primme->aNorm > 0 ? primme->aNorm : primme->stats.estimateLargestSVal))),
                machEps * 3.16 * primme->stats.estimateLargestSVal);
 }
 
@@ -427,3 +435,9 @@ static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *i
                      primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
                machEps * 3.16 * primme->stats.estimateLargestSVal);
 } 
+
+static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
+                         primme_params *primme) {
+   primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+   primme_svds->globalSumDouble(sendBuf, recvBuf, count, primme_svds);
+}

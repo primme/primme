@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 #include "primme.h"         
 #include "numerical_@(pre).h"
 #include "ortho_@(pre).h"
@@ -101,11 +102,12 @@
  * 
  **********************************************************************/
 
-int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2, 
-   @(type) *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
-   double machEps, @(type) *rwork, int rworkSize, primme_params *primme) {
+int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
+   int b1, int b2, @(type) *locked, int ldLocked, int numLocked,
+   int nLocal, int *iseed, double machEps, @(type) *rwork, int rworkSize,
+   primme_params *primme) {
               
-   int i;                   /* Loop indices */
+   int i, j;                /* Loop indices */
    int count;
    int minWorkSize;         
    int nOrth, reorth;
@@ -125,24 +127,31 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
    /* outputFile = primme->outputFile; */
    outputFile = stderr;
 
+   minWorkSize = 2*(numLocked + b2 + 1);
+
+   /* Return memory requirement */
+   if (basis == NULL) {
+      return minWorkSize;
+   }
+
    /*----------------------------------*/
    /* input and workspace verification */
    /*----------------------------------*/
-   if (ldBasis <= 0 || nLocal <= 0 || numLocked < 0 || rworkSize < 0)
-   {
+   if (ldBasis <= 0 || nLocal <= 0 || numLocked < 0 || rworkSize < 0
+         || rworkSize < minWorkSize) {
       return -1;
    }
    else if (b1 > b2) {
       return 0;
    }
 
-   minWorkSize = 2*(numLocked + b2 + 1);
-
-   if (rworkSize < minWorkSize) {
-      return(minWorkSize);
-   }
-   
    tol = sqrt(2.0L)/2.0L;
+
+   /* Zero the columns from b1 to b2 of R */
+   if (R)
+      for(i=b1; i <= b2; i++)
+         for (j=0; j <= i; j++)
+            R[ldR*i+j] = tzero;
 
    /*---------------------------------------------------*/
    /* main loop to orthogonalize new vectors one by one */
@@ -195,12 +204,12 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
 #ifdefarithm L_DEFREAL
          count = i + numLocked + 1;
 #endifarithm
-         (*primme->globalSumDouble)(rwork, overlaps, &count, primme);
+         (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
+            (rwork, overlaps, &count, primme);
 
-         /* lingfei: primme_svds. if Harmonic or Refined projection is used */
-         if (R != NULL){
-             Num_axpy_@(pre)primme(count, tpone, overlaps, 1, 
-                &R[primme->maxBasisSize*i], 1);
+         if (R != NULL) {
+             Num_axpy_@(pre)primme(i + numLocked + 1, tpone, overlaps, 1, 
+                &R[ldR*i], 1);
          }
 
          if (numLocked > 0) { /* locked array most recently accessed */
@@ -237,7 +246,7 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
          /* s1 decreased too much. Numerical problems expected   */
          /* with its implicit computation. Compute s1 explicitly */
          
-         if ( s1 < s0*sqrt(machEps) || nOrth > 1) {  
+         if ( s1 < s0*sqrt(machEps) || nOrth > 1 || !primme) {  
 #ifdefarithm L_DEFCPLX
             ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1, 
                                            &basis[ldBasis*i], 1);
@@ -248,7 +257,8 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
                                            &basis[ldBasis*i], 1);
 #endifarithm
             count = 1;
-            (*primme->globalSumDouble)(&temp, &s1, &count, primme);
+            (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
+               (&temp, &s1, &count, primme);
             s1 = sqrt(s1);
          }
 
@@ -259,7 +269,7 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
             }
             nOrth = maxNumOrthos;
          }
-         else if (s1 <= tol*s0) {
+         else if (s1 <= tol*s0 || (!primme && nOrth < maxNumOrthos)) {
             if (messages) {
                fprintf(outputFile, "Reorthogonalizing: %d\n", i-b1);
             }
@@ -268,7 +278,6 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
             s02 = s1*s1;
          }
          else {
-            /*lingfei:primme_svds. if Harmonic or Refined projection is used*/
             if (R != NULL) {
                 if (nOrth == 1) {
 #ifdefarithm L_DEFCPLX
@@ -281,15 +290,16 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
                                                   &basis[ldBasis*i],1);
 #endifarithm 
                     count = 1;
-                    (*primme->globalSumDouble)(&temp, &s1, &count, primme);
+                    (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
+                       (&temp, &s1, &count, primme);
                     s1 = sqrt(s1);
                 }
 #ifdefarithm L_DEFCPLX
-                R[primme->maxBasisSize*i + i].r = s1;
-                R[primme->maxBasisSize*i + i].i = 0.0L;
+                R[ldR*i + i].r = s1;
+                R[ldR*i + i].i = 0.0L;
 #endifarithm
 #ifdefarithm L_DEFREAL
-                R[primme->maxBasisSize*i + i] = s1;
+                R[ldR*i + i] = s1;
 #endifarithm
             }
 
@@ -302,128 +312,120 @@ int ortho_@(pre)primme(@(type) *basis, @(type) *R, int ldBasis, int b1, int b2,
             Num_scal_@(pre)primme(nLocal, ztmp, &basis[ldBasis*i], 1);
             reorth = 0;
          } 
-            
+ 
       }
    }
-         
+ 
    return 0;
 }
 
-
 /**********************************************************************
- * Function ortho_retained_vectors -- This function orthogonalizes
- *   coefficient vectors (the eigenvectors of the projection H) that
- *   are retained from a previous iteration.  The retained coefficient
- *   vectors are orthogonalized versus the coefficient vectors of the
- *   restarted basis.  This orthogonalizes previous and current Ritz 
- *   vectors cheaply and without communication because the coefficient 
- *   vectors are stored by each process.
+ * Function ortho_single_iteration -- This function orthogonalizes
+ *    applies ones the projector (I-QQ') on X. Optionally returns
+ *    the norms ||Q'X(i)|| and ||(I-QQ')X(i)||.
  *   
- * Input parameters
+ * ARRAYS AND PARAMETERS
  * ----------------
- * currentVectors  Coefficient vectors from the current iteration to 
- *    be orthogonalized against.
- *
- * length          The dimension of each vector
- *
- * numVectors      The number of current vectors
- * 
- * 
- * Input/Output parameters
- * -----------------------
- * previousVectors The coefficient vectors obtained from the previous iteration
- *                 Note that their leading dimension is primme->maxBasisSize.
- *
- * numPrevious     The number of previous vectors to retain
- *
- * rwork           work array of size max(numVectors, numPrevious).  If it
- *                 is of size maxBasisSize, then it will always be sufficiently
- *                 large.
- *
- *
- * Return value
- * ------------
- * int   The number of previous vectors successfully orthogonalized
+ * Q               The basis of the projector I-QQ'.
+ * mQ, nQ, ldQ     Rows, columns and leading dimension of Q.
+ * X               The vectors to apply the projector I-QQ'.
+ * inX             Column indices to apply the projector (optional).
+ * nX              Number of columns to apply the projector.
+ * ldX             The leading dimension of X.
+ * overlaps        The norms of Q'X(i) (optional).
+ * norms           The norms of (I-QQ')X(i) (optional).
+ * rwork           Auxiliary space
+ * lrwork          Available rwork
  *
  ****************************************************************************/
 
-int ortho_retained_vectors_@(pre)primme (@(type) *currentVectors, 
-  int length, int numVectors, @(type) *previousVectors, int numPrevious, 
-  double machEps, @(type) *rwork) {
+int ortho_single_iteration_@(pre)primme(@(type) *Q, int mQ, int nQ, int ldQ, @(type) *X,
+   int *inX, int nX, int ldX, double *overlaps, double *norms, @(type) *rwork, int lrwork,
+   primme_params *primme) {
 
-   int i;       /* Loop counter                                     */
-   int nOrths;  /* Number of times a vector has been orthogonalized */
-   int zeroed;  /* True if the vector norm was reduced below 1e-14  */
-   double norm; /* Vector norm.                                     */
-   @(type) ztmp;/* Temp accumulation var                            */
-                /* and some constants                               */
+   int i, j, M=PRIMME_BLOCK_SIZE, m=min(M, mQ), count;
+   @(type) *y, *y0, *X0;
+   double *norms0;
    @(type) tpone = @(tpone), tzero = @(tzero), tmone = @(tmone);
 
-   /* Orthogonalize each of the numPrevious vectors against the current */
-   /* vectors and amongst themselves.                                   */
+   /* Return memory requirement */
+   if (Q == NULL) {
+      return nQ*nX*2 + M*nX;
+   }
 
-   i = 0;  
+   assert(nQ*nX*2 + m*nX <= lrwork);
 
-   while (i < numPrevious) {
-      zeroed = 0;
+   /* Warning: norms0 and y overlap, so don't use them at the same time */
+   norms0 = (double*)rwork;
+   y = rwork;
+   y0 = y + nQ*nX;
+   X0 = y0 + nQ*nX;
 
-      /* Orthogonalize each vector twice to ensure numerical stability */
+   /* Check if the indices of inX are contiguous */
 
-      for (nOrths = 0; nOrths < 3; nOrths++) {
-
-         /* Orthogonalize versus the numVectors current vectors */
-
-         Num_gemv_@(pre)primme("C", length, numVectors, tpone, currentVectors, 
-            length, &previousVectors[length*i], 1, tzero, rwork, 1);
-
-         Num_gemv_@(pre)primme("N", length, numVectors, tmone, currentVectors, 
-            length, rwork, 1, tpone, &previousVectors[length*i], 1);
-
-         /* Orthogonalize against the i previous vectors that have */
-         /* been orthogonalized thus far.                          */
-
-         if (i > 0) {
-            Num_gemv_@(pre)primme("C", length, i, tpone, previousVectors, 
-               length, &previousVectors[length*i], 1, tzero, rwork, 1);
-
-            Num_gemv_@(pre)primme("N", length, i, tmone, previousVectors, 
-               length, rwork, 1, tpone, &previousVectors[length*i], 1);
-         }
-
-#ifdefarithm L_DEFCPLX
-         ztmp = Num_dot_zprimme(length, &previousVectors[length*i], 1,
-                                        &previousVectors[length*i], 1);
-         norm = ztmp.r;
-#endifarithm
-#ifdefarithm L_DEFREAL
-         norm = Num_dot_dprimme(length, &previousVectors[length*i], 1,
-                                        &previousVectors[length*i], 1);
-#endifarithm
-         norm = sqrt(norm);
-
-         if (norm < 5.0L*machEps) {
-            numPrevious--;
-            Num_@(pre)copy_@(pre)primme(length*(numPrevious-i), 
-              &previousVectors[length*(i+1)], 1, &previousVectors[length*i], 1);
-            zeroed = 1;
-            break;
-         }
-
-#ifdefarithm L_DEFCPLX
-            {ztmp.r = 1.0L/norm; ztmp.i = 0.0L;}
-#endifarithm
-#ifdefarithm L_DEFREAL
-            ztmp = 1.0L/norm;
-#endifarithm
-         Num_scal_@(pre)primme(length, ztmp, &previousVectors[length*i], 1);
-
-      } /* for 3 reorthos */
-
-      if (!zeroed) {
-         i++;
+   if (inX && nX > 0) {
+      for (i=0, j=inX[0]; i<nX && j==inX[i]; i++, j++);
+      if (i >= nX) {
+         X = &X[inX[0]*ldX];
+         inX = NULL;
       }
+   }
 
-   } /* main while loop */
+   /* y = Q'*X */
+   if (!inX) {
+      Num_gemm_@(pre)primme("C", "N", nQ, nX, mQ, tpone, Q, ldQ, X, ldX, tzero, y, nQ);
+   }
+   else {
+      for (i=0; i<nQ*nX; i++)
+         y[i] = tzero;
+      for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
+         Num_copy_matrix_i_@(pre)primme(&X[i], m, inX, nX, ldX, X0, NULL, m);
+         Num_gemm_@(pre)primme("C", "N", nQ, nX, m, tpone, &Q[i], ldQ, X0, m, tpone,
+               y, nQ);
+      }
+   }
 
-   return numPrevious;
+   /* Store the reduction of y in y0 */
+   count = nQ*nX*(sizeof(@(type))/sizeof(double));
+   primme->globalSumDouble(y, y0, &count, primme);
+   
+   /* overlaps(i) = norm(y0(:,i))^2 */
+   for (i=0; i<nX; i++) {
+#ifdefarithm L_DEFCPLX
+      @(type) ztmp = Num_dot_@(pre)primme(nQ, &y0[nQ*i], 1, &y0[nQ*i], 1);
+      double norm = ztmp.r;
+#endifarithm
+#ifdefarithm L_DEFREAL
+      double norm = Num_dot_@(pre)primme(nQ, &y0[nQ*i], 1, &y0[nQ*i], 1);
+#endifarithm
+      overlaps[i] = sqrt(norm);
+   }
+
+   /* X = X - Q*y0; norms0(i) = norms(X(i))^2 */
+   for (i=0; i<nX; i++) norms0[i] = 0.0;
+   for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
+      Num_gemm_@(pre)primme("N", "N", m, nX, nQ, tmone, &Q[i], ldQ, y0, nQ, tpone,
+            inX?X0:&X[i], inX?m:ldX);
+      if (inX) {
+         Num_copy_matrix_i_@(pre)primme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
+      }
+      for (j=0; j<nX; j++) {
+         @(type) *v = inX ? &X0[j*m] : &X[j*ldX+i];
+#ifdefarithm L_DEFCPLX
+         @(type) ztmp = Num_dot_@(pre)primme(m, v, 1, v, 1);
+         double norm2 = ztmp.r;
+#endifarithm
+#ifdefarithm L_DEFREAL
+         double norm2 = Num_dot_@(pre)primme(m, v, 1, v, 1);
+#endifarithm
+         norms0[j] += norm2;
+      }
+   }
+
+   /* Store the reduction of norms0 in norms */
+   primme->globalSumDouble(norms0, norms, &nX, primme);
+ 
+   for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
+
+   return 0;
 }

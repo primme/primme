@@ -34,6 +34,7 @@
 #include "inner_solve_d.h"
 #include "inner_solve_private_d.h"
 #include "factorize_d.h"
+#include "update_W_d.h"
 #include "numerical_d.h"
 
 
@@ -186,21 +187,19 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
    /* Andreas: note that eigenresidual tol may not be achievable, because we */
    /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
-   if (primme->correctionParams.convTest == primme_adaptive) {
    /*lingfei:primme_svds. if refine projection is used, there is 
    no need to change eresTol*/
-      if(primme->correctionParams.precondition == 1 || 
-          primme->projectionParams.refinedScheme == primme_ref_none)
+   if (primme->correctionParams.convTest == primme_adaptive) {
+      if(primme->correctionParams.precondition == 1 ||
+         primme->projectionParams.projection == primme_proj_RR)
           ETolerance = max(eresTol/1.8L, absoluteTolerance);
       else
           ETolerance = max(eresTol, absoluteTolerance);          
       LTolerance = ETolerance;
    }
    else if (primme->correctionParams.convTest == primme_adaptive_ETolerance) {
-   /*lingfei:primme_svds. if refine projection is used, there is 
-   no need to change eresTol*/
-      if(primme->correctionParams.precondition == 1 || 
-          primme->projectionParams.refinedScheme == primme_ref_none)
+      if(primme->correctionParams.precondition == 1 ||
+         primme->projectionParams.projection == primme_proj_RR)
           LTolerance = max(eresTol/1.8L, absoluteTolerance);
       else
           LTolerance = max(eresTol, absoluteTolerance);          
@@ -662,14 +661,13 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
 static void apply_projected_matrix(double *v, double shift, double *Q, 
    int dimQ, double *result, double *rwork, primme_params *primme) {
    
-   int ONE = 1;   /* For passing it by reference in matrixMatvec */
 
-   (*primme->matrixMatvec)(v, result, &ONE, primme);
+   matrixMatvec_dprimme(v, primme->nLocal, primme->nLocal, result,
+         primme->nLocal, 0, 1, primme);
    Num_axpy_dprimme(primme->nLocal, -shift, v, 1, result, 1); 
    if (dimQ > 0)
       apply_projector(Q, dimQ, result, rwork, primme); 
 
-   primme->stats.numMatvecs += 1;
 }
    
 

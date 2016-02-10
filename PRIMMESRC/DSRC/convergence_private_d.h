@@ -29,25 +29,9 @@
 #ifndef CONVERGENCE_PRIVATE_H
 #define CONVERGENCE_PRIVATE_H
 
-static void compute_resnorms(double *V, double *W, double *hVecs, 
-   double *hVals, int basisSize, double *blockNorms, int *iev, int left,
-   int right, void *rwork, primme_params *primme);
-
-static void print_residuals(double *ritzValues, double *blockNorms, 
-   int numConverged, int numLocked, int *iev, int left, int right, 
-   primme_params *primme);
-
-static void swap_UnconvVecs(double *V, double *W, int nLocal, 
-   int basisSize, int *iev, int *flag, double *blockNorms, int dimEvecs, 
-   int blockSize, int left);
-
-static void replace_vectors(int *iev, int *flag, int blockSize, int basisSize,
-   int numVacancies, int *left, int *right, int *ievMax);
-
-static void check_practical_convergence(double *V, double *W, 
-  double *evecs, int numLocked, int basisSize, int blockSize, int start, 
-  int numToProject, int *iev, int *flags, double *blockNorms, double tol, 
-  int *recentlyConverged, int *numVacancies, double *rwork, 
-  primme_params *primme);
+static int check_practical_convergence(double *R, int nLocal, int ldR,
+   double *evecs, int evecsSize, int ldevecs, int left, int *iev,
+   int numToProject, int *flags, double *blockNorms, double tol, double *rwork,
+   int rworkSize, primme_params *primme);
 
 #endif /* CONVERGENCE_PRIVATE_H */

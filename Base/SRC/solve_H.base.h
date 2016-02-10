@@ -29,19 +29,16 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_@(pre)primme(@(type) *H, @(type) *hVecs, @(type) *Q, @(type) *R, double *hVals, 
-   int basisSize, int maxBasisSize, int numLocked, double machEps,
-   int lrwork, @(type) *rwork, int *perm, primme_params *primme, 
-   @(type) *V, @(type) *W, int recentlyConverged);
+int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR,
+   @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs, double *hVals, double *hSVals,
+   int numConverged, int lrwork, @(type) *rwork, int *iwork, primme_params *primme);
 
-#ifdefarithm L_DEFCPLX
-void permute_evecs_zprimme(double *evecs, int elemSize, int *perm, 
-   double *rwork, int nev, int nLocal);
-#endifarithm
-#ifdefarithm L_DEFREAL
-void permute_evecs_dprimme(double *evecs, int *perm, double *rwork, 
-   int nev, int nLocal);
-#endifarithm
+int solve_H_RR_@(pre)primme(@(type) *H, int maxBasisSize, @(type) *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
+   @(type) *rwork, int *iwork, primme_params *primme);
 
+int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
+   int ldhVecs, @(type) *hU, int ldhU, double *hSVals, @(type) *R, int ldR,
+   double *hVals, int basisSize, int lrwork, @(type) *rwork, primme_params *primme);
 
 #endif

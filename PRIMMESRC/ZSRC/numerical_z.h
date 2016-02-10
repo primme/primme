@@ -29,6 +29,7 @@
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
 
+#include "primme.h"
 #include "common_numerical.h"
 #include "Complexz.h"
 
@@ -49,8 +50,16 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
    int *ipivot, Complex_Z *b, int ldb, int *info);
 
 
+void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
 void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
 Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
+void Num_ztgsja_dprimme(const char *jobu, const char *jobv, const char *jobq,
+   int m, int p, int n, int k, int l, Complex_Z *a, int lda, Complex_Z *b, int ldb,
+   double tola, double tolb, double *alpha, double *beta, Complex_Z *u, int ldu,
+   Complex_Z *v, int ldv, Complex_Z *q, int ldq, Complex_Z *work, int ldwork, int ncycle,
+   int *info);
+void Num_orgqr_zprimme(int m, int n, int k, Complex_Z *a, int lda, Complex_Z *tau,
+      Complex_Z *rwork, int lrwork, int *info);
 void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int k, 
    Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb, 
    Complex_Z beta, Complex_Z *c, int ldc);
@@ -67,11 +76,47 @@ void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex
 void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x);
 void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx);
 void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
+void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
+void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul, int i0, Complex_Z *y, int ldy, int zero);
+void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau, Complex_Z *rwork, int lrwork, int *info);
+int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
+   Complex_Z *h, int nh, int ldh, double *hVals,
+   Complex_Z *X0, int nX0b, int nX0e, int ldX0,
+   Complex_Z *X1, int nX1b, int nX1e, int ldX1,
+   Complex_Z *X2, int nX2b, int nX2e, int ldX2,
+   Complex_Z *Wo, int nWob, int nWoe, int ldWo,
+   Complex_Z *R, int nRb, int nRe, int ldR, double *Rnorms,
+   double *rnorms, int nrb, int nre,
+   Complex_Z *rwork, int lrwork, primme_params *primme);
+void Num_compact_res_zprimme(int n, double eval, Complex_Z *x, 
+   Complex_Z *Ax, Complex_Z *newx, Complex_Z *newx0, Complex_Z *newAx, Complex_Z *r);
+void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork);
+void permute_vecs_d(double *vecs, int m, int n, int ld, int *perm_,
+      double *rwork, int *iwork);
+void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
+      Complex_Z *rwork, int *iwork);
+double* Num_compact_vecs_d(double *vecs, int m, int n, int ld, int *perm,
+      double *work, int ldwork, int avoidCopy);
+void compact_vecs_d(double *vecs, int m, int n, int ld, int *perm, int lperm);
+Complex_Z* Num_compact_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm,
+      Complex_Z *work, int ldwork, int avoidCopy);
+void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Complex_Z *y, int ldy);
+void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly);
+void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
+      int *yin, int ldy);
+int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int pshift, int *p,
+   int ldx, Complex_Z *Ax, int ldAx,
+   Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
+   Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
+   Complex_Z *rwork, int lrwork);
+void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
+   const char *diag, int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b,
+   int ldb);
+
+#define PRIMME_BLOCK_SIZE 512
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-
-

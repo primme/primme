@@ -75,7 +75,6 @@ void primme_initialize(primme_params *primme) {
    primme->numOrthoConst           = 0;
 
    primme->projectionParams.projection = primme_proj_default;
-   primme->projectionParams.refinedScheme  = primme_ref_default;
 
    primme->currentEstimates.Anormest           = 0;
    primme->currentEstimates.targetRitzVal      = 0;
@@ -300,7 +299,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_plusK) {
-      if (params->restartingParams.maxPrevRetain <= 0) {
+      if (params->restartingParams.maxPrevRetain < 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -313,7 +312,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain <= 0) {
+      if (params->restartingParams.maxPrevRetain < 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -326,7 +325,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == JD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain <= 0) {
+      if (params->restartingParams.maxPrevRetain < 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -476,8 +475,6 @@ void primme_set_defaults(primme_params *params) {
 
    if (params->projectionParams.projection == primme_proj_default)
       params->projectionParams.projection = primme_proj_RR;
-   if (params->projectionParams.refinedScheme == primme_ref_default)
-      params->projectionParams.refinedScheme = primme_ref_none;
    if (params->InitBasisMode == primme_init_default)
       params->InitBasisMode = primme_init_krylov;
       
@@ -590,15 +587,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 
    PRINTParamsIF(projection, projection, primme_proj_default);
    PRINTParamsIF(projection, projection, primme_proj_RR);
-   PRINTParamsIF(projection, projection, primme_proj_Har);
-
-   PRINTParamsIF(projection, refinedScheme, primme_ref_default);
-   PRINTParamsIF(projection, refinedScheme, primme_ref_none);
-   PRINTParamsIF(projection, refinedScheme, primme_ref_MultiShifts_QR);
-   PRINTParamsIF(projection, refinedScheme, primme_ref_MultiShifts_WTW);
-   PRINTParamsIF(projection, refinedScheme, primme_ref_OneShift_QR);
-   PRINTParamsIF(projection, refinedScheme, primme_ref_OneShift_WTW);
-   PRINTParamsIF(projection, refinedScheme, primme_ref_OneAccuShift_QR);
+   PRINTParamsIF(projection, projection, primme_proj_ref);
 
    PRINTIF(InitBasisMode, primme_init_default);
    PRINTIF(InitBasisMode, primme_init_krylov);

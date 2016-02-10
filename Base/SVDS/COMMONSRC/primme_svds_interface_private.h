@@ -35,5 +35,7 @@ static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *i
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme);
 static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
+static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
+                         primme_params *primme);
 
 #endif

@@ -27,6 +27,7 @@
  ******************************************************************************/
 
 #include <math.h>
+#include <assert.h>
 #include "primme.h"
 #include "solve_H_d.h"
 #include "solve_H_private_d.h"
@@ -34,47 +35,124 @@
 #include "ortho_d.h"
 
 /*******************************************************************************
- * Subroutine solve_H - This procedure solves the eigenproblem for the
- *            matrix H.
+ * Subroutine solve_H - This procedure solves the project problem and return
+ *       the projected vectors (hVecs) and values (hVals) in the order according
+ *       to primme.target.
  *        
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * H             The matrix V'*A*V
- * basisSize     Current size of the orthonormal basis V
- * maxBasisSize  The maximum size of the basis V
- * numLocked     Number of eigenvalues locked, to determine ordering shift.
- * lrwork        Length of the work array rwork
- * primme          Strucuture containing various solver parameters
+ * H              The matrix V'*A*V
+ * basisSize      The dimension of H, R, hU
+ * ldH            The leading dimension of H
+ * R              The factor R for the QR decomposition of (A - target*I)*V
+ * ldR            The leading dimension of R
+ * numConverged   Number of eigenvalues converged to determine ordering shift
+ * lrwork         Length of the work array rwork
+ * primme         Structure containing various solver parameters
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hVecs             The eigenvectors of H
- * hVals             The eigenvalues of H
- * rwork             Must be of size at least 3*maxBasisSize
- * iwork             Permutation array for evecs/evals with desired targeting 
- *                   order. hVecs/hVals are permuted in the right order.
+ * hU                The left singular vectors of R
+ * hVecs             The eigenvectors of H or the right singular vectors
+ * hVals             The Ritz values
+ * hSVals            The singular values of R
+ * rwork             Workspace
+ * iwork             Workspace in integers
  *
  * Return Value
  * ------------
  * int -  0 upon successful return
- *     - -1 Num_dsyev was unsuccsessful
+ *     - -1 Num_dsyev was unsuccessful
  ******************************************************************************/
 
-int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVals, 
-   int basisSize, int maxBasisSize, int numLocked, double machEps, 
-   int lrwork, double *rwork, int *iwork, primme_params *primme,
-   double *V, double *W, int recentlyConverged) {
+int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
+   double *hU, int ldhU, double *hVecs, int ldhVecs, double *hVals, double *hSVals,
+   int numConverged, int lrwork, double *rwork, int *iwork, primme_params *primme) {
+
+   int i, ret;
+
+   switch (primme->projectionParams.projection) {
+   case primme_proj_RR:
+      ret = solve_H_RR_dprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
+            numConverged, lrwork, rwork, iwork, primme);
+      break;
+
+   case primme_proj_Harm:
+      assert(0);
+      break;
+
+   case primme_proj_ref:
+      ret = solve_H_Ref_dprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
+            R, ldR, hVals, basisSize, lrwork, rwork, primme);
+      break;
+
+   default:
+      assert(0);
+   }
+
+   /* Return memory requirements */
+
+   if (H == NULL) {
+      return ret;
+   }
+
+   if (ret != 0) return ret;
+
+   /* -------------------------------------------------------- */
+   /* Update the leftmost and rightmost Ritz values ever seen  */
+   /* -------------------------------------------------------- */
+   for (i=0; i<basisSize; i++) {
+      primme->stats.estimateMinEVal = min(primme->stats.estimateMinEVal,
+            hVals[i]); 
+      primme->stats.estimateMaxEVal = max(primme->stats.estimateMaxEVal,
+            hVals[i]); 
+   }
+   primme->stats.estimateLargestSVal = max(fabs(primme->stats.estimateMinEVal),
+                                           fabs(primme->stats.estimateMaxEVal));
+
+   return 0;
+}
+
+
+/*******************************************************************************
+ * Subroutine solve_H_RR - This procedure solves the eigenproblem for the
+ *            matrix H.
+ *        
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * H              The matrix V'*A*V
+ * basisSize      The dimension of H, R, hU
+ * ldH            The leading dimension of H
+ * R              The factor R for the QR decomposition of (A - target*I)*V
+ * ldR            The leading dimension of R
+ * numConverged   Number of eigenvalues converged to determine ordering shift
+ * lrwork         Length of the work array rwork
+ * primme         Structure containing various solver parameters
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * hU                The left singular vectors of R
+ * hVecs             The eigenvectors of H or the right singular vectors
+ * hVals             The Ritz values
+ * hSVals            The singular values of R
+ * rwork             Workspace
+ * iwork             Workspace in integers
+ *
+ * Return Value
+ * ------------
+ * int -  0 upon successful return
+ *     - -1 Num_dsyev was unsuccessful
+ ******************************************************************************/
+
+int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numConverged, int lrwork,
+   double *rwork, int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
    int index;
    int *permu, *permw;
    double targetShift;
-
-   /*lingfei: primme_svds. define temp variables for refined projection*/
-   double tpone = +1.0e+00, tzero = +0.0e+00;
-   int ret;
-   double RefShift;
 
 
    /* ---------------------- */
@@ -87,6 +165,28 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
    int apSize, idx;
 #endif
 
+   /* Some LAPACK implementations don't like zero-size matrices */
+   if (basisSize == 0) return 0;
+
+   /* Return memory requirements */
+   if (H == NULL) {
+#ifdef NUM_ESSL
+      return 2*basisSize + basisSize*(basisSize + 1)/2;
+#else
+      double rwork0;
+      lrwork = 0;
+      Num_dsyev_dprimme("V", "U", basisSize, hVecs, basisSize, hVals, &rwork0, 
+            -1, &info);
+
+      if (info != 0) {
+         primme_PushErrorMessage(Primme_solve_h, Primme_num_dsyev, info, __FILE__, 
+               __LINE__, primme);
+         return NUM_DSYEV_FAILURE;
+      }
+      lrwork += (int)*(double*)&rwork0;
+      return lrwork;
+#endif
+   }
 
    /* ------------------------------------------------------------------- */
    /* Copy the upper triangular portion of H into hvecs.  We need to do   */
@@ -101,7 +201,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
    if (primme->target != primme_largest) { /* smallest or any of closest_XXX */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) {
-            rwork[idx] = H[maxBasisSize*j+i];
+            rwork[idx] = H[ldH*j+i];
             idx++;
          }
       }
@@ -109,7 +209,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
    else { /* (primme->target == primme_largest)  */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) {
-            rwork[idx] = -H[maxBasisSize*j+i];
+            rwork[idx] = -H[ldH*j+i];
             idx++;
          }
       }
@@ -118,7 +218,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
    apSize = basisSize*(basisSize + 1)/2;
    lrwork = lrwork - apSize;
 
-   info = Num_dspev_dprimme(21, rwork, hVals, hVecs, basisSize, basisSize, 
+   info = Num_dspev_dprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
       &rwork[apSize], lrwork);
 
    if (info != 0) {
@@ -127,23 +227,23 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
       return NUM_DSPEV_FAILURE;
    }
 
-#else
+#else /* NUM_ESSL */
    if (primme->target != primme_largest) {
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) { 
-            hVecs[basisSize*j+i] = H[maxBasisSize*j+i];
+            hVecs[ldhVecs*j+i] = H[ldH*j+i];
          }
       }      
    }
    else { /* (primme->target == primme_largest) */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) { 
-            hVecs[basisSize*j+i] = -H[maxBasisSize*j+i];
+            hVecs[ldhVecs*j+i] = -H[ldH*j+i];
          }
       }
    }
 
-   Num_dsyev_dprimme("V", "U", basisSize, hVecs, basisSize, hVals, rwork, 
+   Num_dsyev_dprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
                 lrwork, &info);
 
    if (info != 0) {
@@ -151,20 +251,7 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
          __LINE__, primme);
       return NUM_DSYEV_FAILURE;
    }
-
-#endif
-
-   /* -------------------------------------------------------- */
-   /* Update the leftmost and rightmost Ritz values ever seen  */
-   /* -------------------------------------------------------- */
-   primme->stats.estimateMinEVal = min(primme->stats.estimateMinEVal,
-                                       primme->target == primme_largest ?
-                                          -hVals[basisSize-1] : hVals[0]); 
-   primme->stats.estimateMaxEVal = max(primme->stats.estimateMaxEVal,
-                                       primme->target == primme_largest ?
-                                          -hVals[0] : hVals[basisSize-1]); 
-   primme->stats.estimateLargestSVal = max(fabs(primme->stats.estimateMinEVal),
-                                           fabs(primme->stats.estimateMaxEVal));
+#endif /* NUM_ESSL */
 
    /* ---------------------------------------------------------------------- */
    /* ORDER the eigenvalues and their eigenvectors according to the desired  */
@@ -187,8 +274,10 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
       /* from the left, from right, or in absolute value terms            */
       /* ---------------------------------------------------------------- */
 
+      /* TODO: order properly when numTargetShifts > 1 */
+
       targetShift = 
-        primme->targetShifts[min(primme->numTargetShifts-1, numLocked)];
+        primme->targetShifts[min(primme->numTargetShifts-1, numConverged)];
 
       if (primme->target == primme_closest_geq) {
    
@@ -254,11 +343,48 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
-      for (i=0;i<basisSize;i++) 
-          permw[i] = permu[i];
-      permute_evecs_dprimme(hVals, permu, rwork, basisSize, 1);
-      permute_evecs_dprimme(hVecs, permw, rwork, basisSize, basisSize);
+      permute_vecs_d(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
+      permute_vecs_d(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
    }
+
+   return 0;   
+}
+
+/*******************************************************************************
+ * Subroutine solve_H_Ref - This procedure solves the singular value
+ *            decomposition of matrix R
+ *        
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * H             The matrix V'*A*V
+ * ldH           The leading dimension of H
+ * R             The R factor for the QR decomposition of (A - target*I)*V
+ * ldR           The leading dimension of R
+ * basisSize     Current size of the orthonormal basis V
+ * lrwork        Length of the work array rwork
+ * primme        Structure containing various solver parameters
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * hVecs             The right singular vectors of R
+ * hU                The left singular vectors of R
+ * hSVals            The singular values of R
+ * hVals             The Ritz values of the vectors in hVecs
+ * rwork             Must be of size at least 3*maxBasisSize
+ *
+ * Return Value
+ * ------------
+ * int -  0 upon successful return
+ *     - -1 Num_dsyev was unsuccessful
+ ******************************************************************************/
+
+int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
+   int ldhVecs, double *hU, int ldhU, double *hSVals, double *R, int ldR,
+   double *hVals, int basisSize, int lrwork, double *rwork, primme_params *primme) {
+
+   int i, j; /* Loop variables    */
+   int info; /* dsyev error value */
+   double tpone = +1.0e+00, tzero = +0.0e+00, ztmp;
 
    /*lingfei: primme_svds. if the refined projection is used after
    the RayRitz projection.  It is designed for interior eigenvalue
@@ -268,173 +394,75 @@ int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVal
             = WTWm - 2*theta*Hm + theta*theta*Im;
    2) Another approach is for two-stages SVD problem;
       (AVm - theta*Vm) = Wm - thetaVm = QR; */
-   if (primme->projectionParams.projection == primme_proj_RR &&
-       primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR) {
-       RefShift = -primme->targetShifts[numLocked+recentlyConverged];
-       /*printf("RefShift = %e\n",RefShift);*/
-       if (Q != NULL && R != NULL) {
-           for(i = 0; i < basisSize; i++){
-               Num_dcopy_dprimme(primme->nLocal, &W[primme->nLocal*i], 
-               1, &Q[primme->nLocal*i], 1);
-               Num_axpy_dprimme(primme->nLocal, RefShift, &V[primme->nLocal*i],
-               1, &Q[primme->nLocal*i], 1);
-           }
 
+   /* Some LAPACK implementations don't like zero-size matrices */
+   if (basisSize == 0) return 0;
 
-        /* --------------------------------------------------------------------- */
-        /* Zero the R array to prevent floating point traps during all-reduce */
-           /* --------------------------------------------------------------------- */
-          for (i = 0; i < primme->maxBasisSize*primme->maxBasisSize; i++) {
-               R[i] = tzero;
-           }
-           ret = ortho_dprimme(Q, R, primme->nLocal, 0,   
-                basisSize-1, NULL, 0, 0, primme->nLocal, 
-                primme->iseed, machEps, rwork, lrwork, primme);
-           if (ret < 0) {
-               primme_PushErrorMessage(Primme_solve_h, Primme_ortho,
-               ret, __FILE__, __LINE__, primme);
-               return ORTHO_FAILURE;
-           }
-       }
-       else {
-           Num_dcopy_dprimme(primme->nLocal, &W[primme->nLocal*(basisSize-1)], 
-                1, &Q[primme->nLocal*(basisSize-1)], 1);
-           Num_axpy_dprimme(primme->nLocal, RefShift, &V[primme->nLocal*(basisSize-1)], 
-                1, &Q[primme->nLocal*(basisSize-1)], 1);
-           ret = ortho_dprimme(Q, R, primme->nLocal, basisSize-1,
-                basisSize-1, NULL, 0, 0, primme->nLocal,
-                primme->iseed, machEps, rwork, lrwork,primme);
-           if (ret < 0) {
-               primme_PushErrorMessage(Primme_solve_h, Primme_ortho,
-               ret, __FILE__, __LINE__, primme);
-               return ORTHO_FAILURE;
-            }
-       }
-    }
-         
-    if (primme->projectionParams.projection == primme_proj_RR && 
-        primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR) {
-      for (i = 0; i < primme->maxBasisSize*primme->maxBasisSize; i++) {
-         hVecs[i] = tzero;
-      }
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i <= j; i++) { 
-            hVecs[basisSize*j+i] = R[maxBasisSize*j+i];
-         }
-      }      
-      /*Since Ritz vectors in hVecs is not needed, we use hVecs to hold refined
-        Ritz vectors. Also, we use the last colomn of R to hold the singular 
-        value. Note, hvecs holds transpose(V) rather than V and sorted according
-        to the descending order*/
+   /* Return memory requirements */
+   if (H == NULL) {
+      double rwork0;
+      lrwork = 0;
+      Num_dgesvd_dprimme("S", "O", basisSize, basisSize, R, basisSize, 
+            NULL, NULL, basisSize, hVecs, basisSize, &rwork0, -1, &info);
 
-
-      Num_dgesvd_dprimme("N","O", basisSize, basisSize, hVecs, basisSize, 
-            &R[maxBasisSize*(maxBasisSize-1)], NULL, basisSize, NULL, 
-            basisSize, rwork, lrwork, &info);
-      
       if (info != 0) {
-            primme_PushErrorMessage(Primme_solve_h, Primme_num_dgesvd, info, __FILE__, 
-                __LINE__, primme);
-            return NUM_DGESVD_FAILURE;
-       }
-
-      /* zero the last colomn of R if reaching maxBasisSize-1 to get ready for
-         last colomn updating of R when performing one-colomn qr updating*/
-      if (basisSize == primme->maxBasisSize -1){
-          for(i=0; i< maxBasisSize; i++)
-              R[maxBasisSize*(maxBasisSize-1)+i] = tzero;
+         primme_PushErrorMessage(Primme_solve_h, Primme_num_dgesvd, info, __FILE__, 
+               __LINE__, primme);
+         return NUM_DGESVD_FAILURE;
       }
-
-      /*compute V from transpose(V) and rearrange V according to ascending order*/
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i < basisSize; i++) { 
-            rwork[basisSize*j+i] = hVecs[basisSize*i+ (basisSize-1-j)];
-         }
-      }      
-      Num_dcopy_dprimme(basisSize*basisSize, rwork, 1, hVecs, 1);
-   
-      /* compute rayleigh quotient lambda(1) = y_1T*H*y_1 */
-      Num_symv_dprimme("U", basisSize, tpone, H, maxBasisSize, hVecs, 1, tzero, rwork, 1);
-      /*lingfei: in the future, if a block refined projection is developed, 
-      we may change Num_symv to Num_symm for computing blocked lamda values.*/
-     /* Num_symm_dprimme("L", "U", basisSize, 1, tpone, H, maxBasisSize, hVecs, 
-      basisSize, tzero, rwork, basisSize);*/
-      hVals[0] = Num_dot_dprimme(basisSize, hVecs, 1, rwork, 1);
-    }
-
-   return 0;   
-}
-
-/******************************************************************************
- * Subroutine permute_evecs- This routine permutes a set of vectors according
- *            to a permutation array perm. It is supposed to be called on 
- *            the eigenvectors after the eigenvalues have been sorted, so that 
- *            the vectors are in the same order as the sorted eigenvalues.
- *
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * rwork  Used as temorary space to swap the vectors
- * nev    Number of eigenvectors/eigenvalues
- * nLocal Number of rows of each vector this process stores
- *
- * INPUT/OUTPUT ARRAYS
- * -------------------
- * perm  The array indicating what order the eigenvectors must be permuted to.
- *       perm[i] indicates that the ith eigenvector in the sorted ordering
- *       should be the perm[i]-th vector from the original ordering.
- * evecs  The eigenvectors to be put in sorted order.
- *
- ******************************************************************************/
-     
-void permute_evecs_dprimme(double *evecs, int *perm, double *rwork, int nev, 
-   int nLocal) {
-
-   int currentIndex;     /* Index of eigenvector in sorted order              */
-   int sourceIndex;      /* Position of out-of-order vector in original order */
-   int destinationIndex; /* Position of out-of-order vector in sorted order   */
-   int tempIndex;        /* Used to swap                                      */
-   
-   currentIndex = 0;
-
-   /* Continue until all eigenvectors are in the sorted order */
-
-   while (1) {
-
-      /* Find a vector that does not belong in its original position */
-      while ((currentIndex < nev) && (perm[currentIndex] == currentIndex)) {
-         currentIndex++;
-      }
-
-      /* Return if they are in the sorted order */
-      if (currentIndex >= nev) {
-         return;
-      }
-
-      /* Copy the vector to a buffer for swapping */
-      Num_dcopy_primme(nLocal, &evecs[currentIndex*nLocal], 1, rwork, 1);
-
-      destinationIndex = currentIndex;
-      /* Copy vector perm[destinationIndex] into position destinationIndex */
-
-      while (perm[destinationIndex] != currentIndex) {
-
-         sourceIndex = perm[destinationIndex];
-         Num_dcopy_primme(nLocal, &evecs[sourceIndex*nLocal], 1, 
-            &evecs[destinationIndex*nLocal], 1);
-         tempIndex = perm[destinationIndex];
-         perm[destinationIndex] = destinationIndex;
-         destinationIndex = tempIndex;
-      }
-
-      /* Copy the vector from the buffer to where it belongs */
-      Num_dcopy_primme(nLocal, rwork, 1, &evecs[destinationIndex*nLocal], 1);
-      perm[destinationIndex] = destinationIndex;
-
-      currentIndex++;
+      lrwork += (int)*(double*)&rwork0;
+      return lrwork;
    }
 
-  /***************************************************************************/
-} /* end of permute_evecs
-   ***************************************************************************/
+   /* Copy upper triangular part of R into hVecs and zero lower triangular
+      part of hVecs */
+   Num_copy_trimatrix_dprimme(R, basisSize, basisSize, ldR, 0, 0, hVecs, ldhVecs, 1);
 
+   /*Since Ritz vectors in hVecs is not needed, we use hVecs to hold refined
+     Ritz vectors. Note gesvd returns transpose(V) rather than V and sorted in
+     descending order of the singular values */
+
+   Num_dgesvd_dprimme(hU?"S":"N", "O", basisSize, basisSize, hVecs, ldhVecs,
+         hSVals?hSVals:hVals, hU, ldhU, hVecs, ldhVecs, rwork, lrwork, &info);
+
+   if (info != 0) {
+      primme_PushErrorMessage(Primme_solve_h, Primme_num_dgesvd, info, __FILE__, 
+            __LINE__, primme);
+      return NUM_DGESVD_FAILURE;
+   }
+
+   /* Transpose back V and rearrange V, hSVals and hU in ascending order
+      of singular values */
+   for (j=0; j < basisSize; j++) {
+      for (i=0; i < basisSize; i++) { 
+         rwork[basisSize*j+i] = hVecs[ldhVecs*i + (basisSize-1-j)];
+      }
+   }      
+   Num_copy_matrix_dprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
+
+   if (hU) {
+      Num_copy_matrix_dprimme(hU, basisSize, basisSize, ldhU, rwork, basisSize);
+      for (j=0; j < basisSize; j++) {
+         for (i=0; i < basisSize; i++) {
+            hU[ldhU*j+i] = rwork[basisSize*(basisSize-j-1) + i];
+         }
+      }
+   }
+
+   if (hSVals) {
+      Num_dcopy_dprimme(basisSize, hSVals, 1, (double*)rwork, 1);
+      for (i=0; i < basisSize; i++)
+         hSVals[i] = ((double*)rwork)[basisSize-i-1];
+   }
+
+   /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
+   Num_symm_dprimme("L", "U", basisSize, basisSize, tpone, H,
+      ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
+
+   for (i=0; i<basisSize; i++) {
+      ztmp = Num_dot_dprimme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
+      hVals[i] = ztmp;
+   }
+
+   return 0;
+}

@@ -119,16 +119,32 @@
  *
  ******************************************************************************/
 
-int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs, 
-   Complex_Z *evecsHat, Complex_Z *M, Complex_Z *UDU, int *ipivot, 
-   double machEps,  Complex_Z *rwork, int rworkSize, int *basisSize, 
-   int *nextGuess, int *numGuesses, double *timeForMV,
-   primme_params *primme) {
+int init_basis_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
+   Complex_Z *evecs, int ldevecs, Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M,
+   int ldM, Complex_Z *UDU, int ldUDU, int *ipivot, double machEps, Complex_Z *rwork,
+   int rworkSize, int *basisSize, int *nextGuess, int *numGuesses,
+   double *timeForMV, primme_params *primme) {
 
    int ret;          /* Return value                              */
-   int currentSize;
+   int i;
    int initSize;
    int random;
+
+   /* Return memory requirement */
+
+   if (V == NULL) {
+      return max(max(max(
+            update_projection_zprimme(NULL, 0, NULL, 0, NULL, 0, nLocal,
+               0, primme->numOrthoConst, NULL, 0, primme),
+            UDUDecompose_zprimme(NULL, 0, NULL, 0, NULL,
+               primme->numOrthoConst, NULL, 0, primme)),
+            ortho_zprimme(NULL, 0, NULL, 0, 0, 
+               primme->numOrthoConst-1, NULL, 0, 0, nLocal, 
+               NULL, 0.0, NULL, 0, primme)),
+            ortho_zprimme(NULL, 0, NULL, 0, 0, *basisSize-1, 
+               NULL, 0, primme->numOrthoConst, nLocal, 
+               NULL, 0.0, NULL, 0, primme));
+   }
 
    /*-----------------------------------------------------------------------*/
    /* Orthogonalize the orthogonalization constraints provided by the user. */
@@ -138,8 +154,8 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
    if (primme->numOrthoConst > 0) {
    /* lingfei: primme_svds. change ortho function for returning Q and R */
-      ret = ortho_zprimme(evecs, NULL, primme->nLocal, 0, 
-        primme->numOrthoConst - 1, NULL, 0, 0, primme->nLocal, 
+      ret = ortho_zprimme(evecs, ldevecs, NULL, 0, 0, 
+        primme->numOrthoConst - 1, NULL, 0, 0, nLocal, 
         primme->iseed, machEps, rwork, rworkSize, primme);
 
       /* Push an error message onto the stack trace if an error occured */
@@ -157,16 +173,14 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
       if (UDU != NULL) {
 
-         (*primme->applyPreconditioner)
-            (evecs, evecsHat, &primme->numOrthoConst, primme); 
+         primme->applyPreconditioner(evecs, evecsHat, &primme->numOrthoConst, primme); 
          primme->stats.numPreconds += primme->numOrthoConst;
 
-         update_projection_zprimme(evecs, evecsHat, M, 0, 
-            primme->numOrthoConst+primme->numEvals, primme->numOrthoConst, 
-            rwork, primme);
+         update_projection_zprimme(evecs, ldevecs, evecsHat, ldevecsHat, M,
+            ldM, nLocal, 0, primme->numOrthoConst, rwork, rworkSize, primme);
 
-         ret = UDUDecompose_zprimme(M, UDU, ipivot, primme->numOrthoConst, 
-            rwork, rworkSize, primme);
+         ret = UDUDecompose_zprimme(M, ldM, UDU, ldUDU, ipivot,
+            primme->numOrthoConst, rwork, rworkSize, primme);
 
          if (ret != 0) {
             primme_PushErrorMessage(Primme_init_basis, Primme_ududecompose, ret,
@@ -191,8 +205,8 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
    *nextGuess = primme->numOrthoConst + initSize;
 
    /* Copy over the initial guesses provided by the user */
-   Num_zcopy_zprimme(primme->nLocal*initSize, 
-         &evecs[primme->numOrthoConst*primme->nLocal], 1, V, 1);
+   Num_copy_matrix_zprimme(&evecs[primme->numOrthoConst*ldevecs],
+         nLocal, initSize, ldevecs, V, ldV);
 
    switch(primme->InitBasisMode) {
    case primme_init_krylov:
@@ -207,13 +221,15 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
    default:
       assert(0);
    }
-   Num_larnv_zprimme(2, primme->iseed, primme->nLocal*random,
-      &V[primme->nLocal*initSize]);
+   for (i=0; i<random; i++) {
+      Num_larnv_zprimme(2, primme->iseed, nLocal,
+            &V[ldV*(initSize+i)]);
+   }
    *basisSize = initSize + random;
 
    /* Orthonormalize the guesses provided by the user */ 
-   ret = ortho_zprimme(V, NULL, primme->nLocal, 0, *basisSize-1, 
-         evecs, primme->nLocal, primme->numOrthoConst, primme->nLocal, 
+   ret = ortho_zprimme(V, ldV, NULL, 0, 0, *basisSize-1, 
+         evecs, ldevecs, primme->numOrthoConst, nLocal, 
          primme->iseed, machEps, rwork, rworkSize, primme);
 
    /* Push an error message onto the stack trace if an error occurred */
@@ -223,11 +239,12 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
       return ORTHO_FAILURE;
    }
 
-   update_W_zprimme(V, W, 0, *basisSize, primme);
+   matrixMatvec_zprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, primme);
 
    if (primme->InitBasisMode == primme_init_krylov) {
-      ret = init_block_krylov(V, W, *basisSize, primme->minRestartSize - 1, evecs, 
-            primme->numOrthoConst, machEps, rwork, rworkSize, primme); 
+      ret = init_block_krylov(V, nLocal, ldV, W, ldW, *basisSize,
+            primme->minRestartSize-1, evecs, ldevecs, primme->numOrthoConst,
+            machEps, rwork, rworkSize, primme); 
 
       /* Push an error message onto the stack trace if an error occurred */
       if (ret < 0) {
@@ -241,15 +258,13 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
    /* ----------------------------------------------------------- */
    /* If time measurements are needed, waste one MV + one Precond */
-   /* Put dummy results in the first open space of W (currentSize)*/
+   /* Put dummy results in the first open space of W (*basisSize) */
    /* ----------------------------------------------------------- */
-   if (primme->dynamicMethodSwitch) {
-      currentSize = primme->nLocal*(*basisSize);
-      ret = 1;
+   if (primme->dynamicMethodSwitch && *basisSize < primme->maxBasisSize) {
       *timeForMV = primme_wTimer(0);
-       (*primme->matrixMatvec)(V, &W[currentSize], &ret, primme);
+      matrixMatvec_zprimme(V, nLocal, ldV, &W[ldW*(*basisSize)], ldV,
+            0, 1, primme);
       *timeForMV = primme_wTimer(0) - *timeForMV;
-      primme->stats.numMatvecs += 1;
    }
       
    return 0;
@@ -288,14 +303,13 @@ int init_basis_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
  * 
  ******************************************************************************/
 
-static int init_block_krylov(Complex_Z *V, Complex_Z *W, int dv1, int dv2, 
-   Complex_Z *locked, int numLocked, double machEps, Complex_Z *rwork, 
-   int rworkSize, primme_params *primme) {
+static int init_block_krylov(Complex_Z *V, int nLocal, int ldV, Complex_Z *W,
+   int ldW, int dv1, int dv2, Complex_Z *locked, int ldlocked, int numLocked,
+   double machEps, Complex_Z *rwork, int rworkSize, primme_params *primme) {
 
    int i;               /* Loop variables */
    int numNewVectors;   /* Number of vectors to be generated */
    int ret;             /* Return code.                      */  
-   int ONE = 1;         /* Used for passing it by reference in matrixmatvec */
    int blockSize;       /* blockSize used in practice */
    
    numNewVectors = dv2 - dv1 + 1;
@@ -313,24 +327,24 @@ static int init_block_krylov(Complex_Z *V, Complex_Z *W, int dv1, int dv2,
    /*----------------------------------------------------------------------*/
 
    if (dv1+blockSize-1 <= dv2) {
-      Num_larnv_zprimme(2, primme->iseed, primme->nLocal*blockSize,
-         &V[primme->nLocal*dv1]);
+      for (i=dv1; i<dv1+blockSize; i++) {
+         Num_larnv_zprimme(2, primme->iseed, nLocal, &V[ldV*i]);
+      }
    }
-   ret = ortho_zprimme(V, NULL, primme->nLocal, dv1, 
-      dv1+blockSize-1, locked, primme->nLocal, numLocked, 
-      primme->nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+   ret = ortho_zprimme(V, ldV, NULL, 0, dv1, 
+      dv1+blockSize-1, locked, ldlocked, numLocked, 
+      nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
 
    /* Generate the remaining vectors in the sequence */
 
    for (i = dv1+blockSize; i <= dv2; i++) {
-      (*primme->matrixMatvec)(&V[primme->nLocal*(i-blockSize)], 
-         &V[primme->nLocal*i], &ONE, primme);
-      Num_zcopy_zprimme(primme->nLocal, &V[primme->nLocal*i], 1,
-         &W[primme->nLocal*(i-blockSize)], 1);
+      matrixMatvec_zprimme(&V[ldV*(i-blockSize)], nLocal, ldV, &V[ldV*i],
+            ldV, 0, 1, primme);
+      Num_zcopy_zprimme(nLocal, &V[ldV*i], 1,
+         &W[ldW*(i-blockSize)], 1);
 
-       /* lingfei: primme_svds. change ortho function for returning Q and R */
-       ret = ortho_zprimme(V, NULL, primme->nLocal, i, i, locked, 
-         primme->nLocal, numLocked, primme->nLocal, primme->iseed, machEps,
+       ret = ortho_zprimme(V, ldV, NULL, 0, i, i, locked, 
+         ldlocked, numLocked, nLocal, primme->iseed, machEps,
          rwork, rworkSize, primme);
 
       if (ret < 0) {
@@ -340,8 +354,8 @@ static int init_block_krylov(Complex_Z *V, Complex_Z *W, int dv1, int dv2,
       }
    }
 
-   primme->stats.numMatvecs += dv2-(dv1+blockSize)+1;
-   update_W_zprimme(V, W, dv2-blockSize+1, blockSize, primme);
+   matrixMatvec_zprimme(V, nLocal, ldV, W, ldW, dv2-blockSize+1,
+         blockSize, primme);
 
    return 0;
 }

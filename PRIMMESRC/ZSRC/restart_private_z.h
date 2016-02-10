@@ -35,40 +35,21 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
-static void restart_X(Complex_Z *X, Complex_Z *hVecs, int nLocal, 
-   int basisSize, int restartSize, Complex_Z *rwork, int rworkSize);
+static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
+   int numPrevRetained, int indexOfPreviousVecs, int *Vperm,
+   int rworkSize, Complex_Z *rwork, int *iwork, primme_params *primme);
 
-static int restart_H(Complex_Z *H, Complex_Z *hVecs, double *hVals, 
-   int restartSize, int basisSize, Complex_Z *previousHVecs, 
-   int numPrevRetained, int indexOfPreviousVecs, int rworkSize, 
-   Complex_Z *rwork, primme_params *primme);
+static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
+   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR, Complex_Z *hU,
+   int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
+   double *hVals, double *hSVals, int *perm, int *Vperm, int restartSize,
+   int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int numConvergedBeforeRestart, int numConverged, int rworkSize,
+   Complex_Z *rwork, int *iwork, double machEps, primme_params *primme);
 
-static int restart_H_Harmonic(Complex_Z *H, Complex_Z *WTW, Complex_Z *hVecs, 
-   Complex_Z *wtwChol, double *hVals, int restartSize, int basisSize, 
-   Complex_Z *previousHVecs, int numPrevRetained, int indexOfPreviousVecs, 
-   int rworkSize, Complex_Z *rwork, primme_params *primme);
-
-static int dtr(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
- int basisSize, int numFree, int *iev, Complex_Z *rwork, primme_params *primme);
-
-static int pack_converged_coefficients(int *restartSize, int basisSize, 
-   int *numPrevRetained, int numLocked, int numGuesses, Complex_Z *hVecs, 
-   double *hVals, int *flag, primme_params *primme);
-
-static int combine_retained_vectors(double *hVals, int *flags, Complex_Z *hVecs, 
-   int basisSize, int *restartSize, int numPacked, Complex_Z *previousHVecs, 
-   int *numPrevRetained, double machEps, Complex_Z *rwork, primme_params *primme);
-
-static void compute_submatrix(Complex_Z *previousHVecs, int numPrevRetained, 
-   Complex_Z *H, int basisSize, int maxBasisSize, Complex_Z *subMatrix, 
-   Complex_Z *rwork);
-
-static int insert_submatrix(Complex_Z *H, double *hVals, Complex_Z *hVecs, 
-   int restartSize, Complex_Z *subMatrix, int numPrevRetained, 
-   int indexOfPreviousVecs, int rworkSize, Complex_Z *rwork, 
-   primme_params *primme);
-
-static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result,
-   int blockSize, primme_params *primme);
+static int compute_submatrix(Complex_Z *X, int nX, int ldX, 
+   Complex_Z *H, int nH, int ldH, Complex_Z *R, int ldR,
+   Complex_Z *rwork, int lrwork);
 
 #endif /* RESTART_PRIVATE_H */

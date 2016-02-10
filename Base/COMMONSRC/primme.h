@@ -86,19 +86,9 @@ typedef enum {
 typedef enum {
    primme_proj_default,
    primme_proj_RR,          /* Rayleigh-Ritz */
-   primme_proj_Har,         /* Harmonic Rayleigh-Ritz */
+   primme_proj_Harm,        /* Harmonic Rayleigh-Ritz */
+   primme_proj_ref          /* refinement with fixed target */
 } primme_projection;
-
-/* refined projection method applied after the previous projection method */
-typedef enum {
-   primme_ref_default,
-   primme_ref_none,
-   primme_ref_MultiShifts_QR,
-   primme_ref_MultiShifts_WTW,
-   primme_ref_OneShift_QR,
-   primme_ref_OneShift_WTW,
-   primme_ref_OneAccuShift_QR
-} primme_refinedscheme;
 
 typedef enum {         /* Initially fill up the search subspace with: */
    primme_init_default,
@@ -156,8 +146,7 @@ typedef struct JD_projectors {
 /*lingfei: primme_svds. define projection schemes*/
 typedef struct projection_params {
    primme_projection projection;
-   primme_refinedscheme refinedScheme;
-}projection_params;
+} projection_params;
 
 /*lingfei: primme_svds. some useful info for users.*/
 typedef struct currentestimates { 

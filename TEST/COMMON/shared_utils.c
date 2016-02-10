@@ -150,17 +150,6 @@ int read_solver_params(char *configFileName, char *outputFileName,
          READ_FIELD_OPParams(projection, projection,
             OPTIONParams(projection, projection, primme_proj_default)
             OPTIONParams(projection, projection, primme_proj_RR)
-            OPTIONParams(projection, projection, primme_proj_Har)
-         );
-
-         READ_FIELD_OPParams(projection, refinedScheme,
-            OPTIONParams(projection, refinedScheme, primme_ref_default)
-            OPTIONParams(projection, refinedScheme, primme_ref_none)
-            OPTIONParams(projection, refinedScheme, primme_ref_MultiShifts_QR)
-            OPTIONParams(projection, refinedScheme, primme_ref_MultiShifts_WTW)
-            OPTIONParams(projection, refinedScheme, primme_ref_OneShift_QR)
-            OPTIONParams(projection, refinedScheme, primme_ref_OneShift_WTW)
-            OPTIONParams(projection, refinedScheme, primme_ref_OneAccuShift_QR)
          );
 
          READ_FIELD_OP(InitBasisMode,

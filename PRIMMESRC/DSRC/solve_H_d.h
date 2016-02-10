@@ -29,13 +29,16 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_dprimme(double *H, double *hVecs, double *Q, double *R, double *hVals, 
-   int basisSize, int maxBasisSize, int numLocked, double machEps,
-   int lrwork, double *rwork, int *perm, primme_params *primme, 
-   double *V, double *W, int recentlyConverged);
+int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
+   double *hU, int ldhU, double *hVecs, int ldhVecs, double *hVals, double *hSVals,
+   int numConverged, int lrwork, double *rwork, int *iwork, primme_params *primme);
 
-void permute_evecs_dprimme(double *evecs, int *perm, double *rwork, 
-   int nev, int nLocal);
+int solve_H_RR_dprimme(double *H, int maxBasisSize, double *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
+   double *rwork, int *iwork, primme_params *primme);
 
+int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
+   int ldhVecs, double *hU, int ldhU, double *hSVals, double *R, int ldR,
+   double *hVals, int basisSize, int lrwork, double *rwork, primme_params *primme);
 
 #endif

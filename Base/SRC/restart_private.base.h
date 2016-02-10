@@ -35,40 +35,21 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
-static void restart_X(@(type) *X, @(type) *hVecs, int nLocal, 
-   int basisSize, int restartSize, @(type) *rwork, int rworkSize);
+static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
+   int numPrevRetained, int indexOfPreviousVecs, int *Vperm,
+   int rworkSize, @(type) *rwork, int *iwork, primme_params *primme);
 
-static int restart_H(@(type) *H, @(type) *hVecs, double *hVals, 
-   int restartSize, int basisSize, @(type) *previousHVecs, 
-   int numPrevRetained, int indexOfPreviousVecs, int rworkSize, 
-   @(type) *rwork, primme_params *primme);
+static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
+   int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR, @(type) *hU,
+   int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
+   double *hVals, double *hSVals, int *perm, int *Vperm, int restartSize,
+   int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int numConvergedBeforeRestart, int numConverged, int rworkSize,
+   @(type) *rwork, int *iwork, double machEps, primme_params *primme);
 
-static int restart_H_Harmonic(@(type) *H, @(type) *WTW, @(type) *hVecs, 
-   @(type) *wtwChol, double *hVals, int restartSize, int basisSize, 
-   @(type) *previousHVecs, int numPrevRetained, int indexOfPreviousVecs, 
-   int rworkSize, @(type) *rwork, primme_params *primme);
-
-static int dtr(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
- int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme);
-
-static int pack_converged_coefficients(int *restartSize, int basisSize, 
-   int *numPrevRetained, int numLocked, int numGuesses, @(type) *hVecs, 
-   double *hVals, int *flag, primme_params *primme);
-
-static int combine_retained_vectors(double *hVals, int *flags, @(type) *hVecs, 
-   int basisSize, int *restartSize, int numPacked, @(type) *previousHVecs, 
-   int *numPrevRetained, double machEps, @(type) *rwork, primme_params *primme);
-
-static void compute_submatrix(@(type) *previousHVecs, int numPrevRetained, 
-   @(type) *H, int basisSize, int maxBasisSize, @(type) *subMatrix, 
-   @(type) *rwork);
-
-static int insert_submatrix(@(type) *H, double *hVals, @(type) *hVecs, 
-   int restartSize, @(type) *subMatrix, int numPrevRetained, 
-   int indexOfPreviousVecs, int rworkSize, @(type) *rwork, 
-   primme_params *primme);
-
-static void apply_preconditioner_block(@(type) *v, @(type) *result,
-   int blockSize, primme_params *primme);
+static int compute_submatrix(@(type) *X, int nX, int ldX, 
+   @(type) *H, int nH, int ldH, @(type) *R, int ldR,
+   @(type) *rwork, int lrwork);
 
 #endif /* RESTART_PRIVATE_H */

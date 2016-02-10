@@ -29,13 +29,28 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-void reset_flags_dprimme(int *flag, int first, int last);
+int restart_dprimme(int *restartSize, double *V, double *W, int nLocal,
+   int basisSize, int ldV, double **X, double **R, double *hVecs, int ldhVecs,
+   int *hVecsperm, double *hVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, double *evecs, double *evals, double *resNorms,
+   double *evecsHat, int ldevecsHat, double *M, int ldM, int *numConverged,
+   int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
+   int ldpreviousHVecs, int *indexOfPreviousVecs, int *Vperm, double machEps,
+   double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
-int restart_dprimme(double *V, double *W, double *H, double *hVecs, 
-   double *hVals, int *flags, int *iev, double *evecs, double *evecsHat, 
-   double *M, double *UDU, int *ipivot, int basisSize, int numConverged, 
-   int *numConvergedStored, int numLocked, int numGuesses, 
-   double *previousHVecs, int numPrevRetained, double machEps, 
-   double *rwork, int rworkSize, primme_params *primme);
+int after_restart_dprimme(double *V, int ldV, double *W, int ldW,
+   double *H, int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR,
+   double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
+   double *hVals, double *hSVals, int *hVecsperm, int *Vperm,
+   int restartSize, int basisSize, int numPrevRetained,
+   int indexOfPreviousVecs, double *evecs, int *evecsSize,
+   int ldevecs, double *evecsHat, int ldevecsHat, double *M, int ldM, double *UDU,
+   int ldUDU, int *ipivot, int numConvergedBeforeRestart, int numConverged,
+   int rworkSize, double *rwork, int *iwork, double machEps, primme_params *primme);
+
+void reset_flags_dprimme(int *flags, int first, int last);
+
+int dtr(int numLocked, double *hVecs, double *hVals, int *flags, 
+  int basisSize, int numFree, int *iev, double *rwork, primme_params *primme);
 
 #endif

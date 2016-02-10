@@ -109,7 +109,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
    }
 
    /* Execute stage 1 */
-   svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs);
+   svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs, NULL);
    ret = @(pre)primme(svals, svecs0, resNorms, &primme_svds->primme); 
    copy_last_params_to_svds(primme_svds, 0, svals, svecs, resNorms);
 
@@ -121,7 +121,7 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
    }
 
    /* Execute stage 2 */
-   svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs);
+   svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs, resNorms);
    ret = @(pre)primme(svals, svecs0, resNorms, &primme_svds->primme0); 
    copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms);
 
@@ -133,11 +133,12 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
 }
 
 static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-                                           double *svals, @(type) *svecs) {
+      double *svals, @(type) *svecs, double *rnorms) {
    primme_params *primme;
    primme_svds_operator method;
    @(type) *aux, *out_svecs = svecs;
    int n, nMax, i, cut;
+   const double machEps = Num_dlamch_primme("E");
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primme0;
    method = stage == 0 ? primme_svds->method : primme_svds->method0;
@@ -185,7 +186,7 @@ static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int 
       /* Move Vc V0 to the rightmost position in svecs (aux).
          If using AA', only move Vc */
       aux = &svecs[nMax*primme_svds->mLocal];
-      Num_copy_@(pre)matrix(&svecs[primme_svds->mLocal*n], primme_svds->nLocal,
+      Num_copy_matrix_@(pre)primme(&svecs[primme_svds->mLocal*n], primme_svds->nLocal,
          method == primme_svds_op_AtA ? n : primme_svds->numOrthoConst,
          primme_svds->nLocal, aux, primme_svds->nLocal);
       if (method == primme_svds_op_AtA) out_svecs = aux;
@@ -195,9 +196,9 @@ static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int 
       assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
       aux = (@(type) *)primme_calloc(primme->nLocal*n, sizeof(@(type)), "aux");
       Num_@(pre)copy_@(pre)primme(primme->nLocal*n, svecs, 1, aux, 1);
-      Num_copy_@(pre)matrix(&aux[primme_svds->mLocal*n], primme_svds->nLocal,
+      Num_copy_matrix_@(pre)primme(&aux[primme_svds->mLocal*n], primme_svds->nLocal,
          n, primme_svds->nLocal, svecs, primme->nLocal);
-      Num_copy_@(pre)matrix(aux, primme_svds->mLocal, n, primme_svds->mLocal,
+      Num_copy_matrix_@(pre)primme(aux, primme_svds->mLocal, n, primme_svds->mLocal,
          &svecs[primme_svds->nLocal], primme->nLocal);
       free(aux);
       break;
@@ -233,12 +234,29 @@ static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int 
          }
       }
    }
-   else if (stage == 1 && primme_svds->initSize > 0) {
+   else if (stage == 1 && primme_svds->initSize > 0 &&
+            primme_svds->target != primme_svds_closest_abs) {
+      /* The target shifts are set in middle of the eigenvalue confidence
+         interval associated to the approximate eigenpairs from the
+         previous stage */
       assert(method == primme_svds_op_augmented);
       primme->targetShifts = (double *)primme_calloc(
          primme_svds->initSize, sizeof(double), "targetShifts");
       for (i=0; i<primme_svds->initSize; i++) {
-         primme->targetShifts[i] = svals[i];
+         double top, bottom;
+         switch(primme_svds->target) {
+            case primme_svds_smallest:
+               top = max(svals[i], primme_svds->aNorm*sqrt(machEps));
+               bottom = max(min(i>0 ? max(svals[i-1], primme_svds->aNorm*sqrt(machEps)) : HUGE_VAL,
+                                sqrt(max(0.0, svals[i]*max(rnorms[i], svals[i]-rnorms[i])))),
+                            primme_svds->aNorm*machEps);
+               primme->targetShifts[i] = (top + bottom)/2.0;
+               break;
+            case primme_svds_largest:
+            case primme_svds_closest_abs:
+               primme->targetShifts[i] = svals[i];
+               break;
+         }
       }
       primme->numTargetShifts = primme_svds->initSize;
    }
@@ -393,12 +411,12 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
             &primme_svds->mLocal, &primme_svds->initSize, &notrans, primme_svds);
       Num_scalInv_@(pre)matrix(&svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
             primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals, primme_svds);
-      Num_copy_@(pre)matrix(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal, n,
+      Num_copy_matrix_@(pre)primme(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal, n,
             primme_svds->nLocal, &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
       break;
    case primme_svds_op_AAt:
       /* Transform svecs to [Uc U Vc A'*U/Sigma] */
-      Num_copy_@(pre)matrix(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal,
+      Num_copy_matrix_@(pre)primme(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal,
             primme_svds->numOrthoConst, primme_svds->nLocal,
             &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
       primme_svds->matrixMatvec(
@@ -423,9 +441,9 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       /* Shuffle svecs from [Vc V; Uc U] to [Uc U Vc V] */
       aux = (@(type) *)primme_calloc(primme->nLocal*n, sizeof(@(type)), "aux");
       Num_@(pre)copy_@(pre)primme(primme->nLocal*n, svecs, 1, aux, 1);
-      Num_copy_@(pre)matrix(aux, primme_svds->nLocal, n, primme->nLocal,
+      Num_copy_matrix_@(pre)primme(aux, primme_svds->nLocal, n, primme->nLocal,
          &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
-      Num_copy_@(pre)matrix(&aux[primme_svds->nLocal], primme_svds->mLocal, n,
+      Num_copy_matrix_@(pre)primme(&aux[primme_svds->nLocal], primme_svds->mLocal, n,
          primme->nLocal, svecs, primme_svds->mLocal);
       free(aux);
       break;
@@ -468,12 +486,12 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    }
 
    /* Update residual norms when final stage */
-   if (stage == 1 || primme_svds->method0 == primme_svds_op_none) {
+   if (primme_svds->method0 != primme_svds_op_none) {
       switch(method) {
       case primme_svds_op_AtA:
       case primme_svds_op_AAt:
          for (i=0; i<primme_svds->initSize; i++) {
-            rnorms[i] /= svals[i];
+            rnorms[i] = min(rnorms[i]/svals[i], primme_svds->aNorm);
          }
          break;
       case primme_svds_op_augmented:
@@ -601,23 +619,6 @@ static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_par
       &primme->nLocal, blockSize, &method, primme_svds);
 }
 
-static void Num_copy_@(pre)matrix(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy) {
-   int i,j;
-
-   assert(ldx >= m && ldy >= m);
-   if (x == y) return;
-   if (ldx == ldy && ldx == m) {
-      memmove(y, x, sizeof(@(type))*m*n);
-   }
-   else {
-      /* TODO: assert x and y don't overlap */
-      for (i=0; i<n; i++)
-         for (j=0; j<m; j++)
-            y[i*ldy+j] = x[i*ldx+j];
-   }
-
-}
-
 static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx, double *factors,
                                        primme_svds_params *primme_svds) {
    int i, ONE=1;
@@ -626,7 +627,7 @@ static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx, double *
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
-      if (isfinite(1.0L/factors[i])) {
+      if (factors[i] > 0 && isfinite(1.0L/factors[i])) {
 #ifdefarithm L_DEFCPLX
          ztmp.r = 1.0L/factors[i]; ztmp.i = 0.0L;
 #endifarithm
@@ -650,7 +651,7 @@ static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx, double *
          ztmp.r = 1.0L/norm; ztmp.i = 0.0L;
 #endifarithm
 #ifdefarithm L_DEFREAL
-         ztmp = 1.0L/norm;
+         ztmp = 1.0L/sqrt(norm);
 #endifarithm
       }
       Num_scal_@(pre)primme(m, ztmp, &x[i*ldx], 1);

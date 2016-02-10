@@ -42,7 +42,7 @@
  * Input Parameters
  * ----------------
  * M  A (numOrthoConst+numEvals) x (numOrthoConst+numEvals) array that contains 
- *    the upper triagular portion of a dimM x dimM hermitian matrix.  
+ *    the upper triangular portion of a dimM x dimM hermitian matrix.  
  *    The leading dimension of the array is numOrthoConst+numEvals.
  *
  * dimM  The dimension of the matrix M
@@ -64,13 +64,32 @@
  *                 dsytrf error code
  ******************************************************************************/
  
-int UDUDecompose_@(pre)primme(@(type) *M, @(type) *UDU, int *ipivot, int dimM, 
-   @(type) *rwork, int rworkSize, primme_params *primme) {
+int UDUDecompose_@(pre)primme(@(type) *M, int ldM, @(type) *UDU, int ldUDU,
+   int *ipivot, int dimM, @(type) *rwork, int rworkSize, primme_params *primme) {
 
-   int i, j;
    int info;
 
-   /* Quick return for M of dimension 1 */
+   /* Quick return for M with dimension 0 */
+
+   if (dimM == 0) return 0;
+
+   /* Return memory requirement */
+
+   if (M == NULL) {
+      @(type) w;
+#ifdefarithm L_DEFCPLX
+      Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
+#endifarithm
+#ifdefarithm L_DEFREAL
+      Num_dsytrf_dprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
+#endifarithm
+      return (int)*(double*)&w;
+    }
+
+   /* if ld is zero, change by the matrix size */
+   if (ldUDU == 0) ldUDU = dimM;
+
+   /* Quick return for M with dimension 1 */
 
    if (dimM <= 1) {
       *UDU = *M;
@@ -80,18 +99,14 @@ int UDUDecompose_@(pre)primme(@(type) *M, @(type) *UDU, int *ipivot, int dimM,
 
       /* Copy the upper triangular portion of M into UDU */
 
-      for (j = 0; j < dimM; j++) {
-         for (i = 0; i <= j; i++) {
-            UDU[dimM*j+i] = M[(primme->numOrthoConst+primme->numEvals)*j+i];
-         }
-      }
+      Num_copy_trimatrix_@(pre)primme(M, dimM, dimM, ldM, 0 /* up */, 0, UDU, ldUDU, 0);
 
       /* Perform the decomposition */
 #ifdefarithm L_DEFCPLX
-      Num_zhetrf_zprimme("U", dimM, UDU, dimM, ipivot, rwork, rworkSize, &info);
+      Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, rwork, rworkSize, &info);
 #endifarithm
 #ifdefarithm L_DEFREAL
-      Num_dsytrf_dprimme("U", dimM, UDU, dimM, ipivot, rwork, rworkSize, &info);
+      Num_dsytrf_dprimme("U", dimM, UDU, ldUDU, ipivot, rwork, rworkSize, &info);
 #endifarithm
    }
 

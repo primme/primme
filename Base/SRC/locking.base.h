@@ -30,13 +30,12 @@
 #ifndef LOCKING_H
 #define LOCKING_H
 
-int lock_vectors_@(pre)primme(double tol, double *aNormEstimate, double *maxConvTol, 
-   int *basisSize, int *numLocked, int *numGuesses, int *nextGuess,
-   @(type) *V, @(type) *W, @(type) *H, @(type) *Q, @(type) *R, @(type) *evecsHat, @(type) *M, 
-   @(type) *UDU, int *ipivot, double *hVals, @(type) *hVecs, 
-   @(type) *evecs, double *evals, int *perm, double machEps, 
-   double *resNorms, int *numPrevRitzVals, double *prevRitzVals, 
-   int *flag, @(type) *rwork, int rworkSize, int *iwork, 
-   int *LockingProblem, primme_params *primme);
+int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
+   int nLocal, int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs,
+   int ldhVecs, int *hVecsperm, double *hVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, @(type) *evecs, double *evals, int *numConverged, int *numLocked,
+   double *resNorms, int *evecsperm, int numGuesses, @(type) *previousHVecs,
+   int *numPrevRetained, int ldpreviousHVecs, int *indexOfPreviousVecs, int *Vperm,
+   double machEps, @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif

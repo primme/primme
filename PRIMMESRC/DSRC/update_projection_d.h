@@ -30,8 +30,8 @@
 #ifndef UPDATE_PROJECTION_H
 #define UPDATE_PROJECTION_H
 
-void update_projection_dprimme(double *X, double *Y, double *Z, 
-   int numCols, int maxCols, int blockSize, double *rwork, 
-   primme_params *primme);
+int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
+   double *Z, int ldZ, int nLocal, int numCols, int blockSize, double *rwork,
+   int lrwork, primme_params *primme);
 
 #endif

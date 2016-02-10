@@ -30,8 +30,8 @@
 #ifndef UPDATE_PROJECTION_H
 #define UPDATE_PROJECTION_H
 
-void update_projection_zprimme(Complex_Z *X, Complex_Z *Y, Complex_Z *Z, 
-   int numCols, int maxCols, int blockSize, Complex_Z *rwork, 
-   primme_params *primme);
+int update_projection_zprimme(Complex_Z *X, int ldX, Complex_Z *Y, int ldY,
+   Complex_Z *Z, int ldZ, int nLocal, int numCols, int blockSize, Complex_Z *rwork,
+   int lrwork, primme_params *primme);
 
 #endif

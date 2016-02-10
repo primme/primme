@@ -34,8 +34,8 @@
 #define INIT_KRYLOV_FAILURE       -3
 #define UDUDECOMPOSE_FAILURE      -4
 
-static int init_block_krylov(double *V, double *W, int dv1, int dv2, 
-   double *locked, int numLocked, double machEps, double *rwork, 
-   int rworkSize, primme_params *primme);
+static int init_block_krylov(double *V, int nLocal, int ldV, double *W,
+   int ldW, int dv1, int dv2, double *locked, int ldlocked, int numLocked,
+   double machEps, double *rwork, int rworkSize, primme_params *primme);
 
 #endif

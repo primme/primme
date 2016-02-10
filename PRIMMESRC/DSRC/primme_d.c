@@ -53,9 +53,14 @@
 #include "const.h"
 #include "wtime.h"
 #include "main_iter_d.h"
+#include "init_d.h"
 #include "ortho_d.h"
 #include "solve_H_d.h"
+#include "restart_d.h"
+#include "locking_d.h"
 #include "correction_d.h"
+#include "convergence_d.h"
+#include "update_projection_d.h"
 #include "primme_private_d.h"
 #include "numerical_d.h"
 #include "primme_interface.h"
@@ -210,8 +215,9 @@ int dprimme(double *evals, double *evecs, double *resNorms,
    /* correspond to the sorted Ritz values in evals.                       */
    /*----------------------------------------------------------------------*/
 
-   permute_evecs_dprimme(&evecs[primme->numOrthoConst], perm, 
-        (double *) primme->realWork, primme->numEvals, primme->nLocal);
+   permute_vecs_d(&evecs[primme->numOrthoConst], primme->nLocal,
+         primme->initSize, primme->nLocal, perm, (double*)primme->realWork,
+         (int*)primme->intWork);
 
    free(perm);
 
@@ -258,11 +264,25 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
    int maxEvecsSize; /* Maximum number of vectors in evecs and evecsHat */
    int intWorkSize;  /* Size of integer work space in bytes             */
+   int initSize;     /* Amount of work space required by init routine   */
    int orthoSize;    /* Amount of work space required by ortho routine  */
+   int convSize;     /* Amount of work space required by converg. routine */
+   int restartSize;  /* Amount of work space required by restart routine */
    int solveCorSize; /* work space for solve_correction and inner_solve */
+   int solveHSize;   /* work space for solve_H                          */
+   int mainSize;     /* work space for main_iter                        */
+   int maxhSize;     /* maximum number of columns of hVecs and maximum
+                        size of hVals */
+   double *evecsHat=NULL;/* not NULL when evecsHat will be used             */
+   double t;
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
-
+   if (primme->projectionParams.projection != primme_proj_RR)
+      maxhSize = primme->maxBasisSize * 2 + 1;
+   else
+      maxhSize = primme->maxBasisSize;
+   
+ 
    /* first determine real workspace */
 
    /*----------------------------------------------------------------------*/
@@ -272,27 +292,19 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    dataSize = primme->nLocal*primme->maxBasisSize  /* Size of V            */
       + primme->nLocal*primme->maxBasisSize        /* Size of W            */
       + primme->maxBasisSize*primme->maxBasisSize  /* Size of H            */
-      + primme->maxBasisSize*primme->maxBasisSize  /* Size of hVecs        */
+      + primme->maxBasisSize*maxhSize              /* Size of hVecs, hU    */
       + primme->restartingParams.maxPrevRetain*primme->maxBasisSize;
                                                    /* size of prevHVecs    */
 
    /*----------------------------------------------------------------------*/
-   /* lingfei: primme_svds. Add memory for Harmonic or Refined projection  */
+   /* Add memory for Harmonic or Refined projection                        */
    /*----------------------------------------------------------------------*/
-   if (primme->projectionParams.projection) {
-        if (primme->projectionParams.projection == primme_proj_RR && 
-            (primme->projectionParams.refinedScheme == primme_ref_OneAccuShift_QR || 
-            primme->projectionParams.refinedScheme == primme_ref_MultiShifts_QR ||
-            primme->projectionParams.refinedScheme == primme_ref_OneShift_QR)){
-            dataSize = dataSize 
-            + primme->nLocal*primme->maxBasisSize              /* Size of Q */
-            + primme->maxBasisSize*primme->maxBasisSize;       /* Size of R */
-        }
-        else{
-            dataSize = dataSize 
-            + primme->maxBasisSize*primme->maxBasisSize /* Size of WTW     */
-            + primme->maxBasisSize*primme->maxBasisSize;/* Size of wtwChol */
-        }
+   if (primme->projectionParams.projection == primme_proj_Harm ||
+         primme->projectionParams.projection == primme_proj_ref) {
+      /* Stored a QR decomposition */
+      dataSize +=
+            primme->nLocal*primme->maxBasisSize +             /* Size of Q */
+            primme->maxBasisSize*primme->maxBasisSize;       /* Size of R */
    }
 
 
@@ -308,23 +320,38 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          + primme->nLocal*maxEvecsSize             /* Size of evecsHat     */ 
          + maxEvecsSize*maxEvecsSize               /* Size of M            */
          + maxEvecsSize*maxEvecsSize;              /* Size of UDU          */
+      evecsHat = &t;
    }
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by init and its children                */
+   /*----------------------------------------------------------------------*/
+
+   initSize = init_basis_dprimme(NULL, primme->nLocal, 0, NULL, 0, NULL,
+         0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &primme->maxBasisSize,
+         NULL, NULL, NULL, primme);
 
    /*----------------------------------------------------------------------*/
    /* Determine orthogalization workspace with and without locking.        */
    /*----------------------------------------------------------------------*/
 
-   /*lingfei: primme_svds. Change ortho function to return Q and R */
    if (primme->locking) {
-      orthoSize = ortho_dprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
+      orthoSize = ortho_dprimme(NULL, 0, NULL, 0, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
          maxEvecsSize, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
    else {
-      orthoSize = ortho_dprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
+      orthoSize = ortho_dprimme(NULL, 0, NULL, 0, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
          primme->numOrthoConst+1, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by solve_H and its children             */
+   /*----------------------------------------------------------------------*/
+
+   solveHSize = solve_H_dprimme(NULL, primme->maxBasisSize, 0, NULL, 0, NULL, 0, NULL,
+         0, NULL, NULL, 0, 0, NULL, NULL, primme);
 
    /*----------------------------------------------------------------------*/
    /* Determine workspace required by solve_correction and its children    */
@@ -336,55 +363,89 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                   1.0, 0.0, 1.0, NULL, NULL, 0, primme);
 
    /*----------------------------------------------------------------------*/
+   /* Determine workspace required by solve_H and its children             */
+   /*----------------------------------------------------------------------*/
+
+   convSize = check_convergence_dprimme(NULL, primme->nLocal, 0, &t, 0,
+         NULL, primme->numEvals, 0, 0, primme->maxBasisSize, NULL, NULL,
+         NULL, 0.0, NULL, 0, NULL, primme);
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by restarting and its children          */
+   /*----------------------------------------------------------------------*/
+
+   if (primme->locking) {
+      restartSize = restart_locking_dprimme(&primme->maxBasisSize, NULL,
+            NULL, primme->nLocal, primme->maxBasisSize, 0, NULL, NULL,
+            NULL, 0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL,
+            NULL, &primme->numEvals, &primme->numEvals, NULL, NULL, 0, NULL,
+            &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
+            NULL, primme);
+   }
+   else {
+      restartSize = restart_dprimme(&primme->maxBasisSize, NULL, NULL,
+            primme->nLocal, primme->maxBasisSize, 0, NULL, NULL, NULL, 0,
+            NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, NULL, NULL,
+            evecsHat, 0, NULL, 0, &primme->numEvals, NULL, NULL,
+            &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
+            NULL, primme);
+ 
+   }
+
+   restartSize += after_restart_dprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0,
+         NULL, 0, NULL, 0, 0,
+         NULL, 0, 0, NULL, NULL, NULL, NULL, primme->maxBasisSize, primme->maxBasisSize,
+         primme->restartingParams.maxPrevRetain, primme->maxBasisSize, NULL,
+         NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, NULL, NULL, 0.0, primme);
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by main_iter and its children           */
+   /*----------------------------------------------------------------------*/
+
+   mainSize = max(
+         update_projection_dprimme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
+            primme->maxBasisSize, NULL, 0, primme),
+         prepare_candidates(NULL, NULL, primme->nLocal, primme->maxBasisSize,
+            0, NULL, NULL, NULL, 0, NULL, NULL, primme->numEvals, primme->numEvals,
+            NULL, 0, primme->maxBlockSize, NULL, primme->numEvals, NULL, NULL, 0.0,
+            NULL, &primme->maxBlockSize, NULL, NULL, 0, NULL, primme));
+ 
+ 
+   /*----------------------------------------------------------------------*/
    /* Workspace is reused in many functions. Allocate the max needed by any*/
    /*----------------------------------------------------------------------*/
    realWorkSize = Num_imax_primme(8,
 
       /* Workspace needed by init_basis */
-      Num_imax_primme(3, 
-         maxEvecsSize*primme->numOrthoConst, maxEvecsSize, orthoSize),
+      initSize,
 
       /* Workspace needed by solve_correction and its child inner_solve */
       solveCorSize, 
 
       /* Workspace needed by function solve_H */
-#ifdef ESSL
-      2*primme->maxBasisSize +
-         primme->maxBasisSize*(primme->maxBasisSize + 1)/2,
-#else
-      3*primme->maxBasisSize,
-#endif
+      solveHSize,
    
       /* Workspace needed by function check_convergence */ 
-      max(primme->maxBasisSize*primme->maxBlockSize + primme->maxBlockSize,
-                2*maxEvecsSize*primme->maxBlockSize),
+      convSize,
 
       /* Workspace needed by function restart*/
-      primme->restartingParams.maxPrevRetain*
-      primme->restartingParams.maxPrevRetain  /* for submatrix of prev hvecs */
-      + primme->maxBasisSize* 
-        primme->maxBasisSize /*lingfei: if harmonic projection for holding harmonic ritz vectors flagged CONVERGED or refined projection for computing yTHy */
-      + Num_imax_primme(4, primme->maxBasisSize, 
-           3*primme->restartingParams.maxPrevRetain,
-           primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
-           primme->maxBasisSize*primme->maxBasisSize,     /* for DTR copying */
-           maxEvecsSize*primme->numEvals), /*this one is for UDU w/o locking */
+      restartSize,
 
       /* Workspace needed by function verify_norms */
       2*primme->numEvals,
 
-      /* space needed by lock vectors (no need w/o lock but doesn't add any) */
-      (2*primme->maxBasisSize) + Num_imax_primme(3, 
-          maxEvecsSize*primme->maxBasisSize, orthoSize, 3*primme->maxBasisSize),
-
       /* maximum workspace needed by ortho */ 
-      orthoSize);
+      orthoSize,
+
+      /* maximum workspace for main */
+      mainSize);
 
    /*----------------------------------------------------------------------*/
-   /* The following size is always alloced as double                       */
+   /* The following size is always allocated as double                     */
    /*----------------------------------------------------------------------*/
 
-   doubleSize = primme->maxBasisSize               /* Size of hVals        */
+   doubleSize = 4
+      + maxhSize                                   /* Size of hVals, hSVals*/
       + primme->numEvals+primme->maxBasisSize      /* Size of prevRitzVals */
       + primme->maxBlockSize;                      /* Size of blockNorms   */
 
@@ -395,7 +456,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    intWorkSize = primme->maxBasisSize /* Size of flag               */
       + 2*primme->maxBlockSize        /* Size of iev and ilev       */
       + maxEvecsSize                  /* Size of ipivot             */
-      + 2*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
+      + 4*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
 
    /*----------------------------------------------------------------------*/
    /* byte sizes:                                                          */

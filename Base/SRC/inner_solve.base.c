@@ -34,6 +34,7 @@
 #include "inner_solve_@(pre).h"
 #include "inner_solve_private_@(pre).h"
 #include "factorize_@(pre).h"
+#include "update_W_@(pre).h"
 #include "numerical_@(pre).h"
 
 
@@ -189,21 +190,19 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
 
    /* Andreas: note that eigenresidual tol may not be achievable, because we */
    /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
-   if (primme->correctionParams.convTest == primme_adaptive) {
    /*lingfei:primme_svds. if refine projection is used, there is 
    no need to change eresTol*/
-      if(primme->correctionParams.precondition == 1 || 
-          primme->projectionParams.refinedScheme == primme_ref_none)
+   if (primme->correctionParams.convTest == primme_adaptive) {
+      if(primme->correctionParams.precondition == 1 ||
+         primme->projectionParams.projection == primme_proj_RR)
           ETolerance = max(eresTol/1.8L, absoluteTolerance);
       else
           ETolerance = max(eresTol, absoluteTolerance);          
       LTolerance = ETolerance;
    }
    else if (primme->correctionParams.convTest == primme_adaptive_ETolerance) {
-   /*lingfei:primme_svds. if refine projection is used, there is 
-   no need to change eresTol*/
-      if(primme->correctionParams.precondition == 1 || 
-          primme->projectionParams.refinedScheme == primme_ref_none)
+      if(primme->correctionParams.precondition == 1 ||
+         primme->projectionParams.projection == primme_proj_RR)
           LTolerance = max(eresTol/1.8L, absoluteTolerance);
       else
           LTolerance = max(eresTol, absoluteTolerance);          
@@ -738,12 +737,12 @@ static int apply_skew_projector(@(type) *Q, @(type) *Qhat, @(type) *UDU,
 static void apply_projected_matrix(@(type) *v, double shift, @(type) *Q, 
    int dimQ, @(type) *result, @(type) *rwork, primme_params *primme) {
    
-   int ONE = 1;   /* For passing it by reference in matrixMatvec */
 #ifdefarithm L_DEFCPLX
    @(type) ztmp; 
 #endifarithm
 
-   (*primme->matrixMatvec)(v, result, &ONE, primme);
+   matrixMatvec_@(pre)primme(v, primme->nLocal, primme->nLocal, result,
+         primme->nLocal, 0, 1, primme);
 #ifdefarithm L_DEFCPLX
    {ztmp.r = -shift; ztmp.i = 0.0L;}
    Num_axpy_zprimme(primme->nLocal, ztmp, v, 1, result, 1); 
@@ -754,7 +753,6 @@ static void apply_projected_matrix(@(type) *v, double shift, @(type) *Q,
    if (dimQ > 0)
       apply_projector(Q, dimQ, result, rwork, primme); 
 
-   primme->stats.numMatvecs += 1;
 }
    
 

@@ -27,6 +27,7 @@
  ******************************************************************************/
 
 #include <stdlib.h>
+#include <assert.h>
 #include "primme.h"
 #include "const.h"
 #include "update_projection_d.h"
@@ -40,41 +41,52 @@
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * X             Some nLocal x numCols matrix
- * Y             Some nLocal x numCols matrix
- * numCols       Number of rows and columns in Z
- * maxCols       Maximum (leading) dimension of Z
- * blockSize     Number of rows and columns to be added to Z
+ * X           Matrix with size nLocal x numCols+blockSize
+ * ldX         The leading dimension of X
+ * Y           Matrix with size nLocal x numCols+blockSize
+ * ldY         The leading dimension of Y
+ * Z           Matrix with size nLocal x numCols+blockSize
+ * numCols     The number of columns that hasn't changed
+ * blockSize   The number of columns that has changed
+ * rwork       Workspace
+ * lrwork      Size of rwork
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * Z      X'*Y where Y is some nLocal x numCols matrix.
- * rwork  Must be at least maxCols*blockSize in length
+ * Z           Matrix with size numCols+blockSize with value X'*Y, only
+ *             Z(1:numCols+blockSize,numCols:numCols+blockSize) will be updated
+ * ldZ         The leading dimension of Z
+ *
  ******************************************************************************/
 
-void update_projection_dprimme(double *X, double *Y, double *Z, 
-   int numCols, int maxCols, int blockSize, double *rwork, 
-   primme_params *primme) {
+int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
+   double *Z, int ldZ, int nLocal, int numCols, int blockSize, double *rwork,
+   int lrwork, primme_params *primme) {
 
-   int j;    /* Loop variable  */ 
-   int count;
+   int count, count_doubles, m;
    double tpone = +1.0e+00, tzero = +0.0e+00;
 
-   /* --------------------------------------------------------------------- */
-   /* Zero the work array to prevent floating point traps during all-reduce */
-   /* --------------------------------------------------------------------- */
+   /* -------------------------- */
+   /* Return memory requirements */
+   /* -------------------------- */
 
-   for (j = 0; j < maxCols*blockSize; j++) {
-      rwork[j] = tzero;
+   if (X == NULL) {
+      return (numCols+blockSize)*numCols*2;
    }
+
+   /* ------------ */
+   /* Quick return */
+   /* ------------ */
+
+   if (blockSize <= 0) return 0;
 
    /* --------------------------------------------------------------------- */
    /* Grow Z by blockSize number of rows and columns all at once            */
    /* --------------------------------------------------------------------- */
 
-   Num_gemm_dprimme("C", "N", numCols+blockSize, blockSize, primme->nLocal, tpone, 
-      X, primme->nLocal, &Y[primme->nLocal*numCols], primme->nLocal, 
-      tzero, rwork, maxCols);
+   m = numCols+blockSize;
+   Num_gemm_dprimme("C", "N", m, blockSize, nLocal, tpone, 
+      X, ldX, &Y[ldY*numCols], ldY, tzero, &Z[ldZ*numCols], ldZ);
 
    /* -------------------------------------------------------------- */
    /* Alternative to the previous call:                              */
@@ -89,7 +101,20 @@ void update_projection_dprimme(double *X, double *Y, double *Z,
          tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
    }
    */
-   
-   count = maxCols*blockSize;
-   (*primme->globalSumDouble)(rwork, &Z[maxCols*numCols], &count, primme);
+
+   /* --------------------------------------------------------------------- */
+   /* Reduce the upper triangular part of the new columns in Z.             */
+   /* --------------------------------------------------------------------- */
+
+   Num_copy_trimatrix_compact_dprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
+         numCols, rwork, &count);
+   assert(count*2 <= lrwork);
+
+   count_doubles = count;
+   primme->globalSumDouble(rwork, (double*)&rwork[count], &count_doubles, primme);
+
+   Num_copy_compact_trimatrix_dprimme(&rwork[count], m, blockSize, numCols,
+         &Z[ldZ*numCols], ldZ);
+
+   return 0;
 }
