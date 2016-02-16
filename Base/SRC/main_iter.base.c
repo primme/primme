@@ -410,7 +410,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /*            as converged, another is targeted in its place if one is     */
             /*            available.                                                   */
  
-            prepare_candidates(V, W, primme->nLocal, basisSize, primme->nLocal,
+            prepare_candidates_@(pre)(V, W, primme->nLocal, basisSize, primme->nLocal,
                &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs, basisSize,
                hVals, flags, numConverged-numLocked, maxRecentlyConverged, blockNorms,
                blockSize, availableBlockSize, evecs, numLocked, evals, resNorms, machEps,
@@ -578,7 +578,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          }
          else if (primme->restartingParams.scheme == primme_dtr) {
             int numFree = numPrevRetained+max(3, primme->maxBlockSize);
-            restartSize = dtr(numLocked, hVecs, hVals, flags, basisSize, numFree, 
+            restartSize = dtr_@(pre)(numLocked, hVecs, hVals, flags, basisSize, numFree, 
                   iev, rwork, primme);
          }
          else {
@@ -886,7 +886,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
  * 
  ******************************************************************************/
 
-int prepare_candidates(@(type) *V, @(type) *W, int nLocal, int basisSize,
+int prepare_candidates_@(pre)(@(type) *V, @(type) *W, int nLocal, int basisSize,
    int ldV, @(type) *X, @(type) *R, @(type) *hVecs, int ldhVecs, double *hVals,
    int *flags, int numSoftLocked, int numEvals, double *blockNorms,
    int blockNormsSize, int maxBlockSize, @(type) *evecs, int numLocked,

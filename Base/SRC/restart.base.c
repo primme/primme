@@ -980,7 +980,7 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
  ******************************************************************************/
 
 
-int dtr(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
+int dtr_@(pre)(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme)
 {
 

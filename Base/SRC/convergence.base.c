@@ -231,13 +231,12 @@ static int check_practical_convergence(@(type) *R, int nLocal, int ldR,
 
    for (i=0; i < numToProject; i++) {
 
-      assert(blockNorms[iev[i]] >= overlaps[i]);
-
       double normPr   = sqrt(blockNorms[iev[i]]*blockNorms[iev[i]]
                                - overlaps[i]*overlaps[i]);   /* || (I-QQ')res || */
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
 
+      assert(blockNorms[iev[i]] >= overlaps[i]);
 
       if (/*normDiff >= tol &&*/ normPr < normDiff*normDiff/blockNorm/2) {
          if (primme->printLevel >= 5 && primme->procID == 0) {

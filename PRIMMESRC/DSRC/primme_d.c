@@ -405,7 +405,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    mainSize = max(
          update_projection_dprimme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
             primme->maxBasisSize, NULL, 0, primme),
-         prepare_candidates(NULL, NULL, primme->nLocal, primme->maxBasisSize,
+         prepare_candidates_d(NULL, NULL, primme->nLocal, primme->maxBasisSize,
             0, NULL, NULL, NULL, 0, NULL, NULL, primme->numEvals, primme->numEvals,
             NULL, 0, primme->maxBlockSize, NULL, primme->numEvals, NULL, NULL, 0.0,
             NULL, &primme->maxBlockSize, NULL, NULL, 0, NULL, primme));

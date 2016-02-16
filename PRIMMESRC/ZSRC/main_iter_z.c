@@ -405,7 +405,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             /*            as converged, another is targeted in its place if one is     */
             /*            available.                                                   */
  
-            prepare_candidates(V, W, primme->nLocal, basisSize, primme->nLocal,
+            prepare_candidates_z(V, W, primme->nLocal, basisSize, primme->nLocal,
                &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs, basisSize,
                hVals, flags, numConverged-numLocked, maxRecentlyConverged, blockNorms,
                blockSize, availableBlockSize, evecs, numLocked, evals, resNorms, machEps,
@@ -573,7 +573,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          }
          else if (primme->restartingParams.scheme == primme_dtr) {
             int numFree = numPrevRetained+max(3, primme->maxBlockSize);
-            restartSize = dtr(numLocked, hVecs, hVals, flags, basisSize, numFree, 
+            restartSize = dtr_z(numLocked, hVecs, hVals, flags, basisSize, numFree, 
                   iev, rwork, primme);
          }
          else {
@@ -881,7 +881,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
  * 
  ******************************************************************************/
 
-int prepare_candidates(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
+int prepare_candidates_z(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
    int ldV, Complex_Z *X, Complex_Z *R, Complex_Z *hVecs, int ldhVecs, double *hVals,
    int *flags, int numSoftLocked, int numEvals, double *blockNorms,
    int blockNormsSize, int maxBlockSize, Complex_Z *evecs, int numLocked,

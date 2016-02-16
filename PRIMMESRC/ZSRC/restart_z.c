@@ -965,7 +965,7 @@ static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *
  ******************************************************************************/
 
 
-int dtr(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
+int dtr_z(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, Complex_Z *rwork, primme_params *primme)
 {
 

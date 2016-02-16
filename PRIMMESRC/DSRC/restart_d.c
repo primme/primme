@@ -965,7 +965,7 @@ static int restart_ref(double *V, int ldV, double *W, int ldW, double *H,
  ******************************************************************************/
 
 
-int dtr(int numLocked, double *hVecs, double *hVals, int *flags, 
+int dtr_d(int numLocked, double *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, double *rwork, primme_params *primme)
 {
 

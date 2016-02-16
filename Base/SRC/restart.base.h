@@ -50,7 +50,7 @@ int after_restart_@(pre)primme(@(type) *V, int ldV, @(type) *W, int ldW,
 
 void reset_flags_@(pre)primme(int *flags, int first, int last);
 
-int dtr(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
+int dtr_@(pre)(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme);
 
 #endif
