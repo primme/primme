@@ -346,7 +346,6 @@ void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(ty
 
 }
 
-#include <complex.h>
 /******************************************************************************/
 @(type) Num_dot_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
 

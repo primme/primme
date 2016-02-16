@@ -292,7 +292,6 @@ void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
 
 }
 
-#include <complex.h>
 /******************************************************************************/
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
 

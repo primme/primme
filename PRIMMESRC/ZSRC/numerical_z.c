@@ -293,7 +293,6 @@ void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex
 
 }
 
-#include <complex.h>
 /******************************************************************************/
 Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
 
