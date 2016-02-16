@@ -130,7 +130,8 @@ static int real_main (int argc, char *argv[]) {
    char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
    
    /* Driver and solver I/O arrays and parameters */
-   double *svals, *svecs, *rnorms;
+   double *svals, *rnorms;
+   PRIMME_NUM *svecs;
    driver_params driver;
    primme_svds_params primme_svds;
    primme_svds_preset_method method=-1;

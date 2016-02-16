@@ -112,7 +112,7 @@ endif
 TESTS_double = tests/test_0??
 TESTS_doublecomplex = tests/test_0?? tests/test_1??
 TESTSsvds_double = tests/test_2??
-TESTSsvds_doublecomplex = tests/test_2?? tests/test_3??
+TESTSsvds_doublecomplex = tests/test_201 tests/test_202 tests/test_203
 
 all_tests_double all_tests_doublecomplex \
 all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme%

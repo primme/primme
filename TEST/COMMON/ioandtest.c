@@ -126,11 +126,29 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 #  undef CHECK_PRIMME_PARAM_DOUBLE
 #  undef CHECK_PRIMME_PARAM_TOL
 
-   h = (PRIMME_NUM *)primme_calloc(cols*2, sizeof(PRIMME_NUM), "h"); h0 = &h[cols];
+   h = (PRIMME_NUM *)primme_calloc(max(cols*2, primme->initSize), sizeof(PRIMME_NUM), "h"); h0 = &h[cols];
    Ax = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "Ax");
    r = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "r");
    
    for (i=0; i < primme->initSize; i++) {
+      /* Check |V(:,0:i-1)'V(:,i)| < sqrt(machEps) */
+      SUF(Num_gemv)("C", primme->nLocal, i+1, COMPLEXZV(1.0), COMPLEXZ(evecs), primme->nLocal, COMPLEXZ(&evecs[primme->nLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
+      if (primme->globalSumDouble) {
+         int cols0 = (i+1)*sizeof(PRIMME_NUM)/sizeof(double);
+         primme->globalSumDouble(h, h0, &cols0, primme);
+      }
+      else h0 = h;
+      prod = REAL_PARTZ(SUF(Num_dot)(i, COMPLEXZ(h0), 1, COMPLEXZ(h0), 1));
+      prod = sqrt(prod);
+      if (prod > 1e-7 && primme->procID == 0) {
+         fprintf(stderr, "Warning: |EVecs[0:%d-1]'Evec[%d]| = %-3E\n", i, i, prod);
+         retX = 1;
+      } 
+      if (fabs(sqrt(h0[i])-1) > 1e-7 && primme->procID == 0) {
+         fprintf(stderr, "Warning: |Evec[%d]|-1 = %-3E\n", i, fabs(sqrt(h0[i])-1));
+         retX = 1;
+      } 
+       
       /* Check |V(:,i)'A*V(:,i) - evals[i]| < |r|*|A| */
       primme->matrixMatvec(&evecs[primme->nLocal*i], Ax, &one, primme);
       eval0 = REAL_PART(primme_dot(&evecs[primme->nLocal*i], Ax, primme));
