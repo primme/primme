@@ -242,22 +242,32 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       assert(method == primme_svds_op_augmented);
       primme->targetShifts = (double *)primme_calloc(
          primme_svds->initSize, sizeof(double), "targetShifts");
-      for (i=0; i<primme_svds->initSize; i++) {
-         double top, bottom;
-         switch(primme_svds->target) {
-            case primme_svds_smallest:
-               top = max(svals[i], primme_svds->aNorm*sqrt(machEps));
-               bottom = max(min(i>0 ? max(svals[i-1], primme_svds->aNorm*sqrt(machEps)) : HUGE_VAL,
-                                sqrt(max(0.0, svals[i]*max(rnorms[i], svals[i]-rnorms[i])))),
-                            primme_svds->aNorm*machEps);
-               primme->targetShifts[i] = (top + bottom)/2.0;
-               break;
-            case primme_svds_largest:
-            case primme_svds_closest_abs:
-               primme->targetShifts[i] = svals[i];
-               break;
+
+      /* Recompute the singular values when it went below the machine precision in the first stage. */
+      if (primme_svds->target == primme_svds_smallest) {
+         for (i=0; i<primme_svds->initSize; i++) {
+            double sval;
+            if (svals[i] < primme_svds->aNorm*sqrt(machEps)) {
+               double *Ax = (double*)primme_calloc(primme->nLocal, sizeof(double), "Ax");
+               double ztmp;
+               int ONE = 1;
+               primme->matrixMatvec(&svecs[primme->nLocal*(primme->numOrthoConst+i)],
+                     Ax, &ONE, primme);
+               ztmp = Num_dot_dprimme(primme->nLocal, Ax, 1,
+                     &svecs[primme->nLocal*(primme->numOrthoConst+i)], 1);
+               if (primme_svds->globalSumDouble) {
+                  primme_svds->globalSumDouble((double*)&ztmp, &sval, &ONE, primme_svds);
+               }
+               else
+                  sval = *(double*)&ztmp;
+               svals[i] = sval/2.0;
+               free(Ax);
+            }
          }
       }
+
+      for (i=0; i<primme_svds->initSize; i++)
+         primme->targetShifts[i] = svals[i];
       primme->numTargetShifts = primme_svds->initSize;
    }
 
@@ -312,6 +322,8 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
 
    /* Require workspace for 2st stage */
    if (primme_svds->method0 != primme_svds_op_none) {
+      assert(primme_svds->method0 != primme_svds_op_AtA &&
+             primme_svds->method0 != primme_svds_op_AAt);
       primme = primme_svds->primme0;
       dprimme(NULL, NULL, NULL, &primme);
       intWorkSize = max(intWorkSize, primme.intWorkSize);

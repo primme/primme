@@ -77,7 +77,7 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
    int numToProject;       /* Number of vectors with potential accuracy problem  */
    int *toProject = iwork; /* Indices from left with potential accuracy problem  */
    double tol;             /* Residual tolerance                                 */
-   double attainableTol;   /* Used in locking to check near convergence problem  */
+   double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    int ret=0;
 
@@ -194,16 +194,14 @@ static int check_practical_convergence(double *R, int nLocal, int ldR,
    int rworkSize, primme_params *primme) {
 
    int i, ret;
-   double normPr; 
-   double normDiff;
-   double *overlaps, *newResiduals;
+   double *overlaps;
 
    /* -------------------------- */
    /* Return memory requirements */
    /* -------------------------- */
 
    if (R == NULL) {
-      return numToProject*2 + ortho_single_iteration_dprimme(NULL, nLocal,
+      return numToProject + ortho_single_iteration_dprimme(NULL, nLocal,
          evecsSize, 0, NULL, NULL, numToProject, 0, NULL, NULL, NULL, 0, primme);
    }
 
@@ -216,12 +214,11 @@ static int check_practical_convergence(double *R, int nLocal, int ldR,
    /* overlaps(i) = || evecs'*R(i) || */
    /* newResiduals(i) = || (I-evecs*evecs')*R(i) || */
 
-   newResiduals = (double*)rwork;
-   overlaps = newResiduals + numToProject;
+   overlaps = (double*)rwork;
 
    ret = ortho_single_iteration_dprimme(evecs, nLocal, evecsSize, ldevecs,
-      R, iev, numToProject, ldR, overlaps, newResiduals, rwork+2*numToProject,
-      rworkSize-2*numToProject, primme);
+      R, iev, numToProject, ldR, overlaps, NULL, rwork+numToProject,
+      rworkSize-numToProject, primme);
    if (ret != 0) return ret;
 
    /* ------------------------------------------------------------------ */
@@ -234,13 +231,15 @@ static int check_practical_convergence(double *R, int nLocal, int ldR,
 
    for (i=0; i < numToProject; i++) {
 
-      normPr   = newResiduals[i]; /* || (I-QQ')res || */
-      normDiff = overlaps[i];     /* || res - (I-QQ')res || */
+      assert(blockNorms[iev[i]] >= overlaps[i]);
 
-      assert(newResiduals[i] <= blockNorms[iev[i]]);
-      assert(fabs(newResiduals[i]*newResiduals[i]+overlaps[i]*overlaps[i]-blockNorms[iev[i]]*blockNorms[iev[i]]) < 1e-6*blockNorms[iev[i]]*blockNorms[iev[i]]);
+      double normPr   = sqrt(blockNorms[iev[i]]*blockNorms[iev[i]]
+                               - overlaps[i]*overlaps[i]);   /* || (I-QQ')res || */
+      double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
+      double blockNorm = blockNorms[iev[i]];
 
-      if (/*normDiff >= tol &&*/ normPr < normDiff*normDiff/blockNorms[iev[i]]/2) {
+
+      if (/*normDiff >= tol &&*/ normPr < normDiff*normDiff/blockNorm/2) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,
                " PRACTICALLY_CONVERGED %d norm(I-QQt)r %e bound %e\n",

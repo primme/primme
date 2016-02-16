@@ -113,12 +113,12 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    int nOrth, reorth;
    int randomizations;
    int messages = 0;        /* messages = 1 prints the intermediate results */
-   int maxNumOrthos = 2;    /* We let 2 reorthogonalizations before randomize */
+   int maxNumOrthos = 3;    /* We let 2 reorthogonalizations before randomize */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
-   double s0, s02, s1;
+   double s0=0.0, s02=0.0, s1=0.0;
    double temp;
-   double ztmp;
+   double ztmp=+0.0e+00;
    double *overlaps;
    double tpone = +1.0e+00, tzero = +0.0e+00, tmone = -1.0e+00;
    FILE *outputFile;
@@ -137,11 +137,11 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    /*----------------------------------*/
    /* input and workspace verification */
    /*----------------------------------*/
-   if (ldBasis <= 0 || nLocal <= 0 || numLocked < 0 || rworkSize < 0
-         || rworkSize < minWorkSize) {
-      return -1;
-   }
-   else if (b1 > b2) {
+   assert(ldBasis > 0 && nLocal > 0 && numLocked >= 0 && rworkSize >= minWorkSize &&
+          ldBasis >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
+          (R == NULL || ldR >= b2));
+
+   if (b1 > b2) {
       return 0;
    }
 
@@ -170,9 +170,10 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
                return -3;
             }
             if (messages){
-               fprintf(outputFile, "Randomizing in ortho:\n");
+               fprintf(outputFile, "Randomizing in ortho: %d, vector size of %d\n", i, nLocal);
             }
 
+            assert(R == NULL);
             Num_larnv_dprimme(2, iseed, nLocal, &basis[ldBasis*i]); 
             randomizations++;
             nOrth = 0;
@@ -349,29 +350,31 @@ int ortho_single_iteration_dprimme(double *Q, int mQ, int nQ, int ldQ, double *X
    
    /* overlaps(i) = norm(y0(:,i))^2 */
    for (i=0; i<nX; i++) {
-      double norm = Num_dot_dprimme(nQ, &y0[nQ*i], 1, &y0[nQ*i], 1);
-      overlaps[i] = sqrt(norm);
+      double ztmp = Num_dot_dprimme(nQ, &y0[nQ*i], 1, &y0[nQ*i], 1);
+      overlaps[i] = sqrt(*(double*)&ztmp);
    }
 
    /* X = X - Q*y0; norms0(i) = norms(X(i))^2 */
-   for (i=0; i<nX; i++) norms0[i] = 0.0;
+   if (norms) for (i=0; i<nX; i++) norms0[i] = 0.0;
    for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
       Num_gemm_dprimme("N", "N", m, nX, nQ, tmone, &Q[i], ldQ, y0, nQ, tpone,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
          Num_copy_matrix_i_dprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
       }
-      for (j=0; j<nX; j++) {
+      if (norms) for (j=0; j<nX; j++) {
          double *v = inX ? &X0[j*m] : &X[j*ldX+i];
-         double norm2 = Num_dot_dprimme(m, v, 1, v, 1);
-         norms0[j] += norm2;
+         double ztmp = Num_dot_dprimme(m, v, 1, v, 1);
+         norms0[j] += *(double*)&ztmp;
       }
    }
 
-   /* Store the reduction of norms0 in norms */
-   primme->globalSumDouble(norms0, norms, &nX, primme);
+   if (norms) {
+      /* Store the reduction of norms0 in norms */
+      primme->globalSumDouble(norms0, norms, &nX, primme);
  
-   for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
+      for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
+   }
 
    return 0;
 }

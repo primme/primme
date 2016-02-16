@@ -160,13 +160,17 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
 void Num_compact_res_dprimme(int n, double eval, double *x, 
    double *Ax, double *newx, double *newx0, double *newAx, double *r) {
 
-   int i;
-   for (i=0; i<n; i++) {
-      if (x != newx && newx) newx[i] = x[i];
-      if (x != newx0 && newx0) newx0[i] = x[i];
-      if (Ax != newAx && newAx) newAx[i] = Ax[i];
+   double ztmp = +0.0e+00;
+   int k, M=min(n,PRIMME_BLOCK_SIZE);
+   *(double*)&ztmp = -eval;
+
+   for (k=0; k<n; k+=M, M=min(M,n-k)) {
+      if (newx) Num_dcopy_dprimme(M, &x[k], 1, newx, 1);
+      if (newx0) Num_dcopy_dprimme(M, &x[k], 1, newx0, 1);
+      if (newAx) Num_dcopy_dprimme(M, &Ax[k], 1, newAx, 1);
       if (r) {
-         r[i] = Ax[i] - eval*x[i];
+         Num_dcopy_dprimme(M, &Ax[k], 1, &r[k], 1);
+         Num_axpy_dprimme(M, ztmp, &x[k], 1, &r[k], 1);
       }
    }
 
@@ -175,19 +179,20 @@ void Num_compact_res_dprimme(int n, double eval, double *x,
 /******************************************************************************
  * Function Num_compact_res_i - This subroutine performs the next operations:
  *
- *    X = X(p), Ax = Ax(p)
- *    j = 0; XD = RD = []
- *    for i=0:nd
- *       if pd(i) != pshift+p(i)
+ *    X = X(p); Ax = Ax(p)
+ *    j = k = 0; XD = RD = []
+ *    for i=0:nd-1
+ *       if pd(i) == j
  *          XD = [XD XO(j)]; RD = [RD RO(j)]; j++
  *       else
- *          XD = [XD X(p(i)]; RD = [RD AX(p(i)) - evals(p(i))*X(p(i))]
+ *          XD = [XD X(p(k)]; RD = [RD AX(p(k)) - evals(p(k))*X(p(k))]; k++
  *       end if
  *    end for
  *
  * NOTE: X and XD *can* overlap, but X(0:n-1) and XD *cannot* overlap (same for R and RD)
  *       XO and XD *can* overlap (same for RO and RD)
  *       p should be a list of increasing indices
+ *       pd should be a merge of two increasing lists
  *
  * PARAMETERS
  * ---------------------------
@@ -195,7 +200,6 @@ void Num_compact_res_dprimme(int n, double eval, double *x,
  * evals       The values to compute the residual
  * x           The matrix that does x = x(p)
  * n           The number of columns of the output x
- * pshift      The shift for the indices in p
  * p           The columns to copy back to x and Ax
  * ldx         The leading dimension of x
  * Ax          The matrix that does Ax = Ax(p)
@@ -216,7 +220,7 @@ void Num_compact_res_dprimme(int n, double eval, double *x,
  *
  ******************************************************************************/
 
-int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int pshift, int *p, 
+int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int *p, 
    int ldx, double *Ax, int ldAx,
    double *xo, int no, int ldxo, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
@@ -245,13 +249,13 @@ int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int pshift
 
    for (k=0; k<m; k+=M, M=min(M,m-k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
-         if (id < nd && io < no && (i >= n || pd[id] != pshift+p[i])) {
+         if (id < nd && io < no && pd[id] == io) {
             Num_copy_matrix_dprimme(&xo[io*ldxo+k], M, 1, ldxo, &X0[id*M], M);
             Num_copy_matrix_dprimme(&ro[io*ldro+k], M, 1, ldro, &R0[id*M], M);
             io++;
          }
          else {
-            assert(id >= nd || (i < n && pd[id] == pshift+p[i]));
+            assert(id >= nd || i < n);
             Num_compact_res_dprimme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k],
                   &x [i*ldx +k], id<nd?&X0[id*M]:NULL,
                   &Ax[i*ldAx+k], id<nd?&R0[id*M]:NULL);
@@ -288,6 +292,7 @@ void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
 
 }
 
+#include <complex.h>
 /******************************************************************************/
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
 
@@ -786,7 +791,7 @@ int Num_update_VWXR_d(double *V, double *W, int mV, int nV, int ldV,
    double *rnorms, int nrb, int nre,
    double *rwork, int lrwork, primme_params *primme) {
 
-   int i, j, k;         /* Loop variables */
+   int i, j;         /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, ldX, ldY;
    double *X, *Y;
@@ -844,23 +849,22 @@ int Num_update_VWXR_d(double *V, double *W, int mV, int nV, int ldV,
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
       for (j=nRb; j<nRe; j++) {
-         double sqr = 0;
-         for (k=0; k<m; k++) {
-            double v =
-               R[i+k+ldR*(j-nRb)] = Y[k+ldY*(j-nYb)] - hVals[j]*X[k+ldX*(j-nXb)];
-            if (Rnorms) sqr += v*v;
+         Num_compact_res_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               NULL, NULL, NULL, &R[i+ldR*(j-nRb)]);
+         if (Rnorms) {
+            double ztmp;
+            ztmp = Num_dot_dprimme(m, &R[i+ldR*(j-nRb)], 1, &R[i+ldR*(j-nRb)], 1);
+            Rnorms[j-nRb] += *(double*)&ztmp;
          }
-         if (Rnorms) Rnorms[j-nRb] += sqr;
       }
 
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
-         double sqr = 0;
-         for (k=0; k<m; k++) {
-            double v = Y[k+ldY*(j-nYb)] - hVals[j]*X[k+ldX*(j-nXb)];
-            sqr += v*v;
-         }
-         rnorms[j-nrb] += sqr;
+         double ztmp;
+         Num_compact_res_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               NULL, NULL, NULL, &Y[ldY*(j-nYb)]);
+         ztmp = Num_dot_dprimme(m, &Y[ldY*(j-nYb)], 1, &Y[ldY*(j-nYb)], 1);
+         rnorms[j-nrb] += *(double*)&ztmp;
       }
    }
 
@@ -911,6 +915,8 @@ void permute_vecs_d(double *vecs, int m, int n, int ld, int *perm_,
    int tempIndex;        /* Used to swap                                      */
    int *perm=iwork;      /* A copy of perm_                                   */
 
+   assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
+
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
    for (tempIndex=0; tempIndex<n; tempIndex++)
@@ -954,6 +960,10 @@ void permute_vecs_d(double *vecs, int m, int n, int ld, int *perm_,
       currentIndex++;
    }
 
+   /* Check permutation */
+   for (currentIndex=0; currentIndex < n; currentIndex++)
+      assert(perm[currentIndex] == currentIndex);
+
 }
 
 void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
@@ -964,6 +974,8 @@ void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
    int tempIndex;        /* Used to swap                                      */
    int *perm=iwork;      /* A copy of perm_                                   */
    int aux;
+
+   assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
@@ -1006,6 +1018,10 @@ void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
 
       currentIndex++;
    }
+
+   /* Check permutation */
+   for (currentIndex=0; currentIndex < n; currentIndex++)
+      assert(perm[currentIndex] == currentIndex);
 
 }
 

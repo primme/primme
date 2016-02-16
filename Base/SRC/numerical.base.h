@@ -122,7 +122,7 @@ void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @
 void Num_copy_trimatrix_compact_@(pre)primme(@(type) *x, int m, int n, int ldx, int i0, @(type) *y, int *ly);
 void Num_copy_matrix_i_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
       int *yin, int ldy);
-int Num_compact_res_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int pshift, int *p,
+int Num_compact_res_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
    int ldx, @(type) *Ax, int ldAx,
    @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,

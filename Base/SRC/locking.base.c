@@ -167,7 +167,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       return max(max(max(max(
             /* for permute_vecs */
             basisSize,
-            Num_compact_res_i_@(pre)primme(nLocal, NULL, NULL, basisSize, 0, NULL, 0,
+            Num_compact_res_i_@(pre)primme(nLocal, NULL, NULL, basisSize, NULL, 0,
                NULL, 0, NULL, primme->maxBlockSize, 0, NULL, 0, NULL,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
             ortho_@(pre)primme(NULL, 0, NULL, 0, 0,
@@ -304,11 +304,16 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    ifailed = iwork;
    for (i=left, failed=0; i < *restartSize; i++)
       if (flags[i] == UNCONVERGED) ifailed[failed++] = i-left;
+   for (i=left, j=0; i < *restartSize; i++)
+      if (flags[i] != UNCONVERGED) ifailed[failed+j++] = i-left;
 
-   /* Generate Vperm merging back the locked pairs that failed to pass the          */
-   /* convergence test with the restarted pairs.                                    */
+   if (1 /* Put zero to disable the new feature */) {
+      /* New feature: the candidate pairs to be locked that failed the              */
+      /* convergence test are rearrange with the rest of non-converged pairs        */
+      /* and are included in the block.                                             */
 
-   if (1) {
+      /* Generate Vperm merging back the locked pairs that failed to pass the          */
+      /* convergence test with the restarted pairs.                                    */
       blockNorms0 = (double*)rwork;
       for (i=0; i<sizeBlockNorms; i++) blockNorms0[i] = blockNorms[i];
       for (i=j=k=0; i<*indexOfPreviousVecs || j<failed; k++) {
@@ -318,26 +323,45 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
          }
          else {
             if (k < maxBlockSize) blockNorms[k] = resNorms[numLocked0+ifailed[j]];
-            Vperm[k] = left + ifailed[j++];
+            Vperm[k] = *indexOfPreviousVecs + *numPrevRetained + j++;
          }
       }
 
       /* Generate the rest of the permutation of Vperm                                 */
       for (i=0; i<*numPrevRetained; i++) Vperm[k++] = *indexOfPreviousVecs+i;
-      for (; k < basisSize; k++) Vperm[k] = k;
+      assert(k == *indexOfPreviousVecs + *numPrevRetained + failed);
+      for (; k < basisSize; k++) Vperm[k] = -1;
 
+      /* Pack X and R for the unconverged pairs.                                       */
+      Num_compact_res_i_@(pre)primme(nLocal, &hVals[left], &V[left*ldV], failed, ifailed, 
+            ldV, &W[left*ldV], ldV,
+            X?*X:NULL, sizeBlockNorms, ldV, X?*R:NULL, ldV,
+            &V[(left+failed)*ldV], maxBlockSize, Vperm, ldV, &W[(left+failed)*ldV], ldV,
+            rwork, rworkSize);
    }
    else {
+      /* The failed candidates are not rearrange with the rest of non-converged pairs  */
+      /* and they may not be in block in the next iteration. This was the behaviour of */
+      /* locking in previous versions than 2.0.                                        */
+
       for (i=0; i<basisSize; i++) Vperm[i] = i;
+
+      /* Pack V and W for the unconverged pairs.                                       */
+      Num_compact_vecs_@(pre)(&V[left*ldV], nLocal, failed, ldV, ifailed, &V[left*ldV],
+            ldV, 0);
+      Num_compact_vecs_@(pre)(&W[left*ldV], nLocal, failed, ldV, ifailed, &W[left*ldV],
+            ldV, 0);
+
+      Num_copy_matrix_@(pre)primme(*X, nLocal, sizeBlockNorms, ldV, &V[(left+failed)*ldV], ldV);
+      Num_copy_matrix_@(pre)primme(*R, nLocal, sizeBlockNorms, ldV, &W[(left+failed)*ldV], ldV);
    }
 
-   /* Pack X and R for the unconverged pairs.                                       */
+   /* Pack hVals, hVecs and hVecsperm for the failed pairs  */
+   Num_compact_vecs_@(pre)(&hVecs[left*ldhVecs], basisSize, failed, ldhVecs, ifailed,
+         &hVecs[left*ldhVecs], ldhVecs, 0);
+   Num_compact_vecs_d(&hVals[left], 1, failed, 1, ifailed, &hVals[left], 1, 0);
+   permute_vecs_i(&hVecsperm[left], numPacked, ifailed, (int*)rwork);
 
-   Num_compact_res_i_@(pre)primme(nLocal, &hVals[left], &V[left*ldV], failed, left, ifailed, 
-         ldV, &W[left*ldV], ldV,
-         X?*X:NULL, sizeBlockNorms, ldV, X?*R:NULL, ldV,
-         &V[(left+failed)*ldV], maxBlockSize, Vperm, ldV, &W[(left+failed)*ldV], ldV,
-         rwork, rworkSize);
    if (X) {
       *X = &V[(left+failed)*ldV];
       *R = &W[(left+failed)*ldV];

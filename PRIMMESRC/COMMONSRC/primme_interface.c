@@ -587,6 +587,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 
    PRINTParamsIF(projection, projection, primme_proj_default);
    PRINTParamsIF(projection, projection, primme_proj_RR);
+   PRINTParamsIF(projection, projection, primme_proj_Harm);
    PRINTParamsIF(projection, projection, primme_proj_ref);
 
    PRINTIF(InitBasisMode, primme_init_default);

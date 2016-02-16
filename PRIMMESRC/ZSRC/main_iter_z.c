@@ -136,6 +136,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                             /* Number of converged Ritz pairs before restart */
    int recentlyConverged;   /* Number of target Ritz pairs that have         */
                             /*    converged during the current iteration.    */
+   int maxRecentlyConverged;/* Maximum converged values per iteration        */
    int numConvergedStored;  /* Numb of Ritzvecs temporarily stored in evecs  */
                             /*    to allow for skew projectors w/o locking   */
    int converged;           /* True when all required Ritz vals. converged   */
@@ -190,7 +191,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    primme_CostModel CostModel; /* Structure holding the runtime estimates of */
                             /* the parameters of the model.Only visible here */
    double timeForMV;        /* Measures time for 1 matvec operation          */
-   double tstart;           /* Timing variable for accumulative time spent   */
+   double tstart=0.0;       /* Timing variable for accumulative time spent   */
 
    /* -------------------------------------------------------------- */
    /* Subdivide the workspace                                        */
@@ -380,13 +381,16 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             primme->stats.numOuterIterations++;
             numPrevRetained = 0;
 
-            /* Limit blockSize to one when there are more than one target shift */
+            /* When QR are computed and there are more than one target shift,	*/
+            /* limit blockSize and the converged values to one.               */
 
-            if (primme->numTargetShifts > numConverged+1) {
+            if (primme->numTargetShifts > numConverged+1 && R) {
                availableBlockSize = 1;
+               maxRecentlyConverged = numConverged-numLocked+1;
             }
             else {
                availableBlockSize = primme->maxBlockSize;
+               maxRecentlyConverged = primme->numEvals-numLocked;
             }
 
             /* Limit blockSize to vacant vectors in the basis */
@@ -403,7 +407,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
  
             prepare_candidates(V, W, primme->nLocal, basisSize, primme->nLocal,
                &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs, basisSize,
-               hVals, flags, numConverged-numLocked, primme->numEvals-numLocked, blockNorms,
+               hVals, flags, numConverged-numLocked, maxRecentlyConverged, blockNorms,
                blockSize, availableBlockSize, evecs, numLocked, evals, resNorms, machEps,
                iev, &blockSize, &recentlyConverged, rwork, rworkSize, iwork, primme);
 
@@ -607,7 +611,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
          if (primme->target != primme_smallest && primme->target != primme_largest) {
             permute_vecs_d(prevRitzVals, 1, basisSize, 1, hVecsperm, (double*)rwork, iwork0);
-            permute_vecs_d(prevRitzVals, 1, basisSize, 1, Vperm, (double*)rwork, iwork0);
+            permute_vecs_d(prevRitzVals, 1, restartSize, 1, Vperm, (double*)rwork, iwork0);
             numPrevRitzVals = restartSize;
          }
 
@@ -897,7 +901,7 @@ int prepare_candidates(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
    if (V == NULL) {
       Complex_Z t;
 
-      return maxBlockSize+max(
+      return maxBlockSize+maxBlockSize*basisSize+max(
          check_convergence_zprimme(NULL, nLocal, 0, NULL, 0, NULL, numLocked, 0,
                basisSize-maxBlockSize, basisSize, NULL, NULL, NULL, 0.0, NULL, 0, NULL, primme),
          Num_update_VWXR_z(NULL, NULL, nLocal, basisSize, 0, NULL, 0, 0, NULL,
@@ -912,7 +916,7 @@ int prepare_candidates(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
 
    *blockSize = 0;
    hValsBlock0 = (double*)rwork;
-   hVecsBlock0 = &rwork[basisSize];
+   hVecsBlock0 = &rwork[maxBlockSize];
    rwork += maxBlockSize + ldhVecs*maxBlockSize;
    rworkSize -= maxBlockSize + ldhVecs*maxBlockSize;
    flagsBlock = iwork;
@@ -1296,7 +1300,7 @@ static void print_residuals(double *ritzValues, double *blockNorms,
 
 static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
-   int switchto, one=1;
+   int switchto=0, one=1;
    double est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
 
    /* ----------------------------------------------------------------- */
@@ -1408,7 +1412,7 @@ static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
  ******************************************************************************/
 static void switch_from_GDpk(primme_CostModel *model, primme_params *primme) {
 
-   int switchto, one = 1;
+   int switchto=0, one = 1;
    double ratio, globalRatio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */

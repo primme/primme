@@ -74,6 +74,8 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
       return (numCols+blockSize)*numCols*2;
    }
 
+   assert(ldX >= nLocal && ldY >= nLocal && ldZ >= numCols+blockSize);
+
    /* ------------ */
    /* Quick return */
    /* ------------ */
@@ -102,19 +104,21 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    }
    */
 
-   /* --------------------------------------------------------------------- */
-   /* Reduce the upper triangular part of the new columns in Z.             */
-   /* --------------------------------------------------------------------- */
+   if (primme->n > 1) {
+      /* --------------------------------------------------------------------- */
+      /* Reduce the upper triangular part of the new columns in Z.             */
+      /* --------------------------------------------------------------------- */
 
-   Num_copy_trimatrix_compact_dprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
-         numCols, rwork, &count);
-   assert(count*2 <= lrwork);
+      Num_copy_trimatrix_compact_dprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
+            numCols, rwork, &count);
+      assert(count*2 <= lrwork);
 
-   count_doubles = count;
-   primme->globalSumDouble(rwork, (double*)&rwork[count], &count_doubles, primme);
+      count_doubles = count;
+      primme->globalSumDouble(rwork, (double*)&rwork[count], &count_doubles, primme);
 
-   Num_copy_compact_trimatrix_dprimme(&rwork[count], m, blockSize, numCols,
-         &Z[ldZ*numCols], ldZ);
+      Num_copy_compact_trimatrix_dprimme(&rwork[count], m, blockSize, numCols,
+            &Z[ldZ*numCols], ldZ);
+   }
 
    return 0;
 }

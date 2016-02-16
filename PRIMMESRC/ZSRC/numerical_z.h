@@ -53,11 +53,6 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
 void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
 void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
 Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
-void Num_ztgsja_dprimme(const char *jobu, const char *jobv, const char *jobq,
-   int m, int p, int n, int k, int l, Complex_Z *a, int lda, Complex_Z *b, int ldb,
-   double tola, double tolb, double *alpha, double *beta, Complex_Z *u, int ldu,
-   Complex_Z *v, int ldv, Complex_Z *q, int ldq, Complex_Z *work, int ldwork, int ncycle,
-   int *info);
 void Num_orgqr_zprimme(int m, int n, int k, Complex_Z *a, int lda, Complex_Z *tau,
       Complex_Z *rwork, int lrwork, int *info);
 void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int k, 
@@ -104,7 +99,7 @@ void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Comp
 void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly);
 void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
       int *yin, int ldy);
-int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int pshift, int *p,
+int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
    int ldx, Complex_Z *Ax, int ldAx,
    Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,

@@ -57,7 +57,7 @@
 #define ZHETRF    FORTRAN_FUNCTION(zhetrf)
 #define ZHETRS    FORTRAN_FUNCTION(zhetrs)
 #define ZGEQRF    FORTRAN_FUNCTION(zgeqrf)
-#define ZUNMQR    FORTRAN_FUNCTION(zunmqr)
+#define ZUNGQR    FORTRAN_FUNCTION(zungqr)
 
 #define DCOPY     FORTRAN_FUNCTION(dcopy)
 #define DSWAP     FORTRAN_FUNCTION(dswap)
@@ -102,7 +102,7 @@
 #define ZGESVD zgesvd
 #define ZHETRS zhetrs
 #define ZGEQRF zgeqrf
-#define ZUNMQR zunmqr
+#define ZUNGQR zungqr
 
 #define DCOPY  SCOPY
 #define DSWAP  SSWAP
@@ -175,7 +175,7 @@ void   ZHETRF(const char *uplo, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda,
 void   ZHETRS(const char *uplo, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, void *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, void *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
 void   ZDOTCSUB(void *dot, PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
 void   ZGEQRF(PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda, void *tau, void *work, PRIMME_BLASINT *lwork, PRIMME_BLASINT *info);
-void   ZUNMQR(const char *side, const char *trans, PRIMME_BLASINT *m, PRIMME_BLASINT *n, PRIMME_BLASINT *k, void *a, PRIMME_BLASINT *lda, void *tau, void *c, PRIMME_BLASINT *ldc, void *work, PRIMME_BLASINT *lwork, PRIMME_BLASINT *info);
+void   ZUNGQR(PRIMME_BLASINT *m, PRIMME_BLASINT *n, PRIMME_BLASINT *k, void *a, PRIMME_BLASINT *lda, void *tau, void *work, PRIMME_BLASINT *lwork, PRIMME_BLASINT *info);
 
 #ifdef NUM_ESSL
 PRIMME_BLASINT dspev(PRIMME_BLASINT iopt, double *ap, double *w, double *z, PRIMME_BLASINT ldz, PRIMME_BLASINT n, double *aux, PRIMME_BLASINT naux);
@@ -221,7 +221,7 @@ void   ZLARNV(PRIMME_BLASINT *idist, PRIMME_BLASINT *iseed, PRIMME_BLASINT *n, v
 void   ZHEEV(_fcd jobz, _fcd uplo, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda, double *w, void *work, PRIMME_BLASINT *ldwork, double *rwork, PRIMME_BLASINT *info);
 void   ZDOTCSUB(void *dot, PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
 void   ZGEQRF(PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda, void *tau, void *work, PRIMME_BLASINT *lwork, PRIMME_BLASINT *info);
-void   ZUNMQR(_fcd side, _fcd trans, PRIMME_BLASINT *m, PRIMME_BLASINT *n, PRIMME_BLASINT *k, void *a, PRIMME_BLASINT *lda, void *tau, void *c, PRIMME_BLASINT *ldc, void *work, PRIMME_BLASINT *lwork, PRIMME_BLASINT *info);
+void   ZUNGQR(PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda, void *tau, void *work, PRIMME_BLASINT *lwork, PRIMME_BLASINT *info);
 
 void   ZHETRF(_fcd uplo, PRIMME_BLASINT *n, void *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, void *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
 void   ZHETRS(_fcd uplo, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, void *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, void *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);

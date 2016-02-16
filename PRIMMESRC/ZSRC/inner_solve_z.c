@@ -145,10 +145,10 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    Complex_Z ztmp;
 
    /* Parameters used to dynamically update eigenpair */
-   double Beta, Delta, Psi, Beta_prev, Delta_prev, Psi_prev, eta;
-   double dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated, R;
+   double Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
+   double dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0, R;
    double Gamma_prev, Phi_prev;
-   double Gamma, Phi;
+   double Gamma=0.0, Phi=0.0;
    double gamma;
 
    /* The convergence criteria of the inner linear system must satisfy:       */
@@ -157,7 +157,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
    double relativeTolerance; 
    double absoluteTolerance;
-   double LTolerance, ETolerance;
+   double LTolerance, ETolerance=0.0;
 
    /* Some constants                                                          */
    Complex_Z tzero = {+0.0e+00,+0.0e00};

@@ -261,6 +261,8 @@ int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
 
    for (i=0; i<basisSize; i++)
       Vperm[i] = hVecsperm[i];
+   permute_vecs_i(Vperm, basisSize, hVecsperm, iwork);
+   
 
    /* --------------------------------------------------------------------- */
    /* If the user requires (I-QQ') projectors in JDQMR without locking,     */
@@ -618,7 +620,7 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
    }
 
    /* Apply permutation Vperm to hVals */
-   permute_vecs_d(hVals, 1, basisSize, 1, Vperm, (double*)rwork, iwork);
+   permute_vecs_d(hVals, 1, restartSize, 1, Vperm, (double*)rwork, iwork);
 
    /* ---------------------------------------------------------------------- */
    /* If coefficient vectors from the previous iteration have been retained, */
@@ -769,7 +771,7 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* Replace H by hVecs' * H * hVecs */
    /* ------------------------------- */
 
-   compute_submatrix(hVecs, basisSize, ldhVecs, H, basisSize, ldH, H, ldH,
+   compute_submatrix(hVecs, restartSize, ldhVecs, H, basisSize, ldH, H, ldH,
       rwork, rworkSize);
 
    /* -------------------------------------- */
@@ -784,8 +786,8 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
             restartSize, rwork, rworkSize, machEps, primme);
       if (ret != 0) return ret;
 
-      ret = solve_H_Ref_@(pre)primme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
-            R, ldR, hVals, basisSize, rworkSize, rwork, primme);
+      ret = solve_H_Ref_@(pre)primme(H, ldH, hVecs, newldhVecs, hU, newldhU, hSVals, 
+            R, ldR, hVals, restartSize, rworkSize, rwork, primme);
       if (ret != 0) return ret;
 
       return 0;
@@ -909,8 +911,8 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    }
 
    permute_vecs_d(hSVals, 1, basisSize, 1, perm, (double*)rwork, iwork);
-   permute_vecs_d(hSVals, 1, basisSize, 1, Vperm, (double*)rwork, iwork);
-   permute_vecs_d(hVals, 1, basisSize, 1, Vperm, (double*)rwork, iwork);
+   permute_vecs_d(hSVals, 1, restartSize, 1, Vperm, (double*)rwork, iwork);
+   permute_vecs_d(hVals, 1, restartSize, 1, Vperm, (double*)rwork, iwork);
 
    /* ---------------------------------------------------------------------- */
    /* If coefficient vectors from the previous iteration have been retained, */

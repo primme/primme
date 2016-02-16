@@ -51,11 +51,6 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
 
 void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy);
-void Num_dtgsja_dprimme(const char *jobu, const char *jobv, const char *jobq,
-   int m, int p, int n, int k, int l, double *a, int lda, double *b, int ldb,
-   double tola, double tolb, double *alpha, double *beta, double *u, int ldu,
-   double *v, int ldv, double *q, int ldq, double *work, int ldwork, int ncycle,
-   int *info);
 void Num_orgqr_dprimme(int m, int n, int k, double *a, int lda, double *tau,
       double *rwork, int lrwork, int *info);
 void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int k, 
@@ -98,7 +93,7 @@ void Num_copy_compact_trimatrix_dprimme(double *x, int m, int n, int i0, double 
 void Num_copy_trimatrix_compact_dprimme(double *x, int m, int n, int ldx, int i0, double *y, int *ly);
 void Num_copy_matrix_i_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy);
-int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int pshift, int *p,
+int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int *p,
    int ldx, double *Ax, int ldAx,
    double *xo, int no, int ldxo, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
