@@ -355,7 +355,7 @@ static void getSumSquares(const CSRMatrix *matrix, double *diag) {
 
    for (i=0; i < matrix->m; i++) {
       for (j=matrix->IA[i]; j <= matrix->IA[i+1]-1; j++) {
-         v = matrix->AElts[j-1]*CONJ(matrix->AElts[j-1]);
+         v = REAL_PART(matrix->AElts[j-1]*CONJ(matrix->AElts[j-1]));
          sumr[i]   += v;
          sumc[matrix->JA[j-1]-1] += v;
       }

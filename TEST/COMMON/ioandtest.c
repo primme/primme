@@ -144,8 +144,8 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
          fprintf(stderr, "Warning: |EVecs[0:%d-1]'Evec[%d]| = %-3E\n", i, i, prod);
          retX = 1;
       } 
-      if (fabs(sqrt(h0[i])-1) > 1e-7 && primme->procID == 0) {
-         fprintf(stderr, "Warning: |Evec[%d]|-1 = %-3E\n", i, fabs(sqrt(h0[i])-1));
+      if (fabs(sqrt(REAL_PART(h0[i]))-1) > 1e-7 && primme->procID == 0) {
+         fprintf(stderr, "Warning: |Evec[%d]|-1 = %-3E\n", i, fabs(sqrt(REAL_PART(h0[i]))-1));
          retX = 1;
       } 
        
