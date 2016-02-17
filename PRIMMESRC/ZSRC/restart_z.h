@@ -31,17 +31,17 @@
 
 int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
    int basisSize, int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs, int ldhVecs,
-   int *hVecsperm, double *hVals, int *flags, int *iev, int *ievSize,
+   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, Complex_Z *evecs, double *evals, double *resNorms,
    Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, int ldM, int *numConverged,
    int *numConvergedStored, Complex_Z *previousHVecs, int *numPrevRetained,
-   int ldpreviousHVecs, int *indexOfPreviousVecs, int *Vperm, double machEps,
+   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
    Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
    Complex_Z *H, int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR,
    Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
-   double *hVals, double *hSVals, int *hVecsperm, int *Vperm,
+   double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained,
    int indexOfPreviousVecs, Complex_Z *evecs, int *evecsSize,
    int ldevecs, Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, int ldM, Complex_Z *UDU,

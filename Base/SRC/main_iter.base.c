@@ -156,8 +156,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    int *flags;              /* Indicates which Ritz values have converged    */
    int *ipivot;             /* The pivot for the UDU factorization of M      */
    int *iev;                /* Evalue index each block vector corresponds to */
-   int *hVecsperm;          /* Permutation of hVecs in restarting            */
-   int *Vperm;              /* Permutation of V in restarting                */
+   int *restartPerm;        /* Permutation of hVecs used to restart V        */
+   int *hVecsPerm;          /* Permutation of hVecs to sort as primme.target */
 
    double tol;              /* Required tolerance for residual norms         */
    @(type) *V;              /* Basis vectors                                 */
@@ -595,25 +595,25 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             restartSize = min(basisSize, primme->minRestartSize);
          }
 
-         hVecsperm = iwork;
-         Vperm = &hVecsperm[basisSize];
-         iwork0 = &Vperm[basisSize];
+         restartPerm = iwork;
+         hVecsPerm = &restartPerm[basisSize];
+         iwork0 = &hVecsPerm[basisSize];
 
          if (!primme->locking) {
             @(type) *X, *R;
             ret = restart_@(pre)primme(&restartSize, V, W, primme->nLocal, basisSize,
-               primme->nLocal, &X, &R, hVecs, basisSize, hVecsperm, hVals, flags, iev, &blockSize,
+               primme->nLocal, &X, &R, hVecs, basisSize, restartPerm, hVals, flags, iev, &blockSize,
                blockNorms, evecs, evals, resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, &numConverged,
                &numConvergedStored, previousHVecs, &numPrevRetained, primme->maxBasisSize,
-               &indexOfPreviousVecs, Vperm, machEps, rwork, rworkSize, iwork0, primme);
+               &indexOfPreviousVecs, hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
          }
          else {
             @(type) *X, *R;
             ret = restart_locking_@(pre)primme(&restartSize, V, W, primme->nLocal, basisSize,
-               primme->nLocal, &X, &R, hVecs, basisSize, hVecsperm, hVals, flags, iev, &blockSize,
+               primme->nLocal, &X, &R, hVecs, basisSize, restartPerm, hVals, flags, iev, &blockSize,
                blockNorms, evecs, evals, &numConverged, &numLocked, resNorms, perm, numGuesses,
                previousHVecs, &numPrevRetained, primme->maxBasisSize, &indexOfPreviousVecs,
-               Vperm, machEps, rwork, rworkSize, iwork0, primme);
+               hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
          }
 
          if (ret != 0) {
@@ -622,18 +622,18 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             return RESTART_FAILURE;
          }
 
-         /* Rearrange prevRitzVals according to hVecsperm */
+         /* Rearrange prevRitzVals according to restartPerm */
 
          if (primme->target != primme_smallest && primme->target != primme_largest) {
-            permute_vecs_d(prevRitzVals, 1, basisSize, 1, hVecsperm, (double*)rwork, iwork0);
-            permute_vecs_d(prevRitzVals, 1, restartSize, 1, Vperm, (double*)rwork, iwork0);
+            permute_vecs_d(prevRitzVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork0);
+            permute_vecs_d(prevRitzVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork0);
             numPrevRitzVals = restartSize;
          }
 
          after_restart_@(pre)primme(V, primme->nLocal, W, primme->nLocal, H,
                primme->maxBasisSize, Q, primme->nLocal, primme->nLocal,
                R, primme->maxBasisSize, hU, basisSize, restartSize, hVecs, basisSize,
-               restartSize, hVals , hSVals, hVecsperm, Vperm, restartSize, basisSize,
+               restartSize, hVals , hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
                numPrevRetained, indexOfPreviousVecs, evecs,
                &numConvergedStored, primme->nLocal, evecsHat, primme->nLocal, M,
                maxEvecsSize, UDU, 0, ipivot, numConvergedBeforeRestart, numConverged,
