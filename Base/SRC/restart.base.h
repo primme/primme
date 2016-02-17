@@ -31,17 +31,17 @@
 
 int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
    int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, int ldhVecs,
-   int *hVecsperm, double *hVals, int *flags, int *iev, int *ievSize,
+   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, @(type) *evecs, double *evals, double *resNorms,
    @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, int *numConverged,
    int *numConvergedStored, @(type) *previousHVecs, int *numPrevRetained,
-   int ldpreviousHVecs, int *indexOfPreviousVecs, int *Vperm, double machEps,
+   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
    @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 int after_restart_@(pre)primme(@(type) *V, int ldV, @(type) *W, int ldW,
    @(type) *H, int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR,
    @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-   double *hVals, double *hSVals, int *hVecsperm, int *Vperm,
+   double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained,
    int indexOfPreviousVecs, @(type) *evecs, int *evecsSize,
    int ldevecs, @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, @(type) *UDU,

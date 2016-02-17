@@ -32,10 +32,10 @@
 
 int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    int nLocal, int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs,
-   int ldhVecs, int *hVecsperm, double *hVals, int *flags, int *iev, int *ievSize,
+   int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, @(type) *evecs, double *evals, int *numConverged, int *numLocked,
    double *resNorms, int *evecsperm, int numGuesses, @(type) *previousHVecs,
-   int *numPrevRetained, int ldpreviousHVecs, int *indexOfPreviousVecs, int *Vperm,
+   int *numPrevRetained, int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm,
    double machEps, @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif
