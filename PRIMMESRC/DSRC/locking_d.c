@@ -360,7 +360,7 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    Num_compact_vecs_d(&hVecs[left*ldhVecs], basisSize, failed, ldhVecs, ifailed,
          &hVecs[left*ldhVecs], ldhVecs, 0);
    Num_compact_vecs_d(&hVals[left], 1, failed, 1, ifailed, &hVals[left], 1, 0);
-   permute_vecs_i(&hVecsperm[left], numPacked, ifailed, (int*)rwork);
+   permute_vecs_i(&hVecsperm[left], numPacked, ifailed, ifailed+numPacked);
 
    if (X) {
       *X = &V[(left+failed)*ldV];

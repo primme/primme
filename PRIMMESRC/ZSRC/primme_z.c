@@ -456,7 +456,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    intWorkSize = primme->maxBasisSize /* Size of flag               */
       + 2*primme->maxBlockSize        /* Size of iev and ilev       */
       + maxEvecsSize                  /* Size of ipivot             */
-      + 4*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
+      + 5*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
 
    /*----------------------------------------------------------------------*/
    /* byte sizes:                                                          */

@@ -134,7 +134,7 @@ static int real_main (int argc, char *argv[]) {
    PRIMME_NUM *evecs;
    driver_params driver;
    primme_params primme;
-   primme_preset_method method=-1;
+   primme_preset_method method=(primme_preset_method)-1;
    int *permutation = NULL;
 
    /* Other miscellaneous items */

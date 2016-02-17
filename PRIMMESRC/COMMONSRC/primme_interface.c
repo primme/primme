@@ -152,7 +152,7 @@ void *primme_valloc(size_t byteSize, const char *target) {
       perror("primme_alloc");
       fprintf(stderr,
          "ERROR(primme_alloc): Could not allocate %lu bytes for: %s\n",
-         byteSize, target);
+         (unsigned long int)byteSize, target);
       fflush(stderr);
       exit(EXIT_FAILURE);
    }
@@ -170,7 +170,7 @@ void *primme_calloc(size_t nelem, size_t elsize, const char *target) {
       perror("primme_calloc");
       fprintf(stderr, 
          "ERROR(primme_calloc): Could not allocate %lu elements of %lu bytes for: %s\n",
-         nelem, elsize, target);
+         (unsigned long int)nelem, (unsigned long int)elsize, target);
       fflush(stderr);
       exit(EXIT_FAILURE);
    }
