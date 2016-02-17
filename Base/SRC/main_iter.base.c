@@ -289,7 +289,17 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
 
       resNorms[0] = 0.0L;
       primme->stats.numMatvecs++;
+      primme->initSize = 1;
       return 0;
+   }
+
+   /* ------------------------------------------------ */
+   /* Especial configuration for matrix of dimension 2 */
+   /* ------------------------------------------------ */
+
+   if (primme->n == 2) {
+      primme->minRestartSize = 2;
+      primme->restartingParams.maxPrevRetain = 0;
    }
 
    /* -------------------- */
@@ -404,12 +414,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
 
             assert(blockSize <= availableBlockSize);
 
-            /* Check the convergence of the blockSize Ritz vectors computed.     */
-            /* Subroutine replace_vectors - This routine determines which eigenvectors */
-            /*            are to be targeted in the next iteration.  If one is marked  */
-            /*            as converged, another is targeted in its place if one is     */
-            /*            available.                                                   */
- 
+            /* Set the block with the first unconverged pairs */
             prepare_candidates_@(pre)(V, W, primme->nLocal, basisSize, primme->nLocal,
                &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs, basisSize,
                hVals, flags, numConverged-numLocked, maxRecentlyConverged, blockNorms,
@@ -500,15 +505,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                if (primme->dynamicMethodSwitch > 0) 
                   CostModel.time_in_inner += primme_wTimer(0) - tstart;
 
-               /* ----------------------------------------------------------- */
-               /* Special case: If (basisSize+numLocked) is the entire space, */
-               /* then everything should be converged. Do not test, just flag */
-               /* everything as converged                                     */
-               /* ----------------------------------------------------------- */
-               if (basisSize + numLocked + primme->numOrthoConst == primme->n)
-                  for (i = 0; i < basisSize; i++)
-                     flags[i] = CONVERGED;
-               
+              
             } /* end of else blocksize=0 */
 
             /* Orthogonalize the corrections with respect to each other */
@@ -564,6 +561,19 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* Restart the basis  */
          /* ------------------ */
 
+         /* ----------------------------------------------------------- */
+         /* Special case: If (basisSize+numLocked) is the entire space, */
+         /* then everything should be converged. Do not test, just flag */
+         /* everything as converged                                     */
+         /* ----------------------------------------------------------- */
+
+         if (basisSize + numLocked + primme->numOrthoConst >= primme->n) {
+            for (i = 0; i < basisSize && numConverged < primme->numEvals; i++)
+               if (flags[i] == UNCONVERGED) { flags[i] = CONVERGED; numConverged++; }
+            restartSize = basisSize;
+            numPrevRetained = 0;
+         }
+
          /* --------------------------------------------------------------------- */
          /* If basis isn't full, restart with the current basis size.             */
          /* If dynamic thick restarting is to be used, then determine the minimum */
@@ -573,7 +583,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* then set the restart size to the minimum restart size.                */
          /* --------------------------------------------------------------------- */
       
-         if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
+         else if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
              restartSize = basisSize;
          }
          else if (primme->restartingParams.scheme == primme_dtr) {
@@ -1021,7 +1031,7 @@ int prepare_candidates_@(pre)(@(type) *V, @(type) *W, int nLocal, int basisSize,
  *    This function is called one iteration before restart so that the
  *    coefficients (eigenvectors of the projection H) corresponding to 
  *    a few of the target Ritz vectors may be retained at restart. 
- *    The desired coefficients are copied to a seperate storage space so
+ *    The desired coefficients are copied to a separate storage space so
  *    that they may be preserved until the restarting routine is called.
  *
  *

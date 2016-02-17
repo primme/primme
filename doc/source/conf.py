@@ -198,7 +198,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('readme', 'PRIMME.tex', u'PRIMME Documentation',
-   u'Andreas Stathopuolos', 'manual'),
+   u'Andreas Stathopoulos', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -228,9 +228,9 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('primmec', 'primmec', u'PRIMME Documentation for C Interface',
-     [u'Andreas Stathopuolos'], 1),
+     [u'Andreas Stathopoulos'], 1),
     ('primmef77', 'primmef77', u'PRIMME Documentation for F77 Interface',
-     [u'Andreas Stathopuolos'], 1)
+     [u'Andreas Stathopoulos'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -244,7 +244,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('readme', 'PRIMME', u'PRIMME Documentation',
-   u'Andreas Stathopuolos', 'PRIMME', 'One line description of project.',
+   u'Andreas Stathopoulos', 'PRIMME', 'One line description of project.',
    'Miscellaneous'),
 ]
 
