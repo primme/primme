@@ -662,7 +662,7 @@ static void Num_scalInv_dmatrix(double *x, int m, int n, int ldx, double *factor
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
-      if (factors[i] > 0 && isfinite(1.0L/factors[i])) {
+      if (factors[i] > 0 && 1.0L/factors[i] < HUGE_VAL) {
          ztmp = 1.0L/factors[i];
       }
       else {
