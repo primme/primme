@@ -134,7 +134,7 @@ static int real_main (int argc, char *argv[]) {
    PRIMME_NUM *evecs;
    driver_params driver;
    primme_params primme;
-   primme_preset_method method=(primme_preset_method)-1;
+   primme_preset_method method=DEFAULT_METHOD;
    int *permutation = NULL;
 
    /* Other miscellaneous items */
@@ -208,9 +208,7 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------- */
    /* Pick one of the default methods(if set) */
    /* --------------------------------------- */
-   if (method > 100 || primme_set_method(method, &primme) < 0 ) {
-      fprintf(primme.outputFile, "No preset method. Using custom settings\n");
-   }
+   primme_set_method(method, &primme);
 
    /* --------------------------------------- */
    /* Optional: report memory requirements    */
