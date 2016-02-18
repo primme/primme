@@ -94,7 +94,6 @@
 #include "lapack.h"
 #include "blas.h"
 #include "primme.h" 
-#include "wtime.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -107,7 +106,6 @@ void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme);
 void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme);
 void Preconditioner_z(void *x, void *y, int *blockSize, primme_params *primme);
 
-double Matvec_mex_timer = 0.0L;
 char *outputfilename;
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
@@ -115,7 +113,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    double *evals, *rnorms;
    void *EVecs;
    primme_params primme;
-   mwSize i, j;
+   mwSize i;
    mwSize ndim;
    mxArray *tmp; /* tmp stores each field value pointer of opts*/
    char *read_target_string = NULL;
@@ -124,9 +122,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    double *read_iseed = NULL;
    double *read_initialevecs = NULL;
    double *read_initialevecsimag = NULL;
-
-   /* Timing vars */
-   double wt1,wt2;
 
    primme_preset_method method = DYNAMIC;
 
@@ -516,21 +511,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*  Call primme  */
       /* ------------- */
 
-      wt1 = primme_get_wtime(); 
-
       ret = dprimme(evals, evecs, rnorms, &primme);
-
-      wt2 = primme_get_wtime();
-
 
       if (ret == 0)
          mexPrintf("dprimme return value is %d, success\n", ret);
       else
          mexPrintf("dprimme return value is %d, fail\n", ret);
-
-      mexPrintf("Wallclock Runtime   : %f seconds\n", wt2-wt1);
-      mexPrintf("Matvec_MEX Time     : %f seconds\n", Matvec_mex_timer);
-
 
       /* Show recommended method for future runs */
       if (outputfilename != NULL) {
@@ -543,7 +529,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
          fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
          fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds); 
-         fprintf(primme.outputFile, "\n#,%d,%.1f\n\n", primme.stats.numMatvecs, wt2-wt1);
+         fprintf(primme.outputFile, "\n#,%d,%.1f\n\n", primme.stats.numMatvecs, primme.stats.elapsedTime);
 
          switch (primme.dynamicMethodSwitch) {
             case -1: fprintf(primme.outputFile, "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
@@ -551,9 +537,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             case -3: fprintf(primme.outputFile, "Recommended method for next run: DYNAMIC (close call)\n"); break;
          }
 
-         fprintf(primme.outputFile, "Wallclock Runtime : %f seconds\n", wt2-wt1);
-         fprintf(primme.outputFile, "Matvec_MEX Time   : %f seconds\n", Matvec_mex_timer);
-         /*           primme_display_params(primme);*/
          fclose(primme.outputFile);           
       }
 
@@ -657,21 +640,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*  Call primme  */
       /* ------------- */
 
-      wt1 = primme_get_wtime(); 
-
       ret = zprimme(evals, evecs, rnorms, &primme);
-
-      wt2 = primme_get_wtime();
-
 
       if (ret == 0)
          mexPrintf("zprimme return value is %d, success\n", ret);
       else
          mexPrintf("zprimme return value is %d, fail\n", ret);
-
-      mexPrintf("Wallclock Runtime   : %f seconds\n", wt2-wt1);
-      mexPrintf("Matvec_MEX Time     : %f seconds\n", Matvec_mex_timer);
-
 
       /* Show recommended method for future runs */
       if (outputfilename != NULL) {  
@@ -681,8 +655,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             case -3: fprintf(primme.outputFile, "Recommended method for next run: DYNAMIC (close call)\n"); break;
          }
 
-         fprintf(primme.outputFile, "Wallclock Runtime : %f seconds\n", wt2-wt1);
-         fprintf(primme.outputFile, "Matvec_MEX Time   : %f seconds\n", Matvec_mex_timer);
          fclose(primme.outputFile);
       }
 
@@ -737,11 +709,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
 {  
-   double wt1 = primme_get_wtime(), wt2; 
    double * sendXr;
    double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
    mxArray *rhs[1], *lhs[1];
    double * yvecr;
@@ -768,21 +738,15 @@ void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
    mxDestroyArray(rhs[0]); 
    mxDestroyArray(lhs[0]);     
 
-   wt2 = primme_get_wtime(); 
-   Matvec_mex_timer = Matvec_mex_timer + wt2 -wt1;
-
 }
 
 
 void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme)
 {  
-   double wt1 = primme_get_wtime(), wt2; 
-
    double * sendXr;
    double * sendXi;
    Complex_Z *xvec = (Complex_Z *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
    double * yvecr;
    double * yveci;
@@ -810,9 +774,6 @@ void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme)
 
    mxDestroyArray(rhs[0]);
    mxDestroyArray(lhs[0]);
-
-   wt2 = primme_get_wtime(); 
-   Matvec_mex_timer = Matvec_mex_timer + wt2 -wt1;
 }
 
 
@@ -834,7 +795,6 @@ void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme)
    double * sendXr;
    double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
    mxArray *rhs[1], *lhs[1];
    double * yvecr;
@@ -869,7 +829,6 @@ void Preconditioner_z(void *x, void *y, int *blockSize, primme_params *primme)
    double * sendXi;
    Complex_Z *xvec = (Complex_Z *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
    double * yvecr;
    double * yveci;
