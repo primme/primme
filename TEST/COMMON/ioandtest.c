@@ -360,7 +360,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       CHECK_PRIMME_PARAM_DOUBLE(aNorm);
       CHECK_PRIMME_PARAM_DOUBLE(eps);
       CHECK_PRIMME_PARAM(initSize);
-      CHECK_PRIMME_PARAM_TOL(stats.numMatvecs, 40);
+      CHECK_PRIMME_PARAM_TOL(stats.numMatvecs, 60);
       CHECK_PRIMME_PARAM(method);
       CHECK_PRIMME_PARAM(methodStage2);
    }
