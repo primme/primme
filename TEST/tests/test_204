@@ -14,5 +14,5 @@ primme_svds.printLevel = 1
 
 // Solver parameters
 primme_svds.numSvals = 5
-primme_svds.eps = 1.000000e-12
+primme_svds.eps = 7.000000e-12
 primme_svds.target = primme_svds_smallest

@@ -68,7 +68,7 @@ static PRIMME_NUM primme_svds_dot(PRIMME_NUM *x, PRIMME_NUM *y, int trans, primm
 int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
                    PRIMME_NUM *evecs, double *rnorms, int *perm) {
 
-   double eval0, rnorm0, prod;
+   double eval0, rnorm0, prod, bound, delta;
    PRIMME_NUM *Ax, *r, *X=NULL, *h, *h0;
    int i, j, cols, retX=0, one=1;
    primme_params primme0;
@@ -129,7 +129,13 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
    h = (PRIMME_NUM *)primme_calloc(max(cols*2, primme->initSize), sizeof(PRIMME_NUM), "h"); h0 = &h[cols];
    Ax = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "Ax");
    r = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "r");
-   
+
+   /* Estimate the separation between eigenvalues */
+   delta = primme->aNorm;
+   for (i=1; i < primme->initSize; i++) {
+      delta = min(delta, fabs(evals[i]-evals[i-1]));
+   }
+
    for (i=0; i < primme->initSize; i++) {
       /* Check |V(:,0:i-1)'V(:,i)| < sqrt(machEps) */
       SUF(Num_gemv)("C", primme->nLocal, i+1, COMPLEXZV(1.0), COMPLEXZ(evecs), primme->nLocal, COMPLEXZ(&evecs[primme->nLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
@@ -167,7 +173,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E, RR residual %5E is larger than tolerance %5E\n", i, evals[i], rnorm0, primme->eps*primme->aNorm*sqrt((double)(i+1)));
          retX = 1;
       }
-      /* Check X'V(:,i) >= sqrt(1-2|r|), assuming residual of X is less than the tolerance */
+      /* Check angle X and V(:,i) is less than twice the max angle of the eigenvector with largest residual  */
       SUF(Num_gemv)("C", primme->nLocal, cols, COMPLEXZV(1.0), COMPLEXZ(X), primme->nLocal, COMPLEXZ(&evecs[primme->nLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
       if (primme->globalSumDouble) {
          int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
@@ -175,8 +181,9 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       }
       else h0 = h;
       prod = REAL_PARTZ(SUF(Num_dot)(cols, COMPLEXZ(h0), 1, COMPLEXZ(h0), 1));
-      if (prod < sqrt(1.-2.*rnorms[i]) && primme->procID == 0) {
-         fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X, %5E > %5E\n", i, evals[i], prod, sqrt(1.-2.*rnorms[i]));
+      bound = primme->aNorm*primme->eps/delta;
+      if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme->procID == 0) {
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i, evals[i], prod, delta);
          retX = 1;
       }
    }
@@ -313,7 +320,7 @@ int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *pe
 int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_svds, double *svals,
                         PRIMME_NUM *svecs, double *rnorms, int *perm) {
 
-   double sval0, rnorm0, prod;
+   double sval0, rnorm0, prod, delta, bound;
    PRIMME_NUM *Ax, *r, *X=NULL, *h, *h0, *U, *V;
    int i, j, cols, retX=0, one=1, notrans=0, trans=1;
    primme_svds_params primme_svds0;
@@ -355,7 +362,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       CHECK_PRIMME_PARAM(initSize);
       CHECK_PRIMME_PARAM_TOL(stats.numOuterIterations, 40);
       CHECK_PRIMME_PARAM(method);
-      CHECK_PRIMME_PARAM(method0);
+      CHECK_PRIMME_PARAM(methodStage2);
    }
 
 #  undef CHECK_PRIMME_PARAM
@@ -365,6 +372,12 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
    h = (PRIMME_NUM *)primme_calloc(cols*2, sizeof(PRIMME_NUM), "h"); h0 = &h[cols];
    Ax = (PRIMME_NUM *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(PRIMME_NUM), "Ax");
    r = (PRIMME_NUM *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(PRIMME_NUM), "r");
+
+   /* Estimate the separation between eigenvalues */
+   delta = primme_svds->aNorm;
+   for (i=1; i < primme_svds->initSize; i++) {
+      delta = min(delta, fabs(svals[i]-svals[i-1]));
+   }
 
    U = svecs;
    V = &svecs[primme_svds->mLocal*cols];   
@@ -394,15 +407,15 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       for (j=0; j<primme_svds->nLocal; j++) r[j] = Ax[j] - svals[i]*V[primme_svds->nLocal*i+j];
       rnorm0 += REAL_PART(primme_svds_dot(r, r, 1, primme_svds));
       rnorm0 = sqrt(rnorm0);
-      if (fabs(rnorms[i]-rnorm0) > 4*max(primme_svds->aNorm,fabs(svals[i]))*MACHINE_EPSILON && primme_svds->procID == 0) {
-         fprintf(stderr, "Warning: rnorms[%d] = %5E, but the computed residual is %5E\n", i, rnorms[i], rnorm0);// 4*max(primme_svds->aNorm,fabs(svals[i]))*MACHINE_EPSILON);
+      if (rnorms[i] < rnorm0 - max(primme_svds->aNorm,fabs(svals[i]))*MACHINE_EPSILON && primme_svds->procID == 0) {
+         fprintf(stderr, "Warning: rnorms[%d] = %5E, but the computed residual is %5E\n", i, rnorms[i], rnorm0);
          retX = 1;
       }
-      if (rnorm0 > primme_svds->eps*primme_svds->aNorm*sqrt((double)(i+1)) && primme_svds->procID == 0) {
+      if (rnorm0 > 8*primme_svds->eps*primme_svds->aNorm*sqrt((double)(i+1)) && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E, RR residual %5E is larger than tolerance %5E\n", i, svals[i], rnorm0, primme_svds->eps*primme_svds->aNorm*sqrt((double)(i+1)));
          retX = 1;
       }
-      /* Check X'U(:,i) >= sqrt(1-2|r|), assuming residual of X is less than the tolerance */
+      /* Check angle X and U(:,i) is less than twice the max angle of the eigenvector with largest residual  */
       SUF(Num_gemv)("C", primme_svds->mLocal, cols, COMPLEXZV(1.0), COMPLEXZ(X), primme_svds->mLocal, COMPLEXZ(&svecs[primme_svds->mLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
       if (primme_svds->globalSumDouble) {
          int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
@@ -410,8 +423,9 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       }
       else h0 = h;
       prod = REAL_PARTZ(SUF(Num_dot)(cols, COMPLEXZ(h0), 1, COMPLEXZ(h0), 1));
-      if (prod < sqrt(1.-2.*rnorms[i]) && primme_svds->procID == 0) {
-         fprintf(stderr, "Warning: Sval[%d] = %-22.15E not found on X, %5E > %5E\n", i, svals[i], prod, sqrt(1.-2.*rnorms[i]));
+      bound = primme_svds->aNorm*primme_svds->eps/delta;
+      if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme_svds->procID == 0) {
+         fprintf(stderr, "Warning: Sval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i, svals[i], prod, delta);
          retX = 1;
       }
    }

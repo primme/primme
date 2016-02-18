@@ -87,7 +87,7 @@ typedef enum {
    primme_proj_default,
    primme_proj_RR,          /* Rayleigh-Ritz */
    primme_proj_Harm,        /* Harmonic Rayleigh-Ritz */
-   primme_proj_ref          /* refinement with fixed target */
+   primme_proj_ref          /* refined with fixed target */
 } primme_projection;
 
 typedef enum {         /* Initially fill up the search subspace with: */
@@ -148,14 +148,6 @@ typedef struct projection_params {
    primme_projection projection;
 } projection_params;
 
-/*lingfei: primme_svds. some useful info for users.*/
-typedef struct currentestimates { 
-   double Anormest;
-   double targetRitzVal;
-   double targetRitzValNorm;
-   double *targetRitzVec;
-}currenterstimates;
-
 typedef struct correction_params {
    int precondition;
    int robustShifts;
@@ -202,9 +194,6 @@ typedef struct primme_params {
    int numTargetShifts;              /* For targeting interior epairs,      */
    double *targetShifts;             /* at least one shift must also be set */
 
-   /* lingfei: primme_svds. The RR or Harmonic or Refined projection is used*/
-   projection_params projectionParams; 
-
    /* the following will be given default values depending on the method */
    int dynamicMethodSwitch;
    int locking;
@@ -229,11 +218,9 @@ typedef struct primme_params {
    void *matrix;
    void *preconditioner;
    double *ShiftsForPreconditioner;
-   /* lingfei: primme_svds. PRIMME MEX use largestRitzValForSVD to adjust tol for ATA method */
-   struct currentestimates currentEstimates;
-   primme_init InitBasisMode;
-   int ReIntroInitGuessToBasis;
+   primme_init initBasisMode;
 
+   struct projection_params projectionParams; 
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
@@ -245,6 +232,7 @@ typedef struct primme_params {
 /*---------------------------------------------------------------------------*/
 
 typedef enum {
+   DEFAULT_METHOD,
    DYNAMIC,
    DEFAULT_MIN_TIME,
    DEFAULT_MIN_MATVECS,

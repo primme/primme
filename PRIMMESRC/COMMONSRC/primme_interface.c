@@ -76,12 +76,7 @@ void primme_initialize(primme_params *primme) {
 
    primme->projectionParams.projection = primme_proj_default;
 
-   primme->currentEstimates.Anormest           = 0;
-   primme->currentEstimates.targetRitzVal      = 0;
-   primme->currentEstimates.targetRitzValNorm  = 0;
-   primme->currentEstimates.targetRitzVec      = NULL;
-   primme->InitBasisMode                       = primme_init_default;
-   primme->ReIntroInitGuessToBasis             = 0;
+   primme->initBasisMode                       = primme_init_default;
 
    /* Eigensolver parameters (outer) */
    primme->locking                             = -1;
@@ -250,6 +245,10 @@ void primme_Free(primme_params *params) {
  *
  ******************************************************************************/
 int primme_set_method(primme_preset_method method, primme_params *params) {
+
+   /* Do nothing if DEFAULT_METHOD */
+   if (method == DEFAULT_METHOD)
+      return 0;
 
    /* From our experience, these two methods yield the smallest matvecs/time */
    /* DYNAMIC will make some timings before it settles on one of the two     */
@@ -475,8 +474,8 @@ void primme_set_defaults(primme_params *params) {
 
    if (params->projectionParams.projection == primme_proj_default)
       params->projectionParams.projection = primme_proj_RR;
-   if (params->InitBasisMode == primme_init_default)
-      params->InitBasisMode = primme_init_krylov;
+   if (params->initBasisMode == primme_init_default)
+      params->initBasisMode = primme_init_krylov;
       
    /* Now that most of the parameters have been set, set defaults  */
    /* for basisSize, restartSize (for those methods that need it)  */
@@ -590,11 +589,10 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTParamsIF(projection, projection, primme_proj_Harm);
    PRINTParamsIF(projection, projection, primme_proj_ref);
 
-   PRINTIF(InitBasisMode, primme_init_default);
-   PRINTIF(InitBasisMode, primme_init_krylov);
-   PRINTIF(InitBasisMode, primme_init_random);
-   PRINTIF(InitBasisMode, primme_init_user);
-   PRINT(ReIntroInitGuessToBasis, %d);
+   PRINTIF(initBasisMode, primme_init_default);
+   PRINTIF(initBasisMode, primme_init_krylov);
+   PRINTIF(initBasisMode, primme_init_random);
+   PRINTIF(initBasisMode, primme_init_user);
 
    PRINT(numTargetShifts, %d);
    if (primme.numTargetShifts > 0 && primme.targetShifts) {

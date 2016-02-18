@@ -208,7 +208,7 @@ int init_basis_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW
    Num_copy_matrix_@(pre)primme(&evecs[primme->numOrthoConst*ldevecs],
          nLocal, initSize, ldevecs, V, ldV);
 
-   switch(primme->InitBasisMode) {
+   switch(primme->initBasisMode) {
    case primme_init_krylov:
       random = 0;
       break;
@@ -241,7 +241,7 @@ int init_basis_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW
 
    matrixMatvec_@(pre)primme(V, nLocal, ldV, W, ldW, 0, *basisSize, primme);
 
-   if (primme->InitBasisMode == primme_init_krylov) {
+   if (primme->initBasisMode == primme_init_krylov) {
       ret = init_block_krylov(V, nLocal, ldV, W, ldW, *basisSize,
             primme->minRestartSize-1, evecs, ldevecs, primme->numOrthoConst,
             machEps, rwork, rworkSize, primme); 

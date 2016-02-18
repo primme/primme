@@ -81,6 +81,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
             if (ret == 1) {
                ret = 0;
                #define READ_METHOD(V) if (strcmp(stringValue, #V) == 0) {*method = V; ret=1;}
+               READ_METHOD(DEFAULT_METHOD);
                READ_METHOD(DYNAMIC);
                READ_METHOD(DEFAULT_MIN_TIME);
                READ_METHOD(DEFAULT_MIN_MATVECS);
@@ -152,14 +153,12 @@ int read_solver_params(char *configFileName, char *outputFileName,
             OPTIONParams(projection, projection, primme_proj_RR)
          );
 
-         READ_FIELD_OP(InitBasisMode,
-            OPTION(InitBasisMode, primme_init_default)
-            OPTION(InitBasisMode, primme_init_krylov)
-            OPTION(InitBasisMode, primme_init_random)
-            OPTION(InitBasisMode, primme_init_user)
+         READ_FIELD_OP(initBasisMode,
+            OPTION(initBasisMode, primme_init_default)
+            OPTION(initBasisMode, primme_init_krylov)
+            OPTION(initBasisMode, primme_init_random)
+            OPTION(initBasisMode, primme_init_user)
          );
-
-         READ_FIELD(ReIntroInitGuessToBasis, %d);
 
          READ_FIELD(numTargetShifts, %d);
          if (strcmp(field, "targetShifts") == 0) {
@@ -456,6 +455,7 @@ fprintf(outputFile, "driver.filter        = %f\n\n", driver.filter);
 void driver_display_method(primme_preset_method method, const char* methodstr, FILE *outputFile) {
 
    const char *strMethod[] = {
+      "DEFAULT_METHOD",
       "DYNAMIC",
       "DEFAULT_MIN_TIME",
       "DEFAULT_MIN_MATVECS",
@@ -472,8 +472,7 @@ void driver_display_method(primme_preset_method method, const char* methodstr, F
       "LOBPCG_OrthoBasis",
       "LOBPCG_OrthoBasis_Window"};
 
-   if (method < 100)
-      fprintf(outputFile, "%s               = %s\n", methodstr, strMethod[method]);
+   fprintf(outputFile, "%s               = %s\n", methodstr, strMethod[method]);
 
 }
 
@@ -485,8 +484,7 @@ void driver_display_methodsvd(primme_svds_preset_method method, const char* meth
       "primme_svds_normalequations",
       "primme_svds_augmented"};
 
-   if (method < 100)
-      fprintf(outputFile, "%s               = %s\n", methodstr, strMethod[method]);
+   fprintf(outputFile, "%s               = %s\n", methodstr, strMethod[method]);
 
 }
 
@@ -495,7 +493,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
                 primme_svds_params *primme_svds, const char* primmeprefix,
                 primme_svds_preset_method *method, const char* methodstr,
                 primme_preset_method *primme_method,
-                primme_preset_method *primme_method0) {
+                primme_preset_method *primme_methodStage2) {
 
    int line, ret, i;
    char ident[2048], *field;
@@ -622,7 +620,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
             OPTION(method, primme_svds_op_augmented)
          );
 
-         READ_FIELD_OP(method0,
+         READ_FIELD_OP(methodStage2,
             OPTION(method, primme_svds_op_none)
             OPTION(method, primme_svds_op_AtA)
             OPTION(method, primme_svds_op_AAt)
@@ -673,8 +671,8 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
 
    read_solver_params(configFileName, outputFileName, &primme_svds->primme,
                       "primme.", primme_method, "primme.method");
-   read_solver_params(configFileName, outputFileName, &primme_svds->primme0,
-                      "primme0.", primme_method0, "primme.method0");
+   read_solver_params(configFileName, outputFileName, &primme_svds->primmeStage2,
+                      "primmeStage2.", primme_methodStage2, "primme.methodStage2");
 
    return (0);
 }
@@ -731,7 +729,9 @@ void broadCast(primme_params *primme, primme_preset_method *method,
    MPI_Bcast(&(primme->aNorm), 1, MPI_DOUBLE, 0, comm);
    MPI_Bcast(&(primme->eps), 1, MPI_DOUBLE, 0, comm);
    MPI_Bcast(&(primme->printLevel), 1, MPI_INT, 0, comm);
+   MPI_Bcast(&(primme->initBasisMode), 1, MPI_INT, 0, comm);
 
+   MPI_Bcast(&(primme->projectionParams.projection), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme->restartingParams.scheme), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme->restartingParams.maxPrevRetain), 1, MPI_INT, 0, comm);
 
@@ -758,7 +758,7 @@ void broadCast(primme_params *primme, primme_preset_method *method,
  *             Each process creates their own.
 ******************************************************************************/
 void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *method,
-   primme_preset_method *primmemethod, primme_preset_method *primmemethod0,
+   primme_preset_method *primmemethod, primme_preset_method *primmemethodStage2,
    driver_params *driver, int master, MPI_Comm comm){
 
    MPI_Bcast(driver->outputFileName, 512, MPI_CHAR, 0, comm);
@@ -794,12 +794,12 @@ void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *
    MPI_Bcast(&(primme_svds->eps), 1, MPI_DOUBLE, 0, comm);
    MPI_Bcast(&(primme_svds->printLevel), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme_svds->method), 1, MPI_INT, 0, comm);
-   MPI_Bcast(&(primme_svds->method0), 1, MPI_INT, 0, comm);
+   MPI_Bcast(&(primme_svds->methodStage2), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme_svds->precondition), 1, MPI_INT, 0, comm);
 
    MPI_Bcast(method, 1, MPI_INT, 0, comm);
    broadCast(&primme_svds->primme, primmemethod,  NULL, master, comm);
-   broadCast(&primme_svds->primme0, primmemethod0,  NULL, master, comm);
+   broadCast(&primme_svds->primmeStage2, primmemethodStage2,  NULL, master, comm);
 }
 
 #ifdef USE_PETSC
