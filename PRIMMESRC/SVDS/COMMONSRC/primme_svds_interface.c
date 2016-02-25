@@ -48,7 +48,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->numSvals                = 1;
    primme_svds->target                  = primme_svds_largest;
    primme_svds->method                  = primme_svds_op_none;
-   primme_svds->method0                 = primme_svds_op_none;
+   primme_svds->methodStage2            = primme_svds_op_none;
 
    /* Shifts for primme_svds_augmented method */
    primme_svds->numTargetShifts         = 0;
@@ -101,31 +101,37 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->realWork                = NULL;
 
    primme_initialize(&primme_svds->primme);
-   primme_initialize(&primme_svds->primme0);
+   primme_initialize(&primme_svds->primmeStage2);
  
 }
 
 int primme_svds_set_method(primme_svds_preset_method method,
+      primme_preset_method methodStage1, primme_preset_method methodStage2,
       primme_svds_params *primme_svds) {
 
-   /* Set method and method0 in primme_svds_params */
+   /* Set method and methodStage2 in primme_svds_params */
    switch(method) {
    case primme_svds_default:
    case primme_svds_hybrid:
       primme_svds->method = primme_svds->n <= primme_svds->m ? primme_svds_op_AtA : primme_svds_op_AAt;
-      primme_svds->method0 = primme_svds_op_augmented;
+      primme_svds->methodStage2 = primme_svds_op_augmented;
       break;
    case primme_svds_normalequations:
       primme_svds->method = primme_svds->n <= primme_svds->m ? primme_svds_op_AtA : primme_svds_op_AAt;
-      primme_svds->method0 = primme_svds_op_none;
+      primme_svds->methodStage2 = primme_svds_op_none;
       break;
    case primme_svds_augmented:
       primme_svds->method = primme_svds_op_augmented;
-      primme_svds->method0 = primme_svds_op_none;
+      primme_svds->methodStage2 = primme_svds_op_none;
       break;
    }
 
+   /* Setup underneath eigensolvers based on primme_svds configuration */
    primme_svds_set_defaults(primme_svds);
+
+   /* Set methods for the underneath eigensolvers */
+   primme_set_method(methodStage1, &primme_svds->primme);
+   primme_set_method(methodStage2, &primme_svds->primmeStage2);
 
    return 0;
 }
@@ -142,7 +148,8 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
    /* Set svds method if none set */
    if (primme_svds->method == primme_svds_op_none) {
-      primme_svds_set_method(primme_svds_default, primme_svds);
+      primme_svds_set_method(primme_svds_default, DEFAULT_METHOD,
+            DEFAULT_METHOD, primme_svds);
    }
 
    /* Copy values set in primme_svds to the first stage underneath eigensolver */
@@ -151,18 +158,18 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
    /* Set default values and method for the first state */
    primme_set_defaults(&primme_svds->primme);
 
-   if (primme_svds->method0 != primme_svds_op_none) {
+   if (primme_svds->methodStage2 != primme_svds_op_none) {
       /* Copy values set in primme_svds to the second stage underneath eigensolver */
       copy_params_from_svds(primme_svds, 1);
 
       /* NOTE: refined extraction seems to work better than RR */
-      if (primme_svds->primme0.projectionParams.projection == primme_proj_default)
-         primme_svds->primme0.projectionParams.projection = primme_proj_ref;
+      if (primme_svds->primmeStage2.projectionParams.projection == primme_proj_default)
+         primme_svds->primmeStage2.projectionParams.projection = primme_proj_ref;
 
       /* Set default values and method for the second state */
-      if (primme_svds->primme0.dynamicMethodSwitch < 0)
-         primme_set_method(JDQMR, &primme_svds->primme0);
-      primme_set_defaults(&primme_svds->primme0);
+      if (primme_svds->primmeStage2.dynamicMethodSwitch < 0)
+         primme_set_method(JDQMR, &primme_svds->primmeStage2);
+      primme_set_defaults(&primme_svds->primmeStage2);
    }
 }
 
@@ -170,8 +177,8 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    primme_params *primme;
    primme_svds_operator method;
 
-   primme = stage == 0 ? &primme_svds->primme : &primme_svds->primme0;
-   method = stage == 0 ? primme_svds->method : primme_svds->method0;
+   primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
+   method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
 
    if (method == primme_svds_op_none) {
       primme->maxMatvecs = 1;
@@ -253,7 +260,7 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    }
    else {
       primme->target = primme_closest_geq;
-      primme->InitBasisMode = primme_init_user;
+      primme->initBasisMode = primme_init_user;
    }
       
    if (primme->target == primme_smallest || primme->target == primme_largest){
@@ -345,10 +352,10 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
    PRINTIF(method, primme_svds_op_AAt);
    PRINTIF(method, primme_svds_op_augmented);
 
-   PRINTIF(method0, primme_svds_op_none);
-   PRINTIF(method0, primme_svds_op_AtA);
-   PRINTIF(method0, primme_svds_op_AAt);
-   PRINTIF(method0, primme_svds_op_augmented);
+   PRINTIF(methodStage2, primme_svds_op_none);
+   PRINTIF(methodStage2, primme_svds_op_AtA);
+   PRINTIF(methodStage2, primme_svds_op_AAt);
+   PRINTIF(methodStage2, primme_svds_op_augmented);
 
    if (primme_svds.method != primme_svds_op_none) {
       fprintf(outputFile, "\n"
@@ -359,13 +366,13 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
       primme_display_params_prefix("primme", primme_svds.primme);
    }
 
-   if (primme_svds.method0 != primme_svds_op_none) {
+   if (primme_svds.methodStage2 != primme_svds_op_none) {
       fprintf(outputFile, "\n"
                           "// ---------------------------------------------------\n"
                           "//            2st stage primme configuration          \n"
                           "// ---------------------------------------------------\n");
-      primme_svds.primme0.outputFile = outputFile;
-      primme_display_params_prefix("primme0", primme_svds.primme0);
+      primme_svds.primmeStage2.outputFile = outputFile;
+      primme_display_params_prefix("primmeStage2", primme_svds.primmeStage2);
    }
    fflush(outputFile);
 
@@ -383,8 +390,8 @@ void primme_svds_Free(primme_svds_params *params) {
 
 /*******************************************************************************
  * Subroutine convTestFunATA - This routine implements primme_params.
- *    convTestFun and return an approximate eigenpair converged when           
- *    resNorm < eps * sval / primme_svds.aNorm = eps * sqrt(eval/primme.aNorm)
+ *    convTestFun and returns an approximate eigenpair converged when           
+ *    resNorm < eps * sval * primme_svds.aNorm = eps * sqrt(eval*primme.aNorm)
  *    resNorm is close to machineEpsilon * primme.aNorm.
  *
  * INPUT ARRAYS AND PARAMETERS
@@ -411,8 +418,8 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 
 /*******************************************************************************
  * Subroutine convTestFunAugmented - This routine implements primme_params.
- *    convTestFun and return an approximate eigenpair converged when           
- *    resNorm < eps / sqrt(2) / primme_svds.aNorm = eps / sqrt(2) / primme.aNorm.          
+ *    convTestFun and returns an approximate eigenpair converged when           
+ *    resNorm < eps / sqrt(2) * primme_svds.aNorm = eps / sqrt(2) * primme.aNorm.          
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------

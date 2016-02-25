@@ -415,7 +415,7 @@ void ApplyInvNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int *blockSi
 void ApplyInvDavidsonNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int *blockSize,
                                    int *mode, primme_svds_params *primme_svds) {
    primme_params *primme =
-      primme_svds->method == *mode ? &primme_svds->primme : &primme_svds->primme0;  
+      primme_svds->method == *mode ? &primme_svds->primme : &primme_svds->primmeStage2;
    ApplyInvNormalPrecNativeSvdsGen(x, ldx, y, ldy, blockSize, mode, primme_svds,
       primme->ShiftsForPreconditioner);
 }

@@ -134,8 +134,8 @@ static int real_main (int argc, char *argv[]) {
    PRIMME_NUM *svecs;
    driver_params driver;
    primme_svds_params primme_svds;
-   primme_svds_preset_method method=-1;
-   primme_preset_method primmemethod=-1, primmemethod0=-1;
+   primme_svds_preset_method method=primme_svds_default;
+   primme_preset_method primmemethod=DEFAULT_METHOD, primmemethodStage2=DEFAULT_METHOD;
    int *permutation = NULL;
 
    /* Other miscellaneous items */
@@ -188,7 +188,7 @@ static int real_main (int argc, char *argv[]) {
       /* --------------------------------------- */
       if (read_solver_params_svds(SolverConfigFileName, driver.outputFileName, 
                            &primme_svds, "primme_svds.", &method, "method", &primmemethod,
-                           &primmemethod0) < 0) {
+                           &primmemethodStage2) < 0) {
          fprintf(stderr, "Reading solver parameters failed\n");
          return(-1);
       }
@@ -199,7 +199,7 @@ static int real_main (int argc, char *argv[]) {
    /* Send read common primme members to all processors */ 
    /* Setup the primme members local to this processor  */ 
    /* ------------------------------------------------- */
-   broadCast_svds(&primme_svds, &method, &primmemethod, &primmemethod0, &driver, master, comm);
+   broadCast_svds(&primme_svds, &method, &primmemethod, &primmemethodStage2, &driver, master, comm);
 #endif
 
    /* --------------------------------------- */
@@ -210,11 +210,7 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------- */
    /* Pick one of the default methods(if set) */
    /* --------------------------------------- */
-   if (method > 100 || primme_svds_set_method(method, &primme_svds) < 0 ) {
-      fprintf(primme_svds.outputFile, "No preset method. Using custom settings\n");
-   }
-   if (primmemethod < 100) primme_set_method(primmemethod, &primme_svds.primme);
-   if (primmemethod0 < 100) primme_set_method(primmemethod0, &primme_svds.primme0);
+   primme_svds_set_method(method, primmemethod, primmemethodStage2, &primme_svds);
 
    /* --------------------------------------- */
    /* Optional: report memory requirements    */
@@ -240,7 +236,7 @@ static int real_main (int argc, char *argv[]) {
       primme_svds_display_params(primme_svds);
       driver_display_methodsvd(method, "method", primme_svds.outputFile);
       driver_display_method(primmemethod, "primme.method", primme_svds.outputFile);
-      driver_display_method(primmemethod0, "primme0.method", primme_svds.outputFile);
+      driver_display_method(primmemethodStage2, "primmeStage2.method", primme_svds.outputFile);
    }
 
    /* --------------------------------------------------------------------- */
@@ -358,9 +354,9 @@ static int real_main (int argc, char *argv[]) {
          fprintf(primme_svds.outputFile, pre "Preconds    : %-d\n", (A).numPreconds);\
          fprintf(primme_svds.outputFile, pre "ElapsedTime : %-f\n", (A).elapsedTime);}
 
-      if (primme_svds.method0 != primme_svds_op_none) {
+      if (primme_svds.methodStage2 != primme_svds_op_none) {
          PRINT_STATS(primme_svds.primme.stats, "1st ");
-         PRINT_STATS(primme_svds.primme0.stats, "2sd ");
+         PRINT_STATS(primme_svds.primmeStage2.stats, "2sd ");
       }
       PRINT_STATS(primme_svds.stats, "");
       if (primme_svds.locking && primme_svds.intWork && primme_svds.intWork[0] == 1) {

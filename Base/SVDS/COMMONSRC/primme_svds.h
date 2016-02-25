@@ -64,13 +64,13 @@ typedef struct primme_svds_params {
    /**** Low interface: configuration for the eigensolver */
    primme_params primme;  /* Keep it as first field to access primme_svds_params from
                              primme_params */
-   primme_params primme0; /* other primme_params, used by hybrid */
+   primme_params primmeStage2; /* other primme_params, used by hybrid */
 
    /* Specify the size of the rectangular matrix A */
    int m; /* number of rows */ 
    int n; /* number of columns */
 
-   /***** High interface: these values are transferred to primme0 and primme1 properly */
+   /***** High interface: these values are transferred to primme and primmeStage2 properly */
    void (*matrixMatvec) 
       (void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
    void (*applyPreconditioner)
@@ -91,7 +91,7 @@ typedef struct primme_svds_params {
    int numTargetShifts;    /* For primme_svds_augmented method, user has to */ 
    double *targetShifts;   /* make sure  at least one shift must also be set */
    primme_svds_operator method; /* one of primme_svds_AtA, primme_svds_AAt or primme_svds_augmented */
-   primme_svds_operator method0; /* hybrid second stage method; accepts the same values as method */
+   primme_svds_operator methodStage2; /* hybrid second stage method; accepts the same values as method */
 
    /* These pointers are not for users but for d/zprimme_svds function */
    int intWorkSize;
@@ -126,8 +126,9 @@ int dprimme_svds(double *evals, double *evecs, double *resNorms,
 int zprimme_svds(double *evals, Complex_Z *evecs, double *resNorms,
       primme_svds_params *primme_svds);
 void primme_svds_initialize(primme_svds_params *primme_svds);
-int primme_svds_set_method(primme_svds_preset_method svd_method,
-      primme_svds_params *params);
+int primme_svds_set_method(primme_svds_preset_method method,
+      primme_preset_method methodStage1, primme_preset_method methodStage2,
+      primme_svds_params *primme_svds);
 void primme_svds_display_params(primme_svds_params primme_svds);
 void primme_svds_Free(primme_svds_params *primme_svds);
 

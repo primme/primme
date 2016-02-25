@@ -357,8 +357,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             primme->maxBasisSize, hU, basisSize, hVecs, basisSize, hVals, hSVals,
             numConverged, rworkSize, rwork, iwork, primme);
       
-      primme->currentEstimates.targetRitzVal = hVals[0];
-
       if (ret != 0) {
          primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret, 
                          __FILE__, __LINE__, primme);
@@ -540,8 +538,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                   primme->maxBasisSize, hU, basisSize, hVecs, basisSize, hVals, hSVals,
                   numConverged, rworkSize, rwork, iwork, primme);
 
-            primme->currentEstimates.targetRitzVal = hVals[0];
-
             if (ret != 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret,
                                __FILE__, __LINE__, primme);
@@ -683,8 +679,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             ret = solve_H_zprimme(H, basisSize, primme->maxBasisSize, R,
                   primme->maxBasisSize, hU, basisSize, hVecs, basisSize, hVals, hSVals,
                   numConverged, rworkSize, rwork, iwork, primme);
-
-            primme->currentEstimates.targetRitzVal = hVals[0];
 
             if (ret != 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret,

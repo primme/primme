@@ -132,6 +132,8 @@ void primme_set_method_f77(primme_params **primme, int *method,
    int d;
 
    switch (*method) {
+      case PRIMMEF77_DEFAULT_METHOD:  
+              d = primme_set_method(DEFAULT_METHOD, *primme); break;
       case PRIMMEF77_DYNAMIC:  
               d = primme_set_method(DYNAMIC, *primme); break;
       case PRIMMEF77_DEFAULT_MIN_TIME:  
@@ -321,6 +323,12 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
       case PRIMMEF77_preconditioner:
               (*primme)->preconditioner = v.ptr_v;
       break;
+      case PRIMMEF77_initBasisMode:
+              (*primme)->initBasisMode = *v.init_v;
+      break;
+      case PRIMMEF77_projectionParams_projection:
+              (*primme)->projectionParams.projection = *v.projection_v;
+      break;
       case PRIMMEF77_restartingParams_scheme:
               (*primme)->restartingParams.scheme = *v.restartscheme_v;
       break;
@@ -374,6 +382,21 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
       break;
       case PRIMMEF77_stats_elapsedTime:
               (*primme)->stats.elapsedTime = *v.double_v;
+      break;
+      case PRIMMEF77_stats_estimateMinEVal:
+              (*primme)->stats.estimateMinEVal = *v.double_v;
+      break;
+      case PRIMMEF77_stats_estimateMaxEVal:
+              (*primme)->stats.estimateMaxEVal = *v.double_v;
+      break;
+      case PRIMMEF77_stats_estimateLargestSVal:
+              (*primme)->stats.estimateLargestSVal = *v.double_v;
+      break;
+      case PRIMMEF77_stats_maxConvTol:
+              (*primme)->stats.maxConvTol = *v.double_v;
+      break;
+      case PRIMMEF77_convTestFun:
+              (*primme)->convTestFun = v.convTestFun_v;
       break;
       default : 
       fprintf(stderr,"Requested member (%d) does not exist: consult primme_f77.h.",*label);
