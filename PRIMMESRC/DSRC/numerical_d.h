@@ -101,6 +101,8 @@ int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int *p,
 void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,
    const char *diag, int m, int n, double alpha, double *a, int lda, double *b,
    int ldb);
+void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, const char *diag,
+      int m, int n, double alpha, double *a, int lda, double *b, int ldb);
 
 #define PRIMME_BLOCK_SIZE 512
 

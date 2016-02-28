@@ -32,6 +32,6 @@
 
 int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    double *Z, int ldZ, int nLocal, int numCols, int blockSize, double *rwork,
-   int lrwork, primme_params *primme);
+   int lrwork, int isSymmetric, primme_params *primme);
 
 #endif

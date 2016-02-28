@@ -135,7 +135,7 @@ int init_basis_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
    if (V == NULL) {
       return max(max(max(
             update_projection_zprimme(NULL, 0, NULL, 0, NULL, 0, nLocal,
-               0, primme->numOrthoConst, NULL, 0, primme),
+               0, primme->numOrthoConst, NULL, 0, 1/*symmetric*/, primme),
             UDUDecompose_zprimme(NULL, 0, NULL, 0, NULL,
                primme->numOrthoConst, NULL, 0, primme)),
             ortho_zprimme(NULL, 0, NULL, 0, 0, 
@@ -177,7 +177,7 @@ int init_basis_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
          primme->stats.numPreconds += primme->numOrthoConst;
 
          update_projection_zprimme(evecs, ldevecs, evecsHat, ldevecsHat, M,
-            ldM, nLocal, 0, primme->numOrthoConst, rwork, rworkSize, primme);
+            ldM, nLocal, 0, primme->numOrthoConst, rwork, rworkSize, 1/*symmetric*/, primme);
 
          ret = UDUDecompose_zprimme(M, ldM, UDU, ldUDU, ipivot,
             primme->numOrthoConst, rwork, rworkSize, primme);

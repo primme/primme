@@ -73,6 +73,9 @@ int UDUDecompose_dprimme(double *M, int ldM, double *UDU, int ldUDU,
 
    if (dimM == 0) return 0;
 
+   /* if ld is zero, change by the matrix size */
+   if (ldUDU == 0) ldUDU = dimM;
+
    /* Return memory requirement */
 
    if (M == NULL) {
@@ -80,9 +83,6 @@ int UDUDecompose_dprimme(double *M, int ldM, double *UDU, int ldUDU,
       Num_dsytrf_dprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
       return (int)*(double*)&w;
     }
-
-   /* if ld is zero, change by the matrix size */
-   if (ldUDU == 0) ldUDU = dimM;
 
    /* Quick return for M with dimension 1 */
 

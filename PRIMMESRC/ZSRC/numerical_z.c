@@ -547,6 +547,18 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
 }
  
 
+void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, const char *diag,
+      int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb) {
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+
+   ZTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+
+}
+
 /******************************************************************************
  * Function Num_copy_matrix - Copy the matrix x into y
  *

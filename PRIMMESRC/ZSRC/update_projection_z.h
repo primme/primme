@@ -32,6 +32,6 @@
 
 int update_projection_zprimme(Complex_Z *X, int ldX, Complex_Z *Y, int ldY,
    Complex_Z *Z, int ldZ, int nLocal, int numCols, int blockSize, Complex_Z *rwork,
-   int lrwork, primme_params *primme);
+   int lrwork, int isSymmetric, primme_params *primme);
 
 #endif

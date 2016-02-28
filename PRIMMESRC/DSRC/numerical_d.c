@@ -525,6 +525,18 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
 }
 
 
+void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, const char *diag,
+      int m, int n, double alpha, double *a, int lda, double *b, int ldb) {
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+
+   DTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+
+}
+
 /******************************************************************************
  * Function Num_copy_matrix - Copy the matrix x into y
  *

@@ -40,11 +40,11 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
    int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
    int rworkSize, Complex_Z *rwork, int *iwork, primme_params *primme);
 
-static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
-   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR, Complex_Z *hU,
-   int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
-   double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
-   int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
+   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR, Complex_Z *QV,
+   int ldQV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
    int numConvergedBeforeRestart, int numConverged, int rworkSize,
    Complex_Z *rwork, int *iwork, double machEps, primme_params *primme);
 

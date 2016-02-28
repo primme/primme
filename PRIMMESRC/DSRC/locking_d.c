@@ -69,6 +69,12 @@
  *
  * ldV              The leading dimension of V and W
  *
+ * ldhR             The leading dimension of Q and R
+ *
+ * hU               The eigenvectors of QV/R
+ *
+ * ldhU             The leading dimension of hU
+ *
  * basisSize        Size of the basis V
  *
  * numGuesses       Number of remaining initial guesses
@@ -143,7 +149,8 @@
  ******************************************************************************/
  
 int restart_locking_dprimme(int *restartSize, double *V, double *W,
-   int nLocal, int basisSize, int ldV, double **X, double **R, double *hVecs,
+   int nLocal, double *hR, int ldhR, double *hU, int ldhU,
+   int basisSize, int ldV, double **X, double **R, double *hVecs,
    int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, double *evecs, double *evals, int *numConverged, int *numLocked,
    double *resNorms, int *evecsperm, int numGuesses, double *previousHVecs,
@@ -170,9 +177,8 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
             Num_compact_res_i_dprimme(nLocal, NULL, NULL, basisSize, NULL, 0,
                NULL, 0, NULL, primme->maxBlockSize, 0, NULL, 0, NULL,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
-            ortho_dprimme(NULL, 0, NULL, 0, 0,
-               *numPrevRetained-1, NULL, 0, *restartSize, 0,
-               NULL, 0, NULL, 0, NULL)),
+            ortho_coefficient_vectors_d(NULL, basisSize, 0, 0, *restartSize, NULL, NULL,
+               0, NULL, 0, *numPrevRetained, 0.0, NULL, NULL, 0, primme)),
             Num_update_VWXR_d(NULL, NULL, 0, basisSize, 0, NULL,
                *restartSize, 0, NULL,
                &t, 0, *restartSize+*numLocked, 0,
@@ -236,6 +242,8 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    permute_vecs_d(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_d(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
 
+   *restartSize += numPacked + *numPrevRetained;
+
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
    /* iteration can be retained to accelerate convergence.  The previous      */
@@ -248,18 +256,15 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    Num_copy_matrix_dprimme(previousHVecs, basisSize, *numPrevRetained,
          ldpreviousHVecs, &hVecs[ldhVecs*(*indexOfPreviousVecs)], ldhVecs);
 
-   ret = ortho_dprimme(hVecs, ldhVecs, NULL, 0, *indexOfPreviousVecs,
-         *indexOfPreviousVecs+*numPrevRetained-1,
-         &hVecs[ldhVecs*(*indexOfPreviousVecs+*numPrevRetained)],
-         ldhVecs, numPacked, basisSize,
-         primme->iseed, machEps, rwork, rworkSize, NULL);
+   ret = ortho_coefficient_vectors_d(hVecs, basisSize, ldhVecs, *indexOfPreviousVecs,
+         *restartSize, restartPerm, hU, ldhU, hR, ldhR, *numPrevRetained, machEps,
+         iwork, rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
    /* Restart V and W by replacing it with the current Ritz vectors. */
    /* -------------------------------------------------------------- */
 
-   *restartSize += numPacked + *numPrevRetained;
    maxBlockSize = min(min(primme->maxBlockSize, primme->numEvals-*numConverged),
          primme->maxBasisSize-*restartSize);
    sizeBlockNorms = X ? min(maxBlockSize, *indexOfPreviousVecs) : 0;

@@ -31,7 +31,8 @@
 #define LOCKING_H
 
 int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
-   int nLocal, int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs,
+   int nLocal, @(type) *hR, int ldhR, @(type) *hU, int ldhU,
+   int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs,
    int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, @(type) *evecs, double *evals, int *numConverged, int *numLocked,
    double *resNorms, int *evecsperm, int numGuesses, @(type) *previousHVecs,

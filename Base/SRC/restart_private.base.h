@@ -40,11 +40,11 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
    int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
    int rworkSize, @(type) *rwork, int *iwork, primme_params *primme);
 
-static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
-   int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR, @(type) *hU,
-   int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-   double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
-   int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
+   int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR, @(type) *QV,
+   int ldQV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
    int numConvergedBeforeRestart, int numConverged, int rworkSize,
    @(type) *rwork, int *iwork, double machEps, primme_params *primme);
 

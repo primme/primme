@@ -38,6 +38,11 @@
 #define NUM_DGESVD_FAILURE  -3
 #define NUM_ZGESVD_FAILURE  -4
 
+static int solve_H_Harm_dprimme(double *H, int ldH, double *QV, int ldQV,
+   double *R, int ldR, double *hVecs, int ldhVecs, double *hU, int ldhU,
+   double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
+   double *rwork, int *iwork, primme_params *primme);
+
 #endif
 
 

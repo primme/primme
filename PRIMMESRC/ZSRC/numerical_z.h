@@ -107,6 +107,8 @@ int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
 void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
    const char *diag, int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b,
    int ldb);
+void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, const char *diag,
+      int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb);
 
 #define PRIMME_BLOCK_SIZE 512
 

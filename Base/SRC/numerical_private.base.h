@@ -46,6 +46,7 @@
 #define ZSWAP     FORTRAN_FUNCTION(zswap)
 #define ZGEMM     FORTRAN_FUNCTION(zgemm)
 #define ZTRMM     FORTRAN_FUNCTION(ztrmm)
+#define ZTRSM     FORTRAN_FUNCTION(ztrsm)
 #define ZHEMM     FORTRAN_FUNCTION(zhemm)
 #define ZHEMV     FORTRAN_FUNCTION(zhemv)
 #define ZAXPY     FORTRAN_FUNCTION(zaxpy)
@@ -63,6 +64,7 @@
 #define DSWAP     FORTRAN_FUNCTION(dswap)
 #define DGEMM     FORTRAN_FUNCTION(dgemm)
 #define DTRMM     FORTRAN_FUNCTION(dtrmm)
+#define DTRSM     FORTRAN_FUNCTION(dtrsm)
 #define DSYMM     FORTRAN_FUNCTION(dsymm)
 #define DSYMV     FORTRAN_FUNCTION(dsymv)
 #define DAXPY     FORTRAN_FUNCTION(daxpy)
@@ -91,6 +93,7 @@
 #define ZSWAP  zswap
 #define ZGEMM  zgemm
 #define ZTRMM  ztrmm
+#define ZTRSM  ztrsm
 #define ZHEMM  zhemm
 #define ZHEMV  zhemv
 #define ZAXPY  zaxpy
@@ -108,6 +111,7 @@
 #define DSWAP  SSWAP
 #define DGEMM  SGEMM
 #define DTRMM  STRMM
+#define DTRSM  STRSM
 #define DSYMM  DSYMM
 #define DSYMV  DSYMV
 #define DAXPY  SAXPY
@@ -139,6 +143,8 @@ void DGEMV(const char *transa, PRIMME_BLASINT *m, PRIMME_BLASINT *n, double *alp
    double *x, PRIMME_BLASINT *incx, double *beta, double *y, PRIMME_BLASINT *incy);
 void DTRMM(const char *side, const char *uplo, const char *transa, const char *diag, PRIMME_BLASINT *m,
    PRIMME_BLASINT *n, double *alpha, double *a, PRIMME_BLASINT *lda, double *b, PRIMME_BLASINT *ldb);
+void DTRSM(const char *side, const char *uplo, const char *transa, const char *diag, PRIMME_BLASINT *m,
+   PRIMME_BLASINT *n, double *alpha, double *a, PRIMME_BLASINT *lda, double *b, PRIMME_BLASINT *ldb);
 void DSYMM(const char *side, const char *uplo, PRIMME_BLASINT *m, PRIMME_BLASINT *n, double *alpha, double *a,
    PRIMME_BLASINT *lda, double *b, PRIMME_BLASINT *ldb, double *beta, double *c, PRIMME_BLASINT *ldc);
 void DSYMV(const char *uplo, PRIMME_BLASINT *n, double *alpha, double *a, PRIMME_BLASINT *lda, double *x, PRIMME_BLASINT *lncx, double *beta, double *y, PRIMME_BLASINT *lncy);
@@ -163,6 +169,7 @@ void   ZCOPY(PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_B
 void   ZSWAP(PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
 void   ZGEMM(const char *transa, const char *transb, PRIMME_BLASINT *m, PRIMME_BLASINT *n, PRIMME_BLASINT *k, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb, void *beta, void *c, PRIMME_BLASINT *ldc);
 void   ZTRMM(const char *side, const char *uplo, const char *transa, const char *diag, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb);
+void   ZTRSM(const char *side, const char *uplo, const char *transa, const char *diag, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb);
 void   ZHEMM(const char *side, const char *uplo, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb, void *beta, void *c, PRIMME_BLASINT *ldc);
 void   ZHEMV(const char *uplo, int *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *x, PRIMME_BLASINT *lncx, void *beta, void *y, PRIMME_BLASINT *lncy);
 void   ZAXPY(PRIMME_BLASINT *n, void *alpha, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
@@ -196,6 +203,8 @@ void DGEMV(_fcd transa_fcd, PRIMME_BLASINT *m, PRIMME_BLASINT *n, double *alpha,
    double *x, PRIMME_BLASINT *incx, double *beta, double *y, PRIMME_BLASINT *incy);
 void DTRMM(_fcd side, _fcd uplo, _fcd transa, _fcd diag, PRIMME_BLASINT *m,
    PRIMME_BLASINT *n, double *alpha, double *a, PRIMME_BLASINT *lda, double *b, PRIMME_BLASINT *ldb);
+void DTRSM(_fcd side, _fcd uplo, _fcd transa, _fcd diag, PRIMME_BLASINT *m,
+   PRIMME_BLASINT *n, double *alpha, double *a, PRIMME_BLASINT *lda, double *b, PRIMME_BLASINT *ldb);
 double DDOT(PRIMME_BLASINT *n, double *x, PRIMME_BLASINT *incx, double *y, PRIMME_BLASINT *incy);
 double DLAMCH(_fcd cmach_fcd);
 void DSCAL(PRIMME_BLASINT *n, double *alpha, double *x, PRIMME_BLASINT *incx);
@@ -213,6 +222,7 @@ void   ZCOPY(PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_B
 void   ZSWAP(PRIMME_BLASINT *n, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
 void   ZGEMM(_fcd transa, _fcd transb, PRIMME_BLASINT *m, PRIMME_BLASINT *n, PRIMME_BLASINT *k, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb, void *beta, void *c, PRIMME_BLASINT *ldc);
 void   ZTRMM(_fcd side, _fcd uplo, _fcd transa, _fcd diag, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb);
+void   ZTRSM(_fcd side, _fcd uplo, _fcd transa, _fcd diag, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb);
 void   ZHEMM(_fcd side, _fcd uplo, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb, void *beta, void *c, PRIMME_BLASINT *ldc);
 void   ZAXPY(PRIMME_BLASINT *n, void *alpha, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
 void   ZGEMV(_fcd transa, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *x, PRIMME_BLASINT *incx, void *beta, void *y, PRIMME_BLASINT *incy);

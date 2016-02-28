@@ -73,6 +73,9 @@ int UDUDecompose_zprimme(Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
 
    if (dimM == 0) return 0;
 
+   /* if ld is zero, change by the matrix size */
+   if (ldUDU == 0) ldUDU = dimM;
+
    /* Return memory requirement */
 
    if (M == NULL) {
@@ -80,9 +83,6 @@ int UDUDecompose_zprimme(Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
       Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
       return (int)*(double*)&w;
     }
-
-   /* if ld is zero, change by the matrix size */
-   if (ldUDU == 0) ldUDU = dimM;
 
    /* Quick return for M with dimension 1 */
 

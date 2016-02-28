@@ -306,6 +306,11 @@ static int allocate_workspace(primme_params *primme, int allocate) {
             primme->nLocal*primme->maxBasisSize +             /* Size of Q */
             primme->maxBasisSize*primme->maxBasisSize;       /* Size of R */
    }
+   if (primme->projectionParams.projection == primme_proj_Harm) {
+      /* Stored QV = Q'*V */
+      dataSize +=
+            primme->maxBasisSize*primme->maxBasisSize;       /* Size of QV */
+   }
 
 
    /*----------------------------------------------------------------------*/
@@ -350,8 +355,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* Determine workspace required by solve_H and its children             */
    /*----------------------------------------------------------------------*/
 
-   solveHSize = solve_H_dprimme(NULL, primme->maxBasisSize, 0, NULL, 0, NULL, 0, NULL,
-         0, NULL, NULL, 0, 0, NULL, NULL, primme);
+   solveHSize = solve_H_dprimme(NULL, primme->maxBasisSize, 0, NULL, 0, NULL, 0,
+         NULL, 0, NULL, 0, NULL, NULL, 0, 0.0, 0, NULL, NULL, primme);
 
    /*----------------------------------------------------------------------*/
    /* Determine workspace required by solve_correction and its children    */
@@ -376,7 +381,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
    if (primme->locking) {
       restartSize = restart_locking_dprimme(&primme->maxBasisSize, NULL,
-            NULL, primme->nLocal, primme->maxBasisSize, 0, NULL, NULL,
+            NULL, primme->nLocal, NULL, 0, NULL, 0, primme->maxBasisSize, 0, NULL, NULL,
             NULL, 0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL,
             NULL, &primme->numEvals, &primme->numEvals, NULL, NULL, 0, NULL,
             &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
@@ -384,7 +389,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    }
    else {
       restartSize = restart_dprimme(&primme->maxBasisSize, NULL, NULL,
-            primme->nLocal, primme->maxBasisSize, 0, NULL, NULL, NULL, 0,
+            primme->nLocal, NULL, 0, NULL, 0, primme->maxBasisSize, 0, NULL, NULL, NULL, 0,
             NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, NULL, NULL,
             evecsHat, 0, NULL, 0, &primme->numEvals, NULL, NULL,
             &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
@@ -393,7 +398,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    }
 
    restartSize += after_restart_dprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0,
-         NULL, 0, NULL, 0, 0,
+         NULL, 0, NULL, 0, NULL, 0, 0,
          NULL, 0, 0, NULL, NULL, NULL, NULL, primme->maxBasisSize, primme->maxBasisSize,
          primme->restartingParams.maxPrevRetain, primme->maxBasisSize, NULL,
          NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, NULL, NULL, 0.0, primme);
@@ -404,7 +409,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
    mainSize = max(
          update_projection_dprimme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
-            primme->maxBasisSize, NULL, 0, primme),
+            primme->maxBasisSize, NULL, 0, 0, primme),
          prepare_candidates_d(NULL, NULL, primme->nLocal, primme->maxBasisSize,
             0, NULL, NULL, NULL, 0, NULL, NULL, primme->numEvals, primme->numEvals,
             NULL, 0, primme->maxBlockSize, NULL, primme->numEvals, NULL, NULL, 0.0,

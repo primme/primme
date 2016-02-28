@@ -135,7 +135,7 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
    if (V == NULL) {
       return max(max(max(
             update_projection_dprimme(NULL, 0, NULL, 0, NULL, 0, nLocal,
-               0, primme->numOrthoConst, NULL, 0, primme),
+               0, primme->numOrthoConst, NULL, 0, 1/*symmetric*/, primme),
             UDUDecompose_dprimme(NULL, 0, NULL, 0, NULL,
                primme->numOrthoConst, NULL, 0, primme)),
             ortho_dprimme(NULL, 0, NULL, 0, 0, 
@@ -177,7 +177,7 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
          primme->stats.numPreconds += primme->numOrthoConst;
 
          update_projection_dprimme(evecs, ldevecs, evecsHat, ldevecsHat, M,
-            ldM, nLocal, 0, primme->numOrthoConst, rwork, rworkSize, primme);
+            ldM, nLocal, 0, primme->numOrthoConst, rwork, rworkSize, 1/*symmetric*/, primme);
 
          ret = UDUDecompose_dprimme(M, ldM, UDU, ldUDU, ipivot,
             primme->numOrthoConst, rwork, rworkSize, primme);

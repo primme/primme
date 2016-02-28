@@ -777,6 +777,23 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, @(type) *a, int lda,
  
 #endifarithm
 
+void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *transa, const char *diag,
+      int m, int n, @(type) alpha, @(type) *a, int lda, @(type) *b, int ldb) {
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+
+#ifdefarithm L_DEFREAL
+   DTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#endifarithm
+#ifdefarithm L_DEFCPLX
+   ZTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#endifarithm
+
+}
+
 /******************************************************************************
  * Function Num_copy_matrix - Copy the matrix x into y
  *

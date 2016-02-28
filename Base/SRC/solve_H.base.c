@@ -42,22 +42,26 @@
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
  * H              The matrix V'*A*V
- * basisSize      The dimension of H, R, hU
+ * basisSize      The dimension of H, R, QV and hU
  * ldH            The leading dimension of H
  * R              The factor R for the QR decomposition of (A - target*I)*V
  * ldR            The leading dimension of R
+ * QV             Q'*V
+ * ldQV           The leading dimension of QV
  * numConverged   Number of eigenvalues converged to determine ordering shift
  * lrwork         Length of the work array rwork
  * primme         Structure containing various solver parameters
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hU                The left singular vectors of R
- * hVecs             The eigenvectors of H or the right singular vectors
- * hVals             The Ritz values
- * hSVals            The singular values of R
- * rwork             Workspace
- * iwork             Workspace in integers
+ * hU             The left singular vectors of R or the eigenvectors of QV/R
+ * ldhU           The leading dimension of hU
+ * hVecs          The coefficient vectors such as V*hVecs will be the Ritz vectors
+ * ldhVecs        The leading dimension of hVecs
+ * hVals          The Ritz values
+ * hSVals         The singular values of R
+ * rwork          Workspace
+ * iwork          Workspace in integers
  *
  * Return Value
  * ------------
@@ -71,8 +75,9 @@
  ******************************************************************************/
 
 int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR,
-   @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs, double *hVals, double *hSVals,
-   int numConverged, int lrwork, @(type) *rwork, int *iwork, primme_params *primme) {
+   @(type) *QV, int ldQV, @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs,
+   double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
+   @(type) *rwork, int *iwork, primme_params *primme) {
 
    int i, ret;
 
@@ -83,7 +88,8 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
       break;
 
    case primme_proj_Harm:
-      assert(0);
+      ret = solve_H_Harm_@(pre)primme(H, ldH, QV, ldQV, R, ldR, hVecs, ldhVecs, hU,
+            ldhU, hVals, basisSize, numConverged, machEps, lrwork, rwork, iwork, primme);
       break;
 
    case primme_proj_ref:
@@ -128,20 +134,18 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
  * H              The matrix V'*A*V
  * basisSize      The dimension of H, R, hU
  * ldH            The leading dimension of H
- * R              The factor R for the QR decomposition of (A - target*I)*V
- * ldR            The leading dimension of R
  * numConverged   Number of eigenvalues converged to determine ordering shift
  * lrwork         Length of the work array rwork
  * primme         Structure containing various solver parameters
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hU                The left singular vectors of R
- * hVecs             The eigenvectors of H or the right singular vectors
- * hVals             The Ritz values
- * hSVals            The singular values of R
- * rwork             Workspace
- * iwork             Workspace in integers
+ * hVecs          The eigenvectors of H or the right singular vectors
+ * ldhVecs        The leading dimension of hVecs
+ * hVals          The Ritz values
+ * hSVals         The singular values of R
+ * rwork          Workspace
+ * iwork          Workspace in integers
  *
  * Return Value
  * ------------
@@ -411,6 +415,19 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
                     permu[index++] = j;
          }
       }
+      else if (primme->target == primme_largest_abs) {
+
+         j = 0;
+         i = basisSize-1;
+         index = 0;
+         while (i>=j) {
+            if (fabs(hVals[i]-targetShift) > fabs(hVals[j]-targetShift)) 
+               permu[index++] = i--;
+            else 
+               permu[index++] = j++;
+         }
+
+      }
 
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
@@ -420,6 +437,117 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
    }
 
    return 0;   
+}
+
+/*******************************************************************************
+ * Subroutine solve_H_Harm - This procedure solves the eigenvalues of QV*inv(R)
+ *
+ *        
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * H             The matrix V'*A*V
+ * ldH           The leading dimension of H
+ * R             The R factor for the QR decomposition of (A - target*I)*V
+ * ldR           The leading dimension of R
+ * basisSize     Current size of the orthonormal basis V
+ * lrwork        Length of the work array rwork
+ * primme        Structure containing various solver parameters
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * hVecs         The orthogonal basis of inv(R) * eigenvectors of QV/R
+ * ldhVecs       The leading dimension of hVecs
+ * hU            The eigenvectors of QV/R
+ * ldhU          The leading dimension of hU
+ * hVals         The Ritz values of the vectors in hVecs
+ * rwork         Workspace
+ *
+ * Return Value
+ * ------------
+ * int -  0 upon successful return
+#ifdefarithm L_DEFCPLX
+ *     - -1 Num_zheev was unsuccessful
+#endifarithm
+#ifdefarithm L_DEFREAL
+ *     - -1 Num_dsyev was unsuccessful
+#endifarithm
+ ******************************************************************************/
+
+static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QV, int ldQV,
+   @(type) *R, int ldR, @(type) *hVecs, int ldhVecs, @(type) *hU, int ldhU,
+   double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
+   @(type) *rwork, int *iwork, primme_params *primme) {
+
+   int i, ret;
+   @(type) tzero = @(tzero), tpone = @(tpone);
+   double *oldTargetShifts, zero=0.0;
+   primme_target oldTarget;
+
+   /* Some LAPACK implementations don't like zero-size matrices */
+   if (basisSize == 0) return 0;
+
+   /* Return memory requirements */
+   if (QV == NULL) {
+      return solve_H_RR_@(pre)primme(QV, ldQV, hVecs, ldhVecs, hVals, basisSize,
+         0, lrwork, rwork, iwork, primme);
+   }
+
+   /* QAQ = QV*inv(R) */
+
+   Num_copy_matrix_@(pre)primme(QV, basisSize, basisSize, ldQV, hVecs, ldhVecs);
+   Num_trsm_@(pre)primme("R", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
+         hVecs, ldhVecs);
+
+   /* Compute eigenpairs of QAQ */
+
+   oldTargetShifts = primme->targetShifts;
+   oldTarget = primme->target;
+   primme->targetShifts = &zero;
+   switch(primme->target) {
+      case primme_closest_geq:
+         primme->target = primme_largest;
+         break;
+      case primme_closest_leq:
+         primme->target = primme_smallest;
+         break;
+      case primme_closest_abs:
+         primme->target = primme_largest_abs;
+         break;
+      default:
+         assert(0);
+   }
+   ret = solve_H_RR_@(pre)primme(hVecs, ldhVecs, hVecs, ldhVecs, hVals, basisSize,
+         0, lrwork, rwork, iwork, primme);
+   primme->targetShifts = oldTargetShifts;
+   primme->target = oldTarget;
+   if (ret != 0) return ret;
+
+   Num_copy_matrix_@(pre)primme(hVecs, basisSize, basisSize, ldhVecs, hU, ldhU);
+
+   /* Transfer back the eigenvectors to V, hVecs = R\hVecs */
+
+   Num_trsm_@(pre)primme("L", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
+         hVecs, ldhVecs);
+   ret = ortho_@(pre)primme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
+         basisSize, primme->iseed, machEps, rwork, lrwork, primme);
+   if (ret != 0) return ret;
+ 
+   /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
+
+   Num_symm_@(pre)primme("L", "U", basisSize, basisSize, tpone, H,
+      ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
+
+   for (i=0; i<basisSize; i++) {
+      @(type) ztmp = Num_dot_@(pre)primme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
+#ifdefarithm L_DEFCPLX
+      hVals[i] = ztmp.r;
+#endifarithm
+#ifdefarithm L_DEFREAL
+      hVals[i] = ztmp;
+#endifarithm
+   }
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -438,11 +566,13 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hVecs             The right singular vectors of R
- * hU                The left singular vectors of R
- * hSVals            The singular values of R
- * hVals             The Ritz values of the vectors in hVecs
- * rwork             Must be of size at least 3*maxBasisSize
+ * hVecs         The right singular vectors of R
+ * ldhVecs       The leading dimension of hVecs
+ * hU            The left singular vectors of R
+ * ldhU          The leading dimension of hU
+ * hSVals        The singular values of R
+ * hVals         The Ritz values of the vectors in hVecs
+ * rwork         Workspace
  *
  * Return Value
  * ------------
@@ -462,15 +592,6 @@ int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
    @(type) tpone = @(tpone), tzero = @(tzero), ztmp;
-
-   /*lingfei: primme_svds. if the refined projection is used after
-   the RayRitz projection.  It is designed for interior eigenvalue
-   problem, especially for singular value problem with augmented
-   method. In this case, we need compute:
-   1) hVecs = Vm**T*A**T*A*Vm - 2*theta*Vm**T*A*Vm + theta*theta*Im
-            = WTWm - 2*theta*Hm + theta*theta*Im;
-   2) Another approach is for two-stages SVD problem;
-      (AVm - theta*Vm) = Wm - thetaVm = QR; */
 
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;

@@ -75,11 +75,12 @@ typedef enum {
 
 
 typedef enum {
-   primme_smallest,
-   primme_largest,
-   primme_closest_geq,
-   primme_closest_leq,
-   primme_closest_abs
+   primme_smallest,        /* leftmost eigenvalues */
+   primme_largest,         /* rightmost eigenvalues */
+   primme_closest_geq,     /* leftmost but greater than the target shift */
+   primme_closest_leq,     /* rightmost but less than the target shift */
+   primme_closest_abs,     /* the closest to the target shift */
+   primme_largest_abs      /* the farthest to the target shift */
 } primme_target;
 
 /* projection methods for extraction */

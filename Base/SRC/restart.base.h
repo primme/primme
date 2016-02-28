@@ -30,6 +30,7 @@
 #define RESTART_H
 
 int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
+   @(type) *hR, int ldhR, @(type) *hU, int ldhU,
    int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, int ldhVecs,
    int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, @(type) *evecs, double *evals, double *resNorms,
@@ -40,9 +41,9 @@ int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
 
 int after_restart_@(pre)primme(@(type) *V, int ldV, @(type) *W, int ldW,
    @(type) *H, int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR,
-   @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-   double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
-   int restartSize, int basisSize, int numPrevRetained,
+   @(type) *QV, int ldQV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs,
+   int ldhVecs, int newldhVecs, double *hVals, double *hSVals, int *restartPerm,
+   int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
    int indexOfPreviousVecs, @(type) *evecs, int *evecsSize,
    int ldevecs, @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, @(type) *UDU,
    int ldUDU, int *ipivot, int numConvergedBeforeRestart, int numConverged,
@@ -52,5 +53,10 @@ void reset_flags_@(pre)primme(int *flags, int first, int last);
 
 int dtr_@(pre)(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme);
+
+int ortho_coefficient_vectors_@(pre)(@(type) *hVecs, int basisSize, int ldhVecs,
+   int indexOfPreviousVecs, int newBasisSize, int *perm, @(type) *hU, int ldhU,
+   @(type) *R, int ldR, int numPrevRetained, int machEps, int *iwork,
+   @(type) *rwork, int rworkSize, primme_params *primme);
 
 #endif

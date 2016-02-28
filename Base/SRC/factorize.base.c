@@ -73,6 +73,9 @@ int UDUDecompose_@(pre)primme(@(type) *M, int ldM, @(type) *UDU, int ldUDU,
 
    if (dimM == 0) return 0;
 
+   /* if ld is zero, change by the matrix size */
+   if (ldUDU == 0) ldUDU = dimM;
+
    /* Return memory requirement */
 
    if (M == NULL) {
@@ -85,9 +88,6 @@ int UDUDecompose_@(pre)primme(@(type) *M, int ldM, @(type) *UDU, int ldUDU,
 #endifarithm
       return (int)*(double*)&w;
     }
-
-   /* if ld is zero, change by the matrix size */
-   if (ldUDU == 0) ldUDU = dimM;
 
    /* Quick return for M with dimension 1 */
 

@@ -132,8 +132,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    int numGuesses;          /* Current number of initial guesses in evecs    */
    int nextGuess;           /* Index of the next initial guess in evecs      */ 
    int numConverged;        /* Number of converged Ritz pairs                */
-   int numConvergedBeforeRestart;
-                            /* Number of converged Ritz pairs before restart */
+   int targetShiftIndex;    /* Target shift used in the QR factorization     */
    int recentlyConverged;   /* Number of target Ritz pairs that have         */
                             /*    converged during the current iteration.    */
    int maxRecentlyConverged;/* Maximum converged values per iteration        */
@@ -177,6 +176,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    int numQR;               /* Maximum number of QR factorizations           */
    Complex_Z *Q = NULL;       /* QR decompositions for harmonic or refined     */
    Complex_Z *R = NULL;       /* projection: (A-target[i])*V = QR              */
+   Complex_Z *QV = NULL;      /* Q'*V                                          */
 
    double *hVals;           /* Eigenvalues of H                              */
    double *hSVals=NULL;     /* Singular values of R                          */
@@ -212,6 +212,9 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
       Q          = rwork; rwork += primme->nLocal*primme->maxBasisSize*numQR;
       R          = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
       hU         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+   }
+   if (primme->projectionParams.projection == primme_proj_Harm) {
+      QV         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
    }
    H             = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    hVecs         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
@@ -344,18 +347,23 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
       /* Compute the initial H and solve for its eigenpairs */
 
-      numConvergedBeforeRestart = 0;
+      targetShiftIndex = 0;
       if (Q) update_Q_zprimme(V, primme->nLocal, primme->nLocal, W, primme->nLocal, Q,
-            primme->nLocal, R, primme->maxBasisSize, primme->targetShifts[numConvergedBeforeRestart], 0,
+            primme->nLocal, R, primme->maxBasisSize, primme->targetShifts[targetShiftIndex], 0,
             basisSize, rwork, rworkSize, machEps, primme);
 
-      update_projection_zprimme(V, primme->nLocal, W, primme->nLocal, H,
+      if (H) update_projection_zprimme(V, primme->nLocal, W, primme->nLocal, H,
             primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
-            rworkSize, primme);
+            rworkSize, 1/*symmetric*/, primme);
+
+      if (QV) update_projection_zprimme(Q, primme->nLocal, V, primme->nLocal, QV,
+            primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
+            rworkSize, 0/*unsymmetric*/, primme);
 
       ret = solve_H_zprimme(H, basisSize, primme->maxBasisSize, R,
-            primme->maxBasisSize, hU, basisSize, hVecs, basisSize, hVals, hSVals,
-            numConverged, rworkSize, rwork, iwork, primme);
+            primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, hVecs,
+            basisSize, hVals, hSVals, numConverged, machEps, rworkSize, rwork,
+            iwork, primme);
       
       if (ret != 0) {
          primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret, 
@@ -521,22 +529,33 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
             if (Q) update_Q_zprimme(V, primme->nLocal, primme->nLocal, W, primme->nLocal, Q,
                   primme->nLocal, R, primme->maxBasisSize,
-                  primme->targetShifts[numConvergedBeforeRestart], basisSize,
+                  primme->targetShifts[targetShiftIndex], basisSize,
                   blockSize, rwork, rworkSize, machEps, primme);
+
+            /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
+            /* projected problem) are in hU; so retain them.                        */
+
+            numPrevRetained = retain_previous_coefficients(QV ? hU : hVecs, 
+               previousHVecs, basisSize, iev, blockSize, primme);
 
             /* Extend H by blockSize columns and rows and solve the */
             /* eigenproblem for the new H.                          */
 
-            numPrevRetained = retain_previous_coefficients(hVecs, 
-               previousHVecs, basisSize, iev, blockSize, primme);
-            update_projection_zprimme(V, primme->nLocal, W, primme->nLocal, H,
+            if (H) update_projection_zprimme(V, primme->nLocal, W, primme->nLocal, H,
                   primme->maxBasisSize, primme->nLocal, basisSize, blockSize, rwork,
-                  rworkSize, primme);
+                  rworkSize, 1/*symmetric*/, primme);
+
+            if (QV) update_projection_zprimme(Q, primme->nLocal, V, primme->nLocal, QV,
+                  primme->maxBasisSize, primme->nLocal, basisSize, blockSize, rwork,
+                  rworkSize, 0/*unsymmetric*/, primme);
+
             basisSize += blockSize;
             blockSize = 0;
+
             ret = solve_H_zprimme(H, basisSize, primme->maxBasisSize, R,
-                  primme->maxBasisSize, hU, basisSize, hVecs, basisSize, hVals, hSVals,
-                  numConverged, rworkSize, rwork, iwork, primme);
+                  primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, hVecs,
+                  basisSize, hVals, hSVals, numConverged, machEps, rworkSize, rwork,
+                  iwork, primme);
 
             if (ret != 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret,
@@ -591,20 +610,22 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          iwork0 = &hVecsPerm[basisSize];
 
          if (!primme->locking) {
-            Complex_Z *X, *R;
-            ret = restart_zprimme(&restartSize, V, W, primme->nLocal, basisSize,
-               primme->nLocal, &X, &R, hVecs, basisSize, restartPerm, hVals, flags, iev, &blockSize,
-               blockNorms, evecs, evals, resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, &numConverged,
-               &numConvergedStored, previousHVecs, &numPrevRetained, primme->maxBasisSize,
-               &indexOfPreviousVecs, hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
+            Complex_Z *X, *Res;
+            ret = restart_zprimme(&restartSize, V, W, primme->nLocal, R, primme->maxBasisSize,
+               hU, basisSize, basisSize, primme->nLocal, &X, &Res, hVecs, basisSize, restartPerm,
+               hVals, flags, iev, &blockSize, blockNorms, evecs, evals, resNorms, evecsHat,
+               primme->nLocal, M, maxEvecsSize, &numConverged, &numConvergedStored, previousHVecs,
+               &numPrevRetained, primme->maxBasisSize, &indexOfPreviousVecs, hVecsPerm, machEps,
+               rwork, rworkSize, iwork0, primme);
          }
          else {
-            Complex_Z *X, *R;
-            ret = restart_locking_zprimme(&restartSize, V, W, primme->nLocal, basisSize,
-               primme->nLocal, &X, &R, hVecs, basisSize, restartPerm, hVals, flags, iev, &blockSize,
-               blockNorms, evecs, evals, &numConverged, &numLocked, resNorms, perm, numGuesses,
-               previousHVecs, &numPrevRetained, primme->maxBasisSize, &indexOfPreviousVecs,
-               hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
+            Complex_Z *X, *Res;
+            ret = restart_locking_zprimme(&restartSize, V, W, primme->nLocal, R,
+               primme->maxBasisSize, hU, basisSize, basisSize, primme->nLocal, &X, &Res, hVecs, basisSize,
+               restartPerm, hVals, flags, iev, &blockSize, blockNorms, evecs, evals, &numConverged,
+               &numLocked, resNorms, perm, numGuesses, previousHVecs, &numPrevRetained,
+               primme->maxBasisSize, &indexOfPreviousVecs, hVecsPerm, machEps, rwork, rworkSize,
+               iwork0, primme);
          }
 
          if (ret != 0) {
@@ -622,15 +643,15 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          }
 
          after_restart_zprimme(V, primme->nLocal, W, primme->nLocal, H,
-               primme->maxBasisSize, Q, primme->nLocal, primme->nLocal,
-               R, primme->maxBasisSize, hU, basisSize, restartSize, hVecs, basisSize,
-               restartSize, hVals , hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
-               numPrevRetained, indexOfPreviousVecs, evecs,
+               primme->maxBasisSize, Q, primme->nLocal, primme->nLocal, R,
+               primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, restartSize,
+               hVecs, basisSize, restartSize, hVals , hSVals, restartPerm, hVecsPerm,
+               restartSize, basisSize, numPrevRetained, indexOfPreviousVecs, evecs,
                &numConvergedStored, primme->nLocal, evecsHat, primme->nLocal, M,
-               maxEvecsSize, UDU, 0, ipivot, numConvergedBeforeRestart, numConverged,
+               maxEvecsSize, UDU, 0, ipivot, targetShiftIndex, numConverged,
                rworkSize, rwork, iwork0, machEps, primme);
 
-         numConvergedBeforeRestart = numConverged;
+         targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
          basisSize = restartSize;
 
 
@@ -664,21 +685,29 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
             if (Q) update_Q_zprimme(V, primme->nLocal, primme->nLocal, W, primme->nLocal, Q,
                   primme->nLocal, R, primme->maxBasisSize,
-                  primme->targetShifts[numConvergedBeforeRestart], basisSize,
+                  primme->targetShifts[targetShiftIndex], basisSize,
                   numNew, rwork, rworkSize, machEps, primme);
+
+            /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
+            /* projected problem) are in hU; so retain them.                        */
+
+            numPrevRetained = retain_previous_coefficients(QV ? hU : hVecs, 
+               previousHVecs, basisSize, iev, numNew, primme);
 
             /* Extend H by numNew columns and rows and solve the */
             /* eigenproblem for the new H.                       */
 
-            numPrevRetained = retain_previous_coefficients(hVecs, 
-               previousHVecs, basisSize, iev, numNew, primme);
-            update_projection_zprimme(V, primme->nLocal, W, primme->nLocal, H,
+            if (H) update_projection_zprimme(V, primme->nLocal, W, primme->nLocal, H,
                   primme->maxBasisSize, primme->nLocal, basisSize, numNew, rwork,
-                  rworkSize, primme);
+                  rworkSize, 1/*symmetric*/, primme);
+            if (QV) update_projection_zprimme(Q, primme->nLocal, V, primme->nLocal, QV,
+                  primme->maxBasisSize, primme->nLocal, basisSize, numNew, rwork,
+                  rworkSize, 0/*unsymmetric*/, primme);
             basisSize += numNew;
             ret = solve_H_zprimme(H, basisSize, primme->maxBasisSize, R,
-                  primme->maxBasisSize, hU, basisSize, hVecs, basisSize, hVals, hSVals,
-                  numConverged, rworkSize, rwork, iwork, primme);
+                  primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, hVecs,
+                  basisSize, hVals, hSVals, numConverged, machEps, rworkSize, rwork, iwork,
+                  primme);
 
             if (ret != 0) {
                primme_PushErrorMessage(Primme_main_iter, Primme_solve_h, ret,

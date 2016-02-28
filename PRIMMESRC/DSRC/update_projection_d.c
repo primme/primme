@@ -34,8 +34,8 @@
 #include "numerical_d.h"
 
 /*******************************************************************************
- * Subroutine update_projection - Z = X'*Y. It assumes Z is a hermitian matrix 
- *    whose columns will be updated with blockSize vectors.  Even though space 
+ * Subroutine update_projection - Z = X'*Y. If Z is a Hermitian matrix 
+ *    whose columns will be updated with blockSize vectors, even though space 
  *    for the entire Z is allocated, only the upper triangular portion is 
  *    stored. 
  *
@@ -50,18 +50,19 @@
  * blockSize   The number of columns that has changed
  * rwork       Workspace
  * lrwork      Size of rwork
+ * isSymmetric Nonzero if Z is symmetric/Hermitian
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * Z           Matrix with size numCols+blockSize with value X'*Y, only
- *             Z(1:numCols+blockSize,numCols:numCols+blockSize) will be updated
+ * Z           Matrix with size numCols+blockSize with value X'*Y, if it's symmetric
+ *             only Z(1:numCols+blockSize,numCols:numCols+blockSize) will be updated
  * ldZ         The leading dimension of Z
  *
  ******************************************************************************/
 
 int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    double *Z, int ldZ, int nLocal, int numCols, int blockSize, double *rwork,
-   int lrwork, primme_params *primme) {
+   int lrwork, int isSymmetric, primme_params *primme) {
 
    int count, count_doubles, m;
    double tpone = +1.0e+00, tzero = +0.0e+00;
@@ -71,7 +72,7 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    /* -------------------------- */
 
    if (X == NULL) {
-      return (numCols+blockSize)*numCols*2;
+      return (numCols+blockSize)*numCols*2 + (isSymmetric ? 0 : blockSize*numCols*2);
    }
 
    assert(ldX >= nLocal && ldY >= nLocal && ldZ >= numCols+blockSize);
@@ -104,7 +105,12 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    }
    */
 
-   if (primme->n > 1) {
+   if (!isSymmetric) {
+      Num_gemm_dprimme("C", "N", blockSize, numCols, nLocal, tpone, 
+            &X[ldX*numCols], ldX, Y, ldY, tzero, &Z[numCols], ldZ);
+   }
+
+   if (primme->numProcs > 1 && isSymmetric) {
       /* --------------------------------------------------------------------- */
       /* Reduce the upper triangular part of the new columns in Z.             */
       /* --------------------------------------------------------------------- */
@@ -118,6 +124,25 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
 
       Num_copy_compact_trimatrix_dprimme(&rwork[count], m, blockSize, numCols,
             &Z[ldZ*numCols], ldZ);
+   }
+   else if (primme->numProcs > 1 && !isSymmetric) {
+      /* --------------------------------------------------------------------- */
+      /* Reduce Z(:,numCols:end) and Z(numCols:end,:).                         */
+      /* --------------------------------------------------------------------- */
+
+      Num_copy_matrix_dprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
+            rwork, m);
+      Num_copy_matrix_dprimme(&Z[numCols], blockSize, numCols, ldZ,
+            &rwork[m*blockSize], blockSize);
+      count = m*blockSize+blockSize*numCols;
+      assert(count*2 <= lrwork);
+
+      count_doubles = count;
+      primme->globalSumDouble(rwork, (double*)&rwork[count], &count_doubles, primme);
+
+      Num_copy_matrix_dprimme(&rwork[count], m, blockSize, ldZ, &Z[ldZ*numCols], m);
+      Num_copy_matrix_dprimme(&rwork[count+m*blockSize], blockSize, numCols, ldZ,
+            &Z[numCols], blockSize);
    }
 
    return 0;

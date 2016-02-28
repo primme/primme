@@ -31,7 +31,8 @@
 #define LOCKING_H
 
 int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
-   int nLocal, int basisSize, int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs,
+   int nLocal, Complex_Z *hR, int ldhR, Complex_Z *hU, int ldhU,
+   int basisSize, int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs,
    int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, Complex_Z *evecs, double *evals, int *numConverged, int *numLocked,
    double *resNorms, int *evecsperm, int numGuesses, Complex_Z *previousHVecs,
