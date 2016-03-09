@@ -299,8 +299,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
    /* Add memory for Harmonic or Refined projection                        */
    /*----------------------------------------------------------------------*/
-   if (primme->projectionParams.projection == primme_proj_Harm ||
-         primme->projectionParams.projection == primme_proj_ref) {
+   if (primme->projectionParams.projection == primme_proj_harmonic ||
+         primme->projectionParams.projection == primme_proj_refined) {
       /* Stored a QR decomposition */
       dataSize +=
             primme->nLocal*primme->maxBasisSize +             /* Size of Q */
@@ -605,6 +605,9 @@ static int check_input(double *evals, @(type) *evecs, double *resNorms,
       ret = -31;
    else if (resNorms == NULL)
       ret = -32;
+   else if (!primme->locking && primme->minRestartSize < primme->numEvals &&
+            primme->n > 2)
+      ret = -33;
 
    return ret;
   /***************************************************************************/

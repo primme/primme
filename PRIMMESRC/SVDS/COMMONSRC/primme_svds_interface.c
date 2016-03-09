@@ -130,8 +130,10 @@ int primme_svds_set_method(primme_svds_preset_method method,
    primme_svds_set_defaults(primme_svds);
 
    /* Set methods for the underneath eigensolvers */
-   primme_set_method(methodStage1, &primme_svds->primme);
-   primme_set_method(methodStage2, &primme_svds->primmeStage2);
+   if (methodStage1 != DEFAULT_METHOD)
+      primme_set_method(methodStage1, &primme_svds->primme);
+   if (methodStage2 != DEFAULT_METHOD)
+      primme_set_method(methodStage2, &primme_svds->primmeStage2);
 
    return 0;
 }
@@ -164,7 +166,7 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
       /* NOTE: refined extraction seems to work better than RR */
       if (primme_svds->primmeStage2.projectionParams.projection == primme_proj_default)
-         primme_svds->primmeStage2.projectionParams.projection = primme_proj_ref;
+         primme_svds->primmeStage2.projectionParams.projection = primme_proj_refined;
 
       /* Set default values and method for the second state */
       if (primme_svds->primmeStage2.dynamicMethodSwitch < 0)

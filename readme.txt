@@ -1941,6 +1941,8 @@ values:
 
 * -32: if "resNorms" is NULL, but not "evecs" and "evals".
 
+* -33: if not "locking" and "minRestartSize" < "numEvals".
+
 
 Preset Methods
 ==============

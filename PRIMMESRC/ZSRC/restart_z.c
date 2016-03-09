@@ -417,7 +417,7 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
             hVecsPerm, rworkSize, rwork, iwork, primme);
       break;
 
-   case primme_proj_ref:
+   case primme_proj_refined:
       ret = restart_ref(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, hU, ldhU, newldhU, hVecs,
             ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
             numPrevRetained, indexOfPreviousVecs, numConvergedBeforeRestart, numConverged,

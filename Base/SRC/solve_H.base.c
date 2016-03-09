@@ -82,11 +82,11 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
             numConverged, lrwork, rwork, iwork, primme);
       break;
 
-   case primme_proj_Harm:
+   case primme_proj_harmonic:
       assert(0);
       break;
 
-   case primme_proj_ref:
+   case primme_proj_refined:
       ret = solve_H_Ref_@(pre)primme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
             R, ldR, hVals, basisSize, lrwork, rwork, primme);
       break;

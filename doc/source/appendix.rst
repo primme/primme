@@ -903,6 +903,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
 * -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
 * -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
+* -33: if not |locking| and |minRestartSize| < |numEvals|.
 
 .. _methods:
 

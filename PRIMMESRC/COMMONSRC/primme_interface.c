@@ -246,9 +246,9 @@ void primme_Free(primme_params *params) {
  ******************************************************************************/
 int primme_set_method(primme_preset_method method, primme_params *params) {
 
-   /* Do nothing if DEFAULT_METHOD */
+   /* Set default method as DYNAMIC */
    if (method == DEFAULT_METHOD)
-      return 0;
+      method = DYNAMIC;
 
    /* From our experience, these two methods yield the smallest matvecs/time */
    /* DYNAMIC will make some timings before it settles on one of the two     */
@@ -298,7 +298,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_plusK) {
-      if (params->restartingParams.maxPrevRetain < 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -311,7 +311,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain < 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -324,7 +324,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == JD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain < 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -525,7 +525,7 @@ void primme_set_defaults(primme_params *params) {
       /* use locking when not enough vectors to restart with */
       params->locking = 1;
    }
-   else if (params->locking == -1) {
+   else if (params->locking < 0) {
       params->locking = 0;   
    }
 }
@@ -586,8 +586,8 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 
    PRINTParamsIF(projection, projection, primme_proj_default);
    PRINTParamsIF(projection, projection, primme_proj_RR);
-   PRINTParamsIF(projection, projection, primme_proj_Harm);
-   PRINTParamsIF(projection, projection, primme_proj_ref);
+   PRINTParamsIF(projection, projection, primme_proj_harmonic);
+   PRINTParamsIF(projection, projection, primme_proj_refined);
 
    PRINTIF(initBasisMode, primme_init_default);
    PRINTIF(initBasisMode, primme_init_krylov);

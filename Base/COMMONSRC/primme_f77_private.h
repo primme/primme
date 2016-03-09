@@ -124,8 +124,8 @@
 /*-------------------------------------------------------*/
 #define PRIMMEF77_proj_default  0
 #define PRIMMEF77_proj_RR  1
-#define PRIMMEF77_proj_Harm  2
-#define PRIMMEF77_proj_ref  3
+#define PRIMMEF77_proj_harmonic  2
+#define PRIMMEF77_proj_refined  3
 /*-------------------------------------------------------*/
 #define PRIMMEF77_init_default  0
 #define PRIMMEF77_init_krylov  1
