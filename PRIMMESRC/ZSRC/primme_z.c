@@ -260,7 +260,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
    int dataSize;     /* Number of Complex_Z positions allocated, excluding */
                      /* doubles (see doubleSize below) and work space.  */
-   int doubleSize;   /* Number of doubles allocated exclusively to the  */
+   int doubleSize=0; /* Number of doubles allocated exclusively to the  */
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
    int maxEvecsSize; /* Maximum number of vectors in evecs and evecsHat */
    int intWorkSize;  /* Size of integer work space in bytes             */
