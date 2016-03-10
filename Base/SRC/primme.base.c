@@ -271,17 +271,10 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    int solveCorSize; /* work space for solve_correction and inner_solve */
    int solveHSize;   /* work space for solve_H                          */
    int mainSize;     /* work space for main_iter                        */
-   int maxhSize;     /* maximum number of columns of hVecs and maximum
-                        size of hVals */
-   @(type) *evecsHat=NULL;/* not NULL when evecsHat will be used             */
-   @(type) t;
+   @(type) *evecsHat=NULL;/* not NULL when evecsHat will be used        */
+   @(type) t;        /* dummy variable */
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
-   if (primme->projectionParams.projection != primme_proj_RR)
-      maxhSize = primme->maxBasisSize * 2 + 1;
-   else
-      maxhSize = primme->maxBasisSize;
-   
  
    /* first determine real workspace */
 
@@ -292,7 +285,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    dataSize = primme->nLocal*primme->maxBasisSize  /* Size of V            */
       + primme->nLocal*primme->maxBasisSize        /* Size of W            */
       + primme->maxBasisSize*primme->maxBasisSize  /* Size of H            */
-      + primme->maxBasisSize*maxhSize              /* Size of hVecs, hU    */
+      + primme->maxBasisSize*primme->maxBasisSize  /* Size of hVecs        */
       + primme->restartingParams.maxPrevRetain*primme->maxBasisSize;
                                                    /* size of prevHVecs    */
 
@@ -301,10 +294,11 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
    if (primme->projectionParams.projection == primme_proj_harmonic ||
          primme->projectionParams.projection == primme_proj_refined) {
-      /* Stored a QR decomposition */
-      dataSize +=
-            primme->nLocal*primme->maxBasisSize +             /* Size of Q */
-            primme->maxBasisSize*primme->maxBasisSize;       /* Size of R */
+
+      dataSize += primme->nLocal*primme->maxBasisSize    /* Size of Q      */
+         + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
+         + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hU     */
+      doubleSize += primme->maxBasisSize;                /* Size of hSVals */
    }
 
 
@@ -320,7 +314,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          + primme->nLocal*maxEvecsSize             /* Size of evecsHat     */ 
          + maxEvecsSize*maxEvecsSize               /* Size of M            */
          + maxEvecsSize*maxEvecsSize;              /* Size of UDU          */
-      evecsHat = &t;
+      evecsHat = &t; /* set not NULL */
    }
 
    /*----------------------------------------------------------------------*/
@@ -444,8 +438,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* The following size is always allocated as double                     */
    /*----------------------------------------------------------------------*/
 
-   doubleSize = 4
-      + maxhSize                                   /* Size of hVals, hSVals*/
+   doubleSize += 4                                 /* Padding              */
+      + primme->maxBasisSize                       /* Size of hVals        */
       + primme->numEvals+primme->maxBasisSize      /* Size of prevRitzVals */
       + primme->maxBlockSize;                      /* Size of blockNorms   */
 
@@ -456,7 +450,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    intWorkSize = primme->maxBasisSize /* Size of flag               */
       + 2*primme->maxBlockSize        /* Size of iev and ilev       */
       + maxEvecsSize                  /* Size of ipivot             */
-      + 5*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
+      + 5*primme->maxBasisSize;       /* Auxiliary permutation arrays */
 
    /*----------------------------------------------------------------------*/
    /* byte sizes:                                                          */

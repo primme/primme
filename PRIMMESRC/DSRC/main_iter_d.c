@@ -136,7 +136,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                             /* Number of converged Ritz pairs before restart */
    int recentlyConverged;   /* Number of target Ritz pairs that have         */
                             /*    converged during the current iteration.    */
-   int maxRecentlyConverged;/* Maximum converged values per iteration        */
+   int maxRecentlyConverged;/* Maximum value allowed for recentlyConverged   */
    int numConvergedStored;  /* Numb of Ritzvecs temporarily stored in evecs  */
                             /*    to allow for skew projectors w/o locking   */
    int converged;           /* True when all required Ritz vals. converged   */
