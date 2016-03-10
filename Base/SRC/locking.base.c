@@ -167,7 +167,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       return max(max(max(max(
             /* for permute_vecs */
             basisSize,
-            Num_compact_res_i_@(pre)primme(nLocal, NULL, NULL, basisSize, NULL, 0,
+            Num_compute_residual_i_@(pre)primme(nLocal, NULL, NULL, basisSize, NULL, 0,
                NULL, 0, NULL, primme->maxBlockSize, 0, NULL, 0, NULL,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
             ortho_@(pre)primme(NULL, 0, NULL, 0, 0,
@@ -333,7 +333,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       for (; k < basisSize; k++) hVecsPerm[k] = -1;
 
       /* Pack X and R for the unconverged pairs.                                     */
-      Num_compact_res_i_@(pre)primme(nLocal, &hVals[left], &V[left*ldV], failed, ifailed, 
+      Num_compute_residual_i_@(pre)primme(nLocal, &hVals[left], &V[left*ldV], failed, ifailed, 
             ldV, &W[left*ldV], ldV,
             X?*X:NULL, sizeBlockNorms, ldV, X?*R:NULL, ldV,
             &V[(left+failed)*ldV], maxBlockSize, hVecsPerm, ldV, &W[(left+failed)*ldV], ldV,

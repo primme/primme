@@ -138,46 +138,38 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
 }
 
 /******************************************************************************
- * Function Num_compact_res - This subroutine performs the next operations:
+ * Function Num_compute_residual - This subroutine performs the next operation
+ *    in a cache-friendly way:
  *
  *    r = Ax - eval*x
- *    newx = newx0 = x
- *    newAx = Ax
  *
  * PARAMETERS
  * ---------------------------
- * n           The number of rows of x, Ax, newx, newx0, newAx and r
+ * n           The number of rows of x, Ax and r
  * eval        The value to compute the residual vector r
  * x           The vector x
  * Ax          The vector Ax
- * newx        On output newx = x
- * newx0       On output newx0 = x
- * newAx       On output newAx = Ax
  * r           On output r = Ax - eval*x
  *
  ******************************************************************************/
 
-void Num_compact_res_dprimme(int n, double eval, double *x, 
-   double *Ax, double *newx, double *newx0, double *newAx, double *r) {
+void Num_compute_residual_dprimme(int n, double eval, double *x, 
+   double *Ax, double *r) {
 
    double ztmp = +0.0e+00;
    int k, M=min(n,PRIMME_BLOCK_SIZE);
    *(double*)&ztmp = -eval;
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      if (newx) Num_dcopy_dprimme(M, &x[k], 1, newx, 1);
-      if (newx0) Num_dcopy_dprimme(M, &x[k], 1, newx0, 1);
-      if (newAx) Num_dcopy_dprimme(M, &Ax[k], 1, newAx, 1);
-      if (r) {
-         Num_dcopy_dprimme(M, &Ax[k], 1, &r[k], 1);
-         Num_axpy_dprimme(M, ztmp, &x[k], 1, &r[k], 1);
-      }
+      Num_dcopy_dprimme(M, &Ax[k], 1, &r[k], 1);
+      Num_axpy_dprimme(M, ztmp, &x[k], 1, &r[k], 1);
    }
 
 }
 
 /******************************************************************************
- * Function Num_compact_res_i - This subroutine performs the next operations:
+ * Function Num_compute_residual_i - This subroutine performs the next operations
+ *    in a cache-friendly way:
  *
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
@@ -220,7 +212,7 @@ void Num_compact_res_dprimme(int n, double eval, double *x,
  *
  ******************************************************************************/
 
-int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int *p, 
+int Num_compute_residual_i_dprimme(int m, double *evals, double *x, int n, int *p, 
    int ldx, double *Ax, int ldAx,
    double *xo, int no, int ldxo, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
@@ -256,9 +248,12 @@ int Num_compact_res_i_dprimme(int m, double *evals, double *x, int n, int *p,
          }
          else {
             assert(id >= nd || i < n);
-            Num_compact_res_dprimme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k],
-                  &x [i*ldx +k], id<nd?&X0[id*M]:NULL,
-                  &Ax[i*ldAx+k], id<nd?&R0[id*M]:NULL);
+            Num_copy_matrix_dprimme(&x[p[i]*ldx+k],   M, 1, ldx,  &x[i*ldx +k],  ldx);
+            Num_copy_matrix_dprimme(&Ax[p[i]*ldAx+k], M, 1, ldAx, &Ax[i*ldAx+k], ldAx);
+            if (id < nd) {
+               Num_copy_matrix_dprimme(&x[p[i]*ldx+k], M, 1, ldx, &X0[id*M], M);
+               Num_compute_residual_dprimme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k], &R0[id*M]);
+            }
             i++;
          }
       }
@@ -848,8 +843,8 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
       for (j=nRb; j<nRe; j++) {
-         Num_compact_res_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               NULL, NULL, NULL, &R[i+ldR*(j-nRb)]);
+         Num_compute_residual_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
             double ztmp;
             ztmp = Num_dot_dprimme(m, &R[i+ldR*(j-nRb)], 1, &R[i+ldR*(j-nRb)], 1);
@@ -860,8 +855,8 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
          double ztmp;
-         Num_compact_res_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               NULL, NULL, NULL, &Y[ldY*(j-nYb)]);
+         Num_compute_residual_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               &Y[ldY*(j-nYb)]);
          ztmp = Num_dot_dprimme(m, &Y[ldY*(j-nYb)], 1, &Y[ldY*(j-nYb)], 1);
          rnorms[j-nrb] += *(double*)&ztmp;
       }

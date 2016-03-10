@@ -93,8 +93,8 @@ int update_Q_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW,
 
    /* Q(:,c) = W(:,c) - V(:,c)*target for c = basisSize:basisSize+blockSize-1 */
    for (i=basisSize; i<basisSize+blockSize; i++) {
-      Num_compact_res_@(pre)primme(nLocal, targetShift, &V[ldV*i], &W[ldW*i],
-            NULL, NULL, NULL, &Q[ldQ*i]);
+      Num_compute_residual_@(pre)primme(nLocal, targetShift, &V[ldV*i], &W[ldW*i],
+            &Q[ldQ*i]);
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */

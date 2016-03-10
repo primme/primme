@@ -102,8 +102,7 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
    @(type) *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
    @(type) *rwork, int lrwork, primme_params *primme);
-void Num_compact_res_@(pre)primme(int n, double eval, @(type) *x, 
-   @(type) *Ax, @(type) *newx, @(type) *newx0, @(type) *newAx, @(type) *r);
+void Num_compute_residual_@(pre)primme(int n, double eval, @(type) *x, @(type) *Ax, @(type) *r);
 void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
 void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
@@ -121,7 +120,7 @@ void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @
 void Num_copy_trimatrix_compact_@(pre)primme(@(type) *x, int m, int n, int ldx, int i0, @(type) *y, int *ly);
 void Num_copy_matrix_i_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
       int *yin, int ldy);
-int Num_compact_res_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
+int Num_compute_residual_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
    int ldx, @(type) *Ax, int ldAx,
    @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,

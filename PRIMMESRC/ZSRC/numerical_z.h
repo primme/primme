@@ -83,8 +83,7 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    Complex_Z *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
    Complex_Z *rwork, int lrwork, primme_params *primme);
-void Num_compact_res_zprimme(int n, double eval, Complex_Z *x, 
-   Complex_Z *Ax, Complex_Z *newx, Complex_Z *newx0, Complex_Z *newAx, Complex_Z *r);
+void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x, Complex_Z *Ax, Complex_Z *r);
 void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
 void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
@@ -98,7 +97,7 @@ void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Comp
 void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly);
 void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
       int *yin, int ldy);
-int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
+int Num_compute_residual_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
    int ldx, Complex_Z *Ax, int ldAx,
    Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
