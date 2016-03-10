@@ -408,7 +408,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             assert(blockSize <= availableBlockSize);
 
             /* Set the block with the first unconverged pairs */
-            prepare_candidates_z(V, W, primme->nLocal, basisSize, primme->nLocal,
+            prepare_candidates_zprimme(V, W, primme->nLocal, basisSize, primme->nLocal,
                &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs, basisSize,
                hVals, flags, numConverged-numLocked, maxRecentlyConverged, blockNorms,
                blockSize, availableBlockSize, evecs, numLocked, evals, resNorms, machEps,
@@ -579,7 +579,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          }
          else if (primme->restartingParams.scheme == primme_dtr) {
             int numFree = numPrevRetained+max(3, primme->maxBlockSize);
-            restartSize = dtr_z(numLocked, hVecs, hVals, flags, basisSize, numFree, 
+            restartSize = dtr_zprimme(numLocked, hVecs, hVals, flags, basisSize, numFree, 
                   iev, rwork, primme);
          }
          else {
@@ -616,8 +616,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          /* Rearrange prevRitzVals according to restartPerm */
 
          if (primme->target != primme_smallest && primme->target != primme_largest) {
-            permute_vecs_d(prevRitzVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork0);
-            permute_vecs_d(prevRitzVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork0);
+            permute_vecs_dprimme(prevRitzVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork0);
+            permute_vecs_dprimme(prevRitzVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork0);
             numPrevRitzVals = restartSize;
          }
 
@@ -885,7 +885,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
  * 
  ******************************************************************************/
 
-int prepare_candidates_z(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
+int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
    int ldV, Complex_Z *X, Complex_Z *R, Complex_Z *hVecs, int ldhVecs, double *hVals,
    int *flags, int numSoftLocked, int numEvals, double *blockNorms,
    int blockNormsSize, int maxBlockSize, Complex_Z *evecs, int numLocked,
@@ -908,7 +908,7 @@ int prepare_candidates_z(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
       return maxBlockSize+maxBlockSize*basisSize+max(
          check_convergence_zprimme(NULL, nLocal, 0, NULL, 0, NULL, numLocked, 0,
                basisSize-maxBlockSize, basisSize, NULL, NULL, NULL, 0.0, NULL, 0, NULL, primme),
-         Num_update_VWXR_z(NULL, NULL, nLocal, basisSize, 0, NULL, 0, 0, NULL,
+         Num_update_VWXR_zprimme(NULL, NULL, nLocal, basisSize, 0, NULL, 0, 0, NULL,
                &t, basisSize-maxBlockSize, basisSize, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
@@ -928,7 +928,7 @@ int prepare_candidates_z(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
 
    /* Pack hVals */
 
-   hValsBlock = Num_compact_vecs_d(hVals, 1, blockNormsSize, 1, &iev[*blockSize],
+   hValsBlock = Num_compact_vecs_dprimme(hVals, 1, blockNormsSize, 1, &iev[*blockSize],
          hValsBlock0, 1, 1 /* avoid copy */);
 
    *recentlyConverged = 0;
@@ -988,9 +988,9 @@ int prepare_candidates_z(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
 
       /* Pack hVals & hVecs */
 
-      hValsBlock = Num_compact_vecs_d(hVals, 1, blockNormsSize, 1, &iev[*blockSize],
+      hValsBlock = Num_compact_vecs_dprimme(hVals, 1, blockNormsSize, 1, &iev[*blockSize],
          hValsBlock0, 1, 1 /* avoid copy */);
-      hVecsBlock = Num_compact_vecs_z(hVecs, basisSize, blockNormsSize, ldhVecs, &iev[*blockSize],
+      hVecsBlock = Num_compact_vecs_zprimme(hVecs, basisSize, blockNormsSize, ldhVecs, &iev[*blockSize],
          hVecsBlock0, ldhVecs, 1 /* avoid copy */);
 
       /* Compute X, R and residual norms for the next candidates */
@@ -998,7 +998,7 @@ int prepare_candidates_z(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
       /* R(basisSize:) = W*hVecs(left:right-1) - X(basisSize:)*diag(hVals)       */
       /* blockNorms(basisSize:) = norms(R(basisSize:))                           */
 
-      ret = Num_update_VWXR_z(V, W, nLocal, basisSize, ldV, hVecsBlock, basisSize,
+      ret = Num_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV, hVecsBlock, basisSize,
          ldhVecs, hValsBlock,
          &X[(*blockSize)*ldV], 0, blockNormsSize, ldV,
          NULL, 0, 0, 0,

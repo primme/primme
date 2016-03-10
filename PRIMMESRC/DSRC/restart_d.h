@@ -50,7 +50,7 @@ int after_restart_dprimme(double *V, int ldV, double *W, int ldW,
 
 void reset_flags_dprimme(int *flags, int first, int last);
 
-int dtr_d(int numLocked, double *hVecs, double *hVals, int *flags, 
+int dtr_dprimme(int numLocked, double *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, double *rwork, primme_params *primme);
 
 #endif

@@ -343,8 +343,8 @@ int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
-      permute_vecs_d(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
-      permute_vecs_d(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
+      permute_vecs_dprimme(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
+      permute_vecs_dprimme(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
    }
 
    return 0;   

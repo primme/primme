@@ -173,7 +173,7 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
             ortho_dprimme(NULL, 0, NULL, 0, 0,
                *numPrevRetained-1, NULL, 0, *restartSize, 0,
                NULL, 0, NULL, 0, NULL)),
-            Num_update_VWXR_d(NULL, NULL, 0, basisSize, 0, NULL,
+            Num_update_VWXR_dprimme(NULL, NULL, 0, basisSize, 0, NULL,
                *restartSize, 0, NULL,
                &t, 0, *restartSize+*numLocked, 0,
                &t, 0, *ievSize, 0,
@@ -233,8 +233,8 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
 
    assert(numPacked == *numConverged-*numLocked);
  
-   permute_vecs_d(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
-   permute_vecs_d(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
+   permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
 
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
@@ -268,7 +268,7 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
       *X = &V[*restartSize*ldV];
       *R = &W[*restartSize*ldV];
    }
-   ret = Num_update_VWXR_d(V, W, nLocal, basisSize, ldV, hVecs,
+   ret = Num_update_VWXR_dprimme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
          X?*X:NULL, 0, sizeBlockNorms, ldV,
@@ -285,7 +285,7 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    /*       residual norm is still less than sqrt(numLocked)*tol                    */
    /* ----------------------------------------------------------------------------- */
 
-   permute_vecs_i(flags, basisSize, restartPerm, iwork);
+   permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    ret = check_convergence_dprimme(&V[ldV*left],
          nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
          *restartSize, flags, &resNorms[*numLocked], hVals, machEps, rwork, rworkSize,
@@ -347,9 +347,9 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
       for (i=0; i<basisSize; i++) hVecsPerm[i] = i;
 
       /* Pack V and W for the unconverged pairs.                                       */
-      Num_compact_vecs_d(&V[left*ldV], nLocal, failed, ldV, ifailed, &V[left*ldV],
+      Num_compact_vecs_dprimme(&V[left*ldV], nLocal, failed, ldV, ifailed, &V[left*ldV],
             ldV, 0);
-      Num_compact_vecs_d(&W[left*ldV], nLocal, failed, ldV, ifailed, &W[left*ldV],
+      Num_compact_vecs_dprimme(&W[left*ldV], nLocal, failed, ldV, ifailed, &W[left*ldV],
             ldV, 0);
 
       Num_copy_matrix_dprimme(*X, nLocal, sizeBlockNorms, ldV, &V[(left+failed)*ldV], ldV);
@@ -357,10 +357,10 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    }
 
    /* Pack hVals, hVecs and restartPerm for the failed pairs  */
-   Num_compact_vecs_d(&hVecs[left*ldhVecs], basisSize, failed, ldhVecs, ifailed,
+   Num_compact_vecs_dprimme(&hVecs[left*ldhVecs], basisSize, failed, ldhVecs, ifailed,
          &hVecs[left*ldhVecs], ldhVecs, 0);
-   Num_compact_vecs_d(&hVals[left], 1, failed, 1, ifailed, &hVals[left], 1, 0);
-   permute_vecs_i(&restartPerm[left], numPacked, ifailed, ifailed+numPacked);
+   Num_compact_vecs_dprimme(&hVals[left], 1, failed, 1, ifailed, &hVals[left], 1, 0);
+   permute_vecs_iprimme(&restartPerm[left], numPacked, ifailed, ifailed+numPacked);
 
    if (X) {
       *X = &V[(left+failed)*ldV];

@@ -666,32 +666,3 @@ void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
    Num_dcopy_primme(*count, (double *) sendBuf, 1, (double *) recvBuf, 1);
 
 }
-
-
-/*******************************************************************************
- * Subroutine convTestFunAbsolute - This routine implements primme_params.
- *    convTestFun and return an approximate eigenpair converged when           
- *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate) or
- *    resNorm is close to machineEpsilon * aNorm.          
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * evec         The approximate eigenvector
- * eval         The approximate eigenvalue 
- * rNorm        The norm of the residual vector
- * primme       Structure containing various solver parameters
- *
- * OUTPUT PARAMETERS
- * ----------------------------------
- * isConv      if it isn't zero the approximate pair is marked as converged
- ******************************************************************************/
-
-void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
-
-   const double machEps = Num_dlamch_primme("E");
-   *isConv = *rNorm < max(
-               primme->eps * (
-                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
-               machEps * 3.16 * primme->stats.estimateLargestSVal);
-}

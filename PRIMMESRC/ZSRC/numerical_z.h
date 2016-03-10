@@ -74,7 +74,7 @@ void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
 void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
 void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul, int i0, Complex_Z *y, int ldy, int zero);
 void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau, Complex_Z *rwork, int lrwork, int *info);
-int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
+int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    Complex_Z *h, int nh, int ldh, double *hVals,
    Complex_Z *X0, int nX0b, int nX0e, int ldX0,
    Complex_Z *X1, int nX1b, int nX1e, int ldX1,
@@ -85,15 +85,14 @@ int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    Complex_Z *rwork, int lrwork, primme_params *primme);
 void Num_compact_res_zprimme(int n, double eval, Complex_Z *x, 
    Complex_Z *Ax, Complex_Z *newx, Complex_Z *newx0, Complex_Z *newAx, Complex_Z *r);
-void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork);
-void permute_vecs_d(double *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
+void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
-void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       Complex_Z *rwork, int *iwork);
-double* Num_compact_vecs_d(double *vecs, int m, int n, int ld, int *perm,
+double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);
-void compact_vecs_d(double *vecs, int m, int n, int ld, int *perm, int lperm);
-Complex_Z* Num_compact_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm,
+Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm,
       Complex_Z *work, int ldwork, int avoidCopy);
 void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Complex_Z *y, int ldy);
 void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly);

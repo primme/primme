@@ -356,8 +356,8 @@ int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
-      permute_vecs_d(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
-      permute_vecs_z(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
+      permute_vecs_dprimme(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
+      permute_vecs_zprimme(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
    }
 
    return 0;   

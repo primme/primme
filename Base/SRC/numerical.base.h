@@ -93,7 +93,7 @@ void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
 void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy);
 void Num_copy_trimatrix_@(pre)primme(@(type) *x, int m, int n, int ldx, int ul, int i0, @(type) *y, int ldy, int zero);
 void Num_geqrf_@(pre)primme(int m, int n, @(type) *a, int lda, @(type) *tau, @(type) *rwork, int lrwork, int *info);
-int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
+int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
    @(type) *h, int nh, int ldh, double *hVals,
    @(type) *X0, int nX0b, int nX0e, int ldX0,
    @(type) *X1, int nX1b, int nX1e, int ldX1,
@@ -104,18 +104,17 @@ int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
    @(type) *rwork, int lrwork, primme_params *primme);
 void Num_compact_res_@(pre)primme(int n, double eval, @(type) *x, 
    @(type) *Ax, @(type) *newx, @(type) *newx0, @(type) *newAx, @(type) *r);
-void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork);
-void permute_vecs_d(double *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
+void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
 #ifdefarithm L_DEFCPLX
-void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       Complex_Z *rwork, int *iwork);
 #endifarithm
-double* Num_compact_vecs_d(double *vecs, int m, int n, int ld, int *perm,
+double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);
-void compact_vecs_d(double *vecs, int m, int n, int ld, int *perm, int lperm);
 #ifdefarithm L_DEFCPLX
-@(type)* Num_compact_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm,
+@(type)* Num_compact_vecs_@(pre)primme(@(type) *vecs, int m, int n, int ld, int *perm,
       @(type) *work, int ldwork, int avoidCopy);
 #endifarithm
 void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @(type) *y, int ldy);

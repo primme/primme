@@ -1032,7 +1032,7 @@ void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @
  *
  ******************************************************************************/
 
-int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
+int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
    @(type) *h, int nh, int ldh, double *hVals,
    @(type) *X0, int nX0b, int nX0e, int ldX0,
    @(type) *X1, int nX1b, int nX1e, int ldX1,
@@ -1157,7 +1157,7 @@ int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
  *
  ******************************************************************************/
 
-void permute_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_@(pre)primme(@(type) *vecs, int m, int n, int ld, int *perm_,
       @(type) *rwork, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
@@ -1218,7 +1218,7 @@ void permute_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm_,
 }
 
 #ifdefarithm L_DEFREAL
-void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
+void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
@@ -1280,7 +1280,7 @@ void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
 
 
 /******************************************************************************
- * Subroutine compact_vecs - copy certain columns of matrix into another
+ * Subroutine Num_compact_vecs - copy certain columns of matrix into another
  *       matrix, i.e., work = vecs(perm). If avoidCopy and perm indices are
  *       consecutive the routine returns a reference in vecs and doesn't copy.
  *            
@@ -1301,7 +1301,7 @@ void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
  *
  ******************************************************************************/
 
-@(type)* Num_compact_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm,
+@(type)* Num_compact_vecs_@(pre)primme(@(type) *vecs, int m, int n, int ld, int *perm,
       @(type) *work, int ldwork, int avoidCopy) {
 
    int i;

@@ -215,7 +215,7 @@ int @(pre)primme(double *evals, @(type) *evecs, double *resNorms,
    /* correspond to the sorted Ritz values in evals.                       */
    /*----------------------------------------------------------------------*/
 
-   permute_vecs_@(pre)(&evecs[primme->numOrthoConst], primme->nLocal,
+   permute_vecs_@(pre)primme(&evecs[primme->numOrthoConst], primme->nLocal,
          primme->initSize, primme->nLocal, perm, (@(type)*)primme->realWork,
          (int*)primme->intWork);
 
@@ -405,7 +405,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    mainSize = max(
          update_projection_@(pre)primme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
             primme->maxBasisSize, NULL, 0, primme),
-         prepare_candidates_@(pre)(NULL, NULL, primme->nLocal, primme->maxBasisSize,
+         prepare_candidates_@(pre)primme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
             0, NULL, NULL, NULL, 0, NULL, NULL, primme->numEvals, primme->numEvals,
             NULL, 0, primme->maxBlockSize, NULL, primme->numEvals, NULL, NULL, 0.0,
             NULL, &primme->maxBlockSize, NULL, NULL, 0, NULL, primme));
@@ -613,3 +613,31 @@ static int check_input(double *evals, @(type) *evecs, double *resNorms,
   /***************************************************************************/
 } /* end of check_input
    ***************************************************************************/
+
+/*******************************************************************************
+ * Subroutine convTestFunAbsolute - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate) or
+ *    resNorm is close to machineEpsilon * aNorm.          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps * (
+                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
+}

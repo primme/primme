@@ -155,7 +155,7 @@ int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
       double d;
       return max(max(max(
                   nLocal,      /* permute_vecs for hVecs */
-                  Num_update_VWXR_@(pre)(NULL, NULL, nLocal, basisSize, 0, &t,
+                  Num_update_VWXR_@(pre)primme(NULL, NULL, nLocal, basisSize, 0, &t,
                      *restartSize, 0, NULL,
                      &t, 0, *restartSize, 0,
                      &t, *numConverged, *numConverged+*ievSize, 0,
@@ -198,11 +198,11 @@ int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
    for (i=0; i<basisSize; i++)
       if (flags[i] == UNCONVERGED) restartPerm[j++] = i;
 
-   permute_vecs_@(pre)(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork,
+   permute_vecs_@(pre)primme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork,
          iwork);
 
    /* Permute hVals */
-   permute_vecs_d(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
 
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
@@ -242,7 +242,7 @@ int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
       *ievSize = 0;
    }
 
-   ret = Num_update_VWXR_@(pre)(V, W, nLocal, basisSize, ldV, hVecs,
+   ret = Num_update_VWXR_@(pre)primme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
          X?*X:NULL, *numConverged, *numConverged+*ievSize, ldV,
@@ -261,7 +261,7 @@ int restart_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
 
    for (i=0; i<basisSize; i++)
       hVecsPerm[i] = restartPerm[i];
-   permute_vecs_i(hVecsPerm, basisSize, restartPerm, iwork);
+   permute_vecs_iprimme(hVecsPerm, basisSize, restartPerm, iwork);
    
 
    /* --------------------------------------------------------------------- */
@@ -620,7 +620,7 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
    }
 
    /* Apply permutation hVecsPerm to hVals */
-   permute_vecs_d(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
 
    /* ---------------------------------------------------------------------- */
    /* If coefficient vectors from the previous iteration have been retained, */
@@ -755,7 +755,7 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
          /* Workspace for permute_vecs(hU) */
          basisSize),
          basisSize+max(geqrfSize, orgqrSize)),
-         Num_update_VWXR_@(pre)(NULL, NULL, nLocal, basisSize, 0, NULL, basisSize, 0, NULL,
+         Num_update_VWXR_@(pre)primme(NULL, NULL, nLocal, basisSize, 0, NULL, basisSize, 0, NULL,
             NULL, 0, 0, 0,
             NULL, 0, 0, 0,
             NULL, 0, 0, 0,
@@ -825,7 +825,7 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       *(double*)&R[ldR*j+j] = hSVals[restartPerm[j]];
    }
 
-   permute_vecs_@(pre)(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
+   permute_vecs_@(pre)primme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
 
    /* -------------------------------------------------------------------- */
    /* Compute the QR decomposition of R(indexOfPrevVecs:restartSize-1)     */
@@ -877,7 +877,7 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* Restart Q by replacing it with Q*hU */
    /* ----------------------------------- */
 
-   Num_update_VWXR_@(pre)(Q, NULL, nLocal, basisSize, ldQ, hU, restartSize,
+   Num_update_VWXR_@(pre)primme(Q, NULL, nLocal, basisSize, ldQ, hU, restartSize,
       ldhU, NULL,
       Q, 0, restartSize, ldQ,
       NULL, 0, 0, 0,
@@ -911,9 +911,9 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       }
    }
 
-   permute_vecs_d(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
-   permute_vecs_d(hSVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
-   permute_vecs_d(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hSVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
 
    /* ---------------------------------------------------------------------- */
    /* If coefficient vectors from the previous iteration have been retained, */
@@ -981,7 +981,7 @@ static int restart_ref(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
  ******************************************************************************/
 
 
-int dtr_@(pre)(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
+int dtr_@(pre)primme(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme)
 {
 

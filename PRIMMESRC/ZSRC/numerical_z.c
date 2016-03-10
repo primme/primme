@@ -802,7 +802,7 @@ void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Comp
  *
  ******************************************************************************/
 
-int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
+int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    Complex_Z *h, int nh, int ldh, double *hVals,
    Complex_Z *X0, int nX0b, int nX0e, int ldX0,
    Complex_Z *X1, int nX1b, int nX1e, int ldX1,
@@ -927,7 +927,7 @@ int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
  *
  ******************************************************************************/
 
-void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       Complex_Z *rwork, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
@@ -990,7 +990,7 @@ void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
 
 
 /******************************************************************************
- * Subroutine compact_vecs - copy certain columns of matrix into another
+ * Subroutine Num_compact_vecs - copy certain columns of matrix into another
  *       matrix, i.e., work = vecs(perm). If avoidCopy and perm indices are
  *       consecutive the routine returns a reference in vecs and doesn't copy.
  *            
@@ -1011,7 +1011,7 @@ void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
  *
  ******************************************************************************/
 
-Complex_Z* Num_compact_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm,
+Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm,
       Complex_Z *work, int ldwork, int avoidCopy) {
 
    int i;

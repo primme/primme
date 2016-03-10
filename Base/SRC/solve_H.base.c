@@ -415,8 +415,8 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
-      permute_vecs_d(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
-      permute_vecs_@(pre)(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
+      permute_vecs_dprimme(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
+      permute_vecs_@(pre)primme(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
    }
 
    return 0;   
