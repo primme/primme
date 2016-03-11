@@ -39,8 +39,8 @@ primme_d.o: primme_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  convergence_d.h update_projection_d.h primme_private_d.h numerical_d.h \
  ../COMMONSRC/common_numerical.h ../COMMONSRC/primme_interface.h
 restart_d.o: restart_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
- ../COMMONSRC/const.h restart_d.h restart_private_d.h ortho_d.h \
- solve_H_d.h factorize_d.h update_projection_d.h update_W_d.h \
+ ../COMMONSRC/const.h restart_d.h restart_private_d.h locking_d.h \
+ ortho_d.h solve_H_d.h factorize_d.h update_projection_d.h update_W_d.h \
  convergence_d.h numerical_d.h ../COMMONSRC/common_numerical.h
 solve_H_d.o: solve_H_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  solve_H_d.h solve_H_private_d.h numerical_d.h \

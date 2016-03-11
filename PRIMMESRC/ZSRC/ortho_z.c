@@ -74,19 +74,20 @@
  * ldBasis    Leading dimension of the basis
  * b1, b2     Range of indices of vectors to be orthonormalized
  *            (b1 can be zero, but b1 must be <= b2)
+ * ldR        Leading dimension in R
  * locked     Array that holds locked vectors if they are in-core
  * ldLocked   Leading dimension of locked
  * numLocked  Number of vectors in locked
  * nLocal     Number of rows of each vector stored on this node
  * machEps    Double machine precision
  *
- * lockFile   Handle of file containing the locked vectors
  * rworkSize  Length of rwork array
  * primme     Primme struct. Contains globalSumDouble and Parallelism info
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
  * basis   Basis vectors stored in core memory
+ * R       Rotations done in the basis: input_basis = output_basis * R
  * iseed   Seeds used to generate random vectors
  * rwork   Contains buffers and other necessary work arrays
  *
@@ -242,7 +243,13 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             s1 = sqrt(s1);
          }
 
-         if (s1 <= machEps*s0) {
+         if (s1 <= machEps*s0 && R) {
+            /* No randomization when computing the QR decomposition */
+            Num_scal_zprimme(nLocal, tzero, &basis[ldBasis*i], 1);
+            R[ldR*i + i] = tzero;
+            reorth = 0;
+         }
+         else if (s1 <= machEps*s0) {
             if (messages) {
                fprintf(outputFile, 
                  "Vector %d lost all significant digits in ortho\n", i-b1);

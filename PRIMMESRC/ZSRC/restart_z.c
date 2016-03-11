@@ -34,6 +34,7 @@
 #include "const.h"
 #include "restart_z.h"
 #include "restart_private_z.h"
+#include "locking_z.h"
 #include "ortho_z.h"
 #include "solve_H_z.h"
 #include "factorize_z.h"
@@ -45,6 +46,253 @@
 
 /*******************************************************************************
  * Subroutine: restart - This routine replaces V with V*c, some subset
+ *             of the Ritz vectors of the current and the previous iteration.
+ *             Related bases and matrices are updated accordingly.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ *
+ * nLocal           Number of rows of V, W, Q, evecs and evecsHat assigned to the node
+ *
+ * ldV              The leading dimension of V, W, Q, evecs and evecsHat
+ *
+ * basisSize        The number of columns in V, W and Q
+ *
+ * resNorms         The residual norms of the converged eigenpairs
+ *
+ * previousHVecs    Coefficient vectors retained from the previous iteration
+ *
+ * ldpreviousHVecs  The leading dimension of previousHVecs
+ *
+ * numGuesses       Number of remaining initial guesses
+ *
+ * rwork            Real work array
+ *
+ * rworkSize        Must be of size 
+ *
+ * iwork            Integer work array
+ *                  
+ * primme           Structure containing various solver parameters
+ *
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * restartSizeOutput The column of vectors of the output V.
+ *
+ * V                The orthonormal basis. After restart, contains Ritz vectors
+ *                  plus the orthogonal components from numPrevRetained Ritz 
+ *                  vectors from the penultimate step.
+ *
+ * W                A*V
+ *
+ * hU               The left singular vectors of R or the eigenvectors of QV/R
+ *
+ * ldhU             The leading dimension of the input hU
+ *
+ * newldhU          The leading dimension of the output hU
+ *
+ * hVecs            The eigenvectors of H
+ *
+ * ldhVecs          The leading dimension of the input hVecs
+ *
+ * newldhVecs       The leading dimension of the output hVecs
+ *
+ * hVals            The eigenvalues of H
+ *
+ * flags            Array indicating the convergence of the Ritz vectors
+ *
+ * iev              Array of size blockSize indicating which Ritz vectors are
+ *                  targeted in the block
+ *
+ * ievSize          The length of iev
+ *
+ * blockNorms       The residual norms of the eigenpairs in the block
+ *
+ * evecs            The converged Ritz vectors. Without locking, all converged
+ *                  eigenvectors are copied from V to evecs if skew projections
+ *                  are required
+ *
+ * evals            The converged Ritz values
+ *
+ * resNorms         The residual norms of the converged eigenpairs
+ *
+ * evecsHat         K^{-1}evecs
+ *
+ * prevRitzVals     Projected values retained from the previous iteration
+ *
+ * numPrevRitzVals  Length of the vector prevRitzVals
+ *
+ * ldevecsHat       The leading dimension of evecsHat
+ *
+ * M, ldM           evecs'*evecsHat and the leading dimension of M
+ *
+ * UDU              The factorization of M
+ *
+ * ldUDU            The leading dimension of UDU
+ *
+ * ipivot           The pivot array of the UDU factorization
+ *
+ * H                The projection V'*A*V
+ *
+ * ldH              The leading dimension of H
+ *
+ * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
+ *
+ * ldQ, ldR         The leading dimension of Q and R
+ *
+ * numConverged     The number of converged eigenpairs
+ *
+ * numLocked        The number of locked eigenpairs
+ *
+ * numConvergedStored The # of converged vectors copied to evecs
+ *
+ * numPrevRetained  As input the number of columns of previousHVecs. As output the
+ *                  number of columns added to V
+ *
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
+ *
+ *
+ * Return value
+ * ------------
+ * int   > 0 the restart size   
+ *        -2 restart_H failed
+ *        -4 factorization of M failed
+ *        -5 flags do not correspond to converged pairs in pseudolocking
+ *       
+ ******************************************************************************/
+ 
+int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int ldV,
+   double *hVals, double *hSVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, Complex_Z *evecs, int *evecsPerm, double *evals, double *resNorms,
+   Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, int ldM, Complex_Z *UDU,
+   int ldUDU, int *ipivot, int *numConverged, int *numLocked,
+   int *numConvergedStored, Complex_Z *previousHVecs, int *numPrevRetained,
+   int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
+   Complex_Z *H, int ldH, Complex_Z *Q, int ldQ, Complex_Z *R, int ldR,
+   Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
+   int *restartSizeOutput, int *targetShiftIndex, double machEps,
+   Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme) {
+
+   int i;                   /* Loop indices */
+   int restartSize;         /* Basis size after restarting                   */
+   int indexOfPreviousVecs; /* Column index in hVecs with previous vecs      */
+   int *iwork0;             /* Temporal integer workspace pointer            */
+   int *restartPerm;        /* Permutation of hVecs used to restart V        */
+   int *hVecsPerm;          /* Permutation of hVecs to sort as primme.target */
+   int ret;                 /* returned error code                           */
+
+   /* Return memory requirement */
+
+   if (V == NULL) {
+      if (primme->locking) {
+         rworkSize = restart_locking_zprimme(&primme->maxBasisSize, NULL,
+               NULL, primme->nLocal, primme->maxBasisSize, 0, NULL, NULL,
+               NULL, 0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL,
+               NULL, &primme->numEvals, &primme->numEvals, NULL, NULL, 0, NULL,
+               &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
+               NULL, primme);
+      }
+      else {
+         rworkSize = restart_soft_locking_zprimme(&primme->maxBasisSize, NULL, NULL,
+               primme->nLocal, primme->maxBasisSize, 0, NULL, NULL, NULL, 0,
+               NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, NULL, NULL,
+               evecsHat, 0, NULL, 0, &primme->numEvals, NULL, NULL,
+               &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
+               NULL, primme);
+      }
+
+      rworkSize += restart_projection_zprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0,
+            NULL, 0, NULL, 0, 0,
+            NULL, 0, 0, NULL, NULL, NULL, NULL, primme->maxBasisSize, primme->maxBasisSize,
+            primme->restartingParams.maxPrevRetain, primme->maxBasisSize, NULL,
+            NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, NULL, NULL, 0.0, primme);
+
+      return rworkSize;
+   }
+
+   /* ----------------------------------------------------------- */
+   /* Special case: If (basisSize+numLocked) is the entire space, */
+   /* then everything should be converged. Do not test, just flag */
+   /* everything as converged                                     */
+   /* ----------------------------------------------------------- */
+
+   if (basisSize + *numLocked + primme->numOrthoConst >= primme->n) {
+      for (i = 0; i < basisSize && *numConverged < primme->numEvals; i++)
+         if (flags[i] == UNCONVERGED) { flags[i] = CONVERGED; (*numConverged)++; }
+      restartSize = basisSize;
+      *numPrevRetained = 0;
+   }
+
+   /* --------------------------------------------------------------------- */
+   /* If basis isn't full, restart with the current basis size.             */
+   /* If dynamic thick restarting is to be used, then determine the minimum */
+   /* number of free spaces to be maintained and call the DTR routine.      */
+   /* The DTR routine will determine how many coefficient vectors from the  */
+   /* left and right of H-spectrum to retain at restart. If DTR is not used */
+   /* then set the restart size to the minimum restart size.                */
+   /* --------------------------------------------------------------------- */
+
+   else if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
+       restartSize = basisSize;
+   }
+   else if (primme->restartingParams.scheme == primme_dtr) {
+      int numFree = *numPrevRetained+max(3, primme->maxBlockSize);
+      restartSize = dtr_zprimme(*numLocked, hVecs, hVals, flags, basisSize, numFree, 
+            iev, rwork, primme);
+   }
+   else {
+      restartSize = min(basisSize, primme->minRestartSize);
+   }
+
+   restartPerm = iwork;
+   hVecsPerm = &restartPerm[basisSize];
+   iwork0 = &hVecsPerm[basisSize];
+
+   if (!primme->locking) {
+      Complex_Z *X, *R;
+      ret = restart_soft_locking_zprimme(&restartSize, V, W, nLocal, basisSize,
+         ldV, &X, &R, hVecs, ldhVecs, restartPerm, hVals, flags, iev, ievSize,
+         blockNorms, evecs, evals, resNorms, evecsHat, ldevecsHat, M, ldM, numConverged,
+         numConvergedStored, previousHVecs, numPrevRetained, ldpreviousHVecs,
+         &indexOfPreviousVecs, hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
+   }
+   else {
+      Complex_Z *X, *R;
+      ret = restart_locking_zprimme(&restartSize, V, W, nLocal, basisSize,
+         ldV, &X, &R, hVecs, ldhVecs, restartPerm, hVals, flags, iev, ievSize,
+         blockNorms, evecs, evals, numConverged, numLocked, resNorms, evecsPerm, numGuesses,
+         previousHVecs, numPrevRetained, ldpreviousHVecs, &indexOfPreviousVecs,
+         hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
+   }
+
+   if (ret != 0) {
+      return ret;
+   }
+
+   /* Rearrange prevRitzVals according to restartPerm */
+
+   if (primme->target != primme_smallest && primme->target != primme_largest) {
+      permute_vecs_dprimme(prevRitzVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork0);
+      permute_vecs_dprimme(prevRitzVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork0);
+      *numPrevRitzVals = restartSize;
+   }
+
+   if (newldhVecs == 0) newldhVecs = restartSize;
+   if (newldhU == 0) newldhU = restartSize;
+   restart_projection_zprimme(V, ldV, W, ldV, H, ldH, Q, ldQ, nLocal, R, ldR,
+         hU, ldhU, newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm,
+         hVecsPerm, restartSize, basisSize, *numPrevRetained, indexOfPreviousVecs, evecs,
+         numConvergedStored, primme->nLocal, evecsHat, primme->nLocal, M,
+         ldM, UDU, ldUDU, ipivot, targetShiftIndex, *numConverged,
+         rworkSize, rwork, iwork0, machEps, primme);
+
+   *restartSizeOutput = restartSize; 
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine: restart_soft_locking - This routine replaces V with V*c, some subset
  *             of the Ritz vectors, corresponding to the restartSize chosen
  *             eigenvalues of V'*A*V. It may include components from the 
  *             Ritz vectors from the (maxBasisSize-1) step (i.e., recurrence
@@ -56,6 +304,14 @@
  * nLocal           Number of rows of V assigned to the node
  *
  * ldV              The leading dimension of V and W
+ *
+ * hR               The factors of the QR decomposition of (A - targetShift*B)*V
+ *
+ * ldhR             The leading dimension of Q and R
+ *
+ * hU               The eigenvectors of QV/R
+ *
+ * ldhU             The leading dimension of hU
  *
  * basisSize        Size of the basis V
  *
@@ -136,7 +392,7 @@
  *       
  ******************************************************************************/
  
-int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
+static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
    int basisSize, int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs, int ldhVecs,
    int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
    double *blockNorms, Complex_Z *evecs, double *evals, double *resNorms,
@@ -315,18 +571,12 @@ int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
 
 
 /*******************************************************************************
- * Subroutine: restart_projected_problem - This routine replaces V with V*c, some subset
- *             of the Ritz vectors, corresponding to the restartSize chosen
- *             eigenvalues of V'*A*V. It may include components from the 
- *             Ritz vectors from the (maxBasisSize-1) step (i.e., recurrence
- *             restarting).
+ * Subroutine: restart_projection - This routine updates Q, R, H and QV to match the
+ *    changes in V.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
  * nLocal           Number of rows of V assigned to the node
- *
- * iev              Array of size blockSize indicating which Ritz vectors are
- *                  being targeted by the block.
  *
  * basisSize        Size of the basis V
  *
@@ -334,20 +584,16 @@ int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
  *
  * numLocked        The number of Ritz vectors that have been locked 
  *
- * numGuesses       Number of remaining initial guesses
- *
- * previousHVecs    Coefficient vectors retained from the previous iteration
- *
- * numPrevRetained  The number of coefficient vectors in previousHVecs
+ * numPrevRetained  The number of coefficient vectors from previousHVecs in hVecs
  *  
+ * indexOfPreviousVecs The first column in hVecs that has a vector from previousHVecs
+ *
  * rwork            Real work array
  *
- * rworkSize        Must be of size 
- *                  (primme->restartingParams.maxPrevRetain)^2 + 
- *                  MAX(
- *                  primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
- *                  5*primme->maxPrevRetain, primme->maxBasisSize^2)
+ * rworkSize        Size of rwork
  *                  
+ * iwork            Integer work array
+ *
  * primme           Structure containing various solver parameters
  *
  *
@@ -360,13 +606,43 @@ int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
  *                  plus the orthogonal components from numPrevRetained Ritz 
  *                  vectors from the penultimate step.
  *
+ * ldV              The leading dimension of V
+ *
  * W                A*V
+ *
+ * ldW              The leading dimension of W
  *
  * H                The projection V'*A*V
  *
+ * ldH              The leading dimension of H
+ *
+ * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
+ *
+ * ldQ, ldR         The leading dimension of Q and R
+ *
+ * QV               = Q'*V
+ *
+ * ldQV             The leading dimension of QV
+ *
+ * hU               The left singular vectors of R or the eigenvectors of QV/R
+ *
+ * ldhU             The leading dimension of the input hU
+ *
+ * newldhU          The leading dimension of the output hU
+ *
  * hVecs            The eigenvectors of H
  *
+ * ldhVecs          The leading dimension of the input hVecs
+ *
+ * newldhVecs       The leading dimension of the output hVecs
+ *
  * hVals            The eigenvalues of H
+ *
+ * hSVals           The singular values of R
+ *
+ * hVecsPerm        The permutation that orders hVals and hVecs as primme.target
+ *
+ * restartPerm      The permutation applied to the columns of hVecs before restarting
  *
  * flags            Array indicating the convergence of the Ritz vectors
  *
@@ -374,15 +650,23 @@ int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
  *                  eigenvectors are copied from V to evecs if skew projections
  *                  are required.
  *
+ * ldevecs          The leading dimension of evecs
+ *
  * evecsHat         K^{-1}evecs
+ *
+ * ldevecsHat       The leading dimension of evecsHat
  *
  * M                evecs'*evecsHat
  *
+ * ldM              The leading dimension of M
+ *
  * UDU              The factorization of M
+ *
+ * ldUDU            The leading dimension of UDU
  *
  * ipivot           The pivot array of the UDU factorization
  *
- * numConvergedStored The # of converged vectors copied to evecs w/o locking
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  *
  *
  * Return value
@@ -394,14 +678,14 @@ int restart_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, int nLocal,
  *       
  ******************************************************************************/
  
-int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
+static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
    Complex_Z *H, int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR,
    Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
    double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained,
    int indexOfPreviousVecs, Complex_Z *evecs, int *evecsSize,
    int ldevecs, Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, int ldM, Complex_Z *UDU,
-   int ldUDU, int *ipivot, int numConvergedBeforeRestart, int numConverged,
+   int ldUDU, int *ipivot, int *targetShiftIndex, int numConverged,
    int rworkSize, Complex_Z *rwork, int *iwork, double machEps, primme_params *primme) {
 
    int ret;
@@ -420,7 +704,7 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
    case primme_proj_refined:
       ret = restart_ref(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, hU, ldhU, newldhU, hVecs,
             ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
-            numPrevRetained, indexOfPreviousVecs, numConvergedBeforeRestart, numConverged,
+            numPrevRetained, indexOfPreviousVecs, targetShiftIndex, numConverged,
             rworkSize, rwork, iwork, machEps, primme);
       break;
 
@@ -453,7 +737,8 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
       /* TODO: primme.shiftsForPreconditioner is undefined at that point;
          maybe it makes sense to always set NULL shiftsForPreconditioner
          when SkewQ is enabled to force the same preconditioner. */
-      (*primme->applyPreconditioner)(&evecs[primme->nLocal*(*evecsSize+primme->numOrthoConst)],
+      assert(ldevecs == primme->nLocal);
+      primme->applyPreconditioner(&evecs[primme->nLocal*(*evecsSize+primme->numOrthoConst)],
             &evecsHat[primme->nLocal*(*evecsSize+primme->numOrthoConst)], &numRecentlyConverged,
             primme);
       primme->stats.numPreconds += numRecentlyConverged;
@@ -499,8 +784,7 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
  * 
  * basisSize     Maximum size of the basis V
  *
- * previousHVecs   Coefficient vectors from the previous iteration.  They are
- *                 orthonormal to the current coefficient vectors.
+ * numLocked     The number of Ritz vectors that have been locked 
  *
  * numPrevRetained The number of vectors retained from the previous iteration
  *
@@ -509,13 +793,14 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
  *                      previousHVecs'*H*previousHvecs will be inserted within
  *                      the restarted H.
  *
+ * hVecsPerm     The permutation that orders hVals and hVecs as primme.target
+ *
+ * iwork         Integer work array
+ *
  * rwork         Work array.  Necessary only when coefficient vectors from the
  *               previous iteration are retained.
  *
- * rworkSize     Can be zero if no previous vectors are retained.  Otherwise,
- *               it must be at least 
- *               numPrevRetained*numPrevRetained + 
- *               max(basisSize*numPrevRetained, 5*numPrevRetained) 
+ * rworkSize     Size of rwork
  *
  *
  * INPUT/OUTPUT ARRAYS
@@ -526,6 +811,8 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
  *        a numPrevRetained x numPrevRetained submatrix inserted at
  *        H(numPrevRetained, numPrevRetained)
  *
+ * ldH    The leading dimension of H
+ *
  * hVecs  If the new H is diagonal, then it will contain the standard basis
  *        vectors.  If previous coefficient vectors are retained, then 
  *        restartSize - numPrevRetained of the vectors will be standard basis
@@ -533,6 +820,10 @@ int after_restart_zprimme(Complex_Z *V, int ldV, Complex_Z *W, int ldW,
  *        numPrevRetained non-zero elements corresponding to the 
  *        numPrevRetined x numPrevRetained submatrix.
  * 
+ * ldhVecs  The leading dimension of the input hVecs
+ *
+ * newldhVecs  The leading dimension of the output hVecs
+ *
  * hVals  The eigenvalues of the restarted H
  * 
  * 
@@ -644,58 +935,85 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
 }
 
 /*******************************************************************************
- * Function restart_ref - This routine is used to recompute H = V'*A*V once V 
- *   has been restarted.  If no coefficient vectors from the previous iteration
- *   have been retained, then the restarted H will be diagonal and the 
- *   new eigenvectors (coefficient vectors) of H will be the standard basis
- *   vectors.  If previous coefficient vectors have been retained, then H will 
- *   contain the numPrevRetained x numPrevRetained submatrix 
- *   previousHVecs'*H*previousHvecs and the rest of the elements of H will be
- *   along the diagonal.
+ * Function restart_ref - This routine is used to recompute the QR decomposition
+ *    of W (=A*V), after V being replaced by V*hVecs. The coefficient vectors
+ *    excepts hVecs(indexOfPrevRetained:indexOfPrevRetained+numPrevRetained) are
+ *    right singular vectors of R. The output R for these columns will be
+ *    a diagonal matrix with the singular values as diagonal elements. The
+ *    output Q for these columns will be the update with the left singular
+ *    vectors. The other columns of R and Q are recomputed properly without
+ *    requiring explicitly recompute the QR factorization.
+ *
+ *    Also H = V'*A*V is recomputed properly.
  *   
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * nLocal           Number of rows of V assigned to the node
  *
- * INPUT PARAMETERS
- * ----------------
- * restartSize   Number of vectors the basis was restarted with
- * 
- * basisSize     Maximum size of the basis V
+ * basisSize        Size of the basis V
  *
- * previousHVecs   Coefficient vectors from the previous iteration.  They are
- *                 orthonormal to the current coefficient vectors.
+ * numConverged     The number of converged eigenpairs without locking
  *
- * numPrevRetained The number of vectors retained from the previous iteration
+ * numPrevRetained  The number of coefficient vectors from previousHVecs in hVecs
+ *  
+ * indexOfPreviousVecs The first column in hVecs that has a vector from previousHVecs
  *
- * indexOfPreviousVecs  The index within hVecs where the previous vectors were
- *                      inserted.  Its also where the overlap matrix
- *                      previousHVecs'*H*previousHvecs will be inserted within
- *                      the restarted H.
+ * rwork            Real work array
  *
- * rwork         Work array.  Necessary only when coefficient vectors from the
- *               previous iteration are retained.
+ * rworkSize        Size of rwork
+ *                  
+ * iwork            Integer work array
  *
- * rworkSize     Can be zero if no previous vectors are retained.  Otherwise,
- *               it must be at least 
- *               numPrevRetained*numPrevRetained + 
- *               max(basisSize*numPrevRetained, 5*numPrevRetained) 
+ * primme           Structure containing various solver parameters
  *
  *
- * INPUT/OUTPUT ARRAYS
- * -------------------
- * H      Will contain H = V'*A*V given the restarted V.  H will be
- *        diagonal since V will contain only Ritz vectors, unless previous
- *        vectors are retained.  In that case, it will be diagonal except for
- *        a numPrevRetained x numPrevRetained submatrix inserted at
- *        H(numPrevRetained, numPrevRetained)
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * restartSize      The number of vectors to restart with. If negative,
+ *                  use dynamic thick restart.
  *
- * hVecs  If the new H is diagonal, then it will contain the standard basis
- *        vectors.  If previous coefficient vectors are retained, then 
- *        restartSize - numPrevRetained of the vectors will be standard basis
- *        vectors.  The remaining numPrevRetained vectors will contain
- *        numPrevRetained non-zero elements corresponding to the 
- *        numPrevRetined x numPrevRetained submatrix.
- * 
- * hVals  The eigenvalues of the restarted H
- * 
+ * V                The orthonormal basis. After restart, contains Ritz vectors
+ *                  plus the orthogonal components from numPrevRetained Ritz 
+ *                  vectors from the penultimate step.
+ *
+ * ldV              The leading dimension of V
+ *
+ * W                A*V
+ *
+ * ldW              The leading dimension of W
+ *
+ * H                The projection V'*A*V
+ *
+ * ldH              The leading dimension of H
+ *
+ * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
+ *
+ * ldQ, ldR         The leading dimension of Q and R
+ *
+ * hU               The left singular vectors of R or the eigenvectors of QV/R
+ *
+ * ldhU             The leading dimension of the input hU
+ *
+ * newldhU          The leading dimension of the output hU
+ *
+ * hVecs            The eigenvectors of H
+ *
+ * ldhVecs          The leading dimension of the input hVecs
+ *
+ * newldhVecs       The leading dimension of the output hVecs
+ *
+ * hVals            The eigenvalues of H
+ *
+ * hSVals           The singular values of R
+ *
+ * hVecsPerm        The permutation that orders hVals and hVecs as primme.target
+ *
+ * restartPerm      The permutation applied to the columns of hVecs before restarting
+ *
+ * flags            Array indicating the convergence of the Ritz vectors
+ *
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
+ *
  * 
  * Return value
  * ------------
@@ -709,7 +1027,7 @@ static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *
    int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
    double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
    int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int numConvergedBeforeRestart, int numConverged, int rworkSize,
+   int *targetShiftIndex, int numConverged, int rworkSize,
    Complex_Z *rwork, int *iwork, double machEps, primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
@@ -763,7 +1081,7 @@ static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *
    /* Quick exit if the target has changed   */
    /* -------------------------------------- */
 
-   if (primme->targetShifts[min(primme->numTargetShifts-1, numConvergedBeforeRestart)]   
+   if (primme->targetShifts[min(primme->numTargetShifts-1, *targetShiftIndex)]   
          != primme->targetShifts[min(primme->numTargetShifts-1, numConverged)]) {
 
       ret = update_Q_zprimme(V, nLocal, ldV, W, ldW, Q, ldQ, R, ldR,
@@ -774,6 +1092,8 @@ static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *
       ret = solve_H_Ref_zprimme(H, ldH, hVecs, newldhVecs, hU, newldhU, hSVals, 
             R, ldR, hVals, restartSize, rworkSize, rwork, primme);
       if (ret != 0) return ret;
+
+      *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
 
       return 0;
 
@@ -966,7 +1286,7 @@ static int restart_ref(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *
  ******************************************************************************/
 
 
-int dtr_zprimme(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
+static int dtr_zprimme(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, Complex_Z *rwork, primme_params *primme)
 {
 

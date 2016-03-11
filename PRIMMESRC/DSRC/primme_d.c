@@ -368,29 +368,14 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* Determine workspace required by restarting and its children          */
    /*----------------------------------------------------------------------*/
 
-   if (primme->locking) {
-      restartSize = restart_locking_dprimme(&primme->maxBasisSize, NULL,
-            NULL, primme->nLocal, primme->maxBasisSize, 0, NULL, NULL,
-            NULL, 0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL,
-            NULL, &primme->numEvals, &primme->numEvals, NULL, NULL, 0, NULL,
-            &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
-            NULL, primme);
-   }
-   else {
-      restartSize = restart_dprimme(&primme->maxBasisSize, NULL, NULL,
-            primme->nLocal, primme->maxBasisSize, 0, NULL, NULL, NULL, 0,
-            NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, NULL, NULL,
-            evecsHat, 0, NULL, 0, &primme->numEvals, NULL, NULL,
-            &primme->restartingParams.maxPrevRetain, 0, NULL, NULL, 0.0, NULL, 0,
-            NULL, primme);
- 
-   }
-
-   restartSize += after_restart_dprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0,
-         NULL, 0, NULL, 0, 0,
-         NULL, 0, 0, NULL, NULL, NULL, NULL, primme->maxBasisSize, primme->maxBasisSize,
-         primme->restartingParams.maxPrevRetain, primme->maxBasisSize, NULL,
-         NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, NULL, NULL, 0.0, primme);
+   restartSize = restart_dprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize, 0, NULL,
+         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+         evecsHat, 0, NULL, 0, NULL, 0, NULL, NULL,
+         NULL, &primme->numEvals, NULL, &primme->restartingParams.maxPrevRetain,
+         primme->maxBasisSize, primme->initSize, NULL, &primme->maxBasisSize, NULL,
+         primme->maxBasisSize, NULL, 0, NULL, 0, NULL,
+         0, 0, NULL, 0, 0, NULL, NULL, 0.0,
+         NULL, 0, NULL, primme);
 
    /*----------------------------------------------------------------------*/
    /* Determine workspace required by main_iter and its children           */
