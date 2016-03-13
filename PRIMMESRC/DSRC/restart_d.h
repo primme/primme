@@ -29,32 +29,21 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-int restart_dprimme(int *restartSize, double *V, double *W, int nLocal,
-   double *hR, int ldhR, double *hU, int ldhU,
-   int basisSize, int ldV, double **X, double **R, double *hVecs, int ldhVecs,
-   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
-   double *blockNorms, double *evecs, double *evals, double *resNorms,
-   double *evecsHat, int ldevecsHat, double *M, int ldM, int *numConverged,
-   int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
-   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
-   double *rwork, int rworkSize, int *iwork, primme_params *primme);
-
-int after_restart_dprimme(double *V, int ldV, double *W, int ldW,
-   double *H, int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR,
-   double *QV, int ldQV, double *hU, int ldhU, int newldhU, double *hVecs,
-   int ldhVecs, int newldhVecs, double *hVals, double *hSVals, int *restartPerm,
-   int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
-   int indexOfPreviousVecs, double *evecs, int *evecsSize,
-   int ldevecs, double *evecsHat, int ldevecsHat, double *M, int ldM, double *UDU,
-   int ldUDU, int *ipivot, int numConvergedBeforeRestart, int numConverged,
-   int rworkSize, double *rwork, int *iwork, double machEps, primme_params *primme);
-
 void reset_flags_dprimme(int *flags, int first, int last);
 
-int dtr_d(int numLocked, double *hVecs, double *hVals, int *flags, 
-  int basisSize, int numFree, int *iev, double *rwork, primme_params *primme);
+int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
+   double *hVals, double *hSVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, double *evecs, int *evecsPerm, double *evals, double *resNorms,
+   double *evecsHat, int ldevecsHat, double *M, int ldM, double *UDU,
+   int ldUDU, int *ipivot, int *numConverged, int *numLocked,
+   int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
+   int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
+   double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QV, int ldQV,
+   double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
+   int *restartSizeOutput, int *targetShiftIndex, double machEps,
+   double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
-int ortho_coefficient_vectors_d(double *hVecs, int basisSize, int ldhVecs,
+int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, double *hU, int ldhU,
    double *R, int ldR, int numPrevRetained, int machEps, int *iwork,
    double *rwork, int rworkSize, primme_params *primme);

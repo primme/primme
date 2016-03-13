@@ -151,6 +151,8 @@ int read_solver_params(char *configFileName, char *outputFileName,
          READ_FIELD_OPParams(projection, projection,
             OPTIONParams(projection, projection, primme_proj_default)
             OPTIONParams(projection, projection, primme_proj_RR)
+            OPTIONParams(projection, projection, primme_proj_refined)
+            OPTIONParams(projection, projection, primme_proj_harmonic)
          );
 
          READ_FIELD_OP(initBasisMode,

@@ -34,7 +34,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme);
 
-int prepare_candidates_d(double *V, double *W, int nLocal, int basisSize,
+int prepare_candidates_dprimme(double *V, double *W, int nLocal, int basisSize,
    int ldV, double *X, double *R, double *hVecs, int ldhVecs, double *hVals,
    int *flags, int numSoftLocked, int numEvals, double *blockNorms,
    int blockNormsSize, int maxBlockSize, double *evecs, int numLocked,

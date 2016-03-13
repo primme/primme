@@ -42,8 +42,8 @@ primme_z.o: primme_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  ../COMMONSRC/common_numerical.h ../COMMONSRC/Complexz.h \
  ../COMMONSRC/primme_interface.h
 restart_z.o: restart_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
- ../COMMONSRC/const.h restart_z.h restart_private_z.h ortho_z.h \
- solve_H_z.h factorize_z.h update_projection_z.h update_W_z.h \
+ ../COMMONSRC/const.h restart_z.h restart_private_z.h locking_z.h \
+ ortho_z.h solve_H_z.h factorize_z.h update_projection_z.h update_W_z.h \
  convergence_z.h numerical_z.h ../COMMONSRC/common_numerical.h \
  ../COMMONSRC/Complexz.h
 solve_H_z.o: solve_H_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \

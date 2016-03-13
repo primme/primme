@@ -182,46 +182,38 @@ void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx,
 }
 
 /******************************************************************************
- * Function Num_compact_res - This subroutine performs the next operations:
+ * Function Num_compute_residual - This subroutine performs the next operation
+ *    in a cache-friendly way:
  *
  *    r = Ax - eval*x
- *    newx = newx0 = x
- *    newAx = Ax
  *
  * PARAMETERS
  * ---------------------------
- * n           The number of rows of x, Ax, newx, newx0, newAx and r
+ * n           The number of rows of x, Ax and r
  * eval        The value to compute the residual vector r
  * x           The vector x
  * Ax          The vector Ax
- * newx        On output newx = x
- * newx0       On output newx0 = x
- * newAx       On output newAx = Ax
  * r           On output r = Ax - eval*x
  *
  ******************************************************************************/
 
-void Num_compact_res_@(pre)primme(int n, double eval, @(type) *x, 
-   @(type) *Ax, @(type) *newx, @(type) *newx0, @(type) *newAx, @(type) *r) {
+void Num_compute_residual_@(pre)primme(int n, double eval, @(type) *x, 
+   @(type) *Ax, @(type) *r) {
 
    @(type) ztmp = @(tzero);
    int k, M=min(n,PRIMME_BLOCK_SIZE);
    *(double*)&ztmp = -eval;
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      if (newx) Num_@(pre)copy_@(pre)primme(M, &x[k], 1, newx, 1);
-      if (newx0) Num_@(pre)copy_@(pre)primme(M, &x[k], 1, newx0, 1);
-      if (newAx) Num_@(pre)copy_@(pre)primme(M, &Ax[k], 1, newAx, 1);
-      if (r) {
-         Num_@(pre)copy_@(pre)primme(M, &Ax[k], 1, &r[k], 1);
-         Num_axpy_@(pre)primme(M, ztmp, &x[k], 1, &r[k], 1);
-      }
+      Num_@(pre)copy_@(pre)primme(M, &Ax[k], 1, &r[k], 1);
+      Num_axpy_@(pre)primme(M, ztmp, &x[k], 1, &r[k], 1);
    }
 
 }
 
 /******************************************************************************
- * Function Num_compact_res_i - This subroutine performs the next operations:
+ * Function Num_compute_residual_i - This subroutine performs the next operations
+ *    in a cache-friendly way:
  *
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
@@ -264,7 +256,7 @@ void Num_compact_res_@(pre)primme(int n, double eval, @(type) *x,
  *
  ******************************************************************************/
 
-int Num_compact_res_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p, 
+int Num_compute_residual_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p, 
    int ldx, @(type) *Ax, int ldAx,
    @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,
@@ -300,9 +292,12 @@ int Num_compact_res_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int 
          }
          else {
             assert(id >= nd || i < n);
-            Num_compact_res_@(pre)primme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k],
-                  &x [i*ldx +k], id<nd?&X0[id*M]:NULL,
-                  &Ax[i*ldAx+k], id<nd?&R0[id*M]:NULL);
+            Num_copy_matrix_@(pre)primme(&x[p[i]*ldx+k],   M, 1, ldx,  &x[i*ldx +k],  ldx);
+            Num_copy_matrix_@(pre)primme(&Ax[p[i]*ldAx+k], M, 1, ldAx, &Ax[i*ldAx+k], ldAx);
+            if (id < nd) {
+               Num_copy_matrix_@(pre)primme(&x[p[i]*ldx+k], M, 1, ldx, &X0[id*M], M);
+               Num_compute_residual_@(pre)primme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k], &R0[id*M]);
+            }
             i++;
          }
       }
@@ -1049,7 +1044,7 @@ void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @
  *
  ******************************************************************************/
 
-int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
+int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
    @(type) *h, int nh, int ldh, double *hVals,
    @(type) *X0, int nX0b, int nX0e, int ldX0,
    @(type) *X1, int nX1b, int nX1e, int ldX1,
@@ -1117,8 +1112,8 @@ int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
       for (j=nRb; j<nRe; j++) {
-         Num_compact_res_@(pre)primme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               NULL, NULL, NULL, &R[i+ldR*(j-nRb)]);
+         Num_compute_residual_@(pre)primme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
             @(type) ztmp;
             ztmp = Num_dot_@(pre)primme(m, &R[i+ldR*(j-nRb)], 1, &R[i+ldR*(j-nRb)], 1);
@@ -1129,8 +1124,8 @@ int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
          @(type) ztmp;
-         Num_compact_res_@(pre)primme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               NULL, NULL, NULL, &Y[ldY*(j-nYb)]);
+         Num_compute_residual_@(pre)primme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               &Y[ldY*(j-nYb)]);
          ztmp = Num_dot_@(pre)primme(m, &Y[ldY*(j-nYb)], 1, &Y[ldY*(j-nYb)], 1);
          rnorms[j-nrb] += *(double*)&ztmp;
       }
@@ -1174,7 +1169,7 @@ int Num_update_VWXR_@(pre)(@(type) *V, @(type) *W, int mV, int nV, int ldV,
  *
  ******************************************************************************/
 
-void permute_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_@(pre)primme(@(type) *vecs, int m, int n, int ld, int *perm_,
       @(type) *rwork, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
@@ -1235,7 +1230,7 @@ void permute_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm_,
 }
 
 #ifdefarithm L_DEFREAL
-void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
+void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
@@ -1297,7 +1292,7 @@ void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
 
 
 /******************************************************************************
- * Subroutine compact_vecs - copy certain columns of matrix into another
+ * Subroutine Num_compact_vecs - copy certain columns of matrix into another
  *       matrix, i.e., work = vecs(perm). If avoidCopy and perm indices are
  *       consecutive the routine returns a reference in vecs and doesn't copy.
  *            
@@ -1318,7 +1313,7 @@ void permute_vecs_i(int *vecs, int n, int *perm_, int *iwork) {
  *
  ******************************************************************************/
 
-@(type)* Num_compact_vecs_@(pre)(@(type) *vecs, int m, int n, int ld, int *perm,
+@(type)* Num_compact_vecs_@(pre)primme(@(type) *vecs, int m, int n, int ld, int *perm,
       @(type) *work, int ldwork, int avoidCopy) {
 
    int i;

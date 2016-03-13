@@ -246,9 +246,9 @@ void primme_Free(primme_params *params) {
  ******************************************************************************/
 int primme_set_method(primme_preset_method method, primme_params *params) {
 
-   /* Do nothing if DEFAULT_METHOD */
+   /* Set default method as DYNAMIC */
    if (method == DEFAULT_METHOD)
-      return 0;
+      method = DYNAMIC;
 
    /* From our experience, these two methods yield the smallest matvecs/time */
    /* DYNAMIC will make some timings before it settles on one of the two     */
@@ -298,7 +298,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_plusK) {
-      if (params->restartingParams.maxPrevRetain < 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -311,7 +311,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == GD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain < 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -324,7 +324,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == JD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain < 0) {
+      if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
          }
@@ -525,7 +525,7 @@ void primme_set_defaults(primme_params *params) {
       /* use locking when not enough vectors to restart with */
       params->locking = 1;
    }
-   else if (params->locking == -1) {
+   else if (params->locking < 0) {
       params->locking = 0;   
    }
 }
@@ -586,8 +586,8 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 
    PRINTParamsIF(projection, projection, primme_proj_default);
    PRINTParamsIF(projection, projection, primme_proj_RR);
-   PRINTParamsIF(projection, projection, primme_proj_Harm);
-   PRINTParamsIF(projection, projection, primme_proj_ref);
+   PRINTParamsIF(projection, projection, primme_proj_harmonic);
+   PRINTParamsIF(projection, projection, primme_proj_refined);
 
    PRINTIF(initBasisMode, primme_init_default);
    PRINTIF(initBasisMode, primme_init_krylov);
@@ -665,33 +665,4 @@ void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
 
    Num_dcopy_primme(*count, (double *) sendBuf, 1, (double *) recvBuf, 1);
 
-}
-
-
-/*******************************************************************************
- * Subroutine convTestFunAbsolute - This routine implements primme_params.
- *    convTestFun and return an approximate eigenpair converged when           
- *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate) or
- *    resNorm is close to machineEpsilon * aNorm.          
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * evec         The approximate eigenvector
- * eval         The approximate eigenvalue 
- * rNorm        The norm of the residual vector
- * primme       Structure containing various solver parameters
- *
- * OUTPUT PARAMETERS
- * ----------------------------------
- * isConv      if it isn't zero the approximate pair is marked as converged
- ******************************************************************************/
-
-void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
-
-   const double machEps = Num_dlamch_primme("E");
-   *isConv = *rNorm < max(
-               primme->eps * (
-                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
-               machEps * 3.16 * primme->stats.estimateLargestSVal);
 }

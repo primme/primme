@@ -93,8 +93,8 @@ int update_Q_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
 
    /* Q(:,c) = W(:,c) - V(:,c)*target for c = basisSize:basisSize+blockSize-1 */
    for (i=basisSize; i<basisSize+blockSize; i++) {
-      Num_compact_res_zprimme(nLocal, targetShift, &V[ldV*i], &W[ldW*i],
-            NULL, NULL, NULL, &Q[ldQ*i]);
+      Num_compute_residual_zprimme(nLocal, targetShift, &V[ldV*i], &W[ldW*i],
+            &Q[ldQ*i]);
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */

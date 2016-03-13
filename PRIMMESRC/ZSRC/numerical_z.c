@@ -139,46 +139,38 @@ void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx,
 }
 
 /******************************************************************************
- * Function Num_compact_res - This subroutine performs the next operations:
+ * Function Num_compute_residual - This subroutine performs the next operation
+ *    in a cache-friendly way:
  *
  *    r = Ax - eval*x
- *    newx = newx0 = x
- *    newAx = Ax
  *
  * PARAMETERS
  * ---------------------------
- * n           The number of rows of x, Ax, newx, newx0, newAx and r
+ * n           The number of rows of x, Ax and r
  * eval        The value to compute the residual vector r
  * x           The vector x
  * Ax          The vector Ax
- * newx        On output newx = x
- * newx0       On output newx0 = x
- * newAx       On output newAx = Ax
  * r           On output r = Ax - eval*x
  *
  ******************************************************************************/
 
-void Num_compact_res_zprimme(int n, double eval, Complex_Z *x, 
-   Complex_Z *Ax, Complex_Z *newx, Complex_Z *newx0, Complex_Z *newAx, Complex_Z *r) {
+void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x, 
+   Complex_Z *Ax, Complex_Z *r) {
 
    Complex_Z ztmp = {+0.0e+00,+0.0e00};
    int k, M=min(n,PRIMME_BLOCK_SIZE);
    *(double*)&ztmp = -eval;
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      if (newx) Num_zcopy_zprimme(M, &x[k], 1, newx, 1);
-      if (newx0) Num_zcopy_zprimme(M, &x[k], 1, newx0, 1);
-      if (newAx) Num_zcopy_zprimme(M, &Ax[k], 1, newAx, 1);
-      if (r) {
-         Num_zcopy_zprimme(M, &Ax[k], 1, &r[k], 1);
-         Num_axpy_zprimme(M, ztmp, &x[k], 1, &r[k], 1);
-      }
+      Num_zcopy_zprimme(M, &Ax[k], 1, &r[k], 1);
+      Num_axpy_zprimme(M, ztmp, &x[k], 1, &r[k], 1);
    }
 
 }
 
 /******************************************************************************
- * Function Num_compact_res_i - This subroutine performs the next operations:
+ * Function Num_compute_residual_i - This subroutine performs the next operations
+ *    in a cache-friendly way:
  *
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
@@ -221,7 +213,7 @@ void Num_compact_res_zprimme(int n, double eval, Complex_Z *x,
  *
  ******************************************************************************/
 
-int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p, 
+int Num_compute_residual_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p, 
    int ldx, Complex_Z *Ax, int ldAx,
    Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
@@ -257,9 +249,12 @@ int Num_compact_res_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
          }
          else {
             assert(id >= nd || i < n);
-            Num_compact_res_zprimme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k],
-                  &x [i*ldx +k], id<nd?&X0[id*M]:NULL,
-                  &Ax[i*ldAx+k], id<nd?&R0[id*M]:NULL);
+            Num_copy_matrix_zprimme(&x[p[i]*ldx+k],   M, 1, ldx,  &x[i*ldx +k],  ldx);
+            Num_copy_matrix_zprimme(&Ax[p[i]*ldAx+k], M, 1, ldAx, &Ax[i*ldAx+k], ldAx);
+            if (id < nd) {
+               Num_copy_matrix_zprimme(&x[p[i]*ldx+k], M, 1, ldx, &X0[id*M], M);
+               Num_compute_residual_zprimme(M, evals[p[i]], &x[p[i]*ldx+k], &Ax[p[i]*ldAx+k], &R0[id*M]);
+            }
             i++;
          }
       }
@@ -814,7 +809,7 @@ void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Comp
  *
  ******************************************************************************/
 
-int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
+int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    Complex_Z *h, int nh, int ldh, double *hVals,
    Complex_Z *X0, int nX0b, int nX0e, int ldX0,
    Complex_Z *X1, int nX1b, int nX1e, int ldX1,
@@ -882,8 +877,8 @@ int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
       for (j=nRb; j<nRe; j++) {
-         Num_compact_res_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               NULL, NULL, NULL, &R[i+ldR*(j-nRb)]);
+         Num_compute_residual_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
             Complex_Z ztmp;
             ztmp = Num_dot_zprimme(m, &R[i+ldR*(j-nRb)], 1, &R[i+ldR*(j-nRb)], 1);
@@ -894,8 +889,8 @@ int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
          Complex_Z ztmp;
-         Num_compact_res_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               NULL, NULL, NULL, &Y[ldY*(j-nYb)]);
+         Num_compute_residual_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
+               &Y[ldY*(j-nYb)]);
          ztmp = Num_dot_zprimme(m, &Y[ldY*(j-nYb)], 1, &Y[ldY*(j-nYb)], 1);
          rnorms[j-nrb] += *(double*)&ztmp;
       }
@@ -939,7 +934,7 @@ int Num_update_VWXR_z(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
  *
  ******************************************************************************/
 
-void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
+void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       Complex_Z *rwork, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
@@ -1002,7 +997,7 @@ void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
 
 
 /******************************************************************************
- * Subroutine compact_vecs - copy certain columns of matrix into another
+ * Subroutine Num_compact_vecs - copy certain columns of matrix into another
  *       matrix, i.e., work = vecs(perm). If avoidCopy and perm indices are
  *       consecutive the routine returns a reference in vecs and doesn't copy.
  *            
@@ -1023,7 +1018,7 @@ void permute_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm_,
  *
  ******************************************************************************/
 
-Complex_Z* Num_compact_vecs_z(Complex_Z *vecs, int m, int n, int ld, int *perm,
+Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm,
       Complex_Z *work, int ldwork, int avoidCopy) {
 
    int i;

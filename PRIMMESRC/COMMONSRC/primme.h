@@ -53,13 +53,13 @@ typedef enum {
    Primme_solve_h,
    Primme_restart,
    Primme_restart_h,
-   Primme_combine_retained, /*lingfei: primme_svds*/
+   Primme_combine_retained,
    Primme_insert_submatrix,
    Primme_lock_vectors,
    Primme_num_dsyev,
-   Primme_num_dsygv,/*lingfei: primme_svds*/
-   Primme_num_dgesvd,/*lingfei: primme_svds*/
-   Primme_num_zgesvd,/*lingfei: primme_svds*/
+   Primme_num_dsygv,
+   Primme_num_dgesvd,
+   Primme_num_zgesvd,
    Primme_num_zheev,
    Primme_num_dspev,
    Primme_num_zhpev,
@@ -87,8 +87,8 @@ typedef enum {
 typedef enum {
    primme_proj_default,
    primme_proj_RR,          /* Rayleigh-Ritz */
-   primme_proj_Harm,        /* Harmonic Rayleigh-Ritz */
-   primme_proj_ref          /* refined with fixed target */
+   primme_proj_harmonic,    /* Harmonic Rayleigh-Ritz */
+   primme_proj_refined      /* refined with fixed target */
 } primme_projection;
 
 typedef enum {         /* Initially fill up the search subspace with: */
@@ -144,7 +144,6 @@ typedef struct JD_projectors {
    int SkewX;
 } JD_projectors;
 
-/*lingfei: primme_svds. define projection schemes*/
 typedef struct projection_params {
    primme_projection projection;
 } projection_params;

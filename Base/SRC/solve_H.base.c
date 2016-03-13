@@ -87,12 +87,12 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
             numConverged, lrwork, rwork, iwork, primme);
       break;
 
-   case primme_proj_Harm:
+   case primme_proj_harmonic:
       ret = solve_H_Harm_@(pre)primme(H, ldH, QV, ldQV, R, ldR, hVecs, ldhVecs, hU,
             ldhU, hVals, basisSize, numConverged, machEps, lrwork, rwork, iwork, primme);
       break;
 
-   case primme_proj_ref:
+   case primme_proj_refined:
       ret = solve_H_Ref_@(pre)primme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
             R, ldR, hVals, basisSize, lrwork, rwork, primme);
       break;
@@ -432,8 +432,8 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
       /* ---------------------------------------------------------------- */
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
-      permute_vecs_d(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
-      permute_vecs_@(pre)(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
+      permute_vecs_dprimme(hVals, 1, basisSize, 1, permu, (double*)rwork, permw);
+      permute_vecs_@(pre)primme(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
    }
 
    return 0;   
