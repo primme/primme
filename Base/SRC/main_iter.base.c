@@ -858,6 +858,8 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basi
    flagsBlock = iwork;
    iwork += maxBlockSize;
 
+   assert(rworkSize >= 0);
+
    /* Pack hVals for already computed residual pairs */
 
    hValsBlock = Num_compact_vecs_dprimme(hVals, 1, blockNormsSize, 1, &iev[*blockSize],
@@ -865,6 +867,8 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basi
 
    *recentlyConverged = 0;
    while (1) {
+      /* Workspace limited by maxBlockSize */
+      assert(blockNormsSize <= maxBlockSize);
 
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       ret = check_convergence_@(pre)primme(&X[(*blockSize)*ldV], nLocal, ldV,
@@ -886,7 +890,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basi
             (*blockSize)++;
          }
 
-         else {
+         else if (*recentlyConverged+1 <= numEvals) {
             /* Write the current Ritz value in evals and the residual in resNorms;  */
             /* it will be checked by restart routine later.                         */
             /* Also print the converged eigenvalue.                                 */
@@ -911,12 +915,12 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basi
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
       blki = *blockSize;
-      for (i=blki>0 ? iev[blki]+1 : 0; i<basisSize && i<numEvals && blki < maxBlockSize; i++)
+      for (i=blki>0 ? iev[blki]+1 : 0; i<basisSize && blki < maxBlockSize; i++)
          if (flags[i] == UNCONVERGED) iev[blki++] = i;
 
-      /* If no new candidates, go out */
+      /* If no new candidates or all required solutions converged yet, go out */
 
-      if (blki == *blockSize) break;
+      if (blki == *blockSize || *recentlyConverged >= numEvals) break;
       blockNormsSize = blki - *blockSize;
 
       /* Pack hVals & hVecs */
@@ -926,10 +930,10 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basi
       hVecsBlock = Num_compact_vecs_@(pre)primme(hVecs, basisSize, blockNormsSize, ldhVecs, &iev[*blockSize],
          hVecsBlock0, ldhVecs, 1 /* avoid copy */);
 
-      /* Compute X, R and residual norms for the next candidates */
-      /* X(basisSize:) = V*hVecs(left:right-1)                                   */
-      /* R(basisSize:) = W*hVecs(left:right-1) - X(basisSize:)*diag(hVals)       */
-      /* blockNorms(basisSize:) = norms(R(basisSize:))                           */
+      /* Compute X, R and residual norms for the next candidates                                   */
+      /* X(basisSize:) = V*hVecs(*blockSize:*blockSize+blockNormsize)                              */
+      /* R(basisSize:) = W*hVecs(*blockSize:*blockSize+blockNormsize) - X(basisSize:)*diag(hVals)  */
+      /* blockNorms(basisSize:) = norms(R(basisSize:))                                             */
 
       ret = Num_update_VWXR_@(pre)primme(V, W, nLocal, basisSize, ldV, hVecsBlock, basisSize,
          ldhVecs, hValsBlock,
