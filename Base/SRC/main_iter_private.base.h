@@ -42,9 +42,8 @@
 static int retain_previous_coefficients(@(type) *hVecs, @(type) *previousHVecs, 
    int basisSize, int *iev, int blockSize, primme_params *primme);
 
-void check_reset_flags_@(pre)primme(int *flag, int *numConverged, 
-   double *hVals, double *prevRitzVals, int numPrevRitzVals,
-   double tol, double aNormEstimate, primme_params *primme);
+static void check_projected_solution(int basisSize, int blockSize, double *hVals,
+      double *hSVals, int *targetShiftIndex, double machEps, primme_params *primme);
 
 static int verify_norms(@(type) *V, @(type) *W, @(type) *hVecs, double *hVals, 
    int basisSize, double *resNorms, int *flag, double tol, double aNormEstimate,

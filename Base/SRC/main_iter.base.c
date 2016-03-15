@@ -565,6 +565,11 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                                __FILE__, __LINE__, primme);
                return SOLVE_H_FAILURE;
             }
+
+            check_projected_solution(basisSize,
+                  min(availableBlockSize+numConverged-numLocked, basisSize), hVals, hSVals,
+                  &targetShiftIndex, machEps, primme);
+            if (targetShiftIndex < 0) break;
  
            /* --------------------------------------------------------------- */
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst-numLocked)
@@ -943,7 +948,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basi
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
       blki = *blockSize;
-      for (i=blki>0 ? iev[blki]+1 : 0; i<basisSize && blki < maxBlockSize; i++)
+      for (i=blki>0 ? iev[blki-1]+1 : 0; i<basisSize && blki < maxBlockSize; i++)
          if (flags[i] == UNCONVERGED) iev[blki++] = i;
 
       /* If no new candidates or all required solutions converged yet, go out */
@@ -1079,6 +1084,60 @@ static int retain_previous_coefficients(@(type) *hVecs, @(type) *previousHVecs,
    return numPrevRetained;
 }
 
+/*******************************************************************************
+ * Function check_projected_solution - This subroutine checks that the
+ *    conditioning of the coefficient vectors are good enough to converge
+ *    with the requested accuracy. For now refined is the only that may preset
+ *    problems: two similar singular values in the projected problem may
+ *    correspond to distinct eigenvalues in the original problem.
+ *
+ *    It is checked that the next upper bound about the angle of the right
+ *    singular vector v of A and the right singular vector vtilde of A+E,
+ *
+ *      sin(v,vtilde) <= sqrt(2)*||E||/sval_gap <= sqrt(2)*||A||*machEps/sval_gap,
+ *
+ *    is less than the upper bound about the angle of exact eigenvector u and
+ *    the approximate eigenvector utilde,
+ *
+ *      sin(u,utilde) <= ||r||/eval_gap <= ||A||*eps/eval_gap.
+ *
+ *    (see pp. 211 in Matrix Algorithms vol. 2 Eigensystems, G. W. Steward).
+ *
+ *    Also consider that if we want |shift+d-l0| - |shift+d-l1| > diff,
+ *    then 2*d >= |diff - (|shift-l1| - |shift-l0|).
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisSize    Length of hVals
+ * blockSize    Number of values to check
+ * hVals        The Ritz values
+ * hSVals       The singular values of R
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
+ * primme       Structure containing various solver parameters
+ *
+ ******************************************************************************/
+ static void check_projected_solution(int basisSize, int blockSize, double *hVals,
+      double *hSVals, int *targetShiftIndex, double machEps, primme_params *primme) {
+
+   int i;
+   double deltaTargetShift, maxDiff;
+
+   if (primme->projectionParams.projection != primme_proj_refined)
+      return;
+
+   deltaTargetShift = 0.0;
+   for (i=1; i<blockSize+1 && i<basisSize; i++) {
+      maxDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps;
+      if (hSVals[i]-hSVals[i-1] < maxDiff)
+         deltaTargetShift = max(deltaTargetShift, fabs(maxDiff - hSVals[i]+hSVals[i-1])/2);
+   }
+
+   if (deltaTargetShift > 0.0) {
+      primme->targetShifts[*targetShiftIndex] += deltaTargetShift;
+      *targetShiftIndex = -1;
+   }
+
+}
 
 /*******************************************************************************
  * Function verify_norms - This subroutine computes the residual norms of the 

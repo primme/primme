@@ -1093,7 +1093,7 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
    /* Quick exit if the target has changed   */
    /* -------------------------------------- */
 
-   if (primme->targetShifts[*targetShiftIndex]   
+   if (*targetShiftIndex < 0 || primme->targetShifts[*targetShiftIndex]
          != primme->targetShifts[min(primme->numTargetShifts-1, numConverged)]) {
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
