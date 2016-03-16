@@ -696,7 +696,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* then return success, else return with a failure.     */
  
          if (numConverged == primme->numEvals) {
-            if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateMaxEVal;
+            if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
             return 0;
          }
          else {
@@ -756,7 +756,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             }
 
             if (converged) {
-               if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateMaxEVal;
+               if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
                return 0;
             }
             else {
@@ -800,7 +800,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    } /* while (!converged)  Outer verification loop
       * -------------------------------------------------------------- */
 
-   if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateMaxEVal;
+   if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
 
    return 0;
 
