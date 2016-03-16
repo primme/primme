@@ -1127,7 +1127,9 @@ static int retain_previous_coefficients(@(type) *hVecs, @(type) *previousHVecs,
 
    deltaTargetShift = 0.0;
    for (i=1; i<blockSize+1 && i<basisSize; i++) {
-      maxDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps;
+      /* NOTE: the factor 10 is got experimentally; a taught case is */
+      /*       Laplacian 2D using 2 as the target shift.             */
+      maxDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps*10;
       if (hSVals[i]-hSVals[i-1] < maxDiff)
          deltaTargetShift = max(deltaTargetShift, fabs(maxDiff - hSVals[i]+hSVals[i-1])/2);
    }
