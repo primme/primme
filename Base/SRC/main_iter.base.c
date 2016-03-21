@@ -593,7 +593,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* be discarded later.                                      */
 
          if (numGuesses > 0) {
-            int numNew = min(primme->minRestartSize-basisSize, numGuesses);
+            int numNew = max(0, min(primme->minRestartSize-basisSize, numGuesses));
 
             Num_copy_matrix_@(pre)primme(&evecs[nextGuess*primme->nLocal], primme->nLocal,
                   numNew, primme->nLocal, &V[basisSize*primme->nLocal], primme->nLocal);

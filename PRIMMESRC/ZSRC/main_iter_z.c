@@ -588,7 +588,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          /* be discarded later.                                      */
 
          if (numGuesses > 0) {
-            int numNew = min(primme->minRestartSize-basisSize, numGuesses);
+            int numNew = max(0, min(primme->minRestartSize-basisSize, numGuesses));
 
             Num_copy_matrix_zprimme(&evecs[nextGuess*primme->nLocal], primme->nLocal,
                   numNew, primme->nLocal, &V[basisSize*primme->nLocal], primme->nLocal);
