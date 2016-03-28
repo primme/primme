@@ -572,7 +572,8 @@ int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
       Num_copy_matrix_zprimme(hU, basisSize, basisSize, ldhU, rwork, basisSize);
       for (j=0; j < basisSize; j++) {
          for (i=0; i < basisSize; i++) {
-            hU[ldhU*j+i] = rwork[basisSize*(basisSize-j-1) + i];
+            hU[ldhU*j+i].r = rwork[basisSize*(basisSize-j-1) + i].r;
+            hU[ldhU*j+i].i = -rwork[basisSize*(basisSize-j-1) + i].i;
          }
       }
    }
