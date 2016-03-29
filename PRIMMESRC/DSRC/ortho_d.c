@@ -345,7 +345,7 @@ int ortho_single_iteration_dprimme(double *Q, int mQ, int nQ, int ldQ, double *X
       for (i=0; i<nQ*nX; i++)
          y[i] = tzero;
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
-         Num_copy_matrix_i_dprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
+         Num_copy_matrix_columns_dprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
          Num_gemm_dprimme("C", "N", nQ, nX, m, tpone, &Q[i], ldQ, X0, m, tpone,
                y, nQ);
       }
@@ -367,7 +367,7 @@ int ortho_single_iteration_dprimme(double *Q, int mQ, int nQ, int ldQ, double *X
       Num_gemm_dprimme("N", "N", m, nX, nQ, tmone, &Q[i], ldQ, y0, nQ, tpone,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
-         Num_copy_matrix_i_dprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
+         Num_copy_matrix_columns_dprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
       }
       if (norms) for (j=0; j<nX; j++) {
          double *v = inX ? &X0[j*m] : &X[j*ldX+i];

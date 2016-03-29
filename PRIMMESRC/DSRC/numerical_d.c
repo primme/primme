@@ -168,8 +168,8 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
 }
 
 /******************************************************************************
- * Function Num_compute_residual_i - This subroutine performs the next operations
- *    in a cache-friendly way:
+ * Function Num_compute_residual_columns - This subroutine performs the next
+ *    operations in a cache-friendly way:
  *
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
@@ -180,6 +180,11 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
  *          XD = [XD X(p(k)]; RD = [RD AX(p(k)) - evals(p(k))*X(p(k))]; k++
  *       end if
  *    end for
+ *
+ *           n        nd             no
+ * X:  [-----|-------------]           (input/output)
+ * XO:                      [--------| (input)
+ * XD:       [--------|                (output)
  *
  * NOTE: X and XD *can* overlap, but X(0:n-1) and XD *cannot* overlap (same for R and RD)
  *       XO and XD *can* overlap (same for RO and RD)
@@ -212,7 +217,7 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
  *
  ******************************************************************************/
 
-int Num_compute_residual_i_dprimme(int m, double *evals, double *x, int n, int *p, 
+int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n, int *p, 
    int ldx, double *Ax, int ldAx,
    double *xo, int no, int ldxo, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
@@ -561,20 +566,20 @@ void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ld
       memmove(y, x, sizeof(double)*m*n);
    }
 
-   /* Copy matrix some rows down or up */
+   /* Copy the matrix some rows back or forward */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
          memmove(&y[i*ldy], &x[i*ldx], sizeof(double)*m);
    }
 
-   /* Copy matrix some columns forward */
+   /* Copy the matrix some columns forward */
    else if (ldx == ldy && y > x && y-x > ldx) {
       for (i=n-1; i>=0; i--)
          for (j=0; j<m; j++)
             y[i*ldy+j] = x[i*ldx+j];
    }
 
-   /* Copy matrix some columns backward and the general case */
+   /* Copy the matrix some columns backward, and other cases */
    else {
       /* TODO: assert x and y don't overlap */
       for (i=0; i<n; i++)
@@ -585,7 +590,7 @@ void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ld
 }
 
 /******************************************************************************
- * Function Num_copy_matrix_i - Copy the matrix x(xin) into y(yin)
+ * Function Num_copy_matrix_columns - Copy the matrix x(xin) into y(yin)
  *
  * PARAMETERS
  * ---------------------------
@@ -602,7 +607,7 @@ void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ld
  *
  ******************************************************************************/
 
-void Num_copy_matrix_i_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
+void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy) {
 
    int i,j;
@@ -689,7 +694,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
 
 
 /******************************************************************************
- * Function Num_copy_trimatrix - Copy the upper triangular part of the matrix x
+ * Function Num_copy_trimatrix_compact - Copy the upper triangular part of the matrix x
  *    into y contiguously, i.e., y has all columns of x row-stacked
  *
  * PARAMETERS
@@ -718,7 +723,7 @@ void Num_copy_trimatrix_compact_dprimme(double *x, int m, int n, int ldx, int i0
 }
 
 /******************************************************************************
- * Function Num_copy_trimatrix - Copy y into the upper triangular part of the
+ * Function Num_copy_compact_trimatrix - Copy y into the upper triangular part of the
  *    matrix x
  *
  * PARAMETERS
@@ -876,7 +881,7 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
-   if (primme->globalSumDouble) {
+   if (primme->numProcs > 1) {
       tmp = (double*)rwork;
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];

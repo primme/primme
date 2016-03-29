@@ -43,8 +43,7 @@
 
 /*******************************************************************************
  * Subroutine check_convergence - This procedure checks the block vectors for  
- *    convergence.  For each of the Ritz vectors that has converged, an
- *    unconverged one will be chosen to replace it. 
+ *    convergence.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -142,10 +141,9 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
 
    /* --------------------------------------------------------------- */
    /* Project the TO_BE_PROJECTED residuals and check for practical   */
-   /* convergence among them. Those practically converged evecs are   */
-   /* swapped just before the converged ones at the end of the block. */
-   /* numVacancies and recentlyConverged are also updated             */
+   /* convergence among them.                                         */
    /* --------------------------------------------------------------- */
+
    if (numToProject > 0) {
       ret = check_practical_convergence(R, nLocal, ldR, evecs,
          primme->numOrthoConst+numLocked, ldevecs, left, toProject,
@@ -238,7 +236,16 @@ static int check_practical_convergence(@(type) *R, int nLocal, int ldR,
 
       assert(blockNorms[iev[i]] >= overlaps[i]);
 
-      if (/*normDiff >= tol &&*/ normPr < normDiff*normDiff/blockNorm/2) {
+      /* ------------------------------------------------------------------ */
+      /* NOTE: previous versions than 2.0 used the next criterion instead:  */
+      /*                                                                    */
+      /* if (normDiff >= tol && normPr < tol*tol/blockNorm/2)               */
+      /*                                                                    */
+      /* Due to rounding-off errors in computing normDiff, the test         */
+      /* normDiff >= tol may fail even it is satisfied in exact arithmetic. */
+      /* ------------------------------------------------------------------ */
+      
+      if (normPr < normDiff*normDiff/blockNorm/2) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,
                " PRACTICALLY_CONVERGED %d norm(I-QQt)r %e bound %e\n",

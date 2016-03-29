@@ -350,7 +350,7 @@ int ortho_single_iteration_zprimme(Complex_Z *Q, int mQ, int nQ, int ldQ, Comple
       for (i=0; i<nQ*nX; i++)
          y[i] = tzero;
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
-         Num_copy_matrix_i_zprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
+         Num_copy_matrix_columns_zprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
          Num_gemm_zprimme("C", "N", nQ, nX, m, tpone, &Q[i], ldQ, X0, m, tpone,
                y, nQ);
       }
@@ -372,7 +372,7 @@ int ortho_single_iteration_zprimme(Complex_Z *Q, int mQ, int nQ, int ldQ, Comple
       Num_gemm_zprimme("N", "N", m, nX, nQ, tmone, &Q[i], ldQ, y0, nQ, tpone,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
-         Num_copy_matrix_i_zprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
+         Num_copy_matrix_columns_zprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
       }
       if (norms) for (j=0; j<nX; j++) {
          Complex_Z *v = inX ? &X0[j*m] : &X[j*ldX+i];

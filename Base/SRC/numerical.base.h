@@ -118,9 +118,9 @@ double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
 #endifarithm
 void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @(type) *y, int ldy);
 void Num_copy_trimatrix_compact_@(pre)primme(@(type) *x, int m, int n, int ldx, int i0, @(type) *y, int *ly);
-void Num_copy_matrix_i_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
+void Num_copy_matrix_columns_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
       int *yin, int ldy);
-int Num_compute_residual_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
+int Num_compute_residual_columns_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
    int ldx, @(type) *Ax, int ldAx,
    @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,

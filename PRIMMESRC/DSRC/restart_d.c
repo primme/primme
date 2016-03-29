@@ -22,8 +22,7 @@
  *******************************************************************************
  * File: restart.c
  *
- * Purpose - Compute the Ritz vectors corresponding to the restartSize
- *           smallest eigenvalues.
+ * Purpose - Restart V and related matrices (eg. W, H, Q, R, QV...).
  *
  ******************************************************************************/
 

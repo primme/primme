@@ -400,7 +400,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* When QR are computed and there are more than one target shift,	*/
             /* limit blockSize and the converged values to one.               */
 
-            if (primme->numTargetShifts > numConverged+1 && R) {
+            if (primme->numTargetShifts > numConverged+1 && Q) {
                availableBlockSize = 1;
                maxRecentlyConverged = numConverged-numLocked+1;
             }
@@ -589,8 +589,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                &targetShiftIndex, machEps, rwork, rworkSize, iwork, primme);
 
          /* If there are any initial guesses remaining, then copy it */
-         /* into the basis, else flag the vector as locked so it may */
-         /* be discarded later.                                      */
+         /* into the basis.                                          */
 
          if (numGuesses > 0) {
             int numNew = max(0, min(primme->minRestartSize-basisSize, numGuesses));
@@ -811,7 +810,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
 *******************************************************************************/
 
 /*******************************************************************************
- * Subroutine prepare_candidates - This subroutine put into the block the first
+ * Subroutine prepare_candidates - This subroutine puts into the block the first
  *    unconverged Ritz pairs, up to maxBlockSize.
  * 
  * INPUT ARRAYS AND PARAMETERS

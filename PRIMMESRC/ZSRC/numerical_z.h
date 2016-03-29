@@ -95,9 +95,9 @@ Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *
       Complex_Z *work, int ldwork, int avoidCopy);
 void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Complex_Z *y, int ldy);
 void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly);
-void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
+void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
       int *yin, int ldy);
-int Num_compute_residual_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
+int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
    int ldx, Complex_Z *Ax, int ldAx,
    Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,

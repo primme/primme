@@ -89,9 +89,9 @@ double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);
 void Num_copy_compact_trimatrix_dprimme(double *x, int m, int n, int i0, double *y, int ldy);
 void Num_copy_trimatrix_compact_dprimme(double *x, int m, int n, int ldx, int i0, double *y, int *ly);
-void Num_copy_matrix_i_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
+void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy);
-int Num_compute_residual_i_dprimme(int m, double *evals, double *x, int n, int *p,
+int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n, int *p,
    int ldx, double *Ax, int ldAx,
    double *xo, int no, int ldxo, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
