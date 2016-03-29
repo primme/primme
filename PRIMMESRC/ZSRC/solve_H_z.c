@@ -563,7 +563,8 @@ int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
       of singular values */
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
-         rwork[basisSize*j+i] = hVecs[ldhVecs*i + (basisSize-1-j)];
+         rwork[basisSize*j+i].r =  hVecs[ldhVecs*i + (basisSize-1-j)].r;
+         rwork[basisSize*j+i].i = -hVecs[ldhVecs*i + (basisSize-1-j)].i;
       }
    }      
    Num_copy_matrix_zprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
@@ -572,8 +573,7 @@ int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
       Num_copy_matrix_zprimme(hU, basisSize, basisSize, ldhU, rwork, basisSize);
       for (j=0; j < basisSize; j++) {
          for (i=0; i < basisSize; i++) {
-            hU[ldhU*j+i].r = rwork[basisSize*(basisSize-j-1) + i].r;
-            hU[ldhU*j+i].i = -rwork[basisSize*(basisSize-j-1) + i].i;
+            hU[ldhU*j+i] = rwork[basisSize*(basisSize-j-1) + i];
          }
       }
    }

@@ -661,7 +661,13 @@ int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
       of singular values */
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
+#ifdefarithm L_DEFREAL
          rwork[basisSize*j+i] = hVecs[ldhVecs*i + (basisSize-1-j)];
+#endifarithm
+#ifdefarithm L_DEFCPLX
+         rwork[basisSize*j+i].r =  hVecs[ldhVecs*i + (basisSize-1-j)].r;
+         rwork[basisSize*j+i].i = -hVecs[ldhVecs*i + (basisSize-1-j)].i;
+#endifarithm
       }
    }      
    Num_copy_matrix_@(pre)primme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
@@ -670,13 +676,7 @@ int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
       Num_copy_matrix_@(pre)primme(hU, basisSize, basisSize, ldhU, rwork, basisSize);
       for (j=0; j < basisSize; j++) {
          for (i=0; i < basisSize; i++) {
-#ifdefarithm L_DEFREAL
             hU[ldhU*j+i] = rwork[basisSize*(basisSize-j-1) + i];
-#endifarithm
-#ifdefarithm L_DEFCPLX
-            hU[ldhU*j+i].r = rwork[basisSize*(basisSize-j-1) + i].r;
-            hU[ldhU*j+i].i = -rwork[basisSize*(basisSize-j-1) + i].i;
-#endifarithm
          }
       }
    }
