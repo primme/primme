@@ -143,9 +143,12 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    int restartLimitReached; /* True when maximum restarts performed          */
    int numPrevRetained;     /* Number of vectors retained using recurrence-  */
                             /* based restarting.                             */
+   int numArbitraryVecs;    /* Columns in hVecs computed with RR instead of  */
+                            /* the current extraction method.                */
    int maxEvecsSize;        /* Maximum capacity of evecs array               */
    int rworkSize;           /* Size of rwork array                           */
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
+   int RRForAll;            /* Compute RR in every cluster                   */
    int ret;                 /* Return value                                  */
 
    int *iwork;              /* Integer workspace pointer                     */
@@ -366,6 +369,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          return SOLVE_H_FAILURE;
       }
 
+      numArbitraryVecs = 0;
+
       /* -------------------------------------------------------------- */
       /* Begin the iterative process.  Keep restarting until all of the */
       /* required eigenpairs have been found (no verification)          */
@@ -401,7 +406,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             }
             else {
                availableBlockSize = primme->maxBlockSize;
-               maxRecentlyConverged = primme->numEvals-numLocked;
+               maxRecentlyConverged = primme->numEvals-numConverged;
             }
 
             /* Limit blockSize to vacant vectors in the basis */
@@ -413,15 +418,19 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             availableBlockSize = min(availableBlockSize, maxRecentlyConverged+1);
 
             /* Set the block with the first unconverged pairs */
-            prepare_candidates_dprimme(V, W, primme->nLocal, basisSize, primme->nLocal,
-               &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs, basisSize,
-               hVals, flags, numConverged-numLocked, maxRecentlyConverged, blockNorms,
-               blockSize, availableBlockSize, evecs, numLocked, evals, resNorms, machEps,
-               iev, &blockSize, &recentlyConverged, rwork, rworkSize, iwork, primme);
+            prepare_candidates_dprimme(V, W, primme->nLocal, H,
+                  primme->maxBasisSize, basisSize, primme->nLocal,
+                  &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs,
+                  basisSize, hVals, hSVals, flags, numConverged-numLocked,
+                  maxRecentlyConverged, blockNorms, blockSize,
+                  availableBlockSize, evecs, numLocked, evals, resNorms,
+                  targetShiftIndex, machEps, iev, &blockSize,
+                  &recentlyConverged, &numArbitraryVecs, rwork, rworkSize,
+                  iwork, primme);
 
             /* print residuals */
             print_residuals(hVals, blockNorms, numConverged, numLocked, iev, blockSize,
-               primme);
+                  primme);
 
             /* If the total number of converged pairs, including the     */
             /* recentlyConverged ones, are greater than or equal to the  */
@@ -560,28 +569,44 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                                __FILE__, __LINE__, primme);
                return SOLVE_H_FAILURE;
             }
+            numArbitraryVecs = 0;
 
-            check_projected_solution(basisSize,
-                  min(availableBlockSize+numConverged-numLocked, basisSize), hVals, hSVals,
-                  &targetShiftIndex, machEps, primme);
-            if (targetShiftIndex < 0) break;
- 
            /* --------------------------------------------------------------- */
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst-numLocked)
             * --------------------------------------------------------------- */
+
+         /* ----------------------------------------------------------------- */
+         /* Restart basis will compute X and R for the next candidates. So it */ 
+         /* is needed that hVecs has proper coefficient vectors for these     */
+         /* candidates. Also prepare_vecs may remove converged flags if the   */
+         /* converged pairs are in a cluster with unconverged pairs.          */ 
+         /* Compute RR for clusters when locking or all required pairs are    */
+         /* converged.                                                        */
+         /* ----------------------------------------------------------------- */
+
+         availableBlockSize = min(availableBlockSize, primme->maxBasisSize-basisSize);
+         if (primme->locking || numConverged >= primme->numEvals)
+            RRForAll = 1;
+         else
+            RRForAll = 0;
+         prepare_vecs_dprimme(basisSize, 0, availableBlockSize, H,
+               primme->maxBlockSize, hVals, hSVals, hVecs, basisSize,
+               targetShiftIndex, &numArbitraryVecs, flags, RRForAll, machEps,
+               rworkSize, rwork, iwork, primme);
 
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
 
-         restart_dprimme(V, W, primme->nLocal, basisSize, primme->nLocal, hVals,
-               hSVals, flags, iev, &blockSize, blockNorms, evecs, perm, evals, resNorms,
-               evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot, &numConverged,
-               &numLocked, &numConvergedStored, previousHVecs, &numPrevRetained,
-               primme->maxBasisSize, numGuesses, prevRitzVals, &numPrevRitzVals, H,
-               primme->maxBasisSize, Q, primme->nLocal, R, primme->maxBasisSize, QV,
-               primme->maxBasisSize, hU, basisSize, 0, hVecs, basisSize, 0, &basisSize,
-               &targetShiftIndex, machEps, rwork, rworkSize, iwork, primme);
+         restart_dprimme(V, W, primme->nLocal, basisSize, primme->nLocal,
+               hVals, hSVals, flags, iev, &blockSize, blockNorms, evecs, perm, evals,
+               resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot,
+               &numConverged, &numLocked, &numConvergedStored, previousHVecs,
+               &numPrevRetained, primme->maxBasisSize, numGuesses, prevRitzVals,
+               &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
+               primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, 0,
+               hVecs, basisSize, 0, &basisSize, &targetShiftIndex, numArbitraryVecs,
+               machEps, rwork, rworkSize, iwork, primme);
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -641,6 +666,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                                __FILE__, __LINE__, primme);
                return SOLVE_H_FAILURE;
             }
+
+            numArbitraryVecs = 0;
          }
  
          primme->stats.numRestarts++;
@@ -841,13 +868,14 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
  * 
  ******************************************************************************/
 
-int prepare_candidates_dprimme(double *V, double *W, int nLocal, int basisSize,
-   int ldV, double *X, double *R, double *hVecs, int ldhVecs, double *hVals,
-   int *flags, int numSoftLocked, int numEvals, double *blockNorms,
-   int blockNormsSize, int maxBlockSize, double *evecs, int numLocked,
-   double *evals, double *resNorms, double machEps, int *iev, int *blockSize,
-   int *recentlyConverged, double *rwork, int rworkSize, int *iwork,
-   primme_params *primme) {
+int prepare_candidates_dprimme(double *V, double *W, int nLocal,
+      double *H, int ldH, int basisSize, int ldV, double *X, double *R,
+      double *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
+      int numSoftLocked, int numEvals, double *blockNorms, int blockNormsSize,
+      int maxBlockSize, double *evecs, int numLocked, double *evals, 
+      double *resNorms, int targetShiftIndex, double machEps, int *iev, 
+      int *blockSize, int *recentlyConverged, int *numArbitraryVecs, 
+      double *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i, blki;            /* loop variables */
    double *hValsBlock;     /* contiguous copy of the hVals to be tested */
@@ -864,17 +892,20 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal, int basisSize,
    if (V == NULL) {
       double t;
 
-      return maxBlockSize+maxBlockSize*basisSize+max(
-         check_convergence_dprimme(NULL, nLocal, 0, NULL, 0, NULL, numLocked, 0,
-               basisSize-maxBlockSize, basisSize, NULL, NULL, NULL, 0.0, NULL, 0, NULL, primme),
-         Num_update_VWXR_dprimme(NULL, NULL, nLocal, basisSize, 0, NULL, 0, 0, NULL,
-               &t, basisSize-maxBlockSize, basisSize, 0,
-               NULL, 0, 0, 0,
-               NULL, 0, 0, 0,
-               NULL, 0, 0, 0,
-               &t, basisSize-maxBlockSize, basisSize, 0, &machEps,
-               NULL, 0, 0,
-               NULL, 0, primme));
+      return maxBlockSize+maxBlockSize*basisSize+
+         max(max(
+               check_convergence_dprimme(NULL, nLocal, 0, NULL, 0, NULL, numLocked, 0,
+                  basisSize-maxBlockSize, basisSize, NULL, NULL, NULL, 0.0, NULL, 0, NULL, primme),
+               Num_update_VWXR_dprimme(NULL, NULL, nLocal, basisSize, 0, NULL, 0, 0, NULL,
+                  &t, basisSize-maxBlockSize, basisSize, 0,
+                  NULL, 0, 0, 0,
+                  NULL, 0, 0, 0,
+                  NULL, 0, 0, 0,
+                  &t, basisSize-maxBlockSize, basisSize, 0, &machEps,
+                  NULL, 0, 0,
+                  NULL, 0, primme)),
+              prepare_vecs_dprimme(basisSize, 0, maxBlockSize, NULL, 0, 
+                 NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0.0, 0, NULL, NULL, primme));
    }
 
    *blockSize = 0;
@@ -907,7 +938,11 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal, int basisSize,
       /* iev(*blockSize:*blockSize+blockNormsize)                    */
 
       for (blki=*blockSize, i=0; i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
-         if (flagsBlock[i] == UNCONVERGED) {
+         if (hSVals && hSVals[iev[blki]] < blockNorms[blki]) {
+            /* ignore */
+            printf("IGNORING\n");
+         }
+         else if (flagsBlock[i] == UNCONVERGED) {
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
             Num_copy_matrix_dprimme(&X[blki*ldV], nLocal, 1, ldV,
@@ -917,7 +952,7 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal, int basisSize,
             (*blockSize)++;
          }
 
-         else if (*recentlyConverged+1 <= numEvals) {
+         else if (*recentlyConverged < numEvals && iev[blki] < primme->numEvals-numLocked) {
             /* Write the current Ritz value in evals and the residual in resNorms;  */
             /* it will be checked by restart routine later.                         */
             /* Also print the converged eigenvalue.                                 */
@@ -939,10 +974,17 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal, int basisSize,
          }
       }
 
-      /* Find next candidates, starting from iev(*blockSize)+1 */
+      /* Generate well conditioned coefficient vectors */
 
       blki = *blockSize;
-      for (i=blki>0 ? iev[blki-1]+1 : 0; i<basisSize && blki < maxBlockSize; i++)
+      i = max(blki, blockNormsSize)>0 ? iev[max(blki, blockNormsSize)-1]+1 : 0; /* starting from */
+      prepare_vecs_dprimme(basisSize, i, maxBlockSize-blki, H, ldH, hVals,
+            hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs, flags,
+            0, machEps, rworkSize, rwork, iwork, primme);
+
+      /* Find next candidates, starting from iev(*blockSize)+1 */
+
+      for ( ; i<basisSize && blki < maxBlockSize; i++)
          if (flags[i] == UNCONVERGED) iev[blki++] = i;
 
       /* If no new candidates or all required solutions converged yet, go out */
@@ -1078,62 +1120,6 @@ static int retain_previous_coefficients(double *hVecs, double *previousHVecs,
    return numPrevRetained;
 }
 
-/*******************************************************************************
- * Function check_projected_solution - This subroutine checks that the
- *    conditioning of the coefficient vectors are good enough to converge
- *    with the requested accuracy. For now refined is the only that may preset
- *    problems: two similar singular values in the projected problem may
- *    correspond to distinct eigenvalues in the original problem.
- *
- *    It is checked that the next upper bound about the angle of the right
- *    singular vector v of A and the right singular vector vtilde of A+E,
- *
- *      sin(v,vtilde) <= sqrt(2)*||E||/sval_gap <= sqrt(2)*||A||*machEps/sval_gap,
- *
- *    is less than the upper bound about the angle of exact eigenvector u and
- *    the approximate eigenvector utilde,
- *
- *      sin(u,utilde) <= ||r||/eval_gap <= ||A||*eps/eval_gap.
- *
- *    (see pp. 211 in Matrix Algorithms vol. 2 Eigensystems, G. W. Steward).
- *
- *    Also consider that if we want |shift+d-l0| - |shift+d-l1| > diff,
- *    then 2*d >= |diff - (|shift-l1| - |shift-l0|).
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * basisSize    Length of hVals
- * blockSize    Number of values to check
- * hVals        The Ritz values
- * hSVals       The singular values of R
- * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
- * primme       Structure containing various solver parameters
- *
- ******************************************************************************/
- static void check_projected_solution(int basisSize, int blockSize, double *hVals,
-      double *hSVals, int *targetShiftIndex, double machEps, primme_params *primme) {
-
-   int i;
-   double deltaTargetShift, maxDiff;
-
-   if (primme->projectionParams.projection != primme_proj_refined)
-      return;
-
-   deltaTargetShift = 0.0;
-   for (i=1; i<blockSize+1 && i<basisSize; i++) {
-      /* NOTE: the factor 10 is got experimentally; a taught case is */
-      /*       Laplacian 2D using 2 as the target shift.             */
-      maxDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps*10;
-      if (hSVals[i]-hSVals[i-1] < maxDiff)
-         deltaTargetShift = max(deltaTargetShift, fabs(maxDiff - hSVals[i]+hSVals[i-1])/2);
-   }
-
-   if (deltaTargetShift > 0.0) {
-      primme->targetShifts[*targetShiftIndex] += deltaTargetShift;
-      *targetShiftIndex = -1;
-   }
-
-}
 
 /*******************************************************************************
  * Function verify_norms - This subroutine computes the residual norms of the 

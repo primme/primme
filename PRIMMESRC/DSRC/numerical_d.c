@@ -1074,3 +1074,54 @@ double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
    }
    return work;
 }
+
+/*******************************************************************************
+ * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
+ *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
+ *    
+ * Input parameters
+ * ----------------
+ * X        The coefficient vectors retained from the previous iteration
+ *
+ * nX       Number of columns of X
+ *
+ * H        Matrix
+ *
+ * nH       Dimension of H
+ *
+ * ldH      Leading dimension of H
+ *
+ * rwork    Work array.  Must be of size nH x nX
+ *
+ * lrwork   Length of the work array
+ *
+ * ldR      Leading dimension of R
+ *
+ * Output parameters
+ * -----------------
+ * R - nX x nX matrix computed 
+ *
+ ******************************************************************************/
+
+int compute_submatrix_dprimme(double *X, int nX, int ldX, 
+   double *H, int nH, int ldH, double *R, int ldR,
+   double *rwork, int lrwork) {
+
+   double tpone = +1.0e+00, tzero = +0.0e+00;
+
+   /* Return memory requirement */
+   if (X == NULL) {
+      return nH*nX;
+   }
+
+   if (nH == 0 || nX == 0) return 0;
+
+   assert(lrwork >= nH*nX);
+
+   Num_symm_dprimme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
+   
+   Num_gemm_dprimme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
+      ldR);
+
+   return 0;
+}

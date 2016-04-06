@@ -130,6 +130,9 @@ void Num_trmm_@(pre)primme(const char *side, const char *uplo, const char *trans
    int ldb);
 void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *transa, const char *diag,
       int m, int n, @(type) alpha, @(type) *a, int lda, @(type) *b, int ldb);
+int compute_submatrix_@(pre)primme(@(type) *X, int nX, int ldX, 
+   @(type) *H, int nH, int ldH, @(type) *R, int ldR,
+   @(type) *rwork, int lrwork);
 
 #define PRIMME_BLOCK_SIZE 512
 

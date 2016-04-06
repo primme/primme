@@ -43,6 +43,13 @@ static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QV, int ldQV,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
    Complex_Z *rwork, int *iwork, primme_params *primme);
 
+static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
+   int ldhVecs, Complex_Z *hU, int ldhU, double *hSVals, Complex_Z *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, int lrwork, Complex_Z *rwork,
+   int *iwork, primme_params *primme);
+
+static int solve_H_RR_zprimme(Complex_Z *H, int maxBasisSize, Complex_Z *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
+   Complex_Z *rwork, int *iwork, primme_params *primme);
+
 #endif
-
-

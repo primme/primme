@@ -247,7 +247,7 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
       if (primme_svds->target == primme_svds_smallest) {
          for (i=0; i<primme_svds->initSize; i++) {
             double sval;
-            if (svals[i] < primme_svds->aNorm*sqrt(machEps)) {
+            if (svals[i]-rnorms[i] < primme_svds->aNorm*sqrt(machEps)) {
                Complex_Z *Ax = (Complex_Z*)primme_calloc(primme->nLocal, sizeof(Complex_Z), "Ax");
                Complex_Z ztmp;
                int ONE = 1;
@@ -260,9 +260,13 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
                }
                else
                   sval = *(double*)&ztmp;
+               svals[i] = primme_svds->aNorm*primme->eps/2;
                svals[i] = sval/2.0;
+               svals[i] = primme_svds->aNorm*machEps;
                free(Ax);
             }
+            else
+               svals[i] -= rnorms[i];
          }
       }
 

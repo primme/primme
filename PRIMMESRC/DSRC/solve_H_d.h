@@ -34,12 +34,11 @@ int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
    double *rwork, int *iwork, primme_params *primme);
 
-int solve_H_RR_dprimme(double *H, int maxBasisSize, double *hVecs,
-   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
-   double *rwork, int *iwork, primme_params *primme);
+int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
+      double *H, int ldH, double *hVals, double *hSVals, double *hVecs,
+      int ldhVecs, int targetShiftIndex, int *arbitraryVecs, int *flags,
+      int RRForAll, double machEps, int rworkSize, double *rwork, int *iwork,
+      primme_params *primme);
 
-int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
-   int ldhVecs, double *hU, int ldhU, double *hSVals, double *R, int ldR,
-   double *hVals, int basisSize, int lrwork, double *rwork, primme_params *primme);
 
 #endif

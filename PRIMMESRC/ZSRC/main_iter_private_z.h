@@ -42,9 +42,6 @@
 static int retain_previous_coefficients(Complex_Z *hVecs, Complex_Z *previousHVecs, 
    int basisSize, int *iev, int blockSize, primme_params *primme);
 
-static void check_projected_solution(int basisSize, int blockSize, double *hVals,
-      double *hSVals, int *targetShiftIndex, double machEps, primme_params *primme);
-
 static int verify_norms(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs, double *hVals, 
    int basisSize, double *resNorms, int *flag, double tol, double aNormEstimate,
    void *rwork, int *numConverged, primme_params *primme);

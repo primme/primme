@@ -35,44 +35,45 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
-static int restart_soft_locking_dprimme(int *restartSize, double *V, double *W, int nLocal,
-   double *hR, int ldhR, double *hU, int ldhU,
-   int basisSize, int ldV, double **X, double **R, double *hVecs, int ldhVecs,
-   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
-   double *blockNorms, double *evecs, double *evals, double *resNorms,
-   double *evecsHat, int ldevecsHat, double *M, int ldM, int *numConverged,
-   int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
-   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
-   double *rwork, int rworkSize, int *iwork, primme_params *primme);
+ static int restart_soft_locking_dprimme(int *restartSize, double *V,
+       double *W, int nLocal, double *hR, int ldhR, double *hU, int ldhU,
+       int basisSize, int ldV, double **X, double **R, double *hVecs, 
+       int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
+       int *ievSize, double *blockNorms, double *evecs, double *evals, 
+       double *resNorms, double *evecsHat, int ldevecsHat, double *M, 
+       int ldM, int *numConverged, int *numConvergedStored, 
+       double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
+       int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+       double machEps, double *rwork, int rworkSize, int *iwork, 
+       primme_params *primme);
 
-static int restart_projection_dprimme(double *V, int ldV, double *W, int ldW,
-   double *H, int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR,
-   double *QV, int ldQV, double *hU, int ldhU, int newldhU, double *hVecs,
-   int ldhVecs, int newldhVecs, double *hVals, double *hSVals, int *restartPerm,
-   int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
-   int indexOfPreviousVecs, double *evecs, int *evecsSize,
-   int ldevecs, double *evecsHat, int ldevecsHat, double *M, int ldM, double *UDU,
-   int ldUDU, int *ipivot, int *targetShiftIndex, int numConverged,
-   int rworkSize, double *rwork, int *iwork, double machEps, primme_params *primme);
+static int restart_projection_dprimme(double *V, int ldV, double *W,
+      int ldW, double *H, int ldH, double *Q, int nLocal, int ldQ,
+      double *R, int ldR, double *QV, int ldQV, double *hU, int ldhU,
+      int newldhU, double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+      double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
+      int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+      double *evecs, int *evecsSize, int ldevecs, double *evecsHat,
+      int ldevecsHat, double *M, int ldM, double *UDU, int ldUDU,
+      int *ipivot, int *targetShiftIndex, int numConverged,
+      int numArbitraryVecs, int rworkSize, double *rwork, int *iwork,
+      double machEps, primme_params *primme);
 
 static int dtr_dprimme(int numLocked, double *hVecs, double *hVals, int *flags, 
   int basisSize, int numFree, int *iev, double *rwork, primme_params *primme);
 
 static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
-   int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
-   int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
-   int rworkSize, double *rwork, int *iwork, primme_params *primme);
+      int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
+      int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
+      double machEps, int rworkSize, double *rwork, int *iwork,
+      primme_params *primme);
 
 static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
    int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *QV,
    int ldQV, double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int rworkSize,
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, int rworkSize,
    double *rwork, int *iwork, double machEps, primme_params *primme);
-
-static int compute_submatrix(double *X, int nX, int ldX, 
-   double *H, int nH, int ldH, double *R, int ldR,
-   double *rwork, int lrwork);
 
 #endif /* RESTART_PRIVATE_H */

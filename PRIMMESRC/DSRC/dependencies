@@ -43,7 +43,7 @@ restart_d.o: restart_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  ortho_d.h solve_H_d.h factorize_d.h update_projection_d.h update_W_d.h \
  convergence_d.h numerical_d.h ../COMMONSRC/common_numerical.h
 solve_H_d.o: solve_H_d.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
- solve_H_d.h solve_H_private_d.h numerical_d.h \
+ ../COMMONSRC/const.h solve_H_d.h solve_H_private_d.h numerical_d.h \
  ../COMMONSRC/common_numerical.h ortho_d.h
 update_projection_d.o: update_projection_d.c ../COMMONSRC/primme.h \
  ../COMMONSRC/Complexz.h ../COMMONSRC/const.h update_projection_d.h \

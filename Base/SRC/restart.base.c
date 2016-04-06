@@ -169,7 +169,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    @(type) *H, int ldH, @(type) *Q, int ldQ, @(type) *R, int ldR, @(type)* QV, int ldQV,
    @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, double machEps,
+   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
    @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;                   /* Loop indices */
@@ -188,7 +188,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
                NULL, nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL,
                NULL, 0, NULL, NULL, NULL, NULL, ievSize, NULL, NULL,
                NULL, numConverged, numConverged, NULL, NULL, 0, NULL,
-               numPrevRetained, 0, NULL, NULL, 0.0, NULL, 0,
+               numPrevRetained, 0, NULL, NULL, 0, 0.0, NULL, 0,
                NULL, primme);
       }
       else {
@@ -196,7 +196,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
                nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL, NULL, 0,
                NULL, NULL, NULL, NULL, ievSize, NULL, NULL, NULL, NULL,
                evecsHat, 0, NULL, 0, numConverged, NULL, NULL,
-               numPrevRetained, 0, NULL, NULL, 0.0, NULL, 0,
+               numPrevRetained, 0, NULL, NULL, 0, 0.0, NULL, 0,
                NULL, primme);
 
       }
@@ -205,7 +205,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
             NULL, 0, NULL, 0, NULL, 0, 0,
             NULL, 0, 0, NULL, NULL, NULL, NULL, basisSize, basisSize,
             *numPrevRetained, basisSize, NULL,
-            NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, NULL, NULL, 0.0, primme);
+            NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, 0, NULL, NULL, 0.0, primme);
 
       return rworkSize;
    }
@@ -254,17 +254,17 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
             hU, ldhU, basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm,
             hVals, flags, iev, ievSize, blockNorms, evecs, evals, resNorms, evecsHat,
             ldevecsHat, M, ldM, numConverged, numConvergedStored, previousHVecs,
-            numPrevRetained, ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, machEps,
-            rwork, rworkSize, iwork0, primme);
+            numPrevRetained, ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm,
+            numArbitraryVecs, machEps, rwork, rworkSize, iwork0, primme);
    }
    else {
       @(type) *X, *Res;
-      ret = restart_locking_@(pre)primme(&restartSize, V, W, nLocal, R,
-            ldR, hU, ldhU, basisSize, ldV, &X, &Res, hVecs, ldhVecs,
-            restartPerm, hVals, flags, iev, ievSize, blockNorms, evecs, evals, numConverged,
-            numLocked, resNorms, evecsPerm, numGuesses, previousHVecs, numPrevRetained,
-            ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, machEps, rwork, rworkSize,
-            iwork0, primme);
+      ret = restart_locking_@(pre)primme(&restartSize, V, W, nLocal, R, ldR,
+            hU, ldhU, basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals,
+            flags, iev, ievSize, blockNorms, evecs, evals, numConverged, numLocked,
+            resNorms, evecsPerm, numGuesses, previousHVecs, numPrevRetained,
+            ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, numArbitraryVecs,
+            machEps, rwork, rworkSize, iwork0, primme);
    }
 
    if (ret != 0) return ret;
@@ -284,7 +284,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
          restartPerm, hVecsPerm, restartSize, basisSize, *numPrevRetained,
          indexOfPreviousVecs, evecs, numConvergedStored, primme->nLocal, evecsHat,
          ldevecsHat, M, ldM, UDU, ldUDU, ipivot, targetShiftIndex, *numConverged,
-         rworkSize, rwork, iwork0, machEps, primme);
+         numArbitraryVecs, rworkSize, rwork, iwork0, machEps, primme);
 
    *restartSizeOutput = restartSize; 
 
@@ -392,17 +392,21 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
  *       
  ******************************************************************************/
  
-static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
-   @(type) *hR, int ldhR, @(type) *hU, int ldhU,
-   int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, int ldhVecs,
-   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
-   double *blockNorms, @(type) *evecs, double *evals, double *resNorms,
-   @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, int *numConverged,
-   int *numConvergedStored, @(type) *previousHVecs, int *numPrevRetained,
-   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
-   @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
- 
-   int i, j, ret;
+ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V,
+       @(type) *W, int nLocal, @(type) *hR, int ldhR, @(type) *hU, int ldhU,
+       int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, 
+       int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
+       int *ievSize, double *blockNorms, @(type) *evecs, double *evals, 
+       double *resNorms, @(type) *evecsHat, int ldevecsHat, @(type) *M, 
+       int ldM, int *numConverged, int *numConvergedStored, 
+       @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
+       int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+       double machEps, @(type) *rwork, int rworkSize, int *iwork, 
+       primme_params *primme) {
+
+   int i, j, k, ret;          /* loop indices */
+   int numCandidates;         /* number of pairs in the block */
+   int left;                  /* column of the first candidate */
    @(type) tpone = @(tpone), tzero = @(tzero);             /*constants*/
 
    /* Return memory requirement */
@@ -435,7 +439,7 @@ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(typ
    /* early converged but unwanted evs preventing wanted from being targeted.    */
    /* -------------------------------------------------------------------------- */
 
-   if (basisSize != primme->n) {
+   if (basisSize + primme->numOrthoConst < primme->n) {
       for (i=0; i<primme->numEvals; i++) {
          if (flags[i] != UNCONVERGED && fabs(hVals[i]-evals[i]) > resNorms[i]) {
             flags[i] = UNCONVERGED;
@@ -443,22 +447,66 @@ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(typ
       }
    }
 
-   /* ----------------------------------------------------------------- */
-   /* Generate the permutation that put converged Ritz vectors first.   */
-   /* Also update the number of converged values.                       */
-   /* ----------------------------------------------------------------- */
+   /* -------------------------------------------------------------- */
+   /* Restart V and W by replacing it with the current Ritz vectors. */
+   /* Result of restartPerm (modified part indicated with ---)       */
+   /*                                                                */
+   /*      non-candid | prevRitzVecs |  candidates  | X & R          */
+   /* V: [------------|--------------|----|---------|- X ---|    )   */
+   /* W: [------------|--------------|----|---------|- R ---|    )   */
+   /*                 ^ indexOfPreviousVecs                          */
+   /*                                ^ left         ^ restartSize    */
+   /*                 [--------------) numPrevRetained               */
+   /*                                [----) numArbitraryVecs         */
+   /*                  numCandidates [--------------)                */
+   /*                                sizeBlockNorms [-------)        */
+   /*                                maxBlockSize   [---------)      */
+   /*                                                                */
+   /* X & R has the eigenvectors and residual vectors of the         */
+   /* first sizeBlockNorms non-candidates pairs.                     */
+   /* -------------------------------------------------------------- */
 
-   for (i=j=0, *numConverged=0; i<basisSize; i++)
-      if (flags[i] != UNCONVERGED) restartPerm[j++] = i, (*numConverged)++;
-   *numConverged = min(*numConverged, primme->numEvals);
-   for (i=0; i<basisSize; i++)
-      if (flags[i] == UNCONVERGED) restartPerm[j++] = i;
+   *numPrevRetained = min(primme->maxBasisSize, *restartSize + *numPrevRetained)
+      - *restartSize;
 
+   for (i=numCandidates=0; i<numArbitraryVecs && i<*restartSize; i++)
+      if (flags[i] == UNCONVERGED) numCandidates++;
+
+   *restartSize += *numPrevRetained;
+
+   *ievSize = min(min(
+                  primme->maxBlockSize,
+                  primme->numEvals-*numConverged+1),
+                  primme->maxBasisSize-*restartSize);
+   numCandidates = max(*ievSize, numCandidates);
+
+   *indexOfPreviousVecs = *restartSize - numCandidates - *numPrevRetained;
+
+   left = *restartSize - numCandidates; 
+
+   for (i=j=k=0; i<basisSize; i++) {
+      if (j<numCandidates && flags[i] == UNCONVERGED) {
+         restartPerm[left + j++] = i;
+      }
+      else if (k < left) {
+         restartPerm[k++] = i;
+      }
+      else {
+         restartPerm[numCandidates + k++] = i;
+      }
+   }
+ 
+   /* Update the number of converged values */
+
+   for (i=*numConverged=0; i<basisSize; i++) {
+      if (flags[i] != UNCONVERGED && i < primme->numEvals) (*numConverged)++;
+   }
+
+   /* Permute hVals and hVecs */
+
+   permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_@(pre)primme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork,
          iwork);
-
-   /* Permute hVals */
-   permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
 
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
@@ -468,12 +516,6 @@ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(typ
    /* restartSize ones.  The orthogonalized previous vectors are then         */
    /* inserted into the hVecs array at hVecs(:,indexOfPreviousVecs).          */
    /* ----------------------------------------------------------------------- */
-
-   *numPrevRetained = min(basisSize, *restartSize + *numPrevRetained)
-      - *restartSize;
-   *indexOfPreviousVecs = *restartSize;
-
-   *restartSize += *numPrevRetained;
 
    Num_copy_matrix_@(pre)primme(previousHVecs, basisSize, *numPrevRetained,
          ldpreviousHVecs, &hVecs[ldhVecs*(*indexOfPreviousVecs)], ldhVecs);
@@ -488,37 +530,66 @@ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(typ
    /* Compute X, R, blockNorms for the next values in the block.     */
    /* -------------------------------------------------------------- */
 
-   if (X) {
-      *ievSize = min(min(min(primme->maxBlockSize, primme->numEvals-*numConverged),
-               *indexOfPreviousVecs-*numConverged), primme->maxBasisSize-*restartSize);
-      *X = &V[*restartSize*ldV];
-      *R = &W[*restartSize*ldV];
-   }
-   else {
-      *ievSize = 0;
-   }
+   *X = &V[*restartSize*ldV];
+   *R = &W[*restartSize*ldV];
 
    ret = Num_update_VWXR_@(pre)primme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
-         X?*X:NULL, *numConverged, *numConverged+*ievSize, ldV,
+         *X, left, left+*ievSize, ldV,
          NULL, 0, 0, 0,
          W, 0, *restartSize, ldV,
-         X?*R:NULL, *numConverged, *numConverged+*ievSize, ldV, blockNorms,
+         *R, left, left+*ievSize, ldV, blockNorms,
          NULL, 0, 0,
          rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
-   if (X)
-      for (i=0; i<*ievSize; i++)
-         iev[i] = restartPerm[i+*numConverged];
-
-   /* Undo the reordering of restartPerm */
+   /* ----------------------------------------------------------------- */
+   /* After solving the projected problem for the retained vectors, the */
+   /* candidates will lead the ordering. Consider this before undoing   */
+   /* the ordering of restartPerm.                                      */
+   /* ----------------------------------------------------------------- */
 
    for (i=0; i<basisSize; i++)
-      hVecsPerm[i] = restartPerm[i];
-   permute_vecs_iprimme(hVecsPerm, basisSize, restartPerm, iwork);
-   
+      hVecsPerm[restartPerm[i]] = i;
+
+   /* ----------------------------------------------------------------- */
+   /* Arbitrary vectors in candidates are treated as previous vectors.  */
+   /* After solving the projected problem for the retained vectors, the */
+   /* candidates will lead the ordering. Consider this to modify the    */
+   /* ordering of hVecsPerm properly.                                   */
+   /* ----------------------------------------------------------------- */
+
+   /* Compute how many arbitrary vectors are in candidates and failed   */
+   /* (the result will be in j).                                        */
+
+   for (i=j=0; i<*restartSize; i++)
+      if (restartPerm[hVecsPerm[i]] < numArbitraryVecs)
+         j++;
+
+   /* Shift arbitrary vectors at the beginning of previous vectors */
+
+   for (i=j=0; i<*restartSize; i++)
+      if (*indexOfPreviousVecs <= hVecsPerm[i] && 
+            hVecsPerm[i] < left+j)
+         hVecsPerm[i] = (hVecsPerm[i]-*indexOfPreviousVecs+j) %
+            (*numPrevRetained+j) + *indexOfPreviousVecs;
+
+   *numPrevRetained += j;
+
+   /* The candidates shouldn't have changed positions */
+
+   for (i=0; i<*ievSize; i++)
+      iev[i] = restartPerm[left + i];
+   for (i=j=0; j<*ievSize && i<basisSize; i++) {
+      if (flags[i] == UNCONVERGED) {
+         assert(iev[j] == i);
+         j++;
+      }
+   }
+
+   // TEMP!!!
+   *ievSize = 0;
 
    /* --------------------------------------------------------------------- */
    /* If the user requires (I-QQ') projectors in JDQMR without locking,     */
@@ -560,7 +631,7 @@ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(typ
          rwork[oldSizeM*i + i] = tpone;
       for (; i < newSizeM; i++)
          rwork[oldSizeM*i + restartPerm[i]+primme->numOrthoConst] = tpone;
-      compute_submatrix(rwork, newSizeM, oldSizeM, M, oldSizeM, ldM,
+      compute_submatrix_@(pre)primme(rwork, newSizeM, oldSizeM, M, oldSizeM, ldM,
          M, ldM, rwork+oldSizeM*newSizeM, rworkSize-oldSizeM*newSizeM);
 
       *numConvergedStored = newNumConvergedStored;
@@ -678,15 +749,17 @@ static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(typ
  *       
  ******************************************************************************/
  
-static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W, int ldW,
-   @(type) *H, int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR,
-   @(type) *QV, int ldQV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs,
-   int ldhVecs, int newldhVecs, double *hVals, double *hSVals, int *restartPerm,
-   int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
-   int indexOfPreviousVecs, @(type) *evecs, int *evecsSize,
-   int ldevecs, @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, @(type) *UDU,
-   int ldUDU, int *ipivot, int *targetShiftIndex, int numConverged,
-   int rworkSize, @(type) *rwork, int *iwork, double machEps, primme_params *primme) {
+static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W,
+      int ldW, @(type) *H, int ldH, @(type) *Q, int nLocal, int ldQ,
+      @(type) *R, int ldR, @(type) *QV, int ldQV, @(type) *hU, int ldhU,
+      int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+      double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
+      int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+      @(type) *evecs, int *evecsSize, int ldevecs, @(type) *evecsHat,
+      int ldevecsHat, @(type) *M, int ldM, @(type) *UDU, int ldUDU,
+      int *ipivot, int *targetShiftIndex, int numConverged,
+      int numArbitraryVecs, int rworkSize, @(type) *rwork, int *iwork,
+      double machEps, primme_params *primme) {
 
    int ret;
 
@@ -698,7 +771,7 @@ static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W, int 
    case primme_proj_RR:
       ret = restart_RR(H, ldH, hVecs, ldhVecs, newldhVecs, hVals, restartSize,
             basisSize, numConverged, numPrevRetained, indexOfPreviousVecs,
-            hVecsPerm, rworkSize, rwork, iwork, primme);
+            hVecsPerm, machEps, rworkSize, rwork, iwork, primme);
       break;
 
    case primme_proj_harmonic:
@@ -707,12 +780,16 @@ static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W, int 
 
       indexOfPreviousVecs = 0;
       numPrevRetained = restartSize;
+      if (H) {
+         int i;
+         for(i=0; i<restartSize; i++) hVecsPerm[i] = i;
+      }
 
    case primme_proj_refined:
       ret = restart_qr(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, QV, ldQV, hU, ldhU,
             newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm,
             restartSize, basisSize, numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
-            numConverged, rworkSize, rwork, iwork, machEps, primme);
+            numConverged, numArbitraryVecs, rworkSize, rwork, iwork, machEps, primme);
       break;
 
    default:
@@ -771,7 +848,7 @@ static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W, int 
 
    }
 
-   return 0;
+   return ret;
 }
 
 /*******************************************************************************
@@ -842,9 +919,10 @@ static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W, int 
  ******************************************************************************/
 
 static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
-   int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
-   int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
-   int rworkSize, @(type) *rwork, int *iwork, primme_params *primme) {
+      int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
+      int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
+      double machEps, int rworkSize, @(type) *rwork, int *iwork,
+      primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
    int ret;           /* Return value                                         */
@@ -855,10 +933,10 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
 
    if (H == NULL) {
       return max(
-            compute_submatrix(NULL, numPrevRetained, 0, NULL, basisSize, 0, NULL,
-               0, NULL, 0),
-            solve_H_RR_@(pre)primme(NULL, 0, NULL, 0, NULL, numPrevRetained,
-               numLocked, 0, NULL, NULL, primme));
+            compute_submatrix_@(pre)primme(NULL, numPrevRetained, 0, NULL,
+               basisSize, 0, NULL, 0, NULL, 0),
+            solve_H_@(pre)primme(NULL, numPrevRetained, 0, NULL, 0, NULL, 0,
+               NULL, 0, NULL, 0, NULL, NULL, numLocked, 0.0, 0, NULL, NULL, primme));
    }
 
    /* ---------------------------------------------------------------------- */
@@ -867,7 +945,7 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
    /* submatrix, then compute the submatrix.                                 */
    /* ---------------------------------------------------------------------- */
 
-   compute_submatrix(&hVecs[ldhVecs*indexOfPreviousVecs], numPrevRetained, ldhVecs, H,
+   compute_submatrix_@(pre)primme(&hVecs[ldhVecs*indexOfPreviousVecs], numPrevRetained, ldhVecs, H,
          basisSize, ldH, &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs],
          ldH, rwork, rworkSize);
 
@@ -924,11 +1002,12 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
    }
    assert(orderedIndexOfPreviousVecs != restartSize || indexOfPreviousVecs >= restartSize);
 
-   ret = solve_H_RR_@(pre)primme(
-         &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], ldH,
+   ret = solve_H_@(pre)primme(
+         &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], numPrevRetained, ldH,
+         NULL, 0, NULL, 0, NULL, 0,
          &hVecs[newldhVecs*orderedIndexOfPreviousVecs+orderedIndexOfPreviousVecs],
-         newldhVecs, &hVals[orderedIndexOfPreviousVecs], numPrevRetained,
-         numLocked, rworkSize, rwork, iwork, primme);
+         newldhVecs, &hVals[orderedIndexOfPreviousVecs], NULL, numLocked,
+         machEps, rworkSize, rwork, iwork, primme);
 
    /* TODO: reorder all hVals */
 
@@ -1038,13 +1117,12 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    int ldQV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int rworkSize,
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, int rworkSize,
    @(type) *rwork, int *iwork, double machEps, primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
    int ret;           /* Return value                                         */
    @(type) tpone = @(tpone), tzero = @(tzero);             /*constants*/
-   int orderedIndexOfPreviousVecs;  /* index of prev. vecs after applying hVecsPerm */
 
    /* Return memory requirement */
  
@@ -1060,7 +1138,7 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       orgqrSize = *(double*)&t;
 
       return max(max(max(max(max(max(
-         compute_submatrix(NULL, basisSize, 0, NULL, basisSize, 0, NULL, 0,
+         compute_submatrix_@(pre)primme(NULL, basisSize, 0, NULL, basisSize, 0, NULL, 0,
             NULL, 0),
          update_Q_@(pre)primme(NULL, nLocal, 0, NULL, 0, NULL, 0, NULL, 0, 0.0, 0,
             basisSize, NULL, 0, 0.0, primme)),
@@ -1085,14 +1163,14 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* Replace H by hVecs' * H * hVecs */
    /* ------------------------------- */
 
-   if (H) compute_submatrix(hVecs, restartSize, ldhVecs, H, basisSize, ldH, H, ldH,
+   if (H) compute_submatrix_@(pre)primme(hVecs, restartSize, ldhVecs, H, basisSize, ldH, H, ldH,
       rwork, rworkSize);
 
    /* -------------------------------------- */
    /* Quick exit if the target has changed   */
    /* -------------------------------------- */
 
-   if (*targetShiftIndex < 0 || primme->targetShifts[*targetShiftIndex]
+   if (1 || *targetShiftIndex < 0 || primme->targetShifts[*targetShiftIndex]
          != primme->targetShifts[min(primme->numTargetShifts-1, numConverged)]) {
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
@@ -1148,11 +1226,13 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* R*hVecs(0:indexOfPrevVecs)=U(restartPerm)*diag(hSVals(restartPerm))  */
    /* -------------------------------------------------------------------- */
 
+   permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
+
    for (j=0; j < indexOfPreviousVecs; j++) {
       for (i=0; i < primme->maxBasisSize; i++) {
          R[ldR*j+i] = tzero;
       }
-      *(double*)&R[ldR*j+j] = hSVals[restartPerm[j]];
+      *(double*)&R[ldR*j+j] = hSVals[j];
    }
 
    permute_vecs_@(pre)primme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
@@ -1166,7 +1246,7 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    assert(ret == 0);
 
    /* -------------------------------------------------------------------- */
-   /* Place the Q factor besides hU and apply permutation hVecsPerm        */
+   /* Place the Q factor besides hU                                        */
    /* -------------------------------------------------------------------- */
 
    Num_copy_matrix_@(pre)primme(&R[ldR*indexOfPreviousVecs], basisSize,
@@ -1200,7 +1280,7 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       for (i=0; i <= j; i++) {
          R[ldR*j+i] = tzero;
       }
-      *(double*)&R[ldR*j+j] = hSVals[restartPerm[j]];
+      *(double*)&R[ldR*j+j] = hSVals[j];
    }
 
    /* ----------------------------------- */
@@ -1232,29 +1312,13 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* basis vectors if no previous coefficient vectors are retained           */
    /* ----------------------------------------------------------------------- */
 
-   for (i=0, orderedIndexOfPreviousVecs=restartSize; i<restartSize; i++) {
-      if (hVecsPerm[i] == indexOfPreviousVecs) {
-         orderedIndexOfPreviousVecs = i;
-         break;
-      }
-   }
-   assert(orderedIndexOfPreviousVecs != restartSize || indexOfPreviousVecs >= restartSize);
-
    for (j=0; j < restartSize; j++) {
       for (i=0; i < restartSize; i++) {
           hVecs[newldhVecs*j+i] = tzero;
           hU[newldhU*j+i] = tzero;
       }
-      if (j < orderedIndexOfPreviousVecs || j >= orderedIndexOfPreviousVecs+numPrevRetained) {
-         hVecs[newldhVecs*j+hVecsPerm[j]] = tpone;
-         hU[newldhU*j+hVecsPerm[j]] = tpone;
-      }
-   }
-
-   if (!QV) {
-      permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
-      permute_vecs_dprimme(hSVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
-      permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+      hVecs[newldhVecs*j+j] = tpone;
+      hU[newldhU*j+j] = tpone;
    }
 
    /* ---------------------------------------------------------------------- */
@@ -1263,20 +1327,32 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* the resulting projected problem.                                       */
    /* ---------------------------------------------------------------------- */
 
-   /* TODO: reorder all hVals when numPacked != 0 */
-
-   if (QV) orderedIndexOfPreviousVecs = 0;
+   assert(!QV || indexOfPreviousVecs == 0);
    ret = solve_H_@(pre)primme(&H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], numPrevRetained, ldH,
          &R[ldR*indexOfPreviousVecs+indexOfPreviousVecs], ldR, QV, ldQV,
-         &hU[newldhU*orderedIndexOfPreviousVecs+orderedIndexOfPreviousVecs], newldhU,
-         &hVecs[newldhVecs*orderedIndexOfPreviousVecs+orderedIndexOfPreviousVecs], newldhVecs,
-         &hVals[orderedIndexOfPreviousVecs], &hSVals[orderedIndexOfPreviousVecs], numConverged,
+         &hU[newldhU*indexOfPreviousVecs+indexOfPreviousVecs], newldhU,
+         &hVecs[newldhVecs*indexOfPreviousVecs+indexOfPreviousVecs], newldhVecs,
+         &hVals[indexOfPreviousVecs], &hSVals[indexOfPreviousVecs], numConverged,
          machEps, rworkSize, rwork, iwork, primme);
    if (ret != 0) {
       primme_PushErrorMessage(Primme_restart_h, Primme_insert_submatrix, 
             ret, __FILE__, __LINE__, primme);
       return INSERT_SUBMATRIX_FAILURE;
    }
+
+   i = numArbitraryVecs;
+   prepare_vecs_@(pre)primme(numPrevRetained, 0, numArbitraryVecs,
+         &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], ldH,
+         &hVals[indexOfPreviousVecs], &hSVals[indexOfPreviousVecs],
+         &hVecs[newldhVecs*indexOfPreviousVecs+indexOfPreviousVecs],
+         numPrevRetained, *targetShiftIndex, &i, NULL, 1,
+         machEps, rworkSize, rwork, iwork, primme);
+   assert(i <= numArbitraryVecs);
+
+   permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+   permute_vecs_dprimme(hSVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+   permute_vecs_@(pre)primme(hVecs, restartSize, restartSize, newldhVecs, hVecsPerm, rwork, iwork);
+   permute_vecs_@(pre)primme(hU, restartSize, restartSize, newldhU, hVecsPerm, rwork, iwork);
 
    return 0;
 }
@@ -1433,58 +1509,6 @@ static int dtr_@(pre)primme(int numLocked, @(type) *hVecs, double *hVals, int *f
 }
 
  
-/*******************************************************************************
- * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
- *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
- *    
- * Input parameters
- * ----------------
- * X        The coefficient vectors retained from the previous iteration
- *
- * nX       Number of columns of X
- *
- * H        Matrix
- *
- * nH       Dimension of H
- *
- * ldH      Leading dimension of H
- *
- * rwork    Work array.  Must be of size nH x nX
- *
- * lrwork   Length of the work array
- *
- * ldR      Leading dimension of R
- *
- * Output parameters
- * -----------------
- * R - nX x nX matrix computed 
- *
- ******************************************************************************/
-
-static int compute_submatrix(@(type) *X, int nX, int ldX, 
-   @(type) *H, int nH, int ldH, @(type) *R, int ldR,
-   @(type) *rwork, int lrwork) {
-
-   @(type) tpone = @(tpone), tzero = @(tzero);
-
-   /* Return memory requirement */
-   if (X == NULL) {
-      return nH*nX;
-   }
-
-   if (nH == 0 || nX == 0) return 0;
-
-   assert(lrwork >= nH*nX);
-
-   Num_symm_@(pre)primme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
-   
-   Num_gemm_@(pre)primme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
-      ldR);
-
-   return 0;
-}
-
-
 /*******************************************************************************
  * Subroutine reset_flags - Marks a series of Ritz values as unconverged
  *

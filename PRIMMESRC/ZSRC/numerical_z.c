@@ -1038,3 +1038,54 @@ Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *
    }
    return work;
 }
+
+/*******************************************************************************
+ * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
+ *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
+ *    
+ * Input parameters
+ * ----------------
+ * X        The coefficient vectors retained from the previous iteration
+ *
+ * nX       Number of columns of X
+ *
+ * H        Matrix
+ *
+ * nH       Dimension of H
+ *
+ * ldH      Leading dimension of H
+ *
+ * rwork    Work array.  Must be of size nH x nX
+ *
+ * lrwork   Length of the work array
+ *
+ * ldR      Leading dimension of R
+ *
+ * Output parameters
+ * -----------------
+ * R - nX x nX matrix computed 
+ *
+ ******************************************************************************/
+
+int compute_submatrix_zprimme(Complex_Z *X, int nX, int ldX, 
+   Complex_Z *H, int nH, int ldH, Complex_Z *R, int ldR,
+   Complex_Z *rwork, int lrwork) {
+
+   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
+
+   /* Return memory requirement */
+   if (X == NULL) {
+      return nH*nX;
+   }
+
+   if (nH == 0 || nX == 0) return 0;
+
+   assert(lrwork >= nH*nX);
+
+   Num_symm_zprimme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
+   
+   Num_gemm_zprimme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
+      ldR);
+
+   return 0;
+}

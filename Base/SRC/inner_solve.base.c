@@ -351,7 +351,7 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
          break;
       }
       
-      if (tau < LTolerance) {
+      if (numIts > 1 && tau < LTolerance) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile, " tau < LTol %e %e\n",tau, LTolerance);
          }
@@ -400,7 +400,7 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
 
          R = max(0.9878, sqrt(tau/tau_prev))*sqrt(1+dot_sol);
         
-         if ( tau <= R*eres_updated || eres_updated <= tau*R ) {
+         if (numIts > 1 && (tau <= R*eres_updated || eres_updated <= tau*R) ) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, " tau < R eres \n");
             }
@@ -420,7 +420,7 @@ int inner_solve_@(pre)primme(@(type) *x, @(type) *r, double *rnorm,
             break;
          }
          
-         if (eres_updated < ETolerance) {    /* tau < LTol has been checked */
+         if (numIts > 1 && eres_updated < ETolerance) {    /* tau < LTol has been checked */
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eres < eresTol %e \n",eres_updated);
             }

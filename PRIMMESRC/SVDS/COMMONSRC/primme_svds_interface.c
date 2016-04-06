@@ -170,7 +170,7 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
       /* Set default values and method for the second state */
       if (primme_svds->primmeStage2.dynamicMethodSwitch < 0)
-         primme_set_method(JDQMR, &primme_svds->primmeStage2);
+         primme_set_method(DEFAULT_MIN_TIME, &primme_svds->primmeStage2);
       primme_set_defaults(&primme_svds->primmeStage2);
    }
 }

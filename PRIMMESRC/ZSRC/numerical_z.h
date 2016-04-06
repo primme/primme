@@ -107,6 +107,9 @@ void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
    int ldb);
 void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, const char *diag,
       int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb);
+int compute_submatrix_zprimme(Complex_Z *X, int nX, int ldX, 
+   Complex_Z *H, int nH, int ldH, Complex_Z *R, int ldR,
+   Complex_Z *rwork, int lrwork);
 
 #define PRIMME_BLOCK_SIZE 512
 

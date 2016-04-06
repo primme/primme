@@ -40,7 +40,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QV, int ldQV,
    double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, double machEps,
+   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
    double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize, int ldhVecs,

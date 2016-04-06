@@ -43,6 +43,13 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QV, int ldQV,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
    @(type) *rwork, int *iwork, primme_params *primme);
 
+static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
+   int ldhVecs, @(type) *hU, int ldhU, double *hSVals, @(type) *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, int lrwork, @(type) *rwork,
+   int *iwork, primme_params *primme);
+
+static int solve_H_RR_@(pre)primme(@(type) *H, int maxBasisSize, @(type) *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
+   @(type) *rwork, int *iwork, primme_params *primme);
+
 #endif
-
-
