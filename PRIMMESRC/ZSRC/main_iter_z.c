@@ -590,7 +590,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          else
             RRForAll = 0;
          prepare_vecs_zprimme(basisSize, 0, availableBlockSize, H,
-               primme->maxBlockSize, hVals, hSVals, hVecs, basisSize,
+               primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
                targetShiftIndex, &numArbitraryVecs, flags, RRForAll, machEps,
                rworkSize, rwork, iwork, primme);
 
@@ -938,7 +938,7 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
       /* iev(*blockSize:*blockSize+blockNormsize)                    */
 
       for (blki=*blockSize, i=0; i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
-         if (hSVals && hSVals[iev[blki]] < blockNorms[blki]) {
+         if (0 && hSVals && hSVals[iev[blki]] < blockNorms[blki]) {
             /* ignore */
             printf("IGNORING\n");
          }

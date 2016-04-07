@@ -188,7 +188,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
                NULL, nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL,
                NULL, 0, NULL, NULL, NULL, NULL, ievSize, NULL, NULL,
                NULL, numConverged, numConverged, NULL, NULL, 0, NULL,
-               numPrevRetained, 0, NULL, NULL, 0, 0.0, NULL, 0,
+               numPrevRetained, 0, NULL, NULL, NULL, 0.0, NULL, 0,
                NULL, primme);
       }
       else {
@@ -263,7 +263,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
             hU, ldhU, basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals,
             flags, iev, ievSize, blockNorms, evecs, evals, numConverged, numLocked,
             resNorms, evecsPerm, numGuesses, previousHVecs, numPrevRetained,
-            ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, numArbitraryVecs,
+            ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, &numArbitraryVecs,
             machEps, rwork, rworkSize, iwork0, primme);
    }
 
@@ -1170,7 +1170,7 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
    /* Quick exit if the target has changed   */
    /* -------------------------------------- */
 
-   if (1 || *targetShiftIndex < 0 || primme->targetShifts[*targetShiftIndex]
+   if (*targetShiftIndex < 0 || primme->targetShifts[*targetShiftIndex]
          != primme->targetShifts[min(primme->numTargetShifts-1, numConverged)]) {
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
@@ -1340,12 +1340,12 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
       return INSERT_SUBMATRIX_FAILURE;
    }
 
-   i = numArbitraryVecs;
+   i = 0;
    prepare_vecs_dprimme(numPrevRetained, 0, numArbitraryVecs,
          &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], ldH,
          &hVals[indexOfPreviousVecs], &hSVals[indexOfPreviousVecs],
          &hVecs[newldhVecs*indexOfPreviousVecs+indexOfPreviousVecs],
-         numPrevRetained, *targetShiftIndex, &i, NULL, 1,
+         newldhVecs, *targetShiftIndex, &i, NULL, 1,
          machEps, rworkSize, rwork, iwork, primme);
    assert(i <= numArbitraryVecs);
 

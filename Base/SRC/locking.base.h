@@ -37,7 +37,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       double *blockNorms, @(type) *evecs, double *evals, int *numConverged, 
       int *numLocked, double *resNorms, int *evecsperm, int numGuesses, 
       @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-      int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+      int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
       double machEps, @(type) *rwork, int rworkSize, int *iwork, 
       primme_params *primme);
 

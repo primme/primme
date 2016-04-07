@@ -928,6 +928,15 @@ void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
 
    assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
 
+   /* Check perm is a permutation */
+
+   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
+   for (tempIndex=0; tempIndex<n; tempIndex++) {
+      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
+      perm[perm_[tempIndex]] = 1;
+   }
+   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+   
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
    for (tempIndex=0; tempIndex<n; tempIndex++)

@@ -676,6 +676,9 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
                   NULL, primme));
    }
 
+   for (i=0; i<basisSize; i++)
+      assert(hSVals[i] < primme->aNorm);
+
    /* Special case: If (basisSize+numLocked) is the entire space, */
    /* then everything should be converged. Just do RR with the    */
    /* entire space.                                               */
@@ -706,7 +709,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
                (primme->target == primme_closest_leq
                 && hVals[j] <= targetShift) ||
                (primme->target == primme_closest_geq
-                && hVals[j] >= targetShift) ||
+                && hVals[j] >= targetShift) || !flags ||
                (primme->target != primme_closest_leq
                 && primme->target != primme_closest_geq)))
             candidates++;
@@ -720,7 +723,11 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
       for (i=j+1, someCandidate=0; i<basisSize; i++) {
 
-         double minDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps;
+         //double minDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps;
+         double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
+         double ip = (flags && ip0 != 0.0) ? ip0 : HUGE_VAL;
+         double minDiff =
+sqrt(2.0)*hSVals[basisSize-1]*machEps/min(ip, primme->aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
          if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff 

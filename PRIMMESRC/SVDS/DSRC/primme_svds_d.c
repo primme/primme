@@ -262,11 +262,12 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
                   sval = *(double*)&ztmp;
                svals[i] = primme_svds->aNorm*primme->eps/2;
                svals[i] = sval/2.0;
-               svals[i] = primme_svds->aNorm*machEps;
                free(Ax);
             }
             else
                svals[i] -= rnorms[i];
+            svals[i] = primme_svds->aNorm*machEps;
+            primme_svds->initSize = 1;
          }
       }
 

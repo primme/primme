@@ -37,7 +37,7 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
       double *blockNorms, Complex_Z *evecs, double *evals, int *numConverged, 
       int *numLocked, double *resNorms, int *evecsperm, int numGuesses, 
       Complex_Z *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-      int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+      int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
       double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
       primme_params *primme);
 

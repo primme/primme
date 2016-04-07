@@ -150,7 +150,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       double *blockNorms, @(type) *evecs, double *evals, int *numConverged, 
       int *numLocked, double *resNorms, int *evecsperm, int numGuesses, 
       @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-      int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+      int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
       double machEps, @(type) *rwork, int rworkSize, int *iwork, 
       primme_params *primme) {
 
@@ -237,7 +237,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    sizeBlockNorms = min(
          maxBlockSize,
          primme->maxBasisSize-*restartSize-*numPrevRetained-*numConverged+*numLocked);
-   for (i=numArbitraryCandidates=0; i<numArbitraryVecs && numArbitraryCandidates<*restartSize; i++)
+   for (i=numArbitraryCandidates=0; i<*numArbitraryVecs && numArbitraryCandidates<*restartSize; i++)
       if (flags[i] == UNCONVERGED) numArbitraryCandidates++;
    numCandidates = max(sizeBlockNorms, numArbitraryCandidates);
 
@@ -246,8 +246,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    indexOfCandidates = *restartSize - numCandidates;
    left = *restartSize;
    *restartSize += *numConverged - *numLocked;
-   assert(*indexOfPreviousVecs >= 0 && indexOfCandidates >=
-*indexOfPreviousVecs && left >= indexOfCandidates);
+   assert(*indexOfPreviousVecs >= 0 && indexOfCandidates >= *indexOfPreviousVecs && left >= indexOfCandidates);
 
    /* ----------------------------------------------------------------------- */
    /* Swap coefficient vectors and hVals corresponding to                     */
@@ -257,14 +256,9 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    /* movement the locking routine would have to perform otherwise.           */
    /* ----------------------------------------------------------------------- */
 
-   for (i=numPacked=0; i<basisSize; i++) {
+   for (i=j=k=numPacked=0; i<basisSize; i++) {
       if (flags[i] != UNCONVERGED && i < primme->numEvals-*numLocked) {
          restartPerm[left + numPacked++] = i;
-      }
-   }
-   for (i=j=k=0; i<basisSize; i++) {
-      if (flags[i] != UNCONVERGED && i < primme->numEvals-*numLocked) {
-         /* Done already */
       }
       else if (j < numCandidates) {
          restartPerm[indexOfCandidates + j++] = i;
@@ -273,7 +267,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
          restartPerm[k++] = i;
       }
       else {
-         restartPerm[numCandidates + numPacked + k++] = i;
+         restartPerm[numCandidates + *numConverged-*numLocked + k++] = i;
       }
    }
 
@@ -372,13 +366,13 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
 
       /* Generate hVecsPerm merging back vectors to be locked pairs that failed to  */
       /* pass the convergence test with the restarted pairs.                        */
-      maxBlockSize = min(min(primme->maxBlockSize, primme->numEvals-*numConverged+1),
+      maxBlockSize = min(min(primme->maxBlockSize, primme->numEvals-*numConverged+failed+1),
             primme->maxBasisSize-left-failed);
       blockNorms0 = (double*)rwork;
       for (i=0; i<sizeBlockNorms; i++) blockNorms0[i] = blockNorms[i];
       for (i=indexOfCandidates, j=k=0; i<left || j<failed; k++) {
          if (i < left && (j >= failed || restartPerm[i] < restartPerm[left+ifailed[j]])) {
-            if (k < maxBlockSize && i-indexOfCandidates < sizeBlockNorms) blockNorms[k] = blockNorms0[i];
+            if (k < maxBlockSize && i-indexOfCandidates < sizeBlockNorms) blockNorms[k] = blockNorms0[i-indexOfCandidates];
             hVecsPerm[k] = i++;
          }
          else {
@@ -485,7 +479,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    /* (the result will be in j).                                        */
 
    for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < numArbitraryVecs)
+      if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
          j++;
    j = numArbitraryCandidates;
 
@@ -498,6 +492,10 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
             (*numPrevRetained+j) + *indexOfPreviousVecs;
 
    *numPrevRetained += j;
+   *numArbitraryVecs = j;
+
+   // TEMP!!!
+   *ievSize = 0;
 
    return 0;
 }

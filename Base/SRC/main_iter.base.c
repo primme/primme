@@ -595,7 +595,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          else
             RRForAll = 0;
          prepare_vecs_@(pre)primme(basisSize, 0, availableBlockSize, H,
-               primme->maxBlockSize, hVals, hSVals, hVecs, basisSize,
+               primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
                targetShiftIndex, &numArbitraryVecs, flags, RRForAll, machEps,
                rworkSize, rwork, iwork, primme);
 
@@ -943,7 +943,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       /* iev(*blockSize:*blockSize+blockNormsize)                    */
 
       for (blki=*blockSize, i=0; i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
-         if (hSVals && hSVals[iev[blki]] < blockNorms[blki]) {
+         if (0 && hSVals && hSVals[iev[blki]] < blockNorms[blki]) {
             /* ignore */
             printf("IGNORING\n");
          }
