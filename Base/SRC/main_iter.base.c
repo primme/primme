@@ -148,7 +148,6 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    int maxEvecsSize;        /* Maximum capacity of evecs array               */
    int rworkSize;           /* Size of rwork array                           */
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
-   int RRForAll;            /* Compute RR in every cluster                   */
    int ret;                 /* Return value                                  */
 
    int *iwork;              /* Integer workspace pointer                     */
@@ -402,7 +401,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             primme->stats.numOuterIterations++;
             numPrevRetained = 0;
 
-            /* When QR are computed and there are more than one target shift,	*/
+            /* When QR are computed and there are more than one target shift, */
             /* limit blockSize and the converged values to one.               */
 
             if (primme->numTargetShifts > numConverged+1 && Q) {
@@ -581,25 +580,30 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             * --------------------------------------------------------------- */
 
          /* ----------------------------------------------------------------- */
-         /* Restart basis will compute X and R for the next candidates. So it */ 
-         /* is needed that hVecs has proper coefficient vectors for these     */
-         /* candidates. Also prepare_vecs may remove converged flags if the   */
-         /* converged pairs are in a cluster with unconverged pairs.          */ 
+         /* Restart basis will need the final coefficient vectors in hVecs    */
+         /* to lock out converged vectors and to compute X and R for the next */
+         /* iteration. The function prepare_vecs will make sure that hVecs    */
+         /* has proper coefficient vectors.                                   */
          /* Compute RR for clusters when locking or all required pairs are    */
          /* converged.                                                        */
          /* ----------------------------------------------------------------- */
 
-         availableBlockSize = max(0, min(min(availableBlockSize,
-                     primme->maxBasisSize-basisSize), primme->numEvals-numConverged));
-         if (primme->locking || numConverged >= primme->numEvals)
-            RRForAll = 1;
-         else
-            RRForAll = 0;
          prepare_vecs_@(pre)primme(basisSize, 0, availableBlockSize, H,
                primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
-               targetShiftIndex, &numArbitraryVecs, flags, RRForAll, machEps,
+               targetShiftIndex, &numArbitraryVecs, flags, 1, machEps,
                rworkSize, rwork, iwork, primme);
 
+         /* ----------------------------------------------------------------- */
+         /* prepare_vecs may remove some converged flags if the converged     */
+         /* pairs are in a cluster with unconverged pairs. So recompute the   */
+         /* number of eigenpairs that have been converged.                    */
+         /* ----------------------------------------------------------------- */
+
+         numConverged = numLocked;
+         for (i=0; i<basisSize && i<primme->numEvals-numLocked; i++) {
+            if (flags[i] != UNCONVERGED) numConverged++;
+         }
+ 
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
@@ -944,11 +948,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       /* iev(*blockSize:*blockSize+blockNormsize)                    */
 
       for (blki=*blockSize, i=0; i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
-         if (0 && hSVals && hSVals[iev[blki]] < blockNorms[blki]) {
-            /* ignore */
-            printf("IGNORING\n");
-         }
-         else if (flagsBlock[i] == UNCONVERGED) {
+         if (flagsBlock[i] == UNCONVERGED) {
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
             Num_copy_matrix_@(pre)primme(&X[blki*ldV], nLocal, 1, ldV,
@@ -980,13 +980,17 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
          }
       }
 
-      /* Generate well conditioned coefficient vectors */
+      /* Generate well conditioned coefficient vectors; start from the last   */
+      /* position visited (variable i)                                        */
 
       blki = *blockSize;
-      i = max(blki, blockNormsSize)>0 ? iev[max(blki, blockNormsSize)-1]+1 : 0; /* starting from */
+      if (*blockSize > 0 || blockNormsSize > 0)
+         i = iev[max(*blockSize, blockNormsSize)-1]+1;
+      else
+         i = 0;
       prepare_vecs_@(pre)primme(basisSize, i, maxBlockSize-blki, H, ldH, hVals,
             hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs, flags,
-            0, machEps, rworkSize, rwork, iwork, primme);
+            1, machEps, rworkSize, rwork, iwork, primme);
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 

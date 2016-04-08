@@ -133,6 +133,10 @@
  *
  * hVecsPerm        The permutation that orders the output hVals and hVecs as primme.target
  *
+ * numArbitraryVecs On input, the number of leading coefficient vectors in
+ *                  hVecs that do not come from solving the projected problem.
+ *                  On output, the number of such vectors that are in the
+ *                  restarted basis
  *
  * Return value
  * ------------
@@ -158,10 +162,10 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    int numPacked;           /* The number of coefficient vectors moved to the */
                             /* end of the hVecs array.                        */
    int maxBlockSize;        /* max block size for the next iteration          */
-   int numCandidates;       /* number of candidates (eligible non-locked vals)*/
-   int numArbitraryCandidates; /* number of candidates that are arbitrary     */
-   int indexOfCandidates;   /* column index of the first candidate            */
-   int sizeBlockNorms;      /* size of blockNorms                             */
+   int sizeBlockNorms;      /* Size of the block                              */
+   int numArbitraryCandidates; /* Number of arbitrary vectors after restart   */
+   int numCandidates;       /* Number of vectors moved after prev. retained   */
+   int indexOfCandidates;   /* Column index of the first candidate            */
    int failed;              /* Number of vectors to be locked that didn't pass the conv. test */
    int *ifailed;            /* Indices of vectors to be locked vectors that failed */
    int left;                /* Index of the first column with a vector to be locked */
@@ -195,16 +199,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
                NULL, primme));
    }
 
-   /* ----------------------------------------------------------------------- */
-   /* Recompute the number of eigenpairs that have converged.                 */
-   /* ----------------------------------------------------------------------- */
-
-   *numConverged = *numLocked;
-   for (i=0; i<basisSize && i<primme->numEvals-*numLocked; i++) {
-      if (flags[i] != UNCONVERGED) (*numConverged)++;
-   }
-
-   /* ----------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------- */
    /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
    /* vectors do not exceed basisSize.                                        */
    /* ----------------------------------------------------------------------- */
@@ -218,43 +213,68 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    *restartSize -= min(min(numGuesses, *numConverged-*numLocked), *restartSize);
 
    /* ----------------------------------------------------------------------- */
-   /* Insert vectors from previous iteration.                                 */
+   /* Don't insert more vectors from iterations than the actual restart size  */
+   /* and don't make the final basis size larger than the current one.        */
    /* ----------------------------------------------------------------------- */
 
-   *numPrevRetained = min(min(
+   *numPrevRetained = max(0, min(min(
          *numPrevRetained,
          *restartSize), 
-         basisSize - (*restartSize+*numConverged-*numLocked));
+         basisSize - (*restartSize+*numConverged-*numLocked)));
 
-   /* ----------------------------------------------------------------------- */
-   /* Compute the number of candidates.                                       */
-   /* ----------------------------------------------------------------------- */
+   /* -------------------------------------------------------------- */
+   /* Rearrange hVals and hVecs so that V*hVecs and W*hVecs will     */
+   /* look like this (modified part indicated with ---):             */
+   /*                                                                */
+   /* (b): candidates           (a): non-locked and non-candidates   */
+   /*                                                                */
+   /*      (a) | prevRitzVecs | (b)  | to be locked | X & R          */
+   /* V: [-----|--------------|------|--------------|- X -|    )     */
+   /* W: [-----|--------------|------|--------------|- R -|    )     */
+   /*          ^ indexOfPreviousVecs ^ left         ^ restartSize    */
+   /*                         ^ indexOfCandidates                    */
+   /*          [--------------) numPrevRetained                      */
+   /*                         [------) numCandidates                 */
+   /*                         [----)   numArbitraryVecs              */
+   /*                                [--------------) numPacked      */
+   /*                         [----) sizeBlockNorms [-----)          */
+   /*                                maxBlockSize   [-------)        */
+   /*                                                                */
+   /*                           to be locked                         */
+   /* evecs: [----------------|--------------)                       */
+   /*                         ^ numLocked                            */
+   /*                                                                */
+   /* X & R will have the eigenvectors and residual vectors of the   */
+   /* first sizeBlockNorms candidates pairs.                         */
+   /* -------------------------------------------------------------- */
 
    maxBlockSize = min(min(
          *restartSize,
          primme->maxBlockSize),
          primme->numEvals-*numConverged+1);
-   sizeBlockNorms = min(
+
+   sizeBlockNorms = max(0, min(
          maxBlockSize,
-         primme->maxBasisSize-*restartSize-*numPrevRetained-*numConverged+*numLocked);
-   for (i=numArbitraryCandidates=0; i<*numArbitraryVecs && numArbitraryCandidates<*restartSize; i++)
+         primme->maxBasisSize-*restartSize-*numPrevRetained
+               -*numConverged+*numLocked));
+
+   for (i=numArbitraryCandidates=0; i<*numArbitraryVecs 
+         && numArbitraryCandidates<*restartSize; i++)
       if (flags[i] == UNCONVERGED) numArbitraryCandidates++;
+
    numCandidates = max(sizeBlockNorms, numArbitraryCandidates);
 
    *indexOfPreviousVecs = *restartSize - numCandidates;
-   *restartSize += *numPrevRetained;
-   indexOfCandidates = *restartSize - numCandidates;
-   left = *restartSize;
-   *restartSize += *numConverged - *numLocked;
-   assert(*indexOfPreviousVecs >= 0 && indexOfCandidates >= *indexOfPreviousVecs && left >= indexOfCandidates);
 
-   /* ----------------------------------------------------------------------- */
-   /* Swap coefficient vectors and hVals corresponding to                     */
-   /* converged Ritz vectors to the end of the hVecs(:, restartSize) subarray.*/
-   /* This allows the converged Ritz vectors to be stored contiguously in     */
-   /* memory after restart.  This significantly reduces the amount of data    */
-   /* movement the locking routine would have to perform otherwise.           */
-   /* ----------------------------------------------------------------------- */
+   *restartSize += *numPrevRetained;
+
+   indexOfCandidates = *restartSize - numCandidates;
+
+   left = *restartSize;
+
+   *restartSize += *numConverged - *numLocked;
+
+   assert(*indexOfPreviousVecs >= 0 && indexOfCandidates >= *indexOfPreviousVecs && left >= indexOfCandidates);
 
    for (i=j=k=numPacked=0; i<basisSize; i++) {
       if (flags[i] != UNCONVERGED && i < primme->numEvals-*numLocked) {
@@ -278,7 +298,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
 
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
-   /* iteration can be retained to accelerate convergence.  The previous      */
+   /* iteration can accelerate convergence.  The previous                     */
    /* coefficient vectors must be combined with the current coefficient       */
    /* vectors by first orthogonalizing the previous ones versus the current   */
    /* restartSize ones.  The orthogonalized previous vectors are then         */
@@ -288,34 +308,14 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    Num_copy_matrix_@(pre)primme(previousHVecs, basisSize, *numPrevRetained,
          ldpreviousHVecs, &hVecs[ldhVecs*(*indexOfPreviousVecs)], ldhVecs);
 
-   ret = ortho_coefficient_vectors_@(pre)primme(hVecs, basisSize, ldhVecs, *indexOfPreviousVecs,
-         *restartSize, restartPerm, hU, ldhU, hR, ldhR, *numPrevRetained, machEps,
-         iwork, rwork, rworkSize, primme);
+   ret = ortho_coefficient_vectors_@(pre)primme(hVecs, basisSize, ldhVecs,
+         *indexOfPreviousVecs, *restartSize, restartPerm, hU, ldhU, hR, ldhR,
+         *numPrevRetained, machEps, iwork, rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
-   /* Restart V and W by replacing it with the current Ritz vectors. */
-   /* After this operation (modified part indicated with ---):       */
-   /* (b): candidates/arbitrary (a): non-locked and non-candidates   */
-   /*                                                                */
-   /*      (a) | prevRitzVecs | (b)  | to be locked | X & R          */
-   /* V: [-----|--------------|------|--------------|- X -|    )     */
-   /* W: [-----|--------------|------|--------------|- R -|    )     */
-   /*          ^ indexOfPreviousVecs ^ left         ^ restartSize    */
-   /*                         ^ indexOfCandidates                    */
-   /*          [--------------) numPrevRetained                      */
-   /*                         [------) numCandidates                 */
-   /*                         [----)   numArbitraryVecs              */
-   /*                                [--------------) numPacked      */
-   /*                         [----) sizeBlockNorms [-----)          */
-   /*                                maxBlockSize   [-------)        */
-   /*                                                                */
-   /*                           to be locked                         */
-   /* evecs: [----------------|--------------)                       */
-   /*                         ^ numLocked                            */
-   /*                                                                */
-   /* X & R has the eigenvectors and residual vectors of the         */
-   /* first sizeBlockNorms non-locked pairs.                         */
+   /* Restart V and W by replacing it V*hVecs and W*hVecs, copy      */
+   /* vectors to be locked into evecs and compute X and R.           */
    /* -------------------------------------------------------------- */
 
    *X = &V[*restartSize*ldV];
@@ -324,34 +324,44 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
          *X, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
-         &evecs[primme->nLocal*(*numLocked+primme->numOrthoConst)], left, *restartSize, primme->nLocal,
+         &evecs[primme->nLocal*(*numLocked+primme->numOrthoConst)], left,
+               *restartSize, primme->nLocal,
          W, 0, *restartSize, ldV,
-         *R, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV, blockNorms,
+         *R, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
+               blockNorms,
          &resNorms[*numLocked], left, *restartSize,
          rwork, rworkSize, primme);
    if (ret != 0) return ret;
  
-   /* ----------------------------------------------------------------------------- */
-   /* Recompute flags for the vectors to be locked.                                 */
-   /* NOTE: the eigenvals flagged as practically converged will keep it if their    */
-   /*       residual norm is still less than sqrt(numLocked)*tol                    */
-   /* ----------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------- */
+   /* Recompute flags for the vectors to be locked.                  */
+   /* NOTE: the eigenvals flagged as practically converged will keep */
+   /*       it if their residual norm is still less than             */
+   /*       sqrt(numLocked)*tol                                      */
+   /* -------------------------------------------------------------- */
 
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    ret = check_convergence_@(pre)primme(&V[ldV*left],
          nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-         *restartSize, flags, &resNorms[*numLocked], hVals, machEps, rwork, rworkSize,
-         iwork, primme);
+         *restartSize, flags, &resNorms[*numLocked], hVals, machEps,
+         rwork, rworkSize, iwork, primme);
    if (ret != 0) return ret;
+
+   /* -------------------------------------------------------------- */
+   /* Temporally save the vals of the vectors to be locked into      */
+   /* evals, they will be used later.                                */
+   /* -------------------------------------------------------------- */
 
    for (i=left; i < *restartSize && i-left+*numLocked < primme->numEvals; i++)
       evals[*numLocked+i-left] = hVals[i];
 
-   /* ----------------------------------------------------------------------------- */
-   /* Pack hVals, hVecs, blockNorms and restartPerm for the unconverged pairs.      */
-   /* When there are more unconverged than vacancies in the block overwrite the     */
-   /* residual vectors computed previously in Num_update_VWXR.                      */ 
-   /* ----------------------------------------------------------------------------- */
+   /* -------------------------------------------------------------- */
+   /* Merge back the pairs that failed to be locked into the         */
+   /* restarted basis.                                               */
+   /* -------------------------------------------------------------- */
+
+   /* Generate the permutation that separates the pairs that failed  */
+   /* to be locked to the ones that passed.                          */
 
    ifailed = iwork;
    for (i=left, failed=0; i < *restartSize; i++)
@@ -360,36 +370,56 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       if (flags[i] != UNCONVERGED) ifailed[failed+j++] = i-left;
 
    if (1 /* Put zero to disable the new feature */) {
-      /* New feature: the candidate pairs to be locked that failed the              */
-      /* convergence test are rearranged with the rest of non-converged pairs       */
-      /* and are included in the block.                                             */
+      /* New feature: the pairs that failed to be locked are         */
+      /* rearranged with the rest of the restarted vectors and they  */
+      /* are considered to be included in the block.                 */
 
-      /* Generate hVecsPerm merging back vectors to be locked pairs that failed to  */
-      /* pass the convergence test with the restarted pairs.                        */
-      maxBlockSize = min(min(primme->maxBlockSize, primme->numEvals-*numConverged+failed+1),
-            primme->maxBasisSize-left-failed);
+      /* Generate hVecsPerm merging candidate vectors and vectors to */
+      /* be locked that failed to pass the convergence test with the */
+      /* restarted pairs. The order is determined by the original    */
+      /* position of the pairs.                                      */
+
+      maxBlockSize = max(0, min(
+            maxBlockSize,
+            primme->maxBasisSize-*restartSize-*numPrevRetained
+                  -*numConverged+*numLocked));
+
       blockNorms0 = (double*)rwork;
       for (i=0; i<sizeBlockNorms; i++) blockNorms0[i] = blockNorms[i];
       for (i=indexOfCandidates, j=k=0; i<left || j<failed; k++) {
-         if (i < left && (j >= failed || restartPerm[i] < restartPerm[left+ifailed[j]])) {
-            if (k < maxBlockSize && i-indexOfCandidates < sizeBlockNorms) blockNorms[k] = blockNorms0[i-indexOfCandidates];
+
+         /* If there is no more failed vectors or the candidate      */
+         /* vector was before the failed, take the candidate         */
+
+         if (i < left && (j >= failed 
+                  || restartPerm[i] < restartPerm[left+ifailed[j]])) {
+
+            if (k < maxBlockSize && i-indexOfCandidates < sizeBlockNorms)
+               blockNorms[k] = blockNorms0[i-indexOfCandidates];
             hVecsPerm[k] = i++;
+
          }
+
+         /* Otherwise take the failed */
+
          else {
-            if (k < maxBlockSize) blockNorms[k] = resNorms[numLocked0+ifailed[j]];
+            if (k < maxBlockSize)
+               blockNorms[k] = resNorms[numLocked0+ifailed[j]];
             hVecsPerm[k] = left + j++;
          }
       }
 
-      /* Generate the rest of the permutation of hVecsPerm                          */
+      /* Generate the rest of the permutation of hVecsPerm           */
+
       for (i=0; i<indexOfCandidates; i++) hVecsPerm[k++] = i;
       assert(k == *indexOfPreviousVecs + *numPrevRetained + failed +
                   numCandidates);
       for (; k < basisSize; k++) hVecsPerm[k] = -1;
 
       /* -------------------------------------------------------------- */
-      /* Pack X and R for the unconverged pairs.                        */
-      /* After this operation (modified part indicated with ---)        */
+      /* Update X and R with the failed vectors and place the failed    */
+      /* vectors after the candidate vectors (modified part indicated   */
+      /* with ---):                                                     */
       /*                                                                */
       /*      (a) | prevRitzVecs | (b)  | failed locked | X & R         */
       /* V: [     |              |------|---------------|- X ---|    )  */
@@ -398,45 +428,54 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       /*                         failed [---------------)               */
       /*                                 maxBlockSize   [---------)     */
       /*                                                                */
-      /* X & R has the eigenvectors and residual vectors of the         */
-      /* first non-locked and failed locked pairs.                      */
       /* -------------------------------------------------------------- */
 
-      Num_compute_residual_columns_@(pre)primme(nLocal, &hVals[left], &V[left*ldV], failed, ifailed, 
-            ldV, &W[left*ldV], ldV,
-            *X, sizeBlockNorms, ldV, *R, ldV,
-            &V[(left+failed)*ldV], maxBlockSize, hVecsPerm, ldV, &W[(left+failed)*ldV], ldV,
+      Num_compute_residual_columns_@(pre)primme(nLocal, &hVals[left],
+            &V[left*ldV], failed, ifailed, ldV, &W[left*ldV], ldV, *X,
+            sizeBlockNorms, ldV, *R, ldV, &V[(left+failed)*ldV],
+            maxBlockSize, hVecsPerm, ldV, &W[(left+failed)*ldV], ldV,
             rwork, rworkSize);
    }
    else {
-      /* The failed candidates are not rearrange with the rest of non-converged pairs  */
-      /* and they may not be in block in the next iteration. This was the behaviour of */
-      /* locking in previous versions than 2.0.                                        */
+      /* The failed pairs are not rearranged with the rest of           */
+      /* non-converged pairs and they may not be in the block in the    */
+      /* next iteration. This was the behaviour of locking in previous  */
+      /* versions than 2.0.                                             */
 
       for (i=0; i<basisSize; i++) hVecsPerm[i] = i;
 
-      /* Pack V and W for the unconverged pairs.                                       */
-      Num_compact_vecs_@(pre)primme(&V[left*ldV], nLocal, failed, ldV, ifailed, &V[left*ldV],
-            ldV, 0);
-      Num_compact_vecs_@(pre)primme(&W[left*ldV], nLocal, failed, ldV, ifailed, &W[left*ldV],
-            ldV, 0);
+      /* Pack together the failed vectors and place them after          */
+      /* candidates.                                                    */
 
-      Num_copy_matrix_@(pre)primme(*X, nLocal, sizeBlockNorms, ldV, &V[(left+failed)*ldV], ldV);
-      Num_copy_matrix_@(pre)primme(*R, nLocal, sizeBlockNorms, ldV, &W[(left+failed)*ldV], ldV);
+      Num_compact_vecs_@(pre)primme(&V[left*ldV], nLocal, failed, ldV,
+            ifailed, &V[left*ldV], ldV, 0);
+      Num_compact_vecs_@(pre)primme(&W[left*ldV], nLocal, failed, ldV,
+            ifailed, &W[left*ldV], ldV, 0);
+
+      /* Copy X and R after the failed vectors */
+
+      Num_copy_matrix_@(pre)primme(*X, nLocal, sizeBlockNorms, ldV,
+            &V[(left+failed)*ldV], ldV);
+      Num_copy_matrix_@(pre)primme(*R, nLocal, sizeBlockNorms, ldV,
+            &W[(left+failed)*ldV], ldV);
    }
 
-   /* Pack hVals, hVecs and restartPerm for the failed pairs  */
-   Num_compact_vecs_@(pre)primme(&hVecs[left*ldhVecs], basisSize, failed, ldhVecs, ifailed,
-         &hVecs[left*ldhVecs], ldhVecs, 0);
-   Num_compact_vecs_dprimme(&hVals[left], 1, failed, 1, ifailed, &hVals[left], 1, 0);
-   permute_vecs_iprimme(&restartPerm[left], numPacked, ifailed, ifailed+numPacked);
+   /* Modify hVals, hVecs and restartPerm to add the pairs failed to */
+   /* be locked just after the candidates                            */
+
+   Num_compact_vecs_@(pre)primme(&hVecs[left*ldhVecs], basisSize, failed,
+         ldhVecs, ifailed, &hVecs[left*ldhVecs], ldhVecs, 0);
+   Num_compact_vecs_dprimme(&hVals[left], 1, failed, 1, ifailed, &hVals[left],
+         1, 0);
+   permute_vecs_iprimme(&restartPerm[left], numPacked, ifailed,
+         ifailed+numPacked);
 
    *X = &V[(left+failed)*ldV];
    *R = &W[(left+failed)*ldV];
 
-   /* Pack the converged Ritz vector into the evecs array and */
-   /* insert the converged Ritz value in sorted order within  */
-   /* the evals array.                                        */
+   /* Pack those Ritz vectors that are actually converged from */
+   /* those that have been copied into evecs. Also insertSort  */
+   /* the converged Ritz value within the evals array.         */ 
 
    for (i=left; i < *restartSize; i++) {
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
@@ -466,17 +505,17 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    *numConverged = *numLocked;
    for (i=0; i<*ievSize; i++) iev[i] = i;
 
+   /* ----------------------------------------------------------------- */
+   /* There is no converged pair in the restarted basis                 */
+   /* ----------------------------------------------------------------- */
+   
    for (i=0; i<basisSize; i++) flags[i] = UNCONVERGED;
 
    /* ----------------------------------------------------------------- */
    /* Arbitrary vectors in candidates are treated as previous vectors.  */
-   /* After solving the projected problem for the retained vectors, the */
-   /* candidates will lead the ordering. Consider this to modify the    */
-   /* ordering of hVecsPerm properly.                                   */
+   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
+   /* the restarted basis.                                              */
    /* ----------------------------------------------------------------- */
-
-   /* Compute how many arbitrary vectors are in candidates and failed   */
-   /* (the result will be in j).                                        */
 
    for (i=j=0; i<*restartSize; i++)
       if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)

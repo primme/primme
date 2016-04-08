@@ -237,7 +237,7 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
 
          if (s1 <= machEps*s0 && R) {
             if (messages) {
-               fprintf(outputFile, "Zeroing: %d\n", i-b1);
+               fprintf(outputFile, "Zeroing column %d\n", i);
             }
             /* No randomization when computing the QR decomposition */
             Num_scal_dprimme(nLocal, tzero, &basis[ldBasis*i], 1);
@@ -280,8 +280,6 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
       }
    }
 
-   return 0;
-
    /* Check orthogonality */
    /*
    if (numLocked) {
@@ -314,6 +312,8 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
       free(H);
    }
    */ 
+
+   return 0;
 }
 
 /**********************************************************************

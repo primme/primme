@@ -76,7 +76,7 @@
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
- * restartSizeOutput The column of vectors of the output V.
+ * restartSizeOutput Output the number of columns of the restarted V.
  *
  * V                The orthonormal basis. After restart, contains Ritz vectors
  *                  plus the orthogonal components from numPrevRetained Ritz 
@@ -150,6 +150,10 @@
  *
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  *
+ * numArbitraryVecs On input, the number of leading coefficient vectors in
+ *                  hVecs that do not come from solving the projected problem.
+ *                  On output, the number of such vectors that are in the
+ *                  restarted basis
  *
  * Return value
  * ------------
@@ -292,11 +296,9 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
 }
 
 /*******************************************************************************
- * Subroutine: restart_soft_locking - This routine replaces V with V*c, some subset
- *             of the Ritz vectors, corresponding to the restartSize chosen
- *             eigenvalues of V'*A*V. It may include components from the 
- *             Ritz vectors from the (maxBasisSize-1) step (i.e., recurrence
- *             restarting).
+ * Subroutine: restart_soft_locking - This routine replaces V with V*c, some
+ *             subset of hVecs. Also it may include components from vectors 
+ *             from the previous iteration.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -382,6 +384,10 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
  *
  * hVecsPerm        The permutation that orders the output hVals and hVecs as primme.target
  *
+ * numArbitraryVecs On input, the number of leading coefficient vectors in
+ *                  hVecs that do not come from solving the projected problem.
+ *                  On output, the number of such vectors that are in the
+ *                  restarted basis
  *
  * Return value
  * ------------
@@ -435,7 +441,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /* -------------------------------------------------------------------------- */ 
    /* Check if any of the previous flagged converged eigenvalues seems           */
    /* to have become unconverged by checking hVals[i]-evals[i] < tol.            */
-   /* If not, flag it UNCONVERGED and let it be targeted again. This avoids      */  
+   /* If it fails, flag it UNCONVERGED and let it be targeted again. This avoids */  
    /* early converged but unwanted evs preventing wanted from being targeted.    */
    /* -------------------------------------------------------------------------- */
 
@@ -459,14 +465,15 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /*                 [--------------) numPrevRetained               */
    /*                                [----) numArbitraryVecs         */
    /*                  numCandidates [--------------)                */
-   /*                                sizeBlockNorms [-------)        */
-   /*                                maxBlockSize   [---------)      */
+   /*                                       ievSize [-------)        */
    /*                                                                */
    /* X & R has the eigenvectors and residual vectors of the         */
-   /* first sizeBlockNorms non-candidates pairs.                     */
+   /* first ievSize candidates pairs.                                */
    /* -------------------------------------------------------------- */
 
-   *numPrevRetained = min(primme->maxBasisSize, *restartSize + *numPrevRetained)
+   *numPrevRetained = min(
+         primme->maxBasisSize,
+         *restartSize + *numPrevRetained)
       - *restartSize;
 
    for (i=numCandidates=0; i<*numArbitraryVecs && i<*restartSize; i++)
@@ -474,10 +481,11 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
 
    *restartSize += *numPrevRetained;
 
-   *ievSize = min(min(
+   *ievSize = max(0, min(min(
                   primme->maxBlockSize,
                   primme->numEvals-*numConverged+1),
-                  primme->maxBasisSize-*restartSize);
+                  primme->maxBasisSize-*restartSize));
+
    numCandidates = max(*ievSize, numCandidates);
 
    *indexOfPreviousVecs = *restartSize - numCandidates - *numPrevRetained;
@@ -498,9 +506,9 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
  
    /* Update the number of converged values */
 
-   for (i=*numConverged=0; i<basisSize; i++) {
-      if (flags[i] != UNCONVERGED && i < primme->numEvals) (*numConverged)++;
-   }
+   for (i=*numConverged=0; i<basisSize; i++)
+      if (flags[i] != UNCONVERGED && i < primme->numEvals)
+         (*numConverged)++;
 
    /* Permute hVals and hVecs */
 
@@ -520,9 +528,9 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    Num_copy_matrix_zprimme(previousHVecs, basisSize, *numPrevRetained,
          ldpreviousHVecs, &hVecs[ldhVecs*(*indexOfPreviousVecs)], ldhVecs);
 
-   ret = ortho_coefficient_vectors_zprimme(hVecs, basisSize, ldhVecs, *indexOfPreviousVecs,
-         *restartSize, restartPerm, hU, ldhU, hR, ldhR, *numPrevRetained, machEps,
-         iwork, rwork, rworkSize, primme);
+   ret = ortho_coefficient_vectors_zprimme(hVecs, basisSize, ldhVecs,
+         *indexOfPreviousVecs, *restartSize, restartPerm, hU, ldhU, hR, ldhR,
+         *numPrevRetained, machEps, iwork, rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
@@ -545,9 +553,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    if (ret != 0) return ret;
 
    /* ----------------------------------------------------------------- */
-   /* After solving the projected problem for the retained vectors, the */
-   /* candidates will lead the ordering. Consider this before undoing   */
-   /* the ordering of restartPerm.                                      */
+   /* Generate the permutation hVecsPerm that undoes restartPerm        */
    /* ----------------------------------------------------------------- */
 
    for (i=0; i<basisSize; i++)
@@ -555,13 +561,9 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
 
    /* ----------------------------------------------------------------- */
    /* Arbitrary vectors in candidates are treated as previous vectors.  */
-   /* After solving the projected problem for the retained vectors, the */
-   /* candidates will lead the ordering. Consider this to modify the    */
-   /* ordering of hVecsPerm properly.                                   */
+   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
+   /* the restarted basis.                                              */
    /* ----------------------------------------------------------------- */
-
-   /* Compute how many arbitrary vectors are in candidates and failed   */
-   /* (the result will be in j).                                        */
 
    for (i=j=0; i<*restartSize; i++)
       if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
@@ -574,14 +576,17 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /* If the user requires (I-QQ') projectors in JDQMR without locking,     */
    /* the converged eigenvectors are copied temporarily to evecs. There     */
    /* they stay locked  for use in (I-QQ') and (I-K^{-1}Q () Q') projectors.*/
-   /* NOTE THIS IS NOT LOCKING! The Ritz vectors remain in the basis, and   */
-   /* they will overwrite evecs at the end.                                 */
+   /* The Ritz vectors remain in the basis, and they will overwrite evecs   */
+   /* the end.                                                              */
    /* We recommend against this type of usage. It's better to use locking.  */
    /* --------------------------------------------------------------------- */
 
    /* Andreas NOTE: is done inefficiently for the moment. We should only */
    /* add the recently converged. But we need to differentiate them      */
    /* from flags...                                                      */
+   /* Eloy NOTE: that will not be enough, the Ritz vectors change from   */
+   /* one restart to the next even if they weren't targeted. Probably    */
+   /* the best we can do is to always copy all converged vectors.        */
 
    if (evecsHat) {
       int newNumConvergedStored=0, oldSizeM, newSizeM;
@@ -754,8 +759,10 @@ static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
       break;
 
    case primme_proj_harmonic:
-      /* In harmonic extraction no vector comes from SVD, so they are treated in */
-      /* the same way as the retained vectors from the previous iteration.       */
+      /* Proceed to restart the QR decomposition and QV. Unlike refined       */
+      /* extraction, coefficient vectors are not singular vectors of R.       */
+      /* So all vectors in hVecs will be treated in the same way as the       */
+      /* retained vectors.                                                    */
 
       indexOfPreviousVecs = 0;
       numPrevRetained = restartSize;
@@ -763,9 +770,14 @@ static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
          int i;
          for(i=0; i<restartSize; i++) hVecsPerm[i] = i;
       }
+      ret = restart_qr(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, QV, ldQV, hU, ldhU,
+            newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm,
+            restartSize, basisSize, numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
+            numConverged, 0, rworkSize, rwork, iwork, machEps, primme);
+      break;
 
    case primme_proj_refined:
-      ret = restart_qr(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, QV, ldQV, hU, ldhU,
+      ret = restart_qr(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, NULL, 0, hU, ldhU,
             newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm,
             restartSize, basisSize, numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
             numConverged, numArbitraryVecs, rworkSize, rwork, iwork, machEps, primme);
@@ -826,6 +838,9 @@ static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
       }
 
    }
+
+   /* When this function is invoked will NULL pointers, ret has the memory    */
+   /* requirement.                                                            */
 
    return ret;
 }
@@ -920,8 +935,7 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
 
    /* ---------------------------------------------------------------------- */
    /* If coefficient vectors from the previous iteration were retained, then */
-   /* set up work space for computing the numPrevRetained x numPrevRetained  */
-   /* submatrix, then compute the submatrix.                                 */
+   /* insert the computed overlap matrix into the restarted H                */
    /* ---------------------------------------------------------------------- */
 
    compute_submatrix_zprimme(&hVecs[ldhVecs*indexOfPreviousVecs], numPrevRetained, ldhVecs, H,
@@ -929,9 +943,12 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
          ldH, rwork, rworkSize);
 
    /* ----------------------------------------------------------------- */
-   /* V*hVecs yields a diagonal matrix composed of the Ritz values of A */
-   /* with respect to V.  Set H to a diagonal matrix with the Ritz      */
-   /* values on the diagonal.                                           */
+   /* Y = V*hVecs([0:indexOfPreviousVecs-1 \                            */
+   /*                 indexOfPreviousVecs+numPrevRetained:restartSize]) */
+   /* are the new Ritz vectors so the upper part of H will be a         */
+   /* diagonal matrix composed of the Ritz values of A. Set H to a      */
+   /* diagonal matrix with these values and zero the upper part of the  */
+   /* columns corresponding to the previous vectors.                    */
    /* ----------------------------------------------------------------- */
 
    for (j=0; j < indexOfPreviousVecs; j++) {
@@ -953,7 +970,8 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
    }
 
    /* --------------------------------------------------------------------- */
-   /* Find the index of the first column with a retained vector             */
+   /* Find the index of the first column with a retained vector. All        */
+   /* retained vectors should be together.                                  */
    /* --------------------------------------------------------------------- */
 
    for (i=0, orderedIndexOfPreviousVecs=restartSize; i<restartSize; i++) {
@@ -968,8 +986,8 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
       assert(hVecsPerm[i-1]+1 == hVecsPerm[i]);
 
    /* --------------------------------------------------------------------- */
-   /* Given the above H, we know the eigenvectors of H will be the standard */
-   /* basis vectors if no previous coefficient vectors are retained         */
+   /* Given the above H, we know the eigenvectors of H will be the          */
+   /* canonical basis except for the retained vectors.                      */
    /* --------------------------------------------------------------------- */
 
    for (j=0; j < restartSize; j++) {
@@ -983,9 +1001,8 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
    permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
 
    /* ---------------------------------------------------------------------- */
-   /* If coefficient vectors from the previous iteration have been retained, */
-   /* then insert the computed overlap matrix into the restarted H and solve */ 
-   /* the resulting eigenproblem for the resulting H.                        */
+   /* Solve the overlap matrix corresponding for the retained vectors to     */ 
+   /* compute the coefficient vectors.                                       */
    /* ---------------------------------------------------------------------- */
 
    ret = solve_H_zprimme(
@@ -1007,7 +1024,7 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
 /*******************************************************************************
  * Function restart_qr - This routine is used to recompute the QR decomposition
  *    of W (=A*V), after V being replaced by V*hVecs. The coefficient vectors
- *    excepts hVecs(indexOfPrevRetained:indexOfPrevRetained+numPrevRetained) are
+ *    except hVecs(indexOfPrevRetained:indexOfPrevRetained+numPrevRetained) are
  *    right singular vectors of R. The output R for these columns will be
  *    a diagonal matrix with the singular values as diagonal elements. The
  *    output Q for these columns will be the update with the left singular
@@ -1110,7 +1127,7 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
 
    /* Return memory requirement */
  
-   if (H == NULL) {
+   if (V == NULL) {
       Complex_Z t;
       int geqrfSize;    /* Workspace used by Num_geqrf_zprimme */
       int orgqrSize;    /* Workspace used by Num_orgqr_zprimme */
@@ -1187,14 +1204,14 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
    }
 
    /* -------------------------------------------------------------------- */
-   /* During the restart V and W has replaced by V*hVecs and W*hVecs.      */
-   /* Currently the QR decomposition correspond to W before restarting.    */
+   /* During the restart V and W have been replaced by V*hVecs and W*hVecs.*/
+   /* Currently the QR decomposition corresponds to W before restarting.   */
    /* To update the QR decomposition to the new W, replace Q by Q*Qn and   */
    /* R by Rn where Qn and Rn are the QR decomposition of R*hVecs = Qn*Rn. */
    /* -------------------------------------------------------------------- */
 
    /* -------------------------------------------------------------------- */
-   /* R(indexOfPrevVecs:) = R * hVecs(indexOfPrevVecs:)                    */
+   /* R(indexOfPrevVecs:end) = R * hVecs(indexOfPrevVecs:end)              */
    /* Compute the QR decomposition of R(indexOfPrevVecs:restartSize-1)     */
    /* Place the Q factor besides hU                                        */
    /* -------------------------------------------------------------------- */
@@ -1271,10 +1288,10 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
    }
 
    /* ---------------------------------------------------------------------- */
-   /* If coefficient vectors from the previous iteration have been retained, */
-   /* then insert the computed overlap matrix into the restarted R and solve */ 
-   /* the resulting projected problem.                                       */
+   /* Solve the overlap matrix corresponding for the retained vectors to     */ 
+   /* compute the coefficient vectors.                                       */
    /* ---------------------------------------------------------------------- */
+
 
    assert(!QV || indexOfPreviousVecs == 0);
    ret = solve_H_zprimme(&H[ldH*indexOfPreviousVecs+indexOfPreviousVecs],
@@ -1289,6 +1306,10 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
             ret, __FILE__, __LINE__, primme);
       return INSERT_SUBMATRIX_FAILURE;
    }
+
+   /* ----------------------------------------------------------------------- */
+   /* Apply hVecsPerm to the projected problem decomposition                  */
+   /* ----------------------------------------------------------------------- */
 
    permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
    permute_vecs_dprimme(hSVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);

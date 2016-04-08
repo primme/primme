@@ -602,7 +602,7 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
 /*******************************************************************************
  * Function prepare_vecs - This subroutine checks that the
  *    conditioning of the coefficient vectors are good enough to converge
- *    with the requested accuracy. For now refined is the only that may preset
+ *    with the requested accuracy. For now refined is the only that may present
  *    problems: two similar singular values in the projected problem may
  *    correspond to distinct eigenvalues in the original problem.
  *
@@ -636,6 +636,9 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
  * ldhVecs      The leading dimension of hVecs
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  * arbitraryVecs The number of vectors modified (input/output)
+ * flags        Array indicating the convergence of the Ritz vectors
+ * RRForAll     If false compute Rayleigh-Ritz only in clusters with
+ *              candidates. If true, compute it in every cluster.
  * machEps      Machine precision
  * rworkSize    The length of rwork
  * rwork        Workspace
@@ -676,9 +679,6 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
                   NULL, primme));
    }
 
-   for (i=0; i<basisSize; i++)
-      assert(hSVals[i] < primme->aNorm);
-
    /* Special case: If (basisSize+numLocked) is the entire space, */
    /* then everything should be converged. Just do RR with the    */
    /* entire space.                                               */
@@ -698,7 +698,8 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
    targetShift = primme->targetShifts[targetShiftIndex];
 
-   for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0; j < basisSize && candidates < blockSize; ) {
+   for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
+         j < basisSize && candidates < blockSize; ) {
 
       /* -------------------------------------------------------------------- */
       /* Count all eligible values (candidates) from j up to i.               */
@@ -718,10 +719,19 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
  
       /* -------------------------------------------------------------------- */
       /* Find the first i-th vector i>j with enough good conditioning, ie.,   */
-      /* the singular value is separated enough from the rest.                */
+      /* the singular value is separated enough from the rest. Also check if  */
+      /* there is an unconverged value in the block.                          */
       /* -------------------------------------------------------------------- */
 
       for (i=j+1, someCandidate=0; i<basisSize; i++) {
+
+         /* Check that this approximation:                                    */
+         /* sin singular vector: max(hSVals)*machEps/(hSvals[i]-hSVals[i+1])  */
+         /* is less than the next ones:                                       */
+         /* sin eigenvector    : aNorm*machEps/(hVals[i]-hVals[i+1])          */
+         /* sin current and previous hVecs(:,i): hVecs(end,i)                 */
+         /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
+         /* we don't use the value when it is zero.                           */
 
          double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip = (flags && ip0 != 0.0) ? ip0 : HUGE_VAL;
@@ -729,6 +739,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
             min(ip, primme->aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
+
          if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff 
                && fabs(hVals[i-1]-targetShift) < hSVals[i-1]+machEps*hSVals[basisSize-1])
             break;
@@ -738,7 +749,8 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
       /* ----------------------------------------------------------------- */
       /* If the cluster j:i-1 is larger than one vector and there is some  */
       /* unconverged pair in there, compute the approximate eigenvectors   */
-      /* with Rayleigh-Ritz.                                               */
+      /* with Rayleigh-Ritz. If RRForAll do also this when there is no     */
+      /* candidate in the cluster.                                         */
       /* ----------------------------------------------------------------- */
 
       if (i-j > 1 && (someCandidate || RRForAll)) {
@@ -748,7 +760,6 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
          aH = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
          ahVecs = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
          assert(rworkSize0 >= 0);
-         printf("ERR: group %d %d\n", j, i);
 
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          compute_submatrix_zprimme(&hVecs[ldhVecs*j], aBasisSize,

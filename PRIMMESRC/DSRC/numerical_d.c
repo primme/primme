@@ -926,17 +926,21 @@ void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
    int tempIndex;        /* Used to swap                                      */
    int *perm=iwork;      /* A copy of perm_                                   */
 
+   /* Check that perm_ and iwork do not overlap */
+
    assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
 
-   /* Check perm is a permutation */
+   /* Check perm_ is a permutation */
 
+#ifndef NDEBUG
    for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
    for (tempIndex=0; tempIndex<n; tempIndex++) {
       assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
       perm[perm_[tempIndex]] = 1;
    }
    for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
-   
+#endif
+
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
    for (tempIndex=0; tempIndex<n; tempIndex++)
