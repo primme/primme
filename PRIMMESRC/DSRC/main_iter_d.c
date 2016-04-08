@@ -584,7 +584,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* converged.                                                        */
          /* ----------------------------------------------------------------- */
 
-         availableBlockSize = min(availableBlockSize, primme->maxBasisSize-basisSize);
+         availableBlockSize = max(0, min(min(availableBlockSize,
+                     primme->maxBasisSize-basisSize), primme->numEvals-numConverged));
          if (primme->locking || numConverged >= primme->numEvals)
             RRForAll = 1;
          else

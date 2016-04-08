@@ -481,21 +481,9 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    for (i=j=0; i<*restartSize; i++)
       if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
          j++;
-   j = numArbitraryCandidates;
-
-   /* Shift arbitrary vectors at the beginning of previous vectors */
-
-   for (i=0; i<*restartSize; i++)
-      if (*indexOfPreviousVecs <= hVecsPerm[i] && 
-            hVecsPerm[i] < indexOfCandidates+j)
-         hVecsPerm[i] = (hVecsPerm[i]-*indexOfPreviousVecs+j) %
-            (*numPrevRetained+j) + *indexOfPreviousVecs;
 
    *numPrevRetained += j;
    *numArbitraryVecs = j;
-
-   // TEMP!!!
-   *ievSize = 0;
 
    return 0;
 }

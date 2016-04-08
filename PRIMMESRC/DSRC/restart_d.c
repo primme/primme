@@ -196,7 +196,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
                nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL, NULL, 0,
                NULL, NULL, NULL, NULL, ievSize, NULL, NULL, NULL, NULL,
                evecsHat, 0, NULL, 0, numConverged, NULL, NULL,
-               numPrevRetained, 0, NULL, NULL, 0, 0.0, NULL, 0,
+               numPrevRetained, 0, NULL, NULL, NULL, 0.0, NULL, 0,
                NULL, primme);
 
       }
@@ -255,7 +255,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
             hVals, flags, iev, ievSize, blockNorms, evecs, evals, resNorms, evecsHat,
             ldevecsHat, M, ldM, numConverged, numConvergedStored, previousHVecs,
             numPrevRetained, ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm,
-            numArbitraryVecs, machEps, rwork, rworkSize, iwork0, primme);
+            &numArbitraryVecs, machEps, rwork, rworkSize, iwork0, primme);
    }
    else {
       double *X, *Res;
@@ -400,7 +400,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
        double *resNorms, double *evecsHat, int ldevecsHat, double *M, 
        int ldM, int *numConverged, int *numConvergedStored, 
        double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-       int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+       int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
        double machEps, double *rwork, int rworkSize, int *iwork, 
        primme_params *primme) {
 
@@ -469,7 +469,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    *numPrevRetained = min(primme->maxBasisSize, *restartSize + *numPrevRetained)
       - *restartSize;
 
-   for (i=numCandidates=0; i<numArbitraryVecs && i<*restartSize; i++)
+   for (i=numCandidates=0; i<*numArbitraryVecs && i<*restartSize; i++)
       if (flags[i] == UNCONVERGED) numCandidates++;
 
    *restartSize += *numPrevRetained;
@@ -564,32 +564,11 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    /* (the result will be in j).                                        */
 
    for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < numArbitraryVecs)
+      if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
          j++;
-
-   /* Shift arbitrary vectors at the beginning of previous vectors */
-
-   for (i=j=0; i<*restartSize; i++)
-      if (*indexOfPreviousVecs <= hVecsPerm[i] && 
-            hVecsPerm[i] < left+j)
-         hVecsPerm[i] = (hVecsPerm[i]-*indexOfPreviousVecs+j) %
-            (*numPrevRetained+j) + *indexOfPreviousVecs;
 
    *numPrevRetained += j;
-
-   /* The candidates shouldn't have changed positions */
-
-   for (i=0; i<*ievSize; i++)
-      iev[i] = restartPerm[left + i];
-   for (i=j=0; j<*ievSize && i<basisSize; i++) {
-      if (flags[i] == UNCONVERGED) {
-         assert(iev[j] == i);
-         j++;
-      }
-   }
-
-   // TEMP!!!
-   *ievSize = 0;
+   *numArbitraryVecs = j;
 
    /* --------------------------------------------------------------------- */
    /* If the user requires (I-QQ') projectors in JDQMR without locking,     */
@@ -974,6 +953,21 @@ static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
    }
 
    /* --------------------------------------------------------------------- */
+   /* Find the index of the first column with a retained vector             */
+   /* --------------------------------------------------------------------- */
+
+   for (i=0, orderedIndexOfPreviousVecs=restartSize; i<restartSize; i++) {
+      if (hVecsPerm[i] == indexOfPreviousVecs) {
+         orderedIndexOfPreviousVecs = i;
+         break;
+      }
+   }
+   assert(orderedIndexOfPreviousVecs != restartSize || indexOfPreviousVecs >= restartSize);
+
+   for (i=orderedIndexOfPreviousVecs+1; i<orderedIndexOfPreviousVecs+numPrevRetained; i++)
+      assert(hVecsPerm[i-1]+1 == hVecsPerm[i]);
+
+   /* --------------------------------------------------------------------- */
    /* Given the above H, we know the eigenvectors of H will be the standard */
    /* basis vectors if no previous coefficient vectors are retained         */
    /* --------------------------------------------------------------------- */
@@ -994,22 +988,12 @@ static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
    /* the resulting eigenproblem for the resulting H.                        */
    /* ---------------------------------------------------------------------- */
 
-   for (i=0, orderedIndexOfPreviousVecs=restartSize; i<restartSize; i++) {
-      if (hVecsPerm[i] == indexOfPreviousVecs) {
-         orderedIndexOfPreviousVecs = i;
-         break;
-      }
-   }
-   assert(orderedIndexOfPreviousVecs != restartSize || indexOfPreviousVecs >= restartSize);
-
    ret = solve_H_dprimme(
          &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], numPrevRetained, ldH,
          NULL, 0, NULL, 0, NULL, 0,
-         &hVecs[newldhVecs*orderedIndexOfPreviousVecs+orderedIndexOfPreviousVecs],
+         &hVecs[newldhVecs*orderedIndexOfPreviousVecs+indexOfPreviousVecs],
          newldhVecs, &hVals[orderedIndexOfPreviousVecs], NULL, numLocked,
          machEps, rworkSize, rwork, iwork, primme);
-
-   /* TODO: reorder all hVals */
 
    if (ret != 0) {
       primme_PushErrorMessage(Primme_restart_h, Primme_insert_submatrix, 
@@ -1211,14 +1195,21 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
 
    /* -------------------------------------------------------------------- */
    /* R(indexOfPrevVecs:) = R * hVecs(indexOfPrevVecs:)                    */
+   /* Compute the QR decomposition of R(indexOfPrevVecs:restartSize-1)     */
+   /* Place the Q factor besides hU                                        */
    /* -------------------------------------------------------------------- */
 
+   permute_vecs_dprimme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
+
    Num_copy_matrix_dprimme(&hVecs[indexOfPreviousVecs*ldhVecs], basisSize,
-      numPrevRetained, ldhVecs, rwork, basisSize);
+      numPrevRetained, ldhVecs, &hU[indexOfPreviousVecs*ldhU], ldhU);
    Num_trmm_dprimme("L", "U", "N", "N", basisSize, numPrevRetained, tpone,
-      R, ldR, rwork, basisSize);
-   Num_copy_matrix_dprimme(rwork, basisSize, numPrevRetained, basisSize,
-      &R[ldR*indexOfPreviousVecs], ldR);
+      R, ldR, &hU[indexOfPreviousVecs*ldhU], ldhU);
+   ret = ortho_dprimme(hU, ldhU, R,
+         ldR, indexOfPreviousVecs, indexOfPreviousVecs+numPrevRetained-1,
+         &hU[(indexOfPreviousVecs+numPrevRetained)*ldhU], ldhU,
+         restartSize-(indexOfPreviousVecs+numPrevRetained), basisSize,
+         primme->iseed, machEps, rwork, rworkSize, NULL);
 
    /* -------------------------------------------------------------------- */
    /* hVecs(0:indexOfPrevVecs) are the right singular vectors of R         */
@@ -1233,48 +1224,6 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
          R[ldR*j+i] = tzero;
       }
       *(double*)&R[ldR*j+j] = hSVals[j];
-   }
-
-   permute_vecs_dprimme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
-
-   /* -------------------------------------------------------------------- */
-   /* Compute the QR decomposition of R(indexOfPrevVecs:restartSize-1)     */
-   /* -------------------------------------------------------------------- */
-
-   Num_geqrf_dprimme(basisSize, numPrevRetained, &R[ldR*indexOfPreviousVecs],
-      ldR, rwork, rwork+basisSize, rworkSize-basisSize, &ret);
-   assert(ret == 0);
-
-   /* -------------------------------------------------------------------- */
-   /* Place the Q factor besides hU                                        */
-   /* -------------------------------------------------------------------- */
-
-   Num_copy_matrix_dprimme(&R[ldR*indexOfPreviousVecs], basisSize,
-      numPrevRetained, ldR, &hU[ldhU*indexOfPreviousVecs], ldhU);
-   Num_orgqr_dprimme(basisSize, numPrevRetained, numPrevRetained,
-      &hU[ldhU*indexOfPreviousVecs], ldhU, rwork, rwork+basisSize,
-      rworkSize-basisSize, &ret);
-   assert(ret == 0);
-
-   /* -------------------------------------------------------------------- */
-   /* Move the R factor to diagonal part of                                */
-   /* R(indexOfPrevVecs:restartSize-1) and zero the lower triangular part  */
-   /* of R(indexOfPrevVecs:restartSize-1, indexOfPrevVecs:restartSize-1).  */
-   /* -------------------------------------------------------------------- */
-
-   Num_copy_trimatrix_dprimme(&R[ldR*indexOfPreviousVecs], numPrevRetained,
-      numPrevRetained, ldR, 0 /* copy upper part */, 0,
-      &R[ldR*indexOfPreviousVecs+indexOfPreviousVecs],
-      primme->maxBasisSize, 1 /* zero lower part */);
-
-   /* -------------------------------------------------------------------- */
-   /* Zero R(0:indexOfPrevVecs-1, indexOfPrevVecs:restartSize-1)           */
-   /* -------------------------------------------------------------------- */
-
-   for (j=indexOfPreviousVecs; j<indexOfPreviousVecs+numPrevRetained; j++) {
-      for (i=0; i < indexOfPreviousVecs; i++) {
-         R[ldR*j+i] = tzero;
-      }
    }
    for (j=indexOfPreviousVecs+numPrevRetained; j < restartSize; j++) {
       for (i=0; i <= j; i++) {
@@ -1328,7 +1277,8 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
    /* ---------------------------------------------------------------------- */
 
    assert(!QV || indexOfPreviousVecs == 0);
-   ret = solve_H_dprimme(&H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], numPrevRetained, ldH,
+   ret = solve_H_dprimme(&H[ldH*indexOfPreviousVecs+indexOfPreviousVecs],
+         numPrevRetained-numArbitraryVecs, ldH,
          &R[ldR*indexOfPreviousVecs+indexOfPreviousVecs], ldR, QV, ldQV,
          &hU[newldhU*indexOfPreviousVecs+indexOfPreviousVecs], newldhU,
          &hVecs[newldhVecs*indexOfPreviousVecs+indexOfPreviousVecs], newldhVecs,
@@ -1339,15 +1289,6 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
             ret, __FILE__, __LINE__, primme);
       return INSERT_SUBMATRIX_FAILURE;
    }
-
-   i = 0;
-   prepare_vecs_dprimme(numPrevRetained, 0, numArbitraryVecs,
-         &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], ldH,
-         &hVals[indexOfPreviousVecs], &hSVals[indexOfPreviousVecs],
-         &hVecs[newldhVecs*indexOfPreviousVecs+indexOfPreviousVecs],
-         newldhVecs, *targetShiftIndex, &i, NULL, 1,
-         machEps, rworkSize, rwork, iwork, primme);
-   assert(i <= numArbitraryVecs);
 
    permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
    permute_vecs_dprimme(hSVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);

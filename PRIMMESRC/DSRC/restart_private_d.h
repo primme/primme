@@ -43,7 +43,7 @@
        double *resNorms, double *evecsHat, int ldevecsHat, double *M, 
        int ldM, int *numConverged, int *numConvergedStored, 
        double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-       int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+       int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
        double machEps, double *rwork, int rworkSize, int *iwork, 
        primme_params *primme);
 

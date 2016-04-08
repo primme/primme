@@ -723,11 +723,10 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
       for (i=j+1, someCandidate=0; i<basisSize; i++) {
 
-         //double minDiff = sqrt(2.0)*machEps*fabs(hVals[i]-hVals[i-1])/primme->eps;
          double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip = (flags && ip0 != 0.0) ? ip0 : HUGE_VAL;
-         double minDiff =
-sqrt(2.0)*hSVals[basisSize-1]*machEps/min(ip, primme->aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+         double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
+            min(ip, primme->aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
          if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff 
@@ -773,7 +772,7 @@ sqrt(2.0)*hSVals[basisSize-1]*machEps/min(ip, primme->aNorm*primme->eps/fabs(hVa
          *arbitraryVecs = i;
 
          /* Remove converged flags from j upto i */
-         if (flags) for (k=j; k<i; k++) flags[k] = UNCONVERGED;
+         if (flags && !RRForAll) for (k=j; k<i; k++) flags[k] = UNCONVERGED;
       }
    }
 

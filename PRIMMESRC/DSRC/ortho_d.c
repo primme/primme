@@ -142,10 +142,6 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
           ldBasis >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
           (R == NULL || ldR >= b2));
 
-   if (b1 > b2) {
-      return 0;
-   }
-
    tol = sqrt(2.0L)/2.0L;
 
    /* Zero the columns from b1 to b2 of R */
@@ -204,8 +200,7 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
             (rwork, overlaps, &count, primme);
 
          if (R != NULL) {
-             Num_axpy_dprimme(i + numLocked + 1, tpone, overlaps, 1, 
-                &R[ldR*i], 1);
+             Num_axpy_dprimme(i, tpone, overlaps, 1, &R[ldR*i], 1);
          }
 
          if (numLocked > 0) { /* locked array most recently accessed */
@@ -241,6 +236,9 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
          }
 
          if (s1 <= machEps*s0 && R) {
+            if (messages) {
+               fprintf(outputFile, "Zeroing: %d\n", i-b1);
+            }
             /* No randomization when computing the QR decomposition */
             Num_scal_dprimme(nLocal, tzero, &basis[ldBasis*i], 1);
             R[ldR*i + i] = tzero;
@@ -263,15 +261,15 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
          }
          else {
             if (R != NULL) {
-                if (nOrth == 1) {
-                    temp = Num_dot_dprimme(nLocal,&basis[ldBasis*i], 1,
-                                                  &basis[ldBasis*i],1);
-                    count = 1;
-                    (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
-                       (&temp, &s1, &count, primme);
-                    s1 = sqrt(s1);
-                }
-                R[ldR*i + i] = s1;
+               if (!primme || nOrth == 1) {
+                  temp = Num_dot_dprimme(nLocal,&basis[ldBasis*i], 1,
+                        &basis[ldBasis*i],1);
+                  count = 1;
+                  (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
+                     (&temp, &s1, &count, primme);
+                  s1 = sqrt(s1);
+               }
+               R[ldR*i + i] = s1;
             }
 
             ztmp = 1.0L/s1;
@@ -281,8 +279,41 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
  
       }
    }
- 
+
    return 0;
+
+   /* Check orthogonality */
+   /*
+   if (numLocked) {
+      double *H = (double*)malloc(sizeof(double)*numLocked*numLocked);
+      Num_gemm_dprimme("C", "N", numLocked, numLocked, nLocal, tpone, locked,
+            ldLocked, locked, ldLocked, tzero, H, numLocked);
+      for(i=0; i < numLocked; i++) {
+         for(j=0; j < i; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+         assert(fabs(1 - *(double*)&H[numLocked*i+i]) < 1e-13);
+      }
+      free(H);
+   }
+   if (b2+1) {
+      double *H = (double*)malloc(sizeof(double)*(b2+1)*(b2+1));
+      Num_gemm_dprimme("C", "N", b2+1, b2+1, nLocal, tpone, basis,
+            ldBasis, basis, ldBasis, tzero, H, b2+1);
+      for(i=0; i < b2+1; i++) {
+         for(j=0; j < i; j++) assert(fabs(*(double*)&H[(b2+1)*i+j]) < 1e-13);
+         assert(fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
+      }
+      free(H);
+   }
+   if (numLocked) {
+      double *H = (double*)malloc(sizeof(double)*(b2+1)*numLocked);
+      Num_gemm_dprimme("C", "N", numLocked, b2+1, nLocal, tpone, locked,
+            ldLocked, basis, ldBasis, tzero, H, numLocked);
+      for(i=0; i < b2+1; i++) {
+         for(j=0; j < numLocked; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+      }
+      free(H);
+   }
+   */ 
 }
 
 /**********************************************************************

@@ -43,7 +43,7 @@
        double *resNorms, Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, 
        int ldM, int *numConverged, int *numConvergedStored, 
        Complex_Z *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-       int *indexOfPreviousVecs, int *hVecsPerm, int numArbitraryVecs, 
+       int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
        double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
        primme_params *primme);
 
