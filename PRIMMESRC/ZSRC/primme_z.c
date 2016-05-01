@@ -362,7 +362,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                   1.0, 0.0, 1.0, NULL, NULL, 0, primme);
 
    /*----------------------------------------------------------------------*/
-   /* Determine workspace required by solve_H and its children             */
+   /* Determine workspace required by check_converged and its children     */
    /*----------------------------------------------------------------------*/
 
    convSize = check_convergence_zprimme(NULL, primme->nLocal, 0, &t, 0,
@@ -393,7 +393,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
             primme->maxBasisSize, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL,
             primme->numEvals, primme->numEvals, NULL, 0, primme->maxBlockSize,
             NULL, primme->numEvals, NULL, NULL, 0, 0.0, NULL,
-            &primme->maxBlockSize, NULL, NULL, NULL, 0, NULL, primme));
+            &primme->maxBlockSize, NULL, NULL, NULL, NULL, 0, NULL, primme));
  
  
    /*----------------------------------------------------------------------*/

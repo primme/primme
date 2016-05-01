@@ -566,7 +566,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /* ----------------------------------------------------------------- */
 
    for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
+      if (restartPerm[hVecsPerm[i]] < min(*numArbitraryVecs, numCandidates))
          j++;
 
    *numPrevRetained += j;

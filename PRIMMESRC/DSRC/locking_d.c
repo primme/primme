@@ -518,7 +518,7 @@ int restart_locking_dprimme(int *restartSize, double *V, double *W,
    /* ----------------------------------------------------------------- */
 
    for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
+      if (restartPerm[hVecsPerm[i]] < numArbitraryCandidates)
          j++;
 
    *numPrevRetained += j;

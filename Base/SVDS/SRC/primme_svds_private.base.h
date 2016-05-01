@@ -38,9 +38,9 @@
 static int primme_svds_check_input(double *svals, @(type) *svecs, 
         double *resNorms, primme_svds_params *primme_svds);
 static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-		double *svals, @(type) *svecs, double *rnorms);
+      double *svals, @(type) *svecs, double *rnorms, int *allocatedTargetShifts);
 static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-                                     double *svals, @(type) *svecs, double *rnorms);
+      double *svals, @(type) *svecs, double *rnorms, int allocatedTargetShifts);
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
 static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
 static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx, double *factors,

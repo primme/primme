@@ -181,6 +181,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                             /* by robust shifting algorithm in correction.c  */
    double *blockNorms;      /* Residual norms corresponding to current block */
                             /* vectors.                                      */
+   double smallestResNorm;  /* the smallest residual norm in the block       */
    @(type) tpone = @(tpone);/* constant 1.0 of type @(type) */
    @(type) tzero = @(tzero);/* constant 0.0 of type @(type) */
 
@@ -189,6 +190,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                             /* the parameters of the model.Only visible here */
    double timeForMV;        /* Measures time for 1 matvec operation          */
    double tstart=0.0;       /* Timing variable for accumulative time spent   */
+
+   int enforceRestart=1;    /* Force an extra RR in soft locking             */
 
    /* -------------------------------------------------------------- */
    /* Subdivide the workspace                                        */
@@ -317,6 +320,9 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
       return INIT_FAILURE;
    }
 
+   /* Now initSize will store the number of converged pairs */
+   primme->initSize = 0;
+
    /* ----------------------------------------------------------- */
    /* Dynamic method switch means we need to decide whether to    */
    /* allow inner iterations based on runtime timing measurements */
@@ -374,6 +380,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
       }
 
       numArbitraryVecs = 0;
+      availableBlockSize = blockSize = 0;
 
       /* -------------------------------------------------------------- */
       /* Begin the iterative process.  Keep restarting until all of the */
@@ -385,6 +392,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
              ( primme->maxOuterIterations == 0 ||
                primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
+         smallestResNorm = HUGE_VAL;
+
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
          /* Keep adding vectors to the basis V until the basis has reached    */
@@ -424,13 +433,13 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* Set the block with the first unconverged pairs */
             prepare_candidates_@(pre)primme(V, W, primme->nLocal, H,
                   primme->maxBasisSize, basisSize, primme->nLocal,
-                  &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal], hVecs,
-                  basisSize, hVals, hSVals, flags, numConverged-numLocked,
-                  maxRecentlyConverged, blockNorms, blockSize,
-                  availableBlockSize, evecs, numLocked, evals, resNorms,
-                  targetShiftIndex, machEps, iev, &blockSize,
-                  &recentlyConverged, &numArbitraryVecs, rwork, rworkSize,
-                  iwork, primme);
+                  &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal],
+                  hVecs, basisSize, hVals, hSVals, flags,
+                  numConverged-numLocked, maxRecentlyConverged, blockNorms,
+                  blockSize, availableBlockSize, evecs, numLocked, evals,
+                  resNorms, targetShiftIndex, machEps, iev, &blockSize,
+                  &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
+                  rwork, rworkSize, iwork, primme);
 
             /* print residuals */
             print_residuals(hVals, blockNorms, numConverged, numLocked, iev, blockSize,
@@ -590,8 +599,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
 
          prepare_vecs_@(pre)primme(basisSize, 0, availableBlockSize, H,
                primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
-               targetShiftIndex, &numArbitraryVecs, flags, 1, machEps,
-               rworkSize, rwork, iwork, primme);
+               targetShiftIndex, &numArbitraryVecs, smallestResNorm, NULL, 1,
+               machEps, rworkSize, rwork, iwork, primme);
 
          /* ----------------------------------------------------------------- */
          /* prepare_vecs may remove some converged flags if the converged     */
@@ -617,6 +626,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, 0,
                hVecs, basisSize, 0, &basisSize, &targetShiftIndex, numArbitraryVecs,
                machEps, rwork, rworkSize, iwork, primme);
+
+         numArbitraryVecs = 0;
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -743,7 +754,11 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                                primme->stats.numMatvecs >= primme->maxMatvecs;
 
          /* ---------------------------------------------------------- */
-         /* The norms of the converged Ritz vectors must be recomputed */
+         /* Especially after many iterations, converged vectors may    */
+         /* have lost orthonormality and in that case the residual     */
+         /* shouldn't be trusted. To prevent to return false positives,*/
+         /* a reset is forced at least once.             Besides that, */ 
+         /* the norms of the converged Ritz vectors must be recomputed */
          /* before return.  This is because the restarting may cause   */
          /* some converged Ritz vectors to become slightly unconverged.*/
          /* If some have become unconverged, then further iterations   */
@@ -751,8 +766,14 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
          /* converged state.                                           */
          /* ---------------------------------------------------------- */
 
-         converged = verify_norms(V, W, hVecs, hVals, basisSize, resNorms, 
-            flags, tol, primme->stats.estimateMaxEVal, rwork, &numConverged, primme);
+         if (enforceRestart) {
+            enforceRestart = 0;
+            converged = 0;
+         }
+         else {
+            converged = verify_norms(V, W, hVecs, hVals, basisSize, resNorms, 
+                  flags, tol, primme->stats.estimateMaxEVal, rwork, &numConverged, primme);
+         }
 
          /* ---------------------------------------------------------- */
          /* If the convergence limit is reached or the target vectors  */
@@ -884,8 +905,9 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       int numSoftLocked, int numEvals, double *blockNorms, int blockNormsSize,
       int maxBlockSize, @(type) *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
-      int *blockSize, int *recentlyConverged, int *numArbitraryVecs, 
-      @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
+      int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
+      double *smallestResNorm, @(type) *rwork, int rworkSize, int *iwork,
+      primme_params *primme) {
 
    int i, blki;            /* loop variables */
    double *hValsBlock;     /* contiguous copy of the hVals to be tested */
@@ -915,7 +937,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
                   NULL, 0, 0,
                   NULL, 0, primme)),
               prepare_vecs_@(pre)primme(basisSize, 0, maxBlockSize, NULL, 0, 
-                 NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0.0, 0, NULL, NULL, primme));
+                 NULL, NULL, NULL, 0, 0, NULL, 0.0, NULL, 0, 0.0, 0, NULL, NULL, primme));
    }
 
    *blockSize = 0;
@@ -932,6 +954,16 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
 
    hValsBlock = Num_compact_vecs_dprimme(hVals, 1, blockNormsSize, 1, &iev[*blockSize],
          hValsBlock0, 1, 1 /* avoid copy */);
+
+   /* If some residual norms have already been computed, set the minimum   */
+   /* of them as the smallest residual norm. If not, use the value from    */
+   /* previous iteration.                                                  */
+
+   if (blockNormsSize > 0) {
+      for (*smallestResNorm = HUGE_VAL, i=0; i < blockNormsSize; i++) {
+         *smallestResNorm = min(*smallestResNorm, blockNorms[i]);
+      }
+   }
 
    *recentlyConverged = 0;
    while (1) {
@@ -989,8 +1021,9 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       else
          i = 0;
       prepare_vecs_@(pre)primme(basisSize, i, maxBlockSize-blki, H, ldH, hVals,
-            hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs, flags,
-            1, machEps, rworkSize, rwork, iwork, primme);
+            hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs,
+            *smallestResNorm, flags, 1, machEps, rworkSize, rwork, iwork,
+            primme);
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
@@ -1025,6 +1058,12 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
          rwork, rworkSize, primme);
       if (ret != 0) return ret;
 
+      /* Update the smallest residual norm */
+
+      if (*blockSize == 0 && blockNormsSize > 0) *smallestResNorm = HUGE_VAL;
+      for (i=*blockSize; i < blockNormsSize; i++) {
+         *smallestResNorm = min(*smallestResNorm, blockNorms[i]);
+      }
    }
 
    return 0;

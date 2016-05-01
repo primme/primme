@@ -1080,7 +1080,7 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
    nYb = min(min(Wo?nWob:INT_MAX, R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
    nYe = max(max(Wo?nWoe:0, R?nRe:0), rnorms?nre:0);
 
-   assert((nXe-nXb+nYe-nYb)*nV <= lrwork); /* Check workspace for X and Y */
+   assert((nXe-nXb+nYe-nYb)*m <= lrwork); /* Check workspace for X and Y */
    assert(2*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
    X = rwork;

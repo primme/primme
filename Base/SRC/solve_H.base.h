@@ -36,9 +36,8 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
 
 int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
       @(type) *H, int ldH, double *hVals, double *hSVals, @(type) *hVecs,
-      int ldhVecs, int targetShiftIndex, int *arbitraryVecs, int *flags,
-      int RRForAll, double machEps, int rworkSize, @(type) *rwork, int *iwork,
-      primme_params *primme);
-
+      int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
+      double smallestResNorm, int *flags, int RRForAll, double machEps,
+      int rworkSize, @(type) *rwork, int *iwork, primme_params *primme);
 
 #endif

@@ -566,7 +566,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    /* ----------------------------------------------------------------- */
 
    for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
+      if (restartPerm[hVecsPerm[i]] < min(*numArbitraryVecs, numCandidates))
          j++;
 
    *numPrevRetained += j;

@@ -710,9 +710,12 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 /*******************************************************************************
  * Function prepare_vecs - This subroutine checks that the
  *    conditioning of the coefficient vectors are good enough to converge
- *    with the requested accuracy. For now refined is the only that may present
- *    problems: two similar singular values in the projected problem may
- *    correspond to distinct eigenvalues in the original problem.
+ *    with the requested accuracy. For now refined extraction is the only one that
+ *    may present problems: two similar singular values in the projected problem
+ *    may correspond to distinct eigenvalues in the original problem. If that is
+ *    the case, the singular vector may have components of both eigenvectors,
+ *    which prevents the residual norm be lower than some degree. Don't dealing
+ *    with this may lead into stagnation.
  *
  *    It is checked that the next upper bound about the angle of the right
  *    singular vector v of A and the right singular vector vtilde of A+E,
@@ -726,10 +729,21 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
  *
  *    (see pp. 211 in Matrix Algorithms vol. 2 Eigensystems, G. W. Steward).
  *
- *    Also consider that if we want |shift+d-l0| - |shift+d-l1| > diff,
- *    then 2*d >= |diff - (|shift-l1| - |shift-l0|).
+ *    If the inequality doesn't hold, do Rayleigh-Ritz onto the subspace
+ *    spanned by both vectors.
  *
- * NOTE: assuming hSVals are arranged in increasing or decreasing order.
+ *    we have found cases where this is not enough or the performance improves
+ *    if Rayleigh-Ritz is also done when the candidate vector has a small
+ *    angle with the last vector in V and when the residual norm is larger than
+ *    the singular value.
+ *
+ *    When only one side of the shift is targeted (primme_closest_leq/geq), we
+ *    allow to take eigenvalue of the other side but close to the shift. In the
+ *    current heuristic they shouldn't be farther than the smallest residual
+ *    norm in the block. This heuristic obtained good results in solving the
+ *    augmented problem with shifts from solving the normal equations.
+ *
+ * NOTE: this function assumes hSVals are arranged in increasing order.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -744,6 +758,7 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
  * ldhVecs      The leading dimension of hVecs
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  * arbitraryVecs The number of vectors modified (input/output)
+ * smallestResNorm The smallest residual norm in the block
  * flags        Array indicating the convergence of the Ritz vectors
  * RRForAll     If false compute Rayleigh-Ritz only in clusters with
  *              candidates. If true, compute it in every cluster.
@@ -757,15 +772,15 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 
 int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
       @(type) *H, int ldH, double *hVals, double *hSVals, @(type) *hVecs,
-      int ldhVecs, int targetShiftIndex, int *arbitraryVecs, int *flags,
-      int RRForAll, double machEps, int rworkSize, @(type) *rwork, int *iwork,
-      primme_params *primme) {
+      int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
+      double smallestResNorm, int *flags, int RRForAll, double machEps,
+      int rworkSize, @(type) *rwork, int *iwork, primme_params *primme) {
 
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
    @(type) tpone = @(tpone), tzero = @(tzero);
-   double targetShift;
+   double targetShift, aNorm;
    int left, right, *perm, ret;
 
    /* Quick exit */
@@ -805,6 +820,8 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
    }
 
    targetShift = primme->targetShifts[targetShiftIndex];
+   aNorm = (primme->aNorm <= 0.0) ?
+      primme->stats.estimateLargestSVal : primme->aNorm;
 
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {
@@ -816,9 +833,9 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
       for ( ; j < i; j++)
          if ((!flags || flags[j] == UNCONVERGED) && (
                (primme->target == primme_closest_leq
-                && hVals[j] <= targetShift) ||
+                && hVals[j]-smallestResNorm <= targetShift) ||
                (primme->target == primme_closest_geq
-                && hVals[j] >= targetShift) || !flags ||
+                && hVals[j]+smallestResNorm >= targetShift) ||
                (primme->target != primme_closest_leq
                 && primme->target != primme_closest_geq)))
             candidates++;
@@ -827,8 +844,9 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
  
       /* -------------------------------------------------------------------- */
       /* Find the first i-th vector i>j with enough good conditioning, ie.,   */
-      /* the singular value is separated enough from the rest. Also check if  */
-      /* there is an unconverged value in the block.                          */
+      /* the singular value is separated enough from the rest (see the header */
+      /* comment in this function). Also check if there is an unconverged     */
+      /* value in the block.                                                  */
       /* -------------------------------------------------------------------- */
 
       for (i=j+1, someCandidate=0; i<basisSize; i++) {
@@ -836,20 +854,22 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
          /* Check that this approximation:                                    */
          /* sin singular vector: max(hSVals)*machEps/(hSvals[i]-hSVals[i+1])  */
          /* is less than the next ones:                                       */
-         /* sin eigenvector    : aNorm*machEps/(hVals[i]-hVals[i+1])          */
+         /* sin eigenvector    : aNorm*eps/(hVals[i]-hVals[i+1])          */
          /* sin current and previous hVecs(:,i): hVecs(end,i)                 */
          /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
          /* we don't use the value when it is zero.                           */
+         /* Also check that singular value is larger than the residual norm   */
 
          double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip = (flags && ip0 != 0.0) ? ip0 : HUGE_VAL;
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
-            min(ip, primme->aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+            min(ip, aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
 
          if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff 
-               && fabs(hVals[i-1]-targetShift) < hSVals[i-1]+machEps*hSVals[basisSize-1])
+               && fabs(hVals[i-1]-targetShift) < hSVals[i-1]+machEps*hSVals[basisSize-1]
+               && hSVals[i-1] >= smallestResNorm)
             break;
       }
       i = min(i, basisSize);
@@ -907,15 +927,15 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
    /* Count all eligible values (candidates) from 0 up to i */
 
    for (j=0, candidates=0; j < i; j++)
-      if (  (primme->target == primme_closest_leq && hVals[j] <= targetShift)
-          ||(primme->target == primme_closest_geq && hVals[j] >= targetShift))
+      if (  (primme->target == primme_closest_leq && hVals[j]-smallestResNorm <= targetShift)
+          ||(primme->target == primme_closest_geq && hVals[j]+smallestResNorm >= targetShift))
          candidates++;
 
    perm = iwork;
    iwork += basisSize;
    for (j=right=left=0; j < i; j++) {
-      if (  (primme->target == primme_closest_leq && hVals[j] <= targetShift)
-          ||(primme->target == primme_closest_geq && hVals[j] >= targetShift))
+      if (  (primme->target == primme_closest_leq && hVals[j]-smallestResNorm <= targetShift)
+          ||(primme->target == primme_closest_geq && hVals[j]+smallestResNorm >= targetShift))
          perm[right++] = j;
       else
          perm[candidates+left++] = j;

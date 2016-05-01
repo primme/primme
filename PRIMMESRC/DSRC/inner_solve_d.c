@@ -157,6 +157,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    double relativeTolerance; 
    double absoluteTolerance;
    double LTolerance, ETolerance=0.0;
+   int isConv;
 
    /* Some constants                                                          */
    double tzero = +0.0e+00;
@@ -185,33 +186,16 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    tau_prev = tau_init = *rnorm;       /* Assumes zero initial guess */
    LTolerance = eresTol;
 
-   /* Andreas: note that eigenresidual tol may not be achievable, because we */
-   /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
-   /*lingfei:primme_svds. if refine projection is used, there is 
-   no need to change eresTol*/
-   if (primme->correctionParams.convTest == primme_adaptive) {
-      if(primme->correctionParams.precondition == 1 ||
-         primme->projectionParams.projection == primme_proj_RR)
-          ETolerance = max(eresTol/1.8L, absoluteTolerance);
-      else
-          ETolerance = max(eresTol, absoluteTolerance);          
-      LTolerance = ETolerance;
-   }
-   else if (primme->correctionParams.convTest == primme_adaptive_ETolerance) {
-      if(primme->correctionParams.precondition == 1 ||
-         primme->projectionParams.projection == primme_proj_RR)
-          LTolerance = max(eresTol/1.8L, absoluteTolerance);
-      else
-          LTolerance = max(eresTol, absoluteTolerance);          
-      ETolerance = max(tau_init*0.1L, LTolerance);
-   }
-   else if (primme->correctionParams.convTest == primme_decreasing_LTolerance) {
+   if (primme->correctionParams.convTest == primme_decreasing_LTolerance) {
       relativeTolerance = pow(primme->correctionParams.relTolBase, 
          (double)-primme->stats.numOuterIterations);
       LTolerance = relativeTolerance * tau_init 
                    + absoluteTolerance + eresTol;
    /*printf(" RL %e INI %e abso %e LToler %e aNormEstimate %e \n", */
    /*relativeTolerance, tau_init, absoluteTolerance,LTolerance,aNormEstimate);*/
+   }
+   else {
+      LTolerance = absoluteTolerance;          
    }
    
    /* --------------------------------------------------------*/
@@ -361,6 +345,27 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
          R = max(0.9878, sqrt(tau/tau_prev))*sqrt(1+dot_sol);
         
+         /* Andreas: note that eigenresidual tol may not be achievable, because we */
+         /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
+         /* Lingfei: if refine projection is used, there is no need to change eresTol */
+         if(primme->correctionParams.precondition == 1 ||
+               primme->projectionParams.projection == primme_proj_RR) {
+            ETolerance = eres_updated*1.8L;
+         }
+         else {
+            ETolerance = eres_updated;
+         }
+
+         primme->convTestFun(&eval_updated, NULL, &ETolerance, &isConv, primme);
+
+         if (numIts > 1 && (isConv || eres_updated < absoluteTolerance)) {
+            if (primme->printLevel >= 5 && primme->procID == 0) {
+               fprintf(primme->outputFile, " eigenvalue and residual norm "
+                     "passed convergence criterion \n");
+            }
+            break;
+         }
+
          if (numIts > 1 && (tau <= R*eres_updated || eres_updated <= tau*R) ) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, " tau < R eres \n");
@@ -381,7 +386,10 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
             break;
          }
          
-         if (numIts > 1 && eres_updated < ETolerance) {    /* tau < LTol has been checked */
+         if (numIts > 1 && 
+               primme->correctionParams.convTest == primme_adaptive_ETolerance
+               && eres_updated < tau_init*0.1L) {
+
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eres < eresTol %e \n",eres_updated);
             }
@@ -400,12 +408,24 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
         /* --------------------------------------------------------*/
       } /* End of if adaptive JDQMR section                        */
         /* --------------------------------------------------------*/
-      else if (primme->printLevel >= 4 && primme->procID == 0) {
-        /* Report for non adaptive inner iterations */
-        fprintf(primme->outputFile,
-           "INN MV %d Sec %e Lin|r| %e\n", primme->stats.numMatvecs,
-           primme_wTimer(0),tau);
-        fflush(primme->outputFile);
+      else {
+         primme->convTestFun(&eval, NULL, &tau, &isConv, primme);
+
+         if (numIts > 1 && isConv) {
+            if (primme->printLevel >= 5 && primme->procID == 0) {
+               fprintf(primme->outputFile, " eigenvalue and residual norm "
+                     "passed convergence criterion \n");
+            }
+            break;
+         }
+
+         else if (primme->printLevel >= 4 && primme->procID == 0) {
+            /* Report for non adaptive inner iterations */
+            fprintf(primme->outputFile,
+                  "INN MV %d Sec %e Lin|r| %e\n", primme->stats.numMatvecs,
+                  primme_wTimer(0),tau);
+            fflush(primme->outputFile);
+         }
       }
 
       if (numIts < maxIterations) {

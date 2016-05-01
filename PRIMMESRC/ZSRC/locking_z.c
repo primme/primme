@@ -518,7 +518,7 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    /* ----------------------------------------------------------------- */
 
    for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < *numArbitraryVecs)
+      if (restartPerm[hVecsPerm[i]] < numArbitraryCandidates)
          j++;
 
    *numPrevRetained += j;
