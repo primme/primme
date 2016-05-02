@@ -427,21 +427,23 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
             /* If QR decomposition accumulates so much error, force it to     */
             /* reset by setting targetShiftIndex to -1. We use the next       */
-            /* heuristic. Note that if (s_0, u_0, y_0) is the triplet of R    */
-            /* with the smallest singular value, (A-tau*I)*V = Q*R, and       */
-            /* l_0 is the Rayleigh quotient of V*y_0, then                    */
-            /*    |l_0-tau| = |y_0'*V'*(A-tau*I)*V*y_0| = |y_0'*V'*Q*R*y_0| = */
-            /*       = |y_0'*V'*Q*u_0*s_0| <= s_0.                            */
-            /* So when |l_0-tau|-machEps*|A| > s_0, we consider to reset the  */
-            /* QR factorization. machEps*|A| is the error computing l_0.      */
+            /* heuristic. Note that if (s_i, u_i, y_i) is the i-th triplet of */
+            /* R, (A-tau*I)*V = Q*R, and l_i is the Rayleigh quotient of      */
+            /* V*y_i, then                                                    */
+            /*    |l_i-tau| = |y_i'*V'*(A-tau*I)*V*y_i| = |y_i'*V'*Q*R*y_i| = */
+            /*       = |y_i'*V'*Q*u_i*s_i| <= s_i.                            */
+            /* So when |l_i-tau|-machEps*|A| > s_i, we consider to reset the  */
+            /* QR factorization. machEps*|A| is the error computing l_i.      */
 
-            if (primme->projectionParams.projection == primme_proj_refined &&
-                  fabs(primme->targetShifts[targetShiftIndex]-hVals[0])
-                  -primme->stats.estimateLargestSVal*machEps > hSVals[0]) {
+            for (i=0; i<basisSize && i<primme->minRestartSize; i++) {
+               if (primme->projectionParams.projection == primme_proj_refined &&
+                     fabs(primme->targetShifts[targetShiftIndex]-hVals[i])
+                     -primme->stats.estimateLargestSVal*machEps > hSVals[i]) {
 
-               availableBlockSize = 0;
-               targetShiftIndex = -1;
-            } 
+                  availableBlockSize = 0;
+                  targetShiftIndex = -1;
+               } 
+            }
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {
