@@ -66,7 +66,7 @@
  *
  * ldhR             The leading dimension of Q and R
  *
- * hU               The eigenvectors of QV/R
+ * hU               The eigenvectors of QtV/R
  *
  * ldhU             The leading dimension of hU
  *

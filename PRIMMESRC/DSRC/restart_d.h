@@ -38,7 +38,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    int ldUDU, int *ipivot, int *numConverged, int *numLocked,
    int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
-   double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QV, int ldQV,
+   double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QtV, int ldQtV,
    double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
    int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
    double *rwork, int rworkSize, int *iwork, primme_params *primme);

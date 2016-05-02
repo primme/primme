@@ -301,9 +301,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       doubleSize += primme->maxBasisSize;                /* Size of hSVals */
    }
    if (primme->projectionParams.projection == primme_proj_harmonic) {
-      /* Stored QV = Q'*V */
+      /* Stored QtV = Q'*V */
       dataSize +=
-            primme->maxBasisSize*primme->maxBasisSize;       /* Size of QV */
+            primme->maxBasisSize*primme->maxBasisSize;      /* Size of QtV */
    }
 
 

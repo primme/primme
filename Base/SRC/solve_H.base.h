@@ -30,7 +30,7 @@
 #define SOLVE_H_H
 
 int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR,
-   @(type) *QV, int ldQV, @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs,
+   @(type) *QtV, int ldQtV, @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
    @(type) *rwork, int *iwork, primme_params *primme);
 

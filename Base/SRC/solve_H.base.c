@@ -43,19 +43,19 @@
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
  * H              The matrix V'*A*V
- * basisSize      The dimension of H, R, QV and hU
+ * basisSize      The dimension of H, R, QtV and hU
  * ldH            The leading dimension of H
  * R              The factor R for the QR decomposition of (A - target*I)*V
  * ldR            The leading dimension of R
- * QV             Q'*V
- * ldQV           The leading dimension of QV
+ * QtV            Q'*V
+ * ldQtV          The leading dimension of QtV
  * numConverged   Number of eigenvalues converged to determine ordering shift
  * lrwork         Length of the work array rwork
  * primme         Structure containing various solver parameters
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hU             The left singular vectors of R or the eigenvectors of QV/R
+ * hU             The left singular vectors of R or the eigenvectors of QtV/R
  * ldhU           The leading dimension of hU
  * hVecs          The coefficient vectors such as V*hVecs will be the Ritz vectors
  * ldhVecs        The leading dimension of hVecs
@@ -76,7 +76,7 @@
  ******************************************************************************/
 
 int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR,
-   @(type) *QV, int ldQV, @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs,
+   @(type) *QtV, int ldQtV, @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
    @(type) *rwork, int *iwork, primme_params *primme) {
 
@@ -89,7 +89,7 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
       break;
 
    case primme_proj_harmonic:
-      ret = solve_H_Harm_@(pre)primme(H, ldH, QV, ldQV, R, ldR, hVecs, ldhVecs, hU,
+      ret = solve_H_Harm_@(pre)primme(H, ldH, QtV, ldQtV, R, ldR, hVecs, ldhVecs, hU,
             ldhU, hVals, basisSize, numConverged, machEps, lrwork, rwork, iwork, primme);
       break;
 
@@ -441,8 +441,20 @@ static int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 }
 
 /*******************************************************************************
- * Subroutine solve_H_Harm - This procedure solves the eigenvalues of QV*inv(R)
- *
+ * Subroutine solve_H_Harm - This procedure implements the harmonic extraction
+ *    in a novelty way. In standard harmonic the next eigenproblem is solved:
+ *       V'*(A-s*I)'*(A-s*I)*V*X = V'*(A-s*I)'*V*X*L,
+ *    where (L_{i,i},X_i) are the harmonic-Ritz pairs. In practice, it is
+ *    computed (A-s*I)*V = Q*R and it is solved instead:
+ *       R*X = Q'*V*X*L,
+ *    which is a generalized non-Hermitian problem. Instead of dealing with
+ *    complex solutions, which are unnatural in context of Hermitian problems,
+ *    we propose the following. Note that,
+ *       (A-s*I)*V = Q*R -> Q'*V*inv(R) = Q'*inv(A-s*I)*Q.
+ *    And note that Q'*V*inv(R) is Hermitian if A is, and also that
+ *       Q'*V*inv(R)*Y = Y*inv(L) ->  Q'*V*X*L = R*X,
+ *    with Y = R*X. So this routine computes X by solving the Hermitian problem
+ *    Q'*V*inv(R).
  *        
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -456,9 +468,9 @@ static int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hVecs         The orthogonal basis of inv(R) * eigenvectors of QV/R
+ * hVecs         The orthogonal basis of inv(R) * eigenvectors of QtV/R
  * ldhVecs       The leading dimension of hVecs
- * hU            The eigenvectors of QV/R
+ * hU            The eigenvectors of QtV/R
  * ldhU          The leading dimension of hU
  * hVals         The Ritz values of the vectors in hVecs
  * rwork         Workspace
@@ -474,7 +486,7 @@ static int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 #endifarithm
  ******************************************************************************/
 
-static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QV, int ldQV,
+static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQtV,
    @(type) *R, int ldR, @(type) *hVecs, int ldhVecs, @(type) *hU, int ldhU,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
    @(type) *rwork, int *iwork, primme_params *primme) {
@@ -488,14 +500,14 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QV, int ldQV,
    if (basisSize == 0) return 0;
 
    /* Return memory requirements */
-   if (QV == NULL) {
-      return solve_H_RR_@(pre)primme(QV, ldQV, hVecs, ldhVecs, hVals, basisSize,
+   if (QtV == NULL) {
+      return solve_H_RR_@(pre)primme(QtV, ldQtV, hVecs, ldhVecs, hVals, basisSize,
          0, lrwork, rwork, iwork, primme);
    }
 
-   /* QAQ = QV*inv(R) */
+   /* QAQ = QtV*inv(R) */
 
-   Num_copy_matrix_@(pre)primme(QV, basisSize, basisSize, ldQV, hVecs, ldhVecs);
+   Num_copy_matrix_@(pre)primme(QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs);
    Num_trsm_@(pre)primme("R", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
          hVecs, ldhVecs);
 

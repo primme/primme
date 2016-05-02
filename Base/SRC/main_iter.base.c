@@ -173,7 +173,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    int numQR;               /* Maximum number of QR factorizations           */
    @(type) *Q = NULL;       /* QR decompositions for harmonic or refined     */
    @(type) *R = NULL;       /* projection: (A-target[i])*V = QR              */
-   @(type) *QV = NULL;      /* Q'*V                                          */
+   @(type) *QtV = NULL;     /* Q'*V                                          */
 
    double *hVals;           /* Eigenvalues of H                              */
    double *hSVals=NULL;     /* Singular values of R                          */
@@ -214,7 +214,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
       hU         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
    }
    if (primme->projectionParams.projection == primme_proj_harmonic) {
-      QV         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+      QtV        = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
    }
    H             = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    hVecs         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
@@ -364,12 +364,12 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
             rworkSize, 1/*symmetric*/, primme);
 
-      if (QV) update_projection_@(pre)primme(Q, primme->nLocal, V, primme->nLocal, QV,
+      if (QtV) update_projection_@(pre)primme(Q, primme->nLocal, V, primme->nLocal, QtV,
             primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
             rworkSize, 0/*unsymmetric*/, primme);
 
       ret = solve_H_@(pre)primme(H, basisSize, primme->maxBasisSize, R,
-            primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, hVecs,
+            primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, hVecs,
             basisSize, hVals, hSVals, numConverged, machEps, rworkSize, rwork,
             iwork, primme);
       
@@ -555,7 +555,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
             /* projected problem) are in hU; so retain them.                        */
 
-            numPrevRetained = retain_previous_coefficients(QV ? hU : hVecs, 
+            numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, 
                previousHVecs, basisSize, iev, blockSize, primme);
 
             /* Extend H by blockSize columns and rows and solve the */
@@ -565,7 +565,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                   primme->maxBasisSize, primme->nLocal, basisSize, blockSize, rwork,
                   rworkSize, 1/*symmetric*/, primme);
 
-            if (QV) update_projection_@(pre)primme(Q, primme->nLocal, V, primme->nLocal, QV,
+            if (QtV) update_projection_@(pre)primme(Q, primme->nLocal, V, primme->nLocal, QtV,
                   primme->maxBasisSize, primme->nLocal, basisSize, blockSize, rwork,
                   rworkSize, 0/*unsymmetric*/, primme);
 
@@ -573,7 +573,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             blockSize = 0;
 
             ret = solve_H_@(pre)primme(H, basisSize, primme->maxBasisSize, R,
-                  primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, hVecs,
+                  primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, hVecs,
                   basisSize, hVals, hSVals, numConverged, machEps, rworkSize, rwork,
                   iwork, primme);
 
@@ -623,7 +623,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                &numConverged, &numLocked, &numConvergedStored, previousHVecs,
                &numPrevRetained, primme->maxBasisSize, numGuesses, prevRitzVals,
                &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
-               primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, 0,
+               primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, 0,
                hVecs, basisSize, 0, &basisSize, &targetShiftIndex, numArbitraryVecs,
                machEps, rwork, rworkSize, iwork, primme);
 
@@ -664,7 +664,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
             /* projected problem) are in hU; so retain them.                        */
 
-            numPrevRetained = retain_previous_coefficients(QV ? hU : hVecs, 
+            numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, 
                previousHVecs, basisSize, iev, numNew, primme);
 
             /* Extend H by numNew columns and rows and solve the */
@@ -673,12 +673,12 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             if (H) update_projection_@(pre)primme(V, primme->nLocal, W, primme->nLocal, H,
                   primme->maxBasisSize, primme->nLocal, basisSize, numNew, rwork,
                   rworkSize, 1/*symmetric*/, primme);
-            if (QV) update_projection_@(pre)primme(Q, primme->nLocal, V, primme->nLocal, QV,
+            if (QtV) update_projection_@(pre)primme(Q, primme->nLocal, V, primme->nLocal, QtV,
                   primme->maxBasisSize, primme->nLocal, basisSize, numNew, rwork,
                   rworkSize, 0/*unsymmetric*/, primme);
             basisSize += numNew;
             ret = solve_H_@(pre)primme(H, basisSize, primme->maxBasisSize, R,
-                  primme->maxBasisSize, QV, primme->maxBasisSize, hU, basisSize, hVecs,
+                  primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, hVecs,
                   basisSize, hVals, hSVals, numConverged, machEps, rworkSize, rwork, iwork,
                   primme);
 

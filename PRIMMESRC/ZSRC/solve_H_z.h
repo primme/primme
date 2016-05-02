@@ -30,7 +30,7 @@
 #define SOLVE_H_H
 
 int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
-   Complex_Z *QV, int ldQV, Complex_Z *hU, int ldhU, Complex_Z *hVecs, int ldhVecs,
+   Complex_Z *QtV, int ldQtV, Complex_Z *hU, int ldhU, Complex_Z *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
    Complex_Z *rwork, int *iwork, primme_params *primme);
 

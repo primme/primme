@@ -49,7 +49,7 @@
 
 static int restart_projection_dprimme(double *V, int ldV, double *W,
       int ldW, double *H, int ldH, double *Q, int nLocal, int ldQ,
-      double *R, int ldR, double *QV, int ldQV, double *hU, int ldhU,
+      double *R, int ldR, double *QtV, int ldQtV, double *hU, int ldhU,
       int newldhU, double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
       double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
@@ -69,8 +69,8 @@ static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
       primme_params *primme);
 
 static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
-   int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *QV,
-   int ldQV, double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
+   int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *QtV,
+   int ldQtV, double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
    int *targetShiftIndex, int numConverged, int numArbitraryVecs, int rworkSize,
