@@ -762,7 +762,6 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
          /* sin current and previous hVecs(:,i): hVecs(end,i)                 */
          /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
          /* we don't use the value when it is zero.                           */
-         /* Also check that singular value is larger than the residual norm   */
 
          double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip = (flags && ip0 != 0.0) ? ip0 : HUGE_VAL;
@@ -771,9 +770,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
 
-         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff 
-               && fabs(hVals[i-1]-targetShift) < hSVals[i-1]+machEps*hSVals[basisSize-1]
-               && hSVals[i-1] >= smallestResNorm)
+         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff) 
             break;
       }
       i = min(i, basisSize);
@@ -846,7 +843,6 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
    }
 
    permute_vecs_dprimme(hVals, 1, i, 1, perm, (double*)rwork, iwork);
-   permute_vecs_dprimme(hSVals, 1, i, 1, perm, (double*)rwork, iwork);
    permute_vecs_zprimme(hVecs, basisSize, i, ldhVecs, perm, rwork, iwork);
 
    /* If something has changed between arbitraryVecs and i, notify */

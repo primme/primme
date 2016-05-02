@@ -425,8 +425,27 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
 
             availableBlockSize = min(availableBlockSize, maxRecentlyConverged+1);
 
+            /* If QR decomposition accumulates so much error, force it to     */
+            /* reset by setting targetShiftIndex to -1. We use the next       */
+            /* heuristic. Note that if (s_0, u_0, y_0) is the triplet of R    */
+            /* with the smallest singular value, (A-tau*I)*V = Q*R, and       */
+            /* l_0 is the Rayleigh quotient of V*y_0, then                    */
+            /*    |l_0-tau| = |y_0'*V'*(A-tau*I)*V*y_0| = |y_0'*V'*Q*R*y_0| = */
+            /*       = |y_0'*V'*Q*u_0*s_0| <= s_0.                            */
+            /* So when |l_0-tau|-machEps*|A| > s_0, we consider to reset the  */
+            /* QR factorization. machEps*|A| is the error computing l_0.      */
+
+            if (primme->projectionParams.projection == primme_proj_refined &&
+                  fabs(primme->targetShifts[targetShiftIndex]-hVals[0])
+                  -primme->stats.estimateLargestSVal*machEps > hSVals[0]) {
+
+               availableBlockSize = 0;
+               targetShiftIndex = -1;
+            } 
+
             /* Set the block with the first unconverged pairs */
-            prepare_candidates_dprimme(V, W, primme->nLocal, H,
+            if (availableBlockSize > 0) {
+               prepare_candidates_dprimme(V, W, primme->nLocal, H,
                   primme->maxBasisSize, basisSize, primme->nLocal,
                   &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal],
                   hVecs, basisSize, hVals, hSVals, flags,
@@ -435,6 +454,10 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
                   rwork, rworkSize, iwork, primme);
+            }
+            else {
+               blockSize = recentlyConverged = 0;
+            }
 
             /* print residuals */
             print_residuals(hVals, blockNorms, numConverged, numLocked, iev, blockSize,
@@ -452,12 +475,15 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
 
             if (numConverged >= primme->numEvals ||
                 (primme->locking && recentlyConverged > 0
-                    && primme->target != primme_smallest
-                    && primme->target != primme_largest) ||
-                (Q && min(primme->numTargetShifts, numConverged) !=
-                        min(primme->numTargetShifts, numConverged-recentlyConverged))
-                              ) {
+                  && primme->target != primme_smallest
+                  && primme->target != primme_largest) ||
+                targetShiftIndex < 0 ||
+                (Q && primme->targetShifts[targetShiftIndex] !=
+                  primme->targetShifts[
+                     min(primme->numTargetShifts-1, max(0,numConverged-1))])) {
+
                break;
+
             }
 
             /* If the block size is zero, the whole basis spans an exact     */
@@ -592,7 +618,8 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* converged.                                                        */
          /* ----------------------------------------------------------------- */
 
-         prepare_vecs_dprimme(basisSize, 0, availableBlockSize, H,
+         if (targetShiftIndex > 0)
+            prepare_vecs_dprimme(basisSize, 0, availableBlockSize, H,
                primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
                targetShiftIndex, &numArbitraryVecs, smallestResNorm, NULL, 1,
                machEps, rworkSize, rwork, iwork, primme);
