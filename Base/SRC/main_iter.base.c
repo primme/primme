@@ -447,6 +447,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
 
                   availableBlockSize = 0;
                   targetShiftIndex = -1;
+                  break;
                } 
             }
 
@@ -487,7 +488,7 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                 targetShiftIndex < 0 ||
                 (Q && primme->targetShifts[targetShiftIndex] !=
                   primme->targetShifts[
-                     min(primme->numTargetShifts-1, max(0,numConverged-1))])) {
+                     min(primme->numTargetShifts-1, numConverged)])) {
 
                break;
 
