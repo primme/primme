@@ -238,7 +238,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             s1 = sqrt(s1);
          }
 
-         if (s1 <= machEps*s0 && R) {
+         if (R && (s1 <= machEps*s0 || nOrth >= maxNumOrthos)) {
             if (messages) {
                fprintf(outputFile, "Zeroing column %d\n", i);
             }

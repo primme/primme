@@ -446,7 +446,7 @@ static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *i
       *rNorm < max(
                primme->eps / sqrt(2.0) * aNorm,
                machEps * 3.16 * aNorm) 
-      && *eval >= primme->aNorm*machEps;
+      && *eval >= aNorm*machEps;
 } 
 
 static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 

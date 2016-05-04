@@ -280,6 +280,7 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
             "targetShifts");
       *allocatedTargetShifts = 1;
       primme->targetShifts[0] = 0.0;
+      primme->numTargetShifts = 1;
 
    }
 
