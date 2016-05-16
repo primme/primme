@@ -443,12 +443,17 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    /* to have become unconverged by checking hVals[i]-evals[i] < tol.            */
    /* If it fails, flag it UNCONVERGED and let it be targeted again. This avoids */  
    /* early converged but unwanted evs preventing wanted from being targeted.    */
+   /* Update maxConvTol for the remaining converged pairs.                       */
    /* -------------------------------------------------------------------------- */
 
    if (basisSize + primme->numOrthoConst < primme->n) {
+      primme->stats.maxConvTol = 0.0;
       for (i=0; i<primme->numEvals; i++) {
          if (flags[i] != UNCONVERGED && fabs(hVals[i]-evals[i]) > resNorms[i]) {
             flags[i] = UNCONVERGED;
+         }
+         else if (flags[i] != UNCONVERGED) {
+            primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorms[i]);
          }
       }
    }
@@ -471,20 +476,21 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    /* first ievSize candidates pairs.                                */
    /* -------------------------------------------------------------- */
 
-   *numPrevRetained = min(
-         primme->maxBasisSize,
-         *restartSize + *numPrevRetained)
-      - *restartSize;
+   *numPrevRetained = min(min(
+            primme->maxBasisSize,
+            *restartSize + *numPrevRetained) - *restartSize,
+      basisSize-*numConverged);
 
    for (i=numCandidates=0; i<*numArbitraryVecs && i<*restartSize; i++)
       if (flags[i] == UNCONVERGED) numCandidates++;
 
    *restartSize += *numPrevRetained;
 
-   *ievSize = max(0, min(min(
+   *ievSize = max(0, min(min(min(
                   primme->maxBlockSize,
                   primme->numEvals-*numConverged+1),
-                  primme->maxBasisSize-*restartSize));
+                  primme->maxBasisSize-*restartSize),
+                  basisSize-*numConverged));
 
    numCandidates = max(*ievSize, numCandidates);
 

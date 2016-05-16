@@ -266,7 +266,6 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    int intWorkSize;  /* Size of integer work space in bytes             */
    int initSize;     /* Amount of work space required by init routine   */
    int orthoSize;    /* Amount of work space required by ortho routine  */
-   int convSize;     /* Amount of work space required by converg. routine */
    int restartSize;  /* Amount of work space required by restart routine */
    int solveCorSize; /* work space for solve_correction and inner_solve */
    int solveHSize;   /* work space for solve_H                          */
@@ -362,14 +361,6 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                   1.0, 0.0, 1.0, NULL, NULL, 0, primme);
 
    /*----------------------------------------------------------------------*/
-   /* Determine workspace required by check_converged and its children     */
-   /*----------------------------------------------------------------------*/
-
-   convSize = check_convergence_@(pre)primme(NULL, primme->nLocal, 0, &t, 0,
-         NULL, primme->numEvals, 0, 0, primme->maxBasisSize, NULL, NULL,
-         NULL, 0.0, NULL, 0, NULL, primme);
-
-   /*----------------------------------------------------------------------*/
    /* Determine workspace required by restarting and its children          */
    /*----------------------------------------------------------------------*/
 
@@ -399,7 +390,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
    /* Workspace is reused in many functions. Allocate the max needed by any*/
    /*----------------------------------------------------------------------*/
-   realWorkSize = Num_imax_primme(8,
+   realWorkSize = Num_imax_primme(7,
 
       /* Workspace needed by init_basis */
       initSize,
@@ -410,9 +401,6 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       /* Workspace needed by function solve_H */
       solveHSize,
    
-      /* Workspace needed by function check_convergence */ 
-      convSize,
-
       /* Workspace needed by function restart*/
       restartSize,
 

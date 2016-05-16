@@ -1026,6 +1026,7 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal,
                         primme->stats.numMatvecs, primme_wTimer(0));
                evals[iev[blki]] = hVals[iev[blki]];
                resNorms[iev[blki]] = blockNorms[blki];
+               primme->stats.maxConvTol = max(primme->stats.maxConvTol, blockNorms[blki]);
             }
 
             /* Write back flags and count the new solution */
