@@ -173,12 +173,15 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    Complex_Z *H, int ldH, Complex_Z *Q, int ldQ, Complex_Z *R, int ldR, Complex_Z* QtV, int ldQtV,
    Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
-   Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme) {
+   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
+   Complex_Z *hVecsRot, int ldhVecsRot, Complex_Z *previousHU, int ldpreviousHU,
+   double *prevhSvals, double machEps, Complex_Z *rwork, int rworkSize,
+   int *iwork, primme_params *primme) {
 
-   int i;                   /* Loop indices */
+   int i,j;                 /* Loop indices */
    int restartSize;         /* Basis size after restarting                   */
    int indexOfPreviousVecs; /* Column index in hVecs with previous vecs      */
+   int numRecentlyLocked=0; /* Number of locked vectors in this restart      */
    int *iwork0;             /* Temporal integer workspace pointer            */
    int *restartPerm;        /* Permutation of hVecs used to restart V        */
    int *hVecsPerm;          /* Permutation of hVecs to sort as primme.target */
@@ -187,29 +190,30 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /* Return memory requirement */
 
    if (V == NULL) {
+      rworkSize = ortho_coefficient_vectors_zprimme(NULL, basisSize, 0,
+            basisSize, NULL, 0, NULL, 0, numPrevRetained, NULL, 0.0, NULL, 0,
+            primme);
+
       if (primme->locking) {
-         rworkSize = restart_locking_zprimme(&basisSize, NULL,
-               NULL, nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL,
-               NULL, 0, NULL, NULL, NULL, NULL, ievSize, NULL, NULL,
-               NULL, numConverged, numConverged, NULL, NULL, 0, NULL,
-               numPrevRetained, 0, NULL, NULL, NULL, 0.0, NULL, 0,
-               NULL, primme);
+         rworkSize += restart_locking_zprimme(&basisSize, NULL, NULL, nLocal,
+               basisSize, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, ievSize,
+               NULL, NULL, NULL, numConverged, numConverged, NULL, NULL,
+               *numPrevRetained, NULL, NULL, 0.0, NULL, 0, NULL, primme);
       }
       else {
-         rworkSize = restart_soft_locking_zprimme(&basisSize, NULL, NULL,
-               nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL, NULL, 0,
-               NULL, NULL, NULL, NULL, ievSize, NULL, NULL, NULL, NULL,
-               evecsHat, 0, NULL, 0, numConverged, NULL, NULL,
-               numPrevRetained, 0, NULL, NULL, NULL, 0.0, NULL, 0,
-               NULL, primme);
-
+         rworkSize += restart_soft_locking_zprimme(&basisSize, NULL, NULL,
+               nLocal, basisSize, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL,
+               NULL, ievSize, NULL, NULL, NULL, NULL, evecsHat, 0, NULL, 0,
+               numConverged, numConverged, *numPrevRetained, NULL, NULL, 0.0,
+               NULL, 0, NULL, primme);
       }
 
       rworkSize += restart_projection_zprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0,
             NULL, 0, NULL, 0, NULL, 0, 0,
             NULL, 0, 0, NULL, NULL, NULL, NULL, basisSize, basisSize,
             *numPrevRetained, basisSize, NULL,
-            NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, 0, NULL, NULL, 0.0, primme);
+            NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0,
+            0, NULL, NULL, 0.0, primme);
 
       return rworkSize;
    }
@@ -237,7 +241,8 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /* --------------------------------------------------------------------- */
 
    else if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
-       restartSize = basisSize;
+      restartSize = basisSize;
+      *numPrevRetained = 0;
    }
    else if (primme->restartingParams.scheme == primme_dtr) {
       int numFree = *numPrevRetained+max(3, primme->maxBlockSize);
@@ -248,30 +253,86 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
       restartSize = min(basisSize, primme->minRestartSize);
    }
 
+   /* ----------------------------------------------------------------------- */
+   /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
+   /* vectors do not exceed basisSize.                                        */
+   /* ----------------------------------------------------------------------- */
+
+   if (primme->locking)
+      restartSize = min(restartSize, basisSize-(*numConverged-*numLocked));
+
+   /* ----------------------------------------------------------------------- */
+   /* Insert as many initial guesses as eigenpairs have converged.            */
+   /* ----------------------------------------------------------------------- */
+
+   restartSize -= min(min(numGuesses, *numConverged-*numLocked), restartSize);
+
+   /* ----------------------------------------------------------------------- */
+   /* Don't insert more vectors from iterations than the actual restart size  */
+   /* and don't make the final basis size larger than the current one.        */
+   /* ----------------------------------------------------------------------- */
+
+   *numPrevRetained = max(0, min(min(
+         *numPrevRetained,
+         restartSize - (*numConverged-*numLocked)), 
+         basisSize - (restartSize+*numConverged-*numLocked)));
+
+   /* ----------------------------------------------------------------------- */
+   /* Restarting with a small number of coefficient vectors from the previous */
+   /* iteration can accelerate convergence.  The previous                     */
+   /* coefficient vectors must be combined with the current coefficient       */
+   /* vectors by first orthogonalizing the previous ones versus the current   */
+   /* restartSize ones.  The orthogonalized previous vectors are then         */
+   /* inserted into the hVecs array at hVecs(:,indexOfPreviousVecs).          */
+   /* ----------------------------------------------------------------------- */
+
+   Num_copy_matrix_zprimme(previousHVecs, basisSize, *numPrevRetained,
+         ldpreviousHVecs, &hVecs[ldhVecs*restartSize], ldhVecs);
+
+   ret = ortho_coefficient_vectors_zprimme(hVecs, basisSize, ldhVecs,
+         restartSize, hU, ldhU, R, ldR, numPrevRetained, prevhSvals,
+         machEps, rwork, rworkSize, primme);
+   if (ret != 0) return ret;
+
+   /* ----------------------------------------------------------------------- */
+   /* Restart V and W, and compute X and residual vectors for next candidates */
+   /* ----------------------------------------------------------------------- */
+
    restartPerm = iwork;
    hVecsPerm = &restartPerm[basisSize];
    iwork0 = &hVecsPerm[basisSize];
 
    if (!primme->locking) {
       Complex_Z *X, *Res;
-      ret = restart_soft_locking_zprimme(&restartSize, V, W, nLocal, R, ldR,
-            hU, ldhU, basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm,
-            hVals, flags, iev, ievSize, blockNorms, evecs, evals, resNorms, evecsHat,
-            ldevecsHat, M, ldM, numConverged, numConvergedStored, previousHVecs,
-            numPrevRetained, ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm,
-            &numArbitraryVecs, machEps, rwork, rworkSize, iwork0, primme);
+      ret = restart_soft_locking_zprimme(&restartSize, V, W, nLocal,
+            basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals,
+            flags, iev, ievSize, blockNorms, evecs, evals, resNorms, evecsHat,
+            ldevecsHat, M, ldM, numConverged, numConvergedStored,
+            *numPrevRetained, &indexOfPreviousVecs, hVecsPerm, machEps, rwork,
+            rworkSize, iwork0, primme);
    }
    else {
       Complex_Z *X, *Res;
-      ret = restart_locking_zprimme(&restartSize, V, W, nLocal, R, ldR,
-            hU, ldhU, basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals,
-            flags, iev, ievSize, blockNorms, evecs, evals, numConverged, numLocked,
-            resNorms, evecsPerm, numGuesses, previousHVecs, numPrevRetained,
-            ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, &numArbitraryVecs,
-            machEps, rwork, rworkSize, iwork0, primme);
+      numRecentlyLocked = *numLocked;
+      ret = restart_locking_zprimme(&restartSize, V, W, nLocal, basisSize,
+            ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals, flags, iev,
+            ievSize, blockNorms, evecs, evals, numConverged, numLocked,
+            resNorms, evecsPerm, *numPrevRetained, &indexOfPreviousVecs,
+            hVecsPerm, machEps, rwork, rworkSize, iwork0, primme);
+      numRecentlyLocked = *numLocked - numRecentlyLocked;
    }
 
    if (ret != 0) return ret;
+
+   /* ----------------------------------------------------------------- */
+   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
+   /* the restarted basis.                                              */
+   /* ----------------------------------------------------------------- */
+
+   for (i=j=0; i<restartSize; i++)
+      if (restartPerm[i] < numArbitraryVecs)
+         j++;
+   numArbitraryVecs = j;
 
    /* Rearrange prevRitzVals according to restartPerm */
 
@@ -288,7 +349,8 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
          restartPerm, hVecsPerm, restartSize, basisSize, *numPrevRetained,
          indexOfPreviousVecs, evecs, numConvergedStored, primme->nLocal, evecsHat,
          ldevecsHat, M, ldM, UDU, ldUDU, ipivot, targetShiftIndex, *numConverged,
-         numArbitraryVecs, rworkSize, rwork, iwork0, machEps, primme);
+         numArbitraryVecs, hVecsRot, ldhVecsRot, previousHU, ldpreviousHU, prevhSvals,
+         numRecentlyLocked, rworkSize, rwork, iwork0, machEps, primme);
 
    *restartSizeOutput = restartSize; 
 
@@ -398,21 +460,17 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
  *       
  ******************************************************************************/
  
- static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V,
-       Complex_Z *W, int nLocal, Complex_Z *hR, int ldhR, Complex_Z *hU, int ldhU,
-       int basisSize, int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs, 
-       int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
-       int *ievSize, double *blockNorms, Complex_Z *evecs, double *evals, 
-       double *resNorms, Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, 
-       int ldM, int *numConverged, int *numConvergedStored, 
-       Complex_Z *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-       int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
-       double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
-       primme_params *primme) {
+static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V,
+       Complex_Z *W, int nLocal, int basisSize, int ldV, Complex_Z **X,
+       Complex_Z **R, Complex_Z *hVecs, int ldhVecs, int *restartPerm,
+       double *hVals, int *flags, int *iev, int *ievSize, double *blockNorms,
+       Complex_Z *evecs, double *evals, double *resNorms, Complex_Z *evecsHat,
+       int ldevecsHat, Complex_Z *M, int ldM, int *numConverged,
+       int *numConvergedStored, int numPrevRetained, int *indexOfPreviousVecs,
+       int *hVecsPerm, double machEps, Complex_Z *rwork, int rworkSize,
+       int *iwork, primme_params *primme) {
 
    int i, j, k, ret;          /* loop indices */
-   int numCandidates;         /* number of pairs in the block */
-   int left;                  /* column of the first candidate */
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};             /*constants*/
 
    /* Return memory requirement */
@@ -420,7 +478,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    if (V == NULL) {
       Complex_Z t;
       double d;
-      return max(max(max(
+      return max(max(
                   nLocal,      /* permute_vecs for hVecs */
                   Num_update_VWXR_zprimme(NULL, NULL, nLocal, basisSize, 0, &t,
                      *restartSize, 0, NULL,
@@ -433,9 +491,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
                      NULL, 0, primme)),
                   /* if evecsHat, permutation matrix & compute_submatrix workspace */
                   evecsHat ? (primme->numOrthoConst+*numConverged)*
-                     (primme->numOrthoConst+*numConverged)*2 : 0),
-                  ortho_coefficient_vectors_zprimme(NULL, basisSize, 0, 0, *restartSize,
-                     NULL, NULL, 0, NULL, 0, *numPrevRetained, 0.0, NULL, NULL, 0, primme));
+                     (primme->numOrthoConst+*numConverged)*2 : 0);
    }
 
    /* -------------------------------------------------------------------------- */ 
@@ -462,29 +518,21 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    /* Restart V and W by replacing it with the current Ritz vectors. */
    /* Result of restartPerm (modified part indicated with ---)       */
    /*                                                                */
-   /*      non-candid | prevRitzVecs |  candidates  | X & R          */
-   /* V: [------------|--------------|----|---------|- X ---|    )   */
-   /* W: [------------|--------------|----|---------|- R ---|    )   */
-   /*                 ^ indexOfPreviousVecs                          */
-   /*                                ^ left         ^ restartSize    */
-   /*                 [--------------) numPrevRetained               */
-   /*                                [----) numArbitraryVecs         */
-   /*                  numCandidates [--------------)                */
-   /*                                       ievSize [-------)        */
+   /*      converged | non-conv | prevRitzVecs | X & R               */
+   /* V: [-----------|----------|--------------|- X ---|    )        */
+   /* W: [-----------|----------|--------------|- R ---|    )        */
+   /*                           ^ indexOfPreviousVecs                */
+   /*    [-----------) numConverged            ^ restartSize         */
+   /*                           [--------------) numPrevRetained     */
+   /*                                  ievSize [-------)             */
    /*                                                                */
    /* X & R has the eigenvectors and residual vectors of the         */
    /* first ievSize candidates pairs.                                */
    /* -------------------------------------------------------------- */
 
-   *numPrevRetained = min(min(
-            primme->maxBasisSize,
-            *restartSize + *numPrevRetained) - *restartSize,
-      basisSize-*numConverged);
+   *indexOfPreviousVecs = *restartSize;
 
-   for (i=numCandidates=0; i<*numArbitraryVecs && i<*restartSize; i++)
-      if (flags[i] == UNCONVERGED) numCandidates++;
-
-   *restartSize += *numPrevRetained;
+   *restartSize += numPrevRetained;
 
    *ievSize = max(0, min(min(min(
                   primme->maxBlockSize,
@@ -492,52 +540,29 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
                   primme->maxBasisSize-*restartSize),
                   basisSize-*numConverged));
 
-   numCandidates = max(*ievSize, numCandidates);
-
-   *indexOfPreviousVecs = *restartSize - numCandidates - *numPrevRetained;
-
-   left = *restartSize - numCandidates; 
-
-   for (i=j=k=0; i<basisSize; i++) {
-      if (j<numCandidates && flags[i] == UNCONVERGED) {
-         restartPerm[left + j++] = i;
-      }
-      else if (k < left) {
-         restartPerm[k++] = i;
-      }
-      else {
-         restartPerm[numCandidates + k++] = i;
-      }
-   }
- 
    /* Update the number of converged values */
 
    for (i=*numConverged=0; i<basisSize; i++)
       if (flags[i] != UNCONVERGED && i < primme->numEvals)
          (*numConverged)++;
 
+   /* Generate restartPerm */
+
+   for (i=j=k=0; i<basisSize; i++) {
+      if (k >= *numConverged || flags[i] == UNCONVERGED) {
+         restartPerm[*numConverged + j++] = i;
+      }
+      else {
+         restartPerm[k++] = i;
+      }
+   }
+   assert(j+k == basisSize);
+ 
    /* Permute hVals and hVecs */
 
    permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_zprimme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork,
          iwork);
-
-   /* ----------------------------------------------------------------------- */
-   /* Restarting with a small number of coefficient vectors from the previous */
-   /* iteration can be retained to accelerate convergence.  The previous      */
-   /* coefficient vectors must be combined with the current coefficient       */
-   /* vectors by first orthogonalizing the previous ones versus the current   */
-   /* restartSize ones.  The orthogonalized previous vectors are then         */
-   /* inserted into the hVecs array at hVecs(:,indexOfPreviousVecs).          */
-   /* ----------------------------------------------------------------------- */
-
-   Num_copy_matrix_zprimme(previousHVecs, basisSize, *numPrevRetained,
-         ldpreviousHVecs, &hVecs[ldhVecs*(*indexOfPreviousVecs)], ldhVecs);
-
-   ret = ortho_coefficient_vectors_zprimme(hVecs, basisSize, ldhVecs,
-         *indexOfPreviousVecs, *restartSize, restartPerm, hU, ldhU, hR, ldhR,
-         *numPrevRetained, machEps, iwork, rwork, rworkSize, primme);
-   if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
    /* Restart V and W by replacing it with the current Ritz vectors. */
@@ -550,10 +575,10 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    ret = Num_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
-         *X, left, left+*ievSize, ldV,
+         *X, *numConverged, *numConverged+*ievSize, ldV,
          NULL, 0, 0, 0,
          W, 0, *restartSize, ldV,
-         *R, left, left+*ievSize, ldV, blockNorms,
+         *R, *numConverged, *numConverged+*ievSize, ldV, blockNorms,
          NULL, 0, 0,
          rwork, rworkSize, primme);
    if (ret != 0) return ret;
@@ -564,19 +589,6 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
 
    for (i=0; i<basisSize; i++)
       hVecsPerm[restartPerm[i]] = i;
-
-   /* ----------------------------------------------------------------- */
-   /* Arbitrary vectors in candidates are treated as previous vectors.  */
-   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
-   /* the restarted basis.                                              */
-   /* ----------------------------------------------------------------- */
-
-   for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < min(*numArbitraryVecs, numCandidates))
-         j++;
-
-   *numPrevRetained += j;
-   *numArbitraryVecs = j;
 
    /* --------------------------------------------------------------------- */
    /* If the user requires (I-QQ') projectors in JDQMR without locking,     */
@@ -748,7 +760,9 @@ static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
       Complex_Z *evecs, int *evecsSize, int ldevecs, Complex_Z *evecsHat,
       int ldevecsHat, Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
       int *ipivot, int *targetShiftIndex, int numConverged,
-      int numArbitraryVecs, int rworkSize, Complex_Z *rwork, int *iwork,
+      int numArbitraryVecs,  Complex_Z *hVecsRot, int ldhVecsRot,
+      Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
+      int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork,
       double machEps, primme_params *primme) {
 
    int ret;
@@ -779,14 +793,15 @@ static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
       ret = restart_qr(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, QtV, ldQtV, hU, ldhU,
             newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm,
             restartSize, basisSize, numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
-            numConverged, 0, rworkSize, rwork, iwork, machEps, primme);
+            numConverged, 0, NULL, 0, NULL, 0, NULL, 0, rworkSize, rwork, iwork, machEps, primme);
       break;
 
    case primme_proj_refined:
       ret = restart_qr(V, ldV, W, ldW, H, ldH, Q, nLocal, ldQ, R, ldR, NULL, 0, hU, ldhU,
             newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm,
             restartSize, basisSize, numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
-            numConverged, numArbitraryVecs, rworkSize, rwork, iwork, machEps, primme);
+            numConverged, numArbitraryVecs,  hVecsRot, ldhVecsRot, previousHU, ldpreviousHU,
+            prevhSvals, numRecentlyLocked, rworkSize, rwork, iwork, machEps, primme);
       break;
 
    default:
@@ -1124,8 +1139,10 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
    int ldQtV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int numArbitraryVecs, int rworkSize,
-   Complex_Z *rwork, int *iwork, double machEps, primme_params *primme) {
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, Complex_Z *hVecsRot,
+   int ldhVecsRot, Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
+   int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork, double machEps, 
+   primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
    int ret;           /* Return value                                         */
@@ -1216,23 +1233,52 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
    /* R by Rn where Qn and Rn are the QR decomposition of R*hVecs = Qn*Rn. */
    /* -------------------------------------------------------------------- */
 
+   permute_vecs_zprimme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
+   permute_vecs_zprimme(hVecsRot, basisSize, basisSize, ldhVecsRot, restartPerm, rwork, iwork);
+   permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
+
    /* -------------------------------------------------------------------- */
+   /* If R = [ prevR r; zeros() rho], where prevR is R in the previous     */
+   /* iteration, then R*[prevhVecs; zeros()] = [prevHU*diag(prevhSvals);   */
+   /* zeros()]. */
+   /* If R=hU*diag(hSVals)*hV' and hVecs=hV*hVecsRot, then R*hVecs =       */
+   /* -------------------------------------------------------------------- */
+
+   Num_copy_matrix_zprimme(previousHU, basisSize, numPrevRetained,
+         ldpreviousHU, &hU[indexOfPreviousVecs*ldhU], ldhU);
+   ret = ortho_zprimme(hU, ldhU, R, ldR, indexOfPreviousVecs,
+         indexOfPreviousVecs+numPrevRetained-1,
+         &hU[(indexOfPreviousVecs+numPrevRetained)*ldhU], ldhU,
+         restartSize+numRecentlyLocked-(indexOfPreviousVecs+numPrevRetained),
+         basisSize, primme->iseed, machEps, rwork, rworkSize, NULL);
+
+   /* -------------------------------------------------------------------- */
+   /* If R=hU*diag(hSVals)*hV' and hVecs=hV*hVecsRot, then R*hVecs =       */
+   /* hU*diag(hSVals)*hVecsRot. This reduces the error computing R*hVecs   */
+   /* to machEps*hSvals(numArbitraryVecs), instead of machEps*hSvals(end). */
    /* R(indexOfPrevVecs:end) = R * hVecs(indexOfPrevVecs:end)              */
    /* Compute the QR decomposition of R(indexOfPrevVecs:restartSize-1)     */
    /* Place the Q factor besides hU                                        */
    /* -------------------------------------------------------------------- */
 
-   permute_vecs_zprimme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
+   /* Compute hVecsRot = hU*diag(hSvals)*hVecsRot limited to columns       */
+   /* 0:numArbitraryVecs-1                                                 */
+   for (i=0; i<numArbitraryVecs; i++) {
+      for (j=0; j<numArbitraryVecs; j++) {
+         *(double*)&hVecsRot[ldhVecsRot*i+j] *= hSVals[j];
+         hVecsRot[ldhVecsRot*i+j].i *= hSVals[j];
+      }
+   }
 
-   Num_copy_matrix_zprimme(&hVecs[indexOfPreviousVecs*ldhVecs], basisSize,
-      numPrevRetained, ldhVecs, &hU[indexOfPreviousVecs*ldhU], ldhU);
-   Num_trmm_zprimme("L", "U", "N", "N", basisSize, numPrevRetained, tpone,
-      R, ldR, &hU[indexOfPreviousVecs*ldhU], ldhU);
-   ret = ortho_zprimme(hU, ldhU, R,
-         ldR, indexOfPreviousVecs, indexOfPreviousVecs+numPrevRetained-1,
-         &hU[(indexOfPreviousVecs+numPrevRetained)*ldhU], ldhU,
-         restartSize-(indexOfPreviousVecs+numPrevRetained), basisSize,
-         primme->iseed, machEps, rwork, rworkSize, NULL);
+   /* [q, r] = qr(hVecsRot); copy r in the upper part of R */
+   ret = ortho_zprimme(hVecsRot, ldhVecsRot, R, ldR, 0, numArbitraryVecs-1,
+         NULL, 0, 0, basisSize, primme->iseed, machEps, rwork, rworkSize, NULL);
+
+   /* hU <- hU*q */
+   Num_copy_matrix_zprimme(hU, basisSize, numArbitraryVecs, ldhU, rwork,
+         basisSize);
+   Num_gemm_zprimme("N", "N", basisSize, numArbitraryVecs, numArbitraryVecs,
+      tpone, rwork, basisSize, hVecsRot, ldhVecsRot, tzero, hU, ldhU);
 
    /* -------------------------------------------------------------------- */
    /* hVecs(0:indexOfPrevVecs) are the right singular vectors of R         */
@@ -1240,19 +1286,14 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
    /* R*hVecs(0:indexOfPrevVecs)=U(restartPerm)*diag(hSVals(restartPerm))  */
    /* -------------------------------------------------------------------- */
 
-   permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
-
-   for (j=0; j < indexOfPreviousVecs; j++) {
+   for (j=numArbitraryVecs; j < restartSize; j++) {
       for (i=0; i < primme->maxBasisSize; i++) {
-         R[ldR*j+i] = tzero;
+         if (i != j) R[ldR*j+i] = tzero;
       }
-      *(double*)&R[ldR*j+j] = hSVals[j];
-   }
-   for (j=indexOfPreviousVecs+numPrevRetained; j < restartSize; j++) {
-      for (i=0; i <= j; i++) {
-         R[ldR*j+i] = tzero;
-      }
-      *(double*)&R[ldR*j+j] = hSVals[j];
+      if (j>=indexOfPreviousVecs && j<indexOfPreviousVecs+numPrevRetained)
+         hSVals[j] = (*(double*)&R[ldR*j+j] *= prevhSvals[j-indexOfPreviousVecs]);
+      else
+         *(double*)&R[ldR*j+j] = hSVals[j];
    }
 
    /* ----------------------------------- */
@@ -1279,38 +1320,49 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
       Num_copy_matrix_zprimme(rwork, restartSize, restartSize, restartSize, QtV, ldQtV);
    }
 
+   /* ---------------------------------------------------------------------- */
+   /* Solve the overlap matrix corresponding for the retained vectors to     */ 
+   /* compute the coefficient vectors.                                       */
+   /* ---------------------------------------------------------------------- */
+
+   assert(!QtV || indexOfPreviousVecs == 0);
+   ret = solve_H_zprimme(H, numArbitraryVecs, ldH, R, ldR, QtV, ldQtV,
+         hU, newldhU, hVecs, newldhVecs, hVals, hSVals, numConverged,
+         machEps, rworkSize, rwork, iwork, primme);
+   if (ret != 0) {
+      primme_PushErrorMessage(Primme_restart_h, Primme_insert_submatrix, 
+            ret, __FILE__, __LINE__, primme);
+      return INSERT_SUBMATRIX_FAILURE;
+   }
+   /* hVecsRot <- hVecs' */
+   for (j=0; j < numArbitraryVecs; j++) {
+      for (i=0; i<numArbitraryVecs; i++) {
+         hVecsRot[ldhVecsRot*j+i].r = hVecs[newldhVecs*i+j].r;
+         hVecsRot[ldhVecsRot*j+i].i = -hVecs[newldhVecs*i+j].i;
+      }
+   }
+
+   /* hVecs <- I and zero hU(numArbitraryVecs:end,0:numArbitraryVecs-1) */
+   for (j=0; j < numArbitraryVecs; j++) {
+      for (i=0; i < restartSize; i++)
+          hVecs[newldhVecs*j+i] = tzero;
+      hVecs[newldhVecs*j+j] = tpone;
+      for (i=numArbitraryVecs; i < restartSize; i++)
+          hU[newldhU*j+i] = tzero;
+   }
+ 
    /* ----------------------------------------------------------------------- */
    /* Given the above R, we know the right vectors will be the standard       */
    /* basis vectors if no previous coefficient vectors are retained           */
    /* ----------------------------------------------------------------------- */
 
-   for (j=0; j < restartSize; j++) {
+   for (j=numArbitraryVecs; j < restartSize; j++) {
       for (i=0; i < restartSize; i++) {
           hVecs[newldhVecs*j+i] = tzero;
           hU[newldhU*j+i] = tzero;
       }
       hVecs[newldhVecs*j+j] = tpone;
       hU[newldhU*j+j] = tpone;
-   }
-
-   /* ---------------------------------------------------------------------- */
-   /* Solve the overlap matrix corresponding for the retained vectors to     */ 
-   /* compute the coefficient vectors.                                       */
-   /* ---------------------------------------------------------------------- */
-
-
-   assert(!QtV || indexOfPreviousVecs == 0);
-   ret = solve_H_zprimme(&H[ldH*indexOfPreviousVecs+indexOfPreviousVecs],
-         numPrevRetained-numArbitraryVecs, ldH,
-         &R[ldR*indexOfPreviousVecs+indexOfPreviousVecs], ldR, QtV, ldQtV,
-         &hU[newldhU*indexOfPreviousVecs+indexOfPreviousVecs], newldhU,
-         &hVecs[newldhVecs*indexOfPreviousVecs+indexOfPreviousVecs], newldhVecs,
-         &hVals[indexOfPreviousVecs], &hSVals[indexOfPreviousVecs], numConverged,
-         machEps, rworkSize, rwork, iwork, primme);
-   if (ret != 0) {
-      primme_PushErrorMessage(Primme_restart_h, Primme_insert_submatrix, 
-            ret, __FILE__, __LINE__, primme);
-      return INSERT_SUBMATRIX_FAILURE;
    }
 
    /* ----------------------------------------------------------------------- */
@@ -1521,36 +1573,58 @@ void reset_flags_zprimme(int *flags, int first, int last) {
  *
  ******************************************************************************/
 
-int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize, int ldhVecs,
-   int indexOfPreviousVecs, int newBasisSize, int *perm, Complex_Z *hU, int ldhU,
-   Complex_Z *R, int ldR, int numPrevRetained, int machEps, int *iwork,
-   Complex_Z *rwork, int rworkSize, primme_params *primme) {
+static int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize,
+      int ldhVecs, int indexOfPreviousVecs, Complex_Z *hU, int ldhU, Complex_Z *R,
+      int ldR, int *numPrevRetained, double *prevhSvals, int machEps,
+      Complex_Z *rwork, int rworkSize, primme_params *primme) {
 
-   int ret;
+   int ret, ldRaux=0, i;
+   Complex_Z *Raux=NULL;
    Complex_Z tpone = {+1.0e+00,+0.0e00};
 
    if (hVecs && primme->projectionParams.projection == primme_proj_harmonic) {
 
-      permute_vecs_zprimme(hU, basisSize, basisSize, ldhU, perm, rwork, iwork);
-      Num_copy_matrix_zprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize, numPrevRetained,
-            ldhVecs, &hU[ldhU*indexOfPreviousVecs], ldhU);
-      ret = ortho_zprimme(hU, ldhU, NULL, 0, indexOfPreviousVecs,
-            indexOfPreviousVecs+numPrevRetained-1,
-            &hU[ldhU*(indexOfPreviousVecs+numPrevRetained)], ldhU,
-            newBasisSize-indexOfPreviousVecs-numPrevRetained, basisSize,
-            primme->iseed, machEps, rwork, rworkSize, NULL);
+      ret = ortho_zprimme(&hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs,
+            NULL, 0, 0, *numPrevRetained-1, &hU[ldhU*indexOfPreviousVecs], ldhU,
+            indexOfPreviousVecs, basisSize, primme->iseed, machEps, rwork,
+            rworkSize, NULL);
       if (ret != 0) return ret;
-      Num_copy_matrix_zprimme(&hU[ldhU*indexOfPreviousVecs], basisSize, numPrevRetained,
-            ldhU, &hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs);
-      Num_trsm_zprimme("L", "U", "N", "N", basisSize, numPrevRetained, tpone, R, ldR,
-            &hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs);
+      Num_trsm_zprimme("L", "U", "N", "N", basisSize, *numPrevRetained,
+            tpone, R, ldR, &hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs);
 
    }
+   else if (hVecs && primme->projectionParams.projection == primme_proj_refined) {
+      Raux = rwork;
+      ldRaux = indexOfPreviousVecs+*numPrevRetained;
+      rwork += indexOfPreviousVecs*ldRaux;
+   }
 
-   return ortho_zprimme(hVecs, ldhVecs, NULL, 0, indexOfPreviousVecs,
-         indexOfPreviousVecs+numPrevRetained-1,
-         &hVecs[ldhVecs*(indexOfPreviousVecs+numPrevRetained)], ldhVecs,
-         newBasisSize-indexOfPreviousVecs-numPrevRetained, basisSize,
+   ret = ortho_zprimme(hVecs, ldhVecs, Raux, ldRaux, indexOfPreviousVecs,
+         indexOfPreviousVecs+*numPrevRetained-1, NULL, 0, 0, basisSize,
          primme->iseed, machEps, rwork, rworkSize, NULL);
 
+   if (!hVecs) {
+      /* Return memory requirement */
+      if (hVecs && primme->projectionParams.projection == primme_proj_refined) {
+         return ret+indexOfPreviousVecs*(indexOfPreviousVecs+*numPrevRetained);
+      }
+      else {
+         return ret;
+      }
+   }
+   else if (primme->projectionParams.projection == primme_proj_refined) {
+      /* Accumulate the diagonal elements of Raux in prevhSvals(i) */
+      for (i=ret=0; i<*numPrevRetained; i++) {
+         double norm = *(double*)&Raux[ldRaux*(indexOfPreviousVecs+i)
+            +indexOfPreviousVecs+i];
+         if (norm < machEps*3.16) continue;
+         prevhSvals[ret] = prevhSvals[i]/norm;
+         Num_copy_matrix_zprimme(&hVecs[ldhVecs*(indexOfPreviousVecs+i)],
+               basisSize, 1, ldhVecs, &hVecs[ldhVecs*(indexOfPreviousVecs+ret)],
+               ldhVecs);
+      }
+      *numPrevRetained = ret;
+   }
+
+   return 0;
 }

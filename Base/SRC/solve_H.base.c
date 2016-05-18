@@ -785,8 +785,9 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
       @(type) *H, int ldH, double *hVals, double *hSVals, @(type) *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, double machEps,
-      int rworkSize, @(type) *rwork, int *iwork, primme_params *primme) {
+      double smallestResNorm, int *flags, int RRForAll, @(type) *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, @(type) *rwork,
+      int *iwork, primme_params *primme) {
 
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
@@ -806,7 +807,7 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
    /* Return memory requirement */
 
    if (H == NULL) {
-      return basisSize*basisSize*2 + /* aH, ahVecs */
+      return basisSize*basisSize + /* aH */
          max(
                compute_submatrix_@(pre)primme(NULL, basisSize, 0, NULL, basisSize, 0,
                   NULL, 0, NULL, 0),
@@ -895,8 +896,12 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
          int rworkSize0 = rworkSize;
          int aBasisSize = i-j;
          aH = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
-         ahVecs = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
+         ahVecs = &hVecsRot[ldhVecsRot*j+j];
          assert(rworkSize0 >= 0);
+
+         /* Zero hVecsRot(:,j:i-1) */
+         Num_zero_matrix_@(pre)primme(&hVecsRot[ldhVecsRot*j],
+               primme->maxBasisSize, aBasisSize, ldhVecsRot);
 
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          compute_submatrix_@(pre)primme(&hVecs[ldhVecs*j], aBasisSize,
@@ -904,14 +909,14 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
                rworkSize0);
 
          /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-         ret = solve_H_RR_@(pre)primme(aH, aBasisSize, ahVecs, aBasisSize,
+         ret = solve_H_RR_@(pre)primme(aH, aBasisSize, ahVecs, ldhVecsRot,
                &hVals[j], aBasisSize, targetShiftIndex, rworkSize0, rwork0,
                iwork, primme);
          if (ret != 0) return ret;
 
          /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
          Num_gemm_@(pre)primme("N", "N", basisSize, aBasisSize, aBasisSize,
-               tpone, &hVecs[ldhVecs*j], ldhVecs, ahVecs, aBasisSize, tzero,
+               tpone, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, tzero,
                rwork0, basisSize);
          Num_copy_matrix_@(pre)primme(rwork0, basisSize, aBasisSize, basisSize,
                &hVecs[ldhVecs*j], ldhVecs);
@@ -950,8 +955,17 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
          perm[candidates+left++] = j;
    }
 
+   /* hVecsRot(:,arbitraryVecs:i-1) = I */
+
+   Num_zero_matrix_@(pre)primme(&hVecsRot[ldhVecsRot*(*arbitraryVecs)],
+         primme->maxBasisSize, i-*arbitraryVecs, ldhVecsRot);
+   for (j=*arbitraryVecs; j<i; j++)
+      hVecsRot[ldhVecsRot*j+j] = tpone;
+   
+
    permute_vecs_dprimme(hVals, 1, i, 1, perm, (double*)rwork, iwork);
    permute_vecs_@(pre)primme(hVecs, basisSize, i, ldhVecs, perm, rwork, iwork);
+   permute_vecs_@(pre)primme(hVecsRot, basisSize, i, ldhVecsRot, perm, rwork, iwork);
 
    /* If something has changed between arbitraryVecs and i, notify */
 

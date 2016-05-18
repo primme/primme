@@ -37,7 +37,8 @@ int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
       Complex_Z *H, int ldH, double *hVals, double *hSVals, Complex_Z *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, double machEps,
-      int rworkSize, Complex_Z *rwork, int *iwork, primme_params *primme);
+      double smallestResNorm, int *flags, int RRForAll, Complex_Z *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, Complex_Z *rwork,
+      int *iwork, primme_params *primme);
 
 #endif

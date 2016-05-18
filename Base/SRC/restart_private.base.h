@@ -35,17 +35,15 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
- static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V,
-       @(type) *W, int nLocal, @(type) *hR, int ldhR, @(type) *hU, int ldhU,
-       int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, 
-       int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
-       int *ievSize, double *blockNorms, @(type) *evecs, double *evals, 
-       double *resNorms, @(type) *evecsHat, int ldevecsHat, @(type) *M, 
-       int ldM, int *numConverged, int *numConvergedStored, 
-       @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-       int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
-       double machEps, @(type) *rwork, int rworkSize, int *iwork, 
-       primme_params *primme);
+static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V,
+       @(type) *W, int nLocal, int basisSize, int ldV, @(type) **X,
+       @(type) **R, @(type) *hVecs, int ldhVecs, int *restartPerm,
+       double *hVals, int *flags, int *iev, int *ievSize, double *blockNorms,
+       @(type) *evecs, double *evals, double *resNorms, @(type) *evecsHat,
+       int ldevecsHat, @(type) *M, int ldM, int *numConverged,
+       int *numConvergedStored, int numPrevRetained, int *indexOfPreviousVecs,
+       int *hVecsPerm, double machEps, @(type) *rwork, int rworkSize,
+       int *iwork, primme_params *primme);
 
 static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W,
       int ldW, @(type) *H, int ldH, @(type) *Q, int nLocal, int ldQ,
@@ -56,7 +54,9 @@ static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W,
       @(type) *evecs, int *evecsSize, int ldevecs, @(type) *evecsHat,
       int ldevecsHat, @(type) *M, int ldM, @(type) *UDU, int ldUDU,
       int *ipivot, int *targetShiftIndex, int numConverged,
-      int numArbitraryVecs, int rworkSize, @(type) *rwork, int *iwork,
+      int numArbitraryVecs,  @(type) *hVecsRot, int ldhVecsRot,
+      @(type) *previousHU, int ldpreviousHU, double *prevhSvals,
+      int numRecentlyLocked, int rworkSize, @(type) *rwork, int *iwork,
       double machEps, primme_params *primme);
 
 static int dtr_@(pre)primme(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
@@ -73,7 +73,14 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    int ldQtV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int numArbitraryVecs, int rworkSize,
-   @(type) *rwork, int *iwork, double machEps, primme_params *primme);
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, @(type) *hVecsRot,
+   int ldhVecsRot, @(type) *previousHU, int ldpreviousHU, double *prevhSvals,
+   int numRecentlyLocked, int rworkSize, @(type) *rwork, int *iwork, double machEps, 
+   primme_params *primme);
+
+static int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize,
+      int ldhVecs, int indexOfPreviousVecs, @(type) *hU, int ldhU, @(type) *R,
+      int ldR, int *numPrevRetained, double *prevhSvals, int machEps,
+      @(type) *rwork, int rworkSize, primme_params *primme);
 
 #endif /* RESTART_PRIVATE_H */

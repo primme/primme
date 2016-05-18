@@ -37,7 +37,8 @@ int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
 int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
       double *H, int ldH, double *hVals, double *hSVals, double *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, double machEps,
-      int rworkSize, double *rwork, int *iwork, primme_params *primme);
+      double smallestResNorm, int *flags, int RRForAll, double *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, double *rwork,
+      int *iwork, primme_params *primme);
 
 #endif

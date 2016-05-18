@@ -638,6 +638,28 @@ void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int l
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
          y[(yin?yin[i]:i)*ldy+j] = x[(xin?xin[i]:i)*ldx+j];
+}
+
+/******************************************************************************
+ * Function Num_zero_matrix - Zero the matrix
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ *
+ ******************************************************************************/
+
+void Num_zero_matrix_zprimme(Complex_Z *x, int m, int n, int ldx) {
+
+   int i,j;
+   Complex_Z tzero = {+0.0e+00,+0.0e00};             /*constants*/
+
+   for (i=0; i<n; i++)
+      for (j=0; j<m; j++)
+         x[i*ldx+j] = tzero;
 } 
 
 

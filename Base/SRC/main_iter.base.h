@@ -41,7 +41,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       int maxBlockSize, @(type) *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, @(type) *rwork, int rworkSize, int *iwork,
-      primme_params *primme);
+      double *smallestResNorm, @(type) *hVecsRot, int ldhVecsRot,
+      @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif /* MAIN_ITER_H */

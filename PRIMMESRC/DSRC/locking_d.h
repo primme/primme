@@ -31,13 +31,11 @@
 #define LOCKING_H
 
 int restart_locking_dprimme(int *restartSize, double *V, double *W, 
-      int nLocal, double *hR, int ldhR, double *hU, int ldhU, int basisSize, 
-      int ldV, double **X, double **R, double *hVecs, int ldhVecs, 
-      int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
-      double *blockNorms, double *evecs, double *evals, int *numConverged, 
-      int *numLocked, double *resNorms, int *evecsperm, int numGuesses, 
-      double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-      int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
+      int nLocal, int basisSize, int ldV, double **X, double **R,
+      double *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
+      int *iev, int *ievSize, double *blockNorms, double *evecs, double *evals,
+      int *numConverged, int *numLocked, double *resNorms, int *evecsperm,
+      int numPrevRetained, int *indexOfPreviousVecs, int *hVecsPerm,
       double machEps, double *rwork, int rworkSize, int *iwork, 
       primme_params *primme);
 

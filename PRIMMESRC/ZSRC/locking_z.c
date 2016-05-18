@@ -148,13 +148,11 @@
  ******************************************************************************/
  
 int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, 
-      int nLocal, Complex_Z *hR, int ldhR, Complex_Z *hU, int ldhU, int basisSize, 
-      int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs, int ldhVecs, 
-      int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
-      double *blockNorms, Complex_Z *evecs, double *evals, int *numConverged, 
-      int *numLocked, double *resNorms, int *evecsperm, int numGuesses, 
-      Complex_Z *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
-      int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
+      int nLocal, int basisSize, int ldV, Complex_Z **X, Complex_Z **R,
+      Complex_Z *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
+      int *iev, int *ievSize, double *blockNorms, Complex_Z *evecs, double *evals,
+      int *numConverged, int *numLocked, double *resNorms, int *evecsperm,
+      int numPrevRetained, int *indexOfPreviousVecs, int *hVecsPerm,
       double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
       primme_params *primme) {
 
@@ -163,9 +161,6 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
                             /* end of the hVecs array.                        */
    int maxBlockSize;        /* max block size for the next iteration          */
    int sizeBlockNorms;      /* Size of the block                              */
-   int numArbitraryCandidates; /* Number of arbitrary vectors after restart   */
-   int numCandidates;       /* Number of vectors moved after prev. retained   */
-   int indexOfCandidates;   /* Column index of the first candidate            */
    int failed;              /* Number of vectors to be locked that didn't pass the conv. test */
    int *ifailed;            /* Indices of vectors to be locked vectors that failed */
    int left;                /* Index of the first column with a vector to be locked */
@@ -176,14 +171,12 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    if (V == NULL) {
       Complex_Z t;
       double d;
-      return max(max(max(max(
+      return max(max(max(
             /* for permute_vecs */
             basisSize,
             Num_compute_residual_columns_zprimme(nLocal, NULL, NULL, basisSize, NULL, 0,
                NULL, 0, NULL, primme->maxBlockSize, 0, NULL, 0, NULL,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
-            ortho_coefficient_vectors_zprimme(NULL, basisSize, 0, 0, *restartSize, NULL, NULL,
-               0, NULL, 0, *numPrevRetained, 0.0, NULL, NULL, 0, primme)),
             Num_update_VWXR_zprimme(NULL, NULL, 0, basisSize, 0, NULL,
                *restartSize, 0, NULL,
                &t, 0, *restartSize+*numLocked, 0,
@@ -199,43 +192,16 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
                NULL, primme));
    }
 
-  /* ----------------------------------------------------------------------- */
-   /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
-   /* vectors do not exceed basisSize.                                        */
-   /* ----------------------------------------------------------------------- */
-
-   *restartSize = min(*restartSize, basisSize-(*numConverged-*numLocked));
-
-   /* ----------------------------------------------------------------------- */
-   /* Insert as many initial guesses as eigenpairs have converged.            */
-   /* ----------------------------------------------------------------------- */
-
-   *restartSize -= min(min(numGuesses, *numConverged-*numLocked), *restartSize);
-
-   /* ----------------------------------------------------------------------- */
-   /* Don't insert more vectors from iterations than the actual restart size  */
-   /* and don't make the final basis size larger than the current one.        */
-   /* ----------------------------------------------------------------------- */
-
-   *numPrevRetained = max(0, min(min(
-         *numPrevRetained,
-         *restartSize), 
-         basisSize - (*restartSize+*numConverged-*numLocked)));
-
    /* -------------------------------------------------------------- */
    /* Rearrange hVals and hVecs so that V*hVecs and W*hVecs will     */
    /* look like this (modified part indicated with ---):             */
    /*                                                                */
-   /* (b): candidates           (a): non-locked and non-candidates   */
-   /*                                                                */
-   /*      (a) | prevRitzVecs | (b)  | to be locked | X & R          */
-   /* V: [-----|--------------|------|--------------|- X -|    )     */
-   /* W: [-----|--------------|------|--------------|- R -|    )     */
-   /*          ^ indexOfPreviousVecs ^ left         ^ restartSize    */
-   /*                         ^ indexOfCandidates                    */
+   /*      restarted  | prevRitzVecs | to be locked | X & R          */
+   /* V: [------------|--------------|--------------|- X -|    )     */
+   /* W: [------------|--------------|--------------|- R -|    )     */
+   /*                                ^ left         ^ restartSize    */
+   /*                 ^ indexOfPreviousVecs                          */
    /*          [--------------) numPrevRetained                      */
-   /*                         [------) numCandidates                 */
-   /*                         [----)   numArbitraryVecs              */
    /*                                [--------------) numPacked      */
    /*                         [----) sizeBlockNorms [-----)          */
    /*                                maxBlockSize   [-------)        */
@@ -255,39 +221,24 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
 
    sizeBlockNorms = max(0, min(
          maxBlockSize,
-         primme->maxBasisSize-*restartSize-*numPrevRetained
+         primme->maxBasisSize-*restartSize-numPrevRetained
                -*numConverged+*numLocked));
 
-   for (i=numArbitraryCandidates=0; i<*numArbitraryVecs 
-         && numArbitraryCandidates<*restartSize; i++)
-      if (flags[i] == UNCONVERGED) numArbitraryCandidates++;
+   *indexOfPreviousVecs = *restartSize;
 
-   numCandidates = max(sizeBlockNorms, numArbitraryCandidates);
+   left = *restartSize + numPrevRetained;
 
-   *indexOfPreviousVecs = *restartSize - numCandidates;
-
-   *restartSize += *numPrevRetained;
-
-   indexOfCandidates = *restartSize - numCandidates;
-
-   left = *restartSize;
-
-   *restartSize += *numConverged - *numLocked;
-
-   assert(*indexOfPreviousVecs >= 0 && indexOfCandidates >= *indexOfPreviousVecs && left >= indexOfCandidates);
+   *restartSize += numPrevRetained + *numConverged - *numLocked;
 
    for (i=j=k=numPacked=0; i<basisSize; i++) {
       if (flags[i] != UNCONVERGED && i < primme->numEvals-*numLocked) {
          restartPerm[left + numPacked++] = i;
       }
-      else if (j < numCandidates) {
-         restartPerm[indexOfCandidates + j++] = i;
-      }
-      else if (k < indexOfCandidates) {
+      else if (k < left) {
          restartPerm[k++] = i;
       }
       else {
-         restartPerm[numCandidates + *numConverged-*numLocked + k++] = i;
+         restartPerm[*numConverged-*numLocked + k++] = i;
       }
    }
 
@@ -295,23 +246,6 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
  
    permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_zprimme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
-
-   /* ----------------------------------------------------------------------- */
-   /* Restarting with a small number of coefficient vectors from the previous */
-   /* iteration can accelerate convergence.  The previous                     */
-   /* coefficient vectors must be combined with the current coefficient       */
-   /* vectors by first orthogonalizing the previous ones versus the current   */
-   /* restartSize ones.  The orthogonalized previous vectors are then         */
-   /* inserted into the hVecs array at hVecs(:,indexOfPreviousVecs).          */
-   /* ----------------------------------------------------------------------- */
-
-   Num_copy_matrix_zprimme(previousHVecs, basisSize, *numPrevRetained,
-         ldpreviousHVecs, &hVecs[ldhVecs*(*indexOfPreviousVecs)], ldhVecs);
-
-   ret = ortho_coefficient_vectors_zprimme(hVecs, basisSize, ldhVecs,
-         *indexOfPreviousVecs, *restartSize, restartPerm, hU, ldhU, hR, ldhR,
-         *numPrevRetained, machEps, iwork, rwork, rworkSize, primme);
-   if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
    /* Restart V and W by replacing it V*hVecs and W*hVecs, copy      */
@@ -323,12 +257,11 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    ret = Num_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
-         *X, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
+         *X, 0, sizeBlockNorms, ldV,
          &evecs[primme->nLocal*(*numLocked+primme->numOrthoConst)], left,
                *restartSize, primme->nLocal,
          W, 0, *restartSize, ldV,
-         *R, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
-               blockNorms,
+         *R, 0, sizeBlockNorms, ldV, blockNorms,
          &resNorms[*numLocked], left, *restartSize,
          rwork, rworkSize, primme);
    if (ret != 0) return ret;
@@ -381,21 +314,21 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
 
       maxBlockSize = max(0, min(
             maxBlockSize,
-            primme->maxBasisSize-*restartSize-*numPrevRetained
+            primme->maxBasisSize-*restartSize-numPrevRetained
                   -*numConverged+*numLocked));
 
       blockNorms0 = (double*)rwork;
       for (i=0; i<sizeBlockNorms; i++) blockNorms0[i] = blockNorms[i];
-      for (i=indexOfCandidates, j=k=0; i<left || j<failed; k++) {
+      for (i=j=k=0; i<*indexOfPreviousVecs || j<failed; k++) {
 
          /* If there is no more failed vectors or the candidate      */
          /* vector was before the failed, take the candidate         */
 
-         if (i < left && (j >= failed 
+         if (i < *indexOfPreviousVecs && (j >= failed 
                   || restartPerm[i] < restartPerm[left+ifailed[j]])) {
 
-            if (k < maxBlockSize && i-indexOfCandidates < sizeBlockNorms)
-               blockNorms[k] = blockNorms0[i-indexOfCandidates];
+            if (k < maxBlockSize && i < sizeBlockNorms)
+               blockNorms[k] = blockNorms0[i];
             hVecsPerm[k] = i++;
 
          }
@@ -411,9 +344,8 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
 
       /* Generate the rest of the permutation of hVecsPerm           */
 
-      for (i=0; i<indexOfCandidates; i++) hVecsPerm[k++] = i;
-      assert(k == *indexOfPreviousVecs + *numPrevRetained + failed +
-                  numCandidates);
+      for (i=0; i<numPrevRetained; i++) hVecsPerm[k++] = i+*indexOfPreviousVecs;
+      assert(k == *indexOfPreviousVecs + numPrevRetained + failed);
       for (; k < basisSize; k++) hVecsPerm[k] = -1;
 
       /* -------------------------------------------------------------- */
@@ -421,9 +353,9 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
       /* vectors after the candidate vectors (modified part indicated   */
       /* with ---):                                                     */
       /*                                                                */
-      /*      (a) | prevRitzVecs | (b)  | failed locked | X & R         */
-      /* V: [     |              |------|---------------|- X ---|    )  */
-      /* W: [     |              |------|---------------|- R ---|    )  */
+      /*      restarted  | prevRitzVecs | failed locked | X & R         */
+      /* V: [            |              |---------------|- X ---|    )  */
+      /* W: [            |              |---------------|- R ---|    )  */
       /*                                ^ left                          */
       /*                         failed [---------------)               */
       /*                                 maxBlockSize   [---------)     */
@@ -510,19 +442,6 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    /* ----------------------------------------------------------------- */
    
    for (i=0; i<basisSize; i++) flags[i] = UNCONVERGED;
-
-   /* ----------------------------------------------------------------- */
-   /* Arbitrary vectors in candidates are treated as previous vectors.  */
-   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
-   /* the restarted basis.                                              */
-   /* ----------------------------------------------------------------- */
-
-   for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < numArbitraryCandidates)
-         j++;
-
-   *numPrevRetained += j;
-   *numArbitraryVecs = j;
 
    return 0;
 }
