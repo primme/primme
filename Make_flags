@@ -7,6 +7,9 @@
 LIBRARY = libprimme.a
 DLIBRARY = libdprimme.a
 ZLIBRARY = libzprimme.a
+SOLIBRARY = libprimme.so
+DSOLIBRARY = libdprimme.so
+ZSOLIBRARY = libzprimme.so
 
 # Define compilers and flags
 #---------------------------------------------------------------
@@ -56,6 +59,12 @@ FFLAGS   ?= -fno-second-underscore -O
 # Cray architectures
 # CFLAGS += -O3 -march=native -mtune=native -funroll-loops  -ffast-math -fstrict-aliasing  -std=gnu99 -msse2 -msse3
 
+#---------------------------------------------------------------
+# Uncomment this to generate position independent code
+# (needed if primme is compiled as a shared library)
+CFLAGS += -fPIC
+FFLAGS += -fPIC
+#---------------------------------------------------------------
 
 #---------------------------------------------------------------
 # Uncomment this when building MATLAB interface

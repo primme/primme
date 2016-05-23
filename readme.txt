@@ -257,7 +257,9 @@ The next directories and files should be available:
 * "TEST/",         sample test programs in C and F77, both
   sequential and parallel;
 
-* "libprimme.a",   the PRIMME library (to be made);
+* "libprimme.a",   the PRIMME static library (to be made);
+
+* "libprimme.so",  the PRIMME shared library (to be made);
 
 * "makefile"       main make file;
 
@@ -345,6 +347,14 @@ Full description of actions that *make* can take:
 
 * *make libz*, if only "zprimme()" is of interest, build
   "libzprimme.a";
+
+* *make solib*, builds "libprimme.so"; alternatively:
+
+* *make solibd*, if only "dprimme()" is of interest, build
+  "libdprimme.so":
+
+* *make solibz*, if only "zprimme()" is of interest, build
+  "libzprimme.so";
 
 * *make test*, build and execute a simple example;
 

@@ -20,6 +20,8 @@ lib:
 	echo "-----------------------------------"; \
 	make lib;\
 	)
+solib: lib
+	$(CC) -shared -o $(SOLIBRARY) -Wl,--whole-archive $(LIBRARY) -Wl,--no-whole-archive
 
 libd:
 	@(\
@@ -29,6 +31,8 @@ libd:
 	echo "---------------------------------------"; \
 	make libd;\
 	)
+solibd: libd
+	$(CC) -shared -o $(DSOLIBRARY) -Wl,--whole-archive $(DLIBRARY) -Wl,--no-whole-archive
 
 libz:
 	@(\
@@ -38,6 +42,9 @@ libz:
 	echo "----------------------------------------"; \
 	make libz;\
 	)
+solibz: libz
+	$(CC) -shared -o $(ZSOLIBRARY) -Wl,--whole-archive $(ZLIBRARY) -Wl,--no-whole-archive
+
 clean: 
 	@(\
 	echo "--------------------------------------------------"; \
