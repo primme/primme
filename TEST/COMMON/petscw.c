@@ -413,9 +413,9 @@ void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
       free(aux);
    }
    else if (*mode == primme_svds_op_augmented) {
-      ApplyPCPrecPETSCGen((PRIMME_NUM*)x+primme_svds->nLocal, ldx, y, ldy, blockSize, 1,
+      ApplyPCPrecPETSCGen((PRIMME_NUM*)x+primme_svds->nLocal, ldx, y, ldy, blockSize, 0,
          (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
-      ApplyPCPrecPETSCGen(x, ldx, (PRIMME_NUM*)y+primme_svds->nLocal, ldy, blockSize, 0,
+      ApplyPCPrecPETSCGen(x, ldx, (PRIMME_NUM*)y+primme_svds->nLocal, ldy, blockSize, 1,
          (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
    }
 }

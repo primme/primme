@@ -95,7 +95,11 @@ int main (int argc, char *argv[]) {
 #elif defined(USE_PETSC)
    PetscInitialize(&argc, &argv, NULL, NULL);
    PetscLogEventRegister("PRIMME global sum", 0, &PRIMME_GLOBAL_SUM);
+   #if PETSC_VERSION_LT(3,7,0)
    ierr = PetscLogBegin(); CHKERRQ(ierr);
+   #else
+   ierr = PetscLogDefaultBegin(); CHKERRQ(ierr);
+   #endif
 #endif
 
    ret = real_main(argc, argv);
