@@ -95,7 +95,11 @@ int main (int argc, char *argv[]) {
 #elif defined(USE_PETSC)
    PetscInitialize(&argc, &argv, NULL, NULL);
    PetscLogEventRegister("PRIMME global sum", 0, &PRIMME_GLOBAL_SUM);
+   #if PETSC_VERSION_LT(3,7,0)
    ierr = PetscLogBegin(); CHKERRQ(ierr);
+   #else
+   ierr = PetscLogDefaultBegin(); CHKERRQ(ierr);
+   #endif
 #endif
 
    ret = real_main(argc, argv);
@@ -547,13 +551,14 @@ static int setMatrixAndPrecond(driver_params *driver,
                pc[1] = NULL;
                ierr = PCCreate(PETSC_COMM_WORLD, pc); CHKERRQ(ierr);
                ierr = MatDuplicate(*matrix, MAT_COPY_VALUES, &A);CHKERRQ(ierr);
+               ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
                ierr = MatShift(A, -driver->shift);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_HYPRE
                ierr = PCSetType(pc[0], PCHYPRE); CHKERRQ(ierr);
-               ierr = PCHYPRESetType(pc[0], "parasails"); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(pc[0], "boomeramg"); CHKERRQ(ierr);
                ierr = PCCreate(PETSC_COMM_WORLD, &pc[1]); CHKERRQ(ierr);
                ierr = PCSetType(pc[1], PCHYPRE); CHKERRQ(ierr);
-               ierr = PCHYPRESetType(pc[1], "parasails"); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(pc[1], "boomeramg"); CHKERRQ(ierr);
 #else
                ierr = PCSetType(pc[0], PCBJACOBI); CHKERRQ(ierr);
 #  ifdef USE_DOUBLECOMPLEX

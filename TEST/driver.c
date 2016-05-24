@@ -95,7 +95,11 @@ int main (int argc, char *argv[]) {
 #elif defined(USE_PETSC)
    PetscInitialize(&argc, &argv, NULL, NULL);
    PetscLogEventRegister("PRIMME global sum", 0, &PRIMME_GLOBAL_SUM);
+   #if PETSC_VERSION_LT(3,7,0)
    ierr = PetscLogBegin(); CHKERRQ(ierr);
+   #else
+   ierr = PetscLogDefaultBegin(); CHKERRQ(ierr);
+   #endif
 #endif
 
    ret = real_main(argc, argv);
@@ -530,7 +534,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
                else {
                   #ifdef PETSC_HAVE_HYPRE
                      ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
-                     ierr = PCHYPRESetType(*pc, "parasails"); CHKERRQ(ierr);
+                     ierr = PCHYPRESetType(*pc, "boomeramg"); CHKERRQ(ierr);
                   #else
                      ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
                   #endif

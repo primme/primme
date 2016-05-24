@@ -136,7 +136,7 @@ static PetscErrorCode loadmtx(const char* filename, Mat *M, PetscBool *pattern) 
       i--; j--;
       if (i!=j) {
          if (i>=low && i<high) {
-            if (j>=low && j<high) 
+            if (j>=lowj && j<highj) 
                d_nz[i-low]++;
             else
                o_nz[i-low]++;
@@ -262,8 +262,10 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
       iscols = is;
       localCols = nlocal[rank];
    } else {
-      ierr = MatGetOwnershipIS(Ain,NULL,&iscols);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Ain, NULL, &localCols); CHKERRQ(ierr);
+      PetscInt lowj, highj;
+      ierr = MatGetOwnershipRangeColumn(Ain,&lowj,&highj);CHKERRQ(ierr);  
+      localCols = highj-lowj;
+      ierr = ISCreateStride(comm,localCols, lowj, 1, &iscols);CHKERRQ(ierr);
    }
 
    /* copy permutation */
@@ -332,13 +334,16 @@ void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *t
    #else
       ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    #endif
+   if (*trans == 1) {
+      Vec aux = xvec; xvec = yvec; yvec = aux;
+   }
    for (i=0; i<*blockSize; i++) {
       ierr = VecPlaceArray(xvec, ((PRIMME_NUM*)x) + (*ldx)*i); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
       ierr = VecPlaceArray(yvec, ((PRIMME_NUM*)y) + (*ldy)*i); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
       if (*trans == 0) {
          ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
       } else {
-         ierr = MatMultTranspose(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+         ierr = MatMultHermitianTranspose(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
       }
       ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
       ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
@@ -408,9 +413,9 @@ void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
       free(aux);
    }
    else if (*mode == primme_svds_op_augmented) {
-      ApplyPCPrecPETSCGen((PRIMME_NUM*)x+primme_svds->nLocal, ldx, y, ldy, blockSize, 1,
+      ApplyPCPrecPETSCGen((PRIMME_NUM*)x+primme_svds->nLocal, ldx, y, ldy, blockSize, 0,
          (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
-      ApplyPCPrecPETSCGen(x, ldx, (PRIMME_NUM*)y+primme_svds->nLocal, ldy, blockSize, 0,
+      ApplyPCPrecPETSCGen(x, ldx, (PRIMME_NUM*)y+primme_svds->nLocal, ldy, blockSize, 1,
          (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
    }
 }
