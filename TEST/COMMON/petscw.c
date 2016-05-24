@@ -395,9 +395,9 @@ void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
    if (*mode == primme_svds_op_AtA) {
       aux = (PRIMME_NUM *)primme_calloc(primme_svds->mLocal, sizeof(PRIMME_NUM), "aux");
       for(i=0; i<*blockSize; i++) {
-         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 0,
+         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 1,
             (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
-         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 1,
+         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 0,
             (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
       }
       free(aux);
@@ -405,9 +405,9 @@ void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
    else if (*mode == primme_svds_op_AAt) {
       aux = (PRIMME_NUM *)primme_calloc(primme_svds->nLocal, sizeof(PRIMME_NUM), "aux");
       for(i=0; i<*blockSize; i++) {
-         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 1,
+         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 0,
             (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
-         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 0,
+         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 1,
             (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
       }
       free(aux);
