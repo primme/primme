@@ -381,6 +381,9 @@ int read_driver_params(char *configFileName, driver_params *driver) {
                else if (strcmp(stringValue, "normal") == 0) {
                   driver->PrecChoice = driver_normal;
                }
+               else if (strcmp(stringValue, "bjacobi") == 0) {
+                  driver->PrecChoice = driver_bjacobi;
+               }
                else {
                   fprintf(stderr, 
                      "ERROR(read_driver_params): Invalid parameter '%s'\n", ident);
@@ -433,7 +436,7 @@ int read_driver_params(char *configFileName, driver_params *driver) {
 
 void driver_display_params(driver_params driver, FILE *outputFile) {
 
-const char *strPrecChoice[] = {"noprecond", "jacobi", "davidsonjacobi", "ilut", "normal"};
+const char *strPrecChoice[] = {"noprecond", "jacobi", "davidsonjacobi", "ilut", "normal", "bjacobi"};
 const char *strMatrixChoice[] = {"default", "native", "petsc", "parasails", "rsb"};
  
 fprintf(outputFile, "// ---------------------------------------------------\n"

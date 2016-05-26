@@ -74,6 +74,8 @@ int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int
       *fnorm_ = fnorm;
    }
 
+   ierr = MatGetSize(**matrix, m, n); CHKERRQ(ierr);
+
    if (perm && *m == *n) {
       Mat Atemp;
       ierr = permutematrix(**matrix, NULL, &Atemp, NULL, perm);CHKERRQ(ierr);
@@ -84,7 +86,6 @@ int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int
       *perm = NULL;
    }
 
-   ierr = MatGetSize(**matrix, m, n); CHKERRQ(ierr);
    ierr = MatGetLocalSize(**matrix, mLocal, nLocal); CHKERRQ(ierr);
    MPI_Comm_size(MPI_COMM_WORLD, numProcs);
    MPI_Comm_rank(MPI_COMM_WORLD, procID);
@@ -303,10 +304,16 @@ void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    int i;
    Mat *matrix;
    Vec xvec, yvec;
+   PetscInt m, n, mLocal, nLocal;
    PetscErrorCode ierr;
 
-   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));   
    matrix = (Mat *)primme->matrix;
+
+   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));   
+   ierr = MatGetSize(*matrix, &m, &n);  CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   ierr = MatGetLocalSize(*matrix, &mLocal, &nLocal);  CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   assert(m == primme->n && n == primme->n && mLocal == primme->nLocal
+         && nLocal == primme->nLocal);
 
    #if PETSC_VERSION_LT(3,6,0)
    ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
@@ -329,9 +336,17 @@ void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *t
    int i;
    Mat *matrix;
    Vec xvec, yvec;
+   PetscInt m, n, mLocal, nLocal;
    PetscErrorCode ierr;
    
    matrix = (Mat *)primme_svds->matrix;
+
+   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));   
+   ierr = MatGetSize(*matrix, &m, &n); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   ierr = MatGetLocalSize(*matrix, &mLocal, &nLocal); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   assert(m == primme_svds->m && n == primme_svds->n && mLocal == primme_svds->mLocal
+         && nLocal == primme_svds->nLocal);
+
    #if PETSC_VERSION_LT(3,6,0)
       ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    #else
@@ -361,9 +376,14 @@ static void ApplyPCPrecPETSCGen(void *x, int *ldx, void *y, int *ldy, int *block
    Vec xvec, yvec;
    Mat matrix;
    PetscErrorCode ierr;
+   PetscInt mLocal, nLocal;
    
-   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));
    ierr = PCGetOperators(pc[0],&matrix,NULL); CHKERRABORT(comm, ierr);
+
+   assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));   
+   ierr = MatGetLocalSize(matrix, &mLocal, &nLocal); CHKERRABORT(comm, ierr);
+   assert(mLocal == nLocal && nLocal <= *ldx && mLocal <= *ldy);
+
    #if PETSC_VERSION_LT(3,6,0)
       ierr = MatGetVecs(matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
    #else
