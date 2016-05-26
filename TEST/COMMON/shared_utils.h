@@ -48,7 +48,8 @@ typedef enum {
    driver_jacobi,       /* K=Diag(A-shift),   shift provided once by user */
    driver_jacobi_i,     /* Diag(A-shift_i), shifts provided by primme every step */
    driver_ilut,         /* ILUT(A-shift)  , shift provided once by user */
-   driver_normal        /* precond based on A*A, only for SVD */
+   driver_normal,       /* precond based on A*A, only for SVD */
+   driver_bjacobi       /* block jacobi */
 } driver_prec;
 
 typedef struct driver_params {
