@@ -74,11 +74,14 @@ int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int
       *fnorm_ = fnorm;
    }
 
-   if (perm) {
+   if (perm && *m == *n) {
       Mat Atemp;
       ierr = permutematrix(**matrix, NULL, &Atemp, NULL, perm);CHKERRQ(ierr);
       ierr = MatDestroy(*matrix);CHKERRQ(ierr);
       **matrix = Atemp;
+   }
+   else if (perm) {
+      *perm = NULL;
    }
 
    ierr = MatGetSize(**matrix, m, n); CHKERRQ(ierr);
@@ -353,16 +356,18 @@ void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *t
 }
 
 static void ApplyPCPrecPETSCGen(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
-                                int trans, Mat *matrix, PC *pc, MPI_Comm comm) {
+                                int trans, PC *pc, MPI_Comm comm) {
    int i;
    Vec xvec, yvec;
+   Mat matrix;
    PetscErrorCode ierr;
    
    assert(sizeof(PetscScalar) == sizeof(PRIMME_NUM));
+   ierr = PCGetOperators(pc[0],&matrix,NULL); CHKERRABORT(comm, ierr);
    #if PETSC_VERSION_LT(3,6,0)
-      ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
+      ierr = MatGetVecs(matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
    #else
-      ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
+      ierr = MatCreateVecs(matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
    #endif
    for (i=0; i<*blockSize; i++) {
       ierr = VecPlaceArray(xvec, ((PRIMME_NUM*)x) + (*ldx)*i); CHKERRABORT(comm, ierr);
@@ -384,7 +389,7 @@ static void ApplyPCPrecPETSCGen(void *x, int *ldx, void *y, int *ldy, int *block
 
 void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
    ApplyPCPrecPETSCGen(x, &primme->nLocal, y, &primme->nLocal, blockSize, 0,
-      (Mat *)primme->matrix, primme->preconditioner, *(MPI_Comm*)primme->commInfo);
+      primme->preconditioner, *(MPI_Comm*)primme->commInfo);
 }
 
 void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
@@ -395,28 +400,28 @@ void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
    if (*mode == primme_svds_op_AtA) {
       aux = (PRIMME_NUM *)primme_calloc(primme_svds->mLocal, sizeof(PRIMME_NUM), "aux");
       for(i=0; i<*blockSize; i++) {
-         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 0,
-            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
-         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 1,
-            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 1,
+            primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 0,
+            primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
       }
       free(aux);
    }
    else if (*mode == primme_svds_op_AAt) {
       aux = (PRIMME_NUM *)primme_calloc(primme_svds->nLocal, sizeof(PRIMME_NUM), "aux");
       for(i=0; i<*blockSize; i++) {
-         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 1,
-            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
-         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 0,
-            (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         ApplyPCPrecPETSCGen((PRIMME_NUM*)x+(*ldx)*i, ldx, aux, ldy, &one, 0,
+            primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         ApplyPCPrecPETSCGen(aux, ldx, (PRIMME_NUM*)y+(*ldy)*i, ldy, &one, 1,
+            primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
       }
       free(aux);
    }
    else if (*mode == primme_svds_op_augmented) {
       ApplyPCPrecPETSCGen((PRIMME_NUM*)x+primme_svds->nLocal, ldx, y, ldy, blockSize, 0,
-         (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
       ApplyPCPrecPETSCGen(x, ldx, (PRIMME_NUM*)y+primme_svds->nLocal, ldy, blockSize, 1,
-         (Mat *)primme_svds->matrix, primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
+         primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
    }
 }
 

@@ -581,6 +581,38 @@ static int setMatrixAndPrecond(driver_params *driver,
                primme_svds->preconditioner = pc;
                primme_svds->applyPreconditioner = ApplyPCPrecPETSCSVD;
             }
+            break;
+         case driver_normal:
+            {
+               PetscErrorCode ierr;
+               Mat *C;
+               pc = (PC *)primme_calloc(1, sizeof(PC), "pc");
+               C = (Mat *)primme_calloc(1, sizeof(Mat), "mat");
+               ierr = PCCreate(PETSC_COMM_WORLD, pc); CHKERRQ(ierr);
+#ifdef PETSC_HAVE_HYPRE
+               ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(*pc, "boomeramg"); CHKERRQ(ierr);
+#else
+               ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
+#endif
+               ierr = MatHermitianTranspose(*matrix,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+               if (primme_svds->m >= primme_svds->n) {
+                  ierr = MatMatMult(A,*matrix,MAT_INITIAL_MATRIX,PETSC_DEFAULT,C);CHKERRQ(ierr);
+               }
+               else {
+                  ierr = MatMatMult(*matrix,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,C);CHKERRQ(ierr);
+               }
+               ierr = PCSetOperators(*pc, *C, *C); CHKERRQ(ierr);
+               ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
+               ierr = PCSetUp(*pc); CHKERRQ(ierr);
+               primme_svds->preconditioner = pc;
+               primme_svds->primme.applyPreconditioner = ApplyPCPrecPETSC;
+               primme_svds->primme.preconditioner = pc;
+               primme_svds->primme.correctionParams.precondition = 1;
+               primme_svds->primme.commInfo = primme_svds->commInfo;
+               primme_svds->primme.matrix = C;
+               ierr = MatDestroy(&A);CHKERRQ(ierr);
+            }
          }
       }
 #endif
@@ -689,18 +721,21 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_svds_params *pr
          PetscErrorCode ierr;
          PC *pc = (PC*)primme_svds->preconditioner;
          ierr = MatDestroy((Mat*)primme_svds->matrix);CHKERRQ(ierr);
-         if (driver->PrecChoice == driver_noprecond) {
-         }
-         else if (driver->PrecChoice != driver_jacobi_i) {
-            ierr = PCDestroy(&pc[0]);CHKERRQ(ierr);
+         switch(driver->PrecChoice) {
+         case driver_noprecond:
+         break;
+         case driver_ilut:
             if (pc[1]) {
                ierr = PCDestroy(&pc[1]);CHKERRQ(ierr);
             }
+         case driver_normal:
+            ierr = PCDestroy(&pc[0]);CHKERRQ(ierr);
             free(primme_svds->preconditioner);
-         }
-         else {
-            ierr = VecDestroy((Vec*)primme_svds->preconditioner);CHKERRQ(ierr);
+            break;
+         case driver_jacobi:
+         case driver_jacobi_i:
             free(primme_svds->preconditioner);
+            break;
          }
       }
 #endif
