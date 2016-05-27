@@ -304,7 +304,8 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
 
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate) {
    primme_params primme;
-   int intWorkSize=0, realWorkSize=0;
+   int intWorkSize=0;         /* Size of int work space */
+   long int realWorkSize=0;   /* Size of real work space */
 
    /* Require workspace for 1st stage */
    if (primme_svds->method != primme_svds_op_none) {
