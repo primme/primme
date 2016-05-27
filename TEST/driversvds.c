@@ -625,24 +625,22 @@ static int setMatrixAndPrecond(driver_params *driver,
                PetscInt lowj, highj;
                MPI_Comm comm;
                pc = (PC *)primme_calloc(1, sizeof(PC), "pc");
-               ierr = PCCreate(PETSC_COMM_WORLD, pc); CHKERRQ(ierr);
-#ifdef PETSC_HAVE_HYPRE
-               ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
-               ierr = PCHYPRESetType(*pc, "boomeramg"); CHKERRQ(ierr);
-#else
-               ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
-#endif
-               ierr = MatHermitianTranspose(*matrix,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-               ierr = PetscObjectGetComm((PetscObject)*matrix,&comm);CHKERRQ(ierr);
-               ierr = MatGetOwnershipRangeColumn(*matrix,&lowj,&highj);CHKERRQ(ierr);  
-               ierr = ISCreateStride(comm, primme_svds->nLocal, lowj, 1, &isrows);CHKERRQ(ierr);
-               ierr = MatGetSubMatrix(A,isrows,NULL,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
-               ierr = MatDestroy(&A);CHKERRQ(ierr);
-               ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-               ierr = MatMPIAIJGetLocalMat(At, MAT_INITIAL_MATRIX, &localA);
+               if (primme_svds->m > primme_svds->n) {
+                  ierr = MatHermitianTranspose(*matrix,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+                  ierr = PetscObjectGetComm((PetscObject)*matrix,&comm);CHKERRQ(ierr);
+                  ierr = MatGetOwnershipRangeColumn(*matrix,&lowj,&highj);CHKERRQ(ierr);  
+                  ierr = ISCreateStride(comm, primme_svds->nLocal, lowj, 1, &isrows);CHKERRQ(ierr);
+                  ierr = MatGetSubMatrix(A,isrows,NULL,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+                  ierr = MatDestroy(&A);CHKERRQ(ierr);
+                  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+                  ierr = MatMPIAIJGetLocalMat(At, MAT_INITIAL_MATRIX, &localA);
+                  ierr = MatDestroy(&At);CHKERRQ(ierr);
+               }
+               else {
+                  ierr = MatMPIAIJGetLocalMat(*matrix, MAT_INITIAL_MATRIX, &localA);
+               }
                ierr = MatHermitianTranspose(localA, MAT_INITIAL_MATRIX, &localAt); CHKERRQ(ierr);
                ierr = MatMatMult(localA,localAt,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-               ierr = MatDestroy(&At);CHKERRQ(ierr);
                ierr = MatDestroy(&localA);CHKERRQ(ierr);
                ierr = MatDestroy(&localAt);CHKERRQ(ierr);
                ierr = PetscObjectGetComm((PetscObject)C, &comm);CHKERRQ(ierr);
