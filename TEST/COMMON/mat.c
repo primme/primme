@@ -419,4 +419,3 @@ void ApplyInvDavidsonNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int 
    ApplyInvNormalPrecNativeSvdsGen(x, ldx, y, ldy, blockSize, mode, primme_svds,
       primme->ShiftsForPreconditioner);
 }
-
