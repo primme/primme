@@ -693,6 +693,7 @@ static int setMatrixAndPrecond(driver_params *driver,
          case driver_noprecond:
             primme_svds->preconditioner = NULL;
             primme_svds->applyPreconditioner = NULL;
+            break;
          case driver_jacobi:
             createInvNormalPrecRSB(*matrix, driver->shift, &diag);
             primme_svds->preconditioner = diag;
