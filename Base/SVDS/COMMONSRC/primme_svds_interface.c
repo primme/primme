@@ -130,9 +130,8 @@ int primme_svds_set_method(primme_svds_preset_method method,
    primme_svds_set_defaults(primme_svds);
 
    /* Set methods for the underneath eigensolvers */
-   if (methodStage1 != DEFAULT_METHOD)
-      primme_set_method(methodStage1, &primme_svds->primme);
-   if (methodStage2 != DEFAULT_METHOD)
+   primme_set_method(methodStage1, &primme_svds->primme);
+   if (primme_svds->methodStage2 != primme_svds_op_none)
       primme_set_method(methodStage2, &primme_svds->primmeStage2);
 
    return 0;
@@ -157,9 +156,6 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
    /* Copy values set in primme_svds to the first stage underneath eigensolver */
    copy_params_from_svds(primme_svds, 0);
 
-   /* Set default values and method for the first state */
-   primme_set_defaults(&primme_svds->primme);
-
    if (primme_svds->methodStage2 != primme_svds_op_none) {
       /* Copy values set in primme_svds to the second stage underneath eigensolver */
       copy_params_from_svds(primme_svds, 1);
@@ -171,7 +167,6 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
       /* Set default values and method for the second state */
       if (primme_svds->primmeStage2.dynamicMethodSwitch < 0)
          primme_set_method(JDQMR, &primme_svds->primmeStage2);
-      primme_set_defaults(&primme_svds->primmeStage2);
    }
 }
 
