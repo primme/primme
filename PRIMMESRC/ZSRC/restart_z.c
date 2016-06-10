@@ -260,9 +260,6 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    }
    else {
       *restartsSinceReset = 0;
-      /* If using refining, reset V also */
-      //if (Q) *reset = 2;
-      printf("Reset!\n");
    }
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
    

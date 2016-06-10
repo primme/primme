@@ -260,9 +260,6 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    }
    else {
       *restartsSinceReset = 0;
-      /* If using refining, reset V also */
-      //if (Q) *reset = 2;
-      printf("Reset!\n");
    }
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
    
