@@ -129,8 +129,11 @@ int primme_svds_set_method(primme_svds_preset_method method,
    /* Setup underneath eigensolvers based on primme_svds configuration */
    primme_svds_set_defaults(primme_svds);
 
-   /* Set methods for the underneath eigensolvers */
+   /* Set method for the first stage */
    primme_set_method(methodStage1, &primme_svds->primme);
+
+   /* Set method for the second state */
+   if (methodStage2 == DEFAULT_METHOD) methodStage2 = JDQMR;
    if (primme_svds->methodStage2 != primme_svds_op_none)
       primme_set_method(methodStage2, &primme_svds->primmeStage2);
 
@@ -163,10 +166,6 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
       /* NOTE: refined extraction seems to work better than RR */
       if (primme_svds->primmeStage2.projectionParams.projection == primme_proj_default)
          primme_svds->primmeStage2.projectionParams.projection = primme_proj_refined;
-
-      /* Set default values and method for the second state */
-      if (primme_svds->primmeStage2.dynamicMethodSwitch < 0)
-         primme_set_method(JDQMR, &primme_svds->primmeStage2);
    }
 }
 
