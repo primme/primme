@@ -35,7 +35,7 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
- static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V,
+static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V,
        @(type) *W, int nLocal, @(type) *hR, int ldhR, @(type) *hU, int ldhU,
        int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, 
        int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
@@ -44,7 +44,7 @@
        int ldM, int *numConverged, int *numConvergedStored, 
        @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
        int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
-       double machEps, @(type) *rwork, int rworkSize, int *iwork, 
+       int reset, double machEps, @(type) *rwork, int rworkSize, int *iwork, 
        primme_params *primme);
 
 static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W,

@@ -95,7 +95,11 @@ int main (int argc, char *argv[]) {
 #elif defined(USE_PETSC)
    PetscInitialize(&argc, &argv, NULL, NULL);
    PetscLogEventRegister("PRIMME global sum", 0, &PRIMME_GLOBAL_SUM);
+   #if PETSC_VERSION_LT(3,7,0)
    ierr = PetscLogBegin(); CHKERRQ(ierr);
+   #else
+   ierr = PetscLogDefaultBegin(); CHKERRQ(ierr);
+   #endif
 #endif
 
    ret = real_main(argc, argv);
@@ -541,7 +545,7 @@ static int setMatrixAndPrecond(driver_params *driver,
             primme_svds->applyPreconditioner = ApplyInvDavidsonNormalPrecNative;
             break;
          case driver_ilut:
-            {
+            if (primme_svds->m == primme_svds->n) {
                PetscErrorCode ierr;
                pc = (PC *)primme_calloc(2, sizeof(PC), "pc");
                pc[1] = NULL;
@@ -577,6 +581,86 @@ static int setMatrixAndPrecond(driver_params *driver,
                primme_svds->preconditioner = pc;
                primme_svds->applyPreconditioner = ApplyPCPrecPETSCSVD;
             }
+            else  {
+               fprintf(stderr, "ERROR: ilut only supported for square matrices! Try bjacobi or normal\n");
+               return -1;
+            }
+            break;
+         case driver_normal:
+            {
+               PetscErrorCode ierr;
+               Mat C;
+               pc = (PC *)primme_calloc(1, sizeof(PC), "pc");
+               ierr = PCCreate(PETSC_COMM_WORLD, pc); CHKERRQ(ierr);
+#ifdef PETSC_HAVE_HYPRE
+               ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(*pc, "boomeramg"); CHKERRQ(ierr);
+#else
+               ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
+#endif
+               ierr = MatHermitianTranspose(*matrix,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+               if (primme_svds->m >= primme_svds->n) {
+                  ierr = MatMatMult(A,*matrix,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+               }
+               else {
+                  ierr = MatMatMult(*matrix,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+               }
+               ierr = PCSetOperators(*pc, C, C); CHKERRQ(ierr);
+               ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
+               ierr = PCSetUp(*pc); CHKERRQ(ierr);
+               primme_svds->preconditioner = pc;
+               primme_svds->primme.applyPreconditioner = ApplyPCPrecPETSC;
+               primme_svds->primme.preconditioner = pc;
+               primme_svds->primme.correctionParams.precondition = 1;
+               primme_svds->primme.commInfo = primme_svds->commInfo;
+               ierr = MatDestroy(&A);CHKERRQ(ierr);
+               ierr = MatDestroy(&C);CHKERRQ(ierr);
+            }
+            break;
+         case driver_bjacobi:
+            {
+               PetscErrorCode ierr;
+               Mat C, localA, localAt, At;
+               IS iscols, isrows;
+               PetscInt lowj, highj;
+               MPI_Comm comm;
+               pc = (PC *)primme_calloc(1, sizeof(PC), "pc");
+               if (primme_svds->m > primme_svds->n) {
+                  ierr = MatHermitianTranspose(*matrix,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+                  ierr = PetscObjectGetComm((PetscObject)*matrix,&comm);CHKERRQ(ierr);
+                  ierr = MatGetOwnershipRangeColumn(*matrix,&lowj,&highj);CHKERRQ(ierr);  
+                  ierr = ISCreateStride(comm, primme_svds->nLocal, lowj, 1, &isrows);CHKERRQ(ierr);
+                  ierr = MatGetSubMatrix(A,isrows,NULL,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+                  ierr = MatDestroy(&A);CHKERRQ(ierr);
+                  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+                  ierr = MatMPIAIJGetLocalMat(At, MAT_INITIAL_MATRIX, &localA);
+                  ierr = MatDestroy(&At);CHKERRQ(ierr);
+               }
+               else {
+                  ierr = MatMPIAIJGetLocalMat(*matrix, MAT_INITIAL_MATRIX, &localA);
+               }
+               ierr = MatHermitianTranspose(localA, MAT_INITIAL_MATRIX, &localAt); CHKERRQ(ierr);
+               ierr = MatMatMult(localA,localAt,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+               ierr = MatDestroy(&localA);CHKERRQ(ierr);
+               ierr = MatDestroy(&localAt);CHKERRQ(ierr);
+               ierr = PetscObjectGetComm((PetscObject)C, &comm);CHKERRQ(ierr);
+               ierr = PCCreate(comm, pc); CHKERRQ(ierr);
+#ifdef PETSC_HAVE_HYPRE
+               ierr = PCSetType(*pc, PCHYPRE); CHKERRQ(ierr);
+               ierr = PCHYPRESetType(*pc, "boomeramg"); CHKERRQ(ierr);
+#else
+               ierr = PCSetType(*pc, PCBJACOBI); CHKERRQ(ierr);
+#endif
+               ierr = PCSetOperators(*pc, C, C); CHKERRQ(ierr);
+               ierr = PCSetFromOptions(*pc); CHKERRQ(ierr);
+               ierr = PCSetUp(*pc); CHKERRQ(ierr);
+               primme_svds->preconditioner = pc;
+               primme_svds->primme.applyPreconditioner = ApplyPCPrecPETSC;
+               primme_svds->primme.preconditioner = pc;
+               primme_svds->primme.correctionParams.precondition = 1;
+               primme_svds->primme.commInfo = primme_svds->commInfo;
+               ierr = MatDestroy(&C);CHKERRQ(ierr);
+            }
          }
       }
 #endif
@@ -609,6 +693,7 @@ static int setMatrixAndPrecond(driver_params *driver,
          case driver_noprecond:
             primme_svds->preconditioner = NULL;
             primme_svds->applyPreconditioner = NULL;
+            break;
          case driver_jacobi:
             createInvNormalPrecRSB(*matrix, driver->shift, &diag);
             primme_svds->preconditioner = diag;
@@ -685,18 +770,21 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_svds_params *pr
          PetscErrorCode ierr;
          PC *pc = (PC*)primme_svds->preconditioner;
          ierr = MatDestroy((Mat*)primme_svds->matrix);CHKERRQ(ierr);
-         if (driver->PrecChoice == driver_noprecond) {
-         }
-         else if (driver->PrecChoice != driver_jacobi_i) {
-            ierr = PCDestroy(&pc[0]);CHKERRQ(ierr);
+         switch(driver->PrecChoice) {
+         case driver_noprecond:
+         break;
+         case driver_ilut:
             if (pc[1]) {
                ierr = PCDestroy(&pc[1]);CHKERRQ(ierr);
             }
+         case driver_normal:
+            ierr = PCDestroy(&pc[0]);CHKERRQ(ierr);
             free(primme_svds->preconditioner);
-         }
-         else {
-            ierr = VecDestroy((Vec*)primme_svds->preconditioner);CHKERRQ(ierr);
+            break;
+         case driver_jacobi:
+         case driver_jacobi_i:
             free(primme_svds->preconditioner);
+            break;
          }
       }
 #endif

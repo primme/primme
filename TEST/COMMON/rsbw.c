@@ -44,7 +44,7 @@ int readMatrixRSB(const char* matrixFileName, blas_sparse_matrix *matrix, double
 #  else
    rsb_type_t typecode = RSB_NUMERICAL_TYPE_DOUBLE;
 #  endif
-   assert(rsb_lib_init(RSB_NULL_INIT_OPTIONS) == RSB_ERR_NO_ERROR);
+   if (rsb_lib_init(RSB_NULL_INIT_OPTIONS) != RSB_ERR_NO_ERROR) assert(0);
    *matrix = blas_invalid_handle;
    if ((rsb_perror(NULL, rsb_lib_init(RSB_NULL_INIT_OPTIONS)))!=RSB_ERR_NO_ERROR) {
      fprintf(stderr, "Error while initializing librsb.\n");
@@ -57,8 +57,8 @@ int readMatrixRSB(const char* matrixFileName, blas_sparse_matrix *matrix, double
       return -1;
    }
 
-   assert(BLAS_ussp(*matrix, blas_rsb_autotune_next_operation) == 0);
-   assert(BLAS_dusget_infinity_norm(*matrix, fnorm, blas_no_trans) == 0);
+   if (BLAS_ussp(*matrix, blas_rsb_autotune_next_operation) != 0) assert(0);
+   if (BLAS_dusget_infinity_norm(*matrix, fnorm, blas_no_trans) != 0) assert(0);
 
    return 0;
 #endif
@@ -81,9 +81,9 @@ void RSBMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    for (i=0; i<*blockSize*primme->nLocal; i++)
       yvec[i] = 0;
 #ifndef USE_DOUBLECOMPLEX
-   assert(BLAS_dusmm(blas_colmajor, blas_no_trans, *blockSize, 1.0, *matrix, xvec, primme->nLocal, yvec, primme->nLocal) == 0);
+   if(BLAS_dusmm(blas_colmajor, blas_no_trans, *blockSize, 1.0, *matrix, xvec, primme->nLocal, yvec, primme->nLocal) != 0) assert(0);
 #else
-   assert(BLAS_zusmm(blas_colmajor, blas_no_trans, *blockSize, &one, *matrix, xvec, primme->nLocal, yvec, primme->nLocal) == 0);
+   if(BLAS_zusmm(blas_colmajor, blas_no_trans, *blockSize, &one, *matrix, xvec, primme->nLocal, yvec, primme->nLocal) != 0) assert(0);
 #endif
 }
 
@@ -110,9 +110,9 @@ void RSBMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
    }
 
 #ifndef USE_DOUBLECOMPLEX
-   assert(BLAS_dusmm(blas_colmajor, *trans == 0 ? blas_no_trans : blas_trans, *blockSize, 1.0, *matrix, xvec, *ldx, yvec, *ldy) == 0);
+   if (BLAS_dusmm(blas_colmajor, *trans == 0 ? blas_no_trans : blas_trans, *blockSize, 1.0, *matrix, xvec, *ldx, yvec, *ldy) != 0) assert(0);
 #else
-   assert(BLAS_zusmm(blas_colmajor, *trans == 0 ? blas_no_trans : blas_trans, *blockSize, &one, *matrix, xvec, *ldx, yvec, *ldy) == 0);
+   if (BLAS_zusmm(blas_colmajor, *trans == 0 ? blas_no_trans : blas_trans, *blockSize, &one, *matrix, xvec, *ldx, yvec, *ldy) != 0) assert(0);
 #endif
 }
 
@@ -126,11 +126,11 @@ void RSBMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
 ******************************************************************************/
 static void getDiagonal(blas_sparse_matrix matrix, double *diag) {
 #ifndef USE_DOUBLECOMPLEX
-   assert(BLAS_dusget_diag(matrix, diag) == 0);
+   if (BLAS_dusget_diag(matrix, diag) != 0) assert(0);
 #else
    int n = BLAS_usgp(matrix, blas_num_rows), i;
    PRIMME_NUM *d = (PRIMME_NUM *)primme_calloc(n, sizeof(PRIMM_NUM), "aux");
-   assert(BLAS_zusget_diag(matrix, d) == 0);
+   if (BLAS_zusget_diag(matrix, d) != 0) assert(0);
    for (i=0; i<n; i++) diag[i] = REAL_PART(d[i]);
 #endif
 }

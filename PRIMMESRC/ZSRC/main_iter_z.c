@@ -182,6 +182,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    double *blockNorms;      /* Residual norms corresponding to current block */
                             /* vectors.                                      */
    double smallestResNorm;  /* the smallest residual norm in the block       */
+   int reset=0;             /* Flag to reset V and W                         */
+   int restartsSinceReset=0;/* Restart since last reset of V and W           */
    Complex_Z tpone = {+1.0e+00,+0.0e00};/* constant 1.0 of type Complex_Z */
    Complex_Z tzero = {+0.0e+00,+0.0e00};/* constant 0.0 of type Complex_Z */
 
@@ -191,7 +193,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    double timeForMV;        /* Measures time for 1 matvec operation          */
    double tstart=0.0;       /* Timing variable for accumulative time spent   */
 
-   int enforceRestart=1;    /* Force an extra RR in soft locking             */
+   int enforceRestart=0;    /* Force an extra RR in soft locking             */
 
    /* -------------------------------------------------------------- */
    /* Subdivide the workspace                                        */
@@ -267,6 +269,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    primme->stats.estimateMinEVal   = HUGE_VAL;
    primme->stats.estimateLargestSVal = -HUGE_VAL;
    primme->stats.maxConvTol        = 0.0L;
+   primme->stats.estimateResidualError = 0.0L;
    if (primme->aNorm > 0.0L) {
       tol = primme->eps*primme->aNorm;
    }
@@ -454,7 +457,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                   blockSize, availableBlockSize, evecs, numLocked, evals,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
-                  rwork, rworkSize, iwork, primme);
+                  &reset, rwork, rworkSize, iwork, primme);
             }
             else {
                blockSize = recentlyConverged = 0;
@@ -648,7 +651,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
                primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, 0,
                hVecs, basisSize, 0, &basisSize, &targetShiftIndex, numArbitraryVecs,
-               machEps, rwork, rworkSize, iwork, primme);
+               &restartsSinceReset, &reset, machEps, rwork, rworkSize, iwork, primme);
 
          numArbitraryVecs = 0;
 
@@ -863,6 +866,10 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                fflush(primme->outputFile);
             }
 
+            restartsSinceReset = 0;
+            reset = 0;
+            primme->stats.estimateResidualError = 0.0;
+
            /* ------------------------------------------------------------ */
          } /* End of elseif(!converged). Restart and recompute all epairs
             * ------------------------------------------------------------ */
@@ -919,6 +926,10 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
  * blockNorms    Residual norms of the Ritz vectors being computed during the
  *               current iteration
  * blockSize     Dimension of the block
+ *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * reset         flag to reset V and W in the next restart
  * 
  ******************************************************************************/
 
@@ -929,7 +940,7 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
       int maxBlockSize, Complex_Z *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, Complex_Z *rwork, int rworkSize, int *iwork,
+      double *smallestResNorm, int *reset, Complex_Z *rwork, int rworkSize, int *iwork,
       primme_params *primme) {
 
    int i, blki;            /* loop variables */
@@ -950,7 +961,7 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
       return maxBlockSize+maxBlockSize*basisSize+
          max(max(
                check_convergence_zprimme(NULL, nLocal, 0, NULL, 0, NULL, numLocked, 0,
-                  basisSize-maxBlockSize, basisSize, NULL, NULL, NULL, 0.0, NULL, 0, NULL, primme),
+                  basisSize-maxBlockSize, basisSize, NULL, NULL, NULL, NULL, 0.0, NULL, 0, NULL, primme),
                Num_update_VWXR_zprimme(NULL, NULL, nLocal, basisSize, 0, NULL, 0, 0, NULL,
                   &t, basisSize-maxBlockSize, basisSize, 0,
                   NULL, 0, 0, 0,
@@ -996,7 +1007,7 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       ret = check_convergence_zprimme(&X[(*blockSize)*ldV], nLocal, ldV,
          &R[(*blockSize)*ldV], ldV, evecs, numLocked, primme->nLocal, 0, blockNormsSize, flagsBlock,
-         &blockNorms[*blockSize], hValsBlock, machEps, rwork, rworkSize, iwork, primme);
+         &blockNorms[*blockSize], hValsBlock, reset, machEps, rwork, rworkSize, iwork, primme);
       if (ret != 0) return ret;
 
       /* Compact blockNorms, X and R for the unconverged pairs in    */

@@ -40,12 +40,23 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QtV, int ldQtV,
    double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
+   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
+   int *restartsSinceReset, int *reset, double machEps,
    double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, double *hU, int ldhU,
    double *R, int ldR, int numPrevRetained, int machEps, int *iwork,
    double *rwork, int rworkSize, primme_params *primme);
+
+int Num_reset_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
+   double *h, int nh, int ldh, double *hVals,
+   double *X0, int nX0b, int nX0e, int ldX0,
+   double *X1, int nX1b, int nX1e, int ldX1,
+   double *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
+   double *Wo, int nWob, int nWoe, int ldWo,
+   double *R, int nRb, int nRe, int ldR, double *Rnorms,
+   double *rnorms, int nrb, int nre,
+   int reset, double machEps, double *rwork, int lrwork, primme_params *primme);
 
 #endif

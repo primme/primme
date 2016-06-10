@@ -154,6 +154,10 @@
  *                  hVecs that do not come from solving the projected problem.
  *                  On output, the number of such vectors that are in the
  *                  restarted basis
+ * restartsSinceReset Number of restarts since last reset of V and W
+ *
+ * reset            flag to reset V and W in the next restart
+ *
  *
  * Return value
  * ------------
@@ -173,7 +177,8 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QtV, int ldQtV,
    double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
+   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
+   int *restartsSinceReset, int *reset, double machEps,
    double *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;                   /* Loop indices */
@@ -183,6 +188,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    int *restartPerm;        /* Permutation of hVecs used to restart V        */
    int *hVecsPerm;          /* Permutation of hVecs to sort as primme.target */
    int ret;                 /* returned error code                           */
+   double aNorm = max((primme?primme->aNorm:0.0), primme->stats.estimateLargestSVal);
 
    /* Return memory requirement */
 
@@ -192,7 +198,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
                NULL, nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL,
                NULL, 0, NULL, NULL, NULL, NULL, ievSize, NULL, NULL,
                NULL, numConverged, numConverged, NULL, NULL, 0, NULL,
-               numPrevRetained, 0, NULL, NULL, NULL, 0.0, NULL, 0,
+               numPrevRetained, 0, NULL, NULL, NULL, 0, 0.0, NULL, 0,
                NULL, primme);
       }
       else {
@@ -200,7 +206,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
                nLocal, NULL, 0, NULL, 0, basisSize, 0, NULL, NULL, NULL, 0,
                NULL, NULL, NULL, NULL, ievSize, NULL, NULL, NULL, NULL,
                evecsHat, 0, NULL, 0, numConverged, NULL, NULL,
-               numPrevRetained, 0, NULL, NULL, NULL, 0.0, NULL, 0,
+               numPrevRetained, 0, NULL, NULL, NULL, 0, 0.0, NULL, 0,
                NULL, primme);
 
       }
@@ -248,6 +254,18 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
       restartSize = min(basisSize, primme->minRestartSize);
    }
 
+   /* Update the estimation of the error in W and V */
+   if (!*reset) {
+      ++*restartsSinceReset;
+   }
+   else {
+      *restartsSinceReset = 0;
+      /* If using refining, reset V also */
+      //if (Q) *reset = 2;
+      printf("Reset!\n");
+   }
+   primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
+   
    restartPerm = iwork;
    hVecsPerm = &restartPerm[basisSize];
    iwork0 = &hVecsPerm[basisSize];
@@ -259,7 +277,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
             hVals, flags, iev, ievSize, blockNorms, evecs, evals, resNorms, evecsHat,
             ldevecsHat, M, ldM, numConverged, numConvergedStored, previousHVecs,
             numPrevRetained, ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm,
-            &numArbitraryVecs, machEps, rwork, rworkSize, iwork0, primme);
+            &numArbitraryVecs, *reset, machEps, rwork, rworkSize, iwork0, primme);
    }
    else {
       double *X, *Res;
@@ -268,10 +286,11 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
             flags, iev, ievSize, blockNorms, evecs, evals, numConverged, numLocked,
             resNorms, evecsPerm, numGuesses, previousHVecs, numPrevRetained,
             ldpreviousHVecs, &indexOfPreviousVecs, hVecsPerm, &numArbitraryVecs,
-            machEps, rwork, rworkSize, iwork0, primme);
+            *reset, machEps, rwork, rworkSize, iwork0, primme);
    }
 
    if (ret != 0) return ret;
+   *reset = 0;
 
    /* Rearrange prevRitzVals according to restartPerm */
 
@@ -388,6 +407,11 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
  *                  hVecs that do not come from solving the projected problem.
  *                  On output, the number of such vectors that are in the
  *                  restarted basis
+ * 
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * reset            flag to reset V and W in the next restart
+ * 
  *
  * Return value
  * ------------
@@ -398,7 +422,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
  *       
  ******************************************************************************/
  
- static int restart_soft_locking_dprimme(int *restartSize, double *V,
+static int restart_soft_locking_dprimme(int *restartSize, double *V,
        double *W, int nLocal, double *hR, int ldhR, double *hU, int ldhU,
        int basisSize, int ldV, double **X, double **R, double *hVecs, 
        int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
@@ -407,7 +431,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
        int ldM, int *numConverged, int *numConvergedStored, 
        double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
        int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
-       double machEps, double *rwork, int rworkSize, int *iwork, 
+       int reset, double machEps, double *rwork, int rworkSize, int *iwork, 
        primme_params *primme) {
 
    int i, j, k, ret;          /* loop indices */
@@ -422,15 +446,15 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
       double d;
       return max(max(max(
                   nLocal,      /* permute_vecs for hVecs */
-                  Num_update_VWXR_dprimme(NULL, NULL, nLocal, basisSize, 0, &t,
+                  Num_reset_update_VWXR_dprimme(NULL, NULL, nLocal, basisSize, 0, &t,
                      *restartSize, 0, NULL,
                      &t, 0, *restartSize, 0,
                      &t, *numConverged, *numConverged+*ievSize, 0,
-                     NULL, 0, 0, 0,
+                     NULL, 0, 0, 0, 0,
                      &t, 0, *restartSize, 0,
                      &t, *numConverged, *numConverged+*ievSize, 0, &d,
                      NULL, 0, 0,
-                     NULL, 0, primme)),
+                     0, 0.0, NULL, 0, primme)),
                   /* if evecsHat, permutation matrix & compute_submatrix workspace */
                   evecsHat ? (primme->numOrthoConst+*numConverged)*
                      (primme->numOrthoConst+*numConverged)*2 : 0),
@@ -547,15 +571,15 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    *X = &V[*restartSize*ldV];
    *R = &W[*restartSize*ldV];
 
-   ret = Num_update_VWXR_dprimme(V, W, nLocal, basisSize, ldV, hVecs,
+   ret = Num_reset_update_VWXR_dprimme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
          *X, left, left+*ievSize, ldV,
-         NULL, 0, 0, 0,
+         NULL, 0, 0, 0, 0,
          W, 0, *restartSize, ldV,
          *R, left, left+*ievSize, ldV, blockNorms,
          NULL, 0, 0,
-         rwork, rworkSize, primme);
+         reset, machEps, rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
    /* ----------------------------------------------------------------- */
@@ -628,6 +652,165 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    }
 
    return 0;
+}
+
+/******************************************************************************
+ * Function Num_reset_update_VWXR - This subroutine performs the next operations:
+ *
+ *    X0 = V*h(nX0b+1:nX0e), X1 = V*h(nX1b+1:nX1e), evecs(evecsSize:) = V*h(nX2b+1:nX2e)
+ *    if reset, then
+ *       reortho evecs(evecsSize:)
+ *       reortho X0
+ *    end
+ *    Wo = A*X0(nWob+1-nX0b:nWoe-nX0b),
+ *    R = Wo(nRb+1-nWob:nRe-nWob) - X0(nRb+1-nX0b:nRe-nX0b)*diag(hVals(nRb+1:nRe)),
+ *    Rnorms = norms(R),
+ *    rnorms = norms(Wo(nrb+1-nWob:nre-nWob) - X0(nrb+1-nX0b:nre-nX0b)*diag(hVals(nrb+1:nre))),
+ *
+ * NOTE: if Rnorms and rnorms are requested, nRb-nRe+nrb-nre < mV
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V, W        input basis
+ * mV,nV,ldV   number of rows and columns and leading dimension of V and W
+ * h           input rotation matrix
+ * nh          Number of columns of h
+ * ldh         The leading dimension of h
+ * hVals       Array of values
+ *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * X0          Output matrix V*h(nX0b:nX0e-1) (optional)
+ * nX0b, nX0e  Range of columns of h
+ * X1          Output matrix V*h(nX1b:nX1e-1) (optional)
+ * nX1b, nX1e  Range of columns of h
+ * evecs       Output matrix V*h(nX2b:nX2e-1) (optional)
+ * evecsSize   First column where to copy V*h(nX2b:nX2e-1) (optional)
+ * nX2b, nX2e  Range of columns of h
+ * Wo          Output matrix W*h(nWob:nWoe-1) (optional)
+ * nWob, nWoe  Range of columns of h
+ * R           Output matrix (optional)
+ * nRb, nRe    Range of columns of h and hVals
+ * Rnorms      Output array with the norms of R (optional)
+ * rnorms      Output array with the extra residual vector norms (optional)
+ * nrb, nre    Columns of residual vector to compute the norm
+ * reset       if reset>1, reothogonalize Xi; if reset>0, recompute Wo=A*X0
+ * 
+ * NOTE: n*e, n*b are zero-base indices of ranges where the first value is
+ *       included and the last isn't.
+ *
+ ******************************************************************************/
+
+int Num_reset_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
+   double *h, int nh, int ldh, double *hVals,
+   double *X0, int nX0b, int nX0e, int ldX0,
+   double *X1, int nX1b, int nX1e, int ldX1,
+   double *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
+   double *Wo, int nWob, int nWoe, int ldWo,
+   double *R, int nRb, int nRe, int ldR, double *Rnorms,
+   double *rnorms, int nrb, int nre,
+   int reset, double machEps, double *rwork, int lrwork, primme_params *primme) {
+
+   int i, j;         /* Loop variables */
+   int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
+   double *tmp, *tmp0;
+   int ret;
+
+   /* Return memory requirements and quick exit */
+   if (V == NULL || reset == 0) {
+      return Num_update_VWXR_dprimme(V, W, mV, nV, ldV, h, nh, ldh, hVals,
+         X0, nX0b, nX0e, ldX0,
+         X1, nX1b, nX1e, ldX1,
+         evecs?&evecs[ldevecs*evecsSize]:NULL, nX2b, nX2e, ldevecs,
+         Wo, nWob, nWoe, ldWo,
+         R, nRb, nRe, ldR, Rnorms,
+         rnorms, nrb, nre,
+         rwork, lrwork, primme);
+   }
+
+   /* R or Rnorms or rnorms imply W */
+   assert(!(R || Rnorms || rnorms) || W);
+
+   assert(2*(nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
+
+   /* X_i = V*h(nX_ib:nX_ie-1) */
+
+   assert(!reset || !evecs || nX0b <= nX2b && nX2e <= nX0e);
+   Num_update_VWXR_dprimme(V, NULL, mV, nV, ldV, h, nh, ldh, NULL,
+         X0, nX0b, nX0e, ldX0,
+         X1, nX1b, nX1e, ldX1,
+         evecs?&evecs[ldevecs*evecsSize]:NULL, nX2b, nX2e, ldevecs,
+         NULL, 0, 0, 0,
+         NULL, 0, 0, 0, NULL,
+         NULL, 0, 0,
+         rwork, lrwork, primme);
+
+   /* Reortho [X2 X0] against evecs if asked */
+
+   if (reset > 1) {
+      ret = ortho_dprimme(evecs, ldevecs, NULL, 0, evecsSize, 
+            evecsSize+nX2e-nX2b-1, NULL, 0, 0, mV, primme->iseed, 
+            machEps, rwork, lrwork, primme);
+      if (ret != 0) return ret;
+      ret = ortho_dprimme(X0, ldX0, NULL, 0, 0, nX2b-nX0b-1, evecs,
+            ldevecs, evecsSize+nX2e-nX2b, mV, primme->iseed, 
+            machEps, rwork, lrwork, primme);
+      if (ret != 0) return ret;
+      Num_copy_matrix_dprimme(&evecs[ldevecs*evecsSize], mV, nX2e-nX2b,
+            ldevecs, &X0[ldX0*(nX2b-nX0b)], ldX0);
+      ret = ortho_dprimme(X0, ldX0, NULL, 0, nX2e-nX0b, nX0e-nX0b, evecs,
+            ldevecs, evecsSize, mV, primme->iseed, machEps, rwork, lrwork,
+            primme);
+      if (ret != 0) return ret;
+   }
+
+   /* Compute W = A*V for the orthogonalized corrections */
+
+   assert(nWob == nX0b && nWoe == nX0e);
+   matrixMatvec_dprimme(X0, mV, ldX0, Wo, ldWo, 0, nWoe-nWob, primme);
+ 
+   /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
+   for (j=nRb; j<nRe; j++) {
+      Num_compute_residual_dprimme(mV, hVals[j], &X0[ldX0*(j-nX0b)],
+            &Wo[ldWo*(j-nWob)], &R[ldR*(j-nRb)]);
+      if (Rnorms) {
+         double ztmp;
+         ztmp = Num_dot_dprimme(mV, &R[ldR*(j-nRb)], 1, &R[ldR*(j-nRb)], 1);
+         Rnorms[j-nRb] = *(double*)&ztmp;
+      }
+   }
+
+   /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
+   if (rnorms) for (j=nrb; j<nre; j++) {
+      rnorms[j-nrb] = 0.0;
+      for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
+         double ztmp;
+         Num_compute_residual_dprimme(m, hVals[j], &X0[ldX0*(j-nX0b)],
+               &Wo[i+ldWo*(j-nWob)], rwork);
+         ztmp = Num_dot_dprimme(m, rwork, 1, rwork, 1);
+         rnorms[j-nrb] += *(double*)&ztmp;
+      }
+   }
+
+   /* Reduce Rnorms and rnorms and sqrt the results */
+
+   if (primme->globalSumDouble) {
+      tmp = (double*)rwork;
+      j = 0;
+      if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
+      if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
+      tmp0 = tmp+j;
+      if (j) primme->globalSumDouble(tmp, tmp0, &j, primme);
+      j = 0;
+      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
+      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
+   }
+   else {
+      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
+      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
+   }
+
+   return 0; 
 }
 
 

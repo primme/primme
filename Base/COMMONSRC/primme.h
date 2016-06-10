@@ -133,6 +133,7 @@ typedef struct primme_stats {
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
    double maxConvTol;               /* largest norm residual of a locked eigenpair */
+   double estimateResidualError;    /* accumulated error in V and W */
 } primme_stats;
 
 typedef struct JD_projectors {

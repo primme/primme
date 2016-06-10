@@ -35,7 +35,7 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
- static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V,
+static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V,
        Complex_Z *W, int nLocal, Complex_Z *hR, int ldhR, Complex_Z *hU, int ldhU,
        int basisSize, int ldV, Complex_Z **X, Complex_Z **R, Complex_Z *hVecs, 
        int ldhVecs, int *restartPerm, double *hVals, int *flags, int *iev, 
@@ -44,7 +44,7 @@
        int ldM, int *numConverged, int *numConvergedStored, 
        Complex_Z *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
        int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
-       double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
+       int reset, double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
        primme_params *primme);
 
 static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,

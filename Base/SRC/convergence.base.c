@@ -65,12 +65,16 @@
  * R              The residual vectors of the Ritz vectors in the block
  *                (this routine may remove the evecs directions in some vectors)
  * flags          Array indicating which eigenvectors have converged     
- ******************************************************************************/
+ *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * reset          flag to reset V and W in the next restart
+  ******************************************************************************/
 
 int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    int ldR, @(type) *evecs, int numLocked, int ldevecs, int left, int right,
-   int *flags, double *blockNorms, double *hVals, double machEps, @(type) *rwork,
-   int rworkSize, int *iwork, primme_params *primme) {
+   int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
+   @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;                  /* Loop variable                                      */
    int numToProject;       /* Number of vectors with potential accuracy problem  */
@@ -110,6 +114,9 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    numToProject = 0;
    for (i=left; i < right; i++) {
        
+      /* Don't trust any residual norm below estimateResidualError */
+      blockNorms[i-left] = max(blockNorms[i-left], primme->stats.estimateResidualError);
+
       primme->convTestFun(&hVals[i], &X[ldX*(i-left)], &blockNorms[i-left],
             &isConv, primme);
 
@@ -131,6 +138,17 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
          else if (flags[i] != PRACTICALLY_CONVERGED) {
             flags[i] = UNCONVERGED;
          }
+      }
+
+      /* ----------------------------------------------------------------- */
+      /* If residual norm is around the bound of the error in the          */
+      /* residual norm, then stop converging this value and force reset    */
+      /* of V and W in the next restart.                                   */
+      /* ----------------------------------------------------------------- */
+
+      else if (blockNorms[i-left] <= primme->stats.estimateResidualError) {
+         flags[i] = CONVERGED;
+         *reset = 1;
       }
 
       else {

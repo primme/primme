@@ -138,6 +138,11 @@
  *                  On output, the number of such vectors that are in the
  *                  restarted basis
  *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * reset            flag to reset V and W in the next restart
+ *
+ *
  * Return value
  * ------------
  * int   > 0 the restart size   
@@ -155,7 +160,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
       int *numLocked, double *resNorms, int *evecsperm, int numGuesses, 
       @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs, 
       int *indexOfPreviousVecs, int *hVecsPerm, int *numArbitraryVecs, 
-      double machEps, @(type) *rwork, int rworkSize, int *iwork, 
+      int reset, double machEps, @(type) *rwork, int rworkSize, int *iwork, 
       primme_params *primme) {
 
    int i, j, k;             /* Loop variables                                 */
@@ -184,18 +189,18 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
             ortho_coefficient_vectors_@(pre)primme(NULL, basisSize, 0, 0, *restartSize, NULL, NULL,
                0, NULL, 0, *numPrevRetained, 0.0, NULL, NULL, 0, primme)),
-            Num_update_VWXR_@(pre)primme(NULL, NULL, 0, basisSize, 0, NULL,
+            Num_reset_update_VWXR_@(pre)primme(NULL, NULL, 0, basisSize, 0, NULL,
                *restartSize, 0, NULL,
                &t, 0, *restartSize+*numLocked, 0,
                &t, 0, *ievSize, 0,
-               &t, *restartSize, *restartSize+*numLocked, 0,
+               &t, 0, *restartSize, *restartSize+*numLocked, 0,
                &t, 0, *restartSize, 0,
                &t, 0, *ievSize, 0, &d,
                &d, *restartSize, *numLocked,
-               NULL, 0, primme)),
+               0, 0.0, NULL, 0, primme)),
             check_convergence_@(pre)primme(NULL,
                nLocal, 0, NULL, 0, NULL, *numLocked, 0, *restartSize,
-               *restartSize+*numLocked, NULL, NULL, NULL, 0.0, NULL, 0,
+               *restartSize+*numLocked, NULL, NULL, NULL, NULL, 0.0, NULL, 0,
                NULL, primme));
    }
 
@@ -320,17 +325,17 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
 
    *X = &V[*restartSize*ldV];
    *R = &W[*restartSize*ldV];
-   ret = Num_update_VWXR_@(pre)primme(V, W, nLocal, basisSize, ldV, hVecs,
+   ret = Num_reset_update_VWXR_@(pre)primme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
          *X, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
-         &evecs[primme->nLocal*(*numLocked+primme->numOrthoConst)], left,
+         evecs, *numLocked+primme->numOrthoConst, left,
                *restartSize, primme->nLocal,
          W, 0, *restartSize, ldV,
          *R, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
                blockNorms,
          &resNorms[*numLocked], left, *restartSize,
-         rwork, rworkSize, primme);
+         reset, machEps, rwork, rworkSize, primme);
    if (ret != 0) return ret;
  
    /* -------------------------------------------------------------- */
@@ -343,7 +348,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    ret = check_convergence_@(pre)primme(&V[ldV*left],
          nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-         *restartSize, flags, &resNorms[*numLocked], hVals, machEps,
+         *restartSize, flags, &resNorms[*numLocked], hVals, &reset /*dummy*/, machEps,
          rwork, rworkSize, iwork, primme);
    if (ret != 0) return ret;
 

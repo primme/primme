@@ -556,7 +556,7 @@ void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, co
 void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ldy) {
    int i,j;
 
-   assert(ldx >= m && ldy >= m);
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
    if (x == y && ldx == ldy) return;

@@ -813,7 +813,7 @@ void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *trans
 void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy) {
    int i,j;
 
-   assert(ldx >= m && ldy >= m);
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
    if (x == y && ldx == ldy) return;

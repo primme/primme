@@ -41,7 +41,7 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
       int maxBlockSize, Complex_Z *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, Complex_Z *rwork, int rworkSize, int *iwork,
+      double *smallestResNorm, int *reset, Complex_Z *rwork, int rworkSize, int *iwork,
       primme_params *primme);
 
 #endif /* MAIN_ITER_H */

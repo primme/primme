@@ -40,12 +40,23 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    Complex_Z *H, int ldH, Complex_Z *Q, int ldQ, Complex_Z *R, int ldR, Complex_Z* QtV, int ldQtV,
    Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs, double machEps,
+   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
+   int *restartsSinceReset, int *reset, double machEps,
    Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, Complex_Z *hU, int ldhU,
    Complex_Z *R, int ldR, int numPrevRetained, int machEps, int *iwork,
    Complex_Z *rwork, int rworkSize, primme_params *primme);
+
+int Num_reset_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
+   Complex_Z *h, int nh, int ldh, double *hVals,
+   Complex_Z *X0, int nX0b, int nX0e, int ldX0,
+   Complex_Z *X1, int nX1b, int nX1e, int ldX1,
+   Complex_Z *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
+   Complex_Z *Wo, int nWob, int nWoe, int ldWo,
+   Complex_Z *R, int nRb, int nRe, int ldR, double *Rnorms,
+   double *rnorms, int nrb, int nre,
+   int reset, double machEps, Complex_Z *rwork, int lrwork, primme_params *primme);
 
 #endif
