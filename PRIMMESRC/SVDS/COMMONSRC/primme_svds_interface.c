@@ -159,17 +159,9 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
    /* Copy values set in primme_svds to the first stage underneath eigensolver */
    copy_params_from_svds(primme_svds, 0);
 
-   /* Set default values and method for the first state */
-   primme_set_defaults(&primme_svds->primme);
-
    if (primme_svds->methodStage2 != primme_svds_op_none) {
       /* Copy values set in primme_svds to the second stage underneath eigensolver */
       copy_params_from_svds(primme_svds, 1);
-
-      /* Set default values and method for the second state */
-      if (primme_svds->primmeStage2.dynamicMethodSwitch < 0)
-         primme_set_method(DEFAULT_MIN_TIME, &primme_svds->primmeStage2);
-      primme_set_defaults(&primme_svds->primmeStage2);
    }
 }
 

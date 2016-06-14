@@ -46,7 +46,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
 
 int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, Complex_Z *hU, int ldhU,
-   Complex_Z *R, int ldR, int numPrevRetained, int machEps, int *iwork,
+   Complex_Z *R, int ldR, int numPrevRetained, double machEps, int *iwork,
    Complex_Z *rwork, int rworkSize, primme_params *primme);
 
 int Num_reset_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,

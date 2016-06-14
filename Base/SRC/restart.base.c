@@ -260,6 +260,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    }
    else {
       *restartsSinceReset = 0;
+      if (!Q) *reset = 2;
    }
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
    
@@ -759,6 +760,9 @@ int Num_reset_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, i
             ldevecs, evecsSize, mV, primme->iseed, machEps, rwork, lrwork,
             primme);
       if (ret != 0) return ret;
+      assert(!X1 || nX0b <= nX1b && nX1e <= nX0e);
+      if (X1) Num_copy_matrix_@(pre)primme(&X0[ldX0*(nX1b-nX0b)], mV, nX1e-nX1b,
+            ldX0, X1, ldX1);
    }
 
    /* Compute W = A*V for the orthogonalized corrections */
@@ -1703,7 +1707,7 @@ void reset_flags_@(pre)primme(int *flags, int first, int last) {
 
 int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, @(type) *hU, int ldhU,
-   @(type) *R, int ldR, int numPrevRetained, int machEps, int *iwork,
+   @(type) *R, int ldR, int numPrevRetained, double machEps, int *iwork,
    @(type) *rwork, int rworkSize, primme_params *primme) {
 
    int ret;

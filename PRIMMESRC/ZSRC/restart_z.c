@@ -260,6 +260,7 @@ int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int l
    }
    else {
       *restartsSinceReset = 0;
+      if (!Q) *reset = 2;
    }
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
    
@@ -759,6 +760,9 @@ int Num_reset_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, in
             ldevecs, evecsSize, mV, primme->iseed, machEps, rwork, lrwork,
             primme);
       if (ret != 0) return ret;
+      assert(!X1 || nX0b <= nX1b && nX1e <= nX0e);
+      if (X1) Num_copy_matrix_zprimme(&X0[ldX0*(nX1b-nX0b)], mV, nX1e-nX1b,
+            ldX0, X1, ldX1);
    }
 
    /* Compute W = A*V for the orthogonalized corrections */
@@ -1703,7 +1707,7 @@ void reset_flags_zprimme(int *flags, int first, int last) {
 
 int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, Complex_Z *hU, int ldhU,
-   Complex_Z *R, int ldR, int numPrevRetained, int machEps, int *iwork,
+   Complex_Z *R, int ldR, int numPrevRetained, double machEps, int *iwork,
    Complex_Z *rwork, int rworkSize, primme_params *primme) {
 
    int ret;

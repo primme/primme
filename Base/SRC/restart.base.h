@@ -46,7 +46,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
 
 int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize, int ldhVecs,
    int indexOfPreviousVecs, int newBasisSize, int *perm, @(type) *hU, int ldhU,
-   @(type) *R, int ldR, int numPrevRetained, int machEps, int *iwork,
+   @(type) *R, int ldR, int numPrevRetained, double machEps, int *iwork,
    @(type) *rwork, int rworkSize, primme_params *primme);
 
 int Num_reset_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
