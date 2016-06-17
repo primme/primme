@@ -156,7 +156,7 @@ union f77_value {
    primme_target *target_v;
    double *double_v;
    long int *long_int_v;
-   FILE *file_v;
+   FILE **file_v;
    primme_init *init_v;
    primme_projection *projection_v;
    primme_restartscheme *restartscheme_v;
