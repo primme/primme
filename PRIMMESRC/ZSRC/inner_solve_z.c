@@ -34,6 +34,7 @@
 #include "inner_solve_z.h"
 #include "inner_solve_private_z.h"
 #include "factorize_z.h"
+#include "update_W_z.h"
 #include "numerical_z.h"
 
 
@@ -144,10 +145,10 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    Complex_Z ztmp;
 
    /* Parameters used to dynamically update eigenpair */
-   double Beta, Delta, Psi, Beta_prev, Delta_prev, Psi_prev, eta;
-   double dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated, R;
+   double Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
+   double dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0, R;
    double Gamma_prev, Phi_prev;
-   double Gamma, Phi;
+   double Gamma=0.0, Phi=0.0;
    double gamma;
 
    /* The convergence criteria of the inner linear system must satisfy:       */
@@ -156,7 +157,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
    double relativeTolerance; 
    double absoluteTolerance;
-   double LTolerance, ETolerance;
+   double LTolerance, ETolerance=0.0;
 
    /* Some constants                                                          */
    Complex_Z tzero = {+0.0e+00,+0.0e00};
@@ -187,12 +188,22 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
    /* Andreas: note that eigenresidual tol may not be achievable, because we */
    /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
+   /*lingfei:primme_svds. if refine projection is used, there is 
+   no need to change eresTol*/
    if (primme->correctionParams.convTest == primme_adaptive) {
-      ETolerance = max(eresTol/1.8L, absoluteTolerance);
+      if(primme->correctionParams.precondition == 1 ||
+         primme->projectionParams.projection == primme_proj_RR)
+          ETolerance = max(eresTol/1.8L, absoluteTolerance);
+      else
+          ETolerance = max(eresTol, absoluteTolerance);          
       LTolerance = ETolerance;
    }
    else if (primme->correctionParams.convTest == primme_adaptive_ETolerance) {
-      LTolerance = max(eresTol/1.8L, absoluteTolerance);
+      if(primme->correctionParams.precondition == 1 ||
+         primme->projectionParams.projection == primme_proj_RR)
+          LTolerance = max(eresTol/1.8L, absoluteTolerance);
+      else
+          LTolerance = max(eresTol, absoluteTolerance);          
       ETolerance = max(tau_init*0.1L, LTolerance);
    }
    else if (primme->correctionParams.convTest == primme_decreasing_LTolerance) {
@@ -210,7 +221,12 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
    /* compute first total number of remaining matvecs */
 
-   maxIterations = primme->maxMatvecs - primme->stats.numMatvecs;
+   if (primme->maxMatvecs > 0) {
+      maxIterations = primme->maxMatvecs - primme->stats.numMatvecs;
+   }
+   else {
+      maxIterations = INT_MAX;
+   }
 
    /* Perform primme.maxInnerIterations, but do not exceed total remaining */
    if (primme->correctionParams.maxInnerIterations > 0) {
@@ -660,16 +676,15 @@ static int apply_skew_projector(Complex_Z *Q, Complex_Z *Qhat, Complex_Z *UDU,
 static void apply_projected_matrix(Complex_Z *v, double shift, Complex_Z *Q, 
    int dimQ, Complex_Z *result, Complex_Z *rwork, primme_params *primme) {
    
-   int ONE = 1;   /* For passing it by reference in matrixMatvec */
    Complex_Z ztmp; 
 
-   (*primme->matrixMatvec)(v, result, &ONE, primme);
+   matrixMatvec_zprimme(v, primme->nLocal, primme->nLocal, result,
+         primme->nLocal, 0, 1, primme);
    {ztmp.r = -shift; ztmp.i = 0.0L;}
    Num_axpy_zprimme(primme->nLocal, ztmp, v, 1, result, 1); 
    if (dimQ > 0)
       apply_projector(Q, dimQ, result, rwork, primme); 
 
-   primme->stats.numMatvecs += 1;
 }
    
 

@@ -29,7 +29,7 @@
 #ifndef DRIVER_SHARED_H
 #define DRIVER_SHARED_H
 
-#include "primme.h"
+#include "primme_svds.h"
 
 #define TRUE  1
 #define FALSE 0
@@ -39,14 +39,17 @@ typedef enum {
    driver_default,
    driver_native,
    driver_petsc,
-   driver_parasails
+   driver_parasails,
+   driver_rsb
 } driver_mat;
 
 typedef enum {
    driver_noprecond,    /* no preconditioning */
    driver_jacobi,       /* K=Diag(A-shift),   shift provided once by user */
    driver_jacobi_i,     /* Diag(A-shift_i), shifts provided by primme every step */
-   driver_ilut          /* ILUT(A-shift)  , shift provided once by user */
+   driver_ilut,         /* ILUT(A-shift)  , shift provided once by user */
+   driver_normal,       /* precond based on A*A, only for SVD */
+   driver_bjacobi       /* block jacobi */
 } driver_prec;
 
 typedef struct driver_params {
@@ -77,12 +80,29 @@ typedef struct driver_params {
 
 
 int read_solver_params(char *configFileName, char *outputFileName,
-                primme_params *primme, primme_preset_method *method);
+                primme_params *primme, const char* primmeprefix,
+                primme_preset_method *method, const char* methodstr);
+int read_solver_params_svds(char *configFileName, char *outputFileName,
+                primme_svds_params *primme, const char* primmeprefix,
+                primme_svds_preset_method *method, const char* methodstr,
+                primme_preset_method *primme_method,
+                primme_preset_method *primme_method0);
 int read_driver_params(char *configFileName, driver_params *driver);
 void driver_display_params(driver_params driver, FILE *outputFile);
-void driver_display_method(primme_preset_method method, FILE *outputFile);
-int readfullMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
-int readUpperMTX(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
-int readmtx(char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
+void driver_display_method(primme_preset_method method, const char *methodstr, FILE *outputFile);
+void driver_display_methodsvd(primme_svds_preset_method method, const char *methodstr, FILE *outputFile);
+#ifdef USE_MPI
+#include <mpi.h>
+void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
+                         primme_params *primme);
+void par_GlobalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
+                         primme_svds_params *primme);
+void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *method,
+   primme_preset_method *primmemethod, primme_preset_method *primmemethod0,
+   driver_params *driver, int master, MPI_Comm comm);
+void broadCast(primme_params *primme, primme_preset_method *method, 
+   driver_params *driver, int master, MPI_Comm comm);
+
+#endif
 
 #endif /* DRIVER_SHARED_H */

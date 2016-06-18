@@ -32,13 +32,6 @@
 #define TRUE  1
 #define FALSE 0
 #define UNCONVERGED   0
-#define CONVERGED     1
-#define LOCK_IT       2
-#define LOCKED        3
-#define INITIAL_GUESS 4
-#define TO_BE_PROJECTED        5
-#define PRACTICALLY_CONVERGED  6
-#define UNCONDITIONAL_LOCK_IT  7
-
+#define CONVERGED   1
 
 #endif /* CONST_H */

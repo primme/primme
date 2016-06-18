@@ -241,9 +241,19 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
    if (primme->target != primme_smallest && primme->target != primme_largest) {
 
       for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
+
+         /* Considering |Ritz value - exact eigenvalue| <= residual norm, then      */
+         /* we take the closest point in the interval Ritz value +- residual norm   */
+         /* to the user shift as the proper shift.                                  */
+
          sortedIndex = ilev[blockIndex];
-         blockOfShifts[blockIndex] = 
-            primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ];
+         if (sortedRitzVals[sortedIndex] - blockNorms[blockIndex] <  primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ] &&  primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ] < sortedRitzVals[sortedIndex] + blockNorms[blockIndex])
+            blockOfShifts[blockIndex] = 
+               primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ];
+         else
+            blockOfShifts[blockIndex] = sortedRitzVals[sortedIndex] + blockNorms[blockIndex] * (
+                  primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ] < sortedRitzVals[sortedIndex] ? -1 : 1);
+         
          if (sortedIndex < *numPrevRitzVals) {
             approxOlsenEps[blockIndex] = 
             fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);

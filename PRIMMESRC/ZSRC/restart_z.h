@@ -29,13 +29,23 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-void reset_flags_zprimme(int *flag, int first, int last);
+void reset_flags_zprimme(int *flags, int first, int last);
 
-int restart_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *H, Complex_Z *hVecs, 
-   double *hVals, int *flags, int *iev, Complex_Z *evecs, Complex_Z *evecsHat, 
-   Complex_Z *M, Complex_Z *UDU, int *ipivot, int basisSize, int numConverged, 
-   int *numConvergedStored, int numLocked, int numGuesses, 
-   Complex_Z *previousHVecs, int numPrevRetained, double machEps, 
+int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize, int ldV,
+   double *hVals, double *hSVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, Complex_Z *evecs, int *evecsPerm, double *evals, double *resNorms,
+   Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M, int ldM, Complex_Z *UDU,
+   int ldUDU, int *ipivot, int *numConverged, int *numLocked,
+   int *numConvergedStored, Complex_Z *previousHVecs, int *numPrevRetained,
+   int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
+   Complex_Z *H, int ldH, Complex_Z *Q, int ldQ, Complex_Z *R, int ldR, Complex_Z* QV, int ldQV,
+   Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs,
+   int *restartSizeOutput, int *targetShiftIndex, double machEps,
+   Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
+
+int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize, int ldhVecs,
+   int indexOfPreviousVecs, int newBasisSize, int *perm, Complex_Z *hU, int ldhU,
+   Complex_Z *R, int ldR, int numPrevRetained, int machEps, int *iwork,
    Complex_Z *rwork, int rworkSize, primme_params *primme);
 
 #endif

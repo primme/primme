@@ -94,7 +94,6 @@
 #include "lapack.h"
 #include "blas.h"
 #include "primme.h" 
-#include "wtime.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -107,7 +106,6 @@ void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme);
 void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme);
 void Preconditioner_z(void *x, void *y, int *blockSize, primme_params *primme);
 
-double Matvec_mex_timer = 0.0L;
 char *outputfilename;
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
@@ -115,7 +113,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    double *evals, *rnorms;
    void *EVecs;
    primme_params primme;
-   mwSize i, j;
+   mwSize i;
    mwSize ndim;
    mxArray *tmp; /* tmp stores each field value pointer of opts*/
    char *read_target_string = NULL;
@@ -125,8 +123,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    double *read_initialevecs = NULL;
    double *read_initialevecsimag = NULL;
 
-   /* Timing vars */
-   double wt1,wt2;
+   primme_preset_method method = DYNAMIC;
 
    /* check: The number of input arguments are between 1 and 6 */
    if (nrhs == 0)
@@ -143,7 +140,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    mexPrintf("input and output arguments check finished\n");
 
    primme_initialize(&primme);
-   primme_preset_method method = DYNAMIC;
 
    mexPrintf("initialization finished...\n");
 
@@ -454,15 +450,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (!mxIsComplex(prhs[0]))
    {
+      double *evecs = (double *)EVecs;
+      int num, ret;
+      double *Outevals, *Outevecs, *Outrnorms, *Outstates;
+
       mexPrintf("The matrix A is real\n");
       /* set Matrix-vector multiplication function */
       primme.matrixMatvec = MatrixMatvec_d; 
       /* set Preconditioning function */
       primme.applyPreconditioner = Preconditioner_d; 
 
-      double *evecs = (double *)EVecs;
       /* Compute the space needed to allocate for evecs */
-      int num;
       /*When locking is 0, num gets the larger of the two parameters*/
       num = max(primme.numEvals,primme.initSize); 
       num = num + primme.numOrthoConst; 
@@ -471,8 +469,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       rnorms = (double *)mxCalloc(primme.numEvals, sizeof(double));
 
       mexPrintf("evals, evecs, rnorms memory allocation succeed\n");
-
-      double *Outevals, *Outevecs, *Outrnorms, *Outstates;
 
       if (nlhs >= 1) {
          plhs[0] = mxCreateDoubleMatrix(primme.numEvals,1,mxREAL);
@@ -497,7 +493,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       mexPrintf("\n Starting dprimme .... \n");
 
-      int ret = dprimme(NULL,NULL,NULL,&primme);
+      ret = dprimme(NULL,NULL,NULL,&primme);
       mexPrintf("ret value for reporting memory is %d\n", ret);
       mexPrintf("The intworksize is %d\n", primme.intWorkSize);
       mexPrintf("The realworksize is %d\n", primme.realWorkSize);
@@ -515,21 +511,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*  Call primme  */
       /* ------------- */
 
-      wt1 = primme_get_wtime(); 
-
       ret = dprimme(evals, evecs, rnorms, &primme);
-
-      wt2 = primme_get_wtime();
-
 
       if (ret == 0)
          mexPrintf("dprimme return value is %d, success\n", ret);
       else
          mexPrintf("dprimme return value is %d, fail\n", ret);
-
-      mexPrintf("Wallclock Runtime   : %f seconds\n", wt2-wt1);
-      mexPrintf("Matvec_MEX Time     : %f seconds\n", Matvec_mex_timer);
-
 
       /* Show recommended method for future runs */
       if (outputfilename != NULL) {
@@ -542,7 +529,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
          fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
          fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds); 
-         fprintf(primme.outputFile, "\n#,%d,%.1f\n\n", primme.stats.numMatvecs, wt2-wt1);
+         fprintf(primme.outputFile, "\n#,%d,%.1f\n\n", primme.stats.numMatvecs, primme.stats.elapsedTime);
 
          switch (primme.dynamicMethodSwitch) {
             case -1: fprintf(primme.outputFile, "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
@@ -550,9 +537,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             case -3: fprintf(primme.outputFile, "Recommended method for next run: DYNAMIC (close call)\n"); break;
          }
 
-         fprintf(primme.outputFile, "Wallclock Runtime : %f seconds\n", wt2-wt1);
-         fprintf(primme.outputFile, "Matvec_MEX Time   : %f seconds\n", Matvec_mex_timer);
-         /*           primme_display_params(primme);*/
          fclose(primme.outputFile);           
       }
 
@@ -590,6 +574,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          mxFree(outputfilename);
    }
    else {
+      Complex_Z *evecs =(Complex_Z *)EVecs;
+      int num, ret;
+      double *Outevals, *OutevecsR, *OutevecsI, *Outrnorms, *Outstates;
+
       mexPrintf("The matrix A is complex\n");
       /* set the Matrix-vector multiplication */
       primme.matrixMatvec = MatrixMatvec_z; 
@@ -598,9 +586,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*set the method for solving the problem. */   
       primme_set_method(method, &primme); 
 
-      Complex_Z *evecs =(Complex_Z *)EVecs;
       /* Compute the space needed to allocate for evecs */
-      int num;
       /*When locking is 0, num gets the larger of the two parameters*/
       num = max(primme.numEvals,primme.initSize); 
       num = num + primme.numOrthoConst; 
@@ -609,8 +595,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       rnorms = (double *)mxCalloc(primme.numEvals, sizeof(double));
 
       mexPrintf("evals, evecs, rnorms memory allocation succeed\n");
-
-      double *Outevals, *OutevecsR, *OutevecsI, *Outrnorms, *Outstates;
 
       if (nlhs >= 1) {
          plhs[0] = mxCreateDoubleMatrix(primme.numEvals,1,mxREAL);
@@ -637,7 +621,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mexPrintf("\n Starting zprimme .... \n");
 
       /* compute the needed primme.realWorkSize and primme.intWorkSize */
-      int ret = zprimme(NULL,NULL,NULL,&primme); 
+      ret = zprimme(NULL,NULL,NULL,&primme); 
       mexPrintf("ret value for reporting memory is %d\n", ret);
       mexPrintf("The intworksize is %d\n", primme.intWorkSize);
       mexPrintf("The realworksize is %d\n", primme.realWorkSize);
@@ -656,21 +640,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*  Call primme  */
       /* ------------- */
 
-      wt1 = primme_get_wtime(); 
-
       ret = zprimme(evals, evecs, rnorms, &primme);
-
-      wt2 = primme_get_wtime();
-
 
       if (ret == 0)
          mexPrintf("zprimme return value is %d, success\n", ret);
       else
          mexPrintf("zprimme return value is %d, fail\n", ret);
-
-      mexPrintf("Wallclock Runtime   : %f seconds\n", wt2-wt1);
-      mexPrintf("Matvec_MEX Time     : %f seconds\n", Matvec_mex_timer);
-
 
       /* Show recommended method for future runs */
       if (outputfilename != NULL) {  
@@ -680,8 +655,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             case -3: fprintf(primme.outputFile, "Recommended method for next run: DYNAMIC (close call)\n"); break;
          }
 
-         fprintf(primme.outputFile, "Wallclock Runtime : %f seconds\n", wt2-wt1);
-         fprintf(primme.outputFile, "Matvec_MEX Time   : %f seconds\n", Matvec_mex_timer);
          fclose(primme.outputFile);
       }
 
@@ -736,22 +709,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
 {  
-   double wt1 = primme_get_wtime(); 
    double * sendXr;
    double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
+   mxArray *rhs[1], *lhs[1];
+   double * yvecr;
+   double * ycopyvec = (double *)y;
 
    if (xvec == NULL) {
       mexErrMsgTxt("vector pointer x cannot be NULL pointer");
    }
 
-   mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxREAL);
    sendXr = mxGetPr(rhs[0]);
-   double * yvecr;
-   double * ycopyvec = (double *)y;
 
    for (l = 0; l < n*(*blockSize); l++) {
       sendXr[l] = xvec[l];
@@ -767,32 +738,25 @@ void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
    mxDestroyArray(rhs[0]); 
    mxDestroyArray(lhs[0]);     
 
-   double wt2 = primme_get_wtime(); 
-   Matvec_mex_timer = Matvec_mex_timer + wt2 -wt1;
-
 }
 
 
 void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme)
 {  
-   double wt1 = primme_get_wtime(); 
-
    double * sendXr;
    double * sendXi;
    Complex_Z *xvec = (Complex_Z *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
+   double * yvecr;
+   double * yveci;
 
+   Complex_Z * ycopyvec = (Complex_Z *)y;
 
    mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxCOMPLEX);
    sendXr = mxGetPr(rhs[0]);
    sendXi = mxGetPi(rhs[0]);
-   double * yvecr;
-   double * yveci;
-
-   Complex_Z * ycopyvec = (Complex_Z *)y;
 
    for (l = 0; l < n*(*blockSize); l++) {
       sendXr[l] = xvec[l].r;
@@ -810,9 +774,6 @@ void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme)
 
    mxDestroyArray(rhs[0]);
    mxDestroyArray(lhs[0]);
-
-   double wt2 = primme_get_wtime(); 
-   Matvec_mex_timer = Matvec_mex_timer + wt2 -wt1;
 }
 
 
@@ -834,18 +795,17 @@ void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme)
    double * sendXr;
    double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
+   mxArray *rhs[1], *lhs[1];
+   double * yvecr;
+   double * ycopyvec = (double *)y;
 
    if (xvec == NULL) {
       mexErrMsgTxt("vector pointer x cannot be NULL pointer");
    }
 
-   mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxREAL);
    sendXr = mxGetPr(rhs[0]);
-   double * yvecr;
-   double * ycopyvec = (double *)y;
 
    for (l = 0; l < n*(*blockSize); l++) {
       sendXr[l] = xvec[l];
@@ -869,17 +829,16 @@ void Preconditioner_z(void *x, void *y, int *blockSize, primme_params *primme)
    double * sendXi;
    Complex_Z *xvec = (Complex_Z *)x;
    mwSize n = primme->n;
-   mwSize k;
    mwSize l;
+   double * yvecr;
+   double * yveci;
+
+   Complex_Z * ycopyvec = (Complex_Z *)y;
 
    mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxCOMPLEX);
    sendXr = mxGetPr(rhs[0]);
    sendXi = mxGetPi(rhs[0]);
-   double * yvecr;
-   double * yveci;
-
-   Complex_Z * ycopyvec = (Complex_Z *)y;
 
    for (l = 0; l < n*(*blockSize); l++) {
       sendXr[l] = xvec[l].r;

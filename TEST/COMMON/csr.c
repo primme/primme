@@ -110,9 +110,11 @@ static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, 
 
    /* first read to set matrix kind and size */
    if(mm_read_banner(matrixFile, &type) != 0) return -1;
-   if (!mm_is_valid(type) || !mm_is_sparse(type) || mm_is_skew(type)
+   if (!mm_is_valid(type) || !mm_is_sparse(type) ||
 #ifndef USE_DOUBLECOMPLEX
-       || mm_is_complex(type) || mm_is_hermitian(type) || !(mm_is_real(type))
+       !(mm_is_real(type)                        || mm_is_pattern(type) || mm_is_integer(type))
+#else
+       !(mm_is_real(type) || mm_is_complex(type) || mm_is_pattern(type) || mm_is_integer(type))
 #endif
       ) {
       fprintf(stderr, "Matrix format '%s' not supported!", mm_typecode_to_str(type)); 
@@ -122,19 +124,25 @@ static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, 
    if (mm_read_mtx_crd_size(matrixFile, m, n, nnz) != 0) return -1;
 
    nzmax = *nnz;
-   if (mm_is_symmetric(type)) nzmax *= 2;
+   if (mm_is_symmetric(type) || mm_is_hermitian(type) || mm_is_skew(type)) nzmax *= 2;
    A = (PRIMME_NUM *)primme_calloc(nzmax, sizeof(PRIMME_NUM), "A");
    J = (int *)primme_calloc(nzmax, sizeof(int), "J");
    I = (int *)primme_calloc(nzmax, sizeof(int), "I");
 
    /* Read matrix in COO */
+   im = 0.0;
    for (k=0, i=0; k<*nnz; k++, i++) {
       if (mm_read_mtx_crd_entry(matrixFile, &I[i], &J[i], &re, &im, type)!=0) return -1;
       if (mm_is_pattern(type)) A[i] = 1;
       else if (mm_is_real(type)) A[i] = re;
       else A[i] = re + IMAGINARY*im;
-      if ((mm_is_symmetric(type) || mm_is_hermitian(type)) && I[i] != J[i]) {
-         I[i+1] = J[i]; J[i+1] = I[i]; A[i+1] = CONJ(A[i]); i++;
+      if (I[i] != J[i]) {
+         if ((mm_is_symmetric(type) || mm_is_hermitian(type))) {
+            I[i+1] = J[i]; J[i+1] = I[i]; A[i+1] = CONJ(A[i]); i++;
+         }
+         else if (mm_is_skew(type)) {
+            I[i+1] = J[i]; J[i+1] = I[i]; A[i+1] = -A[i]; i++;
+         }
       }
    }
    nzmax = *nnz = i;
@@ -275,4 +283,10 @@ void shiftCSRMatrix(double shift, CSRMatrix *matrix) {
 
 }
 
-
+void freeCSRMatrix(CSRMatrix *matrix) {
+   if (!matrix) return;
+   free(matrix->AElts);
+   free(matrix->IA);
+   free(matrix->JA);
+   free(matrix);
+}

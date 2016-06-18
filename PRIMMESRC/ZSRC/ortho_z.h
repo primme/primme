@@ -31,12 +31,13 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_zprimme(Complex_Z *basis, int ldBasis, int b1, int b2, 
-   Complex_Z *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
-   double machEps, Complex_Z *rwork, int rworkSize, primme_params *primme);
+int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
+   int b1, int b2, Complex_Z *locked, int ldLocked, int numLocked,
+   int nLocal, int *iseed, double machEps, Complex_Z *rwork, int rworkSize,
+   primme_params *primme);
 
-int ortho_retained_vectors_zprimme (Complex_Z *currentVectors, 
-  int length, int numVectors, Complex_Z *previousVectors, int numPrevious, 
-  double machEps, Complex_Z *rwork);
+int ortho_single_iteration_zprimme(Complex_Z *Q, int mQ, int nQ, int ldQ, Complex_Z *X,
+   int *inX, int nX, int ldX, double *overlaps, double *norms, Complex_Z *rwork, int lrwork,
+   primme_params *primme);
 
 #endif

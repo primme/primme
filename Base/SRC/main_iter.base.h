@@ -34,4 +34,13 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme);
 
+int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize,
+   int ldV, @(type) *X, @(type) *R, @(type) *hVecs, int ldhVecs, double *hVals,
+   int *flags, int numSoftLocked, int numEvals, double *blockNorms,
+   int blockNormsSize, int maxBlockSize, @(type) *evecs, int numLocked,
+   double *evals, double *resNorms, double machEps, int *iev, int *blockSize,
+   int *recentlyConverged, @(type) *rwork, int rworkSize, int *iwork,
+   primme_params *primme);
+
+
 #endif /* MAIN_ITER_H */

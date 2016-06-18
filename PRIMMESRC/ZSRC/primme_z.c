@@ -53,11 +53,17 @@
 #include "const.h"
 #include "wtime.h"
 #include "main_iter_z.h"
+#include "init_z.h"
 #include "ortho_z.h"
 #include "solve_H_z.h"
+#include "restart_z.h"
+#include "locking_z.h"
 #include "correction_z.h"
+#include "convergence_z.h"
+#include "update_projection_z.h"
 #include "primme_private_z.h"
 #include "numerical_z.h"
+#include "primme_interface.h"
 
 /*******************************************************************************
  * Subroutine zprimme - This routine is a front end used to perform 
@@ -117,30 +123,10 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
    /* ----------------------- */
    machEps = Num_dlamch_primme("E");
 
-   /* ----------------------------------------- */
-   /* Set some defaults for sequential programs */
-   /* ----------------------------------------- */
-   if (primme->numProcs == 1) {
-      primme->nLocal = primme->n;
-      primme->procID = 0;
-      if (primme->globalSumDouble == NULL) 
-         primme->globalSumDouble = primme_seq_globalSumDouble;
-   }
-
-   /* --------------------------------------------------------------------- */
-   /* Decide on whether to use locking (hard locking), or not (soft locking)*/
-   /* --------------------------------------------------------------------- */
-   if (primme->target != primme_smallest &&
-       primme->target != primme_largest ) {
-      /* Locking is necessary as interior Ritz values can cross shifts */
-      primme->locking = 1;
-   }
-   else {
-      if (primme->locking == 0) {
-         /* use locking when not enough vectors to restart with */
-         primme->locking = (primme->numEvals > primme->minRestartSize);   
-      }
-   }
+   /* ------------------ */
+   /* Set some defaults  */
+   /* ------------------ */
+   primme_set_defaults(primme);
 
    /* -------------------------------------------------------------- */
    /* If needed, we are ready to estimate required memory and return */
@@ -161,6 +147,14 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
       (int)((primme->procID/4096)/4096+2) % 4096;
    if (primme->iseed[3]<0 || primme->iseed[3]>4095) primme->iseed[3] = 
       (2*(int)(((primme->procID/4096)/4096)/4096)+1) % 4096;
+
+   /* ----------------------- */
+   /* Set default convTetFun  */
+   /* ----------------------- */
+
+   if (!primme->convTestFun) {
+      primme->convTestFun = convTestFunAbsolute;
+   }
 
    /* ------------------------------------------------------- */
    /* Check primme input data for bounds, correct values etc. */
@@ -221,8 +215,9 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
    /* correspond to the sorted Ritz values in evals.                       */
    /*----------------------------------------------------------------------*/
 
-   permute_evecs_zprimme((double *) &evecs[primme->numOrthoConst], 2, perm, 
-        (double *) primme->realWork, primme->numEvals, primme->nLocal);
+   permute_vecs_zprimme(&evecs[primme->numOrthoConst], primme->nLocal,
+         primme->initSize, primme->nLocal, perm, (Complex_Z*)primme->realWork,
+         (int*)primme->intWork);
 
    free(perm);
 
@@ -265,15 +260,22 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
    int dataSize;     /* Number of Complex_Z positions allocated, excluding */
                      /* doubles (see doubleSize below) and work space.  */
-   int doubleSize;   /* Number of doubles allocated exclusively to the  */
+   int doubleSize=0; /* Number of doubles allocated exclusively to the  */
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
    int maxEvecsSize; /* Maximum number of vectors in evecs and evecsHat */
    int intWorkSize;  /* Size of integer work space in bytes             */
+   int initSize;     /* Amount of work space required by init routine   */
    int orthoSize;    /* Amount of work space required by ortho routine  */
+   int convSize;     /* Amount of work space required by converg. routine */
+   int restartSize;  /* Amount of work space required by restart routine */
    int solveCorSize; /* work space for solve_correction and inner_solve */
+   int solveHSize;   /* work space for solve_H                          */
+   int mainSize;     /* work space for main_iter                        */
+   Complex_Z *evecsHat=NULL;/* not NULL when evecsHat will be used        */
+   Complex_Z t;        /* dummy variable */
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
-
+ 
    /* first determine real workspace */
 
    /*----------------------------------------------------------------------*/
@@ -288,6 +290,24 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                                                    /* size of prevHVecs    */
 
    /*----------------------------------------------------------------------*/
+   /* Add memory for Harmonic or Refined projection                        */
+   /*----------------------------------------------------------------------*/
+   if (primme->projectionParams.projection == primme_proj_harmonic ||
+         primme->projectionParams.projection == primme_proj_refined) {
+
+      dataSize += primme->nLocal*primme->maxBasisSize    /* Size of Q      */
+         + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
+         + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hU     */
+      doubleSize += primme->maxBasisSize;                /* Size of hSVals */
+   }
+   if (primme->projectionParams.projection == primme_proj_harmonic) {
+      /* Stored QV = Q'*V */
+      dataSize +=
+            primme->maxBasisSize*primme->maxBasisSize;       /* Size of QV */
+   }
+
+
+   /*----------------------------------------------------------------------*/
    /* Add also memory needed for JD skew projectors                        */
    /*----------------------------------------------------------------------*/
    if ( (primme->correctionParams.precondition && 
@@ -299,22 +319,38 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          + primme->nLocal*maxEvecsSize             /* Size of evecsHat     */ 
          + maxEvecsSize*maxEvecsSize               /* Size of M            */
          + maxEvecsSize*maxEvecsSize;              /* Size of UDU          */
+      evecsHat = &t; /* set not NULL */
    }
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by init and its children                */
+   /*----------------------------------------------------------------------*/
+
+   initSize = init_basis_zprimme(NULL, primme->nLocal, 0, NULL, 0, NULL,
+         0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &primme->maxBasisSize,
+         NULL, NULL, NULL, primme);
 
    /*----------------------------------------------------------------------*/
    /* Determine orthogalization workspace with and without locking.        */
    /*----------------------------------------------------------------------*/
 
    if (primme->locking) {
-      orthoSize = ortho_zprimme(NULL, primme->nLocal, primme->maxBasisSize,
+      orthoSize = ortho_zprimme(NULL, 0, NULL, 0, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
          maxEvecsSize, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
    else {
-      orthoSize = ortho_zprimme(NULL, primme->nLocal, primme->maxBasisSize,
+      orthoSize = ortho_zprimme(NULL, 0, NULL, 0, primme->maxBasisSize,
          primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
          primme->numOrthoConst+1, primme->nLocal, NULL, 0.0, NULL, 0, primme);
    }
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by solve_H and its children             */
+   /*----------------------------------------------------------------------*/
+
+   solveHSize = solve_H_zprimme(NULL, primme->maxBasisSize, 0, NULL, 0, NULL, 0,
+         NULL, 0, NULL, 0, NULL, NULL, 0, 0.0, 0, NULL, NULL, primme);
 
    /*----------------------------------------------------------------------*/
    /* Determine workspace required by solve_correction and its children    */
@@ -326,53 +362,74 @@ static int allocate_workspace(primme_params *primme, int allocate) {
                   1.0, 0.0, 1.0, NULL, NULL, 0, primme);
 
    /*----------------------------------------------------------------------*/
+   /* Determine workspace required by solve_H and its children             */
+   /*----------------------------------------------------------------------*/
+
+   convSize = check_convergence_zprimme(NULL, primme->nLocal, 0, &t, 0,
+         NULL, primme->numEvals, 0, 0, primme->maxBasisSize, NULL, NULL,
+         NULL, 0.0, NULL, 0, NULL, primme);
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by restarting and its children          */
+   /*----------------------------------------------------------------------*/
+
+   restartSize = restart_zprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize, 0, NULL,
+         NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, NULL, NULL, NULL,
+         evecsHat, 0, NULL, 0, NULL, 0, NULL, &primme->numEvals,
+         &primme->numEvals, &primme->numEvals, NULL, &primme->restartingParams.maxPrevRetain,
+         primme->maxBasisSize, primme->initSize, NULL, &primme->maxBasisSize, NULL,
+         primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL,
+         0, 0, NULL, 0, 0, NULL, NULL, 0.0,
+         NULL, 0, NULL, primme);
+
+   /*----------------------------------------------------------------------*/
+   /* Determine workspace required by main_iter and its children           */
+   /*----------------------------------------------------------------------*/
+
+   mainSize = max(
+         update_projection_zprimme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
+            primme->maxBasisSize, NULL, 0, 0, primme),
+         prepare_candidates_zprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
+            0, NULL, NULL, NULL, 0, NULL, NULL, primme->numEvals, primme->numEvals,
+            NULL, 0, primme->maxBlockSize, NULL, primme->numEvals, NULL, NULL, 0.0,
+            NULL, &primme->maxBlockSize, NULL, NULL, 0, NULL, primme));
+ 
+ 
+   /*----------------------------------------------------------------------*/
    /* Workspace is reused in many functions. Allocate the max needed by any*/
    /*----------------------------------------------------------------------*/
    realWorkSize = Num_imax_primme(8,
 
       /* Workspace needed by init_basis */
-      Num_imax_primme(3, 
-         maxEvecsSize*primme->numOrthoConst, maxEvecsSize, orthoSize),
+      initSize,
 
       /* Workspace needed by solve_correction and its child inner_solve */
       solveCorSize, 
 
       /* Workspace needed by function solve_H */
-#ifdef ESSL
-      2*primme->maxBasisSize +
-         primme->maxBasisSize*(primme->maxBasisSize + 1)/2,
-#else
-      3*primme->maxBasisSize,
-#endif
+      solveHSize,
    
       /* Workspace needed by function check_convergence */ 
-      max(primme->maxBasisSize*primme->maxBlockSize + primme->maxBlockSize,
-                2*maxEvecsSize*primme->maxBlockSize),
+      convSize,
 
       /* Workspace needed by function restart*/
-      primme->restartingParams.maxPrevRetain*
-      primme->restartingParams.maxPrevRetain  /* for submatrix of prev hvecs */
-      + Num_imax_primme(4, primme->maxBasisSize, 
-           5*primme->restartingParams.maxPrevRetain,
-           primme->maxBasisSize*primme->restartingParams.maxPrevRetain,
-           primme->maxBasisSize*primme->maxBasisSize,     /* for DTR copying */
-           maxEvecsSize*primme->numEvals), /*this one is for UDU w/o locking */
+      restartSize,
 
       /* Workspace needed by function verify_norms */
       2*primme->numEvals,
 
-      /* space needed by lock vectors (no need w/o lock but doesn't add any) */
-      (2*primme->maxBasisSize) + Num_imax_primme(3, 
-          maxEvecsSize*primme->maxBasisSize, orthoSize, 3*primme->maxBasisSize),
-
       /* maximum workspace needed by ortho */ 
-      orthoSize);
+      orthoSize,
+
+      /* maximum workspace for main */
+      mainSize);
 
    /*----------------------------------------------------------------------*/
-   /* The following size is always alloced as double                       */
+   /* The following size is always allocated as double                     */
    /*----------------------------------------------------------------------*/
 
-   doubleSize = primme->maxBasisSize               /* Size of hVals        */
+   doubleSize += 4                                 /* Padding              */
+      + primme->maxBasisSize                       /* Size of hVals        */
       + primme->numEvals+primme->maxBasisSize      /* Size of prevRitzVals */
       + primme->maxBlockSize;                      /* Size of blockNorms   */
 
@@ -383,7 +440,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    intWorkSize = primme->maxBasisSize /* Size of flag               */
       + 2*primme->maxBlockSize        /* Size of iev and ilev       */
       + maxEvecsSize                  /* Size of ipivot             */
-      + 2*primme->maxBasisSize;       /* Size of 2 perms in solve_H */
+      + 5*primme->maxBasisSize;       /* Auxiliary permutation arrays */
 
    /*----------------------------------------------------------------------*/
    /* byte sizes:                                                          */
@@ -494,9 +551,9 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
    }
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst >=primme->n)
       ret = -16;
-   else if (primme->maxBasisSize < 2) 
+   else if (primme->maxBasisSize < 2 && primme->maxBasisSize != primme->n) 
       ret = -17;
-   else if (primme->minRestartSize <= 0) 
+   else if (primme->minRestartSize <= 0 && primme->n > 2) 
       ret = -18;
    else if (primme->maxBlockSize <= 0) 
       ret = -19;
@@ -512,7 +569,7 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
    else if (primme->locking && primme->initSize > primme->numEvals)
       ret = -24;
    else if (primme->minRestartSize + primme->restartingParams.maxPrevRetain 
-                   >= primme->maxBasisSize)
+                   >= primme->maxBasisSize && primme->n > 2)
       ret = -25;
    else if (primme->minRestartSize >= primme->n)
       ret = -26;
@@ -532,8 +589,39 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
       ret = -31;
    else if (resNorms == NULL)
       ret = -32;
+   else if (!primme->locking && primme->minRestartSize < primme->numEvals &&
+            primme->n > 2)
+      ret = -33;
 
    return ret;
   /***************************************************************************/
 } /* end of check_input
    ***************************************************************************/
+
+/*******************************************************************************
+ * Subroutine convTestFunAbsolute - This routine implements primme_params.
+ *    convTestFun and return an approximate eigenpair converged when           
+ *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate) or
+ *    resNorm is close to machineEpsilon * aNorm.          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_dlamch_primme("E");
+   *isConv = *rNorm < max(
+               primme->eps * (
+                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
+               machEps * 3.16 * primme->stats.estimateLargestSVal);
+}

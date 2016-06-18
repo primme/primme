@@ -1,0 +1,61 @@
+#
+
+CDOTH_D  = ../../../PRIMMESRC/SVDS/DSRC/primme_svds_private_d.h  
+
+CDOTH_Z = ../../../PRIMMESRC/SVDS/ZSRC/primme_svds_private_z.h 
+
+CSOURCE_D = ../../../PRIMMESRC/SVDS/DSRC/primme_svds_d.c
+
+CSOURCE_Z = ../../../PRIMMESRC/SVDS/ZSRC/primme_svds_z.c 
+
+
+all: $(CSOURCE_D) $(CSOURCE_Z) $(FSOURCE_Z) $(CDOTH_D) $(CDOTH_Z)\
+	 depends_Z depends_D
+complex: $(CSOURCE_Z) $(CDOTH_Z) depends_Z
+real: $(CSOURCE_D) $(CDOTH_D) depends_D
+
+#---------  PRIMMESRC/SVDS/ZSRC   .h files -------------------------
+../../../PRIMMESRC/SVDS/ZSRC/primme_svds_private_z.h: primme_svds_private.base.h 
+	sed -f SampleMakes/arithmetics/cz.sed $< > $@
+
+
+#---------  PRIMMESRC/SVDS/ZSRC   .c  files ------------------------
+../../../PRIMMESRC/SVDS/ZSRC/primme_svds_z.c: primme_svds.base.c
+	sed -f SampleMakes/arithmetics/cz.sed $< > $@
+
+
+#---------  PRIMMESRC/SVDS/DSRC   .h files -------------------------
+../../../PRIMMESRC/SVDS/DSRC/primme_svds_private_d.h: primme_svds_private.base.h 
+	sed -f SampleMakes/arithmetics/cd.sed $< > $@
+
+
+#---------  PRIMMESRC/SVDS/ZSRC   .c  files ------------------------
+../../../PRIMMESRC/SVDS/DSRC/primme_svds_d.c: primme_svds.base.c
+	sed -f SampleMakes/arithmetics/cd.sed $< > $@
+
+
+#
+# Make dependencies in the two directories
+#
+#
+depends_Z:
+	@(\
+	cd ../../../PRIMMESRC/SVDS/ZSRC/;\
+	gcc -I../COMMONSRC/ -I../../../PRIMMESRC/COMMONSRC/ \
+        -I../../../PRIMMESRC/ZSRC/ -MM *.c > dependencies ; \
+	)
+
+depends_D:
+	@(\
+	cd ../../../PRIMMESRC/SVDS/DSRC/;\
+	gcc -I../COMMONSRC/ -I../../../PRIMMESRC/COMMONSRC/ \
+        -I../../../PRIMMESRC/DSRC/ -MM *.c > dependencies ; \
+	)
+#
+#  clean	- remove all object files
+#
+clean:
+	echo 'Cleaning up PRIMMESRC/SVDS/ZSRC and PRIMMESRC/SVDS/DSRC directories'
+	rm -f $(CSOURCE_Z) $(FSOURCE_Z) $(CDOTH_Z)
+	rm -f $(CSOURCE_D) $(CDOTH_D )
+	rm -f a.out core

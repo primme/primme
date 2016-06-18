@@ -35,35 +35,44 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
-static void restart_X(double *X, double *hVecs, int nLocal, 
-   int basisSize, int restartSize, double *rwork, int rworkSize);
+static int restart_soft_locking_dprimme(int *restartSize, double *V, double *W, int nLocal,
+   double *hR, int ldhR, double *hU, int ldhU,
+   int basisSize, int ldV, double **X, double **R, double *hVecs, int ldhVecs,
+   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, double *evecs, double *evals, double *resNorms,
+   double *evecsHat, int ldevecsHat, double *M, int ldM, int *numConverged,
+   int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
+   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
+   double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
-static int restart_H(double *H, double *hVecs, double *hVals, 
-   int restartSize, int basisSize, double *previousHVecs, 
-   int numPrevRetained, int indexOfPreviousVecs, int rworkSize, 
-   double *rwork, primme_params *primme);
+static int restart_projection_dprimme(double *V, int ldV, double *W, int ldW,
+   double *H, int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR,
+   double *QV, int ldQV, double *hU, int ldhU, int newldhU, double *hVecs,
+   int ldhVecs, int newldhVecs, double *hVals, double *hSVals, int *restartPerm,
+   int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
+   int indexOfPreviousVecs, double *evecs, int *evecsSize,
+   int ldevecs, double *evecsHat, int ldevecsHat, double *M, int ldM, double *UDU,
+   int ldUDU, int *ipivot, int *targetShiftIndex, int numConverged,
+   int rworkSize, double *rwork, int *iwork, double machEps, primme_params *primme);
 
-static int dtr(int numLocked, double *hVecs, double *hVals, int *flags, 
- int basisSize, int numFree, int *iev, double *rwork, primme_params *primme);
+static int dtr_dprimme(int numLocked, double *hVecs, double *hVals, int *flags, 
+  int basisSize, int numFree, int *iev, double *rwork, primme_params *primme);
 
-static int pack_converged_coefficients(int *restartSize, int basisSize, 
-   int *numPrevRetained, int numLocked, int numGuesses, double *hVecs, 
-   double *hVals, int *flag, primme_params *primme);
+static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
+   int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
+   int rworkSize, double *rwork, int *iwork, primme_params *primme);
 
-static int combine_retained_vectors(double *hVals, int *flags, double *hVecs, 
-   int basisSize, int *restartSize, int numPacked, double *previousHVecs, 
-   int *numPrevRetained, double machEps, double *rwork, primme_params *primme);
+static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
+   int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *QV,
+   int ldQV, double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int *targetShiftIndex, int numConverged, int rworkSize,
+   double *rwork, int *iwork, double machEps, primme_params *primme);
 
-static void compute_submatrix(double *previousHVecs, int numPrevRetained, 
-   double *H, int basisSize, int maxBasisSize, double *subMatrix, 
-   double *rwork);
-
-static int insert_submatrix(double *H, double *hVals, double *hVecs, 
-   int restartSize, double *subMatrix, int numPrevRetained, 
-   int indexOfPreviousVecs, int rworkSize, double *rwork, 
-   primme_params *primme);
-
-static void apply_preconditioner_block(double *v, double *result,
-   int blockSize, primme_params *primme);
+static int compute_submatrix(double *X, int nX, int ldX, 
+   double *H, int nH, int ldH, double *R, int ldR,
+   double *rwork, int lrwork);
 
 #endif /* RESTART_PRIVATE_H */

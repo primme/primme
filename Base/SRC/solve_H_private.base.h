@@ -34,6 +34,14 @@
 #else
 #define NUM_DSYEV_FAILURE -1
 #endif
+#define ORTHO_FAILURE       -2
+#define NUM_DGESVD_FAILURE  -3
+#define NUM_ZGESVD_FAILURE  -4
+
+static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QV, int ldQV,
+   @(type) *R, int ldR, @(type) *hVecs, int ldhVecs, @(type) *hU, int ldhU,
+   double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
+   @(type) *rwork, int *iwork, primme_params *primme);
 
 #endif
 

@@ -29,10 +29,9 @@
 #ifndef CONVERGENCE_H
 #define CONVERGENCE_H
 
-int check_convergence_dprimme(double *V, double *W, double *hVecs,
-   double *hVals, int *flags, int basisSize, int *iev, int *ievMax, 
-   double *blockNorms, int *blockSize, int numConverged, int numLocked, 
-   double *evecs, double tol, double maxConvTol, double aNormEstimate, 
-   double *rwork, primme_params *primme);
+int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
+   int ldR, double *evecs, int numLocked, int ldevecs, int left, int right,
+   int *flags, double *blockNorms, double *hVals, double machEps, double *rwork,
+   int rworkSize, int *iwork, primme_params *primme);
 
 #endif

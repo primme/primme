@@ -42,6 +42,7 @@ typedef struct {
 int readMatrixNative(const char* matrixFileName, CSRMatrix **matrix_, double *fnorm);
 double frobeniusNorm(const CSRMatrix *matrix);
 void shiftCSRMatrix(double shift, CSRMatrix *matrix);
+void freeCSRMatrix(CSRMatrix *matrix);
 
 #define CSR_H
 #endif

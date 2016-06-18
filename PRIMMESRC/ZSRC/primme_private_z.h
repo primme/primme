@@ -36,4 +36,7 @@
 static int allocate_workspace(primme_params *primme, int allocate);
 static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
                        primme_params *primme);
+static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme);
+
 #endif

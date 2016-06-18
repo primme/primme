@@ -34,9 +34,6 @@
 #define SOLVE_H_FAILURE           -3
 #define UDUDECOMPOSE_FAILURE      -4
 
-static int swap_flagVecs_toEnd(int basisSize, int flagValue, Complex_Z *V, 
-   Complex_Z *W, Complex_Z *H, double *hVals, int *flag, primme_params *primme);
-
 static void insertionSort(double newVal, double *evals, double newNorm,
    double *resNorms, int *perm, int numConverged, primme_params *primme);
 

@@ -53,9 +53,13 @@ typedef enum {
    Primme_solve_h,
    Primme_restart,
    Primme_restart_h,
+   Primme_combine_retained,
    Primme_insert_submatrix,
    Primme_lock_vectors,
    Primme_num_dsyev,
+   Primme_num_dsygv,
+   Primme_num_dgesvd,
+   Primme_num_zgesvd,
    Primme_num_zheev,
    Primme_num_dspev,
    Primme_num_zhpev,
@@ -71,12 +75,28 @@ typedef enum {
 
 
 typedef enum {
-   primme_smallest,
-   primme_largest,
-   primme_closest_geq,
-   primme_closest_leq,
-   primme_closest_abs
+   primme_smallest,        /* leftmost eigenvalues */
+   primme_largest,         /* rightmost eigenvalues */
+   primme_closest_geq,     /* leftmost but greater than the target shift */
+   primme_closest_leq,     /* rightmost but less than the target shift */
+   primme_closest_abs,     /* the closest to the target shift */
+   primme_largest_abs      /* the farthest to the target shift */
 } primme_target;
+
+/* projection methods for extraction */
+typedef enum {
+   primme_proj_default,
+   primme_proj_RR,          /* Rayleigh-Ritz */
+   primme_proj_harmonic,    /* Harmonic Rayleigh-Ritz */
+   primme_proj_refined      /* refined with fixed target */
+} primme_projection;
+
+typedef enum {         /* Initially fill up the search subspace with: */
+   primme_init_default,
+   primme_init_krylov, /* a) Krylov with the last vector provided by the user or random */
+   primme_init_random, /* b) just random vectors */
+   primme_init_user    /* c) provided vectors or a single random vector */
+} primme_init;
 
 
 typedef enum {
@@ -109,8 +129,12 @@ typedef struct primme_stats {
    int numMatvecs;
    int numPreconds;
    double elapsedTime; 
+   double estimateMinEVal;          /* the leftmost Ritz value seen */
+   double estimateMaxEVal;          /* the rightmost Ritz value seen */
+   double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
+   double maxConvTol;               /* largest norm residual of a locked eigenpair */
 } primme_stats;
-   
+
 typedef struct JD_projectors {
    int LeftQ;
    int LeftX;
@@ -119,6 +143,10 @@ typedef struct JD_projectors {
    int SkewQ;
    int SkewX;
 } JD_projectors;
+
+typedef struct projection_params {
+   primme_projection projection;
+} projection_params;
 
 typedef struct correction_params {
    int precondition;
@@ -134,7 +162,7 @@ typedef struct restarting_params {
    primme_restartscheme scheme;
    int maxPrevRetain;
 } restarting_params;
-   
+
 
 /*--------------------------------------------------------------------------*/
 typedef struct primme_params {
@@ -186,20 +214,25 @@ typedef struct primme_params {
 
    int printLevel;
    FILE *outputFile;
-   
+
    void *matrix;
    void *preconditioner;
    double *ShiftsForPreconditioner;
+   primme_init initBasisMode;
 
+   struct projection_params projectionParams; 
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
    struct stackTraceNode *stackTrace;
-   
+
+   void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
+         struct primme_params *primme);
 } primme_params;
 /*---------------------------------------------------------------------------*/
 
 typedef enum {
+   DEFAULT_METHOD,
    DYNAMIC,
    DEFAULT_MIN_TIME,
    DEFAULT_MIN_MATVECS,
@@ -220,9 +253,9 @@ typedef enum {
 
 
 int dprimme(double *evals, double *evecs, double *resNorms, 
-            primme_params *primme);
+      primme_params *primme);
 int zprimme(double *evals, Complex_Z *evecs, double *resNorms, 
-            primme_params *primme);
+      primme_params *primme);
 void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
@@ -230,10 +263,10 @@ void *primme_valloc(size_t byteSize, const char *target);
 void *primme_calloc(size_t nelem, size_t elsize, const char *target);
 void primme_Free(primme_params *primme);
 void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
-                                                   primme_params *params);
+      primme_params *params);
 void primme_PushErrorMessage(const primme_function callingFunction, 
-     const primme_function failedFunction, const int errorCode, 
-     const char *fileName, const int lineNumber, primme_params *primme);
+      const primme_function failedFunction, const int errorCode, 
+      const char *fileName, const int lineNumber, primme_params *primme);
 void primme_PrintStackTrace(const primme_params primme);
 void primme_DeleteStackTrace(primme_params *primme);
 

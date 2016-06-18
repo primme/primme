@@ -3,6 +3,7 @@ C     Defining easy to remember labels for setting the
 C     method in primme_set_method from Fortran
 C-------------------------------------------------------
       integer
+     : PRIMMEF77_DEFAULT_METHOD,
      : PRIMMEF77_DYNAMIC,
      : PRIMMEF77_DEFAULT_MIN_TIME,
      : PRIMMEF77_DEFAULT_MIN_MATVECS,
@@ -20,6 +21,7 @@ C-------------------------------------------------------
      : PRIMMEF77_LOBPCG_OrthoBasis_Window
 
       parameter(
+     : PRIMMEF77_DEFAULT_METHOD = 100,
      : PRIMMEF77_DYNAMIC = 0,
      : PRIMMEF77_DEFAULT_MIN_TIME = 1,
      : PRIMMEF77_DEFAULT_MIN_MATVECS = 2,
@@ -73,6 +75,8 @@ C-------------------------------------------------------
      : PRIMMEF77_outputFile,
      : PRIMMEF77_matrix,
      : PRIMMEF77_preconditioner,
+     : PRIMMEF77_initBasisMode,
+     : PRIMMEF77_projectionParams_projection,
      : PRIMMEF77_restartingParams_scheme,
      : PRIMMEF77_restartingParams_maxPrevRetain,
      : PRIMMEF77_correctionParams_precondition,
@@ -91,8 +95,13 @@ C-------------------------------------------------------
      : PRIMMEF77_stats_numMatvecs,
      : PRIMMEF77_stats_numPreconds,
      : PRIMMEF77_stats_elapsedTime,
+     : PRIMMEF77_stats_estimateMinEVal,
+     : PRIMMEF77_stats_estimateMaxEVal,
+     : PRIMMEF77_stats_estimateLargestSVal,
+     : PRIMMEF77_stats_maxConvTol,
      : PRIMMEF77_dynamicMethodSwitch,
-     : PRIMMEF77_massMatrixMatvec
+     : PRIMMEF77_massMatrixMatvec,
+     : PRIMMEF77_convTestFun
 
       parameter(
      : PRIMMEF77_n = 0,
@@ -126,6 +135,8 @@ C-------------------------------------------------------
      : PRIMMEF77_outputFile = 28,
      : PRIMMEF77_matrix = 29,
      : PRIMMEF77_preconditioner = 30,
+     : PRIMMEF77_initBasisMode = 301,
+     : PRIMMEF77_projectionParams_projection = 302,
      : PRIMMEF77_restartingParams_scheme = 31,
      : PRIMMEF77_restartingParams_maxPrevRetain = 32,
      : PRIMMEF77_correctionParams_precondition = 33,
@@ -144,8 +155,13 @@ C-------------------------------------------------------
      : PRIMMEF77_stats_numMatvecs = 46,
      : PRIMMEF77_stats_numPreconds = 47,
      : PRIMMEF77_stats_elapsedTime = 48,
+     : PRIMMEF77_stats_estimateMinEVal = 481,
+     : PRIMMEF77_stats_estimateMaxEVal = 482,
+     : PRIMMEF77_stats_estimateLargestSVal = 483,
+     : PRIMMEF77_stats_maxConvTol = 484,
      : PRIMMEF77_dynamicMethodSwitch = 49,
-     : PRIMMEF77_massMatrixMatvec = 50
+     : PRIMMEF77_massMatrixMatvec = 50,
+     : PRIMMEF77_convTestFun = 51
      : )
 
 C-------------------------------------------------------
@@ -159,6 +175,14 @@ C-------------------------------------------------------
      : PRIMMEF77_closest_geq,
      : PRIMMEF77_closest_leq,
      : PRIMMEF77_closest_abs,
+     : PRIMMEF77_proj_default,
+     : PRIMMEF77_proj_RR,
+     : PRIMMEF77_proj_harmonic,
+     : PRIMMEF77_proj_refined,
+     : PRIMMEF77_init_default,
+     : PRIMMEF77_init_krylov,
+     : PRIMMEF77_init_random,
+     : PRIMMEF77_init_user,
      : PRIMMEF77_thick,
      : PRIMMEF77_dtr,
      : PRIMMEF77_full_LTolerance,
@@ -172,6 +196,14 @@ C-------------------------------------------------------
      : PRIMMEF77_closest_geq = 2,
      : PRIMMEF77_closest_leq = 3,
      : PRIMMEF77_closest_abs = 4,
+     : PRIMMEF77_proj_default = 0,
+     : PRIMMEF77_proj_RR = 1,
+     : PRIMMEF77_proj_harmonic = 2,
+     : PRIMMEF77_proj_refined = 3,
+     : PRIMMEF77_init_default = 0,
+     : PRIMMEF77_init_krylov = 1,
+     : PRIMMEF77_init_random = 2,
+     : PRIMMEF77_init_user = 3,
      : PRIMMEF77_thick = 0,
      : PRIMMEF77_dtr = 1,
      : PRIMMEF77_full_LTolerance = 0,

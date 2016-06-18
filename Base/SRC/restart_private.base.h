@@ -35,35 +35,44 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
-static void restart_X(@(type) *X, @(type) *hVecs, int nLocal, 
-   int basisSize, int restartSize, @(type) *rwork, int rworkSize);
+static int restart_soft_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W, int nLocal,
+   @(type) *hR, int ldhR, @(type) *hU, int ldhU,
+   int basisSize, int ldV, @(type) **X, @(type) **R, @(type) *hVecs, int ldhVecs,
+   int *restartPerm, double *hVals, int *flags, int *iev, int *ievSize,
+   double *blockNorms, @(type) *evecs, double *evals, double *resNorms,
+   @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, int *numConverged,
+   int *numConvergedStored, @(type) *previousHVecs, int *numPrevRetained,
+   int ldpreviousHVecs, int *indexOfPreviousVecs, int *hVecsPerm, double machEps,
+   @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
-static int restart_H(@(type) *H, @(type) *hVecs, double *hVals, 
-   int restartSize, int basisSize, @(type) *previousHVecs, 
-   int numPrevRetained, int indexOfPreviousVecs, int rworkSize, 
-   @(type) *rwork, primme_params *primme);
+static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W, int ldW,
+   @(type) *H, int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR,
+   @(type) *QV, int ldQV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs,
+   int ldhVecs, int newldhVecs, double *hVals, double *hSVals, int *restartPerm,
+   int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
+   int indexOfPreviousVecs, @(type) *evecs, int *evecsSize,
+   int ldevecs, @(type) *evecsHat, int ldevecsHat, @(type) *M, int ldM, @(type) *UDU,
+   int ldUDU, int *ipivot, int *targetShiftIndex, int numConverged,
+   int rworkSize, @(type) *rwork, int *iwork, double machEps, primme_params *primme);
 
-static int dtr(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
- int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme);
+static int dtr_@(pre)primme(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
+  int basisSize, int numFree, int *iev, @(type) *rwork, primme_params *primme);
 
-static int pack_converged_coefficients(int *restartSize, int basisSize, 
-   int *numPrevRetained, int numLocked, int numGuesses, @(type) *hVecs, 
-   double *hVals, int *flag, primme_params *primme);
+static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
+   int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
+   int rworkSize, @(type) *rwork, int *iwork, primme_params *primme);
 
-static int combine_retained_vectors(double *hVals, int *flags, @(type) *hVecs, 
-   int basisSize, int *restartSize, int numPacked, @(type) *previousHVecs, 
-   int *numPrevRetained, double machEps, @(type) *rwork, primme_params *primme);
+static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
+   int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR, @(type) *QV,
+   int ldQV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int *targetShiftIndex, int numConverged, int rworkSize,
+   @(type) *rwork, int *iwork, double machEps, primme_params *primme);
 
-static void compute_submatrix(@(type) *previousHVecs, int numPrevRetained, 
-   @(type) *H, int basisSize, int maxBasisSize, @(type) *subMatrix, 
-   @(type) *rwork);
-
-static int insert_submatrix(@(type) *H, double *hVals, @(type) *hVecs, 
-   int restartSize, @(type) *subMatrix, int numPrevRetained, 
-   int indexOfPreviousVecs, int rworkSize, @(type) *rwork, 
-   primme_params *primme);
-
-static void apply_preconditioner_block(@(type) *v, @(type) *result,
-   int blockSize, primme_params *primme);
+static int compute_submatrix(@(type) *X, int nX, int ldX, 
+   @(type) *H, int nH, int ldH, @(type) *R, int ldR,
+   @(type) *rwork, int lrwork);
 
 #endif /* RESTART_PRIVATE_H */

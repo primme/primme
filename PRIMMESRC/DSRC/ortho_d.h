@@ -31,12 +31,13 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_dprimme(double *basis, int ldBasis, int b1, int b2, 
-   double *locked, int ldLocked, int numLocked, int nLocal, int *iseed, 
-   double machEps, double *rwork, int rworkSize, primme_params *primme);
+int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
+   int b1, int b2, double *locked, int ldLocked, int numLocked,
+   int nLocal, int *iseed, double machEps, double *rwork, int rworkSize,
+   primme_params *primme);
 
-int ortho_retained_vectors_dprimme (double *currentVectors, 
-  int length, int numVectors, double *previousVectors, int numPrevious, 
-  double machEps, double *rwork);
+int ortho_single_iteration_dprimme(double *Q, int mQ, int nQ, int ldQ, double *X,
+   int *inX, int nX, int ldX, double *overlaps, double *norms, double *rwork, int lrwork,
+   primme_params *primme);
 
 #endif

@@ -39,21 +39,20 @@
 #define RESTART_FAILURE           -6
 #define LOCK_VECTORS_FAILURE      -7
 
-static void adjust_blockSize(int *iev, int *flag, int *blockSize, 
-   int maxBlockSize, int *ievMax, int basisSize, int maxBasisSize, 
-   int numLocked, int numConverged, int numWantedEvs, int matrixDimension);
-
 static int retain_previous_coefficients(Complex_Z *hVecs, Complex_Z *previousHVecs, 
    int basisSize, int *iev, int blockSize, primme_params *primme);
 
-void check_reset_flags_zprimme(int *flag, int *numConverged, 
-   double *hVals, double *prevRitzVals, int numPrevRitzVals,
-   double tol, double aNormEstimate, primme_params *primme);
-
+static void check_projected_solution(int basisSize, int blockSize, double *hVals,
+      double *hSVals, int *targetShiftIndex, double machEps, primme_params *primme);
 
 static int verify_norms(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs, double *hVals, 
    int basisSize, double *resNorms, int *flag, double tol, double aNormEstimate,
    void *rwork, int *numConverged, primme_params *primme);
+
+static void print_residuals(double *ritzValues, double *blockNorms,
+   int numConverged, int numLocked, int *iev, int blockSize, 
+   primme_params *primme);
+
 
 /*----------------------------------------------------------------------------*
  * The following are needed for the Dynamic Method Switching

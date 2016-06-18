@@ -82,3 +82,4 @@
 .. _LAPACK: http://www.netlib.org/lapack/
 .. _BLAS: http://www.netlib.org/blas/
 .. _Sphinx: http://sphinx-doc.org/
+.. _PETSc: http://www.mcs.anl.gov/petsc/

@@ -1,0 +1,9 @@
+primme_svds_z.o: primme_svds_z.c ../COMMONSRC/primme_svds.h \
+ ../../../PRIMMESRC/COMMONSRC/primme.h \
+ ../../../PRIMMESRC/COMMONSRC/Complexz.h \
+ ../../../PRIMMESRC/COMMONSRC/const.h \
+ ../../../PRIMMESRC/COMMONSRC/wtime.h primme_svds_private_z.h \
+ ../COMMONSRC/primme_svds_interface.h ../COMMONSRC/primme_svds.h \
+ ../../../PRIMMESRC/ZSRC/numerical_z.h \
+ ../../../PRIMMESRC/COMMONSRC/common_numerical.h \
+ ../../../PRIMMESRC/COMMONSRC/Complexz.h

@@ -903,6 +903,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
 * -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
 * -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
+* -33: if not |locking| and |minRestartSize| < |numEvals|.
 
 .. _methods:
 
@@ -913,8 +914,9 @@ Preset Methods
 
    .. c:member:: DEFAULT_MIN_TIME
 
-      Set as |JDQMR_ETol|; this method is usually the fastest if
-      the cost of the matrix vector product is inexpensive.
+      Set as |JDQMR_ETol| when |target| is either ``primme_smallest`` or
+      ``primme_largest``, and as |JDQMR| otherwise. This method is usually
+      the fastest if the cost of the matrix vector product is inexpensive.
 
    .. c:member:: DEFAULT_MIN_MATVECS
 
@@ -929,7 +931,7 @@ Preset Methods
 
       With |DYNAMIC| :c:func:`primme_set_method` sets
       |dynamicMethodSwitch| = 1 and makes the same changes as
-      for method |JDQMR_ETol|.
+      for method |DEFAULT_MIN_TIME|.
 
    .. c:member:: Arnoldi
 

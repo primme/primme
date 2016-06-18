@@ -29,10 +29,9 @@
 #ifndef CONVERGENCE_H
 #define CONVERGENCE_H
 
-int check_convergence_@(pre)primme(@(type) *V, @(type) *W, @(type) *hVecs,
-   double *hVals, int *flags, int basisSize, int *iev, int *ievMax, 
-   double *blockNorms, int *blockSize, int numConverged, int numLocked, 
-   @(type) *evecs, double tol, double maxConvTol, double aNormEstimate, 
-   @(type) *rwork, primme_params *primme);
+int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
+   int ldR, @(type) *evecs, int numLocked, int ldevecs, int left, int right,
+   int *flags, double *blockNorms, double *hVals, double machEps, @(type) *rwork,
+   int rworkSize, int *iwork, primme_params *primme);
 
 #endif

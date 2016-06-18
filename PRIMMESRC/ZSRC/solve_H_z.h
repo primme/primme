@@ -29,12 +29,17 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_zprimme(Complex_Z *H, Complex_Z *hVecs, double *hVals, 
-   int basisSize, int maxBasisSize, double *largestEval, int numLocked,
-   int lrwork, Complex_Z *rwork, int *perm, primme_params *primme);
+int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
+   Complex_Z *QV, int ldQV, Complex_Z *hU, int ldhU, Complex_Z *hVecs, int ldhVecs,
+   double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
+   Complex_Z *rwork, int *iwork, primme_params *primme);
 
-void permute_evecs_zprimme(double *evecs, int elemSize, int *perm, 
-   double *rwork, int nev, int nLocal);
+int solve_H_RR_zprimme(Complex_Z *H, int maxBasisSize, Complex_Z *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
+   Complex_Z *rwork, int *iwork, primme_params *primme);
 
+int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
+   int ldhVecs, Complex_Z *hU, int ldhU, double *hSVals, Complex_Z *R, int ldR,
+   double *hVals, int basisSize, int lrwork, Complex_Z *rwork, primme_params *primme);
 
 #endif

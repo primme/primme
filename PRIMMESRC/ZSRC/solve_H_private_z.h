@@ -34,6 +34,14 @@
 #else
 #define NUM_DSYEV_FAILURE -1
 #endif
+#define ORTHO_FAILURE       -2
+#define NUM_DGESVD_FAILURE  -3
+#define NUM_ZGESVD_FAILURE  -4
+
+static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QV, int ldQV,
+   Complex_Z *R, int ldR, Complex_Z *hVecs, int ldhVecs, Complex_Z *hU, int ldhU,
+   double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
+   Complex_Z *rwork, int *iwork, primme_params *primme);
 
 #endif
 

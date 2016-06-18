@@ -1,0 +1,6 @@
+primme_svds_interface.o: primme_svds_interface.c primme_svds.h \
+ ../../../PRIMMESRC/COMMONSRC/primme.h \
+ ../../../PRIMMESRC/COMMONSRC/Complexz.h primme_svds_interface.h \
+ ../../../PRIMMESRC/COMMONSRC/primme_interface.h \
+ ../../../PRIMMESRC/COMMONSRC/common_numerical.h \
+ primme_svds_interface_private.h

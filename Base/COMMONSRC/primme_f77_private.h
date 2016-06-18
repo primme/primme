@@ -33,6 +33,7 @@
 /*     Defining easy to remember labels for setting the  */
 /*     method in primme_set_method from Fortran          */
 /*-------------------------------------------------------*/
+#define PRIMMEF77_DEFAULT_METHOD  100
 #define PRIMMEF77_DYNAMIC  0
 #define PRIMMEF77_DEFAULT_MIN_TIME  1
 #define PRIMMEF77_DEFAULT_MIN_MATVECS  2
@@ -83,6 +84,8 @@
 #define PRIMMEF77_outputFile  28
 #define PRIMMEF77_matrix  29
 #define PRIMMEF77_preconditioner  30
+#define PRIMMEF77_initBasisMode   301
+#define PRIMMEF77_projectionParams_projection  302
 #define PRIMMEF77_restartingParams_scheme  31
 #define PRIMMEF77_restartingParams_maxPrevRetain  32
 #define PRIMMEF77_correctionParams_precondition  33
@@ -101,8 +104,13 @@
 #define PRIMMEF77_stats_numMatvecs  46
 #define PRIMMEF77_stats_numPreconds  47
 #define PRIMMEF77_stats_elapsedTime  48
+#define PRIMMEF77_stats_estimateMinEVal  481
+#define PRIMMEF77_stats_estimateMaxEVal  482
+#define PRIMMEF77_stats_estimateLargestSVal  483
+#define PRIMMEF77_stats_maxConvTol  484
 #define PRIMMEF77_dynamicMethodSwitch 49
 #define PRIMMEF77_massMatrixMatvec  50
+#define PRIMMEF77_convTestFun  51
 
 /*----------------------------------------------------------*/
 /*     Defining easy to remember labels for setting the     */
@@ -113,6 +121,16 @@
 #define PRIMMEF77_closest_geq  2
 #define PRIMMEF77_closest_leq  3
 #define PRIMMEF77_closest_abs  4
+/*-------------------------------------------------------*/
+#define PRIMMEF77_proj_default  0
+#define PRIMMEF77_proj_RR  1
+#define PRIMMEF77_proj_harmonic  2
+#define PRIMMEF77_proj_refined  3
+/*-------------------------------------------------------*/
+#define PRIMMEF77_init_default  0
+#define PRIMMEF77_init_krylov  1
+#define PRIMMEF77_init_random  2
+#define PRIMMEF77_init_user  3
 /*-------------------------------------------------------*/
 #define PRIMMEF77_thick  0
 #define PRIMMEF77_dt  1
@@ -134,10 +152,13 @@ union f77_value {
    void (*matFunc_v) (void *,void *,int *,struct primme_params *);
    void *ptr_v;
    void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_params *);
+   void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*);
    primme_target *target_v;
    double *double_v;
    long int *long_int_v;
    FILE *file_v;
+   primme_init *init_v;
+   primme_projection *projection_v;
    primme_restartscheme *restartscheme_v;
    primme_convergencetest *convergencetest_v;
 };
@@ -146,10 +167,13 @@ union f77_value_ptr {
    void (*matFunc_v) (void *,void *,int *,struct primme_params *);
    void *ptr_v;
    void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_params *);
+   void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*);
    primme_target target_v;
    double double_v;
    long int long_int_v;
    FILE *file_v;
+   primme_init init_v;
+   primme_projection projection_v;
    primme_restartscheme restartscheme_v;
    primme_convergencetest convergencetest_v;
 };

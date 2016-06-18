@@ -212,6 +212,9 @@ static void convertToString(primme_function func, char *functionName) {
       case Primme_restart_h:
          strcpy(functionName, "restart_H");
          break;
+      case Primme_combine_retained:
+         strcpy(functionName, "Primme_combine_retained");
+         break;
       case Primme_insert_submatrix:
          strcpy(functionName, "insert_submatrix");
          break;
@@ -224,6 +227,18 @@ static void convertToString(primme_function func, char *functionName) {
       case Primme_num_zheev:
          strcpy(functionName, "Num_zheev");
          break;
+      /*lingfei:primme_svds*/
+      case Primme_num_dgesvd:
+         strcpy(functionName, "Num_dgesvd");
+         break;
+      /*lingfei:primme_svds*/
+      case Primme_num_zgesvd:
+         strcpy(functionName, "Num_zgesvd");
+         break;
+      /*lingfei:primme_svds*/
+      case Primme_num_dsygv:
+         strcpy(functionName, "Num_dsygv");
+         break;       
       case Primme_num_dspev:
          strcpy(functionName, "Num_dspev");
          break;
