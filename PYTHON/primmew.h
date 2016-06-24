@@ -28,32 +28,12 @@
 
 
 #include "../PRIMMESRC/COMMONSRC/primme.h"
+#include "../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h"
 #include <cstring>
 #include <cassert>
 #include <complex>
 
 class primme_params_w : public primme_params {
-   private:
-   void *cx, *cy;
-   int cbs;
-   bool issety;
-
-   static void mymatvec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
-      primme_params_w *pp = static_cast<primme_params_w*>(primme);
-      pp->cx = x; pp->cy = y; pp->cbs = *blockSize;
-      pp->issety = false;
-      pp->matvec();
-      assert(pp->issety);
-   }
-
-   static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
-      primme_params_w *pp = static_cast<primme_params_w*>(primme);
-      pp->cx = x; pp->cy = y; pp->cbs = *blockSize;
-      pp->issety = false;
-      pp->prevec();
-      assert(pp->issety);
-   }
-
    public:
    int __kind;
 
@@ -61,6 +41,7 @@ class primme_params_w : public primme_params {
       primme_initialize(static_cast<primme_params*>(this));
       matrixMatvec = mymatvec;
       applyPreconditioner = myprevec;
+      correctionParams.precondition = 0;
    }
 
    virtual ~primme_params_w() {}
@@ -74,27 +55,26 @@ class primme_params_w : public primme_params {
       primme_set_method(method, static_cast<primme_params*>(this));
    }
 
-   virtual void matvec() {}
-   virtual void prevec() {}
+   virtual void matvec(int len1YD, int len2YD, double *yd, int len1XD, int len2XD, double *xd)=0;
+   virtual void matvec(int len1YD, int len2YD, std::complex<double> *yd, int len1XD, int len2XD, std::complex<double> *xd)=0;
+   virtual void prevec(int len1YD, int len2YD, double *yd, int len1XD, int len2XD, double *xd)=0;
+   virtual void prevec(int len1YD, int len2YD, std::complex<double> *yd, int len1XD, int len2XD, std::complex<double> *xd)=0;
 
-   void getXd(int *len1X, int *len2X, double **x) {
-      *len1X = nLocal;
-      *len2X = cbs;
-      *x = (double*)cx;
+   private:
+
+   static void mymatvec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
+      primme_params_w *pp = static_cast<primme_params_w*>(primme);
+      if (pp->__kind == 1)
+         pp->matvec(primme->nLocal, *blockSize, (double*)x, primme->nLocal, *blockSize, (double*)y);
+      else if (pp->__kind == 3)
+         pp->matvec(primme->nLocal, *blockSize, (std::complex<double>*)x, primme->nLocal, *blockSize, (std::complex<double>*)y);
    }
-   void getXz(int *len1X, int *len2X, std::complex<double> **x) {
-      *len1X = nLocal;
-      *len2X = cbs;
-      *x = (std::complex<double>*)cx;
-   }
-   void setYd(int len1Y, int len2Y, double *y) {
-      assert(len1Y == nLocal && len2Y == cbs);
-      memcpy(cy, y, nLocal*cbs*sizeof(double));
-      issety = true;
-   }
-   void setYz(int len1Y, int len2Y, std::complex<double> *y) {
-      assert(len1Y == nLocal && len2Y == cbs);
-      memcpy(cy, y, nLocal*cbs*sizeof(std::complex<double>));
-      issety = true;
-   }
+
+   static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
+      primme_params_w *pp = static_cast<primme_params_w*>(primme);
+      if (pp->__kind == 1)
+         pp->prevec(primme->nLocal, *blockSize, (double*)x, primme->nLocal, *blockSize, (double*)y);
+      else if (pp->__kind == 3)
+         pp->prevec(primme->nLocal, *blockSize, (std::complex<double>*)x, primme->nLocal, *blockSize, (std::complex<double>*)y);
+    }
 };

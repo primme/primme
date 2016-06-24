@@ -38,14 +38,15 @@ A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 class PP(Primme.primme_params_w):
 	def __init__(self):
 		Primme.primme_params_w.__init__(self)
-	def matvec(self):
-		self.setY(A*self.getX())
+	def matvec(self, X):
+		return A*X
 pp = PP()
 pp.n = A.shape[0]
-pp.maxBasisSize = 3
-pp.minRestartSize = 1
+#pp.maxBasisSize = 3
+#pp.minRestartSize = 1
 pp.numEvals = 3
-pp.restartingParams.maxPrevRetain = 1
+#pp.restartingParams.maxPrevRetain = 1
+
 pp.set_method(Primme.DYNAMIC)
 pp.display()
 evals = np.zeros(pp.numEvals)
@@ -58,15 +59,15 @@ class PPs(Primme.primme_params_w):
 	def __init__(self, matrix=None):
 		Primme.primme_params_w.__init__(self)
 		self.mymatrix = matrix
-	def matvec(self):
-		self.setY(self.mymatrix*self.getX())
+	def matvec(self, X):
+		return self.mymatrix*X
 
 a = np.ones(10, complex)
 A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 pp = PPs(A)
 pp.n = A.shape[0]
-pp.maxBasisSize = 3
-pp.minRestartSize = 1
+#pp.maxBasisSize = 3
+#pp.minRestartSize = 1
 pp.numEvals = 3
 pp.set_method(Primme.DYNAMIC)
 #pp.display()

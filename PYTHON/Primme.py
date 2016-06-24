@@ -7,6 +7,63 @@
 
 
 
+"""
+Find a few eigenvectors and eigenvalues of a matrix.
+Uses PRIMME: https://github.com/primme/primme
+
+Example
+-------
+>>> import Primme, numpy as np
+>>> from scipy.sparse import *
+>>> 
+>>> # A = [ 2  1  0 ...
+>>> #      -1  2 -1 0 ...
+>>> #       0 -1  2 -1 0 ... ]
+>>> a = np.ones(10)
+>>> A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+>>> 
+>>> class PPd(Primme.primme_params_w):
+... 	def __init__(self):
+... 		Primme.primme_params_w.__init__(self)
+... 	def matvec(self):
+... 		self.setY(A*self.getX())
+>>> pp = PPd()
+>>> pp.n = A.shape[0]
+>>> pp.maxBasisSize = 3
+>>> pp.minRestartSize = 1
+>>> pp.numEvals = 3
+>>> pp.restartingParams.maxPrevRetain = 1
+>>> pp.set_method(Primme.DYNAMIC)
+>>> pp.display()
+>>> evals = np.zeros(pp.numEvals)
+>>> evecs = np.zeros((pp.n, pp.numEvals))
+>>> norms = np.zeros(pp.numEvals)
+>>> print Primme.dprimme(evals, evecs, norms, pp)
+>>> print pp.initSize, evals, norms
+>>> 
+>>> class PPz(Primme.primme_params_w):
+... 	def __init__(self, matrix=None):
+... 		Primme.primme_params_w.__init__(self)
+... 		self.mymatrix = matrix
+... 	def matvec(self):
+... 		self.setY(self.mymatrix*self.getX())
+>>> 
+>>> a = np.ones(10, complex)
+>>> A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+>>> pp = PPz(A)
+>>> pp.n = A.shape[0]
+>>> pp.maxBasisSize = 3
+>>> pp.minRestartSize = 1
+>>> pp.numEvals = 3
+>>> pp.set_method(Primme.DYNAMIC)
+>>> pp.display()
+>>> evals = np.zeros(pp.numEvals)
+>>> evecs = np.zeros((pp.n, pp.numEvals), complex)
+>>> norms = np.zeros(pp.numEvals)
+>>> print Primme.zprimme(evals, evecs, norms, pp)
+>>> print pp.initSize, evals, norms, pp.stats.numMatvecs
+"""
+
 
 from sys import version_info
 if version_info >= (2, 6, 0):
@@ -98,6 +155,9 @@ except:
 
 
 
+__all__ = ['primme_params_w', 'dprimme', 'zprimme', 'eigsh', 'PRIMMEError', 'PRIMMENoConvergence', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_params', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick']
+
+
 _Primme.Primme_dprimme_swigconstant(_Primme)
 Primme_dprimme = _Primme.Primme_dprimme
 
@@ -134,6 +194,9 @@ Primme_restart = _Primme.Primme_restart
 _Primme.Primme_restart_h_swigconstant(_Primme)
 Primme_restart_h = _Primme.Primme_restart_h
 
+_Primme.Primme_combine_retained_swigconstant(_Primme)
+Primme_combine_retained = _Primme.Primme_combine_retained
+
 _Primme.Primme_insert_submatrix_swigconstant(_Primme)
 Primme_insert_submatrix = _Primme.Primme_insert_submatrix
 
@@ -142,6 +205,15 @@ Primme_lock_vectors = _Primme.Primme_lock_vectors
 
 _Primme.Primme_num_dsyev_swigconstant(_Primme)
 Primme_num_dsyev = _Primme.Primme_num_dsyev
+
+_Primme.Primme_num_dsygv_swigconstant(_Primme)
+Primme_num_dsygv = _Primme.Primme_num_dsygv
+
+_Primme.Primme_num_dgesvd_swigconstant(_Primme)
+Primme_num_dgesvd = _Primme.Primme_num_dgesvd
+
+_Primme.Primme_num_zgesvd_swigconstant(_Primme)
+Primme_num_zgesvd = _Primme.Primme_num_zgesvd
 
 _Primme.Primme_num_zheev_swigconstant(_Primme)
 Primme_num_zheev = _Primme.Primme_num_zheev
@@ -191,6 +263,33 @@ primme_closest_leq = _Primme.primme_closest_leq
 _Primme.primme_closest_abs_swigconstant(_Primme)
 primme_closest_abs = _Primme.primme_closest_abs
 
+_Primme.primme_largest_abs_swigconstant(_Primme)
+primme_largest_abs = _Primme.primme_largest_abs
+
+_Primme.primme_proj_default_swigconstant(_Primme)
+primme_proj_default = _Primme.primme_proj_default
+
+_Primme.primme_proj_RR_swigconstant(_Primme)
+primme_proj_RR = _Primme.primme_proj_RR
+
+_Primme.primme_proj_harmonic_swigconstant(_Primme)
+primme_proj_harmonic = _Primme.primme_proj_harmonic
+
+_Primme.primme_proj_refined_swigconstant(_Primme)
+primme_proj_refined = _Primme.primme_proj_refined
+
+_Primme.primme_init_default_swigconstant(_Primme)
+primme_init_default = _Primme.primme_init_default
+
+_Primme.primme_init_krylov_swigconstant(_Primme)
+primme_init_krylov = _Primme.primme_init_krylov
+
+_Primme.primme_init_random_swigconstant(_Primme)
+primme_init_random = _Primme.primme_init_random
+
+_Primme.primme_init_user_swigconstant(_Primme)
+primme_init_user = _Primme.primme_init_user
+
 _Primme.primme_thick_swigconstant(_Primme)
 primme_thick = _Primme.primme_thick
 
@@ -234,6 +333,22 @@ class primme_stats(_object):
     __swig_getmethods__["elapsedTime"] = _Primme.primme_stats_elapsedTime_get
     if _newclass:
         elapsedTime = _swig_property(_Primme.primme_stats_elapsedTime_get, _Primme.primme_stats_elapsedTime_set)
+    __swig_setmethods__["estimateMinEVal"] = _Primme.primme_stats_estimateMinEVal_set
+    __swig_getmethods__["estimateMinEVal"] = _Primme.primme_stats_estimateMinEVal_get
+    if _newclass:
+        estimateMinEVal = _swig_property(_Primme.primme_stats_estimateMinEVal_get, _Primme.primme_stats_estimateMinEVal_set)
+    __swig_setmethods__["estimateMaxEVal"] = _Primme.primme_stats_estimateMaxEVal_set
+    __swig_getmethods__["estimateMaxEVal"] = _Primme.primme_stats_estimateMaxEVal_get
+    if _newclass:
+        estimateMaxEVal = _swig_property(_Primme.primme_stats_estimateMaxEVal_get, _Primme.primme_stats_estimateMaxEVal_set)
+    __swig_setmethods__["estimateLargestSVal"] = _Primme.primme_stats_estimateLargestSVal_set
+    __swig_getmethods__["estimateLargestSVal"] = _Primme.primme_stats_estimateLargestSVal_get
+    if _newclass:
+        estimateLargestSVal = _swig_property(_Primme.primme_stats_estimateLargestSVal_get, _Primme.primme_stats_estimateLargestSVal_set)
+    __swig_setmethods__["maxConvTol"] = _Primme.primme_stats_maxConvTol_set
+    __swig_getmethods__["maxConvTol"] = _Primme.primme_stats_maxConvTol_get
+    if _newclass:
+        maxConvTol = _swig_property(_Primme.primme_stats_maxConvTol_get, _Primme.primme_stats_maxConvTol_set)
 
     def __init__(self):
         this = _Primme.new_primme_stats()
@@ -287,6 +402,28 @@ class JD_projectors(_object):
     __del__ = lambda self: None
 JD_projectors_swigregister = _Primme.JD_projectors_swigregister
 JD_projectors_swigregister(JD_projectors)
+
+class projection_params(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, projection_params, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, projection_params, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["projection"] = _Primme.projection_params_projection_set
+    __swig_getmethods__["projection"] = _Primme.projection_params_projection_get
+    if _newclass:
+        projection = _swig_property(_Primme.projection_params_projection_get, _Primme.projection_params_projection_set)
+
+    def __init__(self):
+        this = _Primme.new_projection_params()
+        try:
+            self.this.append(this)
+        except:
+            self.this = this
+    __swig_destroy__ = _Primme.delete_projection_params
+    __del__ = lambda self: None
+projection_params_swigregister = _Primme.projection_params_swigregister
+projection_params_swigregister(projection_params)
 
 class correction_params(_object):
     __swig_setmethods__ = {}
@@ -498,6 +635,14 @@ class primme_params(_object):
     __swig_getmethods__["ShiftsForPreconditioner"] = _Primme.primme_params_ShiftsForPreconditioner_get
     if _newclass:
         ShiftsForPreconditioner = _swig_property(_Primme.primme_params_ShiftsForPreconditioner_get, _Primme.primme_params_ShiftsForPreconditioner_set)
+    __swig_setmethods__["initBasisMode"] = _Primme.primme_params_initBasisMode_set
+    __swig_getmethods__["initBasisMode"] = _Primme.primme_params_initBasisMode_get
+    if _newclass:
+        initBasisMode = _swig_property(_Primme.primme_params_initBasisMode_get, _Primme.primme_params_initBasisMode_set)
+    __swig_setmethods__["projectionParams"] = _Primme.primme_params_projectionParams_set
+    __swig_getmethods__["projectionParams"] = _Primme.primme_params_projectionParams_get
+    if _newclass:
+        projectionParams = _swig_property(_Primme.primme_params_projectionParams_get, _Primme.primme_params_projectionParams_set)
     __swig_setmethods__["restartingParams"] = _Primme.primme_params_restartingParams_set
     __swig_getmethods__["restartingParams"] = _Primme.primme_params_restartingParams_get
     if _newclass:
@@ -514,6 +659,10 @@ class primme_params(_object):
     __swig_getmethods__["stackTrace"] = _Primme.primme_params_stackTrace_get
     if _newclass:
         stackTrace = _swig_property(_Primme.primme_params_stackTrace_get, _Primme.primme_params_stackTrace_set)
+    __swig_setmethods__["convTestFun"] = _Primme.primme_params_convTestFun_set
+    __swig_getmethods__["convTestFun"] = _Primme.primme_params_convTestFun_get
+    if _newclass:
+        convTestFun = _swig_property(_Primme.primme_params_convTestFun_get, _Primme.primme_params_convTestFun_set)
 
     def __init__(self):
         this = _Primme.new_primme_params()
@@ -526,6 +675,9 @@ class primme_params(_object):
 primme_params_swigregister = _Primme.primme_params_swigregister
 primme_params_swigregister(primme_params)
 
+
+_Primme.DEFAULT_METHOD_swigconstant(_Primme)
+DEFAULT_METHOD = _Primme.DEFAULT_METHOD
 
 _Primme.DYNAMIC_swigconstant(_Primme)
 DYNAMIC = _Primme.DYNAMIC
@@ -613,45 +765,296 @@ class primme_params_w(primme_params):
     def set_method(self, method):
         return _Primme.primme_params_w_set_method(self, method)
 
-    def matvec(self):
-        return _Primme.primme_params_w_matvec(self)
+    def matvec(self, *args):
+        return _Primme.primme_params_w_matvec(self, *args)
 
-    def prevec(self):
-        return _Primme.primme_params_w_prevec(self)
-
-    def getXd(self):
-        return _Primme.primme_params_w_getXd(self)
-
-    def getXz(self):
-        return _Primme.primme_params_w_getXz(self)
-
-    def setYd(self, len1Y):
-        return _Primme.primme_params_w_setYd(self, len1Y)
-
-    def setYz(self, len1Y):
-        return _Primme.primme_params_w_setYz(self, len1Y)
-
-    def getX(self):
-       if self.__kind == 1:
-          return self.getXd()
-       elif self.__kind == 3:
-          return self.getXz()
-
-
-
-    def setY(self, Y):
-       if self.__kind == 1:
-          self.setYd(Y)
-       elif self.__kind == 3:
-          self.setYz(Y)
-
-
+    def prevec(self, *args):
+        return _Primme.primme_params_w_prevec(self, *args)
     def __disown__(self):
         self.this.disown()
         _Primme.disown_primme_params_w(self)
         return weakref_proxy(self)
 primme_params_w_swigregister = _Primme.primme_params_w_swigregister
 primme_params_w_swigregister(primme_params_w)
+
+import numpy as np
+from scipy.sparse.linalg.interface import aslinearoperator
+
+__docformat__ = "restructuredtext en"
+
+PRIMMEErrors = {
+0: "success",
+1: "reported only amount of required memory",
+-1: "failed in allocating int or real workspace",
+-2: "malloc failed in allocating a permutation integer array",
+-3: "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+-4: "if argument 'primme' is NULL",
+-5: "if 'n' <= 0 or 'nLocal' <= 0",
+-6: "if 'numProcs' < 1",
+-7: "if 'matrixMatvec' is NULL",
+-8: "if 'applyPreconditioner' is NULL and 'precondition' is not NULL",
+-9: "if 'globalSumDouble' is NULL",
+-10: "if 'numEvals' > 'n'",
+-11: "if 'numEvals' < 0",
+-12: "if 'eps' > 0 and 'eps' < machine precision",
+-13: "if 'target' is not properly defined",
+-14: "if 'target' is one of 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'numTargetShifts' <= 0 (no shifts)",
+-15: "if 'target' is one of 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'targetShifts' is NULL  (no shifts array)",
+-16: "if 'numOrthoConst' < 0 or 'numOrthoConst' >= 'n'. (no free dimensions left)",
+-17: "if 'maxBasisSize' < 2",
+-18: "if 'minRestartSize' <= 0",
+-19: "if 'maxBlockSize' <= 0",
+-20: "if 'maxPrevRetain' < 0",
+-21: "if 'scheme' is not one of *primme_thick* or *primme_dtr*",
+-22: "if 'initSize' < 0",
+-23: "if not 'locking' and 'initSize' > 'maxBasisSize'",
+-24: "if 'locking' and 'initSize' > 'numEvals'",
+-25: "if 'maxPrevRetain' + 'minRestartSize' >= 'maxBasisSize'",
+-26: "if 'minRestartSize' >= 'n'",
+-27: "if 'printLevel' < 0 or 'printLevel' > 5",
+-28: "if 'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
+-29: "if 'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
+-30: "if 'evals' is NULL, but not 'evecs' and 'resNorms'",
+-31: "if 'evecs' is NULL, but not 'evals' and 'resNorms'",
+-32: "if 'resNorms' is NULL, but not 'evecs' and 'evals'",
+-33: "if not 'locking' and 'minRestartSize' < 'numEvals'"
+}
+
+
+class PRIMMEError(RuntimeError):
+    """
+    PRIMME error
+    """
+    def __init__(self, err):
+        self.err = err
+        RuntimeError.__init__(self, "PRIMME error %d: %s" % (err, PRIMMEErrors[err]))
+
+def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
+          ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
+          Minv=None, OPinv=None, mode='normal'):
+    """
+    Find k eigenvalues and eigenvectors of the real symmetric square matrix
+    or complex hermitian matrix A.
+
+    Solves ``A * x[i] = w[i] * x[i]``, the standard eigenvalue problem for
+    w[i] eigenvalues with corresponding eigenvectors x[i].
+
+    If M is specified, solves ``A * x[i] = w[i] * M * x[i]``, the
+    generalized eigenvalue problem for w[i] eigenvalues
+    with corresponding eigenvectors x[i]
+
+    Parameters
+    ----------
+    A : An N x N matrix, array, sparse matrix, or LinearOperator representing
+        the operation A * x, where A is a real symmetric matrix
+        For buckling mode (see below) A must additionally be positive-definite
+    k : int, optional
+        The number of eigenvalues and eigenvectors desired.
+        `k` must be smaller than N. It is not possible to compute all
+        eigenvectors of a matrix.
+
+    Returns
+    -------
+    w : array
+        Array of k eigenvalues
+    v : array
+        An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
+        the eigenvector corresponding to the eigenvalue ``w[i]``.
+
+    Other Parameters
+    ----------------
+    M : An N x N matrix, array, sparse matrix, or linear operator representing
+        the operation M * x for the generalized eigenvalue problem
+
+            A * x = w * M * x.
+
+        M must represent a real, symmetric matrix if A is real, and must
+        represent a complex, hermitian matrix if A is complex. For best
+        results, the data type of M should be the same as that of A.
+        Additionally:
+
+            If sigma is None, M is symmetric positive definite
+
+            If sigma is specified, M is symmetric positive semi-definite
+
+            In buckling mode, M is symmetric indefinite.
+
+        If sigma is None, eigsh requires an operator to compute the solution
+        of the linear equation ``M * x = b``. This is done internally via a
+        (sparse) LU decomposition for an explicit matrix M, or via an
+        iterative solver for a general linear operator.  Alternatively,
+        the user can supply the matrix or operator Minv, which gives
+        ``x = Minv * b = M^-1 * b``.
+    sigma : real
+        Find eigenvalues near sigma using shift-invert mode.  This requires
+        an operator to compute the solution of the linear system
+        `[A - sigma * M] x = b`, where M is the identity matrix if
+        unspecified.  This is computed internally via a (sparse) LU
+        decomposition for explicit matrices A & M, or via an iterative
+        solver if either A or M is a general linear operator.
+        Alternatively, the user can supply the matrix or operator OPinv,
+        which gives ``x = OPinv * b = [A - sigma * M]^-1 * b``.
+        Note that when sigma is specified, the keyword 'which' refers to
+        the shifted eigenvalues ``w'[i]`` where:
+
+            if mode == 'normal', ``w'[i] = 1 / (w[i] - sigma)``.
+
+            if mode == 'cayley', ``w'[i] = (w[i] + sigma) / (w[i] - sigma)``.
+
+            if mode == 'buckling', ``w'[i] = w[i] / (w[i] - sigma)``.
+
+        (see further discussion in 'mode' below)
+    v0 : ndarray, optional
+        Starting vector for iteration.
+        Default: random
+    ncv : int, optional
+        The number of Lanczos vectors generated ncv must be greater than k and
+        smaller than n; it is recommended that ``ncv > 2*k``.
+        Default: ``min(n, 2*k + 1)``
+    which : str ['LM' | 'SM' | 'LA' | 'SA' | 'BE']
+        If A is a complex hermitian matrix, 'BE' is invalid.
+        Which `k` eigenvectors and eigenvalues to find:
+
+            'LM' : Largest (in magnitude) eigenvalues
+
+            'SM' : Smallest (in magnitude) eigenvalues
+
+            'LA' : Largest (algebraic) eigenvalues
+
+            'SA' : Smallest (algebraic) eigenvalues
+
+            'BE' : Half (k/2) from each end of the spectrum (not supported)
+
+        When sigma != None, 'which' refers to the shifted eigenvalues ``w'[i]``
+        (see discussion in 'sigma', above).
+    maxiter : int, optional
+        Maximum number of restarts update iterations allowed
+        Default: ``n*10``
+    tol : float
+        Accuracy for eigenvalues (stopping criterion).
+        The default value is sqrt of machine precision.
+    Minv : N x N matrix, array, sparse matrix, or LinearOperator
+        See notes in M, above
+    OPinv : N x N matrix, array, sparse matrix, or LinearOperator
+        See notes in sigma, above.
+    return_eigenvectors : bool
+        Return eigenvectors (True) in addition to eigenvalues
+    mode : string ['normal' | 'buckling' | 'cayley']
+        Only 'normal' mode is supported.
+
+    Raises
+    ------
+    PrimmeNoConvergence
+        When the requested convergence is not obtained.
+
+        The PRIMME error code can be found as ``err`` attribute of the exception
+        object.
+
+    See Also
+    --------
+    eigs : eigenvalues and eigenvectors for a general (nonsymmetric) matrix A
+    svds : singular value decomposition for a matrix A
+
+    Notes
+    -----
+    This function is a wrapper to PRIMME functions to find the eigenvalues and
+    eigenvectors [2]_.
+
+    References
+    ----------
+    .. [1] ARPACK Software, http://www.caam.rice.edu/software/ARPACK/
+    .. [2] R. B. Lehoucq, D. C. Sorensen, and C. Yang,  ARPACK USERS GUIDE:
+       Solution of Large Scale Eigenvalue Problems by Implicitly Restarted
+       Arnoldi Methods. SIAM, Philadelphia, PA, 1998.
+
+    Examples
+    --------
+    >>> import Primme
+    >>> import numpy as np
+    >>> from scipy.sparse import spdiags
+    >>> a = np.ones(3)
+    >>> A  = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+    >>> r = Primme.eigsh(A, which='LA')
+    >>> r['w'] % values 
+    """
+
+    A = aslinearoperator(A)
+    if A.shape[0] != A.shape[1]:
+        raise ValueError('expected square matrix (shape=%s)' % (A.shape,))
+
+    if M is not None:
+        raise ValueError('generalized problems (M != None) are not supported')
+
+    if OPinv != None:
+        OPinv = aslinearoperator(OPinv)
+        if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
+            raise ValueError('expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
+
+    class PP(primme_params_w):
+        def __init__(self):
+            primme_params_w.__init__(self)
+        def matvec(self):
+            self.setY(A.matmat(self.getX()))
+        def prevec(self):
+            self.setY(OPinv.matmat(self.getX()))
+
+    pp = PP()
+
+    pp.n = A.shape[0]
+
+    if k <= 0 or k >= pp.n:
+        raise ValueError("k must be between 1 and the order of the "
+                         "square input matrix.")
+    pp.numEvals = k
+    pp.correctionParams.precondition = 1 if OPinv != None else 0
+
+    if which == 'LA' and sigma == None:
+        pp.target = primme_largest
+    elif which == 'SA' and sigma == None:
+        pp.target = primme_smallest
+    elif which == 'SM':
+        pp.target = primme_closest_abs
+        pp.numTargetShifts = 1
+        if sigma != None:
+            sigma = 0.0
+        pp.targetShifts = np.array([sigma], dtype=np.dtype('d'))
+    else:
+        raise ValueError("which value '%s' and sigma value '%s' not supported" % (which, sigma))
+
+    if v0 != None:
+        pp.initSize = v0.shape[1]
+
+    if ncv != None:
+        pp.maxBasisSize = ncv
+
+    if maxiter != None:
+        pp.maxMatvecs = maxiter
+
+    pp.set_method(DYNAMIC)
+
+    evals = np.zeros(pp.numEvals)
+    norms = np.zeros(pp.numEvals)
+
+    if A.dtype is np.dtype(np.complex64):
+        evecs = np.zeros((pp.n, pp.numEvals), complex)
+        err = zprimme(evals, evecs, norms, pp)
+    elif A.dtype is np.dtype('d'):
+        evecs = np.zeros((pp.n, pp.numEvals))
+        err = dprimme(evals, evecs, norms, pp)
+
+    if err != 0:
+        raise PrimmeNoConvergence(err)
+
+    return { 'w': evals, 'v': evecs }
+
+
+# if __name__ == '__main__':
+#     from scipy.sparse import spdiags
+#     a = np.ones(10)
+#     A  = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+#     print(eigsh_primme(A, which='LA'))
+# 
+
 
 # This file is compatible with both classic and new-style classes.
 

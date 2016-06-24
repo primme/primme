@@ -20,8 +20,10 @@ class SwigDirector_primme_params_w : public primme_params_w, public Swig::Direct
 public:
     SwigDirector_primme_params_w(PyObject *self);
     virtual ~SwigDirector_primme_params_w();
-    virtual void matvec();
-    virtual void prevec();
+    virtual void matvec(int len1YD, int len2YD, double *yd, int len1XD, int len2XD, double *xd);
+    virtual void matvec(int len1YD, int len2YD, std::complex< double > *yd, int len1XD, int len2XD, std::complex< double > *xd);
+    virtual void prevec(int len1YD, int len2YD, double *yd, int len1XD, int len2XD, double *xd);
+    virtual void prevec(int len1YD, int len2YD, std::complex< double > *yd, int len1XD, int len2XD, std::complex< double > *xd);
 
 /* Internal director utilities */
 public:
@@ -52,7 +54,7 @@ private:
       return method;
     }
 private:
-    mutable swig::SwigVar_PyObject vtable[2];
+    mutable swig::SwigVar_PyObject vtable[4];
 #endif
 
 };
