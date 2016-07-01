@@ -642,7 +642,8 @@ static int primme_svds_check_input(double *svals, @(type) *svecs, double *resNor
    else if ( (primme_svds->method == primme_svds_op_augmented &&
               primme_svds->methodStage2 != primme_svds_op_none) ||
              (primme_svds->method != primme_svds_op_augmented &&
-              primme_svds->methodStage2 != primme_svds_op_augmented))
+              primme_svds->methodStage2 != primme_svds_op_augmented &&
+              primme_svds->methodStage2 != primme_svds_op_none))
       ret = -15;
    else if (primme_svds->printLevel < 0 || primme_svds->printLevel > 5)
       ret = -16; 

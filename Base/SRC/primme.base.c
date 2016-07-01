@@ -528,16 +528,6 @@ static int check_input(double *evals, @(type) *evecs, double *resNorms,
              primme->target != primme_closest_leq  &&
              primme->target != primme_closest_abs    )
       ret = -13;
-   else if ( primme->target == primme_closest_geq ||
-             primme->target == primme_closest_leq ||
-             primme->target == primme_closest_abs   ) {
-      if (primme->numTargetShifts <= 0) {
-         ret = -14;
-      }
-      else if (primme->targetShifts == NULL ) {
-         ret = -15;
-      }
-   }
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst >=primme->n)
       ret = -16;
    else if (primme->maxBasisSize < 2 && primme->maxBasisSize != primme->n) 
@@ -581,6 +571,17 @@ static int check_input(double *evals, @(type) *evecs, double *resNorms,
    else if (!primme->locking && primme->minRestartSize < primme->numEvals &&
             primme->n > 2)
       ret = -33;
+   /* Please keep this if instruction at the end */
+   else if ( primme->target == primme_closest_geq ||
+             primme->target == primme_closest_leq ||
+             primme->target == primme_closest_abs   ) {
+      if (primme->numTargetShifts <= 0) {
+         ret = -14;
+      }
+      else if (primme->targetShifts == NULL ) {
+         ret = -15;
+      }
+   }
 
    return ret;
   /***************************************************************************/
@@ -609,8 +610,9 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *is
    primme_params *primme) {
 
    const double machEps = Num_dlamch_primme("E");
+   const double aNorm = (primme->aNorm > 0.0) ?
+      primme->aNorm : primme->stats.estimateLargestSVal;
    *isConv = *rNorm < max(
-               primme->eps * (
-                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
+               primme->eps * aNorm,
                machEps * 3.16 * primme->stats.estimateLargestSVal);
 }

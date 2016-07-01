@@ -174,6 +174,8 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    int failed;              /* Number of vectors to be locked that didn't pass the conv. test */
    int *ifailed;            /* Indices of vectors to be locked vectors that failed */
    int left;                /* Index of the first column with a vector to be locked */
+   int overbooking;         /* If basis has more converged pairs than numEvals */
+   double *lockedResNorms;  /* residual norms for locked vectors              */
    int ret, numLocked0 = *numLocked; /* aux variables                         */
    double *blockNorms0;
 
@@ -182,10 +184,10 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
       Complex_Z t;
       double d;
       return max(max(max(max(
-            /* for permute_vecs */
-            basisSize,
+            /* for permute_vecs and fakeResNorms */
+            2*basisSize,
             Num_compute_residual_columns_zprimme(nLocal, NULL, NULL, basisSize, NULL, 0,
-               NULL, 0, NULL, primme->maxBlockSize, 0, NULL, 0, NULL,
+               NULL, 0, NULL, primme->maxBlockSize, 0, 0, NULL, 0, NULL,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
             ortho_coefficient_vectors_zprimme(NULL, basisSize, 0, 0, *restartSize, NULL, NULL,
                0, NULL, 0, *numPrevRetained, 0.0, NULL, NULL, 0, primme)),
@@ -204,28 +206,36 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
                NULL, primme));
    }
 
-  /* ----------------------------------------------------------------------- */
-   /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
-   /* vectors do not exceed basisSize.                                        */
-   /* ----------------------------------------------------------------------- */
+   if (*numConverged+*numLocked > primme->numEvals) {
+      overbooking = 1;
+      *restartSize = *numPrevRetained = 0;
+   }
+   else {
+      overbooking = 0;
 
-   *restartSize = min(*restartSize, basisSize-(*numConverged-*numLocked));
+      /* ----------------------------------------------------------------------- */
+      /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
+      /* vectors do not exceed basisSize.                                        */
+      /* ----------------------------------------------------------------------- */
 
-   /* ----------------------------------------------------------------------- */
-   /* Insert as many initial guesses as eigenpairs have converged.            */
-   /* ----------------------------------------------------------------------- */
+      *restartSize = min(*restartSize, basisSize-(*numConverged-*numLocked));
 
-   *restartSize -= min(min(numGuesses, *numConverged-*numLocked), *restartSize);
+      /* ----------------------------------------------------------------------- */
+      /* Insert as many initial guesses as eigenpairs have converged.            */
+      /* ----------------------------------------------------------------------- */
 
-   /* ----------------------------------------------------------------------- */
-   /* Don't insert more vectors from iterations than the actual restart size  */
-   /* and don't make the final basis size larger than the current one.        */
-   /* ----------------------------------------------------------------------- */
+      *restartSize -= min(min(numGuesses, *numConverged-*numLocked), *restartSize);
 
-   *numPrevRetained = max(0, min(min(
-         *numPrevRetained,
-         *restartSize), 
-         basisSize - (*restartSize+*numConverged-*numLocked)));
+      /* ----------------------------------------------------------------------- */
+      /* Don't insert more vectors from iterations than the actual restart size  */
+      /* and don't make the final basis size larger than the current one.        */
+      /* ----------------------------------------------------------------------- */
+
+      *numPrevRetained = max(0, min(min(
+            *numPrevRetained,
+            *restartSize), 
+            basisSize - (*restartSize+*numConverged-*numLocked)));
+   }
 
    /* -------------------------------------------------------------- */
    /* Rearrange hVals and hVecs so that V*hVecs and W*hVecs will     */
@@ -253,10 +263,10 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    /* first sizeBlockNorms candidates pairs.                         */
    /* -------------------------------------------------------------- */
 
-   maxBlockSize = min(min(
+   maxBlockSize = max(0, min(min(
          *restartSize,
          primme->maxBlockSize),
-         primme->numEvals-*numConverged+1);
+         primme->numEvals-*numConverged+1));
 
    sizeBlockNorms = max(0, min(
          maxBlockSize,
@@ -282,7 +292,15 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    assert(*indexOfPreviousVecs >= 0 && indexOfCandidates >= *indexOfPreviousVecs && left >= indexOfCandidates);
 
    for (i=j=k=numPacked=0; i<basisSize; i++) {
-      if (flags[i] != UNCONVERGED && i < primme->numEvals-*numLocked) {
+      if (flags[i] != UNCONVERGED
+            && (i < primme->numEvals-*numLocked
+            /* Refined and prepare_vecs may not completely order pairs        */
+            /* considering closest_leq/geq; so we find converged pairs beyond */
+            /* the first remaining pairs to converge.                         */
+               || primme->target == primme_closest_geq
+               || primme->target == primme_closest_leq
+            /* Try to converge all pairs in case of overbooking               */
+                || overbooking)) {
          restartPerm[left + numPacked++] = i;
       }
       else if (j < numCandidates) {
@@ -296,7 +314,7 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
       }
    }
 
-   assert(numPacked == *numConverged-*numLocked);
+   assert(numPacked == *numConverged-*numLocked || overbooking);
  
    permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_zprimme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
@@ -323,18 +341,26 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    /* vectors to be locked into evecs and compute X and R.           */
    /* -------------------------------------------------------------- */
 
+   if (!overbooking) {
+      lockedResNorms = &resNorms[*numLocked];
+   }
+   else {
+      lockedResNorms = (double*)rwork;
+      rwork += basisSize;
+      rworkSize -= basisSize;
+   }
    *X = &V[*restartSize*ldV];
    *R = &W[*restartSize*ldV];
    ret = Num_reset_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
          *X, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
-         evecs, *numLocked+primme->numOrthoConst, left,
-               *restartSize, primme->nLocal,
+         evecs, *numLocked+primme->numOrthoConst,
+               left, !overbooking?*restartSize:left, primme->nLocal,
          W, 0, *restartSize, ldV,
          *R, indexOfCandidates, indexOfCandidates+sizeBlockNorms, ldV,
                blockNorms,
-         &resNorms[*numLocked], left, *restartSize,
+         lockedResNorms, left, *restartSize,
          reset, machEps, rwork, rworkSize, primme);
    if (ret != 0) return ret;
  
@@ -348,17 +374,19 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    ret = check_convergence_zprimme(&V[ldV*left],
          nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-         *restartSize, flags, &resNorms[*numLocked], hVals, &reset /*dummy*/, machEps,
+         *restartSize, flags, lockedResNorms, hVals, &reset /*dummy*/, machEps,
          rwork, rworkSize, iwork, primme);
    if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
-   /* Temporally save the vals of the vectors to be locked into      */
-   /* evals, they will be used later.                                */
+   /* Copy the values for the converged pairs into evals       */
    /* -------------------------------------------------------------- */
 
-   for (i=left; i < *restartSize && i-left+*numLocked < primme->numEvals; i++)
-      evals[*numLocked+i-left] = hVals[i];
+   for (i=left, j=0; i < *restartSize; i++) {
+      if (flags[i] != UNCONVERGED && *numLocked+j < primme->numEvals) {
+         evals[*numLocked+j++] = hVals[i];
+      }
+   }
 
    /* -------------------------------------------------------------- */
    /* Merge back the pairs that failed to be locked into the         */
@@ -437,9 +465,9 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
 
       Num_compute_residual_columns_zprimme(nLocal, &hVals[left],
             &V[left*ldV], failed, ifailed, ldV, &W[left*ldV], ldV, *X,
-            sizeBlockNorms, ldV, *R, ldV, &V[(left+failed)*ldV],
-            maxBlockSize, hVecsPerm, ldV, &W[(left+failed)*ldV], ldV,
-            rwork, rworkSize);
+            sizeBlockNorms, ldV, indexOfCandidates, *R, ldV,
+            &V[(left+failed)*ldV], maxBlockSize, hVecsPerm, ldV,
+            &W[(left+failed)*ldV], ldV, rwork, rworkSize);
    }
    else {
       /* The failed pairs are not rearranged with the rest of           */
@@ -484,10 +512,18 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
 
    for (i=left; i < *restartSize; i++) {
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
-         double resNorm = resNorms[i-left+numLocked0];
-         double eval = evals[i-left+numLocked0];
-         Num_copy_matrix_zprimme(&evecs[(numLocked0+i-left+primme->numOrthoConst)*primme->nLocal], nLocal, 1,
-               primme->nLocal, &evecs[(*numLocked+primme->numOrthoConst)*primme->nLocal], primme->nLocal);
+         double resNorm = lockedResNorms[i-left];
+         double eval = evals[*numLocked];
+         if (!overbooking)
+            Num_copy_matrix_zprimme(
+                  &evecs[(numLocked0+i-left+primme->numOrthoConst)*primme->nLocal],
+                  nLocal, 1, primme->nLocal,
+                  &evecs[(*numLocked+primme->numOrthoConst)*primme->nLocal],
+                  primme->nLocal);
+         else
+            Num_copy_matrix_zprimme(&V[i*nLocal], nLocal, 1, primme->nLocal,
+                  &evecs[(*numLocked+primme->numOrthoConst)*primme->nLocal],
+                  primme->nLocal);
          insertionSort(eval, evals, resNorm, resNorms, evecsperm,
             *numLocked, primme);
          (*numLocked)++;

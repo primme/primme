@@ -93,7 +93,7 @@ void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx,
       int *yin, int ldy);
 int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n, int *p,
    int ldx, double *Ax, int ldAx,
-   double *xo, int no, int ldxo, double *ro, int ldro,
+   double *xo, int no, int ldxo, int io0, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
    double *rwork, int lrwork);
 void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,

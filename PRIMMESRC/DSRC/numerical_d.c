@@ -44,6 +44,9 @@ void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy) {
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
    DCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
@@ -59,6 +62,8 @@ void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int 
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0 || k == 0) return;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -84,6 +89,9 @@ void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double a
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
 
@@ -105,6 +113,9 @@ void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    DTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 
 }
@@ -120,6 +131,8 @@ void Num_symv_dprimme(const char *uplo, int n, double alpha,
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    DSYMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 
@@ -132,6 +145,9 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    DAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 
@@ -174,7 +190,7 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
  *    for i=0:nd-1
- *       if pd(i) == j
+ *       if pd(i) == j+io0
  *          XD = [XD XO(j)]; RD = [RD RO(j)]; j++
  *       else
  *          XD = [XD X(p(k)]; RD = [RD AX(p(k)) - evals(p(k))*X(p(k))]; k++
@@ -204,6 +220,7 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
  * xo          Alternative source of columns for xd
  * no          The number of columns in xo
  * ldxo        The leading dimension of xo
+ * io0         The index of the first column in xo
  * ro          Alternative source of columns for rd
  * ldro        The leading dimension of ro
  * xd          The matrix that will have columns from x and xo
@@ -219,7 +236,7 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
 
 int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n, int *p, 
    int ldx, double *Ax, int ldAx,
-   double *xo, int no, int ldxo, double *ro, int ldro,
+   double *xo, int no, int ldxo, int io0, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
    double *rwork, int lrwork) {
 
@@ -246,7 +263,7 @@ int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n,
 
    for (k=0; k<m; k+=M, M=min(M,m-k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
-         if (id < nd && io < no && pd[id] == io) {
+         if (id < nd && io < no && pd[id] == io+io0) {
             Num_copy_matrix_dprimme(&xo[io*ldxo+k], M, 1, ldxo, &X0[id*M], M);
             Num_copy_matrix_dprimme(&ro[io*ldro+k], M, 1, ldro, &R0[id*M], M);
             io++;
@@ -280,6 +297,9 @@ void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd transa_fcd;
 
@@ -299,6 +319,9 @@ double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0.0;
+
    return(DDOT(&ln, x, &lincx, y, &lincy));
 
 }
@@ -311,6 +334,9 @@ void Num_larnv_dprimme(int idist, int *iseed, int length, double *x) {
    PRIMME_BLASINT temp[4];
    PRIMME_BLASINT *liseed = temp;
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (length == 0) return;
 
    if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
       liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
@@ -334,6 +360,9 @@ void Num_scal_dprimme(int n, double alpha, double *x, int incx) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
    DSCAL(&ln, &alpha, x, &lincx);
 
 }
@@ -344,6 +373,9 @@ void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    DSWAP(&ln, x, &lincx, y, &lincy);
 
@@ -375,6 +407,9 @@ void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
  
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
 
@@ -409,6 +444,9 @@ void Num_dgesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, doubl
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    DGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
           &lldwork, &linfo);
 
@@ -427,6 +465,9 @@ void Num_geqrf_dprimme(int m, int n, double *a, int lda, double *tau,
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    DGEQRF
       (&lm, &ln, a, &llda, tau, rwork, &llrwork, &linfo);
 
@@ -442,6 +483,9 @@ void Num_orgqr_dprimme(int m, int n, int k, double *a, int lda, double *tau,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0 || k == 0) return;
 
    DORGQR(&lm, &ln, &lk, a, &llda, tau, rwork, &llrwork, &linfo);
 
@@ -459,6 +503,9 @@ void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
@@ -499,6 +546,9 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
    PRIMME_BLASINT linfo = 0; 
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0 || nrhs == 0) return;
+
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
    } else {
@@ -532,6 +582,9 @@ void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, co
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
 
    DTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 

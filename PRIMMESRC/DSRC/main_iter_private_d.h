@@ -42,9 +42,9 @@
 static int retain_previous_coefficients(double *hVecs, double *previousHVecs, 
    int basisSize, int *iev, int blockSize, primme_params *primme);
 
-static int verify_norms(double *V, double *W, double *hVecs, double *hVals, 
-   int basisSize, double *resNorms, int *flag, double tol, double aNormEstimate,
-   void *rwork, int *numConverged, primme_params *primme);
+static int verify_norms(double *V, double *W, double *hVals, int basisSize,
+      double *resNorms, int *flags, int *converged, double machEps,
+      double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 static void print_residuals(double *ritzValues, double *blockNorms,
    int numConverged, int numLocked, int *iev, int blockSize, 

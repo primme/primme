@@ -799,7 +799,6 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
 
    if (primme->projectionParams.projection != primme_proj_refined
          || basisSize == 0) {
-      if (arbitraryVecs) *arbitraryVecs = 0;
       return 0;
    }
 
@@ -812,6 +811,12 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
                   NULL, 0, NULL, 0),
                solve_H_RR_@(pre)primme(NULL, 0, NULL, 0, NULL, basisSize, 0, 0, NULL,
                   NULL, primme));
+   }
+
+   /* Quick exit */
+
+   if (blockSize == 0) {
+      return 0;
    }
 
    /* Special case: If (basisSize+numLocked) is the entire space, */
@@ -935,28 +940,28 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
 
    /* Count all eligible values (candidates) from 0 up to i */
 
-   for (j=0, candidates=0; j < i; j++)
+   for (j=i0, candidates=0; j < i; j++)
       if (  (primme->target == primme_closest_leq && hVals[j]-smallestResNorm <= targetShift)
           ||(primme->target == primme_closest_geq && hVals[j]+smallestResNorm >= targetShift))
          candidates++;
 
    perm = iwork;
    iwork += basisSize;
-   for (j=right=left=0; j < i; j++) {
+   for (j=i0,right=left=0; j < i; j++) {
       if (  (primme->target == primme_closest_leq && hVals[j]-smallestResNorm <= targetShift)
           ||(primme->target == primme_closest_geq && hVals[j]+smallestResNorm >= targetShift))
-         perm[right++] = j;
+         perm[right++] = j-i0;
       else
-         perm[candidates+left++] = j;
+         perm[candidates+left++] = j-i0;
    }
 
-   permute_vecs_dprimme(hVals, 1, i, 1, perm, (double*)rwork, iwork);
-   permute_vecs_@(pre)primme(hVecs, basisSize, i, ldhVecs, perm, rwork, iwork);
+   permute_vecs_dprimme(&hVals[i0], 1, i-i0, 1, perm, (double*)rwork, iwork);
+   permute_vecs_@(pre)primme(&hVecs[ldhVecs*i0], basisSize, i-i0, ldhVecs, perm, rwork, iwork);
 
    /* If something has changed between arbitraryVecs and i, notify */
 
-   for (j=*arbitraryVecs; j<i; j++)
-      if (perm[j] != j) *arbitraryVecs = j+1;
+   for (j=max(*arbitraryVecs,i0); j<i; j++)
+      if (perm[j-i0]+i0 != j) *arbitraryVecs = j+1;
 
    return 0;
 }

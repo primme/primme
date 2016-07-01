@@ -45,6 +45,9 @@ void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
    ZCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
@@ -60,6 +63,8 @@ void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int 
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0 || k == 0) return;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -85,6 +90,9 @@ void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, Complex_
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
 
@@ -106,6 +114,9 @@ void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 
 }
@@ -121,6 +132,8 @@ void Num_symv_zprimme(const char *uplo, int n, Complex_Z alpha,
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    ZHEMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 
@@ -133,6 +146,9 @@ void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    ZAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 
@@ -175,7 +191,7 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
  *    for i=0:nd-1
- *       if pd(i) == j
+ *       if pd(i) == j+io0
  *          XD = [XD XO(j)]; RD = [RD RO(j)]; j++
  *       else
  *          XD = [XD X(p(k)]; RD = [RD AX(p(k)) - evals(p(k))*X(p(k))]; k++
@@ -205,6 +221,7 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
  * xo          Alternative source of columns for xd
  * no          The number of columns in xo
  * ldxo        The leading dimension of xo
+ * io0         The index of the first column in xo
  * ro          Alternative source of columns for rd
  * ldro        The leading dimension of ro
  * xd          The matrix that will have columns from x and xo
@@ -220,7 +237,7 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
 
 int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int n, int *p, 
    int ldx, Complex_Z *Ax, int ldAx,
-   Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
+   Complex_Z *xo, int no, int ldxo, int io0, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
    Complex_Z *rwork, int lrwork) {
 
@@ -247,7 +264,7 @@ int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int
 
    for (k=0; k<m; k+=M, M=min(M,m-k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
-         if (id < nd && io < no && pd[id] == io) {
+         if (id < nd && io < no && pd[id] == io+io0) {
             Num_copy_matrix_zprimme(&xo[io*ldxo+k], M, 1, ldxo, &X0[id*M], M);
             Num_copy_matrix_zprimme(&ro[io*ldro+k], M, 1, ldro, &R0[id*M], M);
             io++;
@@ -280,6 +297,9 @@ void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
@@ -333,6 +353,9 @@ void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x) {
    PRIMME_BLASINT *liseed = temp;
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (length == 0) return;
+
    if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
       liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
    } else {
@@ -355,6 +378,9 @@ void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
    ZSCAL(&ln, &alpha, x, &lincx);
 
 }
@@ -365,6 +391,9 @@ void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    ZSWAP(&ln, x, &lincx, y, &lincy);
 
@@ -397,6 +426,9 @@ void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, 
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -431,6 +463,9 @@ void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, Compl
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
           &lldwork, rwork, &linfo);
 
@@ -448,6 +483,9 @@ void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau,
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZGEQRF
       (&lm, &ln, a, &llda, tau, rwork, &llrwork, &linfo);
 
@@ -463,6 +501,9 @@ void Num_orgqr_zprimme(int m, int n, int k, Complex_Z *a, int lda, Complex_Z *ta
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0 || k == 0) return;
 
    ZUNGQR(&lm, &ln, &lk, a, &llda, tau, rwork, &llrwork, &linfo);
 
@@ -481,6 +522,9 @@ void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipi
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
@@ -521,6 +565,9 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
    PRIMME_BLASINT linfo = 0; 
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0 || nrhs == 0) return;
+
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
    } else {
@@ -554,6 +601,9 @@ void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, co
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
 
    ZTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 

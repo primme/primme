@@ -99,7 +99,7 @@ void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int l
       int *yin, int ldy);
 int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
    int ldx, Complex_Z *Ax, int ldAx,
-   Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
+   Complex_Z *xo, int no, int ldxo, int io0, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
    Complex_Z *rwork, int lrwork);
 void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,

@@ -83,6 +83,7 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    int ret=0;
+   double targetShift;     /* target shift */
 
    /* -------------------------- */
    /* Return memory requirements */
@@ -92,7 +93,10 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
       return R ? check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
          NULL, right-left, NULL, NULL, 0, NULL, 0, primme) : 0;
    }
-   
+  
+   targetShift = primme->numTargetShifts > 0 ?
+      primme->targetShifts[min(primme->initSize, primme->numTargetShifts-1)] : 0.0;
+ 
    /* -------------------------------------------- */
    /* Tolerance based on our dynamic norm estimate */
    /* -------------------------------------------- */
@@ -116,6 +120,18 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
        
       /* Don't trust any residual norm below estimateResidualError */
       blockNorms[i-left] = max(blockNorms[i-left], primme->stats.estimateResidualError);
+
+      /* Refine doesn't order the pairs considering closest_leq/gep. */
+      /* Then ignore values so that value +-residual is completely   */
+      /* outside of the desired region.                              */
+
+      if ((primme->target == primme_closest_leq
+               && hVals[i]-blockNorms[i-left] > targetShift) ||
+            (primme->target == primme_closest_geq
+             && hVals[i]+blockNorms[i-left] < targetShift)) {
+         flags[i] = UNCONVERGED;
+         continue;
+      }
 
       primme->convTestFun(&hVals[i], &X[ldX*(i-left)], &blockNorms[i-left],
             &isConv, primme);

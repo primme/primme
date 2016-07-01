@@ -124,9 +124,9 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, tmone = {-1.0e+00,+0.0e00};
    FILE *outputFile;
 
-   /* messages = (primme->procID == 0 && primme->printLevel >= 5); */
-   /* outputFile = primme->outputFile; */
-   outputFile = stderr;
+   messages = (primme && primme->procID == 0 && primme->printLevel >= 5
+         && primme->outputFile);
+   outputFile = primme ? primme->outputFile : stdout;
 
    minWorkSize = 2*(numLocked + b2 + 1);
 
@@ -138,7 +138,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
    /*----------------------------------*/
    /* input and workspace verification */
    /*----------------------------------*/
-   assert(ldBasis > 0 && nLocal > 0 && numLocked >= 0 && rworkSize >= minWorkSize &&
+   assert(nLocal >= 0 && numLocked >= 0 && rworkSize >= minWorkSize &&
           ldBasis >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
           (R == NULL || ldR >= b2));
 
@@ -238,7 +238,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             s1 = sqrt(s1);
          }
 
-         if (R && (s1 <= machEps*s0 || nOrth >= maxNumOrthos)) {
+         if (R && (s1 <= machEps*s0 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
             if (messages) {
                fprintf(outputFile, "Zeroing column %d\n", i);
             }
@@ -255,9 +255,6 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             nOrth = maxNumOrthos;
          }
          else if (s1 <= tol*s0 || (!primme && nOrth < maxNumOrthos)) {
-            if (messages) {
-               fprintf(outputFile, "Reorthogonalizing: %d\n", i-b1);
-            }
             /* No numerical benefit in normalizing the vector before reortho */
             s0 = s1;
             s02 = s1*s1;

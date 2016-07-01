@@ -122,7 +122,7 @@ void Num_copy_matrix_columns_@(pre)primme(@(type) *x, int m, int *xin, int n, in
       int *yin, int ldy);
 int Num_compute_residual_columns_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
    int ldx, @(type) *Ax, int ldAx,
-   @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
+   @(type) *xo, int no, int ldxo, int io0, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,
    @(type) *rwork, int lrwork);
 void Num_trmm_@(pre)primme(const char *side, const char *uplo, const char *transa,

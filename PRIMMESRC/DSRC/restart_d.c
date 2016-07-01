@@ -227,7 +227,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
    /* ----------------------------------------------------------- */
 
    if (basisSize + *numLocked + primme->numOrthoConst >= primme->n) {
-      for (i = 0; i < basisSize && *numConverged < primme->numEvals; i++)
+      for (i = 0; i < basisSize; i++)
          if (flags[i] == UNCONVERGED) { flags[i] = CONVERGED; (*numConverged)++; }
       restartSize = basisSize;
       *numPrevRetained = 0;
@@ -263,6 +263,7 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
       if (!Q) *reset = 2;
    }
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
+   if (numArbitraryVecs > 0) *targetShiftIndex = -1;
    
    restartPerm = iwork;
    hVecsPerm = &restartPerm[basisSize];
@@ -306,6 +307,13 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
          indexOfPreviousVecs, evecs, numConvergedStored, primme->nLocal, evecsHat,
          ldevecsHat, M, ldM, UDU, ldUDU, ipivot, targetShiftIndex, *numConverged,
          numArbitraryVecs, rworkSize, rwork, iwork0, machEps, primme);
+
+   /* If all request eigenpair converged, force the converged vectors at the  */
+   /* beginning of V                                                          */
+
+   if (*numConverged >= primme->numEvals && !primme->locking) {
+      permute_vecs_dprimme(V, nLocal, restartSize, ldV, hVecsPerm, rwork, iwork0);
+   }
 
    *restartSizeOutput = restartSize; 
 
@@ -432,9 +440,12 @@ static int restart_soft_locking_dprimme(int *restartSize, double *V,
        int reset, double machEps, double *rwork, int rworkSize, int *iwork, 
        primme_params *primme) {
 
-   int i, j, k, ret;          /* loop indices */
-   int numCandidates;         /* number of pairs in the block */
-   int left;                  /* column of the first candidate */
+   int i, j, k, l, ret;       /* loop indices */
+   int numCandAndArb;         /* number of pairs that are arbitrary or candidates */
+   int left;                  /* column of the first arbitrary pair */
+   int indexOfCandidates;     /* column of the first candidate pair */
+   int wholeSpace=0;          /* if all pairs in V are marked as converged */
+   double aNorm;
    double tpone = +1.0e+00, tzero = +0.0e+00;             /*constants*/
 
    /* Return memory requirement */
@@ -460,38 +471,52 @@ static int restart_soft_locking_dprimme(int *restartSize, double *V,
                      NULL, NULL, 0, NULL, 0, *numPrevRetained, 0.0, NULL, NULL, 0, primme));
    }
 
+   aNorm = max(primme->stats.estimateLargestSVal, primme->aNorm);
+
    /* -------------------------------------------------------------------------- */ 
    /* Check if any of the previous flagged converged eigenvalues seems           */
    /* to have become unconverged by checking hVals[i]-evals[i] < tol.            */
    /* If it fails, flag it UNCONVERGED and let it be targeted again. This avoids */  
    /* early converged but unwanted evs preventing wanted from being targeted.    */
    /* Update maxConvTol for the remaining converged pairs.                       */
+   /* Update the number of converged values also.                                */
    /* -------------------------------------------------------------------------- */
 
    if (basisSize + primme->numOrthoConst < primme->n) {
       primme->stats.maxConvTol = 0.0;
+      *numConverged = 0;
       for (i=0; i<primme->numEvals; i++) {
          if (flags[i] != UNCONVERGED && fabs(hVals[i]-evals[i]) > resNorms[i]) {
             flags[i] = UNCONVERGED;
          }
          else if (flags[i] != UNCONVERGED) {
             primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorms[i]);
+            if (i < primme->numEvals) (*numConverged)++;
          }
       }
+   }
+
+   /* -------------------------------------------------------------- */
+   /* Indicate that all pairs are marked as converged                */
+   /* -------------------------------------------------------------- */
+
+   else {
+      wholeSpace = 1;
    }
 
    /* -------------------------------------------------------------- */
    /* Restart V and W by replacing it with the current Ritz vectors. */
    /* Result of restartPerm (modified part indicated with ---)       */
    /*                                                                */
-   /*      non-candid | prevRitzVecs |  candidates  | X & R          */
+   /* ANC: arbitrary and non-candidate values.                       */
+   /*      non-candid | prevRitzVecs | ANC| candid. | X & R          */
    /* V: [------------|--------------|----|---------|- X ---|    )   */
    /* W: [------------|--------------|----|---------|- R ---|    )   */
    /*                 ^ indexOfPreviousVecs                          */
    /*                                ^ left         ^ restartSize    */
    /*                 [--------------) numPrevRetained               */
-   /*                                [----) numArbitraryVecs         */
-   /*                  numCandidates [--------------)                */
+   /*                                [--------) numArbitraryVecs     */
+   /*                  numCandAndArb [--------------)                */
    /*                                       ievSize [-------)        */
    /*                                                                */
    /* X & R has the eigenvectors and residual vectors of the         */
@@ -503,41 +528,47 @@ static int restart_soft_locking_dprimme(int *restartSize, double *V,
             *restartSize + *numPrevRetained) - *restartSize,
       basisSize-*numConverged);
 
-   for (i=numCandidates=0; i<*numArbitraryVecs && i<*restartSize; i++)
-      if (flags[i] == UNCONVERGED) numCandidates++;
-
-   *restartSize += *numPrevRetained;
-
    *ievSize = max(0, min(min(min(
                   primme->maxBlockSize,
                   primme->numEvals-*numConverged+1),
-                  primme->maxBasisSize-*restartSize),
+                  primme->maxBasisSize-*restartSize-*numPrevRetained),
                   basisSize-*numConverged));
+   *ievSize = min(*numConverged+*ievSize, primme->minRestartSize) - *numConverged;
 
-   numCandidates = max(*ievSize, numCandidates);
+   for (i=j=numCandAndArb=0; i<*restartSize; i++) {
+      if (j < *ievSize && flags[i] == UNCONVERGED) {
+         numCandAndArb++; j++;
+      }
+      else if (i < *numArbitraryVecs) {
+         numCandAndArb++;
+      }
+   }
+   *ievSize = j;
+   *numArbitraryVecs = min(*numArbitraryVecs, *restartSize);
 
-   *indexOfPreviousVecs = *restartSize - numCandidates - *numPrevRetained;
+   *restartSize += *numPrevRetained;
 
-   left = *restartSize - numCandidates; 
+   *indexOfPreviousVecs = *restartSize - numCandAndArb - *numPrevRetained;
 
-   for (i=j=k=0; i<basisSize; i++) {
-      if (j<numCandidates && flags[i] == UNCONVERGED) {
+   left = *restartSize - numCandAndArb;
+
+   indexOfCandidates = *restartSize - *ievSize; 
+
+   for (i=j=k=l=0; i<basisSize; i++) {
+      if (j < *numArbitraryVecs && flags[i] != UNCONVERGED) {
          restartPerm[left + j++] = i;
+      }
+      else if (l < *ievSize && flags[i] == UNCONVERGED) {
+         restartPerm[indexOfCandidates + l++] = i;
       }
       else if (k < left) {
          restartPerm[k++] = i;
       }
       else {
-         restartPerm[numCandidates + k++] = i;
+         restartPerm[numCandAndArb + k++] = i;
       }
    }
  
-   /* Update the number of converged values */
-
-   for (i=*numConverged=0; i<basisSize; i++)
-      if (flags[i] != UNCONVERGED && i < primme->numEvals)
-         (*numConverged)++;
-
    /* Permute hVals and hVecs */
 
    permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
@@ -572,20 +603,57 @@ static int restart_soft_locking_dprimme(int *restartSize, double *V,
    ret = Num_reset_update_VWXR_dprimme(V, W, nLocal, basisSize, ldV, hVecs,
          *restartSize, ldhVecs, hVals,
          V, 0, *restartSize, ldV,
-         *X, left, left+*ievSize, ldV,
+         *X, indexOfCandidates, indexOfCandidates+*ievSize, ldV,
          NULL, 0, 0, 0, 0,
          W, 0, *restartSize, ldV,
-         *R, left, left+*ievSize, ldV, blockNorms,
+         *R, indexOfCandidates, indexOfCandidates+*ievSize, ldV, blockNorms,
          NULL, 0, 0,
          reset, machEps, rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
-   /* ----------------------------------------------------------------- */
-   /* Generate the permutation hVecsPerm that undoes restartPerm        */
-   /* ----------------------------------------------------------------- */
+   if (!wholeSpace) {
+      /* ----------------------------------------------------------------- */
+      /* Generate the permutation hVecsPerm that undoes restartPerm        */
+      /* ----------------------------------------------------------------- */
 
-   for (i=0; i<basisSize; i++)
-      hVecsPerm[restartPerm[i]] = i;
+      for (i=0; i<basisSize; i++)
+         hVecsPerm[restartPerm[i]] = i;
+   }
+
+   else {
+      double *fakeResNorms = (double*)rwork;
+      int reset;
+
+      for (i=0; i<*restartSize; i++)
+         fakeResNorms[i] = aNorm*machEps;
+      ret = check_convergence_dprimme(V, nLocal, ldV,
+         NULL, 0, NULL, 0, 0, 0, *restartSize, flags,
+         fakeResNorms, hVals, &reset, machEps, rwork, rworkSize-*restartSize,
+         iwork, primme);
+      if (ret != 0) return ret;
+
+      *numConverged = 0;
+      for (i=0; i<*restartSize && *numConverged<primme->numEvals; i++) {
+         if (flags[i] != UNCONVERGED) {
+            (*numConverged)++;
+         }
+      }
+      for (i=j=k=0; i<*restartSize; i++) {
+         if (flags[i] != UNCONVERGED && k < *numConverged) {
+            hVecsPerm[k++] = i;
+         }
+         else {
+            hVecsPerm[(*numConverged) + j++] = i;
+         }
+      }
+
+      permute_vecs_dprimme(hVals, 1, *restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+      permute_vecs_dprimme(hVecs, basisSize, *restartSize, ldhVecs, hVecsPerm, rwork,
+            iwork);
+      permute_vecs_iprimme(restartPerm, *restartSize, hVecsPerm, iwork);
+      for (i=0; i<*restartSize; i++)
+         hVecsPerm[i] = i;
+   }
 
    /* ----------------------------------------------------------------- */
    /* Arbitrary vectors in candidates are treated as previous vectors.  */
@@ -593,12 +661,7 @@ static int restart_soft_locking_dprimme(int *restartSize, double *V,
    /* the restarted basis.                                              */
    /* ----------------------------------------------------------------- */
 
-   for (i=j=0; i<*restartSize; i++)
-      if (restartPerm[hVecsPerm[i]] < min(*numArbitraryVecs, numCandidates))
-         j++;
-
-   *numPrevRetained += j;
-   *numArbitraryVecs = j;
+   *numPrevRetained += *numArbitraryVecs;
 
    /* --------------------------------------------------------------------- */
    /* If the user requires (I-QQ') projectors in JDQMR without locking,     */
@@ -733,7 +796,7 @@ int Num_reset_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
 
    /* X_i = V*h(nX_ib:nX_ie-1) */
 
-   assert(!reset || !evecs || nX0b <= nX2b && nX2e <= nX0e);
+   assert(!reset || !evecs || (nX0b <= nX2b && nX2e <= nX0e));
    Num_update_VWXR_dprimme(V, NULL, mV, nV, ldV, h, nh, ldh, NULL,
          X0, nX0b, nX0e, ldX0,
          X1, nX1b, nX1e, ldX1,
@@ -756,11 +819,11 @@ int Num_reset_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
       if (ret != 0) return ret;
       Num_copy_matrix_dprimme(&evecs[ldevecs*evecsSize], mV, nX2e-nX2b,
             ldevecs, &X0[ldX0*(nX2b-nX0b)], ldX0);
-      ret = ortho_dprimme(X0, ldX0, NULL, 0, nX2e-nX0b, nX0e-nX0b, evecs,
+      ret = ortho_dprimme(X0, ldX0, NULL, 0, nX2e-nX0b, nX0e-nX0b-1, evecs,
             ldevecs, evecsSize, mV, primme->iseed, machEps, rwork, lrwork,
             primme);
       if (ret != 0) return ret;
-      assert(!X1 || nX0b <= nX1b && nX1e <= nX0e);
+      assert(!X1 || (nX0b <= nX1b && nX1e <= nX0e));
       if (X1) Num_copy_matrix_dprimme(&X0[ldX0*(nX1b-nX0b)], mV, nX1e-nX1b,
             ldX0, X1, ldX1);
    }
