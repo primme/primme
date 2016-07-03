@@ -41,7 +41,7 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal,
       int maxBlockSize, double *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, int *reset, double *rwork, int rworkSize, int *iwork,
-      primme_params *primme);
+      double *smallestResNorm, double *hVecsRot, int ldhVecsRot, int *reset,
+      double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif /* MAIN_ITER_H */

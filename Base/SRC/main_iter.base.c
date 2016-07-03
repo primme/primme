@@ -169,16 +169,19 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    @(type) *hU=NULL;        /* Left singular vectors of R                    */
    @(type) *previousHVecs;  /* Coefficient vectors retained by               */
                             /* recurrence-based restarting                   */
+   @(type) *previousHU=NULL;/* retained hU from previous iteration           */
 
    int numQR;               /* Maximum number of QR factorizations           */
    @(type) *Q = NULL;       /* QR decompositions for harmonic or refined     */
    @(type) *R = NULL;       /* projection: (A-target[i])*V = QR              */
    @(type) *QtV = NULL;     /* Q'*V                                          */
+   @(type) *hVecsRot=NULL;  /* transformation of hVecs in arbitrary vectors  */
 
    double *hVals;           /* Eigenvalues of H                              */
    double *hSVals=NULL;     /* Singular values of R                          */
    double *prevRitzVals;    /* Eigenvalues of H at previous outer iteration  */
                             /* by robust shifting algorithm in correction.c  */
+   double *prevhSvals=NULL; /* previous hSVals                               */
    double *blockNorms;      /* Residual norms corresponding to current block */
                             /* vectors.                                      */
    double smallestResNorm;  /* the smallest residual norm in the block       */
@@ -222,6 +225,10 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
    H             = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    hVecs         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    previousHVecs = rwork; rwork += primme->maxBasisSize*primme->restartingParams.maxPrevRetain;
+   if (primme->projectionParams.projection == primme_proj_refined) {
+      hVecsRot   = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+      previousHU = rwork; rwork += primme->maxBasisSize*primme->restartingParams.maxPrevRetain;
+   }
 
    if (primme->correctionParams.precondition && 
          primme->correctionParams.maxInnerIterations != 0 &&
@@ -237,6 +244,9 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
       hSVals     = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(@(type)) + 1;
    }
    prevRitzVals  = (double *)rwork; rwork += (primme->maxBasisSize+primme->numEvals)*sizeof(double)/sizeof(@(type)) + 1;
+   if (primme->projectionParams.projection == primme_proj_refined) {
+      prevhSvals = (double *)rwork; rwork += primme->restartingParams.maxPrevRetain*sizeof(double)/sizeof(@(type)) + 1;
+   }
    blockNorms    = (double *)rwork; rwork += primme->maxBlockSize*sizeof(double)/sizeof(@(type)) + 1;
 
    rworkSize     = primme->realWorkSize/sizeof(@(type)) - (rwork - (@(type)*)realWork);
@@ -468,7 +478,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                   blockSize, availableBlockSize, evecs, numLocked, evals,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
-                  &reset, rwork, rworkSize, iwork, primme);
+                  hVecsRot, primme->maxBasisSize, &reset, rwork, rworkSize, iwork,
+                  primme);
             }
             else {
                blockSize = recentlyConverged = 0;
@@ -591,8 +602,16 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
             /* projected problem) are in hU; so retain them.                        */
 
-            numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, 
-               previousHVecs, basisSize, iev, blockSize, primme);
+            numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, basisSize,
+               previousHVecs, primme->maxBasisSize, primme->maxBasisSize, basisSize,
+               iev, blockSize, flags, iwork, primme);
+            if (primme->projectionParams.projection == primme_proj_refined) {
+               retain_previous_coefficients(hU, basisSize, previousHU,
+                     primme->maxBasisSize, primme->maxBasisSize, basisSize,
+                     iev, blockSize, flags, iwork, primme);
+               Num_copy_matrix_columns_dprimme(hSVals, 1, iwork, numPrevRetained, 1,
+                     prevhSvals, NULL, 1);
+            }
 
             /* Extend H by blockSize columns and rows and solve the */
             /* eigenproblem for the new H.                          */
@@ -639,19 +658,9 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             prepare_vecs_@(pre)primme(basisSize, 0, availableBlockSize, H,
                primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
                targetShiftIndex, &numArbitraryVecs, smallestResNorm, NULL, 1,
-               machEps, rworkSize, rwork, iwork, primme);
+               hVecsRot, primme->maxBasisSize, machEps, rworkSize, rwork, iwork,
+               primme);
 
-         /* ----------------------------------------------------------------- */
-         /* prepare_vecs may remove some converged flags if the converged     */
-         /* pairs are in a cluster with unconverged pairs. So recompute the   */
-         /* number of eigenpairs that have been converged.                    */
-         /* ----------------------------------------------------------------- */
-
-         numConverged = numLocked;
-         for (i=0; i<basisSize && i<primme->numEvals-numLocked; i++) {
-            if (flags[i] != UNCONVERGED) numConverged++;
-         }
- 
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
@@ -664,9 +673,9 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
                primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, 0,
                hVecs, basisSize, 0, &basisSize, &targetShiftIndex, numArbitraryVecs,
-               &restartsSinceReset, &reset, machEps, rwork, rworkSize, iwork, primme);
-
-         numArbitraryVecs = 0;
+               hVecsRot, primme->maxBasisSize, previousHU, primme->maxBasisSize,
+               prevhSvals, &restartsSinceReset, &reset, machEps, rwork, rworkSize,
+               iwork, primme);
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -699,12 +708,6 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
                   primme->nLocal, R, primme->maxBasisSize,
                   primme->targetShifts[targetShiftIndex], basisSize,
                   numNew, rwork, rworkSize, machEps, primme);
-
-            /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
-            /* projected problem) are in hU; so retain them.                        */
-
-            numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, 
-               previousHVecs, basisSize, iev, numNew, primme);
 
             /* Extend H by numNew columns and rows and solve the */
             /* eigenproblem for the new H.                       */
@@ -955,8 +958,8 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       int maxBlockSize, @(type) *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, int *reset, @(type) *rwork, int rworkSize, int *iwork,
-      primme_params *primme) {
+      double *smallestResNorm, @(type) *hVecsRot, int ldhVecsRot, int *reset,
+      @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i, blki;            /* loop variables */
    double *hValsBlock;     /* contiguous copy of the hVals to be tested */
@@ -987,7 +990,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
                   NULL, 0, 0,
                   NULL, 0, primme)),
               prepare_vecs_@(pre)primme(basisSize, 0, maxBlockSize, NULL, 0, 
-                 NULL, NULL, NULL, 0, 0, NULL, 0.0, NULL, 0, 0.0, 0, NULL, NULL, primme));
+                 NULL, NULL, NULL, 0, 0, NULL, 0.0, NULL, 0, NULL, 0, 0.0, 0, NULL, NULL, primme));
    }
 
    *blockSize = 0;
@@ -1043,7 +1046,13 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
          }
          else if (flagsBlock[i] != UNCONVERGED
                          && *recentlyConverged < numEvals
-                         && iev[blki] < primme->numEvals-numLocked) {
+			 && (iev[blki] < primme->numEvals-numLocked
+				 /* Refined and prepare_vecs may not completely order pairs        */
+				 /* considering closest_leq/geq; so we find converged pairs beyond */
+				 /* the first remaining pairs to converge.                         */
+				 || primme->target == primme_closest_geq
+				 || primme->target == primme_closest_leq)) {
+ 
             /* Write the current Ritz value in evals and the residual in resNorms;  */
             /* it will be checked by restart routine later.                         */
             /* Also print the converged eigenvalue.                                 */
@@ -1084,8 +1093,8 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
       blki = *blockSize;
       prepare_vecs_@(pre)primme(basisSize, i, maxBlockSize-blki, H, ldH, hVals,
             hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs,
-            *smallestResNorm, flags, 1, machEps, rworkSize, rwork, iwork,
-            primme);
+            *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot, machEps,
+            rworkSize, rwork, iwork, primme);
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
@@ -1157,6 +1166,7 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
  *
  * Output parameters
  * -----------------
+ * cols           Indices of the column retained
  * previousHVecs  The coefficients to be retained
  *
  *
@@ -1166,66 +1176,59 @@ int prepare_candidates_@(pre)primme(@(type) *V, @(type) *W, int nLocal,
  *
  ******************************************************************************/
 
-static int retain_previous_coefficients(@(type) *hVecs, @(type) *previousHVecs, 
-   int basisSize, int *iev, int blockSize, primme_params *primme) {
+static int retain_previous_coefficients(@(type) *hVecs, int ldhVecs,
+   @(type) *previousHVecs, int mpreviousHVecs,  int ldpreviousHVecs,
+   int basisSize, int *iev, int blockSize, int *flags, int *cols,
+   primme_params *primme) {
 
    int i, j;            /* Loop indices                                  */
    int index;           /* The index of some coefficient vector in hVecs */ 
-   int numPrevRetained; /* The number of coefficent vectors retained     */
+   int numPrevRetained; /* The number of coefficient vectors retained    */
    @(type) tzero = @(tzero);
 
    numPrevRetained = 0;
 
-   /* If coefficient vectors are to be retained and its the iteration  */
-   /* before restart occurs, then retain at most maxPrevRetain vectors */
- 
-   if (primme->restartingParams.maxPrevRetain > 0 && 
-       basisSize+blockSize >= primme->maxBasisSize)
-   {
-      index = -1;
+   /* Retain coefficient vectors if it restarts after adding blockSize */
+   /* vectors to V.                                                    */
 
-      /* ------------------------------------------------------------- */
-      /* Retain as many coefficients corresponding to unconverged Ritz */
-      /* vectors as possible.                                          */
-      /* ------------------------------------------------------------- */
+   if (primme->restartingParams.maxPrevRetain == 0 ||
+       basisSize+blockSize < primme->maxBasisSize)
 
-      for (i = 0; i < primme->restartingParams.maxPrevRetain; i++) {
+      return 0;
 
-         /* First, retain coefficient vectors corresponding to current block */
-         /* vectors.  If all of those have been retained, then retain the    */ 
-         /* the next coefficient beyond iev[blockSize-1].                    */
+   /* First, retain coefficient vectors corresponding to current block */
+   /* vectors.  If all of those have been retained, then retain the    */ 
+   /* the next unconverged coefficient vectors beyond iev[blockSize-1].*/
 
-         if (i < blockSize) {
-            index = iev[i];
-         }
-         else {
-            index++;
-         }
+   for (i=0, index=0; i < primme->restartingParams.maxPrevRetain
+         && index < basisSize; index++) {
 
-         /* If there is a coefficient vector at index index, then retain it */
-
-         if (index < basisSize) {
-            Num_@(pre)copy_@(pre)primme(basisSize, &hVecs[basisSize*index], 1, 
-               &previousHVecs[primme->maxBasisSize*numPrevRetained], 1);
-
-            /* Zero the maxBasisSize-basisSize last elements of the buffer */
-
-            for (j = basisSize; j < primme->maxBasisSize; j++) {
-               previousHVecs[primme->maxBasisSize*numPrevRetained+j] = tzero;
-            } 
-
-            numPrevRetained++;
-         }
-         else {
-            break;
-         }
+      if (i < blockSize) {
+         index = cols[i] = iev[i];
+         i++;
       }
-
-      if (primme->printLevel >= 5 && primme->procID == 0) {
-         fprintf(primme->outputFile, "retain_previous: numPrevRetained: %d\n",
-                 numPrevRetained);
+      else if (flags[index] == UNCONVERGED) {
+         cols[i] = index;
+         i++;
       }
+   }
 
+   numPrevRetained = i;
+
+   Num_copy_matrix_columns_@(pre)primme(hVecs, basisSize, cols,
+         numPrevRetained, ldhVecs, previousHVecs, NULL, ldpreviousHVecs);
+
+   /* Zero the maxBasisSize-basisSize last elements of the buffer */
+
+   for (i=0; i<numPrevRetained; i++) {
+      for (j=basisSize; j<mpreviousHVecs; j++) {
+         previousHVecs[ldpreviousHVecs*i+j] = tzero;
+      }
+   }
+
+   if (primme->printLevel >= 5 && primme->procID == 0) {
+      fprintf(primme->outputFile, "retain_previous: numPrevRetained: %d\n",
+            numPrevRetained);
    }
 
    return numPrevRetained;

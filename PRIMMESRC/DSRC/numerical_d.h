@@ -70,6 +70,7 @@ void Num_larnv_dprimme(int idist, int *iseed, int length, double *x);
 void Num_scal_dprimme(int n, double alpha, double *x, int incx);
 void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy);
 void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ldy);
+void Num_zero_matrix_dprimme(double *x, int m, int n, int ldx);
 void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul, int i0, double *y, int ldy, int zero);
 void Num_geqrf_dprimme(int m, int n, double *a, int lda, double *tau, double *rwork, int lrwork, int *info);
 int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,

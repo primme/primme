@@ -41,13 +41,9 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    @(type) *H, int ldH, @(type) *Q, int ldQ, @(type) *R, int ldR, @(type)* QtV, int ldQtV,
    @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
    int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
-   int *restartsSinceReset, int *reset, double machEps,
+   @(type) *hVecsRot, int ldhVecsRot, @(type) *previousHU, int ldpreviousHU,
+   double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
    @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
-
-int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize, int ldhVecs,
-   int indexOfPreviousVecs, int newBasisSize, int *perm, @(type) *hU, int ldhU,
-   @(type) *R, int ldR, int numPrevRetained, double machEps, int *iwork,
-   @(type) *rwork, int rworkSize, primme_params *primme);
 
 int Num_reset_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
    @(type) *h, int nh, int ldh, double *hVals,
