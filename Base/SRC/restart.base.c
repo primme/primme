@@ -177,7 +177,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    @(type) *H, int ldH, @(type) *Q, int ldQ, @(type) *R, int ldR, @(type)* QtV, int ldQtV,
    @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
+   int *restartSizeOutput, int *targetShiftIndex, int *numArbitraryVecs,
    @(type) *hVecsRot, int ldhVecsRot, @(type) *previousHU, int ldpreviousHU,
    double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
    @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
@@ -196,8 +196,8 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
 
    if (V == NULL) {
       rworkSize = ortho_coefficient_vectors_@(pre)primme(NULL, basisSize, 0,
-            basisSize, NULL, 0, NULL, 0, numPrevRetained, NULL, 0.0, NULL, 0,
-            primme);
+            basisSize, NULL, 0, NULL, 0, numPrevRetained, NULL, NULL, 0, 0.0,
+            NULL, 0, primme);
 
       if (primme->locking) {
          rworkSize += restart_locking_@(pre)primme(&basisSize, NULL, NULL, nLocal,
@@ -312,7 +312,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
 
    ret = ortho_coefficient_vectors_@(pre)primme(hVecs, basisSize, ldhVecs,
          indexOfPreviousVecs, hU, ldhU, R, ldR, numPrevRetained, prevhSvals,
-         machEps, rwork, rworkSize, primme);
+         previousHU, ldpreviousHU, machEps, rwork, rworkSize, primme);
    if (ret != 0) return ret;
 
    /* ----------------------------------------------------------------------- */
@@ -346,16 +346,6 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    if (ret != 0) return ret;
    *reset = 0;
 
-   /* ----------------------------------------------------------------- */
-   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
-   /* the restarted basis.                                              */
-   /* ----------------------------------------------------------------- */
-
-   for (i=j=0; i<restartSize; i++)
-      if (restartPerm[i] < numArbitraryVecs)
-         j++;
-   numArbitraryVecs = j;
-
    /* Rearrange prevRitzVals according to restartPerm */
 
    if (primme->target != primme_smallest && primme->target != primme_largest) {
@@ -371,7 +361,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
          restartPerm, hVecsPerm, restartSize, basisSize, *numPrevRetained,
          indexOfPreviousVecs, evecs, numConvergedStored, primme->nLocal, evecsHat,
          ldevecsHat, M, ldM, UDU, ldUDU, ipivot, targetShiftIndex, *numConverged,
-         numArbitraryVecs, hVecsRot, ldhVecsRot, previousHU, ldpreviousHU, prevhSvals,
+         *numArbitraryVecs, hVecsRot, ldhVecsRot, previousHU, ldpreviousHU, prevhSvals,
          numRecentlyLocked, rworkSize, rwork, iwork0, machEps, primme);
 
    /* If all request eigenpair converged, force the converged vectors at the  */
@@ -382,6 +372,16 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    }
 
    *restartSizeOutput = restartSize; 
+
+   /* ----------------------------------------------------------------- */
+   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
+   /* the restarted basis.                                              */
+   /* ----------------------------------------------------------------- */
+
+   for (i=j=0; i<restartSize; i++)
+      if (restartPerm[i] < *numArbitraryVecs)
+         j++;
+   *numArbitraryVecs = j;
 
    return 0;
 }
@@ -1390,6 +1390,8 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
 
    int i, j;          /* Loop variables                                       */
    int ret;           /* Return value                                         */
+   int newNumArbitraryVecs;
+   @(type) *rwork0;
    @(type) tpone = @(tpone), tzero = @(tzero);             /*constants*/
 
    /* Return memory requirement */
@@ -1470,31 +1472,21 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       Num_copy_matrix_@(pre)primme(rwork, basisSize, restartSize, basisSize, QtV, ldQtV);
    }
 
-   /* -------------------------------------------------------------------- */
-   /* During the restart V and W have been replaced by V*hVecs and W*hVecs.*/
-   /* Currently the QR decomposition corresponds to W before restarting.   */
-   /* To update the QR decomposition to the new W, replace Q by Q*Qn and   */
-   /* R by Rn where Qn and Rn are the QR decomposition of R*hVecs = Qn*Rn. */
-   /* -------------------------------------------------------------------- */
+   /* ----------------------------------------------------------------- */
+   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
+   /* the restarted basis.                                              */
+   /* ----------------------------------------------------------------- */
 
-   permute_vecs_@(pre)primme(hU, basisSize, basisSize, ldhU, restartPerm, rwork, iwork);
-   permute_vecs_@(pre)primme(hVecsRot, basisSize, basisSize, ldhVecsRot, restartPerm, rwork, iwork);
-   permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
+   for (i=j=0; i<restartSize; i++)
+      if (restartPerm[i] < numArbitraryVecs)
+         j++;
+   newNumArbitraryVecs = j;
+   //printf("rest: %d %d\n", newNumArbitraryVecs, newNumArbitraryVecs);
 
-   /* -------------------------------------------------------------------- */
-   /* If R = [ prevR r; zeros() rho], where prevR is R in the previous     */
-   /* iteration, then R*[prevhVecs; zeros()] = [prevHU*diag(prevhSvals);   */
-   /* zeros()]. */
-   /* If R=hU*diag(hSVals)*hV' and hVecs=hV*hVecsRot, then R*hVecs =       */
-   /* -------------------------------------------------------------------- */
+   /* Check all arbitrary vectors will be together and at the beginning after restart */
 
-   Num_copy_matrix_@(pre)primme(previousHU, basisSize, numPrevRetained,
-         ldpreviousHU, &hU[indexOfPreviousVecs*ldhU], ldhU);
-   ret = ortho_@(pre)primme(hU, ldhU, R, ldR, indexOfPreviousVecs,
-         indexOfPreviousVecs+numPrevRetained-1,
-         &hU[(indexOfPreviousVecs+numPrevRetained)*ldhU], ldhU,
-         restartSize+numRecentlyLocked-(indexOfPreviousVecs+numPrevRetained),
-         basisSize, primme->iseed, machEps, rwork, rworkSize, NULL);
+   for (i=0; i<newNumArbitraryVecs; i++)
+      assert(restartPerm[i] < numArbitraryVecs);
 
    /* -------------------------------------------------------------------- */
    /* If R=hU*diag(hSVals)*hV' and hVecs=hV*hVecsRot, then R*hVecs =       */
@@ -1507,7 +1499,8 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
 
    /* Compute hVecsRot = hU*diag(hSvals)*hVecsRot limited to columns       */
    /* 0:numArbitraryVecs-1                                                 */
-   for (i=0; i<numArbitraryVecs; i++) {
+   permute_vecs_@(pre)primme(hVecsRot, basisSize, basisSize, ldhVecsRot, restartPerm, rwork, iwork);
+   for (i=0; i<newNumArbitraryVecs; i++) {
       for (j=0; j<numArbitraryVecs; j++) {
          *(double*)&hVecsRot[ldhVecsRot*i+j] *= hSVals[j];
 #ifdefarithm L_DEFCPLX
@@ -1517,14 +1510,42 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    }
 
    /* [q, r] = qr(hVecsRot); copy r in the upper part of R */
-   ret = ortho_@(pre)primme(hVecsRot, ldhVecsRot, R, ldR, 0, numArbitraryVecs-1,
-         NULL, 0, 0, basisSize, primme->iseed, machEps, rwork, rworkSize, NULL);
+   ret = ortho_@(pre)primme(hVecsRot, ldhVecsRot, R, ldR, 0, newNumArbitraryVecs-1,
+         NULL, 0, 0, numArbitraryVecs, primme->iseed, machEps, rwork, rworkSize, NULL);
 
-   /* hU <- hU*q */
-   Num_copy_matrix_@(pre)primme(hU, basisSize, numArbitraryVecs, ldhU, rwork,
-         basisSize);
-   Num_gemm_@(pre)primme("N", "N", basisSize, numArbitraryVecs, numArbitraryVecs,
-      tpone, rwork, basisSize, hVecsRot, ldhVecsRot, tzero, hU, ldhU);
+   /* rwork <- hU*q */
+   Num_gemm_@(pre)primme("N", "N", basisSize, newNumArbitraryVecs, numArbitraryVecs,
+      tpone, hU, ldhU, hVecsRot, ldhVecsRot, tzero, rwork, basisSize);
+   rwork0 = rwork + basisSize*newNumArbitraryVecs;
+   
+   /* -------------------------------------------------------------------- */
+   /* During the restart V and W have been replaced by V*hVecs and W*hVecs.*/
+   /* Currently the QR decomposition corresponds to W before restarting.   */
+   /* To update the QR decomposition to the new W, replace Q by Q*Qn and   */
+   /* R by Rn where Qn and Rn are the QR decomposition of R*hVecs = Qn*Rn. */
+   /* -------------------------------------------------------------------- */
+
+   permute_vecs_@(pre)primme(hU, basisSize, basisSize, ldhU, restartPerm, rwork0, iwork);
+   permute_vecs_dprimme(hSVals, 1, basisSize, 1, restartPerm, (double*)rwork0, iwork);
+   Num_copy_matrix_@(pre)primme(rwork, basisSize, newNumArbitraryVecs,
+         basisSize, hU, ldhU);
+
+   /* -------------------------------------------------------------------- */
+   /* If R = [ prevR r; zeros() rho], where prevR is R in the previous     */
+   /* iteration, then R*[prevhVecs; zeros()] = [prevHU*diag(prevhSvals);   */
+   /* zeros()].                                                            */
+   /* If R=hU*diag(hSVals)*hV' and hVecs=hV*hVecsRot, then R*hVecs =       */
+   /* -------------------------------------------------------------------- */
+
+   /*Num_copy_matrix_@(pre)primme(previousHU, basisSize, numPrevRetained,
+         ldpreviousHU, &hU[indexOfPreviousVecs*ldhU], ldhU);
+   ret = ortho_@(pre)primme(hU, ldhU, R, ldR, indexOfPreviousVecs,
+         indexOfPreviousVecs+numPrevRetained-1,
+         &hU[(indexOfPreviousVecs+numPrevRetained)*ldhU], ldhU,
+         restartSize+numRecentlyLocked-(indexOfPreviousVecs+numPrevRetained),
+         basisSize, primme->iseed, machEps, rwork, rworkSize, NULL);
+   for (i=indexOfPreviousVecs; i<indexOfPreviousVecs+numPrevRetained; i++)
+      assert(*(double*)&R[ldR*i+i] > 0.0);*/
 
    /* -------------------------------------------------------------------- */
    /* hVecs(0:indexOfPrevVecs) are the right singular vectors of R         */
@@ -1532,12 +1553,12 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* R*hVecs(0:indexOfPrevVecs)=U(restartPerm)*diag(hSVals(restartPerm))  */
    /* -------------------------------------------------------------------- */
 
-   for (j=numArbitraryVecs; j < restartSize; j++) {
+   for (j=newNumArbitraryVecs; j < restartSize; j++) {
       for (i=0; i < primme->maxBasisSize; i++) {
          if (i != j) R[ldR*j+i] = tzero;
       }
       if (j>=indexOfPreviousVecs && j<indexOfPreviousVecs+numPrevRetained)
-         hSVals[j] = (*(double*)&R[ldR*j+j] *= prevhSvals[j-indexOfPreviousVecs]);
+         hSVals[j] = (*(double*)&R[ldR*j+j] = prevhSvals[j-indexOfPreviousVecs]);
       else
          *(double*)&R[ldR*j+j] = hSVals[j];
    }
@@ -1546,6 +1567,10 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* Restart Q by replacing it with Q*hU */
    /* ----------------------------------- */
 
+   ret = ortho_@(pre)primme(hU, ldhU, NULL, 0, restartSize, restartSize-1, NULL, 0, 0,
+         basisSize, primme->iseed, machEps, rwork, rworkSize, NULL);
+   if (ret != 0) return ret;
+ 
    Num_update_VWXR_@(pre)primme(Q, NULL, nLocal, basisSize, ldQ, hU, restartSize,
       ldhU, NULL,
       Q, 0, restartSize, ldQ,
@@ -1572,7 +1597,7 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    /* ---------------------------------------------------------------------- */
 
    assert(!QtV || indexOfPreviousVecs == 0);
-   ret = solve_H_@(pre)primme(H, numArbitraryVecs, ldH, R, ldR, QtV, ldQtV,
+   ret = solve_H_@(pre)primme(H, newNumArbitraryVecs, ldH, R, ldR, QtV, ldQtV,
          hU, newldhU, hVecs, newldhVecs, hVals, hSVals, numConverged,
          machEps, rworkSize, rwork, iwork, primme);
    if (ret != 0) {
@@ -1581,8 +1606,8 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       return INSERT_SUBMATRIX_FAILURE;
    }
    /* hVecsRot <- hVecs' */
-   for (j=0; j < numArbitraryVecs; j++) {
-      for (i=0; i<numArbitraryVecs; i++) {
+   for (j=0; j < newNumArbitraryVecs; j++) {
+      for (i=0; i<newNumArbitraryVecs; i++) {
 #ifdefarithm L_DEFREAL
          hVecsRot[ldhVecsRot*j+i] = hVecs[newldhVecs*i+j];
 #endifarithm
@@ -1592,9 +1617,12 @@ static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
 #endifarithm
       }
    }
-
-   /* hVecs <- I and zero hU(numArbitraryVecs:end,0:numArbitraryVecs-1) */
-   for (j=0; j < numArbitraryVecs; j++) {
+   Num_zero_matrix_@(pre)primme(&hVecsRot[newNumArbitraryVecs],
+         primme->maxBasisSize-newNumArbitraryVecs, newNumArbitraryVecs,
+         ldhVecsRot);
+ 
+   /* hVecs <- I and zero hU(newNumArbitraryVecs:end,0:newNumArbitraryVecs-1) */
+   for (j=0; j < newNumArbitraryVecs; j++) {
       for (i=0; i < restartSize; i++)
           hVecs[newldhVecs*j+i] = tzero;
       hVecs[newldhVecs*j+j] = tpone;
@@ -1826,8 +1854,9 @@ void reset_flags_@(pre)primme(int *flags, int first, int last) {
 
 static int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, @(type) *hU, int ldhU, @(type) *R,
-      int ldR, int *numPrevRetained, double *prevhSvals, double machEps,
-      @(type) *rwork, int rworkSize, primme_params *primme) {
+      int ldR, int *numPrevRetained, double *prevhSvals, @(type) *previousHU,
+      int ldpreviousHU, double machEps, @(type) *rwork, int rworkSize,
+      primme_params *primme) {
 
    int ret, ldRaux=0, i;
    @(type) *Raux=NULL;
@@ -1847,7 +1876,8 @@ static int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize,
    else if (hVecs && primme->projectionParams.projection == primme_proj_refined) {
       Raux = rwork;
       ldRaux = indexOfPreviousVecs+*numPrevRetained;
-      rwork += indexOfPreviousVecs*ldRaux;
+      rwork += ldRaux*ldRaux;
+      rworkSize -= ldRaux*ldRaux;
    }
 
    ret = ortho_@(pre)primme(hVecs, ldhVecs, Raux, ldRaux, indexOfPreviousVecs,
@@ -1856,23 +1886,44 @@ static int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize,
 
    if (!hVecs || ret != 0) {
       /* Return memory requirement */
-      if (hVecs && primme->projectionParams.projection == primme_proj_refined) {
-         return ret+indexOfPreviousVecs*(indexOfPreviousVecs+*numPrevRetained);
+      if (!hVecs && primme->projectionParams.projection == primme_proj_refined) {
+         return ret+(indexOfPreviousVecs+*numPrevRetained)*(indexOfPreviousVecs+*numPrevRetained);
       }
       else {
          return ret;
       }
    }
    else if (primme->projectionParams.projection == primme_proj_refined) {
+
+      Num_copy_matrix_@(pre)primme(previousHU, basisSize, *numPrevRetained,
+            ldpreviousHU, &hU[ldhU*indexOfPreviousVecs], ldhU);
+      ret = ortho_@(pre)primme(hU, ldhU, R, ldR, indexOfPreviousVecs,
+            indexOfPreviousVecs+*numPrevRetained-1, NULL, 0, 0, basisSize,
+            primme->iseed, machEps, rwork, rworkSize, NULL);
+      if (ret != 0) return ret;
+
+      /* -------------------------------------------------------------------- */
+      /* If R = [ prevR r; zeros() rho], where prevR is R in the previous     */
+      /* iteration, then R*[prevhVecs; zeros()] = [prevHU*diag(prevhSvals);   */
+      /* zeros()].                                                            */
+      /* If R=hU*diag(hSVals)*hV' and hVecs=hV*hVecsRot, then R*hVecs =       */
+      /* -------------------------------------------------------------------- */
+
       /* Accumulate the diagonal elements of Raux in prevhSvals(i) */
       for (i=ret=0; i<*numPrevRetained; i++) {
          double norm = *(double*)&Raux[ldRaux*(indexOfPreviousVecs+i)
             +indexOfPreviousVecs+i];
-         if (norm < machEps*3.16) continue;
-         prevhSvals[ret] = prevhSvals[i]/norm;
+         double norm0 = *(double*)&R[ldR*(indexOfPreviousVecs+i)
+            +indexOfPreviousVecs+i];
+         //printf("ret %g %g %g   %g\n", norm, norm0, prevhSvals[i], prevhSvals[i]/norm*norm0);
+         if (norm < machEps*3.16 || norm0 < machEps*3.16) continue;
+         prevhSvals[ret] = prevhSvals[i]*(norm0/norm);
          Num_copy_matrix_@(pre)primme(&hVecs[ldhVecs*(indexOfPreviousVecs+i)],
                basisSize, 1, ldhVecs, &hVecs[ldhVecs*(indexOfPreviousVecs+ret)],
                ldhVecs);
+         Num_copy_matrix_@(pre)primme(&hU[ldhU*(indexOfPreviousVecs+i)],
+               basisSize, 1, ldhU, &hU[ldhU*(indexOfPreviousVecs+ret)], ldhU);
+         ret++;
       }
       *numPrevRetained = ret;
    }

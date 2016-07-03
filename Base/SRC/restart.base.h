@@ -40,7 +40,7 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize, int 
    int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
    @(type) *H, int ldH, @(type) *Q, int ldQ, @(type) *R, int ldR, @(type)* QtV, int ldQtV,
    @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, int numArbitraryVecs,
+   int *restartSizeOutput, int *targetShiftIndex, int *numArbitraryVecs,
    @(type) *hVecsRot, int ldhVecsRot, @(type) *previousHU, int ldpreviousHU,
    double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
    @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);

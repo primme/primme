@@ -377,7 +377,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          &primme->numEvals, &primme->numEvals, NULL, &primme->restartingParams.maxPrevRetain,
          primme->maxBasisSize, primme->initSize, NULL, &primme->maxBasisSize, NULL,
          primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL,
-         0, 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0.0,
+         0, 0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, NULL, 0.0,
          NULL, 0, NULL, primme);
 
    /*----------------------------------------------------------------------*/

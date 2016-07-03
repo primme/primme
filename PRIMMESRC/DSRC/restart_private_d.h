@@ -80,7 +80,8 @@ static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
 
 static int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, double *hU, int ldhU, double *R,
-      int ldR, int *numPrevRetained, double *prevhSvals, double machEps,
-      double *rwork, int rworkSize, primme_params *primme);
+      int ldR, int *numPrevRetained, double *prevhSvals, double *previousHU,
+      int ldpreviousHU, double machEps, double *rwork, int rworkSize,
+      primme_params *primme);
 
 #endif /* RESTART_PRIVATE_H */

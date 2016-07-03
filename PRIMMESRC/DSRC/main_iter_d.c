@@ -402,6 +402,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
              ( primme->maxOuterIterations == 0 ||
                primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
+            numPrevRetained = 0;
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
          /* Keep adding vectors to the basis V until the basis has reached    */
@@ -416,7 +417,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                   primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
             primme->stats.numOuterIterations++;
-            numPrevRetained = 0;
 
             /* When QR are computed and there are more than one target shift, */
             /* limit blockSize and the converged values to one.               */
@@ -594,20 +594,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                   primme->targetShifts[targetShiftIndex], basisSize,
                   blockSize, rwork, rworkSize, machEps, primme);
 
-            /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
-            /* projected problem) are in hU; so retain them.                        */
-
-            numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, basisSize,
-               previousHVecs, primme->maxBasisSize, primme->maxBasisSize, basisSize,
-               iev, blockSize, flags, iwork, primme);
-            if (primme->projectionParams.projection == primme_proj_refined) {
-               retain_previous_coefficients(hU, basisSize, previousHU,
-                     primme->maxBasisSize, primme->maxBasisSize, basisSize,
-                     iev, blockSize, flags, iwork, primme);
-               Num_copy_matrix_columns_dprimme(hSVals, 1, iwork, numPrevRetained, 1,
-                     prevhSvals, NULL, 1);
-            }
-
             /* Extend H by blockSize columns and rows and solve the */
             /* eigenproblem for the new H.                          */
 
@@ -633,6 +619,24 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                return SOLVE_H_FAILURE;
             }
             numArbitraryVecs = 0;
+
+            /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
+            /* projected problem) are in hU; so retain them.                        */
+
+            if (basisSize+primme->maxBlockSize >= primme->maxBasisSize
+                  && basisSize < primme->maxBasisSize) {
+
+               numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, basisSize,
+                     previousHVecs, primme->maxBasisSize, primme->maxBasisSize, basisSize,
+                     iev, blockSize, flags, iwork, primme);
+               if (primme->projectionParams.projection == primme_proj_refined) {
+                  retain_previous_coefficients(hU, basisSize, previousHU,
+                        primme->maxBasisSize, primme->maxBasisSize, basisSize,
+                        iev, blockSize, flags, iwork, primme);
+                  Num_copy_matrix_columns_dprimme(hSVals, 1, iwork, numPrevRetained, 1,
+                        prevhSvals, NULL, 1);
+               }
+            }
 
            /* --------------------------------------------------------------- */
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst-numLocked)
@@ -667,7 +671,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                &numPrevRetained, primme->maxBasisSize, numGuesses, prevRitzVals,
                &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
                primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, 0,
-               hVecs, basisSize, 0, &basisSize, &targetShiftIndex, numArbitraryVecs,
+               hVecs, basisSize, 0, &basisSize, &targetShiftIndex, &numArbitraryVecs,
                hVecsRot, primme->maxBasisSize, previousHU, primme->maxBasisSize,
                prevhSvals, &restartsSinceReset, &reset, machEps, rwork, rworkSize,
                iwork, primme);
@@ -725,7 +729,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                return SOLVE_H_FAILURE;
             }
 
-            numArbitraryVecs = 0;
          }
  
          primme->stats.numRestarts++;
@@ -1182,14 +1185,6 @@ static int retain_previous_coefficients(double *hVecs, int ldhVecs,
    double tzero = +0.0e+00;
 
    numPrevRetained = 0;
-
-   /* Retain coefficient vectors if it restarts after adding blockSize */
-   /* vectors to V.                                                    */
-
-   if (primme->restartingParams.maxPrevRetain == 0 ||
-       basisSize+blockSize < primme->maxBasisSize)
-
-      return 0;
 
    /* First, retain coefficient vectors corresponding to current block */
    /* vectors.  If all of those have been retained, then retain the    */ 

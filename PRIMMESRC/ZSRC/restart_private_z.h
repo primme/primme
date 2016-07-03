@@ -80,7 +80,8 @@ static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H
 
 static int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, Complex_Z *hU, int ldhU, Complex_Z *R,
-      int ldR, int *numPrevRetained, double *prevhSvals, double machEps,
-      Complex_Z *rwork, int rworkSize, primme_params *primme);
+      int ldR, int *numPrevRetained, double *prevhSvals, Complex_Z *previousHU,
+      int ldpreviousHU, double machEps, Complex_Z *rwork, int rworkSize,
+      primme_params *primme);
 
 #endif /* RESTART_PRIVATE_H */
