@@ -637,6 +637,7 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
       }
 #endifarithm
       lrwork += (int)*(double*)&rwork0;
+      lrwork += basisSize*basisSize; /* aux for transpose V and symm */
       return lrwork;
    }
 
@@ -673,6 +674,7 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 
    /* Transpose back V */
 
+   assert(lrwork >= basisSize*basisSize);
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
 #ifdefarithm L_DEFREAL
@@ -683,7 +685,7 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
          rwork[basisSize*j+i].i = -hVecs[ldhVecs*i+j].i;
 #endifarithm
       }
-   }      
+   }
    Num_copy_matrix_@(pre)primme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
 
    /* Rearrange V, hSVals and hU in ascending order of singular value   */

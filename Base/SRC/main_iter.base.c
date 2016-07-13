@@ -456,9 +456,12 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /*       = |y_0'*V'*Q*u_0*s_0| <= s_0.                            */
             /* So when |l_0-tau|-machEps*|A| > s_0, we consider to reset the  */
             /* QR factorization. machEps*|A| is the error computing l_0.      */
+            /* NOTE: rarely observed |l_0-tau|-machEps*|A| slightly greater   */
+            /* than s_0 after resetting. The condition restartsSinceReset > 0 */
+            /* avoids infinite loop in those cases.                           */
 
             if (primme->projectionParams.projection == primme_proj_refined &&
-                  basisSize > 0 &&
+                  basisSize > 0 && restartsSinceReset > 0 &&
                   fabs(primme->targetShifts[targetShiftIndex]-hVals[0])
                     -max(primme->aNorm, primme->stats.estimateLargestSVal)
                       *machEps > hSVals[0]) {

@@ -68,7 +68,17 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
       double machEps, int rworkSize, Complex_Z *rwork, int *iwork,
       primme_params *primme);
 
-static int restart_qr(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
+static int restart_refined(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
+   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR,
+   Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, Complex_Z *hVecsRot,
+   int ldhVecsRot, Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
+   int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork, double machEps, 
+   primme_params *primme);
+
+static int restart_harmonic(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
    int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR, Complex_Z *QtV,
    int ldQtV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,

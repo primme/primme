@@ -68,7 +68,17 @@ static int restart_RR(@(type) *H, int ldH, @(type) *hVecs, int ldhVecs,
       double machEps, int rworkSize, @(type) *rwork, int *iwork,
       primme_params *primme);
 
-static int restart_qr(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
+static int restart_refined(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
+   int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR,
+   @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, @(type) *hVecsRot,
+   int ldhVecsRot, @(type) *previousHU, int ldpreviousHU, double *prevhSvals,
+   int numRecentlyLocked, int rworkSize, @(type) *rwork, int *iwork, double machEps, 
+   primme_params *primme);
+
+static int restart_harmonic(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
    int ldH, @(type) *Q, int nLocal, int ldQ, @(type) *R, int ldR, @(type) *QtV,
    int ldQtV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,

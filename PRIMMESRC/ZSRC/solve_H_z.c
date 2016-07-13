@@ -551,6 +551,7 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
          return NUM_ZGESVD_FAILURE;
       }
       lrwork += (int)*(double*)&rwork0;
+      lrwork += basisSize*basisSize; /* aux for transpose V and symm */
       return lrwork;
    }
 
@@ -575,12 +576,13 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
 
    /* Transpose back V */
 
+   assert(lrwork >= basisSize*basisSize);
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
          rwork[basisSize*j+i].r =  hVecs[ldhVecs*i+j].r;
          rwork[basisSize*j+i].i = -hVecs[ldhVecs*i+j].i;
       }
-   }      
+   }
    Num_copy_matrix_zprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
 
    /* Rearrange V, hSVals and hU in ascending order of singular value   */

@@ -71,7 +71,13 @@ void Num_gemm_@(pre)primme(const char *transa, const char *transb, int m, int n,
    PRIMME_BLASINT lldc = ldc;
 
    /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0 || k == 0) return;
+   if (m == 0 || n == 0) return;
+
+   /* Quick exit */
+   if (k == 0) {
+      Num_zero_matrix_@(pre)primme(c, m, n, ldc);
+      return;
+   }
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;

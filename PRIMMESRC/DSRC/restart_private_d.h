@@ -68,7 +68,17 @@ static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
       double machEps, int rworkSize, double *rwork, int *iwork,
       primme_params *primme);
 
-static int restart_qr(double *V, int ldV, double *W, int ldW, double *H,
+static int restart_refined(double *V, int ldV, double *W, int ldW, double *H,
+   int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR,
+   double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
+   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
+   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+   int *targetShiftIndex, int numConverged, int numArbitraryVecs, double *hVecsRot,
+   int ldhVecsRot, double *previousHU, int ldpreviousHU, double *prevhSvals,
+   int numRecentlyLocked, int rworkSize, double *rwork, int *iwork, double machEps, 
+   primme_params *primme);
+
+static int restart_harmonic(double *V, int ldV, double *W, int ldW, double *H,
    int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *QtV,
    int ldQtV, double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,

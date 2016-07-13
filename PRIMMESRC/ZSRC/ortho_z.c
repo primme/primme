@@ -23,7 +23,7 @@
  * File: ortho.c
  *
  * Purpose - Orthonormalizes a block of vectors, vector by vector, 
- *           against two bases and among themselves. Gram-Scmidt is used 
+ *           against two bases and among themselves. Gram-Schmidt is used 
  *           with reorthogonalization based on Daniel's test. 
  *           For the purpose of the test, the norm of the resulting vector 
  *           is computed without synchronizations. Because of floating point,
@@ -46,6 +46,12 @@
  *              s11/s00 = s11/s1hat(1+err) < 0.75 <=> s11/s1hat < .75*(1+err)
  *           if err is around 1e-2 it does not affect Daniels test a lot.
  *           Thus, if s0/s1 > 1.49e7, we must compute the actual s1.
+ *
+ * Note on linear dependency
+ *           If the original vector norm is reduced more than machEps times,
+ *           it is considered linear dependent. If R is not returned, the
+ *           vector is replaced by a random vector. Otherwise the vector is
+ *           zeroed.
  *
  ******************************************************************************/
 
@@ -114,17 +120,19 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
    int nOrth, reorth;
    int randomizations;
    int messages = 0;        /* messages = 1 prints the intermediate results */
-   int maxNumOrthos = 3;    /* We let 2 reorthogonalizations before randomize */
+   int maxNumOrthos = primme?3:5; /* We let 2 reorthogonalizations before randomize */
+                                  /* for nLocal length vectors, and 5 orthogonaliations */
+                                  /* for the rest */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
-   double s0=0.0, s02=0.0, s1=0.0;
+   double s0=0.0, s02=0.0, s1=0.0, s00=0.0;
    double temp;
    Complex_Z ztmp={+0.0e+00,+0.0e00};
    Complex_Z *overlaps;
    Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, tmone = {-1.0e+00,+0.0e00};
    FILE *outputFile;
 
-   messages = (primme && primme->procID == 0 && primme->printLevel >= 5
+   messages = (primme && primme->procID == 0 && primme->printLevel >= 3
          && primme->outputFile);
    outputFile = primme ? primme->outputFile : stdout;
 
@@ -216,7 +224,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
  
          if (nOrth == 1) {
             s02 = overlaps[i+numLocked].r;
-            s0 = sqrt(s02);
+            s00 = s0 = sqrt(s02);
          }
 
          /* Compute the norm of the resulting vector implicitly */
@@ -238,7 +246,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             s1 = sqrt(s1);
          }
 
-         if (R && (s1 <= machEps*s0 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
+         if (R && (s1 <= machEps*s00 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
             if (messages) {
                fprintf(outputFile, "Zeroing column %d\n", i);
             }
@@ -247,7 +255,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             R[ldR*i + i] = tzero;
             reorth = 0;
          }
-         else if (s1 <= machEps*s0) {
+         else if (s1 <= machEps*s00) {
             if (messages) {
                fprintf(outputFile, 
                  "Vector %d lost all significant digits in ortho\n", i-b1);
@@ -300,7 +308,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
             ldBasis, basis, ldBasis, tzero, H, b2+1);
       for(i=0; i < b2+1; i++) {
          for(j=0; j < i; j++) assert(fabs(*(double*)&H[(b2+1)*i+j]) < 1e-13);
-         assert(fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
+         assert(*(double*)&H[(b2+1)*i+i] == 0.0 || fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
       }
       free(H);
    }
@@ -313,7 +321,7 @@ int ortho_zprimme(Complex_Z *basis, int ldBasis, Complex_Z *R, int ldR,
       }
       free(H);
    }
-   */ 
+   */
 
    return 0;
 }
