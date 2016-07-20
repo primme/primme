@@ -159,7 +159,7 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
 #endifarithm
  ******************************************************************************/
 
-static int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
+int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
    int ldhVecs, double *hVals, int basisSize, int numConverged, int lrwork,
    @(type) *rwork, int *iwork, primme_params *primme) {
 
@@ -886,7 +886,7 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
 
-         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff) 
+         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff && i>1) 
             break;
       }
       i = min(i, basisSize);

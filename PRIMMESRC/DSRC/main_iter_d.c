@@ -166,6 +166,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    double *evecsHat = NULL;/* K^{-1}evecs                                   */
    double *rwork;          /* Real work space.                              */
    double *hVecs;          /* Eigenvectors of H                             */
+   double *hV=NULL;        /* Right singular vectors of R                   */
    double *hU=NULL;        /* Left singular vectors of R                    */
    double *previousHVecs;  /* Coefficient vectors retained by               */
                             /* recurrence-based restarting                   */
@@ -217,6 +218,7 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
    if (numQR > 0) {
       Q          = rwork; rwork += primme->nLocal*primme->maxBasisSize*numQR;
       R          = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+      hV         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
       hU         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
    }
    if (primme->projectionParams.projection == primme_proj_harmonic) {
@@ -388,6 +390,11 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          return SOLVE_H_FAILURE;
       }
 
+      if (primme->projectionParams.projection == primme_proj_refined) {
+         Num_copy_matrix_dprimme(hVecs, basisSize, basisSize, basisSize,
+            hV, basisSize);
+      }
+         
       numArbitraryVecs = 0;
       availableBlockSize = blockSize = 0;
       smallestResNorm = HUGE_VAL;
@@ -441,30 +448,6 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             /* Limit basisSize to the matrix dimension */
 
             availableBlockSize = min(availableBlockSize, primme->n-basisSize);
-
-            /* If QR decomposition accumulates so much error, force it to     */
-            /* reset by setting targetShiftIndex to -1. We use the next       */
-            /* heuristic. Note that if (s_0, u_0, y_0) is the smallest triplet*/
-            /* of R, (A-tau*I)*V = Q*R, and l_0 is the Rayleigh quotient of   */
-            /* V*y_0, then                                                    */
-            /*    |l_0-tau| = |y_0'*V'*(A-tau*I)*V*y_0| = |y_0'*V'*Q*R*y_0| = */
-            /*       = |y_0'*V'*Q*u_0*s_0| <= s_0.                            */
-            /* So when |l_0-tau|-machEps*|A| > s_0, we consider to reset the  */
-            /* QR factorization. machEps*|A| is the error computing l_0.      */
-            /* NOTE: rarely observed |l_0-tau|-machEps*|A| slightly greater   */
-            /* than s_0 after resetting. The condition restartsSinceReset > 0 */
-            /* avoids infinite loop in those cases.                           */
-
-            if (primme->projectionParams.projection == primme_proj_refined &&
-                  basisSize > 0 && restartsSinceReset > 0 &&
-                  fabs(primme->targetShifts[targetShiftIndex]-hVals[0])
-                    -max(primme->aNorm, primme->stats.estimateLargestSVal)
-                      *machEps > hSVals[0]) {
-
-               availableBlockSize = 0;
-               targetShiftIndex = -1;
-               reset = 2;
-            }
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {
@@ -608,6 +591,18 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                   primme->maxBasisSize, primme->nLocal, basisSize, blockSize, rwork,
                   rworkSize, 0/*unsymmetric*/, primme);
 
+            if (basisSize+blockSize >= primme->maxBasisSize) {
+               ret = retain_previous_coefficients_dprimme(hVecs, basisSize,
+                     hV, basisSize, hU, basisSize, hVecsRot, numArbitraryVecs,
+                     primme->maxBasisSize, hSVals, previousHVecs,
+                     primme->maxBasisSize, previousHU, primme->maxBasisSize,
+                     primme->maxBasisSize, prevhSvals, basisSize, iev,
+                     blockSize, flags, &numPrevRetained, iwork, rwork,
+                     rworkSize, primme);
+               if (ret != 0) return ret;
+            }
+
+
             basisSize += blockSize;
             blockSize = 0;
 
@@ -623,22 +618,34 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             }
             numArbitraryVecs = 0;
 
-            /* If harmonic, the coefficient vectors (i.e., the eigenvectors of the  */
-            /* projected problem) are in hU; so retain them.                        */
+            if (primme->projectionParams.projection == primme_proj_refined) {
+               Num_copy_matrix_dprimme(hVecs, basisSize, basisSize,
+                     basisSize, hV, basisSize);
+            }
 
-            if (basisSize+primme->maxBlockSize >= primme->maxBasisSize
-                  && basisSize < primme->maxBasisSize) {
+            /* If QR decomposition accumulates so much error, force it to     */
+            /* reset by setting targetShiftIndex to -1. We use the next       */
+            /* heuristic. Note that if (s_0, u_0, y_0) is the smallest triplet*/
+            /* of R, (A-tau*I)*V = Q*R, and l_0 is the Rayleigh quotient of   */
+            /* V*y_0, then                                                    */
+            /*    |l_0-tau| = |y_0'*V'*(A-tau*I)*V*y_0| = |y_0'*V'*Q*R*y_0| = */
+            /*       = |y_0'*V'*Q*u_0*s_0| <= s_0.                            */
+            /* So when |l_0-tau|-machEps*|A| > s_0, we consider to reset the  */
+            /* QR factorization. machEps*|A| is the error computing l_0.      */
+            /* NOTE: rarely observed |l_0-tau|-machEps*|A| slightly greater   */
+            /* than s_0 after resetting. The condition restartsSinceReset > 0 */
+            /* avoids infinite loop in those cases.                           */
 
-               numPrevRetained = retain_previous_coefficients(QtV ? hU : hVecs, basisSize,
-                     previousHVecs, primme->maxBasisSize, primme->maxBasisSize, basisSize,
-                     iev, blockSize, flags, iwork, primme);
-               if (primme->projectionParams.projection == primme_proj_refined) {
-                  retain_previous_coefficients(hU, basisSize, previousHU,
-                        primme->maxBasisSize, primme->maxBasisSize, basisSize,
-                        iev, blockSize, flags, iwork, primme);
-                  Num_copy_matrix_columns_dprimme(hSVals, 1, iwork, numPrevRetained, 1,
-                        prevhSvals, NULL, 1);
-               }
+            if (primme->projectionParams.projection == primme_proj_refined &&
+                  basisSize > 0 && restartsSinceReset > 0 &&
+                  fabs(primme->targetShifts[targetShiftIndex]-hVals[0])
+                    -max(primme->aNorm, primme->stats.estimateLargestSVal)
+                      *machEps > hSVals[0]) {
+
+               availableBlockSize = 0;
+               targetShiftIndex = -1;
+               reset = 2;
+               break;
             }
 
            /* --------------------------------------------------------------- */
@@ -656,28 +663,37 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
          /* converged.                                                        */
          /* ----------------------------------------------------------------- */
 
-         if (targetShiftIndex >= 0)
-            prepare_vecs_dprimme(basisSize, 0, availableBlockSize, H,
+         if (targetShiftIndex >= 0) {
+            prepare_vecs_dprimme(basisSize, numArbitraryVecs, availableBlockSize, H,
                primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
                targetShiftIndex, &numArbitraryVecs, smallestResNorm, NULL, 1,
                hVecsRot, primme->maxBasisSize, machEps, rworkSize, rwork, iwork,
                primme);
+         }
 
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
 
+         i = numConverged;
          restart_dprimme(V, W, primme->nLocal, basisSize, primme->nLocal,
                hVals, hSVals, flags, iev, &blockSize, blockNorms, evecs, perm, evals,
                resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot,
                &numConverged, &numLocked, &numConvergedStored, previousHVecs,
                &numPrevRetained, primme->maxBasisSize, numGuesses, prevRitzVals,
                &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
-               primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, 0,
-               hVecs, basisSize, 0, &basisSize, &targetShiftIndex, &numArbitraryVecs,
-               hVecsRot, primme->maxBasisSize, previousHU, primme->maxBasisSize,
+               primme->maxBasisSize, QtV, primme->maxBasisSize, hV, basisSize,
+               0, hU, basisSize, 0, hVecs, basisSize, 0, &basisSize,
+               &targetShiftIndex, &numArbitraryVecs, hVecsRot,
+               primme->maxBasisSize, previousHU, primme->maxBasisSize,
                prevhSvals, &restartsSinceReset, &reset, machEps, rwork, rworkSize,
                iwork, primme);
+
+         /* Reset smallestResNorm if some pair converged */
+
+         if (i != numConverged) {
+            smallestResNorm = HUGE_VAL;
+         }
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -732,6 +748,10 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
                return SOLVE_H_FAILURE;
             }
 
+            if (primme->projectionParams.projection == primme_proj_refined) {
+               Num_copy_matrix_dprimme(hVecs, basisSize, basisSize,
+                     basisSize, hV, basisSize);
+            }
          }
  
          primme->stats.numRestarts++;
@@ -1073,6 +1093,11 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal,
             (*recentlyConverged)++;
          }
          else if (flagsBlock[i] == UNCONVERGED) {
+            /* Update the smallest residual norm */
+
+            if (*blockSize == 0) *smallestResNorm = HUGE_VAL;
+            *smallestResNorm = min(*smallestResNorm, blockNorms[blki]);
+
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
             Num_copy_matrix_dprimme(&X[blki*ldV], nLocal, 1, ldV,
@@ -1130,103 +1155,10 @@ int prepare_candidates_dprimme(double *V, double *W, int nLocal,
          rwork, rworkSize, primme);
       if (ret != 0) return ret;
 
-      /* Update the smallest residual norm */
-
-      if (*blockSize == 0 && blockNormsSize > 0) *smallestResNorm = HUGE_VAL;
-      for (i=*blockSize; i < blockNormsSize; i++) {
-         *smallestResNorm = min(*smallestResNorm, blockNorms[i]);
-      }
    }
 
    return 0;
 }
-
-/*******************************************************************************
- * Function retain_previous_coefficients - This function is part of the
- *    recurrence-based restarting method for accelerating convergence.
- *    This function is called one iteration before restart so that the
- *    coefficients (eigenvectors of the projection H) corresponding to 
- *    a few of the target Ritz vectors may be retained at restart. 
- *    The desired coefficients are copied to a separate storage space so
- *    that they may be preserved until the restarting routine is called.
- *
- *
- * Input parameters
- * ----------------
- * hVecs      The coefficients (eigenvectors of the projection H).
- *
- * basisSize  The current size of the basis
- *
- * iev        Array of size block size.  It maps the block index to the Ritz
- *            value index each block vector corresponds to.
- *
- * blockSize  The number of block vectors generated during the current iteration
- *
- * primme       Structure containing various solver parameters
- *
- *
- * Output parameters
- * -----------------
- * cols           Indices of the column retained
- * previousHVecs  The coefficients to be retained
- *
- *
- * Return value
- * ------------
- * The number of vectors retained
- *
- ******************************************************************************/
-
-static int retain_previous_coefficients(double *hVecs, int ldhVecs,
-   double *previousHVecs, int mpreviousHVecs,  int ldpreviousHVecs,
-   int basisSize, int *iev, int blockSize, int *flags, int *cols,
-   primme_params *primme) {
-
-   int i, j;            /* Loop indices                                  */
-   int index;           /* The index of some coefficient vector in hVecs */ 
-   int numPrevRetained; /* The number of coefficient vectors retained    */
-   double tzero = +0.0e+00;
-
-   numPrevRetained = 0;
-
-   /* First, retain coefficient vectors corresponding to current block */
-   /* vectors.  If all of those have been retained, then retain the    */ 
-   /* the next unconverged coefficient vectors beyond iev[blockSize-1].*/
-
-   for (i=0, index=0; i < primme->restartingParams.maxPrevRetain
-         && index < basisSize; index++) {
-
-      if (i < blockSize) {
-         index = cols[i] = iev[i];
-         i++;
-      }
-      else if (flags[index] == UNCONVERGED) {
-         cols[i] = index;
-         i++;
-      }
-   }
-
-   numPrevRetained = i;
-
-   Num_copy_matrix_columns_dprimme(hVecs, basisSize, cols,
-         numPrevRetained, ldhVecs, previousHVecs, NULL, ldpreviousHVecs);
-
-   /* Zero the maxBasisSize-basisSize last elements of the buffer */
-
-   for (i=0; i<numPrevRetained; i++) {
-      for (j=basisSize; j<mpreviousHVecs; j++) {
-         previousHVecs[ldpreviousHVecs*i+j] = tzero;
-      }
-   }
-
-   if (primme->printLevel >= 5 && primme->procID == 0) {
-      fprintf(primme->outputFile, "retain_previous: numPrevRetained: %d\n",
-            numPrevRetained);
-   }
-
-   return numPrevRetained;
-}
-
 
 /*******************************************************************************
  * Function verify_norms - This subroutine computes the residual norms of the 

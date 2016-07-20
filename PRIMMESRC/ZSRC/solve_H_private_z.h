@@ -48,8 +48,4 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
    double *hVals, int basisSize, int targetShiftIndex, int lrwork, Complex_Z *rwork,
    int *iwork, primme_params *primme);
 
-static int solve_H_RR_zprimme(Complex_Z *H, int maxBasisSize, Complex_Z *hVecs,
-   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme);
-
 #endif

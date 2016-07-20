@@ -296,6 +296,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
       dataSize += primme->nLocal*primme->maxBasisSize    /* Size of Q      */
          + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
+         + primme->maxBasisSize*primme->maxBasisSize     /* Size of hV     */
          + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hU     */
       doubleSize += primme->maxBasisSize                 /* Size of hSVals */
          + primme->restartingParams.maxPrevRetain;       /* Size of prevSvals */
@@ -376,7 +377,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          evecsHat, 0, NULL, 0, NULL, 0, NULL, &primme->numEvals,
          &primme->numEvals, &primme->numEvals, NULL, &primme->restartingParams.maxPrevRetain,
          primme->maxBasisSize, primme->initSize, NULL, &primme->maxBasisSize, NULL,
-         primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL,
+         primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, NULL,
          0, 0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, NULL, 0.0,
          NULL, 0, NULL, primme);
 

@@ -149,7 +149,7 @@ int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
  *     - -1 Num_zheev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
+int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
    int ldhVecs, double *hVals, int basisSize, int numConverged, int lrwork,
    Complex_Z *rwork, int *iwork, primme_params *primme) {
 
@@ -778,7 +778,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
 
-         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff) 
+         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff && i>1) 
             break;
       }
       i = min(i, basisSize);

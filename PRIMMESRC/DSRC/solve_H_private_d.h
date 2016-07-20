@@ -48,8 +48,4 @@ static int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
    double *hVals, int basisSize, int targetShiftIndex, int lrwork, double *rwork,
    int *iwork, primme_params *primme);
 
-static int solve_H_RR_dprimme(double *H, int maxBasisSize, double *hVecs,
-   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
-   double *rwork, int *iwork, primme_params *primme);
-
 #endif

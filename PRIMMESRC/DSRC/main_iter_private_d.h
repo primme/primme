@@ -39,11 +39,6 @@
 #define RESTART_FAILURE           -6
 #define LOCK_VECTORS_FAILURE      -7
 
-static int retain_previous_coefficients(double *hVecs, int ldhVecs,
-   double *previousHVecs, int mpreviousHVecs,  int ldpreviousHVecs,
-   int basisSize, int *iev, int blockSize, int *flags, int *iwork,
-   primme_params *primme);
-
 static int verify_norms(double *V, double *W, double *hVals, int basisSize,
       double *resNorms, int *flags, int *converged, double machEps,
       double *rwork, int rworkSize, int *iwork, primme_params *primme);

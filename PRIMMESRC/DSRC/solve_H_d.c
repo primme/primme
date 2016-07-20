@@ -149,7 +149,7 @@ int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
  *     - -1 Num_dsyev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
+int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
    int ldhVecs, double *hVals, int basisSize, int numConverged, int lrwork,
    double *rwork, int *iwork, primme_params *primme) {
 
@@ -760,7 +760,7 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
 
-         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff) 
+         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff && i>1) 
             break;
       }
       i = min(i, basisSize);

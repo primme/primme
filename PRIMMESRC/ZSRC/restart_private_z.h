@@ -47,14 +47,15 @@ static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V,
 
 static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
       int ldW, Complex_Z *H, int ldH, Complex_Z *Q, int nLocal, int ldQ,
-      Complex_Z *R, int ldR, Complex_Z *QtV, int ldQtV, Complex_Z *hU, int ldhU,
-      int newldhU, Complex_Z *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+      Complex_Z *R, int ldR, Complex_Z *QtV, int ldQtV, Complex_Z *hV, int ldhV,
+      int newldhV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hU0, int ldhU0,
+      Complex_Z *hVecs, int ldhVecs, int newldhVecs, double *hVals,
       double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       Complex_Z *evecs, int *evecsSize, int ldevecs, Complex_Z *evecsHat,
       int ldevecsHat, Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
       int *ipivot, int *targetShiftIndex, int numConverged,
-      int numArbitraryVecs,  Complex_Z *hVecsRot, int ldhVecsRot,
+      int *numArbitraryVecs,  Complex_Z *hVecsRot, int ldhVecsRot,
       Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
       int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork,
       double machEps, primme_params *primme);
@@ -69,12 +70,13 @@ static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
       primme_params *primme);
 
 static int restart_refined(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
-   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR,
-   Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs,
-   int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
-   int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int numArbitraryVecs, Complex_Z *hVecsRot,
-   int ldhVecsRot, Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
+   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR, Complex_Z *hV,
+   int ldhV, int newldhV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hU0,
+   int ldhU0, Complex_Z *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+   double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
+   int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
+   int numConverged, int *numArbitraryVecs, Complex_Z *hVecsRot, int ldhVecsRot,
+   Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
    int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork, double machEps, 
    primme_params *primme);
 
@@ -90,8 +92,8 @@ static int restart_harmonic(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Comple
 
 static int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, Complex_Z *hU, int ldhU, Complex_Z *R,
-      int ldR, int *numPrevRetained, double *prevhSvals, Complex_Z *previousHU,
-      int ldpreviousHU, double machEps, Complex_Z *rwork, int rworkSize,
-      primme_params *primme);
+      int ldR, int *numPrevRetained, double *hSVals, double *prevhSvals,
+      Complex_Z *previousHU, int ldpreviousHU, int restartSize, double machEps,
+      Complex_Z *rwork, int rworkSize, primme_params *primme);
 
 #endif /* RESTART_PRIVATE_H */
