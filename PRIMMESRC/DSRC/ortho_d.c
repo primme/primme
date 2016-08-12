@@ -120,8 +120,10 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    int nOrth, reorth;
    int randomizations;
    int messages = 0;        /* messages = 1 prints the intermediate results */
-   int maxNumOrthos = primme?3:5; /* We let 2 reorthogonalizations before randomize */
-                                  /* for nLocal length vectors, and 5 orthogonaliations */
+   /* TODO: replace by a dynamic criterion when to stop orthogonalizing local */
+   /* vectors. Observed performance improvement when maxNumOrthos increases.  */
+   int maxNumOrthos = primme?3:7; /* We let 2 reorthogonalizations before randomize */
+                                  /* for nLocal length vectors, and 6 orthogonalisations */
                                   /* for the rest */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */

@@ -40,10 +40,10 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize,
        @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
        int numGuesses, double *prevRitzVals, int *numPrevRitzVals, @(type) *H,
        int ldH, @(type) *Q, int ldQ, @(type) *R, int ldR, @(type)* QtV,
-       int ldQtV, @(type) *hV, int ldhV, int newldhV, @(type) *hU, int ldhU,
-       int newldhU, @(type) *hVecs, int ldhVecs, int newldhVecs,
-       int *restartSizeOutput, int *targetShiftIndex, int *numArbitraryVecs,
-       @(type) *hVecsRot, int ldhVecsRot, @(type) *previousHU, int ldpreviousHU,
+       int ldQtV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs,
+       int ldhVecs, int newldhVecs, int *restartSizeOutput,
+       int *targetShiftIndex, int *numArbitraryVecs, @(type) *hVecsRot,
+       int ldhVecsRot, @(type) *previousHU, int ldpreviousHU,
        double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
        @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
@@ -58,11 +58,9 @@ int Num_reset_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, i
    int reset, double machEps, @(type) *rwork, int lrwork, primme_params *primme);
 
 int retain_previous_coefficients_@(pre)primme(@(type) *hVecs, int ldhVecs,
-   @(type) *hV, int ldhV, @(type) *hU, int ldhU, @(type) *hVecsRot,
-   int numArbitraryVecs, int ldhVecsRot, double *hSVals, @(type) *previousHVecs,
-   int ldpreviousHVecs, @(type) *previousHU, int ldpreviousHU, int mprevious,
-   double *prevhSVals, int basisSize, int *iev, int blockSize, int *flags,
-   int *numPrevRetained, int *iwork, @(type) *rwork, int rworkSize,
+   @(type) *hU, int ldhU, double *hSVals, @(type) *previousHVecs,
+   int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
+   int *flags, int *numPrevRetained, int *iwork, @(type) *rwork, int rworkSize,
    primme_params *primme);
 
 #endif

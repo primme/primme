@@ -1209,7 +1209,7 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
             ldY, &Wo[i], ldWo);
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
-      for (j=nRb; j<nRe; j++) {
+      if (R) for (j=nRb; j<nRe; j++) {
          Num_compute_residual_@(pre)primme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
@@ -1234,16 +1234,16 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
    if (primme->numProcs > 1) {
       tmp = (double*)rwork;
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       tmp0 = tmp+j;
       if (j) primme->globalSumDouble(tmp, tmp0, &j, primme);
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
    }
    else {
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
    }
 
@@ -1350,7 +1350,20 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
    int *perm=iwork;      /* A copy of perm_                                   */
    int aux;
 
+   /* Check that perm_ and iwork do not overlap */
+
    assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
+
+   /* Check perm_ is a permutation */
+
+#ifndef NDEBUG
+   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
+   for (tempIndex=0; tempIndex<n; tempIndex++) {
+      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
+      perm[perm_[tempIndex]] = 1;
+   }
+   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+#endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 

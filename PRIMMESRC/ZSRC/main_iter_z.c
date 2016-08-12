@@ -166,7 +166,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    Complex_Z *evecsHat = NULL;/* K^{-1}evecs                                   */
    Complex_Z *rwork;          /* Real work space.                              */
    Complex_Z *hVecs;          /* Eigenvectors of H                             */
-   Complex_Z *hV=NULL;        /* Right singular vectors of R                   */
    Complex_Z *hU=NULL;        /* Left singular vectors of R                    */
    Complex_Z *previousHVecs;  /* Coefficient vectors retained by               */
                             /* recurrence-based restarting                   */
@@ -218,7 +217,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    if (numQR > 0) {
       Q          = rwork; rwork += primme->nLocal*primme->maxBasisSize*numQR;
       R          = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
-      hV         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
       hU         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
    }
    if (primme->projectionParams.projection == primme_proj_harmonic) {
@@ -272,7 +270,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    LockingProblem = 0;
 
    numPrevRetained = 0;
-   blockSize = 0; 
+   maxRecentlyConverged = blockSize = 0; 
 
    /* ---------------------------------------- */
    /* Set the tolerance for the residual norms */
@@ -390,13 +388,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          return SOLVE_H_FAILURE;
       }
 
-      if (primme->projectionParams.projection == primme_proj_refined) {
-         Num_copy_matrix_zprimme(hVecs, basisSize, basisSize, basisSize,
-            hV, basisSize);
-      }
-         
       numArbitraryVecs = 0;
-      availableBlockSize = blockSize = 0;
+      maxRecentlyConverged = availableBlockSize = blockSize = 0;
       smallestResNorm = HUGE_VAL;
 
       /* -------------------------------------------------------------- */
@@ -593,10 +586,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
             if (basisSize+blockSize >= primme->maxBasisSize) {
                ret = retain_previous_coefficients_zprimme(hVecs, basisSize,
-                     hV, basisSize, hU, basisSize, hVecsRot, numArbitraryVecs,
-                     primme->maxBasisSize, hSVals, previousHVecs,
-                     primme->maxBasisSize, previousHU, primme->maxBasisSize,
-                     primme->maxBasisSize, prevhSvals, basisSize, iev,
+                     hU, basisSize, hSVals, previousHVecs,
+                     primme->maxBasisSize, primme->maxBasisSize, basisSize, iev,
                      blockSize, flags, &numPrevRetained, iwork, rwork,
                      rworkSize, primme);
                if (ret != 0) return ret;
@@ -617,11 +608,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                return SOLVE_H_FAILURE;
             }
             numArbitraryVecs = 0;
-
-            if (primme->projectionParams.projection == primme_proj_refined) {
-               Num_copy_matrix_zprimme(hVecs, basisSize, basisSize,
-                     basisSize, hV, basisSize);
-            }
 
             /* If QR decomposition accumulates so much error, force it to     */
             /* reset by setting targetShiftIndex to -1. We use the next       */
@@ -645,6 +631,12 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                availableBlockSize = 0;
                targetShiftIndex = -1;
                reset = 2;
+               if (primme->printLevel >= 5 && primme->procID == 0) {
+                  fprintf(primme->outputFile, 
+                        "Resetting V, W and QR: Some errors in QR detected.\n");
+                  fflush(primme->outputFile);
+               }
+
                break;
             }
 
@@ -659,41 +651,109 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          /* to lock out converged vectors and to compute X and R for the next */
          /* iteration. The function prepare_vecs will make sure that hVecs    */
          /* has proper coefficient vectors.                                   */
-         /* Compute RR for clusters when locking or all required pairs are    */
-         /* converged.                                                        */
          /* ----------------------------------------------------------------- */
 
          if (targetShiftIndex >= 0) {
-            prepare_vecs_zprimme(basisSize, numArbitraryVecs, availableBlockSize, H,
-               primme->maxBasisSize, hVals, hSVals, hVecs, basisSize,
-               targetShiftIndex, &numArbitraryVecs, smallestResNorm, NULL, 1,
-               hVecsRot, primme->maxBasisSize, machEps, rworkSize, rwork, iwork,
-               primme);
+            /* -------------------------------------------------------------- */
+            /* TODO: merge all this logic in the regular main loop. After all */
+            /* restarting is a regular step that also shrinks the basis.      */
+            /* -------------------------------------------------------------- */
+
+            int j,k,l;
+            double *dummySmallestResNorm, dummyZero = 0.0;
+
+            if (blockSize > 0) {
+               availableBlockSize = blockSize;
+               /* Keep maxRecentlyConverged */
+            }
+
+            /* When QR are computed and there are more than one target shift, */
+            /* limit blockSize and the converged values to one.               */
+
+            else if (primme->numTargetShifts > numConverged+1 && Q) {
+               availableBlockSize = 1;
+               maxRecentlyConverged = numConverged-numLocked+1;
+            }
+
+            else {
+               maxRecentlyConverged = primme->numEvals-numConverged;
+
+               /* Limit blockSize to vacant vectors in the basis */
+
+               availableBlockSize = min(primme->maxBlockSize, primme->maxBasisSize-(numConverged-numLocked));
+
+               /* Limit blockSize to remaining values to converge plus one */
+
+               availableBlockSize = min(availableBlockSize, maxRecentlyConverged+1);
+            }
+
+            /* -------------------------------------------------------------- */
+            /* NOTE: setting smallestResNorm to zero may overpass the inner   */
+            /* product condition (ip) and result in a smaller                 */
+            /* numArbitraryVecs before restarting. This helps or is needed to */
+            /* pass testi-100-LOBPCG_OrthoBasis_Window-100-primme_closest_abs */
+            /* -primme_proj_refined.F                                         */
+            /* -------------------------------------------------------------- */
+
+            dummySmallestResNorm = primme->target == primme_closest_abs ? &dummyZero : &smallestResNorm;
+
+            prepare_candidates_zprimme(V, W, primme->nLocal, H,
+                  primme->maxBasisSize, basisSize, primme->nLocal,
+                  NULL, NULL,
+                  hVecs, basisSize, hVals, hSVals, flags,
+                  numConverged-numLocked, maxRecentlyConverged, blockNorms,
+                  blockSize, availableBlockSize, evecs, numLocked, evals,
+                  resNorms, targetShiftIndex, machEps, iev, &blockSize,
+                  &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
+                  hVecsRot, primme->maxBasisSize, &reset, rwork, rworkSize, iwork,
+                  primme);
+            for (i=0, numConverged=numLocked; i<basisSize; i++) {
+               if (flags[i]) {
+                  numConverged++;
+               }
+            }
+            for (i=k=l=0; i<basisSize; i++) {
+               int iIsInIev = 0;
+               for (j=0; j<blockSize; j++)
+                  if (iev[j] == i) iIsInIev = 1;
+               if (flags[i] != UNCONVERGED || iIsInIev) {
+                  iwork[k++] = i;
+               }
+               else {
+                  iwork[numConverged-numLocked+blockSize+l++] = i;
+               }
+            }
+            permute_vecs_dprimme(hVals, 1, basisSize, 1, iwork, (double*)rwork, iwork+basisSize);
+            permute_vecs_zprimme(hVecs, basisSize, basisSize, basisSize, iwork, rwork, iwork+basisSize);
+            permute_vecs_iprimme(flags, basisSize, iwork, iwork+basisSize);
+            if (hVecsRot) {
+               Num_zero_matrix_zprimme(&hVecsRot[numArbitraryVecs*primme->maxBasisSize], primme->maxBasisSize,
+                     basisSize-numArbitraryVecs, primme->maxBasisSize);
+               for (i=numArbitraryVecs; i<basisSize; i++)
+                  hVecsRot[primme->maxBasisSize*i+i] = tpone;
+               permute_vecs_zprimme(hVecsRot, basisSize, basisSize, primme->maxBasisSize, iwork, rwork, iwork+basisSize);
+               for (i=j=0; i<basisSize; i++)
+                  if (iwork[i] != i) j=i+1;
+               numArbitraryVecs = max(numArbitraryVecs, j);
+            }
          }
 
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
 
-         i = numConverged;
          restart_zprimme(V, W, primme->nLocal, basisSize, primme->nLocal,
                hVals, hSVals, flags, iev, &blockSize, blockNorms, evecs, perm, evals,
                resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot,
                &numConverged, &numLocked, &numConvergedStored, previousHVecs,
                &numPrevRetained, primme->maxBasisSize, numGuesses, prevRitzVals,
                &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
-               primme->maxBasisSize, QtV, primme->maxBasisSize, hV, basisSize,
-               0, hU, basisSize, 0, hVecs, basisSize, 0, &basisSize,
+               primme->maxBasisSize, QtV, primme->maxBasisSize,
+               hU, basisSize, 0, hVecs, basisSize, 0, &basisSize,
                &targetShiftIndex, &numArbitraryVecs, hVecsRot,
                primme->maxBasisSize, previousHU, primme->maxBasisSize,
                prevhSvals, &restartsSinceReset, &reset, machEps, rwork, rworkSize,
                iwork, primme);
-
-         /* Reset smallestResNorm if some pair converged */
-
-         if (i != numConverged) {
-            smallestResNorm = HUGE_VAL;
-         }
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -748,10 +808,6 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                return SOLVE_H_FAILURE;
             }
 
-            if (primme->projectionParams.projection == primme_proj_refined) {
-               Num_copy_matrix_zprimme(hVecs, basisSize, basisSize,
-                     basisSize, hV, basisSize);
-            }
          }
  
          primme->stats.numRestarts++;
@@ -1046,8 +1102,10 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
       assert(blockNormsSize <= maxBlockSize);
 
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
-      ret = check_convergence_zprimme(&X[(*blockSize)*ldV], nLocal, ldV,
-         &R[(*blockSize)*ldV], ldV, evecs, numLocked, primme->nLocal, 0, blockNormsSize, flagsBlock,
+      for (i=*blockSize; i<blockNormsSize; i++)
+         flagsBlock[i-*blockSize] = flags[iev[i]];
+      ret = check_convergence_zprimme(X?&X[(*blockSize)*ldV]:NULL, nLocal, ldV,
+         R?&R[(*blockSize)*ldV]:NULL, ldV, evecs, numLocked, primme->nLocal, 0, blockNormsSize, flagsBlock,
          &blockNorms[*blockSize], hValsBlock, reset, machEps, rwork, rworkSize, iwork, primme);
       if (ret != 0) return ret;
 
@@ -1091,18 +1149,24 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
 
             /* Count the new solution */
             (*recentlyConverged)++;
+
+            /* Reset smallestResNorm if some pair converged */
+            if (*blockSize == 0) {
+               *smallestResNorm = HUGE_VAL;
+            }
          }
          else if (flagsBlock[i] == UNCONVERGED) {
             /* Update the smallest residual norm */
-
-            if (*blockSize == 0) *smallestResNorm = HUGE_VAL;
+            if (*blockSize == 0) {
+               *smallestResNorm = HUGE_VAL;
+            }
             *smallestResNorm = min(*smallestResNorm, blockNorms[blki]);
 
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
-            Num_copy_matrix_zprimme(&X[blki*ldV], nLocal, 1, ldV,
+            if (X) Num_copy_matrix_zprimme(&X[blki*ldV], nLocal, 1, ldV,
                   &X[(*blockSize)*ldV], ldV);
-            Num_copy_matrix_zprimme(&R[blki*ldV], nLocal, 1, ldV,
+            if (R) Num_copy_matrix_zprimme(&R[blki*ldV], nLocal, 1, ldV,
                   &R[(*blockSize)*ldV], ldV);
             (*blockSize)++;
          }
@@ -1146,12 +1210,12 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
 
       ret = Num_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV, hVecsBlock, basisSize,
          ldhVecs, hValsBlock,
-         &X[(*blockSize)*ldV], 0, blockNormsSize, ldV,
+         X?&X[(*blockSize)*ldV]:NULL, 0, blockNormsSize, ldV,
          NULL, 0, 0, 0,
          NULL, 0, 0, 0,
          NULL, 0, 0, 0,
-         &R[(*blockSize)*ldV], 0, blockNormsSize, ldV, &blockNorms[*blockSize],
-         NULL, 0, 0,
+         R?&R[(*blockSize)*ldV]:NULL, 0, blockNormsSize, ldV, &blockNorms[*blockSize],
+         !R?&blockNorms[*blockSize]:NULL, 0, blockNormsSize,
          rwork, rworkSize, primme);
       if (ret != 0) return ret;
 

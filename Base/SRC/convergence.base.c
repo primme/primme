@@ -89,7 +89,7 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    /* Return memory requirements */
    /* -------------------------- */
 
-   if (X == NULL) {
+   if (flags == NULL) {
       return R ? check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
          NULL, right-left, NULL, NULL, 0, NULL, 0, primme) : 0;
    }
@@ -133,7 +133,7 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
          continue;
       }
 
-      primme->convTestFun(&hVals[i], &X[ldX*(i-left)], &blockNorms[i-left],
+      primme->convTestFun(&hVals[i], X?&X[ldX*(i-left)]:NULL, &blockNorms[i-left],
             &isConv, primme);
 
       if (isConv) {

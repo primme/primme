@@ -40,10 +40,10 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize,
        double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
        int numGuesses, double *prevRitzVals, int *numPrevRitzVals, double *H,
        int ldH, double *Q, int ldQ, double *R, int ldR, double* QtV,
-       int ldQtV, double *hV, int ldhV, int newldhV, double *hU, int ldhU,
-       int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
-       int *restartSizeOutput, int *targetShiftIndex, int *numArbitraryVecs,
-       double *hVecsRot, int ldhVecsRot, double *previousHU, int ldpreviousHU,
+       int ldQtV, double *hU, int ldhU, int newldhU, double *hVecs,
+       int ldhVecs, int newldhVecs, int *restartSizeOutput,
+       int *targetShiftIndex, int *numArbitraryVecs, double *hVecsRot,
+       int ldhVecsRot, double *previousHU, int ldpreviousHU,
        double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
        double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
@@ -58,11 +58,9 @@ int Num_reset_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
    int reset, double machEps, double *rwork, int lrwork, primme_params *primme);
 
 int retain_previous_coefficients_dprimme(double *hVecs, int ldhVecs,
-   double *hV, int ldhV, double *hU, int ldhU, double *hVecsRot,
-   int numArbitraryVecs, int ldhVecsRot, double *hSVals, double *previousHVecs,
-   int ldpreviousHVecs, double *previousHU, int ldpreviousHU, int mprevious,
-   double *prevhSVals, int basisSize, int *iev, int blockSize, int *flags,
-   int *numPrevRetained, int *iwork, double *rwork, int rworkSize,
+   double *hU, int ldhU, double *hSVals, double *previousHVecs,
+   int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
+   int *flags, int *numPrevRetained, int *iwork, double *rwork, int rworkSize,
    primme_params *primme);
 
 #endif

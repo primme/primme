@@ -540,13 +540,11 @@ static int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
       return lrwork;
    }
 
-   /* Copy upper triangular part of R into hVecs and zero lower triangular
-      part of hVecs */
-   Num_copy_trimatrix_dprimme(R, basisSize, basisSize, ldR, 0, 0, hVecs, ldhVecs, 1);
+   /* Copy R into hVecs */
+   Num_copy_matrix_dprimme(R, basisSize, basisSize, ldR, hVecs, ldhVecs);
 
-   /* Since Ritz vectors in hVecs is not needed, we use hVecs to hold refined
-      Ritz vectors. Note gesvd returns transpose(V) rather than V and sorted in
-      descending order of the singular values */
+   /* Note gesvd returns transpose(V) rather than V and sorted in descending  */
+   /* order of the singular values                                            */
 
    Num_dgesvd_dprimme("S", "O", basisSize, basisSize, hVecs, ldhVecs,
          hSVals, hU, ldhU, hVecs, ldhVecs, rwork, lrwork, &info);
@@ -669,8 +667,8 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
    double tpone = +1.0e+00, tzero = +0.0e+00;
-   double targetShift, aNorm;
-   int left, right, *perm, ret;
+   double aNorm;
+   int ret;
 
    /* Quick exit */
 
@@ -713,25 +711,19 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
       return 0;
    }
 
-   targetShift = primme->targetShifts[targetShiftIndex];
    aNorm = (primme->aNorm <= 0.0) ?
       primme->stats.estimateLargestSVal : primme->aNorm;
 
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {
 
+      double ip;
       /* -------------------------------------------------------------------- */
       /* Count all eligible values (candidates) from j up to i.               */
       /* -------------------------------------------------------------------- */
 
       for ( ; j < i; j++)
-         if ((!flags || flags[j] == UNCONVERGED) && (
-               (primme->target == primme_closest_leq
-                && hVals[j]-smallestResNorm <= targetShift) ||
-               (primme->target == primme_closest_geq
-                && hVals[j]+smallestResNorm >= targetShift) ||
-               (primme->target != primme_closest_leq
-                && primme->target != primme_closest_geq)))
+         if (!flags || flags[j] == UNCONVERGED)
             candidates++;
      
       if (candidates >= blockSize) break;
@@ -743,24 +735,30 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
       /* value in the block.                                                  */
       /* -------------------------------------------------------------------- */
 
-      for (i=j+1, someCandidate=0; i<basisSize; i++) {
+      for (i=j+1, someCandidate=0, ip=0.0; i<basisSize; i++) {
 
          /* Check that this approximation:                                    */
          /* sin singular vector: max(hSVals)*machEps/(hSvals[i]-hSVals[i+1])  */
-         /* is less than the next ones:                                       */
-         /* sin eigenvector    : aNorm*eps/(hVals[i]-hVals[i+1])          */
-         /* sin current and previous hVecs(:,i): hVecs(end,i)                 */
+         /* is less than the next one:                                        */
+         /* sin eigenvector    : aNorm*eps/(hVals[i]-hVals[i+1]).             */
+         /* Also try to include enough coefficient vectors into the cluster   */
+         /* so that the cluster is close the last included vectors into the   */
+         /* basis.                                                            */
+         /* TODO: check the angle with all vectors added to the basis in the  */
+         /* previous iterations; for now only the last one is considered.     */
          /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
          /* we don't use the value when it is zero.                           */
 
-         double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
-         double ip = (flags && ip0 != 0.0) ? ip0 : HUGE_VAL;
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
-            min(ip, aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+            (aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+         double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
+         double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
 
-         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff && i>1) 
+         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff
+               && (smallestResNorm >= HUGE_VAL
+                  || sqrt(ip1) >= smallestResNorm/aNorm/3.16)) 
             break;
       }
       i = min(i, basisSize);
@@ -780,10 +778,15 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
          ahVecs = &hVecsRot[ldhVecsRot*j+j];
          assert(rworkSize0 >= 0);
 
-         /* Zero hVecsRot(:,j:i-1) */
-         Num_zero_matrix_dprimme(&hVecsRot[ldhVecsRot*j],
-               primme->maxBasisSize, aBasisSize, ldhVecsRot);
 
+         /* Zero hVecsRot(:,arbitraryVecs:i-1) */
+         Num_zero_matrix_dprimme(&hVecsRot[ldhVecsRot*(*arbitraryVecs)],
+               primme->maxBasisSize, i-*arbitraryVecs, ldhVecsRot);
+
+         /* hVecsRot(:,arbitraryVecs:i-1) = I */
+         for (k=*arbitraryVecs; k<i; k++)
+            hVecsRot[ldhVecsRot*k+k] = tpone;
+ 
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          compute_submatrix_dprimme(&hVecs[ldhVecs*j], aBasisSize,
                ldhVecs, H, basisSize, ldH, aH, aBasisSize, rwork0,
@@ -809,49 +812,6 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
          if (flags && !RRForAll) for (k=j; k<i; k++) flags[k] = UNCONVERGED;
       }
    }
-
-   if (primme->target != primme_closest_leq && primme->target != primme_closest_geq)
-      return 0;
-
-   /* -------------------------------------------------------------------- */
-   /* Rearrange hVals and hVecs from 0 up to i-th putting the candidates   */
-   /* first and then the unwanted pairs (eg. hVals[i]>targetshift if       */
-   /* target is primme_closest_leq).                                       */
-   /* -------------------------------------------------------------------- */
-
-   /* Count all eligible values (candidates) from 0 up to i */
-
-   for (j=i0, candidates=0; j < i; j++)
-      if (  (primme->target == primme_closest_leq && hVals[j]-smallestResNorm <= targetShift)
-          ||(primme->target == primme_closest_geq && hVals[j]+smallestResNorm >= targetShift))
-         candidates++;
-
-   perm = iwork;
-   iwork += basisSize;
-   for (j=i0,right=left=0; j < i; j++) {
-      if (  (primme->target == primme_closest_leq && hVals[j]-smallestResNorm <= targetShift)
-          ||(primme->target == primme_closest_geq && hVals[j]+smallestResNorm >= targetShift))
-         perm[right++] = j-i0;
-      else
-         perm[candidates+left++] = j-i0;
-   }
-
-   /* hVecsRot(:,arbitraryVecs:i-1) = I */
-
-   Num_zero_matrix_dprimme(&hVecsRot[ldhVecsRot*(*arbitraryVecs)],
-         primme->maxBasisSize, i-*arbitraryVecs, ldhVecsRot);
-   for (j=*arbitraryVecs; j<i; j++)
-      hVecsRot[ldhVecsRot*j+j] = tpone;
-   
-
-   permute_vecs_dprimme(&hVals[i0], 1, i-i0, 1, perm, (double*)rwork, iwork);
-   permute_vecs_dprimme(&hVecs[ldhVecs*i0], basisSize, i-i0, ldhVecs, perm, rwork, iwork);
-   permute_vecs_dprimme(&hVecsRot[ldhVecsRot*i0], basisSize, i-i0, ldhVecsRot, perm, rwork, iwork);
-
-   /* If something has changed between arbitraryVecs and i, notify */
-
-   for (j=max(*arbitraryVecs,i0); j<i; j++)
-      if (perm[j-i0]+i0 != j) *arbitraryVecs = j+1;
 
    return 0;
 }

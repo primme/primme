@@ -296,7 +296,6 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
       dataSize += primme->nLocal*primme->maxBasisSize    /* Size of Q      */
          + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
-         + primme->maxBasisSize*primme->maxBasisSize     /* Size of hV     */
          + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hU     */
       doubleSize += primme->maxBasisSize                 /* Size of hSVals */
          + primme->restartingParams.maxPrevRetain;       /* Size of prevSvals */
@@ -377,7 +376,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          evecsHat, 0, NULL, 0, NULL, 0, NULL, &primme->numEvals,
          &primme->numEvals, &primme->numEvals, NULL, &primme->restartingParams.maxPrevRetain,
          primme->maxBasisSize, primme->initSize, NULL, &primme->maxBasisSize, NULL,
-         primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, NULL,
+         primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL,
          0, 0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, NULL, 0.0,
          NULL, 0, NULL, primme);
 
@@ -437,7 +436,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    intWorkSize = primme->maxBasisSize /* Size of flag               */
       + 2*primme->maxBlockSize        /* Size of iev and ilev       */
       + maxEvecsSize                  /* Size of ipivot             */
-      + 5*primme->maxBasisSize;       /* Auxiliary permutation arrays */
+      + 7*primme->maxBasisSize;       /* Auxiliary permutation arrays */
 
    /*----------------------------------------------------------------------*/
    /* byte sizes:                                                          */
@@ -556,9 +555,9 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
    else if (primme->locking && primme->initSize > primme->numEvals)
       ret = -24;
    else if (primme->minRestartSize + primme->restartingParams.maxPrevRetain 
-                   >= primme->maxBasisSize && primme->n > 2)
+                   >= primme->maxBasisSize && primme->n > primme->maxBasisSize)
       ret = -25;
-   else if (primme->minRestartSize >= primme->n)
+   else if (primme->minRestartSize > primme->n && primme->n > 2)
       ret = -26;
    else if (primme->printLevel < 0 || primme->printLevel > 5)
       ret = -27; 

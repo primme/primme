@@ -89,7 +89,7 @@ int check_convergence_zprimme(Complex_Z *X, int nLocal, int ldX, Complex_Z *R,
    /* Return memory requirements */
    /* -------------------------- */
 
-   if (X == NULL) {
+   if (flags == NULL) {
       return R ? check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
          NULL, right-left, NULL, NULL, 0, NULL, 0, primme) : 0;
    }
@@ -133,7 +133,7 @@ int check_convergence_zprimme(Complex_Z *X, int nLocal, int ldX, Complex_Z *R,
          continue;
       }
 
-      primme->convTestFun(&hVals[i], &X[ldX*(i-left)], &blockNorms[i-left],
+      primme->convTestFun(&hVals[i], X?&X[ldX*(i-left)]:NULL, &blockNorms[i-left],
             &isConv, primme);
 
       if (isConv) {
@@ -267,8 +267,6 @@ static int check_practical_convergence(Complex_Z *R, int nLocal, int ldR,
                                - overlaps[i]*overlaps[i]);   /* || (I-QQ')res || */
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
-
-      assert(blockNorms[iev[i]] >= overlaps[i]);
 
       /* ------------------------------------------------------------------ */
       /* NOTE: previous versions than 2.0 used the next criterion instead:  */

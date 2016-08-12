@@ -47,16 +47,15 @@ static int restart_soft_locking_dprimme(int *restartSize, double *V,
 
 static int restart_projection_dprimme(double *V, int ldV, double *W,
       int ldW, double *H, int ldH, double *Q, int nLocal, int ldQ,
-      double *R, int ldR, double *QtV, int ldQtV, double *hV, int ldhV,
-      int newldhV, double *hU, int ldhU, int newldhU, double *hU0, int ldhU0,
-      double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
-      double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
-      int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-      double *evecs, int *evecsSize, int ldevecs, double *evecsHat,
-      int ldevecsHat, double *M, int ldM, double *UDU, int ldUDU,
-      int *ipivot, int *targetShiftIndex, int numConverged,
-      int *numArbitraryVecs,  double *hVecsRot, int ldhVecsRot,
-      double *previousHU, int ldpreviousHU, double *prevhSvals,
+      double *R, int ldR, double *QtV, int ldQtV, double *hU, int ldhU,
+      int newldhU, int indexOfPreviousVecsBeforeRestart, double *hVecs,
+      int ldhVecs, int newldhVecs, double *hVals, double *hSVals,
+      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
+      int numPrevRetained, int indexOfPreviousVecs, double *evecs,
+      int *evecsSize, int ldevecs, double *evecsHat, int ldevecsHat,
+      double *M, int ldM, double *UDU, int ldUDU, int *ipivot,
+      int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
+      double *hVecsRot, int ldhVecsRot, double *prevhSvals,
       int numRecentlyLocked, int rworkSize, double *rwork, int *iwork,
       double machEps, primme_params *primme);
 
@@ -70,15 +69,14 @@ static int restart_RR(double *H, int ldH, double *hVecs, int ldhVecs,
       primme_params *primme);
 
 static int restart_refined(double *V, int ldV, double *W, int ldW, double *H,
-   int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *hV,
-   int ldhV, int newldhV, double *hU, int ldhU, int newldhU, double *hU0,
-   int ldhU0, double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
-   double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-   int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
-   int numConverged, int *numArbitraryVecs, double *hVecsRot, int ldhVecsRot,
-   double *previousHU, int ldpreviousHU, double *prevhSvals,
-   int numRecentlyLocked, int rworkSize, double *rwork, int *iwork, double machEps, 
-   primme_params *primme);
+      int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR,
+      double *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
+      double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+      double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
+      int basisSize, int numPrevRetained, int indexOfPreviousVecs,
+      int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
+      double *hVecsRot, int ldhVecsRot, int numRecentlyLocked, int rworkSize,
+      double *rwork, int *iwork, double machEps, primme_params *primme);
 
 static int restart_harmonic(double *V, int ldV, double *W, int ldW, double *H,
    int ldH, double *Q, int nLocal, int ldQ, double *R, int ldR, double *QtV,
@@ -92,8 +90,7 @@ static int restart_harmonic(double *V, int ldV, double *W, int ldW, double *H,
 
 static int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, double *hU, int ldhU, double *R,
-      int ldR, int *numPrevRetained, double *hSVals, double *prevhSvals,
-      double *previousHU, int ldpreviousHU, int restartSize, double machEps,
+      int ldR, int *numPrevRetained, double *outR, int ldoutR, double machEps,
       double *rwork, int rworkSize, primme_params *primme);
 
 #endif /* RESTART_PRIVATE_H */

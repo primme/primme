@@ -184,7 +184,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
             Num_compute_residual_columns_@(pre)primme(nLocal, NULL, NULL, basisSize, NULL, 0,
                NULL, 0, NULL, primme->maxBlockSize, 0, 0, NULL, 0, NULL,
                primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
-            Num_reset_update_VWXR_@(pre)primme(NULL, NULL, 0, basisSize, 0, NULL,
+            Num_reset_update_VWXR_@(pre)primme(NULL, NULL, nLocal, basisSize, 0, NULL,
                *restartSize, 0, NULL,
                &t, 0, *restartSize+*numLocked, 0,
                &t, 0, *ievSize, 0,
@@ -239,28 +239,31 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
 
    *restartSize += numPrevRetained + *numConverged - *numLocked;
 
-   for (i=j=k=numPacked=0; i<basisSize; i++) {
+   for (i=k=numPacked=0; i<basisSize; i++) {
       if (flags[i] != UNCONVERGED
-            && (i < primme->numEvals-*numLocked
-            /* Refined and prepare_vecs may not completely order pairs        */
-            /* considering closest_leq/geq; so we find converged pairs beyond */
-            /* the first remaining pairs to converge.                         */
-               || primme->target == primme_closest_geq
-               || primme->target == primme_closest_leq
             /* Try to converge all pairs in case of overbooking               */
-                || overbooking)) {
+            && (overbooking || (
+            /* Otherwise don't check more than numEvals-numLocked             */
+                  numPacked < primme->numEvals-*numLocked
+            /* Check only the first pairs, except if finding closest_leq/geq  */
+            /* because with refined extraction the pairs may not be ordered   */
+            /* by this criterion.                                             */
+                  && (i < primme->numEvals-*numLocked
+                     || primme->target == primme_closest_geq
+                     || primme->target == primme_closest_leq)))) {
          restartPerm[left + numPacked++] = i;
       }
       else if (k < left) {
          restartPerm[k++] = i;
+      }
+      else if (!overbooking) {
+         restartPerm[min(*numConverged, primme->numEvals)-*numLocked + k++] = i;
       }
       else {
          restartPerm[*numConverged-*numLocked + k++] = i;
       }
    }
 
-   assert(numPacked == *numConverged-*numLocked || overbooking);
- 
    permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_@(pre)primme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
 
@@ -284,7 +287,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
          V, 0, *restartSize, ldV,
          *X, 0, sizeBlockNorms, ldV,
          evecs, *numLocked+primme->numOrthoConst, left,
-               !overbooking?*restartSize:left, primme->nLocal,
+               !overbooking?left+numPacked:left, primme->nLocal,
          W, 0, *restartSize, ldV,
          *R, 0, sizeBlockNorms, ldV, blockNorms,
          lockedResNorms, left, *restartSize,
@@ -301,15 +304,15 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    ret = check_convergence_@(pre)primme(&V[ldV*left],
          nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-         *restartSize, flags, lockedResNorms, hVals, &reset /*dummy*/, machEps,
+         left+numPacked, flags, lockedResNorms, hVals, &reset /*dummy*/, machEps,
          rwork, rworkSize, iwork, primme);
    if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
-   /* Copy the values for the converged pairs into evals       */
+   /* Copy the values for the converged pairs into evals             */
    /* -------------------------------------------------------------- */
 
-   for (i=left, j=0; i < *restartSize; i++) {
+   for (i=left, j=0; i < left+numPacked; i++) {
       if (flags[i] != UNCONVERGED && *numLocked+j < primme->numEvals) {
          evals[*numLocked+j++] = hVals[i];
       }
@@ -324,9 +327,9 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    /* to be locked to the ones that passed.                          */
 
    ifailed = iwork;
-   for (i=left, failed=0; i < *restartSize; i++)
+   for (i=left, failed=0; i < left+numPacked; i++)
       if (flags[i] == UNCONVERGED) ifailed[failed++] = i-left;
-   for (i=left, j=0; i < *restartSize; i++)
+   for (i=left, j=0; i < left+numPacked; i++)
       if (flags[i] != UNCONVERGED) ifailed[failed+j++] = i-left;
 
    if (1 /* Put zero to disable the new feature */) {
@@ -436,7 +439,7 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    /* those that have been copied into evecs. Also insertSort  */
    /* the converged Ritz value within the evals array.         */ 
 
-   for (i=left; i < *restartSize; i++) {
+   for (i=left; i < left+numPacked; i++) {
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
          double resNorm = lockedResNorms[i-left];
          double eval = evals[*numLocked];
