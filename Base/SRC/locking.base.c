@@ -309,12 +309,21 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
    if (ret != 0) return ret;
 
    /* -------------------------------------------------------------- */
-   /* Copy the values for the converged pairs into evals             */
+   /* Copy the values for the converged values into evals, and in    */
+   /* case of overbooking also the converged vectors into evecs.     */
    /* -------------------------------------------------------------- */
 
    for (i=left, j=0; i < left+numPacked; i++) {
       if (flags[i] != UNCONVERGED && *numLocked+j < primme->numEvals) {
+         if (overbooking) {
+            Num_copy_matrix_@(pre)primme(&V[i*nLocal], nLocal, 1, primme->nLocal,
+                  &evecs[(*numLocked+primme->numOrthoConst+j)*primme->nLocal],
+                  primme->nLocal);
+         }
          evals[*numLocked+j++] = hVals[i];
+      }
+      else {
+         flags[i] = UNCONVERGED;
       }
    }
 
@@ -443,16 +452,13 @@ int restart_locking_@(pre)primme(int *restartSize, @(type) *V, @(type) *W,
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
          double resNorm = lockedResNorms[i-left];
          double eval = evals[*numLocked];
-         if (!overbooking)
+         if (!overbooking) {
             Num_copy_matrix_@(pre)primme(
                   &evecs[(numLocked0+i-left+primme->numOrthoConst)*primme->nLocal],
                   nLocal, 1, primme->nLocal,
                   &evecs[(*numLocked+primme->numOrthoConst)*primme->nLocal],
                   primme->nLocal);
-         else
-            Num_copy_matrix_@(pre)primme(&V[i*nLocal], nLocal, 1, primme->nLocal,
-                  &evecs[(*numLocked+primme->numOrthoConst)*primme->nLocal],
-                  primme->nLocal);
+         }
          insertionSort(eval, evals, resNorm, resNorms, evecsperm,
             *numLocked, primme);
          (*numLocked)++;

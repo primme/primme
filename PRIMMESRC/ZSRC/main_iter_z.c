@@ -659,12 +659,12 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             /* restarting is a regular step that also shrinks the basis.      */
             /* -------------------------------------------------------------- */
 
-            int j,k,l;
+            int j,k,l,m;
             double *dummySmallestResNorm, dummyZero = 0.0;
 
             if (blockSize > 0) {
                availableBlockSize = blockSize;
-               /* Keep maxRecentlyConverged */
+               maxRecentlyConverged = 0;
             }
 
             /* When QR are computed and there are more than one target shift, */
@@ -707,16 +707,23 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                   &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
                   hVecsRot, primme->maxBasisSize, &reset, rwork, rworkSize, iwork,
                   primme);
+
+            /* Updated the number of converged pairs */
+
             for (i=0, numConverged=numLocked; i<basisSize; i++) {
-               if (flags[i]) {
+               if (flags[i] != UNCONVERGED && numConverged < primme->numEvals) {
                   numConverged++;
                }
             }
-            for (i=k=l=0; i<basisSize; i++) {
+
+            /* Move the converged pairs and the ones in iev at the beginning */
+
+            for (i=k=l=m=0; i<basisSize; i++) {
                int iIsInIev = 0;
                for (j=0; j<blockSize; j++)
                   if (iev[j] == i) iIsInIev = 1;
-               if (flags[i] != UNCONVERGED || iIsInIev) {
+               if ((flags[i] != UNCONVERGED && m++ < numConverged-numLocked)
+                     || iIsInIev) {
                   iwork[k++] = i;
                }
                else {
@@ -1125,13 +1132,14 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
          }
          else if (flagsBlock[i] != UNCONVERGED
                          && *recentlyConverged < numEvals
-			 && (iev[blki] < primme->numEvals-numLocked
-				 /* Refined and prepare_vecs may not completely order pairs        */
-				 /* considering closest_leq/geq; so we find converged pairs beyond */
-				 /* the first remaining pairs to converge.                         */
-				 || primme->target == primme_closest_geq
-				 || primme->target == primme_closest_leq)) {
- 
+                         && (iev[blki] < primme->numEvals-numLocked
+                            /* Refined and prepare_vecs may not completely    */
+                            /* order pairs considering closest_leq/geq; so we */
+                            /* find converged pairs beyond the first remaining*/
+                            /* pairs to converge.                             */
+                            || primme->target == primme_closest_geq
+                            || primme->target == primme_closest_leq)) {
+
             /* Write the current Ritz value in evals and the residual in resNorms;  */
             /* it will be checked by restart routine later.                         */
             /* Also print the converged eigenvalue.                                 */

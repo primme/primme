@@ -246,7 +246,8 @@ int restart_dprimme(double *V, double *W, int nLocal, int basisSize,
 
    if (basisSize + *numLocked + primme->numOrthoConst >= primme->n) {
       for (i = 0; i < basisSize; i++)
-         if (flags[i] == UNCONVERGED) { flags[i] = CONVERGED; (*numConverged)++; }
+         flags[i] = CONVERGED;
+      *numConverged = basisSize + *numLocked;
       restartSize = basisSize;
       *numPrevRetained = 0;
    }
@@ -1600,7 +1601,12 @@ static int restart_refined(double *V, int ldV, double *W, int ldW, double *H,
       }
    }
 
-   if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
+   /* When the retained coefficient vectors were orthogonalized against all   */
+   /* arbitrary vectors then R*prevhVecs is orthogonal to                     */
+   /* hU(0:indexOfPreviousVecsBeforeRestart) and that rows of R corresponding */
+   /* to the retained vectors should be zero.                                 */
+
+    if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
       /* Zero R(0:nRegular-1,nRegular:restartSize) */
       Num_zero_matrix_dprimme(&R[ldR*nRegular], nRegular, numPrevRetained,
             ldR);
@@ -1620,21 +1626,35 @@ static int restart_refined(double *V, int ldV, double *W, int ldW, double *H,
       NULL, 0, 0,
       rwork, rworkSize, primme);
 
-   /* R may lost the structure after the previous permutation, so the   */
-   /* the easiest way to recompute the projected matrices hVecs, hU and */
-   /* and hSVals is to call solve_H. For LOBPCG style, it means to      */
-   /* solve twice the projected problem, and it may be a performance    */
-   /* issue.                                                            */
-   /* TODO: solve only the columns of R corresponding to the new        */
-   /*       arbitrary vectors or the retained vectors.                  */
-   ret = solve_H_dprimme(H, restartSize, ldH, R, ldR, NULL, 0,
-         hU, newldhU, hVecs, newldhVecs, hVals, hSVals, numConverged,
-         machEps, rworkSize, rwork, iwork, primme);
+   /* ---------------------------------------------------------------------- */
+   /* R may lost the structure after the previous permutation, so the        */
+   /* the easiest way to recompute the projected matrices hVecs, hU and      */
+   /* and hSVals is to call solve_H. For LOBPCG style, it means to           */
+   /* solve twice the projected problem, and it may be a performance issue.  */
+   /*                                                                        */
+   /* TODO: solve only the columns of R corresponding to the new             */
+   /*       arbitrary vectors or the retained vectors.                       */
+   /* ---------------------------------------------------------------------- */
+
+   /* Compute the singular value decomposition of R.                         */
+   /* Notice that hVals aren't changed. They are updated as a permutation    */
+   /* over the original hVals.                                               */
+   /* NOTE: the eigenvalues of the retained pairs aren't correctly computed. */
+
+   ret = solve_H_dprimme(H, restartSize, ldH, R, ldR, NULL, 0, hU, newldhU,
+         hVecs, newldhVecs, (double*)rwork+restartSize, hSVals, numConverged,
+         machEps, rworkSize-restartSize, rwork+restartSize, iwork, primme);
    if (ret != 0) {
       primme_PushErrorMessage(Primme_restart_h, Primme_insert_submatrix, 
             ret, __FILE__, __LINE__, primme);
       return INSERT_SUBMATRIX_FAILURE;
    }
+
+   permute_vecs_dprimme(hVals, 1, restartSize, 1, hVecsPerm, (double*)rwork, iwork);
+
+   /* ---------------------------------------------------------------------- */
+   /* Permute back the columns of R                                          */
+   /* ---------------------------------------------------------------------- */
 
    /* hVecsPerm(invhVecsPerm) = 1:n */
    invhVecsPerm = iwork; iwork0 = iwork + restartSize;
@@ -1646,30 +1666,43 @@ static int restart_refined(double *V, int ldV, double *W, int ldW, double *H,
    permute_vecs_dprimme(R, restartSize, restartSize, ldR, invhVecsPerm,
          rwork, iwork0);
 
-   /* ---------------------------------------------------------------------- */
-   /* Solve the overlap matrix corresponding for the retained vectors to     */ 
-   /* compute the coefficient vectors. Update the first hSVals. Notice       */
-   /* that hVals from arbitrary vectors haven't changed.                     */
-   /* ---------------------------------------------------------------------- */
+   /* ----------------------------------------------------------------- */
+   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
+   /* the restarted basis. When the retained coefficient vectors were   */
+   /* orthogonalized against all arbitrary vectors then the new number  */
+   /* arbitrary vectors will the largest permutation in hVecsPerm.      */
+   /* Otherwise the easiest way is to consider all arbitrary vectors.   */
+   /* ----------------------------------------------------------------- */
 
-   /* hVecsRot <- hVecs' */
+   if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
+      for (i=*numArbitraryVecs=newNumArbitraryVecs; i<restartSize; i++)
+         if (hVecsPerm[i] != i) *numArbitraryVecs=i+1;
+   }
+   else {
+      *numArbitraryVecs = restartSize;
+   }
+
+   /* ----------------------------------------------------------------------- */
+   /* We want to compute hVecsRot so that it corresponds to the rotation of   */
+   /* the right singular vectors of R that produces I(:,hVecsPerm), because   */
+   /* the desired coefficient vectors were already decided in the last        */
+   /* iteration. The current hVecs is the right singular vectors of           */
+   /* R*I(:,hVecsPerm). Notice R*I(:,hVecsPerm) = hU * S * hV'*I(:,hVecsPerm).*/
+   /* Setting hVecsRot as current hVecs'=hV'*I(:,hVecsPerm) will satisfy that */
+   /* hVecs = hV * hVecsRot, with hVecs=I(:,hVecsPerm).                       */
+   /* ----------------------------------------------------------------------- */
+
+   /* hVecsRot <- hVecs' for arbitrary vectors */
+
    Num_zero_matrix_dprimme(hVecsRot, primme->maxBasisSize, primme->maxBasisSize,
          ldhVecsRot);
-   for (j=0; j < restartSize; j++) {
+   for (j=0; j < *numArbitraryVecs; j++) {
       for (i=0; i<restartSize; i++) {
          hVecsRot[ldhVecsRot*j+i] = hVecs[newldhVecs*i+j];
       }
    }
  
-   /* ----------------------------------------------------------------- */
-   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
-   /* the restarted basis.                                              */
-   /* ----------------------------------------------------------------- */
-
-   for (i=*numArbitraryVecs=newNumArbitraryVecs; i<restartSize; i++)
-      if (hVecsPerm[i] != i) *numArbitraryVecs=i+1;
-
-   /* hVecs <- I */
+   /* hVecs <- I for arbitrary vectors */
 
    Num_zero_matrix_dprimme(hVecs, restartSize, *numArbitraryVecs, newldhVecs);
    for (j=0; j < *numArbitraryVecs; j++) {
