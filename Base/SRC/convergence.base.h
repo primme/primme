@@ -31,7 +31,7 @@
 
 int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    int ldR, @(type) *evecs, int numLocked, int ldevecs, int left, int right,
-   int *flags, double *blockNorms, double *hVals, double machEps, @(type) *rwork,
-   int rworkSize, int *iwork, primme_params *primme);
+   int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
+   @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif

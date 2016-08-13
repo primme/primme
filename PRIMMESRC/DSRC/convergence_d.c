@@ -43,8 +43,7 @@
 
 /*******************************************************************************
  * Subroutine check_convergence - This procedure checks the block vectors for  
- *    convergence.  For each of the Ritz vectors that has converged, an
- *    unconverged one will be chosen to replace it. 
+ *    convergence.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -66,12 +65,16 @@
  * R              The residual vectors of the Ritz vectors in the block
  *                (this routine may remove the evecs directions in some vectors)
  * flags          Array indicating which eigenvectors have converged     
- ******************************************************************************/
+ *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * reset          flag to reset V and W in the next restart
+  ******************************************************************************/
 
 int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
    int ldR, double *evecs, int numLocked, int ldevecs, int left, int right,
-   int *flags, double *blockNorms, double *hVals, double machEps, double *rwork,
-   int rworkSize, int *iwork, primme_params *primme) {
+   int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
+   double *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;                  /* Loop variable                                      */
    int numToProject;       /* Number of vectors with potential accuracy problem  */
@@ -80,16 +83,20 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    int ret=0;
+   double targetShift;     /* target shift */
 
    /* -------------------------- */
    /* Return memory requirements */
    /* -------------------------- */
 
-   if (X == NULL) {
+   if (flags == NULL) {
       return R ? check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
          NULL, right-left, NULL, NULL, 0, NULL, 0, primme) : 0;
    }
-   
+  
+   targetShift = primme->numTargetShifts > 0 ?
+      primme->targetShifts[min(primme->initSize, primme->numTargetShifts-1)] : 0.0;
+ 
    /* -------------------------------------------- */
    /* Tolerance based on our dynamic norm estimate */
    /* -------------------------------------------- */
@@ -111,7 +118,22 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
    numToProject = 0;
    for (i=left; i < right; i++) {
        
-      primme->convTestFun(&hVals[i], &X[ldX*(i-left)], &blockNorms[i-left],
+      /* Don't trust any residual norm below estimateResidualError */
+      blockNorms[i-left] = max(blockNorms[i-left], primme->stats.estimateResidualError);
+
+      /* Refine doesn't order the pairs considering closest_leq/gep. */
+      /* Then ignore values so that value +-residual is completely   */
+      /* outside of the desired region.                              */
+
+      if ((primme->target == primme_closest_leq
+               && hVals[i]-blockNorms[i-left] > targetShift) ||
+            (primme->target == primme_closest_geq
+             && hVals[i]+blockNorms[i-left] < targetShift)) {
+         flags[i] = UNCONVERGED;
+         continue;
+      }
+
+      primme->convTestFun(&hVals[i], X?&X[ldX*(i-left)]:NULL, &blockNorms[i-left],
             &isConv, primme);
 
       if (isConv) {
@@ -134,6 +156,17 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
          }
       }
 
+      /* ----------------------------------------------------------------- */
+      /* If residual norm is around the bound of the error in the          */
+      /* residual norm, then stop converging this value and force reset    */
+      /* of V and W in the next restart.                                   */
+      /* ----------------------------------------------------------------- */
+
+      else if (blockNorms[i-left] <= primme->stats.estimateResidualError) {
+         flags[i] = CONVERGED;
+         *reset = 1;
+      }
+
       else {
          flags[i] = UNCONVERGED;
       }
@@ -142,10 +175,9 @@ int check_convergence_dprimme(double *X, int nLocal, int ldX, double *R,
 
    /* --------------------------------------------------------------- */
    /* Project the TO_BE_PROJECTED residuals and check for practical   */
-   /* convergence among them. Those practically converged evecs are   */
-   /* swapped just before the converged ones at the end of the block. */
-   /* numVacancies and recentlyConverged are also updated             */
+   /* convergence among them.                                         */
    /* --------------------------------------------------------------- */
+
    if (numToProject > 0) {
       ret = check_practical_convergence(R, nLocal, ldR, evecs,
          primme->numOrthoConst+numLocked, ldevecs, left, toProject,
@@ -236,9 +268,16 @@ static int check_practical_convergence(double *R, int nLocal, int ldR,
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
 
-      assert(blockNorms[iev[i]] >= overlaps[i]);
-
-      if (/*normDiff >= tol &&*/ normPr < normDiff*normDiff/blockNorm/2) {
+      /* ------------------------------------------------------------------ */
+      /* NOTE: previous versions than 2.0 used the next criterion instead:  */
+      /*                                                                    */
+      /* if (normDiff >= tol && normPr < tol*tol/blockNorm/2)               */
+      /*                                                                    */
+      /* Due to rounding-off errors in computing normDiff, the test         */
+      /* normDiff >= tol may fail even it is satisfied in exact arithmetic. */
+      /* ------------------------------------------------------------------ */
+      
+      if (normPr < normDiff*normDiff/blockNorm/2) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,
                " PRACTICALLY_CONVERGED %d norm(I-QQt)r %e bound %e\n",

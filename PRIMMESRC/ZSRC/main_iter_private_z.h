@@ -39,15 +39,9 @@
 #define RESTART_FAILURE           -6
 #define LOCK_VECTORS_FAILURE      -7
 
-static int retain_previous_coefficients(Complex_Z *hVecs, Complex_Z *previousHVecs, 
-   int basisSize, int *iev, int blockSize, primme_params *primme);
-
-static void check_projected_solution(int basisSize, int blockSize, double *hVals,
-      double *hSVals, int *targetShiftIndex, double machEps, primme_params *primme);
-
-static int verify_norms(Complex_Z *V, Complex_Z *W, Complex_Z *hVecs, double *hVals, 
-   int basisSize, double *resNorms, int *flag, double tol, double aNormEstimate,
-   void *rwork, int *numConverged, primme_params *primme);
+static int verify_norms(Complex_Z *V, Complex_Z *W, double *hVals, int basisSize,
+      double *resNorms, int *flags, int *converged, double machEps,
+      Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 static void print_residuals(double *ritzValues, double *blockNorms,
    int numConverged, int numLocked, int *iev, int blockSize, 

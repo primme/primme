@@ -680,7 +680,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
    read_solver_params(configFileName, outputFileName, &primme_svds->primme,
                       "primme.", primme_method, "primme.method");
    read_solver_params(configFileName, outputFileName, &primme_svds->primmeStage2,
-                      "primmeStage2.", primme_methodStage2, "primme.methodStage2");
+                      "primmeStage2.", primme_methodStage2, "primmeStage2.method");
 
    return (0);
 }

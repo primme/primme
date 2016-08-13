@@ -356,7 +356,12 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQR) {
       params->locking                             = 1;
-      params->restartingParams.maxPrevRetain      = 1;
+      if (params->projectionParams.projection == primme_proj_refined) {
+         params->restartingParams.maxPrevRetain      = 1;
+      }
+      else {
+         params->restartingParams.maxPrevRetain      = 1;
+      }
       params->correctionParams.robustShifts       = 0;
       if (params->correctionParams.maxInnerIterations == -INT_MAX) {
          params->correctionParams.maxInnerIterations = 10;
@@ -372,7 +377,12 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQMR) {
       if (params->restartingParams.maxPrevRetain < 0) {
-         params->restartingParams.maxPrevRetain   = 1;
+         if (params->projectionParams.projection == primme_proj_refined) {
+            params->restartingParams.maxPrevRetain   = 1;
+         }
+         else {
+            params->restartingParams.maxPrevRetain   = 1;
+         }
       }
       params->correctionParams.maxInnerIterations = -1;
       if (params->correctionParams.precondition) {
@@ -390,7 +400,12 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQMR_ETol) {
       if (params->restartingParams.maxPrevRetain < 0) {
-         params->restartingParams.maxPrevRetain   = 1;
+         if (params->projectionParams.projection == primme_proj_refined) {
+            params->restartingParams.maxPrevRetain   = 1;
+         }
+         else {
+            params->restartingParams.maxPrevRetain   = 1;
+         }
       }
       params->correctionParams.maxInnerIterations = -1;
       if (params->correctionParams.precondition) {
@@ -419,10 +434,19 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == LOBPCG_OrthoBasis) {
-      params->maxBasisSize                        = params->numEvals*3;
-      params->minRestartSize                      = params->numEvals;
-      params->maxBlockSize                        = params->numEvals;
-      params->restartingParams.maxPrevRetain      = params->numEvals;
+      if (params->projectionParams.projection == primme_proj_refined
+            && params->numEvals <= 1) {
+         params->maxBasisSize                        = 3;
+         params->minRestartSize                      = 1;
+         params->maxBlockSize                        = 1;
+         params->restartingParams.maxPrevRetain      = 1;
+      }
+      else {
+         params->maxBasisSize                        = params->numEvals*3;
+         params->minRestartSize                      = params->numEvals;
+         params->maxBlockSize                        = params->numEvals;
+         params->restartingParams.maxPrevRetain      = params->numEvals;
+      }
       params->restartingParams.scheme             = primme_thick;
       params->correctionParams.robustShifts       = 0;
       params->correctionParams.maxInnerIterations = 0;
@@ -430,9 +454,17 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == LOBPCG_OrthoBasis_Window) {
-      params->maxBasisSize                        = params->maxBlockSize*3;
-      params->minRestartSize                      = params->maxBlockSize;
-      params->restartingParams.maxPrevRetain      = params->maxBlockSize;
+      if (params->projectionParams.projection == primme_proj_refined
+            && params->maxBlockSize <= 1) {
+         params->maxBasisSize                        = 3;
+         params->minRestartSize                      = 1;
+         params->restartingParams.maxPrevRetain      = 1;
+      }
+      else {
+         params->maxBasisSize                        = params->maxBlockSize*3;
+         params->minRestartSize                      = params->maxBlockSize;
+         params->restartingParams.maxPrevRetain      = params->maxBlockSize;
+      }
       params->restartingParams.scheme             = primme_thick;
       params->correctionParams.robustShifts       = 0;
       params->correctionParams.maxInnerIterations = 0;
