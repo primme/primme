@@ -95,7 +95,7 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
-	$(FC) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
 all: primme_double primme_doublecomplex
 
