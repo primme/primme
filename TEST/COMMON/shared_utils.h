@@ -63,6 +63,7 @@ typedef struct driver_params {
    char saveXFileName[1024];
    double initialGuessesPert;
    char checkXFileName[1024];
+   int checkInterface;
 
    driver_mat matrixChoice;
 

@@ -33,7 +33,7 @@
 #include "shared_utils.h"
  
 int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
-                   PRIMME_NUM *evecs, double *rnorms, int *perm);
+                   PRIMME_NUM *evecs, double *rnorms, int *perm, int checkInterface);
 int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *perm,
                                     primme_params *primme);
 int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, PRIMME_NUM **Xout,

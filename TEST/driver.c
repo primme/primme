@@ -303,7 +303,7 @@ static int real_main (int argc, char *argv[]) {
 #endif
 
    if (driver.checkXFileName[0]) {
-      retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms, permutation);
+      retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms, permutation, driver.checkInterface);
    }
 
    /* --------------------------------------------------------------------- */
@@ -326,7 +326,7 @@ static int real_main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Syst Time           : %f seconds\n", st2-st1);
 #endif
 
-      for (i=0; i < primme.numEvals; i++) {
+      for (i=0; i < primme.initSize; i++) {
          fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
             evals[i], rnorms[i]); 
       }
