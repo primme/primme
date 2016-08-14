@@ -95,7 +95,7 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
-	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(FC) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
 all: primme_double primme_doublecomplex
 
@@ -109,22 +109,23 @@ ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
 endif
 
-TESTS_double = tests/test_0??
-TESTS_doublecomplex = tests/test_0?? tests/test_1??
+TESTS_double = tests/test_0?? tests/testi-*.F
+TESTS_doublecomplex = tests/test_0?? tests/test_1?? tests/testi-*.F
 TESTSsvds_double = tests/test_2??
 TESTSsvds_doublecomplex = tests/test_2??
 EXTRA =
 
 all_tests_double all_tests_doublecomplex \
-all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme%
+all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme% tests_primme_interface
 	@echo "Please wait, this could take a while...";\
 	ok="0";for i in $(TESTS$*) ; do \
 		echo "********** Test $$i $* ***********"; \
-		sed 's/sol_.../&$*/' $$i > ._test00;\
+		sed 's/sol_[^ ]*/&$*/' $$i > ._test00;\
 		echo "$(EXTRA)" >> ._test00;\
 		$(MPIRUN) ./primme$* ._test00 || ok="1"; \
 	done > tests.log 2>&1;\
 	if test $$ok -eq 0 ; then \
+		awk 'BEGIN{c=i=mv=t=0} /^Iterations/{i+=$$2;c++} /^Matvecs/{mv+=$$3} /^Wallclock/{t+=$$4} END{printf("Tests: %d Iterations: %d Matvecs: %d Time: %d s\n", c,i,mv,t)}' tests.log; \
 		echo "All tests passed!"; \
 	else\
 		cat tests.log;\
@@ -134,11 +135,11 @@ all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme%
 	fi
 
 all_tests_double_save all_tests_doublecomplex_save \
-all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: primme%
+all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: primme% tests_primme_interface
 	@echo "Please wait, this could take a while...";\
 	ok="0";for i in $(TESTS$*) ; do \
 		echo "********** Test $$i $* ***********"; \
-		sed 's/sol_.../&$*/; s/checkXFile/saveXFile/' $$i > ._test00;\
+		sed 's/sol_[^ ]*/&$*/; s/checkXFile/saveXFile/' $$i > ._test00;\
 		$(MPIRUN) ./primme$* ._test00 || ok="1"; \
 	done > tests.log 2>&1;\
 	if test $$ok -eq 0 ; then \
@@ -150,7 +151,61 @@ all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: pri
 		exit 1;\
 	fi
 
+T_methods = DEFAULT_METHOD DYNAMIC DEFAULT_MIN_TIME DEFAULT_MIN_MATVECS Arnoldi GD_plusK GD_Olsen_plusK JD_Olsen_plusK JDQR JDQMR JDQMR_ETol SUBSPACE_ITERATION LOBPCG_OrthoBasis LOBPCG_OrthoBasis_Window 
+T_sizes = 1 2 3 4 5 6 7 10 100
 
+# for target in primme_smallest primme_largest primme_closest_geq primme_closest_leq primme_closest_abs; do
+
+tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
+	@rm -f tests/testi-*; \
+	for method in $(T_methods); do \
+	for n in $(T_sizes); do \
+	for nevals in 1 2 3 4 5 6 15 100; do \
+	[ $$nevals -gt $$n ] && continue || true; \
+	for target in primme_smallest primme_largest primme_closest_abs primme_closest_geq; do \
+	case "$$target-$$n-$$nevals-$$method" in \
+		primme_closest_leq-[123]-*) continue ;; \
+		primme_closest_leq-[4567]-1-*) ;; \
+		primme_closest_leq-[4567]-*) continue ;; \
+		primme_closest_leq-10-[12]-*) ;; \
+		primme_closest_leq-10-*) continue ;; \
+		primme_closest_geq-4-4-*) continue ;; \
+		primme_closest_geq-5-5-*) continue ;; \
+		primme_closest_geq-6-6-*) continue ;; \
+		primme_closest_geq-7-7-*) continue ;; \
+		primme_closest_[gl]eq-100-*-LOBPCG*) continue ;; \
+	esac; \
+	for proj in primme_proj_RR primme_proj_refined ; do \
+		case "$$target-$$proj-$$method" in \
+			primme_closest*-primme_proj_RR-LOBPCG*) continue ;; \
+			primme_closest*-SUBSPACE*) continue ;; \
+			primme_closest*-Arnoldi*) continue ;; \
+			primme_closest*-GD*) continue ;; \
+			primme_closest*) ;; \
+			*-primme_proj_RR*) ;; \
+			*) continue ;; \
+		esac; \
+		f="tests/testi-$${n}-$${method}-$${nevals}-$${target}-$${proj}"; \
+		echo "driver.matrixFile = laplace$$n.mtx" > $$f.F; \
+		echo "driver.checkXFile = tests/sol_testi-$${n}-$${nevals}-$${target}" >> $$f.F; \
+		echo "driver.PrecChoice = noprecond" >> $$f.F; \
+		echo "primme.numEvals = $$nevals" >> $$f.F; \
+		echo "primme.eps = 1e-6" >> $$f.F; \
+		echo "primme.numTargetShifts = 1" >> $$f.F; \
+		echo "primme.targetShifts  = 0.5" >> $$f.F; \
+		echo "primme.target = $$target" >> $$f.F; \
+		echo "primme.projection.projection = $$proj" >> $$f.F; \
+		echo "primme.maxMatvecs = 50000" >> $$f.F; \
+		echo "method = $$method" >> $$f.F; \
+	done; done; done; done; done
+
+laplace%.mtx:
+	@echo "%%MatrixMarket matrix coordinate real symmetric" > $@; \
+	echo "$* $* $$((2*$*-1))" >> $@; \
+	for i in `seq 1 $*`; do \
+		echo "$$i $$i 2.0" >> $@; \
+		[  $$i -eq $* ] || echo "$$i $$((i+1)) -1.0" >> $@; \
+	done
 
 test_double: ex_dseq
 	@./ex_dseq > tests.log 2>&1 && grep -q "10 eigenpairs converged" tests.log \

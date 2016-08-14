@@ -4,6 +4,7 @@
 // ---------------------------------------------------
 driver.matrixFile    = lund_b.mtx
 driver.checkXFile    = tests/sol_203
+driver.checkInterface = 1
 driver.PrecChoice    = noprecond
 
 // ---------------------------------------------------
