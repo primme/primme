@@ -356,12 +356,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQR) {
       params->locking                             = 1;
-      if (params->projectionParams.projection == primme_proj_refined) {
-         params->restartingParams.maxPrevRetain      = 1;
-      }
-      else {
-         params->restartingParams.maxPrevRetain      = 1;
-      }
+      params->restartingParams.maxPrevRetain      = 1;
       params->correctionParams.robustShifts       = 0;
       if (params->correctionParams.maxInnerIterations == -INT_MAX) {
          params->correctionParams.maxInnerIterations = 10;
@@ -377,12 +372,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQMR) {
       if (params->restartingParams.maxPrevRetain < 0) {
-         if (params->projectionParams.projection == primme_proj_refined) {
-            params->restartingParams.maxPrevRetain   = 1;
-         }
-         else {
-            params->restartingParams.maxPrevRetain   = 1;
-         }
+         params->restartingParams.maxPrevRetain   = 1;
       }
       params->correctionParams.maxInnerIterations = -1;
       if (params->correctionParams.precondition) {
@@ -400,12 +390,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == JDQMR_ETol) {
       if (params->restartingParams.maxPrevRetain < 0) {
-         if (params->projectionParams.projection == primme_proj_refined) {
-            params->restartingParams.maxPrevRetain   = 1;
-         }
-         else {
-            params->restartingParams.maxPrevRetain   = 1;
-         }
+         params->restartingParams.maxPrevRetain   = 1;
       }
       params->correctionParams.maxInnerIterations = -1;
       if (params->correctionParams.precondition) {
@@ -434,19 +419,10 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == LOBPCG_OrthoBasis) {
-      if (params->projectionParams.projection == primme_proj_refined
-            && params->numEvals <= 1) {
-         params->maxBasisSize                        = 3;
-         params->minRestartSize                      = 1;
-         params->maxBlockSize                        = 1;
-         params->restartingParams.maxPrevRetain      = 1;
-      }
-      else {
-         params->maxBasisSize                        = params->numEvals*3;
-         params->minRestartSize                      = params->numEvals;
-         params->maxBlockSize                        = params->numEvals;
-         params->restartingParams.maxPrevRetain      = params->numEvals;
-      }
+      params->maxBasisSize                        = params->numEvals*3;
+      params->minRestartSize                      = params->numEvals;
+      params->maxBlockSize                        = params->numEvals;
+      params->restartingParams.maxPrevRetain      = params->numEvals;
       params->restartingParams.scheme             = primme_thick;
       params->correctionParams.robustShifts       = 0;
       params->correctionParams.maxInnerIterations = 0;
@@ -454,10 +430,14 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == LOBPCG_OrthoBasis_Window) {
-      if (params->projectionParams.projection == primme_proj_refined
-            && params->maxBlockSize <= 1) {
-         params->maxBasisSize                        = 3;
-         params->minRestartSize                      = 1;
+      /* Observed needing to restart with two vectors at least to converge    */
+      /* in some tests like for instance testi-10-LOBPCG_OrthoBasis_Window-3- */
+      /* primme_closest_geq-primme_proj_refined.F                             */
+      if (params->maxBlockSize == 1
+            && (params->target == primme_closest_leq
+               || params->target == primme_closest_geq)) {
+         params->maxBasisSize                        = 4;
+         params->minRestartSize                      = 2;
          params->restartingParams.maxPrevRetain      = 1;
       }
       else {
