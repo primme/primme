@@ -445,7 +445,8 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize = min(availableBlockSize, primme->n-basisSize);
+            availableBlockSize = min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst);
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {

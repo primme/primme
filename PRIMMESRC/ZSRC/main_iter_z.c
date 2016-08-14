@@ -440,7 +440,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize = min(availableBlockSize, primme->n-basisSize);
+            availableBlockSize = min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst);
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {
