@@ -166,8 +166,8 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       /* Check |A*V(:,i) - (V(:,i)'A*V(:,i))*V(:,i)| < |r| */
       for (j=0; j<primme->nLocal; j++) r[j] = Ax[j] - evals[i]*evecs[primme->nLocal*i+j];
       rnorm0 = sqrt(REAL_PART(primme_dot(r, r, primme)));
-      if (fabs(rnorms[i]-rnorm0) > 10*max(primme->aNorm,fabs(evals[i]))*MACHINE_EPSILON && primme->procID == 0) {
-         fprintf(stderr, "Warning: Eval[%d] = %-22.15E, residual | %5E - %5E | <= %5E\n", i+1, evals[i], rnorms[i], rnorm0, 4*max(primme->aNorm,fabs(evals[i]))*MACHINE_EPSILON);
+      if (fabs(rnorms[i]-rnorm0) > max(0.1*rnorm0, 10*max(primme->aNorm,fabs(evals[i]))*MACHINE_EPSILON) && primme->procID == 0) {
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E, residual %5E should be close to %5E\n", i+1, evals[i], rnorms[i], rnorm0);
          retX = 1;
       }
       if (rnorm0 > primme->eps*primme->aNorm*sqrt((double)primme->numEvals) && primme->aNorm > 0.0 && primme->procID == 0) {
