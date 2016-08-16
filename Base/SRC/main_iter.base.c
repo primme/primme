@@ -717,8 +717,17 @@ int main_iter_@(pre)primme(double *evals, int *perm, @(type) *evecs,
             /* Updated the number of converged pairs */
 
             for (i=0, numConverged=numLocked; i<basisSize; i++) {
-               if (flags[i] != UNCONVERGED && numConverged < primme->numEvals) {
+               if (flags[i] != UNCONVERGED && numConverged < primme->numEvals
+                     && (i < primme->numEvals-numLocked
+                        /* Refined and prepare_vecs may not completely    */
+                        /* order pairs considering closest_leq/geq; so we */
+                        /* find converged pairs beyond the first remaining*/
+                        /* pairs to converge.                             */
+                        || primme->target == primme_closest_geq
+                        || primme->target == primme_closest_leq)) {
+
                   numConverged++;
+
                }
             }
 
