@@ -125,7 +125,7 @@ all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme% tests_prim
 		$(MPIRUN) ./primme$* ._test00 || ok="1"; \
 	done > tests.log 2>&1;\
 	if test $$ok -eq 0 ; then \
-		awk 'BEGIN{c=i=mv=t=0} /^Iterations/{i+=$$2;c++} /^Matvecs/{mv+=$$3} /^Wallclock/{t+=$$4} END{printf("Tests: %d Iterations: %d Matvecs: %d Time: %d s\n", c,i,mv,t)}' tests.log; \
+		awk 'BEGIN{c=i=mv=t=0} /^Iterations/{i+=$$3;c++} /^Matvecs/{mv+=$$3} /^Wallclock/{t+=$$4} END{printf("Tests: %d Iterations: %d Matvecs: %d Time: %d s\n", c,i,mv,t)}' tests.log; \
 		echo "All tests passed!"; \
 	else\
 		cat tests.log;\
