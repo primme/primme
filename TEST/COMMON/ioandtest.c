@@ -397,7 +397,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       /* Check |U(:,i)'A*V(:,i) - svals[i]| < |r|*|A| */
       primme_svds->matrixMatvec(&V[primme_svds->nLocal*i], &primme_svds->nLocal, Ax, &primme_svds->mLocal, &one, &notrans, primme_svds);
       sval0 = REAL_PART(primme_svds_dot(&U[primme_svds->mLocal*i], Ax, 0, primme_svds));
-      if (fabs(svals[i] - sval0) > rnorms[i] && primme_svds->procID == 0) {
+      if (fabs(svals[i] - sval0) > max(rnorms[i], primme_svds->aNorm*primme_svds->eps) && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E should be close to %-22.15E\n", i+1, svals[i], sval0);
          retX = 1;
       }
