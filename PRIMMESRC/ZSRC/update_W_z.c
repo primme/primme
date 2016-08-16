@@ -76,7 +76,8 @@ int update_Q_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
       Complex_Z *Q, int ldQ, Complex_Z *R, int ldR, double targetShift, int basisSize,
       int blockSize, Complex_Z *rwork, int rworkSize, double machEps, primme_params *primme) {
 
-   int i, ret;
+   int i, j, ret;
+   Complex_Z tzero = {+0.0e+00,+0.0e00};             /*constants*/
 
    /* Return memory requirement */
    if (V == NULL) {
@@ -100,6 +101,13 @@ int update_Q_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
    ret = ortho_zprimme(Q, ldQ, R, ldR, basisSize, basisSize+blockSize-1, NULL,
          0, 0, nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+
+   /* Zero the lower triangular part of R */
+   for (i=basisSize; i<basisSize+blockSize; i++) {
+      for (j=i+1; j<ldR; j++) {
+         R[ldR*i+j] = tzero;
+      }
+   }
 
    return ret;
 }

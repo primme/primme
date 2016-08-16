@@ -76,7 +76,8 @@ int update_Q_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW,
       @(type) *Q, int ldQ, @(type) *R, int ldR, double targetShift, int basisSize,
       int blockSize, @(type) *rwork, int rworkSize, double machEps, primme_params *primme) {
 
-   int i, ret;
+   int i, j, ret;
+   @(type) tzero = @(tzero);             /*constants*/
 
    /* Return memory requirement */
    if (V == NULL) {
@@ -100,6 +101,13 @@ int update_Q_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW,
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
    ret = ortho_@(pre)primme(Q, ldQ, R, ldR, basisSize, basisSize+blockSize-1, NULL,
          0, 0, nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+
+   /* Zero the lower triangular part of R */
+   for (i=basisSize; i<basisSize+blockSize; i++) {
+      for (j=i+1; j<ldR; j++) {
+         R[ldR*i+j] = tzero;
+      }
+   }
 
    return ret;
 }

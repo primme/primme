@@ -23,7 +23,7 @@
  * File: ortho.c
  *
  * Purpose - Orthonormalizes a block of vectors, vector by vector, 
- *           against two bases and among themselves. Gram-Scmidt is used 
+ *           against two bases and among themselves. Gram-Schmidt is used 
  *           with reorthogonalization based on Daniel's test. 
  *           For the purpose of the test, the norm of the resulting vector 
  *           is computed without synchronizations. Because of floating point,
@@ -46,6 +46,12 @@
  *              s11/s00 = s11/s1hat(1+err) < 0.75 <=> s11/s1hat < .75*(1+err)
  *           if err is around 1e-2 it does not affect Daniels test a lot.
  *           Thus, if s0/s1 > 1.49e7, we must compute the actual s1.
+ *
+ * Note on linear dependency
+ *           If the original vector norm is reduced more than machEps times,
+ *           it is considered linear dependent. If R is not returned, the
+ *           vector is replaced by a random vector. Otherwise the vector is
+ *           zeroed.
  *
  ******************************************************************************/
 
@@ -114,19 +120,23 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
    int nOrth, reorth;
    int randomizations;
    int messages = 0;        /* messages = 1 prints the intermediate results */
-   int maxNumOrthos = 3;    /* We let 2 reorthogonalizations before randomize */
+   /* TODO: replace by a dynamic criterion when to stop orthogonalizing local */
+   /* vectors. Observed performance improvement when maxNumOrthos increases.  */
+   int maxNumOrthos = primme?3:7; /* We let 2 reorthogonalizations before randomize */
+                                  /* for nLocal length vectors, and 6 orthogonalisations */
+                                  /* for the rest */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
-   double s0=0.0, s02=0.0, s1=0.0;
+   double s0=0.0, s02=0.0, s1=0.0, s00=0.0;
    double temp;
    @(type) ztmp=@(tzero);
    @(type) *overlaps;
    @(type) tpone = @(tpone), tzero = @(tzero), tmone = @(tmone);
    FILE *outputFile;
 
-   /* messages = (primme->procID == 0 && primme->printLevel >= 5); */
-   /* outputFile = primme->outputFile; */
-   outputFile = stderr;
+   messages = (primme && primme->procID == 0 && primme->printLevel >= 3
+         && primme->outputFile);
+   outputFile = primme ? primme->outputFile : stdout;
 
    minWorkSize = 2*(numLocked + b2 + 1);
 
@@ -138,13 +148,9 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
    /*----------------------------------*/
    /* input and workspace verification */
    /*----------------------------------*/
-   assert(ldBasis > 0 && nLocal > 0 && numLocked >= 0 && rworkSize >= minWorkSize &&
+   assert(nLocal >= 0 && numLocked >= 0 && rworkSize >= minWorkSize &&
           ldBasis >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
           (R == NULL || ldR >= b2));
-
-   if (b1 > b2) {
-      return 0;
-   }
 
    tol = sqrt(2.0L)/2.0L;
 
@@ -210,8 +216,7 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
             (rwork, overlaps, &count, primme);
 
          if (R != NULL) {
-             Num_axpy_@(pre)primme(i + numLocked + 1, tpone, overlaps, 1, 
-                &R[ldR*i], 1);
+             Num_axpy_@(pre)primme(i, tpone, overlaps, 1, &R[ldR*i], 1);
          }
 
          if (numLocked > 0) { /* locked array most recently accessed */
@@ -231,7 +236,7 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
 #ifdefarithm L_DEFREAL
             s02 = overlaps[i+numLocked];
 #endifarithm
-            s0 = sqrt(s02);
+            s00 = s0 = sqrt(s02);
          }
 
          /* Compute the norm of the resulting vector implicitly */
@@ -264,13 +269,16 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
             s1 = sqrt(s1);
          }
 
-         if (s1 <= machEps*s0 && R) {
+         if (R && (s1 <= machEps*s00 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
+            if (messages) {
+               fprintf(outputFile, "Zeroing column %d\n", i);
+            }
             /* No randomization when computing the QR decomposition */
             Num_scal_@(pre)primme(nLocal, tzero, &basis[ldBasis*i], 1);
             R[ldR*i + i] = tzero;
             reorth = 0;
          }
-         else if (s1 <= machEps*s0) {
+         else if (s1 <= machEps*s00) {
             if (messages) {
                fprintf(outputFile, 
                  "Vector %d lost all significant digits in ortho\n", i-b1);
@@ -278,36 +286,33 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
             nOrth = maxNumOrthos;
          }
          else if (s1 <= tol*s0 || (!primme && nOrth < maxNumOrthos)) {
-            if (messages) {
-               fprintf(outputFile, "Reorthogonalizing: %d\n", i-b1);
-            }
             /* No numerical benefit in normalizing the vector before reortho */
             s0 = s1;
             s02 = s1*s1;
          }
          else {
             if (R != NULL) {
-                if (nOrth == 1) {
+               if (!primme || nOrth == 1) {
 #ifdefarithm L_DEFCPLX
-                    ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1,
-                                                   &basis[ldBasis*i], 1);   
-                    temp = ztmp.r;
+                  ztmp = Num_dot_zprimme(nLocal, &basis[ldBasis*i], 1,
+                        &basis[ldBasis*i], 1);   
+                  temp = ztmp.r;
 #endifarithm    
 #ifdefarithm L_DEFREAL                                 
-                    temp = Num_dot_dprimme(nLocal,&basis[ldBasis*i], 1,
-                                                  &basis[ldBasis*i],1);
+                  temp = Num_dot_dprimme(nLocal,&basis[ldBasis*i], 1,
+                        &basis[ldBasis*i],1);
 #endifarithm 
-                    count = 1;
-                    (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
-                       (&temp, &s1, &count, primme);
-                    s1 = sqrt(s1);
-                }
+                  count = 1;
+                  (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
+                     (&temp, &s1, &count, primme);
+                  s1 = sqrt(s1);
+               }
 #ifdefarithm L_DEFCPLX
-                R[ldR*i + i].r = s1;
-                R[ldR*i + i].i = 0.0L;
+               R[ldR*i + i].r = s1;
+               R[ldR*i + i].i = 0.0L;
 #endifarithm
 #ifdefarithm L_DEFREAL
-                R[ldR*i + i] = s1;
+               R[ldR*i + i] = s1;
 #endifarithm
             }
 
@@ -323,7 +328,40 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
  
       }
    }
- 
+
+   /* Check orthogonality */
+   /*
+   if (numLocked) {
+      @(type) *H = (@(type)*)malloc(sizeof(@(type))*numLocked*numLocked);
+      Num_gemm_@(pre)primme("C", "N", numLocked, numLocked, nLocal, tpone, locked,
+            ldLocked, locked, ldLocked, tzero, H, numLocked);
+      for(i=0; i < numLocked; i++) {
+         for(j=0; j < i; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+         assert(fabs(1 - *(double*)&H[numLocked*i+i]) < 1e-13);
+      }
+      free(H);
+   }
+   if (b2+1) {
+      @(type) *H = (@(type)*)malloc(sizeof(@(type))*(b2+1)*(b2+1));
+      Num_gemm_@(pre)primme("C", "N", b2+1, b2+1, nLocal, tpone, basis,
+            ldBasis, basis, ldBasis, tzero, H, b2+1);
+      for(i=0; i < b2+1; i++) {
+         for(j=0; j < i; j++) assert(fabs(*(double*)&H[(b2+1)*i+j]) < 1e-13);
+         assert(*(double*)&H[(b2+1)*i+i] == 0.0 || fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
+      }
+      free(H);
+   }
+   if (numLocked) {
+      @(type) *H = (@(type)*)malloc(sizeof(@(type))*(b2+1)*numLocked);
+      Num_gemm_@(pre)primme("C", "N", numLocked, b2+1, nLocal, tpone, locked,
+            ldLocked, basis, ldBasis, tzero, H, numLocked);
+      for(i=0; i < b2+1; i++) {
+         for(j=0; j < numLocked; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+      }
+      free(H);
+   }
+   */
+
    return 0;
 }
 
@@ -387,7 +425,7 @@ int ortho_single_iteration_@(pre)primme(@(type) *Q, int mQ, int nQ, int ldQ, @(t
       for (i=0; i<nQ*nX; i++)
          y[i] = tzero;
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
-         Num_copy_matrix_i_@(pre)primme(&X[i], m, inX, nX, ldX, X0, NULL, m);
+         Num_copy_matrix_columns_@(pre)primme(&X[i], m, inX, nX, ldX, X0, NULL, m);
          Num_gemm_@(pre)primme("C", "N", nQ, nX, m, tpone, &Q[i], ldQ, X0, m, tpone,
                y, nQ);
       }
@@ -409,7 +447,7 @@ int ortho_single_iteration_@(pre)primme(@(type) *Q, int mQ, int nQ, int ldQ, @(t
       Num_gemm_@(pre)primme("N", "N", m, nX, nQ, tmone, &Q[i], ldQ, y0, nQ, tpone,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
-         Num_copy_matrix_i_@(pre)primme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
+         Num_copy_matrix_columns_@(pre)primme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
       }
       if (norms) for (j=0; j<nX; j++) {
          @(type) *v = inX ? &X0[j*m] : &X[j*ldX+i];

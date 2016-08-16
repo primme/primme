@@ -45,6 +45,9 @@ void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
    ZCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
@@ -60,6 +63,14 @@ void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int 
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
+   /* Quick exit */
+   if (k == 0) {
+      Num_zero_matrix_zprimme(c, m, n, ldc);
+      return;
+   }
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -85,6 +96,9 @@ void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, Complex_
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
 
@@ -106,6 +120,9 @@ void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 
 }
@@ -121,6 +138,8 @@ void Num_symv_zprimme(const char *uplo, int n, Complex_Z alpha,
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    ZHEMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 
@@ -133,6 +152,9 @@ void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    ZAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 
@@ -169,18 +191,23 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
 }
 
 /******************************************************************************
- * Function Num_compute_residual_i - This subroutine performs the next operations
- *    in a cache-friendly way:
+ * Function Num_compute_residual_columns - This subroutine performs the next
+ *    operations in a cache-friendly way:
  *
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
  *    for i=0:nd-1
- *       if pd(i) == j
+ *       if pd(i) == j+io0
  *          XD = [XD XO(j)]; RD = [RD RO(j)]; j++
  *       else
  *          XD = [XD X(p(k)]; RD = [RD AX(p(k)) - evals(p(k))*X(p(k))]; k++
  *       end if
  *    end for
+ *
+ *           n        nd             no
+ * X:  [-----|-------------]           (input/output)
+ * XO:                      [--------| (input)
+ * XD:       [--------|                (output)
  *
  * NOTE: X and XD *can* overlap, but X(0:n-1) and XD *cannot* overlap (same for R and RD)
  *       XO and XD *can* overlap (same for RO and RD)
@@ -200,6 +227,7 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
  * xo          Alternative source of columns for xd
  * no          The number of columns in xo
  * ldxo        The leading dimension of xo
+ * io0         The index of the first column in xo
  * ro          Alternative source of columns for rd
  * ldro        The leading dimension of ro
  * xd          The matrix that will have columns from x and xo
@@ -213,9 +241,9 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
  *
  ******************************************************************************/
 
-int Num_compute_residual_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p, 
+int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int n, int *p, 
    int ldx, Complex_Z *Ax, int ldAx,
-   Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
+   Complex_Z *xo, int no, int ldxo, int io0, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
    Complex_Z *rwork, int lrwork) {
 
@@ -242,7 +270,7 @@ int Num_compute_residual_i_zprimme(int m, double *evals, Complex_Z *x, int n, in
 
    for (k=0; k<m; k+=M, M=min(M,m-k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
-         if (id < nd && io < no && pd[id] == io) {
+         if (id < nd && io < no && pd[id] == io+io0) {
             Num_copy_matrix_zprimme(&xo[io*ldxo+k], M, 1, ldxo, &X0[id*M], M);
             Num_copy_matrix_zprimme(&ro[io*ldro+k], M, 1, ldro, &R0[id*M], M);
             io++;
@@ -275,6 +303,9 @@ void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
@@ -328,6 +359,9 @@ void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x) {
    PRIMME_BLASINT *liseed = temp;
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (length == 0) return;
+
    if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
       liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
    } else {
@@ -350,6 +384,9 @@ void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
    ZSCAL(&ln, &alpha, x, &lincx);
 
 }
@@ -360,6 +397,9 @@ void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    ZSWAP(&ln, x, &lincx, y, &lincy);
 
@@ -392,6 +432,9 @@ void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, 
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -426,6 +469,9 @@ void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, Compl
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
           &lldwork, rwork, &linfo);
 
@@ -443,6 +489,9 @@ void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau,
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZGEQRF
       (&lm, &ln, a, &llda, tau, rwork, &llrwork, &linfo);
 
@@ -458,6 +507,9 @@ void Num_orgqr_zprimme(int m, int n, int k, Complex_Z *a, int lda, Complex_Z *ta
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0 || k == 0) return;
 
    ZUNGQR(&lm, &ln, &lk, a, &llda, tau, rwork, &llrwork, &linfo);
 
@@ -476,6 +528,9 @@ void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipi
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
@@ -516,6 +571,9 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
    PRIMME_BLASINT linfo = 0; 
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0 || nrhs == 0) return;
+
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
    } else {
@@ -550,6 +608,9 @@ void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, co
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 
 }
@@ -573,7 +634,7 @@ void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, co
 void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy) {
    int i,j;
 
-   assert(ldx >= m && ldy >= m);
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
    if (x == y && ldx == ldy) return;
@@ -583,20 +644,20 @@ void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, 
       memmove(y, x, sizeof(Complex_Z)*m*n);
    }
 
-   /* Copy matrix some rows down or up */
+   /* Copy the matrix some rows back or forward */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
          memmove(&y[i*ldy], &x[i*ldx], sizeof(Complex_Z)*m);
    }
 
-   /* Copy matrix some columns forward */
+   /* Copy the matrix some columns forward */
    else if (ldx == ldy && y > x && y-x > ldx) {
       for (i=n-1; i>=0; i--)
          for (j=0; j<m; j++)
             y[i*ldy+j] = x[i*ldx+j];
    }
 
-   /* Copy matrix some columns backward and the general case */
+   /* Copy the matrix some columns backward, and other cases */
    else {
       /* TODO: assert x and y don't overlap */
       for (i=0; i<n; i++)
@@ -607,7 +668,7 @@ void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, 
 }
 
 /******************************************************************************
- * Function Num_copy_matrix_i - Copy the matrix x(xin) into y(yin)
+ * Function Num_copy_matrix_columns - Copy the matrix x(xin) into y(yin)
  *
  * PARAMETERS
  * ---------------------------
@@ -624,7 +685,7 @@ void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, 
  *
  ******************************************************************************/
 
-void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
+void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
       int *yin, int ldy) {
 
    int i,j;
@@ -633,6 +694,28 @@ void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Co
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
          y[(yin?yin[i]:i)*ldy+j] = x[(xin?xin[i]:i)*ldx+j];
+}
+
+/******************************************************************************
+ * Function Num_zero_matrix - Zero the matrix
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ *
+ ******************************************************************************/
+
+void Num_zero_matrix_zprimme(Complex_Z *x, int m, int n, int ldx) {
+
+   int i,j;
+   Complex_Z tzero = {+0.0e+00,+0.0e00};             /*constants*/
+
+   for (i=0; i<n; i++)
+      for (j=0; j<m; j++)
+         x[i*ldx+j] = tzero;
 } 
 
 
@@ -711,7 +794,7 @@ void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
 
 
 /******************************************************************************
- * Function Num_copy_trimatrix - Copy the upper triangular part of the matrix x
+ * Function Num_copy_trimatrix_compact - Copy the upper triangular part of the matrix x
  *    into y contiguously, i.e., y has all columns of x row-stacked
  *
  * PARAMETERS
@@ -740,7 +823,7 @@ void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int
 }
 
 /******************************************************************************
- * Function Num_copy_trimatrix - Copy y into the upper triangular part of the
+ * Function Num_copy_compact_trimatrix - Copy y into the upper triangular part of the
  *    matrix x
  *
  * PARAMETERS
@@ -840,7 +923,7 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    nYb = min(min(Wo?nWob:INT_MAX, R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
    nYe = max(max(Wo?nWoe:0, R?nRe:0), rnorms?nre:0);
 
-   assert((nXe-nXb+nYe-nYb)*nV <= lrwork); /* Check workspace for X and Y */
+   assert((nXe-nXb+nYe-nYb)*m <= lrwork); /* Check workspace for X and Y */
    assert(2*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
    X = rwork;
@@ -876,7 +959,7 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
             ldY, &Wo[i], ldWo);
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
-      for (j=nRb; j<nRe; j++) {
+      if (R) for (j=nRb; j<nRe; j++) {
          Num_compute_residual_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
@@ -898,19 +981,19 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
-   if (primme->globalSumDouble) {
+   if (primme->numProcs > 1) {
       tmp = (double*)rwork;
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       tmp0 = tmp+j;
       if (j) primme->globalSumDouble(tmp, tmp0, &j, primme);
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
    }
    else {
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
    }
 
@@ -943,7 +1026,20 @@ void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
    int tempIndex;        /* Used to swap                                      */
    int *perm=iwork;      /* A copy of perm_                                   */
 
+   /* Check that perm_ and iwork do not overlap */
+
    assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
+
+   /* Check perm_ is a permutation */
+
+#ifndef NDEBUG
+   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
+   for (tempIndex=0; tempIndex<n; tempIndex++) {
+      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
+      perm[perm_[tempIndex]] = 1;
+   }
+   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+#endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
@@ -1032,4 +1128,55 @@ Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *
       Num_copy_matrix_zprimme(&vecs[perm[i]*ld], m, 1, ld, &work[i*ldwork], ld);
    }
    return work;
+}
+
+/*******************************************************************************
+ * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
+ *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
+ *    
+ * Input parameters
+ * ----------------
+ * X        The coefficient vectors retained from the previous iteration
+ *
+ * nX       Number of columns of X
+ *
+ * H        Matrix
+ *
+ * nH       Dimension of H
+ *
+ * ldH      Leading dimension of H
+ *
+ * rwork    Work array.  Must be of size nH x nX
+ *
+ * lrwork   Length of the work array
+ *
+ * ldR      Leading dimension of R
+ *
+ * Output parameters
+ * -----------------
+ * R - nX x nX matrix computed 
+ *
+ ******************************************************************************/
+
+int compute_submatrix_zprimme(Complex_Z *X, int nX, int ldX, 
+   Complex_Z *H, int nH, int ldH, Complex_Z *R, int ldR,
+   Complex_Z *rwork, int lrwork) {
+
+   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
+
+   /* Return memory requirement */
+   if (X == NULL) {
+      return nH*nX;
+   }
+
+   if (nH == 0 || nX == 0) return 0;
+
+   assert(lrwork >= nH*nX);
+
+   Num_symm_zprimme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
+   
+   Num_gemm_zprimme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
+      ldR);
+
+   return 0;
 }

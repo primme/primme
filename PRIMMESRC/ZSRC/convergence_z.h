@@ -31,7 +31,7 @@
 
 int check_convergence_zprimme(Complex_Z *X, int nLocal, int ldX, Complex_Z *R,
    int ldR, Complex_Z *evecs, int numLocked, int ldevecs, int left, int right,
-   int *flags, double *blockNorms, double *hVals, double machEps, Complex_Z *rwork,
-   int rworkSize, int *iwork, primme_params *primme);
+   int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
+   Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif

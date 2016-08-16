@@ -47,6 +47,9 @@ void Num_@(pre)copy_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int in
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
 #ifdefarithm L_DEFCPLX
    ZCOPY(&ln, x, &lincx, y, &lincy);
 #endifarithm
@@ -67,6 +70,14 @@ void Num_gemm_@(pre)primme(const char *transa, const char *transb, int m, int n,
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
+   /* Quick exit */
+   if (k == 0) {
+      Num_zero_matrix_@(pre)primme(c, m, n, ldc);
+      return;
+   }
 
 #ifdef NUM_CRAY
    _fcd transa_fcd, transb_fcd;
@@ -103,6 +114,9 @@ void Num_symm_@(pre)primme(const char *side, const char *uplo, int m, int n, @(t
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT lldc = ldc;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd side_fcd, uplo_fcd;
 
@@ -134,6 +148,9 @@ void Num_trmm_@(pre)primme(const char *side, const char *uplo, const char *trans
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdefarithm L_DEFCPLX
    ZTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 #endifarithm
@@ -154,6 +171,8 @@ void Num_symv_@(pre)primme(const char *uplo, int n, @(type) alpha,
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
 #ifdefarithm L_DEFCPLX
    ZHEMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
@@ -171,6 +190,9 @@ void Num_axpy_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
 #ifdefarithm L_DEFCPLX
    ZAXPY(&ln, &alpha, x, &lincx, y, &lincy);
@@ -212,18 +234,23 @@ void Num_compute_residual_@(pre)primme(int n, double eval, @(type) *x,
 }
 
 /******************************************************************************
- * Function Num_compute_residual_i - This subroutine performs the next operations
- *    in a cache-friendly way:
+ * Function Num_compute_residual_columns - This subroutine performs the next
+ *    operations in a cache-friendly way:
  *
  *    X = X(p); Ax = Ax(p)
  *    j = k = 0; XD = RD = []
  *    for i=0:nd-1
- *       if pd(i) == j
+ *       if pd(i) == j+io0
  *          XD = [XD XO(j)]; RD = [RD RO(j)]; j++
  *       else
  *          XD = [XD X(p(k)]; RD = [RD AX(p(k)) - evals(p(k))*X(p(k))]; k++
  *       end if
  *    end for
+ *
+ *           n        nd             no
+ * X:  [-----|-------------]           (input/output)
+ * XO:                      [--------| (input)
+ * XD:       [--------|                (output)
  *
  * NOTE: X and XD *can* overlap, but X(0:n-1) and XD *cannot* overlap (same for R and RD)
  *       XO and XD *can* overlap (same for RO and RD)
@@ -243,6 +270,7 @@ void Num_compute_residual_@(pre)primme(int n, double eval, @(type) *x,
  * xo          Alternative source of columns for xd
  * no          The number of columns in xo
  * ldxo        The leading dimension of xo
+ * io0         The index of the first column in xo
  * ro          Alternative source of columns for rd
  * ldro        The leading dimension of ro
  * xd          The matrix that will have columns from x and xo
@@ -256,9 +284,9 @@ void Num_compute_residual_@(pre)primme(int n, double eval, @(type) *x,
  *
  ******************************************************************************/
 
-int Num_compute_residual_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p, 
+int Num_compute_residual_columns_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p, 
    int ldx, @(type) *Ax, int ldAx,
-   @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
+   @(type) *xo, int no, int ldxo, int io0, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,
    @(type) *rwork, int lrwork) {
 
@@ -285,7 +313,7 @@ int Num_compute_residual_i_@(pre)primme(int m, double *evals, @(type) *x, int n,
 
    for (k=0; k<m; k+=M, M=min(M,m-k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
-         if (id < nd && io < no && pd[id] == io) {
+         if (id < nd && io < no && pd[id] == io+io0) {
             Num_copy_matrix_@(pre)primme(&xo[io*ldxo+k], M, 1, ldxo, &X0[id*M], M);
             Num_copy_matrix_@(pre)primme(&ro[io*ldro+k], M, 1, ldro, &R0[id*M], M);
             io++;
@@ -318,6 +346,9 @@ void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(ty
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
 
 #ifdef NUM_CRAY
    _fcd transa_fcd;
@@ -376,6 +407,9 @@ void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(ty
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0.0;
+
    return(DDOT(&ln, x, &lincx, y, &lincy));
 #endifarithm
 
@@ -389,6 +423,9 @@ void Num_larnv_@(pre)primme(int idist, int *iseed, int length, @(type) *x) {
    PRIMME_BLASINT temp[4];
    PRIMME_BLASINT *liseed = temp;
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (length == 0) return;
 
    if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
       liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
@@ -417,6 +454,9 @@ void Num_scal_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
 #ifdefarithm L_DEFCPLX
    ZSCAL(&ln, &alpha, x, &lincx);
 #endifarithm
@@ -432,6 +472,9 @@ void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy) {
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
 #ifdefarithm L_DEFCPLX
    ZSWAP(&ln, x, &lincx, y, &lincy);
@@ -483,6 +526,9 @@ void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
  
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
 
@@ -509,6 +555,9 @@ void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, 
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -544,6 +593,9 @@ void Num_dgesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, doubl
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    DGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
           &lldwork, &linfo);
 
@@ -565,6 +617,9 @@ void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, @(typ
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
    ZGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
           &lldwork, rwork, &linfo);
 
@@ -582,6 +637,9 @@ void Num_geqrf_@(pre)primme(int m, int n, @(type) *a, int lda, @(type) *tau,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
 
 #ifdefarithm L_DEFCPLX
    ZGEQRF
@@ -603,6 +661,9 @@ void Num_orgqr_@(pre)primme(int m, int n, int k, @(type) *a, int lda, @(type) *t
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT llrwork = lrwork;
    PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0 || k == 0) return;
 
 #ifdefarithm L_DEFREAL
    DORGQR(&lm, &ln, &lk, a, &llda, tau, rwork, &llrwork, &linfo);
@@ -626,6 +687,9 @@ void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
@@ -665,6 +729,9 @@ void Num_zhetrf_zprimme(const char *uplo, int n, @(type) *a, int lda, int *ipivo
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
@@ -706,6 +773,9 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
    PRIMME_BLASINT linfo = 0; 
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0 || nrhs == 0) return;
+
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
    } else {
@@ -745,6 +815,9 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, @(type) *a, int lda,
    PRIMME_BLASINT linfo = 0; 
    int i;
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0 || nrhs == 0) return;
+
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       lipivot = (PRIMME_BLASINT *)primme_calloc(n, sizeof(PRIMME_BLASINT), "lipivot array");
    } else {
@@ -780,6 +853,9 @@ void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *trans
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldb = ldb;
 
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return;
+
 #ifdefarithm L_DEFREAL
    DTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 #endifarithm
@@ -808,7 +884,7 @@ void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *trans
 void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy) {
    int i,j;
 
-   assert(ldx >= m && ldy >= m);
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
    if (x == y && ldx == ldy) return;
@@ -818,20 +894,20 @@ void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y,
       memmove(y, x, sizeof(@(type))*m*n);
    }
 
-   /* Copy matrix some rows down or up */
+   /* Copy the matrix some rows back or forward */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
          memmove(&y[i*ldy], &x[i*ldx], sizeof(@(type))*m);
    }
 
-   /* Copy matrix some columns forward */
+   /* Copy the matrix some columns forward */
    else if (ldx == ldy && y > x && y-x > ldx) {
       for (i=n-1; i>=0; i--)
          for (j=0; j<m; j++)
             y[i*ldy+j] = x[i*ldx+j];
    }
 
-   /* Copy matrix some columns backward and the general case */
+   /* Copy the matrix some columns backward, and other cases */
    else {
       /* TODO: assert x and y don't overlap */
       for (i=0; i<n; i++)
@@ -842,7 +918,7 @@ void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y,
 }
 
 /******************************************************************************
- * Function Num_copy_matrix_i - Copy the matrix x(xin) into y(yin)
+ * Function Num_copy_matrix_columns - Copy the matrix x(xin) into y(yin)
  *
  * PARAMETERS
  * ---------------------------
@@ -859,7 +935,7 @@ void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y,
  *
  ******************************************************************************/
 
-void Num_copy_matrix_i_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
+void Num_copy_matrix_columns_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
       int *yin, int ldy) {
 
    int i,j;
@@ -868,6 +944,28 @@ void Num_copy_matrix_i_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx,
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
          y[(yin?yin[i]:i)*ldy+j] = x[(xin?xin[i]:i)*ldx+j];
+}
+
+/******************************************************************************
+ * Function Num_zero_matrix - Zero the matrix
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ *
+ ******************************************************************************/
+
+void Num_zero_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx) {
+
+   int i,j;
+   @(type) tzero = @(tzero);             /*constants*/
+
+   for (i=0; i<n; i++)
+      for (j=0; j<m; j++)
+         x[i*ldx+j] = tzero;
 } 
 
 
@@ -946,7 +1044,7 @@ void Num_copy_trimatrix_@(pre)primme(@(type) *x, int m, int n, int ldx, int ul,
 
 
 /******************************************************************************
- * Function Num_copy_trimatrix - Copy the upper triangular part of the matrix x
+ * Function Num_copy_trimatrix_compact - Copy the upper triangular part of the matrix x
  *    into y contiguously, i.e., y has all columns of x row-stacked
  *
  * PARAMETERS
@@ -975,7 +1073,7 @@ void Num_copy_trimatrix_compact_@(pre)primme(@(type) *x, int m, int n, int ldx, 
 }
 
 /******************************************************************************
- * Function Num_copy_trimatrix - Copy y into the upper triangular part of the
+ * Function Num_copy_compact_trimatrix - Copy y into the upper triangular part of the
  *    matrix x
  *
  * PARAMETERS
@@ -1075,7 +1173,7 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
    nYb = min(min(Wo?nWob:INT_MAX, R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
    nYe = max(max(Wo?nWoe:0, R?nRe:0), rnorms?nre:0);
 
-   assert((nXe-nXb+nYe-nYb)*nV <= lrwork); /* Check workspace for X and Y */
+   assert((nXe-nXb+nYe-nYb)*m <= lrwork); /* Check workspace for X and Y */
    assert(2*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
    X = rwork;
@@ -1111,7 +1209,7 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
             ldY, &Wo[i], ldWo);
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
-      for (j=nRb; j<nRe; j++) {
+      if (R) for (j=nRb; j<nRe; j++) {
          Num_compute_residual_@(pre)primme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
@@ -1133,19 +1231,19 @@ int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
-   if (primme->globalSumDouble) {
+   if (primme->numProcs > 1) {
       tmp = (double*)rwork;
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       tmp0 = tmp+j;
       if (j) primme->globalSumDouble(tmp, tmp0, &j, primme);
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
    }
    else {
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
    }
 
@@ -1178,7 +1276,20 @@ void permute_vecs_@(pre)primme(@(type) *vecs, int m, int n, int ld, int *perm_,
    int tempIndex;        /* Used to swap                                      */
    int *perm=iwork;      /* A copy of perm_                                   */
 
+   /* Check that perm_ and iwork do not overlap */
+
    assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
+
+   /* Check perm_ is a permutation */
+
+#ifndef NDEBUG
+   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
+   for (tempIndex=0; tempIndex<n; tempIndex++) {
+      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
+      perm[perm_[tempIndex]] = 1;
+   }
+   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+#endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
@@ -1239,7 +1350,20 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
    int *perm=iwork;      /* A copy of perm_                                   */
    int aux;
 
+   /* Check that perm_ and iwork do not overlap */
+
    assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
+
+   /* Check perm_ is a permutation */
+
+#ifndef NDEBUG
+   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
+   for (tempIndex=0; tempIndex<n; tempIndex++) {
+      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
+      perm[perm_[tempIndex]] = 1;
+   }
+   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+#endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
@@ -1327,4 +1451,55 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
       Num_copy_matrix_@(pre)primme(&vecs[perm[i]*ld], m, 1, ld, &work[i*ldwork], ld);
    }
    return work;
+}
+
+/*******************************************************************************
+ * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
+ *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
+ *    
+ * Input parameters
+ * ----------------
+ * X        The coefficient vectors retained from the previous iteration
+ *
+ * nX       Number of columns of X
+ *
+ * H        Matrix
+ *
+ * nH       Dimension of H
+ *
+ * ldH      Leading dimension of H
+ *
+ * rwork    Work array.  Must be of size nH x nX
+ *
+ * lrwork   Length of the work array
+ *
+ * ldR      Leading dimension of R
+ *
+ * Output parameters
+ * -----------------
+ * R - nX x nX matrix computed 
+ *
+ ******************************************************************************/
+
+int compute_submatrix_@(pre)primme(@(type) *X, int nX, int ldX, 
+   @(type) *H, int nH, int ldH, @(type) *R, int ldR,
+   @(type) *rwork, int lrwork) {
+
+   @(type) tpone = @(tpone), tzero = @(tzero);
+
+   /* Return memory requirement */
+   if (X == NULL) {
+      return nH*nX;
+   }
+
+   if (nH == 0 || nX == 0) return 0;
+
+   assert(lrwork >= nH*nX);
+
+   Num_symm_@(pre)primme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
+   
+   Num_gemm_@(pre)primme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
+      ldR);
+
+   return 0;
 }

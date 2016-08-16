@@ -91,6 +91,7 @@ void Num_larnv_@(pre)primme(int idist, int *iseed, int length, @(type) *x);
 void Num_scal_@(pre)primme(int n, @(type) alpha, @(type) *x, int incx);
 void Num_swap_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
 void Num_copy_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx, @(type) *y, int ldy);
+void Num_zero_matrix_@(pre)primme(@(type) *x, int m, int n, int ldx);
 void Num_copy_trimatrix_@(pre)primme(@(type) *x, int m, int n, int ldx, int ul, int i0, @(type) *y, int ldy, int zero);
 void Num_geqrf_@(pre)primme(int m, int n, @(type) *a, int lda, @(type) *tau, @(type) *rwork, int lrwork, int *info);
 int Num_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
@@ -118,11 +119,15 @@ double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
 #endifarithm
 void Num_copy_compact_trimatrix_@(pre)primme(@(type) *x, int m, int n, int i0, @(type) *y, int ldy);
 void Num_copy_trimatrix_compact_@(pre)primme(@(type) *x, int m, int n, int ldx, int i0, @(type) *y, int *ly);
-void Num_copy_matrix_i_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
+void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy);
-int Num_compute_residual_i_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
+#ifdefarithm L_DEFCPLX
+void Num_copy_matrix_columns_@(pre)primme(@(type) *x, int m, int *xin, int n, int ldx, @(type) *y,
+      int *yin, int ldy);
+#endifarithm
+int Num_compute_residual_columns_@(pre)primme(int m, double *evals, @(type) *x, int n, int *p,
    int ldx, @(type) *Ax, int ldAx,
-   @(type) *xo, int no, int ldxo, @(type) *ro, int ldro,
+   @(type) *xo, int no, int ldxo, int io0, @(type) *ro, int ldro,
    @(type) *xd, int nd, int *pd, int ldxd, @(type) *rd, int ldrd,
    @(type) *rwork, int lrwork);
 void Num_trmm_@(pre)primme(const char *side, const char *uplo, const char *transa,
@@ -130,6 +135,9 @@ void Num_trmm_@(pre)primme(const char *side, const char *uplo, const char *trans
    int ldb);
 void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *transa, const char *diag,
       int m, int n, @(type) alpha, @(type) *a, int lda, @(type) *b, int ldb);
+int compute_submatrix_@(pre)primme(@(type) *X, int nX, int ldX, 
+   @(type) *H, int nH, int ldH, @(type) *R, int ldR,
+   @(type) *rwork, int lrwork);
 
 #define PRIMME_BLOCK_SIZE 512
 

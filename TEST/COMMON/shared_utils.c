@@ -240,7 +240,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
       }
       else {
          fprintf(stderr, 
-            "ERROR(read_solver_params): Invalid operator on %d\n", line);
+            "ERROR(read_solver_params): Invalid operator on line %d\n", line);
          return(-1);
       }
 
@@ -337,6 +337,9 @@ int read_driver_params(char *configFileName, driver_params *driver) {
          }
          else if (strcmp(ident, "driver.checkXFile") == 0) {
             ret = fscanf(configFile, "%s", driver->checkXFileName);
+         }
+         else if (strcmp(ident, "driver.checkInterface") == 0) {
+            ret = fscanf(configFile, "%d", &driver->checkInterface);
          }
          else if (strcmp(ident, "driver.matrixChoice") == 0) {
             ret = fscanf(configFile, "%s", stringValue);
@@ -451,6 +454,7 @@ fprintf(outputFile, "driver.initialGuessesFile = %s\n", driver.initialGuessesFil
 fprintf(outputFile, "driver.initialGuessesPert = %e\n", driver.initialGuessesPert);
 fprintf(outputFile, "driver.saveXFile     = %s\n", driver.saveXFileName);
 fprintf(outputFile, "driver.checkXFile    = %s\n", driver.checkXFileName);
+fprintf(outputFile, "driver.checkInterface = %d\n", driver.checkInterface);
 fprintf(outputFile, "driver.PrecChoice    = %s\n", strPrecChoice[driver.PrecChoice]);
 fprintf(outputFile, "driver.shift         = %e\n", driver.shift);
 fprintf(outputFile, "driver.isymm         = %d\n", driver.isymm);
@@ -680,7 +684,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
    read_solver_params(configFileName, outputFileName, &primme_svds->primme,
                       "primme.", primme_method, "primme.method");
    read_solver_params(configFileName, outputFileName, &primme_svds->primmeStage2,
-                      "primmeStage2.", primme_methodStage2, "primme.methodStage2");
+                      "primmeStage2.", primme_methodStage2, "primmeStage2.method");
 
    return (0);
 }
