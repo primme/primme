@@ -35,9 +35,9 @@ from scipy.sparse import *
 a = np.ones(10)
 A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 
-class PP(Primme.primme_params_w):
+class PP(Primme.PrimmeParams):
 	def __init__(self):
-		Primme.primme_params_w.__init__(self)
+		Primme.PrimmeParams.__init__(self)
 	def matvec(self, X):
 		return A*X
 pp = PP()
@@ -55,16 +55,16 @@ norms = np.zeros(pp.numEvals)
 print Primme.dprimme(evals, evecs, norms, pp)
 print pp.initSize, evals, norms
 
-class PPs(Primme.primme_params_w):
+class PPc(Primme.PrimmeParams):
 	def __init__(self, matrix=None):
-		Primme.primme_params_w.__init__(self)
+		Primme.PrimmeParams.__init__(self)
 		self.mymatrix = matrix
 	def matvec(self, X):
 		return self.mymatrix*X
 
 a = np.ones(10, complex)
 A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
-pp = PPs(A)
+pp = PPc(A)
 pp.n = A.shape[0]
 #pp.maxBasisSize = 3
 #pp.minRestartSize = 1
@@ -76,3 +76,63 @@ evecs = np.zeros((pp.n, pp.numEvals), complex)
 norms = np.zeros(pp.numEvals)
 print Primme.zprimme(evals, evecs, norms, pp)
 print pp.initSize, evals, norms, pp.stats.numMatvecs
+
+a = np.ones(10)
+A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+
+class PSP(Primme.PrimmeSvdsParams):
+	def __init__(self):
+		Primme.PrimmeSvdsParams.__init__(self)
+		self._At = A.T
+	def matvec(self, X, transpose):
+		if not transpose:
+			return A*X
+		else:
+			return self._At*X
+pp = PSP()
+pp.m = A.shape[0]
+pp.n = A.shape[1]
+#pp.maxBasisSize = 3
+#pp.minRestartSize = 1
+pp.numSvals = 3
+pp.printLevel = 3
+pp.eps = 1e-6
+pp.target = Primme.primme_svds_largest
+
+pp.set_method(Primme.primme_svds_default, Primme.DEFAULT_METHOD, Primme.DEFAULT_METHOD)
+pp.display()
+svals = np.zeros(pp.numSvals)
+svecsl = np.zeros((pp.m, pp.numSvals))
+svecsr = np.zeros((pp.n, pp.numSvals))
+norms = np.zeros(pp.numSvals)
+print Primme.dprimme_svds(svals, svecsl, svecsr, norms, pp)
+print pp.initSize, svals, norms
+
+a = np.ones(10, complex)
+A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+class PSPc(Primme.PrimmeSvdsParams):
+	def __init__(self):
+		Primme.PrimmeSvdsParams.__init__(self)
+		self._At = A.T.conj()
+	def matvec(self, X, transpose):
+		if not transpose:
+			return A*X
+		else:
+			return self._At*X
+pp = PSPc()
+pp.m = A.shape[0]
+pp.n = A.shape[1]
+#pp.maxBasisSize = 3
+#pp.minRestartSize = 1
+pp.numSvals = 3
+pp.printLevel = 3
+pp.eps = 1e-6
+
+pp.set_method(Primme.primme_svds_default, Primme.DEFAULT_METHOD, Primme.DEFAULT_METHOD)
+
+svals = np.zeros(pp.numSvals)
+svecsl = np.zeros((pp.m, pp.numSvals), A.dtype)
+svecsr = np.zeros((pp.n, pp.numSvals), A.dtype)
+norms = np.zeros(pp.numSvals)
+print Primme.zprimme_svds(svals, svecsl, svecsr, norms, pp)
+print pp.initSize, svals, norms

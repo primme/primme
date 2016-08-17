@@ -3,7 +3,7 @@ from scipy.sparse.linalg.interface import aslinearoperator
 
 __docformat__ = "restructuredtext en"
 
-PRIMMEErrors = {
+__PRIMMEErrors = {
 0: "success",
 1: "reported only amount of required memory",
 -1: "failed in allocating int or real workspace",
@@ -48,7 +48,7 @@ class PRIMMEError(RuntimeError):
     """
     def __init__(self, err):
         self.err = err
-        RuntimeError.__init__(self, "PRIMME error %d: %s" % (err, PRIMMEErrors[err]))
+        RuntimeError.__init__(self, "PRIMME error %d: %s" % (err, __PRIMMEErrors[err]))
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
@@ -165,7 +165,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     Raises
     ------
-    PrimmeNoConvergence
+    PrimmeError
         When the requested convergence is not obtained.
 
         The PRIMME error code can be found as ``err`` attribute of the exception
@@ -211,9 +211,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
             raise ValueError('expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
 
-    class PP(primme_params_w):
+    class PP(PrimmeParams):
         def __init__(self):
-            primme_params_w.__init__(self)
+            PrimmeParams.__init__(self)
         def matvec(self):
             self.setY(A.matmat(self.getX()))
         def prevec(self):
@@ -242,8 +242,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     else:
         raise ValueError("which value '%s' and sigma value '%s' not supported" % (which, sigma))
 
-    if v0 != None:
-        pp.initSize = v0.shape[1]
+    pp.eps = tol
 
     if ncv != None:
         pp.maxBasisSize = ncv
@@ -255,24 +254,130 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     evals = np.zeros(pp.numEvals)
     norms = np.zeros(pp.numEvals)
+    evecs = np.zeros((pp.n, pp.numEvals), A.dtype)
+
+    if v0 != None:
+        pp.initSize = v0.shape[1]
+        np.copyto(evecs[:, 0:pp.initSize], v0)
 
     if A.dtype is np.dtype(np.complex64):
-        evecs = np.zeros((pp.n, pp.numEvals), complex)
         err = zprimme(evals, evecs, norms, pp)
     elif A.dtype is np.dtype('d'):
-        evecs = np.zeros((pp.n, pp.numEvals))
         err = dprimme(evals, evecs, norms, pp)
 
     if err != 0:
-        raise PrimmeNoConvergence(err)
+        raise PrimmeError(err)
 
     return { 'w': evals, 'v': evecs }
 
+
+def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
+         maxiter=None, return_singular_vectors=True):
+    """Compute the largest k singular values/vectors for a sparse matrix.
+    Parameters
+    ----------
+    A : {sparse matrix, LinearOperator}
+        Array to compute the SVD on, of shape (M, N)
+    k : int, optional
+        Number of singular values and vectors to compute.
+        Must be 1 <= k < min(A.shape).
+    ncv : int, optional
+        The maximum size of the basis
+    tol : float, optional
+        Tolerance for singular values. Zero (default) means machine precision.
+    which : str, ['LM' | 'SM'], optional
+        Which `k` singular values to find:
+            - 'LM' : largest singular values
+            - 'SM' : smallest singular values
+    v0 : ndarray, optional
+        Starting vectors for iteration, of length min(A.shape). Should be
+        (approximate) left singular vectors if N > M and a right singular
+        vectors otherwise.
+    maxiter : int, optional
+        Maximum number of iterations.
+    Returns
+    -------
+    u : ndarray, shape=(M, k)
+        Unitary matrix having left singular vectors as columns.
+        If `return_singular_vectors` is "vh", this variable is not computed,
+        and None is returned instead.
+    s : ndarray, shape=(k,)
+        The singular values.
+    vt : ndarray, shape=(k, N)
+        Unitary matrix having right singular vectors as rows.
+        If `return_singular_vectors` is "u", this variable is not computed,
+        and None is returned instead.
+    """
+
+    A = aslinearoperator(A)
+
+    n, m = A.shape
+
+    if k <= 0 or k >= min(n, m):
+        raise ValueError("k must be between 1 and min(A.shape), k=%d" % k)
+
+    class PSP(Primme.PrimmeSvdsParams):
+        def __init__(self):
+            Primme.PrimmeSvdsParams.__init__(self)
+
+        def matvec(self, X, transpose):
+            if transpose == 0:
+                return A*X
+            else:
+                return A.rmatvec(X)
+
+    pp = PP()
+
+    pp.m = A.shape[0]
+    pp.n = A.shape[1]
+
+    pp.numSvals = k
+
+    if which == 'LM':
+        pp.target = primme_svds_largest
+    elif which == 'SM':
+        pp.target = primme_svds_smallest
+    else:
+        raise ValueError("which must be either 'LM' or 'SM'.")
+
+    pp.eps = tol
+
+    if v0 != None:
+        pp.initSize = v0.shape[1]
+
+    if ncv:
+        pp.maxBasisSize = ncv
+
+    if maxiter != None:
+        pp.maxMatvecs = maxiter
+
+    svals = np.zeros(pp.numSvals)
+    svecsl = np.zeros((pp.m, pp.numSvals), A.dtype)
+    svecsr = np.zeros((pp.n, pp.numSvals), A.dtype)
+    norms = np.zeros(pp.numSvals)
+
+    if v0 != None:
+        pp.initSize = v0.shape[1]
+        np.copyto(evecs[:, 0:pp.initSize], v0)
+
+    if A.dtype is np.dtype('d'):
+        err = Primme.dprimme_svds(svals, svecsl, svecsr, norms, pp)
+    elif A.dtype is np.complex64:
+        err = Primme.zprimme_svds(svals, svecsl, svecsr, norms, pp)
+
+    if err != 0:
+        raise PrimmeSvdsError(err)
+
+    if not return_singular_vectors:
+        return svals
+
+    # Transpose conjugate svecsr
+    svecsr = svecsr.T.conj()
+
+    return svecsl, svals, svecsr
 
 # if __name__ == '__main__':
 #     from scipy.sparse import spdiags
 #     a = np.ones(10)
 #     A  = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 #     print(eigsh_primme(A, which='LA'))
-# 
-

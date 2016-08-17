@@ -12,7 +12,7 @@ test: all
 	python test1.py
 
 # Rule: %.i -> %_wrap.cxx
-%_wrap.cxx %_wrap.h: %.i numpy.i
+%_wrap.cxx %_wrap.h: %.i numpy.i wrappers.py primmew.h
 	swig -c++ -Wextra -python $<
 
 # Clean target
