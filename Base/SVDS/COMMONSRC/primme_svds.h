@@ -30,7 +30,13 @@
 #ifndef PRIMME_SVDS_H
 #define PRIMME_SVDS_H
 
-#include "primme.h"
+#ifndef PRIMME_H
+#include "../../COMMONSRC/primme.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
    primme_svds_largest,
@@ -131,5 +137,9 @@ int primme_svds_set_method(primme_svds_preset_method method,
       primme_svds_params *primme_svds);
 void primme_svds_display_params(primme_svds_params primme_svds);
 void primme_svds_Free(primme_svds_params *primme_svds);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PRIMME_SVDS_H */  
