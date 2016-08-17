@@ -315,7 +315,7 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->printLevel = *v.int_v;
       break;
       case PRIMMEF77_outputFile:
-              (*primme)->outputFile = *v.file_v;
+              (*primme)->outputFile = v.file_v;
       break;
       case PRIMMEF77_matrix:
               (*primme)->matrix = v.ptr_v;
