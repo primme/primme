@@ -3605,21 +3605,21 @@ static void copy_matrix(T *x, int m, int n, int ldx, T *y, int ldy) {
 }
 
 
-int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
+static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
       return dprimme(evals, evecs, resNorms, primme);
 }
-int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
+static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
       return zprimme(evals, (Complex_Z*)evecs, resNorms, primme);
 }
 
 template <typename T>
-void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
+static void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
     pp->matvec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
 }
 
 template <typename T>
-void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
+static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
     pp->prevec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
 }
@@ -3655,15 +3655,15 @@ int my_primme(int lenEvals, double *evals,
    return ret;
 }
 
-int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
+static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
-int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
+static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
    return zprimme_svds(svals, (Complex_Z*)svecs, resNorms, primme_svds);
 }
 
 template <typename T>
-void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
+static void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    int m, n;
    if (*transpose == 0) {
@@ -3678,7 +3678,7 @@ void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *tr
 }
 
 template <typename T>
-void myprevec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
+static void myprevec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    int m=0;
    if (*mode == primme_svds_op_AtA) {
@@ -3744,13 +3744,6 @@ int my_primme_svds(int lenSvals, double *svals,
    delete [] svecs;
 
    return ret;
-}
-
-
-SWIGINTERNINLINE PyObject*
-  SWIG_From_int  (int value)
-{
-  return PyInt_FromLong((long) value);
 }
 
 
@@ -4217,6 +4210,13 @@ SWIGINTERNINLINE PyObject*
   }
 
 
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
+}
 
 
 #include <limits.h>
@@ -4931,410 +4931,6 @@ void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, std
 #ifdef __cplusplus
 extern "C" {
 #endif
-SWIGINTERN PyObject *_wrap_tprimme__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  double *arg1 = (double *) 0 ;
-  double *arg2 = (double *) 0 ;
-  double *arg3 = (double *) 0 ;
-  primme_params *arg4 = (primme_params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:tprimme",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "tprimme" "', argument " "1"" of type '" "double *""'"); 
-  }
-  arg1 = reinterpret_cast< double * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "tprimme" "', argument " "2"" of type '" "double *""'"); 
-  }
-  arg2 = reinterpret_cast< double * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "tprimme" "', argument " "3"" of type '" "double *""'"); 
-  }
-  arg3 = reinterpret_cast< double * >(argp3);
-  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_params, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "tprimme" "', argument " "4"" of type '" "primme_params *""'"); 
-  }
-  arg4 = reinterpret_cast< primme_params * >(argp4);
-  {
-    try
-    {
-      result = (int)tprimme(arg1,arg2,arg3,arg4);
-    }
-    catch (const std::invalid_argument& e)
-    {
-      SWIG_exception(SWIG_ValueError, e.what());
-    }
-    catch (const std::out_of_range& e)
-    {
-      SWIG_exception(SWIG_IndexError, e.what());
-    }
-    catch (Swig::DirectorException &e)
-    {
-      SWIG_fail;
-    }
-    if (PyErr_Occurred()) SWIG_fail;
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_tprimme__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  double *arg1 = (double *) 0 ;
-  std::complex< double > *arg2 = (std::complex< double > *) 0 ;
-  double *arg3 = (double *) 0 ;
-  primme_params *arg4 = (primme_params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:tprimme",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "tprimme" "', argument " "1"" of type '" "double *""'"); 
-  }
-  arg1 = reinterpret_cast< double * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__complexT_double_t, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "tprimme" "', argument " "2"" of type '" "std::complex< double > *""'"); 
-  }
-  arg2 = reinterpret_cast< std::complex< double > * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "tprimme" "', argument " "3"" of type '" "double *""'"); 
-  }
-  arg3 = reinterpret_cast< double * >(argp3);
-  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_params, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "tprimme" "', argument " "4"" of type '" "primme_params *""'"); 
-  }
-  arg4 = reinterpret_cast< primme_params * >(argp4);
-  {
-    try
-    {
-      result = (int)tprimme(arg1,arg2,arg3,arg4);
-    }
-    catch (const std::invalid_argument& e)
-    {
-      SWIG_exception(SWIG_ValueError, e.what());
-    }
-    catch (const std::out_of_range& e)
-    {
-      SWIG_exception(SWIG_IndexError, e.what());
-    }
-    catch (Swig::DirectorException &e)
-    {
-      SWIG_fail;
-    }
-    if (PyErr_Occurred()) SWIG_fail;
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_tprimme(PyObject *self, PyObject *args) {
-  int argc;
-  PyObject *argv[5];
-  int ii;
-  
-  if (!PyTuple_Check(args)) SWIG_fail;
-  argc = args ? (int)PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 4) && (ii < argc); ii++) {
-    argv[ii] = PyTuple_GET_ITEM(args,ii);
-  }
-  if (argc == 4) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_double, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      void *vptr = 0;
-      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_double, 0);
-      _v = SWIG_CheckState(res);
-      if (_v) {
-        void *vptr = 0;
-        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_double, 0);
-        _v = SWIG_CheckState(res);
-        if (_v) {
-          void *vptr = 0;
-          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_params, 0);
-          _v = SWIG_CheckState(res);
-          if (_v) {
-            return _wrap_tprimme__SWIG_0(self, args);
-          }
-        }
-      }
-    }
-  }
-  if (argc == 4) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_double, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      void *vptr = 0;
-      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_std__complexT_double_t, 0);
-      _v = SWIG_CheckState(res);
-      if (_v) {
-        void *vptr = 0;
-        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_double, 0);
-        _v = SWIG_CheckState(res);
-        if (_v) {
-          void *vptr = 0;
-          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_params, 0);
-          _v = SWIG_CheckState(res);
-          if (_v) {
-            return _wrap_tprimme__SWIG_1(self, args);
-          }
-        }
-      }
-    }
-  }
-  
-fail:
-  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'tprimme'.\n"
-    "  Possible C/C++ prototypes are:\n"
-    "    tprimme(double *,double *,double *,primme_params *)\n"
-    "    tprimme(double *,std::complex< double > *,double *,primme_params *)\n");
-  return 0;
-}
-
-
-SWIGINTERN PyObject *_wrap_tprimme_svds__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  double *arg1 = (double *) 0 ;
-  double *arg2 = (double *) 0 ;
-  double *arg3 = (double *) 0 ;
-  primme_svds_params *arg4 = (primme_svds_params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:tprimme_svds",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "tprimme_svds" "', argument " "1"" of type '" "double *""'"); 
-  }
-  arg1 = reinterpret_cast< double * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "tprimme_svds" "', argument " "2"" of type '" "double *""'"); 
-  }
-  arg2 = reinterpret_cast< double * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "tprimme_svds" "', argument " "3"" of type '" "double *""'"); 
-  }
-  arg3 = reinterpret_cast< double * >(argp3);
-  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_svds_params, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "tprimme_svds" "', argument " "4"" of type '" "primme_svds_params *""'"); 
-  }
-  arg4 = reinterpret_cast< primme_svds_params * >(argp4);
-  {
-    try
-    {
-      result = (int)tprimme_svds(arg1,arg2,arg3,arg4);
-    }
-    catch (const std::invalid_argument& e)
-    {
-      SWIG_exception(SWIG_ValueError, e.what());
-    }
-    catch (const std::out_of_range& e)
-    {
-      SWIG_exception(SWIG_IndexError, e.what());
-    }
-    catch (Swig::DirectorException &e)
-    {
-      SWIG_fail;
-    }
-    if (PyErr_Occurred()) SWIG_fail;
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_tprimme_svds__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  double *arg1 = (double *) 0 ;
-  std::complex< double > *arg2 = (std::complex< double > *) 0 ;
-  double *arg3 = (double *) 0 ;
-  primme_svds_params *arg4 = (primme_svds_params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:tprimme_svds",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "tprimme_svds" "', argument " "1"" of type '" "double *""'"); 
-  }
-  arg1 = reinterpret_cast< double * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__complexT_double_t, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "tprimme_svds" "', argument " "2"" of type '" "std::complex< double > *""'"); 
-  }
-  arg2 = reinterpret_cast< std::complex< double > * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_double, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "tprimme_svds" "', argument " "3"" of type '" "double *""'"); 
-  }
-  arg3 = reinterpret_cast< double * >(argp3);
-  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_svds_params, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "tprimme_svds" "', argument " "4"" of type '" "primme_svds_params *""'"); 
-  }
-  arg4 = reinterpret_cast< primme_svds_params * >(argp4);
-  {
-    try
-    {
-      result = (int)tprimme_svds(arg1,arg2,arg3,arg4);
-    }
-    catch (const std::invalid_argument& e)
-    {
-      SWIG_exception(SWIG_ValueError, e.what());
-    }
-    catch (const std::out_of_range& e)
-    {
-      SWIG_exception(SWIG_IndexError, e.what());
-    }
-    catch (Swig::DirectorException &e)
-    {
-      SWIG_fail;
-    }
-    if (PyErr_Occurred()) SWIG_fail;
-  }
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_tprimme_svds(PyObject *self, PyObject *args) {
-  int argc;
-  PyObject *argv[5];
-  int ii;
-  
-  if (!PyTuple_Check(args)) SWIG_fail;
-  argc = args ? (int)PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 4) && (ii < argc); ii++) {
-    argv[ii] = PyTuple_GET_ITEM(args,ii);
-  }
-  if (argc == 4) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_double, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      void *vptr = 0;
-      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_double, 0);
-      _v = SWIG_CheckState(res);
-      if (_v) {
-        void *vptr = 0;
-        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_double, 0);
-        _v = SWIG_CheckState(res);
-        if (_v) {
-          void *vptr = 0;
-          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_svds_params, 0);
-          _v = SWIG_CheckState(res);
-          if (_v) {
-            return _wrap_tprimme_svds__SWIG_0(self, args);
-          }
-        }
-      }
-    }
-  }
-  if (argc == 4) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_double, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      void *vptr = 0;
-      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_std__complexT_double_t, 0);
-      _v = SWIG_CheckState(res);
-      if (_v) {
-        void *vptr = 0;
-        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_double, 0);
-        _v = SWIG_CheckState(res);
-        if (_v) {
-          void *vptr = 0;
-          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_svds_params, 0);
-          _v = SWIG_CheckState(res);
-          if (_v) {
-            return _wrap_tprimme_svds__SWIG_1(self, args);
-          }
-        }
-      }
-    }
-  }
-  
-fail:
-  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'tprimme_svds'.\n"
-    "  Possible C/C++ prototypes are:\n"
-    "    tprimme_svds(double *,double *,double *,primme_svds_params *)\n"
-    "    tprimme_svds(double *,std::complex< double > *,double *,primme_svds_params *)\n");
-  return 0;
-}
-
-
 SWIGINTERN PyObject *_wrap_dprimme__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   int arg1 ;
@@ -14029,8 +13625,6 @@ SWIGINTERN PyObject *PrimmeSvdsParams_swigregister(PyObject *SWIGUNUSEDPARM(self
 
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
-	 { (char *)"tprimme", _wrap_tprimme, METH_VARARGS, NULL},
-	 { (char *)"tprimme_svds", _wrap_tprimme_svds, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numOuterIterations_set", _wrap_primme_stats_numOuterIterations_set, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numOuterIterations_get", _wrap_primme_stats_numOuterIterations_get, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numRestarts_set", _wrap_primme_stats_numRestarts_set, METH_VARARGS, NULL},

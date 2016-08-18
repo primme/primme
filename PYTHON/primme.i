@@ -143,6 +143,8 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore primme_svds_seq_globalSumDouble;
 %ignore primme_svds_Free;
 
+%ignore tprimme;
+%ignore tprimme_svds;
 
 %fragment("NumPy_Array_Requirements_extra",
           "header",
@@ -305,21 +307,21 @@ static void copy_matrix(T *x, int m, int n, int ldx, T *y, int ldy) {
 }
 
 
-int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
+static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
       return dprimme(evals, evecs, resNorms, primme);
 }
-int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
+static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
       return zprimme(evals, (Complex_Z*)evecs, resNorms, primme);
 }
 
 template <typename T>
-void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
+static void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
     pp->matvec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
 }
 
 template <typename T>
-void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
+static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
     pp->prevec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
 }
@@ -355,15 +357,15 @@ int my_primme(int lenEvals, double *evals,
    return ret;
 }
 
-int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
+static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
-int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
+static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
    return zprimme_svds(svals, (Complex_Z*)svecs, resNorms, primme_svds);
 }
 
 template <typename T>
-void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
+static void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    int m, n;
    if (*transpose == 0) {
@@ -378,7 +380,7 @@ void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *tr
 }
 
 template <typename T>
-void myprevec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
+static void myprevec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    int m=0;
    if (*mode == primme_svds_op_AtA) {
