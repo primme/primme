@@ -35,6 +35,22 @@ from scipy.sparse import *
 a = np.ones(10)
 A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 
+a = np.ones(10, complex)
+Az = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+
+#
+# High level tests
+#
+
+print Primme.eigsh(A, k=3, tol=1e-6, which='SA')
+print Primme.eigsh(Az, k=3, tol=1e-6, which='SA')
+print Primme.svds(A, k=3, tol=1e-6, which='SM')
+print Primme.svds(Az, k=3, tol=1e-6, which='SM')
+
+#
+# Low level tests
+#
+
 class PP(Primme.PrimmeParams):
 	def __init__(self):
 		Primme.PrimmeParams.__init__(self)
@@ -64,7 +80,7 @@ class PPc(Primme.PrimmeParams):
 
 a = np.ones(10, complex)
 A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
-pp = PPc(A)
+pp = PPc(Az)
 pp.n = A.shape[0]
 #pp.maxBasisSize = 3
 #pp.minRestartSize = 1
@@ -76,9 +92,6 @@ evecs = np.zeros((pp.n, pp.numEvals), complex)
 norms = np.zeros(pp.numEvals)
 print Primme.zprimme(evals, evecs, norms, pp)
 print pp.initSize, evals, norms, pp.stats.numMatvecs
-
-a = np.ones(10)
-A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 
 class PSP(Primme.PrimmeSvdsParams):
 	def __init__(self):
@@ -113,10 +126,10 @@ A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 class PSPc(Primme.PrimmeSvdsParams):
 	def __init__(self):
 		Primme.PrimmeSvdsParams.__init__(self)
-		self._At = A.T.conj()
+		self._At = Az.T.conj()
 	def matvec(self, X, transpose):
 		if not transpose:
-			return A*X
+			return Az*X
 		else:
 			return self._At*X
 pp = PSPc()

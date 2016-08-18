@@ -42,13 +42,22 @@ __PRIMMEErrors = {
 }
 
 
-class PRIMMEError(RuntimeError):
+class PrimmeError(RuntimeError):
     """
     PRIMME error
     """
     def __init__(self, err):
         self.err = err
         RuntimeError.__init__(self, "PRIMME error %d: %s" % (err, __PRIMMEErrors[err]))
+
+class PrimmeSvdsError(RuntimeError):
+    """
+    PRIMME SVDS error
+    """
+    def __init__(self, err):
+        self.err = err
+        RuntimeError.__init__(self, "PRIMME SVDS error %d: %s" % (err, __PRIMMEErrors[err]))
+
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
@@ -214,10 +223,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     class PP(PrimmeParams):
         def __init__(self):
             PrimmeParams.__init__(self)
-        def matvec(self):
-            self.setY(A.matmat(self.getX()))
-        def prevec(self):
-            self.setY(OPinv.matmat(self.getX()))
+        def matvec(self, X):
+            return A.matmat(X)
+        def prevec(self, X):
+            return OPinv.matmat(X)
 
     pp = PP()
  
@@ -260,10 +269,12 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         pp.initSize = v0.shape[1]
         np.copyto(evecs[:, 0:pp.initSize], v0)
 
-    if A.dtype is np.dtype(np.complex64):
+    if A.dtype is np.dtype(np.complex128):
         err = zprimme(evals, evecs, norms, pp)
     elif A.dtype is np.dtype('d'):
         err = dprimme(evals, evecs, norms, pp)
+    else:
+        raise ValueError("dtype of A not supported")
 
     if err != 0:
         raise PrimmeError(err)
@@ -316,17 +327,17 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if k <= 0 or k >= min(n, m):
         raise ValueError("k must be between 1 and min(A.shape), k=%d" % k)
 
-    class PSP(Primme.PrimmeSvdsParams):
+    class PSP(PrimmeSvdsParams):
         def __init__(self):
-            Primme.PrimmeSvdsParams.__init__(self)
+            PrimmeSvdsParams.__init__(self)
 
         def matvec(self, X, transpose):
             if transpose == 0:
-                return A*X
+                return A.matmat(X)
             else:
-                return A.rmatvec(X)
+                return A.H.matmat(X) 
 
-    pp = PP()
+    pp = PSP()
 
     pp.m = A.shape[0]
     pp.n = A.shape[1]
@@ -361,9 +372,11 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         np.copyto(evecs[:, 0:pp.initSize], v0)
 
     if A.dtype is np.dtype('d'):
-        err = Primme.dprimme_svds(svals, svecsl, svecsr, norms, pp)
-    elif A.dtype is np.complex64:
-        err = Primme.zprimme_svds(svals, svecsl, svecsr, norms, pp)
+        err = dprimme_svds(svals, svecsl, svecsr, norms, pp)
+    elif A.dtype is np.dtype(np.complex128):
+        err = zprimme_svds(svals, svecsl, svecsr, norms, pp)
+    else:
+        raise ValueError("dtype of A not supported")
 
     if err != 0:
         raise PrimmeSvdsError(err)
