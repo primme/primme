@@ -9,7 +9,7 @@ all: $(WRAPPERS) primmew.h primmew.cxx
 
 # Test target: run the tests
 test: all
-	python test1.py
+	python tests.py
 
 # Rule: %.i -> %_wrap.cxx
 %_wrap.cxx %_wrap.h: %.i numpy.i wrappers.py primmew.h

@@ -96,7 +96,7 @@
 %#endif
 %#define array_is_contiguous(a) (PyArray_ISCONTIGUOUS((PyArrayObject*)a))
 %#define array_is_native(a)     (PyArray_ISNOTSWAPPED((PyArrayObject*)a))
-%#define array_is_fortran(a)    (PyArray_ISFORTRAN((PyArrayObject*)a))
+%#define array_is_fortran(a)    (PyArray_IS_F_CONTIGUOUS((PyArrayObject*)a))
 }
 
 /**********************************************************************/
@@ -123,7 +123,7 @@
     if (PyInstance_Check(py_obj)) return "instance"    ;
 %#endif
 
-    return "unkown type";
+    return "unknown type";
   }
 
   /* Given a NumPy typecode, return a string describing the type.
@@ -295,7 +295,7 @@
       Py_INCREF(array_descr(ary));
       result = (PyArrayObject*) PyArray_FromArray(ary,
                                                   array_descr(ary),
-                                                  NPY_FORTRANORDER);
+                                                  NPY_ARRAY_F_CONTIGUOUS);
       *is_new_object = 1;
     }
     return result;
@@ -1563,7 +1563,7 @@
   (PyArrayObject* array=NULL)
 {
   array = obj_to_array_no_conversion($input, DATA_TYPECODE);
-  if (!array || !require_dimensions(array,2) || !require_contiguous(array)
+  if (!array || !require_dimensions(array,2)
       || !require_native(array) || !require_fortran(array)) SWIG_fail;
   $1 = (DATA_TYPE*) array_data(array);
   $2 = (DIM_TYPE) array_size(array,0);
@@ -1585,7 +1585,7 @@
   (PyArrayObject* array=NULL)
 {
   array = obj_to_array_no_conversion($input, DATA_TYPECODE);
-  if (!array || !require_dimensions(array,2) || !require_contiguous(array) ||
+  if (!array || !require_dimensions(array,2) ||
       !require_native(array) || !require_fortran(array)) SWIG_fail;
   $1 = (DIM_TYPE) array_size(array,0);
   $2 = (DIM_TYPE) array_size(array,1);

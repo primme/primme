@@ -43,6 +43,7 @@ class PrimmeParams : public primme_params {
    }
 
    virtual ~PrimmeParams() {
+      if (targetShifts) delete [] targetShifts;
       primme_Free(static_cast<primme_params*>(this));
    }
 
@@ -53,6 +54,20 @@ class PrimmeParams : public primme_params {
 
    void set_method(primme_preset_method method) {
       primme_set_method(method, static_cast<primme_params*>(this));
+   }
+
+   void _set_targetShifts(double *targetShifts, int n) {
+      if (this->targetShifts)
+         delete [] this->targetShifts;
+      this->targetShifts = new double[n];
+      for (int i=0; i<n; i++)
+         this->targetShifts[i] = targetShifts[i];
+      this->numTargetShifts = n;
+   }
+
+   void _get_targetShifts(double **targetShifts, int *n) {
+      *targetShifts = this->targetShifts;
+      *n = this->numTargetShifts;
    }
 
    virtual void matvec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd)=0;
@@ -70,6 +85,7 @@ class PrimmeSvdsParams : public primme_svds_params {
    }
 
    virtual ~PrimmeSvdsParams() {
+      if (targetShifts) delete [] targetShifts;
       primme_svds_Free(static_cast<primme_svds_params*>(this));
    }
 
@@ -81,6 +97,20 @@ class PrimmeSvdsParams : public primme_svds_params {
    void set_method(primme_svds_preset_method method,
          primme_preset_method methodStage1, primme_preset_method methodStage2) {
       primme_svds_set_method(method, methodStage1, methodStage2, static_cast<primme_svds_params*>(this));
+   }
+
+   void _set_targetShifts(double *targetShifts, int n) {
+      if (this->targetShifts)
+         delete [] this->targetShifts;
+      this->targetShifts = new double[n];
+      for (int i=0; i<n; i++)
+         this->targetShifts[i] = targetShifts[i];
+      this->numTargetShifts = n;
+   }
+
+   void _get_targetShifts(double **targetShifts, int *n) {
+      *targetShifts = this->targetShifts;
+      *n = this->numTargetShifts;
    }
 
    virtual void matvec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd, int transpose)=0;

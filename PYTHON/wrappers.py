@@ -3,42 +3,65 @@ from scipy.sparse.linalg.interface import aslinearoperator
 
 __docformat__ = "restructuredtext en"
 
-__PRIMMEErrors = {
+_PRIMMEErrors = {
 0: "success",
 1: "reported only amount of required memory",
 -1: "failed in allocating int or real workspace",
 -2: "malloc failed in allocating a permutation integer array",
 -3: "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
--4: "if argument 'primme' is NULL",
--5: "if 'n' <= 0 or 'nLocal' <= 0",
--6: "if 'numProcs' < 1",
--7: "if 'matrixMatvec' is NULL",
--8: "if 'applyPreconditioner' is NULL and 'precondition' is not NULL",
--9: "if 'globalSumDouble' is NULL",
--10: "if 'numEvals' > 'n'",
--11: "if 'numEvals' < 0",
--12: "if 'eps' > 0 and 'eps' < machine precision",
--13: "if 'target' is not properly defined",
--14: "if 'target' is one of 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'numTargetShifts' <= 0 (no shifts)",
--15: "if 'target' is one of 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'targetShifts' is NULL  (no shifts array)",
--16: "if 'numOrthoConst' < 0 or 'numOrthoConst' >= 'n'. (no free dimensions left)",
--17: "if 'maxBasisSize' < 2",
--18: "if 'minRestartSize' <= 0",
--19: "if 'maxBlockSize' <= 0",
--20: "if 'maxPrevRetain' < 0",
--21: "if 'scheme' is not one of *primme_thick* or *primme_dtr*",
--22: "if 'initSize' < 0",
--23: "if not 'locking' and 'initSize' > 'maxBasisSize'",
--24: "if 'locking' and 'initSize' > 'numEvals'",
--25: "if 'maxPrevRetain' + 'minRestartSize' >= 'maxBasisSize'",
--26: "if 'minRestartSize' >= 'n'",
--27: "if 'printLevel' < 0 or 'printLevel' > 5",
--28: "if 'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
--29: "if 'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
--30: "if 'evals' is NULL, but not 'evecs' and 'resNorms'",
--31: "if 'evecs' is NULL, but not 'evals' and 'resNorms'",
--32: "if 'resNorms' is NULL, but not 'evecs' and 'evals'",
--33: "if not 'locking' and 'minRestartSize' < 'numEvals'"
+-4: "argument 'primme' is NULL",
+-5: "'n' <= 0 or 'nLocal' <= 0",
+-6: "'numProcs' < 1",
+-7: "'matrixMatvec' is NULL",
+-8: "'applyPreconditioner' is NULL and 'precondition' is not NULL",
+-9: "'globalSumDouble' is NULL",
+-10: "'numEvals' > 'n'",
+-11: "'numEvals' < 0",
+-12: "'eps' > 0 and 'eps' < machine precision",
+-13: "'target' is not properly defined",
+-14: "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'numTargetShifts' <= 0 (no shifts)",
+-15: "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'targetShifts' is NULL  (no shifts array)",
+-16: "'numOrthoConst' < 0 or 'numOrthoConst' >= 'n'. (no free dimensions left)",
+-17: "'maxBasisSize' < 2",
+-18: "'minRestartSize' <= 0",
+-19: "'maxBlockSize' <= 0",
+-20: "'maxPrevRetain' < 0",
+-21: "'scheme' is not one of *primme_thick* or *primme_dtr*",
+-22: "'initSize' < 0",
+-23: "not 'locking' and 'initSize' > 'maxBasisSize'",
+-24: "'locking' and 'initSize' > 'numEvals'",
+-25: "'maxPrevRetain' + 'minRestartSize' >= 'maxBasisSize'",
+-26: "'minRestartSize' >= 'n'",
+-27: "'printLevel' < 0 or 'printLevel' > 5",
+-28: "'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
+-29: "'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
+-30: "'evals' is NULL, but not 'evecs' and 'resNorms'",
+-31: "'evecs' is NULL, but not 'evals' and 'resNorms'",
+-32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
+-33: "not 'locking' and 'minRestartSize' < 'numEvals'"
+}
+
+_PRIMMESvdsErrors = {
+0   : "success",
+1   : "reported only amount of required memory",
+-1  : "failed in allocating int or real workspace",
+-2  : "malloc failed in allocating a permutation integer array",
+-3  : "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+-4  : "primme_svds is NULL",
+-5  : "Wrong value for m or n",
+-6  : "Wrong value for numProcs",
+-7  : "matrixMatvec is not set",
+-8  : "applyPreconditioner is not set but precondition == 1 ",
+-9  : "numProcs >1 but globalSumDouble is not set",
+-10 : "Wrong value for numSvals, it's larger than min(m, n)",
+-11 : "Wrong value for numSvals, it's smaller than 1",
+-13 : "Wrong value for target",
+-14 : "Wrong value for method",
+-15 : "Not supported combination of method and methodStage2",
+-16 : "Wrong value for printLevel",
+-17 : "svals is not set",
+-18 : "svecs is not set",
+-19 : "resNorms is not set"
 }
 
 
@@ -48,7 +71,7 @@ class PrimmeError(RuntimeError):
     """
     def __init__(self, err):
         self.err = err
-        RuntimeError.__init__(self, "PRIMME error %d: %s" % (err, __PRIMMEErrors[err]))
+        RuntimeError.__init__(self, "PRIMME error %d: %s" % (err, _PRIMMEErrors[err]))
 
 class PrimmeSvdsError(RuntimeError):
     """
@@ -56,12 +79,12 @@ class PrimmeSvdsError(RuntimeError):
     """
     def __init__(self, err):
         self.err = err
-        RuntimeError.__init__(self, "PRIMME SVDS error %d: %s" % (err, __PRIMMEErrors[err]))
+        RuntimeError.__init__(self, "PRIMME SVDS error %d: %s" % (err, _PRIMMESvdsErrors[err]))
 
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
-          Minv=None, OPinv=None, mode='normal'):
+          Minv=None, OPinv=None, mode='normal', lock=None):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex hermitian matrix A.
@@ -115,28 +138,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         iterative solver for a general linear operator.  Alternatively,
         the user can supply the matrix or operator Minv, which gives
         ``x = Minv * b = M^-1 * b``.
-    sigma : real
-        Find eigenvalues near sigma using shift-invert mode.  This requires
-        an operator to compute the solution of the linear system
-        `[A - sigma * M] x = b`, where M is the identity matrix if
-        unspecified.  This is computed internally via a (sparse) LU
-        decomposition for explicit matrices A & M, or via an iterative
-        solver if either A or M is a general linear operator.
-        Alternatively, the user can supply the matrix or operator OPinv,
-        which gives ``x = OPinv * b = [A - sigma * M]^-1 * b``.
-        Note that when sigma is specified, the keyword 'which' refers to
-        the shifted eigenvalues ``w'[i]`` where:
-
-            if mode == 'normal', ``w'[i] = 1 / (w[i] - sigma)``.
-
-            if mode == 'cayley', ``w'[i] = (w[i] + sigma) / (w[i] - sigma)``.
-
-            if mode == 'buckling', ``w'[i] = w[i] / (w[i] - sigma)``.
-
-        (see further discussion in 'mode' below)
-    v0 : ndarray, optional
-        Starting vector for iteration.
-        Default: random
+    sigma : real, optional
+        Find eigenvalues near sigma.
+    v0 : N x i, ndarray, optional
+        Starting vectors for iteration.
     ncv : int, optional
         The number of Lanczos vectors generated ncv must be greater than k and
         smaller than n; it is recommended that ``ncv > 2*k``.
@@ -156,21 +161,24 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             'BE' : Half (k/2) from each end of the spectrum (not supported)
 
         When sigma != None, 'which' refers to the shifted eigenvalues ``w'[i]``
-        (see discussion in 'sigma', above).
     maxiter : int, optional
         Maximum number of restarts update iterations allowed
         Default: ``n*10``
     tol : float
         Accuracy for eigenvalues (stopping criterion).
         The default value is sqrt of machine precision.
-    Minv : N x N matrix, array, sparse matrix, or LinearOperator
-        See notes in M, above
+    Minv : (not supported)
     OPinv : N x N matrix, array, sparse matrix, or LinearOperator
-        See notes in sigma, above.
+        Preconditioner to accelerate the convergence. Usually it is an
+        approximation of the inverse of (A - sigma*M).
     return_eigenvectors : bool
         Return eigenvectors (True) in addition to eigenvalues
     mode : string ['normal' | 'buckling' | 'cayley']
         Only 'normal' mode is supported.
+    lock : N x i, ndarray, optional
+        Seek the eigenvectors orthogonal to these ones. The provided
+        vectors *should* be orthonormal. Useful to not converge some already
+        computed solutions.
 
     Raises
     ------
@@ -188,14 +196,11 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     Notes
     -----
     This function is a wrapper to PRIMME functions to find the eigenvalues and
-    eigenvectors [2]_.
+    eigenvectors [1]_.
 
     References
     ----------
-    .. [1] ARPACK Software, http://www.caam.rice.edu/software/ARPACK/
-    .. [2] R. B. Lehoucq, D. C. Sorensen, and C. Yang,  ARPACK USERS GUIDE:
-       Solution of Large Scale Eigenvalue Problems by Implicitly Restarted
-       Arnoldi Methods. SIAM, Philadelphia, PA, 1998.
+    .. [1] PRIMME Software, https://github.com/primme/primme
 
     Examples
     --------
@@ -210,15 +215,15 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     A = aslinearoperator(A)
     if A.shape[0] != A.shape[1]:
-        raise ValueError('expected square matrix (shape=%s)' % (A.shape,))
+        raise ValueError('A: expected square matrix (shape=%s)' % (A.shape,))
 
     if M is not None:
         raise ValueError('generalized problems (M != None) are not supported')
 
-    if OPinv != None:
+    if OPinv is not None:
         OPinv = aslinearoperator(OPinv)
         if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
-            raise ValueError('expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
+            raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
 
     class PP(PrimmeParams):
         def __init__(self):
@@ -232,42 +237,61 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
  
     pp.n = A.shape[0]
 
-    if k <= 0 or k >= pp.n:
-        raise ValueError("k must be between 1 and the order of the "
-                         "square input matrix.")
+    if k <= 0 or k > pp.n:
+        raise ValueError("k=%d must be between 1 and %d, the order of the "
+                         "square input matrix." % (k, pp.n))
     pp.numEvals = k
-    pp.correctionParams.precondition = 1 if OPinv != None else 0
+    pp.correctionParams.precondition = 0 if OPinv is None else 1
 
-    if which == 'LA' and sigma == None:
+    if which == 'LM':
+        pp.target = primme_largest_abs
+        if sigma is None:
+            sigma = 0.0
+    elif which == 'LA':
         pp.target = primme_largest
-    elif which == 'SA' and sigma == None:
+        sigma = None
+    elif which == 'SA':
         pp.target = primme_smallest
+        sigma = None
     elif which == 'SM':
         pp.target = primme_closest_abs
-        pp.numTargetShifts = 1
-        if sigma != None:
+        if sigma is None:
             sigma = 0.0
-        pp.targetShifts = np.array([sigma], dtype=np.dtype('d'))
     else:
-        raise ValueError("which value '%s' and sigma value '%s' not supported" % (which, sigma))
+        raise ValueError("which='%s' not supported" % which)
+
+    if sigma is not None:
+        pp.targetShifts = np.array([sigma], dtype=np.dtype('d'))
 
     pp.eps = tol
 
-    if ncv != None:
+    if ncv is not None:
         pp.maxBasisSize = ncv
 
-    if maxiter != None:
+    if maxiter is not None:
         pp.maxMatvecs = maxiter
+
+    if OPinv is not None:
+        pp.precondition = 1
 
     pp.set_method(DYNAMIC)
 
+    if lock is not None:
+        if lock.shape[0] != n:
+            raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
+        pp.numOrthoConst = min(v0.shape[1], n)
+
     evals = np.zeros(pp.numEvals)
     norms = np.zeros(pp.numEvals)
-    evecs = np.zeros((pp.n, pp.numEvals), A.dtype)
+    evecs = np.zeros((pp.n, pp.numOrthoConst+pp.numEvals), A.dtype, order='F')
 
-    if v0 != None:
-        pp.initSize = v0.shape[1]
-        np.copyto(evecs[:, 0:pp.initSize], v0)
+    if lock is not None:
+        np.copyto(evecs[:, 0:pp.numOrthoConst], lock[:, 0:pp.numOrthoConst])
+
+    if v0 is not None:
+        pp.initSize = min(v0.shape[1], pp.numEvals)
+        np.copyto(evecs[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize],
+            v0[:, 0:pp.initSize])
 
     if A.dtype is np.dtype(np.complex128):
         err = zprimme(evals, evecs, norms, pp)
@@ -279,12 +303,15 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if err != 0:
         raise PrimmeError(err)
 
-    return { 'w': evals, 'v': evecs }
+    evecs = evecs[:, pp.numOrthoConst:]
+    return evals, evecs
 
 
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
-         maxiter=None, return_singular_vectors=True):
-    """Compute the largest k singular values/vectors for a sparse matrix.
+         maxiter=None, return_singular_vectors=True,
+         precAHA=None, precAAH=None, precAug=None,
+         u0=None, locku0=None, lockv0=None):
+    """Compute k singular values/vectors for a sparse matrix.
     Parameters
     ----------
     A : {sparse matrix, LinearOperator}
@@ -296,16 +323,31 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         The maximum size of the basis
     tol : float, optional
         Tolerance for singular values. Zero (default) means machine precision.
-    which : str, ['LM' | 'SM'], optional
+    which : str ['LM' | 'SM'] or number, optional
         Which `k` singular values to find:
             - 'LM' : largest singular values
             - 'SM' : smallest singular values
-    v0 : ndarray, optional
-        Starting vectors for iteration, of length min(A.shape). Should be
-        (approximate) left singular vectors if N > M and a right singular
-        vectors otherwise.
+            - number : closest singular values to (referred as sigma later)
+    u0, v0 : ndarray, optional
+        Starting vectors for the iterations. Should be approximate left singular
+        vectors and right singular vectors respectively. If only u0 or v0 is
+        provided, the other is computed.
     maxiter : int, optional
         Maximum number of iterations.
+    precAHA : {N x N matrix, array, sparse matrix, LinearOperator}, optional
+        Approximate inverse of (A.H*A - sigma*I). If provided and M>N, it
+        usually accelerates the convergence.
+    precAAH : {M x M matrix, array, sparse matrix, LinearOperator}, optional
+        Approximate inverse of (A*A.H - sigma*I). If provided and M<N, it
+        usually accelerates the convergence.
+    precAug : {(M+N) x (M+N) matrix, array, sparse matrix, LinearOperator}, optional
+        Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I). It usually
+        accelerates the convergence if tol<dtype.eps**.5.
+    locku0, lockv0 : ndarray, optional
+        Seek singular triplets orthogonal to these ones. The provided vectors
+        *should* be orthonormal. If only locku0 or lockv0 is provided, the other
+        is computed. Useful to not converge some already computed solutions.
+
     Returns
     -------
     u : ndarray, shape=(M, k)
@@ -322,10 +364,25 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     A = aslinearoperator(A)
 
-    n, m = A.shape
+    m, n = A.shape
 
-    if k <= 0 or k >= min(n, m):
-        raise ValueError("k must be between 1 and min(A.shape), k=%d" % k)
+    if k <= 0 or k > min(n, m):
+        raise ValueError("k=%d must be between 1 and min(A.shape)=%d" % (k, min(n, m)))
+
+    if precAHA is not None:
+        precAHA = aslinearoperator(precAHA)
+        if precAHA.shape[0] != precAHA.shape[1] or precAHA.shape[0] != n:
+            raise ValueError('precAHA: expected square matrix with size %d' % n)
+
+    if precAAH is not None:
+        precAAH = aslinearoperator(precAAH)
+        if precAAH.shape[0] != precAAH.shape[1] or precAAH.shape[0] != m:
+            raise ValueError('precAAH: expected square matrix with size %d' % m)
+
+    if precAug is not None:
+        precAug = aslinearoperator(precAug)
+        if precAug.shape[0] != precAug.shape[1] or precAug.shape[0] != m+n:
+            raise ValueError('precAug: expected square matrix with size %d' % (m+n))
 
     class PSP(PrimmeSvdsParams):
         def __init__(self):
@@ -336,6 +393,17 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
                 return A.matmat(X)
             else:
                 return A.H.matmat(X) 
+
+        def prevec(self, X, mode):
+            if mode == primme_svds_op_AtA and precAHA is not None:
+                return precAHA.matmat(X)
+            elif mode == primme_svds_op_AAt and precAAH is not None:
+                return precAAH.matmat(X) 
+            elif mode == primme_svds_op_augmented and precAug is not None:
+                return precAug.matmat(X) 
+            else:
+                raise ValueError('Not expected mode')
+            return X
 
     pp = PSP()
 
@@ -349,27 +417,62 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     elif which == 'SM':
         pp.target = primme_svds_smallest
     else:
-        raise ValueError("which must be either 'LM' or 'SM'.")
+        try:
+            which = float(which)
+        except:
+            raise ValueError("which must be either 'LM', 'SM' or a number.")
+        pp.target = primme_svds_closest_abs
+        pp.targetShifts = np.array([which], dtype='d')
 
     pp.eps = tol
-
-    if v0 != None:
-        pp.initSize = v0.shape[1]
 
     if ncv:
         pp.maxBasisSize = ncv
 
-    if maxiter != None:
+    if maxiter:
         pp.maxMatvecs = maxiter
 
+    def check_pair(u, v, var_names):
+        if ((u is not None and u.shape[0] != m) or
+                (v is not None and v.shape[0] != n)):
+            aux = v; v = u; u = aux
+
+        if ((u is not None and u.shape[0] != m) or
+                (v is not None and v.shape[0] != n)):
+            aux = v; v = u; u = aux
+            raise ValueError("%s don't have the expected number of rows." % var_names)
+
+        if u is not None and v is not None and u.shape[1] != v.shape[1]:
+            raise ValueError("%s don't have the same number of columns." % var_names)
+
+        if u is not None and v is None:
+            v, _ = np.linalg.qr(A.H.matmult(u))
+
+        if v is not None and u is None:
+            u, _ = np.linalg.qr(A.matmult(v))
+
+        return u, v
+
+    locku0, lockv0 = check_pair(locku0, lockv0, "lockv0 or locku0")
+
+    if locku0 is not None:
+        pp.numOrthoConst = min(locku0.shape[1], min(m,n))
+
     svals = np.zeros(pp.numSvals)
-    svecsl = np.zeros((pp.m, pp.numSvals), A.dtype)
-    svecsr = np.zeros((pp.n, pp.numSvals), A.dtype)
+    svecsl = np.zeros((pp.m, pp.numOrthoConst+pp.numSvals), A.dtype, order='F')
+    svecsr = np.zeros((pp.n, pp.numOrthoConst+pp.numSvals), A.dtype, order='F')
     norms = np.zeros(pp.numSvals)
 
-    if v0 != None:
-        pp.initSize = v0.shape[1]
-        np.copyto(evecs[:, 0:pp.initSize], v0)
+    if locku0 is not None:
+        np.copyto(svecsl[:, 0:pp.numOrthoConst], locku0[:, 0:pp.numOrthoConst])
+        np.copyto(svecsr[:, 0:pp.numOrthoConst], lockv0[:, 0:pp.numOrthoConst])
+
+    u0, v0 = check_pair(u0, v0, "v0 or u0")
+    
+    if v0 is not None:
+        pp.initSize = min(v0.shape[1], pp.numSvals)
+        np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
+        np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
 
     if A.dtype is np.dtype('d'):
         err = dprimme_svds(svals, svecsl, svecsr, norms, pp)
@@ -383,6 +486,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     if not return_singular_vectors:
         return svals
+
+    svecsl = svecsl[:, pp.numOrthoConst:]
+    svecsr = svecsr[:, pp.numOrthoConst:]
 
     # Transpose conjugate svecsr
     svecsr = svecsr.T.conj()

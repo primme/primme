@@ -146,6 +146,16 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore tprimme;
 %ignore tprimme_svds;
 
+%ignore PrimmeParams::targetShifts;
+%ignore primme_params::targetShifts;
+%ignore PrimmeParams::numTargetShifts;
+%ignore primme_params::numTargetShifts;
+%ignore PrimmeSvdsParams::targetShifts;
+%ignore primme_svds_params::targetShifts;
+%ignore PrimmeSvdsParams::numTargetShifts;
+%ignore primme_svds_params::numTargetShifts;
+
+
 %fragment("NumPy_Array_Requirements_extra",
           "header",
           fragment="NumPy_Array_Requirements")
@@ -211,12 +221,10 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
   (PyArrayObject* array=NULL, PyObject* o=NULL)
 {
   o = $result;
-  if (!is_array(o) || !PyArray_EquivTypenums(array_type(o), DATA_TYPECODE))
-     Swig::DirectorMethodException::raise("No valid type for object returned by $symname");
   array = obj_to_array_no_conversion(o, DATA_TYPECODE);
-  if (!array || !require_dimensions(array,2) || !require_contiguous(array) ||
-      !require_native(array))
-          Swig::DirectorMethodException::raise("No valid type for object returned by $symname (weird detail)");
+  if (!array || !require_dimensions(array,2) || !require_native(array) ||
+        !require_c_or_f_contiguous(array))
+     Swig::DirectorMethodException::raise("No valid type for object returned by $symname");
   if (($1) != (DIM_TYPE) array_size(array,0) ||
       ($2) != (DIM_TYPE) array_size(array,1))
           {Swig::DirectorMethodException::raise("No valid dimensions for object returned by $symname");}
@@ -249,14 +257,6 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
    (int len1Evecs, int len2Evecs, std::complex<double>* evecs),
    (int len1SvecsLeft, int len2SvecsLeft, std::complex<double>* svecsLeft),
    (int len1SvecsRight, int len2SvecsRight, std::complex<double>* svecsRight)};
-%apply (int* DIM1, int* DIM2, double** ARGOUTVIEW_FARRAY2) {
-   (int *len1X, int *len2X, double **x)};
-%apply (int* DIM1, int* DIM2, std::complex<double>** ARGOUTVIEW_FARRAY2) {
-   (int *len1X, int *len2X, std::complex<double> **x)};
-%apply (int DIM1, int DIM2, double* IN_FARRAY2) {
-   (int len1Y, int len2Y, double* y)};
-%apply (int DIM1, int DIM2, std::complex<double>* IN_FARRAY2) {
-   (int len1Y, int len2Y, std::complex<double>* y)};
 
 %apply (int DIM1, int DIM2, int LD, double* IN_FARRAY2D) {
    (int len1YD, int len2YD, int ldYD, double* yd)};
@@ -267,6 +267,12 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %apply (int DIM1, int DIM2, int LD, std::complex<double>* OUT_FARRAY2D) {
    (int len1XD, int len2XD, int ldXD, std::complex<double>* xd)};
 
+/* typemaps and code for targetShift and numTargetShifts */
+ 
+%apply (double* IN_ARRAY1, int DIM1) {
+   (double *targetShifts, int n)};
+%apply (double **ARGOUTVIEW_ARRAY1, int *DIM1) {
+   (double **targetShifts, int *n)};
 
 %inline %{
 template <typename T>
@@ -467,3 +473,7 @@ int my_primme_svds(int lenSvals, double *svals,
 %include "primmew.h"
 
 %pythoncode "wrappers.py"
+%pythoncode %{
+PrimmeParams.targetShifts = property(PrimmeParams._get_targetShifts, PrimmeParams._set_targetShifts)
+PrimmeSvdsParams.targetShifts = property(PrimmeSvdsParams._get_targetShifts, PrimmeSvdsParams._set_targetShifts)
+%}
