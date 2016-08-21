@@ -234,10 +234,13 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
    primme->realWork = (Complex_Z*)primme_svds->realWork + cut;
    primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(Complex_Z);
  
-   if (stage == 0 && primme_svds->numTargetShifts > 0) {
+   if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
+       (stage == 1 && primme->targetShifts == NULL &&
+         primme_svds->target == primme_svds_closest_abs)) {
       primme->targetShifts = primme_svds->targetShifts;
       primme->numTargetShifts = primme_svds->numTargetShifts;
-      if (method == primme_svds_op_AtA || method == primme_svds_op_AAt) {
+      if (stage == 0 &&
+            (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
          for (i=0; i<primme->numTargetShifts; i++) {
             primme->targetShifts[i] *= primme->targetShifts[i];
          }
