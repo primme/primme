@@ -274,8 +274,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if OPinv is not None:
         pp.precondition = 1
 
-    pp.set_method(DYNAMIC)
-
     if lock is not None:
         if lock.shape[0] != n:
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))

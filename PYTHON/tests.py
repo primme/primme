@@ -5,6 +5,7 @@ Based on test_lobpcg.py and test_arpack.py in scipy,
 see https://github.com/scipy/scipy
 """
 
+import warnings
 import numpy as np
 from numpy.testing import run_module_suite, assert_allclose
 from scipy import ones, r_, diag
@@ -46,11 +47,10 @@ def diagonal(n, dtype=np.dtype("d")):
     return A, None
 
 def Lauchli_like(m, n=None, c=1e-5, dtype=float):
-   if n is None: n = max(m/2, 1)
-   k = min(m, n)
-   diagonal = np.linspace(1.0, 5*c, k-5 if k>5 else 0, dtype=dtype)
-   tail = np.linspace(4*c, c, min(5, k), dtype=dtype) 
-   return np.r_[ones((1,n), dtype), diag(np.r_[diagonal, tail]), np.zeros((m-k-1,n), dtype=dtype)]
+   k = min(m-1, n)
+   diagonal = diag(np.linspace(1.0, 5*c, k, dtype=dtype))
+   d = np.c_[diagonal, np.zeros((k, n-k), dtype=dtype)]
+   return np.r_[ones((1,n), dtype), d, np.zeros((m-k-1,n), dtype=dtype)]
 
 #
 # Tools
@@ -75,7 +75,13 @@ def jacobi_prec(A, sigma):
    """
 
    if sigma is None: sigma = 0
-   return np.diag(np.reciprocal(np.diag(A)) - sigma)
+   with warnings.catch_warnings():
+      warnings.simplefilter("error")
+      while True:
+         try:
+            return np.diag(np.reciprocal(np.diag(A)) - sigma)
+         except RuntimeWarning:
+            sigma = sigma*1.001 if sigma != 0.0 else 0.1
 
 def sqr_diagonal_prec(A, sigma):
    """
@@ -83,8 +89,14 @@ def sqr_diagonal_prec(A, sigma):
    """
 
    if sigma is None: sigma = 0
-   return {'precAHA': np.diag(np.reciprocal(np.diag(A.T.conj().dot(A)) - sigma)),
-           'precAAH': np.diag(np.reciprocal(np.diag(A.dot(A.T.conj())) - sigma))}
+   with warnings.catch_warnings():
+      warnings.simplefilter("error")
+      while True:
+         try:
+            return {'precAHA': np.diag(np.reciprocal(np.diag(A.T.conj().dot(A)) - sigma)),
+                    'precAAH': np.diag(np.reciprocal(np.diag(A.dot(A.T.conj())) - sigma))}
+         except RuntimeWarning:
+            sigma = sigma*1.001 if sigma != 0.0 else 0.1
 
 #
 # Tests
@@ -131,7 +143,7 @@ def eigsh_check(eigsh_solver, A, k, M, which, sigma, tol, exact_evals, case_desc
    Rnorms = np.linalg.norm(R, axis=0)
    assert_allclose(Rnorms, np.zeros(k), atol=ANorm*tol*(k**.5), rtol=1, err_msg=case_desc)
 
-def _00test_primme_eigsh():
+def test_primme_eigsh():
    """
    Test cases for Primme.eighs.
    """
@@ -200,17 +212,16 @@ def test_primme_svds():
 
    for n in (2, 3, 5, 10, 100):
       for dtype in (np.dtype("d"), np.complex):
-         for gen_name, gen in (("ElasticRod", (lambda n, d: toStandardProblem(ElasticRod(n, d)))),
+         for gen_name, gen in (("MikotaPair", (lambda n, d: toStandardProblem(MikotaPair(n, d)))),
                                ("Lauchli_like_vert", (lambda n, d: Lauchli_like(n*2, n, dtype=d))),
                                ("Lauchli_like_hori", (lambda n, d: Lauchli_like(n, n*2, dtype=d)))):
             A = gen(n, dtype)
             svl, sva, svr = np.linalg.svd(A, full_matrices=False)
             sigma0 = sva[0]*.51 + sva[-1]*.49
             for op in ((lambda x : x), csr_matrix, aslinearoperator): 
-               #for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
-               for which, sigma in [('LM', 0), ('SM', 0)]:
+               for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
                   for prec in ({}, sqr_diagonal_prec(A, sigma)):
-                     for k in (1, 2, 3, 5, 10, 80):
+                     for k in (1, 2, 3, 5, 10, 30):
                         if k > n: continue
                         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
                               (gen_name, n, dtype, k, bool(prec), which))

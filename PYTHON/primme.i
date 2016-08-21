@@ -412,7 +412,7 @@ int my_primme_svds(int lenSvals, double *svals,
         return -30;
    }
    if (primme_svds->mLocal == 0)
-        primme_svds->mLocal = primme_svds->n;
+        primme_svds->mLocal = primme_svds->m;
    if (primme_svds->nLocal == 0)
         primme_svds->nLocal = primme_svds->n;
    if (len1SvecsLeft < primme_svds->mLocal || len2SvecsLeft < primme_svds->numSvals) {
