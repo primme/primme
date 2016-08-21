@@ -79,7 +79,13 @@ class PrimmeSvdsError(RuntimeError):
     """
     def __init__(self, err):
         self.err = err
-        RuntimeError.__init__(self, "PRIMME SVDS error %d: %s" % (err, _PRIMMESvdsErrors[err]))
+        if err < 100:
+            msg = _PRIMMESvdsErrors[err]
+        elif err < 200:
+            msg = "Error from PRIMME first stage: " + _PRIMMEErrors[err+100]
+        elif err < 300:
+            msg = "Error from PRIMME second stage: " + _PRIMMEErrors[err+200]
+        RuntimeError.__init__(self, "PRIMME SVDS error %d: %s" % (err, msg))
 
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
