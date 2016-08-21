@@ -595,6 +595,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTIF(target, primme_closest_geq);
    PRINTIF(target, primme_closest_leq);
    PRINTIF(target, primme_closest_abs);
+   PRINTIF(target, primme_largest_abs);
 
    PRINTParamsIF(projection, projection, primme_proj_default);
    PRINTParamsIF(projection, projection, primme_proj_RR);

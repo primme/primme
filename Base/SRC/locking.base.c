@@ -575,6 +575,13 @@ static void insertionSort(double newVal, double *evals, double newNorm,
             fabs(newVal-currentShift) >= fabs(evals[i-1]-currentShift) ) break; 
          }
       }
+      else if ( primme->target == primme_largest_abs ) {
+         for (i = numLocked; i > 0; i--) {
+            ithShift =primme->targetShifts[min(primme->numTargetShifts-1, i-1)];
+            if ( ithShift != currentShift || 
+            fabs(newVal-currentShift) <= fabs(evals[i-1]-currentShift) ) break; 
+         }
+      }
       else {
          /* This should never happen */
          assert(0);

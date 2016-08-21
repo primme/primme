@@ -627,7 +627,7 @@ static int primme_svds_check_input(double *svals, @(type) *svecs, double *resNor
       ret = -8;
    else if (primme_svds->numProcs >1 && primme_svds->globalSumDouble == NULL)
       ret = -9;
-   else if (primme_svds->numSvals > primme_svds->n)
+   else if (primme_svds->numSvals > min(primme_svds->n, primme_svds->m))
       ret = -10;
    else if (primme_svds->numSvals < 1)
       ret = -11;

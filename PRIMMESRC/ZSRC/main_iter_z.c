@@ -696,7 +696,13 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
             /* -primme_proj_refined.F                                         */
             /* -------------------------------------------------------------- */
 
-            dummySmallestResNorm = primme->target == primme_closest_abs ? &dummyZero : &smallestResNorm;
+            if (primme->target == primme_closest_abs ||
+                  primme->target == primme_largest_abs) {
+               dummySmallestResNorm = &dummyZero;
+            }
+            else {
+               dummySmallestResNorm = &smallestResNorm;
+            }
 
             prepare_candidates_zprimme(V, W, primme->nLocal, H,
                   primme->maxBasisSize, basisSize, primme->nLocal,
