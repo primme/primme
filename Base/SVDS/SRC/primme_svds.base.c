@@ -70,6 +70,8 @@
  * -3 - main_iter encountered a problem
  * -4 ...-32 - Invalid input (parameters or primme struct) returned 
  *             by check_input()
+ * -100...-199 - PRIMME error code from first stage
+ * -200...-299 - PRIMME error code from second stage
  *
  ******************************************************************************/
 
@@ -116,10 +118,10 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
          allocatedTargetShifts);
 
    if(ret != 0) {
-      return ret;
+      return ret - 100;
    }
    if (primme_svds->methodStage2 == primme_svds_op_none) {
-      return ret;
+      return 0;
    }
 
    /* Execute stage 2 */
@@ -129,7 +131,10 @@ int @(pre)primme_svds(double *svals, @(type) *svecs, double *resNorms,
    copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms,
          allocatedTargetShifts);
 
-   return ret;
+   if(ret != 0) {
+      return ret - 200;
+   }
+   return 0;
 }
 
 static int comp_double(const void *a, const void *b)
