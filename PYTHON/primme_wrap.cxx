@@ -13159,7 +13159,38 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_svds_params_swigregister", primme_svds_params_swigregister, METH_VARARGS, NULL},
 	 { (char *)"dprimme_svds", _wrap_dprimme_svds, METH_VARARGS, NULL},
 	 { (char *)"zprimme_svds", _wrap_zprimme_svds, METH_VARARGS, NULL},
-	 { (char *)"new_PrimmeParams", _wrap_new_PrimmeParams, METH_VARARGS, NULL},
+	 { (char *)"new_PrimmeParams", _wrap_new_PrimmeParams, METH_VARARGS, (char *)"\n"
+		"Abstract class to specify the eigenvalue problem and the options for calling\n"
+		"dprimme and zprimme.\n"
+		"\n"
+		"Example\n"
+		"-------\n"
+		">>> import Primme, scipy.sparse, numpy as np\n"
+		">>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix\n"
+		">>> class PP(Primme.PrimmeParams):\n"
+		"... 	def __init__(self):\n"
+		"... 		Primme.PrimmeParams.__init__(self)\n"
+		"... 	def matvec(self, X):\n"
+		"... 		return A*X\n"
+		">>> pp = PP()\n"
+		">>> pp.n = A.shape[0] # set problem dimension\n"
+		">>> pp.numEvals = 3   # set number of eigenvalues\n"
+		">>> pp.target = Primme.primme_largest # find the largest eigenvalues\n"
+		">>> pp.eps = 1e-6     # residual norm tolerance\n"
+		">>> evals = np.zeros(pp.numEvals)                    # store eigenvalues\n"
+		">>> evecs = np.zeros((pp.n, pp.numEvals), order='F') # store eigenvectors\n"
+		">>> norms = np.zeros(pp.numEvals)                    # store residual norms\n"
+		">>> ret = Primme.dprimme(evals, evecs, norms, pp) # call the solver\n"
+		">>> ret  # error code, 0 is success!\n"
+		"0\n"
+		">>> pp.initSize # number of converged eigenpairs\n"
+		"3\n"
+		">>> evals[0:pp.initSize] # converged values \n"
+		"array([ 99.,  98.,  97.])\n"
+		">>> pp.stats.numMatvecs  # A*v times that take\n"
+		"110\n"
+		"\n"
+		""},
 	 { (char *)"delete_PrimmeParams", _wrap_delete_PrimmeParams, METH_VARARGS, NULL},
 	 { (char *)"PrimmeParams_display", _wrap_PrimmeParams_display, METH_VARARGS, NULL},
 	 { (char *)"PrimmeParams_set_method", _wrap_PrimmeParams_set_method, METH_VARARGS, NULL},
@@ -13172,7 +13203,39 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"PrimmeParams_globalSum_set_get", _wrap_PrimmeParams_globalSum_set_get, METH_VARARGS, NULL},
 	 { (char *)"disown_PrimmeParams", _wrap_disown_PrimmeParams, METH_VARARGS, NULL},
 	 { (char *)"PrimmeParams_swigregister", PrimmeParams_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_PrimmeSvdsParams", _wrap_new_PrimmeSvdsParams, METH_VARARGS, NULL},
+	 { (char *)"new_PrimmeSvdsParams", _wrap_new_PrimmeSvdsParams, METH_VARARGS, (char *)"\n"
+		"Abstract class to specify the eigenvalue problem and the options for calling\n"
+		"dprimme_svds and zprimme_svds.\n"
+		"\n"
+		"Example\n"
+		"-------\n"
+		">>> import Primme, scipy.sparse, numpy as np\n"
+		">>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix\n"
+		">>> class PSP(Primme.PrimmeSvdsParams):\n"
+		"... 	def __init__(self):\n"
+		"... 		Primme.PrimmeSvdsParams.__init__(self)\n"
+		"... 	def matvec(self, X, transpose):\n"
+		"... 		return A*X if transpose == 0 else A.H*X\n"
+		">>> pp = PSP()\n"
+		">>> pp.m, pp.n = A.shape # set problem dimensions\n"
+		">>> pp.numSvals = 3   # set number of singular values to seek\n"
+		">>> pp.target = Primme.primme_svds_smallest # find the smallest singular values\n"
+		">>> pp.eps = 1e-6     # residual norm tolerance\n"
+		">>> svals = np.zeros(pp.numSvals)                     # store singular values\n"
+		">>> svecsl = np.zeros((pp.m, pp.numSvals), order='F') # store left singular vectors\n"
+		">>> svecsr = np.zeros((pp.n, pp.numSvals), order='F') # store right singular vectors\n"
+		">>> norms = np.zeros(pp.numSvals)                     # store residual norms\n"
+		">>> ret = Primme.dprimme_svds(svals, svecsl, svecsr, norms, pp) # call the solver\n"
+		">>> ret  # error code, 0 is success!\n"
+		"0\n"
+		">>> pp.initSize # number of converged singular pairs\n"
+		"3\n"
+		">>> svals[0:pp.initSize] # converged singular values \n"
+		"array([ 1.,  2.,  3.])\n"
+		">>> pp.stats.numMatvecs  # A*v and A.H*v times that take\n"
+		"94\n"
+		"\n"
+		""},
 	 { (char *)"delete_PrimmeSvdsParams", _wrap_delete_PrimmeSvdsParams, METH_VARARGS, NULL},
 	 { (char *)"PrimmeSvdsParams_display", _wrap_PrimmeSvdsParams_display, METH_VARARGS, NULL},
 	 { (char *)"PrimmeSvdsParams_set_method", _wrap_PrimmeSvdsParams_set_method, METH_VARARGS, NULL},

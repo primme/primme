@@ -11,6 +11,7 @@ from numpy.testing import run_module_suite, assert_allclose
 from scipy import ones, r_, diag
 from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse import csr_matrix
+import Primme
 from Primme import eigsh, svds
 
 #
@@ -227,6 +228,9 @@ def test_primme_svds():
                               (gen_name, n, dtype, k, bool(prec), which))
                         yield (svds_check, svds, op(A), k, prec, which, 1e-6, sva, case_desc)
 
+def test_examples():
+   import doctest
+   doctest.testmod(Primme, raise_on_error=True)
 
 if __name__ == "__main__":
     run_module_suite()

@@ -210,17 +210,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     Examples
     --------
-    >>> import Primme
-    >>> import numpy as np
-    >>> from scipy.sparse import spdiags
-    >>> a = np.ones(3)
-    >>> A  = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
-    >>> r = Primme.eigsh(A, which='LA')
-    >>> r['w'] % values 
+    >>> import Primme, scipy.sparse
+    >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+    >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
+    >>> evals # the three largest eigenvalues of A
+    array([ 99.,  98.,  97.])
+    >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
+    >>> evals # the next three largest eigenvalues
+    array([ 96.,  95.,  94.])
     """
 
     A = aslinearoperator(A)
-    if A.shape[0] != A.shape[1]:
+    if len(A.shape) != 2 or A.shape[0] != A.shape[1]:
         raise ValueError('A: expected square matrix (shape=%s)' % (A.shape,))
 
     if M is not None:
@@ -279,13 +280,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         pp.correctionParams.precondition = 1
 
     if lock is not None:
-        if lock.shape[0] != n:
+        if lock.shape[0] != pp.n:
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
-        pp.numOrthoConst = min(v0.shape[1], n)
+        pp.numOrthoConst = min(lock.shape[1], pp.n)
+
+    if A.dtype.kind in frozenset(["b", "i", "u", "f"]):
+        dtype = np.dtype("d")
+    else:
+        dtype = np.dtype("complex128")
 
     evals = np.zeros(pp.numEvals)
     norms = np.zeros(pp.numEvals)
-    evecs = np.zeros((pp.n, pp.numOrthoConst+pp.numEvals), A.dtype, order='F')
+    evecs = np.zeros((pp.n, pp.numOrthoConst+pp.numEvals), dtype, order='F')
 
     if lock is not None:
         np.copyto(evecs[:, 0:pp.numOrthoConst], lock[:, 0:pp.numOrthoConst])
@@ -295,12 +301,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         np.copyto(evecs[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize],
             v0[:, 0:pp.initSize])
 
-    if A.dtype is np.dtype(np.complex128):
+    if dtype is np.dtype(np.complex128):
         err = zprimme(evals, evecs, norms, pp)
-    elif A.dtype is np.dtype('d'):
-        err = dprimme(evals, evecs, norms, pp)
     else:
-        raise ValueError("dtype of A not supported")
+        err = dprimme(evals, evecs, norms, pp)
 
     if err != 0:
         raise PrimmeError(err)
@@ -362,6 +366,22 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Unitary matrix having right singular vectors as rows.
         If `return_singular_vectors` is "u", this variable is not computed,
         and None is returned instead.
+
+    Examples
+    --------
+    >>> import Primme, scipy.sparse
+    >>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+    >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which='SM')
+    >>> svals # the three smallest singular values of A
+    array([ 1.,  2.,  3.])
+
+    >>> import Primme, scipy.sparse
+    >>> A = scipy.sparse.rand(10000, 100, random_state=10)
+    >>> prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
+    ...           [0], 100, 100) # square diag. preconditioner
+    >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
+    >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
+    ['5.99871', '5.99057', '6.01065']
     """
 
     A = aslinearoperator(A)
@@ -461,9 +481,14 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if locku0 is not None:
         pp.numOrthoConst = min(locku0.shape[1], min(m,n))
 
+    if A.dtype.kind in frozenset(["b", "i", "u", "f"]):
+        dtype = np.dtype("d")
+    else:
+        dtype = np.dtype("complex128")
+
     svals = np.zeros(pp.numSvals)
-    svecsl = np.zeros((pp.m, pp.numOrthoConst+pp.numSvals), A.dtype, order='F')
-    svecsr = np.zeros((pp.n, pp.numOrthoConst+pp.numSvals), A.dtype, order='F')
+    svecsl = np.zeros((pp.m, pp.numOrthoConst+pp.numSvals), dtype, order='F')
+    svecsr = np.zeros((pp.n, pp.numOrthoConst+pp.numSvals), dtype, order='F')
     norms = np.zeros(pp.numSvals)
 
     if locku0 is not None:
@@ -477,12 +502,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
         np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
 
-    if A.dtype is np.dtype('d'):
+    if dtype is np.dtype('d'):
         err = dprimme_svds(svals, svecsl, svecsr, norms, pp)
-    elif A.dtype is np.dtype(np.complex128):
-        err = zprimme_svds(svals, svecsl, svecsr, norms, pp)
     else:
-        raise ValueError("dtype of A not supported")
+        err = zprimme_svds(svals, svecsl, svecsr, norms, pp)
 
     if err != 0:
         raise PrimmeSvdsError(err)

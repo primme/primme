@@ -51,6 +51,7 @@ class PrimmeParams : public primme_params {
    void display() {
       if (outputFile) outputFile = stdout;
       primme_display_params(*static_cast<primme_params*>(this));
+      fflush(outputFile);
    }
 
    void set_method(primme_preset_method method) {
@@ -96,6 +97,7 @@ class PrimmeSvdsParams : public primme_svds_params {
    void display() {
       if (outputFile) outputFile = stdout;
       primme_svds_display_params(*static_cast<primme_svds_params*>(this));
+      fflush(outputFile);
    }
 
    void set_method(primme_svds_preset_method method,

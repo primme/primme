@@ -27,60 +27,9 @@
  ******************************************************************************/
 
 %define DOCSTRING
-"Find a few eigenvectors and eigenvalues of a matrix.
+"Find a few eigenvalues and eigenvectors, and also singular triplets of a matrix.
 Uses PRIMME: https://github.com/primme/primme
-
-Example
--------
->>> import Primme, numpy as np
->>> from scipy.sparse import *
->>> 
->>> # A = [ 2  1  0 ...
->>> #      -1  2 -1 0 ...
->>> #       0 -1  2 -1 0 ... ]
->>> a = np.ones(10)
->>> A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
->>> 
->>> class PPd(Primme.PrimmeParams):
-... 	def __init__(self):
-... 		Primme.PrimmeParams.__init__(self)
-... 	def matvec(self, X):
-... 		return A*X
->>> pp = PPd()
->>> pp.n = A.shape[0]
->>> pp.maxBasisSize = 3
->>> pp.minRestartSize = 1
->>> pp.numEvals = 3
->>> pp.restartingParams.maxPrevRetain = 1
->>> pp.set_method(Primme.DYNAMIC)
->>> pp.display()
->>> evals = np.zeros(pp.numEvals)
->>> evecs = np.zeros((pp.n, pp.numEvals))
->>> norms = np.zeros(pp.numEvals)
->>> print Primme.dprimme(evals, evecs, norms, pp)
->>> print pp.initSize, evals, norms
->>> 
->>> class PPz(Primme.PrimmeParams):
-... 	def __init__(self, matrix=None):
-... 		Primme.PrimmeParams.__init__(self)
-... 		self.mymatrix = matrix
-... 	def matvec(self):
-... 		return self.mymatrix*X
->>> 
->>> a = np.ones(10, complex)
->>> A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
->>> pp = PPz(A)
->>> pp.n = A.shape[0]
->>> pp.maxBasisSize = 3
->>> pp.minRestartSize = 1
->>> pp.numEvals = 3
->>> pp.set_method(Primme.DYNAMIC)
->>> pp.display()
->>> evals = np.zeros(pp.numEvals)
->>> evecs = np.zeros((pp.n, pp.numEvals), complex)
->>> norms = np.zeros(pp.numEvals)
->>> print Primme.zprimme(evals, evecs, norms, pp)
->>> print pp.initSize, evals, norms, pp.stats.numMatvecs"
+"
 %enddef
 
 %module(docstring=DOCSTRING,directors="1") Primme
@@ -589,6 +538,77 @@ int my_primme_svds(int lenSvals, double *svals,
         throw Swig::DirectorMethodException();
     }
 }
+
+%define DOCSTRING_PrimmeParams
+"Abstract class to specify the eigenvalue problem and the options for calling
+dprimme and zprimme.
+
+Example
+-------
+>>> import Primme, scipy.sparse, numpy as np
+>>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+>>> class PP(Primme.PrimmeParams):
+... 	def __init__(self):
+... 		Primme.PrimmeParams.__init__(self)
+... 	def matvec(self, X):
+... 		return A*X
+>>> pp = PP()
+>>> pp.n = A.shape[0] # set problem dimension
+>>> pp.numEvals = 3   # set number of eigenvalues
+>>> pp.target = Primme.primme_largest # find the largest eigenvalues
+>>> pp.eps = 1e-6     # residual norm tolerance
+>>> evals = np.zeros(pp.numEvals)                    # store eigenvalues
+>>> evecs = np.zeros((pp.n, pp.numEvals), order='F') # store eigenvectors
+>>> norms = np.zeros(pp.numEvals)                    # store residual norms
+>>> ret = Primme.dprimme(evals, evecs, norms, pp) # call the solver
+>>> ret  # error code, 0 is success!
+0
+>>> pp.initSize # number of converged eigenpairs
+3
+>>> evals[0:pp.initSize] # converged values 
+array([ 99.,  98.,  97.])
+>>> pp.stats.numMatvecs  # A*v times that take
+110
+"
+%enddef
+%feature("docstring") PrimmeParams DOCSTRING_PrimmeParams;
+
+%define DOCSTRING_PrimmeSvdsParams
+"Abstract class to specify the eigenvalue problem and the options for calling
+dprimme_svds and zprimme_svds.
+
+Example
+-------
+>>> import Primme, scipy.sparse, numpy as np
+>>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+>>> class PSP(Primme.PrimmeSvdsParams):
+... 	def __init__(self):
+... 		Primme.PrimmeSvdsParams.__init__(self)
+... 	def matvec(self, X, transpose):
+... 		return A*X if transpose == 0 else A.H*X
+>>> pp = PSP()
+>>> pp.m, pp.n = A.shape # set problem dimensions
+>>> pp.numSvals = 3   # set number of singular values to seek
+>>> pp.target = Primme.primme_svds_smallest # find the smallest singular values
+>>> pp.eps = 1e-6     # residual norm tolerance
+>>> svals = np.zeros(pp.numSvals)                     # store singular values
+>>> svecsl = np.zeros((pp.m, pp.numSvals), order='F') # store left singular vectors
+>>> svecsr = np.zeros((pp.n, pp.numSvals), order='F') # store right singular vectors
+>>> norms = np.zeros(pp.numSvals)                     # store residual norms
+>>> ret = Primme.dprimme_svds(svals, svecsl, svecsr, norms, pp) # call the solver
+>>> ret  # error code, 0 is success!
+0
+>>> pp.initSize # number of converged singular pairs
+3
+>>> svals[0:pp.initSize] # converged singular values 
+array([ 1.,  2.,  3.])
+>>> pp.stats.numMatvecs  # A*v and A.H*v times that take
+94
+"
+%enddef
+%feature("docstring") PrimmeSvdsParams DOCSTRING_PrimmeSvdsParams;
+
+
 %include "../PRIMMESRC/COMMONSRC/primme.h"
 %include "../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h"
 %include "primmew.h"
