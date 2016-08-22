@@ -46,8 +46,8 @@
  * Y           Matrix with size nLocal x numCols+blockSize
  * ldY         The leading dimension of Y
  * Z           Matrix with size nLocal x numCols+blockSize
- * numCols     The number of columns that hasn't changed
- * blockSize   The number of columns that has changed
+ * numCols     The number of columns that haven't changed
+ * blockSize   The number of columns that have changed
  * rwork       Workspace
  * lrwork      Size of rwork
  * isSymmetric Nonzero if Z is symmetric/Hermitian

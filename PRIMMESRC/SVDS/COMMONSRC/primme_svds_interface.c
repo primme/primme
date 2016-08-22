@@ -162,10 +162,6 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
    if (primme_svds->methodStage2 != primme_svds_op_none) {
       /* Copy values set in primme_svds to the second stage underneath eigensolver */
       copy_params_from_svds(primme_svds, 1);
-
-      /* NOTE: refined extraction seems to work better than RR */
-      if (primme_svds->primmeStage2.projectionParams.projection == primme_proj_default)
-         primme_svds->primmeStage2.projectionParams.projection = primme_proj_refined;
    }
 }
 
@@ -239,26 +235,31 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       break;
    }
 
-   if (stage == 0) {
-      switch (primme_svds->target) {
-      case primme_svds_largest:
-         primme->target = primme_largest;
-         break;
-      case primme_svds_smallest:
-         primme->target = primme_smallest;
-         break;
-      case primme_svds_closest_abs:
-         primme->target = method == primme_svds_op_augmented ?
-            primme_closest_geq : primme_closest_abs;
-         primme->numTargetShifts = primme_svds->numTargetShifts;
-         break;
-      }
+   switch (primme_svds->target) {
+   case primme_svds_largest:
+      primme->target = primme_largest;
+      break;
+   case primme_svds_smallest:
+      primme->target = (method == primme_svds_op_augmented) ?
+         primme_closest_geq : primme_smallest;
+      break;
+   case primme_svds_closest_abs:
+      primme->target = primme_closest_abs;
+      primme->numTargetShifts = primme_svds->numTargetShifts;
+      break;
    }
-   else {
-      primme->target = primme_closest_geq;
+
+   if (stage == 1 && primme->initBasisMode == primme_init_default) {
       primme->initBasisMode = primme_init_user;
    }
-      
+
+   if (method == primme_svds_op_augmented && 
+         primme_svds->target != primme_svds_largest &&
+         primme->projectionParams.projection == primme_proj_default) {
+      /* NOTE: refined extraction seems to work better than RR */
+      primme->projectionParams.projection = primme_proj_refined;
+   }
+
    if (primme->target == primme_smallest || primme->target == primme_largest){
       if (primme_svds->locking >= 0)
          primme->locking = primme_svds->locking;
@@ -268,7 +269,6 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
          primme->locking = primme_svds->locking;
       else if (primme->locking < 0)
          primme->locking = 1;
-      primme->numTargetShifts = primme_svds->numSvals;
    }
 
    if (primme_svds->precondition >= 0)
@@ -406,10 +406,11 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme) {
 
    const double machEps = Num_dlamch_primme("E");
+   const double aNorm = (primme->aNorm > 0.0) ?
+      primme->aNorm : primme->stats.estimateLargestSVal;
    *isConv = *rNorm < max(
-               primme->eps * sqrt(fabs(*eval * (
-                  primme->aNorm > 0 ? primme->aNorm : primme->stats.estimateLargestSVal))),
-               machEps * 3.16 * primme->stats.estimateLargestSVal);
+               primme->eps * sqrt(fabs(*eval * aNorm)),
+               machEps * 3.16 * aNorm);
 }
 
 /*******************************************************************************
@@ -433,10 +434,13 @@ static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *i
    primme_params *primme) {
 
    const double machEps = Num_dlamch_primme("E");
-   *isConv = *rNorm < max(
-               primme->eps / sqrt(2.0) * (
-                     primme->aNorm > 0.0 ? primme->aNorm : primme->stats.estimateLargestSVal),
-               machEps * 3.16 * primme->stats.estimateLargestSVal);
+   const double aNorm = (primme->aNorm > 0.0) ?
+      primme->aNorm : primme->stats.estimateLargestSVal;
+   *isConv = 
+      *rNorm < max(
+               primme->eps / sqrt(2.0) * aNorm,
+               machEps * 3.16 * aNorm) 
+      && *eval >= aNorm*machEps;
 } 
 
 static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 

@@ -31,21 +31,36 @@
 
 void reset_flags_dprimme(int *flags, int first, int last);
 
-int restart_dprimme(double *V, double *W, int nLocal, int basisSize, int ldV,
-   double *hVals, double *hSVals, int *flags, int *iev, int *ievSize,
-   double *blockNorms, double *evecs, int *evecsPerm, double *evals, double *resNorms,
-   double *evecsHat, int ldevecsHat, double *M, int ldM, double *UDU,
-   int ldUDU, int *ipivot, int *numConverged, int *numLocked,
-   int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
-   int ldpreviousHVecs, int numGuesses, double *prevRitzVals, int *numPrevRitzVals,
-   double *H, int ldH, double *Q, int ldQ, double *R, int ldR, double* QV, int ldQV,
-   double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs, int newldhVecs,
-   int *restartSizeOutput, int *targetShiftIndex, double machEps,
-   double *rwork, int rworkSize, int *iwork, primme_params *primme);
+int restart_dprimme(double *V, double *W, int nLocal, int basisSize,
+       int ldV, double *hVals, double *hSVals, int *flags, int *iev,
+       int *ievSize, double *blockNorms, double *evecs, int *evecsPerm,
+       double *evals, double *resNorms, double *evecsHat, int ldevecsHat,
+       double *M, int ldM, double *UDU, int ldUDU, int *ipivot,
+       int *numConverged, int *numLocked, int *numConvergedStored,
+       double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
+       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, double *H,
+       int ldH, double *Q, int ldQ, double *R, int ldR, double* QtV,
+       int ldQtV, double *hU, int ldhU, int newldhU, double *hVecs,
+       int ldhVecs, int newldhVecs, int *restartSizeOutput,
+       int *targetShiftIndex, int *numArbitraryVecs, double *hVecsRot,
+       int ldhVecsRot, double *previousHU, int ldpreviousHU,
+       double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
+       double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
-int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize, int ldhVecs,
-   int indexOfPreviousVecs, int newBasisSize, int *perm, double *hU, int ldhU,
-   double *R, int ldR, int numPrevRetained, int machEps, int *iwork,
-   double *rwork, int rworkSize, primme_params *primme);
+int Num_reset_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
+   double *h, int nh, int ldh, double *hVals,
+   double *X0, int nX0b, int nX0e, int ldX0,
+   double *X1, int nX1b, int nX1e, int ldX1,
+   double *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
+   double *Wo, int nWob, int nWoe, int ldWo,
+   double *R, int nRb, int nRe, int ldR, double *Rnorms,
+   double *rnorms, int nrb, int nre,
+   int reset, double machEps, double *rwork, int lrwork, primme_params *primme);
+
+int retain_previous_coefficients_dprimme(double *hVecs, int ldhVecs,
+   double *hU, int ldhU, double *hSVals, double *previousHVecs,
+   int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
+   int *flags, int *numPrevRetained, int *iwork, double *rwork, int rworkSize,
+   primme_params *primme);
 
 #endif

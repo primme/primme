@@ -47,11 +47,11 @@ restart_z.o: restart_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
  convergence_z.h numerical_z.h ../COMMONSRC/common_numerical.h \
  ../COMMONSRC/Complexz.h
 solve_H_z.o: solve_H_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
- solve_H_z.h solve_H_private_z.h numerical_z.h \
+ ../COMMONSRC/const.h solve_H_z.h solve_H_private_z.h numerical_z.h \
  ../COMMONSRC/common_numerical.h ../COMMONSRC/Complexz.h ortho_z.h
-update_W_z.o: update_W_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
- update_W_z.h ortho_z.h numerical_z.h ../COMMONSRC/common_numerical.h \
- ../COMMONSRC/Complexz.h
 update_projection_z.o: update_projection_z.c ../COMMONSRC/primme.h \
  ../COMMONSRC/Complexz.h ../COMMONSRC/const.h update_projection_z.h \
  numerical_z.h ../COMMONSRC/common_numerical.h ../COMMONSRC/Complexz.h
+update_W_z.o: update_W_z.c ../COMMONSRC/primme.h ../COMMONSRC/Complexz.h \
+ update_W_z.h ortho_z.h numerical_z.h ../COMMONSRC/common_numerical.h \
+ ../COMMONSRC/Complexz.h

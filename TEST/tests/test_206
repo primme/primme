@@ -1,0 +1,19 @@
+// Test seeking smallest with high accuracy
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = rect.mtx
+driver.checkXFile    = tests/sol_206
+driver.checkInterface = 1
+driver.PrecChoice    = jacobi
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme_svds.printLevel = 1
+
+// Solver parameters
+primme_svds.numSvals = 1
+primme_svds.eps = 1.000000e-12
+primme_svds.target = primme_svds_smallest

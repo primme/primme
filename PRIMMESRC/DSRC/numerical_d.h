@@ -70,6 +70,7 @@ void Num_larnv_dprimme(int idist, int *iseed, int length, double *x);
 void Num_scal_dprimme(int n, double alpha, double *x, int incx);
 void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy);
 void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ldy);
+void Num_zero_matrix_dprimme(double *x, int m, int n, int ldx);
 void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul, int i0, double *y, int ldy, int zero);
 void Num_geqrf_dprimme(int m, int n, double *a, int lda, double *tau, double *rwork, int lrwork, int *info);
 int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
@@ -89,11 +90,11 @@ double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);
 void Num_copy_compact_trimatrix_dprimme(double *x, int m, int n, int i0, double *y, int ldy);
 void Num_copy_trimatrix_compact_dprimme(double *x, int m, int n, int ldx, int i0, double *y, int *ly);
-void Num_copy_matrix_i_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
+void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy);
-int Num_compute_residual_i_dprimme(int m, double *evals, double *x, int n, int *p,
+int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n, int *p,
    int ldx, double *Ax, int ldAx,
-   double *xo, int no, int ldxo, double *ro, int ldro,
+   double *xo, int no, int ldxo, int io0, double *ro, int ldro,
    double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
    double *rwork, int lrwork);
 void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,
@@ -101,6 +102,9 @@ void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,
    int ldb);
 void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, const char *diag,
       int m, int n, double alpha, double *a, int lda, double *b, int ldb);
+int compute_submatrix_dprimme(double *X, int nX, int ldX, 
+   double *H, int nH, int ldH, double *R, int ldR,
+   double *rwork, int lrwork);
 
 #define PRIMME_BLOCK_SIZE 512
 

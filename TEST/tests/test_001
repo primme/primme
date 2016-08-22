@@ -5,6 +5,7 @@
 driver.matrixFile    = LUNDA.mtx
 driver.checkXFile    = tests/sol_001
 driver.PrecChoice    = noprecond
+driver.checkInterface = 1
 
 // ---------------------------------------------------
 //                 primme configuration

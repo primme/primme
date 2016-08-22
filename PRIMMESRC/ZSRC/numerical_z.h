@@ -72,6 +72,7 @@ void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x);
 void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx);
 void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
 void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy);
+void Num_zero_matrix_zprimme(Complex_Z *x, int m, int n, int ldx);
 void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul, int i0, Complex_Z *y, int ldy, int zero);
 void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau, Complex_Z *rwork, int lrwork, int *info);
 int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
@@ -95,11 +96,13 @@ Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *
       Complex_Z *work, int ldwork, int avoidCopy);
 void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Complex_Z *y, int ldy);
 void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly);
-void Num_copy_matrix_i_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
+void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy);
-int Num_compute_residual_i_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
+void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
+      int *yin, int ldy);
+int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int n, int *p,
    int ldx, Complex_Z *Ax, int ldAx,
-   Complex_Z *xo, int no, int ldxo, Complex_Z *ro, int ldro,
+   Complex_Z *xo, int no, int ldxo, int io0, Complex_Z *ro, int ldro,
    Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
    Complex_Z *rwork, int lrwork);
 void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
@@ -107,6 +110,9 @@ void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
    int ldb);
 void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, const char *diag,
       int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb);
+int compute_submatrix_zprimme(Complex_Z *X, int nX, int ldX, 
+   Complex_Z *H, int nH, int ldH, Complex_Z *R, int ldR,
+   Complex_Z *rwork, int lrwork);
 
 #define PRIMME_BLOCK_SIZE 512
 

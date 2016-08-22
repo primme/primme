@@ -5,6 +5,7 @@
 // ---------------------------------------------------
 driver.matrixFile    = mhd1280b.mtx
 driver.checkXFile    = tests/sol_104
+driver.checkInterface = 1
 driver.PrecChoice    = noprecond
 
 // ---------------------------------------------------

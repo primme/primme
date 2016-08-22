@@ -6,6 +6,7 @@
 driver.matrixFile    = LUNDA.mtx
 driver.initialGuessesPert = 0.000000e+00
 driver.checkXFile    = tests/sol_005
+driver.checkInterface = 1
 driver.PrecChoice    = jacobi
 driver.shift         = 0.000000e+00
 

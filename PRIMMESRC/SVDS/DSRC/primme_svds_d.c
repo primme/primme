@@ -26,7 +26,7 @@
  *
  ******************************************************************************/
  
-#include <stdlib.h>   /* mallocs, free */
+#include <stdlib.h>   /* free, qsort */
 #include <stdio.h>  
 #include <string.h>  
 #include <math.h>  
@@ -76,7 +76,7 @@
 int dprimme_svds(double *svals, double *svecs, double *resNorms, 
       primme_svds_params *primme_svds) {
 
-   int ret;
+   int ret, allocatedTargetShifts;
    double *svecs0;
 
    /* ------------------ */
@@ -109,9 +109,11 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms,
    }
 
    /* Execute stage 1 */
-   svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs, NULL);
+   svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs, NULL,
+         &allocatedTargetShifts);
    ret = dprimme(svals, svecs0, resNorms, &primme_svds->primme); 
-   copy_last_params_to_svds(primme_svds, 0, svals, svecs, resNorms);
+   copy_last_params_to_svds(primme_svds, 0, svals, svecs, resNorms,
+         allocatedTargetShifts);
 
    if(ret != 0) {
       return ret;
@@ -121,19 +123,23 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms,
    }
 
    /* Execute stage 2 */
-   svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs, resNorms);
-   ret = dprimme(svals, svecs0, resNorms, &primme_svds->primmeStage2); 
-   copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms);
-
-   if(ret != 0) {
-      return ret;
-   }
+   svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs, resNorms,
+         &allocatedTargetShifts);
+   ret = dprimme(svals, svecs0, resNorms, &primme_svds->primmeStage2);
+   copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms,
+         allocatedTargetShifts);
 
    return ret;
 }
 
+static int comp_double(const void *a, const void *b)
+{
+   return *(double*)a <= *(double*)b ? -1 : 1;
+}
+
 static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, double *svecs, double *rnorms) {
+      double *svals, double *svecs, double *rnorms, int *allocatedTargetShifts) {
+
    primme_params *primme;
    primme_svds_operator method;
    double *aux, *out_svecs = svecs;
@@ -142,6 +148,8 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
+
+   *allocatedTargetShifts = 0;
 
    if (method == primme_svds_op_none) {
       primme->maxMatvecs = 1;
@@ -171,11 +179,12 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       }
    }
 
-   /* Set properly initial vectors. Now svecs = [Uc U0 Vc V0], where
-      Uc, m x numOrthoConst, left constrain vectors;
-      U0, m x initSize, left initial vectors;
-      Vc, n x numOrthoConst, right constrain vectors;
-      V0, n x numOrthoConst, right initial vectors. */
+   /* Set properly initial vectors. Now svecs = [Uc U0 Vc V0], where          */
+   /* Uc, m x numOrthoConst, left constrain vectors;                          */
+   /* U0, m x initSize, left initial vectors;                                 */
+   /* Vc, n x numOrthoConst, right constrain vectors;                         */
+   /* V0, n x numOrthoConst, right initial vectors.                           */
+
    primme->initSize = primme_svds->initSize;
    primme->numOrthoConst = primme_svds->numOrthoConst;
    n = primme_svds->initSize + primme_svds->numOrthoConst;
@@ -234,41 +243,84 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
          }
       }
    }
-   else if (stage == 1 && primme_svds->initSize > 0 &&
-            primme_svds->target != primme_svds_closest_abs) {
-      /* The target shifts are set in middle of the eigenvalue confidence
-         interval associated to the approximate eigenpairs from the
-         previous stage */
-      assert(method == primme_svds_op_augmented);
-      primme->targetShifts = (double *)primme_calloc(
-         primme_svds->initSize, sizeof(double), "targetShifts");
+   else if (stage == 1 && primme->targetShifts == NULL &&
+            primme_svds->target == primme_svds_smallest) {
 
-      /* Recompute the singular values when it went below the machine precision in the first stage. */
-      if (primme_svds->target == primme_svds_smallest) {
-         for (i=0; i<primme_svds->initSize; i++) {
-            double sval;
-            if (svals[i] < primme_svds->aNorm*sqrt(machEps)) {
-               double *Ax = (double*)primme_calloc(primme->nLocal, sizeof(double), "Ax");
-               double ztmp;
-               int ONE = 1;
-               primme->matrixMatvec(&svecs[primme->nLocal*(primme->numOrthoConst+i)],
-                     Ax, &ONE, primme);
-               ztmp = Num_dot_dprimme(primme->nLocal, Ax, 1,
-                     &svecs[primme->nLocal*(primme->numOrthoConst+i)], 1);
-               if (primme_svds->globalSumDouble) {
-                  primme_svds->globalSumDouble((double*)&ztmp, &sval, &ONE, primme_svds);
-               }
-               else
-                  sval = *(double*)&ztmp;
-               svals[i] = sval/2.0;
-               free(Ax);
-            }
-         }
+      assert(method == primme_svds_op_augmented);
+      *allocatedTargetShifts = 1;
+      primme->targetShifts = (double *)primme_calloc(
+         primme_svds->numSvals, sizeof(double), "targetShifts");
+
+      /* primme was configured to find the closest but greater values than */
+      /* some shift. The eigensolver is not able to distinguish eigenvalues*/
+      /* separated by less than machEps*|A|. The augmented matrix has      */
+      /* |m-n| eigenpairs with value zero that don't correspond to         */
+      /* singular triplets of A. To avoid to return incorrect triplets set */
+      /* shifts not smaller than machEps*|A|.                              */
+
+      for (i=0; i<primme_svds->initSize; i++) {
+         primme->targetShifts[i] = max(svals[i]-rnorms[i], primme_svds->aNorm*machEps);
+      }
+      for ( ; i<primme_svds->numSvals; i++) {
+         primme->targetShifts[i] = primme_svds->aNorm*machEps;
       }
 
-      for (i=0; i<primme_svds->initSize; i++)
-         primme->targetShifts[i] = svals[i];
-      primme->numTargetShifts = primme_svds->initSize;
+      /* Sort the shifts in ascending order */
+
+      qsort(primme->targetShifts, primme_svds->numSvals, sizeof(double),
+            comp_double);
+      primme->numTargetShifts = primme_svds->numSvals;
+
+   }
+   else if (method == primme_svds_op_augmented &&
+         primme_svds->target == primme_svds_smallest &&
+         primme->targetShifts == NULL) {
+
+      primme->targetShifts = (double *)primme_calloc( 1, sizeof(double),
+            "targetShifts");
+      *allocatedTargetShifts = 1;
+      primme->targetShifts[0] = 0.0;
+      primme->numTargetShifts = 1;
+
+   }
+
+   /* Set an initial guess [x; A'x] or [Ax; x] if there is no initial guess   */
+   /* and augmented matrix will be used                                       */
+
+   if (method == primme_svds_op_augmented && primme->initSize <= 0) {
+      int ONE = 1, TWO = 2, NOTRANS = 0, TRANS = 1;
+      double dtmp[2], dtmpo[2], *dtmp0 = dtmpo;
+      double ztmp, tzero = +0.0e+00;
+      if (primme_svds->m >= primme_svds->n) {
+         Num_larnv_dprimme(2, primme->iseed, primme_svds->mLocal,
+               &svecs[primme_svds->nLocal]);
+         primme_svds->matrixMatvec(&svecs[primme_svds->nLocal],
+               &primme_svds->mLocal, svecs, &primme_svds->nLocal, &ONE, &TRANS,
+               primme_svds);
+      }
+      else {
+         Num_larnv_dprimme(2, primme->iseed, primme_svds->nLocal, svecs);
+         primme_svds->matrixMatvec(svecs, &primme_svds->nLocal,
+               &svecs[primme_svds->nLocal], &primme_svds->mLocal, &ONE,
+               &NOTRANS, primme_svds);
+      }
+      ztmp = Num_dot_dprimme(primme_svds->nLocal, svecs, 1, svecs, 1);
+      dtmp[0] = *(double*)&ztmp;
+      ztmp = Num_dot_dprimme(primme_svds->mLocal,
+            &svecs[primme_svds->nLocal], 1, &svecs[primme_svds->nLocal], 1);
+      dtmp[1] = *(double*)&ztmp;
+      if (primme_svds->globalSumDouble) {
+         primme_svds->globalSumDouble(dtmp, dtmp0, &TWO, primme_svds);
+      }
+      else dtmp0 = dtmp;
+      ztmp = tzero;
+      *(double*)&ztmp = 1.0/sqrt(dtmp0[0]);
+      Num_scal_dprimme(primme_svds->nLocal, ztmp, svecs, 1);
+      *(double*)&ztmp = 1.0/sqrt(dtmp0[1]);
+      Num_scal_dprimme(primme_svds->mLocal, ztmp,
+            &svecs[primme_svds->nLocal], 1);
+      primme->initSize = 1;
+      primme->initBasisMode = primme_init_user;
    }
 
    return out_svecs;
@@ -368,7 +420,8 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
 }
  
 static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-                                     double *svals, double *svecs, double *rnorms) {
+      double *svals, double *svecs, double *rnorms, int allocatedTargetShifts) {
+
    int trans = 1, notrans = 0;
    primme_params *primme;
    primme_svds_operator method;
@@ -516,7 +569,8 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
          primme_svds->targetShifts[i] = sqrt(primme_svds->targetShifts[i]);
       }
    }
-   if (stage == 1 && primme->targetShifts) {
+
+   if (allocatedTargetShifts) {
       free(primme->targetShifts);
       primme->targetShifts = NULL;
    }
@@ -585,9 +639,11 @@ static int primme_svds_check_input(double *svals, double *svecs, double *resNorm
              primme_svds->method != primme_svds_op_AAt &&
              primme_svds->method != primme_svds_op_augmented)
       ret = -14;
-   else if ( primme_svds->methodStage2 != primme_svds_op_AtA &&
-             primme_svds->methodStage2 != primme_svds_op_AAt &&
-             primme_svds->methodStage2 != primme_svds_op_augmented)
+   else if ( (primme_svds->method == primme_svds_op_augmented &&
+              primme_svds->methodStage2 != primme_svds_op_none) ||
+             (primme_svds->method != primme_svds_op_augmented &&
+              primme_svds->methodStage2 != primme_svds_op_augmented &&
+              primme_svds->methodStage2 != primme_svds_op_none))
       ret = -15;
    else if (primme_svds->printLevel < 0 || primme_svds->printLevel > 5)
       ret = -16; 

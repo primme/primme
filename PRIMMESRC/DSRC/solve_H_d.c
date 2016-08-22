@@ -29,6 +29,7 @@
 #include <math.h>
 #include <assert.h>
 #include "primme.h"
+#include "const.h"
 #include "solve_H_d.h"
 #include "solve_H_private_d.h"
 #include "numerical_d.h"
@@ -42,19 +43,19 @@
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
  * H              The matrix V'*A*V
- * basisSize      The dimension of H, R, QV and hU
+ * basisSize      The dimension of H, R, QtV and hU
  * ldH            The leading dimension of H
  * R              The factor R for the QR decomposition of (A - target*I)*V
  * ldR            The leading dimension of R
- * QV             Q'*V
- * ldQV           The leading dimension of QV
+ * QtV            Q'*V
+ * ldQtV          The leading dimension of QtV
  * numConverged   Number of eigenvalues converged to determine ordering shift
  * lrwork         Length of the work array rwork
  * primme         Structure containing various solver parameters
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hU             The left singular vectors of R or the eigenvectors of QV/R
+ * hU             The left singular vectors of R or the eigenvectors of QtV/R
  * ldhU           The leading dimension of hU
  * hVecs          The coefficient vectors such as V*hVecs will be the Ritz vectors
  * ldhVecs        The leading dimension of hVecs
@@ -70,7 +71,7 @@
  ******************************************************************************/
 
 int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
-   double *QV, int ldQV, double *hU, int ldhU, double *hVecs, int ldhVecs,
+   double *QtV, int ldQtV, double *hU, int ldhU, double *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
    double *rwork, int *iwork, primme_params *primme) {
 
@@ -83,13 +84,13 @@ int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
       break;
 
    case primme_proj_harmonic:
-      ret = solve_H_Harm_dprimme(H, ldH, QV, ldQV, R, ldR, hVecs, ldhVecs, hU,
+      ret = solve_H_Harm_dprimme(H, ldH, QtV, ldQtV, R, ldR, hVecs, ldhVecs, hU,
             ldhU, hVals, basisSize, numConverged, machEps, lrwork, rwork, iwork, primme);
       break;
 
    case primme_proj_refined:
       ret = solve_H_Ref_dprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
-            R, ldR, hVals, basisSize, lrwork, rwork, primme);
+            R, ldR, hVals, basisSize, numConverged, lrwork, rwork, iwork, primme);
       break;
 
    default:
@@ -368,8 +369,20 @@ int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
 }
 
 /*******************************************************************************
- * Subroutine solve_H_Harm - This procedure solves the eigenvalues of QV*inv(R)
- *
+ * Subroutine solve_H_Harm - This procedure implements the harmonic extraction
+ *    in a novelty way. In standard harmonic the next eigenproblem is solved:
+ *       V'*(A-s*I)'*(A-s*I)*V*X = V'*(A-s*I)'*V*X*L,
+ *    where (L_{i,i},X_i) are the harmonic-Ritz pairs. In practice, it is
+ *    computed (A-s*I)*V = Q*R and it is solved instead:
+ *       R*X = Q'*V*X*L,
+ *    which is a generalized non-Hermitian problem. Instead of dealing with
+ *    complex solutions, which are unnatural in context of Hermitian problems,
+ *    we propose the following. Note that,
+ *       (A-s*I)*V = Q*R -> Q'*V*inv(R) = Q'*inv(A-s*I)*Q.
+ *    And note that Q'*V*inv(R) is Hermitian if A is, and also that
+ *       Q'*V*inv(R)*Y = Y*inv(L) ->  Q'*V*X*L = R*X,
+ *    with Y = R*X. So this routine computes X by solving the Hermitian problem
+ *    Q'*V*inv(R).
  *        
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -383,9 +396,9 @@ int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * hVecs         The orthogonal basis of inv(R) * eigenvectors of QV/R
+ * hVecs         The orthogonal basis of inv(R) * eigenvectors of QtV/R
  * ldhVecs       The leading dimension of hVecs
- * hU            The eigenvectors of QV/R
+ * hU            The eigenvectors of QtV/R
  * ldhU          The leading dimension of hU
  * hVals         The Ritz values of the vectors in hVecs
  * rwork         Workspace
@@ -396,7 +409,7 @@ int solve_H_RR_dprimme(double *H, int ldH, double *hVecs,
  *     - -1 Num_dsyev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Harm_dprimme(double *H, int ldH, double *QV, int ldQV,
+static int solve_H_Harm_dprimme(double *H, int ldH, double *QtV, int ldQtV,
    double *R, int ldR, double *hVecs, int ldhVecs, double *hU, int ldhU,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
    double *rwork, int *iwork, primme_params *primme) {
@@ -410,14 +423,14 @@ static int solve_H_Harm_dprimme(double *H, int ldH, double *QV, int ldQV,
    if (basisSize == 0) return 0;
 
    /* Return memory requirements */
-   if (QV == NULL) {
-      return solve_H_RR_dprimme(QV, ldQV, hVecs, ldhVecs, hVals, basisSize,
+   if (QtV == NULL) {
+      return solve_H_RR_dprimme(QtV, ldQtV, hVecs, ldhVecs, hVals, basisSize,
          0, lrwork, rwork, iwork, primme);
    }
 
-   /* QAQ = QV*inv(R) */
+   /* QAQ = QtV*inv(R) */
 
-   Num_copy_matrix_dprimme(QV, basisSize, basisSize, ldQV, hVecs, ldhVecs);
+   Num_copy_matrix_dprimme(QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs);
    Num_trsm_dprimme("R", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
          hVecs, ldhVecs);
 
@@ -498,9 +511,10 @@ static int solve_H_Harm_dprimme(double *H, int ldH, double *QV, int ldQV,
  *     - -1 Num_dsyev was unsuccessful
  ******************************************************************************/
 
-int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
+static int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
    int ldhVecs, double *hU, int ldhU, double *hSVals, double *R, int ldR,
-   double *hVals, int basisSize, int lrwork, double *rwork, primme_params *primme) {
+   double *hVals, int basisSize, int targetShiftIndex, int lrwork, double *rwork,
+   int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
@@ -522,19 +536,18 @@ int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
          return NUM_DGESVD_FAILURE;
       }
       lrwork += (int)*(double*)&rwork0;
+      lrwork += basisSize*basisSize; /* aux for transpose V and symm */
       return lrwork;
    }
 
-   /* Copy upper triangular part of R into hVecs and zero lower triangular
-      part of hVecs */
-   Num_copy_trimatrix_dprimme(R, basisSize, basisSize, ldR, 0, 0, hVecs, ldhVecs, 1);
+   /* Copy R into hVecs */
+   Num_copy_matrix_dprimme(R, basisSize, basisSize, ldR, hVecs, ldhVecs);
 
-   /*Since Ritz vectors in hVecs is not needed, we use hVecs to hold refined
-     Ritz vectors. Note gesvd returns transpose(V) rather than V and sorted in
-     descending order of the singular values */
+   /* Note gesvd returns transpose(V) rather than V and sorted in descending  */
+   /* order of the singular values                                            */
 
-   Num_dgesvd_dprimme(hU?"S":"N", "O", basisSize, basisSize, hVecs, ldhVecs,
-         hSVals?hSVals:hVals, hU, ldhU, hVecs, ldhVecs, rwork, lrwork, &info);
+   Num_dgesvd_dprimme("S", "O", basisSize, basisSize, hVecs, ldhVecs,
+         hSVals, hU, ldhU, hVecs, ldhVecs, rwork, lrwork, &info);
 
    if (info != 0) {
       primme_PushErrorMessage(Primme_solve_h, Primme_num_dgesvd, info, __FILE__, 
@@ -542,37 +555,262 @@ int solve_H_Ref_dprimme(double *H, int ldH, double *hVecs,
       return NUM_DGESVD_FAILURE;
    }
 
-   /* Transpose back V and rearrange V, hSVals and hU in ascending order
-      of singular values */
+   /* Transpose back V */
+
+   assert(lrwork >= basisSize*basisSize);
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
-         rwork[basisSize*j+i] = hVecs[ldhVecs*i + (basisSize-1-j)];
-      }
-   }      
-   Num_copy_matrix_dprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
-
-   if (hU) {
-      Num_copy_matrix_dprimme(hU, basisSize, basisSize, ldhU, rwork, basisSize);
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i < basisSize; i++) {
-            hU[ldhU*j+i] = rwork[basisSize*(basisSize-j-1) + i];
-         }
+         rwork[basisSize*j+i] = hVecs[ldhVecs*i+j];
       }
    }
+   Num_copy_matrix_dprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
 
-   if (hSVals) {
-      Num_dcopy_dprimme(basisSize, hSVals, 1, (double*)rwork, 1);
-      for (i=0; i < basisSize; i++)
-         hSVals[i] = ((double*)rwork)[basisSize-i-1];
+   /* Rearrange V, hSVals and hU in ascending order of singular value   */
+   /* if target is not largest abs.                                     */
+
+   if (primme->target == primme_closest_abs 
+         || primme->target == primme_closest_leq
+         || primme->target == primme_closest_geq) {
+      int *perm = iwork;
+      int *iwork0 = iwork + basisSize;
+
+      for (i=0; i<basisSize; i++) perm[i] = basisSize-1-i;
+      permute_vecs_dprimme(hSVals, 1, basisSize, 1, perm, (double*)rwork, iwork0);
+      permute_vecs_dprimme(hVecs, basisSize, basisSize, ldhVecs, perm, rwork, iwork0);
+      permute_vecs_dprimme(hU, basisSize, basisSize, ldhU, perm, rwork, iwork0);
    }
 
    /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
+
    Num_symm_dprimme("L", "U", basisSize, basisSize, tpone, H,
       ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
       ztmp = Num_dot_dprimme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
       hVals[i] = ztmp;
+   }
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Function prepare_vecs - This subroutine checks that the
+ *    conditioning of the coefficient vectors are good enough to converge
+ *    with the requested accuracy. For now refined extraction is the only one that
+ *    may present problems: two similar singular values in the projected problem
+ *    may correspond to distinct eigenvalues in the original problem. If that is
+ *    the case, the singular vector may have components of both eigenvectors,
+ *    which prevents the residual norm be lower than some degree. Don't dealing
+ *    with this may lead into stagnation.
+ *
+ *    It is checked that the next upper bound about the angle of the right
+ *    singular vector v of A and the right singular vector vtilde of A+E,
+ *
+ *      sin(v,vtilde) <= sqrt(2)*||E||/sval_gap <= sqrt(2)*||A||*machEps/sval_gap,
+ *
+ *    is less than the upper bound about the angle of exact eigenvector u and
+ *    the approximate eigenvector utilde,
+ *
+ *      sin(u,utilde) <= ||r||/eval_gap <= ||A||*eps/eval_gap.
+ *
+ *    (see pp. 211 in Matrix Algorithms vol. 2 Eigensystems, G. W. Steward).
+ *
+ *    If the inequality doesn't hold, do Rayleigh-Ritz onto the subspace
+ *    spanned by both vectors.
+ *
+ *    we have found cases where this is not enough or the performance improves
+ *    if Rayleigh-Ritz is also done when the candidate vector has a small
+ *    angle with the last vector in V and when the residual norm is larger than
+ *    the singular value.
+ *
+ *    When only one side of the shift is targeted (primme_closest_leq/geq), we
+ *    allow to take eigenvalue of the other side but close to the shift. In the
+ *    current heuristic they shouldn't be farther than the smallest residual
+ *    norm in the block. This heuristic obtained good results in solving the
+ *    augmented problem with shifts from solving the normal equations.
+ *
+ * NOTE: this function assumes hSVals are arranged in increasing order.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisSize    Projected problem size
+ * i0           Index of the first pair to check
+ * blockSize    Number of candidates wanted
+ * H            The matrix V'*A*V
+ * ldH          The leading dimension of H
+ * hVals        The Ritz values
+ * hSVals       The singular values of R
+ * hVecs        The coefficient vectors
+ * ldhVecs      The leading dimension of hVecs
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
+ * arbitraryVecs The number of vectors modified (input/output)
+ * smallestResNorm The smallest residual norm in the block
+ * flags        Array indicating the convergence of the Ritz vectors
+ * RRForAll     If false compute Rayleigh-Ritz only in clusters with
+ *              candidates. If true, compute it in every cluster.
+ * machEps      Machine precision
+ * rworkSize    The length of rwork
+ * rwork        Workspace
+ * iwork        Integer workspace
+ * primme       Structure containing various solver parameters
+ *
+ ******************************************************************************/
+
+int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
+      double *H, int ldH, double *hVals, double *hSVals, double *hVecs,
+      int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
+      double smallestResNorm, int *flags, int RRForAll, double *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, double *rwork,
+      int *iwork, primme_params *primme) {
+
+   int i, j, k;         /* Loop indices */
+   int candidates;      /* Number of eligible pairs */
+   int someCandidate;   /* If there is an eligible pair in the cluster */
+   double tpone = +1.0e+00, tzero = +0.0e+00;
+   double aNorm;
+   int ret;
+
+   /* Quick exit */
+
+   if (primme->projectionParams.projection != primme_proj_refined
+         || basisSize == 0) {
+      return 0;
+   }
+
+   /* Return memory requirement */
+
+   if (H == NULL) {
+      return basisSize*basisSize + /* aH */
+         max(
+               compute_submatrix_dprimme(NULL, basisSize, 0, NULL, basisSize, 0,
+                  NULL, 0, NULL, 0),
+               solve_H_RR_dprimme(NULL, 0, NULL, 0, NULL, basisSize, 0, 0, NULL,
+                  NULL, primme));
+   }
+
+   /* Quick exit */
+
+   if (blockSize == 0) {
+      return 0;
+   }
+
+   /* Special case: If (basisSize+numLocked) is the entire space, */
+   /* then everything should be converged. Just do RR with the    */
+   /* entire space.                                               */
+ 
+   if (basisSize + (primme->locking?primme->initSize:0) 
+         + primme->numOrthoConst >= primme->n) {
+
+      /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
+      ret = solve_H_RR_dprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
+            targetShiftIndex, rworkSize, rwork, iwork, primme);
+      if (ret != 0) return ret;
+
+      *arbitraryVecs = 0;
+
+      return 0;
+   }
+
+   aNorm = (primme->aNorm <= 0.0) ?
+      primme->stats.estimateLargestSVal : primme->aNorm;
+
+   for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
+         j < basisSize && candidates < blockSize; ) {
+
+      double ip;
+      /* -------------------------------------------------------------------- */
+      /* Count all eligible values (candidates) from j up to i.               */
+      /* -------------------------------------------------------------------- */
+
+      for ( ; j < i; j++)
+         if (!flags || flags[j] == UNCONVERGED)
+            candidates++;
+     
+      if (candidates >= blockSize) break;
+ 
+      /* -------------------------------------------------------------------- */
+      /* Find the first i-th vector i>j with enough good conditioning, ie.,   */
+      /* the singular value is separated enough from the rest (see the header */
+      /* comment in this function). Also check if there is an unconverged     */
+      /* value in the block.                                                  */
+      /* -------------------------------------------------------------------- */
+
+      for (i=j+1, someCandidate=0, ip=0.0; i<basisSize; i++) {
+
+         /* Check that this approximation:                                    */
+         /* sin singular vector: max(hSVals)*machEps/(hSvals[i]-hSVals[i+1])  */
+         /* is less than the next one:                                        */
+         /* sin eigenvector    : aNorm*eps/(hVals[i]-hVals[i+1]).             */
+         /* Also try to include enough coefficient vectors into the cluster   */
+         /* so that the cluster is close the last included vectors into the   */
+         /* basis.                                                            */
+         /* TODO: check the angle with all vectors added to the basis in the  */
+         /* previous iterations; for now only the last one is considered.     */
+         /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
+         /* we don't use the value when it is zero.                           */
+
+         double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
+            (aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+         double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
+         double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
+
+         if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
+
+         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff
+               && (smallestResNorm >= HUGE_VAL
+                  || sqrt(ip1) >= smallestResNorm/aNorm/3.16)) 
+            break;
+      }
+      i = min(i, basisSize);
+
+      /* ----------------------------------------------------------------- */
+      /* If the cluster j:i-1 is larger than one vector and there is some  */
+      /* unconverged pair in there, compute the approximate eigenvectors   */
+      /* with Rayleigh-Ritz. If RRForAll do also this when there is no     */
+      /* candidate in the cluster.                                         */
+      /* ----------------------------------------------------------------- */
+
+      if (i-j > 1 && (someCandidate || RRForAll)) {
+         double *rwork0 = rwork, *aH, *ahVecs;
+         int rworkSize0 = rworkSize;
+         int aBasisSize = i-j;
+         aH = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
+         ahVecs = &hVecsRot[ldhVecsRot*j+j];
+         assert(rworkSize0 >= 0);
+
+
+         /* Zero hVecsRot(:,arbitraryVecs:i-1) */
+         Num_zero_matrix_dprimme(&hVecsRot[ldhVecsRot*(*arbitraryVecs)],
+               primme->maxBasisSize, i-*arbitraryVecs, ldhVecsRot);
+
+         /* hVecsRot(:,arbitraryVecs:i-1) = I */
+         for (k=*arbitraryVecs; k<i; k++)
+            hVecsRot[ldhVecsRot*k+k] = tpone;
+ 
+         /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
+         compute_submatrix_dprimme(&hVecs[ldhVecs*j], aBasisSize,
+               ldhVecs, H, basisSize, ldH, aH, aBasisSize, rwork0,
+               rworkSize0);
+
+         /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
+         ret = solve_H_RR_dprimme(aH, aBasisSize, ahVecs, ldhVecsRot,
+               &hVals[j], aBasisSize, targetShiftIndex, rworkSize0, rwork0,
+               iwork, primme);
+         if (ret != 0) return ret;
+
+         /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
+         Num_gemm_dprimme("N", "N", basisSize, aBasisSize, aBasisSize,
+               tpone, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, tzero,
+               rwork0, basisSize);
+         Num_copy_matrix_dprimme(rwork0, basisSize, aBasisSize, basisSize,
+               &hVecs[ldhVecs*j], ldhVecs);
+
+         /* Indicate that before i may not be singular vectors */
+         *arbitraryVecs = i;
+
+         /* Remove converged flags from j upto i */
+         if (flags && !RRForAll) for (k=j; k<i; k++) flags[k] = UNCONVERGED;
+      }
    }
 
    return 0;
