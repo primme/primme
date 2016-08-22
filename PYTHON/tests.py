@@ -228,9 +228,12 @@ def test_primme_svds():
                               (gen_name, n, dtype, k, bool(prec), which))
                         yield (svds_check, svds, op(A), k, prec, which, 1e-6, sva, case_desc)
 
-def test_examples():
+def test_examples_from_doc():
    import doctest
    doctest.testmod(Primme, raise_on_error=True)
+
+def test_examples():
+    execfile("examples.py")
 
 if __name__ == "__main__":
     run_module_suite()

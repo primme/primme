@@ -20,127 +20,51 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 # ******************************************************************************
-#  File: test1.py
+#  File: examples.py
 #  
-#  Purpose - Simple test for PYTHON interface to PRIMME.
+#  Purpose - Simple examples using the PYTHON interface to PRIMME.
 #  
 # ******************************************************************************
 
-import Primme, numpy as np
-from scipy.sparse import *
+import numpy as np
+import scipy.sparse
+import Primme
 
-# A = [ 2  1  0 ...
-#      -1  2 -1 0 ...
-#       0 -1  2 -1 0 ... ]
-a = np.ones(10)
-A = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
 
-a = np.ones(10, complex)
-Az = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
+# Sparse diagonal matrix of size 100
+A = scipy.sparse.spdiags(range(100), [0], 100, 100)
 
-#
-# High level tests
-#
+# Compute the three largest eigenvalues of A with a residual norm tolerance of 1e-6
+evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
+print evals # [ 99.,  98.,  97.]
 
-print Primme.eigsh(A, k=3, tol=1e-6, which='SA')
-print Primme.eigsh(Az, k=3, tol=1e-6, which='SA')
-print Primme.svds(A, k=3, tol=1e-6, which='SM')
-print Primme.svds(Az, k=3, tol=1e-6, which='SM')
+# Compute the three largest eigenvalues of A orthogonal to the previous computed
+# eigenvectors, i.e., the next three eigenvalues
+evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
+print evals # [ 96.,  95.,  94.]
 
-#
-# Low level tests
-#
+# Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
+A = scipy.sparse.spdiags(range(10), [0], 100, 10)
 
-class PP(Primme.PrimmeParams):
-	def __init__(self):
-		Primme.PrimmeParams.__init__(self)
-	def matvec(self, X):
-		return A*X
-pp = PP()
-pp.n = A.shape[0]
-#pp.maxBasisSize = 3
-#pp.minRestartSize = 1
-pp.numEvals = 3
-#pp.restartingParams.maxPrevRetain = 1
+# Compute the three closest to 4.1 singular values and the left and right corresponding
+# singular vectors
+svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which=4.1)
+print svals # [ 4.,  5.,  3.]
 
-pp.set_method(Primme.DYNAMIC)
-pp.display()
-evals = np.zeros(pp.numEvals)
-evecs = np.zeros((pp.n, pp.numEvals))
-norms = np.zeros(pp.numEvals)
-print Primme.dprimme(evals, evecs, norms, pp)
-print pp.initSize, evals, norms
+# Sparse random rectangular matrix 10^5x100
+A = scipy.sparse.rand(10000, 100, density=0.001, random_state=10)
 
-class PPc(Primme.PrimmeParams):
-	def __init__(self, matrix=None):
-		Primme.PrimmeParams.__init__(self)
-		self.mymatrix = matrix
-	def matvec(self, X):
-		return self.mymatrix*X
+# Compute the three closest singular values to 6.0 with a tolerance of 1e-6
+svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, which='SM', tol=1e-6,
+                                                    return_stats=True)
+print svals # [ 0.79488437  0.85890809  0.87174328]
+print stats["elapsedTime"], stats["numMatvecs"] # it took that seconds and 101 matvecs
 
-pp = PPc(Az)
-pp.n = Az.shape[0]
-#pp.maxBasisSize = 3
-#pp.minRestartSize = 1
-pp.numEvals = 3
-pp.set_method(Primme.DYNAMIC)
-#pp.display()
-evals = np.zeros(pp.numEvals)
-evecs = np.zeros((pp.n, pp.numEvals), complex)
-norms = np.zeros(pp.numEvals)
-print Primme.zprimme(evals, evecs, norms, pp)
-print pp.initSize, evals, norms, pp.stats.numMatvecs
+# Compute the square diagonal preconditioner
+prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
+          [0], 100, 100)
 
-class PSP(Primme.PrimmeSvdsParams):
-	def __init__(self):
-		Primme.PrimmeSvdsParams.__init__(self)
-		self._At = A.T
-	def matvec(self, X, transpose):
-		if not transpose:
-			return A*X
-		else:
-			return self._At*X
-
-pp = PSP()
-pp.m = A.shape[0]
-pp.n = A.shape[1]
-#pp.maxBasisSize = 3
-#pp.minRestartSize = 1
-pp.numSvals = 3
-pp.eps = 1e-6
-pp.target = Primme.primme_svds_largest
-
-pp.set_method(Primme.primme_svds_default, Primme.DEFAULT_METHOD, Primme.DEFAULT_METHOD)
-pp.display()
-svals = np.zeros(pp.numSvals)
-svecsl = np.zeros((pp.m, pp.numSvals))
-svecsr = np.zeros((pp.n, pp.numSvals))
-norms = np.zeros(pp.numSvals)
-print Primme.dprimme_svds(svals, svecsl, svecsr, norms, pp)
-print pp.initSize, svals, norms
-
-class PSPc(Primme.PrimmeSvdsParams):
-	def __init__(self):
-		Primme.PrimmeSvdsParams.__init__(self)
-		self._At = Az.T.conj()
-	def matvec(self, X, transpose):
-		if not transpose:
-			return Az*X
-		else:
-			return self._At*X
-pp = PSPc()
-pp.m = Az.shape[0]
-pp.n = Az.shape[1]
-#pp.maxBasisSize = 3
-#pp.minRestartSize = 1
-pp.numSvals = 3
-pp.eps = 1e-6
-
-pp.set_method(Primme.primme_svds_default, Primme.DEFAULT_METHOD, Primme.DEFAULT_METHOD)
-
-svals = np.zeros(pp.numSvals)
-svecsl = np.zeros((pp.m, pp.numSvals), Az.dtype)
-svecsr = np.zeros((pp.n, pp.numSvals), Az.dtype)
-norms = np.zeros(pp.numSvals)
-print Primme.zprimme_svds(svals, svecsl, svecsr, norms, pp)
-print pp.initSize, svals, norms
+# Recompute the singular values but using the preconditioner
+svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, which='SM', tol=1e-6,
+                        precAHA=prec, return_stats=True)
+print stats["elapsedTime"], stats["numMatvecs"] # it took that seconds and 45 matvecs
