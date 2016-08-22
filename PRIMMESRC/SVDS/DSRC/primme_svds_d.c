@@ -70,6 +70,8 @@
  * -3 - main_iter encountered a problem
  * -4 ...-32 - Invalid input (parameters or primme struct) returned 
  *             by check_input()
+ * -100...-199 - PRIMME error code from first stage
+ * -200...-299 - PRIMME error code from second stage
  *
  ******************************************************************************/
 
@@ -116,10 +118,10 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms,
          allocatedTargetShifts);
 
    if(ret != 0) {
-      return ret;
+      return ret - 100;
    }
    if (primme_svds->methodStage2 == primme_svds_op_none) {
-      return ret;
+      return 0;
    }
 
    /* Execute stage 2 */
@@ -129,7 +131,10 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms,
    copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms,
          allocatedTargetShifts);
 
-   return ret;
+   if(ret != 0) {
+      return ret - 200;
+   }
+   return 0;
 }
 
 static int comp_double(const void *a, const void *b)
@@ -234,10 +239,13 @@ static double* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    primme->realWork = (double*)primme_svds->realWork + cut;
    primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(double);
  
-   if (stage == 0 && primme_svds->numTargetShifts > 0) {
+   if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
+       (stage == 1 && primme->targetShifts == NULL &&
+         primme_svds->target == primme_svds_closest_abs)) {
       primme->targetShifts = primme_svds->targetShifts;
       primme->numTargetShifts = primme_svds->numTargetShifts;
-      if (method == primme_svds_op_AtA || method == primme_svds_op_AAt) {
+      if (stage == 0 &&
+            (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
          for (i=0; i<primme->numTargetShifts; i++) {
             primme->targetShifts[i] *= primme->targetShifts[i];
          }
@@ -627,7 +635,7 @@ static int primme_svds_check_input(double *svals, double *svecs, double *resNorm
       ret = -8;
    else if (primme_svds->numProcs >1 && primme_svds->globalSumDouble == NULL)
       ret = -9;
-   else if (primme_svds->numSvals > primme_svds->n)
+   else if (primme_svds->numSvals > min(primme_svds->n, primme_svds->m))
       ret = -10;
    else if (primme_svds->numSvals < 1)
       ret = -11;

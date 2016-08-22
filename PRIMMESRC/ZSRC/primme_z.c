@@ -531,6 +531,7 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
       ret = -12;
    else if ( primme->target != primme_smallest  &&
              primme->target != primme_largest  &&
+             primme->target != primme_largest_abs  &&
              primme->target != primme_closest_geq  &&
              primme->target != primme_closest_leq  &&
              primme->target != primme_closest_abs    )
@@ -579,7 +580,8 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
             primme->n > 2)
       ret = -33;
    /* Please keep this if instruction at the end */
-   else if ( primme->target == primme_closest_geq ||
+   else if ( primme->target == primme_largest_abs ||
+             primme->target == primme_closest_geq ||
              primme->target == primme_closest_leq ||
              primme->target == primme_closest_abs   ) {
       if (primme->numTargetShifts <= 0) {

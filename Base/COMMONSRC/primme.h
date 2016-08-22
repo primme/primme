@@ -275,5 +275,4 @@ void primme_DeleteStackTrace(primme_params *primme);
 }
 #endif
 
-
 #endif /* PRIMME_H */

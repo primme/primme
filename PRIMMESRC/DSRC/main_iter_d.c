@@ -696,7 +696,13 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs,
             /* -primme_proj_refined.F                                         */
             /* -------------------------------------------------------------- */
 
-            dummySmallestResNorm = primme->target == primme_closest_abs ? &dummyZero : &smallestResNorm;
+            if (primme->target == primme_closest_abs ||
+                  primme->target == primme_largest_abs) {
+               dummySmallestResNorm = &dummyZero;
+            }
+            else {
+               dummySmallestResNorm = &smallestResNorm;
+            }
 
             prepare_candidates_dprimme(V, W, primme->nLocal, H,
                   primme->maxBasisSize, basisSize, primme->nLocal,
