@@ -40,6 +40,7 @@ class PrimmeParams : public primme_params {
    PrimmeParams() {
       primme_initialize(static_cast<primme_params*>(this));
       correctionParams.precondition = 0;
+      globalSum_set = 0;
    }
 
    virtual ~PrimmeParams() {
@@ -74,6 +75,8 @@ class PrimmeParams : public primme_params {
    virtual void matvec(int len1YD, int len2YD, int ldYD, std::complex<double> *yd, int len1XD, int len2XD, int ldXD, std::complex<double> *xd)=0;
    virtual void prevec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd)=0;
    virtual void prevec(int len1YD, int len2YD, int ldYD, std::complex<double> *yd, int len1XD, int len2XD, int ldXD, std::complex<double> *xd)=0;
+   virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd)=0;
+   int globalSum_set;
 };
 
 class PrimmeSvdsParams : public primme_svds_params {
@@ -82,6 +85,7 @@ class PrimmeSvdsParams : public primme_svds_params {
    PrimmeSvdsParams() {
       primme_svds_initialize(static_cast<primme_svds_params*>(this));
       precondition = 0;
+      globalSum_set = 0;
    }
 
    virtual ~PrimmeSvdsParams() {
@@ -117,4 +121,6 @@ class PrimmeSvdsParams : public primme_svds_params {
    virtual void matvec(int len1YD, int len2YD, int ldYD, std::complex<double> *yd, int len1XD, int len2XD, int ldXD, std::complex<double> *xd, int transpose)=0;
    virtual void prevec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd, int mode)=0;
    virtual void prevec(int len1YD, int len2YD, int ldYD, std::complex<double> *yd, int len1XD, int len2XD, int ldXD, std::complex<double> *xd, int mode)=0;
+   virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd)=0;
+   int globalSum_set;
 };

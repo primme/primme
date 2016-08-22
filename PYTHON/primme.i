@@ -86,7 +86,7 @@ Example
 %module(docstring=DOCSTRING,directors="1") Primme
 
 %pythoncode %{
-__all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
+__all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 %}
 %{
 #define SWIG_FILE_WITH_INIT
@@ -146,14 +146,68 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore tprimme;
 %ignore tprimme_svds;
 
+%ignore PrimmeParams::matrixMatvec;
+%ignore PrimmeParams::massMatrixMatvec;
+%ignore PrimmeParams::applyPreconditioner;
+%ignore PrimmeParams::convTestFun;
 %ignore PrimmeParams::targetShifts;
-%ignore primme_params::targetShifts;
 %ignore PrimmeParams::numTargetShifts;
+%ignore PrimmeParams::globalSumDouble;
+%ignore PrimmeParams::commInfo;
+%ignore PrimmeParams::intWork;
+%ignore PrimmeParams::realWork;
+%ignore PrimmeParams::outputFile;
+%ignore PrimmeParams::matrix;
+%ignore PrimmeParams::preconditioner;
+%ignore PrimmeParams::ShiftsForPreconditioner;
+%ignore PrimmeParams::stackTrace;
+%ignore primme_params::matrixMatvec;
+%ignore primme_params::massMatrixMatvec;
+%ignore primme_params::applyPreconditioner;
+%ignore primme_params::convTestFun;
+%ignore primme_params::targetShifts;
 %ignore primme_params::numTargetShifts;
+%ignore primme_params::globalSumDouble;
+%ignore primme_params::commInfo;
+%ignore primme_params::intWork;
+%ignore primme_params::realWork;
+%ignore primme_params::outputFile;
+%ignore primme_params::matrix;
+%ignore primme_params::preconditioner;
+%ignore primme_params::ShiftsForPreconditioner;
+%ignore primme_params::stackTrace;
+%ignore PrimmeSvdsParams::matrixMatvec;
+%ignore PrimmeSvdsParams::applyPreconditioner;
+%ignore PrimmeSvdsParams::convTestFun;
 %ignore PrimmeSvdsParams::targetShifts;
-%ignore primme_svds_params::targetShifts;
 %ignore PrimmeSvdsParams::numTargetShifts;
+%ignore PrimmeSvdsParams::commInfo;
+%ignore PrimmeSvdsParams::globalSumDouble;
+%ignore PrimmeSvdsParams::intWork;
+%ignore PrimmeSvdsParams::realWork;
+%ignore PrimmeSvdsParams::outputFile;
+%ignore PrimmeSvdsParams::matrix;
+%ignore PrimmeSvdsParams::preconditioner;
+%ignore PrimmeSvdsParams::ShiftsForPreconditioner;
+%ignore PrimmeSvdsParams::stackTrace;
+%ignore PrimmeSvdsParams::primme;
+%ignore PrimmeSvdsParams::primmeStage2;
+%ignore primme_svds_params::matrixMatvec;
+%ignore primme_svds_params::applyPreconditioner;
+%ignore primme_svds_params::convTestFun;
+%ignore primme_svds_params::targetShifts;
 %ignore primme_svds_params::numTargetShifts;
+%ignore primme_svds_params::globalSumDouble;
+%ignore primme_svds_params::commInfo;
+%ignore primme_svds_params::intWork;
+%ignore primme_svds_params::realWork;
+%ignore primme_svds_params::outputFile;
+%ignore primme_svds_params::matrix;
+%ignore primme_svds_params::preconditioner;
+%ignore primme_svds_params::ShiftsForPreconditioner;
+%ignore primme_svds_params::stackTrace;
+%ignore primme_svds_params::primme;
+%ignore primme_svds_params::primmeStage2;
 
 
 %fragment("NumPy_Array_Requirements_extra",
@@ -239,6 +293,51 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
             ($4)[i+j*($3)] = x[i*ldx+j];
   }
 }
+
+/* Typemap suite for (DIM_TYPE DIM, DATA_TYPE* IN_ARRAY1D)
+   See description of ARGOUTVIEW_FARRAY2 in numpy.i
+ */
+%typemap(directorin,
+         fragment="NumPy_Backward_Compatibility,NumPy_Array_Requirements_extra,NumPy_Fragments")
+  (DIM_TYPE DIM1, DATA_TYPE* IN_ARRAY1D)
+{
+  npy_intp dims[1] = { $1 };
+  PyObject* obj = PyArray_SimpleNewFromData(1, dims, DATA_TYPECODE, (void*)($2));
+  PyArrayObject* array = (PyArrayObject*) obj;
+
+  if (!array || !require_c_or_f_contiguous(array))
+        throw Swig::DirectorMethodException();
+  $input = obj;
+}
+
+/* Typemap suite for (DIM_TYPE DIM, DATA_TYPE* OUT_ARRAY1D)
+   See description of IN_ARRAY1 in numpy.i
+ */
+%typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
+           fragment="NumPy_Macros")
+  (DIM_TYPE DIM1, DATA_TYPE* OUT_ARRAY1D)
+{
+  $1 = is_array($input) && PyArray_EquivTypenums(array_type($input),
+                                                 DATA_TYPECODE);
+}
+%typemap(in,numinputs=0)
+  (DIM_TYPE DIM1, DATA_TYPE* OUT_ARRAY1D)
+{}
+
+%typemap(directorargout,
+         fragment="NumPy_Fragments")
+  (DIM_TYPE DIM1, DATA_TYPE* OUT_ARRAY1D)
+  (PyArrayObject* array=NULL, PyObject* o=NULL)
+{
+  o = $result;
+  array = obj_to_array_no_conversion(o, DATA_TYPECODE);
+  if (!array || !require_dimensions(array,1) || !require_native(array) ||
+        !require_c_or_f_contiguous(array))
+     Swig::DirectorMethodException::raise("No valid type for object returned by $symname");
+  if (($1) != (DIM_TYPE) array_size(array,0))
+          {Swig::DirectorMethodException::raise("No valid dimensions for object returned by $symname");}
+  copy_matrix((DATA_TYPE*)array_data(array), 1, ($1), 1, ($2), 1);
+}
 %enddef    /* %numpy_typemaps_ext() macro */
 
 %numpy_typemaps_ext(double            , NPY_DOUBLE   , int)
@@ -267,12 +366,18 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %apply (int DIM1, int DIM2, int LD, std::complex<double>* OUT_FARRAY2D) {
    (int len1XD, int len2XD, int ldXD, std::complex<double>* xd)};
 
-/* typemaps and code for targetShift and numTargetShifts */
+/* typemaps for targetShift and numTargetShifts */
  
 %apply (double* IN_ARRAY1, int DIM1) {
    (double *targetShifts, int n)};
 %apply (double **ARGOUTVIEW_ARRAY1, int *DIM1) {
    (double **targetShifts, int *n)};
+
+/* typemaps for globalSumDouble */
+%apply (int DIM1, double* IN_ARRAY1D) {
+   (int lenYD, double *yd)};
+%apply (int DIM1, double *OUT_ARRAY1D) {
+   (int lenXD, double *xd)};
 
 %inline %{
 template <typename T>
@@ -332,6 +437,11 @@ static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *pr
     pp->prevec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
 }
 
+static void myglobalSumDouble(void *sendBuf, void *recvBuf, int *count, struct primme_params *primme) {
+    PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
+    pp->globalSum(*count, (double*)sendBuf, *count, (double*)recvBuf);
+}
+
 template <typename T>
 int my_primme(int lenEvals, double *evals,
             int len1Evecs, int len2Evecs, T *evecs,
@@ -358,7 +468,10 @@ int my_primme(int lenEvals, double *evals,
         return -32;
    }
    primme->matrixMatvec = mymatvec<T>;
-   primme->applyPreconditioner = myprevec<T>;
+   if (primme->correctionParams.precondition) 
+      primme->applyPreconditioner = myprevec<T>;
+   if (primme->globalSum_set)
+      primme->globalSumDouble = myglobalSumDouble;
    int ret = tprimme(evals, evecs, resNorms, static_cast<primme_params*>(primme));
    return ret;
 }
@@ -368,6 +481,11 @@ static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_s
 }
 static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
    return zprimme_svds(svals, (Complex_Z*)svecs, resNorms, primme_svds);
+}
+
+static void myglobalSumDouble_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds) {
+    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
+    pp->globalSum(*count, (double*)sendBuf, *count, (double*)recvBuf);
 }
 
 template <typename T>
@@ -434,7 +552,10 @@ int my_primme_svds(int lenSvals, double *svals,
         return -32;
    }
    primme_svds->matrixMatvec = mymatvec_svds<T>;
-   primme_svds->applyPreconditioner = myprevec_svds<T>;
+   if (primme_svds->precondition) 
+      primme_svds->applyPreconditioner = myprevec_svds<T>;
+   if (primme_svds->globalSum_set)
+      primme_svds->globalSumDouble = myglobalSumDouble_svds;
    T *svecs = new T[(primme_svds->nLocal+primme_svds->mLocal)*(primme_svds->numOrthoConst+primme_svds->numSvals)];
    copy_matrix(svecsLeft, primme_svds->mLocal, primme_svds->numOrthoConst,
          len1SvecsLeft, svecs, primme_svds->mLocal);

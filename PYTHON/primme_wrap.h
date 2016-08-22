@@ -24,6 +24,7 @@ public:
     virtual void matvec(int len1YD, int len2YD, int ldYD, std::complex< double > *yd, int len1XD, int len2XD, int ldXD, std::complex< double > *xd);
     virtual void prevec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd);
     virtual void prevec(int len1YD, int len2YD, int ldYD, std::complex< double > *yd, int len1XD, int len2XD, int ldXD, std::complex< double > *xd);
+    virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd);
 
 /* Internal director utilities */
 public:
@@ -54,7 +55,7 @@ private:
       return method;
     }
 private:
-    mutable swig::SwigVar_PyObject vtable[4];
+    mutable swig::SwigVar_PyObject vtable[5];
 #endif
 
 };
@@ -69,6 +70,7 @@ public:
     virtual void matvec(int len1YD, int len2YD, int ldYD, std::complex< double > *yd, int len1XD, int len2XD, int ldXD, std::complex< double > *xd, int transpose);
     virtual void prevec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd, int mode);
     virtual void prevec(int len1YD, int len2YD, int ldYD, std::complex< double > *yd, int len1XD, int len2XD, int ldXD, std::complex< double > *xd, int mode);
+    virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd);
 
 /* Internal director utilities */
 public:
@@ -99,7 +101,7 @@ private:
       return method;
     }
 private:
-    mutable swig::SwigVar_PyObject vtable[4];
+    mutable swig::SwigVar_PyObject vtable[5];
 #endif
 
 };

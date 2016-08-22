@@ -226,11 +226,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if M is not None:
         raise ValueError('generalized problems (M != None) are not supported')
 
-    if OPinv is not None:
-        OPinv = aslinearoperator(OPinv)
-        if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
-            raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
-
     class PP(PrimmeParams):
         def __init__(self):
             PrimmeParams.__init__(self)
@@ -278,7 +273,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         pp.maxMatvecs = maxiter
 
     if OPinv is not None:
-        pp.precondition = 1
+        OPinv = aslinearoperator(OPinv)
+        if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
+            raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
+        pp.correctionParams.precondition = 1
 
     if lock is not None:
         if lock.shape[0] != n:
@@ -405,8 +403,6 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
                 return precAAH.matmat(X) 
             elif mode == primme_svds_op_augmented and precAug is not None:
                 return precAug.matmat(X) 
-            else:
-                raise ValueError('Not expected mode')
             return X
 
     pp = PSP()
@@ -435,6 +431,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     if maxiter:
         pp.maxMatvecs = maxiter
+
+    if precAHA is not None or precAAH is not None or precAug is not None:
+        pp.precondition = 1
 
     def check_pair(u, v, var_names):
         if ((u is not None and u.shape[0] != m) or
