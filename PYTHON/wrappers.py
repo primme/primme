@@ -90,7 +90,8 @@ class PrimmeSvdsError(RuntimeError):
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
-          Minv=None, OPinv=None, mode='normal', lock=None):
+          Minv=None, OPinv=None, mode='normal', lock=None,
+          return_stats=False):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex hermitian matrix A.
@@ -111,17 +112,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         The number of eigenvalues and eigenvectors desired.
         `k` must be smaller than N. It is not possible to compute all
         eigenvectors of a matrix.
-
-    Returns
-    -------
-    w : array
-        Array of k eigenvalues
-    v : array
-        An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
-        the eigenvector corresponding to the eigenvalue ``w[i]``.
-
-    Other Parameters
-    ----------------
     M : An N x N matrix, array, sparse matrix, or linear operator representing
         the operation M * x for the generalized eigenvalue problem
 
@@ -169,7 +159,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         When sigma != None, 'which' refers to the shifted eigenvalues ``w'[i]``
     maxiter : int, optional
         Maximum number of restarts update iterations allowed
-        Default: ``n*10``
     tol : float
         Accuracy for eigenvalues (stopping criterion).
         The default value is sqrt of machine precision.
@@ -185,6 +174,26 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         Seek the eigenvectors orthogonal to these ones. The provided
         vectors *should* be orthonormal. Useful to not converge some already
         computed solutions.
+    report_stats : bool, optional
+        If True, it is also returned extra information from PRIMME.
+
+    Returns
+    -------
+    w : array
+        Array of k eigenvalues
+    v : array
+        An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
+        the eigenvector corresponding to the eigenvalue ``w[i]``.
+    stats : dict, optional (if return_stats)
+        Extra information reported by PRIMME:
+        - "numOuterIterations": number of outer iterations
+        - "numRestarts": number of restarts
+        - "numMatvecs": number of A*v
+        - "numPreconds": number of OPinv*v
+        - "elapsedTime": time that took 
+        - "estimateMinEVal": the leftmost Ritz value seen
+        - "estimateMaxEVal": the rightmost Ritz value seen
+        - "estimateLargestSVal": the largest singular value seen
 
     Raises
     ------
@@ -310,13 +319,21 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         raise PrimmeError(err)
 
     evecs = evecs[:, pp.numOrthoConst:]
-    return evals, evecs
+    if return_stats:
+        stats = dict((f, getattr(pp.stats, f)) for f in [
+            "numOuterIterations", "numRestarts", "numMatvecs",
+            "numPreconds", "elapsedTime", "estimateMinEVal",
+            "estimateMaxEVal", "estimateLargestSVal"])
+        return evals, evecs, stats
+    else:
+        return evals, evecs
 
 
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
-         u0=None, locku0=None, lockv0=None):
+         u0=None, locku0=None, lockv0=None,
+         return_stats=False):
     """Compute k singular values/vectors for a sparse matrix.
     Parameters
     ----------
@@ -353,19 +370,28 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Seek singular triplets orthogonal to these ones. The provided vectors
         *should* be orthonormal. If only locku0 or lockv0 is provided, the other
         is computed. Useful to not converge some already computed solutions.
+    report_stats : bool, optional
+        If True, it is also returned extra information from PRIMME.
 
     Returns
     -------
-    u : ndarray, shape=(M, k)
+    u : ndarray, shape=(M, k), optional
         Unitary matrix having left singular vectors as columns.
         If `return_singular_vectors` is "vh", this variable is not computed,
         and None is returned instead.
     s : ndarray, shape=(k,)
         The singular values.
-    vt : ndarray, shape=(k, N)
+    vt : ndarray, shape=(k, N), optional
         Unitary matrix having right singular vectors as rows.
         If `return_singular_vectors` is "u", this variable is not computed,
         and None is returned instead.
+    stats : dict, optional (if return_stats)
+        Extra information reported by PRIMME:
+        - "numOuterIterations": number of outer iterations
+        - "numRestarts": number of restarts
+        - "numMatvecs": number of A*v
+        - "numPreconds": number of OPinv*v
+        - "elapsedTime": time that took 
 
     Examples
     --------
@@ -510,8 +536,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if err != 0:
         raise PrimmeSvdsError(err)
 
+    if return_stats:
+        stats = dict((f, getattr(pp.stats, f)) for f in [
+            "numOuterIterations", "numRestarts", "numMatvecs",
+            "numPreconds", "elapsedTime"])
+ 
     if not return_singular_vectors:
-        return svals
+        return svals if not return_stats else (svals, stats)
 
     svecsl = svecsl[:, pp.numOrthoConst:]
     svecsr = svecsr[:, pp.numOrthoConst:]
@@ -519,10 +550,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     # Transpose conjugate svecsr
     svecsr = svecsr.T.conj()
 
-    return svecsl, svals, svecsr
-
-# if __name__ == '__main__':
-#     from scipy.sparse import spdiags
-#     a = np.ones(10)
-#     A  = spdiags(np.array([a*(-1.), a*2., a*(-1.)]), np.array([-1, 0, 1]), 10, 10)
-#     print(eigsh_primme(A, which='LA'))
+    if not return_stats:
+        return svecsl, svals, svecsr
+    else:
+        return svecsl, svals, svecsr, stats
