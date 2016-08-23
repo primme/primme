@@ -10,9 +10,9 @@ INCLUDE = -I../../COMMONSRC
 
 .PHONY: clean lib libd libz
 
-CSOURCE =  primme_svds_interface.c
+CSOURCE =  primme_svds_interface.c primme_svds_f77.c
 
-COBJS = primme_svds_interface.o 
+COBJS = primme_svds_interface.o primme_svds_f77.o
 
 # 
 # Compilation
@@ -20,6 +20,9 @@ COBJS = primme_svds_interface.o
 
 primme_svds_interface.o: primme_svds_interface.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c primme_svds_interface.c
+
+primme_svds_f77.o: primme_svds_f77.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c primme_svds_f77.c
 
 #
 # Archive common object files in the target full library

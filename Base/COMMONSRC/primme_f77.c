@@ -26,6 +26,7 @@
  *
  ******************************************************************************/
 
+#include <stdlib.h>   /* free */
 #include "primme.h"
 #include "primme_f77_private.h"
 #ifdef __cplusplus
@@ -91,6 +92,7 @@ void primme_free_f77(primme_params **primme){
 #endif
 
    primme_Free(*primme);
+   free(*primme);
 }
 
 /*****************************************************************************

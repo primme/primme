@@ -190,7 +190,6 @@ void primme_display_params_f77_(primme_params **primme);
 void primme_printstacktrace_f77_(primme_params **primme);
 void primme_set_method_f77_(primme_params **primme, int *method,int *returnVal);
 void primme_set_member_f77_(primme_params **primme, int *label, union f77_value ptr);
-
 void primme_get_prec_shift_f77_(primme_params *primme, int *i, double *shift);
 void primme_get_member_f77_(primme_params *primme, int *label, union f77_value_ptr *ptr);
 void primmetop_get_member_f77_(primme_params **primme, int *label, union f77_value_ptr *ptr);
@@ -207,7 +206,6 @@ void primme_display_params_f77(primme_params **primme);
 void primme_printstacktrace_f77(primme_params **primme);
 void primme_set_method_f77(primme_params **primme, int *method, int *returnVal);
 void primme_set_member_f77(primme_params **primme, int *label, union f77_value ptr);
-
 void primme_get_prec_shift_f77(primme_params *primme, int *i, double *shift);
 void primme_get_member_f77(primme_params *primme, int *label, union f77_value_ptr *ptr);
 void primmetop_get_member_f77(primme_params **primme, int *label, union f77_value_ptr *ptr);

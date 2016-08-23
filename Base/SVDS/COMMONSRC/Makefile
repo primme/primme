@@ -2,9 +2,12 @@
 
 CDOTH = ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h  \
         ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.h \
-        ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h 
+        ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h \
+        ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77_private.h \
+        ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77.h 
 
-CSOURCE = ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.c 
+CSOURCE = ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.c \
+          ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77.c
 
 all: $(CSOURCE) $(CDOTH) depends
 
@@ -19,12 +22,19 @@ all: $(CSOURCE) $(CDOTH) depends
 ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h: primme_svds_interface_private.h
 	cp primme_svds_interface_private.h ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface_private.h
 
+../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77_private.h: primme_svds_f77_private.h
+	cp primme_svds_f77_private.h ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77_private.h
+
+../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77.h: primme_svds_f77.h
+	cp primme_svds_f77.h ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77.h
+
 #---------  PRIMMESRC/SVDS/COMMONSRC   .c files -------------------------
 
 ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.c: primme_svds_interface.c
 	cp primme_svds_interface.c ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_interface.c
 
-
+../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77.c: primme_svds_f77.c
+	cp primme_svds_f77.c ../../../PRIMMESRC/SVDS/COMMONSRC/primme_svds_f77.c
 
 #
 # Make dependencies in the two directories
