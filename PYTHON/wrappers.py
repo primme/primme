@@ -91,7 +91,8 @@ class PrimmeSvdsError(RuntimeError):
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None,
-          return_stats=False):
+          return_stats=False, maxBlockSize=0, minRestartSize=0,
+          maxPrevRetain=0, method=None):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex hermitian matrix A.
@@ -174,6 +175,21 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         Seek the eigenvectors orthogonal to these ones. The provided
         vectors *should* be orthonormal. Useful to not converge some already
         computed solutions.
+    maxBlockSize : int, optional
+        Maximum number of vectors added at every iteration.
+    minRestartSize : int, optional
+        Number of approximate eigenvectors kept from last iteration in restart.
+    maxPrevRetain: int, optional
+        Number of approximate eigenvectors kept from previous iteration in
+        restart. Also referred as +k vectors in GD+k.
+    method : int, optional
+        Preset method, one of:
+        - DEFAULT_MIN_TIME : a variant of JDQMR,
+        - DEFAULT_MIN_MATVECS : GD+k
+        - DYNAMIC : choose dynamically between both previous methods.
+        See a detailed description of the methods and other possible values
+        in [2]_.
+        
     report_stats : bool, optional
         If True, it is also returned extra information from PRIMME.
 
@@ -216,6 +232,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     References
     ----------
     .. [1] PRIMME Software, https://github.com/primme/primme
+    .. [2] Preset Methods, http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods
 
     Examples
     --------
@@ -310,6 +327,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         np.copyto(evecs[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize],
             v0[:, 0:pp.initSize])
 
+    if maxBlockSize:
+        pp.maxBlockSize = maxBlockSize
+
+    if minRestartSize:
+        pp.minRestartSize = minRestartSize
+
+    if maxPrevRetain:
+        pp.restartingParams.maxPrevRetain = maxPrevRetain
+
+    if method is not None:
+        pp.set_method(method)
+ 
     if dtype is np.dtype(np.complex128):
         err = zprimme(evals, evecs, norms, pp)
     else:
@@ -333,7 +362,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
-         return_stats=False):
+         return_stats=False, maxBlockSize=0):
     """Compute k singular values/vectors for a sparse matrix.
     Parameters
     ----------
@@ -370,6 +399,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Seek singular triplets orthogonal to these ones. The provided vectors
         *should* be orthonormal. If only locku0 or lockv0 is provided, the other
         is computed. Useful to not converge some already computed solutions.
+    maxBlockSize : int, optional
+        Maximum number of vectors added at every iteration.
     report_stats : bool, optional
         If True, it is also returned extra information from PRIMME.
 
@@ -477,6 +508,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     if maxiter:
         pp.maxMatvecs = maxiter
+
+    if maxBlockSize:
+        pp.maxBlockSize = maxBlockSize
 
     if precAHA is not None or precAAH is not None or precAug is not None:
         pp.precondition = 1
