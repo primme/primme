@@ -64,19 +64,11 @@ OBJS = $(sort $(SOBJS))
 OBJSdouble = $(sort $(SOBJSdouble)) $(patsubst %.o,%double.o,$(OBJS))
 OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.o,$(OBJS))
 
-.PHONY: clean veryclean
-
 primme_double: $(OBJSdouble) driverdouble.o ../libprimme.a Makefile
 	$(CLDR) -o primme_double $(OBJSdouble) driverdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 primme_doublecomplex: $(OBJSdoublecomplex) driverdoublecomplex.o ../libprimme.a Makefile
 	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) driverdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
-ex_dseq ex_zseq ex_petsc exsvd_dseq: %: %.o ../libprimme.a Makefile
-	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
-
-ex_dseqf77 ex_zseqf77 ex_petscf77 ex_petscf77ptr: % : %.o ../libprimme.a Makefile
-	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 primmesvds_double: $(OBJSdouble) driversvdsdouble.o ../libprimme.a Makefile
 	$(CLDR) -o primmesvds_double $(OBJSdouble) driversvdsdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
@@ -84,12 +76,23 @@ primmesvds_double: $(OBJSdouble) driversvdsdouble.o ../libprimme.a Makefile
 primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libprimme.a Makefile
 	$(CLDR) -o primmesvds_doublecomplex $(OBJSdoublecomplex) driversvdsdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-
 %double.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 %doublecomplex.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
+
+
+EXAMPLES_SIMPLE_C = ex_dseq ex_zseq exsvd_dseq exsvd_zseq
+EXAMPLES_C = $(EXAMPLES_SIMPLE_C) ex_petsc exsvd_petsc
+EXAMPLES_SIMPLE_F77 = ex_dseqf77 ex_zseqf77 exsvd_dseqf77 exsvd_zseqf77
+EXAMPLES_F77 = $(EXAMPLES_SIMPLE_F77) ex_petscf77 ex_petscf77ptr exsvd_petscf77 exsvd_petscf77ptr
+
+$(EXAMPLES_C): %: %.o ../libprimme.a Makefile
+	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
+$(EXAMPLES_F77): % : %.o ../libprimme.a Makefile
+	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 .c.o:
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -97,12 +100,14 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 .f.o .F.o:
 	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
-all: primme_double primme_doublecomplex
+all: drivers examples
+
+drivers: primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex
 
 ifeq ($(USE_PETSC), yes)
-simple_examples: ex_dseq ex_zseq ex_petsc ex_dseqf77 ex_zseqf77 ex_petscf77 ex_petscf77ptr
+examples: $(EXAMPLES_C) $(EXAMPLES_F77)
 else
-simple_examples: ex_dseq ex_zseq ex_dseqf77 ex_zseqf77
+examples: $(EXAMPLES_SIMPLE_C) $(EXAMPLES_SIMPLE_F77)
 endif
 
 ifeq ($(USE_MPI), yes)
@@ -227,7 +232,7 @@ clean:
 	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o
 
 veryclean: clean
-	@rm -f primme_double primme_doublecomplex seqf77_dprimme seqf77_zprimme ex_dseq ex_zseq ex_petsc
+	@rm -f primme_double primme_doublecomplex $(EXAMPLES_C) $(EXAMPLES_F77)
 
 
 COMMON/csr.c: COMMON/csr.h COMMON/mmio.h
@@ -267,5 +272,22 @@ ex_petscf77ptr.F: ex_f77.m4
 exsvd_dseq.c: exsvd_c.m4
 	m4 exsvd_c.m4 > $@
 
-exsvd_dseq0.c: exsvd_c.m4
-	m4 -D ADVANCED_HYBRID exsvd_c.m4 > $@
+exsvd_zseq.c: exsvd_c.m4
+	m4 -D USE_COMPLEX -D ADVANCED_HYBRID exsvd_c.m4 > $@
+
+exsvd_petsc.c: exsvd_c.m4
+	m4 -D USE_PETSC exsvd_c.m4 > $@
+
+exsvd_dseqf77.f: exsvd_f77.m4
+	m4 exsvd_f77.m4 > $@
+
+exsvd_zseqf77.f: exsvd_f77.m4
+	m4 -D USE_COMPLEX exsvd_f77.m4 > $@
+
+exsvd_petscf77.F: exsvd_f77.m4
+	m4 -D USE_PETSC exsvd_f77.m4 > $@
+
+exsvd_petscf77ptr.F: exsvd_f77.m4
+	m4 -D USE_PETSC -D USE_POINTER exsvd_f77.m4 > $@
+
+.PHONY: clean veryclean all drivers examples
