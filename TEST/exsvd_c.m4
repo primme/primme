@@ -486,7 +486,7 @@ void LauchliApplyPreconditioner(void *x, int *ldx, void *y, int *ldy, int *block
 
       /* [y0; y1] <- [0 A^t; A 0] * [x0; x1] */
       ldaux = primme_svds->n+primme_svds->m;
-      aux = malloc(sizeof(PRIMME_NUM)*(*blockSize)*ldaux);
+      aux = (PRIMME_NUM*)malloc(sizeof(PRIMME_NUM)*(*blockSize)*ldaux);
       primme_svds->matrixMatvec(x, ldx, &aux[primme_svds->n], &ldaux, blockSize, &notrans, primme_svds);
       xvec = (PRIMME_NUM *)x + primme_svds->n;
       primme_svds->matrixMatvec(xvec, ldx, aux, &ldaux, blockSize, &trans, primme_svds);
