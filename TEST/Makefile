@@ -11,6 +11,9 @@ COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC -I../PRIMMESRC/SVDS/COMMONS
 override INCLUDE += $(COMMON_INCLUDE)
 LIBDIRS += -L../
 
+EXAMPLES_C = ex_dseq ex_zseq exsvd_dseq exsvd_zseq
+EXAMPLES_F77 = ex_dseqf77 ex_zseqf77 exsvd_dseqf77 exsvd_zseqf77
+
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
 USE_PARASAILS ?= $(if $(findstring undefined,$(origin PARASAILS_LIB_DIR)),no,yes)
@@ -47,6 +50,8 @@ ifeq ($(USE_PETSC), yes)
   FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
+  EXAMPLES_C += ex_petsc exsvd_petsc
+  EXAMPLES_F77 += ex_petscf77 ex_petscf77ptr exsvd_petscf77 exsvd_petscf77ptr
 endif
 
 ifeq ($(USE_RSB), yes)
@@ -83,11 +88,6 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 
-EXAMPLES_SIMPLE_C = ex_dseq ex_zseq exsvd_dseq exsvd_zseq
-EXAMPLES_C = $(EXAMPLES_SIMPLE_C) ex_petsc exsvd_petsc
-EXAMPLES_SIMPLE_F77 = ex_dseqf77 ex_zseqf77 exsvd_dseqf77 exsvd_zseqf77
-EXAMPLES_F77 = $(EXAMPLES_SIMPLE_F77) ex_petscf77 ex_petscf77ptr exsvd_petscf77 exsvd_petscf77ptr
-
 $(EXAMPLES_C): %: %.o ../libprimme.a Makefile
 	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
@@ -104,11 +104,7 @@ all: drivers examples
 
 drivers: primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex
 
-ifeq ($(USE_PETSC), yes)
 examples: $(EXAMPLES_C) $(EXAMPLES_F77)
-else
-examples: $(EXAMPLES_SIMPLE_C) $(EXAMPLES_SIMPLE_F77)
-endif
 
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
@@ -158,8 +154,6 @@ all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: pri
 
 T_methods = DEFAULT_METHOD DYNAMIC DEFAULT_MIN_TIME DEFAULT_MIN_MATVECS Arnoldi GD_plusK GD_Olsen_plusK JD_Olsen_plusK JDQR JDQMR JDQMR_ETol SUBSPACE_ITERATION LOBPCG_OrthoBasis LOBPCG_OrthoBasis_Window 
 T_sizes = 1 2 3 4 5 6 7 10 100
-
-# for target in primme_smallest primme_largest primme_closest_geq primme_closest_leq primme_closest_abs; do
 
 tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
 	@rm -f tests/testi-*; \
@@ -227,6 +221,19 @@ test_doublecomplex: ex_zseq
                 exit 1;)
 
 test: test_double test_doublecomplex
+
+test_examples: $(EXAMPLES_C) $(EXAMPLES_F77)
+	@ok="0";for ex in $(EXAMPLES_C) $(EXAMPLES_F77); do \
+		./$$ex || ok="1"; \
+	done > tests.log 2>&1; \
+	if test $$ok -eq 0 ; then \
+		echo "All tests passed!"; \
+	else\
+		cat tests.log;\
+		echo "Some tests fail. Please consider to send us the file";\
+		echo "TEST/tests.log if the software doesn't work as expected.";\
+		exit 1;\
+	fi
 
 clean:
 	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o
