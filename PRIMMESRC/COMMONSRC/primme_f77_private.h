@@ -33,22 +33,22 @@
 /*     Defining easy to remember labels for setting the  */
 /*     method in primme_set_method from Fortran          */
 /*-------------------------------------------------------*/
-#define PRIMMEF77_DEFAULT_METHOD  100
-#define PRIMMEF77_DYNAMIC  0
-#define PRIMMEF77_DEFAULT_MIN_TIME  1
-#define PRIMMEF77_DEFAULT_MIN_MATVECS  2
-#define PRIMMEF77_Arnoldi  3
-#define PRIMMEF77_GD  4
-#define PRIMMEF77_GD_plusK  5
-#define PRIMMEF77_GD_Olsen_plusK  6
-#define PRIMMEF77_JD_Olsen_plusK  7
-#define PRIMMEF77_RQI  8
-#define PRIMMEF77_JDQR  9
-#define PRIMMEF77_JDQMR  10
-#define PRIMMEF77_JDQMR_ETol  11
-#define PRIMMEF77_SUBSPACE_ITERATION  12
-#define PRIMMEF77_LOBPCG_OrthoBasis  13
-#define PRIMMEF77_LOBPCG_OrthoBasis_Window  14
+#define PRIMMEF77_DEFAULT_METHOD  0
+#define PRIMMEF77_DYNAMIC  1
+#define PRIMMEF77_DEFAULT_MIN_TIME  2
+#define PRIMMEF77_DEFAULT_MIN_MATVECS  3
+#define PRIMMEF77_Arnoldi  4
+#define PRIMMEF77_GD  5
+#define PRIMMEF77_GD_plusK  6
+#define PRIMMEF77_GD_Olsen_plusK  7
+#define PRIMMEF77_JD_Olsen_plusK  8
+#define PRIMMEF77_RQI  9
+#define PRIMMEF77_JDQR  10
+#define PRIMMEF77_JDQMR  11
+#define PRIMMEF77_JDQMR_ETol  12
+#define PRIMMEF77_SUBSPACE_ITERATION  13
+#define PRIMMEF77_LOBPCG_OrthoBasis  14
+#define PRIMMEF77_LOBPCG_OrthoBasis_Window  15
 /*-------------------------------------------------------*/
 /*     Defining easy to remember labels for setting the  */
 /*     members of the primme structure from Fortran      */
@@ -121,6 +121,7 @@
 #define PRIMMEF77_closest_geq  2
 #define PRIMMEF77_closest_leq  3
 #define PRIMMEF77_closest_abs  4
+#define PRIMMEF77_largest_abs  5
 /*-------------------------------------------------------*/
 #define PRIMMEF77_proj_default  0
 #define PRIMMEF77_proj_RR  1

@@ -3,16 +3,16 @@ C     Defining easy to remember labels for setting the
 C     method in primme_svds_set_method from Fortran
 C-------------------------------------------------------
       integer
-     : PRIMMEF77_SVDS_DEFAULT,
-     : PRIMMEF77_SVDS_HYBRID,
-     : PRIMMEF77_SVDS_NORMALEQUATIONS,
-     : PRIMMEF77_SVDS_AUGMENTED
+     : PRIMMEF77_SVDS_default,
+     : PRIMMEF77_SVDS_hybrid,
+     : PRIMMEF77_SVDS_normalequations,
+     : PRIMMEF77_SVDS_augmented
 
       parameter(
-     : PRIMMEF77_SVDS_DEFAULT = 100,
-     : PRIMMEF77_SVDS_HYBRID = 1,
-     : PRIMMEF77_SVDS_NORMALEQUATIONS = 2,
-     : PRIMMEF77_SVDS_AUGMENTED = 3
+     : PRIMMEF77_SVDS_default = 0,
+     : PRIMMEF77_SVDS_hybrid = 1,
+     : PRIMMEF77_SVDS_normalequations = 2,
+     : PRIMMEF77_SVDS_augmented = 3
      :)
 
 C-------------------------------------------------------
@@ -115,7 +115,7 @@ C-------------------------------------------------------
       integer 
      : PRIMMEF77_SVDS_largest,
      : PRIMMEF77_SVDS_smallest,
-     : PRIMMEF77_SVDS_closest_abs
+     : PRIMMEF77_SVDS_closest_abs,
      : PRIMMEF77_SVDS_op_none,
      : PRIMMEF77_SVDS_op_AtA,
      : PRIMMEF77_SVDS_op_AAt,
@@ -124,10 +124,15 @@ C-------------------------------------------------------
       parameter(
      : PRIMMEF77_SVDS_largest = 0,
      : PRIMMEF77_SVDS_smallest = 1,
-     : PRIMMEF77_SVDS_closest_abs = 2
+     : PRIMMEF77_SVDS_closest_abs = 2,
      : PRIMMEF77_SVDS_op_none = 0,
      : PRIMMEF77_SVDS_op_AtA = 1,
      : PRIMMEF77_SVDS_op_AAt = 2,
      : PRIMMEF77_SVDS_op_augmented = 3
      :)
  
+C-------------------------------------------------------
+C    Include PRIMME definitions
+C-------------------------------------------------------
+
+      include 'primme_f77.h'

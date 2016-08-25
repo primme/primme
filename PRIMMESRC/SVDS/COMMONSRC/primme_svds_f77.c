@@ -63,7 +63,7 @@ void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds) {
    free(*primme_svds);
 }
 
-void primme_svds_set_member(primme_svds_params **primme_svds_, int *label,
+void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *label,
       union f77_value v, int *ierr) {
    int i;
    primme_svds_params *primme_svds = *primme_svds_;
@@ -200,7 +200,7 @@ void primme_svds_set_member(primme_svds_params **primme_svds_, int *label,
    }
 }
 
-void primmetop_get_member(primme_svds_params **primme_svds_, int *label,
+void AS_FORTRAN(primme_svdstop_get_member)(primme_svds_params **primme_svds_, int *label,
       union f77_value_ptr *v, int *ierr) {
    int i;
    primme_svds_params *primme_svds = *primme_svds_;
@@ -339,7 +339,7 @@ void primmetop_get_member(primme_svds_params **primme_svds_, int *label,
    }
 }
 
-void primme_svds_get_member(primme_svds_params *primme_svds, int *label,
+void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds, int *label,
       union f77_value_ptr *v, int *ierr) {
-   primmetop_get_member(&primme_svds, label, v, ierr);
+   AS_FORTRAN(primme_svdstop_get_member)(&primme_svds, label, v, ierr);
 }

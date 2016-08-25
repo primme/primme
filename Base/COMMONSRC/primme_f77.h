@@ -21,22 +21,22 @@ C-------------------------------------------------------
      : PRIMMEF77_LOBPCG_OrthoBasis_Window
 
       parameter(
-     : PRIMMEF77_DEFAULT_METHOD = 100,
-     : PRIMMEF77_DYNAMIC = 0,
-     : PRIMMEF77_DEFAULT_MIN_TIME = 1,
-     : PRIMMEF77_DEFAULT_MIN_MATVECS = 2,
-     : PRIMMEF77_Arnoldi = 3,
-     : PRIMMEF77_GD = 4,
-     : PRIMMEF77_GD_plusK = 5,
-     : PRIMMEF77_GD_Olsen_plusK = 6,
-     : PRIMMEF77_JD_Olsen_plusK = 7,
-     : PRIMMEF77_RQI = 8,
-     : PRIMMEF77_JDQR = 9,
-     : PRIMMEF77_JDQMR = 10,
-     : PRIMMEF77_JDQMR_ETol = 11,
-     : PRIMMEF77_SUBSPACE_ITERATION = 12,
-     : PRIMMEF77_LOBPCG_OrthoBasis = 13,
-     : PRIMMEF77_LOBPCG_OrthoBasis_Window = 14
+     : PRIMMEF77_DEFAULT_METHOD = 0,
+     : PRIMMEF77_DYNAMIC = 1,
+     : PRIMMEF77_DEFAULT_MIN_TIME = 2,
+     : PRIMMEF77_DEFAULT_MIN_MATVECS = 3,
+     : PRIMMEF77_Arnoldi = 4,
+     : PRIMMEF77_GD = 5,
+     : PRIMMEF77_GD_plusK = 6,
+     : PRIMMEF77_GD_Olsen_plusK = 7,
+     : PRIMMEF77_JD_Olsen_plusK = 8,
+     : PRIMMEF77_RQI = 9,
+     : PRIMMEF77_JDQR = 10,
+     : PRIMMEF77_JDQMR = 11,
+     : PRIMMEF77_JDQMR_ETol = 12,
+     : PRIMMEF77_SUBSPACE_ITERATION = 13,
+     : PRIMMEF77_LOBPCG_OrthoBasis = 14,
+     : PRIMMEF77_LOBPCG_OrthoBasis_Window = 15
      :)
 
 C-------------------------------------------------------
@@ -175,6 +175,7 @@ C-------------------------------------------------------
      : PRIMMEF77_closest_geq,
      : PRIMMEF77_closest_leq,
      : PRIMMEF77_closest_abs,
+     : PRIMMEF77_largest_abs,
      : PRIMMEF77_proj_default,
      : PRIMMEF77_proj_RR,
      : PRIMMEF77_proj_harmonic,
@@ -196,6 +197,7 @@ C-------------------------------------------------------
      : PRIMMEF77_closest_geq = 2,
      : PRIMMEF77_closest_leq = 3,
      : PRIMMEF77_closest_abs = 4,
+     : PRIMMEF77_largest_abs = 5,
      : PRIMMEF77_proj_default = 0,
      : PRIMMEF77_proj_RR = 1,
      : PRIMMEF77_proj_harmonic = 2,

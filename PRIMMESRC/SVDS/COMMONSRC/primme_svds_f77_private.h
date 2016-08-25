@@ -33,7 +33,7 @@
 /*     Defining easy to remember labels for setting the  */
 /*     method in primme_svds_set_method from Fortran     */
 /*-------------------------------------------------------*/
-#define PRIMMEF77_SVDS_DEFAULT 100
+#define PRIMMEF77_SVDS_DEFAULT 0
 #define PRIMMEF77_SVDS_HYBRID 1
 #define PRIMMEF77_SVDS_NORMALEQUATIONS 2
 #define PRIMMEF77_SVDS_AUGMENTED 3
@@ -127,9 +127,9 @@ union f77_value_ptr {
 };
 
 #ifdef F77UNDERSCORE
-#define AS_FORTRAN(X) X ## _
+#define AS_FORTRAN(X) X ## _f77_
 #else
-#define AS_FORTRAN(X) X
+#define AS_FORTRAN(X) X ## _f77
 #endif
 
 void AS_FORTRAN(dprimme_svds)(double *svals, double *svecs, double *resNorms,
@@ -142,9 +142,9 @@ void AS_FORTRAN(primme_svds_set_method)(primme_svds_preset_method *method,
       primme_svds_params **primme_svds, int *ierr);
 void AS_FORTRAN(primme_svds_display_params)(primme_svds_params **primme_svds);
 void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds);
-void primme_svds_set_member(primme_svds_params **primme_svds, int *label, union f77_value ptr, int *ierr);
-void primmetop_get_member(primme_svds_params **primme_svds, int *label, union f77_value_ptr *ptr, int *ierr);
-void primme_svds_get_member(primme_svds_params *primme_svds, int *label, union f77_value_ptr *ptr, int *ierr);
+void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds, int *label, union f77_value ptr, int *ierr);
+void AS_FORTRAN(primme_svdstop_get_member)(primme_svds_params **primme_svds, int *label, union f77_value_ptr *ptr, int *ierr);
+void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds, int *label, union f77_value_ptr *ptr, int *ierr);
  
 #ifdef __cplusplus
 }
