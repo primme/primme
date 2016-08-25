@@ -567,8 +567,9 @@ Example
 3
 >>> evals[0:pp.initSize] # converged values 
 array([ 99.,  98.,  97.])
->>> pp.stats.numMatvecs  # A*v times that take
-110
+>>> # Time in seconds and A*v times that took
+>>> pp.stats.elapsedTime, pp.stats.numMatvecs # doctest: +SKIP
+0.5, 110
 "
 %enddef
 %feature("docstring") PrimmeParams DOCSTRING_PrimmeParams;
@@ -602,8 +603,9 @@ Example
 3
 >>> svals[0:pp.initSize] # converged singular values 
 array([ 1.,  2.,  3.])
->>> pp.stats.numMatvecs  # A*v and A.H*v times that take
-94
+>>> # Time in seconds and A*v times that took
+>>> pp.stats.elapsedTime, pp.stats.numMatvecs # doctest: +SKIP
+0.7, 94
 "
 %enddef
 %feature("docstring") PrimmeSvdsParams DOCSTRING_PrimmeSvdsParams;
