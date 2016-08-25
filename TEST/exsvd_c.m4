@@ -29,12 +29,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#ifndef min
-#define min(A,B) ((A)<=(B)?(A):(B))
-#endif
-#ifndef max
-#define max(A,B) ((A)>=(B)?(A):(B))
-#endif
 ifdef(`USE_COMPLEX', ``#include <complex.h>
 '')dnl
 ifdef(`USE_PETSC', ``#include <petscpc.h>
@@ -42,6 +36,14 @@ ifdef(`USE_PETSC', ``#include <petscpc.h>
 '')dnl
 //#include "primme.h"   /* header file for PRIMME SVDS too */ 
 #include "primme_svds.h"   /* this shouldn't be in this way */ 
+
+#ifndef min
+#define min(A,B) ((A)<=(B)?(A):(B))
+#endif
+#ifndef max
+#define max(A,B) ((A)>=(B)?(A):(B))
+#endif
+
 define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex double', `double')))dnl
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A);
