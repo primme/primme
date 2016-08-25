@@ -1,23 +1,22 @@
 # SWIG
-INTERFACES = primme.i
-WRAPPERS   = primme_wrap.cxx primme_wrap.h
-PROXIES    = Primme.py
+GENERATED  = primme_wrap.cxx primme_wrap.h Primme.py
 
-# Default target: build the tests
-all: $(WRAPPERS) primmew.h primmew.cxx
+all: $(GENERATED) primmew.h primmew.cxx Primme.py setup.py
 	./setup.py build_ext -i
 
 # Test target: run the tests
-test: all
+test: all tests.py examples.py
 	python tests.py
 
-# Rule: %.i -> %_wrap.cxx
-%_wrap.cxx %_wrap.h: %.i numpy.i wrappers.py primmew.h
-	swig -c++ -Wextra -python $<
+$(GENERATED): primme.i numpy.i wrappers.py primmew.h pyfragments.swg
+	swig -c++ -Wextra -python primme.i
 
 # Clean target
 clean:
 	$(RM) -rf build
-	$(RM) -f *.so  $(WRAPPERS) $(PROXIES)*
+	$(RM) -f _Primme*
 
-.PHONY : all clean test
+veryclean: clean
+	$(RM) $(GENERATED)
+
+.PHONY : all clean veryclean test
