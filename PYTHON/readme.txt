@@ -99,7 +99,7 @@ to the documentation or use help from an interactive python:
 
 $ python
 >>> import Primme
->>> help(Primme.eighs)
+>>> help(Primme.eigs)
 >>> help(Primme.svds)
 
 The abstract classes PrimmeParams and PrimmeSvdsParams in Primme module
