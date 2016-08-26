@@ -45,14 +45,14 @@ pyfragments.swg       <- SWIG files distributed by Numpy (in dir tools/swig)
 primme.i              <- SWIG file with PRIMME interface description
 primmew.h and
 primmew.cxx           <- C++ class encapsulating PRIMME and PRIMME_SVDS
-wrappers.py           <- implementation of eigs and svds
+wrappers.py           <- implementation of eigshh and svds
 primme_wrap.h and
 primme_wrap.cxx and
 Python.py             <- files generated from primme.i
 _Primme.so (generated)<- shared library with PRIMME and PYTHON interface
 setup.py              <- disutils script to build _Primme.so
 tests.py              <- tests for the python interface
-examples.py           <- few examples with eigs and svds
+examples.py           <- few examples with eigshh and svds
 
 -----------------------------------------------------------------------------
 2. _Primme.so compilation 
@@ -93,16 +93,16 @@ or execute the examples:
 3. Interface description
 -----------------------------------------------------------------------------
 
-Primme module offers eigs and svds as high level functions to compute
+Primme module offers eigshh and svds as high level functions to compute
 eigenpairs and singular triples. Too see their description, please refer
 to the documentation or use help from an interactive python:
 
 $ python
 >>> import Primme
->>> help(Primme.eigs)
+>>> help(Primme.eigshh)
 >>> help(Primme.svds)
 
 The abstract classes PrimmeParams and PrimmeSvdsParams in Primme module
 encapsulates primme_params and primme_svds_params respectively from the C
-interface. To see how they works, look for the definitions of eigs and svds
+interface. To see how they works, look for the definitions of eigshh and svds
 in wrappers.py.
