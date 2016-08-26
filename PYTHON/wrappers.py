@@ -507,7 +507,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         pp.maxBasisSize = ncv
 
     if maxiter:
-        pp.maxMatvecs = maxiter
+        # NOTE: every eigensolver iteration spend two matvecs*blockSize
+        pp.maxMatvecs = maxiter*(maxBlockSize if maxBlockSize else 1)/2
 
     if maxBlockSize:
         pp.maxBlockSize = maxBlockSize
