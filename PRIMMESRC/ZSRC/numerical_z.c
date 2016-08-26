@@ -550,7 +550,7 @@ void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipi
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      for(i=0; i<n; i++)
+      if (ipivot) for(i=0; i<n; i++)
          ipivot[i] = (int)lipivot[i];
       free(lipivot);
    }
@@ -591,7 +591,7 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      for(i=0; i<n; i++)
+      if (ipivot) for(i=0; i<n; i++)
          ipivot[i] = (int)lipivot[i];
       free(lipivot);
    }

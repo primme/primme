@@ -531,7 +531,7 @@ void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      for(i=0; i<n; i++)
+      if (ipivot) for(i=0; i<n; i++)
          ipivot[i] = (int)lipivot[i];
       free(lipivot);
    }
@@ -572,7 +572,7 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      for(i=0; i<n; i++)
+      if (ipivot) for(i=0; i<n; i++)
          ipivot[i] = (int)lipivot[i];
       free(lipivot);
    }

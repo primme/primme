@@ -157,7 +157,7 @@ void DSYEV(const char *jobz, const char *uplo, PRIMME_BLASINT *n, double *a, PRI
    double *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
 void DGESVD(const char *jobu, const char *jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, double *a, PRIMME_BLASINT *lda, 
 double *s, double *u, PRIMME_BLASINT *ldu, double *vt, PRIMME_BLASINT *ldvt, double *work,
-PRIMME_BLASINT *ldwork, int *info); 
+PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info); 
 void DSYTRF(const char *uplo, PRIMME_BLASINT *n, double *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, double *work,
    PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
 void DSYTRS(const char *uplo, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, double *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot,
@@ -171,7 +171,7 @@ void   ZGEMM(const char *transa, const char *transb, PRIMME_BLASINT *m, PRIMME_B
 void   ZTRMM(const char *side, const char *uplo, const char *transa, const char *diag, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb);
 void   ZTRSM(const char *side, const char *uplo, const char *transa, const char *diag, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb);
 void   ZHEMM(const char *side, const char *uplo, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *b, PRIMME_BLASINT *ldb, void *beta, void *c, PRIMME_BLASINT *ldc);
-void   ZHEMV(const char *uplo, int *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *x, PRIMME_BLASINT *lncx, void *beta, void *y, PRIMME_BLASINT *lncy);
+void   ZHEMV(const char *uplo, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *x, PRIMME_BLASINT *lncx, void *beta, void *y, PRIMME_BLASINT *lncy);
 void   ZAXPY(PRIMME_BLASINT *n, void *alpha, void *x, PRIMME_BLASINT *incx, void *y, PRIMME_BLASINT *incy);
 void   ZGEMV(const char *transa, PRIMME_BLASINT *m, PRIMME_BLASINT *n, void *alpha, void *a, PRIMME_BLASINT *lda, void *x, PRIMME_BLASINT *incx, void *beta, void *y, PRIMME_BLASINT *incy);
 void   ZSCAL(PRIMME_BLASINT *n, void *alpha, void *x, PRIMME_BLASINT *incx);
