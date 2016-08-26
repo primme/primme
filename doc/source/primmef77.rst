@@ -49,14 +49,14 @@ primme_set_method_f77
 
    :param integer ierr: (output) if 0, successful; if negative, something went wrong.
 
-primme_Free_f77
+primme_free_f77
 """""""""""""""
 
-.. c:function:: primme_Free_f77(primme)
+.. c:function:: primme_free_f77(primme)
 
-   Free memory allocated by PRIMME.
+   Free memory allocated by PRIMME and delete all values set.
 
-   :param ptr primme: parameters structure.
+   :param ptr primme: (input/output) parameters structure.
 
 dprimme_f77
 """""""""""

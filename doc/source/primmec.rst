@@ -204,9 +204,12 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``int`` |printLevel|
       | ``FILE *`` |outputFile|
       | ``double *`` |ShiftsForPreconditioner|
+      | ``primme_init`` |initBasisMode|
+      | ``struct projection_params`` :c:member:`projectionParams <primme_params.projectionParams.projection>`
       | ``struct restarting_params`` :c:member:`restartingParams <primme_params.restartingParams.scheme>`
       | ``struct correction_params`` :c:member:`correctionParams <primme_params.correctionParams.precondition>`
       | ``struct primme_stats`` :c:member:`stats <primme_params.stats.numOuterIterations>`
+      | ``void (*`` |convTestFun| ``)(...)``
       | ``struct stackTraceNode *stackTrace``
 
 .. only:: text
@@ -255,10 +258,13 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       int printLevel;
       FILE *outputFile;
       double *ShiftsForPreconditioner;
+      primme_init initBasisMode;
+      struct projection_params projectionParams;
       struct restarting_params restartingParams;
       struct correction_params correctionParams;
       struct primme_stats stats;
-      struct stackTraceNode *stackTrace
+      void (*convTestFun)(...);
+      struct stackTraceNode *stackTrace;
  
 PRIMME requires the user to set at least the dimension of the matrix (|n|) and
 the matrix-vector product (|matrixMatvec|), as they define the problem to be solved.

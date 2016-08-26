@@ -19,11 +19,10 @@ Welcome to PRIMME's documentation!
 
 .. toctree::
    :maxdepth: 3
+   :includehidden:
 
    intro
-   primmec
-   primmef77
-   appendix
+   api
 
 .. only:: not text and not singlehtml
 
