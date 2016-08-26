@@ -27,8 +27,7 @@ FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 # Mac OS X
 #CC       = clang
-#CC       = gcc-mp-4.9
-#F77      = gfortran-mp-4.9
+#F77      = gfortran
 #DEFINES  = -DF77UNDERSCORE 
 #CFLAGS   = -O2
 #FFLAGS   = -fno-second-underscore -O2

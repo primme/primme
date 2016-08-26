@@ -55,7 +55,7 @@ test:
 	echo "------------------------------------------------"; \
 	echo " Test double sequential C                       "; \
 	echo "------------------------------------------------"; \
-	make test_double; \
+	make test_double USE_PETSC=no; \
 	)
 
 
