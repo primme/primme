@@ -7,6 +7,7 @@ Eigenproblems
 
    primmec
    primmef77
+   pyeigsh
    appendix
 
 Singular values
@@ -17,5 +18,6 @@ Singular values
 
    svdsc
    svdsf77
+   pysvds
    appendixsvds
    

@@ -59,6 +59,8 @@ Table Of Contents:
 
     * primme_get_prec_shift_f77
 
+  * Python Interface
+
   * Appendix
 
     * primme_params
@@ -98,6 +100,8 @@ Table Of Contents:
     * primme_svds_set_member_f77
 
     * primme_svds_get_member_f77
+
+  * Python Interface
 
   * Appendix
 
@@ -2358,6 +2362,184 @@ primme_preset_method
 
       * "SkewX"   = 0.
 
+Python Interface
+****************
+
+Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None)
+
+   Find k eigenvalues and eigenvectors of the real symmetric square
+   matrix or complex Hermitian matrix A.
+
+   Solves "A * x[i] = w[i] * x[i]", the standard eigenvalue problem
+   for w[i] eigenvalues with corresponding eigenvectors x[i].
+
+   If M is specified, solves "A * x[i] = w[i] * M * x[i]", the
+   generalized eigenvalue problem for w[i] eigenvalues with
+   corresponding eigenvectors x[i]
+
+   Parameters:
+      * **A** (*An N x N matrix, array, sparse matrix, or
+        LinearOperator representing*) -- the operation A * x, where A
+        is a real symmetric matrix or complex Hermitian.
+
+      * **k** (*int, optional*) -- The number of eigenvalues and
+        eigenvectors desired. *k* must be smaller than N. It is not
+        possible to compute all eigenvectors of a matrix.
+
+      * **M** (*An N x N matrix, array, sparse matrix, or
+        LinearOperator representing*) --
+
+        the operation M * x for the generalized eigenvalue problem
+
+           A * x = w * M * x.
+
+        M must represent a real, symmetric matrix if A is real, and
+        must represent a complex, hermitian matrix if A is complex.
+        For best results, the data type of M should be the same as
+        that of A.
+
+      * **sigma** (*real, optional*) -- Find eigenvalues near sigma.
+
+      * **v0** (*N x i, ndarray, optional*) -- Starting vectors for
+        iteration.
+
+      * **ncv** (*int, optional*) -- The maximum size of the basis
+
+      * **which** (*str ['LM' | 'SM' | 'LA' | 'SA' | 'BE']*) --
+
+        If A is a complex hermitian matrix, 'BE' is invalid. Which *k*
+        eigenvectors and eigenvalues to find:
+
+           'LM' : Largest (in magnitude) eigenvalues
+
+           'SM' : Smallest (in magnitude) eigenvalues
+
+           'LA' : Largest (algebraic) eigenvalues
+
+           'SA' : Smallest (algebraic) eigenvalues
+
+           'BE' : Half (k/2) from each end of the spectrum (not
+           supported)
+
+        When sigma != None, 'which' refers to the shifted eigenvalues
+        "w'[i]"
+
+      * **maxiter** (*int, optional*) -- Maximum number of
+        iterations.
+
+      * **tol** (*float*) -- Accuracy for eigenvalues (stopping
+        criterion). The default value is sqrt of machine precision.
+
+      * **Minv** (*(not supported)*) --
+
+      * **OPinv** (*N x N matrix, array, sparse matrix, or
+        LinearOperator*) -- Preconditioner to accelerate the
+        convergence. Usually it is an approximation of the inverse of
+        (A - sigma*M).
+
+      * **return_eigenvectors** (*bool*) -- Return eigenvectors
+        (True) in addition to eigenvalues
+
+      * **mode** (*string ['normal' | 'buckling' | 'cayley']*) --
+        Only 'normal' mode is supported.
+
+      * **lock** (*N x i, ndarray, optional*) -- Seek the
+        eigenvectors orthogonal to these ones. The provided vectors
+        *should* be orthonormal. Useful to not converge some already
+        computed solutions.
+
+      * **maxBlockSize** (*int, optional*) -- Maximum number of
+        vectors added at every iteration.
+
+      * **minRestartSize** (*int, optional*) -- Number of
+        approximate eigenvectors kept from last iteration in restart.
+
+      * **maxPrevRetain** (*int, optional*) -- Number of approximate
+        eigenvectors kept from previous iteration in restart. Also
+        referred as +k vectors in GD+k.
+
+      * **method** (*int, optional*) --
+
+        Preset method, one of:
+
+        * DEFAULT_MIN_TIME : a variant of JDQMR,
+
+        * DEFAULT_MIN_MATVECS : GD+k
+
+        * DYNAMIC : choose dynamically between both previous
+          methods.
+
+        See a detailed description of the methods and other possible
+        values in [2].
+
+      * **report_stats** (*bool, optional*) -- If True, it is also
+        returned extra information from PRIMME.
+
+   Returns:
+      * **w** (*array*) -- Array of k eigenvalues
+
+      * **v** (*array*) -- An array representing the *k*
+        eigenvectors. The column "v[:, i]" is the eigenvector
+        corresponding to the eigenvalue "w[i]".
+
+      * **stats** (*dict, optional (if return_stats)*) -- Extra
+        information reported by PRIMME:
+
+        * "numOuterIterations": number of outer iterations
+
+        * "numRestarts": number of restarts
+
+        * "numMatvecs": number of A*v
+
+        * "numPreconds": number of OPinv*v
+
+        * "elapsedTime": time that took
+
+        * "estimateMinEVal": the leftmost Ritz value seen
+
+        * "estimateMaxEVal": the rightmost Ritz value seen
+
+        * "estimateLargestSVal": the largest singular value seen
+
+   Raises:
+      "PrimmeError" -- When the requested convergence is not obtained.
+
+      The PRIMME error code can be found as "err" attribute of the
+      exception object.
+
+   See also:
+
+     "scipy.sparse.linalg.eigs()"
+        eigenvalues and eigenvectors for a general (nonsymmetric)
+        matrix A
+
+     "Primme.svds()"
+        singular value decomposition for a matrix A
+
+   -[ Notes ]-
+
+   This function is a wrapper to PRIMME functions to find the
+   eigenvalues and eigenvectors [1].
+
+   -[ References ]-
+
+   [1] PRIMME Software, https://github.com/primme/primme
+
+   [2] Preset Methods,
+       http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-
+       methods
+
+   -[ Examples ]-
+
+   >>> import Primme, scipy.sparse
+   >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+   >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
+   >>> evals # the three largest eigenvalues of A
+   array([ 99.,  98.,  97.])
+   >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
+   >>> evals # the next three largest eigenvalues
+   array([ 96.,  95.,  94.])
+
 C Library Interface
 *******************
 
@@ -3664,3 +3846,131 @@ primme_svds_preset_method
       sets "method" to "primme_svds_op_AtA" if "m" is larger or equal
       than "n", and to "primme_svds_op_AAt" otherwise; and
       "methodStage2" is set to "primme_svds_op_augmented".
+
+Python Interface
+****************
+
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0)
+
+   Compute k singular values and vectors for a sparse matrix.
+
+   Parameters:
+      * **A** (*{sparse matrix, LinearOperator}*) -- Array to
+        compute the SVD on, of shape (M, N)
+
+      * **k** (*int, optional*) -- Number of singular values and
+        vectors to compute. Must be 1 <= k < min(A.shape).
+
+      * **ncv** (*int, optional*) -- The maximum size of the basis
+
+      * **tol** (*float, optional*) -- Tolerance for singular
+        values. Zero (default) means machine precision.
+
+      * **which** (*str ['LM' | 'SM'] or number, optional*) --
+
+        Which *k* singular values to find:
+
+           * 'LM' : largest singular values
+
+           * 'SM' : smallest singular values
+
+           * number : closest singular values to (referred as sigma
+             later)
+
+      * **u0** (*ndarray, optional*) --
+
+        Left starting vectors for the iterations.
+
+        Should be approximate left singular vectors. If only u0 or v0
+        is provided, the other is computed.
+
+      * **v0** (*ndarray, optional*) -- Right starting vectors for
+        the iterations.
+
+      * **maxiter** (*int, optional*) -- Maximum number of
+        iterations.
+
+      * **precAHA** (*{N x N matrix, array, sparse matrix,
+        LinearOperator}, optional*) -- Approximate inverse of (A.H*A -
+        sigma**2*I). If provided and M>N, it usually accelerates the
+        convergence.
+
+      * **precAAH** (*{M x M matrix, array, sparse matrix,
+        LinearOperator}, optional*) -- Approximate inverse of (A*A.H -
+        sigma**2*I). If provided and M<N, it usually accelerates the
+        convergence.
+
+      * **precAug** (*{(M+N) x (M+N) matrix, array, sparse matrix,
+        LinearOperator}, optional*) -- Approximate inverse of
+        ([zeros() A.H; zeros() A] - sigma*I). It usually accelerates
+        the convergence if tol<dtype.eps**.5.
+
+      * **locku0** (*ndarray, optional*) --
+
+        Left orthogonal vector constrain.
+
+        Seek singular triplets orthogonal to locku0 and lockv0. The
+        provided vectors *should* be orthonormal. If only locku0 or
+        lockv0 is provided, the other is computed. Useful to not
+        converge some already computed solutions.
+
+      * **lockv0** (*ndarray, optional*) -- Right orthogonal vector
+        constrain. See locku0.
+
+      * **maxBlockSize** (*int, optional*) -- Maximum number of
+        vectors added at every iteration.
+
+      * **report_stats** (*bool, optional*) -- If True, it is also
+        returned extra information from PRIMME.
+
+   Returns:
+      * **u** (*ndarray, shape=(M, k), optional*) -- Unitary matrix
+        having left singular vectors as columns. Returned if
+        *return_singular_vectors* is True.
+
+      * **s** (*ndarray, shape=(k,)*) -- The singular values.
+
+      * **vt** (*ndarray, shape=(k, N), optional*) -- Unitary matrix
+        having right singular vectors as rows. Returned if
+        *return_singular_vectors* is True.
+
+      * **stats** (*dict, optional (if return_stats)*) -- Extra
+        information reported by PRIMME:
+
+        * "numOuterIterations": number of outer iterations
+
+        * "numRestarts": number of restarts
+
+        * "numMatvecs": number of A*v
+
+        * "numPreconds": number of OPinv*v
+
+        * "elapsedTime": time that took
+
+        Returned if *return_stats* is True.
+
+   See also:
+
+     "Primme.eigsh()"
+        eigenvalue decomposition for a sparse symmetrix/complex
+        Hermitian matrix A
+
+     "scipy.sparse.linalg.eigs()"
+        eigenvalues and eigenvectors for a general (nonsymmetric)
+        matrix A
+
+   -[ Examples ]-
+
+   >>> import Primme, scipy.sparse
+   >>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+   >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which='SM')
+   >>> svals # the three smallest singular values of A
+   array([ 1.,  2.,  3.])
+
+   >>> import Primme, scipy.sparse
+   >>> A = scipy.sparse.rand(10000, 100, random_state=10)
+   >>> prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
+   ...           [0], 100, 100) # square diag. preconditioner
+   >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
+   >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
+   ['5.99871', '5.99057', '6.01065']

@@ -128,9 +128,10 @@ text:
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
 	@cat $(BUILDDIR)/text/readme.txt $(BUILDDIR)/text/intro.txt \
 	   $(BUILDDIR)/text/primmec.txt $(BUILDDIR)/text/primmef77.txt \
-	   $(BUILDDIR)/text/appendix.txt \
+	   $(BUILDDIR)/text/appendix.txt $(BUILDDIR)/text/pyeigsh.txt \
 	   $(BUILDDIR)/text/svdsc.txt $(BUILDDIR)/text/svdsf77.txt \
-	   $(BUILDDIR)/text/appendixsvds.txt > ../readme.txt
+	   $(BUILDDIR)/text/appendixsvds.txt $(BUILDDIR)/text/pysvds.txt \
+	   > ../readme.txt
 
 man:
 	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) $(BUILDDIR)/man
