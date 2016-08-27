@@ -156,7 +156,7 @@ def test_primme_eigsh():
             evals, evecs = np.linalg.eigh(A)
             sigma0 = evals[0]*.51 + evals[-1]*.49
             for op in ((lambda x : x), csr_matrix, aslinearoperator): 
-               for which, sigma in [(w, None) for w in 'LM', 'SM', 'LA', 'SA'] + [('SM', sigma0)] :
+               for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
                   if gen.__name__ != "ElasticRod":
                      precs = (None, jacobi_prec(A, 0 if sigma is None else sigma))
                   else:
@@ -233,7 +233,7 @@ def test_examples_from_doc():
    doctest.testmod(Primme, raise_on_error=True)
 
 def test_examples():
-    execfile("examples.py")
+    exec(compile(open("examples.py").read(), "examples.py", "exec"))
 
 if __name__ == "__main__":
     run_module_suite()

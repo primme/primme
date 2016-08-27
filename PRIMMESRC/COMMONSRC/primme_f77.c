@@ -93,6 +93,7 @@ void primme_free_f77(primme_params **primme){
 
    primme_Free(*primme);
    free(*primme);
+   *primme = NULL;
 }
 
 /*****************************************************************************

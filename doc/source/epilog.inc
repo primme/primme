@@ -1,4 +1,5 @@
 
+.. |primme_params|                         replace:: :c:type:`primme_params <primme_params>`
 .. |n|                                     replace:: :c:member:`n                                  <primme_params.n>`
 .. |matrixMatvec|                          replace:: :c:member:`matrixMatvec                       <primme_params.matrixMatvec>`
 .. |applyPreconditioner|                   replace:: :c:member:`applyPreconditioner                <primme_params.applyPreconditioner>`
@@ -31,6 +32,7 @@
 .. |matrix|                                replace:: :c:member:`matrix                             <primme_params.matrix>`
 .. |preconditioner|                        replace:: :c:member:`preconditioner                     <primme_params.preconditioner>`
 .. |ShiftsForPreconditioner|               replace:: :c:member:`ShiftsForPreconditioner            <primme_params.ShiftsForPreconditioner>`
+.. |initBasisMode|                         replace:: :c:member:`initBasisMode                      <primme_params.initBasisMode>`
 .. |scheme|               replace:: :c:member:`scheme                             <primme_params.restartingParams.scheme>`
 .. |maxPrevRetain|        replace:: :c:member:`maxPrevRetain                      <primme_params.restartingParams.maxPrevRetain>`
 .. |precondition|         replace:: :c:member:`precondition                       <primme_params.correctionParams.precondition>`
@@ -49,14 +51,27 @@
 .. |numMatvecs|                      replace:: :c:member:`numMatvecs                         <primme_params.stats.numMatvecs>`
 .. |numPreconds|                     replace:: :c:member:`numPreconds                        <primme_params.stats.numPreconds>`
 .. |elapsedTime|                     replace:: :c:member:`elapsedTime                        <primme_params.stats.elapsedTime>`
+.. |estimateMinEVal|                 replace:: :c:member:`estimateMinEVal                    <primme_params.stats.estimateMinEVal>`
+.. |estimateMaxEVal|                 replace:: :c:member:`estimateMaxEVal                    <primme_params.stats.estimateMaxEVal>`
+.. |estimateLargestSVal|             replace:: :c:member:`estimateLargestSVal                <primme_params.stats.estimateLargestSVal>`
+.. |maxConvTol|                      replace:: :c:member:`maxConvTol                         <primme_params.stats.maxConvTol>`
 .. |dynamicMethodSwitch|                   replace:: :c:member:`dynamicMethodSwitch                <primme_params.dynamicMethodSwitch>`
 .. |massMatrixMatvec|                      replace:: :c:member:`massMatrixMatvec                   <primme_params.massMatrixMatvec>`
+.. |convTestFun|                           replace:: :c:member:`convTestFun                        <primme_params.convTestFun>`
 .. |primme_smallest|       replace:: :c:member:`primme_smallest       <primme_params.target>`
 .. |primme_largest|        replace:: :c:member:`primme_largest        <primme_params.target>`
 .. |primme_closest_geq|    replace:: :c:member:`primme_closest_geq    <primme_params.target>`
 .. |primme_closest_leq|    replace:: :c:member:`primme_closest_leq    <primme_params.target>`
 .. |primme_closest_abs|    replace:: :c:member:`primme_closest_abs    <primme_params.target>`
+.. |primme_proj_default|   replace:: :c:member:`primme_proj_default   <primme_params.projectionParams.projection>`
+.. |primme_proj_RR|        replace:: :c:member:`primme_proj_RR        <primme_params.projectionParams.projection>`
+.. |primme_proj_Harm|      replace:: :c:member:`primme_proj_Harm      <primme_params.projectionParams.projection>`
+.. |primme_proj_ref|       replace:: :c:member:`primme_proj_ref       <primme_params.projectionParams.projection>`
 .. |primme_thick|                  replace:: :c:member:`primme_thick                  <primme_params.restartingParams.scheme>`
+.. |primme_init_default|           replace:: :c:member:`primme_init_default   <primme_params.initBasisMode>`
+.. |primme_init_krylov|            replace:: :c:member:`primme_init_krylov    <primme_params.initBasisMode>`
+.. |primme_init_random|            replace:: :c:member:`primme_init_random    <primme_params.initBasisMode>`
+.. |primme_init_user|              replace:: :c:member:`primme_init_user      <primme_params.initBasisMode>`
 .. |primme_dtr|                    replace:: :c:member:`primme_dtr                    <primme_params.restartingParams.scheme>`
 .. |primme_full_LTolerance|        replace:: :c:member:`primme_full_LTolerance        <primme_params.correctionParams.convTest>`
 .. |primme_decreasing_LTolerance|  replace:: :c:member:`primme_decreasing_LTolerance  <primme_params.correctionParams.convTest>`
@@ -77,6 +92,57 @@
 .. |SUBSPACE_ITERATION|            replace:: :c:member:`SUBSPACE_ITERATION            <primme_preset_method.SUBSPACE_ITERATION>`
 .. |LOBPCG_OrthoBasis|             replace:: :c:member:`LOBPCG_OrthoBasis             <primme_preset_method.LOBPCG_OrthoBasis>`
 .. |LOBPCG_OrthoBasis_Window|      replace:: :c:member:`LOBPCG_OrthoBasis_Window      <primme_preset_method.LOBPCG_OrthoBasis_Window>`
+
+.. |Sm|                      replace:: :c:member:`m                            <primme_svds_params.m>`
+.. |Sn|                      replace:: :c:member:`n                            <primme_svds_params.n>`
+.. |SmatrixMatvec|           replace:: :c:member:`matrixMatvec                 <primme_svds_params.matrixMatvec>`
+.. |SnumSvals|               replace:: :c:member:`numSvals                     <primme_svds_params.numSvals>`
+.. |Starget|                 replace:: :c:member:`target                       <primme_svds_params.target>`
+.. |Seps|                    replace:: :c:member:`eps                          <primme_svds_params.eps>`
+.. |SnumProcs|               replace:: :c:member:`numProcs                     <primme_svds_params.numProcs>`
+.. |SprocID|                 replace:: :c:member:`procID                       <primme_svds_params.procID>`
+.. |SmLocal|                 replace:: :c:member:`mLocal                       <primme_svds_params.mLocal>`
+.. |SnLocal|                 replace:: :c:member:`nLocal                       <primme_svds_params.nLocal>`
+.. |SglobalSumDouble|        replace:: :c:member:`globalSumDouble              <primme_svds_params.globalSumDouble>`
+.. |SapplyPreconditioner|    replace:: :c:member:`applyPreconditioner          <primme_svds_params.applyPreconditioner>`
+.. |SinitSize|               replace:: :c:member:`initSize                     <primme_svds_params.initSize>`
+.. |SmaxBasisSize|           replace:: :c:member:`maxBasisSize                 <primme_svds_params.maxBasisSize>`
+.. |SminRestartSize|         replace:: :c:member:`minRestartSize               <primme_svds_params.minRestartSize>`
+.. |SmaxBlockSize|           replace:: :c:member:`maxBlockSize                 <primme_svds_params.maxBlockSize>`
+.. |ScommInfo|               replace:: :c:member:`commInfo                     <primme_svds_params.commInfo>`
+.. |Smatrix|                 replace:: :c:member:`matrix                       <primme_svds_params.matrix>`
+.. |Spreconditioner|         replace:: :c:member:`preconditioner               <primme_svds_params.preconditioner>`
+.. |SnumTargetShifts|        replace:: :c:member:`numTargetShifts              <primme_svds_params.numTargetShifts>`
+.. |StargetShifts|           replace:: :c:member:`targetShifts                 <primme_svds_params.targetShifts>`
+.. |SnumOrthoConst|          replace:: :c:member:`numOrthoConst                <primme_svds_params.numOrthoConst>`
+.. |Slocking|                replace:: :c:member:`locking                      <primme_svds_params.locking>`
+.. |Sprecondition|           replace:: :c:member:`precondition                 <primme_svds_params.precondition>`
+.. |SmaxMatvecs|             replace:: :c:member:`maxMatvecs                   <primme_svds_params.maxMatvecs>`
+.. |SintWorkSize|            replace:: :c:member:`intWorkSize                  <primme_svds_params.intWorkSize>`
+.. |SrealWorkSize|           replace:: :c:member:`realWorkSize                 <primme_svds_params.realWorkSize>`
+.. |Siseed|                  replace:: :c:member:`iseed                        <primme_svds_params.iseed>`
+.. |SintWork|                replace:: :c:member:`intWork                      <primme_svds_params.intWork>`
+.. |SrealWork|               replace:: :c:member:`realWork                     <primme_svds_params.realWork>`
+.. |SaNorm|                  replace:: :c:member:`aNorm                        <primme_svds_params.aNorm>`
+.. |SprintLevel|             replace:: :c:member:`printLevel                   <primme_svds_params.printLevel>`
+.. |SoutputFile|             replace:: :c:member:`outputFile                   <primme_svds_params.outputFile>`
+.. |Smethod|                 replace:: :c:member:`method                       <primme_svds_params.method>`
+.. |SmethodStage2|           replace:: :c:member:`methodStage2                 <primme_svds_params.methodStage2>`
+.. |Sprimme|                 replace:: :c:member:`primme                       <primme_svds_params.primme>`
+.. |SprimmeStage2|           replace:: :c:member:`primmeStage2                 <primme_svds_params.primmeStage2>`
+.. |primme_svds_smallest|       replace:: :c:member:`primme_svds_smallest       <primme_svds_params.target>`
+.. |primme_svds_largest|        replace:: :c:member:`primme_svds_largest        <primme_svds_params.target>`
+.. |primme_svds_closest_abs|    replace:: :c:member:`primme_svds_closest_abs    <primme_svds_params.target>`
+.. |primme_svds_default|         replace:: :c:member:`primme_svds_default         <primme_svds_preset_method.primme_svds_default>`
+.. |primme_svds_hybrid|          replace:: :c:member:`primme_svds_hybrid          <primme_svds_preset_method.primme_svds_hybrid>`
+.. |primme_svds_normalequations| replace:: :c:member:`primme_svds_normalequations <primme_svds_preset_method.primme_svds_normalequations>`
+.. |primme_svds_augmented|       replace:: :c:member:`primme_svds_augmented       <primme_svds_preset_method.primme_svds_augmented>`
+.. |PRIMMEF77_SVDS_default|         replace:: :c:member:`PRIMMEF77_SVDS_default         <primme_svds_preset_method.primme_svds_default>`
+.. |PRIMMEF77_SVDS_hybrid|          replace:: :c:member:`PRIMMEF77_SVDS_hybrid          <primme_svds_preset_method.primme_svds_hybrid>`
+.. |PRIMMEF77_SVDS_normalequations| replace:: :c:member:`PRIMMEF77_SVDS_normalequations <primme_svds_preset_method.primme_svds_normalequations>`
+.. |PRIMMEF77_SVDS_augmented|       replace:: :c:member:`PRIMMEF77_SVDS_augmented       <primme_svds_preset_method.primme_svds_augmented>`
+
+
 
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/
 .. _LAPACK: http://www.netlib.org/lapack/

@@ -61,6 +61,7 @@ void AS_FORTRAN(primme_svds_display_params)(primme_svds_params **primme_svds) {
 void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds) {
    primme_svds_Free(*primme_svds);
    free(*primme_svds);
+   *primme_svds = NULL;
 }
 
 void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *label,

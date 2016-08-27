@@ -13188,7 +13188,7 @@ static PyMethodDef SwigMethods[] = {
 		">>> evals[0:pp.initSize] # converged values \n"
 		"array([ 99.,  98.,  97.])\n"
 		">>> # Time in seconds and A*v times that took\n"
-		">>> pp.stats.elapsedTime, pp.stats.numMatvecs\n"
+		">>> pp.stats.elapsedTime, pp.stats.numMatvecs # doctest: +SKIP\n"
 		"0.5, 110\n"
 		"\n"
 		""},

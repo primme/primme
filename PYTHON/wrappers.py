@@ -95,7 +95,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           maxPrevRetain=0, method=None):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
-    or complex hermitian matrix A.
+    or complex Hermitian matrix A.
 
     Solves ``A * x[i] = w[i] * x[i]``, the standard eigenvalue problem for
     w[i] eigenvalues with corresponding eigenvectors x[i].
@@ -107,13 +107,13 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     Parameters
     ----------
     A : An N x N matrix, array, sparse matrix, or LinearOperator representing
-        the operation A * x, where A is a real symmetric matrix
-        For buckling mode (see below) A must additionally be positive-definite
+        the operation A * x, where A is a real symmetric matrix or complex
+        Hermitian.
     k : int, optional
         The number of eigenvalues and eigenvectors desired.
         `k` must be smaller than N. It is not possible to compute all
         eigenvectors of a matrix.
-    M : An N x N matrix, array, sparse matrix, or linear operator representing
+    M : An N x N matrix, array, sparse matrix, or LinearOperator representing
         the operation M * x for the generalized eigenvalue problem
 
             A * x = w * M * x.
@@ -121,28 +121,12 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         M must represent a real, symmetric matrix if A is real, and must
         represent a complex, hermitian matrix if A is complex. For best
         results, the data type of M should be the same as that of A.
-        Additionally:
-
-            If sigma is None, M is symmetric positive definite
-
-            If sigma is specified, M is symmetric positive semi-definite
-
-            In buckling mode, M is symmetric indefinite.
-
-        If sigma is None, eigsh requires an operator to compute the solution
-        of the linear equation ``M * x = b``. This is done internally via a
-        (sparse) LU decomposition for an explicit matrix M, or via an
-        iterative solver for a general linear operator.  Alternatively,
-        the user can supply the matrix or operator Minv, which gives
-        ``x = Minv * b = M^-1 * b``.
     sigma : real, optional
         Find eigenvalues near sigma.
     v0 : N x i, ndarray, optional
         Starting vectors for iteration.
     ncv : int, optional
-        The number of Lanczos vectors generated ncv must be greater than k and
-        smaller than n; it is recommended that ``ncv > 2*k``.
-        Default: ``min(n, 2*k + 1)``
+        The maximum size of the basis
     which : str ['LM' | 'SM' | 'LA' | 'SA' | 'BE']
         If A is a complex hermitian matrix, 'BE' is invalid.
         Which `k` eigenvectors and eigenvalues to find:
@@ -159,7 +143,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         When sigma != None, 'which' refers to the shifted eigenvalues ``w'[i]``
     maxiter : int, optional
-        Maximum number of restarts update iterations allowed
+        Maximum number of iterations.
     tol : float
         Accuracy for eigenvalues (stopping criterion).
         The default value is sqrt of machine precision.
@@ -184,9 +168,11 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         restart. Also referred as +k vectors in GD+k.
     method : int, optional
         Preset method, one of:
+
         - DEFAULT_MIN_TIME : a variant of JDQMR,
         - DEFAULT_MIN_MATVECS : GD+k
         - DYNAMIC : choose dynamically between both previous methods.
+
         See a detailed description of the methods and other possible values
         in [2]_.
         
@@ -202,6 +188,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         the eigenvector corresponding to the eigenvalue ``w[i]``.
     stats : dict, optional (if return_stats)
         Extra information reported by PRIMME:
+
         - "numOuterIterations": number of outer iterations
         - "numRestarts": number of restarts
         - "numMatvecs": number of A*v
@@ -221,8 +208,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     See Also
     --------
-    eigs : eigenvalues and eigenvectors for a general (nonsymmetric) matrix A
-    svds : singular value decomposition for a matrix A
+    scipy.sparse.linalg.eigs : eigenvalues and eigenvectors for a general (nonsymmetric) matrix A
+    Primme.svds : singular value decomposition for a matrix A
 
     Notes
     -----
@@ -363,7 +350,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
          return_stats=False, maxBlockSize=0):
-    """Compute k singular values/vectors for a sparse matrix.
+    """
+    Compute k singular values and vectors for a sparse matrix.
+
     Parameters
     ----------
     A : {sparse matrix, LinearOperator}
@@ -377,28 +366,37 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Tolerance for singular values. Zero (default) means machine precision.
     which : str ['LM' | 'SM'] or number, optional
         Which `k` singular values to find:
+
             - 'LM' : largest singular values
             - 'SM' : smallest singular values
             - number : closest singular values to (referred as sigma later)
-    u0, v0 : ndarray, optional
-        Starting vectors for the iterations. Should be approximate left singular
-        vectors and right singular vectors respectively. If only u0 or v0 is
+
+    u0 : ndarray, optional
+        Left starting vectors for the iterations.
+
+        Should be approximate left singular vectors. If only u0 or v0 is
         provided, the other is computed.
+    v0 : ndarray, optional
+        Right starting vectors for the iterations.
     maxiter : int, optional
         Maximum number of iterations.
     precAHA : {N x N matrix, array, sparse matrix, LinearOperator}, optional
-        Approximate inverse of (A.H*A - sigma*I). If provided and M>N, it
+        Approximate inverse of (A.H*A - sigma**2*I). If provided and M>N, it
         usually accelerates the convergence.
     precAAH : {M x M matrix, array, sparse matrix, LinearOperator}, optional
-        Approximate inverse of (A*A.H - sigma*I). If provided and M<N, it
+        Approximate inverse of (A*A.H - sigma**2*I). If provided and M<N, it
         usually accelerates the convergence.
     precAug : {(M+N) x (M+N) matrix, array, sparse matrix, LinearOperator}, optional
         Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I). It usually
         accelerates the convergence if tol<dtype.eps**.5.
-    locku0, lockv0 : ndarray, optional
-        Seek singular triplets orthogonal to these ones. The provided vectors
+    locku0 : ndarray, optional
+        Left orthogonal vector constrain.
+
+        Seek singular triplets orthogonal to locku0 and lockv0. The provided vectors
         *should* be orthonormal. If only locku0 or lockv0 is provided, the other
         is computed. Useful to not converge some already computed solutions.
+    lockv0 : ndarray, optional
+        Right orthogonal vector constrain. See locku0.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     report_stats : bool, optional
@@ -408,21 +406,27 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     -------
     u : ndarray, shape=(M, k), optional
         Unitary matrix having left singular vectors as columns.
-        If `return_singular_vectors` is "vh", this variable is not computed,
-        and None is returned instead.
+        Returned if `return_singular_vectors` is True.
     s : ndarray, shape=(k,)
         The singular values.
     vt : ndarray, shape=(k, N), optional
         Unitary matrix having right singular vectors as rows.
-        If `return_singular_vectors` is "u", this variable is not computed,
-        and None is returned instead.
+        Returned if `return_singular_vectors` is True.
     stats : dict, optional (if return_stats)
         Extra information reported by PRIMME:
+
         - "numOuterIterations": number of outer iterations
         - "numRestarts": number of restarts
         - "numMatvecs": number of A*v
         - "numPreconds": number of OPinv*v
         - "elapsedTime": time that took 
+
+        Returned if `return_stats` is True.
+
+    See Also
+    --------
+    Primme.eigsh : eigenvalue decomposition for a sparse symmetrix/complex Hermitian matrix A
+    scipy.sparse.linalg.eigs : eigenvalues and eigenvectors for a general (nonsymmetric) matrix A
 
     Examples
     --------
@@ -507,7 +511,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         pp.maxBasisSize = ncv
 
     if maxiter:
-        pp.maxMatvecs = maxiter
+        # NOTE: every eigensolver iteration spend two matvecs*blockSize
+        pp.maxMatvecs = maxiter*(maxBlockSize if maxBlockSize else 1)/2
 
     if maxBlockSize:
         pp.maxBlockSize = maxBlockSize
