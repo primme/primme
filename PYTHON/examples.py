@@ -36,12 +36,12 @@ A = scipy.sparse.spdiags(range(100), [0], 100, 100)
 
 # Compute the three largest eigenvalues of A with a residual norm tolerance of 1e-6
 evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
-print evals # [ 99.,  98.,  97.]
+print(evals) # [ 99.,  98.,  97.]
 
 # Compute the three largest eigenvalues of A orthogonal to the previous computed
 # eigenvectors, i.e., the next three eigenvalues
 evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
-print evals # [ 96.,  95.,  94.]
+print(evals) # [ 96.,  95.,  94.]
 
 # Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
 A = scipy.sparse.spdiags(range(10), [0], 100, 10)
@@ -49,7 +49,7 @@ A = scipy.sparse.spdiags(range(10), [0], 100, 10)
 # Compute the three closest to 4.1 singular values and the left and right corresponding
 # singular vectors
 svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which=4.1)
-print svals # [ 4.,  5.,  3.]
+print(svals) # [ 4.,  5.,  3.]
 
 # Sparse random rectangular matrix 10^5x100
 A = scipy.sparse.rand(10000, 100, density=0.001, random_state=10)
@@ -57,8 +57,8 @@ A = scipy.sparse.rand(10000, 100, density=0.001, random_state=10)
 # Compute the three closest singular values to 6.0 with a tolerance of 1e-6
 svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, which='SM', tol=1e-6,
                                                     return_stats=True)
-print svals # [ 0.79488437  0.85890809  0.87174328]
-print stats["elapsedTime"], stats["numMatvecs"] # it took that seconds and 101 matvecs
+print(svals) # [ 0.79488437  0.85890809  0.87174328]
+print(stats["elapsedTime"], stats["numMatvecs"]) # it took that seconds and 101 matvecs
 
 # Compute the square diagonal preconditioner
 prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
@@ -67,4 +67,4 @@ prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
 # Recompute the singular values but using the preconditioner
 svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, which='SM', tol=1e-6,
                         precAHA=prec, return_stats=True)
-print stats["elapsedTime"], stats["numMatvecs"] # it took that seconds and 45 matvecs
+print(stats["elapsedTime"], stats["numMatvecs"]) # it took that seconds and 45 matvecs
