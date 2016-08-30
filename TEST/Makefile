@@ -232,6 +232,7 @@ test_doublecomplex: ex_zseq
 
 test: test_double test_doublecomplex
 
+test_examples: test_examples_C test_examples_F77 test_examples_CXX
 test_examples_C test_examples_F77 test_examples_CXX: test_examples% : $(EXAMPLES_%)
 	@ok="0";for ex in $(EXAMPLES_$*); do \
 		./$$ex || ok="1"; \
