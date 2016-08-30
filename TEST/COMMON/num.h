@@ -31,7 +31,11 @@
 
 #ifdef USE_DOUBLECOMPLEX
 #  include "../../PRIMMESRC/ZSRC/numerical_z.h"
-#  define IMAGINARY _Complex_I
+#  ifndef __cplusplus
+#     define IMAGINARY _Complex_I
+#  else
+#     define IMAGINARY std::complex<double>(0.0, 1.0)
+#  endif
 #  define SUF(NAME) NAME ## _zprimme
 #  define PREFIX(NAME) z ## NAME
 #else

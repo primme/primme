@@ -269,7 +269,7 @@ int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *pe
    /* Write number size */
    if (primme->procID == 0) {
       /* NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith */
-      d = (2.*IMAGINARY*IMAGINARY + 1.)*sizeof(d);
+      d = (2.*REAL_PART(IMAGINARY*IMAGINARY) + 1.)*sizeof(d);
       FWRITE(&d, sizeof(d), 1, f);
       /* Write matrix size */
       d = primme->n;
@@ -521,7 +521,7 @@ int writeBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, int
    /* Write number size */
    if (primme_svds->procID == 0) {
       /* NOTE: 2*IMAGINARY*IMAGINARY+1 is -1 in complex arith and 1 in real arith */
-      d = (2.*IMAGINARY*IMAGINARY + 1.)*sizeof(d);
+      d = (2.*REAL_PART(IMAGINARY*IMAGINARY) + 1.)*sizeof(d);
       FWRITE(&d, sizeof(d), 1, f);
       /* Write matrix size */
       d = primme_svds->m;
