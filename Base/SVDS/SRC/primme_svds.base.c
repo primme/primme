@@ -727,14 +727,11 @@ static void Num_scalInv_@(pre)matrix(@(type) *x, int m, int n, int ldx,
 static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
       primme_svds_params *primme_svds) {
 
-#ifdefarithm L_DEFCPLX
-   count *= 2;
-#endifarithm
-
    if (primme_svds && primme_svds->globalSumDouble) {
       primme_svds->globalSumDouble(sendBuf, recvBuf, &count, primme_svds);
    }
    else {
       Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
    }
+
 }
