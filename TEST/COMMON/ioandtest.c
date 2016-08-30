@@ -401,7 +401,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       for (j=0; j<primme_svds->nLocal; j++) r[j] = Ax[j] - svals[i]*V[primme_svds->nLocal*i+j];
       rnorm0 += REAL_PART(primme_svds_dot(r, r, 1, primme_svds));
       rnorm0 = sqrt(rnorm0);
-      if (rnorms[i] < rnorm0 - 10*max(primme_svds->aNorm,fabs(svals[i]))*MACHINE_EPSILON && primme_svds->procID == 0) {
+      if (fabs(rnorms[i]-rnorm0) >= max(.6*max(rnorms[i],rnorm0), 10*max(primme_svds->aNorm,fabs(svals[i]))*MACHINE_EPSILON) && primme->procID == 0) {
          fprintf(stderr, "Warning: rnorms[%d] = %5E, but the computed residual is %5E\n", i+1, rnorms[i], rnorm0);
          retX = 1;
       }

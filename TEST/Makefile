@@ -12,6 +12,7 @@ override INCLUDE += $(COMMON_INCLUDE)
 LIBDIRS += -L../
 
 EXAMPLES_C = ex_dseq ex_zseq exsvd_dseq exsvd_zseq
+EXAMPLES_CXX = ex_zseqxx exsvd_zseqxx
 EXAMPLES_F77 = ex_dseqf77 ex_zseqf77 exsvd_dseqf77 exsvd_zseqf77
 
 USE_NATIVE    ?= yes
@@ -91,11 +92,17 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 $(EXAMPLES_C): %: %.o ../libprimme.a Makefile
 	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
+$(EXAMPLES_CXX): %: %.o ../libprimme.a Makefile
+	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+
 $(EXAMPLES_F77): % : %.o ../libprimme.a Makefile
 	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 .c.o:
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+
+%.o: %.cxx
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
 	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
@@ -104,7 +111,10 @@ all: drivers examples
 
 drivers: primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex
 
-examples: $(EXAMPLES_C) $(EXAMPLES_F77)
+examples: examples_c examples_cxx examples_f77
+examples_c: $(EXAMPLES_C)
+examples_cxx: $(EXAMPLES_CXX)
+examples_f77: $(EXAMPLES_F77)
 
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
@@ -222,8 +232,8 @@ test_doublecomplex: ex_zseq
 
 test: test_double test_doublecomplex
 
-test_examples: $(EXAMPLES_C) $(EXAMPLES_F77)
-	@ok="0";for ex in $(EXAMPLES_C) $(EXAMPLES_F77); do \
+test_examples_C test_examples_F77 test_examples_CXX: test_examples% : $(EXAMPLES_%)
+	@ok="0";for ex in $(EXAMPLES_$*); do \
 		./$$ex || ok="1"; \
 	done > tests.log 2>&1; \
 	if test $$ok -eq 0 ; then \
@@ -239,7 +249,7 @@ clean:
 	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o
 
 veryclean: clean
-	@rm -f primme_double primme_doublecomplex $(EXAMPLES_C) $(EXAMPLES_F77)
+	@rm -f primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex $(EXAMPLES_C) $(EXAMPLES_F77) $(EXAMPLES_CXX)
 
 
 COMMON/csr.c: COMMON/csr.h COMMON/mmio.h
@@ -261,6 +271,9 @@ ex_dseq.c: ex_c.m4
 ex_zseq.c: ex_c.m4
 	m4 -D USE_COMPLEX -D ADVANCED ex_c.m4 > $@
 
+ex_zseqxx.cxx: ex_c.m4
+	m4 -D USE_COMPLEX -D USE_COMPLEX_CXX -D ADVANCED ex_c.m4 > $@
+
 ex_petsc.c: ex_c.m4
 	m4 -D USE_PETSC ex_c.m4 > $@
 
@@ -281,6 +294,9 @@ exsvd_dseq.c: exsvd_c.m4
 
 exsvd_zseq.c: exsvd_c.m4
 	m4 -D USE_COMPLEX -D ADVANCED_HYBRID exsvd_c.m4 > $@
+
+exsvd_zseqxx.cxx: exsvd_c.m4
+	m4 -D USE_COMPLEX -D USE_COMPLEX_CXX -D ADVANCED_HYBRID exsvd_c.m4 > $@
 
 exsvd_petsc.c: exsvd_c.m4
 	m4 -D USE_PETSC exsvd_c.m4 > $@

@@ -28,13 +28,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-ifdef(`USE_COMPLEX', ``#include <complex.h>
-'')dnl
+ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', ``#include <complex>'', ``#include <complex.h>''))
 ifdef(`USE_PETSC', ``#include <petscpc.h>
 #include <petscmat.h>
 '')dnl
 #include "primme.h"   /* header file is required to run primme */ 
-define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex double', `double')))dnl
+define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', `std::complex<double>', `complex double'), `double')))dnl
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLaplacian1D(int n, Mat *A);
 void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme);

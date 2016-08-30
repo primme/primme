@@ -29,8 +29,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-ifdef(`USE_COMPLEX', ``#include <complex.h>
-'')dnl
+ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', ``#include <complex>'', ``#include <complex.h>''))
 ifdef(`USE_PETSC', ``#include <petscpc.h>
 #include <petscmat.h>
 '')dnl
@@ -44,7 +43,7 @@ ifdef(`USE_PETSC', ``#include <petscpc.h>
 #define max(A,B) ((A)>=(B)?(A):(B))
 #endif
 
-define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex double', `double')))dnl
+define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', `std::complex<double>', `complex double'), `double')))dnl
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A);
 void PETScMatvec(void *x, int *ldx, void *y, int *ldy, int *blockSize,
