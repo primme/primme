@@ -277,28 +277,28 @@ static int real_main (int argc, char *argv[]) {
          int j;
          assert(primme_svds.numProcs <= 1);
          for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
-            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.mLocal, COMPLEXZ(r));
-            norm = sqrt(REAL_PARTZ(SUF(Num_dot)(primme_svds.mLocal, COMPLEXZ(r), 1, COMPLEXZ(r), 1)));
+            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.mLocal, r);
+            norm = sqrt(REAL_PART(SUF(Num_dot)(primme_svds.mLocal, r, 1, r, 1)));
             for (j=0; j<primme_svds.mLocal; j++)
                svecs[primme_svds.mLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
-            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.nLocal, COMPLEXZ(r));
-            norm = sqrt(REAL_PARTZ(SUF(Num_dot)(primme_svds.nLocal, COMPLEXZ(r), 1, COMPLEXZ(r), 1)));
+            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.nLocal, r);
+            norm = sqrt(REAL_PART(SUF(Num_dot)(primme_svds.nLocal, r, 1, r, 1)));
             for (j=0; j<primme_svds.nLocal; j++)
                svecs[primme_svds.mLocal*n+primme_svds.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          free(r);
       }
       SUF(Num_larnv)(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
-                     COMPLEXZ(&svecs[primme_svds.mLocal*i]));
+                     &svecs[primme_svds.mLocal*i]);
       SUF(Num_larnv)(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
-                     COMPLEXZ(&svecs[primme_svds.mLocal*n+primme_svds.nLocal*i]));
+                     &svecs[primme_svds.mLocal*n+primme_svds.nLocal*i]);
    } else if (primme_svds.numOrthoConst > 0) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
    } else if (primme_svds.initSize > 0) {
       SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.initSize*(primme_svds.mLocal+primme_svds.nLocal),
-                     COMPLEXZ(svecs));
+                     svecs);
    }
 
 

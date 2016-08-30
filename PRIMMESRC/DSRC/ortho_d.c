@@ -187,8 +187,8 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
          nOrth++;
 
          if (nOrth == 1) {
-            s02 = Num_dot_dprimme(nLocal, &basis[ldBasis*i], 1, 
-                                           &basis[ldBasis*i], 1);
+            s02 = REAL_PART(Num_dot_dprimme(nLocal, &basis[ldBasis*i], 1, 
+                     &basis[ldBasis*i], 1));
          }
             
          if (i > 0) {

@@ -29,14 +29,11 @@
 #ifndef PRIMME_H
 #define PRIMME_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdio.h>
 #include <complex.h>
-#ifdef I
-#   undef I
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #define PRIMME_MAX_NAME_LENGTH 128

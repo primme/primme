@@ -108,7 +108,7 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    /* If locking, set tol beyond which we need to check for accuracy problem */
    /* ---------------------------------------------------------------------- */
    if (primme->locking) {
-      attainableTol = sqrt(primme->numOrthoConst+numLocked)*tol;
+      attainableTol = sqrt((double)(primme->numOrthoConst+numLocked))*tol;
    }
 
    /* ----------------------------------------------------------------- */

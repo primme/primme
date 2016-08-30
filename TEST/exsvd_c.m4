@@ -183,12 +183,12 @@ ifdef(`USE_PETSC', `   if (primme_svds.procID == 0) /* Reports process with ID 0
 
 define(`CALL_PRIMME_SVDS', `   /* Call primme_svds  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
-   ret = zprimme_svds(svals, (Complex_Z*)svecs, rnorms, &primme_svds);
+   ret = zprimme_svds(svals, svecs, rnorms, &primme_svds);
 #else
    ret = dprimme_svds(svals, svecs, rnorms, &primme_svds);
 #endif
 '',
-`   ret = ifdef(`USE_COMPLEX',`z', `d')primme_svds(svals, ifdef(`USE_COMPLEX', `(Complex_Z*)')svecs, rnorms, &primme_svds);
+`   ret = ifdef(`USE_COMPLEX',`z', `d')primme_svds(svals, svecs, rnorms, &primme_svds);
 ')dnl
 
    if (ret != 0) {

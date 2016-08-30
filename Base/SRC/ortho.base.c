@@ -187,8 +187,8 @@ int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
          nOrth++;
 
          if (nOrth == 1) {
-            s02 = Num_dot_@(pre)primme(nLocal, &basis[ldBasis*i], 1, 
-                                           &basis[ldBasis*i], 1);
+            s02 = REAL_PART(Num_dot_@(pre)primme(nLocal, &basis[ldBasis*i], 1, 
+                     &basis[ldBasis*i], 1));
          }
             
          if (i > 0) {

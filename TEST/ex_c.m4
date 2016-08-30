@@ -139,12 +139,12 @@ ifdef(`USE_PETSC', `   if (primme.procID == 0) /* Reports process with ID 0 */
 
 define(`CALL_PRIMME', `   /* Call primme  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
-   ret = zprimme(evals, (Complex_Z*)evecs, rnorms, &primme);
+   ret = zprimme(evals, evecs, rnorms, &primme);
 #else
    ret = dprimme(evals, evecs, rnorms, &primme);
 #endif
 '',
-`   ret = ifdef(`USE_COMPLEX',`z', `d')primme(evals, ifdef(`USE_COMPLEX', `(Complex_Z*)')evecs, rnorms, &primme);
+`   ret = ifdef(`USE_COMPLEX',`z', `d')primme(evals, evecs, rnorms, &primme);
 ')dnl
 
    if (ret != 0) {

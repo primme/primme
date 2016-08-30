@@ -37,6 +37,13 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
 static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme);
+#ifdef __cplusplus
+extern "C" {
+#endif
 double Num_lamch_dprimme(const char *cmach);
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

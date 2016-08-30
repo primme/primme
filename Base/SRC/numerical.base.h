@@ -45,11 +45,11 @@
 #endif
 #endifarithm
 
+#ifdef I
+#   undef I
+#endif
+
 #ifdef USE_DOUBLECOMPLEX
-#  include <complex.h>
-#  ifdef I
-#     undef I
-#  endif
 #  define IMAGINARY _Complex_I
 #  define SCALAR complex double
 #  define REAL double
@@ -65,7 +65,9 @@
 #  define CONJ(x) (x)
 #endif
 
+#ifndef __cplusplus
 #include <tgmath.h>   /* select proper function abs from fabs, cabs... */
+#endif
 
 #define MACHINE_EPSILON 1.11e-16
 
