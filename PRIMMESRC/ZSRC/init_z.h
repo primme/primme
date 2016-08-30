@@ -29,9 +29,9 @@
 #ifndef INIT_H
 #define INIT_H
 
-int init_basis_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
-   Complex_Z *evecs, int ldevecs, Complex_Z *evecsHat, int ldevecsHat, Complex_Z *M,
-   int ldM, Complex_Z *UDU, int ldUDU, int *ipivot, double machEps, Complex_Z *rwork,
+int init_basis_zprimme(complex double *V, int nLocal, int ldV, complex double *W, int ldW,
+   complex double *evecs, int ldevecs, complex double *evecsHat, int ldevecsHat, complex double *M,
+   int ldM, complex double *UDU, int ldUDU, int *ipivot, double machEps, complex double *rwork,
    int rworkSize, int *basisSize, int *nextGuess, int *numGuesses,
    double *timeForMV, primme_params *primme);
 

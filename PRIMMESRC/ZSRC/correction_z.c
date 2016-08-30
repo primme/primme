@@ -34,6 +34,7 @@
 #include "correction_private_z.h"
 #include "inner_solve_z.h"
 #include "numerical_z.h"
+#include "globalsum_z.h"
 
 /*******************************************************************************
  * Subroutine solve_correction - This routine solves the correction equation
@@ -121,12 +122,12 @@
  ******************************************************************************/
  
 
-int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs, 
-   Complex_Z *evecsHat, Complex_Z *UDU, int *ipivot, double *lockedEvals, 
+int solve_correction_zprimme(complex double *V, complex double *W, complex double *evecs, 
+   complex double *evecsHat, complex double *UDU, int *ipivot, double *lockedEvals, 
    int numLocked, int numConvergedStored, double *ritzVals, 
    double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
    double *blockNorms, int *iev, int blockSize, double eresTol, 
-   double machEps, double aNormEstimate, Complex_Z *rwork, int *iwork, 
+   double machEps, double aNormEstimate, complex double *rwork, int *iwork, 
    int rworkSize, primme_params *primme) {
 
    int blockIndex;         /* Loop index.  Ranges from 0..blockSize-1.       */
@@ -144,20 +145,19 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
    int sizeRprojectorX;    /* or numOrthConstr+numConvergedStored w/o locking*/
 
    int ret;                /* Return code.                                   */
-   Complex_Z *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
-   Complex_Z *linSolverRWork;/* Workspace needed by linear solver.            */
+   complex double *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
+   complex double *linSolverRWork;/* Workspace needed by linear solver.            */
    double *sortedRitzVals; /* Sorted array of current and converged Ritz     */
                            /* values.  Size of array is numLocked+basisSize. */
    double *blockOfShifts;  /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
    double *approxOlsenEps; /* Shifts for approximate Olsen implementation    */
-   Complex_Z *Kinvx;         /* Workspace to store K^{-1}x                     */
-   Complex_Z *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
-   Complex_Z *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
-   Complex_Z *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
+   complex double *Kinvx;         /* Workspace to store K^{-1}x                     */
+   complex double *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
+   complex double *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
+   complex double *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
 
-   Complex_Z xKinvx;                        /* Stores x'*K^{-1}x if needed    */
+   complex double xKinvx;                        /* Stores x'*K^{-1}x if needed    */
    double eval, shift, robustShift;       /* robust shift values.           */
-   Complex_Z tmpShift;                      /* Temp shift for daxpy           */
 
    /*------------------------------------------------------------*/
    /* Subdivide the workspace with pointers, and figure out      */
@@ -265,7 +265,7 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
       /* Remember the previous ritz values*/
       *numPrevRitzVals = basisSize;
-      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
+      Num_copy_dprimme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
 
    } /* user provided shifts */
    else {    
@@ -330,7 +330,7 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
       /* Remember the previous ritz values*/
       *numPrevRitzVals = numLocked+basisSize;
-      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
+      Num_copy_dprimme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
 
    } /* else primme_smallest or primme_largest */
 
@@ -364,8 +364,7 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
 
             for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
                /* Compute r_i = r_i - err_i * x_i */
-               {tmpShift.r = -approxOlsenEps[blockIndex]; tmpShift.i = 0.0L;}
-               Num_axpy_zprimme(primme->nLocal, tmpShift,
+               Num_axpy_zprimme(primme->nLocal, -approxOlsenEps[blockIndex],
                &x[primme->nLocal*blockIndex],1,&r[primme->nLocal*blockIndex],1);
             } /* for */
          }
@@ -416,7 +415,7 @@ int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
             return (INNER_SOLVE_FAILURE);
          }
 
-         Num_zcopy_zprimme(primme->nLocal, sol, 1, 
+         Num_copy_zprimme(primme->nLocal, sol, 1, 
             &V[primme->nLocal*(basisSize+blockIndex)], 1);
 
       } /* end for each block vector */
@@ -503,7 +502,7 @@ static double computeRobustShift(int blockIndex, double resNorm,
                       sortedRitzVals[sortedIndex-1]);
       upperGap = fabs(sortedRitzVals[sortedIndex+1] - 
                       sortedRitzVals[sortedIndex]);
-      gap = Num_fmin_primme(2, lowerGap, upperGap);
+      gap = min(lowerGap, upperGap);
    }
    else {
       lowerGap = fabs(sortedRitzVals[sortedIndex] -
@@ -524,13 +523,13 @@ static double computeRobustShift(int blockIndex, double resNorm,
    /* in The Symmetric Eigenvalue Problem by B.N. Parlett.                 */
 
    if (gap > resNorm) {
-      epsilon = Num_fmin_primme(3, delta, resNorm*resNorm/gap, lowerGap);
+      epsilon = min(delta, min(resNorm*resNorm/gap, lowerGap));
    }
    else {
-      epsilon = Num_fmin_primme(2, resNorm, lowerGap);
+      epsilon = min(resNorm, lowerGap);
    }
 
-   *approxOlsenShift = Num_fmin_primme(2, delta, epsilon);
+   *approxOlsenShift = min(delta, epsilon);
 
    /* If the above is too large a shift set it to a milder shift */
    /* epsilon = min(delta, epsilon); */
@@ -653,7 +652,7 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
  *
  ******************************************************************************/
 
-static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result, 
+static void apply_preconditioner_block(complex double *v, complex double *result, 
                 int blockSize, primme_params *primme) {
          
    if (primme->correctionParams.precondition) {
@@ -662,7 +661,7 @@ static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result,
       primme->stats.numPreconds += blockSize;
    }
    else {
-      Num_zcopy_zprimme(primme->nLocal*blockSize, v, 1, result, 1);
+      Num_copy_zprimme(primme->nLocal*blockSize, v, 1, result, 1);
    }
 
 }
@@ -678,7 +677,7 @@ static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result,
  *
  * blockSize  The number of vectors in r, x
  *
- * rwork      Complex_Z work array of size (primme.nLocal + 4*blockSize)
+ * rwork      complex double work array of size (primme.nLocal + 4*blockSize)
  *
  * primme       Structure containing various solver parameters
  *
@@ -688,14 +687,12 @@ static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result,
  *
  ******************************************************************************/
 
-static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
-                int blockSize, Complex_Z *rwork, primme_params *primme) {
+static void Olsen_preconditioner_block(complex double *r, complex double *x,
+                int blockSize, complex double *rwork, primme_params *primme) {
 
-   int blockIndex, count;
-   Complex_Z alpha;
-   Complex_Z *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
-   Complex_Z ztmp;
-   Complex_Z tzero = {+0.0e+00,+0.0e00};
+   int blockIndex;
+   complex double alpha;
+   complex double *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
 
    /*------------------------------------------------------------------*/
    /* Subdivide workspace                                              */
@@ -724,8 +721,7 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
         Num_dot_zprimme(primme->nLocal, &Kinvx[primme->nLocal*blockIndex],1,
                                    &r[primme->nLocal*blockIndex],1);
    }      
-   count = 4*blockSize;
-   (*primme->globalSumDouble)(xKinvx_local, xKinvx, &count, primme);
+   globalSum_zprimme(xKinvx_local, xKinvx, 2*blockSize, primme);
 
    /*------------------------------------------------------------------*/
    /* Compute K^{-1}r                                                  */
@@ -738,14 +734,10 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
    /*------------------------------------------------------------------*/
 
    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
-      if (z_abs_primme(xKinvx[blockIndex]) > 0.0L) 
-      {
-         ztmp.r = -xKinvr[blockIndex].r;
-         ztmp.i = -xKinvr[blockIndex].i;
-         z_div_primme(&alpha, &ztmp, &xKinvx[blockIndex]);
-      }
+      if (ABS(xKinvx[blockIndex]) > 0.0L) 
+         alpha = - xKinvr[blockIndex]/xKinvx[blockIndex];
       else   
-         alpha = tzero;
+         alpha = 0.0;
 
       Num_axpy_zprimme(primme->nLocal,alpha,&Kinvx[primme->nLocal*blockIndex],
                                        1, &x[primme->nLocal*blockIndex],1);
@@ -831,18 +823,17 @@ static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
  *
  ******************************************************************************/
 
-static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs, 
-   Complex_Z *evecsHat, Complex_Z *Kinvx, Complex_Z *xKinvx, 
-   Complex_Z **Lprojector, Complex_Z **RprojectorQ, Complex_Z **RprojectorX, 
+static void setup_JD_projectors(complex double *x, complex double *r, complex double *evecs, 
+   complex double *evecsHat, complex double *Kinvx, complex double *xKinvx, 
+   complex double **Lprojector, complex double **RprojectorQ, complex double **RprojectorX, 
    int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX, 
    int numLocked, int numConverged, primme_params *primme) {
 
    int n, sizeEvecs;
    int ONE = 1;
-   /* In Complex, the size of the array to globalSum is twice as large */
-   int count = 2;
-   Complex_Z xKinvx_local;
-   Complex_Z tpone = {+1.0e+00,+0.0e00};
+   complex double xKinvx_local;
+
+   (void)r; /* unused parameter */
 
    *sizeLprojector  = 0;
    *sizeRprojectorQ = 0;
@@ -866,7 +857,7 @@ static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs,
          *sizeLprojector = sizeEvecs;
          *Lprojector = evecs;
          if (primme->correctionParams.projectors.LeftX) {
-            Num_zcopy_zprimme(n, x, 1, &evecs[sizeEvecs*n], 1);
+            Num_copy_zprimme(n, x, 1, &evecs[sizeEvecs*n], 1);
             *sizeLprojector = *sizeLprojector + 1;
          }
    }
@@ -913,18 +904,18 @@ static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs,
          primme->stats.numPreconds += 1;
          *RprojectorX  = Kinvx;
          xKinvx_local = Num_dot_zprimme(primme->nLocal, x, 1, Kinvx, 1);
-         (*primme->globalSumDouble)(&xKinvx_local, xKinvx, &count, primme);
+         globalSum_zprimme(&xKinvx_local, xKinvx, 1, primme);
       }      
       else {
          *RprojectorX = x;
-         *xKinvx = tpone;
+         *xKinvx = 1.0;
       }
       *sizeRprojectorX = 1;
    }
    else { 
          *RprojectorX = NULL;
          *sizeRprojectorX = 0;
-         *xKinvx = tpone;
+         *xKinvx = 1.0;
    }
          
 } /* setup_JD_projectors */

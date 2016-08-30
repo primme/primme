@@ -31,12 +31,15 @@
 #ifndef NUMERICAL_PRIVATE_H
 #define NUMERICAL_PRIVATE_H
 
-#include "common_numerical.h"
+#include "numerical_d.h"
 
-#ifdef F77UNDERSCORE
-#define FORTRAN_FUNCTION(X) X ## _
+#if !defined(PRIMME_BLASINT_SIZE)
+#  define PRIMME_BLASINT int
 #else
-#define FORTRAN_FUNCTION(X) X
+#  include <stdint.h>
+#  define GENERIC_INT(N) int ## N ## _t
+#  define XGENERIC_INT(N) GENERIC_INT(N)
+#  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
 #endif
 
 #ifndef NUM_CRAY
@@ -78,6 +81,7 @@
 #define DSYTRS    FORTRAN_FUNCTION(dsytrs)
 #define DGEQRF    FORTRAN_FUNCTION(dgeqrf)
 #define DORGQR    FORTRAN_FUNCTION(dorgqr)
+#define DLAMCH    FORTRAN_FUNCTION(dlamch)
 
 #ifdef NUM_ESSL
 #include <essl.h>

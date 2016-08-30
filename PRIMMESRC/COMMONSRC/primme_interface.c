@@ -35,8 +35,8 @@
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
+#include <limits.h>    
 #include "primme.h"
-#include "common_numerical.h"
 #include "primme_interface.h"
 #include "const.h"
 
@@ -676,6 +676,10 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
                       primme_params *params) {
 
-   Num_dcopy_primme(*count, (double *) sendBuf, 1, (double *) recvBuf, 1);
+   int i;
+   (void)params;  /* unused argument */
+   for (i=0; i<*count; i++) {
+      ((double*)recvBuf)[i] = ((double*)sendBuf)[i];
+   }
 
 }

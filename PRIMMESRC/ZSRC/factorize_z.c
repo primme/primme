@@ -64,10 +64,14 @@
  *                 dsytrf error code
  ******************************************************************************/
  
-int UDUDecompose_zprimme(Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
-   int *ipivot, int dimM, Complex_Z *rwork, int rworkSize, primme_params *primme) {
+int UDUDecompose_zprimme(complex double *M, int ldM, complex double *UDU, int ldUDU,
+   int *ipivot, int dimM, complex double *rwork, int rworkSize, primme_params *primme) {
 
    int info;
+
+   /* TODO: this is not a proper PRIMME function, so it may belong to   */
+   /* numerical.c or as a static function in init.c or restart.c.       */
+   (void)primme; /* unused paramter */
 
    /* Quick return for M with dimension 0 */
 
@@ -79,7 +83,7 @@ int UDUDecompose_zprimme(Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
    /* Return memory requirement */
 
    if (M == NULL) {
-      Complex_Z w;
+      complex double w;
       Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
       return (int)*(double*)&w;
     }
@@ -131,17 +135,20 @@ int UDUDecompose_zprimme(Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU,
  *
  ******************************************************************************/
 
-int UDUSolve_zprimme(Complex_Z *UDU, int *ipivot, int dim, Complex_Z *rhs, 
-   Complex_Z *sol) {
+int UDUSolve_zprimme(complex double *UDU, int *ipivot, int dim, complex double *rhs, 
+   complex double *sol) {
 
    int info;
 
+   /* TODO: this is not a proper PRIMME function, so it may belong to   */
+   /* numerical.c or as a static function in init.c or restart.c.       */
+
    if (dim == 1) {
-      z_div_primme(sol, rhs, UDU); 
+      *sol = *rhs/(*UDU); 
       info = 0;
    }
    else {
-      Num_zcopy_zprimme(dim, rhs, 1, sol, 1);
+      Num_copy_zprimme(dim, rhs, 1, sol, 1);
       Num_zhetrs_zprimme("U", dim, 1, UDU, dim, ipivot, sol, dim, &info);
    }
 

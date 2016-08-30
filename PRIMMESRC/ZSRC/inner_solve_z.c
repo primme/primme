@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "primme.h"
 #include "wtime.h"
 #include "inner_solve_z.h"
@@ -36,6 +37,7 @@
 #include "factorize_z.h"
 #include "update_W_z.h"
 #include "numerical_z.h"
+#include "globalsum_z.h"
 
 
 /*******************************************************************************
@@ -122,12 +124,12 @@
  *
  ******************************************************************************/
 
-int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm, 
-   Complex_Z *evecs, Complex_Z *evecsHat, Complex_Z *UDU, int *ipivot, 
-   Complex_Z *xKinvx, Complex_Z *Lprojector, Complex_Z *RprojectorQ, 
-   Complex_Z *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
-   int sizeRprojectorX, Complex_Z *sol, double eval, double shift, 
-   double eresTol, double aNormEstimate, double machEps, Complex_Z *rwork, 
+int inner_solve_zprimme(complex double *x, complex double *r, double *rnorm, 
+   complex double *evecs, complex double *evecsHat, complex double *UDU, int *ipivot, 
+   complex double *xKinvx, complex double *Lprojector, complex double *RprojectorQ, 
+   complex double *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
+   int sizeRprojectorX, complex double *sol, double eval, double shift, 
+   double eresTol, double aNormEstimate, double machEps, complex double *rwork, 
    int rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
@@ -135,14 +137,13 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    int ret;           /* Return value used for error checking.               */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
 
-   Complex_Z *workSpace; /* Workspace needed by UDU routine */
+   complex double *workSpace; /* Workspace needed by UDU routine */
 
    /* QMR parameters */
 
-   Complex_Z *g, *d, *delta, *w, *ptmp;
+   complex double *g, *d, *delta, *w, *ptmp;
    double alpha_prev, beta, rho_prev, rho;
    double Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
-   Complex_Z ztmp;
 
    /* Parameters used to dynamically update eigenpair */
    double Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
@@ -160,8 +161,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    double LTolerance, ETolerance=0.0;
    int isConv;
 
-   /* Some constants                                                          */
-   Complex_Z tzero = {+0.0e+00,+0.0e00};
+   (void)evecsHat; /* unused parameter */
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -172,7 +172,8 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
    workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
-   
+   assert(rworkSize >= primme->nLocal*4 + 2*(primme->numOrthoConst+primme->numEvals));
+
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */
    /* -----------------------------------------*/
@@ -224,7 +225,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
    /* --------------------------------------------------------*/
 
    /* Assume zero initial guess */
-   Num_zcopy_zprimme(primme->nLocal, r, 1, g, 1);
+   Num_copy_zprimme(primme->nLocal, r, 1, g, 1);
 
    ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
            x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
@@ -239,9 +240,8 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
       
    Theta_prev = 0.0L;
    eval_prev = eval;
-   ztmp = dist_dot(g, 1, d, 1, primme);
-   rho_prev = ztmp.r;
-      
+   rho_prev = REAL_PART(dist_dot(g, 1, d, 1, primme));
+
    /* Initialize recurrences used to dynamically update the eigenpair */
 
    Beta_prev = Delta_prev = Psi_prev = 0.0L;
@@ -249,8 +249,8 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
    /* other initializations */
    for (i = 0; i < primme->nLocal; i++) {
-      delta[i] = tzero;
-      sol[i] = tzero;
+      delta[i] = 0.0;
+      sol[i] = 0.0;
    }
 
    numIts = 0;
@@ -263,8 +263,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
 
       apply_projected_matrix(d, shift, Lprojector, sizeLprojector, 
                              w, workSpace, primme);
-      ztmp = dist_dot(d, 1, w, 1, primme);
-      sigma_prev = ztmp.r;
+      sigma_prev = REAL_PART(dist_dot(d, 1, w, 1, primme));
 
       if (sigma_prev == 0.0L) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -281,12 +280,9 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
          break;
       }
 
-      ztmp.r = -alpha_prev;
-      ztmp.i = 0.0L;
-      Num_axpy_zprimme(primme->nLocal, ztmp, w, 1, g, 1);
+      Num_axpy_zprimme(primme->nLocal, -alpha_prev, w, 1, g, 1);
 
-      ztmp = dist_dot(g, 1, g, 1, primme);
-      Theta = ztmp.r;
+      Theta = REAL_PART(dist_dot(g, 1, g, 1, primme));
       Theta = sqrt(Theta);
       Theta = Theta/tau_prev;
       c = 1.0L/sqrt(1+Theta*Theta);
@@ -295,10 +291,8 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
       gamma = c*c*Theta_prev*Theta_prev;
       eta = alpha_prev*c*c;
       for (i = 0; i < primme->nLocal; i++) {
-          delta[i].r = gamma*delta[i].r + eta*d[i].r;
-          delta[i].i = gamma*delta[i].i + eta*d[i].i;
-          sol[i].r = delta[i].r+sol[i].r;
-          sol[i].i = delta[i].i+sol[i].i;
+          delta[i] = gamma*delta[i] + eta*d[i];
+          sol[i] = delta[i]+sol[i];
       }
       numIts++;
 
@@ -334,8 +328,7 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
          /* Perform the update: update the eigenvalue and the square of the  */
          /* residual norm.                                                   */
          
-         ztmp = dist_dot(sol, 1, sol, 1, primme);
-         dot_sol = ztmp.r;
+         dot_sol = REAL_PART(dist_dot(sol, 1, sol, 1, primme));
          eval_updated = shift + (eval - shift + 2*Beta + Gamma)/(1 + dot_sol);
          eres2_updated = (tau*tau)/(1 + dot_sol) + 
             ((eval - shift + Beta)*(eval - shift + Beta))/(1 + dot_sol) - 
@@ -450,11 +443,9 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
                ret = APPLYPROJECTEDPRECONDITIONER_FAILURE;
                break;
          }
-         ztmp = dist_dot(g, 1, w, 1, primme);
-         rho = ztmp.r;
+         rho = REAL_PART(dist_dot(g, 1, w, 1, primme));
          beta = rho/rho_prev;
-         ztmp.r = beta; ztmp.i = 0.0L;
-         Num_axpy_zprimme(primme->nLocal, ztmp, d, 1, w, 1);
+         Num_axpy_zprimme(primme->nLocal, beta, d, 1, w, 1);
          /* Alternate between w and d buffers in successive iterations
           * This saves a memory copy. */
          ptmp = d; d = w; w = ptmp;
@@ -524,10 +515,10 @@ int inner_solve_zprimme(Complex_Z *x, Complex_Z *r, double *rnorm,
  *
  ******************************************************************************/
 
-static int apply_projected_preconditioner(Complex_Z *v, Complex_Z *Q, 
-   Complex_Z *RprojectorQ, Complex_Z *x, Complex_Z *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, Complex_Z *xKinvx, 
-   Complex_Z *UDU, int *ipivot, Complex_Z *result, Complex_Z *rwork, 
+static int apply_projected_preconditioner(complex double *v, complex double *Q, 
+   complex double *RprojectorQ, complex double *x, complex double *RprojectorX, 
+   int sizeRprojectorQ, int sizeRprojectorX, complex double *xKinvx, 
+   complex double *UDU, int *ipivot, complex double *result, complex double *rwork, 
    primme_params *primme) {  
 
    int ONE = 1;
@@ -539,7 +530,7 @@ static int apply_projected_preconditioner(Complex_Z *v, Complex_Z *Q,
       primme->stats.numPreconds += 1;
    }
    else {
-      Num_zcopy_zprimme(primme->nLocal, v, 1, result, 1);
+      Num_copy_zprimme(primme->nLocal, v, 1, result, 1);
    }
 
    ret = apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
@@ -589,19 +580,15 @@ static int apply_projected_preconditioner(Complex_Z *v, Complex_Z *Q,
  * 
  ******************************************************************************/
 
-static int apply_skew_projector(Complex_Z *Q, Complex_Z *Qhat, Complex_Z *UDU, 
-   int *ipivot, int numCols, Complex_Z *v, Complex_Z *rwork, 
+static int apply_skew_projector(complex double *Q, complex double *Qhat, complex double *UDU, 
+   int *ipivot, int numCols, complex double *v, complex double *rwork, 
    primme_params *primme) {
-
-   int count;
-   Complex_Z ztmp;
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, tmone = {-1.0e+00,+0.0e00};
 
    if (numCols > 0) {    /* there is a projector to be applied */
 
       int ret;
-      Complex_Z *overlaps;  /* overlaps of v with columns of Q   */
-      Complex_Z *workSpace; /* Used for computing local overlaps */
+      complex double *overlaps;  /* overlaps of v with columns of Q   */
+      complex double *workSpace; /* Used for computing local overlaps */
 
       overlaps = rwork;
       workSpace = overlaps + numCols;
@@ -615,28 +602,24 @@ static int apply_skew_projector(Complex_Z *Q, Complex_Z *Qhat, Complex_Z *UDU,
 
          /* Backsolve only if there is a skew projector */
          if (UDU != NULL) {
-            if ( z_eq_primme(UDU[0], tzero) ) {
+            if (ABS(UDU[0]) == 0.0) {
                return UDUSOLVE_FAILURE;
             }
-            z_div_primme(&overlaps[0], &overlaps[0], &UDU[0]);
+            overlaps[0] = overlaps[0]/UDU[0];
          }
          /* Compute v=v-Qhat*overlaps */
-         ztmp.r = - overlaps[0].r;
-         ztmp.i = - overlaps[0].i;
-         Num_axpy_zprimme(primme->nLocal, ztmp, Qhat, 1, v, 1);
+         Num_axpy_zprimme(primme->nLocal, -overlaps[0], Qhat, 1, v, 1);
       }
       else {
          /* ------------------------------------------------------*/
          /* More than one vectors. Use BLAS 2.                    */
          /* ------------------------------------------------------*/
          /* Compute workspace = Q'*v */
-         Num_gemv_zprimme("C", primme->nLocal, numCols, tpone, Q, 
-                      primme->nLocal, v, 1, tzero, workSpace, 1);
+         Num_gemv_zprimme("C", primme->nLocal, numCols, 1.0, Q, 
+                      primme->nLocal, v, 1, 0.0, workSpace, 1);
 
          /* Global sum: overlaps = Q'*v */
-         /* In Complex, the size of the array to globalSum is twice as large */
-         count = 2*numCols;
-         (*primme->globalSumDouble)(workSpace, overlaps, &count, primme);   
+         globalSum_zprimme(workSpace, overlaps, numCols, primme);   
 
          /* --------------------------------------------*/
          /* Backsolve only if there is a skew projector */
@@ -652,13 +635,13 @@ static int apply_skew_projector(Complex_Z *Q, Complex_Z *Qhat, Complex_Z *UDU,
                return UDUSOLVE_FAILURE;
             }
             /* Compute v=v-Qhat*workspace */
-            Num_gemv_zprimme("N", primme->nLocal, numCols, tmone, Qhat, 
-                         primme->nLocal, workSpace, 1, tpone, v, 1);
+            Num_gemv_zprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
+                         primme->nLocal, workSpace, 1, 1.0, v, 1);
          }
          else  {
             /* Compute v=v-Qhat*overlaps  */
-            Num_gemv_zprimme("N", primme->nLocal, numCols, tmone, Qhat, 
-                         primme->nLocal, overlaps, 1, tpone, v, 1);
+            Num_gemv_zprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
+                         primme->nLocal, overlaps, 1, 1.0, v, 1);
          } /* UDU==null */
       } /* numCols != 1 */
    } /* numCols > 0 */
@@ -693,15 +676,12 @@ static int apply_skew_projector(Complex_Z *Q, Complex_Z *Qhat, Complex_Z *UDU,
  *
  ******************************************************************************/
 
-static void apply_projected_matrix(Complex_Z *v, double shift, Complex_Z *Q, 
-   int dimQ, Complex_Z *result, Complex_Z *rwork, primme_params *primme) {
-   
-   Complex_Z ztmp; 
+static void apply_projected_matrix(complex double *v, double shift, complex double *Q, 
+   int dimQ, complex double *result, complex double *rwork, primme_params *primme) {
 
    matrixMatvec_zprimme(v, primme->nLocal, primme->nLocal, result,
          primme->nLocal, 0, 1, primme);
-   {ztmp.r = -shift; ztmp.i = 0.0L;}
-   Num_axpy_zprimme(primme->nLocal, ztmp, v, 1, result, 1); 
+   Num_axpy_zprimme(primme->nLocal, -shift, v, 1, result, 1); 
    if (dimQ > 0)
       apply_projector(Q, dimQ, result, rwork, primme); 
 
@@ -729,25 +709,20 @@ static void apply_projected_matrix(Complex_Z *v, double shift, Complex_Z *Q,
  * 
  ******************************************************************************/
 
-static void apply_projector(Complex_Z *Q, int numCols, Complex_Z *v, 
-   Complex_Z *rwork, primme_params *primme) {
+static void apply_projector(complex double *Q, int numCols, complex double *v, 
+   complex double *rwork, primme_params *primme) {
 
-   int count;          /* globalSum counter                 */
-   Complex_Z *overlaps;  /* overlaps of v with columns of Q   */
-   Complex_Z *workSpace; /* Used for computing local overlaps */
-
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, tmone = {-1.0e+00,+0.0e00};
+   complex double *overlaps;  /* overlaps of v with columns of Q   */
+   complex double *workSpace; /* Used for computing local overlaps */
 
    overlaps = rwork;
    workSpace = overlaps + numCols;
 
-   Num_gemv_zprimme("C", primme->nLocal, numCols, tpone, Q, primme->nLocal,
-      v, 1, tzero, workSpace, 1);
-   /* In Complex, the size of the array to globalSum is twice as large */
-   count = 2*numCols;
-   (*primme->globalSumDouble)(workSpace, overlaps, &count, primme);   
-   Num_gemv_zprimme("N", primme->nLocal, numCols, tmone, Q, primme->nLocal,
-      overlaps, 1, tpone, v, 1);
+   Num_gemv_zprimme("C", primme->nLocal, numCols, 1.0, Q, primme->nLocal,
+      v, 1, 0.0, workSpace, 1);
+   globalSum_zprimme(workSpace, overlaps, numCols, primme);   
+   Num_gemv_zprimme("N", primme->nLocal, numCols, -1.0, Q, primme->nLocal,
+      overlaps, 1, 1.0, v, 1);
 
 }
 
@@ -769,16 +744,13 @@ static void apply_projector(Complex_Z *Q, int numCols, Complex_Z *v,
  *
  ******************************************************************************/
 
-static Complex_Z dist_dot(Complex_Z *x, int incx,
-   Complex_Z *y, int incy, primme_params *primme) {
+static complex double dist_dot(complex double *x, int incx,
+   complex double *y, int incy, primme_params *primme) {
                                                                                 
-   Complex_Z temp, product;
-   int count;
+   complex double temp, product;
                                                                                 
    temp = Num_dot_zprimme(primme->nLocal, x, incx, y, incy);
-   /* In Complex, the size of the array to globalSum is twice as large */
-   count = 2;
-   (*primme->globalSumDouble)(&temp, &product, &count, primme);
+   globalSum_zprimme(&temp, &product, 1, primme);
    return product;
                                                                                 
 }

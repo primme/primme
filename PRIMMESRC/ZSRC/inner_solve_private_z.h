@@ -33,23 +33,23 @@
 #define APPLYSKEWPROJECTOR_FAILURE           -2
 #define UDUSOLVE_FAILURE                     -3
 
-static int apply_projected_preconditioner(Complex_Z *v, Complex_Z *Q, 
-   Complex_Z *RprojectorQ, Complex_Z *x, Complex_Z *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, Complex_Z *xKinvx, 
-   Complex_Z *UDU, int *ipivot, Complex_Z *result, Complex_Z *rwork, 
+static int apply_projected_preconditioner(complex double *v, complex double *Q, 
+   complex double *RprojectorQ, complex double *x, complex double *RprojectorX, 
+   int sizeRprojectorQ, int sizeRprojectorX, complex double *xKinvx, 
+   complex double *UDU, int *ipivot, complex double *result, complex double *rwork, 
    primme_params *primme);
 
-static int apply_skew_projector(Complex_Z *Q, Complex_Z *Qhat, Complex_Z *UDU, 
-   int *ipivot, int numCols, Complex_Z *v, Complex_Z *rwork, 
+static int apply_skew_projector(complex double *Q, complex double *Qhat, complex double *UDU, 
+   int *ipivot, int numCols, complex double *v, complex double *rwork, 
    primme_params *primme);
 
-static void apply_projected_matrix(Complex_Z *v, double shift, Complex_Z *Q, 
-   int dimQ, Complex_Z *result, Complex_Z *rwork, primme_params *primme);
+static void apply_projected_matrix(complex double *v, double shift, complex double *Q, 
+   int dimQ, complex double *result, complex double *rwork, primme_params *primme);
 
-static void apply_projector(Complex_Z *Q, int numCols, Complex_Z *v, 
-   Complex_Z *rwork, primme_params *primme);
+static void apply_projector(complex double *Q, int numCols, complex double *v, 
+   complex double *rwork, primme_params *primme);
 
-static Complex_Z dist_dot(Complex_Z *x, int incx,
-   Complex_Z *y, int incy, primme_params *primme);
+static complex double dist_dot(complex double *x, int incx,
+   complex double *y, int incy, primme_params *primme);
 
 #endif

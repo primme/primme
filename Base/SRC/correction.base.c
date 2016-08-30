@@ -34,6 +34,7 @@
 #include "correction_private_@(pre).h"
 #include "inner_solve_@(pre).h"
 #include "numerical_@(pre).h"
+#include "globalsum_@(pre).h"
 
 /*******************************************************************************
  * Subroutine solve_correction - This routine solves the correction equation
@@ -157,7 +158,6 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
    @(type) xKinvx;                        /* Stores x'*K^{-1}x if needed    */
    double eval, shift, robustShift;       /* robust shift values.           */
-   @(type) tmpShift;                      /* Temp shift for daxpy           */
 
    /*------------------------------------------------------------*/
    /* Subdivide the workspace with pointers, and figure out      */
@@ -265,7 +265,7 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
       /* Remember the previous ritz values*/
       *numPrevRitzVals = basisSize;
-      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
+      Num_copy_dprimme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
 
    } /* user provided shifts */
    else {    
@@ -330,7 +330,7 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
       /* Remember the previous ritz values*/
       *numPrevRitzVals = numLocked+basisSize;
-      Num_dcopy_primme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
+      Num_copy_dprimme(*numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1);
 
    } /* else primme_smallest or primme_largest */
 
@@ -364,13 +364,7 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
 
             for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
                /* Compute r_i = r_i - err_i * x_i */
-#ifdefarithm L_DEFCPLX
-               {tmpShift.r = -approxOlsenEps[blockIndex]; tmpShift.i = 0.0L;}
-#endifarithm
-#ifdefarithm L_DEFREAL
-               tmpShift = -approxOlsenEps[blockIndex];
-#endifarithm
-               Num_axpy_@(pre)primme(primme->nLocal, tmpShift,
+               Num_axpy_@(pre)primme(primme->nLocal, -approxOlsenEps[blockIndex],
                &x[primme->nLocal*blockIndex],1,&r[primme->nLocal*blockIndex],1);
             } /* for */
          }
@@ -421,7 +415,7 @@ int solve_correction_@(pre)primme(@(type) *V, @(type) *W, @(type) *evecs,
             return (INNER_SOLVE_FAILURE);
          }
 
-         Num_@(pre)copy_@(pre)primme(primme->nLocal, sol, 1, 
+         Num_copy_@(pre)primme(primme->nLocal, sol, 1, 
             &V[primme->nLocal*(basisSize+blockIndex)], 1);
 
       } /* end for each block vector */
@@ -508,7 +502,7 @@ static double computeRobustShift(int blockIndex, double resNorm,
                       sortedRitzVals[sortedIndex-1]);
       upperGap = fabs(sortedRitzVals[sortedIndex+1] - 
                       sortedRitzVals[sortedIndex]);
-      gap = Num_fmin_primme(2, lowerGap, upperGap);
+      gap = min(lowerGap, upperGap);
    }
    else {
       lowerGap = fabs(sortedRitzVals[sortedIndex] -
@@ -529,13 +523,13 @@ static double computeRobustShift(int blockIndex, double resNorm,
    /* in The Symmetric Eigenvalue Problem by B.N. Parlett.                 */
 
    if (gap > resNorm) {
-      epsilon = Num_fmin_primme(3, delta, resNorm*resNorm/gap, lowerGap);
+      epsilon = min(delta, min(resNorm*resNorm/gap, lowerGap));
    }
    else {
-      epsilon = Num_fmin_primme(2, resNorm, lowerGap);
+      epsilon = min(resNorm, lowerGap);
    }
 
-   *approxOlsenShift = Num_fmin_primme(2, delta, epsilon);
+   *approxOlsenShift = min(delta, epsilon);
 
    /* If the above is too large a shift set it to a milder shift */
    /* epsilon = min(delta, epsilon); */
@@ -667,7 +661,7 @@ static void apply_preconditioner_block(@(type) *v, @(type) *result,
       primme->stats.numPreconds += blockSize;
    }
    else {
-      Num_@(pre)copy_@(pre)primme(primme->nLocal*blockSize, v, 1, result, 1);
+      Num_copy_@(pre)primme(primme->nLocal*blockSize, v, 1, result, 1);
    }
 
 }
@@ -696,13 +690,9 @@ static void apply_preconditioner_block(@(type) *v, @(type) *result,
 static void Olsen_preconditioner_block(@(type) *r, @(type) *x,
                 int blockSize, @(type) *rwork, primme_params *primme) {
 
-   int blockIndex, count;
+   int blockIndex;
    @(type) alpha;
    @(type) *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
-#ifdefarithm L_DEFCPLX
-   @(type) ztmp;
-#endifarithm
-   @(type) tzero = @(tzero);
 
    /*------------------------------------------------------------------*/
    /* Subdivide workspace                                              */
@@ -731,13 +721,7 @@ static void Olsen_preconditioner_block(@(type) *r, @(type) *x,
         Num_dot_@(pre)primme(primme->nLocal, &Kinvx[primme->nLocal*blockIndex],1,
                                    &r[primme->nLocal*blockIndex],1);
    }      
-#ifdefarithm L_DEFCPLX
-   count = 4*blockSize;
-#endifarithm
-#ifdefarithm L_DEFREAL
-   count = 2*blockSize;
-#endifarithm
-   (*primme->globalSumDouble)(xKinvx_local, xKinvx, &count, primme);
+   globalSum_@(pre)primme(xKinvx_local, xKinvx, 2*blockSize, primme);
 
    /*------------------------------------------------------------------*/
    /* Compute K^{-1}r                                                  */
@@ -750,19 +734,10 @@ static void Olsen_preconditioner_block(@(type) *r, @(type) *x,
    /*------------------------------------------------------------------*/
 
    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
-      if (@(abs)(xKinvx[blockIndex]) > 0.0L) 
-#ifdefarithm L_DEFCPLX
-      {
-         ztmp.r = -xKinvr[blockIndex].r;
-         ztmp.i = -xKinvr[blockIndex].i;
-         z_div_primme(&alpha, &ztmp, &xKinvx[blockIndex]);
-      }
-#endifarithm
-#ifdefarithm L_DEFREAL
+      if (ABS(xKinvx[blockIndex]) > 0.0L) 
          alpha = - xKinvr[blockIndex]/xKinvx[blockIndex];
-#endifarithm
       else   
-         alpha = tzero;
+         alpha = 0.0;
 
       Num_axpy_@(pre)primme(primme->nLocal,alpha,&Kinvx[primme->nLocal*blockIndex],
                                        1, &x[primme->nLocal*blockIndex],1);
@@ -856,15 +831,9 @@ static void setup_JD_projectors(@(type) *x, @(type) *r, @(type) *evecs,
 
    int n, sizeEvecs;
    int ONE = 1;
-#ifdefarithm L_DEFCPLX
-   /* In Complex, the size of the array to globalSum is twice as large */
-   int count = 2;
-#endifarithm
-#ifdefarithm L_DEFREAL
-   int count = 1;
-#endifarithm
    @(type) xKinvx_local;
-   @(type) tpone = @(tpone);
+
+   (void)r; /* unused parameter */
 
    *sizeLprojector  = 0;
    *sizeRprojectorQ = 0;
@@ -888,7 +857,7 @@ static void setup_JD_projectors(@(type) *x, @(type) *r, @(type) *evecs,
          *sizeLprojector = sizeEvecs;
          *Lprojector = evecs;
          if (primme->correctionParams.projectors.LeftX) {
-            Num_@(pre)copy_@(pre)primme(n, x, 1, &evecs[sizeEvecs*n], 1);
+            Num_copy_@(pre)primme(n, x, 1, &evecs[sizeEvecs*n], 1);
             *sizeLprojector = *sizeLprojector + 1;
          }
    }
@@ -935,18 +904,18 @@ static void setup_JD_projectors(@(type) *x, @(type) *r, @(type) *evecs,
          primme->stats.numPreconds += 1;
          *RprojectorX  = Kinvx;
          xKinvx_local = Num_dot_@(pre)primme(primme->nLocal, x, 1, Kinvx, 1);
-         (*primme->globalSumDouble)(&xKinvx_local, xKinvx, &count, primme);
+         globalSum_@(pre)primme(&xKinvx_local, xKinvx, 1, primme);
       }      
       else {
          *RprojectorX = x;
-         *xKinvx = tpone;
+         *xKinvx = 1.0;
       }
       *sizeRprojectorX = 1;
    }
    else { 
          *RprojectorX = NULL;
          *sizeRprojectorX = 0;
-         *xKinvx = tpone;
+         *xKinvx = 1.0;
    }
          
 } /* setup_JD_projectors */

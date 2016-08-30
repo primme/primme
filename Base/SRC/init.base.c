@@ -340,7 +340,7 @@ static int init_block_krylov(@(type) *V, int nLocal, int ldV, @(type) *W,
    for (i = dv1+blockSize; i <= dv2; i++) {
       matrixMatvec_@(pre)primme(&V[ldV*(i-blockSize)], nLocal, ldV, &V[ldV*i],
             ldV, 0, 1, primme);
-      Num_@(pre)copy_@(pre)primme(nLocal, &V[ldV*i], 1,
+      Num_copy_@(pre)primme(nLocal, &V[ldV*i], 1,
          &W[ldW*(i-blockSize)], 1);
 
        ret = ortho_@(pre)primme(V, ldV, NULL, 0, i, i, locked, 

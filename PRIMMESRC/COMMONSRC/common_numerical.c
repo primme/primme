@@ -32,29 +32,6 @@
 #include "common_numerical.h"
 
 /******************************************************************************/
-void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy) {
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT lincx = incx;
-   PRIMME_BLASINT lincy = incy;
-
-   DCOPY(&ln, x, &lincx, y, &lincy);
-}
-
-/******************************************************************************/
-double Num_dlamch_primme(const char *cmach) {
-#ifdef NUM_CRAY
-   _fcd cmach_fcd;
-
-   cmach_fcd = _cptofcd(cmach, strlen(cmach));
-   return (DLAMCH(cmach_fcd));
-#else
-   return (DLAMCH(cmach));
-#endif
-
-}
-
-/******************************************************************************/
-
 int Num_imax_primme(int numArgs, int val1, int val2, ...) {
 
    int maxVal, nextVal;

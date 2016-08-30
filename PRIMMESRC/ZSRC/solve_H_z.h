@@ -29,20 +29,20 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
-   Complex_Z *QtV, int ldQtV, Complex_Z *hU, int ldhU, Complex_Z *hVecs, int ldhVecs,
+int solve_H_zprimme(complex double *H, int basisSize, int ldH, complex double *R, int ldR,
+   complex double *QtV, int ldQtV, complex double *hU, int ldhU, complex double *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme);
+   complex double *rwork, int *iwork, primme_params *primme);
 
-int solve_H_RR_zprimme(Complex_Z *H, int maxBasisSize, Complex_Z *hVecs,
+int solve_H_RR_zprimme(complex double *H, int maxBasisSize, complex double *hVecs,
    int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme);
+   complex double *rwork, int *iwork, primme_params *primme);
 
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
-      Complex_Z *H, int ldH, double *hVals, double *hSVals, Complex_Z *hVecs,
+      complex double *H, int ldH, double *hVals, double *hSVals, complex double *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, Complex_Z *hVecsRot,
-      int ldhVecsRot, double machEps, int rworkSize, Complex_Z *rwork,
+      double smallestResNorm, int *flags, int RRForAll, complex double *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, complex double *rwork,
       int *iwork, primme_params *primme);
 
 #endif

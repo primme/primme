@@ -30,18 +30,18 @@
 #ifndef MAIN_ITER_H
 #define MAIN_ITER_H
 
-int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
+int main_iter_zprimme(double *evals, int *perm, complex double *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme);
 
-int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
-      Complex_Z *H, int ldH, int basisSize, int ldV, Complex_Z *X, Complex_Z *R,
-      Complex_Z *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
-      int numSoftLocked, int numEvals, double *blockNorms, int blockNormsSize,
-      int maxBlockSize, Complex_Z *evecs, int numLocked, double *evals, 
+int prepare_candidates_zprimme(complex double *V, complex double *W, int nLocal,
+      complex double *H, int ldH, int basisSize, int ldV, complex double *X, complex double *R,
+      complex double *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
+      int numEvals, double *blockNorms, int blockNormsSize,
+      int maxBlockSize, complex double *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, Complex_Z *hVecsRot, int ldhVecsRot, int *reset,
-      Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
+      double *smallestResNorm, complex double *hVecsRot, int ldhVecsRot, int *reset,
+      complex double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif /* MAIN_ITER_H */

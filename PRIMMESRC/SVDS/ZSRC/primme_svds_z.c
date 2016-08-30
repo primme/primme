@@ -75,11 +75,11 @@
  *
  ******************************************************************************/
 
-int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms, 
+int zprimme_svds(double *svals, complex double *svecs, double *resNorms, 
       primme_svds_params *primme_svds) {
 
    int ret, allocatedTargetShifts;
-   Complex_Z *svecs0;
+   complex double *svecs0;
 
    /* ------------------ */
    /* Set some defaults  */
@@ -142,14 +142,14 @@ static int comp_double(const void *a, const void *b)
    return *(double*)a <= *(double*)b ? -1 : 1;
 }
 
-static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, Complex_Z *svecs, double *rnorms, int *allocatedTargetShifts) {
+static complex double* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
+      double *svals, complex double *svecs, double *rnorms, int *allocatedTargetShifts) {
 
    primme_params *primme;
    primme_svds_operator method;
-   Complex_Z *aux, *out_svecs = svecs;
+   complex double *aux, *out_svecs = svecs;
    int n, nMax, i, cut;
-   const double machEps = Num_dlamch_primme("E");
+   const double machEps = Num_lamch_zprimme("E");
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -208,8 +208,8 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
    case primme_svds_op_augmented:
       /* Shuffle svecs so that svecs = [V; U] */
       assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
-      aux = (Complex_Z *)primme_calloc(primme->nLocal*n, sizeof(Complex_Z), "aux");
-      Num_zcopy_zprimme(primme->nLocal*n, svecs, 1, aux, 1);
+      aux = (complex double *)primme_calloc(primme->nLocal*n, sizeof(complex double), "aux");
+      Num_copy_zprimme(primme->nLocal*n, svecs, 1, aux, 1);
       Num_copy_matrix_zprimme(&aux[primme_svds->mLocal*n], primme_svds->nLocal,
          n, primme_svds->nLocal, svecs, primme->nLocal);
       Num_copy_matrix_zprimme(aux, primme_svds->mLocal, n, primme_svds->mLocal,
@@ -236,8 +236,8 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
    else {
       cut = 0;
    }
-   primme->realWork = (Complex_Z*)primme_svds->realWork + cut;
-   primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(Complex_Z);
+   primme->realWork = (complex double*)primme_svds->realWork + cut;
+   primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(complex double);
  
    if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
        (stage == 1 && primme->targetShifts == NULL &&
@@ -296,9 +296,8 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
    /* and augmented matrix will be used                                       */
 
    if (method == primme_svds_op_augmented && primme->initSize <= 0) {
-      int ONE = 1, TWO = 2, NOTRANS = 0, TRANS = 1;
-      double dtmp[2], dtmpo[2], *dtmp0 = dtmpo;
-      Complex_Z ztmp, tzero = {+0.0e+00,+0.0e00};
+      int ONE = 1, NOTRANS = 0, TRANS = 1;
+      double norms2_[2], norms2[2];
       if (primme_svds->m >= primme_svds->n) {
          Num_larnv_zprimme(2, primme->iseed, primme_svds->mLocal,
                &svecs[primme_svds->nLocal]);
@@ -312,20 +311,13 @@ static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, in
                &svecs[primme_svds->nLocal], &primme_svds->mLocal, &ONE,
                &NOTRANS, primme_svds);
       }
-      ztmp = Num_dot_zprimme(primme_svds->nLocal, svecs, 1, svecs, 1);
-      dtmp[0] = *(double*)&ztmp;
-      ztmp = Num_dot_zprimme(primme_svds->mLocal,
-            &svecs[primme_svds->nLocal], 1, &svecs[primme_svds->nLocal], 1);
-      dtmp[1] = *(double*)&ztmp;
-      if (primme_svds->globalSumDouble) {
-         primme_svds->globalSumDouble(dtmp, dtmp0, &TWO, primme_svds);
-      }
-      else dtmp0 = dtmp;
-      ztmp = tzero;
-      *(double*)&ztmp = 1.0/sqrt(dtmp0[0]);
-      Num_scal_zprimme(primme_svds->nLocal, ztmp, svecs, 1);
-      *(double*)&ztmp = 1.0/sqrt(dtmp0[1]);
-      Num_scal_zprimme(primme_svds->mLocal, ztmp,
+      norms2_[0] = REAL_PART(Num_dot_zprimme(primme_svds->nLocal, svecs, 1,
+               svecs, 1));
+      norms2_[1] = REAL_PART(Num_dot_zprimme(primme_svds->mLocal,
+               &svecs[primme_svds->nLocal], 1, &svecs[primme_svds->nLocal], 1));
+      globalSum_dprimme_svds(norms2_, norms2, 2, primme_svds);
+      Num_scal_zprimme(primme_svds->nLocal, 1.0/sqrt(norms2[0]), svecs, 1);
+      Num_scal_zprimme(primme_svds->mLocal, 1.0/sqrt(norms2[1]),
             &svecs[primme_svds->nLocal], 1);
       primme->initSize = 1;
       primme->initBasisMode = primme_init_user;
@@ -376,7 +368,7 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
       /* If matrixMatvecSVDS is used, it needs extra space to compute A*A' or A'*A */
       if ((primme.matrixMatvec == NULL || primme.matrixMatvec == matrixMatvecSVDS) &&
           (primme_svds->method == primme_svds_op_AtA || primme_svds->method == primme_svds_op_AAt))
-         realWorkSize += primme.maxBlockSize * sizeof(Complex_Z) *
+         realWorkSize += primme.maxBlockSize * sizeof(complex double) *
                            (primme_svds->method == primme_svds_op_AtA ?
                               primme_svds->mLocal : primme_svds->nLocal);
    }
@@ -428,13 +420,13 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
 }
  
 static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, Complex_Z *svecs, double *rnorms, int allocatedTargetShifts) {
+      double *svals, complex double *svecs, double *rnorms, int allocatedTargetShifts) {
 
    int trans = 1, notrans = 0;
    primme_params *primme;
    primme_svds_operator method;
-   Complex_Z *aux, ztmp;
-   double *norms;
+   complex double *aux;
+   double *norms2, *norms2_;
    int n, nMax, i, cut;
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
@@ -506,43 +498,37 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
 
       /* Shuffle svecs from [Vc V; Uc U] to [Uc U Vc V] */
-      aux = (Complex_Z *)primme_calloc(primme->nLocal*n, sizeof(Complex_Z), "aux");
-      Num_zcopy_zprimme(primme->nLocal*n, svecs, 1, aux, 1);
+      aux = (complex double *)primme_calloc(primme->nLocal*n, sizeof(complex double), "aux");
+      Num_copy_zprimme(primme->nLocal*n, svecs, 1, aux, 1);
       Num_copy_matrix_zprimme(aux, primme_svds->nLocal, n, primme->nLocal,
          &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
       Num_copy_matrix_zprimme(&aux[primme_svds->nLocal], primme_svds->mLocal, n,
          primme->nLocal, svecs, primme_svds->mLocal);
+      free(aux);
 
       /* Normalize every column in U and V */
+      norms2_ = (double*)primme_calloc(2*n, sizeof(double), "norms2");
+      norms2 = norms2_ + 2*n;
       for (i=0; i<n; i++) {
-         ztmp = Num_dot_zprimme(primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1,
-               &svecs[primme_svds->mLocal*i], 1);
-         ((double*)aux)[i] = *(double*)&ztmp;
+         norms2_[i] = REAL_PART(Num_dot_zprimme(primme_svds->mLocal,
+            &svecs[primme_svds->mLocal*i], 1, &svecs[primme_svds->mLocal*i],
+            1));
       }
       for (i=0; i<n; i++) {
-         ztmp = Num_dot_zprimme(primme_svds->nLocal,
+         norms2_[n+i] = REAL_PART(Num_dot_zprimme(primme_svds->nLocal,
                &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1,
-               &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1);
-         ((double*)aux)[n+i] = *(double*)&ztmp;
+               &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1));
       }
-      if (primme_svds->globalSumDouble) {
-         int count = 2*n;
-         norms = (double*)aux+2*n;
-         primme_svds->globalSumDouble((double*)aux, norms, &count, primme_svds);
-      }
-      else norms = (double*)aux;
+      globalSum_dprimme_svds(norms2_, norms2, 2*n, primme_svds);
       for (i=0; i<n; i++) {
-         Complex_Z ztmp0 = {+0.0e+00,+0.0e00};
-         *(double*)&ztmp0 = 1.0/sqrt(norms[i]);
-         Num_scal_zprimme(primme_svds->mLocal, ztmp0, &svecs[primme_svds->mLocal*i], 1);
+         Num_scal_zprimme(primme_svds->mLocal, 1.0/sqrt(norms2[i]),
+               &svecs[primme_svds->mLocal*i], 1);
       }
       for (i=0; i<n; i++) {
-         Complex_Z ztmp0 = {+0.0e+00,+0.0e00};
-         *(double*)&ztmp0 = 1.0/sqrt(norms[n+i]);
-         Num_scal_zprimme(primme_svds->nLocal, ztmp0,
+         Num_scal_zprimme(primme_svds->nLocal, 1.0/sqrt(norms2[n+i]),
                &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1);
       }
-      free(aux);
+      free(norms2_);
       break;
    case primme_svds_op_none:
       break;
@@ -554,7 +540,6 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds->iseed[3] = primme->iseed[3];
    primme_svds->maxMatvecs -= primme->stats.numMatvecs;
 
-
    /* Check that primme didn't free the workspaces */
    if ((primme->matrixMatvec == matrixMatvecSVDS) &&
        (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
@@ -565,7 +550,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       cut = 0;
    }
    assert(primme_svds->intWork == primme->intWork);
-   assert((Complex_Z*)primme_svds->realWork + cut == primme->realWork);
+   assert((complex double*)primme_svds->realWork + cut == primme->realWork);
 
    /* Zero references to primme workspaces to prevent to be release by primme_Free */
    primme->intWork = NULL;
@@ -605,7 +590,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
 
 /******************************************************************************
  *
- * static int primme_svds_check_input(double *svals, Complex_Z *svecs, double *resNorms, 
+ * static int primme_svds_check_input(double *svals, complex double *svecs, double *resNorms, 
  *                        primme_svds_params *primme_svds) 
  *
  * INPUT
@@ -617,7 +602,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
  *              -4..-19  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int primme_svds_check_input(double *svals, Complex_Z *svecs, double *resNorms, 
+static int primme_svds_check_input(double *svals, complex double *svecs, double *resNorms, 
       primme_svds_params *primme_svds) {
    int ret;
    ret = 0;
@@ -673,7 +658,7 @@ static int primme_svds_check_input(double *svals, Complex_Z *svecs, double *resN
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme) {
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    int trans = 1, notrans = 0;
-   Complex_Z *x = (Complex_Z*)x_, *y = (Complex_Z*)y_;
+   complex double *x = (complex double*)x_, *y = (complex double*)y_;
    primme_svds_operator method = &primme_svds->primme == primme ?
       primme_svds->method : primme_svds->methodStage2;
    int i, bs;
@@ -719,26 +704,35 @@ static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_par
       &primme->nLocal, blockSize, &method, primme_svds);
 }
 
-static void Num_scalInv_zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors,
-                                       primme_svds_params *primme_svds) {
-   int i, ONE=1;
-   Complex_Z ztmp;
-   double norm, norm0;
+static void Num_scalInv_zmatrix(complex double *x, int m, int n, int ldx,
+      double *factors, primme_svds_params *primme_svds) {
+
+   int i;
+   double norm, norm0, factor;
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
-      if (factors[i] > 0 && 1.0L/factors[i] < HUGE_VAL) {
-         ztmp.r = 1.0L/factors[i]; ztmp.i = 0.0L;
+      if (factors[i] > 0.0 && 1.0L/factors[i] < HUGE_VAL) {
+         factor = factors[i];
       }
       else {
-         ztmp = Num_dot_zprimme(m, &x[i*ldx], 1, &x[i*ldx], 1);
-         norm0 = ztmp.r;
-         if (primme_svds->globalSumDouble) {
-            primme_svds->globalSumDouble(&norm0, &norm, &ONE, primme_svds);
-         }
-         else norm = norm0;
-         ztmp.r = 1.0L/sqrt(norm); ztmp.i = 0.0L;
+         norm0 = REAL_PART(Num_dot_zprimme(m, &x[i*ldx], 1, &x[i*ldx], 1));
+         globalSum_dprimme_svds(&norm0, &norm, 1, primme_svds);
+         factor = sqrt(norm);
       }
-      Num_scal_zprimme(m, ztmp, &x[i*ldx], 1);
+      Num_scal_zprimme(m, 1.0/factor, &x[i*ldx], 1);
+   }
+}
+
+static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
+      primme_svds_params *primme_svds) {
+
+   count *= 2;
+
+   if (primme_svds && primme_svds->globalSumDouble) {
+      primme_svds->globalSumDouble(sendBuf, recvBuf, &count, primme_svds);
+   }
+   else {
+      Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
    }
 }

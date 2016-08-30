@@ -29,10 +29,10 @@
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
+#include <limits.h>    
 #include "primme_svds.h"
 #include "primme_svds_interface.h"
 #include "primme_interface.h"
-#include "common_numerical.h"
 #include "primme_svds_interface_private.h"
 
 /***************************************************************************
@@ -405,9 +405,10 @@ void primme_svds_Free(primme_svds_params *params) {
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme) {
 
-   const double machEps = Num_dlamch_primme("E");
+   const double machEps = Num_lamch_dprimme("E");
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
+   (void)evec;  /* unused argument */
    *isConv = *rNorm < max(
                primme->eps * sqrt(fabs(*eval * aNorm)),
                machEps * 3.16 * aNorm);
@@ -433,9 +434,10 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme) {
 
-   const double machEps = Num_dlamch_primme("E");
+   const double machEps = Num_lamch_dprimme("E");
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
+   (void)evec;  /* unused argument */
    *isConv = 
       *rNorm < max(
                primme->eps / sqrt(2.0) * aNorm,

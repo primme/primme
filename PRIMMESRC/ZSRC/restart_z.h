@@ -29,38 +29,36 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-void reset_flags_zprimme(int *flags, int first, int last);
-
-int restart_zprimme(Complex_Z *V, Complex_Z *W, int nLocal, int basisSize,
+int restart_zprimme(complex double *V, complex double *W, int nLocal, int basisSize,
        int ldV, double *hVals, double *hSVals, int *flags, int *iev,
-       int *ievSize, double *blockNorms, Complex_Z *evecs, int *evecsPerm,
-       double *evals, double *resNorms, Complex_Z *evecsHat, int ldevecsHat,
-       Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU, int *ipivot,
+       int *ievSize, double *blockNorms, complex double *evecs, int *evecsPerm,
+       double *evals, double *resNorms, complex double *evecsHat, int ldevecsHat,
+       complex double *M, int ldM, complex double *UDU, int ldUDU, int *ipivot,
        int *numConverged, int *numLocked, int *numConvergedStored,
-       Complex_Z *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
-       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, Complex_Z *H,
-       int ldH, Complex_Z *Q, int ldQ, Complex_Z *R, int ldR, Complex_Z* QtV,
-       int ldQtV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs,
+       complex double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
+       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, complex double *H,
+       int ldH, complex double *Q, int ldQ, complex double *R, int ldR, complex double* QtV,
+       int ldQtV, complex double *hU, int ldhU, int newldhU, complex double *hVecs,
        int ldhVecs, int newldhVecs, int *restartSizeOutput,
-       int *targetShiftIndex, int *numArbitraryVecs, Complex_Z *hVecsRot,
-       int ldhVecsRot, Complex_Z *previousHU, int ldpreviousHU,
-       double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
-       Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
+       int *targetShiftIndex, int *numArbitraryVecs, complex double *hVecsRot,
+       int ldhVecsRot, int *restartsSinceReset, int *reset,
+       double machEps, complex double *rwork, int rworkSize, int *iwork,
+       primme_params *primme);
 
-int Num_reset_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
-   Complex_Z *h, int nh, int ldh, double *hVals,
-   Complex_Z *X0, int nX0b, int nX0e, int ldX0,
-   Complex_Z *X1, int nX1b, int nX1e, int ldX1,
-   Complex_Z *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
-   Complex_Z *Wo, int nWob, int nWoe, int ldWo,
-   Complex_Z *R, int nRb, int nRe, int ldR, double *Rnorms,
+int Num_reset_update_VWXR_zprimme(complex double *V, complex double *W, int mV, int nV, int ldV,
+   complex double *h, int nh, int ldh, double *hVals,
+   complex double *X0, int nX0b, int nX0e, int ldX0,
+   complex double *X1, int nX1b, int nX1e, int ldX1,
+   complex double *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
+   complex double *Wo, int nWob, int nWoe, int ldWo,
+   complex double *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   int reset, double machEps, Complex_Z *rwork, int lrwork, primme_params *primme);
+   int reset, double machEps, complex double *rwork, int lrwork, primme_params *primme);
 
-int retain_previous_coefficients_zprimme(Complex_Z *hVecs, int ldhVecs,
-   Complex_Z *hU, int ldhU, double *hSVals, Complex_Z *previousHVecs,
+int retain_previous_coefficients_zprimme(complex double *hVecs, int ldhVecs,
+   complex double *hU, int ldhU, double *hSVals, complex double *previousHVecs,
    int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
-   int *flags, int *numPrevRetained, int *iwork, Complex_Z *rwork, int rworkSize,
+   int *flags, int *numPrevRetained, int *iwork, complex double *rwork, int rworkSize,
    primme_params *primme);
 
 #endif

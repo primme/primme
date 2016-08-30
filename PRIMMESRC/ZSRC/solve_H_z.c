@@ -67,13 +67,13 @@
  * Return Value
  * ------------
  * int -  0 upon successful return
- *     - -1 Num_zheev was unsuccessful
+ *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
-   Complex_Z *QtV, int ldQtV, Complex_Z *hU, int ldhU, Complex_Z *hVecs, int ldhVecs,
+int solve_H_zprimme(complex double *H, int basisSize, int ldH, complex double *R, int ldR,
+   complex double *QtV, int ldQtV, complex double *hU, int ldhU, complex double *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme) {
+   complex double *rwork, int *iwork, primme_params *primme) {
 
    int i, ret;
 
@@ -146,12 +146,12 @@ int solve_H_zprimme(Complex_Z *H, int basisSize, int ldH, Complex_Z *R, int ldR,
  * Return Value
  * ------------
  * int -  0 upon successful return
- *     - -1 Num_zheev was unsuccessful
+ *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
+int solve_H_RR_zprimme(complex double *H, int ldH, complex double *hVecs,
    int ldhVecs, double *hVals, int basisSize, int numConverged, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme) {
+   complex double *rwork, int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
@@ -179,7 +179,7 @@ int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
 #ifdef NUM_ESSL
       return 2*basisSize + basisSize*(basisSize + 1)/2;
 #else
-      Complex_Z rwork0;
+      complex double rwork0;
       lrwork = 0;
       lrwork += 2*basisSize;
       Num_zheev_zprimme("V", "U", basisSize, hVecs, basisSize, hVals, &rwork0, 
@@ -190,7 +190,7 @@ int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
                __LINE__, primme);
          return NUM_DSYEV_FAILURE;
       }
-      lrwork += (int)*(double*)&rwork0;
+      lrwork += (int)REAL_PART(rwork0);
       return lrwork;
 #endif
    }
@@ -216,8 +216,7 @@ int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
    else { /* (primme->target == primme_largest)  */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) {
-            rwork[idx].r = -H[ldH*j+i].r;
-            rwork[idx].i = -H[ldH*j+i].i;
+            rwork[idx] = -H[ldH*j+i];
             idx++;
          }
       }
@@ -250,8 +249,7 @@ int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
    else { /* (primme->target == primme_largest) */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) { 
-            hVecs[ldhVecs*j+i].r = -H[ldH*j+i].r;
-            hVecs[ldhVecs*j+i].i = -H[ldH*j+i].i;
+            hVecs[ldhVecs*j+i] = -H[ldH*j+i];
          }
       }
    }
@@ -419,18 +417,19 @@ int solve_H_RR_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
  * Return Value
  * ------------
  * int -  0 upon successful return
- *     - -1 Num_zheev was unsuccessful
+ *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QtV, int ldQtV,
-   Complex_Z *R, int ldR, Complex_Z *hVecs, int ldhVecs, Complex_Z *hU, int ldhU,
+static int solve_H_Harm_zprimme(complex double *H, int ldH, complex double *QtV, int ldQtV,
+   complex double *R, int ldR, complex double *hVecs, int ldhVecs, complex double *hU, int ldhU,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme) {
+   complex double *rwork, int *iwork, primme_params *primme) {
 
    int i, ret;
-   Complex_Z tzero = {+0.0e+00,+0.0e00}, tpone = {+1.0e+00,+0.0e00};
    double *oldTargetShifts, zero=0.0;
    primme_target oldTarget;
+
+   (void)numConverged; /* unused parameter */
 
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
@@ -444,7 +443,7 @@ static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QtV, int ldQtV
    /* QAQ = QtV*inv(R) */
 
    Num_copy_matrix_zprimme(QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs);
-   Num_trsm_zprimme("R", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
+   Num_trsm_zprimme("R", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
 
    /* Compute eigenpairs of QAQ */
@@ -475,7 +474,7 @@ static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QtV, int ldQtV
 
    /* Transfer back the eigenvectors to V, hVecs = R\hVecs */
 
-   Num_trsm_zprimme("L", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
+   Num_trsm_zprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
    ret = ortho_zprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
          basisSize, primme->iseed, machEps, rwork, lrwork, primme);
@@ -483,12 +482,13 @@ static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QtV, int ldQtV
  
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_symm_zprimme("L", "U", basisSize, basisSize, tpone, H,
-      ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
+   Num_symm_zprimme("L", "U", basisSize, basisSize, 1.0, H,
+      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
-      Complex_Z ztmp = Num_dot_zprimme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
-      hVals[i] = ztmp.r;
+      hVals[i] =
+         REAL_PART(Num_dot_zprimme(basisSize, &hVecs[ldhVecs*i], 1,
+                  &rwork[basisSize*i], 1));
    }
 
    return 0;
@@ -521,24 +521,25 @@ static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QtV, int ldQtV
  * Return Value
  * ------------
  * int -  0 upon successful return
- *     - -1 Num_zheev was unsuccessful
+ *     - -1 was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
-   int ldhVecs, Complex_Z *hU, int ldhU, double *hSVals, Complex_Z *R, int ldR,
-   double *hVals, int basisSize, int targetShiftIndex, int lrwork, Complex_Z *rwork,
+static int solve_H_Ref_zprimme(complex double *H, int ldH, complex double *hVecs,
+   int ldhVecs, complex double *hU, int ldhU, double *hSVals, complex double *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, int lrwork, complex double *rwork,
    int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00}, ztmp;
+
+   (void)targetShiftIndex; /* unused parameter */
 
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
 
    /* Return memory requirements */
    if (H == NULL) {
-      Complex_Z rwork0;
+      complex double rwork0;
       lrwork = 0;
       lrwork += 3*basisSize;
       Num_zgesvd_zprimme("S", "O", basisSize, basisSize, R, basisSize,
@@ -550,7 +551,7 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
                __LINE__, primme);
          return NUM_ZGESVD_FAILURE;
       }
-      lrwork += (int)*(double*)&rwork0;
+      lrwork += (int)REAL_PART(rwork0);
       lrwork += basisSize*basisSize; /* aux for transpose V and symm */
       return lrwork;
    }
@@ -577,8 +578,7 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
    assert(lrwork >= basisSize*basisSize);
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
-         rwork[basisSize*j+i].r =  hVecs[ldhVecs*i+j].r;
-         rwork[basisSize*j+i].i = -hVecs[ldhVecs*i+j].i;
+         rwork[basisSize*j+i] = CONJ(hVecs[ldhVecs*i+j]);
       }
    }
    Num_copy_matrix_zprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
@@ -600,12 +600,12 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
 
    /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_symm_zprimme("L", "U", basisSize, basisSize, tpone, H,
-      ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
+   Num_symm_zprimme("L", "U", basisSize, basisSize, 1.0, H,
+      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
-      ztmp = Num_dot_zprimme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
-      hVals[i] = ztmp.r;
+      hVals[i] = REAL_PART(Num_dot_zprimme(basisSize, &hVecs[ldhVecs*i], 1,
+               &rwork[basisSize*i], 1));
    }
 
    return 0;
@@ -675,16 +675,15 @@ static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
  ******************************************************************************/
 
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
-      Complex_Z *H, int ldH, double *hVals, double *hSVals, Complex_Z *hVecs,
+      complex double *H, int ldH, double *hVals, double *hSVals, complex double *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, Complex_Z *hVecsRot,
-      int ldhVecsRot, double machEps, int rworkSize, Complex_Z *rwork,
+      double smallestResNorm, int *flags, int RRForAll, complex double *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, complex double *rwork,
       int *iwork, primme_params *primme) {
 
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
    double aNorm;
    int ret;
 
@@ -769,7 +768,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
             (aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
-         double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
+         double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
@@ -789,7 +788,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
       /* ----------------------------------------------------------------- */
 
       if (i-j > 1 && (someCandidate || RRForAll)) {
-         Complex_Z *rwork0 = rwork, *aH, *ahVecs;
+         complex double *rwork0 = rwork, *aH, *ahVecs;
          int rworkSize0 = rworkSize;
          int aBasisSize = i-j;
          aH = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
@@ -803,7 +802,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
          /* hVecsRot(:,arbitraryVecs:i-1) = I */
          for (k=*arbitraryVecs; k<i; k++)
-            hVecsRot[ldhVecsRot*k+k] = tpone;
+            hVecsRot[ldhVecsRot*k+k] = 1.0;
  
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          compute_submatrix_zprimme(&hVecs[ldhVecs*j], aBasisSize,
@@ -818,7 +817,7 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
 
          /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
          Num_gemm_zprimme("N", "N", basisSize, aBasisSize, aBasisSize,
-               tpone, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, tzero,
+               1.0, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, 0.0,
                rwork0, basisSize);
          Num_copy_matrix_zprimme(rwork0, basisSize, aBasisSize, basisSize,
                &hVecs[ldhVecs*j], ldhVecs);

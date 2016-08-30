@@ -29,17 +29,17 @@
 
 
 #include <stdarg.h>
-#include "Complexz.h"
-#include "numerical_private_z.h"
-#include "numerical_z.h"
-#include "primme.h"
 #include <stdlib.h>   /* free */
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
+#include "numerical_private_z.h"
+#include "numerical_z.h"
+#include "globalsum_z.h"
+#include "primme.h"
 
 /******************************************************************************/
-void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
+void Num_copy_zprimme(int n, complex double *x, int incx, complex double *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -53,8 +53,8 @@ void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
 /******************************************************************************/
 
 void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int k, 
-   Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb, 
-   Complex_Z beta, Complex_Z *c, int ldc) {
+   complex double alpha, complex double *a, int lda, complex double *b, int ldb, 
+   complex double beta, complex double *c, int ldc) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -86,9 +86,9 @@ void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int 
 }
 
 /******************************************************************************/
-void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, Complex_Z alpha, 
-   Complex_Z *a, int lda, Complex_Z *b, int ldb, Complex_Z beta, 
-   Complex_Z *c, int ldc) {
+void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, complex double alpha, 
+   complex double *a, int lda, complex double *b, int ldb, complex double beta, 
+   complex double *c, int ldc) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -112,7 +112,7 @@ void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, Complex_
 }
 
 void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
-   const char *diag, int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b,
+   const char *diag, int m, int n, complex double alpha, complex double *a, int lda, complex double *b,
    int ldb) {
 
    PRIMME_BLASINT lm = m;
@@ -129,9 +129,9 @@ void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
 
 
 /******************************************************************************/
-void Num_symv_zprimme(const char *uplo, int n, Complex_Z alpha, 
-   Complex_Z *a, int lda, Complex_Z *x, int incx, Complex_Z beta, 
-   Complex_Z *y, int incy) {
+void Num_symv_zprimme(const char *uplo, int n, complex double alpha, 
+   complex double *a, int lda, complex double *x, int incx, complex double beta, 
+   complex double *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -146,8 +146,8 @@ void Num_symv_zprimme(const char *uplo, int n, Complex_Z alpha,
 }
 
 /******************************************************************************/
-void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx, 
-   Complex_Z *y, int incy) {
+void Num_axpy_zprimme(int n, complex double alpha, complex double *x, int incx, 
+   complex double *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -176,16 +176,14 @@ void Num_axpy_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx,
  *
  ******************************************************************************/
 
-void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x, 
-   Complex_Z *Ax, Complex_Z *r) {
+void Num_compute_residual_zprimme(int n, double eval, complex double *x, 
+   complex double *Ax, complex double *r) {
 
-   Complex_Z ztmp = {+0.0e+00,+0.0e00};
    int k, M=min(n,PRIMME_BLOCK_SIZE);
-   *(double*)&ztmp = -eval;
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      Num_zcopy_zprimme(M, &Ax[k], 1, &r[k], 1);
-      Num_axpy_zprimme(M, ztmp, &x[k], 1, &r[k], 1);
+      Num_copy_zprimme(M, &Ax[k], 1, &r[k], 1);
+      Num_axpy_zprimme(M, -eval, &x[k], 1, &r[k], 1);
    }
 
 }
@@ -241,14 +239,14 @@ void Num_compute_residual_zprimme(int n, double eval, Complex_Z *x,
  *
  ******************************************************************************/
 
-int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int n, int *p, 
-   int ldx, Complex_Z *Ax, int ldAx,
-   Complex_Z *xo, int no, int ldxo, int io0, Complex_Z *ro, int ldro,
-   Complex_Z *xd, int nd, int *pd, int ldxd, Complex_Z *rd, int ldrd,
-   Complex_Z *rwork, int lrwork) {
+int Num_compute_residual_columns_zprimme(int m, double *evals, complex double *x, int n, int *p, 
+   int ldx, complex double *Ax, int ldAx,
+   complex double *xo, int no, int ldxo, int io0, complex double *ro, int ldro,
+   complex double *xd, int nd, int *pd, int ldxd, complex double *rd, int ldrd,
+   complex double *rwork, int lrwork) {
 
    int i, id, k, io, M=min(m,PRIMME_BLOCK_SIZE);
-   Complex_Z *X0, *R0;
+   complex double *X0, *R0;
 
    /* Return memory requirement */
 
@@ -295,8 +293,8 @@ int Num_compute_residual_columns_zprimme(int m, double *evals, Complex_Z *x, int
 }
 
 /******************************************************************************/
-void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex_Z *a,
-   int lda, Complex_Z *x, int incx, Complex_Z beta, Complex_Z *y, int incy) {
+void Num_gemv_zprimme(const char *transa, int m, int n, complex double alpha, complex double *a,
+   int lda, complex double *x, int incx, complex double beta, complex double *y, int incy) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -320,29 +318,22 @@ void Num_gemv_zprimme(const char *transa, int m, int n, Complex_Z alpha, Complex
 }
 
 /******************************************************************************/
-Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
+complex double Num_dot_zprimme(int n, complex double *x, int incx, complex double *y, int incy) {
 
 /* ---- Explicit implementation of the zdotc() --- */
    int i;
-   Complex_Z zdotc = {+0.0e+00,+0.0e00};
+   double complex zdotc = 0.0;
    if (n <= 0) return(zdotc);
    if (incx==1 && incy==1) {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-        zdotc.r += x[i].r*y[i].r + x[i].i*y[i].i;
-        zdotc.i += x[i].r*y[i].i - x[i].i*y[i].r;
+         zdotc += conj(x[i]) * y[i];
       }
    }
    else {
-      int ix,iy;
-      ix = 0;
-      iy = 0;
-      if(incx <= 0) ix = (-n+1)*incx;
-      if(incy <= 0) iy = (-n+1)*incy;
-      for (i=0;i<n;i++) {
-        zdotc.r += x[ix].r*y[iy].r + x[ix].i*y[iy].i;
-        zdotc.i += x[ix].r*y[iy].i - x[ix].i*y[iy].r;
-        ix += incx;
-        iy += incy;
+      if (incx==1 && incy==1) {
+         for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+            zdotc += conj(x[i*incx]) * y[i*incy];
+         }
       }
    }
    return(zdotc);
@@ -351,7 +342,7 @@ Complex_Z Num_dot_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy)
 }
 
 /******************************************************************************/
-void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x) {
+void Num_larnv_zprimme(int idist, int *iseed, int length, complex double *x) {
 
    PRIMME_BLASINT lidist = idist;
    PRIMME_BLASINT llength = length;
@@ -379,7 +370,7 @@ void Num_larnv_zprimme(int idist, int *iseed, int length, Complex_Z *x) {
 }
 
 /******************************************************************************/
-void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
+void Num_scal_zprimme(int n, complex double alpha, complex double *x, int incx) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -392,7 +383,7 @@ void Num_scal_zprimme(int n, Complex_Z alpha, Complex_Z *x, int incx) {
 }
 
 /******************************************************************************/
-void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
+void Num_swap_zprimme(int n, complex double *x, int incx, complex double *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -409,8 +400,8 @@ void Num_swap_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy) {
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
-   int n, Complex_Z *aux, int naux) {
+int Num_zhpev_zprimme(int iopt, complex double *ap, double *w, complex double *z, int ldz,
+   int n, complex double *aux, int naux) {
 
    PRIMME_BLASINT liopt = iopt;
    PRIMME_BLASINT lldz = ldz;
@@ -425,8 +416,8 @@ int Num_zhpev_zprimme(int iopt, Complex_Z *ap, double *w, Complex_Z *z, int ldz,
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, int lda,
-   double *w, Complex_Z *work, int ldwork, double *rwork, int *info) {
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, complex double *a, int lda,
+   double *w, complex double *work, int ldwork, double *rwork, int *info) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -457,9 +448,9 @@ void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, Complex_Z *a, 
 
 
 /******************************************************************************/
-void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, Complex_Z *a,
-   int lda, double *s, Complex_Z *u, int ldu, Complex_Z *vt, int ldvt,
-   Complex_Z *work, int ldwork, double *rwork, int *info){
+void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, complex double *a,
+   int lda, double *s, complex double *u, int ldu, complex double *vt, int ldvt,
+   complex double *work, int ldwork, double *rwork, int *info){
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -480,8 +471,8 @@ void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, Compl
 
 /******************************************************************************/
 
-void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau,
-      Complex_Z *rwork, int lrwork, int *info) {
+void Num_geqrf_zprimme(int m, int n, complex double *a, int lda, complex double *tau,
+      complex double *rwork, int lrwork, int *info) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -498,8 +489,8 @@ void Num_geqrf_zprimme(int m, int n, Complex_Z *a, int lda, Complex_Z *tau,
    *info = (int)linfo;
 }
 
-void Num_orgqr_zprimme(int m, int n, int k, Complex_Z *a, int lda, Complex_Z *tau,
-      Complex_Z *rwork, int lrwork, int *info) {
+void Num_orgqr_zprimme(int m, int n, int k, complex double *a, int lda, complex double *tau,
+      complex double *rwork, int lrwork, int *info) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -519,8 +510,8 @@ void Num_orgqr_zprimme(int m, int n, int k, Complex_Z *a, int lda, Complex_Z *ta
 
 
 /******************************************************************************/
-void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipivot,
-   Complex_Z *work, int ldwork, int *info) {
+void Num_zhetrf_zprimme(const char *uplo, int n, complex double *a, int lda, int *ipivot,
+   complex double *work, int ldwork, int *info) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -560,8 +551,8 @@ void Num_zhetrf_zprimme(const char *uplo, int n, Complex_Z *a, int lda, int *ipi
 
 
 /******************************************************************************/
-void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda, 
-   int *ipivot, Complex_Z *b, int ldb, int *info) {
+void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, complex double *a, int lda, 
+   int *ipivot, complex double *b, int ldb, int *info) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lnrhs = nrhs;
@@ -601,7 +592,7 @@ void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, Complex_Z *a, int lda
  
 
 void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, const char *diag,
-      int m, int n, Complex_Z alpha, Complex_Z *a, int lda, Complex_Z *b, int ldb) {
+      int m, int n, complex double alpha, complex double *a, int lda, complex double *b, int ldb) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -631,7 +622,7 @@ void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, co
  *
  ******************************************************************************/
 
-void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, int ldy) {
+void Num_copy_matrix_zprimme(complex double *x, int m, int n, int ldx, complex double *y, int ldy) {
    int i,j;
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
@@ -641,13 +632,13 @@ void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, 
 
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
-      memmove(y, x, sizeof(Complex_Z)*m*n);
+      memmove(y, x, sizeof(complex double)*m*n);
    }
 
    /* Copy the matrix some rows back or forward */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
-         memmove(&y[i*ldy], &x[i*ldx], sizeof(Complex_Z)*m);
+         memmove(&y[i*ldy], &x[i*ldx], sizeof(complex double)*m);
    }
 
    /* Copy the matrix some columns forward */
@@ -685,7 +676,7 @@ void Num_copy_matrix_zprimme(Complex_Z *x, int m, int n, int ldx, Complex_Z *y, 
  *
  ******************************************************************************/
 
-void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int ldx, Complex_Z *y,
+void Num_copy_matrix_columns_zprimme(complex double *x, int m, int *xin, int n, int ldx, complex double *y,
       int *yin, int ldy) {
 
    int i,j;
@@ -708,14 +699,13 @@ void Num_copy_matrix_columns_zprimme(Complex_Z *x, int m, int *xin, int n, int l
  *
  ******************************************************************************/
 
-void Num_zero_matrix_zprimme(Complex_Z *x, int m, int n, int ldx) {
+void Num_zero_matrix_zprimme(complex double *x, int m, int n, int ldx) {
 
    int i,j;
-   Complex_Z tzero = {+0.0e+00,+0.0e00};             /*constants*/
 
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
-         x[i*ldx+j] = tzero;
+         x[i*ldx+j] = 0.0;
 } 
 
 
@@ -740,11 +730,10 @@ void Num_zero_matrix_zprimme(Complex_Z *x, int m, int n, int ldx) {
  *
  ******************************************************************************/
 
-void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
-      int i0, Complex_Z *y, int ldy, int zero) {
+void Num_copy_trimatrix_zprimme(complex double *x, int m, int n, int ldx, int ul,
+      int i0, complex double *y, int ldy, int zero) {
 
    int i, j, jm;
-   Complex_Z tzero = {+0.0e+00,+0.0e00};             /*constants*/
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
    if (x == y) return;
@@ -754,9 +743,9 @@ void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
       if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
          /* x and y overlap */
          for (i=0; i<n; i++) {
-            memmove(&y[i*ldy], &x[i*ldx], sizeof(Complex_Z)*min(i0+i+1, m));
+            memmove(&y[i*ldy], &x[i*ldx], sizeof(complex double)*min(i0+i+1, m));
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
          }
       }
       else {
@@ -765,7 +754,7 @@ void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
             for (j=0, jm=min(i0+i+1, m); j<jm; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
          }
       }
    }
@@ -775,9 +764,9 @@ void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
       if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
          /* x and y overlap */
          for (i=0; i<n; i++) {
-            memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(Complex_Z)*(m-min(i0+i, m)));
+            memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(complex double)*(m-min(i0+i, m)));
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
          }
       }
       else {
@@ -786,7 +775,7 @@ void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
             for (j=i+i0; j<m; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
          }
       }
    }
@@ -811,7 +800,7 @@ void Num_copy_trimatrix_zprimme(Complex_Z *x, int m, int n, int ldx, int ul,
  *
  ******************************************************************************/
 
-void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int i0, Complex_Z *y, int *ly) {
+void Num_copy_trimatrix_compact_zprimme(complex double *x, int m, int n, int ldx, int i0, complex double *y, int *ly) {
    int i, j, k;
 
    assert(m == 0 || n == 0 || ldx >= m);
@@ -839,7 +828,7 @@ void Num_copy_trimatrix_compact_zprimme(Complex_Z *x, int m, int n, int ldx, int
  *
  ******************************************************************************/
 
-void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Complex_Z *y, int ldy) {
+void Num_copy_compact_trimatrix_zprimme(complex double *x, int m, int n, int i0, complex double *y, int ldy) {
 
    int i, j, k;
 
@@ -892,22 +881,21 @@ void Num_copy_compact_trimatrix_zprimme(Complex_Z *x, int m, int n, int i0, Comp
  *
  ******************************************************************************/
 
-int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
-   Complex_Z *h, int nh, int ldh, double *hVals,
-   Complex_Z *X0, int nX0b, int nX0e, int ldX0,
-   Complex_Z *X1, int nX1b, int nX1e, int ldX1,
-   Complex_Z *X2, int nX2b, int nX2e, int ldX2,
-   Complex_Z *Wo, int nWob, int nWoe, int ldWo,
-   Complex_Z *R, int nRb, int nRe, int ldR, double *Rnorms,
+int Num_update_VWXR_zprimme(complex double *V, complex double *W, int mV, int nV, int ldV,
+   complex double *h, int nh, int ldh, double *hVals,
+   complex double *X0, int nX0b, int nX0e, int ldX0,
+   complex double *X1, int nX1b, int nX1e, int ldX1,
+   complex double *X2, int nX2b, int nX2e, int ldX2,
+   complex double *Wo, int nWob, int nWoe, int ldWo,
+   complex double *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   Complex_Z *rwork, int lrwork, primme_params *primme) {
+   complex double *rwork, int lrwork, primme_params *primme) {
 
    int i, j;         /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, ldX, ldY;
-   Complex_Z *X, *Y;
+   complex double *X, *Y;
    double *tmp, *tmp0;
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
 
    /* Return memory requirements */
    if (V == NULL) {
@@ -923,6 +911,8 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
    nYb = min(min(Wo?nWob:INT_MAX, R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
    nYe = max(max(Wo?nWoe:0, R?nRe:0), rnorms?nre:0);
 
+   assert(nXe <= nh || nXb >= nXe); /* Check dimension */
+   assert(nYe <= nh || nYb >= nYe); /* Check dimension */
    assert((nXe-nXb+nYe-nYb)*m <= lrwork); /* Check workspace for X and Y */
    assert(2*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
@@ -935,8 +925,8 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
 
    for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
       /* X = V*h(nXb:nXe-1) */
-      Num_gemm_zprimme("N", "N", m, nXe-nXb, nV, tpone,
-         &V[i], ldV, &h[nXb*ldh], ldh, tzero, X, ldX);
+      Num_gemm_zprimme("N", "N", m, nXe-nXb, nV, 1.0,
+         &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX);
 
       /* X0 = X(nX0b-nXb:nX0e-nXb-1) */
       if (X0) Num_copy_matrix_zprimme(&X[ldX*(nX0b-nXb)], m, nX0e-nX0b,
@@ -952,7 +942,7 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
 
       /* Y = W*h(nYb:nYe-1) */
       if (nYb < nYe) Num_gemm_zprimme("N", "N", m, nYe-nYb, nV,
-            tpone, &W[i], ldV, &h[nYb*ldh], ldh, tzero, Y, ldY);
+            1.0, &W[i], ldV, &h[nYb*ldh], ldh, 0.0, Y, ldY);
 
       /* Wo = Y(nWob-nYb:nWoe-nYb-1) */
       if (Wo) Num_copy_matrix_zprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
@@ -963,19 +953,19 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
          Num_compute_residual_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
-            Complex_Z ztmp;
-            ztmp = Num_dot_zprimme(m, &R[i+ldR*(j-nRb)], 1, &R[i+ldR*(j-nRb)], 1);
-            Rnorms[j-nRb] += *(double*)&ztmp;
+            Rnorms[j-nRb] +=
+               REAL_PART(Num_dot_zprimme(m, &R[i+ldR*(j-nRb)], 1,
+                        &R[i+ldR*(j-nRb)], 1));
          }
       }
 
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
-         Complex_Z ztmp;
          Num_compute_residual_zprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &Y[ldY*(j-nYb)]);
-         ztmp = Num_dot_zprimme(m, &Y[ldY*(j-nYb)], 1, &Y[ldY*(j-nYb)], 1);
-         rnorms[j-nrb] += *(double*)&ztmp;
+         rnorms[j-nrb] += 
+            REAL_PART(Num_dot_zprimme(m, &Y[ldY*(j-nYb)], 1,
+                     &Y[ldY*(j-nYb)], 1));
       }
    }
 
@@ -987,7 +977,7 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
       if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       tmp0 = tmp+j;
-      if (j) primme->globalSumDouble(tmp, tmp0, &j, primme);
+      if (j) globalSum_dprimme(tmp, tmp0, j, primme);
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
@@ -1017,8 +1007,8 @@ int Num_update_VWXR_zprimme(Complex_Z *V, Complex_Z *W, int mV, int nV, int ldV,
  *
  ******************************************************************************/
 
-void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
-      Complex_Z *rwork, int *iwork) {
+void permute_vecs_zprimme(complex double *vecs, int m, int n, int ld, int *perm_,
+      complex double *rwork, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
@@ -1062,7 +1052,7 @@ void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       }
 
       /* Copy the vector to a buffer for swapping */
-      Num_zcopy_zprimme(m, &vecs[currentIndex*ld], 1, rwork, 1);
+      Num_copy_zprimme(m, &vecs[currentIndex*ld], 1, rwork, 1);
 
       destinationIndex = currentIndex;
       /* Copy vector perm[destinationIndex] into position destinationIndex */
@@ -1070,7 +1060,7 @@ void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       while (perm[destinationIndex] != currentIndex) {
 
          sourceIndex = perm[destinationIndex];
-         Num_zcopy_zprimme(m, &vecs[sourceIndex*ld], 1, 
+         Num_copy_zprimme(m, &vecs[sourceIndex*ld], 1, 
             &vecs[destinationIndex*ld], 1);
          tempIndex = perm[destinationIndex];
          perm[destinationIndex] = destinationIndex;
@@ -1078,7 +1068,7 @@ void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
       }
 
       /* Copy the vector from the buffer to where it belongs */
-      Num_zcopy_zprimme(m, rwork, 1, &vecs[destinationIndex*ld], 1);
+      Num_copy_zprimme(m, rwork, 1, &vecs[destinationIndex*ld], 1);
       perm[destinationIndex] = destinationIndex;
 
       currentIndex++;
@@ -1114,8 +1104,8 @@ void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
  *
  ******************************************************************************/
 
-Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm,
-      Complex_Z *work, int ldwork, int avoidCopy) {
+complex double* Num_compact_vecs_zprimme(complex double *vecs, int m, int n, int ld, int *perm,
+      complex double *work, int ldwork, int avoidCopy) {
 
    int i;
 
@@ -1158,11 +1148,9 @@ Complex_Z* Num_compact_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *
  *
  ******************************************************************************/
 
-int compute_submatrix_zprimme(Complex_Z *X, int nX, int ldX, 
-   Complex_Z *H, int nH, int ldH, Complex_Z *R, int ldR,
-   Complex_Z *rwork, int lrwork) {
-
-   Complex_Z tpone = {+1.0e+00,+0.0e00}, tzero = {+0.0e+00,+0.0e00};
+int compute_submatrix_zprimme(complex double *X, int nX, int ldX, 
+   complex double *H, int nH, int ldH, complex double *R, int ldR,
+   complex double *rwork, int lrwork) {
 
    /* Return memory requirement */
    if (X == NULL) {
@@ -1173,10 +1161,22 @@ int compute_submatrix_zprimme(Complex_Z *X, int nX, int ldX,
 
    assert(lrwork >= nH*nX);
 
-   Num_symm_zprimme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
+   Num_symm_zprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
    
-   Num_gemm_zprimme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
+   Num_gemm_zprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, 
       ldR);
 
    return 0;
+}
+
+double Num_lamch_zprimme(const char *cmach) {
+#ifdef NUM_CRAY
+   _fcd cmach_fcd;
+
+   cmach_fcd = _cptofcd(cmach, strlen(cmach));
+   return (DLAMCH(cmach_fcd));
+#else
+   return (DLAMCH(cmach));
+#endif
+
 }

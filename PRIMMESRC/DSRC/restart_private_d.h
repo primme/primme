@@ -55,8 +55,8 @@ static int restart_projection_dprimme(double *V, int ldV, double *W,
       int *evecsSize, int ldevecs, double *evecsHat, int ldevecsHat,
       double *M, int ldM, double *UDU, int ldUDU, int *ipivot,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      double *hVecsRot, int ldhVecsRot, double *prevhSvals,
-      int numRecentlyLocked, int rworkSize, double *rwork, int *iwork,
+      double *hVecsRot, int ldhVecsRot,
+      int rworkSize, double *rwork, int *iwork,
       double machEps, primme_params *primme);
 
 static int dtr_dprimme(int numLocked, double *hVecs, double *hVals, int *flags, 
@@ -75,7 +75,7 @@ static int restart_refined(double *V, int ldV, double *W, int ldW, double *H,
       double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      double *hVecsRot, int ldhVecsRot, int numRecentlyLocked, int rworkSize,
+      double *hVecsRot, int ldhVecsRot, int rworkSize,
       double *rwork, int *iwork, double machEps, primme_params *primme);
 
 static int restart_harmonic(double *V, int ldV, double *W, int ldW, double *H,
@@ -83,10 +83,9 @@ static int restart_harmonic(double *V, int ldV, double *W, int ldW, double *H,
    int ldQtV, double *hU, int ldhU, int newldhU, double *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int numArbitraryVecs, double *hVecsRot,
-   int ldhVecsRot, double *previousHU, int ldpreviousHU, double *prevhSvals,
-   int numRecentlyLocked, int rworkSize, double *rwork, int *iwork, double machEps, 
-   primme_params *primme);
+   int *targetShiftIndex, int numConverged, int *numArbitraryVecs, double *hVecsRot,
+   int ldhVecsRot, int rworkSize, double *rwork, int *iwork,
+   double machEps, primme_params *primme);
 
 static int ortho_coefficient_vectors_dprimme(double *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, double *hU, int ldhU, double *R,

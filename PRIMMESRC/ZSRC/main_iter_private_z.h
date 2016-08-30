@@ -39,9 +39,9 @@
 #define RESTART_FAILURE           -6
 #define LOCK_VECTORS_FAILURE      -7
 
-static int verify_norms(Complex_Z *V, Complex_Z *W, double *hVals, int basisSize,
+static int verify_norms(complex double *V, complex double *W, double *hVals, int basisSize,
       double *resNorms, int *flags, int *converged, double machEps,
-      Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
+      complex double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 static void print_residuals(double *ritzValues, double *blockNorms,
    int numConverged, int numLocked, int *iev, int blockSize, 

@@ -77,7 +77,6 @@ int update_Q_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
       int blockSize, double *rwork, int rworkSize, double machEps, primme_params *primme) {
 
    int i, j, ret;
-   double tzero = +0.0e+00;             /*constants*/
 
    /* Return memory requirement */
    if (V == NULL) {
@@ -105,7 +104,7 @@ int update_Q_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
    /* Zero the lower triangular part of R */
    for (i=basisSize; i<basisSize+blockSize; i++) {
       for (j=i+1; j<ldR; j++) {
-         R[ldR*i+j] = tzero;
+         R[ldR*i+j] = 0.0;
       }
    }
 

@@ -29,9 +29,9 @@
 #ifndef CONVERGENCE_H
 #define CONVERGENCE_H
 
-int check_convergence_zprimme(Complex_Z *X, int nLocal, int ldX, Complex_Z *R,
-   int ldR, Complex_Z *evecs, int numLocked, int ldevecs, int left, int right,
+int check_convergence_zprimme(complex double *X, int nLocal, int ldX, complex double *R,
+   int ldR, complex double *evecs, int numLocked, int ldevecs, int left, int right,
    int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
-   Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme);
+   complex double *rwork, int rworkSize, int *iwork, primme_params *primme);
 
 #endif

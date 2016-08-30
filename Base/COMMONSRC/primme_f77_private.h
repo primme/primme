@@ -183,7 +183,7 @@ union f77_value_ptr {
 #ifdef F77UNDERSCORE
 void dprimme_f77_(double *evals, double *evecs, double *rnorms, 
                   primme_params **primme, int *ierr);
-void zprimme_f77_(double *evals, Complex_Z *evecs, double *rnorms, 
+void zprimme_f77_(double *evals, double complex *evecs, double *rnorms, 
                   primme_params **primme, int *ierr);
 void primme_initialize_f77_(primme_params **primme);
 void primme_free_f77_(primme_params **primme);
@@ -199,7 +199,7 @@ void primmetop_get_prec_shift_f77_(primme_params **primme, int *i,
 #else
 void dprimme_f77(double *evals, double *evecs, double *rnorms, 
                  primme_params **primme, int *ierr);
-void zprimme_f77(double *evals, Complex_Z *evecs, double *rnorms, 
+void zprimme_f77(double *evals, double complex *evecs, double *rnorms, 
                   primme_params **primme, int *ierr);
 void primme_initialize_f77(primme_params **primme);
 void primme_free_f77(primme_params **primme);

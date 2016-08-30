@@ -1,6 +1,7 @@
 #
 
 CDOTH_D  = ../../PRIMMESRC/DSRC/convergence_d.h  \
+	../../PRIMMESRC/DSRC/globalsum_d.h  \
 	../../PRIMMESRC/DSRC/convergence_private_d.h  \
 	../../PRIMMESRC/DSRC/correction_d.h \
 	../../PRIMMESRC/DSRC/correction_private_d.h  \
@@ -25,6 +26,7 @@ CDOTH_D  = ../../PRIMMESRC/DSRC/convergence_d.h  \
 	../../PRIMMESRC/DSRC/update_projection_d.h  
 
 CDOTH_Z = ../../PRIMMESRC/ZSRC/convergence_z.h \
+	../../PRIMMESRC/ZSRC/globalsum_z.h  \
 	../../PRIMMESRC/ZSRC/convergence_private_z.h \
 	../../PRIMMESRC/ZSRC/correction_z.h \
 	../../PRIMMESRC/ZSRC/correction_private_z.h \
@@ -49,6 +51,7 @@ CDOTH_Z = ../../PRIMMESRC/ZSRC/convergence_z.h \
 	../../PRIMMESRC/ZSRC/update_projection_z.h 
 
 CSOURCE_Z = ../../PRIMMESRC/ZSRC/convergence_z.c \
+	../../PRIMMESRC/ZSRC/globalsum_z.c \
 	../../PRIMMESRC/ZSRC/correction_z.c \
 	../../PRIMMESRC/ZSRC/primme_z.c \
 	../../PRIMMESRC/ZSRC/init_z.c \
@@ -64,6 +67,7 @@ CSOURCE_Z = ../../PRIMMESRC/ZSRC/convergence_z.c \
 	../../PRIMMESRC/ZSRC/update_W_z.c 
 
 CSOURCE_D = ../../PRIMMESRC/DSRC/convergence_d.c \
+	../../PRIMMESRC/DSRC/globalsum_d.c \
 	../../PRIMMESRC/DSRC/correction_d.c \
 	../../PRIMMESRC/DSRC/primme_d.c \
 	../../PRIMMESRC/DSRC/init_d.c \
@@ -84,6 +88,9 @@ complex: $(CSOURCE_Z) $(CDOTH_Z) depends_Z
 real: $(CSOURCE_D) $(CDOTH_D) depends_D
 
 #---------  PRIMMESRC/ZSRC   .h files -------------------------
+
+../../PRIMMESRC/ZSRC/globalsum_z.h: globalsum.base.h
+	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
 ../../PRIMMESRC/ZSRC/convergence_z.h: convergence.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
@@ -155,6 +162,9 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
 # -------------- PRIMMESRC/ZSRC  .c  files --------------------
+../../PRIMMESRC/ZSRC/globalsum_z.c: globalsum.base.c
+	sed -f SampleMakes/arithmetics/cz.sed $< > $@
+
 ../../PRIMMESRC/ZSRC/convergence_z.c: convergence.base.c
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
@@ -200,6 +210,9 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
 # ============== PRIMMESRC/DSRC .h files ========================
+
+../../PRIMMESRC/DSRC/globalsum_d.h: globalsum.base.h
+	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
 ../../PRIMMESRC/DSRC/convergence_d.h: convergence.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
@@ -271,6 +284,9 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
 # ============== PRIMMESRC/DSRC .c files ========================
+../../PRIMMESRC/DSRC/globalsum_d.c: globalsum.base.c
+	sed -f SampleMakes/arithmetics/cd.sed $< > $@
+
 ../../PRIMMESRC/DSRC/convergence_d.c: convergence.base.c
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 

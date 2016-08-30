@@ -29,8 +29,52 @@
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
 
+#include <limits.h>    
 #include "primme.h"
-#include "common_numerical.h"
+
+// TEMP: Interface @(...) and macros
+
+#ifndef USE_DOUBLE
+#define USE_DOUBLE
+#endif
+
+#ifdef USE_DOUBLECOMPLEX
+#  include <complex.h>
+#  ifdef I
+#     undef I
+#  endif
+#  define IMAGINARY _Complex_I
+#  define SCALAR complex double
+#  define REAL double
+#  define REAL_PART(x) (creal(x))
+#  define ABS(x) (cabs(x))
+#  define CONJ(x) (conj(x))
+#else
+#  define IMAGINARY 0.0
+#  define SCALAR double
+#  define REAL double
+#  define REAL_PART(x) (x)
+#  define ABS(x) (fabs(x))
+#  define CONJ(x) (x)
+#endif
+
+#include <tgmath.h>   /* select proper function abs from fabs, cabs... */
+
+#define MACHINE_EPSILON 1.11e-16
+
+#ifdef F77UNDERSCORE
+#define FORTRAN_FUNCTION(X) X ## _
+#else
+#define FORTRAN_FUNCTION(X) X
+#endif
+
+#ifndef max
+#  define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+#ifndef min
+#  define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +93,7 @@ void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot
 void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
    int *ipivot, double *b, int ldb, int *info);
 
-void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
+void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy);
 double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy);
 void Num_orgqr_dprimme(int m, int n, int k, double *a, int lda, double *tau,
       double *rwork, int lrwork, int *info);
@@ -105,6 +149,7 @@ void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, co
 int compute_submatrix_dprimme(double *X, int nX, int ldX, 
    double *H, int nH, int ldH, double *R, int ldR,
    double *rwork, int lrwork);
+double Num_lamch_dprimme(const char *cmach);
 
 #define PRIMME_BLOCK_SIZE 512
 

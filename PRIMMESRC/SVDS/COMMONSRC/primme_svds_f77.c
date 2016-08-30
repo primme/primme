@@ -36,7 +36,7 @@ void AS_FORTRAN(dprimme_svds)(double *svals, double *svecs, double *resNorms,
    *ierr = dprimme_svds(svals, svecs, resNorms, *primme_svds);
 }
 
-void AS_FORTRAN(zprimme_svds)(double *svals, Complex_Z *svecs, double *resNorms,
+void AS_FORTRAN(zprimme_svds)(double *svals, double complex *svecs, double *resNorms,
       primme_svds_params **primme_svds, int *ierr) {
    *ierr = zprimme_svds(svals, svecs, resNorms, *primme_svds);
 }

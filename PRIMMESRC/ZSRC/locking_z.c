@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 #include "primme.h"
 #include "wtime.h"
 #include "const.h"
@@ -41,7 +42,6 @@
 #include "restart_z.h"
 #include "factorize_z.h"
 #include "numerical_z.h"
-#include <assert.h>
 
 /*******************************************************************************
  * Subroutine: restart_locking - This routine is only called when locking and
@@ -152,13 +152,13 @@
  *       
  ******************************************************************************/
  
-int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W, 
-      int nLocal, int basisSize, int ldV, Complex_Z **X, Complex_Z **R,
-      Complex_Z *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
-      int *iev, int *ievSize, double *blockNorms, Complex_Z *evecs, double *evals,
+int restart_locking_zprimme(int *restartSize, complex double *V, complex double *W, 
+      int nLocal, int basisSize, int ldV, complex double **X, complex double **R,
+      complex double *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
+      int *iev, int *ievSize, double *blockNorms, complex double *evecs, double *evals,
       int *numConverged, int *numLocked, double *resNorms, int *evecsperm,
       int numPrevRetained, int *indexOfPreviousVecs, int *hVecsPerm,
-      int reset, double machEps, Complex_Z *rwork, int rworkSize, int *iwork, 
+      int reset, double machEps, complex double *rwork, int rworkSize, int *iwork, 
       primme_params *primme) {
 
    int i, j, k;             /* Loop variables                                 */
@@ -176,7 +176,7 @@ int restart_locking_zprimme(int *restartSize, Complex_Z *V, Complex_Z *W,
 
    /* Return memory requirement */
    if (V == NULL) {
-      Complex_Z t;
+      complex double t;
       double d;
       return max(max(max(
             /* for permute_vecs and fakeResNorms */

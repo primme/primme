@@ -31,46 +31,14 @@
 
 #ifdef USE_DOUBLECOMPLEX
 #  include "../../PRIMMESRC/ZSRC/numerical_z.h"
-#  include <complex.h>
-#  undef I
-#  define IMAGINARY _Complex_I
 #  define PRIMME_NUM complex double
-#  define REAL_PART(x) (creal(x))
-#  define REAL_PARTZ(x) ((x).r)
-#  define ABS(x) (cabs(x))
-#  define CONJ(x) (conj(x))
 #  define SUF(NAME) NAME ## _zprimme
-#  define SUFX(NAME) Num_z ## NAME ## _zprimme
 #  define PREFIX(NAME) z ## NAME
-#  define COMPLEXZ(X) ((Complex_Z*)(X))
-   static inline Complex_Z COMPLEXZV(PRIMME_NUM x) {Complex_Z z={creal(x), cimag(x)}; return z;}
-   static inline PRIMME_NUM COMPLEXV(Complex_Z x) {return x.r+x.i*IMAGINARY;}
 #else
 #  include "../../PRIMMESRC/DSRC/numerical_d.h"
-#  define IMAGINARY 0.0
 #  define PRIMME_NUM double
-#  define REAL_PART(x) (x)
-#  define REAL_PARTZ(x) (x)
-#  define ABS(x) (fabs(x))
-#  define CONJ(x) (x)
 #  define SUF(NAME) NAME ## _dprimme
-#  define SUFX(NAME) Num_d ## NAME ## _dprimme
 #  define PREFIX(NAME) d ## NAME
-#  define COMPLEXZ(X) (X)
-#  define COMPLEXZV(X) (X)
-#  define COMPLEXV(X) (X)
-#endif
-#define MACHINE_EPSILON 1.11e-16
-
-#ifdef F77UNDERSCORE
-#define FORTRAN_FUNCTION(X) X ## _
-#else
-#define FORTRAN_FUNCTION(X) X
-#endif
-
-#ifndef max
-#  define max(a, b) ((a) > (b) ? (a) : (b))
-#  define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 #define ASSERT_MSG(COND, RETURN, ...) { if (!(COND)) {fprintf(stderr, "Error in " __FUNCT__ ": " __VA_ARGS__); return (RETURN);} }

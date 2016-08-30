@@ -32,6 +32,7 @@
 #include "const.h"
 #include "update_projection_d.h"
 #include "numerical_d.h"
+#include "globalsum_d.h"
 
 /*******************************************************************************
  * Subroutine update_projection - Z = X'*Y. If Z is a Hermitian matrix 
@@ -64,8 +65,7 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    double *Z, int ldZ, int nLocal, int numCols, int blockSize, double *rwork,
    int lrwork, int isSymmetric, primme_params *primme) {
 
-   int count, count_doubles, m;
-   double tpone = +1.0e+00, tzero = +0.0e+00;
+   int count, m;
 
    /* -------------------------- */
    /* Return memory requirements */
@@ -88,8 +88,8 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
    /* --------------------------------------------------------------------- */
 
    m = numCols+blockSize;
-   Num_gemm_dprimme("C", "N", m, blockSize, nLocal, tpone, 
-      X, ldX, &Y[ldY*numCols], ldY, tzero, &Z[ldZ*numCols], ldZ);
+   Num_gemm_dprimme("C", "N", m, blockSize, nLocal, 1.0, 
+      X, ldX, &Y[ldY*numCols], ldY, 0.0, &Z[ldZ*numCols], ldZ);
 
    /* -------------------------------------------------------------- */
    /* Alternative to the previous call:                              */
@@ -99,15 +99,15 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
 
    /*
    for (j = numCols; j < numCols+blockSize; j++) {
-      Num_gemv_dprimme("C", primme->nLocal, j-numCols+1, tpone,
+      Num_gemv_dprimme("C", primme->nLocal, j-numCols+1, 1.0,
          &X[primme->nLocal*numCols], primme->nLocal, &Y[primme->nLocal*j], 1, 
-         tzero, &rwork[maxCols*(j-numCols)+numCols], 1);  
+         0.0, &rwork[maxCols*(j-numCols)+numCols], 1);  
    }
    */
 
    if (!isSymmetric) {
-      Num_gemm_dprimme("C", "N", blockSize, numCols, nLocal, tpone, 
-            &X[ldX*numCols], ldX, Y, ldY, tzero, &Z[numCols], ldZ);
+      Num_gemm_dprimme("C", "N", blockSize, numCols, nLocal, 1.0, 
+            &X[ldX*numCols], ldX, Y, ldY, 0.0, &Z[numCols], ldZ);
    }
 
    if (primme->numProcs > 1 && isSymmetric) {
@@ -119,8 +119,7 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
             numCols, rwork, &count);
       assert(count*2 <= lrwork);
 
-      count_doubles = count;
-      primme->globalSumDouble(rwork, (double*)&rwork[count], &count_doubles, primme);
+      globalSum_dprimme(rwork, &rwork[count], count, primme);
 
       Num_copy_compact_trimatrix_dprimme(&rwork[count], m, blockSize, numCols,
             &Z[ldZ*numCols], ldZ);
@@ -137,8 +136,7 @@ int update_projection_dprimme(double *X, int ldX, double *Y, int ldY,
       count = m*blockSize+blockSize*numCols;
       assert(count*2 <= lrwork);
 
-      count_doubles = count;
-      primme->globalSumDouble(rwork, (double*)&rwork[count], &count_doubles, primme);
+      globalSum_dprimme(rwork, &rwork[count], count, primme);
 
       Num_copy_matrix_dprimme(&rwork[count], m, blockSize, ldZ, &Z[ldZ*numCols], m);
       Num_copy_matrix_dprimme(&rwork[count+m*blockSize], blockSize, numCols, ldZ,

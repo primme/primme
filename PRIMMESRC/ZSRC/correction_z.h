@@ -29,12 +29,12 @@
 #ifndef CORRECTION_H
 #define CORRECTION_H
 
-int solve_correction_zprimme(Complex_Z *V, Complex_Z *W, Complex_Z *evecs,
-   Complex_Z *evecsHat, Complex_Z *UDU, int *ipivot, double *lockedEvals,
+int solve_correction_zprimme(complex double *V, complex double *W, complex double *evecs,
+   complex double *evecsHat, complex double *UDU, int *ipivot, double *lockedEvals,
    int numLocked, int numConvergedStored, double *ritzVals,
    double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
    double *blockNorms, int *iev, int blockSize, double eresTol,
-   double machEps, double aNormEstimate, Complex_Z *rwork, int *iwork,
+   double machEps, double aNormEstimate, complex double *rwork, int *iwork,
    int rworkSize, primme_params *primme);
 
 #endif

@@ -340,7 +340,7 @@ static int init_block_krylov(double *V, int nLocal, int ldV, double *W,
    for (i = dv1+blockSize; i <= dv2; i++) {
       matrixMatvec_dprimme(&V[ldV*(i-blockSize)], nLocal, ldV, &V[ldV*i],
             ldV, 0, 1, primme);
-      Num_dcopy_dprimme(nLocal, &V[ldV*i], 1,
+      Num_copy_dprimme(nLocal, &V[ldV*i], 1,
          &W[ldW*(i-blockSize)], 1);
 
        ret = ortho_dprimme(V, ldV, NULL, 0, i, i, locked, 

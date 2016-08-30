@@ -22,7 +22,7 @@
  *******************************************************************************
  * File: primme.c
  *
- * Purpose - Real, Complex_Z precision front end to the multimethod eigensolver
+ * Purpose - Real, complex double precision front end to the multimethod eigensolver
  *
  * For the moment please cite the following two papers: 
  *
@@ -101,7 +101,7 @@
  *
  ******************************************************************************/
  
-int zprimme(double *evals, Complex_Z *evecs, double *resNorms, 
+int zprimme(double *evals, complex double *evecs, double *resNorms, 
             primme_params *primme) {
       
    int ret;
@@ -121,7 +121,7 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
    /* ----------------------- */
    /*  Find machine precision */
    /* ----------------------- */
-   machEps = Num_dlamch_primme("E");
+   machEps = Num_lamch_zprimme("E");
 
    /* ------------------ */
    /* Set some defaults  */
@@ -216,7 +216,7 @@ int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
    /*----------------------------------------------------------------------*/
 
    permute_vecs_zprimme(&evecs[primme->numOrthoConst], primme->nLocal,
-         primme->initSize, primme->nLocal, perm, (Complex_Z*)primme->realWork,
+         primme->initSize, primme->nLocal, perm, (complex double*)primme->realWork,
          (int*)primme->intWork);
 
    free(perm);
@@ -258,7 +258,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    long int realWorkSize;  /* Size of real work space.                  */
    long int rworkByteSize; /* Size of all real data in bytes            */
 
-   int dataSize;     /* Number of Complex_Z positions allocated, excluding */
+   int dataSize;     /* Number of complex double positions allocated, excluding */
                      /* doubles (see doubleSize below) and work space.  */
    int doubleSize=0; /* Number of doubles allocated exclusively to the  */
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
@@ -270,8 +270,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    int solveCorSize; /* work space for solve_correction and inner_solve */
    int solveHSize;   /* work space for solve_H                          */
    int mainSize;     /* work space for main_iter                        */
-   Complex_Z *evecsHat=NULL;/* not NULL when evecsHat will be used        */
-   Complex_Z t;        /* dummy variable */
+   complex double *evecsHat=NULL;/* not NULL when evecsHat will be used        */
+   complex double t;        /* dummy variable */
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
  
@@ -296,15 +296,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
       dataSize += primme->nLocal*primme->maxBasisSize    /* Size of Q      */
          + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
-         + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hU     */
-      doubleSize += primme->maxBasisSize                 /* Size of hSVals */
-         + primme->restartingParams.maxPrevRetain;       /* Size of prevSvals */
-   }
-   if (primme->projectionParams.projection == primme_proj_refined) {
-      dataSize += 
-         + primme->maxBasisSize*primme->restartingParams.maxPrevRetain /* Size of prevhU */
+         + primme->maxBasisSize*primme->maxBasisSize     /* Size of hU     */
          + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hVecsRot */
-      doubleSize += primme->restartingParams.maxPrevRetain; /* Size of prevSvals */
+      doubleSize += primme->maxBasisSize;                /* Size of hSVals */
    }
    if (primme->projectionParams.projection == primme_proj_harmonic) {
       /* Stored QtV = Q'*V */
@@ -377,7 +371,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
          &primme->numEvals, &primme->numEvals, NULL, &primme->restartingParams.maxPrevRetain,
          primme->maxBasisSize, primme->initSize, NULL, &primme->maxBasisSize, NULL,
          primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL,
-         0, 0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, NULL, 0.0,
+         0, 0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0.0,
          NULL, 0, NULL, primme);
 
    /*----------------------------------------------------------------------*/
@@ -389,7 +383,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
             primme->maxBasisSize, NULL, 0, 0, primme),
          prepare_candidates_zprimme(NULL, NULL, primme->nLocal, NULL, 0,
             primme->maxBasisSize, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL,
-            primme->numEvals, primme->numEvals, NULL, 0, primme->maxBlockSize,
+            primme->numEvals, NULL, 0, primme->maxBlockSize,
             NULL, primme->numEvals, NULL, NULL, 0, 0.0, NULL,
             &primme->maxBlockSize, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, primme));
  
@@ -397,25 +391,25 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
    /* Workspace is reused in many functions. Allocate the max needed by any*/
    /*----------------------------------------------------------------------*/
-   realWorkSize = Num_imax_primme(7,
+   realWorkSize = max(max(max(max(max(max(
 
       /* Workspace needed by init_basis */
       initSize,
 
       /* Workspace needed by solve_correction and its child inner_solve */
-      solveCorSize, 
+      solveCorSize), 
 
       /* Workspace needed by function solve_H */
-      solveHSize,
+      solveHSize),
    
       /* Workspace needed by function restart*/
-      restartSize,
+      restartSize),
 
       /* Workspace needed by function verify_norms */
-      2*primme->numEvals,
+      2*primme->numEvals),
 
       /* maximum workspace needed by ortho */ 
-      orthoSize,
+      orthoSize),
 
       /* maximum workspace for main */
       mainSize);
@@ -442,7 +436,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* byte sizes:                                                          */
    /*----------------------------------------------------------------------*/
    
-   rworkByteSize = (dataSize + realWorkSize)*sizeof(Complex_Z)
+   rworkByteSize = (dataSize + realWorkSize)*sizeof(complex double)
                                 + doubleSize*sizeof(double); 
 
    /*----------------------------------------------------------------------*/
@@ -493,7 +487,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
 /******************************************************************************
  *
- * static int check_input(double *evals, Complex_Z *evecs, double *resNorms, 
+ * static int check_input(double *evals, complex double *evecs, double *resNorms, 
  *                        primme_params *primme) 
  *
  * INPUT
@@ -505,7 +499,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
  *              -4..-32  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(double *evals, Complex_Z *evecs, double *resNorms, 
+static int check_input(double *evals, complex double *evecs, double *resNorms, 
                        primme_params *primme) {
    int ret;
    ret = 0;
@@ -527,7 +521,7 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
       ret = -10;
    else if (primme->numEvals < 0)
       ret = -11;
-   else if (primme->eps > 0.0L && primme->eps < Num_dlamch_primme("E") )
+   else if (primme->eps > 0.0L && primme->eps < Num_lamch_zprimme("E") )
       ret = -12;
    else if ( primme->target != primme_smallest  &&
              primme->target != primme_largest  &&
@@ -618,9 +612,11 @@ static int check_input(double *evals, Complex_Z *evecs, double *resNorms,
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme) {
 
-   const double machEps = Num_dlamch_primme("E");
+   const double machEps = Num_lamch_zprimme("E");
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
+   (void)eval; /* unused parameter */
+   (void)evec; /* unused parameter */
    *isConv = *rNorm < max(
                primme->eps * aNorm,
                machEps * 3.16 * primme->stats.estimateLargestSVal);

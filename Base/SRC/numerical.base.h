@@ -29,11 +29,59 @@
 #ifndef NUMERICAL_H
 #define NUMERICAL_H
 
+#include <limits.h>    
 #include "primme.h"
-#include "common_numerical.h"
+
+// TEMP: Interface @(...) and macros
+
 #ifdefarithm L_DEFCPLX
-#include "Complexz.h"
+#ifndef USE_DOUBLECOMPLEX
+#define USE_DOUBLECOMPLEX
+#endif
 #endifarithm
+#ifdefarithm L_DEFREAL
+#ifndef USE_DOUBLE
+#define USE_DOUBLE
+#endif
+#endifarithm
+
+#ifdef USE_DOUBLECOMPLEX
+#  include <complex.h>
+#  ifdef I
+#     undef I
+#  endif
+#  define IMAGINARY _Complex_I
+#  define SCALAR complex double
+#  define REAL double
+#  define REAL_PART(x) (creal(x))
+#  define ABS(x) (cabs(x))
+#  define CONJ(x) (conj(x))
+#else
+#  define IMAGINARY 0.0
+#  define SCALAR double
+#  define REAL double
+#  define REAL_PART(x) (x)
+#  define ABS(x) (fabs(x))
+#  define CONJ(x) (x)
+#endif
+
+#include <tgmath.h>   /* select proper function abs from fabs, cabs... */
+
+#define MACHINE_EPSILON 1.11e-16
+
+#ifdef F77UNDERSCORE
+#define FORTRAN_FUNCTION(X) X ## _
+#else
+#define FORTRAN_FUNCTION(X) X
+#endif
+
+#ifndef max
+#  define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+#ifndef min
+#  define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,9 +115,9 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
    int *ipivot, double *b, int ldb, int *info);
 #endifarithm
 
-void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy);
+void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy);
 #ifdefarithm L_DEFCPLX
-void Num_zcopy_zprimme(int n, Complex_Z *x, int incx, Complex_Z *y, int incy);
+void Num_copy_zprimme(int n, complex double *x, int incx, complex double *y, int incy);
 #endifarithm
 @(type) Num_dot_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
 void Num_orgqr_@(pre)primme(int m, int n, int k, @(type) *a, int lda, @(type) *tau,
@@ -108,8 +156,8 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
 void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
 #ifdefarithm L_DEFCPLX
-void permute_vecs_zprimme(Complex_Z *vecs, int m, int n, int ld, int *perm_,
-      Complex_Z *rwork, int *iwork);
+void permute_vecs_zprimme(complex double *vecs, int m, int n, int ld, int *perm_,
+      complex double *rwork, int *iwork);
 #endifarithm
 double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);
@@ -138,6 +186,7 @@ void Num_trsm_@(pre)primme(const char *side, const char *uplo, const char *trans
 int compute_submatrix_@(pre)primme(@(type) *X, int nX, int ldX, 
    @(type) *H, int nH, int ldH, @(type) *R, int ldR,
    @(type) *rwork, int lrwork);
+double Num_lamch_@(pre)primme(const char *cmach);
 
 #define PRIMME_BLOCK_SIZE 512
 

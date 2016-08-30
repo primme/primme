@@ -67,12 +67,7 @@
  * Return Value
  * ------------
  * int -  0 upon successful return
-#ifdefarithm L_DEFCPLX
- *     - -1 Num_zheev was unsuccessful
-#endifarithm
-#ifdefarithm L_DEFREAL
- *     - -1 Num_dsyev was unsuccessful
-#endifarithm
+ *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
 int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR,
@@ -151,12 +146,7 @@ int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR
  * Return Value
  * ------------
  * int -  0 upon successful return
-#ifdefarithm L_DEFCPLX
- *     - -1 Num_zheev was unsuccessful
-#endifarithm
-#ifdefarithm L_DEFREAL
- *     - -1 Num_dsyev was unsuccessful
-#endifarithm
+ *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
 int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
@@ -214,7 +204,7 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
          return NUM_DSYEV_FAILURE;
       }
 #endifarithm
-      lrwork += (int)*(double*)&rwork0;
+      lrwork += (int)REAL_PART(rwork0);
       return lrwork;
 #endif
    }
@@ -240,13 +230,7 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
    else { /* (primme->target == primme_largest)  */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) {
-#ifdefarithm L_DEFCPLX
-            rwork[idx].r = -H[ldH*j+i].r;
-            rwork[idx].i = -H[ldH*j+i].i;
-#endifarithm
-#ifdefarithm L_DEFREAL
             rwork[idx] = -H[ldH*j+i];
-#endifarithm
             idx++;
          }
       }
@@ -292,13 +276,7 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
    else { /* (primme->target == primme_largest) */
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) { 
-#ifdefarithm L_DEFCPLX
-            hVecs[ldhVecs*j+i].r = -H[ldH*j+i].r;
-            hVecs[ldhVecs*j+i].i = -H[ldH*j+i].i;
-#endifarithm
-#ifdefarithm L_DEFREAL
             hVecs[ldhVecs*j+i] = -H[ldH*j+i];
-#endifarithm
          }
       }
    }
@@ -478,12 +456,7 @@ int solve_H_RR_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
  * Return Value
  * ------------
  * int -  0 upon successful return
-#ifdefarithm L_DEFCPLX
- *     - -1 Num_zheev was unsuccessful
-#endifarithm
-#ifdefarithm L_DEFREAL
- *     - -1 Num_dsyev was unsuccessful
-#endifarithm
+ *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
 static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQtV,
@@ -492,9 +465,10 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQt
    @(type) *rwork, int *iwork, primme_params *primme) {
 
    int i, ret;
-   @(type) tzero = @(tzero), tpone = @(tpone);
    double *oldTargetShifts, zero=0.0;
    primme_target oldTarget;
+
+   (void)numConverged; /* unused parameter */
 
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
@@ -508,7 +482,7 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQt
    /* QAQ = QtV*inv(R) */
 
    Num_copy_matrix_@(pre)primme(QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs);
-   Num_trsm_@(pre)primme("R", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
+   Num_trsm_@(pre)primme("R", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
 
    /* Compute eigenpairs of QAQ */
@@ -539,7 +513,7 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQt
 
    /* Transfer back the eigenvectors to V, hVecs = R\hVecs */
 
-   Num_trsm_@(pre)primme("L", "U", "N", "N", basisSize, basisSize, tpone, R, ldR,
+   Num_trsm_@(pre)primme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
    ret = ortho_@(pre)primme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
          basisSize, primme->iseed, machEps, rwork, lrwork, primme);
@@ -547,17 +521,13 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQt
  
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_symm_@(pre)primme("L", "U", basisSize, basisSize, tpone, H,
-      ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
+   Num_symm_@(pre)primme("L", "U", basisSize, basisSize, 1.0, H,
+      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
-      @(type) ztmp = Num_dot_@(pre)primme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
-#ifdefarithm L_DEFCPLX
-      hVals[i] = ztmp.r;
-#endifarithm
-#ifdefarithm L_DEFREAL
-      hVals[i] = ztmp;
-#endifarithm
+      hVals[i] =
+         REAL_PART(Num_dot_@(pre)primme(basisSize, &hVecs[ldhVecs*i], 1,
+                  &rwork[basisSize*i], 1));
    }
 
    return 0;
@@ -590,12 +560,7 @@ static int solve_H_Harm_@(pre)primme(@(type) *H, int ldH, @(type) *QtV, int ldQt
  * Return Value
  * ------------
  * int -  0 upon successful return
-#ifdefarithm L_DEFCPLX
- *     - -1 Num_zheev was unsuccessful
-#endifarithm
-#ifdefarithm L_DEFREAL
- *     - -1 Num_dsyev was unsuccessful
-#endifarithm
+ *     - -1 was unsuccessful
  ******************************************************************************/
 
 static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
@@ -605,7 +570,8 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
-   @(type) tpone = @(tpone), tzero = @(tzero), ztmp;
+
+   (void)targetShiftIndex; /* unused parameter */
 
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
@@ -636,7 +602,7 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
          return NUM_DGESVD_FAILURE;
       }
 #endifarithm
-      lrwork += (int)*(double*)&rwork0;
+      lrwork += (int)REAL_PART(rwork0);
       lrwork += basisSize*basisSize; /* aux for transpose V and symm */
       return lrwork;
    }
@@ -675,13 +641,7 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
    assert(lrwork >= basisSize*basisSize);
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
-#ifdefarithm L_DEFREAL
-         rwork[basisSize*j+i] = hVecs[ldhVecs*i+j];
-#endifarithm
-#ifdefarithm L_DEFCPLX
-         rwork[basisSize*j+i].r =  hVecs[ldhVecs*i+j].r;
-         rwork[basisSize*j+i].i = -hVecs[ldhVecs*i+j].i;
-#endifarithm
+         rwork[basisSize*j+i] = CONJ(hVecs[ldhVecs*i+j]);
       }
    }
    Num_copy_matrix_@(pre)primme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs);
@@ -703,17 +663,12 @@ static int solve_H_Ref_@(pre)primme(@(type) *H, int ldH, @(type) *hVecs,
 
    /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_symm_@(pre)primme("L", "U", basisSize, basisSize, tpone, H,
-      ldH, hVecs, ldhVecs, tzero, rwork, basisSize);
+   Num_symm_@(pre)primme("L", "U", basisSize, basisSize, 1.0, H,
+      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
-      ztmp = Num_dot_@(pre)primme(basisSize, &hVecs[ldhVecs*i], 1, &rwork[basisSize*i], 1);
-#ifdefarithm L_DEFCPLX
-      hVals[i] = ztmp.r;
-#endifarithm
-#ifdefarithm L_DEFREAL
-      hVals[i] = ztmp;
-#endifarithm
+      hVals[i] = REAL_PART(Num_dot_@(pre)primme(basisSize, &hVecs[ldhVecs*i], 1,
+               &rwork[basisSize*i], 1));
    }
 
    return 0;
@@ -792,7 +747,6 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
-   @(type) tpone = @(tpone), tzero = @(tzero);
    double aNorm;
    int ret;
 
@@ -877,7 +831,7 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
 
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
             (aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
-         double ip0 = fabs(*(double*)&hVecs[(i-1)*ldhVecs+basisSize-1]);
+         double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 
          if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
@@ -911,7 +865,7 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
 
          /* hVecsRot(:,arbitraryVecs:i-1) = I */
          for (k=*arbitraryVecs; k<i; k++)
-            hVecsRot[ldhVecsRot*k+k] = tpone;
+            hVecsRot[ldhVecsRot*k+k] = 1.0;
  
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          compute_submatrix_@(pre)primme(&hVecs[ldhVecs*j], aBasisSize,
@@ -926,7 +880,7 @@ int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
 
          /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
          Num_gemm_@(pre)primme("N", "N", basisSize, aBasisSize, aBasisSize,
-               tpone, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, tzero,
+               1.0, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, 0.0,
                rwork0, basisSize);
          Num_copy_matrix_@(pre)primme(rwork0, basisSize, aBasisSize, basisSize,
                &hVecs[ldhVecs*j], ldhVecs);

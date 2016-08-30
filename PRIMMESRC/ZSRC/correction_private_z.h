@@ -39,15 +39,15 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
    int *flag, int basisSize, double *sortedEvals, int *ilev, int blockSize,
    primme_params *primme);
 
-static void Olsen_preconditioner_block(Complex_Z *r, Complex_Z *x,
-   int blockSize, Complex_Z *rwork, primme_params *primme) ;
+static void Olsen_preconditioner_block(complex double *r, complex double *x,
+   int blockSize, complex double *rwork, primme_params *primme) ;
 
-static void apply_preconditioner_block(Complex_Z *v, Complex_Z *result,
+static void apply_preconditioner_block(complex double *v, complex double *result,
    int blockSize, primme_params *primme);
 
-static void setup_JD_projectors(Complex_Z *x, Complex_Z *r, Complex_Z *evecs,
-   Complex_Z *evecsHat, Complex_Z *Kinvx, Complex_Z *xKinvx,
-   Complex_Z **Lprojector, Complex_Z **RprojectorQ, Complex_Z **RprojectorX,
+static void setup_JD_projectors(complex double *x, complex double *r, complex double *evecs,
+   complex double *evecsHat, complex double *Kinvx, complex double *xKinvx,
+   complex double **Lprojector, complex double **RprojectorQ, complex double **RprojectorX,
    int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX,
    int numLocked, int numConverged, primme_params *primme);
 

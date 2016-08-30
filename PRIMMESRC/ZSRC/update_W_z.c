@@ -49,7 +49,7 @@
  * W  A*V
  ******************************************************************************/
 
-void matrixMatvec_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W,
+void matrixMatvec_zprimme(complex double *V, int nLocal, int ldV, complex double *W,
    int ldW, int basisSize, int blockSize, primme_params *primme) {
 
    int i, ONE=1;
@@ -72,12 +72,11 @@ void matrixMatvec_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W,
 
 }
 
-int update_Q_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
-      Complex_Z *Q, int ldQ, Complex_Z *R, int ldR, double targetShift, int basisSize,
-      int blockSize, Complex_Z *rwork, int rworkSize, double machEps, primme_params *primme) {
+int update_Q_zprimme(complex double *V, int nLocal, int ldV, complex double *W, int ldW,
+      complex double *Q, int ldQ, complex double *R, int ldR, double targetShift, int basisSize,
+      int blockSize, complex double *rwork, int rworkSize, double machEps, primme_params *primme) {
 
    int i, j, ret;
-   Complex_Z tzero = {+0.0e+00,+0.0e00};             /*constants*/
 
    /* Return memory requirement */
    if (V == NULL) {
@@ -105,7 +104,7 @@ int update_Q_zprimme(Complex_Z *V, int nLocal, int ldV, Complex_Z *W, int ldW,
    /* Zero the lower triangular part of R */
    for (i=basisSize; i<basisSize+blockSize; i++) {
       for (j=i+1; j<ldR; j++) {
-         R[ldR*i+j] = tzero;
+         R[ldR*i+j] = 0.0;
       }
    }
 

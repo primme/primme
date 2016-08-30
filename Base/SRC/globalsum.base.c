@@ -19,44 +19,27 @@
  *   License along with this library; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *******************************************************************************
- * File: common_numerical.h
+ **********************************************************************
+ * File: globalsum.c
  *
- * Purpose - Contains prototypes for common numerical functions.
+ * Purpose - Wrappers around primme->globalSumDouble
  *
  ******************************************************************************/
 
-#ifndef COMMON_NUMERICAL_H
-#define COMMON_NUMERICAL_H
+#include "primme.h"
+#include "numerical_@(pre).h"
 
-#include <stdlib.h>
-#ifndef max
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
+void globalSum_@(pre)primme(@(type) *sendBuf, @(type) *recvBuf, int count, 
+      primme_params *primme) {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifdefarithm L_DEFCPLX
+   count *= 2;
+#endifarithm
 
-void Num_dcopy_primme(int n, double *x, int incx, double *y, int incy);
-double Num_dlamch_primme(const char *cmach);
-int Num_imax_primme(int numArgs, int val1, int val2, ...);
-double Num_fmin_primme(int numArgs, double val1, double val2, ...);
-double Num_fmax_primme(int numArgs, double val1, double val2, ...);
-
-#if !defined(PRIMME_BLASINT_SIZE)
-#  define PRIMME_BLASINT int
-#else
-#  include <stdint.h>
-#  define GENERIC_INT(N) int ## N ## _t
-#  define XGENERIC_INT(N) GENERIC_INT(N)
-#  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
-#endif
-
-
-#ifdef __cplusplus
+   if (primme && primme->globalSumDouble) {
+      primme->globalSumDouble(sendBuf, recvBuf, &count, primme);
+   }
+   else {
+      Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
+   }
 }
-#endif
-
-#endif /* COMMON_NUMERICAL_H */

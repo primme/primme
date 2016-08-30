@@ -69,6 +69,10 @@ int UDUDecompose_@(pre)primme(@(type) *M, int ldM, @(type) *UDU, int ldUDU,
 
    int info;
 
+   /* TODO: this is not a proper PRIMME function, so it may belong to   */
+   /* numerical.c or as a static function in init.c or restart.c.       */
+   (void)primme; /* unused paramter */
+
    /* Quick return for M with dimension 0 */
 
    if (dimM == 0) return 0;
@@ -146,17 +150,15 @@ int UDUSolve_@(pre)primme(@(type) *UDU, int *ipivot, int dim, @(type) *rhs,
 
    int info;
 
+   /* TODO: this is not a proper PRIMME function, so it may belong to   */
+   /* numerical.c or as a static function in init.c or restart.c.       */
+
    if (dim == 1) {
-#ifdefarithm L_DEFCPLX
-      z_div_primme(sol, rhs, UDU); 
-#endifarithm
-#ifdefarithm L_DEFREAL
       *sol = *rhs/(*UDU); 
-#endifarithm
       info = 0;
    }
    else {
-      Num_@(pre)copy_@(pre)primme(dim, rhs, 1, sol, 1);
+      Num_copy_@(pre)primme(dim, rhs, 1, sol, 1);
 #ifdefarithm L_DEFCPLX
       Num_zhetrs_zprimme("U", dim, 1, UDU, dim, ipivot, sol, dim, &info);
 #endifarithm

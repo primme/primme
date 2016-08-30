@@ -9,13 +9,16 @@ INCLUDE =  -I../COMMONSRC/
 
 .PHONY: clean lib libz
 
-CSOURCE = convergence_z.c correction_z.c primme_z.c init_z.c \
+CSOURCE = globalsum_z.c convergence_z.c correction_z.c primme_z.c init_z.c \
           inner_solve_z.c main_iter_z.c factorize_z.c numerical_z.c ortho_z.c \
 	  restart_z.c locking_z.c solve_H_z.c update_projection_z.c update_W_z.c
 
-COBJS = convergence_z.o correction_z.o primme_z.o init_z.o \
+COBJS = globalsum_z.o convergence_z.o correction_z.o primme_z.o init_z.o \
         inner_solve_z.o main_iter_z.o factorize_z.o numerical_z.o ortho_z.o \
 	restart_z.o locking_z.o solve_H_z.o update_projection_z.o update_W_z.o 
+
+globalsum_z.o: globalsum_z.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c globalsum_z.c
 
 convergence_z.o: convergence_z.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c convergence_z.c

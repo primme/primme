@@ -45,6 +45,7 @@
 #include "update_projection_z.h"
 #include "update_W_z.h"
 #include "numerical_z.h"
+#include "globalsum_z.h"
 
 /******************************************************************************
  * Subroutine main_iter - This routine implements a more general, parallel, 
@@ -90,7 +91,7 @@
  *
  * intWork  Integer work array
  *
- * realWork Complex_Z work array
+ * realWork complex double work array
  *
  * INPUT/OUTPUT arrays and parameters
  * ----------------------------------
@@ -120,7 +121,7 @@
  *       
  ******************************************************************************/
 
-int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs, 
+int main_iter_zprimme(double *evals, int *perm, complex double *evecs, 
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme) {
          
@@ -156,40 +157,36 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    int *iev;                /* Evalue index each block vector corresponds to */
 
    double tol;              /* Required tolerance for residual norms         */
-   Complex_Z *V;              /* Basis vectors                                 */
-   Complex_Z *W;              /* Work space storing A*V                        */
-   Complex_Z *H;              /* Upper triangular portion of V'*A*V            */
-   Complex_Z *M = NULL;       /* The projection Q'*K*Q, where Q = [evecs, x]   */
+   complex double *V;              /* Basis vectors                                 */
+   complex double *W;              /* Work space storing A*V                        */
+   complex double *H;              /* Upper triangular portion of V'*A*V            */
+   complex double *M = NULL;       /* The projection Q'*K*Q, where Q = [evecs, x]   */
                             /* x is the current Ritz vector and K is a       */
                             /* hermitian preconditioner.                     */
-   Complex_Z *UDU = NULL;     /* The factorization of M=Q'KQ                   */
-   Complex_Z *evecsHat = NULL;/* K^{-1}evecs                                   */
-   Complex_Z *rwork;          /* Real work space.                              */
-   Complex_Z *hVecs;          /* Eigenvectors of H                             */
-   Complex_Z *hU=NULL;        /* Left singular vectors of R                    */
-   Complex_Z *previousHVecs;  /* Coefficient vectors retained by               */
+   complex double *UDU = NULL;     /* The factorization of M=Q'KQ                   */
+   complex double *evecsHat = NULL;/* K^{-1}evecs                                   */
+   complex double *rwork;          /* Real work space.                              */
+   complex double *hVecs;          /* Eigenvectors of H                             */
+   complex double *hU=NULL;        /* Left singular vectors of R                    */
+   complex double *previousHVecs;  /* Coefficient vectors retained by               */
                             /* recurrence-based restarting                   */
-   Complex_Z *previousHU=NULL;/* retained hU from previous iteration           */
 
    int numQR;               /* Maximum number of QR factorizations           */
-   Complex_Z *Q = NULL;       /* QR decompositions for harmonic or refined     */
-   Complex_Z *R = NULL;       /* projection: (A-target[i])*V = QR              */
-   Complex_Z *QtV = NULL;     /* Q'*V                                          */
-   Complex_Z *hVecsRot=NULL;  /* transformation of hVecs in arbitrary vectors  */
+   complex double *Q = NULL;       /* QR decompositions for harmonic or refined     */
+   complex double *R = NULL;       /* projection: (A-target[i])*V = QR              */
+   complex double *QtV = NULL;     /* Q'*V                                          */
+   complex double *hVecsRot=NULL;  /* transformation of hVecs in arbitrary vectors  */
 
    double *hVals;           /* Eigenvalues of H                              */
    double *hSVals=NULL;     /* Singular values of R                          */
    double *prevRitzVals;    /* Eigenvalues of H at previous outer iteration  */
                             /* by robust shifting algorithm in correction.c  */
-   double *prevhSvals=NULL; /* previous hSVals                               */
    double *blockNorms;      /* Residual norms corresponding to current block */
                             /* vectors.                                      */
    double smallestResNorm;  /* the smallest residual norm in the block       */
    int reset=0;             /* Flag to reset V and W                         */
    int restartsSinceReset=0;/* Restart since last reset of V and W           */
    int wholeSpace=0;        /* search subspace reach max size                */
-   Complex_Z tpone = {+1.0e+00,+0.0e00};/* constant 1.0 of type Complex_Z */
-   Complex_Z tzero = {+0.0e+00,+0.0e00};/* constant 0.0 of type Complex_Z */
 
    /* Runtime measurement variables for dynamic method switching             */
    primme_CostModel CostModel; /* Structure holding the runtime estimates of */
@@ -211,7 +208,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
       numQR = 0;
    }
 
-   rwork         = (Complex_Z *) realWork;
+   rwork         = (complex double *) realWork;
    V             = rwork; rwork += primme->nLocal*primme->maxBasisSize;
    W             = rwork; rwork += primme->nLocal*primme->maxBasisSize;
    if (numQR > 0) {
@@ -225,9 +222,9 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    H             = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    hVecs         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    previousHVecs = rwork; rwork += primme->maxBasisSize*primme->restartingParams.maxPrevRetain;
-   if (primme->projectionParams.projection == primme_proj_refined) {
+   if (primme->projectionParams.projection == primme_proj_refined
+       || primme->projectionParams.projection == primme_proj_harmonic) {
       hVecsRot   = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
-      previousHU = rwork; rwork += primme->maxBasisSize*primme->restartingParams.maxPrevRetain;
    }
 
    if (primme->correctionParams.precondition && 
@@ -239,17 +236,14 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
       UDU        = rwork; rwork += maxEvecsSize*maxEvecsSize;
    }
 
-   hVals         = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(Complex_Z) + 1;
+   hVals         = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(complex double) + 1;
    if (numQR > 0) {
-      hSVals     = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(Complex_Z) + 1;
+      hSVals     = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(complex double) + 1;
    }
-   prevRitzVals  = (double *)rwork; rwork += (primme->maxBasisSize+primme->numEvals)*sizeof(double)/sizeof(Complex_Z) + 1;
-   if (primme->projectionParams.projection == primme_proj_refined) {
-      prevhSvals = (double *)rwork; rwork += primme->restartingParams.maxPrevRetain*sizeof(double)/sizeof(Complex_Z) + 1;
-   }
-   blockNorms    = (double *)rwork; rwork += primme->maxBlockSize*sizeof(double)/sizeof(Complex_Z) + 1;
+   prevRitzVals  = (double *)rwork; rwork += (primme->maxBasisSize+primme->numEvals)*sizeof(double)/sizeof(complex double) + 1;
+   blockNorms    = (double *)rwork; rwork += primme->maxBlockSize*sizeof(double)/sizeof(complex double) + 1;
 
-   rworkSize     = primme->realWorkSize/sizeof(Complex_Z) - (rwork - (Complex_Z*)realWork);
+   rworkSize     = primme->realWorkSize/sizeof(complex double) - (rwork - (complex double*)realWork);
 
    /* Integer workspace */
 
@@ -270,7 +264,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    LockingProblem = 0;
 
    numPrevRetained = 0;
-   maxRecentlyConverged = blockSize = 0; 
+   blockSize = 0; 
 
    /* ---------------------------------------- */
    /* Set the tolerance for the residual norms */
@@ -293,11 +287,11 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
    /* -------------------------------------- */
 
    if (primme->n == 1) {
-      evecs[0] = tpone;
+      evecs[0] = 1.0;
       matrixMatvec_zprimme(&evecs[0], primme->nLocal, primme->nLocal,
             W, primme->nLocal, 0, 1, primme);
-      evals[0] = W[0].r;
-      V[0] = tpone;
+      evals[0] = REAL_PART(W[0]);
+      V[0] = 1.0;
 
       resNorms[0] = 0.0L;
       primme->stats.numMatvecs++;
@@ -360,7 +354,8 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
       /* Reset convergence flags. This may only reoccur without locking */
 
       primme->initSize = numConverged = numConvergedStored = 0;
-      reset_flags_zprimme(flags, 0, primme->maxBasisSize-1);
+      for (i=0; i<primme->maxBasisSize; i++)
+         flags[i] = UNCONVERGED;
 
       /* Compute the initial H and solve for its eigenpairs */
 
@@ -449,7 +444,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                   primme->maxBasisSize, basisSize, primme->nLocal,
                   &V[basisSize*primme->nLocal], &W[basisSize*primme->nLocal],
                   hVecs, basisSize, hVals, hSVals, flags,
-                  numConverged-numLocked, maxRecentlyConverged, blockNorms,
+                  maxRecentlyConverged, blockNorms,
                   blockSize, availableBlockSize, evecs, numLocked, evals,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
@@ -497,7 +492,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
 
             if (blockSize == 0) {
                blockSize = availableBlockSize;
-               Num_scal_zprimme(blockSize*primme->nLocal, tzero,
+               Num_scal_zprimme(blockSize*primme->nLocal, 0.0,
                   &V[primme->nLocal*basisSize], 1);
             }
             else {
@@ -708,7 +703,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                   primme->maxBasisSize, basisSize, primme->nLocal,
                   NULL, NULL,
                   hVecs, basisSize, hVals, hSVals, flags,
-                  numConverged-numLocked, maxRecentlyConverged, blockNorms,
+                  maxRecentlyConverged, blockNorms,
                   blockSize, availableBlockSize, evecs, numLocked, evals,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
@@ -753,7 +748,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                Num_zero_matrix_zprimme(&hVecsRot[numArbitraryVecs*primme->maxBasisSize], primme->maxBasisSize,
                      basisSize-numArbitraryVecs, primme->maxBasisSize);
                for (i=numArbitraryVecs; i<basisSize; i++)
-                  hVecsRot[primme->maxBasisSize*i+i] = tpone;
+                  hVecsRot[primme->maxBasisSize*i+i] = 1.0;
                permute_vecs_zprimme(hVecsRot, basisSize, basisSize, primme->maxBasisSize, iwork, rwork, iwork+basisSize);
                for (i=j=0; i<basisSize; i++)
                   if (iwork[i] != i) j=i+1;
@@ -766,17 +761,16 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
          /* ------------------ */
 
          restart_zprimme(V, W, primme->nLocal, basisSize, primme->nLocal,
-               hVals, hSVals, flags, iev, &blockSize, blockNorms, evecs, perm, evals,
-               resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot,
-               &numConverged, &numLocked, &numConvergedStored, previousHVecs,
-               &numPrevRetained, primme->maxBasisSize, numGuesses, prevRitzVals,
-               &numPrevRitzVals, H, primme->maxBasisSize, Q, primme->nLocal, R,
-               primme->maxBasisSize, QtV, primme->maxBasisSize,
-               hU, basisSize, 0, hVecs, basisSize, 0, &basisSize,
-               &targetShiftIndex, &numArbitraryVecs, hVecsRot,
-               primme->maxBasisSize, previousHU, primme->maxBasisSize,
-               prevhSvals, &restartsSinceReset, &reset, machEps, rwork, rworkSize,
-               iwork, primme);
+               hVals, hSVals, flags, iev, &blockSize, blockNorms, evecs, perm,
+               evals, resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU,
+               0, ipivot, &numConverged, &numLocked, &numConvergedStored,
+               previousHVecs, &numPrevRetained, primme->maxBasisSize,
+               numGuesses, prevRitzVals, &numPrevRitzVals, H,
+               primme->maxBasisSize, Q, primme->nLocal, R, primme->maxBasisSize,
+               QtV, primme->maxBasisSize, hU, basisSize, 0, hVecs, basisSize, 0,
+               &basisSize, &targetShiftIndex, &numArbitraryVecs, hVecsRot,
+               primme->maxBasisSize, &restartsSinceReset, &reset, machEps,
+               rwork, rworkSize, iwork, primme);
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -932,7 +926,7 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
                perm[i] = i;
             }
 
-            Num_zcopy_zprimme(primme->nLocal*primme->numEvals, V, 1, 
+            Num_copy_zprimme(primme->nLocal*primme->numEvals, V, 1, 
                &evecs[primme->nLocal*primme->numOrthoConst], 1);
 
             /* The target values all remained converged, then return */
@@ -1051,22 +1045,22 @@ int main_iter_zprimme(double *evals, int *perm, Complex_Z *evecs,
  * 
  ******************************************************************************/
 
-int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
-      Complex_Z *H, int ldH, int basisSize, int ldV, Complex_Z *X, Complex_Z *R,
-      Complex_Z *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
-      int numSoftLocked, int numEvals, double *blockNorms, int blockNormsSize,
-      int maxBlockSize, Complex_Z *evecs, int numLocked, double *evals, 
+int prepare_candidates_zprimme(complex double *V, complex double *W, int nLocal,
+      complex double *H, int ldH, int basisSize, int ldV, complex double *X, complex double *R,
+      complex double *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
+      int numEvals, double *blockNorms, int blockNormsSize,
+      int maxBlockSize, complex double *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, Complex_Z *hVecsRot, int ldhVecsRot, int *reset,
-      Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme) {
+      double *smallestResNorm, complex double *hVecsRot, int ldhVecsRot, int *reset,
+      complex double *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i, blki;            /* loop variables */
    double *hValsBlock;     /* contiguous copy of the hVals to be tested */
-   Complex_Z *hVecsBlock;    /* contiguous copy of the hVecs columns to be tested */     
+   complex double *hVecsBlock;    /* contiguous copy of the hVecs columns to be tested */     
    int *flagsBlock;        /* contiguous copy of the flags to be tested */
    double *hValsBlock0;    /* workspace for hValsBlock */
-   Complex_Z *hVecsBlock0;   /* workspace for hVecsBlock */
+   complex double *hVecsBlock0;   /* workspace for hVecsBlock */
    double targetShift;     /* current target shift */
    int ret;                /* returned error */
 
@@ -1075,7 +1069,7 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
    /* -------------------------- */
 
    if (V == NULL) {
-      Complex_Z t;
+      complex double t;
 
       return maxBlockSize+maxBlockSize*basisSize+
          max(max(
@@ -1285,26 +1279,25 @@ int prepare_candidates_zprimme(Complex_Z *V, Complex_Z *W, int nLocal,
  *
  ******************************************************************************/
    
-static int verify_norms(Complex_Z *V, Complex_Z *W, double *hVals, int basisSize,
+static int verify_norms(complex double *V, complex double *W, double *hVals, int basisSize,
       double *resNorms, int *flags, int *converged, double machEps,
-      Complex_Z *rwork, int rworkSize, int *iwork, primme_params *primme) {
+      complex double *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;         /* Loop variable                                     */
    double *dwork = (double *) rwork; /* pointer to cast rwork to double*/
    int ret;       /* return value */
    int reset;    /* doomy variable */
-   Complex_Z ztmp;  /* temp complex var */
 
    /* Compute the residual vectors */
 
    for (i=0; i < basisSize; i++) {
-      {ztmp.r = -hVals[i]; ztmp.i = 0.0L;}
-      Num_axpy_zprimme(primme->nLocal, ztmp, &V[primme->nLocal*i], 1, &W[primme->nLocal*i], 1);
-      ztmp = Num_dot_zprimme(primme->nLocal, &W[primme->nLocal*i], 1, &W[primme->nLocal*i], 1);
-      dwork[i] = ztmp.r;
+      Num_axpy_zprimme(primme->nLocal, -hVals[i], &V[primme->nLocal*i], 1,
+            &W[primme->nLocal*i], 1);
+      dwork[i] = REAL_PART(Num_dot_zprimme(primme->nLocal, &W[primme->nLocal*i],
+               1, &W[primme->nLocal*i], 1));
    }
       
-   primme->globalSumDouble(dwork, resNorms, &basisSize, primme); 
+   globalSum_dprimme(dwork, resNorms, basisSize, primme); 
    for (i=0; i < basisSize; i++)
       resNorms[i] = sqrt(resNorms[i]);
 
@@ -1417,7 +1410,7 @@ static void print_residuals(double *ritzValues, double *blockNorms,
 
 static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
-   int switchto=0, one=1;
+   int switchto=0;
    double est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
 
    /* ----------------------------------------------------------------- */
@@ -1434,7 +1427,7 @@ static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
       /* If more many procs, make sure that all have the same ratio */
       if (primme->numProcs > 1) {
-         (*primme->globalSumDouble)(&ratio, &globalRatio, &one, primme); 
+         globalSum_dprimme(&ratio, &globalRatio, 1, primme); 
          ratio = globalRatio/primme->numProcs;
       }
 
@@ -1465,7 +1458,7 @@ static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
    /* If more many procs, make sure that all have the same ratio */
    if (primme->numProcs > 1) {
-      (*primme->globalSumDouble)(&ratio, &globalRatio, &one, primme); 
+      globalSum_dprimme(&ratio, &globalRatio, 1, primme); 
       ratio = globalRatio/primme->numProcs;
    }
    
@@ -1529,7 +1522,7 @@ static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
  ******************************************************************************/
 static void switch_from_GDpk(primme_CostModel *model, primme_params *primme) {
 
-   int switchto=0, one = 1;
+   int switchto=0;
    double ratio, globalRatio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */
@@ -1562,7 +1555,7 @@ static void switch_from_GDpk(primme_CostModel *model, primme_params *primme) {
 
    /* If more many procs, make sure that all have the same ratio */
    if (primme->numProcs > 1) {
-      (*primme->globalSumDouble)(&ratio, &globalRatio, &one, primme); 
+      globalSum_dprimme(&ratio, &globalRatio, 1, primme); 
       ratio = globalRatio/primme->numProcs;
    }
 

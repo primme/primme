@@ -55,8 +55,8 @@ static int restart_projection_@(pre)primme(@(type) *V, int ldV, @(type) *W,
       int *evecsSize, int ldevecs, @(type) *evecsHat, int ldevecsHat,
       @(type) *M, int ldM, @(type) *UDU, int ldUDU, int *ipivot,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      @(type) *hVecsRot, int ldhVecsRot, double *prevhSvals,
-      int numRecentlyLocked, int rworkSize, @(type) *rwork, int *iwork,
+      @(type) *hVecsRot, int ldhVecsRot,
+      int rworkSize, @(type) *rwork, int *iwork,
       double machEps, primme_params *primme);
 
 static int dtr_@(pre)primme(int numLocked, @(type) *hVecs, double *hVals, int *flags, 
@@ -75,7 +75,7 @@ static int restart_refined(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
       double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      @(type) *hVecsRot, int ldhVecsRot, int numRecentlyLocked, int rworkSize,
+      @(type) *hVecsRot, int ldhVecsRot, int rworkSize,
       @(type) *rwork, int *iwork, double machEps, primme_params *primme);
 
 static int restart_harmonic(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H,
@@ -83,10 +83,9 @@ static int restart_harmonic(@(type) *V, int ldV, @(type) *W, int ldW, @(type) *H
    int ldQtV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int numArbitraryVecs, @(type) *hVecsRot,
-   int ldhVecsRot, @(type) *previousHU, int ldpreviousHU, double *prevhSvals,
-   int numRecentlyLocked, int rworkSize, @(type) *rwork, int *iwork, double machEps, 
-   primme_params *primme);
+   int *targetShiftIndex, int numConverged, int *numArbitraryVecs, @(type) *hVecsRot,
+   int ldhVecsRot, int rworkSize, @(type) *rwork, int *iwork,
+   double machEps, primme_params *primme);
 
 static int ortho_coefficient_vectors_@(pre)primme(@(type) *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, @(type) *hU, int ldhU, @(type) *R,

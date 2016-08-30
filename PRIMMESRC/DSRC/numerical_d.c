@@ -29,16 +29,17 @@
 
 
 #include <stdarg.h>
-#include "numerical_private_d.h"
-#include "numerical_d.h"
-#include "primme.h"
 #include <stdlib.h>   /* free */
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
+#include "numerical_private_d.h"
+#include "numerical_d.h"
+#include "globalsum_d.h"
+#include "primme.h"
 
 /******************************************************************************/
-void Num_dcopy_dprimme(int n, double *x, int incx, double *y, int incy) {
+void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -178,13 +179,11 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
 void Num_compute_residual_dprimme(int n, double eval, double *x, 
    double *Ax, double *r) {
 
-   double ztmp = +0.0e+00;
    int k, M=min(n,PRIMME_BLOCK_SIZE);
-   *(double*)&ztmp = -eval;
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      Num_dcopy_dprimme(M, &Ax[k], 1, &r[k], 1);
-      Num_axpy_dprimme(M, ztmp, &x[k], 1, &r[k], 1);
+      Num_copy_dprimme(M, &Ax[k], 1, &r[k], 1);
+      Num_axpy_dprimme(M, -eval, &x[k], 1, &r[k], 1);
    }
 
 }
@@ -692,11 +691,10 @@ void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx,
 void Num_zero_matrix_dprimme(double *x, int m, int n, int ldx) {
 
    int i,j;
-   double tzero = +0.0e+00;             /*constants*/
 
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
-         x[i*ldx+j] = tzero;
+         x[i*ldx+j] = 0.0;
 } 
 
 
@@ -725,7 +723,6 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
       int i0, double *y, int ldy, int zero) {
 
    int i, j, jm;
-   double tzero = +0.0e+00;             /*constants*/
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
    if (x == y) return;
@@ -737,7 +734,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
          for (i=0; i<n; i++) {
             memmove(&y[i*ldy], &x[i*ldx], sizeof(double)*min(i0+i+1, m));
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
          }
       }
       else {
@@ -746,7 +743,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
             for (j=0, jm=min(i0+i+1, m); j<jm; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
          }
       }
    }
@@ -758,7 +755,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
          for (i=0; i<n; i++) {
             memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(double)*(m-min(i0+i, m)));
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
          }
       }
       else {
@@ -767,7 +764,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
             for (j=i+i0; j<m; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = tzero;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
          }
       }
    }
@@ -888,7 +885,6 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
    int nXb, nXe, nYb, nYe, ldX, ldY;
    double *X, *Y;
    double *tmp, *tmp0;
-   double tpone = +1.0e+00, tzero = +0.0e+00;
 
    /* Return memory requirements */
    if (V == NULL) {
@@ -904,6 +900,8 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
    nYb = min(min(Wo?nWob:INT_MAX, R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
    nYe = max(max(Wo?nWoe:0, R?nRe:0), rnorms?nre:0);
 
+   assert(nXe <= nh || nXb >= nXe); /* Check dimension */
+   assert(nYe <= nh || nYb >= nYe); /* Check dimension */
    assert((nXe-nXb+nYe-nYb)*m <= lrwork); /* Check workspace for X and Y */
    assert(2*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
@@ -916,8 +914,8 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
 
    for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
       /* X = V*h(nXb:nXe-1) */
-      Num_gemm_dprimme("N", "N", m, nXe-nXb, nV, tpone,
-         &V[i], ldV, &h[nXb*ldh], ldh, tzero, X, ldX);
+      Num_gemm_dprimme("N", "N", m, nXe-nXb, nV, 1.0,
+         &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX);
 
       /* X0 = X(nX0b-nXb:nX0e-nXb-1) */
       if (X0) Num_copy_matrix_dprimme(&X[ldX*(nX0b-nXb)], m, nX0e-nX0b,
@@ -933,7 +931,7 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
 
       /* Y = W*h(nYb:nYe-1) */
       if (nYb < nYe) Num_gemm_dprimme("N", "N", m, nYe-nYb, nV,
-            tpone, &W[i], ldV, &h[nYb*ldh], ldh, tzero, Y, ldY);
+            1.0, &W[i], ldV, &h[nYb*ldh], ldh, 0.0, Y, ldY);
 
       /* Wo = Y(nWob-nYb:nWoe-nYb-1) */
       if (Wo) Num_copy_matrix_dprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
@@ -944,19 +942,19 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
          Num_compute_residual_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &R[i+ldR*(j-nRb)]);
          if (Rnorms) {
-            double ztmp;
-            ztmp = Num_dot_dprimme(m, &R[i+ldR*(j-nRb)], 1, &R[i+ldR*(j-nRb)], 1);
-            Rnorms[j-nRb] += *(double*)&ztmp;
+            Rnorms[j-nRb] +=
+               REAL_PART(Num_dot_dprimme(m, &R[i+ldR*(j-nRb)], 1,
+                        &R[i+ldR*(j-nRb)], 1));
          }
       }
 
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
-         double ztmp;
          Num_compute_residual_dprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
                &Y[ldY*(j-nYb)]);
-         ztmp = Num_dot_dprimme(m, &Y[ldY*(j-nYb)], 1, &Y[ldY*(j-nYb)], 1);
-         rnorms[j-nrb] += *(double*)&ztmp;
+         rnorms[j-nrb] += 
+            REAL_PART(Num_dot_dprimme(m, &Y[ldY*(j-nYb)], 1,
+                     &Y[ldY*(j-nYb)], 1));
       }
    }
 
@@ -968,7 +966,7 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
       if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       tmp0 = tmp+j;
-      if (j) primme->globalSumDouble(tmp, tmp0, &j, primme);
+      if (j) globalSum_dprimme(tmp, tmp0, j, primme);
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
@@ -1043,7 +1041,7 @@ void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       }
 
       /* Copy the vector to a buffer for swapping */
-      Num_dcopy_dprimme(m, &vecs[currentIndex*ld], 1, rwork, 1);
+      Num_copy_dprimme(m, &vecs[currentIndex*ld], 1, rwork, 1);
 
       destinationIndex = currentIndex;
       /* Copy vector perm[destinationIndex] into position destinationIndex */
@@ -1051,7 +1049,7 @@ void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       while (perm[destinationIndex] != currentIndex) {
 
          sourceIndex = perm[destinationIndex];
-         Num_dcopy_dprimme(m, &vecs[sourceIndex*ld], 1, 
+         Num_copy_dprimme(m, &vecs[sourceIndex*ld], 1, 
             &vecs[destinationIndex*ld], 1);
          tempIndex = perm[destinationIndex];
          perm[destinationIndex] = destinationIndex;
@@ -1059,7 +1057,7 @@ void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       }
 
       /* Copy the vector from the buffer to where it belongs */
-      Num_dcopy_dprimme(m, rwork, 1, &vecs[destinationIndex*ld], 1);
+      Num_copy_dprimme(m, rwork, 1, &vecs[destinationIndex*ld], 1);
       perm[destinationIndex] = destinationIndex;
 
       currentIndex++;
@@ -1214,8 +1212,6 @@ int compute_submatrix_dprimme(double *X, int nX, int ldX,
    double *H, int nH, int ldH, double *R, int ldR,
    double *rwork, int lrwork) {
 
-   double tpone = +1.0e+00, tzero = +0.0e+00;
-
    /* Return memory requirement */
    if (X == NULL) {
       return nH*nX;
@@ -1225,10 +1221,22 @@ int compute_submatrix_dprimme(double *X, int nX, int ldX,
 
    assert(lrwork >= nH*nX);
 
-   Num_symm_dprimme("L", "U", nH, nX, tpone, H, ldH, X, ldX, tzero, rwork, nH);
+   Num_symm_dprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
    
-   Num_gemm_dprimme("C", "N", nX, nX, nH, tpone, X, ldX, rwork, nH, tzero, R, 
+   Num_gemm_dprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, 
       ldR);
 
    return 0;
+}
+
+double Num_lamch_dprimme(const char *cmach) {
+#ifdef NUM_CRAY
+   _fcd cmach_fcd;
+
+   cmach_fcd = _cptofcd(cmach, strlen(cmach));
+   return (DLAMCH(cmach_fcd));
+#else
+   return (DLAMCH(cmach));
+#endif
+
 }

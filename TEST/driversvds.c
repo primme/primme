@@ -311,7 +311,7 @@ static int real_main (int argc, char *argv[]) {
    primme_get_time(&ut1,&st1);
 #endif
 
-   ret = PREFIX(primme_svds)(svals, COMPLEXZ(svecs), rnorms, &primme_svds);
+   ret = PREFIX(primme_svds)(svals, svecs, rnorms, &primme_svds);
 
    wt2 = primme_get_wtime();
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))

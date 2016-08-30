@@ -27,6 +27,7 @@
  * 
  ******************************************************************************/
 
+#include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include "primme.h"
@@ -35,14 +36,10 @@
 
 static PRIMME_NUM primme_dot(PRIMME_NUM *x, PRIMME_NUM *y, primme_params *primme) {
    PRIMME_NUM aux, aux0;
-#ifdef USE_DOUBLECOMPLEX
-   int one = 2;
-#else
-   int one = 1;
-#endif
-   aux = COMPLEXV(SUF(Num_dot)(primme->nLocal, COMPLEXZ(x), 1, COMPLEXZ(y), 1));
+   int n = (int)(sizeof(PRIMME_NUM)/sizeof(double));
+   aux = SUF(Num_dot)(primme->nLocal, x, 1, y, 1);
    if (primme->globalSumDouble) {
-      primme->globalSumDouble(&aux, &aux0, &one, primme);
+      primme->globalSumDouble(&aux, &aux0, &n, primme);
       return aux0;
    }
    return aux;
@@ -50,14 +47,10 @@ static PRIMME_NUM primme_dot(PRIMME_NUM *x, PRIMME_NUM *y, primme_params *primme
 
 static PRIMME_NUM primme_svds_dot(PRIMME_NUM *x, PRIMME_NUM *y, int trans, primme_svds_params *primme) {
    PRIMME_NUM aux, aux0;
-#ifdef USE_DOUBLECOMPLEX
-   int one = 2;
-#else
-   int one = 1;
-#endif
-   aux = COMPLEXV(SUF(Num_dot)(trans ? primme->nLocal : primme->mLocal, COMPLEXZ(x), 1, COMPLEXZ(y), 1));
+   int n = (int)(sizeof(PRIMME_NUM)/sizeof(double));
+   aux = SUF(Num_dot)(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1);
    if (primme->globalSumDouble) {
-      primme->globalSumDouble(&aux, &aux0, &one, primme);
+      primme->globalSumDouble(&aux, &aux0, &n, primme);
       return aux0;
    }
    return aux;
@@ -139,13 +132,13 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 
    for (i=0; i < primme->initSize; i++) {
       /* Check |V(:,0:i-1)'V(:,i)| < sqrt(machEps) */
-      SUF(Num_gemv)("C", primme->nLocal, i+1, COMPLEXZV(1.0), COMPLEXZ(evecs), primme->nLocal, COMPLEXZ(&evecs[primme->nLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
+      SUF(Num_gemv)("C", primme->nLocal, i+1, 1.0, evecs, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
       if (primme->globalSumDouble) {
          int cols0 = (i+1)*sizeof(PRIMME_NUM)/sizeof(double);
          primme->globalSumDouble(h, h0, &cols0, primme);
       }
       else h0 = h;
-      prod = REAL_PARTZ(SUF(Num_dot)(i, COMPLEXZ(h0), 1, COMPLEXZ(h0), 1));
+      prod = REAL_PART(SUF(Num_dot)(i, h0, 1, h0, 1));
       prod = sqrt(prod);
       if (prod > 1e-7 && primme->procID == 0) {
          fprintf(stderr, "Warning: |EVecs[1:%d-1]'Evec[%d]| = %-3E\n", i+1, i+1, prod);
@@ -175,13 +168,13 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
          retX = 1;
       }
       /* Check angle X and V(:,i) is less than twice the max angle of the eigenvector with largest residual  */
-      SUF(Num_gemv)("C", primme->nLocal, cols, COMPLEXZV(1.0), COMPLEXZ(X), primme->nLocal, COMPLEXZ(&evecs[primme->nLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
+      SUF(Num_gemv)("C", primme->nLocal, cols, 1.0, X, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
       if (primme->globalSumDouble) {
          int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
          primme->globalSumDouble(h, h0, &cols0, primme);
       }
       else h0 = h;
-      prod = REAL_PARTZ(SUF(Num_dot)(cols, COMPLEXZ(h0), 1, COMPLEXZ(h0), 1));
+      prod = REAL_PART(SUF(Num_dot)(cols, h0, 1, h0, 1));
       bound = primme->aNorm*primme->eps/delta;
       if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i+1, evals[i], prod, delta);
@@ -417,13 +410,13 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
          retX = 1;
       }
       /* Check angle X and U(:,i) is less than twice the max angle of the eigenvector with largest residual  */
-      SUF(Num_gemv)("C", primme_svds->mLocal, cols, COMPLEXZV(1.0), COMPLEXZ(X), primme_svds->mLocal, COMPLEXZ(&svecs[primme_svds->mLocal*i]), 1, COMPLEXZV(0.), COMPLEXZ(h), 1);
+      SUF(Num_gemv)("C", primme_svds->mLocal, cols, 1.0, X, primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1, 0., h, 1);
       if (primme_svds->globalSumDouble) {
          int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
          primme_svds->globalSumDouble(h, h0, &cols0, primme_svds);
       }
       else h0 = h;
-      prod = REAL_PARTZ(SUF(Num_dot)(cols, COMPLEXZ(h0), 1, COMPLEXZ(h0), 1));
+      prod = REAL_PART(SUF(Num_dot)(cols, h0, 1, h0, 1));
       bound = primme_svds->aNorm*primme_svds->eps/delta;
       if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i+1, svals[i], prod, delta);

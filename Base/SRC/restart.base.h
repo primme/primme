@@ -29,8 +29,6 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-void reset_flags_@(pre)primme(int *flags, int first, int last);
-
 int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize,
        int ldV, double *hVals, double *hSVals, int *flags, int *iev,
        int *ievSize, double *blockNorms, @(type) *evecs, int *evecsPerm,
@@ -43,9 +41,9 @@ int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize,
        int ldQtV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs,
        int ldhVecs, int newldhVecs, int *restartSizeOutput,
        int *targetShiftIndex, int *numArbitraryVecs, @(type) *hVecsRot,
-       int ldhVecsRot, @(type) *previousHU, int ldpreviousHU,
-       double *prevhSvals, int *restartsSinceReset, int *reset, double machEps,
-       @(type) *rwork, int rworkSize, int *iwork, primme_params *primme);
+       int ldhVecsRot, int *restartsSinceReset, int *reset,
+       double machEps, @(type) *rwork, int rworkSize, int *iwork,
+       primme_params *primme);
 
 int Num_reset_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
    @(type) *h, int nh, int ldh, double *hVals,

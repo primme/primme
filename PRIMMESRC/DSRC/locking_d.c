@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 #include "primme.h"
 #include "wtime.h"
 #include "const.h"
@@ -41,7 +42,6 @@
 #include "restart_d.h"
 #include "factorize_d.h"
 #include "numerical_d.h"
-#include <assert.h>
 
 /*******************************************************************************
  * Subroutine: restart_locking - This routine is only called when locking and

@@ -38,14 +38,14 @@
 #define NUM_DGESVD_FAILURE  -3
 #define NUM_ZGESVD_FAILURE  -4
 
-static int solve_H_Harm_zprimme(Complex_Z *H, int ldH, Complex_Z *QtV, int ldQtV,
-   Complex_Z *R, int ldR, Complex_Z *hVecs, int ldhVecs, Complex_Z *hU, int ldhU,
+static int solve_H_Harm_zprimme(complex double *H, int ldH, complex double *QtV, int ldQtV,
+   complex double *R, int ldR, complex double *hVecs, int ldhVecs, complex double *hU, int ldhU,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
-   Complex_Z *rwork, int *iwork, primme_params *primme);
+   complex double *rwork, int *iwork, primme_params *primme);
 
-static int solve_H_Ref_zprimme(Complex_Z *H, int ldH, Complex_Z *hVecs,
-   int ldhVecs, Complex_Z *hU, int ldhU, double *hSVals, Complex_Z *R, int ldR,
-   double *hVals, int basisSize, int targetShiftIndex, int lrwork, Complex_Z *rwork,
+static int solve_H_Ref_zprimme(complex double *H, int ldH, complex double *hVecs,
+   int ldhVecs, complex double *hU, int ldhU, double *hSVals, complex double *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, int lrwork, complex double *rwork,
    int *iwork, primme_params *primme);
 
 #endif

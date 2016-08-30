@@ -35,62 +35,61 @@
 #define UDUDECOMPOSE_FAILURE     -4
 #define PSEUDOLOCK_FAILURE       -5
 
-static int restart_soft_locking_zprimme(int *restartSize, Complex_Z *V,
-       Complex_Z *W, int nLocal, int basisSize, int ldV, Complex_Z **X,
-       Complex_Z **R, Complex_Z *hVecs, int ldhVecs, int *restartPerm,
+static int restart_soft_locking_zprimme(int *restartSize, complex double *V,
+       complex double *W, int nLocal, int basisSize, int ldV, complex double **X,
+       complex double **R, complex double *hVecs, int ldhVecs, int *restartPerm,
        double *hVals, int *flags, int *iev, int *ievSize, double *blockNorms,
-       Complex_Z *evecs, double *evals, double *resNorms, Complex_Z *evecsHat,
-       int ldevecsHat, Complex_Z *M, int ldM, int *numConverged,
+       complex double *evecs, double *evals, double *resNorms, complex double *evecsHat,
+       int ldevecsHat, complex double *M, int ldM, int *numConverged,
        int *numConvergedStored, int numPrevRetained, int *indexOfPreviousVecs,
-       int *hVecsPerm, int reset, double machEps, Complex_Z *rwork, int rworkSize,
+       int *hVecsPerm, int reset, double machEps, complex double *rwork, int rworkSize,
        int *iwork, primme_params *primme);
 
-static int restart_projection_zprimme(Complex_Z *V, int ldV, Complex_Z *W,
-      int ldW, Complex_Z *H, int ldH, Complex_Z *Q, int nLocal, int ldQ,
-      Complex_Z *R, int ldR, Complex_Z *QtV, int ldQtV, Complex_Z *hU, int ldhU,
-      int newldhU, int indexOfPreviousVecsBeforeRestart, Complex_Z *hVecs,
+static int restart_projection_zprimme(complex double *V, int ldV, complex double *W,
+      int ldW, complex double *H, int ldH, complex double *Q, int nLocal, int ldQ,
+      complex double *R, int ldR, complex double *QtV, int ldQtV, complex double *hU, int ldhU,
+      int newldhU, int indexOfPreviousVecsBeforeRestart, complex double *hVecs,
       int ldhVecs, int newldhVecs, double *hVals, double *hSVals,
       int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, Complex_Z *evecs,
-      int *evecsSize, int ldevecs, Complex_Z *evecsHat, int ldevecsHat,
-      Complex_Z *M, int ldM, Complex_Z *UDU, int ldUDU, int *ipivot,
+      int numPrevRetained, int indexOfPreviousVecs, complex double *evecs,
+      int *evecsSize, int ldevecs, complex double *evecsHat, int ldevecsHat,
+      complex double *M, int ldM, complex double *UDU, int ldUDU, int *ipivot,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      Complex_Z *hVecsRot, int ldhVecsRot, double *prevhSvals,
-      int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork,
+      complex double *hVecsRot, int ldhVecsRot,
+      int rworkSize, complex double *rwork, int *iwork,
       double machEps, primme_params *primme);
 
-static int dtr_zprimme(int numLocked, Complex_Z *hVecs, double *hVals, int *flags, 
-  int basisSize, int numFree, int *iev, Complex_Z *rwork, primme_params *primme);
+static int dtr_zprimme(int numLocked, complex double *hVecs, double *hVals, int *flags, 
+  int basisSize, int numFree, int *iev, complex double *rwork, primme_params *primme);
 
-static int restart_RR(Complex_Z *H, int ldH, Complex_Z *hVecs, int ldhVecs,
+static int restart_RR(complex double *H, int ldH, complex double *hVecs, int ldhVecs,
       int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
       int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
-      double machEps, int rworkSize, Complex_Z *rwork, int *iwork,
+      double machEps, int rworkSize, complex double *rwork, int *iwork,
       primme_params *primme);
 
-static int restart_refined(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
-      int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR,
-      Complex_Z *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      Complex_Z *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+static int restart_refined(complex double *V, int ldV, complex double *W, int ldW, complex double *H,
+      int ldH, complex double *Q, int nLocal, int ldQ, complex double *R, int ldR,
+      complex double *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
+      complex double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
       double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      Complex_Z *hVecsRot, int ldhVecsRot, int numRecentlyLocked, int rworkSize,
-      Complex_Z *rwork, int *iwork, double machEps, primme_params *primme);
+      complex double *hVecsRot, int ldhVecsRot, int rworkSize,
+      complex double *rwork, int *iwork, double machEps, primme_params *primme);
 
-static int restart_harmonic(Complex_Z *V, int ldV, Complex_Z *W, int ldW, Complex_Z *H,
-   int ldH, Complex_Z *Q, int nLocal, int ldQ, Complex_Z *R, int ldR, Complex_Z *QtV,
-   int ldQtV, Complex_Z *hU, int ldhU, int newldhU, Complex_Z *hVecs, int ldhVecs,
+static int restart_harmonic(complex double *V, int ldV, complex double *W, int ldW, complex double *H,
+   int ldH, complex double *Q, int nLocal, int ldQ, complex double *R, int ldR, complex double *QtV,
+   int ldQtV, complex double *hU, int ldhU, int newldhU, complex double *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int numArbitraryVecs, Complex_Z *hVecsRot,
-   int ldhVecsRot, Complex_Z *previousHU, int ldpreviousHU, double *prevhSvals,
-   int numRecentlyLocked, int rworkSize, Complex_Z *rwork, int *iwork, double machEps, 
-   primme_params *primme);
+   int *targetShiftIndex, int numConverged, int *numArbitraryVecs, complex double *hVecsRot,
+   int ldhVecsRot, int rworkSize, complex double *rwork, int *iwork,
+   double machEps, primme_params *primme);
 
-static int ortho_coefficient_vectors_zprimme(Complex_Z *hVecs, int basisSize,
-      int ldhVecs, int indexOfPreviousVecs, Complex_Z *hU, int ldhU, Complex_Z *R,
-      int ldR, int *numPrevRetained, Complex_Z *outR, int ldoutR, double machEps,
-      Complex_Z *rwork, int rworkSize, primme_params *primme);
+static int ortho_coefficient_vectors_zprimme(complex double *hVecs, int basisSize,
+      int ldhVecs, int indexOfPreviousVecs, complex double *hU, int ldhU, complex double *R,
+      int ldR, int *numPrevRetained, complex double *outR, int ldoutR, double machEps,
+      complex double *rwork, int rworkSize, primme_params *primme);
 
 #endif /* RESTART_PRIVATE_H */

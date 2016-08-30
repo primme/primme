@@ -268,21 +268,21 @@ static int real_main (int argc, char *argv[]) {
          double norm;
          int j;
          for (i=primme.numOrthoConst; i<min(cols, primme.initSize+primme.numOrthoConst); i++) {
-            SUF(Num_larnv)(2, primme.iseed, primme.nLocal, COMPLEXZ(r));
-            norm = sqrt(REAL_PARTZ(SUF(Num_dot)(primme.nLocal, COMPLEXZ(r), 1, COMPLEXZ(r), 1)));
+            SUF(Num_larnv)(2, primme.iseed, primme.nLocal, r);
+            norm = sqrt(REAL_PART(SUF(Num_dot)(primme.nLocal, r, 1, r, 1)));
             for (j=0; j<primme.nLocal; j++)
                evecs[primme.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          free(r);
       }
       SUF(Num_larnv)(2, primme.iseed, (primme.initSize+primme.numOrthoConst-i)*primme.nLocal,
-                     COMPLEXZ(&evecs[primme.nLocal*i]));
+                     &evecs[primme.nLocal*i]);
    } else if (primme.numOrthoConst > 0) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
    } else if (primme.initSize > 0) {
-      SUF(Num_larnv)(2, primme.iseed, primme.initSize*primme.nLocal, COMPLEXZ(evecs));
+      SUF(Num_larnv)(2, primme.iseed, primme.initSize*primme.nLocal, evecs);
    } else {
-      SUF(Num_larnv)(2, primme.iseed, primme.nLocal, COMPLEXZ(evecs));
+      SUF(Num_larnv)(2, primme.iseed, primme.nLocal, evecs);
    }
 
 
@@ -295,7 +295,7 @@ static int real_main (int argc, char *argv[]) {
    primme_get_time(&ut1,&st1);
 #endif
 
-   ret = PREFIX(primme)(evals, COMPLEXZ(evecs), rnorms, &primme);
+   ret = PREFIX(primme)(evals, evecs, rnorms, &primme);
 
    wt2 = primme_get_wtime();
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))

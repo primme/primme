@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "primme.h"
 #include "wtime.h"
 #include "inner_solve_d.h"
@@ -36,6 +37,7 @@
 #include "factorize_d.h"
 #include "update_W_d.h"
 #include "numerical_d.h"
+#include "globalsum_d.h"
 
 
 /*******************************************************************************
@@ -159,8 +161,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    double LTolerance, ETolerance=0.0;
    int isConv;
 
-   /* Some constants                                                          */
-   double tzero = +0.0e+00;
+   (void)evecsHat; /* unused parameter */
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -171,7 +172,8 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
    workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
-   
+   assert(rworkSize >= primme->nLocal*4 + 2*(primme->numOrthoConst+primme->numEvals));
+
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */
    /* -----------------------------------------*/
@@ -223,7 +225,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
    /* --------------------------------------------------------*/
 
    /* Assume zero initial guess */
-   Num_dcopy_dprimme(primme->nLocal, r, 1, g, 1);
+   Num_copy_dprimme(primme->nLocal, r, 1, g, 1);
 
    ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
            x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
@@ -238,8 +240,8 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
       
    Theta_prev = 0.0L;
    eval_prev = eval;
-   rho_prev = dist_dot(g, 1, d, 1, primme);
-      
+   rho_prev = REAL_PART(dist_dot(g, 1, d, 1, primme));
+
    /* Initialize recurrences used to dynamically update the eigenpair */
 
    Beta_prev = Delta_prev = Psi_prev = 0.0L;
@@ -247,8 +249,8 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
    /* other initializations */
    for (i = 0; i < primme->nLocal; i++) {
-      delta[i] = tzero;
-      sol[i] = tzero;
+      delta[i] = 0.0;
+      sol[i] = 0.0;
    }
 
    numIts = 0;
@@ -261,7 +263,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
       apply_projected_matrix(d, shift, Lprojector, sizeLprojector, 
                              w, workSpace, primme);
-      sigma_prev = dist_dot(d, 1, w, 1, primme);
+      sigma_prev = REAL_PART(dist_dot(d, 1, w, 1, primme));
 
       if (sigma_prev == 0.0L) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -280,7 +282,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
 
       Num_axpy_dprimme(primme->nLocal, -alpha_prev, w, 1, g, 1);
 
-      Theta = dist_dot(g, 1, g, 1, primme);
+      Theta = REAL_PART(dist_dot(g, 1, g, 1, primme));
       Theta = sqrt(Theta);
       Theta = Theta/tau_prev;
       c = 1.0L/sqrt(1+Theta*Theta);
@@ -326,7 +328,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
          /* Perform the update: update the eigenvalue and the square of the  */
          /* residual norm.                                                   */
          
-         dot_sol = dist_dot(sol, 1, sol, 1, primme);
+         dot_sol = REAL_PART(dist_dot(sol, 1, sol, 1, primme));
          eval_updated = shift + (eval - shift + 2*Beta + Gamma)/(1 + dot_sol);
          eres2_updated = (tau*tau)/(1 + dot_sol) + 
             ((eval - shift + Beta)*(eval - shift + Beta))/(1 + dot_sol) - 
@@ -441,7 +443,7 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm,
                ret = APPLYPROJECTEDPRECONDITIONER_FAILURE;
                break;
          }
-         rho = dist_dot(g, 1, w, 1, primme);
+         rho = REAL_PART(dist_dot(g, 1, w, 1, primme));
          beta = rho/rho_prev;
          Num_axpy_dprimme(primme->nLocal, beta, d, 1, w, 1);
          /* Alternate between w and d buffers in successive iterations
@@ -528,7 +530,7 @@ static int apply_projected_preconditioner(double *v, double *Q,
       primme->stats.numPreconds += 1;
    }
    else {
-      Num_dcopy_dprimme(primme->nLocal, v, 1, result, 1);
+      Num_copy_dprimme(primme->nLocal, v, 1, result, 1);
    }
 
    ret = apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
@@ -582,9 +584,6 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
    int *ipivot, int numCols, double *v, double *rwork, 
    primme_params *primme) {
 
-   int count;
-   double tpone = +1.0e+00, tzero = +0.0e+00, tmone = -1.0e+00;
-
    if (numCols > 0) {    /* there is a projector to be applied */
 
       int ret;
@@ -603,7 +602,7 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
 
          /* Backsolve only if there is a skew projector */
          if (UDU != NULL) {
-            if (UDU[0] == 0.0L) {
+            if (ABS(UDU[0]) == 0.0) {
                return UDUSOLVE_FAILURE;
             }
             overlaps[0] = overlaps[0]/UDU[0];
@@ -616,12 +615,11 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
          /* More than one vectors. Use BLAS 2.                    */
          /* ------------------------------------------------------*/
          /* Compute workspace = Q'*v */
-         Num_gemv_dprimme("C", primme->nLocal, numCols, tpone, Q, 
-                      primme->nLocal, v, 1, tzero, workSpace, 1);
+         Num_gemv_dprimme("C", primme->nLocal, numCols, 1.0, Q, 
+                      primme->nLocal, v, 1, 0.0, workSpace, 1);
 
          /* Global sum: overlaps = Q'*v */
-         count = numCols;
-         (*primme->globalSumDouble)(workSpace, overlaps, &count, primme);   
+         globalSum_dprimme(workSpace, overlaps, numCols, primme);   
 
          /* --------------------------------------------*/
          /* Backsolve only if there is a skew projector */
@@ -637,13 +635,13 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
                return UDUSOLVE_FAILURE;
             }
             /* Compute v=v-Qhat*workspace */
-            Num_gemv_dprimme("N", primme->nLocal, numCols, tmone, Qhat, 
-                         primme->nLocal, workSpace, 1, tpone, v, 1);
+            Num_gemv_dprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
+                         primme->nLocal, workSpace, 1, 1.0, v, 1);
          }
          else  {
             /* Compute v=v-Qhat*overlaps  */
-            Num_gemv_dprimme("N", primme->nLocal, numCols, tmone, Qhat, 
-                         primme->nLocal, overlaps, 1, tpone, v, 1);
+            Num_gemv_dprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
+                         primme->nLocal, overlaps, 1, 1.0, v, 1);
          } /* UDU==null */
       } /* numCols != 1 */
    } /* numCols > 0 */
@@ -680,7 +678,6 @@ static int apply_skew_projector(double *Q, double *Qhat, double *UDU,
 
 static void apply_projected_matrix(double *v, double shift, double *Q, 
    int dimQ, double *result, double *rwork, primme_params *primme) {
-   
 
    matrixMatvec_dprimme(v, primme->nLocal, primme->nLocal, result,
          primme->nLocal, 0, 1, primme);
@@ -715,21 +712,17 @@ static void apply_projected_matrix(double *v, double shift, double *Q,
 static void apply_projector(double *Q, int numCols, double *v, 
    double *rwork, primme_params *primme) {
 
-   int count;          /* globalSum counter                 */
    double *overlaps;  /* overlaps of v with columns of Q   */
    double *workSpace; /* Used for computing local overlaps */
-
-   double tpone = +1.0e+00, tzero = +0.0e+00, tmone = -1.0e+00;
 
    overlaps = rwork;
    workSpace = overlaps + numCols;
 
-   Num_gemv_dprimme("C", primme->nLocal, numCols, tpone, Q, primme->nLocal,
-      v, 1, tzero, workSpace, 1);
-   count = numCols;
-   (*primme->globalSumDouble)(workSpace, overlaps, &count, primme);   
-   Num_gemv_dprimme("N", primme->nLocal, numCols, tmone, Q, primme->nLocal,
-      overlaps, 1, tpone, v, 1);
+   Num_gemv_dprimme("C", primme->nLocal, numCols, 1.0, Q, primme->nLocal,
+      v, 1, 0.0, workSpace, 1);
+   globalSum_dprimme(workSpace, overlaps, numCols, primme);   
+   Num_gemv_dprimme("N", primme->nLocal, numCols, -1.0, Q, primme->nLocal,
+      overlaps, 1, 1.0, v, 1);
 
 }
 
@@ -755,11 +748,9 @@ static double dist_dot(double *x, int incx,
    double *y, int incy, primme_params *primme) {
                                                                                 
    double temp, product;
-   int count;
                                                                                 
    temp = Num_dot_dprimme(primme->nLocal, x, incx, y, incy);
-   count = 1;
-   (*primme->globalSumDouble)(&temp, &product, &count, primme);
+   globalSum_dprimme(&temp, &product, 1, primme);
    return product;
                                                                                 
 }

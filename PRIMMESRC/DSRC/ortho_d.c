@@ -62,6 +62,7 @@
 #include "primme.h"         
 #include "numerical_d.h"
 #include "ortho_d.h"
+#include "globalsum_d.h"
  
 
 /**********************************************************************
@@ -115,7 +116,6 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    primme_params *primme) {
               
    int i, j;                /* Loop indices */
-   int count;
    int minWorkSize;         
    int nOrth, reorth;
    int randomizations;
@@ -127,11 +127,9 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
                                   /* for the rest */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
-   double s0=0.0, s02=0.0, s1=0.0, s00=0.0;
+   double s0=0.0, s02=0.0, s1=0.0, s12=0.0, s00=0.0;
    double temp;
-   double ztmp=+0.0e+00;
    double *overlaps;
-   double tpone = +1.0e+00, tzero = +0.0e+00, tmone = -1.0e+00;
    FILE *outputFile;
 
    messages = (primme && primme->procID == 0 && primme->printLevel >= 3
@@ -158,7 +156,7 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    if (R)
       for(i=b1; i <= b2; i++)
          for (j=0; j <= i; j++)
-            R[ldR*i+j] = tzero;
+            R[ldR*i+j] = 0.0;
 
    /*---------------------------------------------------*/
    /* main loop to orthogonalize new vectors one by one */
@@ -189,60 +187,55 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
          nOrth++;
 
          if (nOrth == 1) {
-            ztmp = Num_dot_dprimme(nLocal, &basis[ldBasis*i], 1, 
+            s02 = Num_dot_dprimme(nLocal, &basis[ldBasis*i], 1, 
                                            &basis[ldBasis*i], 1);
          }
             
          if (i > 0) {
-            Num_gemv_dprimme("C", nLocal, i, tpone, basis, ldBasis, 
-               &basis[ldBasis*i], 1, tzero, rwork, 1);
+            Num_gemv_dprimme("C", nLocal, i, 1.0, basis, ldBasis, 
+               &basis[ldBasis*i], 1, 0.0, rwork, 1);
          }
 
          if (numLocked > 0) {
-            Num_gemv_dprimme("C", nLocal, numLocked, tpone, locked, ldLocked,
-               &basis[ldBasis*i], 1, tzero, &rwork[i], 1);
+            Num_gemv_dprimme("C", nLocal, numLocked, 1.0, locked, ldLocked,
+               &basis[ldBasis*i], 1, 0.0, &rwork[i], 1);
          }
 
-         rwork[i+numLocked] = ztmp;
+         rwork[i+numLocked] = s02;
          overlaps = &rwork[i+numLocked+1];
-         count = i + numLocked + 1;
-         (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
-            (rwork, overlaps, &count, primme);
+         globalSum_dprimme(rwork, overlaps, i + numLocked + 1, primme);
 
          if (R != NULL) {
-             Num_axpy_dprimme(i, tpone, overlaps, 1, &R[ldR*i], 1);
+             Num_axpy_dprimme(i, 1.0, overlaps, 1, &R[ldR*i], 1);
          }
 
          if (numLocked > 0) { /* locked array most recently accessed */
-            Num_gemv_dprimme("N", nLocal, numLocked, tmone, locked, ldLocked, 
-               &overlaps[i], 1, tpone, &basis[ldBasis*i], 1); 
+            Num_gemv_dprimme("N", nLocal, numLocked, -1.0, locked, ldLocked, 
+               &overlaps[i], 1, 1.0, &basis[ldBasis*i], 1); 
          }
 
          if (i > 0) {
-            Num_gemv_dprimme("N", nLocal, i, tmone, basis, ldBasis, 
-               overlaps, 1, tpone, &basis[ldBasis*i], 1);
+            Num_gemv_dprimme("N", nLocal, i, -1.0, basis, ldBasis, 
+               overlaps, 1, 1.0, &basis[ldBasis*i], 1);
          }
  
          if (nOrth == 1) {
-            s02 = overlaps[i+numLocked];
-            s00 = s0 = sqrt(s02);
+            s00 = s0 = sqrt(s02 = REAL_PART(overlaps[i+numLocked]));
          }
 
          /* Compute the norm of the resulting vector implicitly */
          
-         temp = Num_dot_dprimme(i+numLocked,overlaps,1,overlaps,1);
-         s1 = sqrt(max(0.0L, s02-temp));
+         temp = REAL_PART(Num_dot_dprimme(i+numLocked,overlaps,1,overlaps,1));
+         s1 = sqrt(s12 = max(0.0L, s02-temp));
          
          /* s1 decreased too much. Numerical problems expected   */
          /* with its implicit computation. Compute s1 explicitly */
          
          if ( s1 < s0*sqrt(machEps) || nOrth > 1 || !primme) {  
-            temp = Num_dot_dprimme(nLocal, &basis[ldBasis*i], 1, 
-                                           &basis[ldBasis*i], 1);
-            count = 1;
-            (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
-               (&temp, &s1, &count, primme);
-            s1 = sqrt(s1);
+            temp = REAL_PART(Num_dot_dprimme(nLocal, &basis[ldBasis*i], 1, 
+                                           &basis[ldBasis*i], 1));
+            globalSum_dprimme(&temp, &s12, 1, primme);
+            s1 = sqrt(s12);
          }
 
          if (R && (s1 <= machEps*s00 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
@@ -250,8 +243,8 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
                fprintf(outputFile, "Zeroing column %d\n", i);
             }
             /* No randomization when computing the QR decomposition */
-            Num_scal_dprimme(nLocal, tzero, &basis[ldBasis*i], 1);
-            R[ldR*i + i] = tzero;
+            Num_scal_dprimme(nLocal, 0.0, &basis[ldBasis*i], 1);
+            R[ldR*i + i] = 0.0;
             reorth = 0;
          }
          else if (s1 <= machEps*s00) {
@@ -264,23 +257,20 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
          else if (s1 <= tol*s0 || (!primme && nOrth < maxNumOrthos)) {
             /* No numerical benefit in normalizing the vector before reortho */
             s0 = s1;
-            s02 = s1*s1;
+            s02 = s12;
          }
          else {
             if (R != NULL) {
                if (!primme || nOrth == 1) {
-                  temp = Num_dot_dprimme(nLocal,&basis[ldBasis*i], 1,
-                        &basis[ldBasis*i],1);
-                  count = 1;
-                  (primme ? primme->globalSumDouble : primme_seq_globalSumDouble)
-                     (&temp, &s1, &count, primme);
+                  temp = REAL_PART(Num_dot_dprimme(nLocal,
+                           &basis[ldBasis*i], 1, &basis[ldBasis*i], 1));
+                  globalSum_dprimme(&temp, &s1, 1, primme);
                   s1 = sqrt(s1);
                }
                R[ldR*i + i] = s1;
             }
 
-            ztmp = 1.0L/s1;
-            Num_scal_dprimme(nLocal, ztmp, &basis[ldBasis*i], 1);
+            Num_scal_dprimme(nLocal, 1.0/s1, &basis[ldBasis*i], 1);
             reorth = 0;
          } 
  
@@ -291,8 +281,8 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    /*
    if (numLocked) {
       double *H = (double*)malloc(sizeof(double)*numLocked*numLocked);
-      Num_gemm_dprimme("C", "N", numLocked, numLocked, nLocal, tpone, locked,
-            ldLocked, locked, ldLocked, tzero, H, numLocked);
+      Num_gemm_dprimme("C", "N", numLocked, numLocked, nLocal, 1.0, locked,
+            ldLocked, locked, ldLocked, 0.0, H, numLocked);
       for(i=0; i < numLocked; i++) {
          for(j=0; j < i; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
          assert(fabs(1 - *(double*)&H[numLocked*i+i]) < 1e-13);
@@ -301,8 +291,8 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    }
    if (b2+1) {
       double *H = (double*)malloc(sizeof(double)*(b2+1)*(b2+1));
-      Num_gemm_dprimme("C", "N", b2+1, b2+1, nLocal, tpone, basis,
-            ldBasis, basis, ldBasis, tzero, H, b2+1);
+      Num_gemm_dprimme("C", "N", b2+1, b2+1, nLocal, 1.0, basis,
+            ldBasis, basis, ldBasis, 0.0, H, b2+1);
       for(i=0; i < b2+1; i++) {
          for(j=0; j < i; j++) assert(fabs(*(double*)&H[(b2+1)*i+j]) < 1e-13);
          assert(*(double*)&H[(b2+1)*i+i] == 0.0 || fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
@@ -311,8 +301,8 @@ int ortho_dprimme(double *basis, int ldBasis, double *R, int ldR,
    }
    if (numLocked) {
       double *H = (double*)malloc(sizeof(double)*(b2+1)*numLocked);
-      Num_gemm_dprimme("C", "N", numLocked, b2+1, nLocal, tpone, locked,
-            ldLocked, basis, ldBasis, tzero, H, numLocked);
+      Num_gemm_dprimme("C", "N", numLocked, b2+1, nLocal, 1.0, locked,
+            ldLocked, basis, ldBasis, 0.0, H, numLocked);
       for(i=0; i < b2+1; i++) {
          for(j=0; j < numLocked; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
       }
@@ -347,10 +337,9 @@ int ortho_single_iteration_dprimme(double *Q, int mQ, int nQ, int ldQ, double *X
    int *inX, int nX, int ldX, double *overlaps, double *norms, double *rwork, int lrwork,
    primme_params *primme) {
 
-   int i, j, M=PRIMME_BLOCK_SIZE, m=min(M, mQ), count;
+   int i, j, M=PRIMME_BLOCK_SIZE, m=min(M, mQ);
    double *y, *y0, *X0;
    double *norms0;
-   double tpone = +1.0e+00, tzero = +0.0e+00, tmone = -1.0e+00;
 
    /* Return memory requirement */
    if (Q == NULL) {
@@ -377,46 +366,44 @@ int ortho_single_iteration_dprimme(double *Q, int mQ, int nQ, int ldQ, double *X
 
    /* y = Q'*X */
    if (!inX) {
-      Num_gemm_dprimme("C", "N", nQ, nX, mQ, tpone, Q, ldQ, X, ldX, tzero, y, nQ);
+      Num_gemm_dprimme("C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ);
    }
    else {
       for (i=0; i<nQ*nX; i++)
-         y[i] = tzero;
+         y[i] = 0.0;
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
          Num_copy_matrix_columns_dprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
-         Num_gemm_dprimme("C", "N", nQ, nX, m, tpone, &Q[i], ldQ, X0, m, tpone,
+         Num_gemm_dprimme("C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, X0, m, 1.0,
                y, nQ);
       }
    }
 
    /* Store the reduction of y in y0 */
-   count = nQ*nX*(sizeof(double)/sizeof(double));
-   primme->globalSumDouble(y, y0, &count, primme);
+   globalSum_dprimme(y, y0, nQ*nX, primme);
    
    /* overlaps(i) = norm(y0(:,i))^2 */
    for (i=0; i<nX; i++) {
-      double ztmp = Num_dot_dprimme(nQ, &y0[nQ*i], 1, &y0[nQ*i], 1);
-      overlaps[i] = sqrt(*(double*)&ztmp);
+      overlaps[i] =
+         sqrt(REAL_PART(Num_dot_dprimme(nQ, &y0[nQ*i], 1, &y0[nQ*i], 1)));
    }
 
    /* X = X - Q*y0; norms0(i) = norms(X(i))^2 */
    if (norms) for (i=0; i<nX; i++) norms0[i] = 0.0;
    for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
-      Num_gemm_dprimme("N", "N", m, nX, nQ, tmone, &Q[i], ldQ, y0, nQ, tpone,
+      Num_gemm_dprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, y0, nQ, 1.0,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
          Num_copy_matrix_columns_dprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
       }
       if (norms) for (j=0; j<nX; j++) {
          double *v = inX ? &X0[j*m] : &X[j*ldX+i];
-         double ztmp = Num_dot_dprimme(m, v, 1, v, 1);
-         norms0[j] += *(double*)&ztmp;
+         norms0[j] += REAL_PART(Num_dot_dprimme(m, v, 1, v, 1));
       }
    }
 
    if (norms) {
       /* Store the reduction of norms0 in norms */
-      primme->globalSumDouble(norms0, norms, &nX, primme);
+      globalSum_dprimme(norms0, norms, nX, primme);
  
       for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
    }

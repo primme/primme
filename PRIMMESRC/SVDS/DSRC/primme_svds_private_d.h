@@ -46,4 +46,6 @@ static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_par
 static void Num_scalInv_dmatrix(double *x, int m, int n, int ldx, double *factors,
                                        primme_svds_params *primme_svds);
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
+static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
+      primme_svds_params *primme_svds);
 #endif

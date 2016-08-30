@@ -29,9 +29,9 @@
 #ifndef CONVERGENCE_PRIVATE_H
 #define CONVERGENCE_PRIVATE_H
 
-static int check_practical_convergence(Complex_Z *R, int nLocal, int ldR,
-   Complex_Z *evecs, int evecsSize, int ldevecs, int left, int *iev,
-   int numToProject, int *flags, double *blockNorms, double tol, Complex_Z *rwork,
+static int check_practical_convergence(complex double *R, int nLocal, int ldR,
+   complex double *evecs, int evecsSize, int ldevecs, int left, int *iev,
+   int numToProject, int *flags, double *blockNorms, double tol, complex double *rwork,
    int rworkSize, primme_params *primme);
 
 #endif /* CONVERGENCE_PRIVATE_H */

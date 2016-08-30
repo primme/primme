@@ -35,15 +35,17 @@
 #define ALLOCATE_WORKSPACE_FAILURE -1
 #define MALLOC_FAILURE             -3
 
-static int primme_svds_check_input(double *svals, Complex_Z *svecs, 
+static int primme_svds_check_input(double *svals, complex double *svecs, 
         double *resNorms, primme_svds_params *primme_svds);
-static Complex_Z* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, Complex_Z *svecs, double *rnorms, int *allocatedTargetShifts);
+static complex double* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
+      double *svals, complex double *svecs, double *rnorms, int *allocatedTargetShifts);
 static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, Complex_Z *svecs, double *rnorms, int allocatedTargetShifts);
+      double *svals, complex double *svecs, double *rnorms, int allocatedTargetShifts);
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
 static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
-static void Num_scalInv_zmatrix(Complex_Z *x, int m, int n, int ldx, double *factors,
+static void Num_scalInv_zmatrix(complex double *x, int m, int n, int ldx, double *factors,
                                        primme_svds_params *primme_svds);
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
+static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
+      primme_svds_params *primme_svds);
 #endif

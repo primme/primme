@@ -69,6 +69,10 @@ int UDUDecompose_dprimme(double *M, int ldM, double *UDU, int ldUDU,
 
    int info;
 
+   /* TODO: this is not a proper PRIMME function, so it may belong to   */
+   /* numerical.c or as a static function in init.c or restart.c.       */
+   (void)primme; /* unused paramter */
+
    /* Quick return for M with dimension 0 */
 
    if (dimM == 0) return 0;
@@ -136,12 +140,15 @@ int UDUSolve_dprimme(double *UDU, int *ipivot, int dim, double *rhs,
 
    int info;
 
+   /* TODO: this is not a proper PRIMME function, so it may belong to   */
+   /* numerical.c or as a static function in init.c or restart.c.       */
+
    if (dim == 1) {
       *sol = *rhs/(*UDU); 
       info = 0;
    }
    else {
-      Num_dcopy_dprimme(dim, rhs, 1, sol, 1);
+      Num_copy_dprimme(dim, rhs, 1, sol, 1);
       Num_dsytrs_dprimme("U", dim, 1, UDU, dim, ipivot, sol, dim, &info);
    }
 

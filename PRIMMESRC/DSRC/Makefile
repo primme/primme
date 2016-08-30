@@ -9,13 +9,16 @@ INCLUDE = -I../COMMONSRC
 
 .PHONY: clean lib libd
 
-CSOURCE = convergence_d.c correction_d.c primme_d.c init_d.c \
+CSOURCE = globalsum_d.c convergence_d.c correction_d.c primme_d.c init_d.c \
           inner_solve_d.c main_iter_d.c factorize_d.c numerical_d.c ortho_d.c \
 	  restart_d.c locking_d.c solve_H_d.c update_projection_d.c update_W_d.c
 
-COBJS = convergence_d.o correction_d.o primme_d.o init_d.o \
+COBJS = globalsum_d.o convergence_d.o correction_d.o primme_d.o init_d.o \
         inner_solve_d.o main_iter_d.o factorize_d.o numerical_d.o ortho_d.o \
 	restart_d.o locking_d.o solve_H_d.o update_projection_d.o update_W_d.o 
+
+globalsum_d.o: globalsum_d.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c globalsum_d.c
 
 convergence_d.o: convergence_d.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c convergence_d.c

@@ -1,9 +1,6 @@
 #
 
-CDOTH = ../../PRIMMESRC/COMMONSRC/common_numerical.h \
-	../../PRIMMESRC/COMMONSRC/common_numerical_private.h \
-	../../PRIMMESRC/COMMONSRC/Complexz.h \
-	../../PRIMMESRC/COMMONSRC/const.h \
+CDOTH = ../../PRIMMESRC/COMMONSRC/const.h \
 	../../PRIMMESRC/COMMONSRC/errors_private.h  \
 	../../PRIMMESRC/COMMONSRC/primme.h \
 	../../PRIMMESRC/COMMONSRC/primme_interface.h \
@@ -11,8 +8,7 @@ CDOTH = ../../PRIMMESRC/COMMONSRC/common_numerical.h \
 	../../PRIMMESRC/COMMONSRC/primme_f77_private.h \
 	../../PRIMMESRC/COMMONSRC/wtime.h
 
-CSOURCE = ../../PRIMMESRC/COMMONSRC/common_numerical.c \
-	../../PRIMMESRC/COMMONSRC/Complexz.c \
+CSOURCE = \
 	../../PRIMMESRC/COMMONSRC/errors.c \
 	../../PRIMMESRC/COMMONSRC/primme_f77.c \
 	../../PRIMMESRC/COMMONSRC/primme_interface.c \
@@ -21,15 +17,6 @@ CSOURCE = ../../PRIMMESRC/COMMONSRC/common_numerical.c \
 all: $(CSOURCE) $(CDOTH) depends
 
 #---------  PRIMMESRC/COMMONSRC   .h files -------------------------
-
-../../PRIMMESRC/COMMONSRC/common_numerical.h: common_numerical.h
-	cp common_numerical.h ../../PRIMMESRC/COMMONSRC/common_numerical.h
-
-../../PRIMMESRC/COMMONSRC/common_numerical_private.h: common_numerical_private.h
-	cp common_numerical_private.h ../../PRIMMESRC/COMMONSRC/common_numerical_private.h
-
-../../PRIMMESRC/COMMONSRC/Complexz.h: Complexz.h
-	cp Complexz.h ../../PRIMMESRC/COMMONSRC/Complexz.h 
 
 ../../PRIMMESRC/COMMONSRC/const.h: const.h
 	cp const.h ../../PRIMMESRC/COMMONSRC/const.h 
@@ -53,12 +40,6 @@ all: $(CSOURCE) $(CDOTH) depends
 	cp wtime.h ../../PRIMMESRC/COMMONSRC/wtime.h
 
 #---------  PRIMMESRC/COMMONSRC   .c files -------------------------
-
-../../PRIMMESRC/COMMONSRC/common_numerical.c: common_numerical.c
-	cp common_numerical.c ../../PRIMMESRC/COMMONSRC/common_numerical.c
-
-../../PRIMMESRC/COMMONSRC/Complexz.c: Complexz.c
-	cp Complexz.c ../../PRIMMESRC/COMMONSRC/Complexz.c
 
 ../../PRIMMESRC/COMMONSRC/errors.c: errors.c
 	cp errors.c ../../PRIMMESRC/COMMONSRC/errors.c 
