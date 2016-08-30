@@ -33,23 +33,23 @@
 #define APPLYSKEWPROJECTOR_FAILURE           -2
 #define UDUSOLVE_FAILURE                     -3
 
-static int apply_projected_preconditioner(complex double *v, complex double *Q, 
-   complex double *RprojectorQ, complex double *x, complex double *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, complex double *xKinvx, 
-   complex double *UDU, int *ipivot, complex double *result, complex double *rwork, 
+static int apply_projected_preconditioner(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *Q, 
+   __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *RprojectorX, 
+   int sizeRprojectorQ, int sizeRprojectorX, __PRIMME_COMPLEX_DOUBLE__ *xKinvx, 
+   __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, __PRIMME_COMPLEX_DOUBLE__ *result, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
    primme_params *primme);
 
-static int apply_skew_projector(complex double *Q, complex double *Qhat, complex double *UDU, 
-   int *ipivot, int numCols, complex double *v, complex double *rwork, 
+static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_DOUBLE__ *Qhat, __PRIMME_COMPLEX_DOUBLE__ *UDU, 
+   int *ipivot, int numCols, __PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
    primme_params *primme);
 
-static void apply_projected_matrix(complex double *v, double shift, complex double *Q, 
-   int dimQ, complex double *result, complex double *rwork, primme_params *primme);
+static void apply_projected_matrix(__PRIMME_COMPLEX_DOUBLE__ *v, double shift, __PRIMME_COMPLEX_DOUBLE__ *Q, 
+   int dimQ, __PRIMME_COMPLEX_DOUBLE__ *result, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme);
 
-static void apply_projector(complex double *Q, int numCols, complex double *v, 
-   complex double *rwork, primme_params *primme);
+static void apply_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, int numCols, __PRIMME_COMPLEX_DOUBLE__ *v, 
+   __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme);
 
-static complex double dist_dot(complex double *x, int incx,
-   complex double *y, int incy, primme_params *primme);
+static __PRIMME_COMPLEX_DOUBLE__ dist_dot(__PRIMME_COMPLEX_DOUBLE__ *x, int incx,
+   __PRIMME_COMPLEX_DOUBLE__ *y, int incy, primme_params *primme);
 
 #endif

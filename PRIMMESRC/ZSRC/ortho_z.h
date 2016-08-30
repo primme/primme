@@ -31,13 +31,13 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR,
-   int b1, int b2, complex double *locked, int ldLocked, int numLocked,
-   int nLocal, int *iseed, double machEps, complex double *rwork, int rworkSize,
+int ortho_zprimme(__PRIMME_COMPLEX_DOUBLE__ *basis, int ldBasis, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
+   int b1, int b2, __PRIMME_COMPLEX_DOUBLE__ *locked, int ldLocked, int numLocked,
+   int nLocal, int *iseed, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize,
    primme_params *primme);
 
-int ortho_single_iteration_zprimme(complex double *Q, int mQ, int nQ, int ldQ, complex double *X,
-   int *inX, int nX, int ldX, double *overlaps, double *norms, complex double *rwork, int lrwork,
+int ortho_single_iteration_zprimme(__PRIMME_COMPLEX_DOUBLE__ *Q, int mQ, int nQ, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *X,
+   int *inX, int nX, int ldX, double *overlaps, double *norms, __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork,
    primme_params *primme);
 
 #endif

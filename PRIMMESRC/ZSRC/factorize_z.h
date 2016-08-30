@@ -29,10 +29,10 @@
 #ifndef FACTORIZE_H
 #define FACTORIZE_H
 
-int UDUDecompose_zprimme(complex double *M, int ldM, complex double *UDU, int ldUDU,
-   int *ipivot, int dimM, complex double *rwork, int rworkSize, primme_params *primme);
+int UDUDecompose_zprimme(__PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU,
+   int *ipivot, int dimM, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, primme_params *primme);
 
-int UDUSolve_zprimme(complex double *UDU, int *ipivot, int dim, complex double *rhs,
-   complex double *sol);
+int UDUSolve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, int dim, __PRIMME_COMPLEX_DOUBLE__ *rhs,
+   __PRIMME_COMPLEX_DOUBLE__ *sol);
 
 #endif

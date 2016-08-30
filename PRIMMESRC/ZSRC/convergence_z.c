@@ -71,10 +71,10 @@
  * reset          flag to reset V and W in the next restart
   ******************************************************************************/
 
-int check_convergence_zprimme(complex double *X, int nLocal, int ldX, complex double *R,
-   int ldR, complex double *evecs, int numLocked, int ldevecs, int left, int right,
+int check_convergence_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int nLocal, int ldX, __PRIMME_COMPLEX_DOUBLE__ *R,
+   int ldR, __PRIMME_COMPLEX_DOUBLE__ *evecs, int numLocked, int ldevecs, int left, int right,
    int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
-   complex double *rwork, int rworkSize, int *iwork, primme_params *primme) {
+   __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;                  /* Loop variable                                      */
    int numToProject;       /* Number of vectors with potential accuracy problem  */
@@ -220,9 +220,9 @@ int check_convergence_zprimme(complex double *X, int nLocal, int ldX, complex do
  * ldR             The leading dimension of R
  * flags           Indicates which Ritz pairs have converged
  ******************************************************************************/
-static int check_practical_convergence(complex double *R, int nLocal, int ldR,
-   complex double *evecs, int evecsSize, int ldevecs, int left, int *iev,
-   int numToProject, int *flags, double *blockNorms, double tol, complex double *rwork,
+static int check_practical_convergence(__PRIMME_COMPLEX_DOUBLE__ *R, int nLocal, int ldR,
+   __PRIMME_COMPLEX_DOUBLE__ *evecs, int evecsSize, int ldevecs, int left, int *iev,
+   int numToProject, int *flags, double *blockNorms, double tol, __PRIMME_COMPLEX_DOUBLE__ *rwork,
    int rworkSize, primme_params *primme) {
 
    int i, ret;

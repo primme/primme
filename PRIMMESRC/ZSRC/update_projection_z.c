@@ -61,8 +61,8 @@
  *
  ******************************************************************************/
 
-int update_projection_zprimme(complex double *X, int ldX, complex double *Y, int ldY,
-   complex double *Z, int ldZ, int nLocal, int numCols, int blockSize, complex double *rwork,
+int update_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int ldX, __PRIMME_COMPLEX_DOUBLE__ *Y, int ldY,
+   __PRIMME_COMPLEX_DOUBLE__ *Z, int ldZ, int nLocal, int numCols, int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork,
    int lrwork, int isSymmetric, primme_params *primme) {
 
    int count, m;

@@ -58,10 +58,10 @@ void dprimme_f77(double *evals, double *evecs, double *rnorms,
  * The only difference from primme: the return value passed as parameter 
  *****************************************************************************/
 #ifdef F77UNDERSCORE
-void zprimme_f77_(double *evals, double complex *evecs, double *rnorms, 
+void zprimme_f77_(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *rnorms, 
                 primme_params **primme, int *ierr) {
 #else
-void zprimme_f77(double *evals, double complex *evecs, double *rnorms, 
+void zprimme_f77(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *rnorms, 
                 primme_params **primme, int *ierr) {
 #endif
 

@@ -64,8 +64,8 @@
  *                 dsytrf error code
  ******************************************************************************/
  
-int UDUDecompose_zprimme(complex double *M, int ldM, complex double *UDU, int ldUDU,
-   int *ipivot, int dimM, complex double *rwork, int rworkSize, primme_params *primme) {
+int UDUDecompose_zprimme(__PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU,
+   int *ipivot, int dimM, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, primme_params *primme) {
 
    int info;
 
@@ -83,7 +83,7 @@ int UDUDecompose_zprimme(complex double *M, int ldM, complex double *UDU, int ld
    /* Return memory requirement */
 
    if (M == NULL) {
-      complex double w;
+      __PRIMME_COMPLEX_DOUBLE__ w;
       Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
       return (int)*(double*)&w;
     }
@@ -135,8 +135,8 @@ int UDUDecompose_zprimme(complex double *M, int ldM, complex double *UDU, int ld
  *
  ******************************************************************************/
 
-int UDUSolve_zprimme(complex double *UDU, int *ipivot, int dim, complex double *rhs, 
-   complex double *sol) {
+int UDUSolve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, int dim, __PRIMME_COMPLEX_DOUBLE__ *rhs, 
+   __PRIMME_COMPLEX_DOUBLE__ *sol) {
 
    int info;
 

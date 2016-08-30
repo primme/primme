@@ -374,7 +374,7 @@ void Num_gemv_@(pre)primme(const char *transa, int m, int n, @(type) alpha, @(ty
 #ifdefarithm L_DEFCPLX
 /* ---- Explicit implementation of the zdotc() --- */
    int i;
-   double complex zdotc = 0.0;
+   @(type) zdotc = 0.0;
    if (n <= 0) return(zdotc);
    if (incx==1 && incy==1) {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
@@ -491,8 +491,8 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
 #endifarithm
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFCPLX
-int Num_zhpev_zprimme(int iopt, complex double *ap, double *w, complex double *z, int ldz,
-   int n, complex double *aux, int naux) {
+int Num_zhpev_zprimme(int iopt, @(type) *ap, double *w, @(type) *z, int ldz,
+   int n, @(type) *aux, int naux) {
 
    PRIMME_BLASINT liopt = iopt;
    PRIMME_BLASINT lldz = ldz;
@@ -537,8 +537,8 @@ void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdefarithm L_DEFCPLX
-void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, complex double *a, int lda,
-   double *w, complex double *work, int ldwork, double *rwork, int *info) {
+void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, @(type) *a, int lda,
+   double *w, @(type) *work, int ldwork, double *rwork, int *info) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;

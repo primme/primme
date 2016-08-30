@@ -32,7 +32,7 @@
 void globalSum_dprimme(double *sendBuf, double *recvBuf, int count, 
       primme_params *params);
 #ifdefarithm L_DEFCPLX
-void globalSum_zprimme(double complex *sendBuf, double complex *recvBuf, int count, 
+void globalSum_zprimme(@(type) *sendBuf, @(type) *recvBuf, int count, 
       primme_params *params);
 #endifarithm
 

@@ -75,11 +75,11 @@
  *
  ******************************************************************************/
 
-int zprimme_svds(double *svals, complex double *svecs, double *resNorms, 
+int zprimme_svds(double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *resNorms, 
       primme_svds_params *primme_svds) {
 
    int ret, allocatedTargetShifts;
-   complex double *svecs0;
+   __PRIMME_COMPLEX_DOUBLE__ *svecs0;
 
    /* ------------------ */
    /* Set some defaults  */
@@ -142,12 +142,12 @@ static int comp_double(const void *a, const void *b)
    return *(double*)a <= *(double*)b ? -1 : 1;
 }
 
-static complex double* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, complex double *svecs, double *rnorms, int *allocatedTargetShifts) {
+static __PRIMME_COMPLEX_DOUBLE__* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
+      double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *rnorms, int *allocatedTargetShifts) {
 
    primme_params *primme;
    primme_svds_operator method;
-   complex double *aux, *out_svecs = svecs;
+   __PRIMME_COMPLEX_DOUBLE__ *aux, *out_svecs = svecs;
    int n, nMax, i, cut;
    const double machEps = Num_lamch_zprimme("E");
 
@@ -208,7 +208,7 @@ static complex double* copy_last_params_from_svds(primme_svds_params *primme_svd
    case primme_svds_op_augmented:
       /* Shuffle svecs so that svecs = [V; U] */
       assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
-      aux = (complex double *)primme_calloc(primme->nLocal*n, sizeof(complex double), "aux");
+      aux = (__PRIMME_COMPLEX_DOUBLE__ *)primme_calloc(primme->nLocal*n, sizeof(__PRIMME_COMPLEX_DOUBLE__), "aux");
       Num_copy_zprimme(primme->nLocal*n, svecs, 1, aux, 1);
       Num_copy_matrix_zprimme(&aux[primme_svds->mLocal*n], primme_svds->nLocal,
          n, primme_svds->nLocal, svecs, primme->nLocal);
@@ -236,8 +236,8 @@ static complex double* copy_last_params_from_svds(primme_svds_params *primme_svd
    else {
       cut = 0;
    }
-   primme->realWork = (complex double*)primme_svds->realWork + cut;
-   primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(complex double);
+   primme->realWork = (__PRIMME_COMPLEX_DOUBLE__*)primme_svds->realWork + cut;
+   primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(__PRIMME_COMPLEX_DOUBLE__);
  
    if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
        (stage == 1 && primme->targetShifts == NULL &&
@@ -368,7 +368,7 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
       /* If matrixMatvecSVDS is used, it needs extra space to compute A*A' or A'*A */
       if ((primme.matrixMatvec == NULL || primme.matrixMatvec == matrixMatvecSVDS) &&
           (primme_svds->method == primme_svds_op_AtA || primme_svds->method == primme_svds_op_AAt))
-         realWorkSize += primme.maxBlockSize * sizeof(complex double) *
+         realWorkSize += primme.maxBlockSize * sizeof(__PRIMME_COMPLEX_DOUBLE__) *
                            (primme_svds->method == primme_svds_op_AtA ?
                               primme_svds->mLocal : primme_svds->nLocal);
    }
@@ -420,12 +420,12 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
 }
  
 static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-      double *svals, complex double *svecs, double *rnorms, int allocatedTargetShifts) {
+      double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *rnorms, int allocatedTargetShifts) {
 
    int trans = 1, notrans = 0;
    primme_params *primme;
    primme_svds_operator method;
-   complex double *aux;
+   __PRIMME_COMPLEX_DOUBLE__ *aux;
    double *norms2, *norms2_;
    int n, nMax, i, cut;
 
@@ -498,7 +498,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
 
       /* Shuffle svecs from [Vc V; Uc U] to [Uc U Vc V] */
-      aux = (complex double *)primme_calloc(primme->nLocal*n, sizeof(complex double), "aux");
+      aux = (__PRIMME_COMPLEX_DOUBLE__ *)primme_calloc(primme->nLocal*n, sizeof(__PRIMME_COMPLEX_DOUBLE__), "aux");
       Num_copy_zprimme(primme->nLocal*n, svecs, 1, aux, 1);
       Num_copy_matrix_zprimme(aux, primme_svds->nLocal, n, primme->nLocal,
          &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
@@ -507,7 +507,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       free(aux);
 
       /* Normalize every column in U and V */
-      norms2_ = (double*)primme_calloc(2*n, sizeof(double), "norms2");
+      norms2_ = (double*)primme_calloc(4*n, sizeof(double), "norms2");
       norms2 = norms2_ + 2*n;
       for (i=0; i<n; i++) {
          norms2_[i] = REAL_PART(Num_dot_zprimme(primme_svds->mLocal,
@@ -550,7 +550,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       cut = 0;
    }
    assert(primme_svds->intWork == primme->intWork);
-   assert((complex double*)primme_svds->realWork + cut == primme->realWork);
+   assert((__PRIMME_COMPLEX_DOUBLE__*)primme_svds->realWork + cut == primme->realWork);
 
    /* Zero references to primme workspaces to prevent to be release by primme_Free */
    primme->intWork = NULL;
@@ -590,7 +590,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
 
 /******************************************************************************
  *
- * static int primme_svds_check_input(double *svals, complex double *svecs, double *resNorms, 
+ * static int primme_svds_check_input(double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *resNorms, 
  *                        primme_svds_params *primme_svds) 
  *
  * INPUT
@@ -602,7 +602,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
  *              -4..-19  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int primme_svds_check_input(double *svals, complex double *svecs, double *resNorms, 
+static int primme_svds_check_input(double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *resNorms, 
       primme_svds_params *primme_svds) {
    int ret;
    ret = 0;
@@ -658,7 +658,7 @@ static int primme_svds_check_input(double *svals, complex double *svecs, double 
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme) {
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    int trans = 1, notrans = 0;
-   complex double *x = (complex double*)x_, *y = (complex double*)y_;
+   __PRIMME_COMPLEX_DOUBLE__ *x = (__PRIMME_COMPLEX_DOUBLE__*)x_, *y = (__PRIMME_COMPLEX_DOUBLE__*)y_;
    primme_svds_operator method = &primme_svds->primme == primme ?
       primme_svds->method : primme_svds->methodStage2;
    int i, bs;
@@ -704,7 +704,7 @@ static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_par
       &primme->nLocal, blockSize, &method, primme_svds);
 }
 
-static void Num_scalInv_zmatrix(complex double *x, int m, int n, int ldx,
+static void Num_scalInv_zmatrix(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int n, int ldx,
       double *factors, primme_svds_params *primme_svds) {
 
    int i;

@@ -507,7 +507,7 @@ static void copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       free(aux);
 
       /* Normalize every column in U and V */
-      norms2_ = (double*)primme_calloc(2*n, sizeof(double), "norms2");
+      norms2_ = (double*)primme_calloc(4*n, sizeof(double), "norms2");
       norms2 = norms2_ + 2*n;
       for (i=0; i<n; i++) {
          norms2_[i] = REAL_PART(Num_dot_dprimme(primme_svds->mLocal,

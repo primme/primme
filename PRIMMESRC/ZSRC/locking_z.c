@@ -152,13 +152,13 @@
  *       
  ******************************************************************************/
  
-int restart_locking_zprimme(int *restartSize, complex double *V, complex double *W, 
-      int nLocal, int basisSize, int ldV, complex double **X, complex double **R,
-      complex double *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
-      int *iev, int *ievSize, double *blockNorms, complex double *evecs, double *evals,
+int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, 
+      int nLocal, int basisSize, int ldV, __PRIMME_COMPLEX_DOUBLE__ **X, __PRIMME_COMPLEX_DOUBLE__ **R,
+      __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
+      int *iev, int *ievSize, double *blockNorms, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *evals,
       int *numConverged, int *numLocked, double *resNorms, int *evecsperm,
       int numPrevRetained, int *indexOfPreviousVecs, int *hVecsPerm,
-      int reset, double machEps, complex double *rwork, int rworkSize, int *iwork, 
+      int reset, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, 
       primme_params *primme) {
 
    int i, j, k;             /* Loop variables                                 */
@@ -176,7 +176,7 @@ int restart_locking_zprimme(int *restartSize, complex double *V, complex double 
 
    /* Return memory requirement */
    if (V == NULL) {
-      complex double t;
+      __PRIMME_COMPLEX_DOUBLE__ t;
       double d;
       return max(max(max(
             /* for permute_vecs and fakeResNorms */

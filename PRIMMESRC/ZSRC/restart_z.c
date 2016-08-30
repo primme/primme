@@ -173,20 +173,20 @@
  *       
  ******************************************************************************/
  
-int restart_zprimme(complex double *V, complex double *W, int nLocal, int basisSize,
+int restart_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int nLocal, int basisSize,
        int ldV, double *hVals, double *hSVals, int *flags, int *iev,
-       int *ievSize, double *blockNorms, complex double *evecs, int *evecsPerm,
-       double *evals, double *resNorms, complex double *evecsHat, int ldevecsHat,
-       complex double *M, int ldM, complex double *UDU, int ldUDU, int *ipivot,
+       int *ievSize, double *blockNorms, __PRIMME_COMPLEX_DOUBLE__ *evecs, int *evecsPerm,
+       double *evals, double *resNorms, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, int ldevecsHat,
+       __PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU, int *ipivot,
        int *numConverged, int *numLocked, int *numConvergedStored,
-       complex double *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
-       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, complex double *H,
-       int ldH, complex double *Q, int ldQ, complex double *R, int ldR, complex double* QtV,
-       int ldQtV, complex double *hU, int ldhU, int newldhU, complex double *hVecs,
+       __PRIMME_COMPLEX_DOUBLE__ *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
+       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, __PRIMME_COMPLEX_DOUBLE__ *H,
+       int ldH, __PRIMME_COMPLEX_DOUBLE__ *Q, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, __PRIMME_COMPLEX_DOUBLE__* QtV,
+       int ldQtV, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, int newldhU, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
        int ldhVecs, int newldhVecs, int *restartSizeOutput,
-       int *targetShiftIndex, int *numArbitraryVecs, complex double *hVecsRot,
+       int *targetShiftIndex, int *numArbitraryVecs, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot,
        int ldhVecsRot, int *restartsSinceReset, int *reset,
-       double machEps, complex double *rwork, int rworkSize, int *iwork,
+       double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork,
        primme_params *primme) {
 
    int i;                   /* Loop indices */
@@ -356,7 +356,7 @@ int restart_zprimme(complex double *V, complex double *W, int nLocal, int basisS
    iwork0 = &hVecsPerm[basisSize];
 
    if (!primme->locking) {
-      complex double *X, *Res;
+      __PRIMME_COMPLEX_DOUBLE__ *X, *Res;
       ret = restart_soft_locking_zprimme(&restartSize, V, W, nLocal,
             basisSize, ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals,
             flags, iev, ievSize, blockNorms, evecs, evals, resNorms, evecsHat,
@@ -365,7 +365,7 @@ int restart_zprimme(complex double *V, complex double *W, int nLocal, int basisS
             rworkSize, iwork0, primme);
    }
    else {
-      complex double *X, *Res;
+      __PRIMME_COMPLEX_DOUBLE__ *X, *Res;
       ret = restart_locking_zprimme(&restartSize, V, W, nLocal, basisSize,
             ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals, flags, iev,
             ievSize, blockNorms, evecs, evals, numConverged, numLocked,
@@ -519,14 +519,14 @@ int restart_zprimme(complex double *V, complex double *W, int nLocal, int basisS
  *       
  ******************************************************************************/
  
-static int restart_soft_locking_zprimme(int *restartSize, complex double *V,
-       complex double *W, int nLocal, int basisSize, int ldV, complex double **X,
-       complex double **R, complex double *hVecs, int ldhVecs, int *restartPerm,
+static int restart_soft_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V,
+       __PRIMME_COMPLEX_DOUBLE__ *W, int nLocal, int basisSize, int ldV, __PRIMME_COMPLEX_DOUBLE__ **X,
+       __PRIMME_COMPLEX_DOUBLE__ **R, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, int *restartPerm,
        double *hVals, int *flags, int *iev, int *ievSize, double *blockNorms,
-       complex double *evecs, double *evals, double *resNorms, complex double *evecsHat,
-       int ldevecsHat, complex double *M, int ldM, int *numConverged,
+       __PRIMME_COMPLEX_DOUBLE__ *evecs, double *evals, double *resNorms, __PRIMME_COMPLEX_DOUBLE__ *evecsHat,
+       int ldevecsHat, __PRIMME_COMPLEX_DOUBLE__ *M, int ldM, int *numConverged,
        int *numConvergedStored, int numPrevRetained, int *indexOfPreviousVecs,
-       int *hVecsPerm, int reset, double machEps, complex double *rwork, int rworkSize,
+       int *hVecsPerm, int reset, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize,
        int *iwork, primme_params *primme) {
 
    int i, j, k, ret;          /* loop indices */
@@ -536,7 +536,7 @@ static int restart_soft_locking_zprimme(int *restartSize, complex double *V,
    /* Return memory requirement */
 
    if (V == NULL) {
-      complex double t;
+      __PRIMME_COMPLEX_DOUBLE__ t;
       double d;
       return max(max(
                   nLocal,      /* permute_vecs for hVecs */
@@ -802,15 +802,15 @@ static int restart_soft_locking_zprimme(int *restartSize, complex double *V,
  *
  ******************************************************************************/
 
-int Num_reset_update_VWXR_zprimme(complex double *V, complex double *W, int mV, int nV, int ldV,
-   complex double *h, int nh, int ldh, double *hVals,
-   complex double *X0, int nX0b, int nX0e, int ldX0,
-   complex double *X1, int nX1b, int nX1e, int ldX1,
-   complex double *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
-   complex double *Wo, int nWob, int nWoe, int ldWo,
-   complex double *R, int nRb, int nRe, int ldR, double *Rnorms,
+int Num_reset_update_VWXR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int mV, int nV, int ldV,
+   __PRIMME_COMPLEX_DOUBLE__ *h, int nh, int ldh, double *hVals,
+   __PRIMME_COMPLEX_DOUBLE__ *X0, int nX0b, int nX0e, int ldX0,
+   __PRIMME_COMPLEX_DOUBLE__ *X1, int nX1b, int nX1e, int ldX1,
+   __PRIMME_COMPLEX_DOUBLE__ *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
+   __PRIMME_COMPLEX_DOUBLE__ *Wo, int nWob, int nWoe, int ldWo,
+   __PRIMME_COMPLEX_DOUBLE__ *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   int reset, double machEps, complex double *rwork, int lrwork, primme_params *primme) {
+   int reset, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork, primme_params *primme) {
 
    int i, j;         /* Loop variables */
    double *tmp, *tmp0;
@@ -1027,17 +1027,17 @@ int Num_reset_update_VWXR_zprimme(complex double *V, complex double *W, int mV, 
  *       
  ******************************************************************************/
  
-static int restart_projection_zprimme(complex double *V, int ldV, complex double *W,
-      int ldW, complex double *H, int ldH, complex double *Q, int nLocal, int ldQ,
-      complex double *R, int ldR, complex double *QtV, int ldQtV, complex double *hU, int ldhU,
-      int newldhU, int indexOfPreviousVecsBeforeRestart, complex double *hVecs,
+static int restart_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W,
+      int ldW, __PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *Q, int nLocal, int ldQ,
+      __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, __PRIMME_COMPLEX_DOUBLE__ *QtV, int ldQtV, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU,
+      int newldhU, int indexOfPreviousVecsBeforeRestart, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
       int ldhVecs, int newldhVecs, double *hVals, double *hSVals,
       int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, complex double *evecs,
-      int *evecsSize, int ldevecs, complex double *evecsHat, int ldevecsHat,
-      complex double *M, int ldM, complex double *UDU, int ldUDU, int *ipivot,
+      int numPrevRetained, int indexOfPreviousVecs, __PRIMME_COMPLEX_DOUBLE__ *evecs,
+      int *evecsSize, int ldevecs, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, int ldevecsHat,
+      __PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU, int *ipivot,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      complex double *hVecsRot, int ldhVecsRot, int rworkSize, complex double *rwork,
+      __PRIMME_COMPLEX_DOUBLE__ *hVecsRot, int ldhVecsRot, int rworkSize, __PRIMME_COMPLEX_DOUBLE__ *rwork,
       int *iwork, double machEps, primme_params *primme) {
 
    int ret;
@@ -1201,10 +1201,10 @@ static int restart_projection_zprimme(complex double *V, int ldV, complex double
  *
  ******************************************************************************/
 
-static int restart_RR(complex double *H, int ldH, complex double *hVecs, int ldhVecs,
+static int restart_RR(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs,
       int newldhVecs, double *hVals, int restartSize, int basisSize, int numLocked,
       int numPrevRetained, int indexOfPreviousVecs, int *hVecsPerm,
-      double machEps, int rworkSize, complex double *rwork, int *iwork,
+      double machEps, int rworkSize, __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork,
       primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
@@ -1400,24 +1400,24 @@ static int restart_RR(complex double *H, int ldH, complex double *hVecs, int ldh
  *
  ******************************************************************************/
 
-static int restart_refined(complex double *V, int ldV, complex double *W, int ldW, complex double *H,
-      int ldH, complex double *Q, int nLocal, int ldQ, complex double *R, int ldR,
-      complex double *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      complex double *hVecs, int ldhVecs, int newldhVecs, double *hVals,
+static int restart_refined(__PRIMME_COMPLEX_DOUBLE__ *V, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W, int ldW, __PRIMME_COMPLEX_DOUBLE__ *H,
+      int ldH, __PRIMME_COMPLEX_DOUBLE__ *Q, int nLocal, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
+      __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
+      __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, int newldhVecs, double *hVals,
       double *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      complex double *hVecsRot, int ldhVecsRot, int rworkSize,
-      complex double *rwork, int *iwork, double machEps, primme_params *primme) {
+      __PRIMME_COMPLEX_DOUBLE__ *hVecsRot, int ldhVecsRot, int rworkSize,
+      __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, double machEps, primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
    int ret;           /* Return value                                         */
    int mhVecsRot0;    /* Number of rows of hVecsRot0                          */
    int newNumArbitraryVecs; /* arbitrary vectors after restarting             */
    int nRegular;      /* restarted vectors that weren't retained              */
-   complex double *hVecsRot0;  /* Part of hVecsRot                                   */
-   complex double *RPrevhVecs;
-   complex double *rwork0;
+   __PRIMME_COMPLEX_DOUBLE__ *hVecsRot0;  /* Part of hVecsRot                                   */
+   __PRIMME_COMPLEX_DOUBLE__ *RPrevhVecs;
+   __PRIMME_COMPLEX_DOUBLE__ *rwork0;
    int rworkSize0;
    int *restartPerm0;
    int *invhVecsPerm;
@@ -1792,13 +1792,13 @@ static int restart_refined(complex double *V, int ldV, complex double *W, int ld
  *
  ******************************************************************************/
 
-static int restart_harmonic(complex double *V, int ldV, complex double *W, int ldW, complex double *H,
-   int ldH, complex double *Q, int nLocal, int ldQ, complex double *R, int ldR, complex double *QtV,
-   int ldQtV, complex double *hU, int ldhU, int newldhU, complex double *hVecs, int ldhVecs,
+static int restart_harmonic(__PRIMME_COMPLEX_DOUBLE__ *V, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W, int ldW, __PRIMME_COMPLEX_DOUBLE__ *H,
+   int ldH, __PRIMME_COMPLEX_DOUBLE__ *Q, int nLocal, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, __PRIMME_COMPLEX_DOUBLE__ *QtV,
+   int ldQtV, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, int newldhU, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs,
    int newldhVecs, double *hVals, double *hSVals, int *restartPerm, int *hVecsPerm,
    int restartSize, int basisSize, int numPrevRetained, int indexOfPreviousVecs,
-   int *targetShiftIndex, int numConverged, int *numArbitraryVecs, complex double *hVecsRot,
-   int ldhVecsRot, int rworkSize, complex double *rwork, int *iwork,
+   int *targetShiftIndex, int numConverged, int *numArbitraryVecs, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot,
+   int ldhVecsRot, int rworkSize, __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork,
    double machEps, primme_params *primme) {
 
    int ret;
@@ -1907,8 +1907,8 @@ static int restart_harmonic(complex double *V, int ldV, complex double *W, int l
  ******************************************************************************/
 
 
-static int dtr_zprimme(int numLocked, complex double *hVecs, double *hVals, int *flags, 
-  int basisSize, int numFree, int *iev, complex double *rwork, primme_params *primme)
+static int dtr_zprimme(int numLocked, __PRIMME_COMPLEX_DOUBLE__ *hVecs, double *hVals, int *flags, 
+  int basisSize, int numFree, int *iev, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme)
 {
 
    int i;                 /* Loop variable */
@@ -2044,10 +2044,10 @@ static int dtr_zprimme(int numLocked, complex double *hVecs, double *hVals, int 
  *
  ******************************************************************************/
 
-static int ortho_coefficient_vectors_zprimme(complex double *hVecs, int basisSize,
-      int ldhVecs, int indexOfPreviousVecs, complex double *hU, int ldhU, complex double *R,
-      int ldR, int *numPrevRetained, complex double *outR, int ldoutR, double machEps,
-      complex double *rwork, int rworkSize, primme_params *primme) {
+static int ortho_coefficient_vectors_zprimme(__PRIMME_COMPLEX_DOUBLE__ *hVecs, int basisSize,
+      int ldhVecs, int indexOfPreviousVecs, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, __PRIMME_COMPLEX_DOUBLE__ *R,
+      int ldR, int *numPrevRetained, __PRIMME_COMPLEX_DOUBLE__ *outR, int ldoutR, double machEps,
+      __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, primme_params *primme) {
 
    int ret, i;
 
@@ -2139,10 +2139,10 @@ static int ortho_coefficient_vectors_zprimme(complex double *hVecs, int basisSiz
  *
  ******************************************************************************/
 
-int retain_previous_coefficients_zprimme(complex double *hVecs, int ldhVecs,
-   complex double *hU, int ldhU, double *hSVals, complex double *previousHVecs,
+int retain_previous_coefficients_zprimme(__PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs,
+   __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, double *hSVals, __PRIMME_COMPLEX_DOUBLE__ *previousHVecs,
    int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
-   int *flags, int *numPrevRetained, int *iwork, complex double *rwork, int rworkSize,
+   int *flags, int *numPrevRetained, int *iwork, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize,
    primme_params *primme) {
 
    int i;               /* Loop indices                                  */

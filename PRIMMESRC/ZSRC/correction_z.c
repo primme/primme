@@ -122,12 +122,12 @@
  ******************************************************************************/
  
 
-int solve_correction_zprimme(complex double *V, complex double *W, complex double *evecs, 
-   complex double *evecsHat, complex double *UDU, int *ipivot, double *lockedEvals, 
+int solve_correction_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, __PRIMME_COMPLEX_DOUBLE__ *evecs, 
+   __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, double *lockedEvals, 
    int numLocked, int numConvergedStored, double *ritzVals, 
    double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
    double *blockNorms, int *iev, int blockSize, double eresTol, 
-   double machEps, double aNormEstimate, complex double *rwork, int *iwork, 
+   double machEps, double aNormEstimate, __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, 
    int rworkSize, primme_params *primme) {
 
    int blockIndex;         /* Loop index.  Ranges from 0..blockSize-1.       */
@@ -145,18 +145,18 @@ int solve_correction_zprimme(complex double *V, complex double *W, complex doubl
    int sizeRprojectorX;    /* or numOrthConstr+numConvergedStored w/o locking*/
 
    int ret;                /* Return code.                                   */
-   complex double *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
-   complex double *linSolverRWork;/* Workspace needed by linear solver.            */
+   __PRIMME_COMPLEX_DOUBLE__ *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
+   __PRIMME_COMPLEX_DOUBLE__ *linSolverRWork;/* Workspace needed by linear solver.            */
    double *sortedRitzVals; /* Sorted array of current and converged Ritz     */
                            /* values.  Size of array is numLocked+basisSize. */
    double *blockOfShifts;  /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
    double *approxOlsenEps; /* Shifts for approximate Olsen implementation    */
-   complex double *Kinvx;         /* Workspace to store K^{-1}x                     */
-   complex double *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
-   complex double *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
-   complex double *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
+   __PRIMME_COMPLEX_DOUBLE__ *Kinvx;         /* Workspace to store K^{-1}x                     */
+   __PRIMME_COMPLEX_DOUBLE__ *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
+   __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
+   __PRIMME_COMPLEX_DOUBLE__ *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
 
-   complex double xKinvx;                        /* Stores x'*K^{-1}x if needed    */
+   __PRIMME_COMPLEX_DOUBLE__ xKinvx;                        /* Stores x'*K^{-1}x if needed    */
    double eval, shift, robustShift;       /* robust shift values.           */
 
    /*------------------------------------------------------------*/
@@ -652,7 +652,7 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
  *
  ******************************************************************************/
 
-static void apply_preconditioner_block(complex double *v, complex double *result, 
+static void apply_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *result, 
                 int blockSize, primme_params *primme) {
          
    if (primme->correctionParams.precondition) {
@@ -677,7 +677,7 @@ static void apply_preconditioner_block(complex double *v, complex double *result
  *
  * blockSize  The number of vectors in r, x
  *
- * rwork      complex double work array of size (primme.nLocal + 4*blockSize)
+ * rwork      __PRIMME_COMPLEX_DOUBLE__ work array of size (primme.nLocal + 4*blockSize)
  *
  * primme       Structure containing various solver parameters
  *
@@ -687,12 +687,12 @@ static void apply_preconditioner_block(complex double *v, complex double *result
  *
  ******************************************************************************/
 
-static void Olsen_preconditioner_block(complex double *r, complex double *x,
-                int blockSize, complex double *rwork, primme_params *primme) {
+static void Olsen_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_COMPLEX_DOUBLE__ *x,
+                int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) {
 
    int blockIndex;
-   complex double alpha;
-   complex double *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
+   __PRIMME_COMPLEX_DOUBLE__ alpha;
+   __PRIMME_COMPLEX_DOUBLE__ *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
 
    /*------------------------------------------------------------------*/
    /* Subdivide workspace                                              */
@@ -823,15 +823,15 @@ static void Olsen_preconditioner_block(complex double *r, complex double *x,
  *
  ******************************************************************************/
 
-static void setup_JD_projectors(complex double *x, complex double *r, complex double *evecs, 
-   complex double *evecsHat, complex double *Kinvx, complex double *xKinvx, 
-   complex double **Lprojector, complex double **RprojectorQ, complex double **RprojectorX, 
+static void setup_JD_projectors(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_COMPLEX_DOUBLE__ *evecs, 
+   __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *Kinvx, __PRIMME_COMPLEX_DOUBLE__ *xKinvx, 
+   __PRIMME_COMPLEX_DOUBLE__ **Lprojector, __PRIMME_COMPLEX_DOUBLE__ **RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ **RprojectorX, 
    int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX, 
    int numLocked, int numConverged, primme_params *primme) {
 
    int n, sizeEvecs;
    int ONE = 1;
-   complex double xKinvx_local;
+   __PRIMME_COMPLEX_DOUBLE__ xKinvx_local;
 
    (void)r; /* unused parameter */
 

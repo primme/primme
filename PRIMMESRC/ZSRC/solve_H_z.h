@@ -29,20 +29,20 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_zprimme(complex double *H, int basisSize, int ldH, complex double *R, int ldR,
-   complex double *QtV, int ldQtV, complex double *hU, int ldhU, complex double *hVecs, int ldhVecs,
+int solve_H_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int basisSize, int ldH, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
+   __PRIMME_COMPLEX_DOUBLE__ *QtV, int ldQtV, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
-   complex double *rwork, int *iwork, primme_params *primme);
+   __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, primme_params *primme);
 
-int solve_H_RR_zprimme(complex double *H, int maxBasisSize, complex double *hVecs,
+int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int maxBasisSize, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
    int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
-   complex double *rwork, int *iwork, primme_params *primme);
+   __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, primme_params *primme);
 
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
-      complex double *H, int ldH, double *hVals, double *hSVals, complex double *hVecs,
+      __PRIMME_COMPLEX_DOUBLE__ *H, int ldH, double *hVals, double *hSVals, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, complex double *hVecsRot,
-      int ldhVecsRot, double machEps, int rworkSize, complex double *rwork,
+      double smallestResNorm, int *flags, int RRForAll, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot,
+      int ldhVecsRot, double machEps, int rworkSize, __PRIMME_COMPLEX_DOUBLE__ *rwork,
       int *iwork, primme_params *primme);
 
 #endif

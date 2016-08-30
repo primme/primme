@@ -110,9 +110,9 @@
  * 
  **********************************************************************/
 
-int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR,
-   int b1, int b2, complex double *locked, int ldLocked, int numLocked,
-   int nLocal, int *iseed, double machEps, complex double *rwork, int rworkSize,
+int ortho_zprimme(__PRIMME_COMPLEX_DOUBLE__ *basis, int ldBasis, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
+   int b1, int b2, __PRIMME_COMPLEX_DOUBLE__ *locked, int ldLocked, int numLocked,
+   int nLocal, int *iseed, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize,
    primme_params *primme) {
               
    int i, j;                /* Loop indices */
@@ -129,7 +129,7 @@ int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
    double s0=0.0, s02=0.0, s1=0.0, s12=0.0, s00=0.0;
    double temp;
-   complex double *overlaps;
+   __PRIMME_COMPLEX_DOUBLE__ *overlaps;
    FILE *outputFile;
 
    messages = (primme && primme->procID == 0 && primme->printLevel >= 3
@@ -280,7 +280,7 @@ int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR
    /* Check orthogonality */
    /*
    if (numLocked) {
-      complex double *H = (complex double*)malloc(sizeof(complex double)*numLocked*numLocked);
+      __PRIMME_COMPLEX_DOUBLE__ *H = (__PRIMME_COMPLEX_DOUBLE__*)malloc(sizeof(__PRIMME_COMPLEX_DOUBLE__)*numLocked*numLocked);
       Num_gemm_zprimme("C", "N", numLocked, numLocked, nLocal, 1.0, locked,
             ldLocked, locked, ldLocked, 0.0, H, numLocked);
       for(i=0; i < numLocked; i++) {
@@ -290,7 +290,7 @@ int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR
       free(H);
    }
    if (b2+1) {
-      complex double *H = (complex double*)malloc(sizeof(complex double)*(b2+1)*(b2+1));
+      __PRIMME_COMPLEX_DOUBLE__ *H = (__PRIMME_COMPLEX_DOUBLE__*)malloc(sizeof(__PRIMME_COMPLEX_DOUBLE__)*(b2+1)*(b2+1));
       Num_gemm_zprimme("C", "N", b2+1, b2+1, nLocal, 1.0, basis,
             ldBasis, basis, ldBasis, 0.0, H, b2+1);
       for(i=0; i < b2+1; i++) {
@@ -300,7 +300,7 @@ int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR
       free(H);
    }
    if (numLocked) {
-      complex double *H = (complex double*)malloc(sizeof(complex double)*(b2+1)*numLocked);
+      __PRIMME_COMPLEX_DOUBLE__ *H = (__PRIMME_COMPLEX_DOUBLE__*)malloc(sizeof(__PRIMME_COMPLEX_DOUBLE__)*(b2+1)*numLocked);
       Num_gemm_zprimme("C", "N", numLocked, b2+1, nLocal, 1.0, locked,
             ldLocked, basis, ldBasis, 0.0, H, numLocked);
       for(i=0; i < b2+1; i++) {
@@ -333,12 +333,12 @@ int ortho_zprimme(complex double *basis, int ldBasis, complex double *R, int ldR
  *
  ****************************************************************************/
 
-int ortho_single_iteration_zprimme(complex double *Q, int mQ, int nQ, int ldQ, complex double *X,
-   int *inX, int nX, int ldX, double *overlaps, double *norms, complex double *rwork, int lrwork,
+int ortho_single_iteration_zprimme(__PRIMME_COMPLEX_DOUBLE__ *Q, int mQ, int nQ, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *X,
+   int *inX, int nX, int ldX, double *overlaps, double *norms, __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork,
    primme_params *primme) {
 
    int i, j, M=PRIMME_BLOCK_SIZE, m=min(M, mQ);
-   complex double *y, *y0, *X0;
+   __PRIMME_COMPLEX_DOUBLE__ *y, *y0, *X0;
    double *norms0;
 
    /* Return memory requirement */
@@ -396,7 +396,7 @@ int ortho_single_iteration_zprimme(complex double *Q, int mQ, int nQ, int ldQ, c
          Num_copy_matrix_columns_zprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
       }
       if (norms) for (j=0; j<nX; j++) {
-         complex double *v = inX ? &X0[j*m] : &X[j*ldX+i];
+         __PRIMME_COMPLEX_DOUBLE__ *v = inX ? &X0[j*m] : &X[j*ldX+i];
          norms0[j] += REAL_PART(Num_dot_zprimme(m, v, 1, v, 1));
       }
    }

@@ -119,9 +119,9 @@
  *
  ******************************************************************************/
 
-int init_basis_zprimme(complex double *V, int nLocal, int ldV, complex double *W, int ldW,
-   complex double *evecs, int ldevecs, complex double *evecsHat, int ldevecsHat, complex double *M,
-   int ldM, complex double *UDU, int ldUDU, int *ipivot, double machEps, complex double *rwork,
+int init_basis_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, int nLocal, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W, int ldW,
+   __PRIMME_COMPLEX_DOUBLE__ *evecs, int ldevecs, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, int ldevecsHat, __PRIMME_COMPLEX_DOUBLE__ *M,
+   int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU, int *ipivot, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork,
    int rworkSize, int *basisSize, int *nextGuess, int *numGuesses,
    double *timeForMV, primme_params *primme) {
 
@@ -303,9 +303,9 @@ int init_basis_zprimme(complex double *V, int nLocal, int ldV, complex double *W
  * 
  ******************************************************************************/
 
-static int init_block_krylov(complex double *V, int nLocal, int ldV, complex double *W,
-   int ldW, int dv1, int dv2, complex double *locked, int ldlocked, int numLocked,
-   double machEps, complex double *rwork, int rworkSize, primme_params *primme) {
+static int init_block_krylov(__PRIMME_COMPLEX_DOUBLE__ *V, int nLocal, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W,
+   int ldW, int dv1, int dv2, __PRIMME_COMPLEX_DOUBLE__ *locked, int ldlocked, int numLocked,
+   double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, primme_params *primme) {
 
    int i;               /* Loop variables */
    int numNewVectors;   /* Number of vectors to be generated */

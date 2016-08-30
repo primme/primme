@@ -371,7 +371,7 @@ static int tprimme(double *evals, double *evecs, double *resNorms, primme_params
       return dprimme(evals, evecs, resNorms, primme);
 }
 static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
-      return zprimme(evals, (Complex_Z*)evecs, resNorms, primme);
+      return zprimme(evals, evecs, resNorms, primme);
 }
 
 template <typename T>
@@ -429,7 +429,7 @@ static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_s
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
-   return zprimme_svds(svals, (Complex_Z*)svecs, resNorms, primme_svds);
+   return zprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 
 static void myglobalSumDouble_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds) {

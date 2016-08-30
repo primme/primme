@@ -22,7 +22,7 @@
  *******************************************************************************
  * File: primme.c
  *
- * Purpose - Real, complex double precision front end to the multimethod eigensolver
+ * Purpose - Real, __PRIMME_COMPLEX_DOUBLE__ precision front end to the multimethod eigensolver
  *
  * For the moment please cite the following two papers: 
  *
@@ -101,7 +101,7 @@
  *
  ******************************************************************************/
  
-int zprimme(double *evals, complex double *evecs, double *resNorms, 
+int zprimme(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *resNorms, 
             primme_params *primme) {
       
    int ret;
@@ -216,7 +216,7 @@ int zprimme(double *evals, complex double *evecs, double *resNorms,
    /*----------------------------------------------------------------------*/
 
    permute_vecs_zprimme(&evecs[primme->numOrthoConst], primme->nLocal,
-         primme->initSize, primme->nLocal, perm, (complex double*)primme->realWork,
+         primme->initSize, primme->nLocal, perm, (__PRIMME_COMPLEX_DOUBLE__*)primme->realWork,
          (int*)primme->intWork);
 
    free(perm);
@@ -258,7 +258,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    long int realWorkSize;  /* Size of real work space.                  */
    long int rworkByteSize; /* Size of all real data in bytes            */
 
-   int dataSize;     /* Number of complex double positions allocated, excluding */
+   int dataSize;     /* Number of __PRIMME_COMPLEX_DOUBLE__ positions allocated, excluding */
                      /* doubles (see doubleSize below) and work space.  */
    int doubleSize=0; /* Number of doubles allocated exclusively to the  */
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
@@ -270,8 +270,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    int solveCorSize; /* work space for solve_correction and inner_solve */
    int solveHSize;   /* work space for solve_H                          */
    int mainSize;     /* work space for main_iter                        */
-   complex double *evecsHat=NULL;/* not NULL when evecsHat will be used        */
-   complex double t;        /* dummy variable */
+   __PRIMME_COMPLEX_DOUBLE__ *evecsHat=NULL;/* not NULL when evecsHat will be used        */
+   __PRIMME_COMPLEX_DOUBLE__ t;        /* dummy variable */
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
  
@@ -436,7 +436,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* byte sizes:                                                          */
    /*----------------------------------------------------------------------*/
    
-   rworkByteSize = (dataSize + realWorkSize)*sizeof(complex double)
+   rworkByteSize = (dataSize + realWorkSize)*sizeof(__PRIMME_COMPLEX_DOUBLE__)
                                 + doubleSize*sizeof(double); 
 
    /*----------------------------------------------------------------------*/
@@ -487,7 +487,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
 /******************************************************************************
  *
- * static int check_input(double *evals, complex double *evecs, double *resNorms, 
+ * static int check_input(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *resNorms, 
  *                        primme_params *primme) 
  *
  * INPUT
@@ -499,7 +499,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
  *              -4..-32  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(double *evals, complex double *evecs, double *resNorms, 
+static int check_input(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *resNorms, 
                        primme_params *primme) {
    int ret;
    ret = 0;

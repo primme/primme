@@ -38,14 +38,14 @@
 #define NUM_DGESVD_FAILURE  -3
 #define NUM_ZGESVD_FAILURE  -4
 
-static int solve_H_Harm_zprimme(complex double *H, int ldH, complex double *QtV, int ldQtV,
-   complex double *R, int ldR, complex double *hVecs, int ldhVecs, complex double *hU, int ldhU,
+static int solve_H_Harm_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *QtV, int ldQtV,
+   __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU,
    double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
-   complex double *rwork, int *iwork, primme_params *primme);
+   __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, primme_params *primme);
 
-static int solve_H_Ref_zprimme(complex double *H, int ldH, complex double *hVecs,
-   int ldhVecs, complex double *hU, int ldhU, double *hSVals, complex double *R, int ldR,
-   double *hVals, int basisSize, int targetShiftIndex, int lrwork, complex double *rwork,
+static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
+   int ldhVecs, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, double *hSVals, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, int lrwork, __PRIMME_COMPLEX_DOUBLE__ *rwork,
    int *iwork, primme_params *primme);
 
 #endif

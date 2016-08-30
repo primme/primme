@@ -31,7 +31,7 @@
  
 void globalSum_dprimme(double *sendBuf, double *recvBuf, int count, 
       primme_params *params);
-void globalSum_zprimme(double complex *sendBuf, double complex *recvBuf, int count, 
+void globalSum_zprimme(__PRIMME_COMPLEX_DOUBLE__ *sendBuf, __PRIMME_COMPLEX_DOUBLE__ *recvBuf, int count, 
       primme_params *params);
 
 #endif

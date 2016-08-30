@@ -30,11 +30,11 @@
 #ifndef UPDATE_W_H
 #define UPDATE_W_H
 
-void matrixMatvec_zprimme(complex double *V, int nLocal, int ldV, complex double *W,
+void matrixMatvec_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, int nLocal, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W,
    int ldW, int basisSize, int blockSize, primme_params *primme);
 
-int update_Q_zprimme(complex double *V, int nLocal, int ldV, complex double *W, int ldW,
-      complex double *Q, int ldQ, complex double *R, int ldR, double targetShift_, int basisSize,
-      int blockSize, complex double *rwork, int rworkSize, double machEps, primme_params *primme);
+int update_Q_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, int nLocal, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W, int ldW,
+      __PRIMME_COMPLEX_DOUBLE__ *Q, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, double targetShift_, int basisSize,
+      int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, double machEps, primme_params *primme);
 
 #endif

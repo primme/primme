@@ -30,10 +30,14 @@
 #define PRIMME_H
 
 #include <stdio.h>
-#include <complex.h>
 
 #ifdef __cplusplus
+#  include <complex>
+#  define __PRIMME_COMPLEX_DOUBLE__ std::complex<double>
 extern "C" {
+#else
+#  include <complex.h>
+#  define __PRIMME_COMPLEX_DOUBLE__ double complex
 #endif
 
 #define PRIMME_MAX_NAME_LENGTH 128
@@ -253,7 +257,7 @@ typedef enum {
 
 int dprimme(double *evals, double *evecs, double *resNorms, 
       primme_params *primme);
-int zprimme(double *evals, double complex *evecs, double *resNorms, 
+int zprimme(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *resNorms, 
       primme_params *primme);
 void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);

@@ -129,7 +129,7 @@ typedef struct primme_svds_params {
 
 int dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
-int zprimme_svds(double *svals, complex double *svecs, double *resNorms,
+int zprimme_svds(double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 void primme_svds_initialize(primme_svds_params *primme_svds);
 int primme_svds_set_method(primme_svds_preset_method method,

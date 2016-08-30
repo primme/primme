@@ -124,12 +124,12 @@
  *
  ******************************************************************************/
 
-int inner_solve_zprimme(complex double *x, complex double *r, double *rnorm, 
-   complex double *evecs, complex double *evecsHat, complex double *UDU, int *ipivot, 
-   complex double *xKinvx, complex double *Lprojector, complex double *RprojectorQ, 
-   complex double *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
-   int sizeRprojectorX, complex double *sol, double eval, double shift, 
-   double eresTol, double aNormEstimate, double machEps, complex double *rwork, 
+int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *r, double *rnorm, 
+   __PRIMME_COMPLEX_DOUBLE__ *evecs, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, 
+   __PRIMME_COMPLEX_DOUBLE__ *xKinvx, __PRIMME_COMPLEX_DOUBLE__ *Lprojector, __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ, 
+   __PRIMME_COMPLEX_DOUBLE__ *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
+   int sizeRprojectorX, __PRIMME_COMPLEX_DOUBLE__ *sol, double eval, double shift, 
+   double eresTol, double aNormEstimate, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
    int rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
@@ -137,11 +137,11 @@ int inner_solve_zprimme(complex double *x, complex double *r, double *rnorm,
    int ret;           /* Return value used for error checking.               */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
 
-   complex double *workSpace; /* Workspace needed by UDU routine */
+   __PRIMME_COMPLEX_DOUBLE__ *workSpace; /* Workspace needed by UDU routine */
 
    /* QMR parameters */
 
-   complex double *g, *d, *delta, *w, *ptmp;
+   __PRIMME_COMPLEX_DOUBLE__ *g, *d, *delta, *w, *ptmp;
    double alpha_prev, beta, rho_prev, rho;
    double Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
 
@@ -515,10 +515,10 @@ int inner_solve_zprimme(complex double *x, complex double *r, double *rnorm,
  *
  ******************************************************************************/
 
-static int apply_projected_preconditioner(complex double *v, complex double *Q, 
-   complex double *RprojectorQ, complex double *x, complex double *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, complex double *xKinvx, 
-   complex double *UDU, int *ipivot, complex double *result, complex double *rwork, 
+static int apply_projected_preconditioner(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *Q, 
+   __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *RprojectorX, 
+   int sizeRprojectorQ, int sizeRprojectorX, __PRIMME_COMPLEX_DOUBLE__ *xKinvx, 
+   __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, __PRIMME_COMPLEX_DOUBLE__ *result, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
    primme_params *primme) {  
 
    int ONE = 1;
@@ -580,15 +580,15 @@ static int apply_projected_preconditioner(complex double *v, complex double *Q,
  * 
  ******************************************************************************/
 
-static int apply_skew_projector(complex double *Q, complex double *Qhat, complex double *UDU, 
-   int *ipivot, int numCols, complex double *v, complex double *rwork, 
+static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_DOUBLE__ *Qhat, __PRIMME_COMPLEX_DOUBLE__ *UDU, 
+   int *ipivot, int numCols, __PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
    primme_params *primme) {
 
    if (numCols > 0) {    /* there is a projector to be applied */
 
       int ret;
-      complex double *overlaps;  /* overlaps of v with columns of Q   */
-      complex double *workSpace; /* Used for computing local overlaps */
+      __PRIMME_COMPLEX_DOUBLE__ *overlaps;  /* overlaps of v with columns of Q   */
+      __PRIMME_COMPLEX_DOUBLE__ *workSpace; /* Used for computing local overlaps */
 
       overlaps = rwork;
       workSpace = overlaps + numCols;
@@ -676,8 +676,8 @@ static int apply_skew_projector(complex double *Q, complex double *Qhat, complex
  *
  ******************************************************************************/
 
-static void apply_projected_matrix(complex double *v, double shift, complex double *Q, 
-   int dimQ, complex double *result, complex double *rwork, primme_params *primme) {
+static void apply_projected_matrix(__PRIMME_COMPLEX_DOUBLE__ *v, double shift, __PRIMME_COMPLEX_DOUBLE__ *Q, 
+   int dimQ, __PRIMME_COMPLEX_DOUBLE__ *result, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) {
 
    matrixMatvec_zprimme(v, primme->nLocal, primme->nLocal, result,
          primme->nLocal, 0, 1, primme);
@@ -709,11 +709,11 @@ static void apply_projected_matrix(complex double *v, double shift, complex doub
  * 
  ******************************************************************************/
 
-static void apply_projector(complex double *Q, int numCols, complex double *v, 
-   complex double *rwork, primme_params *primme) {
+static void apply_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, int numCols, __PRIMME_COMPLEX_DOUBLE__ *v, 
+   __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) {
 
-   complex double *overlaps;  /* overlaps of v with columns of Q   */
-   complex double *workSpace; /* Used for computing local overlaps */
+   __PRIMME_COMPLEX_DOUBLE__ *overlaps;  /* overlaps of v with columns of Q   */
+   __PRIMME_COMPLEX_DOUBLE__ *workSpace; /* Used for computing local overlaps */
 
    overlaps = rwork;
    workSpace = overlaps + numCols;
@@ -744,10 +744,10 @@ static void apply_projector(complex double *Q, int numCols, complex double *v,
  *
  ******************************************************************************/
 
-static complex double dist_dot(complex double *x, int incx,
-   complex double *y, int incy, primme_params *primme) {
+static __PRIMME_COMPLEX_DOUBLE__ dist_dot(__PRIMME_COMPLEX_DOUBLE__ *x, int incx,
+   __PRIMME_COMPLEX_DOUBLE__ *y, int incy, primme_params *primme) {
                                                                                 
-   complex double temp, product;
+   __PRIMME_COMPLEX_DOUBLE__ temp, product;
                                                                                 
    temp = Num_dot_zprimme(primme->nLocal, x, incx, y, incy);
    globalSum_zprimme(&temp, &product, 1, primme);

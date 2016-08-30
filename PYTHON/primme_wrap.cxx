@@ -3452,34 +3452,33 @@ namespace Swig {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_Complex_Z swig_types[0]
-#define SWIGTYPE_p_JD_projectors swig_types[1]
-#define SWIGTYPE_p_PrimmeParams swig_types[2]
-#define SWIGTYPE_p_PrimmeSvdsParams swig_types[3]
-#define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_correction_params swig_types[5]
-#define SWIGTYPE_p_double swig_types[6]
-#define SWIGTYPE_p_int swig_types[7]
-#define SWIGTYPE_p_p_double swig_types[8]
-#define SWIGTYPE_p_primme_convergencetest swig_types[9]
-#define SWIGTYPE_p_primme_function swig_types[10]
-#define SWIGTYPE_p_primme_init swig_types[11]
-#define SWIGTYPE_p_primme_params swig_types[12]
-#define SWIGTYPE_p_primme_preset_method swig_types[13]
-#define SWIGTYPE_p_primme_projection swig_types[14]
-#define SWIGTYPE_p_primme_restartscheme swig_types[15]
-#define SWIGTYPE_p_primme_stats swig_types[16]
-#define SWIGTYPE_p_primme_svds_operator swig_types[17]
-#define SWIGTYPE_p_primme_svds_params swig_types[18]
-#define SWIGTYPE_p_primme_svds_preset_method swig_types[19]
-#define SWIGTYPE_p_primme_svds_stats swig_types[20]
-#define SWIGTYPE_p_primme_svds_target swig_types[21]
-#define SWIGTYPE_p_primme_target swig_types[22]
-#define SWIGTYPE_p_projection_params swig_types[23]
-#define SWIGTYPE_p_restarting_params swig_types[24]
-#define SWIGTYPE_p_std__complexT_double_t swig_types[25]
-static swig_type_info *swig_types[27];
-static swig_module_info swig_module = {swig_types, 26, 0, 0, 0, 0};
+#define SWIGTYPE_p_JD_projectors swig_types[0]
+#define SWIGTYPE_p_PrimmeParams swig_types[1]
+#define SWIGTYPE_p_PrimmeSvdsParams swig_types[2]
+#define SWIGTYPE_p_char swig_types[3]
+#define SWIGTYPE_p_correction_params swig_types[4]
+#define SWIGTYPE_p_double swig_types[5]
+#define SWIGTYPE_p_int swig_types[6]
+#define SWIGTYPE_p_p_double swig_types[7]
+#define SWIGTYPE_p_primme_convergencetest swig_types[8]
+#define SWIGTYPE_p_primme_function swig_types[9]
+#define SWIGTYPE_p_primme_init swig_types[10]
+#define SWIGTYPE_p_primme_params swig_types[11]
+#define SWIGTYPE_p_primme_preset_method swig_types[12]
+#define SWIGTYPE_p_primme_projection swig_types[13]
+#define SWIGTYPE_p_primme_restartscheme swig_types[14]
+#define SWIGTYPE_p_primme_stats swig_types[15]
+#define SWIGTYPE_p_primme_svds_operator swig_types[16]
+#define SWIGTYPE_p_primme_svds_params swig_types[17]
+#define SWIGTYPE_p_primme_svds_preset_method swig_types[18]
+#define SWIGTYPE_p_primme_svds_stats swig_types[19]
+#define SWIGTYPE_p_primme_svds_target swig_types[20]
+#define SWIGTYPE_p_primme_target swig_types[21]
+#define SWIGTYPE_p_projection_params swig_types[22]
+#define SWIGTYPE_p_restarting_params swig_types[23]
+#define SWIGTYPE_p_std__complexT_double_t swig_types[24]
+static swig_type_info *swig_types[26];
+static swig_module_info swig_module = {swig_types, 25, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3641,7 +3640,7 @@ static int tprimme(double *evals, double *evecs, double *resNorms, primme_params
       return dprimme(evals, evecs, resNorms, primme);
 }
 static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
-      return zprimme(evals, (Complex_Z*)evecs, resNorms, primme);
+      return zprimme(evals, evecs, resNorms, primme);
 }
 
 template <typename T>
@@ -3699,7 +3698,7 @@ static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_s
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
-   return zprimme_svds(svals, (Complex_Z*)svecs, resNorms, primme_svds);
+   return zprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 
 static void myglobalSumDouble_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds) {
@@ -8795,7 +8794,7 @@ fail:
 SWIGINTERN PyObject *_wrap_zprimme__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   double *arg1 = (double *) 0 ;
-  Complex_Z *arg2 = (Complex_Z *) 0 ;
+  std::complex< double > *arg2 = (std::complex< double > *) 0 ;
   double *arg3 = (double *) 0 ;
   primme_params *arg4 = (primme_params *) 0 ;
   void *argp1 = 0 ;
@@ -8818,11 +8817,11 @@ SWIGINTERN PyObject *_wrap_zprimme__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "zprimme" "', argument " "1"" of type '" "double *""'"); 
   }
   arg1 = reinterpret_cast< double * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Complex_Z, 0 |  0 );
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__complexT_double_t, 0 |  0 );
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "zprimme" "', argument " "2"" of type '" "Complex_Z *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "zprimme" "', argument " "2"" of type '" "std::complex< double > *""'"); 
   }
-  arg2 = reinterpret_cast< Complex_Z * >(argp2);
+  arg2 = reinterpret_cast< std::complex< double > * >(argp2);
   res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_double, 0 |  0 );
   if (!SWIG_IsOK(res3)) {
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "zprimme" "', argument " "3"" of type '" "double *""'"); 
@@ -8878,7 +8877,7 @@ SWIGINTERN PyObject *_wrap_zprimme(PyObject *self, PyObject *args) {
     _v = SWIG_CheckState(res);
     if (_v) {
       void *vptr = 0;
-      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_Complex_Z, 0);
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_std__complexT_double_t, 0);
       _v = SWIG_CheckState(res);
       if (_v) {
         void *vptr = 0;
@@ -8927,7 +8926,7 @@ fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'zprimme'.\n"
     "  Possible C/C++ prototypes are:\n"
     "    my_primme< std::complex< double > >(int,double *,int,int,std::complex< double > *,int,double *,PrimmeParams *)\n"
-    "    zprimme(double *,Complex_Z *,double *,primme_params *)\n");
+    "    zprimme(double *,std::complex< double > *,double *,primme_params *)\n");
   return 0;
 }
 
@@ -10750,7 +10749,7 @@ fail:
 SWIGINTERN PyObject *_wrap_zprimme_svds__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   double *arg1 = (double *) 0 ;
-  Complex_Z *arg2 = (Complex_Z *) 0 ;
+  std::complex< double > *arg2 = (std::complex< double > *) 0 ;
   double *arg3 = (double *) 0 ;
   primme_svds_params *arg4 = (primme_svds_params *) 0 ;
   void *argp1 = 0 ;
@@ -10773,11 +10772,11 @@ SWIGINTERN PyObject *_wrap_zprimme_svds__SWIG_1(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "zprimme_svds" "', argument " "1"" of type '" "double *""'"); 
   }
   arg1 = reinterpret_cast< double * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Complex_Z, 0 |  0 );
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__complexT_double_t, 0 |  0 );
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "zprimme_svds" "', argument " "2"" of type '" "Complex_Z *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "zprimme_svds" "', argument " "2"" of type '" "std::complex< double > *""'"); 
   }
-  arg2 = reinterpret_cast< Complex_Z * >(argp2);
+  arg2 = reinterpret_cast< std::complex< double > * >(argp2);
   res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_double, 0 |  0 );
   if (!SWIG_IsOK(res3)) {
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "zprimme_svds" "', argument " "3"" of type '" "double *""'"); 
@@ -10833,7 +10832,7 @@ SWIGINTERN PyObject *_wrap_zprimme_svds(PyObject *self, PyObject *args) {
     _v = SWIG_CheckState(res);
     if (_v) {
       void *vptr = 0;
-      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_Complex_Z, 0);
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_std__complexT_double_t, 0);
       _v = SWIG_CheckState(res);
       if (_v) {
         void *vptr = 0;
@@ -10888,7 +10887,7 @@ fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'zprimme_svds'.\n"
     "  Possible C/C++ prototypes are:\n"
     "    my_primme_svds< std::complex< double > >(int,double *,int,int,std::complex< double > *,int,int,std::complex< double > *,int,double *,PrimmeSvdsParams *)\n"
-    "    zprimme_svds(double *,Complex_Z *,double *,primme_svds_params *)\n");
+    "    zprimme_svds(double *,std::complex< double > *,double *,primme_svds_params *)\n");
   return 0;
 }
 
@@ -13262,7 +13261,6 @@ static void *_p_PrimmeSvdsParamsTo_p_primme_svds_params(void *x, int *SWIGUNUSED
 static void *_p_PrimmeParamsTo_p_primme_params(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((primme_params *)  ((PrimmeParams *) x));
 }
-static swig_type_info _swigt__p_Complex_Z = {"_p_Complex_Z", "Complex_Z *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_JD_projectors = {"_p_JD_projectors", "JD_projectors *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PrimmeParams = {"_p_PrimmeParams", "PrimmeParams *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PrimmeSvdsParams = {"_p_PrimmeSvdsParams", "PrimmeSvdsParams *", 0, 0, (void*)0, 0};
@@ -13290,7 +13288,6 @@ static swig_type_info _swigt__p_restarting_params = {"_p_restarting_params", "re
 static swig_type_info _swigt__p_std__complexT_double_t = {"_p_std__complexT_double_t", "std::complex< double > *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
-  &_swigt__p_Complex_Z,
   &_swigt__p_JD_projectors,
   &_swigt__p_PrimmeParams,
   &_swigt__p_PrimmeSvdsParams,
@@ -13318,7 +13315,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_std__complexT_double_t,
 };
 
-static swig_cast_info _swigc__p_Complex_Z[] = {  {&_swigt__p_Complex_Z, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_JD_projectors[] = {  {&_swigt__p_JD_projectors, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PrimmeParams[] = {  {&_swigt__p_PrimmeParams, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PrimmeSvdsParams[] = {  {&_swigt__p_PrimmeSvdsParams, 0, 0, 0},{0, 0, 0, 0}};
@@ -13346,7 +13342,6 @@ static swig_cast_info _swigc__p_restarting_params[] = {  {&_swigt__p_restarting_
 static swig_cast_info _swigc__p_std__complexT_double_t[] = {  {&_swigt__p_std__complexT_double_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
-  _swigc__p_Complex_Z,
   _swigc__p_JD_projectors,
   _swigc__p_PrimmeParams,
   _swigc__p_PrimmeSvdsParams,

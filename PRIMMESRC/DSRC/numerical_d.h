@@ -43,14 +43,22 @@
 #endif
 
 #ifdef USE_DOUBLECOMPLEX
-#  define IMAGINARY _Complex_I
-#  define SCALAR complex double
-#  define REAL double
-#  define REAL_PART(x) (creal(x))
-#  define ABS(x) (cabs(x))
-#  define CONJ(x) (conj(x))
+#  ifndef __cplusplus
+#     include <complex.h> /* definition of creal, cabs, conj */
+#     define SCALAR complex double
+#     define REAL double
+#     define REAL_PART(x) (creal(x))
+#     define ABS(x) (cabs(x))
+#     define CONJ(x) (conj(x))
+#  else
+#     include <complex> /* definition of real, abs, conj */
+#     define SCALAR std::complex<double>
+#     define REAL double
+#     define REAL_PART(x) (std::real(x))
+#     define ABS(x) (std::abs(x))
+#     define CONJ(x) (std::conj(x))
+#  endif
 #else
-#  define IMAGINARY 0.0
 #  define SCALAR double
 #  define REAL double
 #  define REAL_PART(x) (x)

@@ -39,15 +39,15 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
    int *flag, int basisSize, double *sortedEvals, int *ilev, int blockSize,
    primme_params *primme);
 
-static void Olsen_preconditioner_block(complex double *r, complex double *x,
-   int blockSize, complex double *rwork, primme_params *primme) ;
+static void Olsen_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_COMPLEX_DOUBLE__ *x,
+   int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) ;
 
-static void apply_preconditioner_block(complex double *v, complex double *result,
+static void apply_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *result,
    int blockSize, primme_params *primme);
 
-static void setup_JD_projectors(complex double *x, complex double *r, complex double *evecs,
-   complex double *evecsHat, complex double *Kinvx, complex double *xKinvx,
-   complex double **Lprojector, complex double **RprojectorQ, complex double **RprojectorX,
+static void setup_JD_projectors(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_COMPLEX_DOUBLE__ *evecs,
+   __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *Kinvx, __PRIMME_COMPLEX_DOUBLE__ *xKinvx,
+   __PRIMME_COMPLEX_DOUBLE__ **Lprojector, __PRIMME_COMPLEX_DOUBLE__ **RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ **RprojectorX,
    int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX,
    int numLocked, int numConverged, primme_params *primme);
 

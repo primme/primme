@@ -29,7 +29,7 @@
 #include "primme.h"
 #include "numerical_z.h"
 
-void globalSum_zprimme(complex double *sendBuf, complex double *recvBuf, int count, 
+void globalSum_zprimme(__PRIMME_COMPLEX_DOUBLE__ *sendBuf, __PRIMME_COMPLEX_DOUBLE__ *recvBuf, int count, 
       primme_params *primme) {
 
    count *= 2;

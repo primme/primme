@@ -50,14 +50,22 @@
 #endif
 
 #ifdef USE_DOUBLECOMPLEX
-#  define IMAGINARY _Complex_I
-#  define SCALAR complex double
-#  define REAL double
-#  define REAL_PART(x) (creal(x))
-#  define ABS(x) (cabs(x))
-#  define CONJ(x) (conj(x))
+#  ifndef __cplusplus
+#     include <complex.h> /* definition of creal, cabs, conj */
+#     define SCALAR complex double
+#     define REAL double
+#     define REAL_PART(x) (creal(x))
+#     define ABS(x) (cabs(x))
+#     define CONJ(x) (conj(x))
+#  else
+#     include <complex> /* definition of real, abs, conj */
+#     define SCALAR std::complex<double>
+#     define REAL double
+#     define REAL_PART(x) (std::real(x))
+#     define ABS(x) (std::abs(x))
+#     define CONJ(x) (std::conj(x))
+#  endif
 #else
-#  define IMAGINARY 0.0
 #  define SCALAR double
 #  define REAL double
 #  define REAL_PART(x) (x)
@@ -119,7 +127,7 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
 
 void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy);
 #ifdefarithm L_DEFCPLX
-void Num_copy_zprimme(int n, complex double *x, int incx, complex double *y, int incy);
+void Num_copy_zprimme(int n, __PRIMME_COMPLEX_DOUBLE__ *x, int incx, __PRIMME_COMPLEX_DOUBLE__ *y, int incy);
 #endifarithm
 @(type) Num_dot_@(pre)primme(int n, @(type) *x, int incx, @(type) *y, int incy);
 void Num_orgqr_@(pre)primme(int m, int n, int k, @(type) *a, int lda, @(type) *tau,
@@ -158,8 +166,8 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
 void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
 #ifdefarithm L_DEFCPLX
-void permute_vecs_zprimme(complex double *vecs, int m, int n, int ld, int *perm_,
-      complex double *rwork, int *iwork);
+void permute_vecs_zprimme(__PRIMME_COMPLEX_DOUBLE__ *vecs, int m, int n, int ld, int *perm_,
+      __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork);
 #endifarithm
 double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);

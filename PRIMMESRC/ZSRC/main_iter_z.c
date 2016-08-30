@@ -91,7 +91,7 @@
  *
  * intWork  Integer work array
  *
- * realWork complex double work array
+ * realWork __PRIMME_COMPLEX_DOUBLE__ work array
  *
  * INPUT/OUTPUT arrays and parameters
  * ----------------------------------
@@ -121,7 +121,7 @@
  *       
  ******************************************************************************/
 
-int main_iter_zprimme(double *evals, int *perm, complex double *evecs, 
+int main_iter_zprimme(double *evals, int *perm, __PRIMME_COMPLEX_DOUBLE__ *evecs, 
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme) {
          
@@ -157,25 +157,25 @@ int main_iter_zprimme(double *evals, int *perm, complex double *evecs,
    int *iev;                /* Evalue index each block vector corresponds to */
 
    double tol;              /* Required tolerance for residual norms         */
-   complex double *V;              /* Basis vectors                                 */
-   complex double *W;              /* Work space storing A*V                        */
-   complex double *H;              /* Upper triangular portion of V'*A*V            */
-   complex double *M = NULL;       /* The projection Q'*K*Q, where Q = [evecs, x]   */
+   __PRIMME_COMPLEX_DOUBLE__ *V;              /* Basis vectors                                 */
+   __PRIMME_COMPLEX_DOUBLE__ *W;              /* Work space storing A*V                        */
+   __PRIMME_COMPLEX_DOUBLE__ *H;              /* Upper triangular portion of V'*A*V            */
+   __PRIMME_COMPLEX_DOUBLE__ *M = NULL;       /* The projection Q'*K*Q, where Q = [evecs, x]   */
                             /* x is the current Ritz vector and K is a       */
                             /* hermitian preconditioner.                     */
-   complex double *UDU = NULL;     /* The factorization of M=Q'KQ                   */
-   complex double *evecsHat = NULL;/* K^{-1}evecs                                   */
-   complex double *rwork;          /* Real work space.                              */
-   complex double *hVecs;          /* Eigenvectors of H                             */
-   complex double *hU=NULL;        /* Left singular vectors of R                    */
-   complex double *previousHVecs;  /* Coefficient vectors retained by               */
+   __PRIMME_COMPLEX_DOUBLE__ *UDU = NULL;     /* The factorization of M=Q'KQ                   */
+   __PRIMME_COMPLEX_DOUBLE__ *evecsHat = NULL;/* K^{-1}evecs                                   */
+   __PRIMME_COMPLEX_DOUBLE__ *rwork;          /* Real work space.                              */
+   __PRIMME_COMPLEX_DOUBLE__ *hVecs;          /* Eigenvectors of H                             */
+   __PRIMME_COMPLEX_DOUBLE__ *hU=NULL;        /* Left singular vectors of R                    */
+   __PRIMME_COMPLEX_DOUBLE__ *previousHVecs;  /* Coefficient vectors retained by               */
                             /* recurrence-based restarting                   */
 
    int numQR;               /* Maximum number of QR factorizations           */
-   complex double *Q = NULL;       /* QR decompositions for harmonic or refined     */
-   complex double *R = NULL;       /* projection: (A-target[i])*V = QR              */
-   complex double *QtV = NULL;     /* Q'*V                                          */
-   complex double *hVecsRot=NULL;  /* transformation of hVecs in arbitrary vectors  */
+   __PRIMME_COMPLEX_DOUBLE__ *Q = NULL;       /* QR decompositions for harmonic or refined     */
+   __PRIMME_COMPLEX_DOUBLE__ *R = NULL;       /* projection: (A-target[i])*V = QR              */
+   __PRIMME_COMPLEX_DOUBLE__ *QtV = NULL;     /* Q'*V                                          */
+   __PRIMME_COMPLEX_DOUBLE__ *hVecsRot=NULL;  /* transformation of hVecs in arbitrary vectors  */
 
    double *hVals;           /* Eigenvalues of H                              */
    double *hSVals=NULL;     /* Singular values of R                          */
@@ -208,7 +208,7 @@ int main_iter_zprimme(double *evals, int *perm, complex double *evecs,
       numQR = 0;
    }
 
-   rwork         = (complex double *) realWork;
+   rwork         = (__PRIMME_COMPLEX_DOUBLE__ *) realWork;
    V             = rwork; rwork += primme->nLocal*primme->maxBasisSize;
    W             = rwork; rwork += primme->nLocal*primme->maxBasisSize;
    if (numQR > 0) {
@@ -236,14 +236,14 @@ int main_iter_zprimme(double *evals, int *perm, complex double *evecs,
       UDU        = rwork; rwork += maxEvecsSize*maxEvecsSize;
    }
 
-   hVals         = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(complex double) + 1;
+   hVals         = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(__PRIMME_COMPLEX_DOUBLE__) + 1;
    if (numQR > 0) {
-      hSVals     = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(complex double) + 1;
+      hSVals     = (double *)rwork; rwork += primme->maxBasisSize*sizeof(double)/sizeof(__PRIMME_COMPLEX_DOUBLE__) + 1;
    }
-   prevRitzVals  = (double *)rwork; rwork += (primme->maxBasisSize+primme->numEvals)*sizeof(double)/sizeof(complex double) + 1;
-   blockNorms    = (double *)rwork; rwork += primme->maxBlockSize*sizeof(double)/sizeof(complex double) + 1;
+   prevRitzVals  = (double *)rwork; rwork += (primme->maxBasisSize+primme->numEvals)*sizeof(double)/sizeof(__PRIMME_COMPLEX_DOUBLE__) + 1;
+   blockNorms    = (double *)rwork; rwork += primme->maxBlockSize*sizeof(double)/sizeof(__PRIMME_COMPLEX_DOUBLE__) + 1;
 
-   rworkSize     = primme->realWorkSize/sizeof(complex double) - (rwork - (complex double*)realWork);
+   rworkSize     = primme->realWorkSize/sizeof(__PRIMME_COMPLEX_DOUBLE__) - (rwork - (__PRIMME_COMPLEX_DOUBLE__*)realWork);
 
    /* Integer workspace */
 
@@ -1045,22 +1045,22 @@ int main_iter_zprimme(double *evals, int *perm, complex double *evecs,
  * 
  ******************************************************************************/
 
-int prepare_candidates_zprimme(complex double *V, complex double *W, int nLocal,
-      complex double *H, int ldH, int basisSize, int ldV, complex double *X, complex double *R,
-      complex double *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
+int prepare_candidates_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int nLocal,
+      __PRIMME_COMPLEX_DOUBLE__ *H, int ldH, int basisSize, int ldV, __PRIMME_COMPLEX_DOUBLE__ *X, __PRIMME_COMPLEX_DOUBLE__ *R,
+      __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
       int numEvals, double *blockNorms, int blockNormsSize,
-      int maxBlockSize, complex double *evecs, int numLocked, double *evals, 
+      int maxBlockSize, __PRIMME_COMPLEX_DOUBLE__ *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, complex double *hVecsRot, int ldhVecsRot, int *reset,
-      complex double *rwork, int rworkSize, int *iwork, primme_params *primme) {
+      double *smallestResNorm, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot, int ldhVecsRot, int *reset,
+      __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i, blki;            /* loop variables */
    double *hValsBlock;     /* contiguous copy of the hVals to be tested */
-   complex double *hVecsBlock;    /* contiguous copy of the hVecs columns to be tested */     
+   __PRIMME_COMPLEX_DOUBLE__ *hVecsBlock;    /* contiguous copy of the hVecs columns to be tested */     
    int *flagsBlock;        /* contiguous copy of the flags to be tested */
    double *hValsBlock0;    /* workspace for hValsBlock */
-   complex double *hVecsBlock0;   /* workspace for hVecsBlock */
+   __PRIMME_COMPLEX_DOUBLE__ *hVecsBlock0;   /* workspace for hVecsBlock */
    double targetShift;     /* current target shift */
    int ret;                /* returned error */
 
@@ -1069,7 +1069,7 @@ int prepare_candidates_zprimme(complex double *V, complex double *W, int nLocal,
    /* -------------------------- */
 
    if (V == NULL) {
-      complex double t;
+      __PRIMME_COMPLEX_DOUBLE__ t;
 
       return maxBlockSize+maxBlockSize*basisSize+
          max(max(
@@ -1279,9 +1279,9 @@ int prepare_candidates_zprimme(complex double *V, complex double *W, int nLocal,
  *
  ******************************************************************************/
    
-static int verify_norms(complex double *V, complex double *W, double *hVals, int basisSize,
+static int verify_norms(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, double *hVals, int basisSize,
       double *resNorms, int *flags, int *converged, double machEps,
-      complex double *rwork, int rworkSize, int *iwork, primme_params *primme) {
+      __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, primme_params *primme) {
 
    int i;         /* Loop variable                                     */
    double *dwork = (double *) rwork; /* pointer to cast rwork to double*/
