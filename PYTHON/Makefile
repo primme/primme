@@ -9,7 +9,7 @@ test: all tests.py examples.py
 	python tests.py
 
 $(GENERATED): primme.i numpy.i wrappers.py primmew.h pyfragments.swg
-	swig -c++ -Wextra -python primme.i
+	-@swig -c++ -Wextra -python primme.i
 
 # Clean target
 clean:
