@@ -45,10 +45,6 @@
 #endif
 #endifarithm
 
-#ifdef I
-#   undef I
-#endif
-
 #ifdef USE_DOUBLECOMPLEX
 #  ifndef __cplusplus
 #     include <complex.h> /* definition of creal, cabs, conj */
@@ -71,6 +67,11 @@
 #  define REAL_PART(x) (x)
 #  define ABS(x) (fabs(x))
 #  define CONJ(x) (x)
+#endif
+
+/* complex.h may be defined in primme.h or here; so undefine I */
+#ifdef I
+#   undef I
 #endif
 
 #ifndef __cplusplus

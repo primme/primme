@@ -31,15 +31,16 @@
 
 #ifdef USE_DOUBLECOMPLEX
 #  include "../../PRIMMESRC/ZSRC/numerical_z.h"
-#  define PRIMME_NUM complex double
+#  define IMAGINARY _Complex_I
 #  define SUF(NAME) NAME ## _zprimme
 #  define PREFIX(NAME) z ## NAME
 #else
 #  include "../../PRIMMESRC/DSRC/numerical_d.h"
-#  define PRIMME_NUM double
+#  define IMAGINARY 0.0
 #  define SUF(NAME) NAME ## _dprimme
 #  define PREFIX(NAME) d ## NAME
 #endif
+#define PRIMME_NUM SCALAR
 
 #define ASSERT_MSG(COND, RETURN, ...) { if (!(COND)) {fprintf(stderr, "Error in " __FUNCT__ ": " __VA_ARGS__); return (RETURN);} }
 
