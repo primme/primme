@@ -3618,13 +3618,13 @@ static void copy_matrix(T *x, I m, J n, I ldx, T *y, I ldy) {
 
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
-      memmove(y, x, sizeof(T)*m*n);
+      memmove(y, x, sizeof(T)*(size_t)m*(size_t)n);
    }
 
    /* Copy matrix some rows down or up */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
-         memmove(&y[i*ldy], &x[i*ldx], sizeof(T)*m);
+         memmove(&y[i*ldy], &x[i*ldx], sizeof(T)*(size_t)m);
    }
 
    /* Copy matrix some columns forward */
@@ -4726,7 +4726,7 @@ void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, double 
       copy_matrix((double*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       double *x = (double*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -4786,7 +4786,7 @@ void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, std::co
       copy_matrix((std::complex<double>*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       std::complex<double> *x = (std::complex<double>*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -4846,7 +4846,7 @@ void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, double 
       copy_matrix((double*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       double *x = (double*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -4906,7 +4906,7 @@ void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, std::co
       copy_matrix((std::complex<double>*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       std::complex<double> *x = (std::complex<double>*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -5028,7 +5028,7 @@ void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, dou
       copy_matrix((double*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       double *x = (double*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -5090,7 +5090,7 @@ void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, std
       copy_matrix((std::complex<double>*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       std::complex<double> *x = (std::complex<double>*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -5152,7 +5152,7 @@ void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, dou
       copy_matrix((double*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       double *x = (double*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];
@@ -5214,7 +5214,7 @@ void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, std
       copy_matrix((std::complex<double>*)array_data(array5), (len1XD), (len2XD), (int)(strides[1]/strides[0]), (xd), (ldXD));
     } else {
       std::complex<double> *x = (std::complex<double>*)array_data(array5);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<(len1XD); i++)
       for (int j=0; j<(len2XD); j++)
       (xd)[i+j*(ldXD)] = x[i*ldx+j];

@@ -238,7 +238,7 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
     copy_matrix((DATA_TYPE*)array_data(array), ($1), ($2), (DIM_TYPE)(strides[1]/strides[0]), ($4), ($3));
   } else {
       DATA_TYPE *x = (DATA_TYPE*)array_data(array);
-      int ldx = strides[0]/strides[1];
+      npy_intp ldx = strides[0]/strides[1];
       for (int i=0; i<($1); i++)
          for (int j=0; j<($2); j++)
             ($4)[i+j*($3)] = x[i*ldx+j];
@@ -342,13 +342,13 @@ static void copy_matrix(T *x, I m, J n, I ldx, T *y, I ldy) {
 
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
-      memmove(y, x, sizeof(T)*m*n);
+      memmove(y, x, sizeof(T)*(size_t)m*(size_t)n);
    }
 
    /* Copy matrix some rows down or up */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
-         memmove(&y[i*ldy], &x[i*ldx], sizeof(T)*m);
+         memmove(&y[i*ldy], &x[i*ldx], sizeof(T)*(size_t)m);
    }
 
    /* Copy matrix some columns forward */
