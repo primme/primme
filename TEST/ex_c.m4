@@ -162,11 +162,11 @@ ifdef(`USE_PETSC', ``   if (primme.procID == 0) { /* Reports process with ID 0 *
    sp()fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
    sp()fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
    sp()                                                      primme.aNorm*primme.eps);
-   sp()fprintf(primme.outputFile, "Iterations: %-d\n", 
+   sp()fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
    sp()                                              primme.stats.numOuterIterations); 
-   sp()fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
-   sp()fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
-   sp()fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds);
+   sp()fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+   sp()fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+   sp()fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
    sp()if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
    sp()   fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
    sp()   fprintf(primme.outputFile,
