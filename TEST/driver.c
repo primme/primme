@@ -318,8 +318,6 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------------------------------------- */
 
    if (master) {
-      primme_PrintStackTrace(primme);
-
       fprintf(primme.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
       fprintf(primme.outputFile, "User Time           : %f seconds\n", ut2-ut1);
