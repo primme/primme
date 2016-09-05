@@ -124,7 +124,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
          }
          #define OPTION(F, V) if (strcmp(stringValue, #V) == 0) { primme-> F = V; ret = 1; }
          #define READ_FIELDParams(S, V, P) if (strcmp(field, #S "." #V) == 0) \
-            ret = fscanf(configFile, #P, &primme-> S ## Params . V);
+            ret = fscanf(configFile, P, &primme-> S ## Params . V);
          #define READ_FIELD_OPParams(S, V, P) if (strcmp(field, #S "." #V) == 0) { \
             ret = fscanf(configFile, "%s", stringValue); \
             if (ret == 1) { ret=0; P } \
@@ -208,7 +208,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
          READ_FIELDParams(correction, precondition, "%d");
          READ_FIELDParams(correction, robustShifts, "%d");
          READ_FIELDParams(correction, maxInnerIterations, "%d");
-         READ_FIELDParams(correction, relTolBase, %lf);
+         READ_FIELDParams(correction, relTolBase, "%lf");
 
          READ_FIELD_OPParams(correction, convTest,
             OPTIONParams(correction, convTest, primme_full_LTolerance)
