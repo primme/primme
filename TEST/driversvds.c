@@ -350,10 +350,10 @@ static int real_main (int argc, char *argv[]) {
       fprintf(primme_svds.outputFile, "Tolerance : %-22.15E\n", 
                                                             primme_svds.aNorm*primme_svds.eps);
       #define PRINT_STATS(A, pre) { \
-         fprintf(primme_svds.outputFile, pre "Iterations  : %-d\n", (A).numOuterIterations); \
-         fprintf(primme_svds.outputFile, pre "Restarts    : %-d\n", (A).numRestarts);\
-         fprintf(primme_svds.outputFile, pre "Matvecs     : %-d\n", (A).numMatvecs);\
-         fprintf(primme_svds.outputFile, pre "Preconds    : %-d\n", (A).numPreconds);\
+         fprintf(primme_svds.outputFile, pre "Iterations  : %-" PRIMME_INT_P "\n", (A).numOuterIterations); \
+         fprintf(primme_svds.outputFile, pre "Restarts    : %-" PRIMME_INT_P "\n", (A).numRestarts);\
+         fprintf(primme_svds.outputFile, pre "Matvecs     : %-" PRIMME_INT_P "\n", (A).numMatvecs);\
+         fprintf(primme_svds.outputFile, pre "Preconds    : %-" PRIMME_INT_P "\n", (A).numPreconds);\
          fprintf(primme_svds.outputFile, pre "ElapsedTime : %-f\n", (A).elapsedTime);}
 
       if (primme_svds.methodStage2 != primme_svds_op_none) {
@@ -369,7 +369,7 @@ static int real_main (int argc, char *argv[]) {
             "However, the subspace of svecs is accurate to the required tolerance.\n");
       }
 
-      fprintf(primme_svds.outputFile, "\n\n#,%d,%.1f\n\n", primme_svds.stats.numMatvecs,
+      fprintf(primme_svds.outputFile, "\n\n#,%" PRIMME_INT_P ",%.1f\n\n", primme_svds.stats.numMatvecs,
          wt2-wt1); 
    }
 
@@ -480,6 +480,9 @@ static int setMatrixAndPrecond(driver_params *driver,
             break;
          case driver_ilut:
             fprintf(stderr, "ERROR: ilut preconditioner is not supported with NATIVE, use other!\n");
+            return -1;
+         default:
+            fprintf(stderr, "ERROR: preconditioner is not supported with NATIVE, use other!\n");
             return -1;
          }
       }
@@ -740,6 +743,8 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_svds_params *pr
          free(primme_svds->preconditioner);
          break;
       case driver_ilut:
+         break;
+      default:
          break;
       }
 #endif

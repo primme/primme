@@ -72,7 +72,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
    /* Check primme_params */
 #  define CHECK_PRIMME_PARAM(F) \
         if (primme0. F != primme-> F ) { \
-           fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", primme-> F , primme0. F ); \
+           fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", (int)primme-> F , (int)primme0. F ); \
            retX = 1; \
         }
 #  define CHECK_PRIMME_PARAM_DOUBLE(F) \
@@ -82,7 +82,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
         }
 #  define CHECK_PRIMME_PARAM_TOL(F, T) \
         if (abs(primme0. F - primme-> F ) > primme-> F * T /100+1) { \
-           fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", primme-> F , primme0. F ); \
+           fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", (int)primme-> F , (int)primme0. F ); \
            retX = 1; \
         }
 
@@ -327,7 +327,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
    /* Check primme_svds_params */
 #  define CHECK_PRIMME_PARAM(F) \
         if (primme_svds0. F != primme_svds-> F ) { \
-           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", primme_svds-> F , primme_svds0. F ); \
+           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", (int)primme_svds-> F , (int)primme_svds0. F ); \
            retX = 1; \
         }
 #  define CHECK_PRIMME_PARAM_DOUBLE(F) \
@@ -337,7 +337,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
         }
 #  define CHECK_PRIMME_PARAM_TOL(F, T) \
         if (abs(primme_svds0. F - primme_svds-> F ) > primme_svds-> F * T /100+1) { \
-           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", primme_svds-> F , primme_svds0. F ); \
+           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", (int)primme_svds-> F , (int)primme_svds0. F ); \
            retX = 1; \
         }
 

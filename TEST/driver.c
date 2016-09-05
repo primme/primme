@@ -332,11 +332,11 @@ static int real_main (int argc, char *argv[]) {
 
       fprintf(primme.outputFile, "Tolerance  : %-22.15E\n", 
                                                             primme.aNorm*primme.eps);
-      fprintf(primme.outputFile, "Iterations : %-d\n", 
+      fprintf(primme.outputFile, "Iterations : %-" PRIMME_INT_P "\n", 
                                                     primme.stats.numOuterIterations); 
-      fprintf(primme.outputFile, "Restarts   : %-d\n", primme.stats.numRestarts);
-      fprintf(primme.outputFile, "Matvecs    : %-d\n", primme.stats.numMatvecs);
-      fprintf(primme.outputFile, "Preconds   : %-d\n", primme.stats.numPreconds);
+      fprintf(primme.outputFile, "Restarts   : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+      fprintf(primme.outputFile, "Matvecs    : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+      fprintf(primme.outputFile, "Preconds   : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
       if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme.outputFile,
@@ -345,7 +345,7 @@ static int real_main (int argc, char *argv[]) {
             "However, the subspace of evecs is accurate to the required tolerance.\n");
       }
 
-      fprintf(primme.outputFile, "\n\n#,%d,%.1f\n\n", primme.stats.numMatvecs,
+      fprintf(primme.outputFile, "\n\n#,%" PRIMME_INT_P ",%.1f\n\n", primme.stats.numMatvecs,
          wt2-wt1); 
 
       switch (primme.dynamicMethodSwitch) {
@@ -467,6 +467,9 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
             primme->preconditioner = prec;
             primme->applyPreconditioner = ApplyILUTPrecNative;
             break;
+         default:
+            fprintf(stderr, "ERROR: preconditioner is not supported with NATIVE, use other!\n");
+            return -1;
          }
       }
 #endif
@@ -635,6 +638,8 @@ static int destroyMatrixAndPrecond(driver_params *driver, primme_params *primme,
          if (primme->preconditioner) {
             freeCSRMatrix((CSRMatrix*)primme->preconditioner);
          }
+         break;
+      default:
          break;
       }
 #endif

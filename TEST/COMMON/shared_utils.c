@@ -116,7 +116,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
          field = ident + strlen(primmeprefix);
 
          #define READ_FIELD(V, P) if (strcmp(field, #V) == 0) \
-            ret = fscanf(configFile, #P, &primme-> V);
+            ret = fscanf(configFile, P, &primme-> V);
          #define READ_FIELD_OP(V, P) if (strcmp(field, #V) == 0) { \
             ret = fscanf(configFile, "%s", stringValue); \
             if (ret == 1) { ret=0; P } \
@@ -132,15 +132,15 @@ int read_solver_params(char *configFileName, char *outputFileName,
          }
          #define OPTIONParams(S, F, V) if (strcmp(stringValue, #V) == 0) { primme-> S ## Params . F = V; ret = 1; }
   
-         READ_FIELD(printLevel, %d);
-         READ_FIELD(numEvals, %d);
-         READ_FIELD(aNorm, %le);
-         READ_FIELD(eps, %le);
-         READ_FIELD(maxBasisSize, %d);
-         READ_FIELD(minRestartSize, %d);
-         READ_FIELD(maxBlockSize, %d);
-         READ_FIELD(maxOuterIterations, %d);
-         READ_FIELD(maxMatvecs, %d);
+         READ_FIELD(printLevel, "%d");
+         READ_FIELD(numEvals, "%d");
+         READ_FIELD(aNorm, "%le");
+         READ_FIELD(eps, "%le");
+         READ_FIELD(maxBasisSize, "%d");
+         READ_FIELD(minRestartSize, "%d");
+         READ_FIELD(maxBlockSize, "%d");
+         READ_FIELD(maxOuterIterations, "%" PRIMME_INT_P);
+         READ_FIELD(maxMatvecs, "%" PRIMME_INT_P);
          READ_FIELD_OP(target,
             OPTION(target, primme_smallest)
             OPTION(target, primme_largest)
@@ -162,7 +162,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
             OPTION(initBasisMode, primme_init_user)
          );
 
-         READ_FIELD(numTargetShifts, %d);
+         READ_FIELD(numTargetShifts, "%d");
          if (strcmp(field, "targetShifts") == 0) {
             ret = 1;
             if (primme->numTargetShifts > 0) {
@@ -180,15 +180,15 @@ int read_solver_params(char *configFileName, char *outputFileName,
             }
          }
  
-         READ_FIELD(dynamicMethodSwitch, %d);
-         READ_FIELD(locking, %d);
-         READ_FIELD(initSize, %d);
-         READ_FIELD(numOrthoConst, %d);
+         READ_FIELD(dynamicMethodSwitch, "%d");
+         READ_FIELD(locking, "%d");
+         READ_FIELD(initSize, "%d");
+         READ_FIELD(numOrthoConst, "%d");
 
          if (strcmp(field, "iseed") == 0) {
             ret = 1;
             for (i=0;i<4; i++) {
-               ret = fscanf(configFile, "%d", &primme->iseed[i]);
+               ret = fscanf(configFile, "%" PRIMME_INT_P, &primme->iseed[i]);
                if (ret != 1) break;
             }
             if (ret == 1) {
@@ -203,11 +203,11 @@ int read_solver_params(char *configFileName, char *outputFileName,
             OPTIONParams(restarting, scheme, primme_dtr)
          );
 
-         READ_FIELDParams(restarting, maxPrevRetain, %d);
+         READ_FIELDParams(restarting, maxPrevRetain, "%d");
 
-         READ_FIELDParams(correction, precondition, %d);
-         READ_FIELDParams(correction, robustShifts, %d);
-         READ_FIELDParams(correction, maxInnerIterations, %d);
+         READ_FIELDParams(correction, precondition, "%d");
+         READ_FIELDParams(correction, robustShifts, "%d");
+         READ_FIELDParams(correction, maxInnerIterations, "%d");
          READ_FIELDParams(correction, relTolBase, %lf);
 
          READ_FIELD_OPParams(correction, convTest,
@@ -217,12 +217,12 @@ int read_solver_params(char *configFileName, char *outputFileName,
             OPTIONParams(correction, convTest, primme_adaptive)
          );
 
-         READ_FIELDParams(correction, projectors.LeftQ , %d);
-         READ_FIELDParams(correction, projectors.LeftX , %d);
-         READ_FIELDParams(correction, projectors.RightQ, %d);
-         READ_FIELDParams(correction, projectors.SkewQ , %d);
-         READ_FIELDParams(correction, projectors.RightX, %d);
-         READ_FIELDParams(correction, projectors.SkewX , %d);
+         READ_FIELDParams(correction, projectors.LeftQ , "%d");
+         READ_FIELDParams(correction, projectors.LeftX , "%d");
+         READ_FIELDParams(correction, projectors.RightQ, "%d");
+         READ_FIELDParams(correction, projectors.SkewQ , "%d");
+         READ_FIELDParams(correction, projectors.RightX, "%d");
+         READ_FIELDParams(correction, projectors.SkewX , "%d");
 
          if (ret == 0) {
             fprintf(stderr, 
@@ -566,7 +566,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
          field = ident + strlen(primmeprefix);
 
          #define READ_FIELD(V, P) if (strcmp(field, #V) == 0) \
-            ret = fscanf(configFile, #P, &primme_svds-> V);
+            ret = fscanf(configFile, P, &primme_svds-> V);
          #define READ_FIELD_OP(V, P) if (strcmp(field, #V) == 0) { \
             ret = fscanf(configFile, "%s", stringValue); \
             if (ret == 1) { ret=0; P } \
@@ -574,13 +574,13 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
          }
          #define OPTION(F, V) if (strcmp(stringValue, #V) == 0) { primme_svds-> F = V; ret = 1; }
   
-         READ_FIELD(printLevel, %d);
-         READ_FIELD(numSvals, %d);
-         READ_FIELD(aNorm, %le);
-         READ_FIELD(eps, %le);
-         READ_FIELD(maxBasisSize, %d);
-         READ_FIELD(maxBlockSize, %d);
-         READ_FIELD(maxMatvecs, %d);
+         READ_FIELD(printLevel, "%d");
+         READ_FIELD(numSvals, "%d");
+         READ_FIELD(aNorm, "%le");
+         READ_FIELD(eps, "%le");
+         READ_FIELD(maxBasisSize, "%d");
+         READ_FIELD(maxBlockSize, "%d");
+         READ_FIELD(maxMatvecs, "%" PRIMME_INT_P);
 
          READ_FIELD_OP(target,
             OPTION(target, primme_svds_smallest)
@@ -588,7 +588,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
             OPTION(target, primme_svds_closest_abs)
          );
 
-         READ_FIELD(numTargetShifts, %d);
+         READ_FIELD(numTargetShifts, "%d");
          if (strcmp(field, "targetShifts") == 0) {
             ret = 1;
             if (primme_svds->numTargetShifts > 0) {
@@ -606,14 +606,14 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
             }
          }
  
-         READ_FIELD(locking, %d);
-         READ_FIELD(initSize, %d);
-         READ_FIELD(numOrthoConst, %d);
+         READ_FIELD(locking, "%d");
+         READ_FIELD(initSize, "%d");
+         READ_FIELD(numOrthoConst, "%d");
 
          if (strcmp(field, "iseed") == 0) {
             ret = 1;
             for (i=0;i<4; i++) {
-               ret = fscanf(configFile, "%d", &primme_svds->iseed[i]);
+               ret = fscanf(configFile, "%" PRIMME_INT_P, &primme_svds->iseed[i]);
                if (ret != 1) break;
             }
             if (ret == 1) {
@@ -623,7 +623,7 @@ int read_solver_params_svds(char *configFileName, char *outputFileName,
             }
          }
 
-         READ_FIELD(precondition, %d);
+         READ_FIELD(precondition, "%d");
 
          READ_FIELD_OP(method,
             OPTION(method, primme_svds_op_none)
