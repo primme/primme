@@ -63,42 +63,6 @@ extern "C" {
 #  define PRIMME_INT_MAX INT_MAX
 #endif
 
-#define PRIMME_MAX_NAME_LENGTH 128
-
-typedef enum {
-   Primme_dprimme,
-   Primme_zprimme,
-   Primme_check_input,
-   Primme_allocate_workspace,
-   Primme_main_iter,
-   Primme_init_basis,
-   Primme_init_block_krylov,
-   Primme_init_krylov,
-   Primme_ortho,
-   Primme_solve_h,
-   Primme_restart,
-   Primme_restart_h,
-   Primme_combine_retained,
-   Primme_insert_submatrix,
-   Primme_lock_vectors,
-   Primme_num_dsyev,
-   Primme_num_dsygv,
-   Primme_num_dgesvd,
-   Primme_num_zgesvd,
-   Primme_num_zheev,
-   Primme_num_dspev,
-   Primme_num_zhpev,
-   Primme_ududecompose,
-   Primme_udusolve,
-   Primme_apply_projected_preconditioner,
-   Primme_apply_skew_projector,
-   Primme_inner_solve,
-   Primme_solve_correction,
-   Primme_fopen,
-   Primme_malloc
-} primme_function;
-
-
 typedef enum {
    primme_smallest,        /* leftmost eigenvalues */
    primme_largest,         /* rightmost eigenvalues */
@@ -136,16 +100,6 @@ typedef enum {
    primme_adaptive_ETolerance,
    primme_adaptive
 } primme_convergencetest;
-
-
-typedef struct stackTraceNode {
-   primme_function callingFunction;
-   primme_function failedFunction;
-   int errorCode;
-   int lineNumber;
-   char fileName[PRIMME_MAX_NAME_LENGTH];
-   struct stackTraceNode *nextNode;
-} stackTraceNode;
 
 
 typedef struct primme_stats {
@@ -250,7 +204,6 @@ typedef struct primme_params {
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
-   struct stackTraceNode *stackTrace;
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
          struct primme_params *primme);
@@ -288,13 +241,6 @@ void primme_display_params(primme_params primme);
 void *primme_valloc(size_t byteSize, const char *target);
 void *primme_calloc(size_t nelem, size_t elsize, const char *target);
 void primme_Free(primme_params *primme);
-void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
-      primme_params *params);
-void primme_PushErrorMessage(const primme_function callingFunction, 
-      const primme_function failedFunction, const int errorCode, 
-      const char *fileName, const int lineNumber, primme_params *primme);
-void primme_PrintStackTrace(const primme_params primme);
-void primme_DeleteStackTrace(primme_params *primme);
 
 #ifdef __cplusplus
 }

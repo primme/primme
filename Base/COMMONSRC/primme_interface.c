@@ -40,6 +40,9 @@
 #include "primme_interface.h"
 #include "const.h"
 
+static void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
+                      primme_params *params);
+
 /***************************************************************************
 
    Initialize the primme data structure
@@ -128,7 +131,6 @@ void primme_initialize(primme_params *primme) {
    primme->realWorkSize            = 0;
    primme->intWork                 = NULL;
    primme->realWork                = NULL;
-   primme->stackTrace              = NULL;
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
 
@@ -143,17 +145,9 @@ void *primme_valloc(size_t byteSize, const char *target) {
 
    void *ptr;
 
-   if ( (ptr = malloc(byteSize)) == NULL) {
-      perror("primme_alloc");
-      fprintf(stderr,
-         "ERROR(primme_alloc): Could not allocate %lu bytes for: %s\n",
-         (unsigned long int)byteSize, target);
-      fflush(stderr);
-      exit(EXIT_FAILURE);
-   }
-
-   return (ptr);
-
+   CHKERRM((ptr = malloc(byteSize)) == NULL, NULL,
+      "malloc could not allocate %zd bytes for: %s\n", byteSize, target);
+   return ptr;
 }
 
 /* Memory allocation with zeroing */
@@ -161,17 +155,10 @@ void *primme_calloc(size_t nelem, size_t elsize, const char *target) {
 
    void *ptr;
 
-   if ((ptr = calloc(nelem, elsize)) == NULL) {
-      perror("primme_calloc");
-      fprintf(stderr, 
-         "ERROR(primme_calloc): Could not allocate %lu elements of %lu bytes for: %s\n",
-         (unsigned long int)nelem, (unsigned long int)elsize, target);
-      fflush(stderr);
-      exit(EXIT_FAILURE);
-   }
-
-   return (ptr);
-
+   CHKERRM((ptr = calloc(nelem, elsize)) == NULL, NULL,
+         "calloc could not allocate %zd elements of %zd bytes for: %s\n",
+         nelem, elsize, target);
+   return ptr;
 }
 
 void primme_Free(primme_params *params) {
@@ -674,7 +661,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
  *        NOTE: The count and the copying refers to double datatypes
  ******************************************************************************/
 
-void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
+static void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
                       primme_params *params) {
 
    int i;

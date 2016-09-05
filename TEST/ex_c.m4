@@ -155,8 +155,6 @@ ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
 ifdef(`USE_PETSC', ``   if (primme.procID == 0) { /* Reports process with ID 0 */
 ' define(sp, `   ')', `define(sp, `')')dnl
    sp()/* Reporting (optional) */
-   sp()primme_PrintStackTrace(primme);
-
    sp()for (i=0; i < primme.initSize; i++) {
    sp()   fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
    sp()      evals[i], rnorms[i]); 

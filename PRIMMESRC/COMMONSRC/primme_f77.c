@@ -109,15 +109,6 @@ void primme_display_params_f77(primme_params **primme) {
    primme_display_params(*(*primme));
 }
 
-#ifdef F77UNDERSCORE
-void primme_printstacktrace_f77_(primme_params **primme) {
-#else
-void primme_printstacktrace_f77(primme_params **primme) {
-#endif
-
-   primme_PrintStackTrace(*(*primme));
-}
-
 /*************************************************************************
  * set method takes "int method" as input. On return:
  *    returnValue = 0 successful completion 

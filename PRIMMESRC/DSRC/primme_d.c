@@ -113,11 +113,6 @@ int dprimme(double *evals, SCALAR *evecs, double *resNorms,
    /* ------------------ */
    primme_wTimer(1);
 
-   /* ---------------------------- */
-   /* Clear previous error reports */
-   /* ---------------------------- */
-   primme_DeleteStackTrace(primme);
-
    /* ----------------------- */
    /*  Find machine precision */
    /* ----------------------- */
@@ -160,54 +155,28 @@ int dprimme(double *evals, SCALAR *evecs, double *resNorms,
    /* Check primme input data for bounds, correct values etc. */
    /* ------------------------------------------------------- */
 
-   ret = check_input(evals, evecs, resNorms, primme);
+   CHKERR(ret = check_input(evals, evecs, resNorms, primme), ret);
 
-   if (ret != 0) {
-      primme_PushErrorMessage(Primme_dprimme, Primme_check_input, ret,
-                      __FILE__, __LINE__, primme);
-      primme->stats.elapsedTime = primme_wTimer(0);
-      return ret;
-   }
-   
    /* ----------------------------------------------------------------------- */
    /* Compute AND allocate memory requirements for main_iter and subordinates */
    /* ----------------------------------------------------------------------- */
 
-   ret = allocate_workspace(primme, TRUE);
-
-   if (ret != 0) {
-      primme_PushErrorMessage(Primme_dprimme, Primme_allocate_workspace, ret,
-                      __FILE__, __LINE__, primme);
-      primme->stats.elapsedTime = primme_wTimer(0);
-      return ALLOCATE_WORKSPACE_FAILURE;
-   }
+   CHKERR(allocate_workspace(primme, TRUE), ALLOCATE_WORKSPACE_FAILURE);
 
    /* --------------------------------------------------------- */
    /* Allocate workspace that will be needed locally by dprimme */
    /* --------------------------------------------------------- */
-   perm = (int *)primme_calloc((primme->numEvals), sizeof(int), "Perm array");
-
-   if (perm == NULL) {
-      primme_PushErrorMessage(Primme_dprimme, Primme_malloc, 0, 
-                      __FILE__, __LINE__, primme);
-      primme->stats.elapsedTime = primme_wTimer(0);
-      return MALLOC_FAILURE;
-   }
+   CHKERR(
+         (perm = (int *)primme_calloc((primme->numEvals), sizeof(int),
+                                     "Perm array")) == NULL, MALLOC_FAILURE);
 
    /*----------------------------------------------------------------------*/
    /* Call the solver                                                      */
    /*----------------------------------------------------------------------*/
 
-   ret = main_iter_dprimme(evals, perm, evecs, resNorms, machEps, 
-                   primme->intWork, primme->realWork, primme);
-
-   if (ret < 0) {
-      primme_PushErrorMessage(Primme_dprimme, Primme_main_iter, 
-                      ret, __FILE__, __LINE__, primme);
-      primme->stats.elapsedTime = primme_wTimer(0);
-      return MAIN_ITER_FAILURE;
-   }
-   /*----------------------------------------------------------------------*/
+   CHKERR(main_iter_dprimme(evals, perm, evecs, resNorms, machEps, 
+                   primme->intWork, primme->realWork, primme),
+         MAIN_ITER_FAILURE);
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */

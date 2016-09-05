@@ -7,18 +7,15 @@ include ../../Make_flags
 
 .PHONY: clean lib libd libz
 
-CSOURCE =  errors.c primme_f77.c \
+CSOURCE =  primme_f77.c \
 	primme_interface.c wtime.c
 
-COBJS = errors.o  primme_f77.o  \
+COBJS =  primme_f77.o  \
 	primme_interface.o wtime.o
 
 # 
 # Compilation
 #
-errors.o: errors.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c errors.c
-
 primme_f77.o: primme_f77.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c primme_f77.c
 

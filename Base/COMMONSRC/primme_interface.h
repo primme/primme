@@ -39,4 +39,13 @@ void primme_display_params_prefix(const char* prefix, primme_params primme);
 #  define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
+#define CHKERRM(ERRN, RETURN, ...) { \
+   int err = (ERRN);\
+   if (err) {\
+      fprintf(stderr, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+      fprintf(stderr, "PRIMME: " __VA_ARGS__);\
+      return (RETURN);\
+   }\
+}
+
 #endif

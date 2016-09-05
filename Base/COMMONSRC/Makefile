@@ -1,7 +1,6 @@
 #
 
 CDOTH = ../../PRIMMESRC/COMMONSRC/const.h \
-	../../PRIMMESRC/COMMONSRC/errors_private.h  \
 	../../PRIMMESRC/COMMONSRC/primme.h \
 	../../PRIMMESRC/COMMONSRC/primme_interface.h \
 	../../PRIMMESRC/COMMONSRC/primme_f77.h  \
@@ -9,7 +8,6 @@ CDOTH = ../../PRIMMESRC/COMMONSRC/const.h \
 	../../PRIMMESRC/COMMONSRC/wtime.h
 
 CSOURCE = \
-	../../PRIMMESRC/COMMONSRC/errors.c \
 	../../PRIMMESRC/COMMONSRC/primme_f77.c \
 	../../PRIMMESRC/COMMONSRC/primme_interface.c \
 	../../PRIMMESRC/COMMONSRC/wtime.c
@@ -20,9 +18,6 @@ all: $(CSOURCE) $(CDOTH) depends
 
 ../../PRIMMESRC/COMMONSRC/const.h: const.h
 	cp const.h ../../PRIMMESRC/COMMONSRC/const.h 
-
-../../PRIMMESRC/COMMONSRC/errors_private.h: errors_private.h
-	cp errors_private.h ../../PRIMMESRC/COMMONSRC/errors_private.h 
 
 ../../PRIMMESRC/COMMONSRC/primme.h: primme.h
 	cp primme.h ../../PRIMMESRC/COMMONSRC/primme.h
@@ -40,9 +35,6 @@ all: $(CSOURCE) $(CDOTH) depends
 	cp wtime.h ../../PRIMMESRC/COMMONSRC/wtime.h
 
 #---------  PRIMMESRC/COMMONSRC   .c files -------------------------
-
-../../PRIMMESRC/COMMONSRC/errors.c: errors.c
-	cp errors.c ../../PRIMMESRC/COMMONSRC/errors.c 
 
 ../../PRIMMESRC/COMMONSRC/primme_interface.c: primme_interface.c
 	cp primme_interface.c ../../PRIMMESRC/COMMONSRC/primme_interface.c

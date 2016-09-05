@@ -15,7 +15,6 @@ CDOTH_D  = ../../PRIMMESRC/DSRC/convergence_d.h  \
 	../../PRIMMESRC/DSRC/primme_private_d.h  \
 	../../PRIMMESRC/DSRC/restart_d.h  \
 	../../PRIMMESRC/DSRC/solve_H_d.h  \
-	../../PRIMMESRC/DSRC/solve_H_private_d.h  \
 	../../PRIMMESRC/DSRC/update_W_d.h  \
 	../../PRIMMESRC/DSRC/update_projection_d.h  
 
@@ -34,7 +33,6 @@ CDOTH_Z = ../../PRIMMESRC/ZSRC/convergence_z.h \
 	../../PRIMMESRC/ZSRC/primme_private_z.h \
 	../../PRIMMESRC/ZSRC/restart_z.h \
 	../../PRIMMESRC/ZSRC/solve_H_z.h \
-	../../PRIMMESRC/ZSRC/solve_H_private_z.h \
 	../../PRIMMESRC/ZSRC/update_W_z.h \
 	../../PRIMMESRC/ZSRC/update_projection_z.h 
 

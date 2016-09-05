@@ -112,9 +112,9 @@ all: drivers examples
 drivers: primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex
 
 examples: examples_c examples_cxx examples_f77
-examples_c: $(EXAMPLES_C)
-examples_cxx: $(EXAMPLES_CXX)
-examples_f77: $(EXAMPLES_F77)
+examples_C: $(EXAMPLES_C)
+examples_CXX: $(EXAMPLES_CXX)
+examples_F77: $(EXAMPLES_F77)
 
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
@@ -233,8 +233,8 @@ test_doublecomplex: ex_zseq
 test: test_double test_doublecomplex
 
 test_examples: test_examples_C test_examples_F77 test_examples_CXX
-test_examples_C test_examples_F77 test_examples_CXX: test_examples% : $(EXAMPLES_%)
-	@ok="0";for ex in $(EXAMPLES_$*); do \
+test_examples_C test_examples_F77 test_examples_CXX: test_examples% : examples%
+	@ok="0";for ex in $(EXAMPLES$*); do \
 		./$$ex || ok="1"; \
 	done > tests.log 2>&1; \
 	if test $$ok -eq 0 ; then \

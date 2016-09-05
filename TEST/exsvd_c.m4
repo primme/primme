@@ -201,8 +201,6 @@ define(`REPORT_PRIMME_SVDS', `
 ifdef(`USE_PETSC', ``   if (primme_svds.procID == 0) { /* Reports process with ID 0 */
 ' define(sp, `   ')', `define(sp, `')')dnl
    sp()/* Reporting (optional) */
-   sp()primme_PrintStackTrace(primme_svds.primme);
-
    sp()for (i=0; i < primme_svds.initSize; i++) {
    sp()   fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
    sp()      svals[i], rnorms[i]); 
@@ -455,7 +453,8 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
    int modeAtA = primme_svds_op_AtA, modeAAt = primme_svds_op_AAt;
    double mu = *(double*)primme_svds->matrix;
    PRIMME_NUM  *aux;
-   int ldaux, notrans = 0, trans = 1;
+   PRIMME_INT ldaux;
+   int notrans = 0, trans = 1;
    int min_m_n = min(primme_svds->m, primme_svds->n);
     
    if (*mode == primme_svds_op_AtA) {

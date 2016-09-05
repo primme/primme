@@ -45,7 +45,7 @@ ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         ! Solver Parameters
-        integer n,NUMEmax,BASISmax,BLOCKmax,maxMatvecs,
+        integer*8 n,NUMEmax,BASISmax,BLOCKmax,maxMatvecs,
      :          printLevel, method, whichEvals, numTargetShifts
         real*8 ETOL
 
@@ -90,6 +90,7 @@ ifdef(`USE_PETSC', `ifdef(`USE_POINTER',
 ', `        integer i,ierr
 ')dnl
         real*8  epsil, aNorm
+        integer*8 numIts, numMatvecs
 
 !-----------------------------------------------------------------------
 !       Start executable 
@@ -203,15 +204,21 @@ ifdef(`USE_PETSC', ``        if (procID.eq.0) then
         sp()   print *, 'PRIMME returned with error: ', ierr
         sp()endif
 
-        sp()call primme_display_stats_f77(primme)
 !       sp()
 !       sp()Example of obtaining primme members from the driver:
 !       sp()NOTE: don't use primme_get_member_f77, which can only be used in a callback
 !
         sp()call primmetop_get_member_f77(primme, PRIMMEF77_eps, epsil)
         sp()call primmetop_get_member_f77(primme, PRIMMEF77_aNorm, aNorm)
-        sp()print '(A16,E8.2,A20,e12.5)', 'Tolerance used: ',epsil,
-     :  sp()                           '  Estimated norm(A):',aNorm
+        sp()call primmetop_get_member_f77(primme,
+     :  sp()                  PRIMMEF77_stats_numOuterIterations, numIts)
+        sp()call primmetop_get_member_f77(primme,
+     :  sp()                      PRIMMEF77_stats_numMatvecs, numMatvecs)
+        sp()print '(A,E8.2,/,A,e12.5,/,A,I8,/,A,I8)',
+     :  sp()                           'Tolerance used:   ',epsil,
+     :  sp()                           'Estimated norm(A):',aNorm,
+     :  sp()                           'Iterations:       ',numIts,
+     :  sp()                           'Matvecs:          ',numMatvecs
 !
 !       sp()Reporting of evals and residuals
 !
