@@ -37,6 +37,8 @@ Uses PRIMME: https://github.com/primme/primme
 %pythoncode %{
 __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 %}
+// Support PRIMME_INT for int64_t
+%include "stdint.i"
 %{
 #define SWIG_FILE_WITH_INIT
 #include "primmew.h"
@@ -233,7 +235,7 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
           {Swig::DirectorMethodException::raise("No valid dimensions for object returned by $symname");}
   npy_intp * strides = array_strides(array);
   if (array_is_fortran(array)) {
-    copy_matrix((DATA_TYPE*)array_data(array), ($1), ($2), strides[1]/strides[0], ($4), ($3));
+    copy_matrix((DATA_TYPE*)array_data(array), ($1), ($2), (DIM_TYPE)(strides[1]/strides[0]), ($4), ($3));
   } else {
       DATA_TYPE *x = (DATA_TYPE*)array_data(array);
       int ldx = strides[0]/strides[1];
@@ -329,9 +331,9 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
    (int lenXD, double *xd)};
 
 %inline %{
-template <typename T>
-static void copy_matrix(T *x, int m, int n, int ldx, T *y, int ldy) {
-   int i,j;
+template <typename T, typename I, typename J>
+static void copy_matrix(T *x, I m, J n, I ldx, T *y, I ldy) {
+   I i; J j;
 
    assert(ldx >= m && ldy >= m);
 
@@ -377,13 +379,13 @@ static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms,
 template <typename T>
 static void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->matvec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
+    pp->matvec((int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)x, (int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)y);
 }
 
 template <typename T>
 static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->prevec(primme->nLocal, *blockSize, primme->nLocal, (T*)x, primme->nLocal, *blockSize, primme->nLocal, (T*)y);
+    pp->prevec((int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)x, (int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)y);
 }
 
 static void myglobalSumDouble(void *sendBuf, void *recvBuf, int *count, struct primme_params *primme) {
@@ -406,7 +408,7 @@ int my_primme(int lenEvals, double *evals,
         primme->nLocal = primme->n;
    if (len1Evecs < primme->nLocal || len2Evecs < primme->numEvals) {
         PyErr_Format(PyExc_ValueError,
-                     "Size of `evecs' should be at least (%d, %d)",
+                     "Size of `evecs' should be at least (%" PRIMME_INT_P ", %d)",
                      primme->nLocal, primme->numEvals);
         return -31;
    }
@@ -438,9 +440,9 @@ static void myglobalSumDouble_svds(void *sendBuf, void *recvBuf, int *count, str
 }
 
 template <typename T>
-static void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
+static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
-   int m, n;
+   PRIMME_INT m, n;
    if (*transpose == 0) {
       m = primme_svds->mLocal;
       n = primme_svds->nLocal;
@@ -449,13 +451,13 @@ static void mymatvec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
       n = primme_svds->mLocal;
       m = primme_svds->nLocal;
    }
-   pp->matvec(n, *blockSize, *ldx, (T*)x, m, *blockSize, *ldy, (T*)y, *transpose);
+   pp->matvec((int)n, *blockSize, (int)*ldx, (T*)x, (int)m, *blockSize, (int)*ldy, (T*)y, *transpose);
 }
 
 template <typename T>
-static void myprevec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
+static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
-   int m=0;
+   PRIMME_INT m=0;
    if (*mode == primme_svds_op_AtA) {
       m = primme_svds->nLocal;
    } else if (*mode ==  primme_svds_op_AAt) {
@@ -463,7 +465,7 @@ static void myprevec_svds(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
    } else if (*mode == primme_svds_op_augmented) {
       m = primme_svds->mLocal + primme_svds->nLocal;
    }
-   pp->prevec(m, *blockSize, *ldx, (T*)x, m, *blockSize, *ldy, (T*)y, *mode);
+   pp->prevec((int)m, *blockSize, (int)*ldx, (T*)x, (int)m, *blockSize, (int)*ldy, (T*)y, *mode);
 }
 
 template <typename T>
@@ -484,13 +486,13 @@ int my_primme_svds(int lenSvals, double *svals,
         primme_svds->nLocal = primme_svds->n;
    if (len1SvecsLeft < primme_svds->mLocal || len2SvecsLeft < primme_svds->numSvals) {
         PyErr_Format(PyExc_ValueError,
-                     "Size of `svecsleft' should be at least (%d, %d)",
+                     "Size of `svecsleft' should be at least (%" PRIMME_INT_P ", %d)",
                      primme_svds->mLocal, primme_svds->numSvals);
         return -31;
    }
    if (len1SvecsRight < primme_svds->nLocal || len2SvecsRight < primme_svds->numSvals) {
         PyErr_Format(PyExc_ValueError,
-                     "Size of `svecsright' should be at least (%d, %d)",
+                     "Size of `svecsright' should be at least (%" PRIMME_INT_P ", %d)",
                      primme_svds->nLocal, primme_svds->numSvals);
         return -31;
    }
@@ -507,18 +509,18 @@ int my_primme_svds(int lenSvals, double *svals,
       primme_svds->globalSumDouble = myglobalSumDouble_svds;
    T *svecs = new T[(primme_svds->nLocal+primme_svds->mLocal)*(primme_svds->numOrthoConst+primme_svds->numSvals)];
    copy_matrix(svecsLeft, primme_svds->mLocal, primme_svds->numOrthoConst,
-         len1SvecsLeft, svecs, primme_svds->mLocal);
+         (PRIMME_INT)len1SvecsLeft, svecs, primme_svds->mLocal);
    copy_matrix(svecsRight, primme_svds->nLocal, primme_svds->numOrthoConst,
-         len1SvecsRight, &svecs[primme_svds->numOrthoConst*primme_svds->mLocal],
+         (PRIMME_INT)len1SvecsRight, &svecs[primme_svds->numOrthoConst*primme_svds->mLocal],
          primme_svds->nLocal);
    int ret = tprimme_svds(svals, svecs, resNorms, static_cast<primme_svds_params*>(primme_svds));
    copy_matrix(&svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
          primme_svds->mLocal, primme_svds->numSvals,
-         primme_svds->mLocal, &svecsLeft[len1SvecsLeft*primme_svds->numOrthoConst], len1SvecsLeft);
+         primme_svds->mLocal, &svecsLeft[len1SvecsLeft*primme_svds->numOrthoConst], (PRIMME_INT)len1SvecsLeft);
    copy_matrix(&svecs[primme_svds->mLocal*(primme_svds->numOrthoConst
             +primme_svds->initSize)
          + primme_svds->nLocal*primme_svds->numOrthoConst], primme_svds->nLocal,
-         primme_svds->initSize, primme_svds->nLocal, &svecsRight[len1SvecsRight*primme_svds->numOrthoConst], len1SvecsRight);
+         primme_svds->initSize, primme_svds->nLocal, &svecsRight[len1SvecsRight*primme_svds->numOrthoConst], (PRIMME_INT)len1SvecsRight);
    delete [] svecs;
 
    return ret;
