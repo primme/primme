@@ -189,7 +189,6 @@ int solve_H_RR_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
 #else
       SCALAR rwork0;
 #  ifdef USE_DOUBLECOMPLEX
-      lrwork += 2*basisSize;
       CHKERR((Num_heev_zprimme("V", "U", basisSize, hVecs, basisSize, hVals,
                &rwork0, -1, hVals, &info), info), -1);
       *lrwork = max(*lrwork, (size_t)REAL_PART(rwork0) + 2*basisSize);
@@ -238,7 +237,7 @@ int solve_H_RR_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    }
    
    apSize = basisSize*(basisSize + 1)/2;
-   lrwork = lrwork - apSize;
+   assert(*lrwork >= (size_t)apSize);
 #  ifdef USE_DOUBLECOMPLEX
    /* -------------------------------------------------------------------- */
    /* Assign also 3N double work space after the 2N complex rwork finishes */
@@ -246,10 +245,10 @@ int solve_H_RR_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    doubleWork = (double *) (&rwork[apsize + 2*basisSize]);
 
    CHKERR(Num_hpev_zprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
-      &rwork[apSize], *lrwork), -1);
+      &rwork[apSize], TO_INT(*lrwork)), -1);
 #  elif defined(USE_DOUBLE)
    CHKERR(Num_hpev_dprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
-      &rwork[apSize], *lrwork), -1);
+      &rwork[apSize], TO_INT(*lrwork-apSize)), -1);
 #  endif
 
 #else /* NUM_ESSL */
@@ -278,7 +277,7 @@ int solve_H_RR_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
                 2*basisSize, doubleWork, &info), info), -1);
 #  elif defined(USE_DOUBLE)
    CHKERR((Num_heev_dprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
-                *lrwork, &info), info), -1);
+                TO_INT(*lrwork), &info), info), -1);
 #  endif
 #endif /* NUM_ESSL */
 
