@@ -81,7 +81,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
            retX = 1; \
         }
 #  define CHECK_PRIMME_PARAM_TOL(F, T) \
-        if (abs(primme0. F - primme-> F ) > primme-> F * T /100+1) { \
+        if (abs((int)primme0. F - (int)primme-> F ) > (int)primme-> F * T /100+1) { \
            fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", (int)primme-> F , (int)primme0. F ); \
            retX = 1; \
         }
@@ -336,7 +336,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
            retX = 1; \
         }
 #  define CHECK_PRIMME_PARAM_TOL(F, T) \
-        if (abs(primme_svds0. F - primme_svds-> F ) > primme_svds-> F * T /100+1) { \
+        if (abs((int)primme_svds0. F - (int)primme_svds-> F ) > (int)primme_svds-> F * T /100+1) { \
            fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", (int)primme_svds-> F , (int)primme_svds0. F ); \
            retX = 1; \
         }
