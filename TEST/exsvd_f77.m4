@@ -45,7 +45,7 @@ ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         ! Solver Parameters
-        integer m,n,NUMSmax,BASISmax,BLOCKmax,maxMatvecs,
+        integer*8 m,n,NUMSmax,BASISmax,BLOCKmax,maxMatvecs,
      :          printLevel, whichSvals, numTargetShifts
         real*8 TOL, c
 
@@ -300,7 +300,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
         integer*8 ldx,ldy
-        integer ldx,ldy,k,transpose
+        integer k,transpose
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer j
@@ -437,7 +437,8 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         integer*8 ldx,ldy
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
-        integer k,transpose,i,j,m,n, ierr
+        integer*8 m, n, i
+        integer k,transpose,j, ierr
         real*8 c
         common c
         call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_m,
