@@ -29,10 +29,12 @@
 #include "primme.h"
 #include "numerical_z.h"
 
-void globalSum_zprimme(__PRIMME_COMPLEX_DOUBLE__ *sendBuf, __PRIMME_COMPLEX_DOUBLE__ *recvBuf, int count, 
+int globalSum_zprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
       primme_params *primme) {
 
+#ifdef USE_DOUBLECOMPLEX
    count *= 2;
+#endif
 
    if (primme && primme->globalSumDouble) {
       primme->globalSumDouble(sendBuf, recvBuf, &count, primme);
@@ -40,4 +42,6 @@ void globalSum_zprimme(__PRIMME_COMPLEX_DOUBLE__ *sendBuf, __PRIMME_COMPLEX_DOUB
    else {
       Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
    }
+
+   return 0;
 }

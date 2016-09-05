@@ -29,12 +29,12 @@
 #ifndef INNER_SOLVE_H
 #define INNER_SOLVE_H
 
-int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *r, double *rnorm, __PRIMME_COMPLEX_DOUBLE__ *evecs,
-   __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, __PRIMME_COMPLEX_DOUBLE__ *xKinvx, 
-   __PRIMME_COMPLEX_DOUBLE__ *Lprojector, __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ *RprojectorX,
-   int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX,
-   __PRIMME_COMPLEX_DOUBLE__ *sol, double eval, double shift, double eresTol, 
-   double aNormEstimate, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, 
-   primme_params *primme);
+int inner_solve_zprimme(SCALAR *x, SCALAR *r, double *rnorm, 
+   SCALAR *evecs, SCALAR *evecsHat, SCALAR *UDU, int *ipivot, 
+   SCALAR *xKinvx, SCALAR *Lprojector, SCALAR *RprojectorQ, 
+   SCALAR *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
+   int sizeRprojectorX, SCALAR *sol, double eval, double shift, 
+   double eresTol, double aNormEstimate, double machEps, SCALAR *rwork, 
+   size_t rworkSize, primme_params *primme);
 
 #endif

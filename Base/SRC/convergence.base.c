@@ -32,14 +32,17 @@
 #include "primme.h"
 #include "const.h"
 #include "wtime.h"
-#include "convergence_@(pre).h"
-#include "convergence_private_@(pre).h"
-#include "ortho_@(pre).h"
 #include "numerical_@(pre).h"
+#include "convergence_@(pre).h"
+#include "ortho_@(pre).h"
 
 /* Extra estates for flags */
 #define PRACTICALLY_CONVERGED  2
 
+static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
+      PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
+      int left, int *iev, int numToProject, int *flags, double *blockNorms,
+      double tol, SCALAR *rwork, size_t *rworkSize, primme_params *primme);
 
 /*******************************************************************************
  * Subroutine check_convergence - This procedure checks the block vectors for  
@@ -71,10 +74,11 @@
  * reset          flag to reset V and W in the next restart
   ******************************************************************************/
 
-int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
-   int ldR, @(type) *evecs, int numLocked, int ldevecs, int left, int right,
-   int *flags, double *blockNorms, double *hVals, int *reset, double machEps,
-   @(type) *rwork, int rworkSize, int *iwork, primme_params *primme) {
+int check_convergence_@(pre)primme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
+      SCALAR *R, PRIMME_INT ldR, SCALAR *evecs, int numLocked,
+      PRIMME_INT ldevecs, int left, int right, int *flags, double *blockNorms,
+      double *hVals, int *reset, double machEps, SCALAR *rwork,
+      size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme) {
 
    int i;                  /* Loop variable                                      */
    int numToProject;       /* Number of vectors with potential accuracy problem  */
@@ -82,7 +86,6 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    double tol;             /* Residual tolerance                                 */
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
-   int ret=0;
    double targetShift;     /* target shift */
 
    /* -------------------------- */
@@ -90,10 +93,15 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    /* -------------------------- */
 
    if (flags == NULL) {
-      return R ? check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
-         NULL, right-left, NULL, NULL, 0, NULL, 0, primme) : 0;
+      if (R) check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
+            NULL, right-left, NULL, NULL, 0, NULL, rworkSize, primme);
+      *iwork = max(*iwork, right-left); /* for toProject */
+      return 0;
    }
-  
+ 
+   /* Check enough space for toProject */
+   assert(iworkSize >= right-left);
+
    targetShift = primme->numTargetShifts > 0 ?
       primme->targetShifts[min(primme->initSize, primme->numTargetShifts-1)] : 0.0;
  
@@ -179,12 +187,13 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
    /* --------------------------------------------------------------- */
 
    if (numToProject > 0) {
-      ret = check_practical_convergence(R, nLocal, ldR, evecs,
-         primme->numOrthoConst+numLocked, ldevecs, left, toProject,
-         numToProject, flags, blockNorms, tol, rwork, rworkSize, primme);
+      CHKERR(check_practical_convergence(R, nLocal, ldR, evecs,
+               primme->numOrthoConst+numLocked, ldevecs, left, toProject,
+               numToProject, flags, blockNorms, tol, rwork, rworkSize, primme),
+               -1);
    }
 
-   return ret;
+   return 0;
 
 }
 
@@ -220,21 +229,26 @@ int check_convergence_@(pre)primme(@(type) *X, int nLocal, int ldX, @(type) *R,
  * ldR             The leading dimension of R
  * flags           Indicates which Ritz pairs have converged
  ******************************************************************************/
-static int check_practical_convergence(@(type) *R, int nLocal, int ldR,
-   @(type) *evecs, int evecsSize, int ldevecs, int left, int *iev,
-   int numToProject, int *flags, double *blockNorms, double tol, @(type) *rwork,
-   int rworkSize, primme_params *primme) {
+static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
+      PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
+      int left, int *iev, int numToProject, int *flags, double *blockNorms,
+      double tol, SCALAR *rwork, size_t *rworkSize, primme_params *primme) {
 
-   int i, ret;
+   int i;
    double *overlaps;
+   size_t rworkSize0;
 
    /* -------------------------- */
    /* Return memory requirements */
    /* -------------------------- */
 
    if (R == NULL) {
-      return numToProject + ortho_single_iteration_@(pre)primme(NULL, nLocal,
-         evecsSize, 0, NULL, NULL, numToProject, 0, NULL, NULL, NULL, 0, primme);
+      size_t lrw=0;
+      CHKERR(ortho_single_iteration_@(pre)primme(NULL, nLocal, evecsSize, 0,
+               NULL, NULL, numToProject, 0, NULL, NULL, NULL, &lrw, primme),
+               -1);
+      *rworkSize = max(*rworkSize, numToProject+lrw);
+      return 0;
    }
 
    /* ------------------------------------------------------------------ */
@@ -248,10 +262,11 @@ static int check_practical_convergence(@(type) *R, int nLocal, int ldR,
 
    overlaps = (double*)rwork;
 
-   ret = ortho_single_iteration_@(pre)primme(evecs, nLocal, evecsSize, ldevecs,
-      R, iev, numToProject, ldR, overlaps, NULL, rwork+numToProject,
-      rworkSize-numToProject, primme);
-   if (ret != 0) return ret;
+   assert(*rworkSize >= (size_t)numToProject);
+   rworkSize0 = *rworkSize - numToProject;
+   CHKERR(ortho_single_iteration_@(pre)primme(evecs, nLocal, evecsSize, ldevecs,
+            R, iev, numToProject, ldR, overlaps, NULL, rwork+numToProject,
+            &rworkSize0, primme), -1);
 
    /* ------------------------------------------------------------------ */
    /* For each projected residual check whether there is an accuracy     */

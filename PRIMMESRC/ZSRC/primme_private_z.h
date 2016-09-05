@@ -34,7 +34,7 @@
 #define MAIN_ITER_FAILURE          -3
 
 static int allocate_workspace(primme_params *primme, int allocate);
-static int check_input(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *resNorms,
+static int check_input(double *evals, SCALAR *evecs, double *resNorms,
                        primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme);

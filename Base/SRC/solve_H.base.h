@@ -29,20 +29,20 @@
 #ifndef SOLVE_H_H
 #define SOLVE_H_H
 
-int solve_H_@(pre)primme(@(type) *H, int basisSize, int ldH, @(type) *R, int ldR,
-   @(type) *QtV, int ldQtV, @(type) *hU, int ldhU, @(type) *hVecs, int ldhVecs,
-   double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
-   @(type) *rwork, int *iwork, primme_params *primme);
+int solve_H_@(pre)primme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
+   SCALAR *QtV, int ldQtV, SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs,
+   double *hVals, double *hSVals, int numConverged, double machEps, size_t *lrwork,
+   SCALAR *rwork, int liwork, int *iwork, primme_params *primme);
 
-int solve_H_RR_@(pre)primme(@(type) *H, int maxBasisSize, @(type) *hVecs,
-   int ldhVecs, double *hVals, int basisSize, int numLocked, int lrwork,
-   @(type) *rwork, int *iwork, primme_params *primme);
+int solve_H_RR_@(pre)primme(SCALAR *H, int ldH, SCALAR *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numConverged, size_t *lrwork,
+   SCALAR *rwork, int liwork, int *iwork, primme_params *primme);
 
 int prepare_vecs_@(pre)primme(int basisSize, int i0, int blockSize,
-      @(type) *H, int ldH, double *hVals, double *hSVals, @(type) *hVecs,
+      SCALAR *H, int ldH, double *hVals, double *hSVals, SCALAR *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, @(type) *hVecsRot,
-      int ldhVecsRot, double machEps, int rworkSize, @(type) *rwork,
-      int *iwork, primme_params *primme);
+      double smallestResNorm, int *flags, int RRForAll, SCALAR *hVecsRot,
+      int ldhVecsRot, double machEps, size_t *rworkSize, SCALAR *rwork,
+      int iworkSize, int *iwork, primme_params *primme);
 
 #endif

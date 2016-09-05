@@ -30,8 +30,8 @@
 #include <assert.h>
 #include "primme.h"
 #include "const.h"
-#include "update_projection_z.h"
 #include "numerical_z.h"
+#include "update_projection_z.h"
 #include "globalsum_z.h"
 
 /*******************************************************************************
@@ -61,9 +61,10 @@
  *
  ******************************************************************************/
 
-int update_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int ldX, __PRIMME_COMPLEX_DOUBLE__ *Y, int ldY,
-   __PRIMME_COMPLEX_DOUBLE__ *Z, int ldZ, int nLocal, int numCols, int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork,
-   int lrwork, int isSymmetric, primme_params *primme) {
+int update_projection_zprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
+      PRIMME_INT ldY, SCALAR *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, SCALAR *rwork, size_t *lrwork, int isSymmetric,
+      primme_params *primme) {
 
    int count, m;
 
@@ -72,7 +73,10 @@ int update_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int ldX, __PRIMME_CO
    /* -------------------------- */
 
    if (X == NULL) {
-      return (numCols+blockSize)*numCols*2 + (isSymmetric ? 0 : blockSize*numCols*2);
+      *lrwork = max(*lrwork,
+            (size_t)(numCols+blockSize)*numCols*2 
+            + (isSymmetric ? 0 : (size_t)blockSize*numCols*2));
+      return 0;
    }
 
    assert(ldX >= nLocal && ldY >= nLocal && ldZ >= numCols+blockSize);
@@ -117,9 +121,9 @@ int update_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int ldX, __PRIMME_CO
 
       Num_copy_trimatrix_compact_zprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
             numCols, rwork, &count);
-      assert(count*2 <= lrwork);
+      assert((size_t)count*2 <= *lrwork);
 
-      globalSum_zprimme(rwork, &rwork[count], count, primme);
+      CHKERR(globalSum_zprimme(rwork, &rwork[count], count, primme), -1);
 
       Num_copy_compact_trimatrix_zprimme(&rwork[count], m, blockSize, numCols,
             &Z[ldZ*numCols], ldZ);
@@ -134,9 +138,9 @@ int update_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int ldX, __PRIMME_CO
       Num_copy_matrix_zprimme(&Z[numCols], blockSize, numCols, ldZ,
             &rwork[m*blockSize], blockSize);
       count = m*blockSize+blockSize*numCols;
-      assert(count*2 <= lrwork);
+      assert((size_t)count*2 <= *lrwork);
 
-      globalSum_zprimme(rwork, &rwork[count], count, primme);
+      CHKERR(globalSum_zprimme(rwork, &rwork[count], count, primme), -1);
 
       Num_copy_matrix_zprimme(&rwork[count], m, blockSize, ldZ, &Z[ldZ*numCols], m);
       Num_copy_matrix_zprimme(&rwork[count+m*blockSize], blockSize, numCols, ldZ,

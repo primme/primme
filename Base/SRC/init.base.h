@@ -29,10 +29,11 @@
 #ifndef INIT_H
 #define INIT_H
 
-int init_basis_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW,
-   @(type) *evecs, int ldevecs, @(type) *evecsHat, int ldevecsHat, @(type) *M,
-   int ldM, @(type) *UDU, int ldUDU, int *ipivot, double machEps, @(type) *rwork,
-   int rworkSize, int *basisSize, int *nextGuess, int *numGuesses,
-   double *timeForMV, primme_params *primme);
+int init_basis_@(pre)primme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, SCALAR *evecs, PRIMME_INT ldevecs,
+      SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU,
+      int ldUDU, int *ipivot, double machEps, SCALAR *rwork, size_t *rworkSize,
+      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
+      primme_params *primme);
 
 #endif

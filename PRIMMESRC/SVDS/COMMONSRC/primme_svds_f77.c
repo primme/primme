@@ -27,6 +27,7 @@
  ******************************************************************************/
 
 #include <stdlib.h>   /* free */
+#include <limits.h>   /* INT_MAX */
 #include "primme_svds.h"
 #include "primme_svds_f77_private.h"
 
@@ -90,10 +91,12 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
          primme_svds->applyPreconditioner = v.matFunc_v;
          break;
       case PRIMMEF77_SVDS_numProcs :
-         primme_svds->numProcs = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else
+         primme_svds->numProcs = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_procID :
-         primme_svds->procID = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->procID = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_mLocal :
          primme_svds->mLocal = *v.int_v;
@@ -108,13 +111,15 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
          primme_svds->globalSumDouble = v.globalSumDoubleFunc_v;
          break;
       case PRIMMEF77_SVDS_numSvals :
-         primme_svds->numSvals = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->numSvals = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_target :
          primme_svds->target = *v.target_v;
          break;
       case PRIMMEF77_SVDS_numTargetShifts :
-         primme_svds->numTargetShifts = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->numTargetShifts = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_targetShifts :
          primme_svds->targetShifts = v.double_v;
@@ -126,13 +131,14 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
          primme_svds->methodStage2 = *v.operator_v;
          break;
       case PRIMMEF77_SVDS_intWorkSize :
-         primme_svds->intWorkSize = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->intWorkSize = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_realWorkSize :
-         primme_svds->realWorkSize = *v.long_int_v;
+         primme_svds->realWorkSize = (size_t)*v.int_v;
          break;
       case PRIMMEF77_SVDS_intWork :
-         primme_svds->intWork = v.int_v;
+         primme_svds->intWork = (int*)v.int_v;
          break;
       case PRIMMEF77_SVDS_realWork :
          primme_svds->realWork = v.ptr_v;
@@ -144,10 +150,12 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
          primme_svds->preconditioner = v.ptr_v;
          break;
       case PRIMMEF77_SVDS_locking :
-         primme_svds->locking = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->locking = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_numOrthoConst :
-         primme_svds->numOrthoConst = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->numOrthoConst = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_aNorm :
          primme_svds->aNorm = *v.double_v;
@@ -156,16 +164,20 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
          primme_svds->eps = *v.double_v;
          break;
       case PRIMMEF77_SVDS_precondition :
-         primme_svds->precondition = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->precondition = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_initSize :
-         primme_svds->initSize = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->initSize = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_maxBasisSize :
-         primme_svds->maxBasisSize = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->maxBasisSize = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_maxBlockSize :
-         primme_svds->maxBlockSize = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->maxBlockSize = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_maxMatvecs :
          primme_svds->maxMatvecs = *v.int_v;
@@ -176,7 +188,8 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
          }
          break;
       case PRIMMEF77_SVDS_printLevel :
-         primme_svds->printLevel = *v.int_v;
+         if (*v.int_v > INT_MAX) *ierr = 1; else 
+         primme_svds->printLevel = (int)*v.int_v;
          break;
       case PRIMMEF77_SVDS_outputFile :
          primme_svds->outputFile = v.file_v;
@@ -268,7 +281,7 @@ void AS_FORTRAN(primme_svdstop_get_member)(primme_svds_params **primme_svds_, in
          v->int_v = primme_svds->intWorkSize;
          break;
       case PRIMMEF77_SVDS_realWorkSize :
-         v->long_int_v = primme_svds->realWorkSize;
+         v->int_v = (PRIMME_INT)primme_svds->realWorkSize;
          break;
       case PRIMMEF77_SVDS_intWork :
          v->ptr_v = primme_svds->intWork;

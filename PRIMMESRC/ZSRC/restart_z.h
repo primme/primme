@@ -29,36 +29,37 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-int restart_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int nLocal, int basisSize,
-       int ldV, double *hVals, double *hSVals, int *flags, int *iev,
-       int *ievSize, double *blockNorms, __PRIMME_COMPLEX_DOUBLE__ *evecs, int *evecsPerm,
-       double *evals, double *resNorms, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, int ldevecsHat,
-       __PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU, int *ipivot,
+int restart_zprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
+       PRIMME_INT ldV, double *hVals, double *hSVals, int *flags, int *iev,
+       int *ievSize, double *blockNorms, SCALAR *evecs, int *evecsPerm,
+       double *evals, double *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
+       SCALAR *M, int ldM, SCALAR *UDU, int ldUDU, int *ipivot,
        int *numConverged, int *numLocked, int *numConvergedStored,
-       __PRIMME_COMPLEX_DOUBLE__ *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
-       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, __PRIMME_COMPLEX_DOUBLE__ *H,
-       int ldH, __PRIMME_COMPLEX_DOUBLE__ *Q, int ldQ, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, __PRIMME_COMPLEX_DOUBLE__* QtV,
-       int ldQtV, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, int newldhU, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
+       SCALAR *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
+       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, SCALAR *H,
+       int ldH, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR, SCALAR* QtV,
+       int ldQtV, SCALAR *hU, int ldhU, int newldhU, SCALAR *hVecs,
        int ldhVecs, int newldhVecs, int *restartSizeOutput,
-       int *targetShiftIndex, int *numArbitraryVecs, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot,
+       int *targetShiftIndex, int *numArbitraryVecs, SCALAR *hVecsRot,
        int ldhVecsRot, int *restartsSinceReset, int *reset,
-       double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork,
-       primme_params *primme);
+       double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
+       int iworkSize, primme_params *primme);
 
-int Num_reset_update_VWXR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int mV, int nV, int ldV,
-   __PRIMME_COMPLEX_DOUBLE__ *h, int nh, int ldh, double *hVals,
-   __PRIMME_COMPLEX_DOUBLE__ *X0, int nX0b, int nX0e, int ldX0,
-   __PRIMME_COMPLEX_DOUBLE__ *X1, int nX1b, int nX1e, int ldX1,
-   __PRIMME_COMPLEX_DOUBLE__ *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
-   __PRIMME_COMPLEX_DOUBLE__ *Wo, int nWob, int nWoe, int ldWo,
-   __PRIMME_COMPLEX_DOUBLE__ *R, int nRb, int nRe, int ldR, double *Rnorms,
+int Num_reset_update_VWXR_zprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
+   int nV, PRIMME_INT ldV,
+   SCALAR *h, int nh, int ldh, double *hVals,
+   SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+   SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+   SCALAR *evecs, int evecsSize, int nX2b, int nX2e, PRIMME_INT ldevecs,
+   SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+   SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   int reset, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork, primme_params *primme);
-
-int retain_previous_coefficients_zprimme(__PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs,
-   __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, double *hSVals, __PRIMME_COMPLEX_DOUBLE__ *previousHVecs,
-   int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
-   int *flags, int *numPrevRetained, int *iwork, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize,
+   int reset, double machEps, SCALAR *rwork, size_t *lrwork,
    primme_params *primme);
+
+int retain_previous_coefficients_zprimme(SCALAR *hVecs, int ldhVecs,
+   SCALAR *hU, int ldhU, SCALAR *previousHVecs, int ldpreviousHVecs,
+   int mprevious, int basisSize, int *iev, int blockSize, int *flags,
+   int *numPrevRetained, int *iwork, int iworkSize, primme_params *primme);
 
 #endif

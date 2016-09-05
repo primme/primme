@@ -32,12 +32,33 @@
 #include <assert.h>
 #include "primme.h"
 #include "wtime.h"
+#include "numerical_z.h"
 #include "inner_solve_z.h"
-#include "inner_solve_private_z.h"
 #include "factorize_z.h"
 #include "update_W_z.h"
-#include "numerical_z.h"
 #include "globalsum_z.h"
+
+static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, 
+   SCALAR *RprojectorQ, SCALAR *x, SCALAR *RprojectorX, 
+   int sizeRprojectorQ, int sizeRprojectorX, SCALAR *xKinvx, 
+   SCALAR *UDU, int *ipivot, SCALAR *result, SCALAR *rwork, 
+   primme_params *primme);
+
+static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU, 
+   int *ipivot, int numCols, SCALAR *v, SCALAR *rwork, 
+   primme_params *primme);
+
+static int apply_projected_matrix(SCALAR *v, double shift, SCALAR *Q,
+   int dimQ, SCALAR *result, SCALAR *rwork, primme_params *primme);
+
+static int apply_projector(SCALAR *Q, int numCols, SCALAR *v, 
+   SCALAR *rwork, primme_params *primme);
+
+static int dist_dot(SCALAR *x, int incx,
+   SCALAR *y, int incy, primme_params *primme, SCALAR *result);
+
+static int dist_dot_real(SCALAR *x, int incx,
+   SCALAR *y, int incy, primme_params *primme, REAL *result);
 
 
 /*******************************************************************************
@@ -124,24 +145,23 @@
  *
  ******************************************************************************/
 
-int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *r, double *rnorm, 
-   __PRIMME_COMPLEX_DOUBLE__ *evecs, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, 
-   __PRIMME_COMPLEX_DOUBLE__ *xKinvx, __PRIMME_COMPLEX_DOUBLE__ *Lprojector, __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ, 
-   __PRIMME_COMPLEX_DOUBLE__ *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
-   int sizeRprojectorX, __PRIMME_COMPLEX_DOUBLE__ *sol, double eval, double shift, 
-   double eresTol, double aNormEstimate, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
-   int rworkSize, primme_params *primme) {
+int inner_solve_zprimme(SCALAR *x, SCALAR *r, double *rnorm, 
+   SCALAR *evecs, SCALAR *evecsHat, SCALAR *UDU, int *ipivot, 
+   SCALAR *xKinvx, SCALAR *Lprojector, SCALAR *RprojectorQ, 
+   SCALAR *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
+   int sizeRprojectorX, SCALAR *sol, double eval, double shift, 
+   double eresTol, double aNormEstimate, double machEps, SCALAR *rwork, 
+   size_t rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
    int numIts;        /* Number of inner iterations                          */
-   int ret;           /* Return value used for error checking.               */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
 
-   __PRIMME_COMPLEX_DOUBLE__ *workSpace; /* Workspace needed by UDU routine */
+   SCALAR *workSpace; /* Workspace needed by UDU routine */
 
    /* QMR parameters */
 
-   __PRIMME_COMPLEX_DOUBLE__ *g, *d, *delta, *w, *ptmp;
+   SCALAR *g, *d, *delta, *w, *ptmp;
    double alpha_prev, beta, rho_prev, rho;
    double Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
 
@@ -172,7 +192,8 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
    delta  = d + primme->nLocal;
    w      = delta + primme->nLocal;
    workSpace = w + primme->nLocal; /* This needs at least 2*numOrth+NumEvals) */
-   assert(rworkSize >= primme->nLocal*4 + 2*(primme->numOrthoConst+primme->numEvals));
+   assert(rworkSize >= (size_t)primme->nLocal*4
+                       + 2*(primme->numOrthoConst+primme->numEvals));
 
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */
@@ -227,20 +248,13 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
    /* Assume zero initial guess */
    Num_copy_zprimme(primme->nLocal, r, 1, g, 1);
 
-   ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
+   CHKERR(apply_projected_preconditioner(g, evecs, RprojectorQ, 
            x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
-           xKinvx, UDU, ipivot, d, workSpace, primme);
+           xKinvx, UDU, ipivot, d, workSpace, primme), -1);
 
-   if (ret != 0) {
-      primme_PushErrorMessage(Primme_inner_solve, 
-         Primme_apply_projected_preconditioner, ret, __FILE__, __LINE__, 
-         primme);
-      return APPLYPROJECTEDPRECONDITIONER_FAILURE;
-   }
-      
    Theta_prev = 0.0L;
    eval_prev = eval;
-   rho_prev = REAL_PART(dist_dot(g, 1, d, 1, primme));
+   CHKERR(dist_dot_real(g, 1, d, 1, primme, &rho_prev), -1);
 
    /* Initialize recurrences used to dynamically update the eigenpair */
 
@@ -261,9 +275,9 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
 
    while (numIts < maxIterations) {
 
-      apply_projected_matrix(d, shift, Lprojector, sizeLprojector, 
-                             w, workSpace, primme);
-      sigma_prev = REAL_PART(dist_dot(d, 1, w, 1, primme));
+      CHKERR(apply_projected_matrix(d, shift, Lprojector, sizeLprojector, 
+                             w, workSpace, primme), -1);
+      CHKERR(dist_dot_real(d, 1, w, 1, primme, &sigma_prev), -1);
 
       if (sigma_prev == 0.0L) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -282,7 +296,7 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
 
       Num_axpy_zprimme(primme->nLocal, -alpha_prev, w, 1, g, 1);
 
-      Theta = REAL_PART(dist_dot(g, 1, g, 1, primme));
+      CHKERR(dist_dot_real(g, 1, g, 1, primme, &Theta), -1);
       Theta = sqrt(Theta);
       Theta = Theta/tau_prev;
       c = 1.0L/sqrt(1+Theta*Theta);
@@ -328,7 +342,7 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
          /* Perform the update: update the eigenvalue and the square of the  */
          /* residual norm.                                                   */
          
-         dot_sol = REAL_PART(dist_dot(sol, 1, sol, 1, primme));
+         CHKERR(dist_dot_real(sol, 1, sol, 1, primme, &dot_sol), -1);
          eval_updated = shift + (eval - shift + 2*Beta + Gamma)/(1 + dot_sol);
          eres2_updated = (tau*tau)/(1 + dot_sol) + 
             ((eval - shift + Beta)*(eval - shift + Beta))/(1 + dot_sol) - 
@@ -402,8 +416,9 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
 
          if (primme->printLevel >= 4 && primme->procID == 0) {
             fprintf(primme->outputFile,
-           "INN MV %d Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n", primme->stats.
-            numMatvecs, primme_wTimer(0), eval_updated, tau, eres_updated);
+                  "INN MV %" PRIMME_INT_P " Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n",
+                  primme->stats.numMatvecs, primme_wTimer(0), eval_updated,
+                  tau, eres_updated);
             fflush(primme->outputFile);
          }
 
@@ -424,26 +439,19 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
          else if (primme->printLevel >= 4 && primme->procID == 0) {
             /* Report for non adaptive inner iterations */
             fprintf(primme->outputFile,
-                  "INN MV %d Sec %e Lin|r| %e\n", primme->stats.numMatvecs,
-                  primme_wTimer(0),tau);
+                  "INN MV %" PRIMME_INT_P " Sec %e Lin|r| %e\n",
+                  primme->stats.numMatvecs, primme_wTimer(0),tau);
             fflush(primme->outputFile);
          }
       }
 
       if (numIts < maxIterations) {
 
-         ret = apply_projected_preconditioner(g, evecs, RprojectorQ, 
+         CHKERR(apply_projected_preconditioner(g, evecs, RprojectorQ, 
             x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
-            xKinvx, UDU, ipivot, w, workSpace, primme);
+            xKinvx, UDU, ipivot, w, workSpace, primme), -1);
 
-         if (ret != 0) {
-            primme_PushErrorMessage(Primme_inner_solve, 
-               Primme_apply_projected_preconditioner, ret, __FILE__, __LINE__, 
-               primme);
-               ret = APPLYPROJECTEDPRECONDITIONER_FAILURE;
-               break;
-         }
-         rho = REAL_PART(dist_dot(g, 1, w, 1, primme));
+         CHKERR(dist_dot_real(g, 1, w, 1, primme, &rho), -1);
          beta = rho/rho_prev;
          Num_axpy_zprimme(primme->nLocal, beta, d, 1, w, 1);
          /* Alternate between w and d buffers in successive iterations
@@ -515,14 +523,13 @@ int inner_solve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ 
  *
  ******************************************************************************/
 
-static int apply_projected_preconditioner(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *Q, 
-   __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, __PRIMME_COMPLEX_DOUBLE__ *xKinvx, 
-   __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, __PRIMME_COMPLEX_DOUBLE__ *result, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
+static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, 
+   SCALAR *RprojectorQ, SCALAR *x, SCALAR *RprojectorX, 
+   int sizeRprojectorQ, int sizeRprojectorX, SCALAR *xKinvx, 
+   SCALAR *UDU, int *ipivot, SCALAR *result, SCALAR *rwork, 
    primme_params *primme) {  
 
    int ONE = 1;
-   int ret;
 
    if (primme->correctionParams.precondition) {
       /* Place K^{-1}v in result */
@@ -533,21 +540,11 @@ static int apply_projected_preconditioner(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME
       Num_copy_zprimme(primme->nLocal, v, 1, result, 1);
    }
 
-   ret = apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
-                           result, rwork, primme);
-   if (ret != 0) {
-         primme_PushErrorMessage(Primme_apply_projected_preconditioner, 
-            Primme_apply_skew_projector, ret, __FILE__, __LINE__, primme);
-         return APPLYSKEWPROJECTOR_FAILURE;
-   }
+   CHKERR(apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
+                           result, rwork, primme), -1);
 
-   apply_skew_projector(x, RprojectorX, xKinvx, ipivot, sizeRprojectorX,
-                           result, rwork, primme);
-   if (ret != 0) {
-         primme_PushErrorMessage(Primme_apply_projected_preconditioner, 
-            Primme_apply_skew_projector, ret, __FILE__, __LINE__, primme);
-         return APPLYSKEWPROJECTOR_FAILURE;
-   }
+   CHKERR(apply_skew_projector(x, RprojectorX, xKinvx, ipivot, sizeRprojectorX,
+                           result, rwork, primme), -1);
 
    return 0;
 }
@@ -580,15 +577,14 @@ static int apply_projected_preconditioner(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME
  * 
  ******************************************************************************/
 
-static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_DOUBLE__ *Qhat, __PRIMME_COMPLEX_DOUBLE__ *UDU, 
-   int *ipivot, int numCols, __PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *rwork, 
+static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU, 
+   int *ipivot, int numCols, SCALAR *v, SCALAR *rwork, 
    primme_params *primme) {
 
    if (numCols > 0) {    /* there is a projector to be applied */
 
-      int ret;
-      __PRIMME_COMPLEX_DOUBLE__ *overlaps;  /* overlaps of v with columns of Q   */
-      __PRIMME_COMPLEX_DOUBLE__ *workSpace; /* Used for computing local overlaps */
+      SCALAR *overlaps;  /* overlaps of v with columns of Q   */
+      SCALAR *workSpace; /* Used for computing local overlaps */
 
       overlaps = rwork;
       workSpace = overlaps + numCols;
@@ -598,13 +594,11 @@ static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_D
       /* --------------------------------------------------------*/
       if (numCols == 1) {
          /* Compute workspace = Q'*v */
-         overlaps[0] = dist_dot(Q, 1, v, 1, primme);
+         CHKERR(dist_dot(Q, 1, v, 1, primme, &overlaps[0]), -1);
 
          /* Backsolve only if there is a skew projector */
          if (UDU != NULL) {
-            if (ABS(UDU[0]) == 0.0) {
-               return UDUSOLVE_FAILURE;
-            }
+            CHKERRM(ABS(UDU[0]) == 0.0, -1, "Failure factorizing UDU.");
             overlaps[0] = overlaps[0]/UDU[0];
          }
          /* Compute v=v-Qhat*overlaps */
@@ -619,7 +613,8 @@ static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_D
                       primme->nLocal, v, 1, 0.0, workSpace, 1);
 
          /* Global sum: overlaps = Q'*v */
-         globalSum_zprimme(workSpace, overlaps, numCols, primme);   
+         CHKERR(globalSum_zprimme(workSpace, overlaps, numCols, primme),
+               -1);
 
          /* --------------------------------------------*/
          /* Backsolve only if there is a skew projector */
@@ -628,12 +623,9 @@ static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_D
             /* Solve (Q'Qhat)^{-1}*workSpace = overlaps = Q'*v for alpha by */
             /* backsolving  with the UDU decomposition.                 */
    
-            ret = UDUSolve_zprimme(UDU, ipivot, numCols, overlaps, workSpace);
-            if (ret != 0) {
-               primme_PushErrorMessage(Primme_apply_skew_projector,
-                  Primme_udusolve, ret, __FILE__, __LINE__, primme);
-               return UDUSOLVE_FAILURE;
-            }
+            CHKERR(UDUSolve_zprimme(UDU, ipivot, numCols, overlaps,
+                     workSpace), -1);
+
             /* Compute v=v-Qhat*workspace */
             Num_gemv_zprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
                          primme->nLocal, workSpace, 1, 1.0, v, 1);
@@ -676,15 +668,16 @@ static int apply_skew_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, __PRIMME_COMPLEX_D
  *
  ******************************************************************************/
 
-static void apply_projected_matrix(__PRIMME_COMPLEX_DOUBLE__ *v, double shift, __PRIMME_COMPLEX_DOUBLE__ *Q, 
-   int dimQ, __PRIMME_COMPLEX_DOUBLE__ *result, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) {
+static int apply_projected_matrix(SCALAR *v, double shift, SCALAR *Q, 
+   int dimQ, SCALAR *result, SCALAR *rwork, primme_params *primme) {
 
-   matrixMatvec_zprimme(v, primme->nLocal, primme->nLocal, result,
-         primme->nLocal, 0, 1, primme);
+   CHKERR(matrixMatvec_zprimme(v, primme->nLocal, primme->nLocal, result,
+         primme->nLocal, 0, 1, primme), -1);
    Num_axpy_zprimme(primme->nLocal, -shift, v, 1, result, 1); 
    if (dimQ > 0)
-      apply_projector(Q, dimQ, result, rwork, primme); 
+      CHKERR(apply_projector(Q, dimQ, result, rwork, primme), -1);
 
+   return 0;
 }
    
 
@@ -709,21 +702,22 @@ static void apply_projected_matrix(__PRIMME_COMPLEX_DOUBLE__ *v, double shift, _
  * 
  ******************************************************************************/
 
-static void apply_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, int numCols, __PRIMME_COMPLEX_DOUBLE__ *v, 
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) {
+static int apply_projector(SCALAR *Q, int numCols, SCALAR *v, 
+   SCALAR *rwork, primme_params *primme) {
 
-   __PRIMME_COMPLEX_DOUBLE__ *overlaps;  /* overlaps of v with columns of Q   */
-   __PRIMME_COMPLEX_DOUBLE__ *workSpace; /* Used for computing local overlaps */
+   SCALAR *overlaps;  /* overlaps of v with columns of Q   */
+   SCALAR *workSpace; /* Used for computing local overlaps */
 
    overlaps = rwork;
    workSpace = overlaps + numCols;
 
    Num_gemv_zprimme("C", primme->nLocal, numCols, 1.0, Q, primme->nLocal,
       v, 1, 0.0, workSpace, 1);
-   globalSum_zprimme(workSpace, overlaps, numCols, primme);   
+   CHKERR(globalSum_zprimme(workSpace, overlaps, numCols, primme), -1);
    Num_gemv_zprimme("N", primme->nLocal, numCols, -1.0, Q, primme->nLocal,
       overlaps, 1, 1.0, v, 1);
 
+   return 0;
 }
 
 
@@ -742,15 +736,51 @@ static void apply_projector(__PRIMME_COMPLEX_DOUBLE__ *Q, int numCols, __PRIMME_
  *
  * primme  Structure containing various solver parameters
  *
+ * result The inner product
+ *
  ******************************************************************************/
 
-static __PRIMME_COMPLEX_DOUBLE__ dist_dot(__PRIMME_COMPLEX_DOUBLE__ *x, int incx,
-   __PRIMME_COMPLEX_DOUBLE__ *y, int incy, primme_params *primme) {
+static int dist_dot(SCALAR *x, int incx,
+   SCALAR *y, int incy, primme_params *primme, SCALAR *result) {
                                                                                 
-   __PRIMME_COMPLEX_DOUBLE__ temp, product;
+   SCALAR temp;
                                                                                 
    temp = Num_dot_zprimme(primme->nLocal, x, incx, y, incy);
-   globalSum_zprimme(&temp, &product, 1, primme);
-   return product;
+   CHKERR(globalSum_zprimme(&temp, result, 1, primme), -1);
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Function dist_dot_real - Computes dot products in parallel and return the
+ *    real part.
+*
+ * Input Parameters
+ * ----------------
+ * x, y  Operands of the dot product operation
+ *
+ * incx  Array increment for x.  A value of 1 implies the elements are
+ *       contiguous in memory.
+ *
+ * incy  Array increment for y.  A value of 1 implies the elements are
+ *       contiguous in memory.
+ *
+ * primme  Structure containing various solver parameters
+ *
+ * Output Parameter
+ * ----------------
+ * result The real part of the inner product
+ *
+ ******************************************************************************/
+
+static int dist_dot_real(SCALAR *x, int incx,
+   SCALAR *y, int incy, primme_params *primme, REAL *result) {
                                                                                 
+   SCALAR temp, product;
+                                                                                
+   temp = Num_dot_zprimme(primme->nLocal, x, incx, y, incy);
+   CHKERR(globalSum_zprimme(&temp, &product, 1, primme), -1);
+   *result = REAL_PART(product);
+
+   return 0;
 }

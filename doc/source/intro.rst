@@ -11,6 +11,32 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77 an
 Changelog
 ^^^^^^^^^
 
+Changes in PRIMME 2.0 (released on XXX):
+
+* Added parameter to return an error code in callbacks |matrixMatvec|, |applyPreconditioner|,
+  |massMatrixMatvec| and |globalSumDouble|.
+
+* Changed to type :c:type:`PRIMME_NUM` the options |n|, |nLocal|, |maxMatvecs|
+  and |iseed|, and the stats counters |numOuterIterations|, |numRestarts|, |numMavecs|,
+  |numPreconds|. Also changed |realWorkSize| to ``size_t``. Fortran interface functions
+  will expect an ``interger`` of size compatible with :c:type:`PRIMME_NUM` for
+  all parameters with integer type: ``int``, :c:type:`PRIMME_NUM` and ``size_t``;
+  see also parameter ``value`` in functions
+  :c:function:`primmetop_set_member_f77`,
+  :c:function:`primmetop_get_member_f77`,
+  :c:function:`primme_set_member_f77` and
+  :c:function:`primme_get_member_f77`.
+
+* Added parameter to return an error code in Fortran interface functions:
+  :c:function:`primmetop_set_member_f77`,
+  :c:function:`primmetop_get_member_f77`,
+  :c:function:`primme_set_member_f77` and
+  :c:function:`primme_get_member_f77`.
+
+* Optional user-defined convergence function, |convTestFun|.
+
+* Removed ``primme_display_stats_f77``.
+
 Changes in PRIMME 1.2.2 (released on October 13, 2015):
 
 * Fixed wrong symbols in :file:`libdprimme.a` and :file:`libzprimme.a`.
@@ -169,6 +195,7 @@ The next directories and files should be available:
 * :file:`readme.txt`     text version of the documentation;
 * :file:`doc/`           directory with the HTML and PDF versions of the documentation.
 
+.. _making :
 
 Making and Linking
 ^^^^^^^^^^^^^^^^^^
@@ -183,6 +210,14 @@ Making and Linking
     (usually they does).
   * ``-DPRIMME_BLASINT_SIZE=64``, if the library integers are 64-bit integer (``kind=8``) type
     (usually they are not).
+
+  By default PRIMME sets the integer type for matrix dimensions and counters (:c:type:`PRIMME_INT`)
+  to 64 bits integer ``int64_t``. This can be changed by setting the macro ``PRIMME_INT_SIZE``
+  to one of the following values:
+
+  - ``0``: use the regular ``int``.
+  - ``32``: use C99 ``int32_t``. 
+  - ``64``: use C99 ``int64_t``. 
 
 .. note::
 
@@ -202,7 +237,6 @@ Making and Linking
    by the next macro definition with the proper type for an ``int`` of 64 bits::
 
       #define PRIMME_BLASINT __int64
-
 
 After customizing :file:`Make_flags`, type this to generate :file:`libprimme.a`::
 

@@ -29,12 +29,12 @@
 #ifndef INNER_SOLVE_H
 #define INNER_SOLVE_H
 
-int inner_solve_dprimme(double *x, double *r, double *rnorm, double *evecs,
-   double *evecsHat, double *UDU, int *ipivot, double *xKinvx, 
-   double *Lprojector, double *RprojectorQ, double *RprojectorX,
-   int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX,
-   double *sol, double eval, double shift, double eresTol, 
-   double aNormEstimate, double machEps, double *rwork, int rworkSize, 
-   primme_params *primme);
+int inner_solve_dprimme(SCALAR *x, SCALAR *r, double *rnorm, 
+   SCALAR *evecs, SCALAR *evecsHat, SCALAR *UDU, int *ipivot, 
+   SCALAR *xKinvx, SCALAR *Lprojector, SCALAR *RprojectorQ, 
+   SCALAR *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
+   int sizeRprojectorX, SCALAR *sol, double eval, double shift, 
+   double eresTol, double aNormEstimate, double machEps, SCALAR *rwork, 
+   size_t rworkSize, primme_params *primme);
 
 #endif

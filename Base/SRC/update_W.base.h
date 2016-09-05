@@ -30,11 +30,13 @@
 #ifndef UPDATE_W_H
 #define UPDATE_W_H
 
-void matrixMatvec_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W,
-   int ldW, int basisSize, int blockSize, primme_params *primme);
+int matrixMatvec_@(pre)primme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_params *primme);
 
-int update_Q_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW,
-      @(type) *Q, int ldQ, @(type) *R, int ldR, double targetShift_, int basisSize,
-      int blockSize, @(type) *rwork, int rworkSize, double machEps, primme_params *primme);
+int update_Q_@(pre)primme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
+      double targetShift, int basisSize, int blockSize, SCALAR *rwork,
+      size_t *rworkSize, double machEps, primme_params *primme);
 
 #endif

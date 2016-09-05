@@ -30,7 +30,7 @@
  ******************************************************************************/
 
 #if !(defined (__APPLE__) && defined (__MACH__))
-#include <malloc.h>
+#  include <malloc.h>
 #endif
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
@@ -571,9 +571,10 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
                                     prefix, primme. P ## Params. S);
 #define PRINTParamsIF(P,S,V) if (primme. P ## Params. S == V) \
                                  fprintf(outputFile, "%s." #P "." #S " = " #V "\n", prefix);
-
-   PRINT(n, %d);
-   PRINT(nLocal, %d);
+#define PRINT_PRIMME_INT(P) fprintf(outputFile, "%s." #P " = %" PRIMME_INT_P "\n", prefix, primme. P);
+ 
+   PRINT_PRIMME_INT(n);
+   PRINT_PRIMME_INT(nLocal);
    PRINT(numProcs, %d);
    PRINT(procID, %d);
 
@@ -587,8 +588,8 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINT(maxBasisSize, %d);
    PRINT(minRestartSize, %d);
    PRINT(maxBlockSize, %d);
-   PRINT(maxOuterIterations, %d);
-   PRINT(maxMatvecs, %d);
+   PRINT_PRIMME_INT(maxOuterIterations);
+   PRINT_PRIMME_INT(maxMatvecs);
 
    PRINTIF(target, primme_smallest);
    PRINTIF(target, primme_largest);
@@ -622,7 +623,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINT(numOrthoConst, %d);
    fprintf(outputFile, "%s.iseed =", prefix);
    for (i=0; i<4;i++) {
-      fprintf(outputFile, " %d",primme.iseed[i]);
+      fprintf(outputFile, " %" PRIMME_INT_P, primme.iseed[i]);
    }
    fprintf(outputFile, "\n");
 

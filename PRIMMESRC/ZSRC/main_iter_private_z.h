@@ -39,9 +39,10 @@
 #define RESTART_FAILURE           -6
 #define LOCK_VECTORS_FAILURE      -7
 
-static int verify_norms(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, double *hVals, int basisSize,
+static int verify_norms(SCALAR *V, SCALAR *W, double *hVals, int basisSize,
       double *resNorms, int *flags, int *converged, double machEps,
-      __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, primme_params *primme);
+      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 
 static void print_residuals(double *ritzValues, double *blockNorms,
    int numConverged, int numLocked, int *iev, int blockSize, 
@@ -98,8 +99,8 @@ typedef struct {
 } primme_CostModel;
 
 static void initializeModel(primme_CostModel *model, primme_params *primme);
-static void switch_from_JDQMR(primme_CostModel *model, primme_params *primme);
-static void switch_from_GDpk (primme_CostModel *model, primme_params *primme);
+static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme);
+static int switch_from_GDpk (primme_CostModel *model, primme_params *primme);
 static int update_statistics(primme_CostModel *model, primme_params *primme,
    double current_time, int recentConv, int calledAtRestart, int numConverged, 
    double currentResNorm, double aNormEst);

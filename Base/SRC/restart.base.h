@@ -29,36 +29,37 @@
 #ifndef RESTART_H
 #define RESTART_H
 
-int restart_@(pre)primme(@(type) *V, @(type) *W, int nLocal, int basisSize,
-       int ldV, double *hVals, double *hSVals, int *flags, int *iev,
-       int *ievSize, double *blockNorms, @(type) *evecs, int *evecsPerm,
-       double *evals, double *resNorms, @(type) *evecsHat, int ldevecsHat,
-       @(type) *M, int ldM, @(type) *UDU, int ldUDU, int *ipivot,
+int restart_@(pre)primme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
+       PRIMME_INT ldV, double *hVals, double *hSVals, int *flags, int *iev,
+       int *ievSize, double *blockNorms, SCALAR *evecs, int *evecsPerm,
+       double *evals, double *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
+       SCALAR *M, int ldM, SCALAR *UDU, int ldUDU, int *ipivot,
        int *numConverged, int *numLocked, int *numConvergedStored,
-       @(type) *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
-       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, @(type) *H,
-       int ldH, @(type) *Q, int ldQ, @(type) *R, int ldR, @(type)* QtV,
-       int ldQtV, @(type) *hU, int ldhU, int newldhU, @(type) *hVecs,
+       SCALAR *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
+       int numGuesses, double *prevRitzVals, int *numPrevRitzVals, SCALAR *H,
+       int ldH, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR, SCALAR* QtV,
+       int ldQtV, SCALAR *hU, int ldhU, int newldhU, SCALAR *hVecs,
        int ldhVecs, int newldhVecs, int *restartSizeOutput,
-       int *targetShiftIndex, int *numArbitraryVecs, @(type) *hVecsRot,
+       int *targetShiftIndex, int *numArbitraryVecs, SCALAR *hVecsRot,
        int ldhVecsRot, int *restartsSinceReset, int *reset,
-       double machEps, @(type) *rwork, int rworkSize, int *iwork,
-       primme_params *primme);
+       double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
+       int iworkSize, primme_params *primme);
 
-int Num_reset_update_VWXR_@(pre)primme(@(type) *V, @(type) *W, int mV, int nV, int ldV,
-   @(type) *h, int nh, int ldh, double *hVals,
-   @(type) *X0, int nX0b, int nX0e, int ldX0,
-   @(type) *X1, int nX1b, int nX1e, int ldX1,
-   @(type) *evecs, int evecsSize, int nX2b, int nX2e, int ldevecs,
-   @(type) *Wo, int nWob, int nWoe, int ldWo,
-   @(type) *R, int nRb, int nRe, int ldR, double *Rnorms,
+int Num_reset_update_VWXR_@(pre)primme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
+   int nV, PRIMME_INT ldV,
+   SCALAR *h, int nh, int ldh, double *hVals,
+   SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+   SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+   SCALAR *evecs, int evecsSize, int nX2b, int nX2e, PRIMME_INT ldevecs,
+   SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+   SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   int reset, double machEps, @(type) *rwork, int lrwork, primme_params *primme);
-
-int retain_previous_coefficients_@(pre)primme(@(type) *hVecs, int ldhVecs,
-   @(type) *hU, int ldhU, double *hSVals, @(type) *previousHVecs,
-   int ldpreviousHVecs, int mprevious, int basisSize, int *iev, int blockSize,
-   int *flags, int *numPrevRetained, int *iwork, @(type) *rwork, int rworkSize,
+   int reset, double machEps, SCALAR *rwork, size_t *lrwork,
    primme_params *primme);
+
+int retain_previous_coefficients_@(pre)primme(SCALAR *hVecs, int ldhVecs,
+   SCALAR *hU, int ldhU, SCALAR *previousHVecs, int ldpreviousHVecs,
+   int mprevious, int basisSize, int *iev, int blockSize, int *flags,
+   int *numPrevRetained, int *iwork, int iworkSize, primme_params *primme);
 
 #endif

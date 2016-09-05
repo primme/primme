@@ -59,10 +59,10 @@ typedef enum {
 } primme_svds_operator;
 
 typedef struct primme_svds_stats {
-   int numOuterIterations;
-   int numRestarts;
-   int numMatvecs;
-   int numPreconds;
+   PRIMME_INT numOuterIterations;
+   PRIMME_INT numRestarts;
+   PRIMME_INT numMatvecs;
+   PRIMME_INT numPreconds;
    double elapsedTime;
 } primme_svds_stats;
 
@@ -73,20 +73,20 @@ typedef struct primme_svds_params {
    primme_params primmeStage2; /* other primme_params, used by hybrid */
 
    /* Specify the size of the rectangular matrix A */
-   int m; /* number of rows */ 
-   int n; /* number of columns */
+   PRIMME_INT m; /* number of rows */ 
+   PRIMME_INT n; /* number of columns */
 
    /***** High interface: these values are transferred to primme and primmeStage2 properly */
    void (*matrixMatvec) 
-      (void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
+      (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
    void (*applyPreconditioner)
-      (void *x, int *ldx, void *y, int *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
+      (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
 
    /* Input for the following is only required for parallel programs */
    int numProcs;
    int procID;
-   int mLocal;
-   int nLocal;
+   PRIMME_INT mLocal;
+   PRIMME_INT nLocal;
    void *commInfo;
    void (*globalSumDouble)
       (void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds );
@@ -101,7 +101,7 @@ typedef struct primme_svds_params {
 
    /* These pointers are not for users but for d/zprimme_svds function */
    int intWorkSize;
-   long int realWorkSize;
+   size_t realWorkSize;
    int *intWork;
    void *realWork;
 
@@ -119,8 +119,8 @@ typedef struct primme_svds_params {
    int initSize;
    int maxBasisSize;
    int maxBlockSize;
-   int maxMatvecs;
-   int iseed[4];
+   PRIMME_INT maxMatvecs;
+   PRIMME_INT iseed[4];
    int printLevel;
    FILE *outputFile;
    struct primme_svds_stats stats;

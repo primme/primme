@@ -46,16 +46,16 @@ ifdef(`USE_PETSC', ``#include <petscpc.h>
 define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', `std::complex<double>', `complex double'), `double')))dnl
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A);
-void PETScMatvec(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                          int *transpose, primme_svds_params *primme_svds);
-void ApplyPCPrecAHA(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void ApplyPCPrecAHA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                          int *transpose, primme_svds_params *primme_svds);
 void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
                          primme_svds_params *primme_svds);
 ', `
-void LauchliMatrixMatvec(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                          int *transpose, primme_svds_params *primme_svds);
-void LauchliApplyPreconditioner(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                                 int *mode, primme_svds_params *primme_svds);
 ifdef(`ADVANCED_HYBRID',`void LauchliAugmentedMatvec(void *x, void *y, int *blockSize, primme_params *primme);')
 ')dnl
@@ -298,7 +298,7 @@ PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A) {
    PetscFunctionReturn(0);
 }
 
-void PETScMatvec(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *trans,
+void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *trans,
                     primme_svds_params *primme_svds) {
    int i;
    Mat *A;
@@ -337,7 +337,7 @@ void PETScMatvec(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *tran
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
 }
 ', `
-void LauchliMatrixMatvec(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                          int *transpose, primme_svds_params *primme_svds) {
    
    int i;            /* vector index, from 0 to *blockSize-1 */
@@ -399,7 +399,7 @@ void LauchliAugmentedMatvec(void *x, void *y, int *blockSize, primme_params *pri
    - M, preconditioner for A^t*A (or A*A^t or [0 A^t; A 0]), where A is the Lauchli matrix.
 */
 ifdef(`USE_PETSC', `
-void ApplyPCPrecAHA(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void ApplyPCPrecAHA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                          int *mode, primme_svds_params *primme_svds) {
    int i,j;
    Mat *matrix;
@@ -445,7 +445,7 @@ void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
    MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
 }
 ', `
-void LauchliApplyPreconditioner(void *x, int *ldx, void *y, int *ldy, int *blockSize,
+void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                                 int *mode, primme_svds_params *primme_svds) {
    
    int i;            /* vector index, from 0 to *blockSize-1*/

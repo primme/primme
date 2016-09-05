@@ -32,15 +32,18 @@
 #include <assert.h>
 #include "primme.h"
 #include "const.h"
+#include "numerical_d.h"
 #include "init_d.h"
-#include "init_private_d.h"
 #include "update_projection_d.h"
 #include "update_W_d.h"
 #include "ortho_d.h"
 #include "factorize_d.h"
-#include "numerical_d.h"
 #include "wtime.h"                       /* Needed for CostModel */
 
+static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, int dv1, int dv2, SCALAR *locked,
+      PRIMME_INT ldlocked, int numLocked, double machEps, SCALAR *rwork,
+      size_t *rworkSize, primme_params *primme);
 
 /*******************************************************************************
  * subroutine init_basis - This subroutine is used to 
@@ -111,21 +114,16 @@
  *
  * Return value
  * ------------
- *  0 - Successful return
- * -1 - Orthogonalization failure
- * -2 - Failure to initialize block Krylov subspace
- * -3 - Failure to initialize Krylov subspace
- * -4 - Failure to UDU decompose M
- *
+ *  error code
  ******************************************************************************/
 
-int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
-   double *evecs, int ldevecs, double *evecsHat, int ldevecsHat, double *M,
-   int ldM, double *UDU, int ldUDU, int *ipivot, double machEps, double *rwork,
-   int rworkSize, int *basisSize, int *nextGuess, int *numGuesses,
-   double *timeForMV, primme_params *primme) {
+int init_basis_dprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, SCALAR *evecs, PRIMME_INT ldevecs,
+      SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU,
+      int ldUDU, int *ipivot, double machEps, SCALAR *rwork, size_t *rworkSize,
+      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
+      primme_params *primme) {
 
-   int ret;          /* Return value                              */
    int i;
    int initSize;
    int random;
@@ -133,17 +131,17 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
    /* Return memory requirement */
 
    if (V == NULL) {
-      return max(max(max(
-            update_projection_dprimme(NULL, 0, NULL, 0, NULL, 0, nLocal,
-               0, primme->numOrthoConst, NULL, 0, 1/*symmetric*/, primme),
-            UDUDecompose_dprimme(NULL, 0, NULL, 0, NULL,
-               primme->numOrthoConst, NULL, 0, primme)),
-            ortho_dprimme(NULL, 0, NULL, 0, 0, 
-               primme->numOrthoConst-1, NULL, 0, 0, nLocal, 
-               NULL, 0.0, NULL, 0, primme)),
-            ortho_dprimme(NULL, 0, NULL, 0, 0, *basisSize-1, 
-               NULL, 0, primme->numOrthoConst, nLocal, 
-               NULL, 0.0, NULL, 0, primme));
+      update_projection_dprimme(NULL, 0, NULL, 0, NULL, 0, nLocal,
+            0, primme->numOrthoConst, NULL, rworkSize, 1/*symmetric*/, primme);
+      UDUDecompose_dprimme(NULL, 0, NULL, 0, NULL,
+            primme->numOrthoConst, NULL, rworkSize, primme);
+      ortho_dprimme(NULL, 0, NULL, 0, 0, 
+            primme->numOrthoConst-1, NULL, 0, 0, nLocal, 
+            NULL, 0.0, NULL, rworkSize, primme);
+      ortho_dprimme(NULL, 0, NULL, 0, 0, *basisSize-1, 
+            NULL, 0, primme->numOrthoConst, nLocal, 
+            NULL, 0.0, NULL, rworkSize, primme);
+      return 0;
    }
 
    /*-----------------------------------------------------------------------*/
@@ -153,17 +151,9 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
    /*-----------------------------------------------------------------------*/
 
    if (primme->numOrthoConst > 0) {
-   /* lingfei: primme_svds. change ortho function for returning Q and R */
-      ret = ortho_dprimme(evecs, ldevecs, NULL, 0, 0, 
+      CHKERR(ortho_dprimme(evecs, ldevecs, NULL, 0, 0, 
         primme->numOrthoConst - 1, NULL, 0, 0, nLocal, 
-        primme->iseed, machEps, rwork, rworkSize, primme);
-
-      /* Push an error message onto the stack trace if an error occured */
-      if (ret < 0) {
-         primme_PushErrorMessage(Primme_init_basis, Primme_ortho, ret, 
-                         __FILE__, __LINE__, primme);
-         return ORTHO_FAILURE;
-      }
+        primme->iseed, machEps, rwork, rworkSize, primme), -1);
 
       /* Initialize evecsHat, M, and its factorization UDU,ipivot. This   */
       /* allows the orthogonalization constraints to be included in the   */
@@ -173,20 +163,16 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
 
       if (UDU != NULL) {
 
-         primme->applyPreconditioner(evecs, evecsHat, &primme->numOrthoConst, primme); 
+         primme->applyPreconditioner(evecs, evecsHat, &primme->numOrthoConst,
+               primme); 
          primme->stats.numPreconds += primme->numOrthoConst;
 
-         update_projection_dprimme(evecs, ldevecs, evecsHat, ldevecsHat, M,
-            ldM, nLocal, 0, primme->numOrthoConst, rwork, rworkSize, 1/*symmetric*/, primme);
+         CHKERR(update_projection_dprimme(evecs, ldevecs, evecsHat,
+                  ldevecsHat, M, ldM, nLocal, 0, primme->numOrthoConst, rwork,
+                  rworkSize, 1/*symmetric*/, primme), -1);
 
-         ret = UDUDecompose_dprimme(M, ldM, UDU, ldUDU, ipivot,
-            primme->numOrthoConst, rwork, rworkSize, primme);
-
-         if (ret != 0) {
-            primme_PushErrorMessage(Primme_init_basis, Primme_ududecompose, ret,
-               __FILE__, __LINE__, primme);
-            return UDUDECOMPOSE_FAILURE;
-         }
+         CHKERR(UDUDecompose_dprimme(M, ldM, UDU, ldUDU, ipivot,
+                  primme->numOrthoConst, rwork, rworkSize, primme), -1);
 
       }  /* if evecsHat and M=evecs'evecsHat, UDU are needed */
 
@@ -228,30 +214,17 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
    *basisSize = initSize + random;
 
    /* Orthonormalize the guesses provided by the user */ 
-   ret = ortho_dprimme(V, ldV, NULL, 0, 0, *basisSize-1, 
+   CHKERR(ortho_dprimme(V, ldV, NULL, 0, 0, *basisSize-1, 
          evecs, ldevecs, primme->numOrthoConst, nLocal, 
-         primme->iseed, machEps, rwork, rworkSize, primme);
+         primme->iseed, machEps, rwork, rworkSize, primme), -1)
 
-   /* Push an error message onto the stack trace if an error occurred */
-   if (ret < 0) {
-      primme_PushErrorMessage(Primme_init_basis, Primme_ortho, ret, 
-            __FILE__, __LINE__, primme);
-      return ORTHO_FAILURE;
-   }
-
-   matrixMatvec_dprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, primme);
+   CHKERR(matrixMatvec_dprimme(V, nLocal, ldV, W, ldW, 0, *basisSize,
+            primme), -1);
 
    if (primme->initBasisMode == primme_init_krylov) {
-      ret = init_block_krylov(V, nLocal, ldV, W, ldW, *basisSize,
+      CHKERR(init_block_krylov(V, nLocal, ldV, W, ldW, *basisSize,
             primme->minRestartSize-1, evecs, ldevecs, primme->numOrthoConst,
-            machEps, rwork, rworkSize, primme); 
-
-      /* Push an error message onto the stack trace if an error occurred */
-      if (ret < 0) {
-         primme_PushErrorMessage(Primme_init_basis, Primme_init_block_krylov,
-               ret, __FILE__, __LINE__, primme);
-         return INIT_BLOCK_KRYLOV_FAILURE;
-      }
+            machEps, rwork, rworkSize, primme), -1); 
 
       *basisSize = primme->minRestartSize;
    }
@@ -262,8 +235,8 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
    /* ----------------------------------------------------------- */
    if (primme->dynamicMethodSwitch && *basisSize < primme->maxBasisSize) {
       *timeForMV = primme_wTimer(0);
-      matrixMatvec_dprimme(V, nLocal, ldV, &W[ldW*(*basisSize)], ldV,
-            0, 1, primme);
+      CHKERR(matrixMatvec_dprimme(V, nLocal, ldV, &W[ldW*(*basisSize)],
+               ldV, 0, 1, primme), -1);
       *timeForMV = primme_wTimer(0) - *timeForMV;
    }
       
@@ -303,13 +276,13 @@ int init_basis_dprimme(double *V, int nLocal, int ldV, double *W, int ldW,
  * 
  ******************************************************************************/
 
-static int init_block_krylov(double *V, int nLocal, int ldV, double *W,
-   int ldW, int dv1, int dv2, double *locked, int ldlocked, int numLocked,
-   double machEps, double *rwork, int rworkSize, primme_params *primme) {
+static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, int dv1, int dv2, SCALAR *locked,
+      PRIMME_INT ldlocked, int numLocked, double machEps, SCALAR *rwork,
+      size_t *rworkSize, primme_params *primme) {
 
    int i;               /* Loop variables */
    int numNewVectors;   /* Number of vectors to be generated */
-   int ret;             /* Return code.                      */  
    int blockSize;       /* blockSize used in practice */
    
    numNewVectors = dv2 - dv1 + 1;
@@ -331,31 +304,26 @@ static int init_block_krylov(double *V, int nLocal, int ldV, double *W,
          Num_larnv_dprimme(2, primme->iseed, nLocal, &V[ldV*i]);
       }
    }
-   ret = ortho_dprimme(V, ldV, NULL, 0, dv1, 
-      dv1+blockSize-1, locked, ldlocked, numLocked, 
-      nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+   CHKERR(ortho_dprimme(V, ldV, NULL, 0, dv1, 
+            dv1+blockSize-1, locked, ldlocked, numLocked, 
+            nLocal, primme->iseed, machEps, rwork, rworkSize, primme), -1);
 
    /* Generate the remaining vectors in the sequence */
 
    for (i = dv1+blockSize; i <= dv2; i++) {
-      matrixMatvec_dprimme(&V[ldV*(i-blockSize)], nLocal, ldV, &V[ldV*i],
-            ldV, 0, 1, primme);
+      CHKERR(matrixMatvec_dprimme(&V[ldV*(i-blockSize)], nLocal, ldV,
+               &V[ldV*i], ldV, 0, 1, primme), -1);
+
       Num_copy_dprimme(nLocal, &V[ldV*i], 1,
          &W[ldW*(i-blockSize)], 1);
 
-       ret = ortho_dprimme(V, ldV, NULL, 0, i, i, locked, 
-         ldlocked, numLocked, nLocal, primme->iseed, machEps,
-         rwork, rworkSize, primme);
-
-      if (ret < 0) {
-         primme_PushErrorMessage(Primme_init_block_krylov, Primme_ortho, 
-                         ret, __FILE__, __LINE__, primme);
-         return ORTHO_FAILURE;
-      }
+      CHKERR(ortho_dprimme(V, ldV, NULL, 0, i, i, locked, 
+               ldlocked, numLocked, nLocal, primme->iseed, machEps,
+               rwork, rworkSize, primme), -1);
    }
 
-   matrixMatvec_dprimme(V, nLocal, ldV, W, ldW, dv2-blockSize+1,
-         blockSize, primme);
+   CHKERR(matrixMatvec_dprimme(V, nLocal, ldV, W, ldW, dv2-blockSize+1,
+            blockSize, primme), -1);
 
    return 0;
 }

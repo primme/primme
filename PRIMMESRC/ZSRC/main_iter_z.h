@@ -30,18 +30,19 @@
 #ifndef MAIN_ITER_H
 #define MAIN_ITER_H
 
-int main_iter_zprimme(double *evals, int *perm, __PRIMME_COMPLEX_DOUBLE__ *evecs,
+int main_iter_zprimme(double *evals, int *perm, SCALAR *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme);
 
-int prepare_candidates_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int nLocal,
-      __PRIMME_COMPLEX_DOUBLE__ *H, int ldH, int basisSize, int ldV, __PRIMME_COMPLEX_DOUBLE__ *X, __PRIMME_COMPLEX_DOUBLE__ *R,
-      __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
+int prepare_candidates_zprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal,
+      SCALAR *H, int ldH, int basisSize, PRIMME_INT ldV, SCALAR *X, SCALAR *R,
+      SCALAR *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
       int numEvals, double *blockNorms, int blockNormsSize,
-      int maxBlockSize, __PRIMME_COMPLEX_DOUBLE__ *evecs, int numLocked, double *evals, 
+      int maxBlockSize, SCALAR *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot, int ldhVecsRot, int *reset,
-      __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, primme_params *primme);
+      double *smallestResNorm, SCALAR *hVecsRot, int ldhVecsRot, int *reset,
+      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 
 #endif /* MAIN_ITER_H */

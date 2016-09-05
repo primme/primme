@@ -29,9 +29,12 @@
 #include "primme.h"
 #include "numerical_d.h"
 
-void globalSum_dprimme(double *sendBuf, double *recvBuf, int count, 
+int globalSum_dprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
       primme_params *primme) {
 
+#ifdef USE_DOUBLECOMPLEX
+   count *= 2;
+#endif
 
    if (primme && primme->globalSumDouble) {
       primme->globalSumDouble(sendBuf, recvBuf, &count, primme);
@@ -39,4 +42,6 @@ void globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
    else {
       Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
    }
+
+   return 0;
 }

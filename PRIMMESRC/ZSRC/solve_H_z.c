@@ -30,10 +30,21 @@
 #include <assert.h>
 #include "primme.h"
 #include "const.h"
-#include "solve_H_z.h"
-#include "solve_H_private_z.h"
 #include "numerical_z.h"
+#include "solve_H_z.h"
 #include "ortho_z.h"
+
+static int solve_H_Harm_zprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
+   SCALAR *R, int ldR, SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU,
+   double *hVals, int basisSize, int numConverged, double machEps,
+   size_t *lrwork, SCALAR *rwork, int liwork, int *iwork,
+   primme_params *primme);
+
+static int solve_H_Ref_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
+   int ldhVecs, SCALAR *hU, int ldhU, double *hSVals, SCALAR *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, size_t *lrwork,
+   SCALAR *rwork, int liwork, int *iwork, primme_params *primme);
+
 
 /*******************************************************************************
  * Subroutine solve_H - This procedure solves the project problem and return
@@ -70,27 +81,29 @@
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-int solve_H_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int basisSize, int ldH, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
-   __PRIMME_COMPLEX_DOUBLE__ *QtV, int ldQtV, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs,
-   double *hVals, double *hSVals, int numConverged, double machEps, int lrwork,
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, primme_params *primme) {
+int solve_H_zprimme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
+   SCALAR *QtV, int ldQtV, SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs,
+   double *hVals, double *hSVals, int numConverged, double machEps, size_t *lrwork,
+   SCALAR *rwork, int liwork, int *iwork, primme_params *primme) {
 
-   int i, ret;
+   int i;
 
    switch (primme->projectionParams.projection) {
    case primme_proj_RR:
-      ret = solve_H_RR_zprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
-            numConverged, lrwork, rwork, iwork, primme);
+      CHKERR(solve_H_RR_zprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
+               numConverged, lrwork, rwork, liwork, iwork, primme), -1);
       break;
 
    case primme_proj_harmonic:
-      ret = solve_H_Harm_zprimme(H, ldH, QtV, ldQtV, R, ldR, hVecs, ldhVecs, hU,
-            ldhU, hVals, basisSize, numConverged, machEps, lrwork, rwork, iwork, primme);
+      CHKERR(solve_H_Harm_zprimme(H, ldH, QtV, ldQtV, R, ldR, hVecs,
+               ldhVecs, hU, ldhU, hVals, basisSize, numConverged, machEps,
+               lrwork, rwork, liwork, iwork, primme), -1);
       break;
 
    case primme_proj_refined:
-      ret = solve_H_Ref_zprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
-            R, ldR, hVals, basisSize, numConverged, lrwork, rwork, iwork, primme);
+      CHKERR(solve_H_Ref_zprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
+               R, ldR, hVals, basisSize, numConverged, lrwork, rwork, liwork,
+               iwork, primme), -1);
       break;
 
    default:
@@ -100,10 +113,8 @@ int solve_H_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int basisSize, int ldH, __PRIM
    /* Return memory requirements */
 
    if (H == NULL) {
-      return ret;
+      return 0;
    }
-
-   if (ret != 0) return ret;
 
    /* -------------------------------------------------------- */
    /* Update the leftmost and rightmost Ritz values ever seen  */
@@ -149,9 +160,9 @@ int solve_H_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int basisSize, int ldH, __PRIM
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
-   int ldhVecs, double *hVals, int basisSize, int numConverged, int lrwork,
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, primme_params *primme) {
+int solve_H_RR_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
+   int ldhVecs, double *hVals, int basisSize, int numConverged, size_t *lrwork,
+   SCALAR *rwork, int liwork, int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
@@ -159,13 +170,9 @@ int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_D
    int *permu, *permw;
    double targetShift;
 
+#ifdef USE_DOUBLECOMPLEX
    double  *doubleWork;
-
-   /* ---------------------- */
-   /* Divide the iwork space */
-   /* ---------------------- */
-   permu  = iwork;
-   permw = permu + basisSize;
+#endif
 
 #ifdef NUM_ESSL
    int apSize, idx;
@@ -177,23 +184,31 @@ int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_D
    /* Return memory requirements */
    if (H == NULL) {
 #ifdef NUM_ESSL
-      return 2*basisSize + basisSize*(basisSize + 1)/2;
+      *lrwork = max(*lrwork, (size_t)2*basisSize
+                    + (size_t)basisSize*(basisSize + 1)/2);
 #else
-      __PRIMME_COMPLEX_DOUBLE__ rwork0;
-      lrwork = 0;
+      SCALAR rwork0;
+#  ifdef USE_DOUBLECOMPLEX
       lrwork += 2*basisSize;
-      Num_zheev_zprimme("V", "U", basisSize, hVecs, basisSize, hVals, &rwork0, 
-            -1, hVals, &info);
-
-      if (info != 0) {
-         primme_PushErrorMessage(Primme_solve_h, Primme_num_zheev, info, __FILE__, 
-               __LINE__, primme);
-         return NUM_DSYEV_FAILURE;
-      }
-      lrwork += (int)REAL_PART(rwork0);
-      return lrwork;
+      CHKERR((Num_heev_zprimme("V", "U", basisSize, hVecs, basisSize, hVals,
+               &rwork0, -1, hVals, &info), info), -1);
+      *lrwork = max(*lrwork, (size_t)REAL_PART(rwork0) + 2*basisSize);
+#  elif defined(USE_DOUBLE)
+      CHKERR((Num_heev_dprimme("V", "U", basisSize, hVecs, basisSize, hVals,
+               &rwork0, -1, &info), info), -1);
+      *lrwork = max(*lrwork, (size_t)rwork0);
+#  endif
+      return 0;
 #endif
    }
+
+   /* ---------------------- */
+   /* Divide the iwork space */
+   /* ---------------------- */
+   assert(liwork >= 2*basisSize);
+   permu  = iwork;
+   permw = permu + basisSize;
+
 
    /* ------------------------------------------------------------------- */
    /* Copy the upper triangular portion of H into hvecs.  We need to do   */
@@ -224,19 +239,18 @@ int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_D
    
    apSize = basisSize*(basisSize + 1)/2;
    lrwork = lrwork - apSize;
+#  ifdef USE_DOUBLECOMPLEX
    /* -------------------------------------------------------------------- */
    /* Assign also 3N double work space after the 2N complex rwork finishes */
    /* -------------------------------------------------------------------- */
    doubleWork = (double *) (&rwork[apsize + 2*basisSize]);
 
-   info = Num_zhpev_zprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
-      &rwork[apSize], lrwork);
-
-   if (info != 0) {
-      primme_PushErrorMessage(Primme_solve_h, Primme_num_zhpev, info, __FILE__, 
-         __LINE__, primme);
-      return NUM_DSPEV_FAILURE;
-   }
+   CHKERR(Num_hpev_zprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
+      &rwork[apSize], *lrwork), -1);
+#  elif defined(USE_DOUBLE)
+   CHKERR(Num_hpev_dprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
+      &rwork[apSize], *lrwork), -1);
+#  endif
 
 #else /* NUM_ESSL */
    if (primme->target != primme_largest) {
@@ -254,19 +268,18 @@ int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_D
       }
    }
 
+#  ifdef USE_DOUBLECOMPLEX
    /* -------------------------------------------------------------------- */
    /* Assign also 3N double work space after the 2N complex rwork finishes */
    /* -------------------------------------------------------------------- */
    doubleWork = (double *) (rwork+ 2*basisSize);
 
-   Num_zheev_zprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
-                2*basisSize, doubleWork, &info);
-
-   if (info != 0) {
-      primme_PushErrorMessage(Primme_solve_h, Primme_num_zheev, info, __FILE__, 
-         __LINE__, primme);
-      return NUM_DSYEV_FAILURE;
-   }
+   CHKERR((Num_heev_zprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
+                2*basisSize, doubleWork, &info), info), -1);
+#  elif defined(USE_DOUBLE)
+   CHKERR((Num_heev_dprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
+                *lrwork, &info), info), -1);
+#  endif
 #endif /* NUM_ESSL */
 
    /* ---------------------------------------------------------------------- */
@@ -420,10 +433,11 @@ int solve_H_RR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_D
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Harm_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *QtV, int ldQtV,
-   __PRIMME_COMPLEX_DOUBLE__ *R, int ldR, __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU,
-   double *hVals, int basisSize, int numConverged, double machEps, int lrwork,
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, primme_params *primme) {
+static int solve_H_Harm_zprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
+   SCALAR *R, int ldR, SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU,
+   double *hVals, int basisSize, int numConverged, double machEps,
+   size_t *lrwork, SCALAR *rwork, int liwork, int *iwork,
+   primme_params *primme) {
 
    int i, ret;
    double *oldTargetShifts, zero=0.0;
@@ -436,8 +450,9 @@ static int solve_H_Harm_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_
 
    /* Return memory requirements */
    if (QtV == NULL) {
-      return solve_H_RR_zprimme(QtV, ldQtV, hVecs, ldhVecs, hVals, basisSize,
-         0, lrwork, rwork, iwork, primme);
+      CHKERR(solve_H_RR_zprimme(QtV, ldQtV, hVecs, ldhVecs, hVals, basisSize,
+         0, lrwork, rwork, liwork, iwork, primme), -1);
+      return 0;
    }
 
    /* QAQ = QtV*inv(R) */
@@ -464,11 +479,11 @@ static int solve_H_Harm_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_
       default:
          assert(0);
    }
-   ret = solve_H_RR_zprimme(hVecs, ldhVecs, hVecs, ldhVecs, hVals, basisSize,
-         0, lrwork, rwork, iwork, primme);
+   ret = solve_H_RR_zprimme(hVecs, ldhVecs, hVecs, ldhVecs, hVals,
+         basisSize, 0, lrwork, rwork, liwork, iwork, primme);
    primme->targetShifts = oldTargetShifts;
    primme->target = oldTarget;
-   if (ret != 0) return ret;
+   CHKERRM(ret, -1, "Error calling solve_H_RR_zprimme\n");
 
    Num_copy_matrix_zprimme(hVecs, basisSize, basisSize, ldhVecs, hU, ldhU);
 
@@ -476,13 +491,12 @@ static int solve_H_Harm_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_
 
    Num_trsm_zprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
-   ret = ortho_zprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
-         basisSize, primme->iseed, machEps, rwork, lrwork, primme);
-   if (ret != 0) return ret;
+   CHKERR(ortho_zprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
+         basisSize, primme->iseed, machEps, rwork, lrwork, primme), -1);
  
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_symm_zprimme("L", "U", basisSize, basisSize, 1.0, H,
+   Num_hemm_zprimme("L", "U", basisSize, basisSize, 1.0, H,
       ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
@@ -524,13 +538,13 @@ static int solve_H_Harm_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_
  *     - -1 was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
-   int ldhVecs, __PRIMME_COMPLEX_DOUBLE__ *hU, int ldhU, double *hSVals, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
-   double *hVals, int basisSize, int targetShiftIndex, int lrwork, __PRIMME_COMPLEX_DOUBLE__ *rwork,
-   int *iwork, primme_params *primme) {
+static int solve_H_Ref_zprimme(SCALAR *H, int ldH, SCALAR *hVecs,
+   int ldhVecs, SCALAR *hU, int ldhU, double *hSVals, SCALAR *R, int ldR,
+   double *hVals, int basisSize, int targetShiftIndex, size_t *lrwork,
+   SCALAR *rwork, int liwork, int *iwork, primme_params *primme) {
 
    int i, j; /* Loop variables    */
-   int info; /* dsyev error value */
+   int info; /* error value */
 
    (void)targetShiftIndex; /* unused parameter */
 
@@ -539,21 +553,24 @@ static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_C
 
    /* Return memory requirements */
    if (H == NULL) {
-      __PRIMME_COMPLEX_DOUBLE__ rwork0;
-      lrwork = 0;
-      lrwork += 3*basisSize;
-      Num_zgesvd_zprimme("S", "O", basisSize, basisSize, R, basisSize,
+      SCALAR rwork0;
+      size_t lrwork0 = 0;
+#ifdef USE_DOUBLECOMPLEX
+      lrwork0 = (size_t)(3*basisSize);
+      CHKERR((Num_gesvd_zprimme("S", "O", basisSize, basisSize, R, basisSize,
             NULL, NULL, basisSize, hVecs, basisSize, &rwork0,
-            -1, hVals, &info);
-
-      if (info != 0) {
-         primme_PushErrorMessage(Primme_solve_h, Primme_num_zgesvd, info, __FILE__, 
-               __LINE__, primme);
-         return NUM_ZGESVD_FAILURE;
-      }
-      lrwork += (int)REAL_PART(rwork0);
-      lrwork += basisSize*basisSize; /* aux for transpose V and symm */
-      return lrwork;
+            -1, hVals, &info), info), -1);
+#elif defined(USE_DOUBLE)
+      CHKERR((Num_gesvd_dprimme("S", "O", basisSize, basisSize, R, basisSize, 
+            NULL, NULL, basisSize, hVecs, basisSize, &rwork0, -1, &info), info),
+            -1);
+#endif
+      lrwork0 += (size_t)REAL_PART(rwork0);
+      lrwork0 += (size_t)basisSize*(size_t)basisSize; /* aux for transpose V and hemm */
+      *lrwork = max(*lrwork, lrwork0);
+      /* for perm and permute_vecs */
+      *iwork = max(*iwork, 2*basisSize);
+      return 0;
    }
 
    /* Copy R into hVecs */
@@ -562,20 +579,22 @@ static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_C
    /* Note gesvd returns transpose(V) rather than V and sorted in descending  */
    /* order of the singular values                                            */
 
+#ifdef USE_DOUBLECOMPLEX
    /* zgesvd requires 5*basisSize double work space; booked 3*basisSize complex double */
-   Num_zgesvd_zprimme("S", "O", basisSize, basisSize, hVecs, ldhVecs,
+   assert(*lrwork >= (size_t)(3*basisSize));
+   CHKERR((Num_gesvd_zprimme("S", "O", basisSize, basisSize, hVecs, ldhVecs,
          hSVals, hU, ldhU, hVecs, ldhVecs, rwork+3*basisSize,
-         lrwork-3*basisSize, (double*)rwork, &info);
-
-   if (info != 0) {
-      primme_PushErrorMessage(Primme_solve_h, Primme_num_zgesvd, info, __FILE__, 
-            __LINE__, primme);
-      return NUM_ZGESVD_FAILURE;
-   }
+         TO_INT(*lrwork-(size_t)(3*basisSize)), (double*)rwork, &info), info),
+         -1);
+#elif defined(USE_DOUBLE)
+   CHKERR((Num_gesvd_dprimme("S", "O", basisSize, basisSize, hVecs, ldhVecs,
+         hSVals, hU, ldhU, hVecs, ldhVecs, rwork, TO_INT(*lrwork), &info),
+         info), -1);
+#endif
 
    /* Transpose back V */
 
-   assert(lrwork >= basisSize*basisSize);
+   assert(*lrwork >= (size_t)basisSize*(size_t)basisSize);
    for (j=0; j < basisSize; j++) {
       for (i=0; i < basisSize; i++) { 
          rwork[basisSize*j+i] = CONJ(hVecs[ldhVecs*i+j]);
@@ -591,6 +610,7 @@ static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_C
          || primme->target == primme_closest_geq) {
       int *perm = iwork;
       int *iwork0 = iwork + basisSize;
+      assert(liwork >= 2*basisSize);
 
       for (i=0; i<basisSize; i++) perm[i] = basisSize-1-i;
       permute_vecs_dprimme(hSVals, 1, basisSize, 1, perm, (double*)rwork, iwork0);
@@ -600,7 +620,7 @@ static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_C
 
    /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_symm_zprimme("L", "U", basisSize, basisSize, 1.0, H,
+   Num_hemm_zprimme("L", "U", basisSize, basisSize, 1.0, H,
       ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
@@ -675,17 +695,16 @@ static int solve_H_Ref_zprimme(__PRIMME_COMPLEX_DOUBLE__ *H, int ldH, __PRIMME_C
  ******************************************************************************/
 
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
-      __PRIMME_COMPLEX_DOUBLE__ *H, int ldH, double *hVals, double *hSVals, __PRIMME_COMPLEX_DOUBLE__ *hVecs,
+      SCALAR *H, int ldH, double *hVals, double *hSVals, SCALAR *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, __PRIMME_COMPLEX_DOUBLE__ *hVecsRot,
-      int ldhVecsRot, double machEps, int rworkSize, __PRIMME_COMPLEX_DOUBLE__ *rwork,
-      int *iwork, primme_params *primme) {
+      double smallestResNorm, int *flags, int RRForAll, SCALAR *hVecsRot,
+      int ldhVecsRot, double machEps, size_t *rworkSize, SCALAR *rwork,
+      int iworkSize, int *iwork, primme_params *primme) {
 
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
    double aNorm;
-   int ret;
 
    /* Quick exit */
 
@@ -697,12 +716,14 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
    /* Return memory requirement */
 
    if (H == NULL) {
-      return basisSize*basisSize + /* aH */
-         max(
-               compute_submatrix_zprimme(NULL, basisSize, 0, NULL, basisSize, 0,
-                  NULL, 0, NULL, 0),
-               solve_H_RR_zprimme(NULL, 0, NULL, 0, NULL, basisSize, 0, 0, NULL,
-                  NULL, primme));
+      size_t rworkSize0=0;
+      CHKERR(compute_submatrix_zprimme(NULL, basisSize, 0, NULL,
+               basisSize, 0, NULL, 0, NULL, &rworkSize0), -1);
+      CHKERR(solve_H_RR_zprimme(NULL, 0, NULL, 0, NULL, basisSize, 0,
+            &rworkSize0, NULL, 0, iwork, primme), -1);
+      rworkSize0 += (size_t)basisSize*(size_t)basisSize; /* aH */
+      *rworkSize = max(*rworkSize, rworkSize0);
+      return 0;
    }
 
    /* Quick exit */
@@ -719,9 +740,8 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
          + primme->numOrthoConst >= primme->n) {
 
       /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-      ret = solve_H_RR_zprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
-            targetShiftIndex, rworkSize, rwork, iwork, primme);
-      if (ret != 0) return ret;
+      CHKERR(solve_H_RR_zprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
+            targetShiftIndex, rworkSize, rwork, iworkSize, iwork, primme), -1);
 
       *arbitraryVecs = 0;
 
@@ -788,13 +808,13 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
       /* ----------------------------------------------------------------- */
 
       if (i-j > 1 && (someCandidate || RRForAll)) {
-         __PRIMME_COMPLEX_DOUBLE__ *rwork0 = rwork, *aH, *ahVecs;
-         int rworkSize0 = rworkSize;
+         SCALAR *rwork0 = rwork, *aH, *ahVecs;
+         size_t rworkSize0 = *rworkSize;
          int aBasisSize = i-j;
-         aH = rwork0; rwork0 += aBasisSize*aBasisSize; rworkSize0 -= aBasisSize*aBasisSize;
+         aH = rwork0; rwork0 += aBasisSize*aBasisSize;
+         assert(rworkSize0 >= (size_t)aBasisSize*(size_t)aBasisSize);
+         rworkSize0 -= (size_t)aBasisSize*(size_t)aBasisSize;
          ahVecs = &hVecsRot[ldhVecsRot*j+j];
-         assert(rworkSize0 >= 0);
-
 
          /* Zero hVecsRot(:,arbitraryVecs:i-1) */
          Num_zero_matrix_zprimme(&hVecsRot[ldhVecsRot*(*arbitraryVecs)],
@@ -807,13 +827,12 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          compute_submatrix_zprimme(&hVecs[ldhVecs*j], aBasisSize,
                ldhVecs, H, basisSize, ldH, aH, aBasisSize, rwork0,
-               rworkSize0);
+               &rworkSize0);
 
          /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-         ret = solve_H_RR_zprimme(aH, aBasisSize, ahVecs, ldhVecsRot,
-               &hVals[j], aBasisSize, targetShiftIndex, rworkSize0, rwork0,
-               iwork, primme);
-         if (ret != 0) return ret;
+         CHKERR(solve_H_RR_zprimme(aH, aBasisSize, ahVecs, ldhVecsRot,
+               &hVals[j], aBasisSize, targetShiftIndex, &rworkSize0, rwork0,
+               iworkSize, iwork, primme), -1);
 
          /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
          Num_gemm_zprimme("N", "N", basisSize, aBasisSize, aBasisSize,

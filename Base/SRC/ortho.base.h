@@ -31,13 +31,14 @@
 #ifndef ORTHO_H
 #define ORTHO_H
 
-int ortho_@(pre)primme(@(type) *basis, int ldBasis, @(type) *R, int ldR,
-   int b1, int b2, @(type) *locked, int ldLocked, int numLocked,
-   int nLocal, int *iseed, double machEps, @(type) *rwork, int rworkSize,
-   primme_params *primme);
+int ortho_@(pre)primme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
+      PRIMME_INT ldR, int b1, int b2, SCALAR *locked, PRIMME_INT ldLocked,
+      int numLocked, PRIMME_INT nLocal, PRIMME_INT *iseed, double machEps,
+      SCALAR *rwork, size_t *rworkSize, primme_params *primme);
 
-int ortho_single_iteration_@(pre)primme(@(type) *Q, int mQ, int nQ, int ldQ, @(type) *X,
-   int *inX, int nX, int ldX, double *overlaps, double *norms, @(type) *rwork, int lrwork,
-   primme_params *primme);
+ int ortho_single_iteration_@(pre)primme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
+      PRIMME_INT ldQ, SCALAR *X, int *inX, int nX, PRIMME_INT ldX,
+      REAL *overlaps, REAL *norms, SCALAR *rwork, size_t *lrwork,
+      primme_params *primme);
 
 #endif

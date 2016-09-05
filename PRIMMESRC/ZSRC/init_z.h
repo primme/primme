@@ -29,10 +29,11 @@
 #ifndef INIT_H
 #define INIT_H
 
-int init_basis_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, int nLocal, int ldV, __PRIMME_COMPLEX_DOUBLE__ *W, int ldW,
-   __PRIMME_COMPLEX_DOUBLE__ *evecs, int ldevecs, __PRIMME_COMPLEX_DOUBLE__ *evecsHat, int ldevecsHat, __PRIMME_COMPLEX_DOUBLE__ *M,
-   int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU, int *ipivot, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork,
-   int rworkSize, int *basisSize, int *nextGuess, int *numGuesses,
-   double *timeForMV, primme_params *primme);
+int init_basis_zprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, SCALAR *evecs, PRIMME_INT ldevecs,
+      SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU,
+      int ldUDU, int *ipivot, double machEps, SCALAR *rwork, size_t *rworkSize,
+      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
+      primme_params *primme);
 
 #endif

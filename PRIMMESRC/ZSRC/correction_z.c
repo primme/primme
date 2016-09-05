@@ -28,13 +28,34 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 #include "primme.h"
 #include "const.h"
-#include "correction_z.h"
-#include "correction_private_z.h"
-#include "inner_solve_z.h"
 #include "numerical_z.h"
+#include "correction_z.h"
+#include "inner_solve_z.h"
 #include "globalsum_z.h"
+
+static double computeRobustShift(int blockIndex, double resNorm, 
+   double *prevRitzVals, int numPrevRitzVals, double *sortedRitzVals, 
+   double *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+
+static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals, 
+   int *flags, int basisSize, double *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+ 
+static int apply_preconditioner_block(SCALAR *v, SCALAR *result, 
+                int blockSize, primme_params *primme);
+
+static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
+                int blockSize, SCALAR *rwork, primme_params *primme);
+
+static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs, 
+   SCALAR *evecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
+   SCALAR **Lprojector, SCALAR **RprojectorQ, SCALAR **RprojectorX, 
+   int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX, 
+   int numLocked, int numConverged, primme_params *primme);
+
 
 /*******************************************************************************
  * Subroutine solve_correction - This routine solves the correction equation
@@ -122,21 +143,21 @@
  ******************************************************************************/
  
 
-int solve_correction_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, __PRIMME_COMPLEX_DOUBLE__ *evecs, 
-   __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, double *lockedEvals, 
+int solve_correction_zprimme(SCALAR *V, SCALAR *W, SCALAR *evecs, 
+   SCALAR *evecsHat, SCALAR *UDU, int *ipivot, double *lockedEvals, 
    int numLocked, int numConvergedStored, double *ritzVals, 
    double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
    double *blockNorms, int *iev, int blockSize, double eresTol, 
-   double machEps, double aNormEstimate, __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork, 
-   int rworkSize, primme_params *primme) {
+   double machEps, double aNormEstimate, SCALAR *rwork, size_t *rworkSize,
+   int *iwork, int iworkSize, primme_params *primme) {
 
    int blockIndex;         /* Loop index.  Ranges from 0..blockSize-1.       */
    int ritzIndex;          /* Ritz value index blockIndex corresponds to.    */
                            /* Possible values range from 0..basisSize-1.     */
    int sortedIndex;        /* Ritz value index in sortedRitzVals, blockIndex */
                            /* corresponds to. Range 0..numLocked+basisSize-1 */
-   int neededRsize;        /* Needed size for rwork. If not enough return    */
-   int linSolverRWorkSize; /* Size of the linSolverRWork array.              */
+   size_t neededRsize;     /* Needed size for rwork. If not enough return    */
+   size_t linSolverRWorkSize;/* Size of the linSolverRWork array.            */
    int *ilev;              /* Array of size blockSize.  Maps the target Ritz */
                            /* values to their positions in the sortedEvals   */
                            /* array.                                         */
@@ -144,19 +165,18 @@ int solve_correction_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUB
    int sizeRprojectorQ;    /* These will be 0/1/or numOrthConstr+numLocked   */
    int sizeRprojectorX;    /* or numOrthConstr+numConvergedStored w/o locking*/
 
-   int ret;                /* Return code.                                   */
-   __PRIMME_COMPLEX_DOUBLE__ *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
-   __PRIMME_COMPLEX_DOUBLE__ *linSolverRWork;/* Workspace needed by linear solver.            */
+   SCALAR *r, *x, *sol;  /* Residual, Ritz vector, and correction.         */
+   SCALAR *linSolverRWork;/* Workspace needed by linear solver.            */
    double *sortedRitzVals; /* Sorted array of current and converged Ritz     */
                            /* values.  Size of array is numLocked+basisSize. */
    double *blockOfShifts;  /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
    double *approxOlsenEps; /* Shifts for approximate Olsen implementation    */
-   __PRIMME_COMPLEX_DOUBLE__ *Kinvx;         /* Workspace to store K^{-1}x                     */
-   __PRIMME_COMPLEX_DOUBLE__ *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
-   __PRIMME_COMPLEX_DOUBLE__ *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
-   __PRIMME_COMPLEX_DOUBLE__ *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
+   SCALAR *Kinvx;         /* Workspace to store K^{-1}x                     */
+   SCALAR *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
+   SCALAR *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
+   SCALAR *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
 
-   __PRIMME_COMPLEX_DOUBLE__ xKinvx;                        /* Stores x'*K^{-1}x if needed    */
+   SCALAR xKinvx;                        /* Stores x'*K^{-1}x if needed    */
    double eval, shift, robustShift;       /* robust shift values.           */
 
    /*------------------------------------------------------------*/
@@ -201,9 +221,13 @@ int solve_correction_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUB
    approxOlsenEps = blockOfShifts  + blockSize;
    neededRsize = neededRsize + numLocked+basisSize + 2*blockSize;
 
-   if (neededRsize > rworkSize) {
-      return(neededRsize);
+   /* Return memory requirements */
+   if (V == NULL) {
+      *rworkSize = max(*rworkSize, neededRsize);
+      *iwork = max(*iwork, primme->numEvals+primme->maxBasisSize);
+      return 0;
    }
+   assert(neededRsize <= *rworkSize);
 
    /* Subdivide also the integer work space */
    ilev = iwork;       /* of size blockSize */
@@ -223,6 +247,7 @@ int solve_correction_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUB
       /* list of current Ritz values, ritzVals.  The merging of the two */
       /* lists lockedEvals and ritzVals is stored in sortedRitzVals.    */
 
+      assert(iworkSize >= numLocked+blockSize);
       mergeSort(lockedEvals, numLocked, ritzVals, flags, basisSize, 
                    sortedRitzVals, ilev, blockSize, primme);
    }
@@ -403,17 +428,11 @@ int solve_correction_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUB
          shift = blockOfShifts[blockIndex];
          primme->ShiftsForPreconditioner = &blockOfShifts[blockIndex];
 
-         ret = inner_solve_zprimme(x, r, &blockNorms[blockIndex], evecs, 
+         CHKERR(inner_solve_zprimme(x, r, &blockNorms[blockIndex], evecs, 
             evecsHat, UDU, ipivot, &xKinvx, Lprojector, RprojectorQ, 
             RprojectorX, sizeLprojector, sizeRprojectorQ, sizeRprojectorX,
             sol, ritzVals[ritzIndex], shift, eresTol, aNormEstimate, 
-            machEps, linSolverRWork, linSolverRWorkSize, primme);
-
-         if (ret != 0) {
-            primme_PushErrorMessage(Primme_solve_correction, Primme_inner_solve,
-                            ret, __FILE__, __LINE__, primme);
-            return (INNER_SOLVE_FAILURE);
-         }
+            machEps, linSolverRWork, linSolverRWorkSize, primme), -1);
 
          Num_copy_zprimme(primme->nLocal, sol, 1, 
             &V[primme->nLocal*(basisSize+blockIndex)], 1);
@@ -652,7 +671,7 @@ static void mergeSort(double *lockedEvals, int numLocked, double *ritzVals,
  *
  ******************************************************************************/
 
-static void apply_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_COMPLEX_DOUBLE__ *result, 
+static int apply_preconditioner_block(SCALAR *v, SCALAR *result, 
                 int blockSize, primme_params *primme) {
          
    if (primme->correctionParams.precondition) {
@@ -664,6 +683,7 @@ static void apply_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_CO
       Num_copy_zprimme(primme->nLocal*blockSize, v, 1, result, 1);
    }
 
+   return 0;
 }
 
 /*******************************************************************************
@@ -677,7 +697,7 @@ static void apply_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_CO
  *
  * blockSize  The number of vectors in r, x
  *
- * rwork      __PRIMME_COMPLEX_DOUBLE__ work array of size (primme.nLocal + 4*blockSize)
+ * rwork      SCALAR work array of size (primme.nLocal + 4*blockSize)
  *
  * primme       Structure containing various solver parameters
  *
@@ -687,12 +707,12 @@ static void apply_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *v, __PRIMME_CO
  *
  ******************************************************************************/
 
-static void Olsen_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_COMPLEX_DOUBLE__ *x,
-                int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork, primme_params *primme) {
+static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
+                int blockSize, SCALAR *rwork, primme_params *primme) {
 
    int blockIndex;
-   __PRIMME_COMPLEX_DOUBLE__ alpha;
-   __PRIMME_COMPLEX_DOUBLE__ *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
+   SCALAR alpha;
+   SCALAR *Kinvx, *xKinvx, *xKinvr, *xKinvx_local, *xKinvr_local;
 
    /*------------------------------------------------------------------*/
    /* Subdivide workspace                                              */
@@ -721,7 +741,8 @@ static void Olsen_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_CO
         Num_dot_zprimme(primme->nLocal, &Kinvx[primme->nLocal*blockIndex],1,
                                    &r[primme->nLocal*blockIndex],1);
    }      
-   globalSum_zprimme(xKinvx_local, xKinvx, 2*blockSize, primme);
+   CHKERR(globalSum_zprimme(xKinvx_local, xKinvx, 2*blockSize, primme),
+         -1);
 
    /*------------------------------------------------------------------*/
    /* Compute K^{-1}r                                                  */
@@ -742,6 +763,8 @@ static void Olsen_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_CO
       Num_axpy_zprimme(primme->nLocal,alpha,&Kinvx[primme->nLocal*blockIndex],
                                        1, &x[primme->nLocal*blockIndex],1);
    } /*for*/
+
+   return 0;
 
 } /* of Olsen_preconditiner_block */
 
@@ -823,15 +846,15 @@ static void Olsen_preconditioner_block(__PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_CO
  *
  ******************************************************************************/
 
-static void setup_JD_projectors(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *r, __PRIMME_COMPLEX_DOUBLE__ *evecs, 
-   __PRIMME_COMPLEX_DOUBLE__ *evecsHat, __PRIMME_COMPLEX_DOUBLE__ *Kinvx, __PRIMME_COMPLEX_DOUBLE__ *xKinvx, 
-   __PRIMME_COMPLEX_DOUBLE__ **Lprojector, __PRIMME_COMPLEX_DOUBLE__ **RprojectorQ, __PRIMME_COMPLEX_DOUBLE__ **RprojectorX, 
+static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs, 
+   SCALAR *evecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
+   SCALAR **Lprojector, SCALAR **RprojectorQ, SCALAR **RprojectorX, 
    int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX, 
    int numLocked, int numConverged, primme_params *primme) {
 
    int n, sizeEvecs;
    int ONE = 1;
-   __PRIMME_COMPLEX_DOUBLE__ xKinvx_local;
+   SCALAR xKinvx_local;
 
    (void)r; /* unused parameter */
 
@@ -904,7 +927,7 @@ static void setup_JD_projectors(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_D
          primme->stats.numPreconds += 1;
          *RprojectorX  = Kinvx;
          xKinvx_local = Num_dot_zprimme(primme->nLocal, x, 1, Kinvx, 1);
-         globalSum_zprimme(&xKinvx_local, xKinvx, 1, primme);
+         CHKERR(globalSum_zprimme(&xKinvx_local, xKinvx, 1, primme), -1);
       }      
       else {
          *RprojectorX = x;
@@ -917,5 +940,7 @@ static void setup_JD_projectors(__PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_D
          *sizeRprojectorX = 0;
          *xKinvx = 1.0;
    }
-         
+
+   return 0;
+
 } /* setup_JD_projectors */

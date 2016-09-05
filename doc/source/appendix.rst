@@ -5,11 +5,17 @@ Appendix
 primme_params
 """""""""""""
 
+.. c:type:: PRIMME_INT
+
+   Integer type used in matrix dimensions (such as |n| and |nLocal|) and counters (such as |numMatvecs|).
+
+   The integer size is controlled by the compilation flag  ``PRIMME_INT_SIZE``, see :ref:`making`.
+
 .. c:type:: primme_params
 
    Structure to set the problem matrices and eigensolver options.
 
-   .. c:member:: int n
+   .. c:member:: PRIMME_INT n
 
       Dimension of the matrix.
 
@@ -24,10 +30,10 @@ primme_params
    
       :param x: one dimensional array containing the ``blockSize`` vectors 
          packed one after the other (i.e., the leading dimension is the vector size), each of size |nLocal|.
-         The real type is ``double*`` and ``Complex_Z*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
+         The real type is ``double*`` and ``double complex*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
       :param y: one dimensional array containing the ``blockSize`` vectors 
          packed one after the other (i.e., the leading dimension is the vector size), each of size |nLocal|.
-         The real type is ``double*`` and ``Complex_Z*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
+         The real type is ``double*`` and ``double complex*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
       :param blockSize: number of vectors in x and y.
       :param primme: parameters structure.
 
@@ -448,7 +454,7 @@ primme_params
 
    .. index:: stopping criterion
 
-   .. c:member:: int maxMatvecs
+   .. c:member:: PRIMME_INT maxMatvecs
 
       Maximum number of matrix vector multiplications (approximately equal to 
       the number of preconditioning operations) that the code is allowed to 
@@ -461,7 +467,7 @@ primme_params
 
    .. index:: stopping criterion
 
-   .. c:member:: int maxOuterIterations
+   .. c:member:: PRIMME_INT maxOuterIterations
 
       Maximum number of outer iterations that the code is allowed to perform 
       before it exits.
@@ -487,7 +493,7 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | this field is read and written by :c:func:`dprimme`.
 
-   .. c:member:: long int realWorkSize
+   .. c:member:: size_t realWorkSize
 
       If :c:func:`dprimme` or :c:func:`zprimme` is called with all arguments as NULL
       except for :c:type:`primme_params` then PRIMME returns immediately with |realWorkSize|
@@ -533,9 +539,9 @@ primme_params
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read and written by :c:func:`dprimme`.
 
-   .. c:member:: int iseed
+   .. c:member:: PRIMME_INT iseed
 
-      The ``int iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
+      The ``PRIMME_INT iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
 
       The default value is an array with values -1, -1, -1 and -1. In that case, ``iseed``
       is set based on the value of |procID| to avoid every parallel process generating
@@ -826,7 +832,7 @@ primme_params
 
       See [r3]_ for a study about different projector configurations in JD.
 
-   .. c:member:: int stats.numOuterIterations
+   .. c:member:: PRIMME_INT stats.numOuterIterations
 
       Hold the number of outer iterations. The value is available during execution and at the end.
 
@@ -835,7 +841,7 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
-   .. c:member:: int stats.numRestarts
+   .. c:member:: PRIMME_INT stats.numRestarts
 
       Hold the number of restarts during execution and at the end.
 
@@ -844,7 +850,7 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
-   .. c:member:: int stats.numMatvecs
+   .. c:member:: PRIMME_INT stats.numMatvecs
 
       Hold how many vectors the operator in |matrixMatvec| has been applied on.
       The value is available during execution and at the end.
@@ -854,7 +860,7 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
-   .. c:member:: int stats.numPreconds
+   .. c:member:: PRIMME_INT stats.numPreconds
 
       Hold how many vectors the operator in |applyPreconditioner| has been applied on.
       The value is available during execution and at the end.
@@ -921,8 +927,8 @@ primme_params
       If NULL, it is used the default convergence criteria (see |eps|).
    
       :param eval: the approximate value to evaluate.
-      :param x: one dimensional array of size |nLocal| containing the approximate vector.
-         The real type is ``double*`` and ``Complex_Z*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
+      :param x: one dimensional array of size |nLocal| containing the approximate vector; it can be NULL.
+         The real type is ``double*`` and ``double complex*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
       :param resNorm: the norm of residual vector.
       :param isconv: (output) the function sets zero if the pair is not converged and non zero otherwise.
       :param primme: parameters structure.

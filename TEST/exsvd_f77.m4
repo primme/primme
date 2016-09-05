@@ -299,6 +299,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
+        integer*8 ldx,ldy
         integer ldx,ldy,k,transpose
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
@@ -350,7 +351,8 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscpc.h>
-        integer ldx,ldy,k,mode
+        integer*8 ldx,ldy
+        integer k,mode
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer j,mLocal,nLocal
@@ -432,7 +434,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         implicit none
         intrinsic min
         include 'primme_svds_f77.h'
-        integer ldx,ldy
+        integer*8 ldx,ldy
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer k,transpose,i,j,m,n, ierr
@@ -481,7 +483,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         implicit none
         intrinsic min
         include 'primme_svds_f77.h'
-        integer ldx,ldy
+        integer*8 ldx,ldy
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer k,mode,i,j,m,n, ierr

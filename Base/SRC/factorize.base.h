@@ -29,10 +29,11 @@
 #ifndef FACTORIZE_H
 #define FACTORIZE_H
 
-int UDUDecompose_@(pre)primme(@(type) *M, int ldM, @(type) *UDU, int ldUDU,
-   int *ipivot, int dimM, @(type) *rwork, int rworkSize, primme_params *primme);
+int UDUDecompose_@(pre)primme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
+      int *ipivot, int dimM, SCALAR *rwork, size_t *rworkSize,
+      primme_params *primme);
 
-int UDUSolve_@(pre)primme(@(type) *UDU, int *ipivot, int dim, @(type) *rhs,
-   @(type) *sol);
+int UDUSolve_@(pre)primme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs,
+   SCALAR *sol);
 
 #endif

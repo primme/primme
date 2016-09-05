@@ -29,12 +29,12 @@
 #include "primme.h"
 #include "numerical_@(pre).h"
 
-void globalSum_@(pre)primme(@(type) *sendBuf, @(type) *recvBuf, int count, 
+int globalSum_@(pre)primme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
       primme_params *primme) {
 
-#ifdefarithm L_DEFCPLX
+#ifdef USE_DOUBLECOMPLEX
    count *= 2;
-#endifarithm
+#endif
 
    if (primme && primme->globalSumDouble) {
       primme->globalSumDouble(sendBuf, recvBuf, &count, primme);
@@ -42,4 +42,6 @@ void globalSum_@(pre)primme(@(type) *sendBuf, @(type) *recvBuf, int count,
    else {
       Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
    }
+
+   return 0;
 }

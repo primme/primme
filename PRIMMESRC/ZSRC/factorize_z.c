@@ -30,8 +30,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include "primme.h"
-#include "factorize_z.h"
 #include "numerical_z.h"
+#include "factorize_z.h"
 
 /******************************************************************************
  * Function UDUDecompose - This function computes an UDU decomposition of the
@@ -60,12 +60,12 @@
  *
  * Return Value
  * ------------
- * int error code: 0 upon success
- *                 dsytrf error code
+ * int error code
  ******************************************************************************/
  
-int UDUDecompose_zprimme(__PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX_DOUBLE__ *UDU, int ldUDU,
-   int *ipivot, int dimM, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, primme_params *primme) {
+int UDUDecompose_zprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
+      int *ipivot, int dimM, SCALAR *rwork, size_t *rworkSize,
+      primme_params *primme) {
 
    int info;
 
@@ -83,9 +83,10 @@ int UDUDecompose_zprimme(__PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX
    /* Return memory requirement */
 
    if (M == NULL) {
-      __PRIMME_COMPLEX_DOUBLE__ w;
-      Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
-      return (int)*(double*)&w;
+      SCALAR w;
+      Num_hetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
+      *rworkSize = max(*rworkSize, (size_t)REAL_PART(w));
+      return 0;
     }
 
    /* Quick return for M with dimension 1 */
@@ -98,13 +99,15 @@ int UDUDecompose_zprimme(__PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX
 
       /* Copy the upper triangular portion of M into UDU */
 
-      Num_copy_trimatrix_zprimme(M, dimM, dimM, ldM, 0 /* up */, 0, UDU, ldUDU, 0);
+      Num_copy_trimatrix_zprimme(M, dimM, dimM, ldM, 0 /* up */, 0, UDU,
+            ldUDU, 0);
 
       /* Perform the decomposition */
-      Num_zhetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, rwork, rworkSize, &info);
+      CHKERR((Num_hetrf_zprimme("U", dimM, UDU, ldUDU, ipivot, rwork,
+                  TO_INT(*rworkSize), &info), info), -1);
    }
 
-   return info;
+   return 0;
 }
 
 /******************************************************************************
@@ -135,8 +138,8 @@ int UDUDecompose_zprimme(__PRIMME_COMPLEX_DOUBLE__ *M, int ldM, __PRIMME_COMPLEX
  *
  ******************************************************************************/
 
-int UDUSolve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, int dim, __PRIMME_COMPLEX_DOUBLE__ *rhs, 
-   __PRIMME_COMPLEX_DOUBLE__ *sol) {
+int UDUSolve_zprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, 
+   SCALAR *sol) {
 
    int info;
 
@@ -149,9 +152,10 @@ int UDUSolve_zprimme(__PRIMME_COMPLEX_DOUBLE__ *UDU, int *ipivot, int dim, __PRI
    }
    else {
       Num_copy_zprimme(dim, rhs, 1, sol, 1);
-      Num_zhetrs_zprimme("U", dim, 1, UDU, dim, ipivot, sol, dim, &info);
+      CHKERR((Num_hetrs_zprimme("U", dim, 1, UDU, dim, ipivot, sol, dim,
+                  &info), info), -1);
    }
 
-   return info;
+   return 0;
 
 }

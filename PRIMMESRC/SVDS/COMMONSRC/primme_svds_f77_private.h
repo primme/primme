@@ -104,25 +104,23 @@ extern "C" {
 #endif
 
 union f77_value {
-   int *int_v;
-   void (*matFunc_v) (void*,int*,void*,int*,int*,int*,struct primme_svds_params*);
+   PRIMME_INT *int_v;
+   void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*);
    void *ptr_v;
    void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_svds_params*);
    primme_svds_target *target_v;
    primme_svds_operator *operator_v;
    double *double_v;
-   long int *long_int_v;
    FILE *file_v;
 };
 union f77_value_ptr {
-   int int_v;
-   void (*matFunc_v) (void*,int*,void*,int*,int*,int*,struct primme_svds_params*);
+   PRIMME_INT int_v;
+   void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*);
    void *ptr_v;
    void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_svds_params*);
    primme_svds_target target_v;
    primme_svds_operator operator_v;
    double double_v;
-   long int long_int_v;
    FILE *file_v;
 };
 

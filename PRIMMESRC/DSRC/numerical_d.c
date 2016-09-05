@@ -39,7 +39,7 @@
 #include "primme.h"
 
 /******************************************************************************/
-void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy) {
+void Num_copy_dprimme(int n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -48,13 +48,13 @@ void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy) {
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   DCOPY(&ln, x, &lincx, y, &lincy);
+   XCOPY(&ln, x, &lincx, y, &lincy);
 }
 /******************************************************************************/
 
 void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int k, 
-   double alpha, double *a, int lda, double *b, int ldb, 
-   double beta, double *c, int ldc) {
+   SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, 
+   SCALAR beta, SCALAR *c, int ldc) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -77,18 +77,18 @@ void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n, int 
 
    transa_fcd = _cptofcd(transa, strlen(transa));
    transb_fcd = _cptofcd(transb, strlen(transb));
-   DGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
+   XGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
          c, &lldc);
 #else
-   DGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
+   XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif
 
 }
 
 /******************************************************************************/
-void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double alpha, 
-   double *a, int lda, double *b, int ldb, double beta, 
-   double *c, int ldc) {
+void Num_hemm_dprimme(const char *side, const char *uplo, int m, int n, SCALAR alpha, 
+   SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta, 
+   SCALAR *c, int ldc) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -104,15 +104,15 @@ void Num_symm_dprimme(const char *side, const char *uplo, int m, int n, double a
 
    side_fcd = _cptofcd(side, strlen(side));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   DSYMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
+   XHEMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #else
-   DSYMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
+   XHEMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif 
 
 }
 
 void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,
-   const char *diag, int m, int n, double alpha, double *a, int lda, double *b,
+   const char *diag, int m, int n, SCALAR alpha, SCALAR *a, int lda, SCALAR *b,
    int ldb) {
 
    PRIMME_BLASINT lm = m;
@@ -123,15 +123,25 @@ void Num_trmm_dprimme(const char *side, const char *uplo, const char *transa,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
 
-   DTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#ifdef NUM_CRAY
+   _fcd side_fcd, uplo_fcd, transa_fcd, diag_fcd;
+
+   side_fcd = _cptofcd(side, strlen(side));
+   uplo_fcd = _cptofcd(uplo, strlen(uplo));
+   transa_fcd = _cptofcd(transa, strlen(transa));
+   diag_fcd = _cptofcd(diag, strlen(diag));
+   XTRMM(side_fcd, uplo_fcd, transa_fcd, diag_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#else
+   XTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#endif
 
 }
 
 
 /******************************************************************************/
-void Num_symv_dprimme(const char *uplo, int n, double alpha, 
-   double *a, int lda, double *x, int incx, double beta, 
-   double *y, int incy) {
+void Num_hemv_dprimme(const char *uplo, int n, SCALAR alpha, 
+   SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, 
+   SCALAR *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -141,13 +151,20 @@ void Num_symv_dprimme(const char *uplo, int n, double alpha,
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   DSYMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
+#ifdef NUM_CRAY
+   _fcd uplo_fcd;
+
+   uplo_fcd = _cptofcd(uplo, strlen(uplo));
+   XHEMV(uplo_fcd, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
+#else
+   XHEMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
+#endif
 
 }
 
 /******************************************************************************/
-void Num_axpy_dprimme(int n, double alpha, double *x, int incx, 
-   double *y, int incy) {
+void Num_axpy_dprimme(int n, SCALAR alpha, SCALAR *x, int incx, 
+   SCALAR *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -156,8 +173,7 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   DAXPY(&ln, &alpha, x, &lincx, y, &lincy);
-
+   XAXPY(&ln, &alpha, x, &lincx, y, &lincy);
 }
 
 /******************************************************************************
@@ -176,8 +192,8 @@ void Num_axpy_dprimme(int n, double alpha, double *x, int incx,
  *
  ******************************************************************************/
 
-void Num_compute_residual_dprimme(int n, double eval, double *x, 
-   double *Ax, double *r) {
+void Num_compute_residual_dprimme(int n, double eval, SCALAR *x, 
+   SCALAR *Ax, SCALAR *r) {
 
    int k, M=min(n,PRIMME_BLOCK_SIZE);
 
@@ -239,14 +255,14 @@ void Num_compute_residual_dprimme(int n, double eval, double *x,
  *
  ******************************************************************************/
 
-int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n, int *p, 
-   int ldx, double *Ax, int ldAx,
-   double *xo, int no, int ldxo, int io0, double *ro, int ldro,
-   double *xd, int nd, int *pd, int ldxd, double *rd, int ldrd,
-   double *rwork, int lrwork) {
+int Num_compute_residual_columns_dprimme(int m, double *evals, SCALAR *x, int n, int *p, 
+   int ldx, SCALAR *Ax, int ldAx,
+   SCALAR *xo, int no, int ldxo, int io0, SCALAR *ro, int ldro,
+   SCALAR *xd, int nd, int *pd, int ldxd, SCALAR *rd, int ldrd,
+   SCALAR *rwork, int lrwork) {
 
    int i, id, k, io, M=min(m,PRIMME_BLOCK_SIZE);
-   double *X0, *R0;
+   SCALAR *X0, *R0;
 
    /* Return memory requirement */
 
@@ -293,8 +309,8 @@ int Num_compute_residual_columns_dprimme(int m, double *evals, double *x, int n,
 }
 
 /******************************************************************************/
-void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
-   int lda, double *x, int incx, double beta, double *y, int incy) {
+void Num_gemv_dprimme(const char *transa, int m, int n, SCALAR alpha, SCALAR *a,
+   int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y, int incy) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -309,17 +325,36 @@ void Num_gemv_dprimme(const char *transa, int m, int n, double alpha, double *a,
    _fcd transa_fcd;
 
    transa_fcd = _cptofcd(transa, strlen(transa));
-   DGEMV(transa_fcd, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
+   XGEMV(transa_fcd, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #else
-   DGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
-
+   XGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
 #endif
 
 }
 
 /******************************************************************************/
-double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
+SCALAR Num_dot_dprimme(int n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
+#ifdef USE_DOUBLECOMPLEX
+/* ---- Explicit implementation of the zdotc() --- */
+   int i;
+   SCALAR zdotc = 0.0;
+   if (n <= 0) return(zdotc);
+   if (incx==1 && incy==1) {
+      for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+         zdotc += conj(x[i]) * y[i];
+      }
+   }
+   else {
+      if (incx==1 && incy==1) {
+         for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+            zdotc += conj(x[i*incx]) * y[i*incy];
+         }
+      }
+   }
+   return(zdotc);
+/* -- end of explicit implementation of the zdotc() - */
+#else
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
@@ -327,23 +362,21 @@ double Num_dot_dprimme(int n, double *x, int incx, double *y, int incy) {
    /* Zero dimension matrix may cause problems */
    if (n == 0) return 0.0;
 
-   return(DDOT(&ln, x, &lincx, y, &lincy));
+   return XDOT(&ln, x, &lincx, y, &lincy);
+#endif
 
 }
 
 /******************************************************************************/
-void Num_larnv_dprimme(int idist, int *iseed, int length, double *x) {
+void Num_larnv_dprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length, SCALAR *x) {
 
    PRIMME_BLASINT lidist = idist;
-   PRIMME_BLASINT llength = length;
+   PRIMME_BLASINT llength;
    PRIMME_BLASINT temp[4];
-   PRIMME_BLASINT *liseed = temp;
+   PRIMME_BLASINT *liseed;
    int i;
 
-   /* Zero dimension matrix may cause problems */
-   if (length == 0) return;
-
-   if (sizeof(int) == sizeof(PRIMME_BLASINT)) {
+   if (sizeof(PRIMME_INT) == sizeof(PRIMME_BLASINT)) {
       liseed = (PRIMME_BLASINT*)iseed; /* cast avoid compiler warning */
    } else {
       liseed = temp;
@@ -351,16 +384,21 @@ void Num_larnv_dprimme(int idist, int *iseed, int length, double *x) {
          liseed[i] = (PRIMME_BLASINT)iseed[i];
    }
 
-   DLARNV(&lidist, liseed, &llength, x);
+   while(length > 0) {
+      llength = (PRIMME_BLASINT)min(length, PRIMME_BLASINT_MAX-1);
+      XLARNV(&lidist, liseed, &llength, x);
+      length -= (PRIMME_INT)llength;
+      x += llength;
+   }
 
-   if (sizeof(int) != sizeof(PRIMME_BLASINT))
+   if (sizeof(PRIMME_INT) != sizeof(PRIMME_BLASINT))
       for(i=0; i<4; i++)
          iseed[i] = (int)liseed[i];
 
 }
 
 /******************************************************************************/
-void Num_scal_dprimme(int n, double alpha, double *x, int incx) {
+void Num_scal_dprimme(int n, SCALAR alpha, SCALAR *x, int incx) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -368,12 +406,12 @@ void Num_scal_dprimme(int n, double alpha, double *x, int incx) {
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   DSCAL(&ln, &alpha, x, &lincx);
+   XSCAL(&ln, &alpha, x, &lincx);
 
 }
 
 /******************************************************************************/
-void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy) {
+void Num_swap_dprimme(int n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -382,14 +420,14 @@ void Num_swap_dprimme(int n, double *x, int incx, double *y, int incy) {
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   DSWAP(&ln, x, &lincx, y, &lincy);
+   XSWAP(&ln, x, &lincx, y, &lincy);
 
 }
 
 /******************************************************************************/
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 #ifdef NUM_ESSL
-int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
+
+int Num_hpev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
    int n, double *aux, int naux) {
 
    PRIMME_BLASINT liopt = iopt;
@@ -397,14 +435,17 @@ int Num_dspev_dprimme(int iopt, double *ap, double *w, double *z, int ldz,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lnaux = naux;
 
+#ifdef USE_DOUBLE
    return dspev(liopt, ap, w, z, lldz, ln, aux, lnaux);
+#elif defined(USE_DOUBLECOMPLEX)
+   return zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
+#endif
 }
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
 #else
+#  ifdef USE_DOUBLE
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
+void Num_heev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
    double *w, double *work, int ldwork, int *info) {
 
    PRIMME_BLASINT ln = n;
@@ -421,23 +462,44 @@ void Num_dsyev_dprimme(const char *jobz, const char *uplo, int n, double *a, int
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   DSYEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo);
-
+   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo);
 #else
-
-   DSYEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo);
-
+   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo);
 #endif
    *info = (int)linfo;
 }
-
+#  elif defined(USE_DOUBLECOMPLEX)
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+void Num_heev_zprimme(const char *jobz, const char *uplo, int n, SCALAR *a, int lda,
+   double *w, SCALAR *work, int ldwork, double *rwork, int *info) {
 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
+#ifdef NUM_CRAY
+   _fcd jobz_fcd, uplo_fcd;
+
+   jobz_fcd = _cptofcd(jobz, strlen(jobz));
+   uplo_fcd = _cptofcd(uplo, strlen(uplo));
+
+   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
+#else
+   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo);
+#endif
+   *info = (int)linfo;
+}
+#  endif
 #endif
 
 
+#ifdef USE_DOUBLE
 /******************************************************************************/
-void Num_dgesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, double *a,
+void Num_gesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, double *a,
    int lda, double *s, double *u, int ldu, double *vt, int ldvt,
    double *work, int ldwork, int *info){
 
@@ -452,55 +514,55 @@ void Num_dgesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, doubl
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
 
-   DGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
-          &lldwork, &linfo);
+#ifdef NUM_CRAY
+   _fcd jobu_fcd, jobvt_fcd;
 
+   jobu_fcd = _cptofcd(jobu, strlen(jobu));
+   jobvt_fcd = _cptofcd(jobvt, strlen(jobvt));
+   XGESVD(jobu_fcd, jobvt_fcd, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
+#else
+   XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
+          &lldwork, &linfo);
+#endif
    *info = (int)linfo;
 }
 
-
+#elif defined(USE_DOUBLECOMPLEX)
 /******************************************************************************/
-
-void Num_geqrf_dprimme(int m, int n, double *a, int lda, double *tau,
-      double *rwork, int lrwork, int *info) {
+void Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, SCALAR *a,
+   int lda, double *s, SCALAR *u, int ldu, SCALAR *vt, int ldvt,
+   SCALAR *work, int ldwork, double *rwork, int *info){
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT llrwork = lrwork;
+   PRIMME_BLASINT lldu = ldu;
+   PRIMME_BLASINT lldvt = ldvt;
+   PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
 
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
 
-   DGEQRF
-      (&lm, &ln, a, &llda, tau, rwork, &llrwork, &linfo);
+#ifdef NUM_CRAY
+   _fcd jobu_fcd, jobvt_fcd;
 
+   jobu_fcd = _cptofcd(jobu, strlen(jobu));
+   jobvt_fcd = _cptofcd(jobvt, strlen(jobvt));
+   XGESVD(jobu_fcd, jobvt_fcd, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
+          &lldwork, rwork, &linfo);
+#else
+   XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
+          &lldwork, rwork, &linfo);
+#endif
    *info = (int)linfo;
 }
-
-void Num_orgqr_dprimme(int m, int n, int k, double *a, int lda, double *tau,
-      double *rwork, int lrwork, int *info) {
-
-   PRIMME_BLASINT lm = m;
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT lk = k;
-   PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT llrwork = lrwork;
-   PRIMME_BLASINT linfo = 0;
-
-   /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0 || k == 0) return;
-
-   DORGQR(&lm, &ln, &lk, a, &llda, tau, rwork, &llrwork, &linfo);
-
-   *info = (int)linfo;
-}
-
+#endif
 
 /******************************************************************************/
-void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot, 
-   double *work, int ldwork, int *info) {
+
+void Num_hetrf_dprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
+   SCALAR *work, int ldwork, int *info) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -522,11 +584,9 @@ void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot
    _fcd uplo_fcd;
 
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   DSYTRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
+   XHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 #else
-
-   DSYTRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
-
+   XHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
@@ -538,10 +598,9 @@ void Num_dsytrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot
 
 }
 
-
 /******************************************************************************/
-void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda, 
-   int *ipivot, double *b, int ldb, int *info) {
+void Num_hetrs_dprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda, 
+   int *ipivot, SCALAR *b, int ldb, int *info) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lnrhs = nrhs;
@@ -564,10 +623,9 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
    _fcd uplo_fcd;
 
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   DSYTRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+   XHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #else
-
-   DSYTRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+   XHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
@@ -576,12 +634,10 @@ void Num_dsytrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
       free(lipivot);
    }
    *info = (int)linfo;
-
 }
 
-
 void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, const char *diag,
-      int m, int n, double alpha, double *a, int lda, double *b, int ldb) {
+      int m, int n, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -591,8 +647,17 @@ void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, co
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
 
-   DTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#ifdef NUM_CRAY
+   _fcd side_fcd, uplo_fcd, transa_fcd, diag_fcd;
 
+   side_fcd = _cptofcd(side, strlen(side));
+   uplo_fcd = _cptofcd(uplo, strlen(uplo));
+   transa_fcd = _cptofcd(transa, strlen(transa));
+   diag_fcd = _cptofcd(diag, strlen(diag));
+   XTRSM(side_fcd, uplo_fcd, transa_fcd, diag_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#else
+   XTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+#endif
 }
 
 /******************************************************************************
@@ -611,7 +676,7 @@ void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa, co
  *
  ******************************************************************************/
 
-void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ldy) {
+void Num_copy_matrix_dprimme(SCALAR *x, int m, int n, int ldx, SCALAR *y, int ldy) {
    int i,j;
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
@@ -621,13 +686,13 @@ void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ld
 
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
-      memmove(y, x, sizeof(double)*m*n);
+      memmove(y, x, sizeof(SCALAR)*m*n);
    }
 
    /* Copy the matrix some rows back or forward */
    else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
       for (i=0; i<n; i++)
-         memmove(&y[i*ldy], &x[i*ldx], sizeof(double)*m);
+         memmove(&y[i*ldy], &x[i*ldx], sizeof(SCALAR)*m);
    }
 
    /* Copy the matrix some columns forward */
@@ -665,7 +730,7 @@ void Num_copy_matrix_dprimme(double *x, int m, int n, int ldx, double *y, int ld
  *
  ******************************************************************************/
 
-void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
+void Num_copy_matrix_columns_dprimme(SCALAR *x, int m, int *xin, int n, int ldx, SCALAR *y,
       int *yin, int ldy) {
 
    int i,j;
@@ -688,7 +753,7 @@ void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx,
  *
  ******************************************************************************/
 
-void Num_zero_matrix_dprimme(double *x, int m, int n, int ldx) {
+void Num_zero_matrix_dprimme(SCALAR *x, int m, int n, int ldx) {
 
    int i,j;
 
@@ -719,8 +784,8 @@ void Num_zero_matrix_dprimme(double *x, int m, int n, int ldx) {
  *
  ******************************************************************************/
 
-void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
-      int i0, double *y, int ldy, int zero) {
+void Num_copy_trimatrix_dprimme(SCALAR *x, int m, int n, int ldx, int ul,
+      int i0, SCALAR *y, int ldy, int zero) {
 
    int i, j, jm;
 
@@ -732,7 +797,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
       if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
          /* x and y overlap */
          for (i=0; i<n; i++) {
-            memmove(&y[i*ldy], &x[i*ldx], sizeof(double)*min(i0+i+1, m));
+            memmove(&y[i*ldy], &x[i*ldx], sizeof(SCALAR)*min(i0+i+1, m));
             /* zero lower part*/
             if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
          }
@@ -753,7 +818,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
       if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
          /* x and y overlap */
          for (i=0; i<n; i++) {
-            memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(double)*(m-min(i0+i, m)));
+            memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(SCALAR)*(m-min(i0+i, m)));
             /* zero upper part*/
             if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
          }
@@ -789,7 +854,7 @@ void Num_copy_trimatrix_dprimme(double *x, int m, int n, int ldx, int ul,
  *
  ******************************************************************************/
 
-void Num_copy_trimatrix_compact_dprimme(double *x, int m, int n, int ldx, int i0, double *y, int *ly) {
+void Num_copy_trimatrix_compact_dprimme(SCALAR *x, int m, int n, int ldx, int i0, SCALAR *y, int *ly) {
    int i, j, k;
 
    assert(m == 0 || n == 0 || ldx >= m);
@@ -817,7 +882,7 @@ void Num_copy_trimatrix_compact_dprimme(double *x, int m, int n, int ldx, int i0
  *
  ******************************************************************************/
 
-void Num_copy_compact_trimatrix_dprimme(double *x, int m, int n, int i0, double *y, int ldy) {
+void Num_copy_compact_trimatrix_dprimme(SCALAR *x, int m, int n, int i0, SCALAR *y, int ldy) {
 
    int i, j, k;
 
@@ -870,20 +935,20 @@ void Num_copy_compact_trimatrix_dprimme(double *x, int m, int n, int i0, double 
  *
  ******************************************************************************/
 
-int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
-   double *h, int nh, int ldh, double *hVals,
-   double *X0, int nX0b, int nX0e, int ldX0,
-   double *X1, int nX1b, int nX1e, int ldX1,
-   double *X2, int nX2b, int nX2e, int ldX2,
-   double *Wo, int nWob, int nWoe, int ldWo,
-   double *R, int nRb, int nRe, int ldR, double *Rnorms,
+int Num_update_VWXR_dprimme(SCALAR *V, SCALAR *W, int mV, int nV, int ldV,
+   SCALAR *h, int nh, int ldh, double *hVals,
+   SCALAR *X0, int nX0b, int nX0e, int ldX0,
+   SCALAR *X1, int nX1b, int nX1e, int ldX1,
+   SCALAR *X2, int nX2b, int nX2e, int ldX2,
+   SCALAR *Wo, int nWob, int nWoe, int ldWo,
+   SCALAR *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   double *rwork, int lrwork, primme_params *primme) {
+   SCALAR *rwork, int lrwork, primme_params *primme) {
 
    int i, j;         /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, ldX, ldY;
-   double *X, *Y;
+   SCALAR *X, *Y;
    double *tmp, *tmp0;
 
    /* Return memory requirements */
@@ -966,7 +1031,7 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
       if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       tmp0 = tmp+j;
-      if (j) globalSum_dprimme(tmp, tmp0, j, primme);
+      if (j) CHKERR(globalSum_dprimme(tmp, tmp0, j, primme), -1);
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
@@ -996,8 +1061,8 @@ int Num_update_VWXR_dprimme(double *V, double *W, int mV, int nV, int ldV,
  *
  ******************************************************************************/
 
-void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
-      double *rwork, int *iwork) {
+void permute_vecs_dprimme(SCALAR *vecs, int m, int n, int ld, int *perm_,
+      SCALAR *rwork, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
@@ -1069,6 +1134,7 @@ void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
 
 }
 
+#ifdef USE_DOUBLE
 void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
@@ -1140,6 +1206,7 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
       assert(perm[currentIndex] == currentIndex);
 
 }
+#endif
 
 
 /******************************************************************************
@@ -1164,8 +1231,8 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
  *
  ******************************************************************************/
 
-double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
-      double *work, int ldwork, int avoidCopy) {
+SCALAR* Num_compact_vecs_dprimme(SCALAR *vecs, int m, int n, int ld, int *perm,
+      SCALAR *work, int ldwork, int avoidCopy) {
 
    int i;
 
@@ -1208,20 +1275,21 @@ double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
  *
  ******************************************************************************/
 
-int compute_submatrix_dprimme(double *X, int nX, int ldX, 
-   double *H, int nH, int ldH, double *R, int ldR,
-   double *rwork, int lrwork) {
+int compute_submatrix_dprimme(SCALAR *X, int nX, int ldX, 
+   SCALAR *H, int nH, int ldH, SCALAR *R, int ldR,
+   SCALAR *rwork, size_t *lrwork) {
 
    /* Return memory requirement */
    if (X == NULL) {
-      return nH*nX;
+      *lrwork = max(*lrwork, (size_t)nH*(size_t)nX);
+      return 0;
    }
 
    if (nH == 0 || nX == 0) return 0;
 
-   assert(lrwork >= nH*nX);
+   assert(*lrwork >= (size_t)nH*(size_t)nX);
 
-   Num_symm_dprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
+   Num_hemm_dprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
    
    Num_gemm_dprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, 
       ldR);
@@ -1229,14 +1297,15 @@ int compute_submatrix_dprimme(double *X, int nX, int ldX,
    return 0;
 }
 
-double Num_lamch_dprimme(const char *cmach) {
+#ifdef USE_DOUBLE
+SCALAR Num_lamch_dprimme(const char *cmach) {
 #ifdef NUM_CRAY
    _fcd cmach_fcd;
 
    cmach_fcd = _cptofcd(cmach, strlen(cmach));
-   return (DLAMCH(cmach_fcd));
+   return XLAMCH(cmach_fcd);
 #else
-   return (DLAMCH(cmach));
+   return XLAMCH(cmach);
 #endif
-
 }
+#endif

@@ -41,13 +41,15 @@ void ApplyInvDavidsonDiagPrecNative(void *x, void *y, int *blockSize,
 int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
                          double threshold, double filter, CSRMatrix **prec);
 void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme);
-void CSRMatrixMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                        int *trans, primme_svds_params *primme_svds);
+void CSRMatrixMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, int *trans, primme_svds_params *primme_svds);
 int createInvNormalPrecNative(const CSRMatrix *matrix, double shift, double **prec);
-void ApplyInvNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                              int *mode, primme_svds_params *primme_svds);
-void ApplyInvDavidsonNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                              int *mode, primme_svds_params *primme_svds);
+void ApplyInvNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, int *mode,
+      primme_svds_params *primme_svds);
+void ApplyInvDavidsonNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, int *mode,
+      primme_svds_params *primme_svds);
 
 #endif
 

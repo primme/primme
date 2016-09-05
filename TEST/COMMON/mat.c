@@ -68,6 +68,7 @@ void FORTRAN_FUNCTION(zlusol)(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*,
 void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    
    int i;
+   int n = (int)primme->n;
    PRIMME_NUM *xvec, *yvec;
    CSRMatrix *matrix;
    
@@ -81,15 +82,17 @@ void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 #else
       FORTRAN_FUNCTION(zamux)
 #endif
-            (&primme->n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
+            (&n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
              matrix->AElts, matrix->JA, matrix->IA);
    }
 }
 
-void CSRMatrixMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                        int *trans, primme_svds_params *primme_svds) {
+void CSRMatrixMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, int *trans, primme_svds_params *primme_svds) {
    
    int i;
+   int m = (int)primme_svds->m;
+   int n = (int)primme_svds->n;
    PRIMME_NUM *xvec, *yvec;
    CSRMatrix *matrix;
    
@@ -104,7 +107,7 @@ void CSRMatrixMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
 #else
          FORTRAN_FUNCTION(zamux)
 #endif
-              (&primme_svds->m, &xvec[(*ldx)*i], &yvec[(*ldy)*i], 
+              (&m, &xvec[(*ldx)*i], &yvec[(*ldy)*i], 
                matrix->AElts, matrix->JA, matrix->IA);
       }
    } else {
@@ -114,7 +117,7 @@ void CSRMatrixMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
 #else
          FORTRAN_FUNCTION(zatmuxr)
 #endif
-           (&primme_svds->n, &primme_svds->m, &xvec[(*ldx)*i], 
+           (&n, &m, &xvec[(*ldx)*i], 
             &yvec[(*ldy)*i], matrix->AElts, matrix->JA, matrix->IA);
       }
    }
@@ -294,6 +297,7 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
 
 void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme) {
    int i;
+   int n = (int)primme->n;
    PRIMME_NUM *xvec, *yvec;
    CSRMatrix *prec;
    
@@ -307,7 +311,7 @@ void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme
 #else
       FORTRAN_FUNCTION(lusol0)
 #endif
-             (&primme->n, &xvec[primme->n*i], &yvec[primme->n*i],
+             (&n, &xvec[primme->n*i], &yvec[primme->n*i],
               prec->AElts, prec->JA, prec->IA);
    }
 }
@@ -383,8 +387,10 @@ int createInvNormalPrecNative(const CSRMatrix *matrix, double shift, double **pr
    return 1;
 }
 
-static void ApplyInvNormalPrecNativeSvdsGen(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                                 int *mode, primme_svds_params *primme_svds, double *shifts) {
+static void ApplyInvNormalPrecNativeSvdsGen(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, int *mode,
+      primme_svds_params *primme_svds, double *shifts) {
+
    double *diag = (double *)primme_svds->preconditioner;
    PRIMME_NUM *xvec = (PRIMME_NUM *)x, *yvec = (PRIMME_NUM *)y;
    const int bs = *blockSize;
@@ -407,13 +413,17 @@ static void ApplyInvNormalPrecNativeSvdsGen(void *x, int *ldx, void *y, int *ldy
    } 
 }
 
-void ApplyInvNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                              int *mode, primme_svds_params *primme_svds) {
+void ApplyInvNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, int *mode,
+      primme_svds_params *primme_svds) {
+
    ApplyInvNormalPrecNativeSvdsGen(x, ldx, y, ldy, blockSize, mode, primme_svds, NULL);
 }
 
-void ApplyInvDavidsonNormalPrecNative(void *x, int *ldx, void *y, int *ldy, int *blockSize,
-                                   int *mode, primme_svds_params *primme_svds) {
+void ApplyInvDavidsonNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, int *mode,
+      primme_svds_params *primme_svds) {
+
    primme_params *primme =
       primme_svds->method == *mode ? &primme_svds->primme : &primme_svds->primmeStage2;
    ApplyInvNormalPrecNativeSvdsGen(x, ldx, y, ldy, blockSize, mode, primme_svds,

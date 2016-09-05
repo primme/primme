@@ -149,7 +149,7 @@ static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int 
    primme_svds_operator method;
    @(type) *aux, *out_svecs = svecs;
    int n, nMax, i, cut;
-   const double machEps = Num_lamch_@(pre)primme("E");
+   const double machEps = Num_lamch_dprimme("E");
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -357,7 +357,7 @@ static @(type)* copy_last_params_from_svds(primme_svds_params *primme_svds, int 
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate) {
    primme_params primme;
    int intWorkSize=0;         /* Size of int work space */
-   long int realWorkSize=0;   /* Size of real work space */
+   size_t realWorkSize=0;     /* Size of real work space */
 
    /* Require workspace for 1st stage */
    if (primme_svds->method != primme_svds_op_none) {

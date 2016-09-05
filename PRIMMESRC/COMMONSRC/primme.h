@@ -40,6 +40,29 @@ extern "C" {
 #  define __PRIMME_COMPLEX_DOUBLE__ double complex
 #endif
 
+#if !defined(PRIMME_INT_SIZE) || PRIMME_INT_SIZE == 64
+#  include <stdint.h>
+#  include <inttypes.h>
+#  define PRIMME_INT int64_t
+#  define PRIMME_INT_P PRId64
+#  define PRIMME_INT_MAX INT64_MAX
+#elif PRIMME_INT_SIZE == 0
+#  include <limits.h>
+#  define PRIMME_INT int
+#  define PRIMME_INT_P "d"
+#  define PRIMME_INT_MAX INT_MAX
+#elif PRIMME_INT == 32
+#  include <stdint.h>
+#  include <inttypes.h>
+#  define PRIMME_INT int32_t
+#  define PRIMME_INT_P PRId32
+#  define PRIMME_INT_MAX INT32_MAX
+#else
+#  define PRIMME_INT PRIMME_INT_SIZE
+#  define PRIMME_INT_P "d"
+#  define PRIMME_INT_MAX INT_MAX
+#endif
+
 #define PRIMME_MAX_NAME_LENGTH 128
 
 typedef enum {
@@ -126,10 +149,10 @@ typedef struct stackTraceNode {
 
 
 typedef struct primme_stats {
-   int numOuterIterations;
-   int numRestarts;
-   int numMatvecs;
-   int numPreconds;
+   PRIMME_INT numOuterIterations;
+   PRIMME_INT numRestarts;
+   PRIMME_INT numMatvecs;
+   PRIMME_INT numPreconds;
    double elapsedTime; 
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
@@ -171,7 +194,7 @@ typedef struct restarting_params {
 typedef struct primme_params {
 
    /* The user must input at least the following two arguments */
-   int n;
+   PRIMME_INT n;
    void (*matrixMatvec)
       ( void *x,  void *y, int *blockSize, struct primme_params *primme);
 
@@ -186,7 +209,7 @@ typedef struct primme_params {
    /* input for the following is only required for parallel programs */
    int numProcs;
    int procID;
-   int nLocal;
+   PRIMME_INT nLocal;
    void *commInfo;
    void (*globalSumDouble)
       (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme );
@@ -205,11 +228,11 @@ typedef struct primme_params {
    int maxBasisSize;
    int minRestartSize;
    int maxBlockSize;
-   int maxMatvecs;
-   int maxOuterIterations;
+   PRIMME_INT maxMatvecs;
+   PRIMME_INT maxOuterIterations;
    int intWorkSize;
-   long int realWorkSize;
-   int iseed[4];
+   size_t realWorkSize;
+   PRIMME_INT iseed[4];
    int *intWork;
    void *realWork;
    double aNorm;

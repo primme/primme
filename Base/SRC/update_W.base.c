@@ -29,9 +29,9 @@
 
 #include <assert.h>
 #include "primme.h"
+#include "numerical_@(pre).h"
 #include "update_W_@(pre).h"
 #include "ortho_@(pre).h"
-#include "numerical_@(pre).h"
 
 
 /*******************************************************************************
@@ -41,20 +41,24 @@
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
  * V          The orthonormal basis
+ * nLocal     Number of rows of each vector stored on this node
+ * ldV        The leading dimension of V
+ * ldW        The leading dimension of W
  * basisSize  Number of vectors in V
  * blockSize  The current block size
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
- * W  A*V
+ * W          A*V
  ******************************************************************************/
 
-void matrixMatvec_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W,
-   int ldW, int basisSize, int blockSize, primme_params *primme) {
+int matrixMatvec_@(pre)primme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_params *primme) {
 
-   int i, ONE=1;
+   int i, ONE=1, ierr=0;
 
-   if (blockSize <= 0) return;
+   if (blockSize <= 0) return 0;
 
    /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
    if (ldV == nLocal && ldW == nLocal) {
@@ -70,19 +74,43 @@ void matrixMatvec_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W,
 
    primme->stats.numMatvecs += blockSize;
 
+   return ierr;
+
 }
 
-int update_Q_@(pre)primme(@(type) *V, int nLocal, int ldV, @(type) *W, int ldW,
-      @(type) *Q, int ldQ, @(type) *R, int ldR, double targetShift, int basisSize,
-      int blockSize, @(type) *rwork, int rworkSize, double machEps, primme_params *primme) {
+/*******************************************************************************
+ * Subroutine update_QR - Computes the QR factorization (A-targetShift*I)*V
+ *    updating only the columns nv:nv+blockSize-1 of Q and R.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V          The orthonormal basis
+ * nLocal     Number of rows of each vector stored on this node
+ * ldV        The leading dimension of V
+ * W          A*V
+ * ldW        The leading dimension of W
+ * basisSize  Number of vectors in V
+ * blockSize  The current block size
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * Q          The Q factor
+ * R          The R factor
+ ******************************************************************************/
+
+int update_Q_@(pre)primme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
+      double targetShift, int basisSize, int blockSize, SCALAR *rwork,
+      size_t *rworkSize, double machEps, primme_params *primme) {
 
    int i, j, ret;
 
    /* Return memory requirement */
    if (V == NULL) {
-      return ortho_@(pre)primme(NULL, 0, NULL, 0, basisSize,
+      ortho_@(pre)primme(NULL, 0, NULL, 0, basisSize,
          basisSize+blockSize-1, NULL, 0, 0, primme->nLocal, 
-         NULL, machEps, NULL, 0, primme);
+         NULL, machEps, NULL, rworkSize, primme);
+      return 0;
    }
 
    /* Quick exit */

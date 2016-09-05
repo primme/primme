@@ -30,18 +30,19 @@
 #ifndef MAIN_ITER_H
 #define MAIN_ITER_H
 
-int main_iter_dprimme(double *evals, int *perm, double *evecs,
+int main_iter_dprimme(double *evals, int *perm, SCALAR *evecs,
    double *resNorms, double machEps, int *intWork, void *realWork, 
    primme_params *primme);
 
-int prepare_candidates_dprimme(double *V, double *W, int nLocal,
-      double *H, int ldH, int basisSize, int ldV, double *X, double *R,
-      double *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
+int prepare_candidates_dprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal,
+      SCALAR *H, int ldH, int basisSize, PRIMME_INT ldV, SCALAR *X, SCALAR *R,
+      SCALAR *hVecs, int ldhVecs, double *hVals, double *hSVals, int *flags,
       int numEvals, double *blockNorms, int blockNormsSize,
-      int maxBlockSize, double *evecs, int numLocked, double *evals, 
+      int maxBlockSize, SCALAR *evecs, int numLocked, double *evals, 
       double *resNorms, int targetShiftIndex, double machEps, int *iev, 
       int *blockSize, int *recentlyConverged, int *numArbitraryVecs,
-      double *smallestResNorm, double *hVecsRot, int ldhVecsRot, int *reset,
-      double *rwork, int rworkSize, int *iwork, primme_params *primme);
+      double *smallestResNorm, SCALAR *hVecsRot, int ldhVecsRot, int *reset,
+      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 
 #endif /* MAIN_ITER_H */

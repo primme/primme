@@ -27,6 +27,7 @@
  ******************************************************************************/
 
 #include <stdlib.h>   /* free */
+#include <limits.h>   /* INT_MAX */
 #include "primme.h"
 #include "primme_f77_private.h"
 #ifdef __cplusplus
@@ -174,32 +175,6 @@ void primme_set_method_f77(primme_params **primme, int *method,
 }
 
 /*************************************************************************
- *  Display the runtime statistics from primme (Fortran does not 
- *  have access to these.
- *************************************************************************/
-#ifdef F77UNDERSCORE
-void primme_display_stats_f77_(primme_params **primme)
-#else
-void primme_display_stats_f77(primme_params **primme)
-#endif
-{ 
-        fprintf((*primme)->outputFile, 
-                                   "--------------------------------------\n");
-        fprintf((*primme)->outputFile, "Number of outer iterations: %d\n",
-                                        (*primme)->stats.numOuterIterations);
-        fprintf((*primme)->outputFile, "Number of Restarts: %d\n",
-                                        (*primme)->stats.numRestarts);
-        fprintf((*primme)->outputFile, "Number of Matrix-vector products: %d\n",
-                                        (*primme)->stats.numMatvecs);
-        if ((*primme)->correctionParams.precondition == 1)
-        fprintf((*primme)->outputFile, "Number of Precond operations: %d\n",
-                                        (*primme)->stats.numPreconds);
-        fprintf((*primme)->outputFile, "Total elapsed wall clock Time: %g\n",
-                                        (*primme)->stats.elapsedTime);
-        fprintf((*primme)->outputFile, "--------------------------------------\n");
-}
-
-/*************************************************************************
  * primme_set_member_f77(primme_params *primme, int *label, void *ptr)
  *
  * Sets any of the members of the primme data structure from a Fortran call.
@@ -218,12 +193,13 @@ void primme_display_stats_f77(primme_params **primme)
  *
  *************************************************************************/
 #ifdef F77UNDERSCORE
-void primme_set_member_f77_(primme_params **primme, int *label, union f77_value v){
+void primme_set_member_f77_(primme_params **primme, int *label, union f77_value v, int *ierr){
 #else
-void primme_set_member_f77(primme_params **primme, int *label, union f77_value v){
+void primme_set_member_f77(primme_params **primme, int *label, union f77_value v, int *ierr){
 #endif
    int i;
 
+   *ierr = 0;
    switch (*label) {
       case PRIMMEF77_n:
               (*primme)->n = *v.int_v;
@@ -238,10 +214,12 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->applyPreconditioner = v.matFunc_v;
       break;
       case PRIMMEF77_numProcs:
-              (*primme)->numProcs = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->numProcs = (int)*v.int_v;
       break;
       case PRIMMEF77_procID:
-              (*primme)->procID = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->procID = (int)*v.int_v;
       break;
       case PRIMMEF77_commInfo:
               (*primme)->commInfo = v.ptr_v;
@@ -253,37 +231,46 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->globalSumDouble = v.globalSumDoubleFunc_v;
       break;
       case PRIMMEF77_numEvals:
-              (*primme)->numEvals = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->numEvals = (int)*v.int_v;
       break;
       case PRIMMEF77_target:
               (*primme)->target = *v.target_v;
       break;
       case PRIMMEF77_numTargetShifts:
-              (*primme)->numTargetShifts = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->numTargetShifts = (int)*v.int_v;
       break;
       case PRIMMEF77_targetShifts:
               (*primme)->targetShifts = v.double_v;
       break;
       case PRIMMEF77_locking:
-              (*primme)->locking = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->locking = (int)*v.int_v;
       break;
       case PRIMMEF77_initSize:
-              (*primme)->initSize = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->initSize = (int)*v.int_v;
       break;
       case PRIMMEF77_numOrthoConst:
-              (*primme)->numOrthoConst = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->numOrthoConst = (int)*v.int_v;
       break;
       case PRIMMEF77_dynamicMethodSwitch:
-              (*primme)->dynamicMethodSwitch = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->dynamicMethodSwitch = (int)*v.int_v;
       break;
       case PRIMMEF77_maxBasisSize:
-              (*primme)->maxBasisSize = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->maxBasisSize = (int)*v.int_v;
       break;
       case PRIMMEF77_minRestartSize:
-              (*primme)->minRestartSize = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->minRestartSize = (int)*v.int_v;
       break;
       case PRIMMEF77_maxBlockSize:
-              (*primme)->maxBlockSize = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->maxBlockSize = (int)*v.int_v;
       break;
       case PRIMMEF77_maxMatvecs:
               (*primme)->maxMatvecs = *v.int_v;
@@ -292,10 +279,11 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->maxOuterIterations = *v.int_v;
       break;
       case PRIMMEF77_intWorkSize:
-              (*primme)->intWorkSize = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->intWorkSize = (int)*v.int_v;
       break;
       case PRIMMEF77_realWorkSize:
-              (*primme)->realWorkSize = *v.long_int_v;
+              (*primme)->realWorkSize = (size_t)*v.int_v;
       break;
       case PRIMMEF77_iseed:
          for (i=0; i< 4; i++) {
@@ -303,7 +291,7 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
          }
       break;
       case PRIMMEF77_intWork:
-              (*primme)->intWork = v.int_v;
+              (*primme)->intWork = (int*)v.int_v;
       break;
       case PRIMMEF77_realWork:
               (*primme)->realWork = v.ptr_v;
@@ -315,7 +303,8 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->eps = *v.double_v;
       break;
       case PRIMMEF77_printLevel:
-              (*primme)->printLevel = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->printLevel = (int)*v.int_v;
       break;
       case PRIMMEF77_outputFile:
               (*primme)->outputFile = v.file_v;
@@ -336,34 +325,44 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->restartingParams.scheme = *v.restartscheme_v;
       break;
       case PRIMMEF77_restartingParams_maxPrevRetain:
-              (*primme)->restartingParams.maxPrevRetain = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->restartingParams.maxPrevRetain = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_precondition:
-              (*primme)->correctionParams.precondition = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.precondition = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_robustShifts:
-              (*primme)->correctionParams.robustShifts = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.robustShifts = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_maxInnerIterations:
-              (*primme)->correctionParams.maxInnerIterations = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.maxInnerIterations = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_LeftQ:
-              (*primme)->correctionParams.projectors.LeftQ = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.projectors.LeftQ = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_LeftX:
-              (*primme)->correctionParams.projectors.LeftX = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.projectors.LeftX = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_RightQ:
-              (*primme)->correctionParams.projectors.RightQ = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.projectors.RightQ = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_RightX:
-              (*primme)->correctionParams.projectors.RightX = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.projectors.RightX = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_SkewQ:
-              (*primme)->correctionParams.projectors.SkewQ = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.projectors.SkewQ = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_projectors_SkewX:
-              (*primme)->correctionParams.projectors.SkewX = *v.int_v;
+              if (*v.int_v > INT_MAX) *ierr = 1; else 
+              (*primme)->correctionParams.projectors.SkewX = (int)*v.int_v;
       break;
       case PRIMMEF77_correctionParams_convTest:
               (*primme)->correctionParams.convTest = *v.convergencetest_v;
@@ -402,8 +401,7 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
               (*primme)->convTestFun = v.convTestFun_v;
       break;
       default : 
-      fprintf(stderr,"Requested member (%d) does not exist: consult primme_f77.h.",*label);
-      fprintf(stderr," No action taken \n");
+      *ierr = 1;
    }
 
 }
@@ -435,12 +433,13 @@ void primme_set_member_f77(primme_params **primme, int *label, union f77_value v
  *
  *************************************************************************/
 #ifdef F77UNDERSCORE
-void primme_get_member_f77_(primme_params *primme, int *label, union f77_value_ptr *v){
+void primme_get_member_f77_(primme_params *primme, int *label, union f77_value_ptr *v, int *ierr){
 #else
-void primme_get_member_f77(primme_params *primme, int *label, union f77_value_ptr *v){
+void primme_get_member_f77(primme_params *primme, int *label, union f77_value_ptr *v, int *ierr){
 #endif
    int i;
 
+   *ierr = 0;
    switch (*label) {
       case PRIMMEF77_n:
               v->int_v = primme->n;
@@ -514,7 +513,7 @@ void primme_get_member_f77(primme_params *primme, int *label, union f77_value_pt
               v->int_v = primme->intWorkSize;
       break;
       case PRIMMEF77_realWorkSize:
-              v->long_int_v = primme->realWorkSize;
+              v->int_v = primme->realWorkSize;
       break;
       case PRIMMEF77_iseed:
          for (i=0; i< 4; i++) {
@@ -600,8 +599,7 @@ void primme_get_member_f77(primme_params *primme, int *label, union f77_value_pt
               v->double_v = primme->stats.elapsedTime;
       break;
       default :
-      fprintf(stderr,"Requested member (%d) does not exist: consult primme_f77.h.",*label);
-      fprintf(stderr," No action taken \n");
+      *ierr = 1;
    }
 }
 
@@ -641,12 +639,12 @@ void primme_get_prec_shift_f77(primme_params *primme, int *i, double *shift)
  *
  *************************************************************************/
 #ifdef F77UNDERSCORE
-void primmetop_get_member_f77_(primme_params **primme, int *label, union f77_value_ptr *ptr){
-   primme_get_member_f77_(*primme, label, ptr);
+void primmetop_get_member_f77_(primme_params **primme, int *label, union f77_value_ptr *ptr, int *ierr){
+   primme_get_member_f77_(*primme, label, ptr, ierr);
 }
 #else
-void primmetop_get_member_f77(primme_params **primme, int *label, union f77_value_ptr *ptr){
-   primme_get_member_f77(*primme, label, ptr);
+void primmetop_get_member_f77(primme_params **primme, int *label, union f77_value_ptr *ptr, int *ierr){
+   primme_get_member_f77(*primme, label, ptr, ierr);
 }
 #endif
 /*************************************************************************/

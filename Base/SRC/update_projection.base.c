@@ -30,8 +30,8 @@
 #include <assert.h>
 #include "primme.h"
 #include "const.h"
-#include "update_projection_@(pre).h"
 #include "numerical_@(pre).h"
+#include "update_projection_@(pre).h"
 #include "globalsum_@(pre).h"
 
 /*******************************************************************************
@@ -61,9 +61,10 @@
  *
  ******************************************************************************/
 
-int update_projection_@(pre)primme(@(type) *X, int ldX, @(type) *Y, int ldY,
-   @(type) *Z, int ldZ, int nLocal, int numCols, int blockSize, @(type) *rwork,
-   int lrwork, int isSymmetric, primme_params *primme) {
+int update_projection_@(pre)primme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
+      PRIMME_INT ldY, SCALAR *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, SCALAR *rwork, size_t *lrwork, int isSymmetric,
+      primme_params *primme) {
 
    int count, m;
 
@@ -72,7 +73,10 @@ int update_projection_@(pre)primme(@(type) *X, int ldX, @(type) *Y, int ldY,
    /* -------------------------- */
 
    if (X == NULL) {
-      return (numCols+blockSize)*numCols*2 + (isSymmetric ? 0 : blockSize*numCols*2);
+      *lrwork = max(*lrwork,
+            (size_t)(numCols+blockSize)*numCols*2 
+            + (isSymmetric ? 0 : (size_t)blockSize*numCols*2));
+      return 0;
    }
 
    assert(ldX >= nLocal && ldY >= nLocal && ldZ >= numCols+blockSize);
@@ -117,9 +121,9 @@ int update_projection_@(pre)primme(@(type) *X, int ldX, @(type) *Y, int ldY,
 
       Num_copy_trimatrix_compact_@(pre)primme(&Z[ldZ*numCols], m, blockSize, ldZ,
             numCols, rwork, &count);
-      assert(count*2 <= lrwork);
+      assert((size_t)count*2 <= *lrwork);
 
-      globalSum_@(pre)primme(rwork, &rwork[count], count, primme);
+      CHKERR(globalSum_@(pre)primme(rwork, &rwork[count], count, primme), -1);
 
       Num_copy_compact_trimatrix_@(pre)primme(&rwork[count], m, blockSize, numCols,
             &Z[ldZ*numCols], ldZ);
@@ -134,9 +138,9 @@ int update_projection_@(pre)primme(@(type) *X, int ldX, @(type) *Y, int ldY,
       Num_copy_matrix_@(pre)primme(&Z[numCols], blockSize, numCols, ldZ,
             &rwork[m*blockSize], blockSize);
       count = m*blockSize+blockSize*numCols;
-      assert(count*2 <= lrwork);
+      assert((size_t)count*2 <= *lrwork);
 
-      globalSum_@(pre)primme(rwork, &rwork[count], count, primme);
+      CHKERR(globalSum_@(pre)primme(rwork, &rwork[count], count, primme), -1);
 
       Num_copy_matrix_@(pre)primme(&rwork[count], m, blockSize, ldZ, &Z[ldZ*numCols], m);
       Num_copy_matrix_@(pre)primme(&rwork[count+m*blockSize], blockSize, numCols, ldZ,

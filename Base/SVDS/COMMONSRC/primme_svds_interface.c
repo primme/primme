@@ -296,15 +296,16 @@ void primme_svds_display_params(primme_svds_params primme_svds) {
                                     primme_svds. P ## Params. S);
 #define PRINTParamsIF(P,S,V) if (primme_svds. P ## Params. S == V) \
                                  fprintf(outputFile, "primme_svds." #P "." #S " = " #V "\n");
-
+#define PRINT_PRIMME_INT(P) fprintf(outputFile, "primme_svds." #P " = %" PRIMME_INT_P "\n", primme_svds. P);
+ 
 fprintf(outputFile, "// ---------------------------------------------------\n"
                     "//            primme_svds configuration               \n"
                     "// ---------------------------------------------------\n");
 
-   PRINT(m, %d);
-   PRINT(n, %d);
-   PRINT(mLocal, %d);
-   PRINT(nLocal, %d);
+   PRINT_PRIMME_INT(m);
+   PRINT_PRIMME_INT(n);
+   PRINT_PRIMME_INT(mLocal);
+   PRINT_PRIMME_INT(nLocal);
    PRINT(numProcs, %d);
    PRINT(procID, %d);
 
@@ -317,7 +318,7 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
    PRINT(eps, %e);
    PRINT(maxBasisSize, %d);
    PRINT(maxBlockSize, %d);
-   PRINT(maxMatvecs, %d);
+   PRINT_PRIMME_INT(maxMatvecs);
 
    PRINTIF(target, primme_svds_smallest);
    PRINTIF(target, primme_svds_largest);
@@ -337,7 +338,7 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
    PRINT(numOrthoConst, %d);
    fprintf(outputFile, "primme_svds.iseed =");
    for (i=0; i<4;i++) {
-      fprintf(outputFile, " %d",primme_svds.iseed[i]);
+      fprintf(outputFile, " %" PRIMME_INT_P, primme_svds.iseed[i]);
    }
    fprintf(outputFile, "\n");
 

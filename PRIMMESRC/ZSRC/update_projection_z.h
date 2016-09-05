@@ -30,8 +30,9 @@
 #ifndef UPDATE_PROJECTION_H
 #define UPDATE_PROJECTION_H
 
-int update_projection_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int ldX, __PRIMME_COMPLEX_DOUBLE__ *Y, int ldY,
-   __PRIMME_COMPLEX_DOUBLE__ *Z, int ldZ, int nLocal, int numCols, int blockSize, __PRIMME_COMPLEX_DOUBLE__ *rwork,
-   int lrwork, int isSymmetric, primme_params *primme);
+int update_projection_zprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
+      PRIMME_INT ldY, SCALAR *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, SCALAR *rwork, size_t *lrwork, int isSymmetric,
+      primme_params *primme);
 
 #endif

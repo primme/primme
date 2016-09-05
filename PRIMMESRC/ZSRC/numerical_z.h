@@ -73,6 +73,26 @@
 
 #define MACHINE_EPSILON 1.11e-16
 
+// TEMP: Error management system
+
+#define CHKERR(ERRN, RETURN) { \
+   int err = (ERRN);\
+   if (err) {\
+      fprintf(stderr, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+      return (RETURN);\
+   }\
+}
+#define CHKERRM(ERRN, RETURN, ...) { \
+   int err = (ERRN);\
+   if (err) {\
+      fprintf(stderr, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+      fprintf(stderr, "PRIMME: " __VA_ARGS__);\
+      return (RETURN);\
+   }\
+}
+
+#define TO_INT(X) ((X) < INT_MAX ? (X) : INT_MAX)
+
 #ifdef F77UNDERSCORE
 #define FORTRAN_FUNCTION(X) X ## _
 #else
@@ -91,83 +111,101 @@
 extern "C" {
 #endif
 
-int Num_zhpev_zprimme(int iopt, __PRIMME_COMPLEX_DOUBLE__ *ap, double *w, __PRIMME_COMPLEX_DOUBLE__ *z, int ldz, 
-   int n, __PRIMME_COMPLEX_DOUBLE__ *aux, double *rwork, int naux);
-void Num_zheev_zprimme(const char *jobz, const char *uplo, int n, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, 
-   double *w, __PRIMME_COMPLEX_DOUBLE__ *work, int ldwork, double *rwork, int *info);
-void Num_zgesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, __PRIMME_COMPLEX_DOUBLE__ *a, int lda,
-    double *s, __PRIMME_COMPLEX_DOUBLE__ *u, int ldu, __PRIMME_COMPLEX_DOUBLE__ *vt, int ldvt, __PRIMME_COMPLEX_DOUBLE__ *work,
+#ifdef USE_DOUBLECOMPLEX
+int Num_hpev_zprimme(int iopt, SCALAR *ap, double *w, SCALAR *z, int ldz, 
+   int n, SCALAR *aux, double *rwork, int naux);
+void Num_heev_zprimme(const char *jobz, const char *uplo, int n, SCALAR *a, int lda, 
+   double *w, SCALAR *work, int ldwork, double *rwork, int *info);
+void Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n, SCALAR *a, int lda,
+    double *s, SCALAR *u, int ldu, SCALAR *vt, int ldvt, SCALAR *work,
     int ldwork, double *rwork, int *info);
-void Num_zhetrf_zprimme(const char *uplo, int n, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, int *ipivot,
-   __PRIMME_COMPLEX_DOUBLE__ *work, int ldwork, int *info);
-void Num_zhetrs_zprimme(const char *uplo, int n, int nrhs, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, 
-   int *ipivot, __PRIMME_COMPLEX_DOUBLE__ *b, int ldb, int *info);
+#endif
 
+#ifdef USE_DOUBLE
+int Num_hpev_dprimme(int iopt, double *ap, double *w, double *z, int ldz, 
+   int n, double *aux, int naux);
+void Num_heev_dprimme(const char *jobz, const char *uplo, int n, double *a, int lda, 
+   double *w, double *work, int ldwork, int *info);
+void Num_gesvd_dprimme(const char *jobu, const char *jobvt, int m, int n, double *a, int lda,
+    double *s, double *u, int ldu, double *vt, int ldvt, double *work,
+    int ldwork, int *info);
+#endif
 
+void Num_hetrf_zprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
+   SCALAR *work, int ldwork, int *info);
+void Num_hetrs_zprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda, 
+   int *ipivot, SCALAR *b, int ldb, int *info);
 void Num_copy_dprimme(int n, double *x, int incx, double *y, int incy);
-void Num_copy_zprimme(int n, __PRIMME_COMPLEX_DOUBLE__ *x, int incx, __PRIMME_COMPLEX_DOUBLE__ *y, int incy);
-__PRIMME_COMPLEX_DOUBLE__ Num_dot_zprimme(int n, __PRIMME_COMPLEX_DOUBLE__ *x, int incx, __PRIMME_COMPLEX_DOUBLE__ *y, int incy);
-void Num_orgqr_zprimme(int m, int n, int k, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *tau,
-      __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork, int *info);
+#ifdef USE_DOUBLECOMPLEX
+void Num_copy_zprimme(int n, SCALAR *x, int incx, SCALAR *y, int incy);
+#endif
+SCALAR Num_dot_zprimme(int n, SCALAR *x, int incx, SCALAR *y, int incy);
 void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n, int k, 
-   __PRIMME_COMPLEX_DOUBLE__ alpha, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *b, int ldb, 
-   __PRIMME_COMPLEX_DOUBLE__ beta, __PRIMME_COMPLEX_DOUBLE__ *c, int ldc);
-void Num_symm_zprimme(const char *side, const char *uplo, int m, int n, __PRIMME_COMPLEX_DOUBLE__ alpha, 
-   __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *b, int ldb, __PRIMME_COMPLEX_DOUBLE__ beta, 
-   __PRIMME_COMPLEX_DOUBLE__ *c, int ldc);
-void Num_symv_zprimme(const char *uplo, int n, __PRIMME_COMPLEX_DOUBLE__ alpha, 
-   __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *x, int lncx, __PRIMME_COMPLEX_DOUBLE__ beta, 
-   __PRIMME_COMPLEX_DOUBLE__ *y, int lncy); 
-void Num_axpy_zprimme(int n, __PRIMME_COMPLEX_DOUBLE__ alpha, __PRIMME_COMPLEX_DOUBLE__ *x, int incx, 
-   __PRIMME_COMPLEX_DOUBLE__ *y, int incy);
-void Num_gemv_zprimme(const char *transa, int m, int n, __PRIMME_COMPLEX_DOUBLE__ alpha, __PRIMME_COMPLEX_DOUBLE__ *a,
-   int lda, __PRIMME_COMPLEX_DOUBLE__ *x, int incx, __PRIMME_COMPLEX_DOUBLE__ beta, __PRIMME_COMPLEX_DOUBLE__ *y, int incy);
-void Num_larnv_zprimme(int idist, int *iseed, int length, __PRIMME_COMPLEX_DOUBLE__ *x);
-void Num_scal_zprimme(int n, __PRIMME_COMPLEX_DOUBLE__ alpha, __PRIMME_COMPLEX_DOUBLE__ *x, int incx);
-void Num_swap_zprimme(int n, __PRIMME_COMPLEX_DOUBLE__ *x, int incx, __PRIMME_COMPLEX_DOUBLE__ *y, int incy);
-void Num_copy_matrix_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int n, int ldx, __PRIMME_COMPLEX_DOUBLE__ *y, int ldy);
-void Num_zero_matrix_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int n, int ldx);
-void Num_copy_trimatrix_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int n, int ldx, int ul, int i0, __PRIMME_COMPLEX_DOUBLE__ *y, int ldy, int zero);
-void Num_geqrf_zprimme(int m, int n, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *tau, __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork, int *info);
-int Num_update_VWXR_zprimme(__PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, int mV, int nV, int ldV,
-   __PRIMME_COMPLEX_DOUBLE__ *h, int nh, int ldh, double *hVals,
-   __PRIMME_COMPLEX_DOUBLE__ *X0, int nX0b, int nX0e, int ldX0,
-   __PRIMME_COMPLEX_DOUBLE__ *X1, int nX1b, int nX1e, int ldX1,
-   __PRIMME_COMPLEX_DOUBLE__ *X2, int nX2b, int nX2e, int ldX2,
-   __PRIMME_COMPLEX_DOUBLE__ *Wo, int nWob, int nWoe, int ldWo,
-   __PRIMME_COMPLEX_DOUBLE__ *R, int nRb, int nRe, int ldR, double *Rnorms,
+   SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, 
+   SCALAR beta, SCALAR *c, int ldc);
+void Num_hemm_zprimme(const char *side, const char *uplo, int m, int n,
+SCALAR alpha, 
+   SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta, 
+   SCALAR *c, int ldc);
+void Num_hemv_zprimme(const char *uplo, int n, SCALAR alpha, 
+   SCALAR *a, int lda, SCALAR *x, int lncx, SCALAR beta, 
+   SCALAR *y, int lncy); 
+void Num_axpy_zprimme(int n, SCALAR alpha, SCALAR *x, int incx, 
+   SCALAR *y, int incy);
+void Num_gemv_zprimme(const char *transa, int m, int n, SCALAR alpha, SCALAR *a,
+   int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y, int incy);
+void Num_larnv_zprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length, SCALAR *x);
+void Num_scal_zprimme(int n, SCALAR alpha, SCALAR *x, int incx);
+void Num_swap_zprimme(int n, SCALAR *x, int incx, SCALAR *y, int incy);
+void Num_copy_matrix_zprimme(SCALAR *x, int m, int n, int ldx, SCALAR *y, int ldy);
+void Num_zero_matrix_zprimme(SCALAR *x, int m, int n, int ldx);
+void Num_copy_trimatrix_zprimme(SCALAR *x, int m, int n, int ldx, int ul, int i0, SCALAR *y, int ldy, int zero);
+int Num_update_VWXR_zprimme(SCALAR *V, SCALAR *W, int mV, int nV, int ldV,
+   SCALAR *h, int nh, int ldh, double *hVals,
+   SCALAR *X0, int nX0b, int nX0e, int ldX0,
+   SCALAR *X1, int nX1b, int nX1e, int ldX1,
+   SCALAR *X2, int nX2b, int nX2e, int ldX2,
+   SCALAR *Wo, int nWob, int nWoe, int ldWo,
+   SCALAR *R, int nRb, int nRe, int ldR, double *Rnorms,
    double *rnorms, int nrb, int nre,
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork, primme_params *primme);
-void Num_compute_residual_zprimme(int n, double eval, __PRIMME_COMPLEX_DOUBLE__ *x, __PRIMME_COMPLEX_DOUBLE__ *Ax, __PRIMME_COMPLEX_DOUBLE__ *r);
+   SCALAR *rwork, int lrwork, primme_params *primme);
+void Num_compute_residual_zprimme(int n, double eval, SCALAR *x, SCALAR *Ax, SCALAR *r);
 void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
 void permute_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm_,
       double *rwork, int *iwork);
-void permute_vecs_zprimme(__PRIMME_COMPLEX_DOUBLE__ *vecs, int m, int n, int ld, int *perm_,
-      __PRIMME_COMPLEX_DOUBLE__ *rwork, int *iwork);
+#ifdef USE_DOUBLECOMPLEX
+void permute_vecs_zprimme(SCALAR *vecs, int m, int n, int ld, int *perm_,
+      SCALAR *rwork, int *iwork);
+#endif
 double* Num_compact_vecs_dprimme(double *vecs, int m, int n, int ld, int *perm,
       double *work, int ldwork, int avoidCopy);
-__PRIMME_COMPLEX_DOUBLE__* Num_compact_vecs_zprimme(__PRIMME_COMPLEX_DOUBLE__ *vecs, int m, int n, int ld, int *perm,
-      __PRIMME_COMPLEX_DOUBLE__ *work, int ldwork, int avoidCopy);
-void Num_copy_compact_trimatrix_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int n, int i0, __PRIMME_COMPLEX_DOUBLE__ *y, int ldy);
-void Num_copy_trimatrix_compact_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int n, int ldx, int i0, __PRIMME_COMPLEX_DOUBLE__ *y, int *ly);
+#ifdef USE_DOUBLECOMPLEX
+SCALAR* Num_compact_vecs_zprimme(SCALAR *vecs, int m, int n, int ld, int *perm,
+      SCALAR *work, int ldwork, int avoidCopy);
+#endif
+void Num_copy_compact_trimatrix_zprimme(SCALAR *x, int m, int n, int i0, SCALAR *y, int ldy);
+void Num_copy_trimatrix_compact_zprimme(SCALAR *x, int m, int n, int ldx, int i0, SCALAR *y, int *ly);
 void Num_copy_matrix_columns_dprimme(double *x, int m, int *xin, int n, int ldx, double *y,
       int *yin, int ldy);
-void Num_copy_matrix_columns_zprimme(__PRIMME_COMPLEX_DOUBLE__ *x, int m, int *xin, int n, int ldx, __PRIMME_COMPLEX_DOUBLE__ *y,
+#ifdef USE_DOUBLECOMPLEX
+void Num_copy_matrix_columns_zprimme(SCALAR *x, int m, int *xin, int n, int
+ldx, SCALAR *y,
       int *yin, int ldy);
-int Num_compute_residual_columns_zprimme(int m, double *evals, __PRIMME_COMPLEX_DOUBLE__ *x, int n, int *p,
-   int ldx, __PRIMME_COMPLEX_DOUBLE__ *Ax, int ldAx,
-   __PRIMME_COMPLEX_DOUBLE__ *xo, int no, int ldxo, int io0, __PRIMME_COMPLEX_DOUBLE__ *ro, int ldro,
-   __PRIMME_COMPLEX_DOUBLE__ *xd, int nd, int *pd, int ldxd, __PRIMME_COMPLEX_DOUBLE__ *rd, int ldrd,
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork);
+#endif
+int Num_compute_residual_columns_zprimme(int m, double *evals, SCALAR *x, int n, int *p,
+   int ldx, SCALAR *Ax, int ldAx,
+   SCALAR *xo, int no, int ldxo, int io0, SCALAR *ro, int ldro,
+   SCALAR *xd, int nd, int *pd, int ldxd, SCALAR *rd, int ldrd,
+   SCALAR *rwork, int lrwork);
 void Num_trmm_zprimme(const char *side, const char *uplo, const char *transa,
-   const char *diag, int m, int n, __PRIMME_COMPLEX_DOUBLE__ alpha, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *b,
+   const char *diag, int m, int n, SCALAR alpha, SCALAR *a, int lda, SCALAR *b,
    int ldb);
 void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa, const char *diag,
-      int m, int n, __PRIMME_COMPLEX_DOUBLE__ alpha, __PRIMME_COMPLEX_DOUBLE__ *a, int lda, __PRIMME_COMPLEX_DOUBLE__ *b, int ldb);
-int compute_submatrix_zprimme(__PRIMME_COMPLEX_DOUBLE__ *X, int nX, int ldX, 
-   __PRIMME_COMPLEX_DOUBLE__ *H, int nH, int ldH, __PRIMME_COMPLEX_DOUBLE__ *R, int ldR,
-   __PRIMME_COMPLEX_DOUBLE__ *rwork, int lrwork);
-double Num_lamch_zprimme(const char *cmach);
+      int m, int n, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb);
+int compute_submatrix_zprimme(SCALAR *X, int nX, int ldX, 
+   SCALAR *H, int nH, int ldH, SCALAR *R, int ldR,
+   SCALAR *rwork, size_t *lrwork);
+double Num_lamch_dprimme(const char *cmach);
 
 #define PRIMME_BLOCK_SIZE 512
 

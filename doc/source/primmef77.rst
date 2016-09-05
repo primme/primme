@@ -167,6 +167,9 @@ primmetop_set_member_f77
 
    :param value: (input) value to set.
 
+      If the type of the option is integer (``int``, :c:type:`PRIMME_INT`, ``size_t``), the
+      type of ``value`` should be as long as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
+
    .. note::
 
       **Don't use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
@@ -187,6 +190,9 @@ primmetop_get_member_f77
       the detailed in function :c:func:`primmetop_set_member_f77`.
 
    :param value: (output) value of the field.
+
+      If the type of the option is integer (``int``, :c:type:`PRIMME_INT`, ``size_t``), the
+      type of ``value`` should be as long as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
 
    .. note::
 
@@ -247,6 +253,9 @@ primme_set_member_f77
 
    :param value: (input) value to set.
 
+      If the type of the option is integer (``int``, :c:type:`PRIMME_INT`, ``size_t``), the
+      type of ``value`` should be as long as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
+
    .. note::
 
       Use this function exclusively inside PRIMME's callback functions, e.g., |matrixMatvec|
@@ -266,6 +275,9 @@ primme_get_member_f77
       the detailed in function :c:func:`primmetop_set_member_f77`.
 
    :param value: (output) value of the field.
+
+      If the type of the option is integer (``int``, :c:type:`PRIMME_INT`, ``size_t``), the
+      type of ``value`` should be as long as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
 
    .. note::
 

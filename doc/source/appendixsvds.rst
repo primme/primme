@@ -8,7 +8,7 @@ primme_svds_params
 
    Structure to set the problem matrix and the solver options.
 
-   .. c:member:: int m
+   .. c:member:: PRIMME_INT m
 
       Number of rows of the matrix.
 
@@ -17,7 +17,7 @@ primme_svds_params
          | :c:func:`primme_initialize` sets this field to 0;
          | this field is read by :c:func:`dprimme`.
 
-   .. c:member:: int n
+   .. c:member:: PRIMME_INT n
 
       Number of columns of the matrix.
 
@@ -26,13 +26,13 @@ primme_svds_params
          | :c:func:`primme_initialize` sets this field to 0;
          | this field is read by :c:func:`dprimme`.
 
-   .. c:member:: void (*matrixMatvec) (void *x, int ldx, void *y, int ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds)
+   .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds)
 
       Block matrix-multivector multiplication, :math:`y = A x` if ``transpose`` is zero and :math:`y = A^*x` otherwise.
 
       If ``transpose`` is zero, then ``x`` and ``y`` are array of dimensions |SnLocal| x ``blockSize`` and |SmLocal| x ``blockSize``
       respectively. Elsewhere they have dimensions |SmLocal| x ``blockSize`` and |SnLocal| x ``blockSize``. Both arrays are column-major
-      (consecutive rows are consecutive in memory) and their real type is ``double*`` and ``Complex_Z*`` when called from
+      (consecutive rows are consecutive in memory) and their real type is ``double*`` and ``double complex*`` when called from
       :c:func:`dprimme_svds` :c:func:`zprimme_svds` respectively.
 
       :param x: input array.
@@ -53,7 +53,7 @@ primme_svds_params
          Integer arguments are passed by reference to make easier the interface to other
          languages (like Fortran).
 
-   .. c:member:: void (*applyPreconditioner)(void *x, int ldx, void *y, int ldy, int *blockSize, int *mode, primme_svds_params *primme_svds)
+   .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds)
 
       Block preconditioner-multivector application. Depending on ``mode`` it is expected an approximation of the inverse of
 
@@ -65,7 +65,7 @@ primme_svds_params
       If ``mode`` is ``primme_svds_op_AtA``, then ``x`` and ``y`` are array of dimensions |SnLocal| x ``blockSize``; if mode is
       ``primme_svds_op_AAt``, they are |SmLocal| x ``blockSize``; and otherwise they are (|SmLocal| + |SnLocal|) x ``blockSize``.
       Both arrays are column-major
-      (consecutive rows are consecutive in memory) and their real type is ``double*`` and ``Complex_Z*`` when called from
+      (consecutive rows are consecutive in memory) and their real type is ``double*`` and ``double complex*`` when called from
       :c:func:`dprimme_svds` :c:func:`zprimme_svds` respectively.
 
       :param x: input array.
@@ -102,7 +102,7 @@ primme_svds_params
          | :c:func:`dprimme_svds` sets this field to 0 if |SnumProcs| is 1;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int mLocal
+   .. c:member:: PRIMME_INT mLocal
 
       Number of local rows on this process. The value depends on how the matrix and
       preconditioner is distributed along the processes.
@@ -115,7 +115,7 @@ primme_svds_params
 
       See also: |SmatrixMatvec| and |SapplyPreconditioner|.
 
-   .. c:member:: int nLocal
+   .. c:member:: PRIMME_INT nLocal
 
       Number of local columns on this process. The value depends on how the matrix and
       preconditioner is distributed along the processes.
@@ -356,7 +356,7 @@ primme_svds_params
 
    .. index:: stopping criterion
 
-   .. c:member:: int maxMatvecs
+   .. c:member:: PRIMME_INT maxMatvecs
 
       Maximum number of matrix vector multiplications (approximately half 
       the number of preconditioning operations) that the code is allowed to 
@@ -383,7 +383,7 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: long int realWorkSize
+   .. c:member:: size_t realWorkSize
 
       If :c:func:`dprimme_svds` or :c:func:`zprimme_svds` is called with all arguments as NULL
       except for :c:type:`primme_svds_params` then it returns immediately with |SrealWorkSize|
@@ -423,9 +423,9 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to NULL;
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int iseed
+   .. c:member:: PRIMME_INT iseed
 
-      The ``int iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
+      The ``PRIMME_INT iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
 
       The default value is an array with values -1, -1, -1 and -1. In that case, ``iseed``
       is set based on the value of |SprocID| to avoid every parallel process generating
@@ -517,7 +517,7 @@ primme_svds_params
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int stats.numOuterIterations
+   .. c:member:: PRIMME_INT stats.numOuterIterations
 
       Hold the number of outer iterations.
 
@@ -526,7 +526,7 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int stats.numRestarts
+   .. c:member:: PRIMME_INT stats.numRestarts
 
       Hold the number of restarts.
 
@@ -535,7 +535,7 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int stats.numMatvecs
+   .. c:member:: PRIMME_INT stats.numMatvecs
 
       Hold how many vectors the operator in |SmatrixMatvec| has been applied on.
 
@@ -544,7 +544,7 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int stats.numPreconds
+   .. c:member:: PRIMME_INT stats.numPreconds
 
       Hold how many vectors the operator in |SapplyPreconditioner| has been applied on.
 

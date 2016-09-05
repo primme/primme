@@ -32,8 +32,8 @@
 #include "primme.h"
 #include "wtime.h"
 #include "const.h"
+#include "numerical_z.h"
 #include "locking_z.h"
-#include "locking_private_z.h"
 #include "ortho_z.h"
 #include "convergence_z.h"
 #include "update_projection_z.h"
@@ -41,7 +41,9 @@
 #include "solve_H_z.h"
 #include "restart_z.h"
 #include "factorize_z.h"
-#include "numerical_z.h"
+
+static void insertionSort(double newVal, double *evals, double newNorm,
+   double *resNorms, int *perm, int numLocked, primme_params *primme);
 
 /*******************************************************************************
  * Subroutine: restart_locking - This routine is only called when locking and
@@ -152,14 +154,14 @@
  *       
  ******************************************************************************/
  
-int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PRIMME_COMPLEX_DOUBLE__ *W, 
-      int nLocal, int basisSize, int ldV, __PRIMME_COMPLEX_DOUBLE__ **X, __PRIMME_COMPLEX_DOUBLE__ **R,
-      __PRIMME_COMPLEX_DOUBLE__ *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
-      int *iev, int *ievSize, double *blockNorms, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *evals,
+int restart_locking_zprimme(int *restartSize, SCALAR *V, SCALAR *W, 
+      PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,
+      SCALAR *hVecs, int ldhVecs, int *restartPerm, double *hVals, int *flags,
+      int *iev, int *ievSize, double *blockNorms, SCALAR *evecs, double *evals,
       int *numConverged, int *numLocked, double *resNorms, int *evecsperm,
       int numPrevRetained, int *indexOfPreviousVecs, int *hVecsPerm,
-      int reset, double machEps, __PRIMME_COMPLEX_DOUBLE__ *rwork, int rworkSize, int *iwork, 
-      primme_params *primme) {
+      int reset, double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
+      int iworkSize, primme_params *primme) {
 
    int i, j, k;             /* Loop variables                                 */
    int numPacked;           /* The number of coefficient vectors moved to the */
@@ -171,32 +173,35 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
    int left;                /* Index of the first column with a vector to be locked */
    int overbooking;         /* If basis has more converged pairs than numEvals */
    double *lockedResNorms;  /* residual norms for locked vectors              */
-   int ret, numLocked0 = *numLocked; /* aux variables                         */
+   int numLocked0 = *numLocked; /* aux variables                         */
    double *blockNorms0;
+   size_t rworkSize0 = *rworkSize;
 
    /* Return memory requirement */
    if (V == NULL) {
-      __PRIMME_COMPLEX_DOUBLE__ t;
+      SCALAR t;
       double d;
-      return max(max(max(
-            /* for permute_vecs and fakeResNorms */
-            2*basisSize,
-            Num_compute_residual_columns_zprimme(nLocal, NULL, NULL, basisSize, NULL, 0,
-               NULL, 0, NULL, primme->maxBlockSize, 0, 0, NULL, 0, NULL,
-               primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0)),
-            Num_reset_update_VWXR_zprimme(NULL, NULL, nLocal, basisSize, 0, NULL,
-               *restartSize, 0, NULL,
+      /* for permute_vecs and fakeResNorms */
+      *rworkSize = max(*rworkSize, (size_t)basisSize*2);
+      *rworkSize = max(*rworkSize, (size_t)
+            Num_compute_residual_columns_zprimme(nLocal, NULL, NULL,
+               basisSize, NULL, 0, NULL, 0, NULL, primme->maxBlockSize, 0, 0,
+               NULL, 0, NULL, primme->maxBlockSize, NULL, 0, NULL, 0, NULL, 0));
+      CHKERR(Num_reset_update_VWXR_zprimme(NULL, NULL, nLocal, basisSize,
+               0, NULL, *restartSize, 0, NULL,
                &t, 0, *restartSize+*numLocked, 0,
                &t, 0, *ievSize, 0,
                &t, 0, *restartSize, *restartSize+*numLocked, 0,
                &t, 0, *restartSize, 0,
                &t, 0, *ievSize, 0, &d,
                &d, *restartSize, *numLocked,
-               0, 0.0, NULL, 0, primme)),
-            check_convergence_zprimme(NULL,
-               nLocal, 0, NULL, 0, NULL, *numLocked, 0, *restartSize,
-               *restartSize+*numLocked, NULL, NULL, NULL, NULL, 0.0, NULL, 0,
-               NULL, primme));
+               0, 0.0, NULL, rworkSize, primme), -1);
+      CHKERR(check_convergence_zprimme(NULL, nLocal, 0, NULL, 0, NULL,
+               *numLocked, 0, *restartSize, *restartSize+*numLocked, NULL, NULL,
+               NULL, NULL, 0.0, NULL, rworkSize, iwork, 0, primme), -1);
+      /* for permute_vecs and ifailed */
+      *iwork = max(*iwork, 2*basisSize);
+      return 0;
    }
 
    overbooking = (*numConverged > primme->numEvals);
@@ -264,6 +269,7 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
       }
    }
 
+   assert(iworkSize >= basisSize);
    permute_vecs_dprimme(hVals, 1, basisSize, 1, restartPerm, (double*)rwork, iwork);
    permute_vecs_zprimme(hVecs, basisSize, basisSize, ldhVecs, restartPerm, rwork, iwork);
 
@@ -278,21 +284,21 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
    else {
       lockedResNorms = (double*)rwork;
       rwork += basisSize;
-      rworkSize -= basisSize;
+      assert(rworkSize0 >= (size_t)basisSize);
+      rworkSize0 -= basisSize;
    }
    *X = &V[*restartSize*ldV];
    *R = &W[*restartSize*ldV];
-   ret = Num_reset_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV, hVecs,
-         *restartSize, ldhVecs, hVals,
-         V, 0, *restartSize, ldV,
-         *X, 0, sizeBlockNorms, ldV,
-         evecs, *numLocked+primme->numOrthoConst, left,
-               !overbooking?left+numPacked:left, primme->nLocal,
-         W, 0, *restartSize, ldV,
-         *R, 0, sizeBlockNorms, ldV, blockNorms,
-         lockedResNorms, left, *restartSize,
-         reset, machEps, rwork, rworkSize, primme);
-   if (ret != 0) return ret;
+   CHKERR(Num_reset_update_VWXR_zprimme(V, W, nLocal, basisSize, ldV,
+            hVecs, *restartSize, ldhVecs, hVals,
+            V, 0, *restartSize, ldV,
+            *X, 0, sizeBlockNorms, ldV,
+            evecs, *numLocked+primme->numOrthoConst, left,
+                !overbooking?left+numPacked:left, primme->nLocal,
+            W, 0, *restartSize, ldV,
+            *R, 0, sizeBlockNorms, ldV, blockNorms,
+            lockedResNorms, left, *restartSize,
+            reset, machEps, rwork, &rworkSize0, primme), -1);
  
    /* -------------------------------------------------------------- */
    /* Recompute flags for the vectors to be locked.                  */
@@ -302,11 +308,10 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
    /* -------------------------------------------------------------- */
 
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
-   ret = check_convergence_zprimme(&V[ldV*left],
-         nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-         left+numPacked, flags, lockedResNorms, hVals, &reset /*dummy*/, machEps,
-         rwork, rworkSize, iwork, primme);
-   if (ret != 0) return ret;
+   CHKERR(check_convergence_zprimme(&V[ldV*left],
+            nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
+            left+numPacked, flags, lockedResNorms, hVals, &reset /*dummy*/,
+            machEps, rwork, &rworkSize0, iwork, iworkSize, primme), -1);
 
    /* -------------------------------------------------------------- */
    /* Copy the values for the converged values into evals, and in    */
@@ -335,6 +340,7 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
    /* Generate the permutation that separates the pairs that failed  */
    /* to be locked to the ones that passed.                          */
 
+   assert(iworkSize >= numPacked);
    ifailed = iwork;
    for (i=left, failed=0; i < left+numPacked; i++)
       if (flags[i] == UNCONVERGED) ifailed[failed++] = i-left;
@@ -405,7 +411,7 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
             &V[left*ldV], failed, ifailed, ldV, &W[left*ldV], ldV, *X,
             sizeBlockNorms, ldV, 0, *R, ldV,
             &V[(left+failed)*ldV], maxBlockSize, hVecsPerm, ldV,
-            &W[(left+failed)*ldV], ldV, rwork, rworkSize);
+            &W[(left+failed)*ldV], ldV, rwork, TO_INT(rworkSize0));
    }
    else {
       /* The failed pairs are not rearranged with the rest of           */
@@ -438,6 +444,7 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
          ldhVecs, ifailed, &hVecs[left*ldhVecs], ldhVecs, 0);
    Num_compact_vecs_dprimme(&hVals[left], 1, failed, 1, ifailed, &hVals[left],
          1, 0);
+   assert(iworkSize >= numPacked*2);
    permute_vecs_iprimme(&restartPerm[left], numPacked, ifailed,
          ifailed+numPacked);
 
@@ -468,7 +475,7 @@ int restart_locking_zprimme(int *restartSize, __PRIMME_COMPLEX_DOUBLE__ *V, __PR
 
          if (primme->printLevel >= 2 && primme->procID == 0) { 
             fprintf(primme->outputFile, 
-                  "Lock epair[ %d ]= %e norm %.4e Mvecs %d Time %.4e Flag %d\n",
+                  "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
                   *numLocked, eval, resNorm, 
                   primme->stats.numMatvecs, primme_wTimer(0), flags[i]);
             fflush(primme->outputFile);

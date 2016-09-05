@@ -29,9 +29,11 @@
 #ifndef GLOBALSUM_H
 #define GLOBALSUM_H
  
-void globalSum_dprimme(double *sendBuf, double *recvBuf, int count, 
+int globalSum_dprimme(double *sendBuf, double *recvBuf, int count, 
       primme_params *params);
-void globalSum_zprimme(__PRIMME_COMPLEX_DOUBLE__ *sendBuf, __PRIMME_COMPLEX_DOUBLE__ *recvBuf, int count, 
+#ifdef USE_DOUBLECOMPLEX
+int globalSum_zprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
       primme_params *params);
+#endif
 
 #endif

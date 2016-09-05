@@ -2,16 +2,11 @@
 
 CDOTH_D  = ../../PRIMMESRC/DSRC/convergence_d.h  \
 	../../PRIMMESRC/DSRC/globalsum_d.h  \
-	../../PRIMMESRC/DSRC/convergence_private_d.h  \
 	../../PRIMMESRC/DSRC/correction_d.h \
-	../../PRIMMESRC/DSRC/correction_private_d.h  \
 	../../PRIMMESRC/DSRC/factorize_d.h  \
 	../../PRIMMESRC/DSRC/init_d.h \
-	../../PRIMMESRC/DSRC/init_private_d.h  \
 	../../PRIMMESRC/DSRC/inner_solve_d.h  \
-	../../PRIMMESRC/DSRC/inner_solve_private_d.h  \
 	../../PRIMMESRC/DSRC/locking_d.h  \
-	../../PRIMMESRC/DSRC/locking_private_d.h \
 	../../PRIMMESRC/DSRC/main_iter_d.h  \
 	../../PRIMMESRC/DSRC/main_iter_private_d.h  \
 	../../PRIMMESRC/DSRC/numerical_d.h  \
@@ -19,7 +14,6 @@ CDOTH_D  = ../../PRIMMESRC/DSRC/convergence_d.h  \
 	../../PRIMMESRC/DSRC/ortho_d.h  \
 	../../PRIMMESRC/DSRC/primme_private_d.h  \
 	../../PRIMMESRC/DSRC/restart_d.h  \
-	../../PRIMMESRC/DSRC/restart_private_d.h  \
 	../../PRIMMESRC/DSRC/solve_H_d.h  \
 	../../PRIMMESRC/DSRC/solve_H_private_d.h  \
 	../../PRIMMESRC/DSRC/update_W_d.h  \
@@ -27,16 +21,11 @@ CDOTH_D  = ../../PRIMMESRC/DSRC/convergence_d.h  \
 
 CDOTH_Z = ../../PRIMMESRC/ZSRC/convergence_z.h \
 	../../PRIMMESRC/ZSRC/globalsum_z.h  \
-	../../PRIMMESRC/ZSRC/convergence_private_z.h \
 	../../PRIMMESRC/ZSRC/correction_z.h \
-	../../PRIMMESRC/ZSRC/correction_private_z.h \
 	../../PRIMMESRC/ZSRC/factorize_z.h \
 	../../PRIMMESRC/ZSRC/init_z.h \
-	../../PRIMMESRC/ZSRC/init_private_z.h \
 	../../PRIMMESRC/ZSRC/inner_solve_z.h \
-	../../PRIMMESRC/ZSRC/inner_solve_private_z.h \
 	../../PRIMMESRC/ZSRC/locking_z.h \
-	../../PRIMMESRC/ZSRC/locking_private_z.h \
 	../../PRIMMESRC/ZSRC/main_iter_z.h \
 	../../PRIMMESRC/ZSRC/main_iter_private_z.h \
 	../../PRIMMESRC/ZSRC/numerical_z.h \
@@ -44,7 +33,6 @@ CDOTH_Z = ../../PRIMMESRC/ZSRC/convergence_z.h \
 	../../PRIMMESRC/ZSRC/ortho_z.h \
 	../../PRIMMESRC/ZSRC/primme_private_z.h \
 	../../PRIMMESRC/ZSRC/restart_z.h \
-	../../PRIMMESRC/ZSRC/restart_private_z.h \
 	../../PRIMMESRC/ZSRC/solve_H_z.h \
 	../../PRIMMESRC/ZSRC/solve_H_private_z.h \
 	../../PRIMMESRC/ZSRC/update_W_z.h \
@@ -95,13 +83,7 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 ../../PRIMMESRC/ZSRC/convergence_z.h: convergence.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
-../../PRIMMESRC/ZSRC/convergence_private_z.h: convergence_private.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
 ../../PRIMMESRC/ZSRC/correction_z.h: correction.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
-../../PRIMMESRC/ZSRC/correction_private_z.h: correction_private.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
 ../../PRIMMESRC/ZSRC/factorize_z.h: factorize.base.h
@@ -110,19 +92,10 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 ../../PRIMMESRC/ZSRC/init_z.h: init.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
-../../PRIMMESRC/ZSRC/init_private_z.h: init_private.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
 ../../PRIMMESRC/ZSRC/inner_solve_z.h: inner_solve.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
-../../PRIMMESRC/ZSRC/inner_solve_private_z.h: inner_solve_private.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
 ../../PRIMMESRC/ZSRC/locking_z.h: locking.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
-../../PRIMMESRC/ZSRC/locking_private_z.h: locking_private.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
 ../../PRIMMESRC/ZSRC/main_iter_z.h: main_iter.base.h
@@ -146,13 +119,7 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 ../../PRIMMESRC/ZSRC/restart_z.h: restart.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
-../../PRIMMESRC/ZSRC/restart_private_z.h: restart_private.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
 ../../PRIMMESRC/ZSRC/solve_H_z.h: solve_H.base.h
-	sed -f SampleMakes/arithmetics/cz.sed $< > $@
-
-../../PRIMMESRC/ZSRC/solve_H_private_z.h: solve_H_private.base.h
 	sed -f SampleMakes/arithmetics/cz.sed $< > $@
 
 ../../PRIMMESRC/ZSRC/update_W_z.h: update_W.base.h
@@ -217,13 +184,7 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 ../../PRIMMESRC/DSRC/convergence_d.h: convergence.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
-../../PRIMMESRC/DSRC/convergence_private_d.h: convergence_private.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
 ../../PRIMMESRC/DSRC/correction_d.h: correction.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
-../../PRIMMESRC/DSRC/correction_private_d.h: correction_private.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
 ../../PRIMMESRC/DSRC/factorize_d.h: factorize.base.h
@@ -232,19 +193,10 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 ../../PRIMMESRC/DSRC/init_d.h: init.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
-../../PRIMMESRC/DSRC/init_private_d.h: init_private.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
 ../../PRIMMESRC/DSRC/inner_solve_d.h: inner_solve.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
-../../PRIMMESRC/DSRC/inner_solve_private_d.h: inner_solve_private.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
 ../../PRIMMESRC/DSRC/locking_d.h: locking.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
-../../PRIMMESRC/DSRC/locking_private_d.h: locking_private.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
 ../../PRIMMESRC/DSRC/main_iter_d.h: main_iter.base.h
@@ -268,13 +220,7 @@ real: $(CSOURCE_D) $(CDOTH_D) depends_D
 ../../PRIMMESRC/DSRC/restart_d.h: restart.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
-../../PRIMMESRC/DSRC/restart_private_d.h: restart_private.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
 ../../PRIMMESRC/DSRC/solve_H_d.h: solve_H.base.h
-	sed -f SampleMakes/arithmetics/cd.sed $< > $@
-
-../../PRIMMESRC/DSRC/solve_H_private_d.h: solve_H_private.base.h
 	sed -f SampleMakes/arithmetics/cd.sed $< > $@
 
 ../../PRIMMESRC/DSRC/update_W_d.h: update_W.base.h
