@@ -63,8 +63,6 @@ extern "C" {
 #  define PRIMME_INT_MAX INT_MAX
 #endif
 
-#define PRIMME_MAX_NAME_LENGTH 128
-
 typedef enum {
    primme_smallest,        /* leftmost eigenvalues */
    primme_largest,         /* rightmost eigenvalues */
