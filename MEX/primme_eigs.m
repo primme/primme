@@ -223,7 +223,7 @@ function [varargout] = primme_eigs(varargin)
        % Test whether the given matvec function is valid
        try
           xvec = randn(dim,1);
-          yvev = primmeA(xvec);
+          yvec = primmeA(xvec);
           clear xvec, yvec;
        catch ME
           if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
