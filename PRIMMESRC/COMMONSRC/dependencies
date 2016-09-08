@@ -1,4 +1,0 @@
-primme_f77.o: primme_f77.c primme.h primme_f77_private.h
-primme_interface.o: primme_interface.c primme.h primme_interface.h \
- const.h
-wtime.o: wtime.c wtime.h

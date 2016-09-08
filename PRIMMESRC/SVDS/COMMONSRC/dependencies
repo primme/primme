@@ -1,6 +1,0 @@
-primme_svds_f77.o: primme_svds_f77.c primme_svds.h \
- ../../COMMONSRC/primme.h primme_svds_f77_private.h
-primme_svds_interface.o: primme_svds_interface.c primme_svds.h \
- ../../COMMONSRC/primme.h primme_svds_interface.h \
- ../../../PRIMMESRC/COMMONSRC/primme_interface.h \
- primme_svds_interface_private.h

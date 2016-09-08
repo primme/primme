@@ -12,6 +12,10 @@ include Make_flags
 
 #------------------------ Libraries ------------------------------
 lib:
+	make -C Base/COMMONSRC
+	make -C Base/SRC -f Makefile-sed
+	make -C Base/SVDS/COMMONSRC
+	make -C Base/SVDS/SRC -f Makefile-sed
 	@(\
 	cd PRIMMESRC;\
 	echo "-----------------------------------"; \

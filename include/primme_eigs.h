@@ -20,48 +20,16 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *******************************************************************************
- * File: primme.h
+ * File: primme_eigs.h
  * 
- * Purpose - Main header with the PRIMME C interface functions.
+ * Purpose - Main header with the PRIMME EIGS C interface functions.
  * 
  ******************************************************************************/
 
-#ifndef PRIMME_H
-#define PRIMME_H
+#ifndef PRIMME_EIGS_H
+#define PRIMME_EIGS_H
 
 #include <stdio.h>
-
-#ifdef __cplusplus
-#  include <complex>
-#  define __PRIMME_COMPLEX_DOUBLE__ std::complex<double>
-extern "C" {
-#else
-#  include <complex.h>
-#  define __PRIMME_COMPLEX_DOUBLE__ double complex
-#endif
-
-#if !defined(PRIMME_INT_SIZE) || PRIMME_INT_SIZE == 64
-#  include <stdint.h>
-#  include <inttypes.h>
-#  define PRIMME_INT int64_t
-#  define PRIMME_INT_P PRId64
-#  define PRIMME_INT_MAX INT64_MAX
-#elif PRIMME_INT_SIZE == 0
-#  include <limits.h>
-#  define PRIMME_INT int
-#  define PRIMME_INT_P "d"
-#  define PRIMME_INT_MAX INT_MAX
-#elif PRIMME_INT == 32
-#  include <stdint.h>
-#  include <inttypes.h>
-#  define PRIMME_INT int32_t
-#  define PRIMME_INT_P PRId32
-#  define PRIMME_INT_MAX INT32_MAX
-#else
-#  define PRIMME_INT PRIMME_INT_SIZE
-#  define PRIMME_INT_P "d"
-#  define PRIMME_INT_MAX INT_MAX
-#endif
 
 typedef enum {
    primme_smallest,        /* leftmost eigenvalues */
@@ -230,20 +198,21 @@ typedef enum {
 } primme_preset_method;
 
 
-
+int sprimme(float *evals, float *evecs, float *resNorms, 
+      primme_params *primme);
+int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+      primme_params *primme);
 int dprimme(double *evals, double *evecs, double *resNorms, 
       primme_params *primme);
-int zprimme(double *evals, __PRIMME_COMPLEX_DOUBLE__ *evecs, double *resNorms, 
+int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
       primme_params *primme);
 void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
-void *primme_valloc(size_t byteSize, const char *target);
-void *primme_calloc(size_t nelem, size_t elsize, const char *target);
 void primme_Free(primme_params *primme);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PRIMME_H */
+#endif /* PRIMME_EIGS_H */

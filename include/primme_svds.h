@@ -30,10 +30,6 @@
 #ifndef PRIMME_SVDS_H
 #define PRIMME_SVDS_H
 
-#ifndef PRIMME_H
-#include "../../COMMONSRC/primme.h"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -127,9 +123,13 @@ typedef struct primme_svds_params {
 
 } primme_svds_params;
 
+int sprimme_svds(float *svals, float *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
 int dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
-int zprimme_svds(double *svals, __PRIMME_COMPLEX_DOUBLE__ *svecs, double *resNorms,
+int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 void primme_svds_initialize(primme_svds_params *primme_svds);
 int primme_svds_set_method(primme_svds_preset_method method,
