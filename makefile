@@ -8,70 +8,30 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib libd libz clean backup test
+.PHONY: lib libd libz clean test
 
 #------------------------ Libraries ------------------------------
+# Making the PRIMME library
+# Includes float, double and complex counterparts
 lib:
-	make -C Base/COMMONSRC
-	make -C Base/SRC -f Makefile-sed
-	make -C Base/SVDS/COMMONSRC
-	make -C Base/SVDS/SRC -f Makefile-sed
-	@(\
-	cd PRIMMESRC;\
-	echo "-----------------------------------"; \
-	echo "     Making the PRIMME library     "; \
-	echo "  Includes both double and complex "; \
-	echo "-----------------------------------"; \
-	make lib;\
-	)
+	@make -C src ../lib/$(LIBRARY)
 
-libd:
-	@(\
-	cd PRIMMESRC;\
-	echo "---------------------------------------"; \
-	echo " Making the double-only PRIMME library "; \
-	echo "---------------------------------------"; \
-	make libd;\
-	)
-
-libz:
-	@(\
-	cd PRIMMESRC;\
-	echo "----------------------------------------"; \
-	echo " Making the complex-only PRIMME library "; \
-	echo "----------------------------------------"; \
-	make libz;\
-	)
 clean: 
-	@(\
-	echo "--------------------------------------------------"; \
-	echo " Cleaning .o, a.out, cores, from all directories "; \
-	echo "--------------------------------------------------"; \
-	make -C PRIMMESRC clean;\
-	echo " From Test directories";\
-	make -C TEST clean;\
-	echo "--------------------------------------------------"; \
-	)
+	@make -C src clean;\
+	make -C TEST clean
 
 test:
-	@(\
-	cd TEST ;\
+	@\
 	echo "------------------------------------------------"; \
 	echo " Test double sequential C                       "; \
 	echo "------------------------------------------------"; \
-	make test_double USE_PETSC=no; \
-	)
+	make -C TEST test_double USE_PETSC=no
 
+all_test:
+	@make -C TEST all_tests USE_PETSC=no
 
 check_style:
 	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
-
-backup: 
-	@(\
-	cd .. ;\
-	tar cvf back_$(shell date "+%m_%d_%y_%H_%M").tar PRIMME;\
-	gzip back_*.tar;\
-	)
 
 distribution:
 	@(\
