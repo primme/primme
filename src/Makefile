@@ -84,7 +84,8 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 #
 
 ../lib/$(LIBRARY): $(OBJS)
-	@ar rv $@ $^;\
+	@mkdir -p ../lib;\
+	ar rv $@ $^;\
 	$(RANLIB) $@
 
 #
