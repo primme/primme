@@ -70,16 +70,16 @@ OBJS = $(sort $(SOBJS))
 OBJSdouble = $(sort $(SOBJSdouble)) $(patsubst %.o,%double.o,$(OBJS))
 OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.o,$(OBJS))
 
-primme_double: $(OBJSdouble) driverdouble.o ../libprimme.a Makefile
+primme_double: $(OBJSdouble) driverdouble.o
 	$(CLDR) -o primme_double $(OBJSdouble) driverdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-primme_doublecomplex: $(OBJSdoublecomplex) driverdoublecomplex.o ../libprimme.a Makefile
+primme_doublecomplex: $(OBJSdoublecomplex) driverdoublecomplex.o
 	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) driverdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-primmesvds_double: $(OBJSdouble) driversvdsdouble.o ../libprimme.a Makefile
+primmesvds_double: $(OBJSdouble) driversvdsdouble.o
 	$(CLDR) -o primmesvds_double $(OBJSdouble) driversvdsdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libprimme.a Makefile
+primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o
 	$(CLDR) -o primmesvds_doublecomplex $(OBJSdoublecomplex) driversvdsdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
@@ -89,13 +89,13 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 
-$(EXAMPLES_C): %: %.o ../libprimme.a Makefile
+$(EXAMPLES_C): %: %.o
 	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-$(EXAMPLES_CXX): %: %.o ../libprimme.a Makefile
+$(EXAMPLES_CXX): %: %.o
 	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-$(EXAMPLES_F77): % : %.o ../libprimme.a Makefile
+$(EXAMPLES_F77): % : %.o
 	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 .c.o:
