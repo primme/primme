@@ -33,7 +33,7 @@
 typedef struct {
    int *JA;
    int *IA;
-   PRIMME_NUM *AElts;
+   SCALAR *AElts;
    int m; /* number of rows */
    int n; /* number of columns */
    int nnz;

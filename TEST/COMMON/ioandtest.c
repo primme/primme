@@ -34,10 +34,10 @@
 #include "num.h"
 #include "ioandtest.h"
 
-static PRIMME_NUM primme_dot(PRIMME_NUM *x, PRIMME_NUM *y, primme_params *primme) {
-   PRIMME_NUM aux, aux0;
-   int n = (int)(sizeof(PRIMME_NUM)/sizeof(double));
-   aux = SUF(Num_dot)(primme->nLocal, x, 1, y, 1);
+static SCALAR primme_dot(SCALAR *x, SCALAR *y, primme_params *primme) {
+   SCALAR aux, aux0;
+   int n = (int)(sizeof(SCALAR)/sizeof(double));
+   aux = Num_dot_Sprimme(primme->nLocal, x, 1, y, 1);
    if (primme->globalSumDouble) {
       primme->globalSumDouble(&aux, &aux0, &n, primme);
       return aux0;
@@ -45,10 +45,10 @@ static PRIMME_NUM primme_dot(PRIMME_NUM *x, PRIMME_NUM *y, primme_params *primme
    return aux;
 }
 
-static PRIMME_NUM primme_svds_dot(PRIMME_NUM *x, PRIMME_NUM *y, int trans, primme_svds_params *primme) {
-   PRIMME_NUM aux, aux0;
-   int n = (int)(sizeof(PRIMME_NUM)/sizeof(double));
-   aux = SUF(Num_dot)(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1);
+static SCALAR primme_svds_dot(SCALAR *x, SCALAR *y, int trans, primme_svds_params *primme) {
+   SCALAR aux, aux0;
+   int n = (int)(sizeof(SCALAR)/sizeof(double));
+   aux = Num_dot_Sprimme(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1);
    if (primme->globalSumDouble) {
       primme->globalSumDouble(&aux, &aux0, &n, primme);
       return aux0;
@@ -59,10 +59,10 @@ static PRIMME_NUM primme_svds_dot(PRIMME_NUM *x, PRIMME_NUM *y, int trans, primm
 #undef __FUNCT__
 #define __FUNCT__ "check_solution"
 int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
-                   PRIMME_NUM *evecs, double *rnorms, int *perm, int checkInterface) {
+                   SCALAR *evecs, double *rnorms, int *perm, int checkInterface) {
 
    double eval0, rnorm0, prod, bound, delta;
-   PRIMME_NUM *Ax, *r, *X=NULL, *h, *h0;
+   SCALAR *Ax, *r, *X=NULL, *h, *h0;
    int i, j, cols, retX=0, one=1;
    primme_params primme0;
 
@@ -120,9 +120,9 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 #  undef CHECK_PRIMME_PARAM_TOL
 
    i = max(cols, primme->initSize);
-   h = (PRIMME_NUM *)primme_calloc(i*2, sizeof(PRIMME_NUM), "h"); h0 = &h[i];
-   Ax = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "Ax");
-   r = (PRIMME_NUM *)primme_calloc(primme->nLocal, sizeof(PRIMME_NUM), "r");
+   h = (SCALAR *)primme_calloc(i*2, sizeof(SCALAR), "h"); h0 = &h[i];
+   Ax = (SCALAR *)primme_calloc(primme->nLocal, sizeof(SCALAR), "Ax");
+   r = (SCALAR *)primme_calloc(primme->nLocal, sizeof(SCALAR), "r");
 
    /* Estimate the separation between eigenvalues */
    delta = primme->aNorm > 0.0 ? primme->aNorm : HUGE_VAL;
@@ -132,13 +132,13 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 
    for (i=0; i < primme->initSize; i++) {
       /* Check |V(:,0:i-1)'V(:,i)| < sqrt(machEps) */
-      SUF(Num_gemv)("C", primme->nLocal, i+1, 1.0, evecs, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
+      Num_gemv_Sprimme("C", primme->nLocal, i+1, 1.0, evecs, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
       if (primme->globalSumDouble) {
-         int cols0 = (i+1)*sizeof(PRIMME_NUM)/sizeof(double);
+         int cols0 = (i+1)*sizeof(SCALAR)/sizeof(double);
          primme->globalSumDouble(h, h0, &cols0, primme);
       }
       else h0 = h;
-      prod = REAL_PART(SUF(Num_dot)(i, h0, 1, h0, 1));
+      prod = REAL_PART(Num_dot_Sprimme(i, h0, 1, h0, 1));
       prod = sqrt(prod);
       if (prod > 1e-7 && primme->procID == 0) {
          fprintf(stderr, "Warning: |EVecs[1:%d-1]'Evec[%d]| = %-3E\n", i+1, i+1, prod);
@@ -168,13 +168,13 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
          retX = 1;
       }
       /* Check angle X and V(:,i) is less than twice the max angle of the eigenvector with largest residual  */
-      SUF(Num_gemv)("C", primme->nLocal, cols, 1.0, X, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
+      Num_gemv_Sprimme("C", primme->nLocal, cols, 1.0, X, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
       if (primme->globalSumDouble) {
-         int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
+         int cols0 = cols*sizeof(SCALAR)/sizeof(double);
          primme->globalSumDouble(h, h0, &cols0, primme);
       }
       else h0 = h;
-      prod = REAL_PART(SUF(Num_dot)(cols, h0, 1, h0, 1));
+      prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1));
       bound = primme->aNorm*primme->eps/delta;
       if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i+1, evals[i], prod, delta);
@@ -191,14 +191,14 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 
 #undef __FUNCT__
 #define __FUNCT__ "readBinaryEvecsAndPrimmeParams"
-int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, PRIMME_NUM **Xout,
+int readBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                           int n, int Xcols, int *Xcolsout, int nLocal,
                                           int *perm, primme_params *primme_out) {
 
 #  define FREAD(A, B, C, D) { ASSERT_MSG(fread(A, B, C, D) == (size_t)C, -1, "Unexpected end of file\n"); }
 
    FILE *f;
-   PRIMME_NUM d;
+   SCALAR d;
    int i, j, cols;
 
    ASSERT_MSG((f = fopen(fileName, "rb")),
@@ -217,7 +217,7 @@ int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, PRIMME_N
    /* Read X */
    FREAD(&d, sizeof(d), 1, f); cols = REAL_PART(d);
    if (Xcols > 0 && (X || Xout)) {
-      if (!X) *Xout = X = (PRIMME_NUM*)malloc(sizeof(PRIMME_NUM)*min(cols, Xcols)*nLocal);
+      if (!X) *Xout = X = (SCALAR*)malloc(sizeof(SCALAR)*min(cols, Xcols)*nLocal);
       if (Xcolsout) *Xcolsout = min(cols, Xcols);
       if (!perm) {
          for (i=0; i<min(cols, Xcols); i++) {
@@ -254,13 +254,13 @@ int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, PRIMME_N
 
 #undef __FUNCT__
 #define __FUNCT__ "writeBinaryEvecsAndPrimmeParams"
-int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *perm,
+int writeBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, int *perm,
                                            primme_params *primme) {
 
 #  define FWRITE(A, B, C, D) { ASSERT_MSG(fwrite(A, B, C, D) == (size_t)C, -1, "Unexpected error writing on %s\n", fileName); }
 
    FILE *f;
-   PRIMME_NUM d;
+   SCALAR d;
    int i, j;
 
    ASSERT_MSG((f = fopen(fileName, "wb")),
@@ -312,10 +312,10 @@ int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *pe
 #undef __FUNCT__
 #define __FUNCT__ "check_solution_svds"
 int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_svds, double *svals,
-                        PRIMME_NUM *svecs, double *rnorms, int *perm) {
+                        SCALAR *svecs, double *rnorms, int *perm) {
 
    double sval0, rnorm0, prod, delta, bound;
-   PRIMME_NUM *Ax, *r, *X=NULL, *h, *h0, *U, *V;
+   SCALAR *Ax, *r, *X=NULL, *h, *h0, *U, *V;
    int i, j, cols, retX=0, one=1, notrans=0, trans=1;
    primme_svds_params primme_svds0;
 
@@ -363,9 +363,9 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
 #  undef CHECK_PRIMME_PARAM_DOUBLE
 #  undef CHECK_PRIMME_PARAM_TOL
 
-   h = (PRIMME_NUM *)primme_calloc(cols*2, sizeof(PRIMME_NUM), "h"); h0 = &h[cols];
-   Ax = (PRIMME_NUM *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(PRIMME_NUM), "Ax");
-   r = (PRIMME_NUM *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(PRIMME_NUM), "r");
+   h = (SCALAR *)primme_calloc(cols*2, sizeof(SCALAR), "h"); h0 = &h[cols];
+   Ax = (SCALAR *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(SCALAR), "Ax");
+   r = (SCALAR *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(SCALAR), "r");
 
    /* Estimate the separation between eigenvalues */
    delta = primme_svds->aNorm;
@@ -410,13 +410,13 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
          retX = 1;
       }
       /* Check angle X and U(:,i) is less than twice the max angle of the eigenvector with largest residual  */
-      SUF(Num_gemv)("C", primme_svds->mLocal, cols, 1.0, X, primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1, 0., h, 1);
+      Num_gemv_Sprimme("C", primme_svds->mLocal, cols, 1.0, X, primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1, 0., h, 1);
       if (primme_svds->globalSumDouble) {
-         int cols0 = cols*sizeof(PRIMME_NUM)/sizeof(double);
+         int cols0 = cols*sizeof(SCALAR)/sizeof(double);
          primme_svds->globalSumDouble(h, h0, &cols0, primme_svds);
       }
       else h0 = h;
-      prod = REAL_PART(SUF(Num_dot)(cols, h0, 1, h0, 1));
+      prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1));
       bound = primme_svds->aNorm*primme_svds->eps/delta;
       if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i+1, svals[i], prod, delta);
@@ -433,14 +433,14 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
 
 #undef __FUNCT__
 #define __FUNCT__ "readBinaryEvecsAndPrimmeSvdsParams"
-int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, PRIMME_NUM **Xout,
+int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                        int m, int n, int Xcols, int *Xcolsout, int mLocal, int nLocal,
                                        int *perm, primme_svds_params *primme_svds_out) {
 
 #  define FREAD(A, B, C, D) { ASSERT_MSG(fread(A, B, C, D) == (size_t)C, -1, "Unexpected end of file\n"); }
 
    FILE *f;
-   PRIMME_NUM d;
+   SCALAR d;
    int i, j, cols;
 
    ASSERT_MSG((f = fopen(fileName, "rb")),
@@ -462,7 +462,7 @@ int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, PRIM
    /* Read X = [U V] */
    FREAD(&d, sizeof(d), 1, f); cols = REAL_PART(d);
    if (Xcols > 0 && (X || Xout)) {
-      if (!X) *Xout = X = (PRIMME_NUM*)malloc(sizeof(PRIMME_NUM)*min(cols, Xcols)*(mLocal+nLocal));
+      if (!X) *Xout = X = (SCALAR*)malloc(sizeof(SCALAR)*min(cols, Xcols)*(mLocal+nLocal));
       if (Xcolsout) *Xcolsout = min(cols, Xcols);
       if (!perm) {
          assert(n == nLocal && m == mLocal);
@@ -506,13 +506,13 @@ int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, PRIM
 
 #undef __FUNCT__
 #define __FUNCT__ "writeBinaryEvecsAndPrimmeSvdsParams"
-int writeBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, int *perm,
+int writeBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, int *perm,
                                     primme_svds_params *primme_svds) {
 
 #  define FWRITE(A, B, C, D) { ASSERT_MSG(fwrite(A, B, C, D) == (size_t)C, -1, "Unexpected error writing on %s\n", fileName); }
 
    FILE *f;
-   PRIMME_NUM d;
+   SCALAR d;
    int i, j;
 
    ASSERT_MSG((f = fopen(fileName, "wb")),

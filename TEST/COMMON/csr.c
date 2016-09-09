@@ -36,7 +36,7 @@
 #include "primme.h"
 #include "csr.h"
 
-static int readfullMTX(const char *mtfile, PRIMME_NUM **A, int **JA, int **IA, int *m, int *n, int *nnz);
+static int readfullMTX(const char *mtfile, SCALAR **A, int **JA, int **IA, int *m, int *n, int *nnz);
 #ifndef USE_DOUBLECOMPLEX
 static int readUpperMTX(const char *mtfile, double **A, int **JA, int **IA, int *n, int *nnz);
 int ssrcsr(int *job, int *value2, int *nrow, double *a, int *ja, int *ia, 
@@ -95,10 +95,10 @@ static int my_comp(const void *a, const void *b)
    return p[0][ia] != p[0][ib] ? p[0][ia] - p[0][ib] : p[1][ia] - p[1][ib];
 }
 
-static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, int *m, int *n, int *nnz) { 
+static int readfullMTX(const char *mtfile, SCALAR **AA, int **JA, int **IA, int *m, int *n, int *nnz) { 
    int i,j, k, nzmax;
    int *I, *J, *perm;
-   PRIMME_NUM *A;
+   SCALAR *A;
    double re, im;
    FILE *matrixFile;
    MM_typecode type;
@@ -125,7 +125,7 @@ static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, 
 
    nzmax = *nnz;
    if (mm_is_symmetric(type) || mm_is_hermitian(type) || mm_is_skew(type)) nzmax *= 2;
-   A = (PRIMME_NUM *)primme_calloc(nzmax, sizeof(PRIMME_NUM), "A");
+   A = (SCALAR *)primme_calloc(nzmax, sizeof(SCALAR), "A");
    J = (int *)primme_calloc(nzmax, sizeof(int), "J");
    I = (int *)primme_calloc(nzmax, sizeof(int), "I");
 
@@ -165,7 +165,7 @@ static int readfullMTX(const char *mtfile, PRIMME_NUM **AA, int **JA, int **IA, 
    *JA = I;
    for (i=0; i<nzmax; i++) (*JA)[i] = J[perm[i]];
    free(J);
-   *AA = (PRIMME_NUM *)primme_calloc(nzmax, sizeof(PRIMME_NUM), "AA");
+   *AA = (SCALAR *)primme_calloc(nzmax, sizeof(SCALAR), "AA");
    for (i=0; i<nzmax; i++) (*AA)[i] = A[perm[i]];
    free(A);
    free(perm);

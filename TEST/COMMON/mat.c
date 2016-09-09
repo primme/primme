@@ -47,11 +47,11 @@ void FORTRAN_FUNCTION(ilut)(int*, double*, int*, int*, int*, double*, double*, i
                             double*, double*, int*, int*, int*, int*);
 void FORTRAN_FUNCTION(lusol0)(int*, double*, double*, double*, int*, int*);
 #else
-void FORTRAN_FUNCTION(zamux)(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
-void FORTRAN_FUNCTION(zatmuxr)(int*, int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
-void FORTRAN_FUNCTION(zilut)(int*, PRIMME_NUM*, int*, int*, int*, double*, PRIMME_NUM*, int*, int*, int*,
-                             PRIMME_NUM*, int*, int*);
-void FORTRAN_FUNCTION(zlusol)(int*, PRIMME_NUM*, PRIMME_NUM*, PRIMME_NUM*, int*, int*);
+void FORTRAN_FUNCTION(zamux)(int*, SCALAR*, SCALAR*, SCALAR*, int*, int*);
+void FORTRAN_FUNCTION(zatmuxr)(int*, int*, SCALAR*, SCALAR*, SCALAR*, int*, int*);
+void FORTRAN_FUNCTION(zilut)(int*, SCALAR*, int*, int*, int*, double*, SCALAR*, int*, int*, int*,
+                             SCALAR*, int*, int*);
+void FORTRAN_FUNCTION(zlusol)(int*, SCALAR*, SCALAR*, SCALAR*, int*, int*);
 #endif
 
 #ifdef __cplusplus
@@ -69,12 +69,12 @@ void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    
    int i;
    int n = (int)primme->n;
-   PRIMME_NUM *xvec, *yvec;
+   SCALAR *xvec, *yvec;
    CSRMatrix *matrix;
    
    matrix = (CSRMatrix *)primme->matrix;
-   xvec = (PRIMME_NUM *)x;
-   yvec = (PRIMME_NUM *)y;
+   xvec = (SCALAR *)x;
+   yvec = (SCALAR *)y;
 
    for (i=0;i<*blockSize;i++) {
 #ifndef USE_DOUBLECOMPLEX
@@ -93,12 +93,12 @@ void CSRMatrixMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    int i;
    int m = (int)primme_svds->m;
    int n = (int)primme_svds->n;
-   PRIMME_NUM *xvec, *yvec;
+   SCALAR *xvec, *yvec;
    CSRMatrix *matrix;
    
    matrix = (CSRMatrix *)primme_svds->matrix;
-   xvec = (PRIMME_NUM *)x;
-   yvec = (PRIMME_NUM *)y;
+   xvec = (SCALAR *)x;
+   yvec = (SCALAR *)y;
 
    if (*trans == 0) {
       for (i=0;i<*blockSize;i++) {
@@ -144,7 +144,7 @@ int createInvDiagPrecNative(const CSRMatrix *matrix, double shift, double **prec
    return 1;
 }
 
-static void ApplyInvDiagPrecNativeGen(PRIMME_NUM *xvec, int ldx, PRIMME_NUM *yvec,
+static void ApplyInvDiagPrecNativeGen(SCALAR *xvec, int ldx, SCALAR *yvec,
       int ldy, int nLocal, int bs, double *diag, double *shifts, double aNorm) {
    int i, j;
    const double minDenominator = 1e-14*(aNorm >= 0.0L ? aNorm : 1.);
@@ -164,7 +164,7 @@ static void ApplyInvDiagPrecNativeGen(PRIMME_NUM *xvec, int ldx, PRIMME_NUM *yve
 
 
 void ApplyInvDiagPrecNative(void *x, void *y, int *blockSize, primme_params *primme) {
-   ApplyInvDiagPrecNativeGen((PRIMME_NUM*)x, primme->nLocal, (PRIMME_NUM*)y, primme->nLocal,
+   ApplyInvDiagPrecNativeGen((SCALAR*)x, primme->nLocal, (SCALAR*)y, primme->nLocal,
       primme->nLocal, *blockSize, (double*)primme->preconditioner, NULL, primme->aNorm);
 }
 
@@ -183,7 +183,7 @@ void ApplyInvDiagPrecNative(void *x, void *y, int *blockSize, primme_params *pri
 
 void ApplyInvDavidsonDiagPrecNative(void *x, void *y, int *blockSize, 
                                         primme_params *primme) {
-   ApplyInvDiagPrecNativeGen((PRIMME_NUM*)x, primme->nLocal, (PRIMME_NUM*)y, primme->nLocal,
+   ApplyInvDiagPrecNativeGen((SCALAR*)x, primme->nLocal, (SCALAR*)y, primme->nLocal,
       primme->nLocal, *blockSize, (double*)primme->preconditioner,
       primme->ShiftsForPreconditioner, primme->aNorm);
 }
@@ -203,7 +203,7 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
 #ifdef USE_DOUBLECOMPLEX
    int ierr;
    int lenFactors;
-   PRIMME_NUM *W;
+   SCALAR *W;
    int *iW;
    CSRMatrix *factors;
 
@@ -212,22 +212,22 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
    }
 
    /* Work arrays */
-   W = (PRIMME_NUM *)primme_calloc(matrix->n+1, sizeof(PRIMME_NUM), "W");
+   W = (SCALAR *)primme_calloc(matrix->n+1, sizeof(SCALAR), "W");
    iW = (int *)primme_calloc(matrix->n*2, sizeof(int), "iW");
 
    /* Max size of factorization */
    lenFactors = 9*matrix->nnz;
 
    factors = (CSRMatrix *)primme_calloc(1,  sizeof(CSRMatrix), "factors");
-   factors->AElts = (PRIMME_NUM *)primme_calloc(lenFactors,
-                                sizeof(PRIMME_NUM), "iluElts");
+   factors->AElts = (SCALAR *)primme_calloc(lenFactors,
+                                sizeof(SCALAR), "iluElts");
    factors->JA = (int *)primme_calloc(lenFactors, sizeof(int), "Jilu");
    factors->IA = (int *)primme_calloc(matrix->n+1, sizeof(int), "Iilu");
    factors->n = matrix->n;
    factors->nnz = lenFactors;
    
    FORTRAN_FUNCTION(zilut)
-         ((int*)&matrix->n, (PRIMME_NUM*)matrix->AElts, (int*)matrix->JA,
+         ((int*)&matrix->n, (SCALAR*)matrix->AElts, (int*)matrix->JA,
           (int*)matrix->IA, &level, &threshold,
           factors->AElts, factors->JA, factors->IA, &lenFactors, W, iW, &ierr);
    
@@ -298,12 +298,12 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
 void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme) {
    int i;
    int n = (int)primme->n;
-   PRIMME_NUM *xvec, *yvec;
+   SCALAR *xvec, *yvec;
    CSRMatrix *prec;
    
    prec = (CSRMatrix *)primme->preconditioner;
-   xvec = (PRIMME_NUM *)x;
-   yvec = (PRIMME_NUM *)y;
+   xvec = (SCALAR *)x;
+   yvec = (SCALAR *)y;
 
    for (i=0; i<*blockSize; i++) {
 #ifdef USE_DOUBLECOMPLEX
@@ -392,7 +392,7 @@ static void ApplyInvNormalPrecNativeSvdsGen(void *x, PRIMME_INT *ldx, void *y,
       primme_svds_params *primme_svds, double *shifts) {
 
    double *diag = (double *)primme_svds->preconditioner;
-   PRIMME_NUM *xvec = (PRIMME_NUM *)x, *yvec = (PRIMME_NUM *)y;
+   SCALAR *xvec = (SCALAR *)x, *yvec = (SCALAR *)y;
    const int bs = *blockSize;
    double *sumr = diag, *sumc = &diag[primme_svds->mLocal];
    

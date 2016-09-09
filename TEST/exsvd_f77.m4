@@ -30,7 +30,7 @@ define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `com
         Program primmeSvdsF77Example
 !-----------------------------------------------------------------------
         implicit none
-        include 'primme_svds_f77.h'
+        include 'primme_f77.h'
 ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscmat.h>
@@ -295,7 +295,7 @@ ifdef([USE_PETSC], [
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
         implicit none
-        include 'primme_svds_f77.h'
+        include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
@@ -346,7 +346,7 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
         implicit none
-        include 'primme_svds_f77.h'
+        include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
@@ -400,7 +400,7 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
         implicit none
-        include 'primme_svds_f77.h'
+        include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
         real*8 x(*), y(*)
         integer*8 primme_svds
@@ -433,7 +433,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !       ----------------------------------------------------------------
         implicit none
         intrinsic min
-        include 'primme_svds_f77.h'
+        include 'primme_f77.h'
         integer*8 ldx,ldy
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
@@ -483,7 +483,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !       ----------------------------------------------------------------
         implicit none
         intrinsic min
-        include 'primme_svds_f77.h'
+        include 'primme_f77.h'
         integer*8 ldx,ldy
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds

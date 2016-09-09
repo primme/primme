@@ -131,10 +131,9 @@ ifdef(`USE_PETSC', `   if (primme.procID == 0) /* Reports process with ID 0 */
    ')   primme_display_params(primme);
 
    /* Allocate space for converged Ritz values and residual norms */
-   evals = (double *)primme_calloc(primme.numEvals, sizeof(double), "evals");
-   evecs = (PRIMME_NUM *)primme_calloc(primme.n*primme.numEvals, 
-                                sizeof(PRIMME_NUM), "evecs");
-   rnorms = (double *)primme_calloc(primme.numEvals, sizeof(double), "rnorms");
+   evals = (double*)malloc(primme.numEvals*sizeof(double));
+   evecs = (PRIMME_NUM*)malloc(primme.n*primme.numEvals*sizeof(PRIMME_NUM));
+   rnorms = (double*)malloc(primme.numEvals*sizeof(double));
 
 define(`CALL_PRIMME', `   /* Call primme  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)

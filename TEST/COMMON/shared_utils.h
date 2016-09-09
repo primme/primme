@@ -29,7 +29,8 @@
 #ifndef DRIVER_SHARED_H
 #define DRIVER_SHARED_H
 
-#include "primme_svds.h"
+#include "primme.h"
+#include "num.h"
 
 #define TRUE  1
 #define FALSE 0

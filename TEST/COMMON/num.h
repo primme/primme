@@ -29,23 +29,24 @@
 #ifndef NUM_H
 #define NUM_H
 
-#ifdef USE_DOUBLECOMPLEX
-#  include "../../PRIMMESRC/ZSRC/numerical_z.h"
+#include "../../src/include/template.h"
+#include "../../src/include/blaslapack.h"
+#ifdef USE_COMPLEX
 #  ifndef __cplusplus
 #     define IMAGINARY _Complex_I
 #  else
-#     define IMAGINARY std::complex<double>(0.0, 1.0)
+#     define IMAGINARY std::complex<SCALAR>(0.0, 1.0)
 #  endif
-#  define SUF(NAME) NAME ## _zprimme
-#  define PREFIX(NAME) z ## NAME
 #else
-#  include "../../PRIMMESRC/DSRC/numerical_d.h"
 #  define IMAGINARY 0.0
-#  define SUF(NAME) NAME ## _dprimme
-#  define PREFIX(NAME) d ## NAME
 #endif
-#define PRIMME_NUM SCALAR
-
+#define Sprimme CONCAT(SCALAR_PRE,primme)
+#define Sprimme_svds CONCAT(SCALAR_PRE,primme_svds)
+#if !(defined (__APPLE__) && defined (__MACH__))
+#  include <malloc.h> /* malloc */
+#endif
+#include <stdlib.h>   /* malloc, free */
+#define primme_calloc(N,S,D) (malloc((N)*(S)))
 #define ASSERT_MSG(COND, RETURN, ...) { if (!(COND)) {fprintf(stderr, "Error in " __FUNCT__ ": " __VA_ARGS__); return (RETURN);} }
 
 #endif /* NUM_H */

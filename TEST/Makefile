@@ -7,9 +7,9 @@ include ../Link_flags
 
 
 SOBJS= COMMON/shared_utils.o COMMON/ioandtest.o
-COMMON_INCLUDE = -I./COMMON -I../PRIMMESRC/COMMONSRC -I../PRIMMESRC/SVDS/COMMONSRC
+COMMON_INCLUDE = -I./COMMON -I../include
 override INCLUDE += $(COMMON_INCLUDE)
-LIBDIRS += -L../
+LIBDIRS += -L../lib
 
 EXAMPLES_C = ex_dseq ex_zseq exsvd_dseq exsvd_zseq
 EXAMPLES_CXX = ex_zseqxx exsvd_zseqxx
@@ -83,7 +83,7 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o ../libp
 	$(CLDR) -o primmesvds_doublecomplex $(OBJSdoublecomplex) driversvdsdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 %double.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLE $(INCLUDE) -c $< -o $@
 
 %doublecomplex.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
@@ -125,6 +125,8 @@ TESTS_doublecomplex = tests/test_0?? tests/test_1?? tests/testi-*.F
 TESTSsvds_double = tests/test_2??
 TESTSsvds_doublecomplex = tests/test_2??
 EXTRA =
+
+all_tests: all_tests_double all_tests_doublecomplex all_testssvds_double all_testssvds_doublecomplex test_examples
 
 all_tests_double all_tests_doublecomplex \
 all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme% tests_primme_interface

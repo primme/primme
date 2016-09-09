@@ -76,7 +76,7 @@ PetscLogEvent PRIMME_GLOBAL_SUM;
 #include "shared_utils.h"
 #include "ioandtest.h"
 /* wtime.h header file is included so primme's timimg functions can be used */
-#include "wtime.h"
+#include "../src/include/wtime.h"
 
 static int real_main (int argc, char *argv[]);
 static int setMatrixAndPrecond(driver_params *driver, primme_svds_params *primme_svds, int **permutation);
@@ -135,7 +135,7 @@ static int real_main (int argc, char *argv[]) {
    
    /* Driver and solver I/O arrays and parameters */
    double *svals, *rnorms;
-   PRIMME_NUM *svecs;
+   SCALAR *svecs;
    driver_params driver;
    primme_svds_params primme_svds;
    primme_svds_preset_method method=primme_svds_default;
@@ -220,7 +220,7 @@ static int real_main (int argc, char *argv[]) {
    /* Optional: report memory requirements    */
    /* --------------------------------------- */
 
-   ret = PREFIX(primme_svds)(NULL,NULL,NULL,&primme_svds);
+   ret = Sprimme_svds(NULL,NULL,NULL,&primme_svds);
    if (master) {
       fprintf(primme_svds.outputFile,"PRIMME SVDS will allocate the following memory:\n");
       fprintf(primme_svds.outputFile," processor %d, real workspace, %ld bytes\n",
@@ -250,8 +250,8 @@ static int real_main (int argc, char *argv[]) {
    /* Allocate space for converged Ritz values and residual norms */
 
    svals = (double *)primme_calloc(primme_svds.numSvals, sizeof(double), "svals");
-   svecs = (PRIMME_NUM *)primme_calloc((primme_svds.mLocal+primme_svds.nLocal)*
-                                       primme_svds.numSvals, sizeof(PRIMME_NUM), "svecs");
+   svecs = (SCALAR *)primme_calloc((primme_svds.mLocal+primme_svds.nLocal)*
+                                       primme_svds.numSvals, sizeof(SCALAR), "svecs");
    rnorms = (double *)primme_calloc(primme_svds.numSvals, sizeof(double), "rnorms");
 
    /* ------------------------ */
@@ -272,32 +272,32 @@ static int real_main (int argc, char *argv[]) {
 
       /* Perturb the initial guesses by a vector with some norm  */
       if (driver.initialGuessesPert > 0) {
-         PRIMME_NUM *r = (PRIMME_NUM *)primme_calloc(max(primme_svds.nLocal,primme_svds.mLocal),sizeof(PRIMME_NUM), "random");
+         SCALAR *r = (SCALAR *)primme_calloc(max(primme_svds.nLocal,primme_svds.mLocal),sizeof(SCALAR), "random");
          double norm;
          int j;
          assert(primme_svds.numProcs <= 1);
          for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
-            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.mLocal, r);
-            norm = sqrt(REAL_PART(SUF(Num_dot)(primme_svds.mLocal, r, 1, r, 1)));
+            Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.mLocal, r);
+            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme_svds.mLocal, r, 1, r, 1)));
             for (j=0; j<primme_svds.mLocal; j++)
                svecs[primme_svds.mLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
-            SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.nLocal, r);
-            norm = sqrt(REAL_PART(SUF(Num_dot)(primme_svds.nLocal, r, 1, r, 1)));
+            Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.nLocal, r);
+            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme_svds.nLocal, r, 1, r, 1)));
             for (j=0; j<primme_svds.nLocal; j++)
                svecs[primme_svds.mLocal*n+primme_svds.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          free(r);
       }
-      SUF(Num_larnv)(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
+      Num_larnv_Sprimme(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
                      &svecs[primme_svds.mLocal*i]);
-      SUF(Num_larnv)(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
+      Num_larnv_Sprimme(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
                      &svecs[primme_svds.mLocal*n+primme_svds.nLocal*i]);
    } else if (primme_svds.numOrthoConst > 0) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
    } else if (primme_svds.initSize > 0) {
-      SUF(Num_larnv)(2, primme_svds.iseed, primme_svds.initSize*(primme_svds.mLocal+primme_svds.nLocal),
+      Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.initSize*(primme_svds.mLocal+primme_svds.nLocal),
                      svecs);
    }
 
@@ -311,7 +311,7 @@ static int real_main (int argc, char *argv[]) {
    primme_get_time(&ut1,&st1);
 #endif
 
-   ret = PREFIX(primme_svds)(svals, svecs, rnorms, &primme_svds);
+   ret = Sprimme_svds(svals, svecs, rnorms, &primme_svds);
 
    wt2 = primme_get_wtime();
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))

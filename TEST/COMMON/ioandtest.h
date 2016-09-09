@@ -33,17 +33,17 @@
 #include "shared_utils.h"
  
 int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
-                   PRIMME_NUM *evecs, double *rnorms, int *perm, int checkInterface);
-int writeBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, int *perm,
+                   SCALAR *evecs, double *rnorms, int *perm, int checkInterface);
+int writeBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, int *perm,
                                     primme_params *primme);
-int readBinaryEvecsAndPrimmeParams(const char *fileName, PRIMME_NUM *X, PRIMME_NUM **Xout,
+int readBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                    int n, int Xcols, int *Xcolsout, int nLocal,
                                    int *perm, primme_params *primme);
 int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_svds, double *svals,
-                        PRIMME_NUM *svecs, double *rnorms, int *perm);
-int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, PRIMME_NUM **Xout,
+                        SCALAR *svecs, double *rnorms, int *perm);
+int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                        int m, int n, int Xcols, int *Xcolsout, int mLocal, int nLocal,
                                        int *perm, primme_svds_params *primme_svds_out);
-int writeBinaryEvecsAndPrimmeSvdsParams(const char *fileName, PRIMME_NUM *X, int *perm,
+int writeBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, int *perm,
                                     primme_svds_params *primme_svds);
 #endif

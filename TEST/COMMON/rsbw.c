@@ -66,17 +66,17 @@ int readMatrixRSB(const char* matrixFileName, blas_sparse_matrix *matrix, double
 
 void RSBMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    int i;
-   PRIMME_NUM *xvec, *yvec;
+   SCALAR *xvec, *yvec;
    blas_sparse_matrix *matrix;
 #ifdef USE_DOUBLECOMPLEX
-   const PRIMME_NUM one=(PRIMME_NUM)1;
+   const SCALAR one=(SCALAR)1;
 #endif
   
    if (*blockSize <= 0) return; 
 
    matrix = (blas_sparse_matrix *)primme->matrix;
-   xvec = (PRIMME_NUM *)x;
-   yvec = (PRIMME_NUM *)y;
+   xvec = (SCALAR *)x;
+   yvec = (SCALAR *)y;
 
    for (i=0; i<*blockSize*primme->nLocal; i++)
       yvec[i] = 0;
@@ -91,15 +91,15 @@ void RSBMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
                   int *trans, primme_svds_params *primme_svds) {
    
    int i, j;
-   PRIMME_NUM *xvec, *yvec;
+   SCALAR *xvec, *yvec;
    blas_sparse_matrix *matrix;
 #ifdef USE_DOUBLECOMPLEX
-   const PRIMME_NUM one=(PRIMME_NUM)1;
+   const SCALAR one=(SCALAR)1;
 #endif
    
    matrix = (blas_sparse_matrix *)primme_svds->matrix;
-   xvec = (PRIMME_NUM *)x;
-   yvec = (PRIMME_NUM *)y;
+   xvec = (SCALAR *)x;
+   yvec = (SCALAR *)y;
 
    for (i=0; i<(*blockSize); i++) {
      if (*trans == 0){
@@ -129,7 +129,7 @@ static void getDiagonal(blas_sparse_matrix matrix, double *diag) {
    if (BLAS_dusget_diag(matrix, diag) != 0) assert(0);
 #else
    int n = BLAS_usgp(matrix, blas_num_rows), i;
-   PRIMME_NUM *d = (PRIMME_NUM *)primme_calloc(n, sizeof(PRIMM_NUM), "aux");
+   SCALAR *d = (SCALAR *)primme_calloc(n, sizeof(PRIMM_NUM), "aux");
    if (BLAS_zusget_diag(matrix, d) != 0) assert(0);
    for (i=0; i<n; i++) diag[i] = REAL_PART(d[i]);
 #endif
@@ -158,13 +158,13 @@ static void getSumSquares(blas_sparse_matrix matrix, double *diag) {
    int n = BLAS_usgp(matrix, blas_num_cols);
    int i, *AI, *AJ;
    double *sumr = diag, *sumc = &diag[m], v;
-   PRIMME_NUM *A;
+   SCALAR *A;
 
    for (i=0; i < m + n; i++) {
       diag[i] = 0.0;
    }
 
-   A = (PRIMME_NUM *)primme_calloc(nnz, sizeof(PRIMME_NUM), "A");
+   A = (SCALAR *)primme_calloc(nnz, sizeof(SCALAR), "A");
    AI = (int *)primme_calloc(nnz*2, sizeof(int), "AI AJ");
    AJ = AI + nnz;
    for (i=0; i<nnz; i++) {

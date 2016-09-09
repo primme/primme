@@ -33,8 +33,7 @@ ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', ``#include <complex>'', ``#include
 ifdef(`USE_PETSC', ``#include <petscpc.h>
 #include <petscmat.h>
 '')dnl
-//#include "primme.h"   /* header file for PRIMME SVDS too */ 
-#include "primme_svds.h"   /* this shouldn't be in this way */ 
+#include "primme.h"   /* header file for PRIMME SVDS too */ 
 
 #ifndef min
 #define min(A,B) ((A)<=(B)?(A):(B))
@@ -175,10 +174,10 @@ ifdef(`USE_PETSC', `   if (primme_svds.procID == 0) /* Reports process with ID 0
    ')   primme_svds_display_params(primme_svds);
 
    /* Allocate space for converged Ritz values and residual norms */
-   svals = (double *)primme_calloc(primme_svds.numSvals, sizeof(double), "svals");
-   svecs = (PRIMME_NUM *)primme_calloc((primme_svds.n+primme_svds.m)*primme_svds.numSvals, 
-                                sizeof(PRIMME_NUM), "svecs");
-   rnorms = (double *)primme_calloc(primme_svds.numSvals, sizeof(double), "rnorms");
+   svals = (double*)malloc(primme_svds.numSvals*sizeof(double));
+   svecs = (PRIMME_NUM*)malloc((primme_svds.n+primme_svds.m)
+         *primme_svds.numSvals*sizeof(PRIMME_NUM));
+   rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
 
 define(`CALL_PRIMME_SVDS', `   /* Call primme_svds  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
