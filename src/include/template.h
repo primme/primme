@@ -88,6 +88,8 @@
 #  define REAL_SUF sprimme
 #  define USE_COMPLEX
 #  define REAL float
+#else
+#  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
 #endif
 
 /* A C99 code with complex type is not a valid C++ code. However C++          */

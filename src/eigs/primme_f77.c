@@ -49,6 +49,7 @@ void AS_FORTRAN(Sprimme)(REAL *evals, SCALAR *evecs,
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
+#include "notemplate.h"
 
 /*****************************************************************************
  * Initialize handles also the allocation of primme structure 

@@ -39,6 +39,7 @@ void AS_FORTRAN(Sprimme_svds)(REAL *svals, SCALAR *svecs,
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
+#include "notemplate.h"
 
 void AS_FORTRAN(primme_svds_initialize)(primme_svds_params **primme_svds) {
    *primme_svds = NULL;

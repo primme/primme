@@ -34,10 +34,10 @@
 #include "primme_svds_interface.h"
 #include "primme_interface.h"
 
-static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
-static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
+/* Only define these functions ones */
+#ifdef USE_DOUBLE
+#include "notemplate.h"
+
 static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
 static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme);
@@ -226,17 +226,14 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    case primme_svds_op_AtA:
       primme->n = primme_svds->n;
       primme->nLocal = primme_svds->nLocal;
-      primme->convTestFun = convTestFunATA;
       break;
    case primme_svds_op_AAt:
       primme->n = primme_svds->m;
       primme->nLocal = primme_svds->mLocal;
-      primme->convTestFun = convTestFunATA;
       break;
    case primme_svds_op_augmented:
       primme->n = primme_svds->m + primme_svds->n;
       primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
-      primme->convTestFun = convTestFunAugmented;
       break;
    case primme_svds_op_none:
       break;
@@ -392,69 +389,10 @@ void primme_svds_Free(primme_svds_params *params) {
    params->realWorkSize = 0;
 }
 
-/*******************************************************************************
- * Subroutine convTestFunATA - This routine implements primme_params.
- *    convTestFun and returns an approximate eigenpair converged when           
- *    resNorm < eps * sval * primme_svds.aNorm = eps * sqrt(eval*primme.aNorm)
- *    resNorm is close to machineEpsilon * primme.aNorm.
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * evec         The approximate eigenvector
- * eval         The approximate eigenvalue 
- * rNorm        The norm of the residual vector
- * primme       Structure containing various solver parameters
- *
- * OUTPUT PARAMETERS
- * ----------------------------------
- * isConv      if it isn't zero the approximate pair is marked as converged
- ******************************************************************************/
-
-static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
-
-   const double machEps = Num_lamch_Rprimme("E");
-   const double aNorm = (primme->aNorm > 0.0) ?
-      primme->aNorm : primme->stats.estimateLargestSVal;
-   (void)evec;  /* unused argument */
-   *isConv = *rNorm < max(
-               primme->eps * sqrt(fabs(*eval * aNorm)),
-               machEps * 3.16 * aNorm);
-}
-
-/*******************************************************************************
- * Subroutine convTestFunAugmented - This routine implements primme_params.
- *    convTestFun and returns an approximate eigenpair converged when           
- *    resNorm < eps / sqrt(2) * primme_svds.aNorm = eps / sqrt(2) * primme.aNorm.          
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * evec         The approximate eigenvector
- * eval         The approximate eigenvalue 
- * rNorm        The norm of the residual vector
- * primme       Structure containing various solver parameters
- *
- * OUTPUT PARAMETERS
- * ----------------------------------
- * isConv      if it isn't zero the approximate pair is marked as converged
- ******************************************************************************/
-
-static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
-
-   const double machEps = Num_lamch_Rprimme("E");
-   const double aNorm = (primme->aNorm > 0.0) ?
-      primme->aNorm : primme->stats.estimateLargestSVal;
-   (void)evec;  /* unused argument */
-   *isConv = 
-      *rNorm < max(
-               primme->eps / sqrt(2.0) * aNorm,
-               machEps * 3.16 * aNorm) 
-      && *eval >= aNorm*machEps;
-} 
-
 static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme) {
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_svds->globalSumDouble(sendBuf, recvBuf, count, primme_svds);
 }
+
+#endif /* USE_DOUBLE */

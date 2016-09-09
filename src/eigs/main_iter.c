@@ -282,6 +282,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs,
    numPrevRetained = 0;
    blockSize = 0; 
 
+   for (i=0; i<primme->numEvals; i++) perm[i] = i;
+
    /* ---------------------------------------- */
    /* Set the tolerance for the residual norms */
    /* ---------------------------------------- */

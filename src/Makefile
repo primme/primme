@@ -130,16 +130,16 @@ eigs/locking.o: locking.h const.h numerical.h convergence.h auxiliary_eigs.h res
 eigs/main_iter.o: main_iter.h const.h wtime.h numerical.h main_iter_private.h convergence.h correction.h init.h ortho.h restart.h solve_projection.h update_projection.h update_W.h globalsum.h auxiliary_eigs.h
 eigs/ortho.o: ortho.h numerical.h globalsum.h const.h
 eigs/primme.o: const.h wtime.h numerical.h convergence.h correction.h init.h ortho.h restart.h solve_projection.h update_projection.h update_W.h primme_interface.h
-eigs/primme_f77.o: primme_f77_private.h primme_interface.h
+eigs/primme_f77.o: primme_f77_private.h primme_interface.h notemplate.h
 eigs/primme_f77_private.h: template.h
-eigs/primme_interface.o: template.h const.h primme_interface.h
+eigs/primme_interface.o: template.h const.h primme_interface.h notemplate.h
 eigs/restart.o: restart.h const.h numerical.h locking.h ortho.h solve_projection.h factorize.h update_projection.h update_W.h convergence.h globalsum.h auxiliary_eigs.h
 eigs/solve_projection.o: solve_projection.h const.h numerical.h ortho.h
 eigs/update_projection.o: update_projection.h const.h numerical.h globalsum.h
 eigs/update_W.o: update_W.h numerical.h ortho.h auxiliary_eigs.h
 
 svds/primme_svds.o: numerical.h wtime.h primme_svds_interface.h primme_interface.h
-svds/primme_svds_f77.o: primme_svds_f77_private.h primme_svds_interface.h
+svds/primme_svds_f77.o: primme_svds_f77_private.h primme_svds_interface.h notemplate.h
 svds/primme_svds_f77_private.h: template.h
-svds/primme_svds_interface.o: numerical.h primme_interface.h primme_svds_interface.h
+svds/primme_svds_interface.o: numerical.h primme_interface.h primme_svds_interface.h notemplate.h
 

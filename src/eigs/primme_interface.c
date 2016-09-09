@@ -40,6 +40,10 @@
 #include "primme_interface.h"
 #include "const.h"
 
+/* Only define these functions ones */
+#ifdef USE_DOUBLE
+#include "notemplate.h"
+
 static void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
                       primme_params *params);
 
@@ -646,3 +650,5 @@ static void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count,
    }
 
 }
+
+#endif /* USE_DOUBLE */

@@ -47,11 +47,15 @@ static int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       REAL *svals, SCALAR *svecs, REAL *rnorms, int allocatedTargetShifts);
 static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
 static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
-static void Num_scalInv_Smatrix(SCALAR *x, int m, int n, int ldx, REAL *factors,
+static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx, REAL *factors,
                                        primme_svds_params *primme_svds);
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
 static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
       primme_svds_params *primme_svds);
+static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme);
+static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme);
 
 /*******************************************************************************
  * Subroutine Sprimme_svds - This routine is a front end used to perform 
@@ -199,6 +203,20 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       case primme_svds_op_none:
          break;
       }
+   }
+
+   switch(method) {
+   case primme_svds_op_AtA:
+      primme->convTestFun = convTestFunATA;
+      break;
+   case primme_svds_op_AAt:
+      primme->convTestFun = convTestFunATA;
+      break;
+   case primme_svds_op_augmented:
+      primme->convTestFun = convTestFunAugmented;
+      break;
+   case primme_svds_op_none:
+      break;
    }
 
    /* Set properly initial vectors. Now svecs = [Uc U0 Vc V0], where          */
@@ -721,7 +739,7 @@ static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_par
       &primme->nLocal, blockSize, &method, primme_svds);
 }
 
-static void Num_scalInv_Smatrix(SCALAR *x, int m, int n, int ldx,
+static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
       REAL *factors, primme_svds_params *primme_svds) {
 
    int i;
@@ -752,3 +770,64 @@ static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count,
    }
 
 }
+
+/*******************************************************************************
+ * Subroutine convTestFunATA - This routine implements primme_params.
+ *    convTestFun and returns an approximate eigenpair converged when           
+ *    resNorm < eps * sval * primme_svds.aNorm = eps * sqrt(eval*primme.aNorm)
+ *    resNorm is close to machineEpsilon * primme.aNorm.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_lamch_Rprimme("E");
+   const double aNorm = (primme->aNorm > 0.0) ?
+      primme->aNorm : primme->stats.estimateLargestSVal;
+   (void)evec;  /* unused argument */
+   *isConv = *rNorm < max(
+               primme->eps * sqrt(fabs(*eval * aNorm)),
+               machEps * 3.16 * aNorm);
+}
+
+/*******************************************************************************
+ * Subroutine convTestFunAugmented - This routine implements primme_params.
+ *    convTestFun and returns an approximate eigenpair converged when           
+ *    resNorm < eps / sqrt(2) * primme_svds.aNorm = eps / sqrt(2) * primme.aNorm.          
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * evec         The approximate eigenvector
+ * eval         The approximate eigenvalue 
+ * rNorm        The norm of the residual vector
+ * primme       Structure containing various solver parameters
+ *
+ * OUTPUT PARAMETERS
+ * ----------------------------------
+ * isConv      if it isn't zero the approximate pair is marked as converged
+ ******************************************************************************/
+
+static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
+   primme_params *primme) {
+
+   const double machEps = Num_lamch_Rprimme("E");
+   const double aNorm = (primme->aNorm > 0.0) ?
+      primme->aNorm : primme->stats.estimateLargestSVal;
+   (void)evec;  /* unused argument */
+   *isConv = 
+      *rNorm < max(
+               primme->eps / sqrt(2.0) * aNorm,
+               machEps * 3.16 * aNorm) 
+      && *eval >= aNorm*machEps;
+} 
