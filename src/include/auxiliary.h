@@ -107,26 +107,26 @@ double* Num_compact_vecs_dprimme(double *vecs, int64_t m, int n,
 int compute_submatrix_dprimme(double *X, int nX, int ldX,
    double *H, int nH, int ldH, double *R, int ldR,
    double *rwork, size_t *lrwork);
-void Num_copy_matrix_zprimme(_Complex double *x, int64_t m, int64_t n, int64_t
-      ldx, _Complex double *y, int64_t ldy);
-void Num_copy_matrix_columns_zprimme(_Complex double *x, int64_t m, int *xin, int n,
-      int64_t ldx, _Complex double *y, int *yin, int64_t ldy);
-void Num_zero_matrix_zprimme(_Complex double *x, int64_t m, int64_t n,
+void Num_copy_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, int64_t m, int64_t n, int64_t
+      ldx, PRIMME_COMPLEX_DOUBLE *y, int64_t ldy);
+void Num_copy_matrix_columns_zprimme(PRIMME_COMPLEX_DOUBLE *x, int64_t m, int *xin, int n,
+      int64_t ldx, PRIMME_COMPLEX_DOUBLE *y, int *yin, int64_t ldy);
+void Num_zero_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, int64_t m, int64_t n,
       int64_t ldx);
-void Num_copy_trimatrix_zprimme(_Complex double *x, int m, int n, int ldx, int ul,
-      int i0, _Complex double *y, int ldy, int zero);
-void Num_copy_trimatrix_compact_zprimme(_Complex double *x, int64_t m, int n,
-      int64_t ldx, int i0, _Complex double *y, int *ly);
-void Num_copy_compact_trimatrix_zprimme(_Complex double *x, int64_t m, int n, int i0,
-      _Complex double *y, int ldy);
-void permute_vecs_zprimme(_Complex double *vecs, int64_t m, int n, int64_t ld,
-      int *perm_, _Complex double *rwork, int *iwork);
-_Complex double* Num_compact_vecs_zprimme(_Complex double *vecs, int64_t m, int n,
-      int64_t ld, int *perm, _Complex double *work, int64_t ldwork,
+void Num_copy_trimatrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, int m, int n, int ldx, int ul,
+      int i0, PRIMME_COMPLEX_DOUBLE *y, int ldy, int zero);
+void Num_copy_trimatrix_compact_zprimme(PRIMME_COMPLEX_DOUBLE *x, int64_t m, int n,
+      int64_t ldx, int i0, PRIMME_COMPLEX_DOUBLE *y, int *ly);
+void Num_copy_compact_trimatrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, int64_t m, int n, int i0,
+      PRIMME_COMPLEX_DOUBLE *y, int ldy);
+void permute_vecs_zprimme(PRIMME_COMPLEX_DOUBLE *vecs, int64_t m, int n, int64_t ld,
+      int *perm_, PRIMME_COMPLEX_DOUBLE *rwork, int *iwork);
+PRIMME_COMPLEX_DOUBLE* Num_compact_vecs_zprimme(PRIMME_COMPLEX_DOUBLE *vecs, int64_t m, int n,
+      int64_t ld, int *perm, PRIMME_COMPLEX_DOUBLE *work, int64_t ldwork,
       int avoidCopy);
-int compute_submatrix_zprimme(_Complex double *X, int nX, int ldX,
-   _Complex double *H, int nH, int ldH, _Complex double *R, int ldR,
-   _Complex double *rwork, size_t *lrwork);
+int compute_submatrix_zprimme(PRIMME_COMPLEX_DOUBLE *X, int nX, int ldX,
+   PRIMME_COMPLEX_DOUBLE *H, int nH, int ldH, PRIMME_COMPLEX_DOUBLE *R, int ldR,
+   PRIMME_COMPLEX_DOUBLE *rwork, size_t *lrwork);
 void Num_copy_matrix_sprimme(float *x, int64_t m, int64_t n, int64_t
       ldx, float *y, int64_t ldy);
 void Num_copy_matrix_columns_sprimme(float *x, int64_t m, int *xin, int n,
@@ -147,24 +147,24 @@ float* Num_compact_vecs_sprimme(float *vecs, int64_t m, int n,
 int compute_submatrix_sprimme(float *X, int nX, int ldX,
    float *H, int nH, int ldH, float *R, int ldR,
    float *rwork, size_t *lrwork);
-void Num_copy_matrix_cprimme(_Complex float *x, int64_t m, int64_t n, int64_t
-      ldx, _Complex float *y, int64_t ldy);
-void Num_copy_matrix_columns_cprimme(_Complex float *x, int64_t m, int *xin, int n,
-      int64_t ldx, _Complex float *y, int *yin, int64_t ldy);
-void Num_zero_matrix_cprimme(_Complex float *x, int64_t m, int64_t n,
+void Num_copy_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, int64_t m, int64_t n, int64_t
+      ldx, PRIMME_COMPLEX_FLOAT *y, int64_t ldy);
+void Num_copy_matrix_columns_cprimme(PRIMME_COMPLEX_FLOAT *x, int64_t m, int *xin, int n,
+      int64_t ldx, PRIMME_COMPLEX_FLOAT *y, int *yin, int64_t ldy);
+void Num_zero_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, int64_t m, int64_t n,
       int64_t ldx);
-void Num_copy_trimatrix_cprimme(_Complex float *x, int m, int n, int ldx, int ul,
-      int i0, _Complex float *y, int ldy, int zero);
-void Num_copy_trimatrix_compact_cprimme(_Complex float *x, int64_t m, int n,
-      int64_t ldx, int i0, _Complex float *y, int *ly);
-void Num_copy_compact_trimatrix_cprimme(_Complex float *x, int64_t m, int n, int i0,
-      _Complex float *y, int ldy);
-void permute_vecs_cprimme(_Complex float *vecs, int64_t m, int n, int64_t ld,
-      int *perm_, _Complex float *rwork, int *iwork);
-_Complex float* Num_compact_vecs_cprimme(_Complex float *vecs, int64_t m, int n,
-      int64_t ld, int *perm, _Complex float *work, int64_t ldwork,
+void Num_copy_trimatrix_cprimme(PRIMME_COMPLEX_FLOAT *x, int m, int n, int ldx, int ul,
+      int i0, PRIMME_COMPLEX_FLOAT *y, int ldy, int zero);
+void Num_copy_trimatrix_compact_cprimme(PRIMME_COMPLEX_FLOAT *x, int64_t m, int n,
+      int64_t ldx, int i0, PRIMME_COMPLEX_FLOAT *y, int *ly);
+void Num_copy_compact_trimatrix_cprimme(PRIMME_COMPLEX_FLOAT *x, int64_t m, int n, int i0,
+      PRIMME_COMPLEX_FLOAT *y, int ldy);
+void permute_vecs_cprimme(PRIMME_COMPLEX_FLOAT *vecs, int64_t m, int n, int64_t ld,
+      int *perm_, PRIMME_COMPLEX_FLOAT *rwork, int *iwork);
+PRIMME_COMPLEX_FLOAT* Num_compact_vecs_cprimme(PRIMME_COMPLEX_FLOAT *vecs, int64_t m, int n,
+      int64_t ld, int *perm, PRIMME_COMPLEX_FLOAT *work, int64_t ldwork,
       int avoidCopy);
-int compute_submatrix_cprimme(_Complex float *X, int nX, int ldX,
-   _Complex float *H, int nH, int ldH, _Complex float *R, int ldR,
-   _Complex float *rwork, size_t *lrwork);
+int compute_submatrix_cprimme(PRIMME_COMPLEX_FLOAT *X, int nX, int ldX,
+   PRIMME_COMPLEX_FLOAT *H, int nH, int ldH, PRIMME_COMPLEX_FLOAT *R, int ldR,
+   PRIMME_COMPLEX_FLOAT *rwork, size_t *lrwork);
 #endif

@@ -37,19 +37,19 @@ int check_convergence_dprimme(double *X, int64_t nLocal, int64_t ldX,
       int64_t ldevecs, int left, int right, int *flags, double *blockNorms,
       double *hVals, int *reset, double machEps, double *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
-int check_convergence_zprimme(_Complex double *X, int64_t nLocal, int64_t ldX,
-      _Complex double *R, int64_t ldR, _Complex double *evecs, int numLocked,
+int check_convergence_zprimme(PRIMME_COMPLEX_DOUBLE *X, int64_t nLocal, int64_t ldX,
+      PRIMME_COMPLEX_DOUBLE *R, int64_t ldR, PRIMME_COMPLEX_DOUBLE *evecs, int numLocked,
       int64_t ldevecs, int left, int right, int *flags, double *blockNorms,
-      double *hVals, int *reset, double machEps, _Complex double *rwork,
+      double *hVals, int *reset, double machEps, PRIMME_COMPLEX_DOUBLE *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
 int check_convergence_sprimme(float *X, int64_t nLocal, int64_t ldX,
       float *R, int64_t ldR, float *evecs, int numLocked,
       int64_t ldevecs, int left, int right, int *flags, float *blockNorms,
       float *hVals, int *reset, double machEps, float *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
-int check_convergence_cprimme(_Complex float *X, int64_t nLocal, int64_t ldX,
-      _Complex float *R, int64_t ldR, _Complex float *evecs, int numLocked,
+int check_convergence_cprimme(PRIMME_COMPLEX_FLOAT *X, int64_t nLocal, int64_t ldX,
+      PRIMME_COMPLEX_FLOAT *R, int64_t ldR, PRIMME_COMPLEX_FLOAT *evecs, int numLocked,
       int64_t ldevecs, int left, int right, int *flags, float *blockNorms,
-      float *hVals, int *reset, double machEps, _Complex float *rwork,
+      float *hVals, int *reset, double machEps, PRIMME_COMPLEX_FLOAT *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
 #endif

@@ -34,10 +34,10 @@
 #endif
 int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
       primme_params *primme);
-int globalSum_zprimme(_Complex double *sendBuf, _Complex double *recvBuf, int count,
+int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *sendBuf, PRIMME_COMPLEX_DOUBLE *recvBuf, int count,
       primme_params *primme);
 int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
       primme_params *primme);
-int globalSum_cprimme(_Complex float *sendBuf, _Complex float *recvBuf, int count,
+int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
       primme_params *primme);
 #endif

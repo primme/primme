@@ -49,17 +49,17 @@ int Num_update_VWXR_dprimme(double *V, double *W, int64_t mV, int nV,
       double *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
       double *rwork, int lrwork, primme_params *primme);
-void Num_compute_residual_zprimme(int64_t n, _Complex double eval, _Complex double *x,
-   _Complex double *Ax, _Complex double *r);
-int Num_update_VWXR_zprimme(_Complex double *V, _Complex double *W, int64_t mV, int nV,
-      int64_t ldV, _Complex double *h, int nh, int ldh, double *hVals,
-      _Complex double *X0, int nX0b, int nX0e, int64_t ldX0,
-      _Complex double *X1, int nX1b, int nX1e, int64_t ldX1,
-      _Complex double *X2, int nX2b, int nX2e, int64_t ldX2,
-      _Complex double *Wo, int nWob, int nWoe, int64_t ldWo,
-      _Complex double *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
+void Num_compute_residual_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE eval, PRIMME_COMPLEX_DOUBLE *x,
+   PRIMME_COMPLEX_DOUBLE *Ax, PRIMME_COMPLEX_DOUBLE *r);
+int Num_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, int64_t mV, int nV,
+      int64_t ldV, PRIMME_COMPLEX_DOUBLE *h, int nh, int ldh, double *hVals,
+      PRIMME_COMPLEX_DOUBLE *X0, int nX0b, int nX0e, int64_t ldX0,
+      PRIMME_COMPLEX_DOUBLE *X1, int nX1b, int nX1e, int64_t ldX1,
+      PRIMME_COMPLEX_DOUBLE *X2, int nX2b, int nX2e, int64_t ldX2,
+      PRIMME_COMPLEX_DOUBLE *Wo, int nWob, int nWoe, int64_t ldWo,
+      PRIMME_COMPLEX_DOUBLE *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
-      _Complex double *rwork, int lrwork, primme_params *primme);
+      PRIMME_COMPLEX_DOUBLE *rwork, int lrwork, primme_params *primme);
 void Num_compute_residual_sprimme(int64_t n, float eval, float *x,
    float *Ax, float *r);
 int Num_update_VWXR_sprimme(float *V, float *W, int64_t mV, int nV,
@@ -71,15 +71,15 @@ int Num_update_VWXR_sprimme(float *V, float *W, int64_t mV, int nV,
       float *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
       float *rwork, int lrwork, primme_params *primme);
-void Num_compute_residual_cprimme(int64_t n, _Complex float eval, _Complex float *x,
-   _Complex float *Ax, _Complex float *r);
-int Num_update_VWXR_cprimme(_Complex float *V, _Complex float *W, int64_t mV, int nV,
-      int64_t ldV, _Complex float *h, int nh, int ldh, float *hVals,
-      _Complex float *X0, int nX0b, int nX0e, int64_t ldX0,
-      _Complex float *X1, int nX1b, int nX1e, int64_t ldX1,
-      _Complex float *X2, int nX2b, int nX2e, int64_t ldX2,
-      _Complex float *Wo, int nWob, int nWoe, int64_t ldWo,
-      _Complex float *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
+void Num_compute_residual_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT eval, PRIMME_COMPLEX_FLOAT *x,
+   PRIMME_COMPLEX_FLOAT *Ax, PRIMME_COMPLEX_FLOAT *r);
+int Num_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, int64_t mV, int nV,
+      int64_t ldV, PRIMME_COMPLEX_FLOAT *h, int nh, int ldh, float *hVals,
+      PRIMME_COMPLEX_FLOAT *X0, int nX0b, int nX0e, int64_t ldX0,
+      PRIMME_COMPLEX_FLOAT *X1, int nX1b, int nX1e, int64_t ldX1,
+      PRIMME_COMPLEX_FLOAT *X2, int nX2b, int nX2e, int64_t ldX2,
+      PRIMME_COMPLEX_FLOAT *Wo, int nWob, int nWoe, int64_t ldWo,
+      PRIMME_COMPLEX_FLOAT *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
-      _Complex float *rwork, int lrwork, primme_params *primme);
+      PRIMME_COMPLEX_FLOAT *rwork, int lrwork, primme_params *primme);
 #endif

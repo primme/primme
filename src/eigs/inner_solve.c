@@ -57,7 +57,7 @@ static int dist_dot(SCALAR *x, int incx,
    SCALAR *y, int incy, primme_params *primme, SCALAR *result);
 
 static int dist_dot_real(SCALAR *x, int incx,
-   SCALAR *y, int incy, primme_params *primme, double *result);
+   SCALAR *y, int incy, primme_params *primme, REAL *result);
 
 
 /*******************************************************************************
@@ -162,15 +162,15 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
    /* QMR parameters */
 
    SCALAR *g, *d, *delta, *w, *ptmp;
-   double alpha_prev, beta, rho_prev, rho;
-   double Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
+   REAL alpha_prev, beta, rho_prev, rho;
+   REAL Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
 
    /* Parameters used to dynamically update eigenpair */
-   double Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
-   double dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0, R;
-   double Gamma_prev, Phi_prev;
-   double Gamma=0.0, Phi=0.0;
-   double gamma;
+   REAL Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
+   REAL dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0, R;
+   REAL Gamma_prev, Phi_prev;
+   REAL Gamma=0.0, Phi=0.0;
+   REAL gamma;
 
    /* The convergence criteria of the inner linear system must satisfy:       */
    /* || current residual || <= relativeTolerance * || initial residual ||    */
@@ -372,7 +372,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
             ETolerance = eres_updated;
          }
 
-         primme->convTestFun(&eval_updated, NULL, &ETolerance, &isConv, primme);
+         double eval_updatedD = eval_updated;
+         primme->convTestFun(&eval_updatedD, NULL, &ETolerance, &isConv, primme);
 
          if (numIts > 1 && (isConv || eres_updated < absoluteTolerance)) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -775,7 +776,7 @@ static int dist_dot(SCALAR *x, int incx,
  ******************************************************************************/
 
 static int dist_dot_real(SCALAR *x, int incx,
-   SCALAR *y, int incy, primme_params *primme, double *result) {
+   SCALAR *y, int incy, primme_params *primme, REAL *result) {
                                                                                 
    SCALAR temp, product;
                                                                                 

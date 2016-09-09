@@ -45,12 +45,12 @@ int update_Q_dprimme(double *V, int64_t nLocal, int64_t ldV,
       double *W, int64_t ldW, double *Q, int64_t ldQ, double *R, int ldR,
       double targetShift, int basisSize, int blockSize, double *rwork,
       size_t *rworkSize, double machEps, primme_params *primme);
-int matrixMatvec_zprimme(_Complex double *V, int64_t nLocal, int64_t ldV,
-      _Complex double *W, int64_t ldW, int basisSize, int blockSize,
+int matrixMatvec_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t nLocal, int64_t ldV,
+      PRIMME_COMPLEX_DOUBLE *W, int64_t ldW, int basisSize, int blockSize,
       primme_params *primme);
-int update_Q_zprimme(_Complex double *V, int64_t nLocal, int64_t ldV,
-      _Complex double *W, int64_t ldW, _Complex double *Q, int64_t ldQ, _Complex double *R, int ldR,
-      double targetShift, int basisSize, int blockSize, _Complex double *rwork,
+int update_Q_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t nLocal, int64_t ldV,
+      PRIMME_COMPLEX_DOUBLE *W, int64_t ldW, PRIMME_COMPLEX_DOUBLE *Q, int64_t ldQ, PRIMME_COMPLEX_DOUBLE *R, int ldR,
+      double targetShift, int basisSize, int blockSize, PRIMME_COMPLEX_DOUBLE *rwork,
       size_t *rworkSize, double machEps, primme_params *primme);
 int matrixMatvec_sprimme(float *V, int64_t nLocal, int64_t ldV,
       float *W, int64_t ldW, int basisSize, int blockSize,
@@ -59,11 +59,11 @@ int update_Q_sprimme(float *V, int64_t nLocal, int64_t ldV,
       float *W, int64_t ldW, float *Q, int64_t ldQ, float *R, int ldR,
       double targetShift, int basisSize, int blockSize, float *rwork,
       size_t *rworkSize, double machEps, primme_params *primme);
-int matrixMatvec_cprimme(_Complex float *V, int64_t nLocal, int64_t ldV,
-      _Complex float *W, int64_t ldW, int basisSize, int blockSize,
+int matrixMatvec_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t nLocal, int64_t ldV,
+      PRIMME_COMPLEX_FLOAT *W, int64_t ldW, int basisSize, int blockSize,
       primme_params *primme);
-int update_Q_cprimme(_Complex float *V, int64_t nLocal, int64_t ldV,
-      _Complex float *W, int64_t ldW, _Complex float *Q, int64_t ldQ, _Complex float *R, int ldR,
-      double targetShift, int basisSize, int blockSize, _Complex float *rwork,
+int update_Q_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t nLocal, int64_t ldV,
+      PRIMME_COMPLEX_FLOAT *W, int64_t ldW, PRIMME_COMPLEX_FLOAT *Q, int64_t ldQ, PRIMME_COMPLEX_FLOAT *R, int ldR,
+      double targetShift, int basisSize, int blockSize, PRIMME_COMPLEX_FLOAT *rwork,
       size_t *rworkSize, double machEps, primme_params *primme);
 #endif

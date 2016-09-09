@@ -46,13 +46,13 @@ int ortho_single_iteration_dprimme(double *Q, int64_t mQ, int64_t nQ,
       int64_t ldQ, double *X, int *inX, int nX, int64_t ldX,
       double *overlaps, double *norms, double *rwork, size_t *lrwork,
       primme_params *primme);
-int ortho_zprimme(_Complex double *basis, int64_t ldBasis, _Complex double *R,
-      int64_t ldR, int b1, int b2, _Complex double *locked, int64_t ldLocked,
+int ortho_zprimme(PRIMME_COMPLEX_DOUBLE *basis, int64_t ldBasis, PRIMME_COMPLEX_DOUBLE *R,
+      int64_t ldR, int b1, int b2, PRIMME_COMPLEX_DOUBLE *locked, int64_t ldLocked,
       int numLocked, int64_t nLocal, int64_t *iseed, double machEps,
-      _Complex double *rwork, size_t *rworkSize, primme_params *primme);
-int ortho_single_iteration_zprimme(_Complex double *Q, int64_t mQ, int64_t nQ,
-      int64_t ldQ, _Complex double *X, int *inX, int nX, int64_t ldX,
-      double *overlaps, double *norms, _Complex double *rwork, size_t *lrwork,
+      PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, primme_params *primme);
+int ortho_single_iteration_zprimme(PRIMME_COMPLEX_DOUBLE *Q, int64_t mQ, int64_t nQ,
+      int64_t ldQ, PRIMME_COMPLEX_DOUBLE *X, int *inX, int nX, int64_t ldX,
+      double *overlaps, double *norms, PRIMME_COMPLEX_DOUBLE *rwork, size_t *lrwork,
       primme_params *primme);
 int ortho_sprimme(float *basis, int64_t ldBasis, float *R,
       int64_t ldR, int b1, int b2, float *locked, int64_t ldLocked,
@@ -62,12 +62,12 @@ int ortho_single_iteration_sprimme(float *Q, int64_t mQ, int64_t nQ,
       int64_t ldQ, float *X, int *inX, int nX, int64_t ldX,
       float *overlaps, float *norms, float *rwork, size_t *lrwork,
       primme_params *primme);
-int ortho_cprimme(_Complex float *basis, int64_t ldBasis, _Complex float *R,
-      int64_t ldR, int b1, int b2, _Complex float *locked, int64_t ldLocked,
+int ortho_cprimme(PRIMME_COMPLEX_FLOAT *basis, int64_t ldBasis, PRIMME_COMPLEX_FLOAT *R,
+      int64_t ldR, int b1, int b2, PRIMME_COMPLEX_FLOAT *locked, int64_t ldLocked,
       int numLocked, int64_t nLocal, int64_t *iseed, double machEps,
-      _Complex float *rwork, size_t *rworkSize, primme_params *primme);
-int ortho_single_iteration_cprimme(_Complex float *Q, int64_t mQ, int64_t nQ,
-      int64_t ldQ, _Complex float *X, int *inX, int nX, int64_t ldX,
-      float *overlaps, float *norms, _Complex float *rwork, size_t *lrwork,
+      PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, primme_params *primme);
+int ortho_single_iteration_cprimme(PRIMME_COMPLEX_FLOAT *Q, int64_t mQ, int64_t nQ,
+      int64_t ldQ, PRIMME_COMPLEX_FLOAT *X, int *inX, int nX, int64_t ldX,
+      float *overlaps, float *norms, PRIMME_COMPLEX_FLOAT *rwork, size_t *lrwork,
       primme_params *primme);
 #endif

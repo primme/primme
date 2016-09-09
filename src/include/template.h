@@ -73,6 +73,7 @@
 #  define SCALAR_SUF zprimme
 #  define REAL_SUF dprimme
 #  define USE_COMPLEX
+#  define SCALAR PRIMME_COMPLEX_DOUBLE
 #  define REAL double
 #elif defined(USE_FLOAT)
 #  define SCALAR_PRE s
@@ -87,6 +88,7 @@
 #  define SCALAR_SUF cprimme
 #  define REAL_SUF sprimme
 #  define USE_COMPLEX
+#  define SCALAR PRIMME_COMPLEX_FLOAT
 #  define REAL float
 #else
 #  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
@@ -100,14 +102,10 @@
 
 #ifdef USE_COMPLEX
 #  ifndef __cplusplus
-#     include <complex.h> /* definition of creal, cabs, conj */
-#     define SCALAR complex REAL
 #     define REAL_PART(x) (creal(x))
 #     define ABS(x) (cabs(x))
 #     define CONJ(x) (conj(x))
 #  else
-#     include <complex> /* definition of real, abs, conj */
-#     define SCALAR std::complex<REAL>
 #     define REAL_PART(x) (std::real(x))
 #     define ABS(x) (std::abs(x))
 #     define CONJ(x) (std::conj(x))
@@ -147,6 +145,10 @@
 #     define TEMPLATE_PLEASE \
         APPEND_FUNC(Sprimme,SCALAR_SUF)
 #  endif
+   /* Avoid to use the final type for complex in generated headers file.      */
+   /* Instead use PRIMME_COMPLEX_FLOAT and _DOUBLE.                           */
+#  undef PRIMME_COMPLEX_FLOAT
+#  undef PRIMME_COMPLEX_DOUBLE
 #else
 #  define TEMPLATE_PLEASE
 #endif

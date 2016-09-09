@@ -36,16 +36,16 @@ int update_projection_dprimme(double *X, int64_t ldX, double *Y,
       int64_t ldY, double *Z, int64_t ldZ, int64_t nLocal, int numCols,
       int blockSize, double *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
-int update_projection_zprimme(_Complex double *X, int64_t ldX, _Complex double *Y,
-      int64_t ldY, _Complex double *Z, int64_t ldZ, int64_t nLocal, int numCols,
-      int blockSize, _Complex double *rwork, size_t *lrwork, int isSymmetric,
+int update_projection_zprimme(PRIMME_COMPLEX_DOUBLE *X, int64_t ldX, PRIMME_COMPLEX_DOUBLE *Y,
+      int64_t ldY, PRIMME_COMPLEX_DOUBLE *Z, int64_t ldZ, int64_t nLocal, int numCols,
+      int blockSize, PRIMME_COMPLEX_DOUBLE *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
 int update_projection_sprimme(float *X, int64_t ldX, float *Y,
       int64_t ldY, float *Z, int64_t ldZ, int64_t nLocal, int numCols,
       int blockSize, float *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
-int update_projection_cprimme(_Complex float *X, int64_t ldX, _Complex float *Y,
-      int64_t ldY, _Complex float *Z, int64_t ldZ, int64_t nLocal, int numCols,
-      int blockSize, _Complex float *rwork, size_t *lrwork, int isSymmetric,
+int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, int64_t ldX, PRIMME_COMPLEX_FLOAT *Y,
+      int64_t ldY, PRIMME_COMPLEX_FLOAT *Z, int64_t ldZ, int64_t nLocal, int numCols,
+      int blockSize, PRIMME_COMPLEX_FLOAT *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
 #endif

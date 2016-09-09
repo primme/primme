@@ -43,19 +43,19 @@ int UDUDecompose_dprimme(double *M, int ldM, double *UDU, int ldUDU,
 #endif
 int UDUSolve_dprimme(double *UDU, int *ipivot, int dim, double *rhs,
    double *sol, primme_params *primme);
-int UDUDecompose_zprimme(_Complex double *M, int ldM, _Complex double *UDU, int ldUDU,
-      int *ipivot, int dimM, _Complex double *rwork, size_t *rworkSize,
+int UDUDecompose_zprimme(PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *UDU, int ldUDU,
+      int *ipivot, int dimM, PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize,
       primme_params *primme);
-int UDUSolve_zprimme(_Complex double *UDU, int *ipivot, int dim, _Complex double *rhs,
-   _Complex double *sol, primme_params *primme);
+int UDUSolve_zprimme(PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, int dim, PRIMME_COMPLEX_DOUBLE *rhs,
+   PRIMME_COMPLEX_DOUBLE *sol, primme_params *primme);
 int UDUDecompose_sprimme(float *M, int ldM, float *UDU, int ldUDU,
       int *ipivot, int dimM, float *rwork, size_t *rworkSize,
       primme_params *primme);
 int UDUSolve_sprimme(float *UDU, int *ipivot, int dim, float *rhs,
    float *sol, primme_params *primme);
-int UDUDecompose_cprimme(_Complex float *M, int ldM, _Complex float *UDU, int ldUDU,
-      int *ipivot, int dimM, _Complex float *rwork, size_t *rworkSize,
+int UDUDecompose_cprimme(PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *UDU, int ldUDU,
+      int *ipivot, int dimM, PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize,
       primme_params *primme);
-int UDUSolve_cprimme(_Complex float *UDU, int *ipivot, int dim, _Complex float *rhs,
-   _Complex float *sol, primme_params *primme);
+int UDUSolve_cprimme(PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, int dim, PRIMME_COMPLEX_FLOAT *rhs,
+   PRIMME_COMPLEX_FLOAT *sol, primme_params *primme);
 #endif
