@@ -13,8 +13,21 @@ Changelog
 
 Changes in PRIMME 2.0 (released on XXX):
 
-* Added parameter to return an error code in callbacks |matrixMatvec|, |applyPreconditioner|,
-  |massMatrixMatvec| and |globalSumDouble|.
+* Added interface for singular value problems; see :c:func:`dprimme_svds`.
+
+* Support for ``float`` and ``complex float`` arithmetic.
+
+* Support for problem dimensions larger than 2^31, without requiring
+  BLAS_ and LAPACK_ compiled with 64-bits integers.
+
+* Improve robustness and performance for interior problems; implemented advanced refined
+  and harmonic-Ritz extractions.
+
+* Python interface compatible with NumPy_ and `SciPy Library`_.
+
+* Added parameter to indicate the leading dimension of the input/output matrices and to
+  return an error code in callbacks |matrixMatvec|, |applyPreconditioner|,
+  |massMatrixMatvec| and |globalSumReal|.
 
 * Changed to type :c:type:`PRIMME_NUM` the options |n|, |nLocal|, |maxMatvecs|
   and |iseed|, and the stats counters |numOuterIterations|, |numRestarts|, |numMavecs|,
@@ -32,6 +45,9 @@ Changes in PRIMME 2.0 (released on XXX):
   :c:function:`primmetop_get_member_f77`,
   :c:function:`primme_set_member_f77` and
   :c:function:`primme_get_member_f77`.
+
+* Added leading dimension for ``evecs`` |ldevecs| and preferred leading dimension
+  for the operators |ldOPs|, such as |matrixMatvec|.
 
 * Optional user-defined convergence function, |convTestFun|.
 

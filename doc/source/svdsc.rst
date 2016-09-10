@@ -188,7 +188,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       | ``int`` |SprocID|
       | ``int`` |SmLocal|
       | ``int`` |SnLocal|
-      | ``void (*`` |SglobalSumDouble| ``)(...)``
+      | ``void (*`` |SglobalSumReal| ``)(...)``
       |
       | *Accelerate the convergence*
       | ``void (*`` |SapplyPreconditioner| ``)(...)``, preconditioner-vector product.
@@ -274,7 +274,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
 
 PRIMME SVDS requires the user to set at least the matrix dimensions (|Sm| x |Sn|) and
 the matrix-vector product (|SmatrixMatvec|), as they define the problem to be solved.
-For parallel programs, |SmLocal|, |SnLocal|, |SprocID| and |SglobalSumDouble| are also required.
+For parallel programs, |SmLocal|, |SnLocal|, |SprocID| and |SglobalSumReal| are also required.
 
 In addition, most users would want to specify how many singular triplets to find,
 and provide a preconditioner (if available).

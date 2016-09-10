@@ -152,3 +152,5 @@
 .. _Sphinx: http://sphinx-doc.org/
 .. _PETSc: http://www.mcs.anl.gov/petsc/
 .. _column-major: https://en.wikipedia.org/wiki/Row-major_order
+.. _NumPy: http://www.numpy.org/
+.. _`SciPy Library`: https://www.scipy.org/scipylib/index.html
