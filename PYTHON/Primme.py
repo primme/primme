@@ -112,16 +112,8 @@ except __builtin__.Exception:
 
 
 
-__all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
+__all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'sprimme_svds', 'cprimme_svds', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 
-
-def myglobalSumDouble(sendBuf, recvBuf, count, primme):
-    return _Primme.myglobalSumDouble(sendBuf, recvBuf, count, primme)
-myglobalSumDouble = _Primme.myglobalSumDouble
-
-def myglobalSumDouble_svds(sendBuf, recvBuf, count, primme_svds):
-    return _Primme.myglobalSumDouble_svds(sendBuf, recvBuf, count, primme_svds)
-myglobalSumDouble_svds = _Primme.myglobalSumDouble_svds
 primme_smallest = _Primme.primme_smallest
 primme_largest = _Primme.primme_largest
 primme_closest_geq = _Primme.primme_closest_geq
@@ -164,10 +156,38 @@ class primme_stats(_object):
     __swig_getmethods__["numPreconds"] = _Primme.primme_stats_numPreconds_get
     if _newclass:
         numPreconds = _swig_property(_Primme.primme_stats_numPreconds_get, _Primme.primme_stats_numPreconds_set)
+    __swig_setmethods__["numGlobalSum"] = _Primme.primme_stats_numGlobalSum_set
+    __swig_getmethods__["numGlobalSum"] = _Primme.primme_stats_numGlobalSum_get
+    if _newclass:
+        numGlobalSum = _swig_property(_Primme.primme_stats_numGlobalSum_get, _Primme.primme_stats_numGlobalSum_set)
+    __swig_setmethods__["volumeGlobalSum"] = _Primme.primme_stats_volumeGlobalSum_set
+    __swig_getmethods__["volumeGlobalSum"] = _Primme.primme_stats_volumeGlobalSum_get
+    if _newclass:
+        volumeGlobalSum = _swig_property(_Primme.primme_stats_volumeGlobalSum_get, _Primme.primme_stats_volumeGlobalSum_set)
+    __swig_setmethods__["numOrthoInnerProds"] = _Primme.primme_stats_numOrthoInnerProds_set
+    __swig_getmethods__["numOrthoInnerProds"] = _Primme.primme_stats_numOrthoInnerProds_get
+    if _newclass:
+        numOrthoInnerProds = _swig_property(_Primme.primme_stats_numOrthoInnerProds_get, _Primme.primme_stats_numOrthoInnerProds_set)
     __swig_setmethods__["elapsedTime"] = _Primme.primme_stats_elapsedTime_set
     __swig_getmethods__["elapsedTime"] = _Primme.primme_stats_elapsedTime_get
     if _newclass:
         elapsedTime = _swig_property(_Primme.primme_stats_elapsedTime_get, _Primme.primme_stats_elapsedTime_set)
+    __swig_setmethods__["timeMatvec"] = _Primme.primme_stats_timeMatvec_set
+    __swig_getmethods__["timeMatvec"] = _Primme.primme_stats_timeMatvec_get
+    if _newclass:
+        timeMatvec = _swig_property(_Primme.primme_stats_timeMatvec_get, _Primme.primme_stats_timeMatvec_set)
+    __swig_setmethods__["timePrecond"] = _Primme.primme_stats_timePrecond_set
+    __swig_getmethods__["timePrecond"] = _Primme.primme_stats_timePrecond_get
+    if _newclass:
+        timePrecond = _swig_property(_Primme.primme_stats_timePrecond_get, _Primme.primme_stats_timePrecond_set)
+    __swig_setmethods__["timeOrtho"] = _Primme.primme_stats_timeOrtho_set
+    __swig_getmethods__["timeOrtho"] = _Primme.primme_stats_timeOrtho_get
+    if _newclass:
+        timeOrtho = _swig_property(_Primme.primme_stats_timeOrtho_get, _Primme.primme_stats_timeOrtho_set)
+    __swig_setmethods__["timeGlobalSum"] = _Primme.primme_stats_timeGlobalSum_set
+    __swig_getmethods__["timeGlobalSum"] = _Primme.primme_stats_timeGlobalSum_get
+    if _newclass:
+        timeGlobalSum = _swig_property(_Primme.primme_stats_timeGlobalSum_get, _Primme.primme_stats_timeGlobalSum_set)
     __swig_setmethods__["estimateMinEVal"] = _Primme.primme_stats_estimateMinEVal_set
     __swig_getmethods__["estimateMinEVal"] = _Primme.primme_stats_estimateMinEVal_get
     if _newclass:
@@ -354,6 +374,10 @@ class primme_params(_object):
     __swig_getmethods__["nLocal"] = _Primme.primme_params_nLocal_get
     if _newclass:
         nLocal = _swig_property(_Primme.primme_params_nLocal_get, _Primme.primme_params_nLocal_set)
+    __swig_setmethods__["globalSumReal"] = _Primme.primme_params_globalSumReal_set
+    __swig_getmethods__["globalSumReal"] = _Primme.primme_params_globalSumReal_get
+    if _newclass:
+        globalSumReal = _swig_property(_Primme.primme_params_globalSumReal_get, _Primme.primme_params_globalSumReal_set)
     __swig_setmethods__["numEvals"] = _Primme.primme_params_numEvals_set
     __swig_getmethods__["numEvals"] = _Primme.primme_params_numEvals_get
     if _newclass:
@@ -426,6 +450,14 @@ class primme_params(_object):
     __swig_getmethods__["initBasisMode"] = _Primme.primme_params_initBasisMode_get
     if _newclass:
         initBasisMode = _swig_property(_Primme.primme_params_initBasisMode_get, _Primme.primme_params_initBasisMode_set)
+    __swig_setmethods__["ldevecs"] = _Primme.primme_params_ldevecs_set
+    __swig_getmethods__["ldevecs"] = _Primme.primme_params_ldevecs_get
+    if _newclass:
+        ldevecs = _swig_property(_Primme.primme_params_ldevecs_get, _Primme.primme_params_ldevecs_set)
+    __swig_setmethods__["ldOPs"] = _Primme.primme_params_ldOPs_set
+    __swig_getmethods__["ldOPs"] = _Primme.primme_params_ldOPs_get
+    if _newclass:
+        ldOPs = _swig_property(_Primme.primme_params_ldOPs_get, _Primme.primme_params_ldOPs_set)
     __swig_setmethods__["projectionParams"] = _Primme.primme_params_projectionParams_set
     __swig_getmethods__["projectionParams"] = _Primme.primme_params_projectionParams_get
     if _newclass:
@@ -470,6 +502,14 @@ JDQMR_ETol = _Primme.JDQMR_ETol
 SUBSPACE_ITERATION = _Primme.SUBSPACE_ITERATION
 LOBPCG_OrthoBasis = _Primme.LOBPCG_OrthoBasis
 LOBPCG_OrthoBasis_Window = _Primme.LOBPCG_OrthoBasis_Window
+
+def sprimme(*args):
+    return _Primme.sprimme(*args)
+sprimme = _Primme.sprimme
+
+def cprimme(*args):
+    return _Primme.cprimme(*args)
+cprimme = _Primme.cprimme
 
 def dprimme(*args):
     return _Primme.dprimme(*args)
@@ -557,6 +597,10 @@ class primme_svds_params(_object):
     __swig_getmethods__["nLocal"] = _Primme.primme_svds_params_nLocal_get
     if _newclass:
         nLocal = _swig_property(_Primme.primme_svds_params_nLocal_get, _Primme.primme_svds_params_nLocal_set)
+    __swig_setmethods__["globalSumReal"] = _Primme.primme_svds_params_globalSumReal_set
+    __swig_getmethods__["globalSumReal"] = _Primme.primme_svds_params_globalSumReal_get
+    if _newclass:
+        globalSumReal = _swig_property(_Primme.primme_svds_params_globalSumReal_get, _Primme.primme_svds_params_globalSumReal_set)
     __swig_setmethods__["numSvals"] = _Primme.primme_svds_params_numSvals_set
     __swig_getmethods__["numSvals"] = _Primme.primme_svds_params_numSvals_get
     if _newclass:
@@ -641,6 +685,14 @@ class primme_svds_params(_object):
 primme_svds_params_swigregister = _Primme.primme_svds_params_swigregister
 primme_svds_params_swigregister(primme_svds_params)
 
+
+def sprimme_svds(*args):
+    return _Primme.sprimme_svds(*args)
+sprimme_svds = _Primme.sprimme_svds
+
+def cprimme_svds(*args):
+    return _Primme.cprimme_svds(*args)
+cprimme_svds = _Primme.cprimme_svds
 
 def dprimme_svds(*args):
     return _Primme.dprimme_svds(*args)
@@ -758,8 +810,8 @@ class PrimmeParams(primme_params):
     def prevec(self, *args):
         return _Primme.PrimmeParams_prevec(self, *args)
 
-    def globalSum(self, lenYD, yd):
-        return _Primme.PrimmeParams_globalSum(self, lenYD, yd)
+    def globalSum(self, *args):
+        return _Primme.PrimmeParams_globalSum(self, *args)
     __swig_setmethods__["globalSum_set"] = _Primme.PrimmeParams_globalSum_set_set
     __swig_getmethods__["globalSum_set"] = _Primme.PrimmeParams_globalSum_set_get
     if _newclass:
@@ -882,8 +934,8 @@ class PrimmeSvdsParams(primme_svds_params):
     def prevec(self, *args):
         return _Primme.PrimmeSvdsParams_prevec(self, *args)
 
-    def globalSum(self, lenYD, yd):
-        return _Primme.PrimmeSvdsParams_globalSum(self, lenYD, yd)
+    def globalSum(self, *args):
+        return _Primme.PrimmeSvdsParams_globalSum(self, *args)
     __swig_setmethods__["globalSum_set"] = _Primme.PrimmeSvdsParams_globalSum_set_set
     __swig_getmethods__["globalSum_set"] = _Primme.PrimmeSvdsParams_globalSum_set_get
     if _newclass:
@@ -911,7 +963,7 @@ _PRIMMEErrors = {
 -6: "'numProcs' < 1",
 -7: "'matrixMatvec' is NULL",
 -8: "'applyPreconditioner' is NULL and 'precondition' is not NULL",
--9: "'globalSumDouble' is NULL",
+-9: "'not used",
 -10: "'numEvals' > 'n'",
 -11: "'numEvals' < 0",
 -12: "'eps' > 0 and 'eps' < machine precision",
@@ -935,7 +987,9 @@ _PRIMMEErrors = {
 -30: "'evals' is NULL, but not 'evecs' and 'resNorms'",
 -31: "'evecs' is NULL, but not 'evals' and 'resNorms'",
 -32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
--33: "not 'locking' and 'minRestartSize' < 'numEvals'"
+-33: "not 'locking' and 'minRestartSize' < 'numEvals'",
+-34: "'ldevecs' is less than 'nLocal'",
+-35: "'ldOPs' is non-zero and less than 'nLocal'"
 }
 
 _PRIMMESvdsErrors = {
@@ -1194,10 +1248,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
         pp.numOrthoConst = min(lock.shape[1], pp.n)
 
-    if A.dtype.kind in frozenset(["b", "i", "u", "f"]):
+    if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
-        dtype = np.dtype("complex128")
+        dtype = A.dtype
 
     evals = np.zeros(pp.numEvals)
     norms = np.zeros(pp.numEvals)
@@ -1223,10 +1277,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if method is not None:
         pp.set_method(method)
 
-    if dtype is np.dtype(np.complex128):
-        err = zprimme(evals, evecs, norms, pp)
-    else:
+    if dtype.type is np.complex64:
+        err = cprimme(evals, evecs, norms, pp)
+    elif dtype.type is np.float:
+        err = sprimme(evals, evecs, norms, pp)
+    elif dtype.type is np.double:
         err = dprimme(evals, evecs, norms, pp)
+    else:
+        err = zprimme(evals, evecs, norms, pp)
 
     if err != 0:
         raise PrimmeError(err)
@@ -1443,10 +1501,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if locku0 is not None:
         pp.numOrthoConst = min(locku0.shape[1], min(m,n))
 
-    if A.dtype.kind in frozenset(["b", "i", "u", "f"]):
+    if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
-        dtype = np.dtype("complex128")
+        dtype = A.dtype
 
     svals = np.zeros(pp.numSvals)
     svecsl = np.zeros((pp.m, pp.numOrthoConst+pp.numSvals), dtype, order='F')
@@ -1464,7 +1522,11 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
         np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
 
-    if dtype is np.dtype('d'):
+    if dtype.type is np.complex64:
+        err = cprimme_svds(svals, svecsl, svecsr, norms, pp)
+    elif dtype.type is np.float:
+        err = sprimme_svds(svals, svecsl, svecsr, norms, pp)
+    elif dtype.type is np.double:
         err = dprimme_svds(svals, svecsl, svecsr, norms, pp)
     else:
         err = zprimme_svds(svals, svecsl, svecsr, norms, pp)

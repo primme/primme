@@ -299,10 +299,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
         pp.numOrthoConst = min(lock.shape[1], pp.n)
 
-    if A.dtype.kind in frozenset(["b", "i", "u", "f"]):
+    if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
-        dtype = np.dtype("complex128")
+        dtype = A.dtype
 
     evals = np.zeros(pp.numEvals)
     norms = np.zeros(pp.numEvals)
@@ -328,10 +328,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if method is not None:
         pp.set_method(method)
  
-    if dtype is np.dtype(np.complex128):
-        err = zprimme(evals, evecs, norms, pp)
-    else:
+    if dtype.type is np.complex64:
+        err = cprimme(evals, evecs, norms, pp)
+    elif dtype.type is np.float:
+        err = sprimme(evals, evecs, norms, pp)
+    elif dtype.type is np.double:
         err = dprimme(evals, evecs, norms, pp)
+    else:
+        err = zprimme(evals, evecs, norms, pp)
 
     if err != 0:
         raise PrimmeError(err)
@@ -548,10 +552,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if locku0 is not None:
         pp.numOrthoConst = min(locku0.shape[1], min(m,n))
 
-    if A.dtype.kind in frozenset(["b", "i", "u", "f"]):
+    if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
-        dtype = np.dtype("complex128")
+        dtype = A.dtype
 
     svals = np.zeros(pp.numSvals)
     svecsl = np.zeros((pp.m, pp.numOrthoConst+pp.numSvals), dtype, order='F')
@@ -569,7 +573,11 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
         np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
 
-    if dtype is np.dtype('d'):
+    if dtype.type is np.complex64:
+        err = cprimme_svds(svals, svecsl, svecsr, norms, pp)
+    elif dtype.type is np.float:
+        err = sprimme_svds(svals, svecsl, svecsr, norms, pp)
+    elif dtype.type is np.double:
         err = dprimme_svds(svals, svecsl, svecsr, norms, pp)
     else:
         err = zprimme_svds(svals, svecsl, svecsr, norms, pp)

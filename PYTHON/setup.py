@@ -15,7 +15,7 @@ numpy_include = numpy.get_include()
 _Primme = Extension("_Primme",
                    ["primme_wrap.cxx", "primmew.cxx"],
                    include_dirs = [numpy_include],
-                   library_dirs = [".."],
+                   library_dirs = ["../lib"],
                    libraries = ["primme", "blas", "lapack"],
                    #extra_compile_args = ["-g", "-O0"]
                    )

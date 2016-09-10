@@ -39,7 +39,6 @@
 #  include <complex>
 #  define PRIMME_COMPLEX_FLOAT std::complex<float>
 #  define PRIMME_COMPLEX_DOUBLE std::complex<double>
-extern "C" {
 #else
 #  include <complex.h>
 #  define PRIMME_COMPLEX_FLOAT float complex

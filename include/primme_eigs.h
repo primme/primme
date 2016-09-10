@@ -31,8 +31,10 @@
 
 #include <stdio.h>
 
-#ifndef PRIMME_H
-#  error "Please include 'primme.h' instead; checkout the documentation."
+#include "primme.h"
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 typedef enum {

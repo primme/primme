@@ -30,9 +30,7 @@
 #ifndef PRIMME_SVDS_H
 #define PRIMME_SVDS_H
 
-#ifndef PRIMME_H
-#  error "Please include 'primme.h' instead; checkout the documentation."
-#endif
+#include "primme_eigs.h"
 
 #ifdef __cplusplus
 extern "C" {

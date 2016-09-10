@@ -35,7 +35,7 @@ Uses PRIMME: https://github.com/primme/primme
 %module(docstring=DOCSTRING,directors="1") Primme
 
 %pythoncode %{
-__all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
+__all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'sprimme_svds', 'cprimme_svds', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 %}
 // Support PRIMME_INT for int64_t
 %include "stdint.i"
@@ -74,24 +74,14 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %}
 
 // Global ignores
-%ignore PRIMME_MAX_NAME_LENGTH;
-%ignore stackTraceNode;
-%ignore primme_valloc;
-%ignore primme_calloc;
-%ignore primme_malloc;
 %ignore primme_display_params;
 %ignore primme_set_method;
 %ignore primme_initialize;
-%ignore primme_seq_globalSumDouble;
-%ignore primme_PushErrorMessage;
-%ignore primme_PrintStackTrace;
-%ignore primme_DeleteStackTrace;
 %ignore primme_Free;
 
 %ignore primme_svds_display_params;
 %ignore primme_svds_set_method;
 %ignore primme_svds_initialize;
-%ignore primme_svds_seq_globalSumDouble;
 %ignore primme_svds_Free;
 
 %ignore tprimme;
@@ -111,7 +101,6 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore PrimmeParams::matrix;
 %ignore PrimmeParams::preconditioner;
 %ignore PrimmeParams::ShiftsForPreconditioner;
-%ignore PrimmeParams::stackTrace;
 %ignore primme_params::matrixMatvec;
 %ignore primme_params::massMatrixMatvec;
 %ignore primme_params::applyPreconditioner;
@@ -126,7 +115,6 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore primme_params::matrix;
 %ignore primme_params::preconditioner;
 %ignore primme_params::ShiftsForPreconditioner;
-%ignore primme_params::stackTrace;
 %ignore PrimmeSvdsParams::matrixMatvec;
 %ignore PrimmeSvdsParams::applyPreconditioner;
 %ignore PrimmeSvdsParams::convTestFun;
@@ -140,7 +128,6 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore PrimmeSvdsParams::matrix;
 %ignore PrimmeSvdsParams::preconditioner;
 %ignore PrimmeSvdsParams::ShiftsForPreconditioner;
-%ignore PrimmeSvdsParams::stackTrace;
 %ignore PrimmeSvdsParams::primme;
 %ignore PrimmeSvdsParams::primmeStage2;
 %ignore primme_svds_params::matrixMatvec;
@@ -156,7 +143,6 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 %ignore primme_svds_params::matrix;
 %ignore primme_svds_params::preconditioner;
 %ignore primme_svds_params::ShiftsForPreconditioner;
-%ignore primme_svds_params::stackTrace;
 %ignore primme_svds_params::primme;
 %ignore primme_svds_params::primmeStage2;
 
@@ -218,7 +204,7 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 }
 %typemap(in,numinputs=0)
   (DIM_TYPE DIM1, DIM_TYPE DIM2, DIM_TYPE LD, DATA_TYPE* OUT_FARRAY2D)
-{}
+{ $1 = $2 = $3 = 0; }
 
 %typemap(directorargout,
          fragment="NumPy_Fragments")
@@ -273,7 +259,7 @@ __all__ = ['PrimmeParams', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnold
 }
 %typemap(in,numinputs=0)
   (DIM_TYPE DIM1, DATA_TYPE* OUT_ARRAY1D)
-{}
+{ $1 = 0; }
 
 %typemap(directorargout,
          fragment="NumPy_Fragments")
@@ -369,6 +355,12 @@ static void copy_matrix(T *x, I m, J n, I ldx, T *y, I ldy) {
 }
 
 
+static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme) {
+      return sprimme(evals, evecs, resNorms, primme);
+}
+static int tprimme(float *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme) {
+      return cprimme(evals, evecs, resNorms, primme);
+}
 static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
       return dprimme(evals, evecs, resNorms, primme);
 }
@@ -377,26 +369,37 @@ static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms,
 }
 
 template <typename T>
-static void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
+static void mymatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, struct primme_params *primme, int *ierr) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->matvec((int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)x, (int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)y);
+    pp->matvec((int)primme->nLocal, *blockSize, (int)*ldx, (T*)x, (int)primme->nLocal, *blockSize, (int)*ldy, (T*)y);
+    *ierr = 0; 
 }
 
 template <typename T>
-static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
+static void myprevec(void *x, PRIMME_INT *ldx,  void *y, PRIMME_INT *ldy, int *blockSize, struct primme_params *primme, int *ierr) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->prevec((int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)x, (int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)y);
-}
-
-static void myglobalSumDouble(void *sendBuf, void *recvBuf, int *count, struct primme_params *primme) {
-    PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->globalSum(*count, (double*)sendBuf, *count, (double*)recvBuf);
+    pp->prevec((int)primme->nLocal, *blockSize, (int)*ldx, (T*)x, (int)primme->nLocal, *blockSize, (int)*ldy, (T*)y);
+    *ierr = 0; 
 }
 
 template <typename T>
-int my_primme(int lenEvals, double *evals,
+struct Real { typedef T type;};
+template <>
+struct Real<std::complex<double> > { typedef double type;};
+template <>
+struct Real<std::complex<float> > { typedef float type;};
+
+template <typename T>
+static void myglobalSum(void *sendBuf, void *recvBuf, int *count, struct primme_params *primme, int *ierr) {
+    PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
+    pp->globalSum(*count, static_cast<typename Real<T>::type*>(sendBuf), *count, static_cast<typename Real<T>::type*>(recvBuf));
+    *ierr = 0;
+}
+
+template <typename T, typename R>
+int my_primme(int lenEvals, R *evals,
             int len1Evecs, int len2Evecs, T *evecs,
-            int lenResNorms, double *resNorms, 
+            int lenResNorms, R *resNorms, 
             PrimmeParams *primme) {
    if (lenEvals < primme->numEvals) {
         PyErr_Format(PyExc_ValueError,
@@ -422,11 +425,17 @@ int my_primme(int lenEvals, double *evals,
    if (primme->correctionParams.precondition) 
       primme->applyPreconditioner = myprevec<T>;
    if (primme->globalSum_set)
-      primme->globalSumDouble = myglobalSumDouble;
+      primme->globalSumReal = myglobalSum<T>;
    int ret = tprimme(evals, evecs, resNorms, static_cast<primme_params*>(primme));
    return ret;
 }
 
+static int tprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds) { 
+   return sprimme_svds(svals, svecs, resNorms, primme_svds);
+}
+static int tprimme_svds(float *svals, std::complex<float> *svecs, float *resNorms, primme_svds_params *primme_svds) {
+   return cprimme_svds(svals, svecs, resNorms, primme_svds);
+}
 static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
@@ -434,13 +443,15 @@ static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resN
    return zprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 
-static void myglobalSumDouble_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds) {
+template <typename T>
+static void myglobalSum_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds, int *ierr) {
     PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
-    pp->globalSum(*count, (double*)sendBuf, *count, (double*)recvBuf);
+    pp->globalSum(*count, static_cast<typename Real<T>::type*>(sendBuf), *count, static_cast<typename Real<T>::type*>(recvBuf));
+    *ierr = 0;
 }
 
 template <typename T>
-static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
+static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds, int *ierr) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    PRIMME_INT m, n;
    if (*transpose == 0) {
@@ -452,10 +463,11 @@ static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
       m = primme_svds->nLocal;
    }
    pp->matvec((int)n, *blockSize, (int)*ldx, (T*)x, (int)m, *blockSize, (int)*ldy, (T*)y, *transpose);
+   *ierr = 0;
 }
 
 template <typename T>
-static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
+static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds, int *ierr) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    PRIMME_INT m=0;
    if (*mode == primme_svds_op_AtA) {
@@ -466,13 +478,14 @@ static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
       m = primme_svds->mLocal + primme_svds->nLocal;
    }
    pp->prevec((int)m, *blockSize, (int)*ldx, (T*)x, (int)m, *blockSize, (int)*ldy, (T*)y, *mode);
+   *ierr = 0;
 }
 
-template <typename T>
-int my_primme_svds(int lenSvals, double *svals,
+template <typename T, typename R>
+int my_primme_svds(int lenSvals, R *svals,
             int len1SvecsLeft, int len2SvecsLeft, T *svecsLeft,
             int len1SvecsRight, int len2SvecsRight, T *svecsRight,
-            int lenResNorms, double *resNorms, 
+            int lenResNorms, R *resNorms, 
             PrimmeSvdsParams *primme_svds) {
    if (lenSvals < primme_svds->numSvals) {
         PyErr_Format(PyExc_ValueError,
@@ -506,7 +519,7 @@ int my_primme_svds(int lenSvals, double *svals,
    if (primme_svds->precondition) 
       primme_svds->applyPreconditioner = myprevec_svds<T>;
    if (primme_svds->globalSum_set)
-      primme_svds->globalSumDouble = myglobalSumDouble_svds;
+      primme_svds->globalSumReal = myglobalSum_svds<T>;
    T *svecs = new T[(primme_svds->nLocal+primme_svds->mLocal)*(primme_svds->numOrthoConst+primme_svds->numSvals)];
    copy_matrix(svecsLeft, primme_svds->mLocal, primme_svds->numOrthoConst,
          (PRIMME_INT)len1SvecsLeft, svecs, primme_svds->mLocal);
@@ -527,10 +540,14 @@ int my_primme_svds(int lenSvals, double *svals,
 }
 %}
 
-%template (dprimme) my_primme<double>;
-%template (zprimme) my_primme<std::complex<double> >;
-%template (dprimme_svds) my_primme_svds<double>;
-%template (zprimme_svds) my_primme_svds<std::complex<double> >;
+%template (sprimme) my_primme<float,float>;
+%template (cprimme) my_primme<std::complex<float>,float>;
+%template (dprimme) my_primme<double,double>;
+%template (zprimme) my_primme<std::complex<double>,double>;
+%template (sprimme_svds) my_primme_svds<float,float>;
+%template (cprimme_svds) my_primme_svds<std::complex<float>,float>;
+%template (dprimme_svds) my_primme_svds<double,double>;
+%template (zprimme_svds) my_primme_svds<std::complex<double>,double>;
 
 
 %feature("director") PrimmeParams;
@@ -613,8 +630,9 @@ array([ 1.,  2.,  3.])
 %feature("docstring") PrimmeSvdsParams DOCSTRING_PrimmeSvdsParams;
 
 
-%include "../PRIMMESRC/COMMONSRC/primme.h"
-%include "../PRIMMESRC/SVDS/COMMONSRC/primme_svds.h"
+%include "../include/primme.h"
+%include "../include/primme_eigs.h"
+%include "../include/primme_svds.h"
 %include "primmew.h"
 
 %pythoncode "wrappers.py"

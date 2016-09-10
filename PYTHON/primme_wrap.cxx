@@ -3458,33 +3458,37 @@ namespace Swig {
 #define SWIGTYPE_p_char swig_types[3]
 #define SWIGTYPE_p_correction_params swig_types[4]
 #define SWIGTYPE_p_double swig_types[5]
-#define SWIGTYPE_p_int swig_types[6]
-#define SWIGTYPE_p_long_long swig_types[7]
-#define SWIGTYPE_p_p_double swig_types[8]
-#define SWIGTYPE_p_primme_convergencetest swig_types[9]
-#define SWIGTYPE_p_primme_init swig_types[10]
-#define SWIGTYPE_p_primme_params swig_types[11]
-#define SWIGTYPE_p_primme_preset_method swig_types[12]
-#define SWIGTYPE_p_primme_projection swig_types[13]
-#define SWIGTYPE_p_primme_restartscheme swig_types[14]
-#define SWIGTYPE_p_primme_stats swig_types[15]
-#define SWIGTYPE_p_primme_svds_operator swig_types[16]
-#define SWIGTYPE_p_primme_svds_params swig_types[17]
-#define SWIGTYPE_p_primme_svds_preset_method swig_types[18]
-#define SWIGTYPE_p_primme_svds_stats swig_types[19]
-#define SWIGTYPE_p_primme_svds_target swig_types[20]
-#define SWIGTYPE_p_primme_target swig_types[21]
-#define SWIGTYPE_p_projection_params swig_types[22]
-#define SWIGTYPE_p_restarting_params swig_types[23]
-#define SWIGTYPE_p_short swig_types[24]
-#define SWIGTYPE_p_signed_char swig_types[25]
-#define SWIGTYPE_p_std__complexT_double_t swig_types[26]
-#define SWIGTYPE_p_unsigned_char swig_types[27]
-#define SWIGTYPE_p_unsigned_int swig_types[28]
-#define SWIGTYPE_p_unsigned_long_long swig_types[29]
-#define SWIGTYPE_p_unsigned_short swig_types[30]
-static swig_type_info *swig_types[32];
-static swig_module_info swig_module = {swig_types, 31, 0, 0, 0, 0};
+#define SWIGTYPE_p_f_p_void_p_void_p_int_p_primme_params_p_int__void swig_types[6]
+#define SWIGTYPE_p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void swig_types[7]
+#define SWIGTYPE_p_float swig_types[8]
+#define SWIGTYPE_p_int swig_types[9]
+#define SWIGTYPE_p_long_long swig_types[10]
+#define SWIGTYPE_p_p_double swig_types[11]
+#define SWIGTYPE_p_primme_convergencetest swig_types[12]
+#define SWIGTYPE_p_primme_init swig_types[13]
+#define SWIGTYPE_p_primme_params swig_types[14]
+#define SWIGTYPE_p_primme_preset_method swig_types[15]
+#define SWIGTYPE_p_primme_projection swig_types[16]
+#define SWIGTYPE_p_primme_restartscheme swig_types[17]
+#define SWIGTYPE_p_primme_stats swig_types[18]
+#define SWIGTYPE_p_primme_svds_operator swig_types[19]
+#define SWIGTYPE_p_primme_svds_params swig_types[20]
+#define SWIGTYPE_p_primme_svds_preset_method swig_types[21]
+#define SWIGTYPE_p_primme_svds_stats swig_types[22]
+#define SWIGTYPE_p_primme_svds_target swig_types[23]
+#define SWIGTYPE_p_primme_target swig_types[24]
+#define SWIGTYPE_p_projection_params swig_types[25]
+#define SWIGTYPE_p_restarting_params swig_types[26]
+#define SWIGTYPE_p_short swig_types[27]
+#define SWIGTYPE_p_signed_char swig_types[28]
+#define SWIGTYPE_p_std__complexT_double_t swig_types[29]
+#define SWIGTYPE_p_std__complexT_float_t swig_types[30]
+#define SWIGTYPE_p_unsigned_char swig_types[31]
+#define SWIGTYPE_p_unsigned_int swig_types[32]
+#define SWIGTYPE_p_unsigned_long_long swig_types[33]
+#define SWIGTYPE_p_unsigned_short swig_types[34]
+static swig_type_info *swig_types[36];
+static swig_module_info swig_module = {swig_types, 35, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3645,6 +3649,12 @@ static void copy_matrix(T *x, I m, J n, I ldx, T *y, I ldy) {
 }
 
 
+static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme) {
+      return sprimme(evals, evecs, resNorms, primme);
+}
+static int tprimme(float *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme) {
+      return cprimme(evals, evecs, resNorms, primme);
+}
 static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
       return dprimme(evals, evecs, resNorms, primme);
 }
@@ -3653,26 +3663,37 @@ static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms,
 }
 
 template <typename T>
-static void mymatvec(void *x, void *y, int *blockSize, struct primme_params *primme) {
+static void mymatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, struct primme_params *primme, int *ierr) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->matvec((int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)x, (int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)y);
+    pp->matvec((int)primme->nLocal, *blockSize, (int)*ldx, (T*)x, (int)primme->nLocal, *blockSize, (int)*ldy, (T*)y);
+    *ierr = 0; 
 }
 
 template <typename T>
-static void myprevec(void *x,  void *y, int *blockSize, struct primme_params *primme) {
+static void myprevec(void *x, PRIMME_INT *ldx,  void *y, PRIMME_INT *ldy, int *blockSize, struct primme_params *primme, int *ierr) {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->prevec((int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)x, (int)primme->nLocal, *blockSize, (int)primme->nLocal, (T*)y);
-}
-
-static void myglobalSumDouble(void *sendBuf, void *recvBuf, int *count, struct primme_params *primme) {
-    PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
-    pp->globalSum(*count, (double*)sendBuf, *count, (double*)recvBuf);
+    pp->prevec((int)primme->nLocal, *blockSize, (int)*ldx, (T*)x, (int)primme->nLocal, *blockSize, (int)*ldy, (T*)y);
+    *ierr = 0; 
 }
 
 template <typename T>
-int my_primme(int lenEvals, double *evals,
+struct Real { typedef T type;};
+template <>
+struct Real<std::complex<double> > { typedef double type;};
+template <>
+struct Real<std::complex<float> > { typedef float type;};
+
+template <typename T>
+static void myglobalSum(void *sendBuf, void *recvBuf, int *count, struct primme_params *primme, int *ierr) {
+    PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
+    pp->globalSum(*count, static_cast<typename Real<T>::type*>(sendBuf), *count, static_cast<typename Real<T>::type*>(recvBuf));
+    *ierr = 0;
+}
+
+template <typename T, typename R>
+int my_primme(int lenEvals, R *evals,
             int len1Evecs, int len2Evecs, T *evecs,
-            int lenResNorms, double *resNorms, 
+            int lenResNorms, R *resNorms, 
             PrimmeParams *primme) {
    if (lenEvals < primme->numEvals) {
         PyErr_Format(PyExc_ValueError,
@@ -3698,11 +3719,17 @@ int my_primme(int lenEvals, double *evals,
    if (primme->correctionParams.precondition) 
       primme->applyPreconditioner = myprevec<T>;
    if (primme->globalSum_set)
-      primme->globalSumDouble = myglobalSumDouble;
+      primme->globalSumReal = myglobalSum<T>;
    int ret = tprimme(evals, evecs, resNorms, static_cast<primme_params*>(primme));
    return ret;
 }
 
+static int tprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds) { 
+   return sprimme_svds(svals, svecs, resNorms, primme_svds);
+}
+static int tprimme_svds(float *svals, std::complex<float> *svecs, float *resNorms, primme_svds_params *primme_svds) {
+   return cprimme_svds(svals, svecs, resNorms, primme_svds);
+}
 static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
@@ -3710,13 +3737,15 @@ static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resN
    return zprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 
-static void myglobalSumDouble_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds) {
+template <typename T>
+static void myglobalSum_svds(void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds, int *ierr) {
     PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
-    pp->globalSum(*count, (double*)sendBuf, *count, (double*)recvBuf);
+    pp->globalSum(*count, static_cast<typename Real<T>::type*>(sendBuf), *count, static_cast<typename Real<T>::type*>(recvBuf));
+    *ierr = 0;
 }
 
 template <typename T>
-static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds) {
+static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds, int *ierr) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    PRIMME_INT m, n;
    if (*transpose == 0) {
@@ -3728,10 +3757,11 @@ static void mymatvec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
       m = primme_svds->nLocal;
    }
    pp->matvec((int)n, *blockSize, (int)*ldx, (T*)x, (int)m, *blockSize, (int)*ldy, (T*)y, *transpose);
+   *ierr = 0;
 }
 
 template <typename T>
-static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds) {
+static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode, struct primme_svds_params *primme_svds, int *ierr) {
    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
    PRIMME_INT m=0;
    if (*mode == primme_svds_op_AtA) {
@@ -3742,13 +3772,14 @@ static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
       m = primme_svds->mLocal + primme_svds->nLocal;
    }
    pp->prevec((int)m, *blockSize, (int)*ldx, (T*)x, (int)m, *blockSize, (int)*ldy, (T*)y, *mode);
+   *ierr = 0;
 }
 
-template <typename T>
-int my_primme_svds(int lenSvals, double *svals,
+template <typename T, typename R>
+int my_primme_svds(int lenSvals, R *svals,
             int len1SvecsLeft, int len2SvecsLeft, T *svecsLeft,
             int len1SvecsRight, int len2SvecsRight, T *svecsRight,
-            int lenResNorms, double *resNorms, 
+            int lenResNorms, R *resNorms, 
             PrimmeSvdsParams *primme_svds) {
    if (lenSvals < primme_svds->numSvals) {
         PyErr_Format(PyExc_ValueError,
@@ -3782,7 +3813,7 @@ int my_primme_svds(int lenSvals, double *svals,
    if (primme_svds->precondition) 
       primme_svds->applyPreconditioner = myprevec_svds<T>;
    if (primme_svds->globalSum_set)
-      primme_svds->globalSumDouble = myglobalSumDouble_svds;
+      primme_svds->globalSumReal = myglobalSum_svds<T>;
    T *svecs = new T[(primme_svds->nLocal+primme_svds->mLocal)*(primme_svds->numOrthoConst+primme_svds->numSvals)];
    copy_matrix(svecsLeft, primme_svds->mLocal, primme_svds->numOrthoConst,
          (PRIMME_INT)len1SvecsLeft, svecs, primme_svds->mLocal);
@@ -3803,11 +3834,168 @@ int my_primme_svds(int lenSvals, double *svals,
 }
 
 
+#include <limits.h>
+#if !defined(SWIG_NO_LLONG_MAX)
+# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
+#   define LLONG_MAX __LONG_LONG_MAX__
+#   define LLONG_MIN (-LLONG_MAX - 1LL)
+#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+# endif
+#endif
+
+
+SWIGINTERN int
+SWIG_AsVal_double (PyObject *obj, double *val)
+{
+  int res = SWIG_TypeError;
+  if (PyFloat_Check(obj)) {
+    if (val) *val = PyFloat_AsDouble(obj);
+    return SWIG_OK;
+#if PY_VERSION_HEX < 0x03000000
+  } else if (PyInt_Check(obj)) {
+    if (val) *val = PyInt_AsLong(obj);
+    return SWIG_OK;
+#endif
+  } else if (PyLong_Check(obj)) {
+    double v = PyLong_AsDouble(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    int dispatch = 0;
+    double d = PyFloat_AsDouble(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = d;
+      return SWIG_AddCast(SWIG_OK);
+    } else {
+      PyErr_Clear();
+    }
+    if (!dispatch) {
+      long v = PyLong_AsLong(obj);
+      if (!PyErr_Occurred()) {
+	if (val) *val = v;
+	return SWIG_AddCast(SWIG_AddCast(SWIG_OK));
+      } else {
+	PyErr_Clear();
+      }
+    }
+  }
+#endif
+  return res;
+}
+
+
+#include <float.h>
+
+
+#include <math.h>
+
+
+SWIGINTERNINLINE int
+SWIG_CanCastAsInteger(double *d, double min, double max) {
+  double x = *d;
+  if ((min <= x && x <= max)) {
+   double fx = floor(x);
+   double cx = ceil(x);
+   double rd =  ((x - fx) < 0.5) ? fx : cx; /* simple rint */
+   if ((errno == EDOM) || (errno == ERANGE)) {
+     errno = 0;
+   } else {
+     double summ, reps, diff;
+     if (rd < x) {
+       diff = x - rd;
+     } else if (rd > x) {
+       diff = rd - x;
+     } else {
+       return 1;
+     }
+     summ = rd + x;
+     reps = diff/summ;
+     if (reps < 8*DBL_EPSILON) {
+       *d = rd;
+       return 1;
+     }
+   }
+  }
+  return 0;
+}
+
+
 #if NPY_API_VERSION < 0x00000007
 #define NPY_ARRAY_DEFAULT NPY_DEFAULT
 #define NPY_ARRAY_FARRAY  NPY_FARRAY
 #define NPY_FORTRANORDER  NPY_FORTRAN
 #endif
+
+
+  SWIGINTERN int
+  SWIG_AsVal_long (PyObject * obj, long * val)
+  {
+    PyArray_Descr * longDescr = PyArray_DescrNewFromType(NPY_LONG);
+    if (PyInt_Check(obj)) {
+      if (val) *val = PyInt_AsLong(obj);
+      return SWIG_OK;
+    } else if (PyLong_Check(obj)) {
+      long v = PyLong_AsLong(obj);
+      if (!PyErr_Occurred()) {
+	if (val) *val = v;
+	return SWIG_OK;
+      } else {
+	PyErr_Clear();
+      }
+    }
+#ifdef SWIG_PYTHON_CAST_MODE
+    {
+      int dispatch = 0;
+      long v = PyInt_AsLong(obj);
+      if (!PyErr_Occurred()) {
+	if (val) *val = v;
+	return SWIG_AddCast(SWIG_OK);
+      } else {
+	PyErr_Clear();
+      }
+      if (!dispatch) {
+	double d;
+	int res = SWIG_AddCast(SWIG_AsVal_double (obj,&d));
+	if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, LONG_MIN, LONG_MAX)) {
+	  if (val) *val = (long)(d);
+	  return res;
+	}
+      }
+    }
+#endif
+    if (!PyArray_IsScalar(obj,Integer)) return SWIG_TypeError;
+    PyArray_CastScalarToCtype(obj, (void*)val, longDescr);
+    return SWIG_OK;
+  }
+
+
+SWIGINTERN int
+SWIG_AsVal_int (PyObject * obj, int *val)
+{
+  long v;
+  int res = SWIG_AsVal_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v < INT_MIN || v > INT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = static_cast< int >(v);
+    }
+  }  
+  return res;
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
+}
 
 
 /* Macros to extract array attributes.
@@ -4268,147 +4456,6 @@ int my_primme_svds(int lenSvals, double *svals,
 
 
 
-SWIGINTERNINLINE PyObject*
-  SWIG_From_int  (int value)
-{
-  return PyInt_FromLong((long) value);
-}
-
-
-SWIGINTERN int
-SWIG_AsVal_double (PyObject *obj, double *val)
-{
-  int res = SWIG_TypeError;
-  if (PyFloat_Check(obj)) {
-    if (val) *val = PyFloat_AsDouble(obj);
-    return SWIG_OK;
-#if PY_VERSION_HEX < 0x03000000
-  } else if (PyInt_Check(obj)) {
-    if (val) *val = PyInt_AsLong(obj);
-    return SWIG_OK;
-#endif
-  } else if (PyLong_Check(obj)) {
-    double v = PyLong_AsDouble(obj);
-    if (!PyErr_Occurred()) {
-      if (val) *val = v;
-      return SWIG_OK;
-    } else {
-      PyErr_Clear();
-    }
-  }
-#ifdef SWIG_PYTHON_CAST_MODE
-  {
-    int dispatch = 0;
-    double d = PyFloat_AsDouble(obj);
-    if (!PyErr_Occurred()) {
-      if (val) *val = d;
-      return SWIG_AddCast(SWIG_OK);
-    } else {
-      PyErr_Clear();
-    }
-    if (!dispatch) {
-      long v = PyLong_AsLong(obj);
-      if (!PyErr_Occurred()) {
-	if (val) *val = v;
-	return SWIG_AddCast(SWIG_AddCast(SWIG_OK));
-      } else {
-	PyErr_Clear();
-      }
-    }
-  }
-#endif
-  return res;
-}
-
-
-#include <float.h>
-
-
-#include <math.h>
-
-
-SWIGINTERNINLINE int
-SWIG_CanCastAsInteger(double *d, double min, double max) {
-  double x = *d;
-  if ((min <= x && x <= max)) {
-   double fx = floor(x);
-   double cx = ceil(x);
-   double rd =  ((x - fx) < 0.5) ? fx : cx; /* simple rint */
-   if ((errno == EDOM) || (errno == ERANGE)) {
-     errno = 0;
-   } else {
-     double summ, reps, diff;
-     if (rd < x) {
-       diff = x - rd;
-     } else if (rd > x) {
-       diff = rd - x;
-     } else {
-       return 1;
-     }
-     summ = rd + x;
-     reps = diff/summ;
-     if (reps < 8*DBL_EPSILON) {
-       *d = rd;
-       return 1;
-     }
-   }
-  }
-  return 0;
-}
-
-
-  SWIGINTERN int
-  SWIG_AsVal_long (PyObject * obj, long * val)
-  {
-    PyArray_Descr * longDescr = PyArray_DescrNewFromType(NPY_LONG);
-    if (PyInt_Check(obj)) {
-      if (val) *val = PyInt_AsLong(obj);
-      return SWIG_OK;
-    } else if (PyLong_Check(obj)) {
-      long v = PyLong_AsLong(obj);
-      if (!PyErr_Occurred()) {
-	if (val) *val = v;
-	return SWIG_OK;
-      } else {
-	PyErr_Clear();
-      }
-    }
-#ifdef SWIG_PYTHON_CAST_MODE
-    {
-      int dispatch = 0;
-      long v = PyInt_AsLong(obj);
-      if (!PyErr_Occurred()) {
-	if (val) *val = v;
-	return SWIG_AddCast(SWIG_OK);
-      } else {
-	PyErr_Clear();
-      }
-      if (!dispatch) {
-	double d;
-	int res = SWIG_AddCast(SWIG_AsVal_double (obj,&d));
-	if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, LONG_MIN, LONG_MAX)) {
-	  if (val) *val = (long)(d);
-	  return res;
-	}
-      }
-    }
-#endif
-    if (!PyArray_IsScalar(obj,Integer)) return SWIG_TypeError;
-    PyArray_CastScalarToCtype(obj, (void*)val, longDescr);
-    return SWIG_OK;
-  }
-
-
-#include <limits.h>
-#if !defined(SWIG_NO_LLONG_MAX)
-# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
-#   define LLONG_MAX __LONG_LONG_MAX__
-#   define LLONG_MIN (-LLONG_MAX - 1LL)
-#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
-# endif
-#endif
-
-
 #if defined(LLONG_MAX) && !defined(SWIG_LONG_LONG_AVAILABLE)
 #  define SWIG_LONG_LONG_AVAILABLE
 #endif
@@ -4465,22 +4512,6 @@ SWIG_From_long_SS_long  (long long value)
 
 
   #define SWIG_From_double   PyFloat_FromDouble 
-
-
-SWIGINTERN int
-SWIG_AsVal_int (PyObject * obj, int *val)
-{
-  long v;
-  int res = SWIG_AsVal_long (obj, &v);
-  if (SWIG_IsOK(res)) {
-    if ((v < INT_MIN || v > INT_MAX)) {
-      return SWIG_OverflowError;
-    } else {
-      if (val) *val = static_cast< int >(v);
-    }
-  }  
-  return res;
-}
 
 
   SWIGINTERN int
@@ -4675,6 +4706,84 @@ SwigDirector_PrimmeParams::SwigDirector_PrimmeParams(PyObject *self): PrimmePara
 SwigDirector_PrimmeParams::~SwigDirector_PrimmeParams() {
 }
 
+void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, float *yd, int len1XD, int len2XD, int ldXD, float *xd) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_float,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 0;
+  const char * const swig_method_name = "matvec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"matvec", (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
+void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, std::complex< float > *yd, int len1XD, int len2XD, int ldXD, std::complex< float > *xd) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 1;
+  const char * const swig_method_name = "matvec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"matvec", (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
 void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd) {
   PyArrayObject *array5 = NULL ;
   PyObject *o5 = NULL ;
@@ -4695,7 +4804,7 @@ void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, double 
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 0;
+  const size_t swig_method_index = 2;
   const char * const swig_method_name = "matvec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
@@ -4755,7 +4864,7 @@ void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, std::co
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 1;
+  const size_t swig_method_index = 3;
   const char * const swig_method_name = "matvec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
@@ -4795,6 +4904,84 @@ void SwigDirector_PrimmeParams::matvec(int len1YD, int len2YD, int ldYD, std::co
 }
 
 
+void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, float *yd, int len1XD, int len2XD, int ldXD, float *xd) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_float,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 4;
+  const char * const swig_method_name = "prevec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"prevec", (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
+void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, std::complex< float > *yd, int len1XD, int len2XD, int ldXD, std::complex< float > *xd) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 5;
+  const char * const swig_method_name = "prevec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"prevec", (char *)"(OOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
 void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd) {
   PyArrayObject *array5 = NULL ;
   PyObject *o5 = NULL ;
@@ -4815,7 +5002,7 @@ void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, double 
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 2;
+  const size_t swig_method_index = 6;
   const char * const swig_method_name = "prevec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
@@ -4875,7 +5062,7 @@ void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, std::co
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 3;
+  const size_t swig_method_index = 7;
   const char * const swig_method_name = "prevec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
@@ -4915,6 +5102,37 @@ void SwigDirector_PrimmeParams::prevec(int len1YD, int len2YD, int ldYD, std::co
 }
 
 
+void SwigDirector_PrimmeParams::globalSum(int lenYD, float *yd, int lenXD, float *xd) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(lenYD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(lenXD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_float,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 8;
+  const char * const swig_method_name = "globalSum";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"globalSum", (char *)"(OOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
 void SwigDirector_PrimmeParams::globalSum(int lenYD, double *yd, int lenXD, double *xd) {
   PyArrayObject *array3 = NULL ;
   PyObject *o3 = NULL ;
@@ -4935,7 +5153,7 @@ void SwigDirector_PrimmeParams::globalSum(int lenYD, double *yd, int lenXD, doub
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 4;
+  const size_t swig_method_index = 9;
   const char * const swig_method_name = "globalSum";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
@@ -4975,6 +5193,88 @@ SwigDirector_PrimmeSvdsParams::SwigDirector_PrimmeSvdsParams(PyObject *self): Pr
 SwigDirector_PrimmeSvdsParams::~SwigDirector_PrimmeSvdsParams() {
 }
 
+void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, float *yd, int len1XD, int len2XD, int ldXD, float *xd, int transpose) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj8;
+  obj8 = SWIG_From_int(static_cast< int >(transpose));
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 0;
+  const char * const swig_method_name = "matvec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"matvec", (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
+void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, std::complex< float > *yd, int len1XD, int len2XD, int ldXD, std::complex< float > *xd, int transpose) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  swig::SwigVar_PyObject obj8;
+  obj8 = SWIG_From_int(static_cast< int >(transpose));
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 1;
+  const char * const swig_method_name = "matvec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"matvec", (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
 void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd, int transpose) {
   PyArrayObject *array5 = NULL ;
   PyObject *o5 = NULL ;
@@ -4997,7 +5297,7 @@ void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, dou
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 0;
+  const size_t swig_method_index = 2;
   const char * const swig_method_name = "matvec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OO)" ,(PyObject *)obj0,(PyObject *)obj1);
@@ -5059,7 +5359,7 @@ void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, std
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 1;
+  const size_t swig_method_index = 3;
   const char * const swig_method_name = "matvec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OO)" ,(PyObject *)obj0,(PyObject *)obj1);
@@ -5099,6 +5399,88 @@ void SwigDirector_PrimmeSvdsParams::matvec(int len1YD, int len2YD, int ldYD, std
 }
 
 
+void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, float *yd, int len1XD, int len2XD, int ldXD, float *xd, int mode) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj8;
+  obj8 = SWIG_From_int(static_cast< int >(mode));
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 4;
+  const char * const swig_method_name = "prevec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"prevec", (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
+void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, std::complex< float > *yd, int len1XD, int len2XD, int ldXD, std::complex< float > *xd, int mode) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(len1YD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_From_int(static_cast< int >(len2YD));
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(ldYD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  swig::SwigVar_PyObject obj4;
+  obj4 = SWIG_From_int(static_cast< int >(len1XD));
+  swig::SwigVar_PyObject obj5;
+  obj5 = SWIG_From_int(static_cast< int >(len2XD));
+  swig::SwigVar_PyObject obj6;
+  obj6 = SWIG_From_int(static_cast< int >(ldXD));
+  swig::SwigVar_PyObject obj7;
+  obj7 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_std__complexT_float_t,  0 );
+  swig::SwigVar_PyObject obj8;
+  obj8 = SWIG_From_int(static_cast< int >(mode));
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 5;
+  const char * const swig_method_name = "prevec";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"prevec", (char *)"(OOOOOOOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3,(PyObject *)obj4,(PyObject *)obj5,(PyObject *)obj6,(PyObject *)obj7,(PyObject *)obj8);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
 void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, double *yd, int len1XD, int len2XD, int ldXD, double *xd, int mode) {
   PyArrayObject *array5 = NULL ;
   PyObject *o5 = NULL ;
@@ -5121,7 +5503,7 @@ void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, dou
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 2;
+  const size_t swig_method_index = 6;
   const char * const swig_method_name = "prevec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OO)" ,(PyObject *)obj0,(PyObject *)obj1);
@@ -5183,7 +5565,7 @@ void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, std
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 3;
+  const size_t swig_method_index = 7;
   const char * const swig_method_name = "prevec";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OO)" ,(PyObject *)obj0,(PyObject *)obj1);
@@ -5223,6 +5605,37 @@ void SwigDirector_PrimmeSvdsParams::prevec(int len1YD, int len2YD, int ldYD, std
 }
 
 
+void SwigDirector_PrimmeSvdsParams::globalSum(int lenYD, float *yd, int lenXD, float *xd) {
+  swig::SwigVar_PyObject obj0;
+  obj0 = SWIG_From_int(static_cast< int >(lenYD));
+  swig::SwigVar_PyObject obj1;
+  obj1 = SWIG_NewPointerObj(SWIG_as_voidptr(yd), SWIGTYPE_p_float,  0 );
+  swig::SwigVar_PyObject obj2;
+  obj2 = SWIG_From_int(static_cast< int >(lenXD));
+  swig::SwigVar_PyObject obj3;
+  obj3 = SWIG_NewPointerObj(SWIG_as_voidptr(xd), SWIGTYPE_p_float,  0 );
+  if (!swig_get_self()) {
+    Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
+  }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+  const size_t swig_method_index = 8;
+  const char * const swig_method_name = "globalSum";
+  PyObject* method = swig_get_method(swig_method_index, swig_method_name);
+  swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(OOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3);
+#else
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *)"globalSum", (char *)"(OOOO)" ,(PyObject *)obj0,(PyObject *)obj1,(PyObject *)obj2,(PyObject *)obj3);
+#endif
+  if (!result) {
+    PyObject *error = PyErr_Occurred();
+    {
+      if (error != NULL) {
+        throw Swig::DirectorMethodException();
+      }
+    }
+  }
+}
+
+
 void SwigDirector_PrimmeSvdsParams::globalSum(int lenYD, double *yd, int lenXD, double *xd) {
   PyArrayObject *array3 = NULL ;
   PyObject *o3 = NULL ;
@@ -5243,7 +5656,7 @@ void SwigDirector_PrimmeSvdsParams::globalSum(int lenYD, double *yd, int lenXD, 
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call PrimmeSvdsParams.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
-  const size_t swig_method_index = 4;
+  const size_t swig_method_index = 9;
   const char * const swig_method_name = "globalSum";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, (char *)"(O)" ,(PyObject *)obj0);
@@ -5276,46 +5689,87 @@ void SwigDirector_PrimmeSvdsParams::globalSum(int lenYD, double *yd, int lenXD, 
 #ifdef __cplusplus
 extern "C" {
 #endif
-SWIGINTERN PyObject *_wrap_myglobalSumDouble(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_sprimme__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  void *arg1 = (void *) 0 ;
-  void *arg2 = (void *) 0 ;
-  int *arg3 = (int *) 0 ;
-  primme_params *arg4 = (primme_params *) 0 ;
-  int res1 ;
-  int res2 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
+  int arg1 ;
+  float *arg2 = (float *) 0 ;
+  int arg3 ;
+  int arg4 ;
+  float *arg5 = (float *) 0 ;
+  int arg6 ;
+  float *arg7 = (float *) 0 ;
+  PrimmeParams *arg8 = (PrimmeParams *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  void *argp7 = 0 ;
+  int res7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:myglobalSumDouble",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0,SWIG_as_voidptrptr(&arg1), 0, 0);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "myglobalSumDouble" "', argument " "1"" of type '" "void *""'"); 
-  }
-  res2 = SWIG_ConvertPtr(obj1,SWIG_as_voidptrptr(&arg2), 0, 0);
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOO:sprimme",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "sprimme" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_float, 0 |  0 );
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "myglobalSumDouble" "', argument " "2"" of type '" "void *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "sprimme" "', argument " "2"" of type '" "float *""'"); 
   }
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_int, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "myglobalSumDouble" "', argument " "3"" of type '" "int *""'"); 
+  arg2 = reinterpret_cast< float * >(argp2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "sprimme" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "sprimme" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "sprimme" "', argument " "5"" of type '" "float *""'"); 
   }
-  arg3 = reinterpret_cast< int * >(argp3);
-  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_params, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "myglobalSumDouble" "', argument " "4"" of type '" "primme_params *""'"); 
+  arg5 = reinterpret_cast< float * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "sprimme" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  res7 = SWIG_ConvertPtr(obj6, &argp7,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res7)) {
+    SWIG_exception_fail(SWIG_ArgError(res7), "in method '" "sprimme" "', argument " "7"" of type '" "float *""'"); 
   }
-  arg4 = reinterpret_cast< primme_params * >(argp4);
+  arg7 = reinterpret_cast< float * >(argp7);
+  res8 = SWIG_ConvertPtr(obj7, &argp8,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "sprimme" "', argument " "8"" of type '" "PrimmeParams *""'"); 
+  }
+  arg8 = reinterpret_cast< PrimmeParams * >(argp8);
   {
     try
     {
-      myglobalSumDouble(arg1,arg2,arg3,arg4);
+      result = (int)my_primme< float,float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
     }
     catch (const std::invalid_argument& e)
     {
@@ -5331,53 +5785,94 @@ SWIGINTERN PyObject *_wrap_myglobalSumDouble(PyObject *SWIGUNUSEDPARM(self), PyO
     }
     if (PyErr_Occurred()) SWIG_fail;
   }
-  resultobj = SWIG_Py_Void();
+  resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_myglobalSumDouble_svds(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_cprimme__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  void *arg1 = (void *) 0 ;
-  void *arg2 = (void *) 0 ;
-  int *arg3 = (int *) 0 ;
-  primme_svds_params *arg4 = (primme_svds_params *) 0 ;
-  int res1 ;
-  int res2 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
+  int arg1 ;
+  float *arg2 = (float *) 0 ;
+  int arg3 ;
+  int arg4 ;
+  std::complex< float > *arg5 = (std::complex< float > *) 0 ;
+  int arg6 ;
+  float *arg7 = (float *) 0 ;
+  PrimmeParams *arg8 = (PrimmeParams *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  void *argp7 = 0 ;
+  int res7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:myglobalSumDouble_svds",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0,SWIG_as_voidptrptr(&arg1), 0, 0);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "myglobalSumDouble_svds" "', argument " "1"" of type '" "void *""'"); 
-  }
-  res2 = SWIG_ConvertPtr(obj1,SWIG_as_voidptrptr(&arg2), 0, 0);
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOO:cprimme",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "cprimme" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_float, 0 |  0 );
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "myglobalSumDouble_svds" "', argument " "2"" of type '" "void *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cprimme" "', argument " "2"" of type '" "float *""'"); 
   }
-  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_int, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "myglobalSumDouble_svds" "', argument " "3"" of type '" "int *""'"); 
+  arg2 = reinterpret_cast< float * >(argp2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "cprimme" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "cprimme" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "cprimme" "', argument " "5"" of type '" "std::complex< float > *""'"); 
   }
-  arg3 = reinterpret_cast< int * >(argp3);
-  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_svds_params, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "myglobalSumDouble_svds" "', argument " "4"" of type '" "primme_svds_params *""'"); 
+  arg5 = reinterpret_cast< std::complex< float > * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "cprimme" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  res7 = SWIG_ConvertPtr(obj6, &argp7,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res7)) {
+    SWIG_exception_fail(SWIG_ArgError(res7), "in method '" "cprimme" "', argument " "7"" of type '" "float *""'"); 
   }
-  arg4 = reinterpret_cast< primme_svds_params * >(argp4);
+  arg7 = reinterpret_cast< float * >(argp7);
+  res8 = SWIG_ConvertPtr(obj7, &argp8,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "cprimme" "', argument " "8"" of type '" "PrimmeParams *""'"); 
+  }
+  arg8 = reinterpret_cast< PrimmeParams * >(argp8);
   {
     try
     {
-      myglobalSumDouble_svds(arg1,arg2,arg3,arg4);
+      result = (int)my_primme< std::complex< float >,float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
     }
     catch (const std::invalid_argument& e)
     {
@@ -5393,7 +5888,7 @@ SWIGINTERN PyObject *_wrap_myglobalSumDouble_svds(PyObject *SWIGUNUSEDPARM(self)
     }
     if (PyErr_Occurred()) SWIG_fail;
   }
-  resultobj = SWIG_Py_Void();
+  resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
   return NULL;
@@ -5456,7 +5951,7 @@ SWIGINTERN PyObject *_wrap_dprimme__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
   {
     try
     {
-      result = (int)my_primme< double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+      result = (int)my_primme< double,double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
     }
     catch (const std::invalid_argument& e)
     {
@@ -5535,7 +6030,267 @@ SWIGINTERN PyObject *_wrap_zprimme__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
   {
     try
     {
-      result = (int)my_primme< std::complex< double > >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+      result = (int)my_primme< std::complex< double >,double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::out_of_range& e)
+    {
+      SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (Swig::DirectorException &e)
+    {
+      SWIG_fail;
+    }
+    if (PyErr_Occurred()) SWIG_fail;
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_sprimme_svds__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  float *arg2 = (float *) 0 ;
+  int arg3 ;
+  int arg4 ;
+  float *arg5 = (float *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  float *arg8 = (float *) 0 ;
+  int arg9 ;
+  float *arg10 = (float *) 0 ;
+  PrimmeSvdsParams *arg11 = (PrimmeSvdsParams *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
+  int val9 ;
+  int ecode9 = 0 ;
+  void *argp10 = 0 ;
+  int res10 = 0 ;
+  void *argp11 = 0 ;
+  int res11 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  PyObject * obj9 = 0 ;
+  PyObject * obj10 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOOOO:sprimme_svds",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8,&obj9,&obj10)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "sprimme_svds" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "sprimme_svds" "', argument " "2"" of type '" "float *""'"); 
+  }
+  arg2 = reinterpret_cast< float * >(argp2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "sprimme_svds" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "sprimme_svds" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "sprimme_svds" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "sprimme_svds" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "sprimme_svds" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  res8 = SWIG_ConvertPtr(obj7, &argp8,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "sprimme_svds" "', argument " "8"" of type '" "float *""'"); 
+  }
+  arg8 = reinterpret_cast< float * >(argp8);
+  ecode9 = SWIG_AsVal_int(obj8, &val9);
+  if (!SWIG_IsOK(ecode9)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode9), "in method '" "sprimme_svds" "', argument " "9"" of type '" "int""'");
+  } 
+  arg9 = static_cast< int >(val9);
+  res10 = SWIG_ConvertPtr(obj9, &argp10,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res10)) {
+    SWIG_exception_fail(SWIG_ArgError(res10), "in method '" "sprimme_svds" "', argument " "10"" of type '" "float *""'"); 
+  }
+  arg10 = reinterpret_cast< float * >(argp10);
+  res11 = SWIG_ConvertPtr(obj10, &argp11,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res11)) {
+    SWIG_exception_fail(SWIG_ArgError(res11), "in method '" "sprimme_svds" "', argument " "11"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg11 = reinterpret_cast< PrimmeSvdsParams * >(argp11);
+  {
+    try
+    {
+      result = (int)my_primme_svds< float,float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::out_of_range& e)
+    {
+      SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (Swig::DirectorException &e)
+    {
+      SWIG_fail;
+    }
+    if (PyErr_Occurred()) SWIG_fail;
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cprimme_svds__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  float *arg2 = (float *) 0 ;
+  int arg3 ;
+  int arg4 ;
+  std::complex< float > *arg5 = (std::complex< float > *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  std::complex< float > *arg8 = (std::complex< float > *) 0 ;
+  int arg9 ;
+  float *arg10 = (float *) 0 ;
+  PrimmeSvdsParams *arg11 = (PrimmeSvdsParams *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
+  int val9 ;
+  int ecode9 = 0 ;
+  void *argp10 = 0 ;
+  int res10 = 0 ;
+  void *argp11 = 0 ;
+  int res11 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  PyObject * obj9 = 0 ;
+  PyObject * obj10 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOOOO:cprimme_svds",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8,&obj9,&obj10)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "cprimme_svds" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cprimme_svds" "', argument " "2"" of type '" "float *""'"); 
+  }
+  arg2 = reinterpret_cast< float * >(argp2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "cprimme_svds" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "cprimme_svds" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "cprimme_svds" "', argument " "5"" of type '" "std::complex< float > *""'"); 
+  }
+  arg5 = reinterpret_cast< std::complex< float > * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "cprimme_svds" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "cprimme_svds" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  res8 = SWIG_ConvertPtr(obj7, &argp8,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "cprimme_svds" "', argument " "8"" of type '" "std::complex< float > *""'"); 
+  }
+  arg8 = reinterpret_cast< std::complex< float > * >(argp8);
+  ecode9 = SWIG_AsVal_int(obj8, &val9);
+  if (!SWIG_IsOK(ecode9)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode9), "in method '" "cprimme_svds" "', argument " "9"" of type '" "int""'");
+  } 
+  arg9 = static_cast< int >(val9);
+  res10 = SWIG_ConvertPtr(obj9, &argp10,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res10)) {
+    SWIG_exception_fail(SWIG_ArgError(res10), "in method '" "cprimme_svds" "', argument " "10"" of type '" "float *""'"); 
+  }
+  arg10 = reinterpret_cast< float * >(argp10);
+  res11 = SWIG_ConvertPtr(obj10, &argp11,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res11)) {
+    SWIG_exception_fail(SWIG_ArgError(res11), "in method '" "cprimme_svds" "', argument " "11"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg11 = reinterpret_cast< PrimmeSvdsParams * >(argp11);
+  {
+    try
+    {
+      result = (int)my_primme_svds< std::complex< float >,float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11);
     }
     catch (const std::invalid_argument& e)
     {
@@ -5627,7 +6382,7 @@ SWIGINTERN PyObject *_wrap_dprimme_svds__SWIG_0(PyObject *SWIGUNUSEDPARM(self), 
   {
     try
     {
-      result = (int)my_primme_svds< double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11);
+      result = (int)my_primme_svds< double,double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11);
     }
     catch (const std::invalid_argument& e)
     {
@@ -5719,7 +6474,7 @@ SWIGINTERN PyObject *_wrap_zprimme_svds__SWIG_0(PyObject *SWIGUNUSEDPARM(self), 
   {
     try
     {
-      result = (int)my_primme_svds< std::complex< double > >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11);
+      result = (int)my_primme_svds< std::complex< double >,double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11);
     }
     catch (const std::invalid_argument& e)
     {
@@ -5950,6 +6705,162 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_primme_stats_numGlobalSum_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  int64_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_numGlobalSum_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_numGlobalSum_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_long_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_numGlobalSum_set" "', argument " "2"" of type '" "int64_t""'");
+  } 
+  arg2 = static_cast< int64_t >(val2);
+  if (arg1) (arg1)->numGlobalSum = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_numGlobalSum_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int64_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_numGlobalSum_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_numGlobalSum_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (int64_t) ((arg1)->numGlobalSum);
+  resultobj = SWIG_From_long_SS_long(static_cast< long long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_volumeGlobalSum_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  int64_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_volumeGlobalSum_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_volumeGlobalSum_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_long_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_volumeGlobalSum_set" "', argument " "2"" of type '" "int64_t""'");
+  } 
+  arg2 = static_cast< int64_t >(val2);
+  if (arg1) (arg1)->volumeGlobalSum = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_volumeGlobalSum_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int64_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_volumeGlobalSum_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_volumeGlobalSum_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (int64_t) ((arg1)->volumeGlobalSum);
+  resultobj = SWIG_From_long_SS_long(static_cast< long long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_numOrthoInnerProds_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_numOrthoInnerProds_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_numOrthoInnerProds_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_numOrthoInnerProds_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->numOrthoInnerProds = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_numOrthoInnerProds_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_numOrthoInnerProds_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_numOrthoInnerProds_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (double) ((arg1)->numOrthoInnerProds);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_primme_stats_elapsedTime_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   primme_stats *arg1 = (primme_stats *) 0 ;
@@ -5995,6 +6906,214 @@ SWIGINTERN PyObject *_wrap_primme_stats_elapsedTime_get(PyObject *SWIGUNUSEDPARM
   }
   arg1 = reinterpret_cast< primme_stats * >(argp1);
   result = (double) ((arg1)->elapsedTime);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timeMatvec_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_timeMatvec_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timeMatvec_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_timeMatvec_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->timeMatvec = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timeMatvec_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_timeMatvec_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timeMatvec_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (double) ((arg1)->timeMatvec);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timePrecond_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_timePrecond_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timePrecond_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_timePrecond_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->timePrecond = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timePrecond_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_timePrecond_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timePrecond_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (double) ((arg1)->timePrecond);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timeOrtho_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_timeOrtho_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timeOrtho_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_timeOrtho_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->timeOrtho = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timeOrtho_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_timeOrtho_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timeOrtho_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (double) ((arg1)->timeOrtho);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timeGlobalSum_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_stats_timeGlobalSum_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timeGlobalSum_set" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_stats_timeGlobalSum_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->timeGlobalSum = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_stats_timeGlobalSum_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_stats *arg1 = (primme_stats *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_stats_timeGlobalSum_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_stats, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_stats_timeGlobalSum_get" "', argument " "1"" of type '" "primme_stats *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_stats * >(argp1);
+  result = (double) ((arg1)->timeGlobalSum);
   resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
@@ -7635,6 +8754,57 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_primme_params_globalSumReal_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  void (*arg2)(void *,void *,int *,primme_params *,int *) = (void (*)(void *,void *,int *,primme_params *,int *)) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_params_globalSumReal_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_globalSumReal_set" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj1, (void**)(&arg2), SWIGTYPE_p_f_p_void_p_void_p_int_p_primme_params_p_int__void);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "primme_params_globalSumReal_set" "', argument " "2"" of type '" "void (*)(void *,void *,int *,primme_params *,int *)""'"); 
+    }
+  }
+  if (arg1) (arg1)->globalSumReal = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_params_globalSumReal_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  void (*result)(void *,void *,int *,primme_params *,int *) = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_params_globalSumReal_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_globalSumReal_get" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  result = (void (*)(void *,void *,int *,primme_params *,int *)) ((arg1)->globalSumReal);
+  resultobj = SWIG_NewFunctionPtrObj((void *)(result), SWIGTYPE_p_f_p_void_p_void_p_int_p_primme_params_p_int__void);
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_primme_params_numEvals_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   primme_params *arg1 = (primme_params *) 0 ;
@@ -8578,6 +9748,110 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_primme_params_ldevecs_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  int64_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_params_ldevecs_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_ldevecs_set" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  ecode2 = SWIG_AsVal_long_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_params_ldevecs_set" "', argument " "2"" of type '" "int64_t""'");
+  } 
+  arg2 = static_cast< int64_t >(val2);
+  if (arg1) (arg1)->ldevecs = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_params_ldevecs_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int64_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_params_ldevecs_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_ldevecs_get" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  result = (int64_t) ((arg1)->ldevecs);
+  resultobj = SWIG_From_long_SS_long(static_cast< long long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_params_ldOPs_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  int64_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_params_ldOPs_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_ldOPs_set" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  ecode2 = SWIG_AsVal_long_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_params_ldOPs_set" "', argument " "2"" of type '" "int64_t""'");
+  } 
+  arg2 = static_cast< int64_t >(val2);
+  if (arg1) (arg1)->ldOPs = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_params_ldOPs_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int64_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_params_ldOPs_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_ldOPs_get" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  result = (int64_t) ((arg1)->ldOPs);
+  resultobj = SWIG_From_long_SS_long(static_cast< long long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_primme_params_projectionParams_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   primme_params *arg1 = (primme_params *) 0 ;
@@ -8863,6 +10137,328 @@ SWIGINTERN PyObject *primme_params_swigregister(PyObject *SWIGUNUSEDPARM(self), 
   return SWIG_Py_Void();
 }
 
+SWIGINTERN PyObject *_wrap_sprimme__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  float *arg1 = (float *) 0 ;
+  float *arg2 = (float *) 0 ;
+  float *arg3 = (float *) 0 ;
+  primme_params *arg4 = (primme_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:sprimme",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "sprimme" "', argument " "1"" of type '" "float *""'"); 
+  }
+  arg1 = reinterpret_cast< float * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "sprimme" "', argument " "2"" of type '" "float *""'"); 
+  }
+  arg2 = reinterpret_cast< float * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "sprimme" "', argument " "3"" of type '" "float *""'"); 
+  }
+  arg3 = reinterpret_cast< float * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "sprimme" "', argument " "4"" of type '" "primme_params *""'"); 
+  }
+  arg4 = reinterpret_cast< primme_params * >(argp4);
+  {
+    try
+    {
+      result = (int)sprimme(arg1,arg2,arg3,arg4);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::out_of_range& e)
+    {
+      SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (Swig::DirectorException &e)
+    {
+      SWIG_fail;
+    }
+    if (PyErr_Occurred()) SWIG_fail;
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_sprimme(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[9] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 8) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_float, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_float, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_float, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          void *vptr = 0;
+          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_params, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_sprimme__SWIG_1(self, args);
+          }
+        }
+      }
+    }
+  }
+  if (argc == 8) {
+    int _v;
+    {
+      int res = SWIG_AsVal_int(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_float, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                void *vptr = 0;
+                int res = SWIG_ConvertPtr(argv[6], &vptr, SWIGTYPE_p_float, 0);
+                _v = SWIG_CheckState(res);
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    return _wrap_sprimme__SWIG_0(self, args);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'sprimme'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    my_primme< float,float >(int,float *,int,int,float *,int,float *,PrimmeParams *)\n"
+    "    sprimme(float *,float *,float *,primme_params *)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_cprimme__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  float *arg1 = (float *) 0 ;
+  std::complex< float > *arg2 = (std::complex< float > *) 0 ;
+  float *arg3 = (float *) 0 ;
+  primme_params *arg4 = (primme_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:cprimme",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cprimme" "', argument " "1"" of type '" "float *""'"); 
+  }
+  arg1 = reinterpret_cast< float * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cprimme" "', argument " "2"" of type '" "std::complex< float > *""'"); 
+  }
+  arg2 = reinterpret_cast< std::complex< float > * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "cprimme" "', argument " "3"" of type '" "float *""'"); 
+  }
+  arg3 = reinterpret_cast< float * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "cprimme" "', argument " "4"" of type '" "primme_params *""'"); 
+  }
+  arg4 = reinterpret_cast< primme_params * >(argp4);
+  {
+    try
+    {
+      result = (int)cprimme(arg1,arg2,arg3,arg4);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::out_of_range& e)
+    {
+      SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (Swig::DirectorException &e)
+    {
+      SWIG_fail;
+    }
+    if (PyErr_Occurred()) SWIG_fail;
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cprimme(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[9] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 8) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_float, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_float, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          void *vptr = 0;
+          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_params, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_cprimme__SWIG_1(self, args);
+          }
+        }
+      }
+    }
+  }
+  if (argc == 8) {
+    int _v;
+    {
+      int res = SWIG_AsVal_int(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_float, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                void *vptr = 0;
+                int res = SWIG_ConvertPtr(argv[6], &vptr, SWIGTYPE_p_float, 0);
+                _v = SWIG_CheckState(res);
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    return _wrap_cprimme__SWIG_0(self, args);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'cprimme'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    my_primme< std::complex< float >,float >(int,float *,int,int,std::complex< float > *,int,float *,PrimmeParams *)\n"
+    "    cprimme(float *,std::complex< float > *,float *,primme_params *)\n");
+  return 0;
+}
+
+
 SWIGINTERN PyObject *_wrap_dprimme__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   double *arg1 = (double *) 0 ;
@@ -8997,7 +10593,7 @@ SWIGINTERN PyObject *_wrap_dprimme(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'dprimme'.\n"
     "  Possible C/C++ prototypes are:\n"
-    "    my_primme< double >(int,double *,int,int,double *,int,double *,PrimmeParams *)\n"
+    "    my_primme< double,double >(int,double *,int,int,double *,int,double *,PrimmeParams *)\n"
     "    dprimme(double *,double *,double *,primme_params *)\n");
   return 0;
 }
@@ -9137,7 +10733,7 @@ SWIGINTERN PyObject *_wrap_zprimme(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'zprimme'.\n"
     "  Possible C/C++ prototypes are:\n"
-    "    my_primme< std::complex< double > >(int,double *,int,int,std::complex< double > *,int,double *,PrimmeParams *)\n"
+    "    my_primme< std::complex< double >,double >(int,double *,int,int,std::complex< double > *,int,double *,PrimmeParams *)\n"
     "    zprimme(double *,std::complex< double > *,double *,primme_params *)\n");
   return 0;
 }
@@ -9786,6 +11382,57 @@ SWIGINTERN PyObject *_wrap_primme_svds_params_nLocal_get(PyObject *SWIGUNUSEDPAR
   arg1 = reinterpret_cast< primme_svds_params * >(argp1);
   result = (int64_t) ((arg1)->nLocal);
   resultobj = SWIG_From_long_SS_long(static_cast< long long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_svds_params_globalSumReal_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_svds_params *arg1 = (primme_svds_params *) 0 ;
+  void (*arg2)(void *,void *,int *,primme_svds_params *,int *) = (void (*)(void *,void *,int *,primme_svds_params *,int *)) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_svds_params_globalSumReal_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_svds_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_svds_params_globalSumReal_set" "', argument " "1"" of type '" "primme_svds_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_svds_params * >(argp1);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj1, (void**)(&arg2), SWIGTYPE_p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "primme_svds_params_globalSumReal_set" "', argument " "2"" of type '" "void (*)(void *,void *,int *,primme_svds_params *,int *)""'"); 
+    }
+  }
+  if (arg1) (arg1)->globalSumReal = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_svds_params_globalSumReal_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_svds_params *arg1 = (primme_svds_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  void (*result)(void *,void *,int *,primme_svds_params *,int *) = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_svds_params_globalSumReal_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_svds_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_svds_params_globalSumReal_get" "', argument " "1"" of type '" "primme_svds_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_svds_params * >(argp1);
+  result = (void (*)(void *,void *,int *,primme_svds_params *,int *)) ((arg1)->globalSumReal);
+  resultobj = SWIG_NewFunctionPtrObj((void *)(result), SWIGTYPE_p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void);
   return resultobj;
 fail:
   return NULL;
@@ -10812,6 +12459,362 @@ SWIGINTERN PyObject *primme_svds_params_swigregister(PyObject *SWIGUNUSEDPARM(se
   return SWIG_Py_Void();
 }
 
+SWIGINTERN PyObject *_wrap_sprimme_svds__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  float *arg1 = (float *) 0 ;
+  float *arg2 = (float *) 0 ;
+  float *arg3 = (float *) 0 ;
+  primme_svds_params *arg4 = (primme_svds_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:sprimme_svds",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "sprimme_svds" "', argument " "1"" of type '" "float *""'"); 
+  }
+  arg1 = reinterpret_cast< float * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "sprimme_svds" "', argument " "2"" of type '" "float *""'"); 
+  }
+  arg2 = reinterpret_cast< float * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "sprimme_svds" "', argument " "3"" of type '" "float *""'"); 
+  }
+  arg3 = reinterpret_cast< float * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_svds_params, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "sprimme_svds" "', argument " "4"" of type '" "primme_svds_params *""'"); 
+  }
+  arg4 = reinterpret_cast< primme_svds_params * >(argp4);
+  {
+    try
+    {
+      result = (int)sprimme_svds(arg1,arg2,arg3,arg4);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::out_of_range& e)
+    {
+      SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (Swig::DirectorException &e)
+    {
+      SWIG_fail;
+    }
+    if (PyErr_Occurred()) SWIG_fail;
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_sprimme_svds(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[12] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 11) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_float, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_float, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_float, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          void *vptr = 0;
+          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_svds_params, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_sprimme_svds__SWIG_1(self, args);
+          }
+        }
+      }
+    }
+  }
+  if (argc == 11) {
+    int _v;
+    {
+      int res = SWIG_AsVal_int(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_float, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_float, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    {
+                      int res = SWIG_AsVal_int(argv[8], NULL);
+                      _v = SWIG_CheckState(res);
+                    }
+                    if (_v) {
+                      void *vptr = 0;
+                      int res = SWIG_ConvertPtr(argv[9], &vptr, SWIGTYPE_p_float, 0);
+                      _v = SWIG_CheckState(res);
+                      if (_v) {
+                        void *vptr = 0;
+                        int res = SWIG_ConvertPtr(argv[10], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+                        _v = SWIG_CheckState(res);
+                        if (_v) {
+                          return _wrap_sprimme_svds__SWIG_0(self, args);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'sprimme_svds'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    my_primme_svds< float,float >(int,float *,int,int,float *,int,int,float *,int,float *,PrimmeSvdsParams *)\n"
+    "    sprimme_svds(float *,float *,float *,primme_svds_params *)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_cprimme_svds__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  float *arg1 = (float *) 0 ;
+  std::complex< float > *arg2 = (std::complex< float > *) 0 ;
+  float *arg3 = (float *) 0 ;
+  primme_svds_params *arg4 = (primme_svds_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:cprimme_svds",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cprimme_svds" "', argument " "1"" of type '" "float *""'"); 
+  }
+  arg1 = reinterpret_cast< float * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cprimme_svds" "', argument " "2"" of type '" "std::complex< float > *""'"); 
+  }
+  arg2 = reinterpret_cast< std::complex< float > * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "cprimme_svds" "', argument " "3"" of type '" "float *""'"); 
+  }
+  arg3 = reinterpret_cast< float * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_primme_svds_params, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "cprimme_svds" "', argument " "4"" of type '" "primme_svds_params *""'"); 
+  }
+  arg4 = reinterpret_cast< primme_svds_params * >(argp4);
+  {
+    try
+    {
+      result = (int)cprimme_svds(arg1,arg2,arg3,arg4);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      SWIG_exception(SWIG_ValueError, e.what());
+    }
+    catch (const std::out_of_range& e)
+    {
+      SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (Swig::DirectorException &e)
+    {
+      SWIG_fail;
+    }
+    if (PyErr_Occurred()) SWIG_fail;
+  }
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cprimme_svds(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[12] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 11) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_float, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_float, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          void *vptr = 0;
+          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_primme_svds_params, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_cprimme_svds__SWIG_1(self, args);
+          }
+        }
+      }
+    }
+  }
+  if (argc == 11) {
+    int _v;
+    {
+      int res = SWIG_AsVal_int(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_float, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    {
+                      int res = SWIG_AsVal_int(argv[8], NULL);
+                      _v = SWIG_CheckState(res);
+                    }
+                    if (_v) {
+                      void *vptr = 0;
+                      int res = SWIG_ConvertPtr(argv[9], &vptr, SWIGTYPE_p_float, 0);
+                      _v = SWIG_CheckState(res);
+                      if (_v) {
+                        void *vptr = 0;
+                        int res = SWIG_ConvertPtr(argv[10], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+                        _v = SWIG_CheckState(res);
+                        if (_v) {
+                          return _wrap_cprimme_svds__SWIG_0(self, args);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'cprimme_svds'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    my_primme_svds< std::complex< float >,float >(int,float *,int,int,std::complex< float > *,int,int,std::complex< float > *,int,float *,PrimmeSvdsParams *)\n"
+    "    cprimme_svds(float *,std::complex< float > *,float *,primme_svds_params *)\n");
+  return 0;
+}
+
+
 SWIGINTERN PyObject *_wrap_dprimme_svds__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   double *arg1 = (double *) 0 ;
@@ -10952,7 +12955,7 @@ SWIGINTERN PyObject *_wrap_dprimme_svds(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'dprimme_svds'.\n"
     "  Possible C/C++ prototypes are:\n"
-    "    my_primme_svds< double >(int,double *,int,int,double *,int,int,double *,int,double *,PrimmeSvdsParams *)\n"
+    "    my_primme_svds< double,double >(int,double *,int,int,double *,int,int,double *,int,double *,PrimmeSvdsParams *)\n"
     "    dprimme_svds(double *,double *,double *,primme_svds_params *)\n");
   return 0;
 }
@@ -11098,7 +13101,7 @@ SWIGINTERN PyObject *_wrap_zprimme_svds(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'zprimme_svds'.\n"
     "  Possible C/C++ prototypes are:\n"
-    "    my_primme_svds< std::complex< double > >(int,double *,int,int,std::complex< double > *,int,int,std::complex< double > *,int,double *,PrimmeSvdsParams *)\n"
+    "    my_primme_svds< std::complex< double >,double >(int,double *,int,int,std::complex< double > *,int,int,std::complex< double > *,int,double *,PrimmeSvdsParams *)\n"
     "    zprimme_svds(double *,std::complex< double > *,double *,primme_svds_params *)\n");
   return 0;
 }
@@ -11402,6 +13405,252 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_0(PyObject *SWIGUNUSEDPARM(
   int arg2 ;
   int arg3 ;
   int arg4 ;
+  float *arg5 = (float *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  float *arg9 = (float *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOO:PrimmeParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeParams_matvec" "', argument " "1"" of type '" "PrimmeParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeParams_matvec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeParams_matvec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeParams_matvec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeParams_matvec" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeParams_matvec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeParams_matvec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeParams_matvec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeParams_matvec" "', argument " "9"" of type '" "float *""'"); 
+  }
+  arg9 = reinterpret_cast< float * >(argp9);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeParams::matvec");
+        } else {
+          (arg1)->matvec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeParams *arg1 = (PrimmeParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  std::complex< float > *arg5 = (std::complex< float > *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  std::complex< float > *arg9 = (std::complex< float > *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOO:PrimmeParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeParams_matvec" "', argument " "1"" of type '" "PrimmeParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeParams_matvec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeParams_matvec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeParams_matvec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeParams_matvec" "', argument " "5"" of type '" "std::complex< float > *""'"); 
+  }
+  arg5 = reinterpret_cast< std::complex< float > * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeParams_matvec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeParams_matvec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeParams_matvec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeParams_matvec" "', argument " "9"" of type '" "std::complex< float > *""'"); 
+  }
+  arg9 = reinterpret_cast< std::complex< float > * >(argp9);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeParams::matvec");
+        } else {
+          (arg1)->matvec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeParams *arg1 = (PrimmeParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
   double *arg5 = (double *) 0 ;
   int arg6 ;
   int arg7 ;
@@ -11426,7 +13675,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_0(PyObject *SWIGUNUSEDPARM(
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOO:PrimmeParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
@@ -11490,7 +13739,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_3(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeParams *arg1 = (PrimmeParams *) 0 ;
   int arg2 ;
@@ -11520,7 +13769,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_matvec__SWIG_1(PyObject *SWIGUNUSEDPARM(
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOO:PrimmeParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
@@ -11586,14 +13835,14 @@ fail:
 
 SWIGINTERN PyObject *_wrap_PrimmeParams_matvec(PyObject *self, PyObject *args) {
   Py_ssize_t argc;
-  PyObject *argv[6] = {
+  PyObject *argv[10] = {
     0
   };
   Py_ssize_t ii;
   
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 5) && (ii < argc); ii++) {
+  for (ii = 0; (ii < 9) && (ii < argc); ii++) {
     argv[ii] = PyTuple_GET_ITEM(args,ii);
   }
   if (argc == 5) {
@@ -11621,7 +13870,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_matvec(PyObject *self, PyObject *args) {
             int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_double, 0);
             _v = SWIG_CheckState(res);
             if (_v) {
-              return _wrap_PrimmeParams_matvec__SWIG_0(self, args);
+              return _wrap_PrimmeParams_matvec__SWIG_2(self, args);
             }
           }
         }
@@ -11653,7 +13902,117 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_matvec(PyObject *self, PyObject *args) {
             int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_double_t, 0);
             _v = SWIG_CheckState(res);
             if (_v) {
-              return _wrap_PrimmeParams_matvec__SWIG_1(self, args);
+              return _wrap_PrimmeParams_matvec__SWIG_3(self, args);
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 9) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_float, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      return _wrap_PrimmeParams_matvec__SWIG_0(self, args);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 9) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      return _wrap_PrimmeParams_matvec__SWIG_1(self, args);
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -11664,6 +14023,8 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_matvec(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'PrimmeParams_matvec'.\n"
     "  Possible C/C++ prototypes are:\n"
+    "    PrimmeParams::matvec(int,int,int,float *,int,int,int,float *)\n"
+    "    PrimmeParams::matvec(int,int,int,std::complex< float > *,int,int,int,std::complex< float > *)\n"
     "    PrimmeParams::matvec(int,int,int,double *,int,int,int,double *)\n"
     "    PrimmeParams::matvec(int,int,int,std::complex< double > *,int,int,int,std::complex< double > *)\n");
   return 0;
@@ -11671,6 +14032,252 @@ fail:
 
 
 SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeParams *arg1 = (PrimmeParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  float *arg5 = (float *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  float *arg9 = (float *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOO:PrimmeParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeParams_prevec" "', argument " "1"" of type '" "PrimmeParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeParams_prevec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeParams_prevec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeParams_prevec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeParams_prevec" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeParams_prevec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeParams_prevec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeParams_prevec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeParams_prevec" "', argument " "9"" of type '" "float *""'"); 
+  }
+  arg9 = reinterpret_cast< float * >(argp9);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeParams::prevec");
+        } else {
+          (arg1)->prevec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeParams *arg1 = (PrimmeParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  std::complex< float > *arg5 = (std::complex< float > *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  std::complex< float > *arg9 = (std::complex< float > *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOO:PrimmeParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeParams_prevec" "', argument " "1"" of type '" "PrimmeParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeParams_prevec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeParams_prevec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeParams_prevec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeParams_prevec" "', argument " "5"" of type '" "std::complex< float > *""'"); 
+  }
+  arg5 = reinterpret_cast< std::complex< float > * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeParams_prevec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeParams_prevec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeParams_prevec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeParams_prevec" "', argument " "9"" of type '" "std::complex< float > *""'"); 
+  }
+  arg9 = reinterpret_cast< std::complex< float > * >(argp9);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeParams::prevec");
+        } else {
+          (arg1)->prevec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeParams *arg1 = (PrimmeParams *) 0 ;
   int arg2 ;
@@ -11700,7 +14307,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_0(PyObject *SWIGUNUSEDPARM(
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOO:PrimmeParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
@@ -11764,7 +14371,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_3(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeParams *arg1 = (PrimmeParams *) 0 ;
   int arg2 ;
@@ -11794,7 +14401,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_prevec__SWIG_1(PyObject *SWIGUNUSEDPARM(
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOO:PrimmeParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
@@ -11860,14 +14467,14 @@ fail:
 
 SWIGINTERN PyObject *_wrap_PrimmeParams_prevec(PyObject *self, PyObject *args) {
   Py_ssize_t argc;
-  PyObject *argv[6] = {
+  PyObject *argv[10] = {
     0
   };
   Py_ssize_t ii;
   
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 5) && (ii < argc); ii++) {
+  for (ii = 0; (ii < 9) && (ii < argc); ii++) {
     argv[ii] = PyTuple_GET_ITEM(args,ii);
   }
   if (argc == 5) {
@@ -11895,7 +14502,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_prevec(PyObject *self, PyObject *args) {
             int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_double, 0);
             _v = SWIG_CheckState(res);
             if (_v) {
-              return _wrap_PrimmeParams_prevec__SWIG_0(self, args);
+              return _wrap_PrimmeParams_prevec__SWIG_2(self, args);
             }
           }
         }
@@ -11927,7 +14534,117 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_prevec(PyObject *self, PyObject *args) {
             int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_double_t, 0);
             _v = SWIG_CheckState(res);
             if (_v) {
-              return _wrap_PrimmeParams_prevec__SWIG_1(self, args);
+              return _wrap_PrimmeParams_prevec__SWIG_3(self, args);
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 9) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_float, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      return _wrap_PrimmeParams_prevec__SWIG_0(self, args);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 9) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      return _wrap_PrimmeParams_prevec__SWIG_1(self, args);
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -11938,13 +14655,102 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_prevec(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'PrimmeParams_prevec'.\n"
     "  Possible C/C++ prototypes are:\n"
+    "    PrimmeParams::prevec(int,int,int,float *,int,int,int,float *)\n"
+    "    PrimmeParams::prevec(int,int,int,std::complex< float > *,int,int,int,std::complex< float > *)\n"
     "    PrimmeParams::prevec(int,int,int,double *,int,int,int,double *)\n"
     "    PrimmeParams::prevec(int,int,int,std::complex< double > *,int,int,int,std::complex< double > *)\n");
   return 0;
 }
 
 
-SWIGINTERN PyObject *_wrap_PrimmeParams_globalSum(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_PrimmeParams_globalSum__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeParams *arg1 = (PrimmeParams *) 0 ;
+  int arg2 ;
+  float *arg3 = (float *) 0 ;
+  int arg4 ;
+  float *arg5 = (float *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:PrimmeParams_globalSum",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeParams_globalSum" "', argument " "1"" of type '" "PrimmeParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeParams_globalSum" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "PrimmeParams_globalSum" "', argument " "3"" of type '" "float *""'"); 
+  }
+  arg3 = reinterpret_cast< float * >(argp3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeParams_globalSum" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeParams_globalSum" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeParams::globalSum");
+        } else {
+          (arg1)->globalSum(arg2,arg3,arg4,arg5);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeParams_globalSum__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeParams *arg1 = (PrimmeParams *) 0 ;
   int arg2 ;
@@ -11964,7 +14770,7 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_globalSum(PyObject *SWIGUNUSEDPARM(self)
   bool upcall = false;
   
   {
-    
+    arg4 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOO:PrimmeParams_globalSum",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeParams, 0 |  0 );
@@ -12015,6 +14821,79 @@ SWIGINTERN PyObject *_wrap_PrimmeParams_globalSum(PyObject *SWIGUNUSEDPARM(self)
   return resultobj;
 fail:
   return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeParams_globalSum(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[6] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 5) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_double, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_PrimmeParams_globalSum__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 5) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_float, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              return _wrap_PrimmeParams_globalSum__SWIG_0(self, args);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'PrimmeParams_globalSum'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    PrimmeParams::globalSum(int,float *,int,float *)\n"
+    "    PrimmeParams::globalSum(int,double *,int,double *)\n");
+  return 0;
 }
 
 
@@ -12418,6 +15297,270 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_0(PyObject *SWIGUNUSEDP
   int arg2 ;
   int arg3 ;
   int arg4 ;
+  float *arg5 = (float *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  float *arg9 = (float *) 0 ;
+  int arg10 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  int val10 ;
+  int ecode10 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  PyObject * obj9 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOOO:PrimmeSvdsParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8,&obj9)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeSvdsParams_matvec" "', argument " "1"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeSvdsParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeSvdsParams_matvec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeSvdsParams_matvec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeSvdsParams_matvec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeSvdsParams_matvec" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeSvdsParams_matvec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeSvdsParams_matvec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeSvdsParams_matvec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeSvdsParams_matvec" "', argument " "9"" of type '" "float *""'"); 
+  }
+  arg9 = reinterpret_cast< float * >(argp9);
+  ecode10 = SWIG_AsVal_int(obj9, &val10);
+  if (!SWIG_IsOK(ecode10)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode10), "in method '" "PrimmeSvdsParams_matvec" "', argument " "10"" of type '" "int""'");
+  } 
+  arg10 = static_cast< int >(val10);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeSvdsParams::matvec");
+        } else {
+          (arg1)->matvec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  std::complex< float > *arg5 = (std::complex< float > *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  std::complex< float > *arg9 = (std::complex< float > *) 0 ;
+  int arg10 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  int val10 ;
+  int ecode10 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  PyObject * obj9 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOOO:PrimmeSvdsParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8,&obj9)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeSvdsParams_matvec" "', argument " "1"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeSvdsParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeSvdsParams_matvec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeSvdsParams_matvec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeSvdsParams_matvec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeSvdsParams_matvec" "', argument " "5"" of type '" "std::complex< float > *""'"); 
+  }
+  arg5 = reinterpret_cast< std::complex< float > * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeSvdsParams_matvec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeSvdsParams_matvec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeSvdsParams_matvec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeSvdsParams_matvec" "', argument " "9"" of type '" "std::complex< float > *""'"); 
+  }
+  arg9 = reinterpret_cast< std::complex< float > * >(argp9);
+  ecode10 = SWIG_AsVal_int(obj9, &val10);
+  if (!SWIG_IsOK(ecode10)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode10), "in method '" "PrimmeSvdsParams_matvec" "', argument " "10"" of type '" "int""'");
+  } 
+  arg10 = static_cast< int >(val10);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeSvdsParams::matvec");
+        } else {
+          (arg1)->matvec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
   double *arg5 = (double *) 0 ;
   int arg6 ;
   int arg7 ;
@@ -12446,7 +15589,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_0(PyObject *SWIGUNUSEDP
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOOO:PrimmeSvdsParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
@@ -12515,7 +15658,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_3(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
   int arg2 ;
@@ -12549,7 +15692,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec__SWIG_1(PyObject *SWIGUNUSEDP
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOOO:PrimmeSvdsParams_matvec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
@@ -12620,14 +15763,14 @@ fail:
 
 SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec(PyObject *self, PyObject *args) {
   Py_ssize_t argc;
-  PyObject *argv[7] = {
+  PyObject *argv[11] = {
     0
   };
   Py_ssize_t ii;
   
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 6) && (ii < argc); ii++) {
+  for (ii = 0; (ii < 10) && (ii < argc); ii++) {
     argv[ii] = PyTuple_GET_ITEM(args,ii);
   }
   if (argc == 6) {
@@ -12660,7 +15803,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec(PyObject *self, PyObject *arg
                 _v = SWIG_CheckState(res);
               }
               if (_v) {
-                return _wrap_PrimmeSvdsParams_matvec__SWIG_0(self, args);
+                return _wrap_PrimmeSvdsParams_matvec__SWIG_2(self, args);
               }
             }
           }
@@ -12698,7 +15841,129 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec(PyObject *self, PyObject *arg
                 _v = SWIG_CheckState(res);
               }
               if (_v) {
-                return _wrap_PrimmeSvdsParams_matvec__SWIG_1(self, args);
+                return _wrap_PrimmeSvdsParams_matvec__SWIG_3(self, args);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 10) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_float, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      {
+                        int res = SWIG_AsVal_int(argv[9], NULL);
+                        _v = SWIG_CheckState(res);
+                      }
+                      if (_v) {
+                        return _wrap_PrimmeSvdsParams_matvec__SWIG_0(self, args);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 10) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      {
+                        int res = SWIG_AsVal_int(argv[9], NULL);
+                        _v = SWIG_CheckState(res);
+                      }
+                      if (_v) {
+                        return _wrap_PrimmeSvdsParams_matvec__SWIG_1(self, args);
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -12710,6 +15975,8 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_matvec(PyObject *self, PyObject *arg
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'PrimmeSvdsParams_matvec'.\n"
     "  Possible C/C++ prototypes are:\n"
+    "    PrimmeSvdsParams::matvec(int,int,int,float *,int,int,int,float *,int)\n"
+    "    PrimmeSvdsParams::matvec(int,int,int,std::complex< float > *,int,int,int,std::complex< float > *,int)\n"
     "    PrimmeSvdsParams::matvec(int,int,int,double *,int,int,int,double *,int)\n"
     "    PrimmeSvdsParams::matvec(int,int,int,std::complex< double > *,int,int,int,std::complex< double > *,int)\n");
   return 0;
@@ -12717,6 +15984,270 @@ fail:
 
 
 SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  float *arg5 = (float *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  float *arg9 = (float *) 0 ;
+  int arg10 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  int val10 ;
+  int ecode10 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  PyObject * obj9 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOOO:PrimmeSvdsParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8,&obj9)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeSvdsParams_prevec" "', argument " "1"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeSvdsParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeSvdsParams_prevec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeSvdsParams_prevec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeSvdsParams_prevec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeSvdsParams_prevec" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeSvdsParams_prevec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeSvdsParams_prevec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeSvdsParams_prevec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeSvdsParams_prevec" "', argument " "9"" of type '" "float *""'"); 
+  }
+  arg9 = reinterpret_cast< float * >(argp9);
+  ecode10 = SWIG_AsVal_int(obj9, &val10);
+  if (!SWIG_IsOK(ecode10)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode10), "in method '" "PrimmeSvdsParams_prevec" "', argument " "10"" of type '" "int""'");
+  } 
+  arg10 = static_cast< int >(val10);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeSvdsParams::prevec");
+        } else {
+          (arg1)->prevec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  std::complex< float > *arg5 = (std::complex< float > *) 0 ;
+  int arg6 ;
+  int arg7 ;
+  int arg8 ;
+  std::complex< float > *arg9 = (std::complex< float > *) 0 ;
+  int arg10 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  int val10 ;
+  int ecode10 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  PyObject * obj8 = 0 ;
+  PyObject * obj9 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOOOO:PrimmeSvdsParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7,&obj8,&obj9)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeSvdsParams_prevec" "', argument " "1"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeSvdsParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeSvdsParams_prevec" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "PrimmeSvdsParams_prevec" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeSvdsParams_prevec" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeSvdsParams_prevec" "', argument " "5"" of type '" "std::complex< float > *""'"); 
+  }
+  arg5 = reinterpret_cast< std::complex< float > * >(argp5);
+  ecode6 = SWIG_AsVal_int(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "PrimmeSvdsParams_prevec" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "PrimmeSvdsParams_prevec" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "PrimmeSvdsParams_prevec" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = static_cast< int >(val8);
+  res9 = SWIG_ConvertPtr(obj8, &argp9,SWIGTYPE_p_std__complexT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "PrimmeSvdsParams_prevec" "', argument " "9"" of type '" "std::complex< float > *""'"); 
+  }
+  arg9 = reinterpret_cast< std::complex< float > * >(argp9);
+  ecode10 = SWIG_AsVal_int(obj9, &val10);
+  if (!SWIG_IsOK(ecode10)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode10), "in method '" "PrimmeSvdsParams_prevec" "', argument " "10"" of type '" "int""'");
+  } 
+  arg10 = static_cast< int >(val10);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeSvdsParams::prevec");
+        } else {
+          (arg1)->prevec(arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
   int arg2 ;
@@ -12750,7 +16281,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_0(PyObject *SWIGUNUSEDP
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOOO:PrimmeSvdsParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
@@ -12819,7 +16350,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_3(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
   int arg2 ;
@@ -12853,7 +16384,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec__SWIG_1(PyObject *SWIGUNUSEDP
   bool upcall = false;
   
   {
-    
+    arg6 = arg7 = arg8 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOOOOO:PrimmeSvdsParams_prevec",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
@@ -12924,14 +16455,14 @@ fail:
 
 SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec(PyObject *self, PyObject *args) {
   Py_ssize_t argc;
-  PyObject *argv[7] = {
+  PyObject *argv[11] = {
     0
   };
   Py_ssize_t ii;
   
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 6) && (ii < argc); ii++) {
+  for (ii = 0; (ii < 10) && (ii < argc); ii++) {
     argv[ii] = PyTuple_GET_ITEM(args,ii);
   }
   if (argc == 6) {
@@ -12964,7 +16495,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec(PyObject *self, PyObject *arg
                 _v = SWIG_CheckState(res);
               }
               if (_v) {
-                return _wrap_PrimmeSvdsParams_prevec__SWIG_0(self, args);
+                return _wrap_PrimmeSvdsParams_prevec__SWIG_2(self, args);
               }
             }
           }
@@ -13002,7 +16533,129 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec(PyObject *self, PyObject *arg
                 _v = SWIG_CheckState(res);
               }
               if (_v) {
-                return _wrap_PrimmeSvdsParams_prevec__SWIG_1(self, args);
+                return _wrap_PrimmeSvdsParams_prevec__SWIG_3(self, args);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 10) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_float, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      {
+                        int res = SWIG_AsVal_int(argv[9], NULL);
+                        _v = SWIG_CheckState(res);
+                      }
+                      if (_v) {
+                        return _wrap_PrimmeSvdsParams_prevec__SWIG_0(self, args);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 10) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  {
+                    int res = SWIG_AsVal_int(argv[7], NULL);
+                    _v = SWIG_CheckState(res);
+                  }
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_std__complexT_float_t, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      {
+                        int res = SWIG_AsVal_int(argv[9], NULL);
+                        _v = SWIG_CheckState(res);
+                      }
+                      if (_v) {
+                        return _wrap_PrimmeSvdsParams_prevec__SWIG_1(self, args);
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -13014,13 +16667,102 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_prevec(PyObject *self, PyObject *arg
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'PrimmeSvdsParams_prevec'.\n"
     "  Possible C/C++ prototypes are:\n"
+    "    PrimmeSvdsParams::prevec(int,int,int,float *,int,int,int,float *,int)\n"
+    "    PrimmeSvdsParams::prevec(int,int,int,std::complex< float > *,int,int,int,std::complex< float > *,int)\n"
     "    PrimmeSvdsParams::prevec(int,int,int,double *,int,int,int,double *,int)\n"
     "    PrimmeSvdsParams::prevec(int,int,int,std::complex< double > *,int,int,int,std::complex< double > *,int)\n");
   return 0;
 }
 
 
-SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_globalSum(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_globalSum__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
+  int arg2 ;
+  float *arg3 = (float *) 0 ;
+  int arg4 ;
+  float *arg5 = (float *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:PrimmeSvdsParams_globalSum",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PrimmeSvdsParams_globalSum" "', argument " "1"" of type '" "PrimmeSvdsParams *""'"); 
+  }
+  arg1 = reinterpret_cast< PrimmeSvdsParams * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "PrimmeSvdsParams_globalSum" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "PrimmeSvdsParams_globalSum" "', argument " "3"" of type '" "float *""'"); 
+  }
+  arg3 = reinterpret_cast< float * >(argp3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "PrimmeSvdsParams_globalSum" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "PrimmeSvdsParams_globalSum" "', argument " "5"" of type '" "float *""'"); 
+  }
+  arg5 = reinterpret_cast< float * >(argp5);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==obj0));
+  try {
+    {
+      try
+      {
+        if (upcall) {
+          Swig::DirectorPureVirtualException::raise("PrimmeSvdsParams::globalSum");
+        } else {
+          (arg1)->globalSum(arg2,arg3,arg4,arg5);
+        }
+      }
+      catch (const std::invalid_argument& e)
+      {
+        SWIG_exception(SWIG_ValueError, e.what());
+      }
+      catch (const std::out_of_range& e)
+      {
+        SWIG_exception(SWIG_IndexError, e.what());
+      }
+      catch (Swig::DirectorException &e)
+      {
+        SWIG_fail;
+      }
+      if (PyErr_Occurred()) SWIG_fail;
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_globalSum__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PrimmeSvdsParams *arg1 = (PrimmeSvdsParams *) 0 ;
   int arg2 ;
@@ -13040,7 +16782,7 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_globalSum(PyObject *SWIGUNUSEDPARM(s
   bool upcall = false;
   
   {
-    
+    arg4 = 0; 
   }
   if (!PyArg_ParseTuple(args,(char *)"OOO:PrimmeSvdsParams_globalSum",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PrimmeSvdsParams, 0 |  0 );
@@ -13091,6 +16833,79 @@ SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_globalSum(PyObject *SWIGUNUSEDPARM(s
   return resultobj;
 fail:
   return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_PrimmeSvdsParams_globalSum(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[6] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 5) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_double, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_PrimmeSvdsParams_globalSum__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 5) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PrimmeSvdsParams, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_float, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            void *vptr = 0;
+            int res = SWIG_ConvertPtr(argv[4], &vptr, SWIGTYPE_p_float, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              return _wrap_PrimmeSvdsParams_globalSum__SWIG_0(self, args);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'PrimmeSvdsParams_globalSum'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    PrimmeSvdsParams::globalSum(int,float *,int,float *)\n"
+    "    PrimmeSvdsParams::globalSum(int,double *,int,double *)\n");
+  return 0;
 }
 
 
@@ -13180,8 +16995,6 @@ SWIGINTERN PyObject *PrimmeSvdsParams_swigregister(PyObject *SWIGUNUSEDPARM(self
 
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
-	 { (char *)"myglobalSumDouble", _wrap_myglobalSumDouble, METH_VARARGS, NULL},
-	 { (char *)"myglobalSumDouble_svds", _wrap_myglobalSumDouble_svds, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numOuterIterations_set", _wrap_primme_stats_numOuterIterations_set, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numOuterIterations_get", _wrap_primme_stats_numOuterIterations_get, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numRestarts_set", _wrap_primme_stats_numRestarts_set, METH_VARARGS, NULL},
@@ -13190,8 +17003,22 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_stats_numMatvecs_get", _wrap_primme_stats_numMatvecs_get, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numPreconds_set", _wrap_primme_stats_numPreconds_set, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_numPreconds_get", _wrap_primme_stats_numPreconds_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_numGlobalSum_set", _wrap_primme_stats_numGlobalSum_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_numGlobalSum_get", _wrap_primme_stats_numGlobalSum_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_volumeGlobalSum_set", _wrap_primme_stats_volumeGlobalSum_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_volumeGlobalSum_get", _wrap_primme_stats_volumeGlobalSum_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_numOrthoInnerProds_set", _wrap_primme_stats_numOrthoInnerProds_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_numOrthoInnerProds_get", _wrap_primme_stats_numOrthoInnerProds_get, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_elapsedTime_set", _wrap_primme_stats_elapsedTime_set, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_elapsedTime_get", _wrap_primme_stats_elapsedTime_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timeMatvec_set", _wrap_primme_stats_timeMatvec_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timeMatvec_get", _wrap_primme_stats_timeMatvec_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timePrecond_set", _wrap_primme_stats_timePrecond_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timePrecond_get", _wrap_primme_stats_timePrecond_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timeOrtho_set", _wrap_primme_stats_timeOrtho_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timeOrtho_get", _wrap_primme_stats_timeOrtho_get, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timeGlobalSum_set", _wrap_primme_stats_timeGlobalSum_set, METH_VARARGS, NULL},
+	 { (char *)"primme_stats_timeGlobalSum_get", _wrap_primme_stats_timeGlobalSum_get, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_estimateMinEVal_set", _wrap_primme_stats_estimateMinEVal_set, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_estimateMinEVal_get", _wrap_primme_stats_estimateMinEVal_get, METH_VARARGS, NULL},
 	 { (char *)"primme_stats_estimateMaxEVal_set", _wrap_primme_stats_estimateMaxEVal_set, METH_VARARGS, NULL},
@@ -13255,6 +17082,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_params_procID_get", _wrap_primme_params_procID_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_nLocal_set", _wrap_primme_params_nLocal_set, METH_VARARGS, NULL},
 	 { (char *)"primme_params_nLocal_get", _wrap_primme_params_nLocal_get, METH_VARARGS, NULL},
+	 { (char *)"primme_params_globalSumReal_set", _wrap_primme_params_globalSumReal_set, METH_VARARGS, NULL},
+	 { (char *)"primme_params_globalSumReal_get", _wrap_primme_params_globalSumReal_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_numEvals_set", _wrap_primme_params_numEvals_set, METH_VARARGS, NULL},
 	 { (char *)"primme_params_numEvals_get", _wrap_primme_params_numEvals_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_target_set", _wrap_primme_params_target_set, METH_VARARGS, NULL},
@@ -13291,6 +17120,10 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_params_printLevel_get", _wrap_primme_params_printLevel_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_initBasisMode_set", _wrap_primme_params_initBasisMode_set, METH_VARARGS, NULL},
 	 { (char *)"primme_params_initBasisMode_get", _wrap_primme_params_initBasisMode_get, METH_VARARGS, NULL},
+	 { (char *)"primme_params_ldevecs_set", _wrap_primme_params_ldevecs_set, METH_VARARGS, NULL},
+	 { (char *)"primme_params_ldevecs_get", _wrap_primme_params_ldevecs_get, METH_VARARGS, NULL},
+	 { (char *)"primme_params_ldOPs_set", _wrap_primme_params_ldOPs_set, METH_VARARGS, NULL},
+	 { (char *)"primme_params_ldOPs_get", _wrap_primme_params_ldOPs_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_projectionParams_set", _wrap_primme_params_projectionParams_set, METH_VARARGS, NULL},
 	 { (char *)"primme_params_projectionParams_get", _wrap_primme_params_projectionParams_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_restartingParams_set", _wrap_primme_params_restartingParams_set, METH_VARARGS, NULL},
@@ -13302,6 +17135,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_primme_params", _wrap_new_primme_params, METH_VARARGS, NULL},
 	 { (char *)"delete_primme_params", _wrap_delete_primme_params, METH_VARARGS, NULL},
 	 { (char *)"primme_params_swigregister", primme_params_swigregister, METH_VARARGS, NULL},
+	 { (char *)"sprimme", _wrap_sprimme, METH_VARARGS, NULL},
+	 { (char *)"cprimme", _wrap_cprimme, METH_VARARGS, NULL},
 	 { (char *)"dprimme", _wrap_dprimme, METH_VARARGS, NULL},
 	 { (char *)"zprimme", _wrap_zprimme, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_stats_numOuterIterations_set", _wrap_primme_svds_stats_numOuterIterations_set, METH_VARARGS, NULL},
@@ -13329,6 +17164,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_svds_params_mLocal_get", _wrap_primme_svds_params_mLocal_get, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_nLocal_set", _wrap_primme_svds_params_nLocal_set, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_nLocal_get", _wrap_primme_svds_params_nLocal_get, METH_VARARGS, NULL},
+	 { (char *)"primme_svds_params_globalSumReal_set", _wrap_primme_svds_params_globalSumReal_set, METH_VARARGS, NULL},
+	 { (char *)"primme_svds_params_globalSumReal_get", _wrap_primme_svds_params_globalSumReal_get, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_numSvals_set", _wrap_primme_svds_params_numSvals_set, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_numSvals_get", _wrap_primme_svds_params_numSvals_get, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_target_set", _wrap_primme_svds_params_target_set, METH_VARARGS, NULL},
@@ -13368,6 +17205,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_primme_svds_params", _wrap_new_primme_svds_params, METH_VARARGS, NULL},
 	 { (char *)"delete_primme_svds_params", _wrap_delete_primme_svds_params, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_swigregister", primme_svds_params_swigregister, METH_VARARGS, NULL},
+	 { (char *)"sprimme_svds", _wrap_sprimme_svds, METH_VARARGS, NULL},
+	 { (char *)"cprimme_svds", _wrap_cprimme_svds, METH_VARARGS, NULL},
 	 { (char *)"dprimme_svds", _wrap_dprimme_svds, METH_VARARGS, NULL},
 	 { (char *)"zprimme_svds", _wrap_zprimme_svds, METH_VARARGS, NULL},
 	 { (char *)"new_PrimmeParams", _wrap_new_PrimmeParams, METH_VARARGS, (char *)"\n"
@@ -13467,11 +17306,11 @@ static PyMethodDef SwigMethods[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static void *_p_PrimmeSvdsParamsTo_p_primme_svds_params(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((primme_svds_params *)  ((PrimmeSvdsParams *) x));
-}
 static void *_p_PrimmeParamsTo_p_primme_params(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((primme_params *)  ((PrimmeParams *) x));
+}
+static void *_p_PrimmeSvdsParamsTo_p_primme_svds_params(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((primme_svds_params *)  ((PrimmeSvdsParams *) x));
 }
 static swig_type_info _swigt__p_JD_projectors = {"_p_JD_projectors", "JD_projectors *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PrimmeParams = {"_p_PrimmeParams", "PrimmeParams *", 0, 0, (void*)0, 0};
@@ -13479,6 +17318,9 @@ static swig_type_info _swigt__p_PrimmeSvdsParams = {"_p_PrimmeSvdsParams", "Prim
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_correction_params = {"_p_correction_params", "correction_params *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_void_p_void_p_int_p_primme_params_p_int__void = {"_p_f_p_void_p_void_p_int_p_primme_params_p_int__void", "void (*)(void *,void *,int *,primme_params *,int *)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void = {"_p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void", "void (*)(void *,void *,int *,primme_svds_params *,int *)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "intptr_t *|int *|int_least32_t *|int_fast32_t *|int32_t *|int_fast16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_long_long = {"_p_long_long", "int_least64_t *|int_fast64_t *|int64_t *|long long *|intmax_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_double = {"_p_p_double", "double **", 0, 0, (void*)0, 0};
@@ -13500,6 +17342,7 @@ static swig_type_info _swigt__p_restarting_params = {"_p_restarting_params", "re
 static swig_type_info _swigt__p_short = {"_p_short", "short *|int_least16_t *|int16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_signed_char = {"_p_signed_char", "signed char *|int_least8_t *|int_fast8_t *|int8_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__complexT_double_t = {"_p_std__complexT_double_t", "std::complex< double > *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_std__complexT_float_t = {"_p_std__complexT_float_t", "std::complex< float > *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *|uint_least8_t *|uint_fast8_t *|uint8_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_int = {"_p_unsigned_int", "uintptr_t *|uint_least32_t *|uint_fast32_t *|uint32_t *|unsigned int *|uint_fast16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_long_long = {"_p_unsigned_long_long", "uint_least64_t *|uint_fast64_t *|uint64_t *|unsigned long long *|uintmax_t *", 0, 0, (void*)0, 0};
@@ -13512,6 +17355,9 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_char,
   &_swigt__p_correction_params,
   &_swigt__p_double,
+  &_swigt__p_f_p_void_p_void_p_int_p_primme_params_p_int__void,
+  &_swigt__p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void,
+  &_swigt__p_float,
   &_swigt__p_int,
   &_swigt__p_long_long,
   &_swigt__p_p_double,
@@ -13533,6 +17379,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_short,
   &_swigt__p_signed_char,
   &_swigt__p_std__complexT_double_t,
+  &_swigt__p_std__complexT_float_t,
   &_swigt__p_unsigned_char,
   &_swigt__p_unsigned_int,
   &_swigt__p_unsigned_long_long,
@@ -13545,6 +17392,9 @@ static swig_cast_info _swigc__p_PrimmeSvdsParams[] = {  {&_swigt__p_PrimmeSvdsPa
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_correction_params[] = {  {&_swigt__p_correction_params, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_void_p_void_p_int_p_primme_params_p_int__void[] = {  {&_swigt__p_f_p_void_p_void_p_int_p_primme_params_p_int__void, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void[] = {  {&_swigt__p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_float[] = {  {&_swigt__p_float, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_long_long[] = {  {&_swigt__p_long_long, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_double[] = {  {&_swigt__p_p_double, 0, 0, 0},{0, 0, 0, 0}};
@@ -13566,6 +17416,7 @@ static swig_cast_info _swigc__p_restarting_params[] = {  {&_swigt__p_restarting_
 static swig_cast_info _swigc__p_short[] = {  {&_swigt__p_short, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_signed_char[] = {  {&_swigt__p_signed_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__complexT_double_t[] = {  {&_swigt__p_std__complexT_double_t, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_std__complexT_float_t[] = {  {&_swigt__p_std__complexT_float_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_int[] = {  {&_swigt__p_unsigned_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_long_long[] = {  {&_swigt__p_unsigned_long_long, 0, 0, 0},{0, 0, 0, 0}};
@@ -13578,6 +17429,9 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_char,
   _swigc__p_correction_params,
   _swigc__p_double,
+  _swigc__p_f_p_void_p_void_p_int_p_primme_params_p_int__void,
+  _swigc__p_f_p_void_p_void_p_int_p_primme_svds_params_p_int__void,
+  _swigc__p_float,
   _swigc__p_int,
   _swigc__p_long_long,
   _swigc__p_p_double,
@@ -13599,6 +17453,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_short,
   _swigc__p_signed_char,
   _swigc__p_std__complexT_double_t,
+  _swigc__p_std__complexT_float_t,
   _swigc__p_unsigned_char,
   _swigc__p_unsigned_int,
   _swigc__p_unsigned_long_long,
