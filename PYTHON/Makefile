@@ -5,7 +5,7 @@ all: $(GENERATED) primmew.h primmew.cxx Primme.py setup.py
 	./setup.py build_ext -i
 
 # Test target: run the tests
-test: all tests.py examples.py
+test: tests.py examples.py
 	python tests.py
 
 $(GENERATED): primme.i numpy.i wrappers.py primmew.h pyfragments.swg
