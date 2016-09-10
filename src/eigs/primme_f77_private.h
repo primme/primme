@@ -60,7 +60,7 @@
 #define PRIMMEF77_procID  4
 #define PRIMMEF77_commInfo  5
 #define PRIMMEF77_nLocal  6
-#define PRIMMEF77_globalSumDouble  7
+#define PRIMMEF77_globalSumReal  7
 #define PRIMMEF77_numEvals  8
 #define PRIMMEF77_target  9
 #define PRIMMEF77_numTargetShifts  10
@@ -152,10 +152,10 @@ extern "C" {
 
 union f77_value {
    PRIMME_INT *int_v;
-   void (*matFunc_v) (void *,void *,int *,struct primme_params *);
+   void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
    void *ptr_v;
-   void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_params *);
-   void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*);
+   void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_params *,int*);
+   void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*,int*);
    primme_target *target_v;
    double *double_v;
    FILE *file_v;
@@ -166,10 +166,10 @@ union f77_value {
 };
 union f77_value_ptr {
    PRIMME_INT int_v;
-   void (*matFunc_v) (void *,void *,int *,struct primme_params *);
+   void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
    void *ptr_v;
-   void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_params *);
-   void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*);
+   void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_params *,int*);
+   void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*,int*);
    primme_target target_v;
    double double_v;
    FILE *file_v;

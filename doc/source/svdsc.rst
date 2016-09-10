@@ -14,14 +14,24 @@ To solve real and complex singular value problems call respectively:
 
    .. parsed-literal::
 
+      int :c:func:`sprimme_svds <sprimme_svds>` (float \*svals, float \*svecs, float \*resNorms,
+                              primme_svds_params \*primme_svds)
+      int :c:func:`cprimme_svds <zprimme_svds>` (float \*svals, :c:type:`PRIMME_COMPLEX_FLOAT` \*svecs, float \*resNorms,
+                              primme_svds_params \*primme_svds)
       int :c:func:`dprimme_svds <dprimme_svds>` (double \*svals, double \*svecs, double \*resNorms,
                               primme_svds_params \*primme_svds)
-      int :c:func:`zprimme_svds <zprimme_svds>` (double \*svals, Complex_Z \*svecs, double \*resNorms,
+      int :c:func:`zprimme_svds <zprimme_svds>` (double \*svals, :c:type:`PRIMME_COMPLEX_DOUBLE` \*svecs, double \*resNorms,
                               primme_svds_params \*primme_svds)
 
 .. only:: text
 
    ::
+
+      int sprimme_svds(float *svals, float *svecs, float *resNorms,
+                  primme_svds_params *primme_svds);
+
+      int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
+                  primme_svds_params\*primme_svds);
 
       int dprimme_svds(double *svals, double *svecs, double *resNorms, 
                   primme_svds_params *primme);
@@ -282,6 +292,28 @@ Interface Description
 
 The next enumerations and functions are declared in ``primme.h``.
 
+sprimme_svds
+""""""""""""
+
+.. c:function:: int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+   Solve a real singular value problem.
+
+   :param svals: array at least of size |SnumSvals| to store the
+      computed singular values; all processes in a parallel run return this local array with the same values.
+
+   :param resNorms: array at least of size |SnumSvals| to store the
+      residual norms of the computed triplets; all processes in parallel run return this local array with
+      the same values.
+
+   :param svecs: array at least of size (|SmLocal| + |SnLocal|) times |SnumSvals|
+      to store columnwise the (local part of the) computed left singular vectors
+      and the right singular vectors.
+
+   :param primme_svds: parameters structure.
+
+   :return: error indicator; see :ref:`error-codes-svds`.
+
 dprimme_svds
 """"""""""""
 
@@ -304,22 +336,19 @@ dprimme_svds
 
    :return: error indicator; see :ref:`error-codes-svds`.
 
-zprimme_svds
+cprimme_svds
 """"""""""""
 
-.. c:function:: int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
 
    Solve a complex singular value problem; see function :c:func:`dprimme_svds`.
 
-   .. note::
+zprimme_svds
+""""""""""""
 
-      PRIMME SVDS uses a structure called ``Complex_Z`` to define complex numbers.
-      ``Complex_Z`` is defined in :file:`PRIMMESRC/COMMONSRC/Complexz.h`.
-      In future versions of PRIMME, ``Complex_Z`` will be replaced by ``complex double`` from
-      the C99 standard.
-      Because the two types are binary compatible, we strongly recommend that calling
-      programs use the C99 type to maintain future compatibility.
-      See examples in :file:`TEST` such as :file:`exsvds_zseq.c` and :file:`exsvds_zseqf77.c`.
+.. c:function:: int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
+
+   Solve a complex singular value problem; see function :c:func:`dprimme_svds`.
 
 primme_svds_initialize
 """"""""""""""""""""""

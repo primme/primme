@@ -39,8 +39,8 @@
 #include "notemplate.h"
 
 static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
-static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
-                         primme_params *primme);
+static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, 
+                         primme_params *primme, int *ierr);
 
 /***************************************************************************
 
@@ -67,7 +67,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->mLocal                  = 0;
    primme_svds->nLocal                  = 0;
    primme_svds->commInfo                = NULL;
-   primme_svds->globalSumDouble         = NULL;
+   primme_svds->globalSumReal           = NULL;
 
    /* Use these pointers to provide matrix/preconditioner */
    primme_svds->matrix                  = NULL;
@@ -215,11 +215,11 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    /* ---------------------------------------------- */
    /* Set some parameters only for parallel programs */
    /* ---------------------------------------------- */
-   if (primme_svds->numProcs > 1 && primme_svds->globalSumDouble != NULL) {
+   if (primme_svds->numProcs > 1 && primme_svds->globalSumReal != NULL) {
       primme->procID = primme_svds->procID;
       primme->numProcs = primme_svds->numProcs;
       primme->commInfo = primme_svds->commInfo;
-      primme->globalSumDouble = globalSumDoubleSvds;
+      primme->globalSumReal = globalSumRealSvds;
    }
 
    switch(method) {
@@ -389,10 +389,10 @@ void primme_svds_Free(primme_svds_params *params) {
    params->realWorkSize = 0;
 }
 
-static void globalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
-                         primme_params *primme) {
+static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, 
+                         primme_params *primme, int *ierr) {
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
-   primme_svds->globalSumDouble(sendBuf, recvBuf, count, primme_svds);
+   primme_svds->globalSumReal(sendBuf, recvBuf, count, primme_svds, ierr);
 }
 
 #endif /* USE_DOUBLE */

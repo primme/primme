@@ -32,6 +32,7 @@
 #include "numerical.h"
 #include "globalsum.h"
 #include "auxiliary_eigs.h"
+#include "wtime.h"
 
 /******************************************************************************
  * Function Num_compute_residual - This subroutine performs the next operation
@@ -212,4 +213,86 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    }
 
    return 0; 
+}
+
+/*******************************************************************************
+ * Subroutine applyPreconditioner - apply preconditioner to V
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V          The orthonormal basis
+ * nLocal     Number of rows of each vector stored on this node
+ * ldV        The leading dimension of V
+ * ldW        The leading dimension of W
+ * blockSize  The number of columns of V and W.
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * W          M*V
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, int blockSize, primme_params *primme) {
+
+   int i, ONE=1, ierr=0;
+   double t0;
+
+   if (blockSize <= 0) return 0;
+   assert(primme->nLocal == nLocal);
+
+   t0 = primme_wTimer(0);
+
+   if (primme->correctionParams.precondition) {
+      if (primme->ldOPs == 0
+            || (ldV == primme->ldOPs && ldW == primme->ldOPs)) {
+         CHKERRM((primme->applyPreconditioner(V, &ldV, W, &ldW, &blockSize,
+                     primme, &ierr), ierr), -1,
+               "Error returned by 'applyPreconditioner' %d", ierr);
+      }
+      else {
+         for (i=0; i<blockSize; i++) {
+            CHKERRM((primme->applyPreconditioner(&V[ldV*i], &primme->ldOPs,
+                        &W[ldW*i], &primme->ldOPs, &ONE, primme, &ierr), ierr),
+                  -1, "Error returned by 'applyPreconditioner' %d", ierr);
+         }
+      }
+      primme->stats.numPreconds += blockSize;
+   }
+   else {
+      Num_copy_matrix_Sprimme(V, nLocal, blockSize, ldV, W, ldW);
+   }
+
+   primme->stats.timePrecond += primme_wTimer(0) - t0;
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine convTestFun - wrapper around primme.convTestFun; evaluate if the
+ *    the approximate eigenpair eval, evec with given residual norm is
+ *    considered as converged.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * eval     the eigenvalue
+ * evec     the eigenvector
+ * rNorm    the residual vector norm
+ * 
+ * OUTPUT
+ * ------
+ * isconv   if non-zero, the pair is considered converged.
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int convTestFun_Sprimme(REAL eval, SCALAR *evec, REAL rNorm, int *isconv, 
+      struct primme_params *primme) {
+
+   int ierr=0;
+   double evald = eval, rNormd = rNorm;
+
+   CHKERRM((primme->convTestFun(&evald, evec, &rNormd, isconv, primme, &ierr),
+            ierr), -1, "Error returned by 'convTestFun' %d", ierr);
+
+   return 0;
 }

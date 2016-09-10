@@ -983,7 +983,7 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
-   if (primme->globalSumDouble) {
+   if (primme->globalSumReal) {
       tmp = (REAL*)rwork;
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
@@ -1180,13 +1180,11 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* TODO: primme.shiftsForPreconditioner is undefined at that point;
          maybe it makes sense to always set NULL shiftsForPreconditioner
          when SkewQ is enabled to force the same preconditioner. */
-      assert(ldevecs == primme->nLocal);
-      assert(ldevecsHat == primme->nLocal);
-      primme->applyPreconditioner(
-            &evecs[primme->nLocal*(*evecsSize+primme->numOrthoConst)],
-            &evecsHat[primme->nLocal*(*evecsSize+primme->numOrthoConst)],
-            &numRecentlyConverged, primme);
-      primme->stats.numPreconds += numRecentlyConverged;
+      CHKERR(applyPreconditioner_Sprimme(
+               &evecs[ldevecs*(*evecsSize+primme->numOrthoConst)], nLocal,
+               ldevecs,
+               &evecsHat[ldevecsHat*(*evecsSize+primme->numOrthoConst)],
+               ldevecsHat, numRecentlyConverged, primme), -1);
 
       /* Update the projection evecs'*evecsHat now that evecs and evecsHat   */
       /* have been expanded by numRecentlyConverged columns.  Required       */

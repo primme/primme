@@ -36,6 +36,7 @@
 #include "update_W.h"
 #include "ortho.h"
 #include "factorize.h"
+#include "auxiliary_eigs.h"
 #include "wtime.h"                       /* Needed for CostModel */
 
 static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
@@ -162,9 +163,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
       if (UDU != NULL) {
 
-         primme->applyPreconditioner(evecs, evecsHat, &primme->numOrthoConst,
-               primme); 
-         primme->stats.numPreconds += primme->numOrthoConst;
+         CHKERR(applyPreconditioner_Sprimme(evecs, primme->nLocal, ldevecs,
+                  evecsHat, ldevecsHat, primme->numOrthoConst, primme), -1);
 
          CHKERR(update_projection_Sprimme(evecs, ldevecs, evecsHat,
                   ldevecsHat, M, ldM, nLocal, 0, primme->numOrthoConst, rwork,

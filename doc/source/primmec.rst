@@ -15,19 +15,29 @@ respectively:
 
    .. parsed-literal::
 
+      int :c:func:`sprimme <sprimme>` (float \*evals, float \*evecs, float \*resNorms,
+                              primme_params \*primme)
+      int :c:func:`cprimme <cprimme>` (float \*evals, PRIMME_COMPLEX_FLOAT \*evecs, float \*resNorms,
+                              primme_params \*primme)
       int :c:func:`dprimme <dprimme>` (double \*evals, double \*evecs, double \*resNorms,
                               primme_params \*primme)
-      int :c:func:`zprimme <zprimme>` (double \*evals, Complex_Z \*evecs, double \*resNorms,
+      int :c:func:`zprimme <zprimme>` (double \*evals, PRIMME_COMPLEX_DOUBLE \*evecs, double \*resNorms,
                               primme_params \*primme)
 
 .. only:: text
 
    ::
 
+      int sprimme(float *evals, float *evecs, float *resNorms, 
+                  primme_params *primme);
+
+      int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+                  primme_params *primme);
+
       int dprimme(double *evals, double *evecs, double *resNorms, 
                   primme_params *primme);
 
-      int zprimme(double *evals, Complex_Z *evecs, double *resNorms, 
+      int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
                   primme_params *primme);
 
 Other useful functions:
@@ -175,7 +185,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``int`` |numProcs|
       | ``int`` |procID|
       | ``int`` |nLocal|
-      | ``void (*`` |globalSumDouble| ``)(...)``
+      | ``void (*`` |globalSumReal| ``)(...)``
       |
       | *Accelerate the convergence*
       | ``void (*`` |applyPreconditioner| ``)(...)``, preconditioner-vector product.
@@ -190,6 +200,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``void *`` |preconditioner|
       |
       | *Advanced options*
+      | ``PRIMME_INT`` |ldevecs|, leading dimension of the evecs.
       | ``int`` |numOrthoConst|, orthogonal constrains to the eigenvectors.
       | ``int`` |dynamicMethodSwitch|
       | ``int`` |locking|
@@ -210,7 +221,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``struct correction_params`` :c:member:`correctionParams <primme_params.correctionParams.precondition>`
       | ``struct primme_stats`` :c:member:`stats <primme_params.stats.numOuterIterations>`
       | ``void (*`` |convTestFun| ``)(...)``
-      | ``struct stackTraceNode *stackTrace``
+      | ``PRIMME_INT`` |ldOPS|, leading dimension to use in |matrixMatvec|...
 
 .. only:: text
 
@@ -229,7 +240,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       int numProcs;
       int procID;
       int nLocal;
-      void (*globalSumDouble)(...);
+      void (*globalSumReal)(...);
       
       /* Accelerate the convergence */
       void (*applyPreconditioner)(...);     // precond-vector product
@@ -244,6 +255,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       void *preconditioner;
       
       /* Advanced options */
+      PRIMME_INT ldevecs; // leading dimension of the evecs
       int numOrthoConst; // orthogonal constrains to the eigenvectors
       int dynamicMethodSwitch;
       int locking;
@@ -264,11 +276,11 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       struct correction_params correctionParams;
       struct primme_stats stats;
       void (*convTestFun)(...);
-      struct stackTraceNode *stackTrace;
+      PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec...
  
 PRIMME requires the user to set at least the dimension of the matrix (|n|) and
 the matrix-vector product (|matrixMatvec|), as they define the problem to be solved.
-For parallel programs, |nLocal|, |procID| and |globalSumDouble| are also required.
+For parallel programs, |nLocal|, |procID| and |globalSumReal| are also required.
 
 In addition, most users would want to specify how many eigenpairs to find,
 and provide a preconditioner (if available).
@@ -285,6 +297,27 @@ Interface Description
 ^^^^^^^^^^^^^^^^^^^^^
 
 The next enumerations and functions are declared in ``primme.h``.
+
+sprimme
+"""""""
+
+.. c:function:: int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
+
+   Solve a real symmetric standard eigenproblem.
+
+   :param evals: array at least of size |numEvals| to store the
+      computed eigenvalues; all processes in a parallel run return this local array with the same values.
+
+   :param resNorms: array at least of size |numEvals| to store the
+      residual norms of the computed eigenpairs; all processes in parallel run return this local array with
+      the same values.
+
+   :param evecs: array at least of size |nLocal| times |numEvals|
+      to store columnwise the (local part of the) computed eigenvectors.
+
+   :param primme: parameters structure.
+
+   :return: error indicator; see :ref:`error-codes`.
 
 dprimme
 """""""
@@ -307,22 +340,19 @@ dprimme
 
    :return: error indicator; see :ref:`error-codes`.
 
+cprimme
+"""""""
+
+.. c:function:: int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+   Solve a Hermitian standard eigenproblem; see function :c:func:`sprimme`.
+
 zprimme
 """""""
 
-.. c:function:: int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
+.. c:function:: int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
 
    Solve a Hermitian standard eigenproblem; see function :c:func:`dprimme`.
-
-   .. note::
-
-      PRIMME uses a structure called ``Complex_Z`` to define complex numbers.
-      ``Complex_Z`` is defined in :file:`PRIMMESRC/COMMONSRC/Complexz.h`.
-      In future versions of PRIMME, ``Complex_Z`` will be replaced by ``complex double`` from
-      the C99 standard.
-      Because the two types are binary compatible, we strongly recommend that calling
-      programs use the C99 type to maintain future compatibility.
-      See examples in :file:`TEST` such as :file:`ex_zseq.c` and :file:`ex_zseqf77.c`.
 
 primme_initialize
 """""""""""""""""

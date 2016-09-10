@@ -53,7 +53,7 @@
 #define PRIMMEF77_SVDS_mLocal 8
 #define PRIMMEF77_SVDS_nLocal 9
 #define PRIMMEF77_SVDS_commInfo 10
-#define PRIMMEF77_SVDS_globalSumDouble 11
+#define PRIMMEF77_SVDS_globalSumReal 11
 #define PRIMMEF77_SVDS_numSvals 12
 #define PRIMMEF77_SVDS_target 13
 #define PRIMMEF77_SVDS_numTargetShifts 14
@@ -108,9 +108,9 @@ extern "C" {
 
 union f77_value {
    PRIMME_INT *int_v;
-   void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*);
+   void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
    void *ptr_v;
-   void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_svds_params*);
+   void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
    primme_svds_target *target_v;
    primme_svds_operator *operator_v;
    double *double_v;
@@ -118,9 +118,9 @@ union f77_value {
 };
 union f77_value_ptr {
    PRIMME_INT int_v;
-   void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*);
+   void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
    void *ptr_v;
-   void (*globalSumDoubleFunc_v) (void *,void *,int *,struct primme_svds_params*);
+   void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
    primme_svds_target target_v;
    primme_svds_operator operator_v;
    double double_v;

@@ -49,6 +49,22 @@ int Num_update_VWXR_dprimme(double *V, double *W, int64_t mV, int nV,
       double *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
       double *rwork, int lrwork, primme_params *primme);
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Sprimme)
+#  define applyPreconditioner_Sprimme CONCAT(applyPreconditioner_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Rprimme)
+#  define applyPreconditioner_Rprimme CONCAT(applyPreconditioner_,REAL_SUF)
+#endif
+int applyPreconditioner_dprimme(double *V, int64_t nLocal, int64_t ldV,
+      double *W, int64_t ldW, int blockSize, primme_params *primme);
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Sprimme)
+#  define convTestFun_Sprimme CONCAT(convTestFun_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Rprimme)
+#  define convTestFun_Rprimme CONCAT(convTestFun_,REAL_SUF)
+#endif
+int convTestFun_dprimme(double eval, double *evec, double rNorm, int *isconv,
+      struct primme_params *primme);
 void Num_compute_residual_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE eval, PRIMME_COMPLEX_DOUBLE *x,
    PRIMME_COMPLEX_DOUBLE *Ax, PRIMME_COMPLEX_DOUBLE *r);
 int Num_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, int64_t mV, int nV,
@@ -60,6 +76,10 @@ int Num_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, 
       PRIMME_COMPLEX_DOUBLE *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
       PRIMME_COMPLEX_DOUBLE *rwork, int lrwork, primme_params *primme);
+int applyPreconditioner_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t nLocal, int64_t ldV,
+      PRIMME_COMPLEX_DOUBLE *W, int64_t ldW, int blockSize, primme_params *primme);
+int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, double rNorm, int *isconv,
+      struct primme_params *primme);
 void Num_compute_residual_sprimme(int64_t n, float eval, float *x,
    float *Ax, float *r);
 int Num_update_VWXR_sprimme(float *V, float *W, int64_t mV, int nV,
@@ -71,6 +91,10 @@ int Num_update_VWXR_sprimme(float *V, float *W, int64_t mV, int nV,
       float *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
       float *rwork, int lrwork, primme_params *primme);
+int applyPreconditioner_sprimme(float *V, int64_t nLocal, int64_t ldV,
+      float *W, int64_t ldW, int blockSize, primme_params *primme);
+int convTestFun_sprimme(float eval, float *evec, float rNorm, int *isconv,
+      struct primme_params *primme);
 void Num_compute_residual_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT eval, PRIMME_COMPLEX_FLOAT *x,
    PRIMME_COMPLEX_FLOAT *Ax, PRIMME_COMPLEX_FLOAT *r);
 int Num_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, int64_t mV, int nV,
@@ -82,4 +106,8 @@ int Num_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, in
       PRIMME_COMPLEX_FLOAT *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
       PRIMME_COMPLEX_FLOAT *rwork, int lrwork, primme_params *primme);
+int applyPreconditioner_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t nLocal, int64_t ldV,
+      PRIMME_COMPLEX_FLOAT *W, int64_t ldW, int blockSize, primme_params *primme);
+int convTestFun_cprimme(float eval, PRIMME_COMPLEX_FLOAT *evec, float rNorm, int *isconv,
+      struct primme_params *primme);
 #endif

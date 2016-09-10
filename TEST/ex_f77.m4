@@ -290,7 +290,7 @@ ifdef([USE_PETSC], [
            call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
         enddo
         end
-        subroutine PETScMatvec(x,y,k,primme)
+        subroutine PETScMatvec(x,ldx,y,ldy,k,primme,err)
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
@@ -299,10 +299,10 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-        PRIMME_NUM x(*), y(*)
+        integer*8 ldx,ldy
+        PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme
-        integer*8 nLocal
-        integer k,j
+        integer k,err,j
 ifdef([USE_POINTER], [        Mat, pointer :: A
         type(c_ptr) :: pA
 ], [        Mat A
@@ -311,22 +311,22 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
         Vec xvec,yvec
         PetscErrorCode ierr
 
-        call primme_get_member_f77(primme, PRIMMEF77_nLocal,nLocal,ierr)
-ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMMEF77_matrix, pA, ierr)
+ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMMEF77_matrix, pA, err)
         call c_f_pointer(pA, A)
 ])
         call MatCreateVecs(A, xvec, yvec, ierr)
-        do j=0,k-1
-           call VecPlaceArray(xvec, x(j*nLocal+1), ierr)
-           call VecPlaceArray(yvec, y(j*nLocal+1), ierr)
+        do j=1,k
+           call VecPlaceArray(xvec, x(1,j), ierr)
+           call VecPlaceArray(yvec, y(1,j), ierr)
            call MatMult(A, xvec, yvec, ierr)
            call VecResetArray(xvec, ierr)
            call VecResetArray(yvec, ierr)
         enddo
         call VecDestroy(xvec, ierr)
         call VecDestroy(yvec, ierr)
+        err = 0
         end
-        subroutine ApplyPCPrecPETSc(x,y,k,primme)
+        subroutine ApplyPCPrecPETSc(x,ldx,y,ldy,k,primme,err)
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
@@ -336,10 +336,10 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscpc.h>
-        PRIMME_NUM x(*), y(*)
+        integer*8 ldx,ldy
+        PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme
-        integer*8 nLocal
-        integer k,j
+        integer k,err,j
 ifdef([USE_POINTER], [        Mat, pointer :: A
         PC, pointer :: pc
         type(c_ptr) :: pA, ppc
@@ -350,25 +350,25 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
         Vec xvec,yvec
         PetscErrorCode ierr
 
-        call primme_get_member_f77(primme, PRIMMEF77_nLocal,nLocal,ierr)
-ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMMEF77_matrix, pA, ierr)
+ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMMEF77_matrix, pA, err)
         call primme_get_member_f77(primme, PRIMMEF77_preconditioner,
-     :                                                        ppc, ierr)
+     :                                                        ppc, err)
         call c_f_pointer(pA, A)
         call c_f_pointer(ppc, pc)
 ])
         call MatCreateVecs(A, xvec, yvec, ierr)
-        do j=0,k-1
-           call VecPlaceArray(xvec, x(j*nLocal+1), ierr)
-           call VecPlaceArray(yvec, y(j*nLocal+1), ierr)
+        do j=1,k
+           call VecPlaceArray(xvec, x(1,j), ierr)
+           call VecPlaceArray(yvec, y(1,j), ierr)
            call PCApply(pc, xvec, yvec, ierr)
            call VecResetArray(xvec, ierr)
            call VecResetArray(yvec, ierr)
         enddo
         call VecDestroy(xvec, ierr)
         call VecDestroy(yvec, ierr)
+        err = 0
         end
-        subroutine par_GlobalSumDouble(x,y,k,primme)
+        subroutine par_GlobalSumDouble(x,y,k,primme,ierr)
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
@@ -377,7 +377,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscsys.h>
         real*8 x(*), y(*)
         integer*8 primme
-        integer k, ierr
+        integer k
 ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
@@ -399,27 +399,29 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !            [ 0 -1  2 -1  0 ... ]
 !             ...
 !      
-        subroutine MV(x,y,k,primme)
+        subroutine MV(x,ldx,y,ldy,k,primme,ierr)
 !       ----------------------------------------------------------------
         implicit none
         include 'primme_f77.h'
-        PRIMME_NUM x(*), y(*)
+        integer*8 ldx, ldy
+        PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme
         integer*8 n, i
-        integer k,j
-        call primme_get_member_f77(primme, PRIMMEF77_n, n)
-        do j=0,k-1
+        integer k,ierr,j
+        call primme_get_member_f77(primme, PRIMMEF77_n, n, ierr)
+        do j=1,k
            do i=1,n
-              y(j*n+i) = 0
+              y(i,j) = 0
               if (i.ge.2) then
-                 y(j*n+i) = y(j*n+i) - x(j*n+i-1)
+                 y(i,j) = y(i,j) - x(i-1,j)
               endif
-              y(j*n+i) = y(j*n+i) + 2.*x(j*n+i)
+              y(i,j) = y(i,j) + 2.*x(i,j)
               if (i.le.n-1) then
-                 y(j*n+i) = y(j*n+i) - x(j*n+i+1)
+                 y(i,j) = y(i,j) - x(i+1,j)
               endif
            enddo
         enddo
+        ierr = 0
         end
 
 !       This performs Y = M^{-1} * X, where
@@ -428,19 +430,21 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !       - Y, output dense matrix of size primme.n x blockSize;
 !       - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
 !      
-        subroutine ApplyPrecon(x,y,k,primme)
+        subroutine ApplyPrecon(x,ldx,y,ldy,k,primme, ierr)
 !       ----------------------------------------------------------------
         implicit none
         include 'primme_f77.h'
-        PRIMME_NUM x(*), y(*)
+        integer*8 ldx, ldy
+        PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme
         integer*8 n, i
-        integer k,j
-        call primme_get_member_f77(primme, PRIMMEF77_n, n)
-        do j=0,k-1
+        integer k,ierr,j
+        call primme_get_member_f77(primme, PRIMMEF77_n, n, ierr)
+        do j=1,k
            do i=1,n
-              y(j*n+i) = x(j*n+i)/2.0
+              y(i,j) = x(i,j)/2.0
            enddo
         enddo
+        ierr = 0
         end
 ])dnl

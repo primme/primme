@@ -34,6 +34,7 @@
 #include "correction.h"
 #include "inner_solve.h"
 #include "globalsum.h"
+#include "auxiliary_eigs.h"
 
 static REAL computeRobustShift(int blockIndex, double resNorm, 
    REAL *prevRitzVals, int numPrevRitzVals, REAL *sortedRitzVals, 
@@ -43,9 +44,6 @@ static void mergeSort(REAL *lockedEvals, int numLocked, REAL *ritzVals,
    int *flags, int basisSize, REAL *sortedRitzVals, int *ilev, int blockSize,
    primme_params *primme);
  
-static int apply_preconditioner_block(SCALAR *v, SCALAR *result, 
-                int blockSize, primme_params *primme);
-
 static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
                 int blockSize, SCALAR *rwork, primme_params *primme);
 
@@ -398,7 +396,8 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
 
          /* GD: compute K^{-1}r , or approx.Olsen: K^{-1}(r-ex) */
 
-         apply_preconditioner_block(r, x, blockSize, primme );
+         CHKERR(applyPreconditioner_Sprimme(r, primme->nLocal, primme->nLocal,
+                  x, primme->nLocal, blockSize, primme), -1);
       }
    }
    /* ------------------------------------------------------------ */
@@ -656,39 +655,6 @@ static void mergeSort(REAL *lockedEvals, int numLocked, REAL *ritzVals,
 }
 
 /*******************************************************************************
- * Subroutine apply_preconditioner_block - This subroutine applies the 
- *    preconditioner to a block of vectors v by computing: K^{-1}v
- *
- * Input Parameters
- * ----------------
- * v         The vectors the preconditioner will be applied to.
- *
- * blockSize The number of vectors in the blocks v, result
- *
- * primme      Structure containing various solver parameters
- * 
- * Output parameters
- * -----------------
- * result    The result of the application of K^{-1}
- *
- ******************************************************************************/
-
-static int apply_preconditioner_block(SCALAR *v, SCALAR *result, 
-                int blockSize, primme_params *primme) {
-         
-   if (primme->correctionParams.precondition) {
-
-      (*primme->applyPreconditioner)(v, result, &blockSize, primme);
-      primme->stats.numPreconds += blockSize;
-   }
-   else {
-      Num_copy_Sprimme(primme->nLocal*blockSize, v, 1, result, 1);
-   }
-
-   return 0;
-}
-
-/*******************************************************************************
  * Subroutine Olsen_preconditioner_block - This subroutine applies the projected
  *    preconditioner to a block of blockSize vectors r by computing:
  *       (I - (K^{-1}x_i)x_i^T / (x_i^T K^{-1}x_i) ) K^{-1}r_i
@@ -729,7 +695,8 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
    /* Compute K^{-1}x for block x. Kinvx memory requirement (blockSize*nLocal)*/
    /*------------------------------------------------------------------ */
 
-   apply_preconditioner_block(x, Kinvx, blockSize, primme );
+   CHKERR(applyPreconditioner_Sprimme(x, primme->nLocal, primme->nLocal, Kinvx,
+            primme->nLocal, blockSize, primme), -1);
 
    /*------------------------------------------------------------------ */
    /* Compute local x^TK^{-1}x and x^TK^{-1}r = (K^{-1}x)^Tr for each vector */
@@ -750,7 +717,8 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
    /* Compute K^{-1}r                                                  */
    /*------------------------------------------------------------------*/
 
-   apply_preconditioner_block(r, x, blockSize, primme );
+   CHKERR(applyPreconditioner_Sprimme(r, primme->nLocal, primme->nLocal, x,
+            primme->nLocal, blockSize, primme), -1);
 
    /*------------------------------------------------------------------*/
    /* Compute K^(-1)r  - ( xKinvr/xKinvx ) K^(-1)r for each vector     */
@@ -855,7 +823,6 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs,
    int numLocked, int numConverged, primme_params *primme) {
 
    int n, sizeEvecs;
-   int ONE = 1;
    SCALAR xKinvx_local;
 
    (void)r; /* unused parameter */
@@ -925,7 +892,8 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs,
    
       if (primme->correctionParams.precondition   &&
           primme->correctionParams.projectors.SkewX) {
-         (*primme->applyPreconditioner)(x, Kinvx, &ONE, primme);
+         CHKERR(applyPreconditioner_Sprimme(x, primme->nLocal, primme->nLocal,
+                  Kinvx, primme->nLocal, 1, primme), -1);
          primme->stats.numPreconds += 1;
          *RprojectorX  = Kinvx;
          xKinvx_local = Num_dot_Sprimme(primme->nLocal, x, 1, Kinvx, 1);

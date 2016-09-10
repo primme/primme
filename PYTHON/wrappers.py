@@ -14,7 +14,7 @@ _PRIMMEErrors = {
 -6: "'numProcs' < 1",
 -7: "'matrixMatvec' is NULL",
 -8: "'applyPreconditioner' is NULL and 'precondition' is not NULL",
--9: "'globalSumDouble' is NULL",
+-9: "'not used",
 -10: "'numEvals' > 'n'",
 -11: "'numEvals' < 0",
 -12: "'eps' > 0 and 'eps' < machine precision",
@@ -38,7 +38,9 @@ _PRIMMEErrors = {
 -30: "'evals' is NULL, but not 'evecs' and 'resNorms'",
 -31: "'evecs' is NULL, but not 'evals' and 'resNorms'",
 -32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
--33: "not 'locking' and 'minRestartSize' < 'numEvals'"
+-33: "not 'locking' and 'minRestartSize' < 'numEvals'",
+-34: "'ldevecs' is less than 'nLocal'",
+-35: "'ldOPs' is non-zero and less than 'nLocal'"
 }
 
 _PRIMMESvdsErrors = {

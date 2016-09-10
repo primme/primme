@@ -46,17 +46,17 @@ define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifde
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A);
 void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *transpose, primme_svds_params *primme_svds);
+                         int *transpose, primme_svds_params *primme_svds, int *ierr);
 void ApplyPCPrecAHA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *transpose, primme_svds_params *primme_svds);
+                         int *transpose, primme_svds_params *primme_svds, int *ierr);
 void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
-                         primme_svds_params *primme_svds);
+                         primme_svds_params *primme_svds, int *ierr);
 ', `
 void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *transpose, primme_svds_params *primme_svds);
+                         int *transpose, primme_svds_params *primme_svds, int *ierr);
 void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                                int *mode, primme_svds_params *primme_svds);
-ifdef(`ADVANCED_HYBRID',`void LauchliAugmentedMatvec(void *x, void *y, int *blockSize, primme_params *primme);')
+                                int *mode, primme_svds_params *primme_svds, int *ierr);
+ifdef(`ADVANCED_HYBRID',`void LauchliAugmentedMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);')
 ')dnl
 
 int main (int argc, char *argv[]) {
@@ -296,7 +296,7 @@ PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A) {
 }
 
 void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *trans,
-                    primme_svds_params *primme_svds) {
+                    primme_svds_params *primme_svds, int *err) {
    int i;
    Mat *A;
    Vec xvec, yvec;
@@ -332,10 +332,11 @@ void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockS
    }
    ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   *err = 0;
 }
 ', `
 void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *transpose, primme_svds_params *primme_svds) {
+                         int *transpose, primme_svds_params *primme_svds, int *err) {
    
    int i;            /* vector index, from 0 to *blockSize-1 */
    int j;
@@ -366,6 +367,7 @@ void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int
          }
       }
    }
+   *err = 0;
 }
 ifdef(`ADVANCED_HYBRID',`
 /* Example of custom product for the augmented matrix [0 A^t; A 0]. In this case
@@ -373,7 +375,7 @@ ifdef(`ADVANCED_HYBRID',`
    LauchliMatrixMatvec.
 */
 
-void LauchliAugmentedMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
+void LauchliAugmentedMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
    /* A pointer to the primme_svds_params is stored at primme.matrix */
    primme_svds_params *primme_svds = (primme_svds_params*)primme->matrix;
    PRIMME_NUM *x0 = (PRIMME_NUM*)x, *x1 = &x0[primme_svds->nLocal],
@@ -382,9 +384,9 @@ void LauchliAugmentedMatvec(void *x, void *y, int *blockSize, primme_params *pri
    /* [y0; y1] <-  * [x0; x1] */
 
    /* y0 <- A^t * x1 */
-   LauchliMatrixMatvec(x1, &primme->nLocal, y0, &primme->nLocal, blockSize, &trans, primme_svds);
+   LauchliMatrixMatvec(x1, ldx, y0, ldy, blockSize, &trans, primme_svds, ierr);
    /* y1 <- A * x0 */
-   LauchliMatrixMatvec(x0, &primme->nLocal, y1, &primme->nLocal, blockSize, &notrans, primme_svds);
+   LauchliMatrixMatvec(x0, ldx, y1, ldy, blockSize, &notrans, primme_svds, ierr);
 }
 ')dnl
 ')dnl
@@ -397,7 +399,7 @@ void LauchliAugmentedMatvec(void *x, void *y, int *blockSize, primme_params *pri
 */
 ifdef(`USE_PETSC', `
 void ApplyPCPrecAHA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *mode, primme_svds_params *primme_svds) {
+                         int *mode, primme_svds_params *primme_svds, int *err) {
    int i,j;
    Mat *matrix;
    PC *pc;
@@ -433,17 +435,21 @@ void ApplyPCPrecAHA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blo
          for (j=0; j<primme_svds->mLocal+primme_svds->nLocal; j++)
             y0[(*ldy)*i+j] = x0[(*ldx)*i+j];
    }
+   *err = 0;
 }
 
 void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                         primme_svds_params *primme_svds) {
+                         primme_svds_params *primme_svds, int *ierr) {
    MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
 
-   MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
+   if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) == MPI_SUCCESS)
+      *ierr = 0;
+   else
+      *ierr = 1;
 }
 ', `
 void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                                int *mode, primme_svds_params *primme_svds) {
+                                int *mode, primme_svds_params *primme_svds, int *ierr) {
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int j;            /* row index */
@@ -486,15 +492,16 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
       /* [y0; y1] <- [0 A^t; A 0] * [x0; x1] */
       ldaux = primme_svds->n+primme_svds->m;
       aux = (PRIMME_NUM*)malloc(sizeof(PRIMME_NUM)*(*blockSize)*ldaux);
-      primme_svds->matrixMatvec(x, ldx, &aux[primme_svds->n], &ldaux, blockSize, &notrans, primme_svds);
+      primme_svds->matrixMatvec(x, ldx, &aux[primme_svds->n], &ldaux, blockSize, &notrans, primme_svds, ierr);
       xvec = (PRIMME_NUM *)x + primme_svds->n;
-      primme_svds->matrixMatvec(xvec, ldx, aux, &ldaux, blockSize, &trans, primme_svds);
+      primme_svds->matrixMatvec(xvec, ldx, aux, &ldaux, blockSize, &trans, primme_svds, ierr);
       /* y0 <- preconditioner for A^t*A  * y0 */
-      LauchliApplyPreconditioner(aux, &ldaux, y, ldy, blockSize, &modeAtA, primme_svds);
+      LauchliApplyPreconditioner(aux, &ldaux, y, ldy, blockSize, &modeAtA, primme_svds, ierr);
       /* y1 <- preconditioner for A*A^t  * y1 */
       yvec = (PRIMME_NUM *)aux + primme_svds->n;
-      LauchliApplyPreconditioner(yvec, &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds);
+      LauchliApplyPreconditioner(yvec, &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
       free(aux);
    }
+   *ierr = 0;
 }
 ')dnl

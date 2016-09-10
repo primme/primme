@@ -30,6 +30,10 @@
 #ifndef PRIMME_SVDS_H
 #define PRIMME_SVDS_H
 
+#ifndef PRIMME_H
+#  error "Please include 'primme.h' instead; checkout the documentation."
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -74,9 +78,11 @@ typedef struct primme_svds_params {
 
    /***** High interface: these values are transferred to primme and primmeStage2 properly */
    void (*matrixMatvec) 
-      (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
+      (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
+       int *transpose, struct primme_svds_params *primme_svds, int *ierr);
    void (*applyPreconditioner)
-      (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *transpose, struct primme_svds_params *primme_svds);
+      (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
+       int *transpose, struct primme_svds_params *primme_svds, int *ierr);
 
    /* Input for the following is only required for parallel programs */
    int numProcs;
@@ -84,8 +90,9 @@ typedef struct primme_svds_params {
    PRIMME_INT mLocal;
    PRIMME_INT nLocal;
    void *commInfo;
-   void (*globalSumDouble)
-      (void *sendBuf, void *recvBuf, int *count, struct primme_svds_params *primme_svds );
+   void (*globalSumReal)
+      (void *sendBuf, void *recvBuf, int *count,
+       struct primme_svds_params *primme_svds, int *ierr);
 
    /* Though primme_svds_initialize will assign defaults, most users will set these */
    int numSvals;

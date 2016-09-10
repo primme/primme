@@ -45,17 +45,19 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       REAL *svals, SCALAR *svecs, REAL *rnorms, int *allocatedTargetShifts);
 static int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       REAL *svals, SCALAR *svecs, REAL *rnorms, int allocatedTargetShifts);
-static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme);
-static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme);
+static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx, REAL *factors,
                                        primme_svds_params *primme_svds);
 static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
-static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
+static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count, 
       primme_svds_params *primme_svds);
 static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
+   primme_params *primme, int *ierr);
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
+   primme_params *primme, int *ierr);
 
 /*******************************************************************************
  * Subroutine Sprimme_svds - This routine is a front end used to perform 
@@ -330,26 +332,28 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    /* and augmented matrix will be used                                       */
 
    if (method == primme_svds_op_augmented && primme->initSize <= 0) {
-      int ONE = 1, NOTRANS = 0, TRANS = 1;
-      double norms2_[2], norms2[2];
+      int ONE = 1, NOTRANS = 0, TRANS = 1, ierr=0;
+      REAL norms2_[2], norms2[2];
       if (primme_svds->m >= primme_svds->n) {
          Num_larnv_Sprimme(2, primme->iseed, primme_svds->mLocal,
                &svecs[primme_svds->nLocal]);
-         primme_svds->matrixMatvec(&svecs[primme_svds->nLocal],
-               &primme_svds->mLocal, svecs, &primme_svds->nLocal, &ONE, &TRANS,
-               primme_svds);
+         CHKERRMS((primme_svds->matrixMatvec(&svecs[primme_svds->nLocal],
+                     &primme_svds->mLocal, svecs, &primme_svds->nLocal, &ONE,
+                     &TRANS, primme_svds, &ierr), ierr), NULL,
+               "Error returned by 'matrixMatvec' %d", ierr);
       }
       else {
          Num_larnv_Sprimme(2, primme->iseed, primme_svds->nLocal, svecs);
-         primme_svds->matrixMatvec(svecs, &primme_svds->nLocal,
-               &svecs[primme_svds->nLocal], &primme_svds->mLocal, &ONE,
-               &NOTRANS, primme_svds);
+         CHKERRMS((primme_svds->matrixMatvec(svecs, &primme_svds->nLocal,
+                     &svecs[primme_svds->nLocal], &primme_svds->mLocal, &ONE,
+                     &NOTRANS, primme_svds, &ierr), ierr), NULL,
+               "Error returned by 'matrixMatvec' %d", ierr);
       }
       norms2_[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, svecs, 1,
                svecs, 1));
       norms2_[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal,
                &svecs[primme_svds->nLocal], 1, &svecs[primme_svds->nLocal], 1));
-      globalSum_dprimme_svds(norms2_, norms2, 2, primme_svds);
+      globalSum_Rprimme_svds(norms2_, norms2, 2, primme_svds);
       Num_scal_Sprimme(primme_svds->nLocal, 1.0/sqrt(norms2[0]), svecs, 1);
       Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[1]),
             &svecs[primme_svds->nLocal], 1);
@@ -459,8 +463,8 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_params *primme;
    primme_svds_operator method;
    SCALAR *aux;
-   double *norms2, *norms2_;
-   int n, nMax, i, cut;
+   REAL *norms2, *norms2_;
+   int n, nMax, i, cut, ierr;
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -505,10 +509,12 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    switch(method) {
    case primme_svds_op_AtA:
       /* Transform svecs to [Uc A*V/Sigma Vc V] */
-      primme_svds->matrixMatvec(
+      CHKERRMS((primme_svds->matrixMatvec(
             &svecs[primme_svds->mLocal*nMax+primme->nLocal*primme_svds->numOrthoConst],
             &primme_svds->nLocal, &svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
-            &primme_svds->mLocal, &primme_svds->initSize, &notrans, primme_svds);
+            &primme_svds->mLocal, &primme_svds->initSize, &notrans, primme_svds,
+            &ierr), ierr), -1,
+         "Error returned by 'matrixMatvec' %d", ierr);
       Num_scalInv_Smatrix(&svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
             primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals, primme_svds);
       Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal, n,
@@ -519,10 +525,12 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal,
             primme_svds->numOrthoConst, primme_svds->nLocal,
             &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
-      primme_svds->matrixMatvec(
+      CHKERRMS((primme_svds->matrixMatvec(
             &svecs[primme_svds->mLocal*primme_svds->numOrthoConst], &primme_svds->mLocal,
             &svecs[primme_svds->mLocal*n+primme->nLocal*primme_svds->numOrthoConst],
-            &primme_svds->nLocal, &primme_svds->initSize, &trans, primme_svds);
+            &primme_svds->nLocal, &primme_svds->initSize, &trans, primme_svds,
+            &ierr), ierr), -1,
+         "Error returned by 'matrixMatvec' %d", ierr);
       Num_scalInv_Smatrix(
             &svecs[primme_svds->mLocal*n+primme->nLocal*primme_svds->numOrthoConst],
             primme_svds->nLocal, primme_svds->initSize, primme_svds->nLocal, svals, primme_svds);
@@ -552,7 +560,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
                &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1,
                &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1));
       }
-      globalSum_dprimme_svds(norms2_, norms2, 2*n, primme_svds);
+      globalSum_Rprimme_svds(norms2_, norms2, 2*n, primme_svds);
       for (i=0; i<n; i++) {
          Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[i]),
                &svecs[primme_svds->mLocal*i], 1);
@@ -653,7 +661,7 @@ static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms,
    else if (primme_svds->applyPreconditioner == NULL && 
          primme_svds->precondition == 1) 
       ret = -8;
-   else if (primme_svds->numProcs >1 && primme_svds->globalSumDouble == NULL)
+   else if (primme_svds->numProcs >1 && primme_svds->globalSumReal == NULL)
       ret = -9;
    else if (primme_svds->numSvals > min(primme_svds->n, primme_svds->m))
       ret = -10;
@@ -690,7 +698,9 @@ static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms,
 /**********************************************************************************
  * void MatrixATA_Matvec(void *x, void *y, int *blockSize, primme_params *primme) *
  **********************************************************************************/
-static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *primme) {
+static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
+
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    int trans = 1, notrans = 0;
    SCALAR *x = (SCALAR*)x_, *y = (SCALAR*)y_;
@@ -703,47 +713,55 @@ static void matrixMatvecSVDS(void *x_, void *y_, int *blockSize, primme_params *
       for (i=0, bs=min((*blockSize-i), primme->maxBlockSize); bs>0;
                i+= bs, bs=min((*blockSize-i), primme->maxBlockSize))
       {
-         primme_svds->matrixMatvec(&x[primme->nLocal*i], &primme->nLocal,
-            primme_svds->realWork, &primme_svds->mLocal, &bs, &notrans, primme_svds);
+         primme_svds->matrixMatvec(&x[*ldx*i], ldx, primme_svds->realWork,
+               &primme_svds->mLocal, &bs, &notrans, primme_svds, ierr);
+         if (*ierr != 0) return;
          primme_svds->matrixMatvec(primme_svds->realWork, &primme_svds->mLocal,
-            &y[i*primme->nLocal], &primme->nLocal, &bs, &trans, primme_svds);
+            &y[*ldy*i], ldy, &bs, &trans, primme_svds, ierr);
+         if (*ierr != 0) return;
       }
       break;
    case primme_svds_op_AAt:
       for (i=0, bs=min((*blockSize-i), primme->maxBlockSize); bs>0;
                i+= bs, bs=min((*blockSize-i), primme->maxBlockSize))
       {
-         primme_svds->matrixMatvec(&x[primme->nLocal*i], &primme->nLocal,
-            primme_svds->realWork, &primme_svds->nLocal, &bs, &trans, primme_svds);
+         primme_svds->matrixMatvec(&x[*ldx*i], ldx, primme_svds->realWork,
+               &primme_svds->nLocal, &bs, &trans, primme_svds, ierr);
+         if (*ierr != 0) return;
          primme_svds->matrixMatvec(primme_svds->realWork, &primme_svds->nLocal,
-            &y[i*primme->nLocal], &primme->nLocal, &bs, &notrans, primme_svds);
+            &y[*ldy*i], ldy, &bs, &notrans, primme_svds, ierr);
+         if (*ierr != 0) return;
       }
       break;
    case primme_svds_op_augmented:
-      primme_svds->matrixMatvec(&x[primme_svds->nLocal], &primme->nLocal, y,
-         &primme->nLocal, blockSize, &trans, primme_svds);
-      primme_svds->matrixMatvec(x, &primme->nLocal, &y[primme_svds->nLocal],
-         &primme->nLocal, blockSize, &notrans, primme_svds);
+      primme_svds->matrixMatvec(&x[primme_svds->nLocal], ldx, y, ldy, blockSize,
+            &trans, primme_svds, ierr);
+         if (*ierr != 0) return;
+      primme_svds->matrixMatvec(x, ldx, &y[primme_svds->nLocal],
+         ldy, blockSize, &notrans, primme_svds, ierr);
+         if (*ierr != 0) return;
       break;
    case primme_svds_op_none:
       break;
    }
 }
 
-static void applyPreconditionerSVDS(void *x, void *y, int *blockSize, primme_params *primme) {
+static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
+
    primme_svds_params *primme_svds = (primme_svds_params *) primme->preconditioner;
    int method = (int)(&primme_svds->primme == primme ?
                         primme_svds->method : primme_svds->methodStage2);
 
-   primme_svds->applyPreconditioner(x, &primme->nLocal, y,
-      &primme->nLocal, blockSize, &method, primme_svds);
+   primme_svds->applyPreconditioner(x, ldx, y, ldy, blockSize, &method,
+         primme_svds, ierr);
 }
 
 static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
       REAL *factors, primme_svds_params *primme_svds) {
 
    int i;
-   double norm, norm0, factor;
+   REAL norm, norm0, factor;
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
@@ -752,23 +770,28 @@ static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
       }
       else {
          norm0 = REAL_PART(Num_dot_Sprimme(m, &x[i*ldx], 1, &x[i*ldx], 1));
-         globalSum_dprimme_svds(&norm0, &norm, 1, primme_svds);
+         globalSum_Rprimme_svds(&norm0, &norm, 1, primme_svds);
          factor = sqrt(norm);
       }
       Num_scal_Sprimme(m, 1.0/factor, &x[i*ldx], 1);
    }
 }
 
-static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count, 
+static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count, 
       primme_svds_params *primme_svds) {
 
-   if (primme_svds && primme_svds->globalSumDouble) {
-      primme_svds->globalSumDouble(sendBuf, recvBuf, &count, primme_svds);
+   int ierr;
+
+   if (primme_svds && primme_svds->globalSumReal) {
+      CHKERRMS((primme_svds->globalSumReal(sendBuf, recvBuf, &count,
+                  primme_svds, &ierr), ierr), -1,
+            "Error returned by 'globalSumReal' %d", ierr);
    }
    else {
       Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
    }
 
+   return 0;
 }
 
 /*******************************************************************************
@@ -790,7 +813,7 @@ static void globalSum_dprimme_svds(double *sendBuf, double *recvBuf, int count,
  ******************************************************************************/
 
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
+   primme_params *primme, int *ierr) {
 
    const double machEps = Num_lamch_Rprimme("E");
    const double aNorm = (primme->aNorm > 0.0) ?
@@ -799,6 +822,7 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    *isConv = *rNorm < max(
                primme->eps * sqrt(fabs(*eval * aNorm)),
                machEps * 3.16 * aNorm);
+   *ierr = 0;
 }
 
 /*******************************************************************************
@@ -819,7 +843,7 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
  ******************************************************************************/
 
 static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
+   primme_params *primme, int *ierr) {
 
    const double machEps = Num_lamch_Rprimme("E");
    const double aNorm = (primme->aNorm > 0.0) ?
@@ -830,4 +854,5 @@ static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *i
                primme->eps / sqrt(2.0) * aNorm,
                machEps * 3.16 * aNorm) 
       && *eval >= aNorm*machEps;
+   *ierr = 0;
 } 

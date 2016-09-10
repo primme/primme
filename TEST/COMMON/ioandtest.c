@@ -34,23 +34,25 @@
 #include "num.h"
 #include "ioandtest.h"
 
-static SCALAR primme_dot(SCALAR *x, SCALAR *y, primme_params *primme) {
-   SCALAR aux, aux0;
-   int n = (int)(sizeof(SCALAR)/sizeof(double));
-   aux = Num_dot_Sprimme(primme->nLocal, x, 1, y, 1);
-   if (primme->globalSumDouble) {
-      primme->globalSumDouble(&aux, &aux0, &n, primme);
+static REAL primme_dot_real(SCALAR *x, SCALAR *y, primme_params *primme) {
+   REAL aux, aux0;
+   int n = 1;
+   int ierr;
+   aux = REAL_PART(Num_dot_Sprimme(primme->nLocal, x, 1, y, 1));
+   if (primme->globalSumReal) {
+      primme->globalSumReal(&aux, &aux0, &n, primme, &ierr);
       return aux0;
    }
    return aux;
 }
 
-static SCALAR primme_svds_dot(SCALAR *x, SCALAR *y, int trans, primme_svds_params *primme) {
-   SCALAR aux, aux0;
-   int n = (int)(sizeof(SCALAR)/sizeof(double));
-   aux = Num_dot_Sprimme(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1);
-   if (primme->globalSumDouble) {
-      primme->globalSumDouble(&aux, &aux0, &n, primme);
+static REAL primme_svds_dot_real(SCALAR *x, SCALAR *y, int trans, primme_svds_params *primme) {
+   REAL aux, aux0;
+   int n = 1;
+   int ierr;
+   aux = REAL_PART(Num_dot_Sprimme(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1));
+   if (primme->globalSumReal) {
+      primme->globalSumReal(&aux, &aux0, &n, primme, &ierr);
       return aux0;
    }
    return aux;
@@ -63,7 +65,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 
    double eval0, rnorm0, prod, bound, delta;
    SCALAR *Ax, *r, *X=NULL, *h, *h0;
-   int i, j, cols, retX=0, one=1;
+   int i, j, cols, retX=0, one=1, ierr=0;
    primme_params primme0;
 
    /* Read stored eigenvectors and primme_params */
@@ -133,9 +135,9 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
    for (i=0; i < primme->initSize; i++) {
       /* Check |V(:,0:i-1)'V(:,i)| < sqrt(machEps) */
       Num_gemv_Sprimme("C", primme->nLocal, i+1, 1.0, evecs, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
-      if (primme->globalSumDouble) {
+      if (primme->globalSumReal) {
          int cols0 = (i+1)*sizeof(SCALAR)/sizeof(double);
-         primme->globalSumDouble(h, h0, &cols0, primme);
+         primme->globalSumReal(h, h0, &cols0, primme, &ierr);
       }
       else h0 = h;
       prod = REAL_PART(Num_dot_Sprimme(i, h0, 1, h0, 1));
@@ -150,15 +152,15 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       } 
        
       /* Check |V(:,i)'A*V(:,i) - evals[i]| < max(|r|,eps*|A|) */
-      primme->matrixMatvec(&evecs[primme->nLocal*i], Ax, &one, primme);
-      eval0 = REAL_PART(primme_dot(&evecs[primme->nLocal*i], Ax, primme));
+      primme->matrixMatvec(&evecs[primme->nLocal*i], &primme->nLocal, Ax, &primme->nLocal, &one, primme, &ierr);
+      eval0 = primme_dot_real(&evecs[primme->nLocal*i], Ax, primme);
       if (fabs(evals[i] - eval0) > max(rnorms[i], primme->aNorm*primme->eps) && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E should be close to %-22.15E\n", i+1, evals[i], eval0);
          retX = 1;
       }
       /* Check |A*V(:,i) - (V(:,i)'A*V(:,i))*V(:,i)| < |r| */
       for (j=0; j<primme->nLocal; j++) r[j] = Ax[j] - evals[i]*evecs[primme->nLocal*i+j];
-      rnorm0 = sqrt(REAL_PART(primme_dot(r, r, primme)));
+      rnorm0 = sqrt(primme_dot_real(r, r, primme));
       if (fabs(rnorms[i]-rnorm0) > max(0.1*rnorm0, 10*max(primme->aNorm,fabs(evals[i]))*MACHINE_EPSILON) && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E, residual %5E should be close to %5E\n", i+1, evals[i], rnorms[i], rnorm0);
          retX = 1;
@@ -169,9 +171,9 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       }
       /* Check angle X and V(:,i) is less than twice the max angle of the eigenvector with largest residual  */
       Num_gemv_Sprimme("C", primme->nLocal, cols, 1.0, X, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
-      if (primme->globalSumDouble) {
+      if (primme->globalSumReal) {
          int cols0 = cols*sizeof(SCALAR)/sizeof(double);
-         primme->globalSumDouble(h, h0, &cols0, primme);
+         primme->globalSumReal(h, h0, &cols0, primme, &ierr);
       }
       else h0 = h;
       prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1));
@@ -316,7 +318,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
 
    double sval0, rnorm0, prod, delta, bound;
    SCALAR *Ax, *r, *X=NULL, *h, *h0, *U, *V;
-   int i, j, cols, retX=0, one=1, notrans=0, trans=1;
+   int i, j, cols, retX=0, one=1, notrans=0, trans=1, ierr=0;
    primme_svds_params primme_svds0;
 
    /* Read stored singular vectors and primme_svds_params */
@@ -377,29 +379,29 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
    V = &svecs[primme_svds->mLocal*cols];   
    for (i=0; i < primme_svds->initSize; i++) {
       /* Check normality of U(:,i) and V(:,i) */
-      sval0 = REAL_PART(primme_svds_dot(&U[primme_svds->mLocal*i], &U[primme_svds->mLocal*i], 0, primme_svds));
+      sval0 = primme_svds_dot_real(&U[primme_svds->mLocal*i], &U[primme_svds->mLocal*i], 0, primme_svds);
       if (fabs(1.0 - sval0) > 1e-8 && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: norm of U[%d] = %e\n", i+1, sval0);
          retX = 1;
       }
-      sval0 = REAL_PART(primme_svds_dot(&V[primme_svds->nLocal*i], &V[primme_svds->nLocal*i], 1, primme_svds));
+      sval0 = primme_svds_dot_real(&V[primme_svds->nLocal*i], &V[primme_svds->nLocal*i], 1, primme_svds);
       if (fabs(1.0 - sval0) > 1e-8 && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: norm of V[%d] = %e\n", i+1, sval0);
          retX = 1;
       }
       /* Check |U(:,i)'A*V(:,i) - svals[i]| < |r|*|A| */
-      primme_svds->matrixMatvec(&V[primme_svds->nLocal*i], &primme_svds->nLocal, Ax, &primme_svds->mLocal, &one, &notrans, primme_svds);
-      sval0 = REAL_PART(primme_svds_dot(&U[primme_svds->mLocal*i], Ax, 0, primme_svds));
+      primme_svds->matrixMatvec(&V[primme_svds->nLocal*i], &primme_svds->nLocal, Ax, &primme_svds->mLocal, &one, &notrans, primme_svds, &ierr);
+      sval0 = primme_svds_dot_real(&U[primme_svds->mLocal*i], Ax, 0, primme_svds);
       if (fabs(svals[i] - sval0) > max(rnorms[i], primme_svds->aNorm*primme_svds->eps) && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E should be close to %-22.15E\n", i+1, svals[i], sval0);
          retX = 1;
       }
       /* Check |A*V(:,i) - (U(:,i)'A*V(:,i))*U(:,i)|^2 + |A'*U(:,i) - (U(:,i)'A*V(:,i))*V(:,i)|^2 < |r|^2 */
       for (j=0; j<primme_svds->mLocal; j++) r[j] = Ax[j] - svals[i]*U[primme_svds->mLocal*i+j];
-      rnorm0 = REAL_PART(primme_svds_dot(r, r, 0, primme_svds));
-      primme_svds->matrixMatvec(&U[primme_svds->mLocal*i], &primme_svds->mLocal, Ax, &primme_svds->nLocal, &one, &trans, primme_svds);
+      rnorm0 = primme_svds_dot_real(r, r, 0, primme_svds);
+      primme_svds->matrixMatvec(&U[primme_svds->mLocal*i], &primme_svds->mLocal, Ax, &primme_svds->nLocal, &one, &trans, primme_svds, &ierr);
       for (j=0; j<primme_svds->nLocal; j++) r[j] = Ax[j] - svals[i]*V[primme_svds->nLocal*i+j];
-      rnorm0 += REAL_PART(primme_svds_dot(r, r, 1, primme_svds));
+      rnorm0 += primme_svds_dot_real(r, r, 1, primme_svds);
       rnorm0 = sqrt(rnorm0);
       if (rnorms[i] < rnorm0 && rnorm0 > 10*rnorms[i] && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: rnorms[%d] = %5E, but the computed residual is %5E\n", i+1, rnorms[i], rnorm0);
@@ -411,9 +413,9 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       }
       /* Check angle X and U(:,i) is less than twice the max angle of the eigenvector with largest residual  */
       Num_gemv_Sprimme("C", primme_svds->mLocal, cols, 1.0, X, primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1, 0., h, 1);
-      if (primme_svds->globalSumDouble) {
+      if (primme_svds->globalSumReal) {
          int cols0 = cols*sizeof(SCALAR)/sizeof(double);
-         primme_svds->globalSumDouble(h, h0, &cols0, primme_svds);
+         primme_svds->globalSumReal(h, h0, &cols0, primme_svds, &ierr);
       }
       else h0 = h;
       prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1));

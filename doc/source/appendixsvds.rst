@@ -26,7 +26,7 @@ primme_svds_params
          | :c:func:`primme_initialize` sets this field to 0;
          | this field is read by :c:func:`dprimme`.
 
-   .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds)
+   .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
 
       Block matrix-multivector multiplication, :math:`y = A x` if ``transpose`` is zero and :math:`y = A^*x` otherwise.
 
@@ -42,6 +42,7 @@ primme_svds_params
       :param blockSize: number of columns in ``x`` and ``y``.
       :param transpose: if non-zero, the transpose A should be applied.
       :param primme_svds: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
       Input/output:
 
@@ -53,7 +54,7 @@ primme_svds_params
          Integer arguments are passed by reference to make easier the interface to other
          languages (like Fortran).
 
-   .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds)
+   .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
       Block preconditioner-multivector application. Depending on ``mode`` it is expected an approximation of the inverse of
 
@@ -75,6 +76,7 @@ primme_svds_params
       :param blockSize: number of columns in ``x`` and ``y``.
       :param mode: one of ``primme_svds_op_AtA``, ``primme_svds_op_AAt`` or ``primme_svds_op_augmented``.
       :param primme_svds: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
       Input/output:
 
@@ -132,13 +134,13 @@ primme_svds_params
       For example, with MPI, it could be a pointer to the MPI communicator.
       PRIMME does not use this. It is available for possible use in 
       user functions defined in |SmatrixMatvec|, |SapplyPreconditioner| and
-      |SglobalSumDouble|.
+      |SglobalSumReal|.
 
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
 
-   .. c:member:: void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count, primme_svds_params *primme_svds)
+   .. c:member:: void (*globalSumReal)(double *sendBuf, double *recvBuf, int *count, primme_svds_params *primme_svds, int *ierr)
 
       Global sum reduction function. No need to set for sequential programs.
 
@@ -148,33 +150,34 @@ primme_svds_params
          of ``sendBuf``.
       :param count: array size of ``sendBuf`` and ``recvBuf``.
       :param primme_svds: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
+      The actual type of ``sendBuf`` and ``recvBuf`` depends on which function is being calling. For :c:func:`dprimme_svds`
+      and :c:func:`zprimme_svds` it is ``double``, and for :c:func:`sprimme_svds` and  :c:func:`cprimme_svds` it is ``float``.
+      Note that ``count`` is the number of values of the actual type.
+ 
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to an internal function;
-         | :c:func:`dprimme_svds` sets this field to an internal function if |SnumProcs| is 1 and |globalSumDouble| is NULL;
+         | :c:func:`dprimme_svds` sets this field to an internal function if |SnumProcs| is 1 and |SglobalSumReal| is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
       When MPI is used this can be a simply wrapper to MPI_Allreduce().
 
       .. code:: c
 
-         void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                                  primme_svds_params *primme_svds) {
+         void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count, 
+                                  primme_svds_params *primme_svds, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
-            MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator);
+            if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
+            }
          }
 
-      .. note::
-
-         Argument ``count`` is passed by reference to make easier the interface to other
-         languages (like Fortran).
-
-      .. note::
-
-         The arguments ``sendBuf`` and ``recvBuf`` are always double arrays and ``count``
-         is always the number of double elements in both arrays, even for :c:func:`zprimme_svds`.
+         When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
    .. c:member:: int numSvals
 
@@ -579,7 +582,7 @@ The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of th
 * -6: Wrong value for |SnumProcs|,
 * -7: |SmatrixMatvec| is not set,
 * -8: |SapplyPreconditioner| is not set but |Sprecondition| == 1 ,
-* -9: |SnumProcs| >1 but |SglobalSumDouble| is not set,
+* -9: |SnumProcs| >1 but |SglobalSumReal| is not set,
 * -10: Wrong value for |SnumSvals|, it's larger than min(|Sm|, |Sn|),
 * -11: Wrong value for |SnumSvals|, it's smaller than 1,
 * -13: Wrong value for |Starget|,

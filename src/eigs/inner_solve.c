@@ -36,6 +36,7 @@
 #include "factorize.h"
 #include "update_W.h"
 #include "globalsum.h"
+#include "auxiliary_eigs.h"
 
 static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, 
    SCALAR *RprojectorQ, SCALAR *x, SCALAR *RprojectorX, 
@@ -372,8 +373,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
             ETolerance = eres_updated;
          }
 
-         double eval_updatedD = eval_updated;
-         primme->convTestFun(&eval_updatedD, NULL, &ETolerance, &isConv, primme);
+         CHKERR(convTestFun_Sprimme(eval_updated, NULL, ETolerance, &isConv,
+                  primme), -1);
 
          if (numIts > 1 && (isConv || eres_updated < absoluteTolerance)) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -427,8 +428,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
       } /* End of if adaptive JDQMR section                        */
         /* --------------------------------------------------------*/
       else {
-         double evald = eval, taud = tau;
-         primme->convTestFun(&evald, NULL, &taud, &isConv, primme);
+         CHKERR(convTestFun_Sprimme(eval, NULL, tau, &isConv, primme), -1);
 
          if (numIts > 1 && isConv) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -531,16 +531,9 @@ static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q,
    SCALAR *UDU, int *ipivot, SCALAR *result, SCALAR *rwork, 
    primme_params *primme) {  
 
-   int ONE = 1;
-
-   if (primme->correctionParams.precondition) {
-      /* Place K^{-1}v in result */
-      (*primme->applyPreconditioner)(v, result, &ONE, primme);
-      primme->stats.numPreconds += 1;
-   }
-   else {
-      Num_copy_Sprimme(primme->nLocal, v, 1, result, 1);
-   }
+   /* Place K^{-1}v in result */
+   CHKERR(applyPreconditioner_Sprimme(v, primme->nLocal, primme->nLocal, result,
+            primme->nLocal, 1, primme), -1);
 
    CHKERR(apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
                            result, rwork, primme), -1);

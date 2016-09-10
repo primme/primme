@@ -44,9 +44,6 @@
 #ifdef USE_DOUBLE
 #include "notemplate.h"
 
-static void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                      primme_params *params);
-
 /***************************************************************************
 
    Initialize the primme data structure
@@ -75,7 +72,7 @@ void primme_initialize(primme_params *primme) {
    primme->procID                  = 0;
    primme->nLocal                  = 0;
    primme->commInfo                = NULL;
-   primme->globalSumDouble         = NULL;
+   primme->globalSumReal           = NULL;
 
    /* Initial guesses/constraints */
    primme->initSize                = 0;
@@ -116,7 +113,12 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numRestarts       = 0;
    primme->stats.numMatvecs        = 0;
    primme->stats.numPreconds       = 0;
-   primme->stats.elapsedTime       = 0.0L;
+   primme->stats.volumeGlobalSum   = 0;
+   primme->stats.numOrthoInnerProds= 0.0;
+   primme->stats.elapsedTime       = 0.0;
+   primme->stats.timeMatvec        = 0.0;
+   primme->stats.timePrecond       = 0.0;
+   primme->stats.timeGlobalSum     = 0.0;
    primme->stats.estimateMaxEVal   = -HUGE_VAL;
    primme->stats.estimateMinEVal   = HUGE_VAL;
    primme->stats.estimateLargestSVal = -HUGE_VAL;
@@ -137,6 +139,8 @@ void primme_initialize(primme_params *primme) {
    primme->realWork                = NULL;
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
+   primme->ldevecs                 = 0;
+   primme->ldOPs                   = 0;
 
 }
 
@@ -446,10 +450,10 @@ void primme_set_defaults(primme_params *params) {
    if (params->numProcs <= 1) {
       params->nLocal = params->n;
       params->procID = 0;
-      if (params->globalSumDouble == NULL) 
-         params->globalSumDouble = primme_seq_globalSumDouble;
    }
 
+   if (params->ldevecs == 0)
+      params->ldevecs = params->nLocal;
    if (params->projectionParams.projection == primme_proj_default)
       params->projectionParams.projection = primme_proj_RR;
    if (params->initBasisMode == primme_init_default)
@@ -587,6 +591,8 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINT(locking, %d);
    PRINT(initSize, %d);
    PRINT(numOrthoConst, %d);
+   PRINT_PRIMME_INT(ldevecs);
+   PRINT_PRIMME_INT(ldOPs);
    fprintf(outputFile, "%s.iseed =", prefix);
    for (i=0; i<4;i++) {
       fprintf(outputFile, " %" PRIMME_INT_P, primme.iseed[i]);
@@ -627,28 +633,5 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
   /**************************************************************************/
 } /* end of display params */
   /**************************************************************************/
-
-/******************************************************************************
- * function 
- * primme_seq_globalSumDouble(void *sendBuf, double *recvBuf, int count) 
- *
- * This is the sequential default for the function globalSumDouble. 
- * If the program is parallel, the user must supply a different pointer 
- * function to the primme.globalSumDouble 
- * 
- ******************************************************************************
- *        NOTE: The count and the copying refers to double datatypes
- ******************************************************************************/
-
-static void primme_seq_globalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                      primme_params *params) {
-
-   int i;
-   (void)params;  /* unused argument */
-   for (i=0; i<*count; i++) {
-      ((double*)recvBuf)[i] = ((double*)sendBuf)[i];
-   }
-
-}
 
 #endif /* USE_DOUBLE */

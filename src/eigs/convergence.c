@@ -33,6 +33,7 @@
 #include "numerical.h"
 #include "convergence.h"
 #include "ortho.h"
+#include "auxiliary_eigs.h"
 
 /* Extra estates for flags */
 #define PRACTICALLY_CONVERGED  2
@@ -140,9 +141,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
          continue;
       }
 
-      double hval = hVals[i], rnorm = blockNorms[i-left];
-      primme->convTestFun(&hval, X?&X[ldX*(i-left)]:NULL, &rnorm,
-            &isConv, primme);
+      CHKERR(convTestFun_Sprimme(hVals[i], X?&X[ldX*(i-left)]:NULL,
+               blockNorms[i-left], &isConv, primme), -1);
 
       if (isConv) {
          flags[i] = CONVERGED;

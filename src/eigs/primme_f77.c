@@ -181,8 +181,8 @@ void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
       case PRIMMEF77_nLocal:
               (*primme)->nLocal = *v.int_v;
       break;
-      case PRIMMEF77_globalSumDouble:
-              (*primme)->globalSumDouble = v.globalSumDoubleFunc_v;
+      case PRIMMEF77_globalSumReal:
+              (*primme)->globalSumReal = v.globalSumRealFunc_v;
       break;
       case PRIMMEF77_numEvals:
               if (*v.int_v > INT_MAX) *ierr = 1; else 
@@ -418,8 +418,8 @@ void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,
       case PRIMMEF77_nLocal:
               v->int_v = primme->nLocal;
       break;
-      case PRIMMEF77_globalSumDouble:
-              v->globalSumDoubleFunc_v = primme->globalSumDouble;
+      case PRIMMEF77_globalSumReal:
+              v->globalSumRealFunc_v = primme->globalSumReal;
       break;
       case PRIMMEF77_numEvals:
               v->int_v = primme->numEvals;

@@ -63,6 +63,7 @@
 #include "ortho.h"
 #include "const.h"
 #include "globalsum.h"
+#include "wtime.h"
  
 
 /**********************************************************************
@@ -131,11 +132,10 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
    REAL s0=0.0, s02=0.0, s1=0.0, s12=0.0, s00=0.0;
    REAL temp;
    SCALAR *overlaps;
-   FILE *outputFile;
+   double t0;
 
    messages = (primme && primme->procID == 0 && primme->printLevel >= 3
          && primme->outputFile);
-   outputFile = primme ? primme->outputFile : stdout;
 
    minWorkSize = 2*(numLocked + b2 + 1);
 
@@ -164,6 +164,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
    /* main loop to orthogonalize new vectors one by one */
    /*---------------------------------------------------*/
 
+   t0 = primme_wTimer(0);
+
    for(i=b1; i <= b2; i++) {
     
       nOrth = 0;
@@ -177,7 +179,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
                return -3;
             }
             if (messages){
-               fprintf(outputFile, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P "\n", i, nLocal);
+               fprintf(primme->outputFile, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P "\n", i, nLocal);
             }
 
             assert(R == NULL);
@@ -191,16 +193,19 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          if (nOrth == 1) {
             s02 = REAL_PART(Num_dot_Sprimme(nLocal, &basis[ldBasis*i], 1, 
                      &basis[ldBasis*i], 1));
+            if (primme) primme->stats.numOrthoInnerProds += 1;
          }
             
          if (i > 0) {
             Num_gemv_Sprimme("C", nLocal, i, 1.0, basis, ldBasis, 
                &basis[ldBasis*i], 1, 0.0, rwork, 1);
+            if (primme) primme->stats.numOrthoInnerProds += i;
          }
 
          if (numLocked > 0) {
             Num_gemv_Sprimme("C", nLocal, numLocked, 1.0, locked, ldLocked,
                &basis[ldBasis*i], 1, 0.0, &rwork[i], 1);
+            if (primme) primme->stats.numOrthoInnerProds += numLocked;
          }
 
          rwork[i+numLocked] = s02;
@@ -215,11 +220,13 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          if (numLocked > 0) { /* locked array most recently accessed */
             Num_gemv_Sprimme("N", nLocal, numLocked, -1.0, locked, ldLocked, 
                &overlaps[i], 1, 1.0, &basis[ldBasis*i], 1); 
+            if (primme) primme->stats.numOrthoInnerProds += numLocked;
          }
 
          if (i > 0) {
             Num_gemv_Sprimme("N", nLocal, i, -1.0, basis, ldBasis, 
                overlaps, 1, 1.0, &basis[ldBasis*i], 1);
+            if (primme) primme->stats.numOrthoInnerProds += i;
          }
  
          if (nOrth == 1) {
@@ -237,13 +244,14 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          if ( s1 < s0*sqrt(machEps) || nOrth > 1 || !primme) {  
             temp = REAL_PART(Num_dot_Sprimme(nLocal, &basis[ldBasis*i], 1, 
                                            &basis[ldBasis*i], 1));
+            if (primme) primme->stats.numOrthoInnerProds += 1;
             CHKERR(globalSum_Rprimme(&temp, &s12, 1, primme), -1);
             s1 = sqrt(s12);
          }
 
          if (R && (s1 <= machEps*s00 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
             if (messages) {
-               fprintf(outputFile, "Zeroing column %d\n", i);
+               fprintf(primme->outputFile, "Zeroing column %d\n", i);
             }
             /* No randomization when computing the QR decomposition */
             Num_scal_Sprimme(nLocal, 0.0, &basis[ldBasis*i], 1);
@@ -252,7 +260,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          }
          else if (s1 <= machEps*s00) {
             if (messages) {
-               fprintf(outputFile, 
+               fprintf(primme->outputFile, 
                  "Vector %d lost all significant digits in ortho\n", i-b1);
             }
             nOrth = maxNumOrthos;
@@ -267,6 +275,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
                if (!primme || nOrth == 1) {
                   temp = REAL_PART(Num_dot_Sprimme(nLocal,
                            &basis[ldBasis*i], 1, &basis[ldBasis*i], 1));
+                  if (primme) primme->stats.numOrthoInnerProds += 1;
                   CHKERR(globalSum_Rprimme(&temp, &s1, 1, primme), -1);
                   s1 = sqrt(s1);
                }
@@ -279,6 +288,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
  
       }
    }
+
+   if (primme) primme->stats.timeOrtho += primme_wTimer(0) - t0;
 
    /* Check orthogonality */
    /*

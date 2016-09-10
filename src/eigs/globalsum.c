@@ -28,33 +28,28 @@
 
 #include "numerical.h"
 #include "globalsum.h"
+#include "wtime.h"
 
 TEMPLATE_PLEASE
 int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
       primme_params *primme) {
 
-   if (primme && primme->globalSumDouble) {
+   int ierr;
+   double t0=0.0;
+
+   if (primme && primme->globalSumReal) {
+      t0 = primme_wTimer(0);
+
       /* If it is a complex type, count real and imaginary part */
-      #ifdef USE_COMPLEX
-         count *= 2;
-      #endif
-      #if defined(USE_DOUBLE) || defined(USE_DOUBLECOMPLEX)
-         primme->globalSumDouble((double*)sendBuf, (double*)recvBuf, &count,
-               primme);
-      #else
-         double *sendBufd, *recvBufd;
-         int i;
-         sendBufd = (double*)malloc(sizeof(double)*count*2);
-         recvBufd = sendBufd + count;
-         for(i=0; i<count; i++) {
-            sendBufd[i] = ((REAL*)sendBuf)[i];
-         }
-         primme->globalSumDouble(sendBufd, recvBufd, &count, primme);
-         for(i=0; i<count; i++) {
-            ((REAL*)recvBuf)[i] = recvBufd[i];
-         }
-         free(sendBufd);
-      #endif
+#ifdef USE_COMPLEX
+      count *= 2;
+#endif
+      CHKERRM((primme->globalSumReal(sendBuf, recvBuf, &count, primme, &ierr),
+               ierr), -1,
+            "Error returned by 'globalSumReal' %d", ierr);
+
+      primme->stats.timeGlobalSum += primme_wTimer(0) - t0;
+      primme->stats.volumeGlobalSum += count;
    }
    else {
       Num_copy_Sprimme(count, sendBuf, 1, recvBuf, 1);

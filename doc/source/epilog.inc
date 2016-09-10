@@ -7,7 +7,7 @@
 .. |procID|                                replace:: :c:member:`procID                             <primme_params.procID>`
 .. |commInfo|                              replace:: :c:member:`commInfo                           <primme_params.commInfo>`
 .. |nLocal|                                replace:: :c:member:`nLocal                             <primme_params.nLocal>`
-.. |globalSumDouble|                       replace:: :c:member:`globalSumDouble                    <primme_params.globalSumDouble>`
+.. |globalSumReal|                         replace:: :c:member:`globalSumReal                      <primme_params.globalSumReal>`
 .. |numEvals|                              replace:: :c:member:`numEvals                           <primme_params.numEvals>`
 .. |target|                                replace:: :c:member:`target                             <primme_params.target>`
 .. |numTargetShifts|                       replace:: :c:member:`numTargetShifts                    <primme_params.numTargetShifts>`
@@ -58,6 +58,8 @@
 .. |dynamicMethodSwitch|                   replace:: :c:member:`dynamicMethodSwitch                <primme_params.dynamicMethodSwitch>`
 .. |massMatrixMatvec|                      replace:: :c:member:`massMatrixMatvec                   <primme_params.massMatrixMatvec>`
 .. |convTestFun|                           replace:: :c:member:`convTestFun                        <primme_params.convTestFun>`
+.. |ldevecs|                               replace:: :c:member:`ldevecs                            <primme_params.ldevecs>`
+.. |ldOPs|                                 replace:: :c:member:`ldOPs                              <primme_params.ldOPs>`
 .. |primme_smallest|       replace:: :c:member:`primme_smallest       <primme_params.target>`
 .. |primme_largest|        replace:: :c:member:`primme_largest        <primme_params.target>`
 .. |primme_closest_geq|    replace:: :c:member:`primme_closest_geq    <primme_params.target>`
@@ -103,7 +105,7 @@
 .. |SprocID|                 replace:: :c:member:`procID                       <primme_svds_params.procID>`
 .. |SmLocal|                 replace:: :c:member:`mLocal                       <primme_svds_params.mLocal>`
 .. |SnLocal|                 replace:: :c:member:`nLocal                       <primme_svds_params.nLocal>`
-.. |SglobalSumDouble|        replace:: :c:member:`globalSumDouble              <primme_svds_params.globalSumDouble>`
+.. |SglobalSumReal|          replace:: :c:member:`globalSumReal                <primme_svds_params.globalSumReal>`
 .. |SapplyPreconditioner|    replace:: :c:member:`applyPreconditioner          <primme_svds_params.applyPreconditioner>`
 .. |SinitSize|               replace:: :c:member:`initSize                     <primme_svds_params.initSize>`
 .. |SmaxBasisSize|           replace:: :c:member:`maxBasisSize                 <primme_svds_params.maxBasisSize>`
@@ -149,3 +151,4 @@
 .. _BLAS: http://www.netlib.org/blas/
 .. _Sphinx: http://sphinx-doc.org/
 .. _PETSc: http://www.mcs.anl.gov/petsc/
+.. _column-major: https://en.wikipedia.org/wiki/Row-major_order

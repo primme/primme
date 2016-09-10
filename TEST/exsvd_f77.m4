@@ -290,7 +290,7 @@ ifdef([USE_PETSC], [
         call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
         call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
         end
-        subroutine PETScMatvec(x,ldx,y,ldy,k,transpose,primme_svds)
+        subroutine PETScMatvec(x,ldx,y,ldy,k,transpose,primme_svds,err)
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
@@ -303,7 +303,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
         integer k,transpose
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
-        integer j
+        integer j,err
 ifdef([USE_POINTER], [        Mat, pointer :: A
         type(c_ptr) :: pA
 ], [        Mat A
@@ -314,7 +314,7 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
         PetscErrorCode ierr
 
 ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
-     :                                  PRIMMEF77_SVDS_matrix, pA, ierr)
+     :                                  PRIMMEF77_SVDS_matrix, pA, err)
         call c_f_pointer(pA, A)
 ])
 #if PETSC_VERSION_LT(3,6,0)
@@ -340,8 +340,9 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
         enddo
         call VecDestroy(xvec, ierr)
         call VecDestroy(yvec, ierr)
+        err = 0
         end
-        subroutine ApplyPCPrecAHA(x,ldx,y,ldy,k,mode,primme_svds)
+        subroutine ApplyPCPrecAHA(x,ldx,y,ldy,k,mode,primme_svds,err)
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
@@ -351,11 +352,11 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscpc.h>
-        integer*8 ldx,ldy
-        integer k,mode
+        integer*8 ldx,ldy,mLocal,nLocal
+        integer k,mode,err
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
-        integer j,mLocal,nLocal
+        integer j
 ifdef([USE_POINTER], [        Mat, pointer :: A
         PC, pointer :: pc
         type(c_ptr) :: pA, ppc
@@ -367,13 +368,13 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
         PetscErrorCode ierr
 
         call primme_svds_get_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_mLocal, mLocal, ierr)
+     :                              PRIMMEF77_SVDS_mLocal, mLocal, err)
         call primme_svds_get_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_nLocal, nLocal, ierr)
+     :                              PRIMMEF77_SVDS_nLocal, nLocal, err)
 ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
-     :                                  PRIMMEF77_SVDS_matrix, pA, ierr)
+     :                                  PRIMMEF77_SVDS_matrix, pA, err)
         call primme_svds_get_member_f77(primme_svds,
-     :                         PRIMMEF77_SVDS_preconditioner, ppc, ierr)
+     :                         PRIMMEF77_SVDS_preconditioner, ppc, err)
         call c_f_pointer(pA, A)
         call c_f_pointer(ppc, pc)
 ])
@@ -394,8 +395,9 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
         else if (mode.eq.PRIMMEF77_SVDS_op_augmented) then
            y(1:mLocal+nLocal,1:k) = x(1:mLocal+nLocal,1:k) 
         endif
+        err = 0
         end
-        subroutine par_GlobalSumDouble(x,y,k,primme_svds)
+        subroutine par_GlobalSumDouble(x,y,k,primme_svds,ierr)
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
@@ -404,7 +406,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
 #include <petsc/finclude/petscsys.h>
         real*8 x(*), y(*)
         integer*8 primme_svds
-        integer k, ierr
+        integer k
 ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
@@ -429,7 +431,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !            [ 0  0 e2  0  0 ... ]
 !             ...
 !      
-        subroutine MV(x,ldx,y,ldy,k,transpose,primme_svds)
+        subroutine MV(x,ldx,y,ldy,k,transpose,primme_svds,ierr)
 !       ----------------------------------------------------------------
         implicit none
         intrinsic min
@@ -471,6 +473,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
               enddo
            enddo
         endif
+        ierr = 0
         end
 
 !       This performs Y = M^{-1} * X, where
@@ -479,15 +482,15 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !       - Y, output dense matrix of size primme.n x blockSize;
 !       - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
 !      
-        subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds)
+        subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr)
 !       ----------------------------------------------------------------
         implicit none
         intrinsic min
         include 'primme_f77.h'
-        integer*8 ldx,ldy
+        integer*8 ldx,ldy,m,n
         PRIMME_NUM x(ldx,*), y(ldy,*)
         integer*8 primme_svds
-        integer k,mode,i,j,m,n, ierr
+        integer k,mode,i,j,ierr
         real*8 c, ei, shift
         common c
         call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_m,
@@ -523,5 +526,6 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
 !          If any preconditioner is available, just y = x
            y(1:m+n,1:k) = x(1:m+n,1:k)
         endif
+        ierr = 0
         end
 ])dnl

@@ -31,6 +31,10 @@
 
 #include <stdio.h>
 
+#ifndef PRIMME_H
+#  error "Please include 'primme.h' instead; checkout the documentation."
+#endif
+
 typedef enum {
    primme_smallest,        /* leftmost eigenvalues */
    primme_largest,         /* rightmost eigenvalues */
@@ -75,7 +79,14 @@ typedef struct primme_stats {
    PRIMME_INT numRestarts;
    PRIMME_INT numMatvecs;
    PRIMME_INT numPreconds;
+   PRIMME_INT numGlobalSum;         /* times called globalSumReal */
+   PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
+   double numOrthoInnerProds;       /* number of inner prods done by Ortho */
    double elapsedTime; 
+   double timeMatvec;               /* time expend by matrixMatvec */
+   double timePrecond;              /* time expend by applyPreconditioner */
+   double timeOrtho;                /* time expend by ortho  */
+   double timeGlobalSum;            /* time expend by globalSumReal  */
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
@@ -118,23 +129,27 @@ typedef struct primme_params {
    /* The user must input at least the following two arguments */
    PRIMME_INT n;
    void (*matrixMatvec)
-      ( void *x,  void *y, int *blockSize, struct primme_params *primme);
+      ( void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
+        struct primme_params *primme, int *ierr);
 
    /* Preconditioner applied on block of vectors (if available) */
    void (*applyPreconditioner)
-      ( void *x,  void *y, int *blockSize, struct primme_params *primme);
+      ( void *x, PRIMME_INT *ldx,  void *y, PRIMME_INT *ldy, int *blockSize,
+        struct primme_params *primme, int *ierr);
 
    /* Matrix times a multivector for mass matrix B for generalized Ax = xBl */
    void (*massMatrixMatvec)
-      ( void *x,  void *y, int *blockSize, struct primme_params *primme);
+      ( void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
+        struct primme_params *primme, int *ierr);
 
    /* input for the following is only required for parallel programs */
    int numProcs;
    int procID;
    PRIMME_INT nLocal;
    void *commInfo;
-   void (*globalSumDouble)
-      (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme );
+   void (*globalSumReal)
+      (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme,
+       int *ierr );
 
    /*Though primme_initialize will assign defaults, most users will set these */
    int numEvals;          
@@ -167,6 +182,8 @@ typedef struct primme_params {
    void *preconditioner;
    double *ShiftsForPreconditioner;
    primme_init initBasisMode;
+   PRIMME_INT ldevecs;
+   PRIMME_INT ldOPs;
 
    struct projection_params projectionParams; 
    struct restarting_params restartingParams;
@@ -174,7 +191,7 @@ typedef struct primme_params {
    struct primme_stats stats;
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
-         struct primme_params *primme);
+         struct primme_params *primme, int *ierr);
 } primme_params;
 /*---------------------------------------------------------------------------*/
 

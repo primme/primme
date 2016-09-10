@@ -11,6 +11,14 @@ primme_params
 
    The integer size is controlled by the compilation flag  ``PRIMME_INT_SIZE``, see :ref:`making`.
 
+.. c:type:: PRIMME_COMPLEX_FLOAT
+
+   Macro that is ``complex float`` in C and ``std::complex<float>`` in C++.
+
+.. c:type:: PRIMME_COMPLEX_DOUBLE
+
+   Macro that is ``complex double`` in C and ``std::complex<double>`` in C++.
+
 .. c:type:: primme_params
 
    Structure to set the problem matrices and eigensolver options.
@@ -24,30 +32,33 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | this field is read by :c:func:`dprimme`.
 
-   .. c:member:: void (*matrixMatvec) (void *x, void *y, int *blockSize, primme_params *primme)
+   .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block matrix-multivector multiplication, :math:`y = A x` in solving :math:`A x = \lambda x` or :math:`A x = \lambda B x`.
    
-      :param x: one dimensional array containing the ``blockSize`` vectors 
-         packed one after the other (i.e., the leading dimension is the vector size), each of size |nLocal|.
-         The real type is ``double*`` and ``double complex*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
-      :param y: one dimensional array containing the ``blockSize`` vectors 
-         packed one after the other (i.e., the leading dimension is the vector size), each of size |nLocal|.
-         The real type is ``double*`` and ``double complex*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
-      :param blockSize: number of vectors in x and y.
+      :param x: matrix of size |nLocal| x ``blockSize`` in column-major_ order with leading dimension ``ldx``.
+      :param ldx: the leading dimension of the array ``x``.
+      :param y: matrix of size |nLocal| x ``blockSize`` in column-major_ order with leading dimension ``ldy``.
+      :param ldy: the leading dimension of the array ``y``.
+      :param blockSize: number of columns in ``x`` and ``y``.
       :param primme: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
+      for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and for
+      for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
 
-      .. note::
+   .. note::
 
-         Argument ``blockSize`` is passed by reference to make easier the interface to other
-         languages (like Fortran).
+         If you will have performance issues with leading dimension different than |nLocal|,
+         set |ldOPs| to |nLocal|.
 
-   .. c:member:: void (*applyPreconditioner)(void *x, void *y, int *blockSize, struct primme_params *primme)
+   .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block preconditioner-multivector application, :math:`y = M^{-1}x` where :math:`M` is usually an approximation of :math:`A - \sigma I` or :math:`A - \sigma B` for finding eigenvalues close to :math:`\sigma`.
       The function follows the convention of |matrixMatvec|.
@@ -57,7 +68,7 @@ primme_params
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
  
-   .. c:member:: void (*massMatrixMatvec)(void *x, void *y, int *blockSize, struct primme_params *primme)
+   .. c:member:: void (*massMatrixMatvec) (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block matrix-multivector multiplication, :math:`y = B x` in solving :math:`A x = \lambda B x`.
       The function follows the convention of |matrixMatvec|.
@@ -110,13 +121,13 @@ primme_params
       PRIMME does not use this. It is available for possible use in 
       user functions defined in |matrixMatvec|,
       |applyPreconditioner|, |massMatrixMatvec| and
-      |globalSumDouble|.
+      |globalSumReal|.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
 
-   .. c:member:: void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count, primme_params *primme)
+   .. c:member:: void (*globalSumReal)(void *sendBuf, void *recvBuf, int *count, primme_params *primme, int *ierr)
 
       Global sum reduction function. No need to set for sequential programs.
 
@@ -126,34 +137,36 @@ primme_params
          of ``sendBuf``.
       :param count: array size of ``sendBuf`` and ``recvBuf``.
       :param primme: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
+      The actual type of ``sendBuf`` and ``recvBuf`` depends on which function is being calling. For :c:func:`dprimme`
+      and :c:func:`zprimme` it is ``double``, and for :c:func:`sprimme` and  :c:func:`cprimme` it is ``float``.
+      Note that ``count`` is the number of values of the actual type.
+ 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to an internal function;
-         | :c:func:`dprimme` sets this field to an internal function if |numProcs| is 1 and |globalSumDouble| is NULL;
+         | :c:func:`dprimme` sets this field to an internal function if |numProcs| is 1 and |globalSumReal| is NULL;
          | this field is read by :c:func:`dprimme`.
 
       When MPI is used this can be a simply wrapper to MPI_Allreduce().
 
       .. code:: c
 
-         void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                                  primme_params *primme) {
+         void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count, 
+                                  primme_params *primme, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-            MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator);
+            if(MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
+            }
          }
 
-      .. note::
+      }
 
-         Argument ``count`` is passed by reference to make easier the interface to other
-         languages (like Fortran).
-
-      .. note::
-
-         The arguments ``sendBuf`` and ``recvBuf`` are always double arrays and ``count``
-         is always the number of double elements in both arrays, even for :c:func:`zprimme`.
-
+      When calling :c:func:`sprimme` and :c:func:`cprimme` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
    .. c:member:: int numEvals
 
@@ -391,7 +404,16 @@ primme_params
 
          | :c:func:`primme_initialize` sets this field to 0;
          | this field is read and written by :c:func:`dprimme`.
-      
+
+   .. c:member:: PRIMME_INT ldevecs
+
+      The leading dimension of ``evecs``. The default is |nLocal|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | this field is read by :c:func:`dprimme`.
+
    .. c:member:: int numOrthoConst
 
       Number of vectors to be used as external orthogonalization constraints.
@@ -832,6 +854,17 @@ primme_params
 
       See [r3]_ for a study about different projector configurations in JD.
 
+   .. c:member:: PRIMME_INT ldOPs
+
+      Recommended leading dimension to be used in |matrixMatvec|, |applyPreconditioner| and |massMatrixMatvec|.
+      The default value is zero, which means no recommendation.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | this field is read by :c:func:`dprimme`.
+
+
    .. c:member:: PRIMME_INT stats.numOuterIterations
 
       Hold the number of outer iterations. The value is available during execution and at the end.
@@ -870,9 +903,69 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
+   .. c:member:: PRIMME_INT stats.numGlobalSum
+
+      Hold how many times |globalSumReal| has been called.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.volumeGlobalSum
+
+      Hold how many :c:type:`REAL` have been reduced by |globalSumReal|.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
    .. c:member:: double stats.elapsedTime
 
       Hold the wall clock time spent by the call to :c:func:`dprimme` or :c:func:`zprimme`.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.timeMatvec
+
+      Hold the wall clock time spent by |matrixMatvec|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.timePrecond
+
+      Hold the wall clock time spent by |applyPreconditioner|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.timeOrtho
+
+      Hold the wall clock time spent by orthogonalization.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.timeGlobalSum
+
+      Hold the wall clock time spent by |globalSumReal|.
       The value is available at the end of the execution.
 
       Input/output:
@@ -921,37 +1014,25 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
-   .. c:member:: void (*convTestFun) (double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme)
+   .. c:member:: void (*convTestFun) (double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme, int *ierr)
 
       Function that evaluates if the approximate eigenpair has converged.
       If NULL, it is used the default convergence criteria (see |eps|).
    
       :param eval: the approximate value to evaluate.
       :param x: one dimensional array of size |nLocal| containing the approximate vector; it can be NULL.
-         The real type is ``double*`` and ``double complex*`` when called from :c:func:`dprimme` and :c:func:`zprimme` respectively.
+         The actual type depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
+         for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and for
+         for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
       :param resNorm: the norm of residual vector.
       :param isconv: (output) the function sets zero if the pair is not converged and non zero otherwise.
       :param primme: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
-
-
-..   struct stackTraceNode *stackTrace;            (OUTPUT)
-..
-.. Struct with the following members. If an error occurs the function
-.. primme_PrintStackTrace(primme) prints the calling stack from top to the 
-..       function that caused the error. Nothing to set.
-..
-.. int callingFunction;
-..    int failedFunction;
-..    int errorCode;
-..    int lineNumber;
-..    char fileName[PRIMME_MAX_NAME_LENGTH];
-..    struct stackTraceNode *nextNode;
-..
 
 
 .. _error-codes:
@@ -973,7 +1054,6 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -7: if |matrixMatvec| is NULL.
 * -8: if |applyPreconditioner| is NULL and 
   |precondition| is not NULL.
-* -9: if |globalSumDouble| is NULL.
 * -10: if |numEvals| > |n|.
 * -11: if |numEvals| < 0.
 * -12: if |eps| > 0 and |eps| < machine precision.
@@ -1006,6 +1086,8 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
 * -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
 * -33: if not |locking| and |minRestartSize| < |numEvals|.
+* -34: if |ldevecs| < |nLocal|
+* -35: if |ldOPs| is not zero and less than |nLocal|
 
 .. _methods:
 

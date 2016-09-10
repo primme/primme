@@ -71,7 +71,7 @@ static int allocate_workspace(primme_params *primme, int allocate);
 static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
                        primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme);
+   primme_params *primme, int *ierr);
 
 
 /*******************************************************************************
@@ -459,8 +459,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
    else if (primme->applyPreconditioner == NULL && 
             primme->correctionParams.precondition ) 
       ret = -8;
-   else if (primme->globalSumDouble == NULL)
-      ret = -9;
+   /* ret = -9 is free */
    else if (primme->numEvals > primme->n)
       ret = -10;
    else if (primme->numEvals < 0)
@@ -517,6 +516,10 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
    else if (!primme->locking && primme->minRestartSize < primme->numEvals &&
             primme->n > 2)
       ret = -33;
+   else if (primme->ldevecs < primme->nLocal)
+      ret = -34;
+   else if (primme->ldOPs != 0 && primme->ldOPs < primme->nLocal)
+      ret = -35;
    /* Please keep this if instruction at the end */
    else if ( primme->target == primme_largest_abs ||
              primme->target == primme_closest_geq ||
@@ -553,8 +556,8 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
  * isConv      if it isn't zero the approximate pair is marked as converged
  ******************************************************************************/
 
-static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme) {
+static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr) {
 
    const double machEps = Num_lamch_Rprimme("E");
    const double aNorm = (primme->aNorm > 0.0) ?
@@ -564,4 +567,5 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *is
    *isConv = *rNorm < max(
                primme->eps * aNorm,
                machEps * 3.16 * primme->stats.estimateLargestSVal);
+   *ierr = 0;
 }

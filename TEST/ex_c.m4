@@ -36,13 +36,13 @@ ifdef(`USE_PETSC', ``#include <petscpc.h>
 define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', `std::complex<double>', `complex double'), `double')))dnl
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLaplacian1D(int n, Mat *A);
-void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme);
-void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme);
+void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void ApplyPCPrecPETSC(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
-                         primme_params *primme);
+                         primme_params *primme, int *ierr);
 ', `
-void LaplacianMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme);
-void LaplacianApplyPreconditioner(void *x, void *y, int *blockSize, primme_params *primme);
+void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 ')dnl
 
 int main (int argc, char *argv[]) {
@@ -275,7 +275,7 @@ PetscErrorCode generateLaplacian1D(int n, Mat *A) {
    PetscFunctionReturn(0);
 }
 
-void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
+void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
    int i;
    Mat *matrix;
    Vec xvec, yvec;
@@ -285,17 +285,18 @@ void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 
    ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    }
    ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   *err = 0; 
 }
 ', `
-void LaplacianMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
+void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
@@ -303,8 +304,8 @@ void LaplacianMatrixMatvec(void *x, void *y, int *blockSize, primme_params *prim
    PRIMME_NUM *yvec;     /* pointer to i-th output vector y */
    
    for (i=0; i<*blockSize; i++) {
-      xvec = (PRIMME_NUM *)x + primme->n*i;
-      yvec = (PRIMME_NUM *)y + primme->n*i;
+      xvec = (PRIMME_NUM *)x + *ldx*i;
+      yvec = (PRIMME_NUM *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = 0.0;
          if (row-1 >= 0) yvec[row] += -1.0*xvec[row-1];
@@ -312,6 +313,7 @@ void LaplacianMatrixMatvec(void *x, void *y, int *blockSize, primme_params *prim
          if (row+1 < primme->n) yvec[row] += -1.0*xvec[row+1];
       }      
    }
+   *err = 0;
 }
 ')dnl
 
@@ -322,7 +324,7 @@ void LaplacianMatrixMatvec(void *x, void *y, int *blockSize, primme_params *prim
    - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
 */
 ifdef(`USE_PETSC', `
-void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
+void ApplyPCPrecPETSC(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
    int i;
    Mat *matrix;
    PC *pc;
@@ -334,8 +336,8 @@ void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
 
    ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = PCApply(*pc, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
@@ -345,13 +347,16 @@ void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
 }
 
 static void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                         primme_params *primme) {
+                         primme_params *primme, int *ierr) {
    MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
 
-   MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
+   if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) == MPI_SUCCESS)
+      *ierr = 0;
+   else
+      *ierr = 1;
 }
 ', `
-void LaplacianApplyPreconditioner(void *x, void *y, int *blockSize, primme_params *primme) {
+void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
@@ -359,11 +364,12 @@ void LaplacianApplyPreconditioner(void *x, void *y, int *blockSize, primme_param
    PRIMME_NUM *yvec;     /* pointer to i-th output vector y */
     
    for (i=0; i<*blockSize; i++) {
-      xvec = (PRIMME_NUM *)x + primme->n*i;
-      yvec = (PRIMME_NUM *)y + primme->n*i;
+      xvec = (PRIMME_NUM *)x + *ldx*i;
+      yvec = (PRIMME_NUM *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = xvec[row]/2.;
       }      
    }
+   *ierr = 0;
 }
 ')dnl

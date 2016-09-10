@@ -65,7 +65,7 @@ void FORTRAN_FUNCTION(zlusol)(int*, SCALAR*, SCALAR*, SCALAR*, int*, int*);
  * be cast as doubles for use in amux()
  *
 ******************************************************************************/
-void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
+void CSRMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
    
    int i;
    int n = (int)primme->n;
@@ -82,13 +82,14 @@ void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
 #else
       FORTRAN_FUNCTION(zamux)
 #endif
-            (&n, &xvec[primme->nLocal*i], &yvec[primme->nLocal*i], 
+            (&n, &xvec[*ldx*i], &yvec[*ldy*i], 
              matrix->AElts, matrix->JA, matrix->IA);
    }
+   *ierr = 0;
 }
 
 void CSRMatrixMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
-      int *blockSize, int *trans, primme_svds_params *primme_svds) {
+      int *blockSize, int *trans, primme_svds_params *primme_svds, int *ierr) {
    
    int i;
    int m = (int)primme_svds->m;
@@ -121,6 +122,7 @@ void CSRMatrixMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
             &yvec[(*ldy)*i], matrix->AElts, matrix->JA, matrix->IA);
       }
    }
+   *ierr = 0;
 }
 
 
@@ -163,9 +165,10 @@ static void ApplyInvDiagPrecNativeGen(SCALAR *xvec, int ldx, SCALAR *yvec,
 }
 
 
-void ApplyInvDiagPrecNative(void *x, void *y, int *blockSize, primme_params *primme) {
-   ApplyInvDiagPrecNativeGen((SCALAR*)x, primme->nLocal, (SCALAR*)y, primme->nLocal,
+void ApplyInvDiagPrecNative(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
+   ApplyInvDiagPrecNativeGen((SCALAR*)x, *ldx, (SCALAR*)y, *ldy,
       primme->nLocal, *blockSize, (double*)primme->preconditioner, NULL, primme->aNorm);
+   *ierr = 0;
 }
 
 /******************************************************************************
@@ -181,11 +184,12 @@ void ApplyInvDiagPrecNative(void *x, void *y, int *blockSize, primme_params *pri
  *
 ******************************************************************************/
 
-void ApplyInvDavidsonDiagPrecNative(void *x, void *y, int *blockSize, 
-                                        primme_params *primme) {
-   ApplyInvDiagPrecNativeGen((SCALAR*)x, primme->nLocal, (SCALAR*)y, primme->nLocal,
+void ApplyInvDavidsonDiagPrecNative(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, 
+                                        primme_params *primme, int *ierr) {
+   ApplyInvDiagPrecNativeGen((SCALAR*)x, *ldx, (SCALAR*)y, *ldy,
       primme->nLocal, *blockSize, (double*)primme->preconditioner,
       primme->ShiftsForPreconditioner, primme->aNorm);
+   *ierr = 0;
 }
 
 /******************************************************************************
@@ -295,7 +299,7 @@ int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
 #endif
 }
 
-void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme) {
+void ApplyILUTPrecNative(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
    int i;
    int n = (int)primme->n;
    SCALAR *xvec, *yvec;
@@ -311,9 +315,10 @@ void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme
 #else
       FORTRAN_FUNCTION(lusol0)
 #endif
-             (&n, &xvec[primme->n*i], &yvec[primme->n*i],
+             (&n, &xvec[*ldx*i], &yvec[*ldy*i],
               prec->AElts, prec->JA, prec->IA);
    }
+   *ierr = 0;
 }
 
 
@@ -415,17 +420,19 @@ static void ApplyInvNormalPrecNativeSvdsGen(void *x, PRIMME_INT *ldx, void *y,
 
 void ApplyInvNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, int *mode,
-      primme_svds_params *primme_svds) {
+      primme_svds_params *primme_svds, int *ierr) {
 
    ApplyInvNormalPrecNativeSvdsGen(x, ldx, y, ldy, blockSize, mode, primme_svds, NULL);
+   *ierr = 0;
 }
 
 void ApplyInvDavidsonNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, int *mode,
-      primme_svds_params *primme_svds) {
+      primme_svds_params *primme_svds, int *ierr) {
 
    primme_params *primme =
       primme_svds->method == *mode ? &primme_svds->primme : &primme_svds->primmeStage2;
    ApplyInvNormalPrecNativeSvdsGen(x, ldx, y, ldy, blockSize, mode, primme_svds,
       primme->ShiftsForPreconditioner);
+   *ierr = 0;
 }

@@ -106,8 +106,8 @@ void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds_, int *
       case PRIMMEF77_SVDS_commInfo :
          primme_svds->commInfo = v.ptr_v;
          break;
-      case PRIMMEF77_SVDS_globalSumDouble :
-         primme_svds->globalSumDouble = v.globalSumDoubleFunc_v;
+      case PRIMMEF77_SVDS_globalSumReal :
+         primme_svds->globalSumReal = v.globalSumRealFunc_v;
          break;
       case PRIMMEF77_SVDS_numSvals :
          if (*v.int_v > INT_MAX) *ierr = 1; else 
@@ -253,8 +253,8 @@ void AS_FORTRAN(primme_svdstop_get_member)(primme_svds_params **primme_svds_, in
       case PRIMMEF77_SVDS_commInfo :
          v->ptr_v = primme_svds->commInfo;
          break;
-      case PRIMMEF77_SVDS_globalSumDouble :
-         v->globalSumDoubleFunc_v = primme_svds->globalSumDouble;
+      case PRIMMEF77_SVDS_globalSumReal :
+         v->globalSumRealFunc_v = primme_svds->globalSumReal;
          break;
       case PRIMMEF77_SVDS_numSvals :
          v->int_v = primme_svds->numSvals;

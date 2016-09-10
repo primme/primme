@@ -275,6 +275,13 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs,
    primme->stats.numOuterIterations = 0;
    primme->stats.numRestarts = 0;
    primme->stats.numMatvecs = 0;
+   primme->stats.elapsedTime = 0.0;
+   primme->stats.timeMatvec = 0.0;
+   primme->stats.timePrecond = 0.0;
+   primme->stats.timeOrtho = 0.0;
+   primme->stats.timeGlobalSum = 0.0;
+   primme->stats.volumeGlobalSum = 0.0;
+   primme->stats.numOrthoInnerProds = 0.0;
    numLocked = 0;
    converged = FALSE;
    LockingProblem = 0;

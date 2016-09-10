@@ -32,6 +32,7 @@
 #include "update_W.h"
 #include "auxiliary_eigs.h"
 #include "ortho.h"
+#include "wtime.h"
 
 
 /*******************************************************************************
@@ -58,21 +59,31 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       primme_params *primme) {
 
    int i, ONE=1, ierr=0;
+   double t0;
 
    if (blockSize <= 0) return 0;
 
+   assert(ldV >= nLocal && ldW >= nLocal);
+   assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
+
+   t0 = primme_wTimer(0);
+
    /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
-   if (ldV == nLocal && ldW == nLocal) {
-      primme->matrixMatvec(&V[ldV*basisSize], &W[ldW*basisSize], &blockSize,
-            primme);
+   if (primme->ldOPs == 0 || (ldV == primme->ldOPs && ldW == primme->ldOPs)) {
+      CHKERRM((primme->matrixMatvec(&V[ldV*basisSize], &ldV, &W[ldW*basisSize],
+                  &ldW, &blockSize, primme, &ierr), ierr), -1,
+            "Error returned by 'matrixMatvec' %d", ierr);
    }
    else {
       for (i=0; i<basisSize; i++) {
-         primme->matrixMatvec(&V[ldV*(basisSize+i)], &W[ldW*(basisSize+i)], &ONE,
-               primme);
+         CHKERRM((primme->matrixMatvec(&V[ldV*(basisSize+i)], &primme->ldOPs,
+                     &W[ldW*(basisSize+i)], &primme->ldOPs, &ONE, primme,
+                     &ierr), ierr), -1,
+               "Error returned by 'matrixMatvec' %d", ierr);
       }
    }
 
+   primme->stats.timeMatvec += primme_wTimer(0) - t0;
    primme->stats.numMatvecs += blockSize;
 
    return ierr;

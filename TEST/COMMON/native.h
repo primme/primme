@@ -32,24 +32,24 @@
 #include "csr.h"
 #include "primme_svds.h"
 
-void CSRMatrixMatvec(void *x, void *y, int *blockSize, primme_params *primme);
+void CSRMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 int createInvDiagPrecNative(const CSRMatrix *matrix, double shift, double **prec);
-void ApplyInvDiagPrecNative(void *x, void *y, int *blockSize, 
-                                        primme_params *primme);
-void ApplyInvDavidsonDiagPrecNative(void *x, void *y, int *blockSize, 
-                                        primme_params *primme);
+void ApplyInvDiagPrecNative(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, 
+                                        primme_params *primme, int *ierr);
+void ApplyInvDavidsonDiagPrecNative(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, 
+                                        primme_params *primme, int *ierr);
 int createILUTPrecNative(const CSRMatrix *matrix, double shift, int level,
                          double threshold, double filter, CSRMatrix **prec);
-void ApplyILUTPrecNative(void *x, void *y, int *blockSize, primme_params *primme);
+void ApplyILUTPrecNative(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 void CSRMatrixMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
-      int *blockSize, int *trans, primme_svds_params *primme_svds);
+      int *blockSize, int *trans, primme_svds_params *primme_svds, int *ierr);
 int createInvNormalPrecNative(const CSRMatrix *matrix, double shift, double **prec);
 void ApplyInvNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, int *mode,
-      primme_svds_params *primme_svds);
+      primme_svds_params *primme_svds, int *ierr);
 void ApplyInvDavidsonNormalPrecNative(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, int *mode,
-      primme_svds_params *primme_svds);
+      primme_svds_params *primme_svds, int *ierr);
 
 #endif
 
