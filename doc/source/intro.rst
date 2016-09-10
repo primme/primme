@@ -30,7 +30,7 @@ Changes in PRIMME 2.0 (released on XXX):
   |massMatrixMatvec| and |globalSumReal|.
 
 * Changed to type :c:type:`PRIMME_NUM` the options |n|, |nLocal|, |maxMatvecs|
-  and |iseed|, and the stats counters |numOuterIterations|, |numRestarts|, |numMavecs|,
+  and |iseed|, and the stats counters |numOuterIterations|, |numRestarts|, |numMatvecs|,
   |numPreconds|. Also changed |realWorkSize| to ``size_t``. Fortran interface functions
   will expect an ``interger`` of size compatible with :c:type:`PRIMME_NUM` for
   all parameters with integer type: ``int``, :c:type:`PRIMME_NUM` and ``size_t``;

@@ -125,6 +125,50 @@ and MATLAB.
 Changelog
 =========
 
+Changes in PRIMME 2.0 (released on XXX):
+
+* Added interface for singular value problems; see "dprimme_svds()".
+
+* Support for "float" and "complex float" arithmetic.
+
+* Support for problem dimensions larger than 2^31, without requiring
+  BLAS and LAPACK compiled with 64-bits integers.
+
+* Improve robustness and performance for interior problems;
+  implemented advanced refined and harmonic-Ritz extractions.
+
+* Python interface compatible with NumPy and SciPy Library.
+
+* Added parameter to indicate the leading dimension of the
+  input/output matrices and to return an error code in callbacks
+  "matrixMatvec", "applyPreconditioner", "massMatrixMatvec" and
+  "globalSumReal".
+
+* Changed to type "PRIMME_NUM" the options "n", "nLocal",
+  "maxMatvecs" and "iseed", and the stats counters
+  "numOuterIterations", "numRestarts", "numMatvecs", "numPreconds".
+  Also changed "realWorkSize" to "size_t". Fortran interface functions
+  will expect an "interger" of size compatible with "PRIMME_NUM" for
+  all parameters with integer type: "int", "PRIMME_NUM" and "size_t";
+  see also parameter "value" in functions
+  >>:c:function:`primmetop_set_member_f77`<<,
+  >>:c:function:`primmetop_get_member_f77`<<,
+  >>:c:function:`primme_set_member_f77`<< and
+  >>:c:function:`primme_get_member_f77`<<.
+
+* Added parameter to return an error code in Fortran interface
+  functions: >>:c:function:`primmetop_set_member_f77`<<,
+  >>:c:function:`primmetop_get_member_f77`<<,
+  >>:c:function:`primme_set_member_f77`<< and
+  >>:c:function:`primme_get_member_f77`<<.
+
+* Added leading dimension for "evecs" "ldevecs" and preferred
+  leading dimension for the operators "ldOPs", such as "matrixMatvec".
+
+* Optional user-defined convergence function, "convTestFun".
+
+* Removed "primme_display_stats_f77".
+
 Changes in PRIMME 1.2.2 (released on October 13, 2015):
 
 * Fixed wrong symbols in "libdprimme.a" and "libzprimme.a".
@@ -318,6 +362,17 @@ Making and Linking
   * "-DPRIMME_BLASINT_SIZE=64", if the library integers are 64-bit
     integer ("kind=8") type (usually they are not).
 
+  By default PRIMME sets the integer type for matrix dimensions and
+  counters ("PRIMME_INT") to 64 bits integer "int64_t". This can be
+  changed by setting the macro "PRIMME_INT_SIZE" to one of the
+  following values:
+
+  * "0": use the regular "int".
+
+  * "32": use C99 "int32_t".
+
+  * "64": use C99 "int64_t".
+
 Note: When "-DPRIMME_BLASINT_SIZE=64" is set the code uses the type
   "int64_t" supported by the C99 standard. In case the compiler
   doesn't honor the standard, replace the next lines in
@@ -437,10 +492,16 @@ C Library Interface
 The PRIMME interface is composed of the following functions. To solve
 real symmetric and Hermitian standard eigenproblems call respectively:
 
+   int sprimme(float *evals, float *evecs, float *resNorms,
+               primme_params *primme);
+
+   int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms,
+               primme_params *primme);
+
    int dprimme(double *evals, double *evecs, double *resNorms,
                primme_params *primme);
 
-   int zprimme(double *evals, Complex_Z *evecs, double *resNorms,
+   int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms,
                primme_params *primme);
 
 Other useful functions:
@@ -522,7 +583,7 @@ next fields:
    int numProcs;
    int procID;
    int nLocal;
-   void (*globalSumDouble)(...);
+   void (*globalSumReal)(...);
 
    /* Accelerate the convergence */
    void (*applyPreconditioner)(...);     // precond-vector product
@@ -537,6 +598,7 @@ next fields:
    void *preconditioner;
 
    /* Advanced options */
+   PRIMME_INT ldevecs; // leading dimension of the evecs
    int numOrthoConst; // orthogonal constrains to the eigenvectors
    int dynamicMethodSwitch;
    int locking;
@@ -557,12 +619,12 @@ next fields:
    struct correction_params correctionParams;
    struct primme_stats stats;
    void (*convTestFun)(...);
-   struct stackTraceNode *stackTrace;
+   PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec...
 
 PRIMME requires the user to set at least the dimension of the matrix
 ("n") and the matrix-vector product ("matrixMatvec"), as they define
 the problem to be solved. For parallel programs, "nLocal", "procID"
-and "globalSumDouble" are also required.
+and "globalSumReal" are also required.
 
 In addition, most users would want to specify how many eigenpairs to
 find, and provide a preconditioner (if available).
@@ -581,6 +643,32 @@ Interface Description
 =====================
 
 The next enumerations and functions are declared in "primme.h".
+
+
+sprimme
+-------
+
+int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
+
+   Solve a real symmetric standard eigenproblem.
+
+   Parameters:
+      * **evals** -- array at least of size "numEvals" to store the
+        computed eigenvalues; all processes in a parallel run return
+        this local array with the same values.
+
+      * **resNorms** -- array at least of size "numEvals" to store
+        the residual norms of the computed eigenpairs; all processes
+        in parallel run return this local array with the same values.
+
+      * **evecs** -- array at least of size "nLocal" times
+        "numEvals" to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **primme** -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
 
 
 dprimme
@@ -609,21 +697,20 @@ int dprimme(double *evals, double *evecs, double *resNorms, primme_params *p
       error indicator; see Error Codes.
 
 
+cprimme
+-------
+
+int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+   Solve a Hermitian standard eigenproblem; see function "sprimme()".
+
+
 zprimme
 -------
 
-int zprimme(double *evals, Complex_Z *evecs, double *resNorms, primme_params *primme)
+int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
 
    Solve a Hermitian standard eigenproblem; see function "dprimme()".
-
-   Note: PRIMME uses a structure called "Complex_Z" to define
-     complex numbers. "Complex_Z" is defined in
-     "PRIMMESRC/COMMONSRC/Complexz.h". In future versions of PRIMME,
-     "Complex_Z" will be replaced by "complex double" from the C99
-     standard. Because the two types are binary compatible, we
-     strongly recommend that calling programs use the C99 type to
-     maintain future compatibility. See examples in "TEST" such as
-     "ex_zseq.c" and "ex_zseqf77.c".
 
 
 primme_initialize
@@ -875,7 +962,13 @@ primmetop_set_member_f77(primme, label, value)
            "PRIMMEF77_dynamicMethodSwitch"
            "PRIMMEF77_massMatrixMatvec"
 
-      * **value** -- (input) value to set.
+      * **value** --
+
+        (input) value to set.
+
+        If the type of the option is integer ("int", "PRIMME_INT",
+        "size_t"), the type of "value" should be as long as
+        "PRIMME_INT", which is "integer*8" by default.
 
    Note: **Don't use** this function inside PRIMME's callback
      functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
@@ -896,7 +989,13 @@ primmetop_get_member_f77(primme, label, value)
       * **label** (*integer*) -- (input) field where to get value.
         One of the detailed in function "primmetop_set_member_f77()".
 
-      * **value** -- (output) value of the field.
+      * **value** --
+
+        (output) value of the field.
+
+        If the type of the option is integer ("int", "PRIMME_INT",
+        "size_t"), the type of "value" should be as long as
+        "PRIMME_INT", which is "integer*8" by default.
 
    Note: **Don't use** this function inside PRIMME's callback
      functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
@@ -961,7 +1060,13 @@ primme_set_member_f77(primme, label, value)
       * **label** (*integer*) -- field where to set value. One of
         the vales defined in "primmetop_set_member_f77()".
 
-      * **value** -- (input) value to set.
+      * **value** --
+
+        (input) value to set.
+
+        If the type of the option is integer ("int", "PRIMME_INT",
+        "size_t"), the type of "value" should be as long as
+        "PRIMME_INT", which is "integer*8" by default.
 
    Note: Use this function exclusively inside PRIMME's callback
      functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
@@ -982,7 +1087,13 @@ primme_get_member_f77(primme, label, value)
       * **label** (*integer*) -- (input) field where to get value.
         One of the detailed in function "primmetop_set_member_f77()".
 
-      * **value** -- (output) value of the field.
+      * **value** --
+
+        (output) value of the field.
+
+        If the type of the option is integer ("int", "PRIMME_INT",
+        "size_t"), the type of "value" should be as long as
+        "PRIMME_INT", which is "integer*8" by default.
 
    Note: Use this function exclusively inside PRIMME's callback
      functions, e.g., "matrixMatvec" or "applyPreconditioner", or in
@@ -1044,11 +1155,29 @@ Appendix
 primme_params
 =============
 
+PRIMME_INT
+
+   Integer type used in matrix dimensions (such as "n" and "nLocal")
+   and counters (such as "numMatvecs").
+
+   The integer size is controlled by the compilation flag
+   "PRIMME_INT_SIZE", see Making and Linking.
+
+PRIMME_COMPLEX_FLOAT
+
+   Macro that is "complex float" in C and "std::complex<float>" in
+   C++.
+
+PRIMME_COMPLEX_DOUBLE
+
+   Macro that is "complex double" in C and "std::complex<double>" in
+   C++.
+
 primme_params
 
    Structure to set the problem matrices and eigensolver options.
 
-   int n
+   PRIMME_INT n
 
       Dimension of the matrix.
 
@@ -1057,37 +1186,43 @@ primme_params
             "primme_initialize()" sets this field to 0;
             this field is read by "dprimme()".
 
-   void (*matrixMatvec)(void *x, void *y, int *blockSize, primme_params *primme)
+   void (*matrixMatvec)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block matrix-multivector multiplication, y = A x in solving A x
       = \lambda x or A x = \lambda B x.
 
       Parameters:
-         * **x** -- one dimensional array containing the "blockSize"
-           vectors packed one after the other (i.e., the leading
-           dimension is the vector size), each of size "nLocal". The
-           real type is "double*" and "Complex_Z*" when called from
-           "dprimme()" and "zprimme()" respectively.
+         * **x** -- matrix of size "nLocal" x "blockSize" in column-
+           major order with leading dimension "ldx".
 
-         * **y** -- one dimensional array containing the "blockSize"
-           vectors packed one after the other (i.e., the leading
-           dimension is the vector size), each of size "nLocal". The
-           real type is "double*" and "Complex_Z*" when called from
-           "dprimme()" and "zprimme()" respectively.
+         * **ldx** -- the leading dimension of the array "x".
 
-         * **blockSize** -- number of vectors in x and y.
+         * **y** -- matrix of size "nLocal" x "blockSize" in column-
+           major order with leading dimension "ldy".
+
+         * **ldy** -- the leading dimension of the array "y".
+
+         * **blockSize** -- number of columns in "x" and "y".
 
          * **primme** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      The actual type of "x" and "y" depends on which function is
+      being calling. For "dprimme()", it is "double", for "zprimme()"
+      it is "PRIMME_COMPLEX_DOUBLE", for "sprimme()" it is "float" and
+      for for "cprimme()" it is "PRIMME_COMPLEX_FLOAT".
 
       Input/output:
 
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme()".
 
-      Note: Argument "blockSize" is passed by reference to make
-        easier the interface to other languages (like Fortran).
+   Note: If you will have performance issues with leading dimension
+     different than "nLocal", set "ldOPs" to "nLocal".
 
-   void (*applyPreconditioner)(void *x, void *y, int *blockSize, struct primme_params *primme)
+   void (*applyPreconditioner)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block preconditioner-multivector application, y = M^{-1}x where
       M is usually an approximation of A - \sigma I or A - \sigma B
@@ -1099,7 +1234,7 @@ primme_params
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme()".
 
-   void (*massMatrixMatvec)(void *x, void *y, int *blockSize, struct primme_params *primme)
+   void (*massMatrixMatvec)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block matrix-multivector multiplication, y = B x in solving A x
       = \lambda B x. The function follows the convention of
@@ -1151,13 +1286,13 @@ primme_params
       For example, with MPI, it could be a pointer to the MPI
       communicator. PRIMME does not use this. It is available for
       possible use in user functions defined in "matrixMatvec",
-      "applyPreconditioner", "massMatrixMatvec" and "globalSumDouble".
+      "applyPreconditioner", "massMatrixMatvec" and "globalSumReal".
 
       Input/output:
 
             "primme_initialize()" sets this field to NULL;
 
-   void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count, primme_params *primme)
+   void (*globalSumReal)(void *sendBuf, void *recvBuf, int *count, primme_params *primme, int *ierr)
 
       Global sum reduction function. No need to set for sequential
       programs.
@@ -1174,28 +1309,38 @@ primme_params
 
          * **primme** -- parameters structure.
 
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      The actual type of "sendBuf" and "recvBuf" depends on which
+      function is being calling. For "dprimme()" and "zprimme()" it is
+      "double", and for "sprimme()" and  "cprimme()" it is "float".
+      Note that "count" is the number of values of the actual type.
+
       Input/output:
 
             "primme_initialize()" sets this field to an internal function;
-            "dprimme()" sets this field to an internal function if "numProcs" is 1 and "globalSumDouble" is NULL;
+            "dprimme()" sets this field to an internal function if "numProcs" is 1 and "globalSumReal" is NULL;
             this field is read by "dprimme()".
 
       When MPI is used this can be a simply wrapper to
       MPI_Allreduce().
 
-         void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
-                                  primme_params *primme) {
+         void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count,
+                                  primme_params *primme, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-            MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator);
+            if(MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
+            }
          }
 
-      Note: Argument "count" is passed by reference to make easier
-        the interface to other languages (like Fortran).
+      }
 
-      Note: The arguments "sendBuf" and "recvBuf" are always double
-        arrays and "count" is always the number of double elements in
-        both arrays, even for "zprimme()".
+      When calling "sprimme()" and "cprimme()" replace "MPI_DOUBLE" by
+      "`MPI_FLOAT".
 
    int numEvals
 
@@ -1438,6 +1583,15 @@ primme_params
             "primme_initialize()" sets this field to 0;
             this field is read and written by "dprimme()".
 
+   PRIMME_INT ldevecs
+
+      The leading dimension of "evecs". The default is "nLocal".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
+
    int numOrthoConst
 
       Number of vectors to be used as external orthogonalization
@@ -1499,7 +1653,7 @@ primme_params
         fashion. Every correction equation from a block is solved
         independently.
 
-   int maxMatvecs
+   PRIMME_INT maxMatvecs
 
       Maximum number of matrix vector multiplications (approximately
       equal to the number of preconditioning operations) that the code
@@ -1510,7 +1664,7 @@ primme_params
             "primme_initialize()" sets this field to "INT_MAX";
             this field is read by "dprimme()".
 
-   int maxOuterIterations
+   PRIMME_INT maxOuterIterations
 
       Maximum number of outer iterations that the code is allowed to
       perform before it exits.
@@ -1538,7 +1692,7 @@ primme_params
             "primme_initialize()" sets this field to 0;
             this field is read and written by "dprimme()".
 
-   long int realWorkSize
+   size_t realWorkSize
 
       If "dprimme()" or "zprimme()" is called with all arguments as
       NULL except for "primme_params" then PRIMME returns immediately
@@ -1589,10 +1743,10 @@ primme_params
             "primme_initialize()" sets this field to NULL;
             this field is read and written by "dprimme()".
 
-   int iseed
+   PRIMME_INT iseed
 
-      The "int iseed[4]" is an array with the seeds needed by the
-      LAPACK dlarnv and zlarnv.
+      The "PRIMME_INT iseed[4]" is an array with the seeds needed by
+      the LAPACK dlarnv and zlarnv.
 
       The default value is an array with values -1, -1, -1 and -1. In
       that case, "iseed" is set based on the value of "procID" to
@@ -1888,7 +2042,18 @@ primme_params
       See [r3] for a study about different projector configurations in
       JD.
 
-   int stats.numOuterIterations
+   PRIMME_INT ldOPs
+
+      Recommended leading dimension to be used in "matrixMatvec",
+      "applyPreconditioner" and "massMatrixMatvec". The default value
+      is zero, which means no recommendation.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
+
+   PRIMME_INT stats.numOuterIterations
 
       Hold the number of outer iterations. The value is available
       during execution and at the end.
@@ -1898,7 +2063,7 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-   int stats.numRestarts
+   PRIMME_INT stats.numRestarts
 
       Hold the number of restarts during execution and at the end.
 
@@ -1907,7 +2072,7 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-   int stats.numMatvecs
+   PRIMME_INT stats.numMatvecs
 
       Hold how many vectors the operator in "matrixMatvec" has been
       applied on. The value is available during execution and at the
@@ -1918,7 +2083,7 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-   int stats.numPreconds
+   PRIMME_INT stats.numPreconds
 
       Hold how many vectors the operator in "applyPreconditioner" has
       been applied on. The value is available during execution and at
@@ -1929,10 +2094,70 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
+   PRIMME_INT stats.numGlobalSum
+
+      Hold how many times "globalSumReal" has been called. The value
+      is available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.volumeGlobalSum
+
+      Hold how many "REAL" have been reduced by "globalSumReal". The
+      value is available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
    double stats.elapsedTime
 
       Hold the wall clock time spent by the call to "dprimme()" or
       "zprimme()". The value is available at the end of the execution.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.timeMatvec
+
+      Hold the wall clock time spent by "matrixMatvec". The value is
+      available at the end of the execution.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.timePrecond
+
+      Hold the wall clock time spent by "applyPreconditioner". The
+      value is available at the end of the execution.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.timeOrtho
+
+      Hold the wall clock time spent by orthogonalization. The value
+      is available at the end of the execution.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.timeGlobalSum
+
+      Hold the wall clock time spent by "globalSumReal". The value is
+      available at the end of the execution.
 
       Input/output:
 
@@ -1983,7 +2208,7 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-   void (*convTestFun)(double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme)
+   void (*convTestFun)(double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme, int *ierr)
 
       Function that evaluates if the approximate eigenpair has
       converged. If NULL, it is used the default convergence criteria
@@ -1993,9 +2218,11 @@ primme_params
          * **eval** -- the approximate value to evaluate.
 
          * **x** -- one dimensional array of size "nLocal"
-           containing the approximate vector. The real type is
-           "double*" and "Complex_Z*" when called from "dprimme()" and
-           "zprimme()" respectively.
+           containing the approximate vector; it can be NULL. The
+           actual type depends on which function is being calling. For
+           "dprimme()", it is "double", for "zprimme()" it is
+           "PRIMME_COMPLEX_DOUBLE", for "sprimme()" it is "float" and
+           for for "cprimme()" it is "PRIMME_COMPLEX_FLOAT".
 
          * **resNorm** -- the norm of residual vector.
 
@@ -2003,6 +2230,9 @@ primme_params
            is not converged and non zero otherwise.
 
          * **primme** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
 
       Input/output:
 
@@ -2037,8 +2267,6 @@ values:
 
 * -8: if "applyPreconditioner" is NULL and "precondition" is not
   NULL.
-
-* -9: if "globalSumDouble" is NULL.
 
 * -10: if "numEvals" > "n".
 
@@ -2095,6 +2323,10 @@ values:
 * -32: if "resNorms" is NULL, but not "evecs" and "evals".
 
 * -33: if not "locking" and "minRestartSize" < "numEvals".
+
+* -34: if "ldevecs" < "nLocal"
+
+* -35: if "ldOPs" is not zero and less than "nLocal"
 
 
 Preset Methods
@@ -2546,6 +2778,12 @@ C Library Interface
 The PRIMME SVDS interface is composed of the following functions. To
 solve real and complex singular value problems call respectively:
 
+   int sprimme_svds(float *svals, float *svecs, float *resNorms,
+               primme_svds_params *primme_svds);
+
+   int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
+               primme_svds_params\*primme_svds);
+
    int dprimme_svds(double *svals, double *svecs, double *resNorms,
                primme_svds_params *primme);
 
@@ -2671,7 +2909,7 @@ which has the next fields:
 PRIMME SVDS requires the user to set at least the matrix dimensions
 ("m" x "n") and the matrix-vector product ("matrixMatvec"), as they
 define the problem to be solved. For parallel programs, "mLocal",
-"nLocal", "procID" and "globalSumDouble" are also required.
+"nLocal", "procID" and "globalSumReal" are also required.
 
 In addition, most users would want to specify how many singular
 triplets to find, and provide a preconditioner (if available).
@@ -2690,6 +2928,32 @@ Interface Description
 =====================
 
 The next enumerations and functions are declared in "primme.h".
+
+
+sprimme_svds
+------------
+
+int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+   Solve a real singular value problem.
+
+   Parameters:
+      * **svals** -- array at least of size "numSvals" to store the
+        computed singular values; all processes in a parallel run
+        return this local array with the same values.
+
+      * **resNorms** -- array at least of size "numSvals" to store
+        the residual norms of the computed triplets; all processes in
+        parallel run return this local array with the same values.
+
+      * **svecs** -- array at least of size ("mLocal" + "nLocal")
+        times "numSvals" to store columnwise the (local part of the)
+        computed left singular vectors and the right singular vectors.
+
+      * **primme_svds** -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
 
 
 dprimme_svds
@@ -2718,22 +2982,22 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_
       error indicator; see Error Codes.
 
 
-zprimme_svds
+cprimme_svds
 ------------
 
-int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms, primme_svds_params *primme_svds)
+int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
 
    Solve a complex singular value problem; see function
    "dprimme_svds()".
 
-   Note: PRIMME SVDS uses a structure called "Complex_Z" to define
-     complex numbers. "Complex_Z" is defined in
-     "PRIMMESRC/COMMONSRC/Complexz.h". In future versions of PRIMME,
-     "Complex_Z" will be replaced by "complex double" from the C99
-     standard. Because the two types are binary compatible, we
-     strongly recommend that calling programs use the C99 type to
-     maintain future compatibility. See examples in "TEST" such as
-     "exsvds_zseq.c" and "exsvds_zseqf77.c".
+
+zprimme_svds
+------------
+
+int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
+
+   Solve a complex singular value problem; see function
+   "dprimme_svds()".
 
 
 primme_svds_initialize
@@ -3148,7 +3412,7 @@ primme_svds_params
 
       Structure to set the problem matrix and the solver options.
 
-      int m
+      PRIMME_INT m
 
          Number of rows of the matrix.
 
@@ -3157,7 +3421,7 @@ primme_svds_params
                "primme_initialize()" sets this field to 0;
                this field is read by "dprimme()".
 
-      int n
+      PRIMME_INT n
 
          Number of columns of the matrix.
 
@@ -3166,7 +3430,7 @@ primme_svds_params
                "primme_initialize()" sets this field to 0;
                this field is read by "dprimme()".
 
-      void (*matrixMatvec)(void *x, int ldx, void *y, int ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds)
+      void (*matrixMatvec)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
 
          Block matrix-multivector multiplication, y = A x if
          "transpose" is zero and y = A^*x otherwise.
@@ -3176,8 +3440,8 @@ primme_svds_params
          respectively. Elsewhere they have dimensions "mLocal" x
          "blockSize" and "nLocal" x "blockSize". Both arrays are
          column-major (consecutive rows are consecutive in memory) and
-         their real type is "double*" and "Complex_Z*" when called
-         from "dprimme_svds()" "zprimme_svds()" respectively.
+         their real type is "double*" and "double complex*" when
+         called from "dprimme_svds()" "zprimme_svds()" respectively.
 
          Parameters:
             * **x** -- input array.
@@ -3195,6 +3459,9 @@ primme_svds_params
 
             * **primme_svds** -- parameters structure.
 
+            * **ierr** -- output error code; if it is set to non-
+              zero, the current call to PRIMME will stop.
+
          Input/output:
 
                "primme_initialize()" sets this field to NULL;
@@ -3203,7 +3470,7 @@ primme_svds_params
          Note: Integer arguments are passed by reference to make
            easier the interface to other languages (like Fortran).
 
-      void (*applyPreconditioner)(void *x, int ldx, void *y, int ldy, int *blockSize, int *mode, primme_svds_params *primme_svds)
+      void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
          Block preconditioner-multivector application. Depending on
          "mode" it is expected an approximation of the inverse of
@@ -3222,8 +3489,8 @@ primme_svds_params
          "primme_svds_op_AAt", they are "mLocal" x "blockSize"; and
          otherwise they are ("mLocal" + "nLocal") x "blockSize". Both
          arrays are column-major (consecutive rows are consecutive in
-         memory) and their real type is "double*" and "Complex_Z*"
-         when called from "dprimme_svds()" "zprimme_svds()"
+         memory) and their real type is "double*" and "double
+         complex*" when called from "dprimme_svds()" "zprimme_svds()"
          respectively.
 
          Parameters:
@@ -3241,6 +3508,9 @@ primme_svds_params
               "primme_svds_op_AAt" or "primme_svds_op_augmented".
 
             * **primme_svds** -- parameters structure.
+
+            * **ierr** -- output error code; if it is set to non-
+              zero, the current call to PRIMME will stop.
 
          Input/output:
 
@@ -3269,7 +3539,7 @@ primme_svds_params
                "dprimme_svds()" sets this field to 0 if "numProcs" is 1;
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      int mLocal
+      PRIMME_INT mLocal
 
          Number of local rows on this process. The value depends on
          how the matrix and preconditioner is distributed along the
@@ -3283,7 +3553,7 @@ primme_svds_params
 
          See also: "matrixMatvec" and "applyPreconditioner".
 
-      int nLocal
+      PRIMME_INT nLocal
 
          Number of local columns on this process. The value depends on
          how the matrix and preconditioner is distributed along the
@@ -3301,13 +3571,13 @@ primme_svds_params
          For example, with MPI, it could be a pointer to the MPI
          communicator. PRIMME does not use this. It is available for
          possible use in user functions defined in "matrixMatvec",
-         "applyPreconditioner" and "globalSumDouble".
+         "applyPreconditioner" and "globalSumReal".
 
          Input/output:
 
                "primme_svds_initialize()" sets this field to NULL;
 
-      void (*globalSumDouble)(double *sendBuf, double *recvBuf, int *count, primme_svds_params *primme_svds)
+      void (*globalSumReal)(double *sendBuf, double *recvBuf, int *count, primme_svds_params *primme_svds, int *ierr)
 
          Global sum reduction function. No need to set for sequential
          programs.
@@ -3324,28 +3594,36 @@ primme_svds_params
 
             * **primme_svds** -- parameters structure.
 
+            * **ierr** -- output error code; if it is set to non-
+              zero, the current call to PRIMME will stop.
+
+         The actual type of "sendBuf" and "recvBuf" depends on which
+         function is being calling. For "dprimme_svds()" and
+         "zprimme_svds()" it is "double", and for "sprimme_svds()" and
+         "cprimme_svds()" it is "float". Note that "count" is the
+         number of values of the actual type.
+
          Input/output:
 
                "primme_svds_initialize()" sets this field to an internal function;
-               "dprimme_svds()" sets this field to an internal function if "numProcs" is 1 and "globalSumDouble" is NULL;
+               "dprimme_svds()" sets this field to an internal function if "numProcs" is 1 and "globalSumReal" is NULL;
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
          When MPI is used this can be a simply wrapper to
          MPI_Allreduce().
 
-            void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
-                                     primme_svds_params *primme_svds) {
+            void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count,
+                                     primme_svds_params *primme_svds, int *ierr) {
                MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
-               MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                             communicator);
+               if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
+                             communicator) == MPI_SUCCESS) {
+                  *ierr = 0;
+               } else {
+                  *ierr = 1;
+               }
             }
 
-         Note: Argument "count" is passed by reference to make
-           easier the interface to other languages (like Fortran).
-
-         Note: The arguments "sendBuf" and "recvBuf" are always
-           double arrays and "count" is always the number of double
-           elements in both arrays, even for "zprimme_svds()".
+            When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
       int numSvals
 
@@ -3524,7 +3802,7 @@ primme_svds_params
                this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      int maxMatvecs
+      PRIMME_INT maxMatvecs
 
          Maximum number of matrix vector multiplications
          (approximately half the number of preconditioning operations)
@@ -3554,7 +3832,7 @@ primme_svds_params
                "primme_svds_initialize()" sets this field to 0;
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-      long int realWorkSize
+      size_t realWorkSize
 
          If "dprimme_svds()" or "zprimme_svds()" is called with all
          arguments as NULL except for "primme_svds_params" then it
@@ -3599,10 +3877,10 @@ primme_svds_params
                "primme_svds_initialize()" sets this field to NULL;
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-      int iseed
+      PRIMME_INT iseed
 
-         The "int iseed[4]" is an array with the seeds needed by the
-         LAPACK dlarnv and zlarnv.
+         The "PRIMME_INT iseed[4]" is an array with the seeds needed
+         by the LAPACK dlarnv and zlarnv.
 
          The default value is an array with values -1, -1, -1 and -1.
          In that case, "iseed" is set based on the value of "procID"
@@ -3703,7 +3981,7 @@ primme_svds_params
                this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-      int stats.numOuterIterations
+      PRIMME_INT stats.numOuterIterations
 
          Hold the number of outer iterations.
 
@@ -3712,7 +3990,7 @@ primme_svds_params
                "primme_svds_initialize()" sets this field to 0;
                written by "dprimme_svds()" and "zprimme_svds()".
 
-      int stats.numRestarts
+      PRIMME_INT stats.numRestarts
 
          Hold the number of restarts.
 
@@ -3721,7 +3999,7 @@ primme_svds_params
                "primme_svds_initialize()" sets this field to 0;
                written by "dprimme_svds()" and "zprimme_svds()".
 
-      int stats.numMatvecs
+      PRIMME_INT stats.numMatvecs
 
          Hold how many vectors the operator in "matrixMatvec" has been
          applied on.
@@ -3731,7 +4009,7 @@ primme_svds_params
                "primme_svds_initialize()" sets this field to 0;
                written by "dprimme_svds()" and "zprimme_svds()".
 
-      int stats.numPreconds
+      PRIMME_INT stats.numPreconds
 
          Hold how many vectors the operator in "applyPreconditioner"
          has been applied on.
@@ -3779,7 +4057,7 @@ next values:
 
 * -8: "applyPreconditioner" is not set but "precondition" == 1 ,
 
-* -9: "numProcs" >1 but "globalSumDouble" is not set,
+* -9: "numProcs" >1 but "globalSumReal" is not set,
 
 * -10: Wrong value for "numSvals", it's larger than min("m", "n"),
 

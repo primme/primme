@@ -3,10 +3,8 @@
 #       for building the library and compiling the tests
 #---------------------------------------------------------------
 
-# Define the path to the created primme library(-ies)
+# Define the path to the created PRIMME library
 LIBRARY = libprimme.a
-DLIBRARY = libdprimme.a
-ZLIBRARY = libzprimme.a
 
 # Define compilers and flags
 #---------------------------------------------------------------
@@ -15,7 +13,7 @@ ZLIBRARY = libzprimme.a
 CC       ?= cc
 F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?= -O
+CFLAGS   ?= -O -fPIC
 FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 # IBM architectures
