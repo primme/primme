@@ -36,24 +36,20 @@ int init_basis_dprimme(double *V, int64_t nLocal, int64_t ldV,
       double *W, int64_t ldW, double *evecs, int64_t ldevecs,
       double *evecsHat, int64_t ldevecsHat, double *M, int ldM, double *UDU,
       int ldUDU, int *ipivot, double machEps, double *rwork, size_t *rworkSize,
-      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
-      primme_params *primme);
+      int *basisSize, int *nextGuess, int *numGuesses, primme_params *primme);
 int init_basis_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t nLocal, int64_t ldV,
       PRIMME_COMPLEX_DOUBLE *W, int64_t ldW, PRIMME_COMPLEX_DOUBLE *evecs, int64_t ldevecs,
       PRIMME_COMPLEX_DOUBLE *evecsHat, int64_t ldevecsHat, PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *UDU,
       int ldUDU, int *ipivot, double machEps, PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize,
-      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
-      primme_params *primme);
+      int *basisSize, int *nextGuess, int *numGuesses, primme_params *primme);
 int init_basis_sprimme(float *V, int64_t nLocal, int64_t ldV,
       float *W, int64_t ldW, float *evecs, int64_t ldevecs,
       float *evecsHat, int64_t ldevecsHat, float *M, int ldM, float *UDU,
       int ldUDU, int *ipivot, double machEps, float *rwork, size_t *rworkSize,
-      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
-      primme_params *primme);
+      int *basisSize, int *nextGuess, int *numGuesses, primme_params *primme);
 int init_basis_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t nLocal, int64_t ldV,
       PRIMME_COMPLEX_FLOAT *W, int64_t ldW, PRIMME_COMPLEX_FLOAT *evecs, int64_t ldevecs,
       PRIMME_COMPLEX_FLOAT *evecsHat, int64_t ldevecsHat, PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *UDU,
       int ldUDU, int *ipivot, double machEps, PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize,
-      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
-      primme_params *primme);
+      int *basisSize, int *nextGuess, int *numGuesses, primme_params *primme);
 #endif

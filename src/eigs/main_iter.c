@@ -205,7 +205,6 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Runtime measurement variables for dynamic method switching             */
    primme_CostModel CostModel; /* Structure holding the runtime estimates of */
                             /* the parameters of the model.Only visible here */
-   double timeForMV;        /* Measures time for 1 matvec operation          */
    double tstart=0.0;       /* Timing variable for accumulative time spent   */
 
    /* -------------------------------------------------------------- */
@@ -347,8 +346,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
    CHKERR(init_basis_Sprimme(V, primme->nLocal, ldV, W, ldW, evecs, ldevecs,
             evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot, machEps,
-            rwork, &rworkSize, &basisSize, &nextGuess, &numGuesses, &timeForMV,
-            primme), -1);
+            rwork, &rworkSize, &basisSize, &nextGuess, &numGuesses, primme),
+         -1);
 
    /* Now initSize will store the number of converged pairs */
    primme->initSize = 0;
@@ -359,7 +358,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* ----------------------------------------------------------- */
    if (primme->dynamicMethodSwitch > 0) {
       initializeModel(&CostModel, primme);
-      CostModel.MV = timeForMV;
+      CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
       if (primme->numEvals < 5)
          primme->dynamicMethodSwitch = 1;   /* Start tentatively GD+k */
       else
@@ -533,6 +532,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   /* update convergence statistics and consider switching */
                   if (recentlyConverged > 0 || primme->dynamicMethodSwitch == 2)
                   {
+                     CostModel.MV =
+                        primme->stats.timeMatvec/primme->stats.numMatvecs;
                      ret = update_statistics(&CostModel, primme, tstart, 
                         recentlyConverged, 0, numConverged, blockNorms[0], 
                         primme->stats.estimateLargestSVal); 
@@ -835,6 +836,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          /* ------------------------------------------------------------- */
          if (primme->dynamicMethodSwitch == 1 ) {
             tstart = primme_wTimer(0);
+            CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
             ret = update_statistics(&CostModel, primme, tstart, 0, 1,
                numConverged, blockNorms[0], primme->stats.estimateMaxEVal); 
             CHKERR(switch_from_GDpk(&CostModel, primme), -1);

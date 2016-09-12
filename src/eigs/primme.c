@@ -300,7 +300,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
 
    CHKERR(init_basis_Sprimme(NULL, primme->nLocal, 0, NULL, 0, NULL, 0,
             NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, &realWorkSize,
-            &primme->maxBasisSize, NULL, NULL, NULL, primme), -1);
+            &primme->maxBasisSize, NULL, NULL, primme), -1);
 
    /*----------------------------------------------------------------------*/
    /* Determine orthogalization workspace with and without locking.        */

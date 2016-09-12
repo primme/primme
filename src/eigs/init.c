@@ -121,8 +121,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *evecs, PRIMME_INT ldevecs,
       SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU,
       int ldUDU, int *ipivot, double machEps, SCALAR *rwork, size_t *rworkSize,
-      int *basisSize, int *nextGuess, int *numGuesses, double *timeForMV,
-      primme_params *primme) {
+      int *basisSize, int *nextGuess, int *numGuesses, primme_params *primme) {
 
    int i;
    int initSize;
@@ -228,17 +227,6 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       *basisSize = primme->minRestartSize;
    }
 
-   /* ----------------------------------------------------------- */
-   /* If time measurements are needed, waste one MV + one Precond */
-   /* Put dummy results in the first open space of W (*basisSize) */
-   /* ----------------------------------------------------------- */
-   if (primme->dynamicMethodSwitch && *basisSize < primme->maxBasisSize) {
-      *timeForMV = primme_wTimer(0);
-      CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, &W[ldW*(*basisSize)],
-               ldV, 0, 1, primme), -1);
-      *timeForMV = primme_wTimer(0) - *timeForMV;
-   }
-      
    return 0;
 }
 
