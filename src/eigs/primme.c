@@ -181,8 +181,8 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* Call the solver                                                      */
    /*----------------------------------------------------------------------*/
 
-   CHKERR(main_iter_Sprimme(evals, perm, evecs, resNorms, machEps, 
-                   primme->intWork, primme->realWork, primme),
+   CHKERR(main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms,
+            machEps, primme->intWork, primme->realWork, primme),
          MAIN_ITER_FAILURE);
 
    /*----------------------------------------------------------------------*/
@@ -191,9 +191,11 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* correspond to the sorted Ritz values in evals.                       */
    /*----------------------------------------------------------------------*/
 
-   permute_vecs_Sprimme(&evecs[primme->numOrthoConst], primme->nLocal,
-         primme->initSize, primme->nLocal, perm, (SCALAR*)primme->realWork,
-         (int*)primme->intWork);
+   assert(primme->realWorkSize >= sizeof(SCALAR)*primme->nLocal
+         && primme->intWorkSize >= (int)sizeof(int)*primme->initSize);
+   permute_vecs_Sprimme(&evecs[primme->numOrthoConst*primme->ldevecs],
+         primme->nLocal, primme->initSize, primme->ldevecs, perm,
+         (SCALAR*)primme->realWork, (int*)primme->intWork);
 
    free(perm);
 
@@ -251,8 +253,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* Compute the memory required by the main iteration data structures    */
    /*----------------------------------------------------------------------*/
 
-   dataSize = primme->nLocal*primme->maxBasisSize  /* Size of V            */
-      + primme->nLocal*primme->maxBasisSize        /* Size of W            */
+   dataSize = primme->ldOPs*primme->maxBasisSize   /* Size of V            */
+      + primme->ldOPs*primme->maxBasisSize         /* Size of W            */
       + primme->maxBasisSize*primme->maxBasisSize  /* Size of H            */
       + primme->maxBasisSize*primme->maxBasisSize  /* Size of hVecs        */
       + primme->restartingParams.maxPrevRetain*primme->maxBasisSize;
@@ -264,7 +266,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    if (primme->projectionParams.projection == primme_proj_harmonic ||
          primme->projectionParams.projection == primme_proj_refined) {
 
-      dataSize += primme->nLocal*primme->maxBasisSize    /* Size of Q      */
+      dataSize += primme->ldOPs*primme->maxBasisSize     /* Size of Q      */
          + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
          + primme->maxBasisSize*primme->maxBasisSize     /* Size of hU     */
          + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hVecsRot */
@@ -321,7 +323,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* Determine workspace required by solve_correction and its children    */
    /*----------------------------------------------------------------------*/
 
-   CHKERR(solve_correction_Sprimme(NULL, NULL, NULL, NULL, NULL, 
+   CHKERR(solve_correction_Sprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 
             NULL, NULL, maxEvecsSize, 0, NULL, NULL, NULL, NULL, 
             primme->maxBasisSize, NULL, NULL, primme->maxBlockSize, 
             1.0, 0.0, 1.0, NULL, &realWorkSize, &intWorkSize, 0, primme), -1);
@@ -331,9 +333,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
 
    CHKERR(restart_Sprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
-            0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, NULL,
-            NULL, NULL, evecsHat, 0, NULL, 0, NULL, 0, NULL, &primme->numEvals,
-            &primme->numEvals, &primme->numEvals, NULL,
+            0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, 0,
+            NULL, NULL, NULL, evecsHat, 0, NULL, 0, NULL, 0, NULL,
+            &primme->numEvals, &primme->numEvals, &primme->numEvals, NULL,
             &primme->restartingParams.maxPrevRetain, primme->maxBasisSize,
             primme->initSize, NULL, &primme->maxBasisSize, NULL,
             primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, NULL,
@@ -347,10 +349,10 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    CHKERR(update_projection_Sprimme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
             primme->maxBasisSize, NULL, &realWorkSize, 0, primme), -1);
 
-   CHKERR(prepare_candidates_Sprimme(NULL, NULL, primme->nLocal, NULL, 0,
-            primme->maxBasisSize, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL,
+   CHKERR(prepare_candidates_Sprimme(NULL, 0, NULL, 0, primme->nLocal, NULL, 0,
+            primme->maxBasisSize, NULL, NULL, NULL, 0, NULL, NULL, NULL,
             primme->numEvals, NULL, 0, primme->maxBlockSize,
-            NULL, primme->numEvals, NULL, NULL, 0, 0.0, NULL,
+            NULL, primme->numEvals, 0, NULL, NULL, 0, 0.0, NULL,
             &primme->maxBlockSize, NULL, NULL, NULL, NULL, 0, NULL, NULL,
             &realWorkSize, &intWorkSize, 0, primme), -1);
 

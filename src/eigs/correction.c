@@ -44,14 +44,17 @@ static void mergeSort(REAL *lockedEvals, int numLocked, REAL *ritzVals,
    int *flags, int basisSize, REAL *sortedRitzVals, int *ilev, int blockSize,
    primme_params *primme);
  
-static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
-                int blockSize, SCALAR *rwork, primme_params *primme);
+static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
+      PRIMME_INT ldx, int blockSize, SCALAR *rwork, primme_params *primme);
 
-static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs, 
-   SCALAR *evecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
-   SCALAR **Lprojector, SCALAR **RprojectorQ, SCALAR **RprojectorX, 
-   int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX, 
-   int numLocked, int numConverged, primme_params *primme);
+
+static int setup_JD_projectors(SCALAR *x, SCALAR *evecs, PRIMME_INT ldevecs,
+      SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
+      SCALAR **Lprojector, PRIMME_INT *ldLprojector, SCALAR **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, SCALAR **RprojectorX,
+      PRIMME_INT *ldRprojectorX,  int *sizeLprojector, int *sizeRprojectorQ,
+      int *sizeRprojectorX, int numLocked, int numConverged,
+      primme_params *primme);
 
 
 /*******************************************************************************
@@ -140,13 +143,14 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs, 
-   SCALAR *evecsHat, SCALAR *UDU, int *ipivot, REAL *lockedEvals, 
-   int numLocked, int numConvergedStored, REAL *ritzVals, 
-   REAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
-   REAL *blockNorms, int *iev, int blockSize, double eresTol, 
-   double machEps, double aNormEstimate, SCALAR *rwork, size_t *rworkSize,
-   int *iwork, int iworkSize, primme_params *primme) {
+int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
+      PRIMME_INT ldW, SCALAR *evecs, PRIMME_INT ldevecs, SCALAR *evecsHat,
+      PRIMME_INT ldevecsHat, SCALAR *UDU, int *ipivot, REAL *lockedEvals, 
+      int numLocked, int numConvergedStored, REAL *ritzVals, 
+      REAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
+      REAL *blockNorms, int *iev, int blockSize, double eresTol, 
+      double machEps, double aNormEstimate, SCALAR *rwork, size_t *rworkSize,
+      int *iwork, int iworkSize, primme_params *primme) {
 
    int blockIndex;         /* Loop index.  Ranges from 0..blockSize-1.       */
    int ritzIndex;          /* Ritz value index blockIndex corresponds to.    */
@@ -172,6 +176,10 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
    SCALAR *Lprojector;   /* Q pointer for (I-Q*Q'). Usually points to evecs*/
    SCALAR *RprojectorQ;  /* May point to evecs/evecsHat depending on skewQ */
    SCALAR *RprojectorX;  /* May point to x/Kinvx depending on skewX        */
+   PRIMME_INT ldLprojector;  /* The leading dimension of Lprojector     */
+   PRIMME_INT ldRprojectorQ; /* The leading dimension of RprojectorQ    */
+   PRIMME_INT ldRprojectorX; /* The leading dimension of RprojectorL    */
+
 
    SCALAR xKinvx;                        /* Stores x'*K^{-1}x if needed    */
    REAL eval, shift, robustShift;       /* robust shift values.           */
@@ -185,14 +193,13 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
    neededRsize = 0;
    Kinvx       = rwork;
    /* Kinvx will have nonzero size if precond and both RightX and SkewX */
-   if (primme->correctionParams.precondition &&        
-       primme->correctionParams.projectors.RightX &&  
+   if (primme->correctionParams.projectors.RightX &&  
        primme->correctionParams.projectors.SkewX ) { 
 
       /* OLSEN's method requires a block, but JDQMR is vector by vector */
       if (primme->correctionParams.maxInnerIterations == 0) {    
-         sol = Kinvx + primme->nLocal*blockSize;
-         neededRsize = neededRsize + primme->nLocal*blockSize;
+         sol = Kinvx + primme->ldOPs*blockSize;
+         neededRsize = neededRsize + primme->ldOPs*blockSize;
       }
       else {
          sol = Kinvx + primme->nLocal;
@@ -272,12 +279,17 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
          /* to the user shift as the proper shift.                                  */
 
          sortedIndex = ilev[blockIndex];
-         if (sortedRitzVals[sortedIndex] - blockNorms[blockIndex] <  primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ] &&  primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ] < sortedRitzVals[sortedIndex] + blockNorms[blockIndex])
+         if (sortedRitzVals[sortedIndex] - blockNorms[blockIndex]
+               <  primme->targetShifts[min(primme->numTargetShifts-1,numLocked)]
+             &&   primme->targetShifts[min(primme->numTargetShifts-1,numLocked)]
+               < sortedRitzVals[sortedIndex] + blockNorms[blockIndex])
             blockOfShifts[blockIndex] = 
-               primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ];
+               primme->targetShifts[min(primme->numTargetShifts-1, numLocked)];
          else
-            blockOfShifts[blockIndex] = sortedRitzVals[sortedIndex] + blockNorms[blockIndex] * (
-                  primme->targetShifts[ min(primme->numTargetShifts-1, numLocked) ] < sortedRitzVals[sortedIndex] ? -1 : 1);
+            blockOfShifts[blockIndex] = sortedRitzVals[sortedIndex]
+               + blockNorms[blockIndex] * (
+                  primme->targetShifts[min(primme->numTargetShifts-1,numLocked)]
+                     < sortedRitzVals[sortedIndex] ? -1 : 1);
          
          if (sortedIndex < *numPrevRitzVals) {
             approxOlsenEps[blockIndex] = 
@@ -372,15 +384,15 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
       /* This is Generalized Davidson or approximate Olsen's method. */
       /* Perform block preconditioning (with or without projections) */
       
-      r = &W[primme->nLocal*basisSize];    /* All the block residuals    */
-      x = &V[primme->nLocal*basisSize];    /* All the block Ritz vectors */
+      r = &W[ldW*basisSize];    /* All the block residuals    */
+      x = &V[ldV*basisSize];    /* All the block Ritz vectors */
       
       if ( primme->correctionParams.projectors.RightX &&
            primme->correctionParams.projectors.SkewX    ) {    
            /* Compute exact Olsen's projected preconditioner. This is */
           /* expensive and rarely improves anything! Included for completeness*/
           
-          Olsen_preconditioner_block(r, x, blockSize, Kinvx, primme);
+          Olsen_preconditioner_block(r, ldW, x, ldV, blockSize, Kinvx, primme);
       }
       else {
          if ( primme->correctionParams.projectors.RightX ) {   
@@ -390,14 +402,14 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
             for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
                /* Compute r_i = r_i - err_i * x_i */
                Num_axpy_Sprimme(primme->nLocal, -approxOlsenEps[blockIndex],
-               &x[primme->nLocal*blockIndex],1,&r[primme->nLocal*blockIndex],1);
+               &x[ldV*blockIndex],1,&r[ldW*blockIndex],1);
             } /* for */
          }
 
          /* GD: compute K^{-1}r , or approx.Olsen: K^{-1}(r-ex) */
 
-         CHKERR(applyPreconditioner_Sprimme(r, primme->nLocal, primme->nLocal,
-                  x, primme->nLocal, blockSize, primme), -1);
+         CHKERR(applyPreconditioner_Sprimme(r, primme->nLocal, ldW,
+                  x, ldV, blockSize, primme), -1);
       }
    }
    /* ------------------------------------------------------------ */
@@ -409,17 +421,18 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
 
       for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
 
-         r = &W[primme->nLocal*(basisSize+blockIndex)];
-         x = &V[primme->nLocal*(basisSize+blockIndex)];
+         r = &W[ldW*(basisSize+blockIndex)];
+         x = &V[ldV*(basisSize+blockIndex)];
 
          /* Set up the left/right/skew projectors for JDQMR.        */
          /* The pointers Lprojector, Rprojector(Q/X) point to the   */
          /* appropriate arrays for use in the projection step       */
 
-         setup_JD_projectors(x, r, evecs, evecsHat, Kinvx, &xKinvx, 
-            &Lprojector, &RprojectorQ, &RprojectorX, 
-            &sizeLprojector, &sizeRprojectorQ, &sizeRprojectorX,
-            numLocked, numConvergedStored, primme);
+         CHKERR(setup_JD_projectors(x, evecs, ldevecs, evecsHat, ldevecsHat,
+                  Kinvx, &xKinvx, &Lprojector, &ldLprojector, &RprojectorQ,
+                  &ldRprojectorQ, &RprojectorX, &ldRprojectorX, &sizeLprojector,
+                  &sizeRprojectorQ, &sizeRprojectorX, numLocked,
+                  numConvergedStored, primme), -1);
 
          /* Map the index of the block vector to its corresponding eigenvalue */
          /* index, and the shift for the correction equation. Also make the   */
@@ -429,14 +442,16 @@ int solve_correction_Sprimme(SCALAR *V, SCALAR *W, SCALAR *evecs,
          shift = blockOfShifts[blockIndex];
          primme->ShiftsForPreconditioner = &blockOfShifts[blockIndex];
 
-         CHKERR(inner_solve_Sprimme(x, r, &blockNorms[blockIndex], evecs, 
-            evecsHat, UDU, ipivot, &xKinvx, Lprojector, RprojectorQ, 
-            RprojectorX, sizeLprojector, sizeRprojectorQ, sizeRprojectorX,
-            sol, ritzVals[ritzIndex], shift, eresTol, aNormEstimate, 
-            machEps, linSolverRWork, linSolverRWorkSize, primme), -1);
+         CHKERR(inner_solve_Sprimme(x, r, &blockNorms[blockIndex], evecs,
+                  ldevecs, UDU, ipivot, &xKinvx,
+                  Lprojector, ldLprojector, RprojectorQ, ldRprojectorQ,
+                  RprojectorX, ldRprojectorX, sizeLprojector, sizeRprojectorQ,
+                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift, eresTol,
+                  aNormEstimate, machEps, linSolverRWork, linSolverRWorkSize,
+                  primme), -1);
 
          Num_copy_Sprimme(primme->nLocal, sol, 1, 
-            &V[primme->nLocal*(basisSize+blockIndex)], 1);
+            &V[ldV*(basisSize+blockIndex)], 1);
 
       } /* end for each block vector */
    } /* JDqmr variants */
@@ -675,8 +690,8 @@ static void mergeSort(REAL *lockedEvals, int numLocked, REAL *ritzVals,
  *
  ******************************************************************************/
 
-static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
-                int blockSize, SCALAR *rwork, primme_params *primme) {
+static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
+      PRIMME_INT ldx, int blockSize, SCALAR *rwork, primme_params *primme) {
 
    int blockIndex;
    SCALAR alpha;
@@ -686,7 +701,7 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
    /* Subdivide workspace                                              */
    /*------------------------------------------------------------------*/
    Kinvx = rwork;
-   xKinvx_local = Kinvx + primme->nLocal*blockSize;
+   xKinvx_local = Kinvx + ldx*blockSize;
    xKinvr_local = xKinvx_local + blockSize;
    xKinvx       = xKinvr_local + blockSize;
    xKinvr       = xKinvx + blockSize;
@@ -695,8 +710,8 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
    /* Compute K^{-1}x for block x. Kinvx memory requirement (blockSize*nLocal)*/
    /*------------------------------------------------------------------ */
 
-   CHKERR(applyPreconditioner_Sprimme(x, primme->nLocal, primme->nLocal, Kinvx,
-            primme->nLocal, blockSize, primme), -1);
+   CHKERR(applyPreconditioner_Sprimme(x, primme->nLocal, ldx, Kinvx, ldx,
+            blockSize, primme), -1);
 
    /*------------------------------------------------------------------ */
    /* Compute local x^TK^{-1}x and x^TK^{-1}r = (K^{-1}x)^Tr for each vector */
@@ -704,21 +719,20 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
 
    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
       xKinvx_local[blockIndex] =
-        Num_dot_Sprimme(primme->nLocal, &x[primme->nLocal*blockIndex],1, 
-                           &Kinvx[primme->nLocal*blockIndex],1);
+        Num_dot_Sprimme(primme->nLocal, &x[ldx*blockIndex],1, 
+                           &Kinvx[ldx*blockIndex],1);
       xKinvr_local[blockIndex] =
-        Num_dot_Sprimme(primme->nLocal, &Kinvx[primme->nLocal*blockIndex],1,
-                                   &r[primme->nLocal*blockIndex],1);
+        Num_dot_Sprimme(primme->nLocal, &Kinvx[ldx*blockIndex],1,
+                                   &r[ldr*blockIndex],1);
    }      
-   CHKERR(globalSum_Sprimme(xKinvx_local, xKinvx, 2*blockSize, primme),
-         -1);
+   CHKERR(globalSum_Sprimme(xKinvx_local, xKinvx, 2*blockSize, primme), -1);
 
    /*------------------------------------------------------------------*/
    /* Compute K^{-1}r                                                  */
    /*------------------------------------------------------------------*/
 
-   CHKERR(applyPreconditioner_Sprimme(r, primme->nLocal, primme->nLocal, x,
-            primme->nLocal, blockSize, primme), -1);
+   CHKERR(applyPreconditioner_Sprimme(r, primme->nLocal, ldr, x, ldx,
+            blockSize, primme), -1);
 
    /*------------------------------------------------------------------*/
    /* Compute K^(-1)r  - ( xKinvr/xKinvx ) K^(-1)r for each vector     */
@@ -730,8 +744,8 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
       else   
          alpha = 0.0;
 
-      Num_axpy_Sprimme(primme->nLocal,alpha,&Kinvx[primme->nLocal*blockIndex],
-                                       1, &x[primme->nLocal*blockIndex],1);
+      Num_axpy_Sprimme(primme->nLocal,alpha,&Kinvx[ldx*blockIndex],
+                                       1, &x[ldx*blockIndex],1);
    } /*for*/
 
    return 0;
@@ -747,7 +761,6 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
  *  INPUT
  *  -----
  *   x                The Ritz vector
- *   r                The residual vector for x
  *   evecs            Converged locked eigenvectors (denoted as Q herein)
  *   evecsHat         K^{-1}*evecs
  *   numLocked        Number of locked eigenvectors (if locking)
@@ -816,20 +829,23 @@ static int Olsen_preconditioner_block(SCALAR *r, SCALAR *x,
  *
  ******************************************************************************/
 
-static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs, 
-   SCALAR *evecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
-   SCALAR **Lprojector, SCALAR **RprojectorQ, SCALAR **RprojectorX, 
-   int *sizeLprojector, int *sizeRprojectorQ, int *sizeRprojectorX, 
-   int numLocked, int numConverged, primme_params *primme) {
+static int setup_JD_projectors(SCALAR *x, SCALAR *evecs, PRIMME_INT ldevecs,
+      SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
+      SCALAR **Lprojector, PRIMME_INT *ldLprojector, SCALAR **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, SCALAR **RprojectorX,
+      PRIMME_INT *ldRprojectorX,  int *sizeLprojector, int *sizeRprojectorQ,
+      int *sizeRprojectorX, int numLocked, int numConverged,
+      primme_params *primme) {
 
    int n, sizeEvecs;
    SCALAR xKinvx_local;
 
-   (void)r; /* unused parameter */
-
    *sizeLprojector  = 0;
    *sizeRprojectorQ = 0;
    *sizeRprojectorX = 0;
+   *ldLprojector  = 0;
+   *ldRprojectorQ = 0;
+   *ldRprojectorX = 0;
    *Lprojector  = NULL;
    *RprojectorQ = NULL;
    *RprojectorX = NULL;
@@ -848,14 +864,16 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs,
    
          *sizeLprojector = sizeEvecs;
          *Lprojector = evecs;
+         *ldLprojector = ldevecs;
          if (primme->correctionParams.projectors.LeftX) {
-            Num_copy_Sprimme(n, x, 1, &evecs[sizeEvecs*n], 1);
+            Num_copy_Sprimme(n, x, 1, &evecs[sizeEvecs*ldevecs], 1);
             *sizeLprojector = *sizeLprojector + 1;
          }
    }
    else {
       if (primme->correctionParams.projectors.LeftX) {
          *Lprojector = x;
+         *ldLprojector = n;
          *sizeLprojector = 1;
       }
    }
@@ -872,9 +890,11 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs,
       if (primme->correctionParams.precondition    &&
           primme->correctionParams.projectors.SkewQ) {
          *RprojectorQ = evecsHat;       /* Use the K^(-1)evecs array */
+         *ldRprojectorQ = ldevecsHat;
       }                               
       else {  /* Right Q but not SkewQ */
          *RprojectorQ = evecs;          /* Use just the evecs array. */
+         *ldRprojectorQ = ldevecs;
       }
       *sizeRprojectorQ = sizeEvecs;
    
@@ -904,6 +924,7 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *r, SCALAR *evecs,
          *xKinvx = 1.0;
       }
       *sizeRprojectorX = 1;
+      *ldRprojectorX  = n;
    }
    else { 
          *RprojectorX = NULL;

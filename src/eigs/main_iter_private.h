@@ -29,17 +29,6 @@
 #ifndef MAIN_ITER_PRIVATE_H
 #define MAIN_ITER_PRIVATE_H
 
-/* Failure codes returned by main_iter */
-
-#define MAX_ITERATIONS_REACHED    -1
-#define INIT_FAILURE              -2
-#define ORTHO_FAILURE             -3
-#define SOLVE_H_FAILURE           -4
-#define SOLVE_CORRECTION_FAILURE  -5
-#define RESTART_FAILURE           -6
-#define LOCK_VECTORS_FAILURE      -7
-
-
 /*----------------------------------------------------------------------------*
  * The following are needed for the Dynamic Method Switching
  *----------------------------------------------------------------------------*/

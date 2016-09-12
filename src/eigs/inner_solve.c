@@ -38,20 +38,21 @@
 #include "globalsum.h"
 #include "auxiliary_eigs.h"
 
-static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, 
-   SCALAR *RprojectorQ, SCALAR *x, SCALAR *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, SCALAR *xKinvx, 
-   SCALAR *UDU, int *ipivot, SCALAR *result, SCALAR *rwork, 
-   primme_params *primme);
+static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,
+      SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
+      SCALAR *RprojectorX,  PRIMME_INT ldRprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, SCALAR *xKinvx, SCALAR *UDU, int *ipivot,
+      SCALAR *result, SCALAR *rwork, primme_params *primme);
 
-static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU, 
-   int *ipivot, int numCols, SCALAR *v, SCALAR *rwork, 
-   primme_params *primme);
+static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
+      PRIMME_INT ldQhat, SCALAR *UDU, int *ipivot, int numCols, SCALAR *v,
+      SCALAR *rwork, primme_params *primme);
 
-static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q,
-   int dimQ, SCALAR *result, SCALAR *rwork, primme_params *primme);
+static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q, 
+      PRIMME_INT ldQ, int dimQ, SCALAR *result, SCALAR *rwork,
+      primme_params *primme);
 
-static int apply_projector(SCALAR *Q, int numCols, SCALAR *v, 
+static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int numCols, SCALAR *v, 
    SCALAR *rwork, primme_params *primme);
 
 static int dist_dot(SCALAR *x, int incx,
@@ -146,13 +147,14 @@ static int dist_dot_real(SCALAR *x, int incx,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, 
-   SCALAR *evecs, SCALAR *evecsHat, SCALAR *UDU, int *ipivot, 
-   SCALAR *xKinvx, SCALAR *Lprojector, SCALAR *RprojectorQ, 
-   SCALAR *RprojectorX, int sizeLprojector, int sizeRprojectorQ, 
-   int sizeRprojectorX, SCALAR *sol, REAL eval, REAL shift, 
-   double eresTol, double aNormEstimate, double machEps, SCALAR *rwork, 
-   size_t rworkSize, primme_params *primme) {
+int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
+      PRIMME_INT ldevecs, SCALAR *UDU, int *ipivot, SCALAR *xKinvx,
+      SCALAR *Lprojector, PRIMME_INT ldLprojector,
+      SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX,
+      PRIMME_INT ldRprojectorX, int sizeLprojector, int sizeRprojectorQ, 
+      int sizeRprojectorX, SCALAR *sol, REAL eval, REAL shift, 
+      double eresTol, double aNormEstimate, double machEps, SCALAR *rwork, 
+      size_t rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
    int numIts;        /* Number of inner iterations                          */
@@ -181,8 +183,6 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
    double absoluteTolerance;
    double LTolerance, ETolerance=0.0;
    int isConv;
-
-   (void)evecsHat; /* unused parameter */
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -249,9 +249,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
    /* Assume zero initial guess */
    Num_copy_Sprimme(primme->nLocal, r, 1, g, 1);
 
-   CHKERR(apply_projected_preconditioner(g, evecs, RprojectorQ, 
-           x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
-           xKinvx, UDU, ipivot, d, workSpace, primme), -1);
+   CHKERR(apply_projected_preconditioner(g, evecs, ldevecs, RprojectorQ,
+           ldRprojectorQ, x, RprojectorX, ldRprojectorX, sizeRprojectorQ,
+           sizeRprojectorX, xKinvx, UDU, ipivot, d, workSpace, primme), -1);
 
    Theta_prev = 0.0L;
    eval_prev = eval;
@@ -276,8 +276,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
 
    while (numIts < maxIterations) {
 
-      CHKERR(apply_projected_matrix(d, shift, Lprojector, sizeLprojector, 
-                             w, workSpace, primme), -1);
+      CHKERR(apply_projected_matrix(d, shift, Lprojector, ldLprojector,
+               sizeLprojector, w, workSpace, primme), -1);
       CHKERR(dist_dot_real(d, 1, w, 1, primme, &sigma_prev), -1);
 
       if (sigma_prev == 0.0L) {
@@ -449,9 +449,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
 
       if (numIts < maxIterations) {
 
-         CHKERR(apply_projected_preconditioner(g, evecs, RprojectorQ, 
-            x, RprojectorX, sizeRprojectorQ, sizeRprojectorX, 
-            xKinvx, UDU, ipivot, w, workSpace, primme), -1);
+         CHKERR(apply_projected_preconditioner(g, evecs, ldevecs, RprojectorQ, 
+            ldRprojectorQ, x, RprojectorX, ldRprojectorX, sizeRprojectorQ,
+            sizeRprojectorX, xKinvx, UDU, ipivot, w, workSpace, primme), -1);
 
          CHKERR(dist_dot_real(g, 1, w, 1, primme, &rho), -1);
          beta = rho/rho_prev;
@@ -525,21 +525,21 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm,
  *
  ******************************************************************************/
 
-static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, 
-   SCALAR *RprojectorQ, SCALAR *x, SCALAR *RprojectorX, 
-   int sizeRprojectorQ, int sizeRprojectorX, SCALAR *xKinvx, 
-   SCALAR *UDU, int *ipivot, SCALAR *result, SCALAR *rwork, 
-   primme_params *primme) {  
+static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,
+      SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
+      SCALAR *RprojectorX,  PRIMME_INT ldRprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, SCALAR *xKinvx, SCALAR *UDU, int *ipivot,
+      SCALAR *result, SCALAR *rwork, primme_params *primme) {  
 
    /* Place K^{-1}v in result */
    CHKERR(applyPreconditioner_Sprimme(v, primme->nLocal, primme->nLocal, result,
             primme->nLocal, 1, primme), -1);
 
-   CHKERR(apply_skew_projector(Q, RprojectorQ, UDU, ipivot, sizeRprojectorQ,
-                           result, rwork, primme), -1);
+   CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, UDU, ipivot,
+            sizeRprojectorQ, result, rwork, primme), -1);
 
-   CHKERR(apply_skew_projector(x, RprojectorX, xKinvx, ipivot, sizeRprojectorX,
-                           result, rwork, primme), -1);
+   CHKERR(apply_skew_projector(x, primme->nLocal, RprojectorX, ldRprojectorX,
+            xKinvx, ipivot, sizeRprojectorX, result, rwork, primme), -1);
 
    return 0;
 }
@@ -572,9 +572,9 @@ static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q,
  * 
  ******************************************************************************/
 
-static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU, 
-   int *ipivot, int numCols, SCALAR *v, SCALAR *rwork, 
-   primme_params *primme) {
+static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
+      PRIMME_INT ldQhat, SCALAR *UDU, int *ipivot, int numCols, SCALAR *v,
+      SCALAR *rwork, primme_params *primme) {
 
    if (numCols > 0) {    /* there is a projector to be applied */
 
@@ -604,12 +604,11 @@ static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU,
          /* More than one vectors. Use BLAS 2.                    */
          /* ------------------------------------------------------*/
          /* Compute workspace = Q'*v */
-         Num_gemv_Sprimme("C", primme->nLocal, numCols, 1.0, Q, 
-                      primme->nLocal, v, 1, 0.0, workSpace, 1);
+         Num_gemv_Sprimme("C", primme->nLocal, numCols, 1.0, Q, ldQ, v, 1, 0.0,
+               workSpace, 1);
 
          /* Global sum: overlaps = Q'*v */
-         CHKERR(globalSum_Sprimme(workSpace, overlaps, numCols, primme),
-               -1);
+         CHKERR(globalSum_Sprimme(workSpace, overlaps, numCols, primme), -1);
 
          /* --------------------------------------------*/
          /* Backsolve only if there is a skew projector */
@@ -622,13 +621,13 @@ static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU,
                      workSpace, primme), -1);
 
             /* Compute v=v-Qhat*workspace */
-            Num_gemv_Sprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
-                         primme->nLocal, workSpace, 1, 1.0, v, 1);
+            Num_gemv_Sprimme("N", primme->nLocal, numCols, -1.0, Qhat, ldQhat,
+                  workSpace, 1, 1.0, v, 1);
          }
          else  {
             /* Compute v=v-Qhat*overlaps  */
-            Num_gemv_Sprimme("N", primme->nLocal, numCols, -1.0, Qhat, 
-                         primme->nLocal, overlaps, 1, 1.0, v, 1);
+            Num_gemv_Sprimme("N", primme->nLocal, numCols, -1.0, Qhat, ldQhat,
+                  overlaps, 1, 1.0, v, 1);
          } /* UDU==null */
       } /* numCols != 1 */
    } /* numCols > 0 */
@@ -664,13 +663,14 @@ static int apply_skew_projector(SCALAR *Q, SCALAR *Qhat, SCALAR *UDU,
  ******************************************************************************/
 
 static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q, 
-   int dimQ, SCALAR *result, SCALAR *rwork, primme_params *primme) {
+      PRIMME_INT ldQ, int dimQ, SCALAR *result, SCALAR *rwork,
+      primme_params *primme) {
 
    CHKERR(matrixMatvec_Sprimme(v, primme->nLocal, primme->nLocal, result,
          primme->nLocal, 0, 1, primme), -1);
    Num_axpy_Sprimme(primme->nLocal, -shift, v, 1, result, 1); 
    if (dimQ > 0)
-      CHKERR(apply_projector(Q, dimQ, result, rwork, primme), -1);
+      CHKERR(apply_projector(Q, ldQ, dimQ, result, rwork, primme), -1);
 
    return 0;
 }
@@ -697,7 +697,7 @@ static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q,
  * 
  ******************************************************************************/
 
-static int apply_projector(SCALAR *Q, int numCols, SCALAR *v, 
+static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int numCols, SCALAR *v, 
    SCALAR *rwork, primme_params *primme) {
 
    SCALAR *overlaps;  /* overlaps of v with columns of Q   */
@@ -706,11 +706,11 @@ static int apply_projector(SCALAR *Q, int numCols, SCALAR *v,
    overlaps = rwork;
    workSpace = overlaps + numCols;
 
-   Num_gemv_Sprimme("C", primme->nLocal, numCols, 1.0, Q, primme->nLocal,
-      v, 1, 0.0, workSpace, 1);
+   Num_gemv_Sprimme("C", primme->nLocal, numCols, 1.0, Q, ldQ, v, 1, 0.0,
+         workSpace, 1);
    CHKERR(globalSum_Sprimme(workSpace, overlaps, numCols, primme), -1);
-   Num_gemv_Sprimme("N", primme->nLocal, numCols, -1.0, Q, primme->nLocal,
-      overlaps, 1, 1.0, v, 1);
+   Num_gemv_Sprimme("N", primme->nLocal, numCols, -1.0, Q, ldQ, overlaps,
+         1, 1.0, v, 1);
 
    return 0;
 }

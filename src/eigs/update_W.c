@@ -75,7 +75,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
             "Error returned by 'matrixMatvec' %d", ierr);
    }
    else {
-      for (i=0; i<basisSize; i++) {
+      for (i=0; i<blockSize; i++) {
          CHKERRM((primme->matrixMatvec(&V[ldV*(basisSize+i)], &primme->ldOPs,
                      &W[ldW*(basisSize+i)], &primme->ldOPs, &ONE, primme,
                      &ierr), ierr), -1,
@@ -116,7 +116,7 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       double targetShift, int basisSize, int blockSize, SCALAR *rwork,
       size_t *rworkSize, double machEps, primme_params *primme) {
 
-   int i, j, ret;
+   int i, j;
 
    /* Return memory requirement */
    if (V == NULL) {
@@ -139,8 +139,8 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
-   ret = ortho_Sprimme(Q, ldQ, R, ldR, basisSize, basisSize+blockSize-1, NULL,
-         0, 0, nLocal, primme->iseed, machEps, rwork, rworkSize, primme);
+   CHKERR(ortho_Sprimme(Q, ldQ, R, ldR, basisSize, basisSize+blockSize-1, NULL,
+         0, 0, nLocal, primme->iseed, machEps, rwork, rworkSize, primme), -1);
 
    /* Zero the lower triangular part of R */
    for (i=basisSize; i<basisSize+blockSize; i++) {
@@ -149,5 +149,5 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       }
    }
 
-   return ret;
+   return 0;
 }

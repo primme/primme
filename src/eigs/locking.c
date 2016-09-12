@@ -159,11 +159,12 @@ TEMPLATE_PLEASE
 int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W, 
       PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,
       SCALAR *hVecs, int ldhVecs, int *restartPerm, REAL *hVals, int *flags,
-      int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs, REAL *evals,
-      int *numConverged, int *numLocked, REAL *resNorms, int *evecsperm,
-      int numPrevRetained, int *indexOfPreviousVecs, int *hVecsPerm,
-      int reset, double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme) {
+      int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs,
+      PRIMME_INT ldevecs, REAL *evals, int *numConverged, int *numLocked,
+      REAL *resNorms, int *evecsperm, int numPrevRetained,
+      int *indexOfPreviousVecs, int *hVecsPerm, int reset, double machEps,
+      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme) {
 
    int i, j, k;             /* Loop variables                                 */
    int numPacked;           /* The number of coefficient vectors moved to the */
@@ -296,7 +297,7 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
             V, 0, *restartSize, ldV,
             *X, 0, sizeBlockNorms, ldV,
             evecs, *numLocked+primme->numOrthoConst, left,
-                !overbooking?left+numPacked:left, primme->nLocal,
+                !overbooking?left+numPacked:left, ldevecs,
             W, 0, *restartSize, ldV,
             *R, 0, sizeBlockNorms, ldV, blockNorms,
             lockedResNorms, left, *restartSize,
@@ -323,9 +324,9 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    for (i=left, j=0; i < left+numPacked; i++) {
       if (flags[i] != UNCONVERGED && *numLocked+j < primme->numEvals) {
          if (overbooking) {
-            Num_copy_matrix_Sprimme(&V[i*nLocal], nLocal, 1, primme->nLocal,
-                  &evecs[(*numLocked+primme->numOrthoConst+j)*primme->nLocal],
-                  primme->nLocal);
+            Num_copy_matrix_Sprimme(&V[i*ldV], nLocal, 1, ldV,
+                  &evecs[(*numLocked+primme->numOrthoConst+j)*ldevecs],
+                  ldevecs);
          }
          evals[*numLocked+j++] = hVals[i];
       }
@@ -463,10 +464,9 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
          REAL eval = evals[*numLocked];
          if (!overbooking) {
             Num_copy_matrix_Sprimme(
-                  &evecs[(numLocked0+i-left+primme->numOrthoConst)*primme->nLocal],
-                  nLocal, 1, primme->nLocal,
-                  &evecs[(*numLocked+primme->numOrthoConst)*primme->nLocal],
-                  primme->nLocal);
+                  &evecs[(numLocked0+i-left+primme->numOrthoConst)*ldevecs],
+                  nLocal, 1, ldevecs,
+                  &evecs[(*numLocked+primme->numOrthoConst)*ldevecs], ldevecs);
          }
          insertionSort(eval, evals, resNorm, resNorms, evecsperm,
             *numLocked, primme);
