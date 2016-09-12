@@ -138,7 +138,7 @@ static int real_main (int argc, char *argv[]) {
    SCALAR *evecs;
    driver_params driver;
    primme_params primme;
-   primme_preset_method method=DEFAULT_METHOD;
+   primme_preset_method method=PRIMME_DEFAULT_METHOD;
    int *permutation = NULL;
 
    /* Other miscellaneous items */

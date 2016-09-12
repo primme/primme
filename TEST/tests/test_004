@@ -22,4 +22,4 @@ primme.target = primme_closest_abs
 primme.numTargetShifts = 1
 primme.targetShifts = 0
 
-method               = GD_Olsen_plusK
+method               = PRIMME_GD_Olsen_plusK

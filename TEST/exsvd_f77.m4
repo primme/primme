@@ -58,7 +58,7 @@ ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
      :            maxMatvecs      = 300000,
      :            TOL             = 1.0D-12,
      :            printLevel      = 2,
-     :            whichSvals      = PRIMMEF77_SVDS_closest_abs,
+     :            whichSvals      = primme_svds_closest_abs,
      :            numTargetShifts = 1
      :  )
 ifdef(`USE_PETSC', `',`        common c')
@@ -108,50 +108,50 @@ ifdef(`USE_PETSC', `        call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
         c = 1.0D-4
 
 !       Set a few basic solver parameters
-        call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_m,
+        call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_m,
      :                                                          m, ierr)
-        call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_n,
+        call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_n,
      :                                                          n, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                           PRIMMEF77_SVDS_numSvals, NUMSmax, ierr)
-        call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_eps,
+     :                           PRIMME_SVDS_numSvals, NUMSmax, ierr)
+        call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_eps,
      :                                                       TOL, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                         PRIMMEF77_SVDS_target, whichSvals, ierr)
+     :                         PRIMME_SVDS_target, whichSvals, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :            PRIMMEF77_SVDS_numTargetShifts, numTargetShifts, ierr)
+     :            PRIMME_SVDS_numTargetShifts, numTargetShifts, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                 PRIMMEF77_SVDS_targetShifts, TargetShifts, ierr)
+     :                 PRIMME_SVDS_targetShifts, TargetShifts, ierr)
 
 !       Set matvec 
 ifdef(`USE_PETSC', `        call generateLauchli(m, n, c, A, ierr)
 ifdef(`USE_POINTER', `        call primme_svds_set_member_f77(primme_svds,
-     :                                   PRIMMEF77_SVDS_matrix, A, ierr)
+     :                                   PRIMME_SVDS_matrix, A, ierr)
 ')dnl
         call primme_svds_set_member_f77(primme_svds,
-     :                   PRIMMEF77_SVDS_matrixMatvec, PETScMatvec, ierr)
+     :                   PRIMME_SVDS_matrixMatvec, PETScMatvec, ierr)
 ', `        call primme_svds_set_member_f77(primme_svds,
-     :                            PRIMMEF77_SVDS_matrixMatvec, MV, ierr)
+     :                            PRIMME_SVDS_matrixMatvec, MV, ierr)
 ')dnl
         
 ifdef(`USE_PETSC', `!       Set parallel parameters
         call MatGetLocalSize(A, mLocal, nLocal, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_mLocal, mLocal, ierr)
+     :                              PRIMME_SVDS_mLocal, mLocal, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_nLocal, nLocal, ierr)
+     :                              PRIMME_SVDS_nLocal, nLocal, ierr)
         call MPI_Comm_size(PETSC_COMM_WORLD, numProcs, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                         PRIMMEF77_SVDS_numProcs, numProcs, ierr)
+     :                         PRIMME_SVDS_numProcs, numProcs, ierr)
         call MPI_Comm_rank(PETSC_COMM_WORLD, procID, ierr);
         call primme_svds_set_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_procID, procID, ierr)
+     :                              PRIMME_SVDS_procID, procID, ierr)
 ifdef(`USE_POINTER', `        comm = PETSC_COMM_WORLD
         call primme_svds_set_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_commInfo, comm, ierr)
+     :                              PRIMME_SVDS_commInfo, comm, ierr)
 ')dnl
         call primme_svds_set_member_f77(primme_svds,
-     :        PRIMMEF77_SVDS_globalSumDouble, par_GlobalSumDouble, ierr)
+     :        PRIMME_SVDS_globalSumDouble, par_GlobalSumDouble, ierr)
 ')dnl
 
 !       Set preconditioner based on A^H*A (optional)
@@ -164,29 +164,29 @@ ifdef(`USE_PETSC', `        call PCCreate(PETSC_COMM_WORLD, pc, ierr)
         call PCSetFromOptions(pc, ierr)
         call PCSetUp(pc, ierr)
 ifdef(`USE_POINTER', `        call primme_svds_set_member_f77(primme_svds, 
-     :       PRIMMEF77_SVDS_preconditioner, pc, ierr)
+     :       PRIMME_SVDS_preconditioner, pc, ierr)
 ')dnl
         call primme_svds_set_member_f77(primme_svds, 
-     :       PRIMMEF77_SVDS_applyPreconditioner, ApplyPCPrecAHA, ierr)
+     :       PRIMME_SVDS_applyPreconditioner, ApplyPCPrecAHA, ierr)
 ', `        call primme_svds_set_member_f77(primme_svds, 
-     :       PRIMMEF77_SVDS_applyPreconditioner, ApplyPrecon, ierr)
+     :       PRIMME_SVDS_applyPreconditioner, ApplyPrecon, ierr)
 ')dnl
 !
 !       Set a few other solver parameters (optional) 
 !
         call primme_svds_set_member_f77(primme_svds,
-     :                      PRIMMEF77_SVDS_maxBasisSize, BASISmax, ierr)
+     :                      PRIMME_SVDS_maxBasisSize, BASISmax, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                      PRIMMEF77_SVDS_maxBlockSize, BLOCKmax, ierr)
+     :                      PRIMME_SVDS_maxBlockSize, BLOCKmax, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                      PRIMMEF77_SVDS_printLevel, printLevel, ierr)
+     :                      PRIMME_SVDS_printLevel, printLevel, ierr)
         call primme_svds_set_member_f77(primme_svds,
-     :                      PRIMMEF77_SVDS_maxMatvecs, maxMatvecs, ierr)
+     :                      PRIMME_SVDS_maxMatvecs, maxMatvecs, ierr)
 !
 !       Set the method to be used (after m, n, numSvals, and precondition have
 !       been set. Also after maxBasisSize is set, if desired.)
-        call primme_svds_set_method_f77(PRIMMEF77_SVDS_default,
-     :        PRIMMEF77_DEFAULT_METHOD, PRIMMEF77_DEFAULT_METHOD,
+        call primme_svds_set_method_f77(PRIMME_SVDS_default,
+     :        PRIMME_DEFAULT_METHOD, PRIMME_DEFAULT_METHOD,
      :        primme_svds, ierr)
 
         if (ierr .lt. 0) 
@@ -227,9 +227,9 @@ ifdef(`USE_PETSC', ``        if (procID.eq.0) then
 !       sp()NOTE: don't use primme_svds_get_member_f77, which can only be used in a callback
 !
         sp()call primme_svdstop_get_member_f77(primme_svds,
-     :  sp()                    PRIMMEF77_SVDS_eps, epsil, ierr)
+     :  sp()                    PRIMME_SVDS_eps, epsil, ierr)
         sp()call primme_svdstop_get_member_f77(primme_svds,
-     :  sp()                    PRIMMEF77_SVDS_aNorm, aNorm, ierr)
+     :  sp()                    PRIMME_SVDS_aNorm, aNorm, ierr)
         sp()print '(A16,E8.2,A20,e12.5)', 'Tolerance used: ',epsil,
      :  sp()                           '  Estimated norm(A):',aNorm
 !
@@ -314,7 +314,7 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
         PetscErrorCode ierr
 
 ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
-     :                                  PRIMMEF77_SVDS_matrix, pA, err)
+     :                                  PRIMME_SVDS_matrix, pA, err)
         call c_f_pointer(pA, A)
 ])
 #if PETSC_VERSION_LT(3,6,0)
@@ -368,17 +368,17 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
         PetscErrorCode ierr
 
         call primme_svds_get_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_mLocal, mLocal, err)
+     :                              PRIMME_SVDS_mLocal, mLocal, err)
         call primme_svds_get_member_f77(primme_svds,
-     :                              PRIMMEF77_SVDS_nLocal, nLocal, err)
+     :                              PRIMME_SVDS_nLocal, nLocal, err)
 ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
-     :                                  PRIMMEF77_SVDS_matrix, pA, err)
+     :                                  PRIMME_SVDS_matrix, pA, err)
         call primme_svds_get_member_f77(primme_svds,
-     :                         PRIMMEF77_SVDS_preconditioner, ppc, err)
+     :                         PRIMME_SVDS_preconditioner, ppc, err)
         call c_f_pointer(pA, A)
         call c_f_pointer(ppc, pc)
 ])
-        if (mode.eq.PRIMMEF77_SVDS_op_AtA) then
+        if (mode.eq.PRIMME_SVDS_op_AtA) then
            call MatCreateVecs(A, xvec, PETSC_NULL_OBJECT, ierr)
            call MatCreateVecs(A, yvec, PETSC_NULL_OBJECT, ierr)
            do j=1,k
@@ -390,9 +390,9 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
            enddo
            call VecDestroy(xvec, ierr)
            call VecDestroy(yvec, ierr)
-        else if (mode.eq.PRIMMEF77_SVDS_op_AAt) then
+        else if (mode.eq.PRIMME_SVDS_op_AAt) then
            y(1:mLocal,1:k) = x(1:mLocal,1:k) 
-        else if (mode.eq.PRIMMEF77_SVDS_op_augmented) then
+        else if (mode.eq.PRIMME_SVDS_op_augmented) then
            y(1:mLocal+nLocal,1:k) = x(1:mLocal+nLocal,1:k) 
         endif
         err = 0
@@ -411,7 +411,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
         call primme_svds_get_member_f77(primme_svds,
-     :                             PRIMMEF77_SVDS_commInfo, pcomm, ierr)
+     :                             PRIMME_SVDS_commInfo, pcomm, ierr)
         call c_f_pointer(pcomm, comm)
 ])dnl
         call MPI_Allreduce(x, y, k, MPI_DOUBLE, MPI_SUM,
@@ -443,9 +443,9 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         integer k,transpose,j, ierr
         real*8 c
         common c
-        call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_m,
+        call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_m,
      :                                                          m, ierr)
-        call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_n,
+        call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_n,
      :                                                          n, ierr)
         if (transpose.eq.0) then
            do j=1,k
@@ -493,13 +493,13 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         integer k,mode,i,j,ierr
         real*8 c, ei, shift
         common c
-        call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_m,
+        call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_m,
      :                                                          m, ierr)
-        call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_n,
+        call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_n,
      :                                                          n, ierr)
         call primme_svds_get_member_f77(primme_svds,
-     :                         PRIMMEF77_SVDS_targetShifts, shift, ierr)
-        if (mode.eq.PRIMMEF77_SVDS_op_AtA) then
+     :                         PRIMME_SVDS_targetShifts, shift, ierr)
+        if (mode.eq.PRIMME_SVDS_op_AtA) then
            do j=1,k
               do i=1,n
                  if (i-1.le.m) then
@@ -510,7 +510,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
                  y(i,j) = x(i,j)/(1.0 + ei*ei - shift*shift)
               enddo
            enddo
-        else if (mode.eq.PRIMMEF77_SVDS_op_AAt) then
+        else if (mode.eq.PRIMME_SVDS_op_AAt) then
            do j=1,k
               y(1,j) = x(1,j)/m
               do i=2,m
@@ -522,7 +522,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
                  y(i,j) = x(i,j)/(ei*ei - shift*shift)
               enddo
            enddo
-        else if (mode.eq.PRIMMEF77_SVDS_op_augmented) then
+        else if (mode.eq.PRIMME_SVDS_op_augmented) then
 !          If any preconditioner is available, just y = x
            y(1:m+n,1:k) = x(1:m+n,1:k)
         endif

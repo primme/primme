@@ -139,7 +139,7 @@ static int real_main (int argc, char *argv[]) {
    driver_params driver;
    primme_svds_params primme_svds;
    primme_svds_preset_method method=primme_svds_default;
-   primme_preset_method primmemethod=DEFAULT_METHOD, primmemethodStage2=DEFAULT_METHOD;
+   primme_preset_method primmemethod=PRIMME_DEFAULT_METHOD, primmemethodStage2=PRIMME_DEFAULT_METHOD;
    int *permutation = NULL;
 
    /* Other miscellaneous items */

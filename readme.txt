@@ -151,21 +151,21 @@ Changes in PRIMME 2.0 (released on XXX):
   will expect an "interger" of size compatible with "PRIMME_NUM" for
   all parameters with integer type: "int", "PRIMME_NUM" and "size_t";
   see also parameter "value" in functions
-  >>:c:function:`primmetop_set_member_f77`<<,
-  >>:c:function:`primmetop_get_member_f77`<<,
-  >>:c:function:`primme_set_member_f77`<< and
-  >>:c:function:`primme_get_member_f77`<<.
+  "primmetop_set_member_f77()", "primmetop_get_member_f77()",
+  "primme_set_member_f77()" and "primme_get_member_f77()".
 
 * Added parameter to return an error code in Fortran interface
-  functions: >>:c:function:`primmetop_set_member_f77`<<,
-  >>:c:function:`primmetop_get_member_f77`<<,
-  >>:c:function:`primme_set_member_f77`<< and
-  >>:c:function:`primme_get_member_f77`<<.
+  functions: "primmetop_set_member_f77()",
+  "primmetop_get_member_f77()", "primme_set_member_f77()" and
+  "primme_get_member_f77()".
 
 * Added leading dimension for "evecs" "ldevecs" and preferred
   leading dimension for the operators "ldOPs", such as "matrixMatvec".
 
 * Optional user-defined convergence function, "convTestFun".
+
+* Prefixed methods with "PRIMME_". Rename Fortran constants from
+  "PRIMMEF77_" to "PRIMME_".
 
 * Removed "primme_display_stats_f77".
 
@@ -173,9 +173,9 @@ Changes in PRIMME 1.2.2 (released on October 13, 2015):
 
 * Fixed wrong symbols in "libdprimme.a" and "libzprimme.a".
 
-* "primme_set_method()" sets "JDQMR" instead of "JDQMR_ETol" for
-  preset methods "DEFAULT_MIN_TIME" and "DYNAMIC" when seeking
-  interior values.
+* "primme_set_method()" sets "PRIMME_JDQMR" instead of
+  "PRIMME_JDQMR_ETol" for preset methods "PRIMME_DEFAULT_MIN_TIME" and
+  "PRIMME_DYNAMIC" when seeking interior values.
 
 * Fixed compilation of driver with a PETSc installation without
   HYPRE.
@@ -234,8 +234,8 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 * PRIMME now assigns unique random seeds per parallel process for up
   to 4096^3  (140 trillion) processes.
 
-* For the "DYNAMIC" method, fixed issues with initialization and
-  synchronization decisions across multiple processes.
+* For the "PRIMME_DYNAMIC" method, fixed issues with initialization
+  and synchronization decisions across multiple processes.
 
 * Fixed uncommon library interface bugs, coordinated better setting
   the method and the user setting of parameters, and improved the
@@ -736,21 +736,21 @@ int primme_set_method(primme_preset_method method, primme_params *primme)
 
         preset configuration; one of
 
-           "DYNAMIC"
-           "DEFAULT_MIN_TIME"
-           "DEFAULT_MIN_MATVECS"
-           "Arnoldi"
-           "GD"
-           "GD_plusK"
-           "GD_Olsen_plusK"
-           "JD_Olsen_plusK"
-           "RQI"
-           "JDQR"
-           "JDQMR"
-           "JDQMR_ETol"
-           "SUBSPACE_ITERATION"
-           "LOBPCG_OrthoBasis"
-           "LOBPCG_OrthoBasis_Window"
+           "PRIMME_DYNAMIC"
+           "PRIMME_DEFAULT_MIN_TIME"
+           "PRIMME_DEFAULT_MIN_MATVECS"
+           "PRIMME_Arnoldi"
+           "PRIMME_GD"
+           "PRIMME_GD_plusK"
+           "PRIMME_GD_Olsen_plusK"
+           "PRIMME_JD_Olsen_plusK"
+           "PRIMME_RQI"
+           "PRIMME_JDQR"
+           "PRIMME_JDQMR"
+           "PRIMME_JDQMR_ETol"
+           "PRIMME_SUBSPACE_ITERATION"
+           "PRIMME_LOBPCG_OrthoBasis"
+           "PRIMME_LOBPCG_OrthoBasis_Window"
 
       * **primme** -- parameters structure.
 
@@ -813,21 +813,21 @@ primme_set_method_f77(method, primme, ierr)
 
         (input) preset configuration. One of:
 
-           "PRIMMEF77_DYNAMIC"
-           "PRIMMEF77_DEFAULT_MIN_TIME"
-           "PRIMMEF77_DEFAULT_MIN_MATVECS"
-           "PRIMMEF77_Arnoldi"
-           "PRIMMEF77_GD"
-           "PRIMMEF77_GD_plusK"
-           "PRIMMEF77_GD_Olsen_plusK"
-           "PRIMMEF77_JD_Olsen_plusK"
-           "PRIMMEF77_RQI"
-           "PRIMMEF77_JDQR"
-           "PRIMMEF77_JDQMR"
-           "PRIMMEF77_JDQMR_ETol"
-           "PRIMMEF77_SUBSPACE_ITERATION"
-           "PRIMMEF77_LOBPCG_OrthoBasis"
-           "PRIMMEF77_LOBPCG_OrthoBasis_Window"
+           "PRIMME_DYNAMIC"
+           "PRIMME_DEFAULT_MIN_TIME"
+           "PRIMME_DEFAULT_MIN_MATVECS"
+           "PRIMME_Arnoldi"
+           "PRIMME_GD"
+           "PRIMME_GD_plusK"
+           "PRIMME_GD_Olsen_plusK"
+           "PRIMME_JD_Olsen_plusK"
+           "PRIMME_RQI"
+           "PRIMME_JDQR"
+           "PRIMME_JDQMR"
+           "PRIMME_JDQMR_ETol"
+           "PRIMME_SUBSPACE_ITERATION"
+           "PRIMME_LOBPCG_OrthoBasis"
+           "PRIMME_LOBPCG_OrthoBasis_Window"
 
         See "primme_preset_method".
 
@@ -910,57 +910,57 @@ primmetop_set_member_f77(primme, label, value)
 
         field where to set value. One of:
 
-           "PRIMMEF77_n"
-           "PRIMMEF77_matrixMatvec"
-           "PRIMMEF77_applyPreconditioner"
-           "PRIMMEF77_numProcs"
-           "PRIMMEF77_procID"
-           "PRIMMEF77_commInfo"
-           "PRIMMEF77_nLocal"
-           "PRIMMEF77_globalSumDouble"
-           "PRIMMEF77_numEvals"
-           "PRIMMEF77_target"
-           "PRIMMEF77_numTargetShifts"
-           "PRIMMEF77_targetShifts"
-           "PRIMMEF77_locking"
-           "PRIMMEF77_initSize"
-           "PRIMMEF77_numOrthoConst"
-           "PRIMMEF77_maxBasisSize"
-           "PRIMMEF77_minRestartSize"
-           "PRIMMEF77_maxBlockSize"
-           "PRIMMEF77_maxMatvecs"
-           "PRIMMEF77_maxOuterIterations"
-           "PRIMMEF77_intWorkSize"
-           "PRIMMEF77_realWorkSize"
-           "PRIMMEF77_iseed"
-           "PRIMMEF77_intWork"
-           "PRIMMEF77_realWork"
-           "PRIMMEF77_aNorm"
-           "PRIMMEF77_eps"
-           "PRIMMEF77_printLevel"
-           "PRIMMEF77_outputFile"
-           "PRIMMEF77_matrix"
-           "PRIMMEF77_preconditioner"
-           "PRIMMEF77_restartingParams_scheme".
-           "PRIMMEF77_restartingParams_maxPrevRetain"
-           "PRIMMEF77_correctionParams_precondition"
-           "PRIMMEF77_correctionParams_robustShifts"
-           "PRIMMEF77_correctionParams_maxInnerIterations"
-           "PRIMMEF77_correctionParams_projectors_LeftQ"
-           "PRIMMEF77_correctionParams_projectors_LeftX"
-           "PRIMMEF77_correctionParams_projectors_RightQ"
-           "PRIMMEF77_correctionParams_projectors_RightX"
-           "PRIMMEF77_correctionParams_projectors_SkewQ"
-           "PRIMMEF77_correctionParams_projectors_SkewX"
-           "PRIMMEF77_correctionParams_convTest"
-           "PRIMMEF77_correctionParams_relTolBase"
-           "PRIMMEF77_stats_numOuterIterations"
-           "PRIMMEF77_stats_numRestarts"
-           "PRIMMEF77_stats_numMatvecs"
-           "PRIMMEF77_stats_numPreconds"
-           "PRIMMEF77_stats_elapsedTime"
-           "PRIMMEF77_dynamicMethodSwitch"
-           "PRIMMEF77_massMatrixMatvec"
+           "PRIMME_n"
+           "PRIMME_matrixMatvec"
+           "PRIMME_applyPreconditioner"
+           "PRIMME_numProcs"
+           "PRIMME_procID"
+           "PRIMME_commInfo"
+           "PRIMME_nLocal"
+           "PRIMME_globalSumDouble"
+           "PRIMME_numEvals"
+           "PRIMME_target"
+           "PRIMME_numTargetShifts"
+           "PRIMME_targetShifts"
+           "PRIMME_locking"
+           "PRIMME_initSize"
+           "PRIMME_numOrthoConst"
+           "PRIMME_maxBasisSize"
+           "PRIMME_minRestartSize"
+           "PRIMME_maxBlockSize"
+           "PRIMME_maxMatvecs"
+           "PRIMME_maxOuterIterations"
+           "PRIMME_intWorkSize"
+           "PRIMME_realWorkSize"
+           "PRIMME_iseed"
+           "PRIMME_intWork"
+           "PRIMME_realWork"
+           "PRIMME_aNorm"
+           "PRIMME_eps"
+           "PRIMME_printLevel"
+           "PRIMME_outputFile"
+           "PRIMME_matrix"
+           "PRIMME_preconditioner"
+           "PRIMME_restartingParams_scheme".
+           "PRIMME_restartingParams_maxPrevRetain"
+           "PRIMME_correctionParams_precondition"
+           "PRIMME_correctionParams_robustShifts"
+           "PRIMME_correctionParams_maxInnerIterations"
+           "PRIMME_correctionParams_projectors_LeftQ"
+           "PRIMME_correctionParams_projectors_LeftX"
+           "PRIMME_correctionParams_projectors_RightQ"
+           "PRIMME_correctionParams_projectors_RightX"
+           "PRIMME_correctionParams_projectors_SkewQ"
+           "PRIMME_correctionParams_projectors_SkewX"
+           "PRIMME_correctionParams_convTest"
+           "PRIMME_correctionParams_relTolBase"
+           "PRIMME_stats_numOuterIterations"
+           "PRIMME_stats_numRestarts"
+           "PRIMME_stats_numMatvecs"
+           "PRIMME_stats_numPreconds"
+           "PRIMME_stats_elapsedTime"
+           "PRIMME_dynamicMethodSwitch"
+           "PRIMME_massMatrixMatvec"
 
       * **value** --
 
@@ -1002,10 +1002,10 @@ primmetop_get_member_f77(primme, label, value)
      functions called by these functions. In those cases use
      "primme_get_member_f77()".
 
-   Note: When "label" is one of "PRIMMEF77_matrixMatvec",
-     "PRIMMEF77_applyPreconditioner", "PRIMMEF77_commInfo",
-     "PRIMMEF77_intWork", "PRIMMEF77_realWork", "PRIMMEF77_matrix" and
-     "PRIMMEF77_preconditioner", the returned "value" is a C pointer
+   Note: When "label" is one of "PRIMME_matrixMatvec",
+     "PRIMME_applyPreconditioner", "PRIMME_commInfo",
+     "PRIMME_intWork", "PRIMME_realWork", "PRIMME_matrix" and
+     "PRIMME_preconditioner", the returned "value" is a C pointer
      ("void*"). Use Fortran pointer or other extensions to deal with
      it. For instance:
 
@@ -1013,7 +1013,7 @@ primmetop_get_member_f77(primme, label, value)
         MPI_Comm comm
 
         comm = MPI_COMM_WORLD
-        call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+        call primme_set_member_f77(primme, PRIMME_commInfo, comm)
         ...
         subroutine par_GlobalSumDouble(x,y,k,primme)
         use iso_c_binding
@@ -1022,7 +1022,7 @@ primmetop_get_member_f77(primme, label, value)
         MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
-        call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+        call primme_get_member_f77(primme, PRIMME_commInfo, pcomm)
         call c_f_pointer(pcomm, comm)
         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 
@@ -1100,10 +1100,10 @@ primme_get_member_f77(primme, label, value)
      functions called by these functions. Otherwise, e.g., from the
      main program, use the function "primmetop_get_member_f77()".
 
-   Note: When "label" is one of "PRIMMEF77_matrixMatvec",
-     "PRIMMEF77_applyPreconditioner", "PRIMMEF77_commInfo",
-     "PRIMMEF77_intWork", "PRIMMEF77_realWork", "PRIMMEF77_matrix" and
-     "PRIMMEF77_preconditioner", the returned "value" is a C pointer
+   Note: When "label" is one of "PRIMME_matrixMatvec",
+     "PRIMME_applyPreconditioner", "PRIMME_commInfo",
+     "PRIMME_intWork", "PRIMME_realWork", "PRIMME_matrix" and
+     "PRIMME_preconditioner", the returned "value" is a C pointer
      ("void*"). Use Fortran pointer or other extensions to deal with
      it. For instance:
 
@@ -1111,7 +1111,7 @@ primme_get_member_f77(primme, label, value)
         MPI_Comm comm
 
         comm = MPI_COMM_WORLD
-        call primme_set_member_f77(primme, PRIMMEF77_commInfo, comm)
+        call primme_set_member_f77(primme, PRIMME_commInfo, comm)
         ...
         subroutine par_GlobalSumDouble(x,y,k,primme)
         use iso_c_binding
@@ -1120,7 +1120,7 @@ primme_get_member_f77(primme, label, value)
         MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
-        call primme_get_member_f77(primme, PRIMMEF77_commInfo, pcomm)
+        call primme_get_member_f77(primme, PRIMME_commInfo, pcomm)
         call c_f_pointer(pcomm, comm)
         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 
@@ -1528,15 +1528,15 @@ primme_params
    int dynamicMethodSwitch
 
       If this value is 1, it alternates dynamically between
-      "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS", trying to identify
-      the fastest method.
+      "PRIMME_DEFAULT_MIN_TIME" and "PRIMME_DEFAULT_MIN_MATVECS",
+      trying to identify the fastest method.
 
       On exit, it holds a recommended method for future runs on this
       problem:
 
-            -1: use "DEFAULT_MIN_MATVECS" next time.
-            -2: use "DEFAULT_MIN_TIME" next time.
-            -3: close call, use "DYNAMIC" next time again.
+            -1: use "PRIMME_DEFAULT_MIN_MATVECS" next time.
+            -2: use "PRIMME_DEFAULT_MIN_TIME" next time.
+            -3: close call, use "PRIMME_DYNAMIC" next time again.
 
       Input/output:
 
@@ -2334,32 +2334,34 @@ Preset Methods
 
 primme_preset_method
 
-   DEFAULT_MIN_TIME
+   PRIMME_DEFAULT_MIN_TIME
 
-      Set as "JDQMR_ETol" when "target" is either "primme_smallest" or
-      "primme_largest", and as "JDQMR" otherwise. This method is
-      usually the fastest if the cost of the matrix vector product is
-      inexpensive.
+      Set as "PRIMME_JDQMR_ETol" when "target" is either
+      "primme_smallest" or "primme_largest", and as "PRIMME_JDQMR"
+      otherwise. This method is usually the fastest if the cost of the
+      matrix vector product is inexpensive.
 
-   DEFAULT_MIN_MATVECS
+   PRIMME_DEFAULT_MIN_MATVECS
 
-      Currently set as "GD_Olsen_plusK"; this method usually performs
-      fewer matrix vector products than other methods, so it's a good
-      choice when this operation is expensive.
+      Currently set as "PRIMME_GD_Olsen_plusK"; this method usually
+      performs fewer matrix vector products than other methods, so
+      it's a good choice when this operation is expensive.
 
-   DYNAMIC
+   PRIMME_DYNAMIC
 
       Switches to the best method dynamically; currently, between
-      methods "DEFAULT_MIN_TIME" and "DEFAULT_MIN_MATVECS".
+      methods "PRIMME_DEFAULT_MIN_TIME" and
+      "PRIMME_DEFAULT_MIN_MATVECS".
 
-      With "DYNAMIC" "primme_set_method()" sets "dynamicMethodSwitch"
-      = 1 and makes the same changes as for method "DEFAULT_MIN_TIME".
+      With "PRIMME_DYNAMIC" "primme_set_method()" sets
+      "dynamicMethodSwitch" = 1 and makes the same changes as for
+      method "PRIMME_DEFAULT_MIN_TIME".
 
-   Arnoldi
+   PRIMME_Arnoldi
 
       Arnoldi implemented à la Generalized Davidson.
 
-      With "Arnoldi" "primme_set_method()" sets:
+      With "PRIMME_Arnoldi" "primme_set_method()" sets:
 
       * "locking" = 0;
 
@@ -2369,11 +2371,11 @@ primme_preset_method
 
       * "maxInnerIterations" = 0.
 
-   GD
+   PRIMME_GD
 
       Generalized Davidson.
 
-      With "GD" "primme_set_method()" sets:
+      With "PRIMME_GD" "primme_set_method()" sets:
 
       * "locking" = 0;
 
@@ -2387,13 +2389,13 @@ primme_preset_method
 
       * "SkewX" = 0.
 
-   GD_plusK
+   PRIMME_GD_plusK
 
       GD with locally optimal restarting.
 
-      With "GD_plusK" "primme_set_method()" sets "maxPrevRetain" = 2
-      if "maxBlockSize" is 1 and "numEvals" > 1; otherwise it sets
-      "maxPrevRetain" to "maxBlockSize". Also:
+      With "PRIMME_GD_plusK" "primme_set_method()" sets
+      "maxPrevRetain" = 2 if "maxBlockSize" is 1 and "numEvals" > 1;
+      otherwise it sets "maxPrevRetain" to "maxBlockSize". Also:
 
       * "locking" = 0;
 
@@ -2403,26 +2405,27 @@ primme_preset_method
 
       * "SkewX" = 0.
 
-   GD_Olsen_plusK
+   PRIMME_GD_Olsen_plusK
 
       GD+k and the cheap Olsen's Method.
 
-      With "GD_Olsen_plusK" "primme_set_method()" makes the same
-      changes as for method "GD_plusK" and sets "RightX" = 1.
+      With "PRIMME_GD_Olsen_plusK" "primme_set_method()" makes the
+      same changes as for method "PRIMME_GD_plusK" and sets "RightX" =
+      1.
 
-   JD_Olsen_plusK
+   PRIMME_JD_Olsen_plusK
 
       GD+k and Olsen's Method.
 
-      With "JD_Olsen_plusK" "primme_set_method()" makes the same
-      changes as for method "GD_plusK" and also sets "robustShifts" =
-      1, "RightX" to 1, and "SkewX" to 1.
+      With "PRIMME_JD_Olsen_plusK" "primme_set_method()" makes the
+      same changes as for method "PRIMME_GD_plusK" and also sets
+      "robustShifts" = 1, "RightX" to 1, and "SkewX" to 1.
 
-   RQI
+   PRIMME_RQI
 
       (Accelerated) Rayleigh Quotient Iteration.
 
-      With "RQI" "primme_set_method()" sets:
+      With "PRIMME_RQI" "primme_set_method()" sets:
 
       * "locking" = 1;
 
@@ -2451,11 +2454,11 @@ primme_preset_method
         correction equation. Therefore RQI becomes INVIT (inverse
         iteration) in that case.
 
-   JDQR
+   PRIMME_JDQR
 
       Jacobi-Davidson with fixed number of inner steps.
 
-      With "JDQR" "primme_set_method()" sets:
+      With "PRIMME_JDQR" "primme_set_method()" sets:
 
       * "locking"     = 1;
 
@@ -2481,12 +2484,12 @@ primme_preset_method
 
       * "convTest" = "primme_full_LTolerance".
 
-   JDQMR
+   PRIMME_JDQMR
 
       Jacobi-Davidson with adaptive stopping criterion for inner Quasi
       Minimum Residual (QMR).
 
-      With "JDQMR" "primme_set_method()" sets:
+      With "PRIMME_JDQMR" "primme_set_method()" sets:
 
       * "locking" = 0;
 
@@ -2508,19 +2511,19 @@ primme_preset_method
 
       * "convTest"  = "primme_adaptive".
 
-   JDQMR_ETol
+   PRIMME_JDQMR_ETol
 
       JDQMR but QMR stops after residual norm reduces by a 0.1 factor.
 
-      With "JDQMR_ETol" "primme_set_method()" makes the same changes
-      as for the method "JDQMR" and sets "convTest" =
+      With "PRIMME_JDQMR_ETol" "primme_set_method()" makes the same
+      changes as for the method "PRIMME_JDQMR" and sets "convTest" =
       "primme_adaptive_ETolerance".
 
-   SUBSPACE_ITERATION
+   PRIMME_SUBSPACE_ITERATION
 
       Subspace iteration.
 
-      With "SUBSPACE_ITERATION" "primme_set_method()" sets:
+      With "PRIMME_SUBSPACE_ITERATION" "primme_set_method()" sets:
 
       * "locking"    = 1;
 
@@ -2542,11 +2545,11 @@ primme_preset_method
 
       * "SkewX"   = 0.
 
-   LOBPCG_OrthoBasis
+   PRIMME_LOBPCG_OrthoBasis
 
       LOBPCG with orthogonal basis.
 
-      With "LOBPCG_OrthoBasis" "primme_set_method()" sets:
+      With "PRIMME_LOBPCG_OrthoBasis" "primme_set_method()" sets:
 
       * "locking"    = 0;
 
@@ -2568,11 +2571,12 @@ primme_preset_method
 
       * "SkewX"   = 0.
 
-   LOBPCG_OrthoBasis_Window
+   PRIMME_LOBPCG_OrthoBasis_Window
 
       LOBPCG with sliding window of "maxBlockSize" < 3 *** "numEvals".
 
-      With "LOBPCG_OrthoBasis_Window" "primme_set_method()" sets:
+      With "PRIMME_LOBPCG_OrthoBasis_Window" "primme_set_method()"
+      sets:
 
       * "locking"    = 0;
 
@@ -3163,20 +3167,20 @@ primme_svds_set_method_f77(method, methodStage1, methodStage2, primme_svds, ierr
         (input) preset configuration to compute the singular triplets;
         one of
 
-        * "PRIMMEF77_SVDS_default", currently set as
-          "PRIMMEF77_SVDS_hybrid".
+        * "PRIMME_SVDS_default", currently set as
+          "PRIMME_SVDS_hybrid".
 
-        * "PRIMMEF77_SVDS_normalequations", compute the eigenvectors
-          of A^*A or A A^*.
+        * "PRIMME_SVDS_normalequations", compute the eigenvectors of
+          A^*A or A A^*.
 
-        * "PRIMMEF77_SVDS_augmented", compute the eigenvectors of
-          the augmented matrix, \left(\begin{array}{} 0 & A^* \\ A & 0
+        * "PRIMME_SVDS_augmented", compute the eigenvectors of the
+          augmented matrix, \left(\begin{array}{} 0 & A^* \\ A & 0
           \end{array}\right).
 
-        * "PRIMMEF77_SVDS_hybrid", start with
-          "PRIMMEF77_SVDS_normalequations"; use the resulting
-          approximate singular vectors as initial vectors for
-          "PRIMMEF77_SVDS_augmented" if the required accuracy was not
+        * "PRIMME_SVDS_hybrid", start with
+          "PRIMME_SVDS_normalequations"; use the resulting approximate
+          singular vectors as initial vectors for
+          "PRIMME_SVDS_augmented" if the required accuracy was not
           achieved.
 
       * **methodStage1** (*primme_preset_method*) -- (input) preset
@@ -3185,7 +3189,7 @@ primme_svds_set_method_f77(method, methodStage1, methodStage2, primme_svds, ierr
 
       * **methodStage2** (*primme_preset_method*) -- (input) preset
         method to compute the eigenpairs with the second stage of
-        "PRIMMEF77_SVDS_hybrid"; see available values at
+        "PRIMME_SVDS_hybrid"; see available values at
         "primme_set_method_f77()".
 
       * **primme_svds** (*ptr*) -- (input/output) parameters
@@ -3233,47 +3237,47 @@ primme_svdstop_set_member_f77(primme_svds, label, value)
 
         field where to set value. One of:
 
-           "PRIMMEF77_SVDS_primme"
-           "PRIMMEF77_SVDS_primmeStage2"
-           "PRIMMEF77_SVDS_m"
-           "PRIMMEF77_SVDS_n"
-           "PRIMMEF77_SVDS_matrixMatvec"
-           "PRIMMEF77_SVDS_applyPreconditioner"
-           "PRIMMEF77_SVDS_numProcs"
-           "PRIMMEF77_SVDS_procID"
-           "PRIMMEF77_SVDS_mLocal"
-           "PRIMMEF77_SVDS_nLocal"
-           "PRIMMEF77_SVDS_commInfo"
-           "PRIMMEF77_SVDS_globalSumDouble"
-           "PRIMMEF77_SVDS_numSvals"
-           "PRIMMEF77_SVDS_target"
-           "PRIMMEF77_SVDS_numTargetShifts"
-           "PRIMMEF77_SVDS_targetShifts"
-           "PRIMMEF77_SVDS_method"
-           "PRIMMEF77_SVDS_methodStage2"
-           "PRIMMEF77_SVDS_intWorkSize"
-           "PRIMMEF77_SVDS_realWorkSize"
-           "PRIMMEF77_SVDS_intWork"
-           "PRIMMEF77_SVDS_realWork"
-           "PRIMMEF77_SVDS_matrix"
-           "PRIMMEF77_SVDS_preconditioner"
-           "PRIMMEF77_SVDS_locking"
-           "PRIMMEF77_SVDS_numOrthoConst"
-           "PRIMMEF77_SVDS_aNorm"
-           "PRIMMEF77_SVDS_eps"
-           "PRIMMEF77_SVDS_precondition"
-           "PRIMMEF77_SVDS_initSize"
-           "PRIMMEF77_SVDS_maxBasisSize"
-           "PRIMMEF77_SVDS_maxBlockSize"
-           "PRIMMEF77_SVDS_maxMatvecs"
-           "PRIMMEF77_SVDS_iseed"
-           "PRIMMEF77_SVDS_printLevel"
-           "PRIMMEF77_SVDS_outputFile"
-           "PRIMMEF77_SVDS_stats_numOuterIterations"
-           "PRIMMEF77_SVDS_stats_numRestarts"
-           "PRIMMEF77_SVDS_stats_numMatvecs"
-           "PRIMMEF77_SVDS_stats_numPreconds"
-           "PRIMMEF77_SVDS_stats_elapsedTime"
+           "PRIMME_SVDS_primme"
+           "PRIMME_SVDS_primmeStage2"
+           "PRIMME_SVDS_m"
+           "PRIMME_SVDS_n"
+           "PRIMME_SVDS_matrixMatvec"
+           "PRIMME_SVDS_applyPreconditioner"
+           "PRIMME_SVDS_numProcs"
+           "PRIMME_SVDS_procID"
+           "PRIMME_SVDS_mLocal"
+           "PRIMME_SVDS_nLocal"
+           "PRIMME_SVDS_commInfo"
+           "PRIMME_SVDS_globalSumDouble"
+           "PRIMME_SVDS_numSvals"
+           "PRIMME_SVDS_target"
+           "PRIMME_SVDS_numTargetShifts"
+           "PRIMME_SVDS_targetShifts"
+           "PRIMME_SVDS_method"
+           "PRIMME_SVDS_methodStage2"
+           "PRIMME_SVDS_intWorkSize"
+           "PRIMME_SVDS_realWorkSize"
+           "PRIMME_SVDS_intWork"
+           "PRIMME_SVDS_realWork"
+           "PRIMME_SVDS_matrix"
+           "PRIMME_SVDS_preconditioner"
+           "PRIMME_SVDS_locking"
+           "PRIMME_SVDS_numOrthoConst"
+           "PRIMME_SVDS_aNorm"
+           "PRIMME_SVDS_eps"
+           "PRIMME_SVDS_precondition"
+           "PRIMME_SVDS_initSize"
+           "PRIMME_SVDS_maxBasisSize"
+           "PRIMME_SVDS_maxBlockSize"
+           "PRIMME_SVDS_maxMatvecs"
+           "PRIMME_SVDS_iseed"
+           "PRIMME_SVDS_printLevel"
+           "PRIMME_SVDS_outputFile"
+           "PRIMME_SVDS_stats_numOuterIterations"
+           "PRIMME_SVDS_stats_numRestarts"
+           "PRIMME_SVDS_stats_numMatvecs"
+           "PRIMME_SVDS_stats_numPreconds"
+           "PRIMME_SVDS_stats_elapsedTime"
 
       * **value** -- (input) value to set.
 
@@ -3304,10 +3308,10 @@ primme_svdstop_get_member_f77(primme_svds, label, value)
      functions called by these functions. In those cases use
      "primme_svds_get_member_f77()".
 
-   Note: When "label" is one of "PRIMMEF77_SVDS_matrixMatvec",
-     "PRIMMEF77_SVDS_applyPreconditioner", "PRIMMEF77_SVDS_commInfo",
-     "PRIMMEF77_SVDS_intWork", "PRIMMEF77_SVDS_realWork",
-     "PRIMMEF77_SVDS_matrix" and "PRIMMEF77_SVDS_preconditioner", the
+   Note: When "label" is one of "PRIMME_SVDS_matrixMatvec",
+     "PRIMME_SVDS_applyPreconditioner", "PRIMME_SVDS_commInfo",
+     "PRIMME_SVDS_intWork", "PRIMME_SVDS_realWork",
+     "PRIMME_SVDS_matrix" and "PRIMME_SVDS_preconditioner", the
      returned "value" is a C pointer ("void*"). Use Fortran pointer or
      other extensions to deal with it. For instance:
 
@@ -3315,7 +3319,7 @@ primme_svdstop_get_member_f77(primme_svds, label, value)
         MPI_Comm comm
 
         comm = MPI_COMM_WORLD
-        call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, comm)
+        call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_commInfo, comm)
         ...
         subroutine par_GlobalSumDouble(x,y,k,primme_svds)
         use iso_c_binding
@@ -3324,7 +3328,7 @@ primme_svdstop_get_member_f77(primme_svds, label, value)
         MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
-        call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, pcomm)
+        call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_commInfo, pcomm)
         call c_f_pointer(pcomm, comm)
         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 
@@ -3374,10 +3378,10 @@ primme_svds_get_member_f77(primme_svds, label, value)
      functions called by these functions. Otherwise, e.g., from the
      main program, use the function "primme_svdstop_get_member_f77()".
 
-   Note: When "label" is one of "PRIMMEF77_SVDS_matrixMatvec",
-     "PRIMMEF77_SVDS_applyPreconditioner", "PRIMMEF77_SVDS_commInfo",
-     "PRIMMEF77_SVDS_intWork", "PRIMMEF77_SVDS_realWork",
-     "PRIMMEF77_SVDS_matrix" and "PRIMMEF77_SVDS_preconditioner", the
+   Note: When "label" is one of "PRIMME_SVDS_matrixMatvec",
+     "PRIMME_SVDS_applyPreconditioner", "PRIMME_SVDS_commInfo",
+     "PRIMME_SVDS_intWork", "PRIMME_SVDS_realWork",
+     "PRIMME_SVDS_matrix" and "PRIMME_SVDS_preconditioner", the
      returned "value" is a C pointer ("void*"). Use Fortran pointer or
      other extensions to deal with it. For instance:
 
@@ -3385,7 +3389,7 @@ primme_svds_get_member_f77(primme_svds, label, value)
         MPI_Comm comm
 
         comm = MPI_COMM_WORLD
-        call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, comm)
+        call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_commInfo, comm)
         ...
         subroutine par_GlobalSumDouble(x,y,k,primme_svds)
         use iso_c_binding
@@ -3394,7 +3398,7 @@ primme_svds_get_member_f77(primme_svds, label, value)
         MPI_Comm, pointer :: comm
         type(c_ptr) :: pcomm
 
-        call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, pcomm)
+        call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_commInfo, pcomm)
         call c_f_pointer(pcomm, comm)
         call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 

@@ -23,4 +23,4 @@ primme.maxMatvecs = 140
 primme.target = primme_largest
 primme.locking = 1
 
-method               = GD_Olsen_plusK
+method               = PRIMME_GD_Olsen_plusK

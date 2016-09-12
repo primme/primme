@@ -124,18 +124,18 @@ ifdef(`USE_PETSC', `   /* Build the Jacobi preconditioner of A^T*A, useful when 
 
    /* Set method to solve the singular value problem and
       the underneath eigenvalue problem (optional) */
-ifdef(`ADVANCED_HYBRID', `   primme_svds_set_method(primme_svds_hybrid, DYNAMIC, DEFAULT_MIN_TIME, &primme_svds);
-   /*  Set hybrid method with DYNAMIC and DEFAULT_MIN_TIME as the underneath eigensolver configuration
+ifdef(`ADVANCED_HYBRID', `   primme_svds_set_method(primme_svds_hybrid, PRIMME_DYNAMIC, PRIMME_DEFAULT_MIN_TIME, &primme_svds);
+   /*  Set hybrid method with PRIMME_DYNAMIC and PRIMME_DEFAULT_MIN_TIME as the underneath eigensolver configuration
        for the first and the second stage, respectively.
-       DYNAMIC uses a runtime heuristic to choose the fastest method between
-       DEFAULT_MIN_TIME and DEFAULT_MIN_MATVECS. But you can set another
-       method, such as LOBPCG_OrthoBasis_Window, directly */
-', `   primme_svds_set_method(primme_svds_default, DEFAULT_METHOD, DEFAULT_METHOD,
-                                                      &primme_svds);
+       PRIMME_DYNAMIC uses a runtime heuristic to choose the fastest method between
+       PRIMME_DEFAULT_MIN_TIME and PRIMME_DEFAULT_MIN_MATVECS. But you can set another
+       method, such as PRIMME_LOBPCG_OrthoBasis_Window, directly */
+', `   primme_svds_set_method(primme_svds_default, PRIMME_DEFAULT_METHOD,
+                              PRIMME_DEFAULT_METHOD, &primme_svds);
    /*  primme_svds_default: devs choice, now being hybrid, which first solve
        the normal equation and then the augmented problem.
-       DEFAULT_METHOD devs choice of the solver at every stage. But other methods
-       can be set such as DYNAMIC or LOBPCG_OrthoBasis_Window. */
+       PRIMME_DEFAULT_METHOD devs choice of the solver at every stage. But other methods
+       can be set such as DYNAMIC or PRIMME_LOBPCG_OrthoBasis_Window. */
 ')dnl
 
    primme_svds.printLevel = 3;
@@ -224,8 +224,8 @@ ifdef(`USE_PETSC', `   }
 CALL_PRIMME_SVDS
 ifdef(`ADVANCED_HYBRID', `
    /* Hybrid method second stage */
-   primme_svds_set_method(primme_svds_augmented, DEFAULT_MIN_MATVECS, DEFAULT_METHOD,
-                           &primme_svds);
+   primme_svds_set_method(primme_svds_augmented, PRIMME_DEFAULT_MIN_MATVECS,
+                          PRIMME_DEFAULT_METHOD, &primme_svds);
                               /* Set DEFAULT_MIN_MATVECS as the underneath eigensolver */
    primme_svds.primme.matrixMatvec = LauchliAugmentedMatvec; 
                               /* Set a custom matrix-vector product */

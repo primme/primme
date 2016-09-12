@@ -112,7 +112,7 @@ except __builtin__.Exception:
 
 
 
-__all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'Arnoldi', 'DEFAULT_METHOD', 'DEFAULT_MIN_MATVECS', 'DEFAULT_MIN_TIME', 'DYNAMIC', 'GD', 'GD_Olsen_plusK', 'GD_plusK', 'JDQMR', 'JDQMR_ETol', 'JDQR', 'JD_Olsen_plusK', 'LOBPCG_OrthoBasis', 'LOBPCG_OrthoBasis_Window', 'RQI', 'SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'sprimme_svds', 'cprimme_svds', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
+__all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'PRIMME_Arnoldi', 'PRIMME_DEFAULT_METHOD', 'PRIMME_DEFAULT_MIN_MATVECS', 'PRIMME_DEFAULT_MIN_TIME', 'PRIMME_DYNAMIC', 'PRIMME_GD', 'PRIMME_GD_Olsen_plusK', 'PRIMME_GD_plusK', 'PRIMME_JDQMR', 'PRIMME_JDQMR_ETol', 'PRIMME_JDQR', 'PRIMME_JD_Olsen_plusK', 'PRIMME_LOBPCG_OrthoBasis', 'PRIMME_LOBPCG_OrthoBasis_Window', 'PRIMME_RQI', 'PRIMME_SUBSPACE_ITERATION', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'sprimme_svds', 'cprimme_svds', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 
 primme_smallest = _Primme.primme_smallest
 primme_largest = _Primme.primme_largest
@@ -486,22 +486,22 @@ class primme_params(_object):
 primme_params_swigregister = _Primme.primme_params_swigregister
 primme_params_swigregister(primme_params)
 
-DEFAULT_METHOD = _Primme.DEFAULT_METHOD
-DYNAMIC = _Primme.DYNAMIC
-DEFAULT_MIN_TIME = _Primme.DEFAULT_MIN_TIME
-DEFAULT_MIN_MATVECS = _Primme.DEFAULT_MIN_MATVECS
-Arnoldi = _Primme.Arnoldi
-GD = _Primme.GD
-GD_plusK = _Primme.GD_plusK
-GD_Olsen_plusK = _Primme.GD_Olsen_plusK
-JD_Olsen_plusK = _Primme.JD_Olsen_plusK
-RQI = _Primme.RQI
-JDQR = _Primme.JDQR
-JDQMR = _Primme.JDQMR
-JDQMR_ETol = _Primme.JDQMR_ETol
-SUBSPACE_ITERATION = _Primme.SUBSPACE_ITERATION
-LOBPCG_OrthoBasis = _Primme.LOBPCG_OrthoBasis
-LOBPCG_OrthoBasis_Window = _Primme.LOBPCG_OrthoBasis_Window
+PRIMME_DEFAULT_METHOD = _Primme.PRIMME_DEFAULT_METHOD
+PRIMME_DYNAMIC = _Primme.PRIMME_DYNAMIC
+PRIMME_DEFAULT_MIN_TIME = _Primme.PRIMME_DEFAULT_MIN_TIME
+PRIMME_DEFAULT_MIN_MATVECS = _Primme.PRIMME_DEFAULT_MIN_MATVECS
+PRIMME_Arnoldi = _Primme.PRIMME_Arnoldi
+PRIMME_GD = _Primme.PRIMME_GD
+PRIMME_GD_plusK = _Primme.PRIMME_GD_plusK
+PRIMME_GD_Olsen_plusK = _Primme.PRIMME_GD_Olsen_plusK
+PRIMME_JD_Olsen_plusK = _Primme.PRIMME_JD_Olsen_plusK
+PRIMME_RQI = _Primme.PRIMME_RQI
+PRIMME_JDQR = _Primme.PRIMME_JDQR
+PRIMME_JDQMR = _Primme.PRIMME_JDQMR
+PRIMME_JDQMR_ETol = _Primme.PRIMME_JDQMR_ETol
+PRIMME_SUBSPACE_ITERATION = _Primme.PRIMME_SUBSPACE_ITERATION
+PRIMME_LOBPCG_OrthoBasis = _Primme.PRIMME_LOBPCG_OrthoBasis
+PRIMME_LOBPCG_OrthoBasis_Window = _Primme.PRIMME_LOBPCG_OrthoBasis_Window
 
 def sprimme(*args):
     return _Primme.sprimme(*args)

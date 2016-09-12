@@ -24,4 +24,4 @@ primme.target = primme_largest
 // Correction parameters
 primme.correction.precondition = 1
 
-method               = DEFAULT_MIN_TIME
+method               = PRIMME_DEFAULT_MIN_TIME

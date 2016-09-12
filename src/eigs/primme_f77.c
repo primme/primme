@@ -85,48 +85,9 @@ void AS_FORTRAN(primme_display_params)(primme_params **primme) {
  *    returnValue < 0 no such method exists. If not defined by user, defaults 
  *    have been set for maxBasisSize, minRestartSize, and maxBlockSize   
  *************************************************************************/
-void AS_FORTRAN(primme_set_method)(primme_params **primme, int *method, int
-      *returnValue) {
-
-   int d;
-
-   switch (*method) {
-      case PRIMMEF77_DEFAULT_METHOD:  
-              d = primme_set_method(DEFAULT_METHOD, *primme); break;
-      case PRIMMEF77_DYNAMIC:  
-              d = primme_set_method(DYNAMIC, *primme); break;
-      case PRIMMEF77_DEFAULT_MIN_TIME:  
-              d = primme_set_method(DEFAULT_MIN_TIME, *primme); break;
-      case PRIMMEF77_DEFAULT_MIN_MATVECS:  
-              d = primme_set_method(DEFAULT_MIN_MATVECS, *primme); break;
-      case PRIMMEF77_Arnoldi:  
-              d = primme_set_method(Arnoldi, *primme); break;
-      case PRIMMEF77_GD:  
-              d = primme_set_method(GD, *primme); break;
-      case PRIMMEF77_GD_plusK:  
-              d = primme_set_method(GD_plusK, *primme); break;
-      case PRIMMEF77_GD_Olsen_plusK:  
-              d = primme_set_method(GD_Olsen_plusK, *primme); break;
-      case PRIMMEF77_JD_Olsen_plusK:  
-              d = primme_set_method(JD_Olsen_plusK, *primme); break;
-      case PRIMMEF77_RQI:  
-              d = primme_set_method(RQI, *primme); break;
-      case PRIMMEF77_JDQR:  
-              d = primme_set_method(JDQR, *primme); break;
-      case PRIMMEF77_JDQMR:  
-              d = primme_set_method(JDQMR, *primme); break;
-      case PRIMMEF77_JDQMR_ETol: 
-              d = primme_set_method(JDQMR_ETol, *primme); break;
-      case PRIMMEF77_SUBSPACE_ITERATION: 
-              d = primme_set_method(SUBSPACE_ITERATION, *primme); break;
-      case PRIMMEF77_LOBPCG_OrthoBasis: 
-              d = primme_set_method(LOBPCG_OrthoBasis, *primme); break;
-      case PRIMMEF77_LOBPCG_OrthoBasis_Window: 
-              d = primme_set_method(LOBPCG_OrthoBasis_Window, *primme); break;
-      default : fprintf(stderr," Using user parameter settings.\n");
-              d = primme_set_method( (primme_preset_method) -1, *primme); break;
-   }
-   *returnValue = d;
+void AS_FORTRAN(primme_set_method)(primme_params **primme,
+      primme_preset_method *method, int *returnValue) {
+  *returnValue = primme_set_method(*method, *primme);
 }
 
 /*************************************************************************
@@ -354,6 +315,12 @@ void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
       case PRIMMEF77_convTestFun:
               (*primme)->convTestFun = v.convTestFun_v;
       break;
+      case PRIMMEF77_ldevecs:
+              (*primme)->ldevecs = *v.int_v;
+      break;
+      case PRIMMEF77_ldOPs:
+              (*primme)->ldOPs = *v.int_v;
+      break;
       default : 
       *ierr = 1;
    }
@@ -550,6 +517,12 @@ void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,
       break;
       case PRIMMEF77_stats_elapsedTime:
               v->double_v = primme->stats.elapsedTime;
+      break;
+      case PRIMMEF77_ldevecs:
+              v->int_v = primme->ldevecs;
+      break;
+      case PRIMMEF77_ldOPs:
+              v->int_v = primme->ldOPs;
       break;
       default :
       *ierr = 1;

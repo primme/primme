@@ -217,30 +217,30 @@ void primme_Free(primme_params *params) {
 int primme_set_method(primme_preset_method method, primme_params *params) {
 
    /* Set default method as DYNAMIC */
-   if (method == DEFAULT_METHOD)
-      method = DYNAMIC;
+   if (method == PRIMME_DEFAULT_METHOD)
+      method = PRIMME_DYNAMIC;
 
    /* From our experience, these two methods yield the smallest matvecs/time */
    /* DYNAMIC will make some timings before it settles on one of the two     */
-   if (method == DEFAULT_MIN_MATVECS) {
-      method = GD_Olsen_plusK;
+   if (method == PRIMME_DEFAULT_MIN_MATVECS) {
+      method = PRIMME_GD_Olsen_plusK;
    }
-   else if (method == DEFAULT_MIN_TIME) {
+   else if (method == PRIMME_DEFAULT_MIN_TIME) {
       /* JDQMR works better than JDQMR_ETol in interior problems. */
       if (params->target == primme_smallest || params->target == primme_largest) {
-         method = JDQMR_ETol;
+         method = PRIMME_JDQMR_ETol;
       }
       else {
-         method = JDQMR;
+         method = PRIMME_JDQMR;
       }
    }
-   if (method == DYNAMIC) {
+   if (method == PRIMME_DYNAMIC) {
       /* JDQMR works better than JDQMR_ETol in interior problems. */
       if (params->target == primme_smallest || params->target == primme_largest) {
-         method = JDQMR_ETol;
+         method = PRIMME_JDQMR_ETol;
       }
       else {
-         method = JDQMR;
+         method = PRIMME_JDQMR;
       }
       params->dynamicMethodSwitch = 1;
    }
@@ -255,19 +255,19 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.precondition = params->applyPreconditioner ? 1 : 0;
    }
 
-   if (method == Arnoldi) {
+   if (method == PRIMME_Arnoldi) {
       params->restartingParams.maxPrevRetain      = 0;
       params->correctionParams.precondition       = 0;
       params->correctionParams.maxInnerIterations = 0;
    }
-   else if (method == GD) {
+   else if (method == PRIMME_GD) {
       params->restartingParams.maxPrevRetain      = 0;
       params->correctionParams.robustShifts       = 1;
       params->correctionParams.maxInnerIterations = 0;
       params->correctionParams.projectors.RightX  = 0;
       params->correctionParams.projectors.SkewX   = 0;
    }
-   else if (method == GD_plusK) {
+   else if (method == PRIMME_GD_plusK) {
       if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
@@ -280,7 +280,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.RightX  = 0;
       params->correctionParams.projectors.SkewX   = 0;
    }
-   else if (method == GD_Olsen_plusK) {
+   else if (method == PRIMME_GD_Olsen_plusK) {
       if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
@@ -293,7 +293,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.RightX  = 1;
       params->correctionParams.projectors.SkewX   = 0;
    }
-   else if (method == JD_Olsen_plusK) {
+   else if (method == PRIMME_JD_Olsen_plusK) {
       if (params->restartingParams.maxPrevRetain <= 0) {
          if (params->maxBlockSize == 1 && params->numEvals > 1) {
             params->restartingParams.maxPrevRetain = 2;
@@ -307,7 +307,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.RightX  = 1;
       params->correctionParams.projectors.SkewX   = 1;
    }
-   else if (method == RQI) {
+   else if (method == PRIMME_RQI) {
      /* This is accelerated RQI as basisSize may be > 2                 */
      /* NOTE: If numTargetShifts > 0 and targetShifts[*] are provided,  *
       * the interior problem solved uses these shifts in the correction *
@@ -324,7 +324,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 0;
       params->correctionParams.convTest           = primme_full_LTolerance;
    }
-   else if (method == JDQR) {
+   else if (method == PRIMME_JDQR) {
       params->locking                             = 1;
       params->restartingParams.maxPrevRetain      = 1;
       params->correctionParams.robustShifts       = 0;
@@ -340,7 +340,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.relTolBase         = 1.5;
       params->correctionParams.convTest           = primme_full_LTolerance;
    }
-   else if (method == JDQMR) {
+   else if (method == PRIMME_JDQMR) {
       if (params->restartingParams.maxPrevRetain < 0) {
          params->restartingParams.maxPrevRetain   = 1;
       }
@@ -358,7 +358,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 1;
       params->correctionParams.convTest           = primme_adaptive;
    }
-   else if (method == JDQMR_ETol) {
+   else if (method == PRIMME_JDQMR_ETol) {
       if (params->restartingParams.maxPrevRetain < 0) {
          params->restartingParams.maxPrevRetain   = 1;
       }
@@ -376,7 +376,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.SkewX   = 1;
       params->correctionParams.convTest           = primme_adaptive_ETolerance;
    }
-   else if (method == SUBSPACE_ITERATION) {
+   else if (method == PRIMME_SUBSPACE_ITERATION) {
       params->locking                             = 1;
       params->maxBasisSize                        = params->numEvals*2;
       params->minRestartSize                      = params->numEvals;
@@ -388,7 +388,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.RightX  = 1;
       params->correctionParams.projectors.SkewX   = 0;
    }
-   else if (method == LOBPCG_OrthoBasis) {
+   else if (method == PRIMME_LOBPCG_OrthoBasis) {
       params->maxBasisSize                        = params->numEvals*3;
       params->minRestartSize                      = params->numEvals;
       params->maxBlockSize                        = params->numEvals;
@@ -399,7 +399,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
       params->correctionParams.projectors.RightX  = 1;
       params->correctionParams.projectors.SkewX   = 0;
    }
-   else if (method == LOBPCG_OrthoBasis_Window) {
+   else if (method == PRIMME_LOBPCG_OrthoBasis_Window) {
       /* Observed needing to restart with two vectors at least to converge    */
       /* in some tests like for instance testi-10-LOBPCG_OrthoBasis_Window-3- */
       /* primme_closest_geq-primme_proj_refined.F                             */
@@ -441,7 +441,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
 
 void primme_set_defaults(primme_params *params) {
    if (params->dynamicMethodSwitch < 0) {
-      primme_set_method(DYNAMIC, params);
+      primme_set_method(PRIMME_DYNAMIC, params);
    }
 
    /* ----------------------------------------- */

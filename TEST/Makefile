@@ -207,7 +207,7 @@ tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
 		echo "primme.target = $$target" >> $$f.F; \
 		echo "primme.projection.projection = $$proj" >> $$f.F; \
 		echo "primme.maxMatvecs = 50000" >> $$f.F; \
-		echo "method = $$method" >> $$f.F; \
+		echo "method = PRIMME_$$method" >> $$f.F; \
 	done; done; done; done; done
 
 laplace%.mtx:

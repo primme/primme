@@ -72,17 +72,17 @@ primme_svds_set_method_f77
 
    :param integer method: (input) preset configuration to compute the singular triplets; one of
 
-      * |PRIMMEF77_SVDS_default|, currently set as |PRIMMEF77_SVDS_hybrid|.
-      * |PRIMMEF77_SVDS_normalequations|, compute the eigenvectors of :math:`A^*A` or :math:`A A^*`.
-      * |PRIMMEF77_SVDS_augmented|, compute the eigenvectors of the augmented matrix, :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right)`.
-      * |PRIMMEF77_SVDS_hybrid|, start with |PRIMMEF77_SVDS_normalequations|; use the
+      * |PRIMME_SVDS_default|, currently set as |PRIMME_SVDS_hybrid|.
+      * |PRIMME_SVDS_normalequations|, compute the eigenvectors of :math:`A^*A` or :math:`A A^*`.
+      * |PRIMME_SVDS_augmented|, compute the eigenvectors of the augmented matrix, :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right)`.
+      * |PRIMME_SVDS_hybrid|, start with |PRIMME_SVDS_normalequations|; use the
         resulting approximate singular vectors as initial vectors for
-        |PRIMMEF77_SVDS_augmented| if the required accuracy was not achieved.
+        |PRIMME_SVDS_augmented| if the required accuracy was not achieved.
 
    :param primme_preset_method methodStage1: (input) preset method to compute the eigenpairs at the first stage; see available values at :c:func:`primme_set_method_f77`.
 
    :param primme_preset_method methodStage2: (input) preset method to compute the eigenpairs with
-      the second stage of |PRIMMEF77_SVDS_hybrid|; see available values at :c:func:`primme_set_method_f77`.
+      the second stage of |PRIMME_SVDS_hybrid|; see available values at :c:func:`primme_set_method_f77`.
 
    :param ptr primme_svds: (input/output) parameters structure.
 
@@ -117,47 +117,47 @@ primme_svdstop_set_member_f77
 
    :param integer label: field where to set value. One of:
 
-     | :c:member:`PRIMMEF77_SVDS_primme                         <primme_svds_params.primme>`
-     | :c:member:`PRIMMEF77_SVDS_primmeStage2                   <primme_svds_params.primmeStage2>`
-     | :c:member:`PRIMMEF77_SVDS_m                              <primme_svds_params.m>`
-     | :c:member:`PRIMMEF77_SVDS_n                              <primme_svds_params.n>`
-     | :c:member:`PRIMMEF77_SVDS_matrixMatvec                   <primme_svds_params.matrixMatvec>`
-     | :c:member:`PRIMMEF77_SVDS_applyPreconditioner            <primme_svds_params.applyPreconditioner>`
-     | :c:member:`PRIMMEF77_SVDS_numProcs                       <primme_svds_params.numProcs>`
-     | :c:member:`PRIMMEF77_SVDS_procID                         <primme_svds_params.procID>`
-     | :c:member:`PRIMMEF77_SVDS_mLocal                         <primme_svds_params.mLocal>`
-     | :c:member:`PRIMMEF77_SVDS_nLocal                         <primme_svds_params.nLocal>`
-     | :c:member:`PRIMMEF77_SVDS_commInfo                       <primme_svds_params.commInfo>`
-     | :c:member:`PRIMMEF77_SVDS_globalSumDouble                <primme_svds_params.globalSumDouble>`
-     | :c:member:`PRIMMEF77_SVDS_numSvals                       <primme_svds_params.numSvals>`
-     | :c:member:`PRIMMEF77_SVDS_target                         <primme_svds_params.target>`
-     | :c:member:`PRIMMEF77_SVDS_numTargetShifts                <primme_svds_params.numTargetShifts>`
-     | :c:member:`PRIMMEF77_SVDS_targetShifts                   <primme_svds_params.targetShifts>`
-     | :c:member:`PRIMMEF77_SVDS_method                         <primme_svds_params.method>`
-     | :c:member:`PRIMMEF77_SVDS_methodStage2                   <primme_svds_params.methodStage2>`
-     | :c:member:`PRIMMEF77_SVDS_intWorkSize                    <primme_svds_params.intWorkSize>`
-     | :c:member:`PRIMMEF77_SVDS_realWorkSize                   <primme_svds_params.realWorkSize>`
-     | :c:member:`PRIMMEF77_SVDS_intWork                        <primme_svds_params.intWork>`
-     | :c:member:`PRIMMEF77_SVDS_realWork                       <primme_svds_params.realWork>`
-     | :c:member:`PRIMMEF77_SVDS_matrix                         <primme_svds_params.matrix>`
-     | :c:member:`PRIMMEF77_SVDS_preconditioner                 <primme_svds_params.preconditioner>`
-     | :c:member:`PRIMMEF77_SVDS_locking                        <primme_svds_params.locking>`
-     | :c:member:`PRIMMEF77_SVDS_numOrthoConst                  <primme_svds_params.numOrthoConst>`
-     | :c:member:`PRIMMEF77_SVDS_aNorm                          <primme_svds_params.aNorm>`
-     | :c:member:`PRIMMEF77_SVDS_eps                            <primme_svds_params.eps>`
-     | :c:member:`PRIMMEF77_SVDS_precondition                   <primme_svds_params.precondition>`
-     | :c:member:`PRIMMEF77_SVDS_initSize                       <primme_svds_params.initSize>`
-     | :c:member:`PRIMMEF77_SVDS_maxBasisSize                   <primme_svds_params.maxBasisSize>`
-     | :c:member:`PRIMMEF77_SVDS_maxBlockSize                   <primme_svds_params.maxBlockSize>`
-     | :c:member:`PRIMMEF77_SVDS_maxMatvecs                     <primme_svds_params.maxMatvecs>`
-     | :c:member:`PRIMMEF77_SVDS_iseed                          <primme_svds_params.iseed>`
-     | :c:member:`PRIMMEF77_SVDS_printLevel                     <primme_svds_params.printLevel>`
-     | :c:member:`PRIMMEF77_SVDS_outputFile                     <primme_svds_params.outputFile>`
-     | :c:member:`PRIMMEF77_SVDS_stats_numOuterIterations       <primme_svds_params.stats_numOuterIterations>`
-     | :c:member:`PRIMMEF77_SVDS_stats_numRestarts              <primme_svds_params.stats_numRestarts>`
-     | :c:member:`PRIMMEF77_SVDS_stats_numMatvecs               <primme_svds_params.stats_numMatvecs>`
-     | :c:member:`PRIMMEF77_SVDS_stats_numPreconds              <primme_svds_params.stats_numPreconds>`
-     | :c:member:`PRIMMEF77_SVDS_stats_elapsedTime              <primme_svds_params.stats_elapsedTime>`
+     | :c:member:`PRIMME_SVDS_primme                         <primme_svds_params.primme>`
+     | :c:member:`PRIMME_SVDS_primmeStage2                   <primme_svds_params.primmeStage2>`
+     | :c:member:`PRIMME_SVDS_m                              <primme_svds_params.m>`
+     | :c:member:`PRIMME_SVDS_n                              <primme_svds_params.n>`
+     | :c:member:`PRIMME_SVDS_matrixMatvec                   <primme_svds_params.matrixMatvec>`
+     | :c:member:`PRIMME_SVDS_applyPreconditioner            <primme_svds_params.applyPreconditioner>`
+     | :c:member:`PRIMME_SVDS_numProcs                       <primme_svds_params.numProcs>`
+     | :c:member:`PRIMME_SVDS_procID                         <primme_svds_params.procID>`
+     | :c:member:`PRIMME_SVDS_mLocal                         <primme_svds_params.mLocal>`
+     | :c:member:`PRIMME_SVDS_nLocal                         <primme_svds_params.nLocal>`
+     | :c:member:`PRIMME_SVDS_commInfo                       <primme_svds_params.commInfo>`
+     | :c:member:`PRIMME_SVDS_globalSumDouble                <primme_svds_params.globalSumDouble>`
+     | :c:member:`PRIMME_SVDS_numSvals                       <primme_svds_params.numSvals>`
+     | :c:member:`PRIMME_SVDS_target                         <primme_svds_params.target>`
+     | :c:member:`PRIMME_SVDS_numTargetShifts                <primme_svds_params.numTargetShifts>`
+     | :c:member:`PRIMME_SVDS_targetShifts                   <primme_svds_params.targetShifts>`
+     | :c:member:`PRIMME_SVDS_method                         <primme_svds_params.method>`
+     | :c:member:`PRIMME_SVDS_methodStage2                   <primme_svds_params.methodStage2>`
+     | :c:member:`PRIMME_SVDS_intWorkSize                    <primme_svds_params.intWorkSize>`
+     | :c:member:`PRIMME_SVDS_realWorkSize                   <primme_svds_params.realWorkSize>`
+     | :c:member:`PRIMME_SVDS_intWork                        <primme_svds_params.intWork>`
+     | :c:member:`PRIMME_SVDS_realWork                       <primme_svds_params.realWork>`
+     | :c:member:`PRIMME_SVDS_matrix                         <primme_svds_params.matrix>`
+     | :c:member:`PRIMME_SVDS_preconditioner                 <primme_svds_params.preconditioner>`
+     | :c:member:`PRIMME_SVDS_locking                        <primme_svds_params.locking>`
+     | :c:member:`PRIMME_SVDS_numOrthoConst                  <primme_svds_params.numOrthoConst>`
+     | :c:member:`PRIMME_SVDS_aNorm                          <primme_svds_params.aNorm>`
+     | :c:member:`PRIMME_SVDS_eps                            <primme_svds_params.eps>`
+     | :c:member:`PRIMME_SVDS_precondition                   <primme_svds_params.precondition>`
+     | :c:member:`PRIMME_SVDS_initSize                       <primme_svds_params.initSize>`
+     | :c:member:`PRIMME_SVDS_maxBasisSize                   <primme_svds_params.maxBasisSize>`
+     | :c:member:`PRIMME_SVDS_maxBlockSize                   <primme_svds_params.maxBlockSize>`
+     | :c:member:`PRIMME_SVDS_maxMatvecs                     <primme_svds_params.maxMatvecs>`
+     | :c:member:`PRIMME_SVDS_iseed                          <primme_svds_params.iseed>`
+     | :c:member:`PRIMME_SVDS_printLevel                     <primme_svds_params.printLevel>`
+     | :c:member:`PRIMME_SVDS_outputFile                     <primme_svds_params.outputFile>`
+     | :c:member:`PRIMME_SVDS_stats_numOuterIterations       <primme_svds_params.stats_numOuterIterations>`
+     | :c:member:`PRIMME_SVDS_stats_numRestarts              <primme_svds_params.stats_numRestarts>`
+     | :c:member:`PRIMME_SVDS_stats_numMatvecs               <primme_svds_params.stats_numMatvecs>`
+     | :c:member:`PRIMME_SVDS_stats_numPreconds              <primme_svds_params.stats_numPreconds>`
+     | :c:member:`PRIMME_SVDS_stats_elapsedTime              <primme_svds_params.stats_elapsedTime>`
 
    :param value: (input) value to set.
 
@@ -189,8 +189,8 @@ primme_svdstop_get_member_f77
 
    .. note::
 
-      When ``label`` is one of ``PRIMMEF77_SVDS_matrixMatvec``, ``PRIMMEF77_SVDS_applyPreconditioner``, ``PRIMMEF77_SVDS_commInfo``,
-      ``PRIMMEF77_SVDS_intWork``, ``PRIMMEF77_SVDS_realWork``, ``PRIMMEF77_SVDS_matrix`` and ``PRIMMEF77_SVDS_preconditioner``,
+      When ``label`` is one of ``PRIMME_SVDS_matrixMatvec``, ``PRIMME_SVDS_applyPreconditioner``, ``PRIMME_SVDS_commInfo``,
+      ``PRIMME_SVDS_intWork``, ``PRIMME_SVDS_realWork``, ``PRIMME_SVDS_matrix`` and ``PRIMME_SVDS_preconditioner``,
       the returned ``value`` is a C pointer (``void*``). Use Fortran pointer or other extensions to deal with it.
       For instance::
 
@@ -198,7 +198,7 @@ primme_svdstop_get_member_f77
          MPI_Comm comm
 
          comm = MPI_COMM_WORLD
-         call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, comm)
+         call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_commInfo, comm)
          ...
          subroutine par_GlobalSumDouble(x,y,k,primme_svds)
          use iso_c_binding
@@ -207,7 +207,7 @@ primme_svdstop_get_member_f77
          MPI_Comm, pointer :: comm
          type(c_ptr) :: pcomm
 
-         call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, pcomm)
+         call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_commInfo, pcomm)
          call c_f_pointer(pcomm, comm)
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 
@@ -255,8 +255,8 @@ primme_svds_get_member_f77
 
    .. note::
 
-      When ``label`` is one of ``PRIMMEF77_SVDS_matrixMatvec``, ``PRIMMEF77_SVDS_applyPreconditioner``, ``PRIMMEF77_SVDS_commInfo``,
-      ``PRIMMEF77_SVDS_intWork``, ``PRIMMEF77_SVDS_realWork``, ``PRIMMEF77_SVDS_matrix`` and ``PRIMMEF77_SVDS_preconditioner``,
+      When ``label`` is one of ``PRIMME_SVDS_matrixMatvec``, ``PRIMME_SVDS_applyPreconditioner``, ``PRIMME_SVDS_commInfo``,
+      ``PRIMME_SVDS_intWork``, ``PRIMME_SVDS_realWork``, ``PRIMME_SVDS_matrix`` and ``PRIMME_SVDS_preconditioner``,
       the returned ``value`` is a C pointer (``void*``). Use Fortran pointer or other extensions to deal with it.
       For instance::
 
@@ -264,7 +264,7 @@ primme_svds_get_member_f77
          MPI_Comm comm
 
          comm = MPI_COMM_WORLD
-         call primme_svds_set_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, comm)
+         call primme_svds_set_member_f77(primme_svds, PRIMME_SVDS_commInfo, comm)
          ...
          subroutine par_GlobalSumDouble(x,y,k,primme_svds)
          use iso_c_binding
@@ -273,7 +273,7 @@ primme_svds_get_member_f77
          MPI_Comm, pointer :: comm
          type(c_ptr) :: pcomm
 
-         call primme_svds_get_member_f77(primme_svds, PRIMMEF77_SVDS_commInfo, pcomm)
+         call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_commInfo, pcomm)
          call c_f_pointer(pcomm, comm)
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 

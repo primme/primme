@@ -140,7 +140,7 @@ int primme_svds_set_method(primme_svds_preset_method method,
    primme_set_method(methodStage1, &primme_svds->primme);
 
    /* Set method for the second state */
-   if (methodStage2 == DEFAULT_METHOD) methodStage2 = JDQMR;
+   if (methodStage2 == PRIMME_DEFAULT_METHOD) methodStage2 = PRIMME_JDQMR;
    if (primme_svds->methodStage2 != primme_svds_op_none)
       primme_set_method(methodStage2, &primme_svds->primmeStage2);
 
@@ -159,8 +159,8 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
    /* Set svds method if none set */
    if (primme_svds->method == primme_svds_op_none) {
-      primme_svds_set_method(primme_svds_default, DEFAULT_METHOD,
-            DEFAULT_METHOD, primme_svds);
+      primme_svds_set_method(primme_svds_default, PRIMME_DEFAULT_METHOD,
+            PRIMME_DEFAULT_METHOD, primme_svds);
    }
 
    /* Copy values set in primme_svds to the first stage underneath eigensolver */

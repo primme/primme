@@ -35,21 +35,24 @@ Changes in PRIMME 2.0 (released on XXX):
   will expect an ``interger`` of size compatible with :c:type:`PRIMME_NUM` for
   all parameters with integer type: ``int``, :c:type:`PRIMME_NUM` and ``size_t``;
   see also parameter ``value`` in functions
-  :c:function:`primmetop_set_member_f77`,
-  :c:function:`primmetop_get_member_f77`,
-  :c:function:`primme_set_member_f77` and
-  :c:function:`primme_get_member_f77`.
+  :c:func:`primmetop_set_member_f77`,
+  :c:func:`primmetop_get_member_f77`,
+  :c:func:`primme_set_member_f77` and
+  :c:func:`primme_get_member_f77`.
 
 * Added parameter to return an error code in Fortran interface functions:
-  :c:function:`primmetop_set_member_f77`,
-  :c:function:`primmetop_get_member_f77`,
-  :c:function:`primme_set_member_f77` and
-  :c:function:`primme_get_member_f77`.
+  :c:func:`primmetop_set_member_f77`,
+  :c:func:`primmetop_get_member_f77`,
+  :c:func:`primme_set_member_f77` and
+  :c:func:`primme_get_member_f77`.
 
 * Added leading dimension for ``evecs`` |ldevecs| and preferred leading dimension
   for the operators |ldOPs|, such as |matrixMatvec|.
 
 * Optional user-defined convergence function, |convTestFun|.
+
+* Prefixed methods with ``PRIMME_``. Rename Fortran constants from ``PRIMMEF77_``
+  to ``PRIMME_``.
 
 * Removed ``primme_display_stats_f77``.
 

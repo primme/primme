@@ -81,22 +81,22 @@ int read_solver_params(char *configFileName, char *outputFileName,
             if (ret == 1) {
                ret = 0;
                #define READ_METHOD(V) if (strcmp(stringValue, #V) == 0) {*method = V; ret=1;}
-               READ_METHOD(DEFAULT_METHOD);
-               READ_METHOD(DYNAMIC);
-               READ_METHOD(DEFAULT_MIN_TIME);
-               READ_METHOD(DEFAULT_MIN_MATVECS);
-               READ_METHOD(Arnoldi);
-               READ_METHOD(GD);
-               READ_METHOD(GD_plusK);
-               READ_METHOD(GD_Olsen_plusK);
-               READ_METHOD(JD_Olsen_plusK);
-               READ_METHOD(RQI);
-               READ_METHOD(JDQR);
-               READ_METHOD(JDQMR);
-               READ_METHOD(JDQMR_ETol);
-               READ_METHOD(SUBSPACE_ITERATION);
-               READ_METHOD(LOBPCG_OrthoBasis);
-               READ_METHOD(LOBPCG_OrthoBasis_Window);
+               READ_METHOD(PRIMME_DEFAULT_METHOD);
+               READ_METHOD(PRIMME_DYNAMIC);
+               READ_METHOD(PRIMME_DEFAULT_MIN_TIME);
+               READ_METHOD(PRIMME_DEFAULT_MIN_MATVECS);
+               READ_METHOD(PRIMME_Arnoldi);
+               READ_METHOD(PRIMME_GD);
+               READ_METHOD(PRIMME_GD_plusK);
+               READ_METHOD(PRIMME_GD_Olsen_plusK);
+               READ_METHOD(PRIMME_JD_Olsen_plusK);
+               READ_METHOD(PRIMME_RQI);
+               READ_METHOD(PRIMME_JDQR);
+               READ_METHOD(PRIMME_JDQMR);
+               READ_METHOD(PRIMME_JDQMR_ETol);
+               READ_METHOD(PRIMME_SUBSPACE_ITERATION);
+               READ_METHOD(PRIMME_LOBPCG_OrthoBasis);
+               READ_METHOD(PRIMME_LOBPCG_OrthoBasis_Window);
                #undef READ_METHOD
             }
             if (ret == 0) {
@@ -467,22 +467,22 @@ fprintf(outputFile, "driver.filter        = %f\n\n", driver.filter);
 void driver_display_method(primme_preset_method method, const char* methodstr, FILE *outputFile) {
 
    const char *strMethod[] = {
-      "DEFAULT_METHOD",
-      "DYNAMIC",
-      "DEFAULT_MIN_TIME",
-      "DEFAULT_MIN_MATVECS",
-      "Arnoldi",
-      "GD",
-      "GD_plusK",
-      "GD_Olsen_plusK",
-      "JD_Olsen_plusK",
-      "RQI",
-      "JDQR",
-      "JDQMR",
-      "JDQMR_ETol",
-      "SUBSPACE_ITERATION",
-      "LOBPCG_OrthoBasis",
-      "LOBPCG_OrthoBasis_Window"};
+      "PRIMME_DEFAULT_METHOD",
+      "PRIMME_DYNAMIC",
+      "PRIMME_DEFAULT_MIN_TIME",
+      "PRIMME_DEFAULT_MIN_MATVECS",
+      "PRIMME_Arnoldi",
+      "PRIMME_GD",
+      "PRIMME_GD_plusK",
+      "PRIMME_GD_Olsen_plusK",
+      "PRIMME_JD_Olsen_plusK",
+      "PRIMME_RQI",
+      "PRIMME_JDQR",
+      "PRIMME_JDQMR",
+      "PRIMME_JDQMR_ETol",
+      "PRIMME_SUBSPACE_ITERATION",
+      "PRIMME_LOBPCG_OrthoBasis",
+      "PRIMME_LOBPCG_OrthoBasis_Window"};
 
    fprintf(outputFile, "%s               = %s\n", methodstr, strMethod[method]);
 

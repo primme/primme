@@ -198,22 +198,22 @@ typedef struct primme_params {
 /*---------------------------------------------------------------------------*/
 
 typedef enum {
-   DEFAULT_METHOD,
-   DYNAMIC,
-   DEFAULT_MIN_TIME,
-   DEFAULT_MIN_MATVECS,
-   Arnoldi,
-   GD,
-   GD_plusK,
-   GD_Olsen_plusK,
-   JD_Olsen_plusK,
-   RQI,
-   JDQR,
-   JDQMR,
-   JDQMR_ETol,
-   SUBSPACE_ITERATION,
-   LOBPCG_OrthoBasis,
-   LOBPCG_OrthoBasis_Window
+   PRIMME_DEFAULT_METHOD,
+   PRIMME_DYNAMIC,
+   PRIMME_DEFAULT_MIN_TIME,
+   PRIMME_DEFAULT_MIN_MATVECS,
+   PRIMME_Arnoldi,
+   PRIMME_GD,
+   PRIMME_GD_plusK,
+   PRIMME_GD_Olsen_plusK,
+   PRIMME_JD_Olsen_plusK,
+   PRIMME_RQI,
+   PRIMME_JDQR,
+   PRIMME_JDQMR,
+   PRIMME_JDQMR_ETol,
+   PRIMME_SUBSPACE_ITERATION,
+   PRIMME_LOBPCG_OrthoBasis,
+   PRIMME_LOBPCG_OrthoBasis_Window
 } primme_preset_method;
 
 

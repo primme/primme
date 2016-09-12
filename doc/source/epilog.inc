@@ -79,21 +79,21 @@
 .. |primme_decreasing_LTolerance|  replace:: :c:member:`primme_decreasing_LTolerance  <primme_params.correctionParams.convTest>`
 .. |primme_adaptive_ETolerance|    replace:: :c:member:`primme_adaptive_ETolerance    <primme_params.correctionParams.convTest>`
 .. |primme_adaptive|               replace:: :c:member:`primme_adaptive               <primme_params.correctionParams.convTest>`
-.. |DYNAMIC|                       replace:: :c:member:`DYNAMIC                       <primme_preset_method.DYNAMIC>`
-.. |DEFAULT_MIN_TIME|              replace:: :c:member:`DEFAULT_MIN_TIME              <primme_preset_method.DEFAULT_MIN_TIME>`
-.. |DEFAULT_MIN_MATVECS|           replace:: :c:member:`DEFAULT_MIN_MATVECS           <primme_preset_method.DEFAULT_MIN_MATVECS>`
-.. |Arnoldi|                       replace:: :c:member:`Arnoldi                       <primme_preset_method.Arnoldi>`
-.. |GD|                            replace:: :c:member:`GD                            <primme_preset_method.GD>`
-.. |GD_plusK|                      replace:: :c:member:`GD_plusK                      <primme_preset_method.GD_plusK>`
-.. |GD_Olsen_plusK|                replace:: :c:member:`GD_Olsen_plusK                <primme_preset_method.GD_Olsen_plusK>`
-.. |JD_Olsen_plusK|                replace:: :c:member:`JD_Olsen_plusK                <primme_preset_method.JD_Olsen_plusK>`
-.. |RQI|                           replace:: :c:member:`RQI                           <primme_preset_method.RQI>`
-.. |JDQR|                          replace:: :c:member:`JDQR                          <primme_preset_method.JDQR>`
-.. |JDQMR|                         replace:: :c:member:`JDQMR                         <primme_preset_method.JDQMR>`
-.. |JDQMR_ETol|                    replace:: :c:member:`JDQMR_ETol                    <primme_preset_method.JDQMR_ETol>`
-.. |SUBSPACE_ITERATION|            replace:: :c:member:`SUBSPACE_ITERATION            <primme_preset_method.SUBSPACE_ITERATION>`
-.. |LOBPCG_OrthoBasis|             replace:: :c:member:`LOBPCG_OrthoBasis             <primme_preset_method.LOBPCG_OrthoBasis>`
-.. |LOBPCG_OrthoBasis_Window|      replace:: :c:member:`LOBPCG_OrthoBasis_Window      <primme_preset_method.LOBPCG_OrthoBasis_Window>`
+.. |DYNAMIC|                       replace:: :c:member:`PRIMME_DYNAMIC                       <primme_preset_method.PRIMME_DYNAMIC>`
+.. |DEFAULT_MIN_TIME|              replace:: :c:member:`PRIMME_DEFAULT_MIN_TIME              <primme_preset_method.PRIMME_DEFAULT_MIN_TIME>`
+.. |DEFAULT_MIN_MATVECS|           replace:: :c:member:`PRIMME_DEFAULT_MIN_MATVECS           <primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS>`
+.. |Arnoldi|                       replace:: :c:member:`PRIMME_Arnoldi                       <primme_preset_method.PRIMME_Arnoldi>`
+.. |GD|                            replace:: :c:member:`PRIMME_GD                            <primme_preset_method.PRIMME_GD>`
+.. |GD_plusK|                      replace:: :c:member:`PRIMME_GD_plusK                      <primme_preset_method.PRIMME_GD_plusK>`
+.. |GD_Olsen_plusK|                replace:: :c:member:`PRIMME_GD_Olsen_plusK                <primme_preset_method.PRIMME_GD_Olsen_plusK>`
+.. |JD_Olsen_plusK|                replace:: :c:member:`PRIMME_JD_Olsen_plusK                <primme_preset_method.PRIMME_JD_Olsen_plusK>`
+.. |RQI|                           replace:: :c:member:`PRIMME_RQI                           <primme_preset_method.PRIMME_RQI>`
+.. |JDQR|                          replace:: :c:member:`PRIMME_JDQR                          <primme_preset_method.PRIMME_JDQR>`
+.. |JDQMR|                         replace:: :c:member:`PRIMME_JDQMR                         <primme_preset_method.PRIMME_JDQMR>`
+.. |JDQMR_ETol|                    replace:: :c:member:`PRIMME_JDQMR_ETol                    <primme_preset_method.PRIMME_JDQMR_ETol>`
+.. |SUBSPACE_ITERATION|            replace:: :c:member:`PRIMME_SUBSPACE_ITERATION            <primme_preset_method.PRIMME_SUBSPACE_ITERATION>`
+.. |LOBPCG_OrthoBasis|             replace:: :c:member:`PRIMME_LOBPCG_OrthoBasis             <primme_preset_method.PRIMME_LOBPCG_OrthoBasis>`
+.. |LOBPCG_OrthoBasis_Window|      replace:: :c:member:`PRIMME_LOBPCG_OrthoBasis_Window      <primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window>`
 
 .. |Sm|                      replace:: :c:member:`m                            <primme_svds_params.m>`
 .. |Sn|                      replace:: :c:member:`n                            <primme_svds_params.n>`
@@ -139,10 +139,10 @@
 .. |primme_svds_hybrid|          replace:: :c:member:`primme_svds_hybrid          <primme_svds_preset_method.primme_svds_hybrid>`
 .. |primme_svds_normalequations| replace:: :c:member:`primme_svds_normalequations <primme_svds_preset_method.primme_svds_normalequations>`
 .. |primme_svds_augmented|       replace:: :c:member:`primme_svds_augmented       <primme_svds_preset_method.primme_svds_augmented>`
-.. |PRIMMEF77_SVDS_default|         replace:: :c:member:`PRIMMEF77_SVDS_default         <primme_svds_preset_method.primme_svds_default>`
-.. |PRIMMEF77_SVDS_hybrid|          replace:: :c:member:`PRIMMEF77_SVDS_hybrid          <primme_svds_preset_method.primme_svds_hybrid>`
-.. |PRIMMEF77_SVDS_normalequations| replace:: :c:member:`PRIMMEF77_SVDS_normalequations <primme_svds_preset_method.primme_svds_normalequations>`
-.. |PRIMMEF77_SVDS_augmented|       replace:: :c:member:`PRIMMEF77_SVDS_augmented       <primme_svds_preset_method.primme_svds_augmented>`
+.. |PRIMME_SVDS_default|         replace:: :c:member:`PRIMME_SVDS_default         <primme_svds_preset_method.primme_svds_default>`
+.. |PRIMME_SVDS_hybrid|          replace:: :c:member:`PRIMME_SVDS_hybrid          <primme_svds_preset_method.primme_svds_hybrid>`
+.. |PRIMME_SVDS_normalequations| replace:: :c:member:`PRIMME_SVDS_normalequations <primme_svds_preset_method.primme_svds_normalequations>`
+.. |PRIMME_SVDS_augmented|       replace:: :c:member:`PRIMME_SVDS_augmented       <primme_svds_preset_method.primme_svds_augmented>`
 
 
 

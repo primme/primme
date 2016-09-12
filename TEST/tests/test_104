@@ -22,4 +22,4 @@ primme.target = primme_closest_abs
 primme.numTargetShifts = 1
 primme.targetShifts = 1e-2
 
-method               = DEFAULT_MIN_TIME
+method               = PRIMME_DEFAULT_MIN_TIME

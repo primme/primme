@@ -27,4 +27,4 @@ primme.targetShifts = 0
 // Correction parameters
 primme.correction.precondition = 1
 
-method               = GD_Olsen_plusK
+method               = PRIMME_GD_Olsen_plusK

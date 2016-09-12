@@ -31,26 +31,6 @@
 
 /*-------------------------------------------------------*/
 /*     Defining easy to remember labels for setting the  */
-/*     method in primme_set_method from Fortran          */
-/*-------------------------------------------------------*/
-#define PRIMMEF77_DEFAULT_METHOD  0
-#define PRIMMEF77_DYNAMIC  1
-#define PRIMMEF77_DEFAULT_MIN_TIME  2
-#define PRIMMEF77_DEFAULT_MIN_MATVECS  3
-#define PRIMMEF77_Arnoldi  4
-#define PRIMMEF77_GD  5
-#define PRIMMEF77_GD_plusK  6
-#define PRIMMEF77_GD_Olsen_plusK  7
-#define PRIMMEF77_JD_Olsen_plusK  8
-#define PRIMMEF77_RQI  9
-#define PRIMMEF77_JDQR  10
-#define PRIMMEF77_JDQMR  11
-#define PRIMMEF77_JDQMR_ETol  12
-#define PRIMMEF77_SUBSPACE_ITERATION  13
-#define PRIMMEF77_LOBPCG_OrthoBasis  14
-#define PRIMMEF77_LOBPCG_OrthoBasis_Window  15
-/*-------------------------------------------------------*/
-/*     Defining easy to remember labels for setting the  */
 /*     members of the primme structure from Fortran      */
 /*-------------------------------------------------------*/
 #define PRIMMEF77_n  0
@@ -111,35 +91,8 @@
 #define PRIMMEF77_dynamicMethodSwitch 49
 #define PRIMMEF77_massMatrixMatvec  50
 #define PRIMMEF77_convTestFun  51
-
-/*----------------------------------------------------------*/
-/*     Defining easy to remember labels for setting the     */
-/*     enum members for targeting, restarting and innertest */
-/*----------------------------------------------------------*/
-#define PRIMMEF77_smallest  0
-#define PRIMMEF77_largest  1
-#define PRIMMEF77_closest_geq  2
-#define PRIMMEF77_closest_leq  3
-#define PRIMMEF77_closest_abs  4
-#define PRIMMEF77_largest_abs  5
-/*-------------------------------------------------------*/
-#define PRIMMEF77_proj_default  0
-#define PRIMMEF77_proj_RR  1
-#define PRIMMEF77_proj_harmonic  2
-#define PRIMMEF77_proj_refined  3
-/*-------------------------------------------------------*/
-#define PRIMMEF77_init_default  0
-#define PRIMMEF77_init_krylov  1
-#define PRIMMEF77_init_random  2
-#define PRIMMEF77_init_user  3
-/*-------------------------------------------------------*/
-#define PRIMMEF77_thick  0
-#define PRIMMEF77_dt  1
-/*-------------------------------------------------------*/
-#define PRIMMEF77_full_LTolerance  0
-#define PRIMMEF77_decreasing_LTolerance  1
-#define PRIMMEF77_adaptive_ETolerance  2
-#define PRIMMEF77_adaptive  3
+#define PRIMMEF77_ldevecs  52
+#define PRIMMEF77_ldOPs  53
 
 #include "template.h"
 #include "primme_interface.h" /* for Sprimme */
@@ -191,7 +144,7 @@ void AS_FORTRAN(primme_initialize)(primme_params **primme);
 void AS_FORTRAN(primme_free)(primme_params **primme);
 void AS_FORTRAN(primme_display_params)(primme_params **primme);
 void AS_FORTRAN(primme_printstacktrace)(primme_params **primme);
-void AS_FORTRAN(primme_set_method)(primme_params **primme, int *method, int *returnVal);
+void AS_FORTRAN(primme_set_method)(primme_params **primme, primme_preset_method *method, int *returnValue);
 void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label, union f77_value ptr, int *ierr);
 void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i, double *shift);
 void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label, union f77_value_ptr *ptr, int *ierr);
