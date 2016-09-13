@@ -290,7 +290,7 @@ License Information
 ===================
 
 PRIMME is license under the 3-clause license BSD. Python and Matlab
-interfaces have BSD-compatible licenses. Source code under TESTS is
+interfaces have BSD-compatible licenses. Source code under tests is
 compatible with LGPLv3. Details can be taken from COPYING.txt.
 
 
@@ -308,7 +308,7 @@ Directory Structure
 
 The next directories and files should be available:
 
-* "COPYING.txt", BSD License;
+* "COPYING.txt", license;
 
 * "Make_flags",  flags to be used by makefiles to compile library
   and tests;
@@ -332,7 +332,7 @@ The next directories and files should be available:
 
 * "PYTHON/",       Python interface for PRIMME;
 
-* "exmplaes/",     sample programs in C, C++ and F77, both
+* "examples/",     sample programs in C, C++ and F77, both
   sequential and parallel;
 
 * "tests/",        drivers for testing purpose and test cases;
@@ -377,22 +377,8 @@ Making and Linking
 
 Note: When "-DPRIMME_BLASINT_SIZE=64" is set the code uses the type
   "int64_t" supported by the C99 standard. In case the compiler
-  doesn't honor the standard, replace the next lines in
-  "PRIMMESRC/COMMONSRC/common_numerical.h":
-
-     #if !defined(PRIMME_BLASINT_SIZE)
-     #  define PRIMME_BLASINT int
-     #else
-     #  include <stdint.h>
-     #  define GENERIC_INT(N) int ## N ## _t
-     #  define XGENERIC_INT(N) GENERIC_INT(N)
-     #  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
-     #endif
-
-  by the next macro definition with the proper type for an "int" of 64
-  bits:
-
-     #define PRIMME_BLASINT __int64
+  doesn't honor the standard, you can set the corresponding type name
+  supported, for instance "-DPRIMME_BLASINT_SIZE=__int64".
 
 After customizing "Make_flags", type this to generate "libprimme.a":
 
@@ -403,7 +389,7 @@ Making can be also done at the command line:
    make lib CC=clang CFLAGS='-O3'
 
 "Link_flags" has the flags for linking with external libraries and
-making the executables located in "TEST":
+making the executables located in "examples" and "tests":
 
 * *LDFLAGS*, linker flags such as "-framework Accelerate".
 
@@ -417,10 +403,6 @@ After that, type this to compile and execute a simple test:
    Test passed!
    ...
    Test passed!
-
-If it worked, try with other examples in "TEST" (see "README" in
-"TEST" for more information about how to compile the driver and the
-examples).
 
 In case of linking problems check flags in *LDFLAGS* and *LIBS* and
 consider to add/remove "-DF77UNDERSCORE" from *CFLAGS*. If the

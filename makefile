@@ -26,7 +26,7 @@ test:
 	echo "------------------------------------------------"; \
 	make -C examples test_examples_C USE_PETSC=no
 
-all_test:
+all_tests:
 	@make -C examples test_examples;\
 	make -C tests all_tests
 
