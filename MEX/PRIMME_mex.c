@@ -1,24 +1,31 @@
 /*******************************************************************************
- *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2015 College of William & Mary,
- *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
+ * Copyright (c) 2016, College of William & Mary
+ * All rights reserved.
  *
- *   This file is part of PRIMME.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of College of William & Mary nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- *   PRIMME is free software; you can redistribute it and/or
- *   modify it under the terms of the GNU Lesser General Public
- *   License as published by the Free Software Foundation; either
- *   version 2.1 of the License, or (at your option) any later version.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL COLLEGE OF WILLIAM & MARY BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *   PRIMME is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *   Lesser General Public License for more details.
- *
- *   You should have received a copy of the GNU Lesser General Public
- *   License along with this library; if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
+ * PRIMME: https://github.com/primme/primme
+ * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
  * File: PRIMME_mex.c
  * 
@@ -101,10 +108,10 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
-void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme);
-void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme);
-void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme);
-void Preconditioner_z(void *x, void *y, int *blockSize, primme_params *primme);
+void MatrixMatvec_d(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void MatrixMatvec_z(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void Preconditioner_d(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void Preconditioner_z(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 
 char *outputfilename;
 
@@ -123,7 +130,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    double *read_initialevecs = NULL;
    double *read_initialevecsimag = NULL;
 
-   primme_preset_method method = DYNAMIC;
+   primme_preset_method method = PRIMME_DYNAMIC;
 
    /* check: The number of input arguments are between 1 and 6 */
    if (nrhs == 0)
@@ -574,7 +581,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          mxFree(outputfilename);
    }
    else {
-      Complex_Z *evecs =(Complex_Z *)EVecs;
+      double *evecs =(double *)EVecs;
       int num, ret;
       double *Outevals, *OutevecsR, *OutevecsI, *Outrnorms, *Outstates;
 
@@ -591,7 +598,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       num = max(primme.numEvals,primme.initSize); 
       num = num + primme.numOrthoConst; 
       evals = (double *)mxCalloc(primme.numEvals, sizeof(double));
-      evecs = (Complex_Z *)mxCalloc(primme.n*(num+primme.maxBlockSize), sizeof(Complex_Z));
+      evecs = (double *)mxCalloc(primme.n*(num+primme.maxBlockSize), sizeof(double)*2);
       rnorms = (double *)mxCalloc(primme.numEvals, sizeof(double));
 
       mexPrintf("evals, evecs, rnorms memory allocation succeed\n");
@@ -632,15 +639,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       if (read_initialevecs != NULL)
          for (i =0;i<(primme.initSize+primme.numOrthoConst)*primme.n;i++) {
-            evecs[i].r = read_initialevecs[i];
-            evecs[i].i = read_initialevecsimag[i];
+            evecs[i*2] = read_initialevecs[i];
+            evecs[i*2+1] = read_initialevecsimag[i];
          }
 
       /* ------------- */
       /*  Call primme  */
       /* ------------- */
 
-      ret = zprimme(evals, evecs, rnorms, &primme);
+      ret = zprimme(evals, (PRIMME_COMPLEX_DOUBLE*)evecs, rnorms, &primme);
 
       if (ret == 0)
          mexPrintf("zprimme return value is %d, success\n", ret);
@@ -667,8 +674,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       if (nlhs >= 2) {
          for (i=0; i<(primme.n*num);i++) {
-            OutevecsR[i] = evecs[i].r;
-            OutevecsI[i] = evecs[i].i;
+            OutevecsR[i] = evecs[i*2];
+            OutevecsI[i] = evecs[i*2+1];
          }
       }
 
@@ -707,12 +714,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
  * this function.
  */
 
-void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
+void MatrixMatvec_d(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 {  
    double * sendXr;
    double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize l;
+   mwSize l,r,c;
    mxArray *rhs[1], *lhs[1];
    double * yvecr;
    double * ycopyvec = (double *)y;
@@ -724,16 +731,16 @@ void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxREAL);
    sendXr = mxGetPr(rhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      sendXr[l] = xvec[l];
-   }
+   for (l = c = 0; c < *blockSize; c++)
+      for (r = 0; r < n; r++)
+         sendXr[l++] = xvec[*ldx*c+r];
 
    mexCallMATLAB( 1, lhs, 1, rhs, "getMatvecHandle");        
    yvecr = mxGetPr(lhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      ycopyvec[l] = yvecr[l];
-   }
+   for (l = c = 0; c < *blockSize; c++)
+      for (r = 0; r < n; r++)
+         ycopyvec[*ldy*c+r] = yvecr[l++];
 
    mxDestroyArray(rhs[0]); 
    mxDestroyArray(lhs[0]);     
@@ -741,36 +748,40 @@ void MatrixMatvec_d(void *x, void *y, int *blockSize, primme_params *primme)
 }
 
 
-void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme)
+void MatrixMatvec_z(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 {  
    double * sendXr;
    double * sendXi;
-   Complex_Z *xvec = (Complex_Z *)x;
+   double *xvec = (double*)x;
    mwSize n = primme->n;
-   mwSize l;
+   mwSize l,r,c;
    double * yvecr;
    double * yveci;
 
-   Complex_Z * ycopyvec = (Complex_Z *)y;
+   double * ycopyvec = (double *)y;
 
    mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxCOMPLEX);
    sendXr = mxGetPr(rhs[0]);
    sendXi = mxGetPi(rhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      sendXr[l] = xvec[l].r;
-      sendXi[l] = xvec[l].i;
+   for (l = c = 0; c < *blockSize; c++) {
+      for (r = 0; r < n; r++) {
+         sendXr[l] = xvec[(*ldx*c+r)*2];
+         sendXi[l++] = xvec[(*ldx*c+r)*2+1];
+      }
    }
 
    mexCallMATLAB( 1, lhs, 1, rhs, "getMatvecHandle");        
    yvecr = mxGetPr(lhs[0]);
    yveci = mxGetPi(lhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      ycopyvec[l].r = yvecr[l];
-      ycopyvec[l].i = yveci[l];
-   }
+   for (l = c = 0; c < *blockSize; c++) {
+      for (r = 0; r < n; r++) {
+         ycopyvec[(*ldy*c+r)*2] = yvecr[l];
+         ycopyvec[(*ldy*c+r)*2+1] = yveci[l++];
+      }
+  }
 
    mxDestroyArray(rhs[0]);
    mxDestroyArray(lhs[0]);
@@ -789,13 +800,13 @@ void MatrixMatvec_z(void *x, void *y, int *blockSize, primme_params *primme)
  * vector y is returned to this function.
  */
 
-void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme)
+void Preconditioner_d(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 { 
 
    double * sendXr;
    double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize l;
+   mwSize l,r,c;
    mxArray *rhs[1], *lhs[1];
    double * yvecr;
    double * ycopyvec = (double *)y;
@@ -807,52 +818,56 @@ void Preconditioner_d(void *x, void *y, int *blockSize, primme_params *primme)
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxREAL);
    sendXr = mxGetPr(rhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      sendXr[l] = xvec[l];
-   }
+   for (l = c = 0; c < *blockSize; c++)
+      for (r = 0; r < n; r++)
+         sendXr[l++] = xvec[*ldx*c+r];
 
    mexCallMATLAB( 1, lhs, 1, rhs, "getPrecondHandle");
    yvecr = mxGetPr(lhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      ycopyvec[l] = yvecr[l];
-   }
+   for (l = c = 0; c < *blockSize; c++)
+      for (r = 0; r < n; r++)
+         ycopyvec[*ldy*c+r] = yvecr[l++];
 
    mxDestroyArray(rhs[0]);
    mxDestroyArray(lhs[0]);
 
 }
 
-void Preconditioner_z(void *x, void *y, int *blockSize, primme_params *primme)
+void Preconditioner_z(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 { 
    double * sendXr;
    double * sendXi;
-   Complex_Z *xvec = (Complex_Z *)x;
+   double *xvec = (double *)x;
    mwSize n = primme->n;
-   mwSize l;
+   mwSize l,r,c;
    double * yvecr;
    double * yveci;
 
-   Complex_Z * ycopyvec = (Complex_Z *)y;
+   double * ycopyvec = (double *)y;
 
    mxArray *rhs[1], *lhs[1];
    rhs[0] = mxCreateDoubleMatrix(n,*blockSize,mxCOMPLEX);
    sendXr = mxGetPr(rhs[0]);
    sendXi = mxGetPi(rhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      sendXr[l] = xvec[l].r;
-      sendXi[l] = xvec[l].i;
+   for (l = c = 0; c < *blockSize; c++) {
+      for (r = 0; r < n; r++) {
+         sendXr[l] = xvec[(*ldx*c+r)*2];
+         sendXi[l++] = xvec[(*ldx*c+r)*2+1];
+      }
    }
 
    mexCallMATLAB( 1, lhs, 1, rhs, "getPrecondHandle");
    yvecr = mxGetPr(lhs[0]);
    yveci = mxGetPi(lhs[0]);
 
-   for (l = 0; l < n*(*blockSize); l++) {
-      ycopyvec[l].r = yvecr[l];
-      ycopyvec[l].i = yveci[l];
-   }
+   for (l = c = 0; c < *blockSize; c++) {
+      for (r = 0; r < n; r++) {
+         ycopyvec[(*ldy*c+r)*2] = yvecr[l];
+         ycopyvec[(*ldy*c+r)*2+1] = yveci[l++];
+      }
+  }
 
    mxDestroyArray(rhs[0]);
    mxDestroyArray(lhs[0]);

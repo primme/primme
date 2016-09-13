@@ -115,8 +115,8 @@ clean:
 
 %.o: $(foreach arch,$(ARCHS),%$(arch).o)
 
-incluce/template.h: primme.h
-incluce/numerical.h: template.h blaslapack.h auxiliary.h
+include/template.h: primme.h
+include/numerical.h: template.h blaslapack.h auxiliary.h
 linalg/blacklapack.o: blacklapack.h template.h blaslapack_private.h
 linalg/auxiliary.o: auxiliary.h template.h blaslapack.h
 

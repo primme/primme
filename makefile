@@ -8,7 +8,7 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib libd libz clean test
+.PHONY: lib clean test all_tests check_style
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
@@ -17,31 +17,21 @@ lib:
 	@make -C src ../lib/$(LIBRARY)
 
 clean: 
-	@make -C src clean;\
-	make -C TEST clean
+	@make -C src clean
 
 test:
 	@\
 	echo "------------------------------------------------"; \
-	echo " Test double sequential C                       "; \
+	echo " Test C examples                                "; \
 	echo "------------------------------------------------"; \
-	make -C TEST test_double USE_PETSC=no
+	make -C examples test_examples_C USE_PETSC=no
 
 all_test:
-	@make -C TEST all_tests USE_PETSC=no
+	@make -C examples test_examples;\
+	make -C tests all_tests
 
 check_style:
 	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
-distribution:
-	@(\
-	cd .. ;\
-	tar cvf primme_v1.11.tar \
-	PRIMME/PRIMMESRC PRIMME/DTEST  PRIMME/ZTEST  \
-	PRIMME/readme.txt PRIMME/COPYING.txt \
-	PRIMME/readme.html PRIMME/doc.pdf PRIMME/primmestyle.css \
-	PRIMME/Abstract_stathopoulos.pdf PRIMME/Paper_stathopoulos.pdf \
-	PRIMME/Make_flags PRIMME/Link_flags PRIMME/makefile;\
-	gzip primme_v1.11.tar;\
-	)
-
+tags:
+	@make -C src ../tags

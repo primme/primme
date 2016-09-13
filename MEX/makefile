@@ -33,8 +33,8 @@ MEXFLAGS += -O -largeArrayDims
 # Set TOP to the path where PRIMME is installed
 TOP = ../
 
-LIBS = -L$(TOP) -lprimme -lm  -lmwlapack -lmwblas
-INCLUDE = -I$(TOP)/PRIMMESRC/COMMONSRC
+LIBS = -L../lib -lprimme -lm  -lmwlapack -lmwblas
+INCLUDE = -I../include
 
 all:
 	$(MEX) $(MEXFLAGS) $(LIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).c

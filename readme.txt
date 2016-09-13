@@ -118,8 +118,8 @@ PRIMME, pronounced as *prime*, finds a number of eigenvalues and their
 corresponding eigenvectors of a real symmetric, or complex hermitian
 matrix A. Largest, smallest and interior eigenvalues are supported.
 Preconditioning can be used to accelerate convergence. PRIMME is
-written in C99, but complete interfaces are provided for Fortran 77
-and MATLAB.
+written in C99, but complete interfaces are provided for Fortran 77,
+MATLAB and Python.
 
 
 Changelog
@@ -254,6 +254,10 @@ Please cite:
      description*, ACM Transaction on Mathematical Software Vol. 37,
      No. 2, (2010), 21:1-21:30.
 
+[r6] L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-
+     Performance Preconditioned SVD Solver for Accurate Large-Scale
+     Computations*, arXiv:1607.01404
+
 More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
 supported by a number of grants from the National Science Foundation.
@@ -277,24 +281,17 @@ supported by a number of grants from the National Science Foundation.
      of eigenvectors of hermitian matrices*, Tech Report: WM-
      CS-2005-03, July, 2005.
 
+[r7] L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD
+     Method for Computing Accurately Singular Triplets of Large
+     Matrices*, SIAM J. Sci. Comput. 37-5(2015), pp. S365-S388.
+
 
 License Information
 ===================
 
-PRIMME is free software; you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation; either version 2.1 of the License, or
-(at your option) any later version.
-
-PRIMME is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
-USA
+PRIMME is license under the 3-clause license BSD. Python and Matlab
+interfaces have BSD-compatible licenses. Source code under TESTS is
+compatible with LGPLv3. Details can be taken from COPYING.txt.
 
 
 Contact Information
@@ -302,7 +299,8 @@ Contact Information
 
 For reporting bugs or questions about functionality contact Andreas
 Stathopoulos by email, *andreas* at *cs.wm.edu*. See further
-information in the webpage http://www.cs.wm.edu/~andreas/software .
+information in the webpage http://www.cs.wm.edu/~andreas/software and
+on github.
 
 
 Directory Structure
@@ -310,7 +308,7 @@ Directory Structure
 
 The next directories and files should be available:
 
-* "COPYING.txt", LGPL License;
+* "COPYING.txt", BSD License;
 
 * "Make_flags",  flags to be used by makefiles to compile library
   and tests;
@@ -318,22 +316,26 @@ The next directories and files should be available:
 * "Link_flags",  flags needed in making and linking the test
   programs;
 
-* "PRIMMESRC/",  directory with source code in the following
-  subdirectories:
+* "include/",    directory with headers files;
 
-     * "COMMONSRC/", interface and common functions used by all
-       precision versions;
+* "src/",        directory with the source code for "libprimme":
 
-     * "DSRC/",      the source code for the double precision
-       "dprimme()";
+     * "include/",   common headers;
 
-     * "ZSRC/",      the source code for the double complex
-       precision "zprimme()";
+     * "eigs/",      eigenvalue interface and implementation;
+
+     * "svds/",      singular value interface and implementation;
+
+     * "tools/",     tools used to generated some headers;
 
 * "MEX/",          MATLAB interface for PRIMME;
 
-* "TEST/",         sample test programs in C and F77, both
+* "PYTHON/",       Python interface for PRIMME;
+
+* "exmplaes/",     sample programs in C, C++ and F77, both
   sequential and parallel;
+
+* "tests/",        drivers for testing purpose and test cases;
 
 * "libprimme.a",   the PRIMME library (to be made);
 
@@ -429,16 +431,10 @@ Full description of actions that *make* can take:
 
 * *make lib*, builds "libprimme.a"; alternatively:
 
-* *make libd*, if only "dprimme()" is of interest, build
-  "libdprimme.a":
+* *make test*, build and execute simple examples;
 
-* *make libz*, if only "zprimme()" is of interest, build
-  "libzprimme.a";
-
-* *make test*, build and execute a simple example;
-
-* *make clean*, removes all "*.o", "a.out", and core files from all
-  directories.
+* *make clean*, removes all "*.o", "a.out", and core files from
+  "src".
 
 
 Considerations using an IDE
@@ -449,16 +445,16 @@ KDevelop, Qt Creator, Visual Studio and XCode. To build the PRIMME
 library do the following:
 
 1. Create a new project and include the source files under the
-   directory "PRIMMESRC".
+   directory "src".
 
-2. Add the directory "PRIMMESRC/COMMONSRC" as an include directory.
+2. Add the directories "include" and "src/include" as include
+   directories.
 
 To build an example code using PRIMME make sure:
 
 * to add a reference for PRIMME, BLAS and LAPACK libraries;
 
-* to add the directory "PRIMMESRC/COMMONSRC" as an include
-  directory.
+* to add the directory "include" as an include directory.
 
 
 Tested Systems

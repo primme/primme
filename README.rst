@@ -28,14 +28,9 @@ Making can be also done at the command line::
 C Library Interface
 -------------------
 
-To solve real symmetric standard eigenproblems call::
+To compute few eigenvalues and eigenvectors from a real symmetric matrix call::
 
     int dprimme(double *evals, double *evecs, double *resNorms, 
-                primme_params *primme);
-
-To solve Hermitian standard eigenproblems call::
-
-    int zprimme(double *evals, Complex_Z *evecs, double *resNorms, 
                 primme_params *primme);
 
 The call arguments are:
@@ -45,7 +40,21 @@ The call arguments are:
 * `resNorms`, array to return the residual norms of the found eigenpairs; and
 * `primme`, structure that specify the matrix problem, which eigenvalues are wanted and several method options.
 
-See documentation in `readme.txt` file and in ``doc`` directory.
+To compute few singular values and vectors from a matrix call::
+
+    int dprimme_svds(double *svals, double *svecs, double *resNorms, 
+                primme_svds_params *primme_svds);
+
+The call arguments are:
+
+* `svals`, array to return the found singular values;
+* `svecs`, array to return the found vectors;
+* `resNorms`, array to return the residual norms of the triplets; and
+* `primme_svds`, structure that specify the matrix problem, which values are wanted and several method options.
+
+There are available versions for complex double, float and float double.
+See documentation in `readme.txt` file and in ``doc`` directory; also it is online at doc_.
+The `examples` directory is plenty of self-contained examples in C, C++ and F77, and some of them using PETSc_.
 
 Citing this code 
 ----------------
@@ -56,6 +65,10 @@ Please cite:
   MultiMethod Eigensolver: Methods and software description*, ACM
   Transaction on Mathematical Software Vol. 37, No. 2, (2010),
   21:1-21:30.
+
+* L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
+  Preconditioned SVD Solver for Accurate Large-Scale Computations*,
+  arXiv:1607.01404
 
 More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
@@ -78,30 +91,26 @@ supported by a number of grants from the National Science Foundation.
 * A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
   of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
+* L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD Method for Computing
+  Accurately Singular Triplets of Large Matrices*, SIAM J. Sci. Comput. 37-5(2015),
+  pp. S365-S388.
 
 License Information
 -------------------
 
-PRIMME is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-PRIMME is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
+PRIMME is license under the 3-clause license BSD.
+Python and Matlab interfaces have BSD-compatible licenses.
+Source code under TESTS is compatible with LGPLv3.
+Details can be taken from COPYING.txt.
 
 Contact Information 
 -------------------
 
 For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
 email, `andreas` at `cs.wm.edu`. See further information in
-the webpage http://www.cs.wm.edu/~andreas/software .
+the webpages http://www.cs.wm.edu/~andreas/software.
 
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/software
+.. _`github`: https://github.com/primme/primme
+.. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
+.. _PETSc : http://www.mcs.anl.gov/petsc/

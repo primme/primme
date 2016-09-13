@@ -6,7 +6,7 @@ PRIMME, pronounced as *prime*, finds a number of eigenvalues and their correspon
 real symmetric, or complex hermitian matrix A. Largest, smallest and interior 
 eigenvalues are supported. Preconditioning can be used to accelerate 
 convergence. 
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77 and MATLAB.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB and Python.
   
 Changelog
 ^^^^^^^^^
@@ -126,7 +126,7 @@ Citing this code
 
 .. only:: latex
 
-   Please cite [r1]_.
+   Please cite [r1]_ and [r6]_.
 
 .. only:: not latex
 
@@ -137,10 +137,14 @@ Citing this code
    Transaction on Mathematical Software Vol. 37, No. 2, (2010),
    21:1-21:30.
 
+.. [r6] L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
+  Preconditioned SVD Solver for Accurate Large-Scale Computations*,
+  arXiv:1607.01404
+
 .. only:: latex
 
    More information on the algorithms and research that led to this
-   software can be found in the rest of the papers [r2]_, [r3]_, [r4]_, [r5]_.
+   software can be found in the rest of the papers [r2]_, [r3]_, [r4]_, [r5]_, [r7]_.
    The work has been supported by a number of grants from the
    National Science Foundation.
 
@@ -167,30 +171,25 @@ Citing this code
 .. [r5] A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
    of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
+.. [r7] L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD Method for Computing
+  Accurately Singular Triplets of Large Matrices*, SIAM J. Sci. Comput. 37-5(2015),
+  pp. S365-S388.
+
+
 License Information
 ^^^^^^^^^^^^^^^^^^^
 
-PRIMME is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-PRIMME is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
+PRIMME is license under the 3-clause license BSD.
+Python and Matlab interfaces have BSD-compatible licenses.
+Source code under tests is compatible with LGPLv3.
+Details can be taken from COPYING.txt.
 
 Contact Information 
 ^^^^^^^^^^^^^^^^^^^
 
 For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
 email, `andreas` at `cs.wm.edu`. See further information in
-the webpage http://www.cs.wm.edu/~andreas/software .
+the webpage http://www.cs.wm.edu/~andreas/software and on github_.
 
 
 Directory Structure
@@ -198,17 +197,21 @@ Directory Structure
 
 The next directories and files should be available:
 
-* :file:`COPYING.txt`, LGPL License;
+* :file:`COPYING.txt`, license;
 * :file:`Make_flags`,  flags to be used by makefiles to compile library and tests;
 * :file:`Link_flags`,  flags needed in making and linking the test programs;
-* :file:`PRIMMESRC/`,  directory with source code in the following subdirectories:
+* :file:`include/`,    directory with headers files;
+* :file:`src/`,        directory with the source code for :file:`libprimme`:
 
-   * :file:`COMMONSRC/`, interface and common functions used by all precision versions;
-   * :file:`DSRC/`,      the source code for the double precision :c:func:`dprimme`;
-   * :file:`ZSRC/`,      the source code for the double complex precision :c:func:`zprimme`;
+   * :file:`include/`,   common headers;
+   * :file:`eigs/`,      eigenvalue interface and implementation;
+   * :file:`svds/`,      singular value interface and implementation;
+   * :file:`tools/`,     tools used to generated some headers;
 
 * :file:`MEX/`,          MATLAB interface for PRIMME;
-* :file:`TEST/`,         sample test programs in C and F77, both sequential and parallel;
+* :file:`PYTHON/`,       Python interface for PRIMME;
+* :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
+* :file:`tests/`,        drivers for testing purpose and test cases;
 * :file:`libprimme.a`,   the PRIMME library (to be made);
 * :file:`makefile`       main make file;
 * :file:`readme.txt`     text version of the documentation;
@@ -242,20 +245,8 @@ Making and Linking
 
    When ``-DPRIMME_BLASINT_SIZE=64`` is set the code uses the type ``int64_t``
    supported by the C99 standard. In case the compiler doesn't honor the
-   standard, replace the next lines in :file:`PRIMMESRC/COMMONSRC/common_numerical.h`::
-
-      #if !defined(PRIMME_BLASINT_SIZE)
-      #  define PRIMME_BLASINT int
-      #else
-      #  include <stdint.h>
-      #  define GENERIC_INT(N) int ## N ## _t
-      #  define XGENERIC_INT(N) GENERIC_INT(N)
-      #  define PRIMME_BLASINT XGENERIC_INT(PRIMME_BLASINT_SIZE)
-      #endif
-
-   by the next macro definition with the proper type for an ``int`` of 64 bits::
-
-      #define PRIMME_BLASINT __int64
+   standard, you can set the corresponding type name supported, for instance
+   ``-DPRIMME_BLASINT_SIZE=__int64``.
 
 After customizing :file:`Make_flags`, type this to generate :file:`libprimme.a`::
 
@@ -266,7 +257,7 @@ Making can be also done at the command line::
     make lib CC=clang CFLAGS='-O3'
 
 :file:`Link_flags` has the flags for linking with external libraries and making the executables
-located in :file:`TEST`:
+located in :file:`examples` and :file:`tests`:
 
 * `LDFLAGS`, linker flags such as ``-framework Accelerate``.
 * `LIBS`, flags to link with libraries (BLAS_ and LAPACK_ are required), such as ``-lprimme -llapack -lblas -lgfortran -lm``.
@@ -279,9 +270,6 @@ After that, type this to compile and execute a simple test::
     ...
     Test passed! 
 
-If it worked, try with other examples in :file:`TEST` (see :file:`README` in :file:`TEST` for more
-information about how to compile the driver and the examples).
-
 In case of linking problems check flags in `LDFLAGS` and `LIBS` and consider
 to add/remove ``-DF77UNDERSCORE`` from `CFLAGS`. If the execution fails consider
 to add/remove ``-DPRIMME_BLASINT_SIZE=64`` from `CFLAGS`.
@@ -289,10 +277,8 @@ to add/remove ``-DPRIMME_BLASINT_SIZE=64`` from `CFLAGS`.
 Full description of actions that `make` can take:
 
 * `make lib`, builds :file:`libprimme.a`; alternatively:
-* `make libd`, if only :c:func:`dprimme` is of interest, build :file:`libdprimme.a`:
-* `make libz`, if only :c:func:`zprimme` is of interest, build :file:`libzprimme.a`;
-* `make test`, build and execute a simple example; 
-* `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from all directories.
+* `make test`, build and execute simple examples; 
+* `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
 
 Considerations using an IDE
 """""""""""""""""""""""""""
@@ -300,13 +286,13 @@ Considerations using an IDE
 PRIMME can be built in other environments such as Anjuta, Eclipse, KDevelop, Qt Creator,
 Visual Studio and XCode. To build the PRIMME library do the following:
 
-#. Create a new project and include the source files under the directory :file:`PRIMMESRC`.
-#. Add the directory :file:`PRIMMESRC/COMMONSRC` as an include directory.
+#. Create a new project and include the source files under the directory :file:`src`.
+#. Add the directories :file:`include` and :file:`src/include` as include directories.
 
 To build an example code using PRIMME make sure:
 
 - to add a reference for PRIMME, BLAS_ and LAPACK_ libraries;
-- to add the directory :file:`PRIMMESRC/COMMONSRC` as an include directory.
+- to add the directory :file:`include` as an include directory.
 
 Tested Systems
 ^^^^^^^^^^^^^^
@@ -322,5 +308,7 @@ Many users have reported builds on several other platforms/compilers:
 * Cray XC30
 * SunOS 5.9, quad processor Sun-Fire-280R, and several other UltraSparcs
 * AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at nersc.gov)
+
+.. _`github`: https://github.com/primme/primme
 
 .. include:: epilog.inc
