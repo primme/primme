@@ -208,7 +208,7 @@ The next directories and files should be available:
    * :file:`svds/`,      singular value interface and implementation;
    * :file:`tools/`,     tools used to generated some headers;
 
-* :file:`MEX/`,          MATLAB interface for PRIMME;
+* :file:`Matlab/`,       Matlab interface for PRIMME;
 * :file:`PYTHON/`,       Python interface for PRIMME;
 * :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
 * :file:`tests/`,        drivers for testing purpose and test cases;

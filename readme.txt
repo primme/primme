@@ -289,9 +289,10 @@ supported by a number of grants from the National Science Foundation.
 License Information
 ===================
 
-PRIMME is license under the 3-clause license BSD. Python and Matlab
-interfaces have BSD-compatible licenses. Source code under tests is
-compatible with LGPLv3. Details can be taken from COPYING.txt.
+PRIMME is licensed under the 3-clause license BSD. Python and Matlab
+interfaces have BSD-compatible licenses. Source code under
+file:*tests* is compatible with LGPLv3. Details can be taken from
+COPYING.txt.
 
 
 Contact Information
@@ -328,7 +329,7 @@ The next directories and files should be available:
 
      * "tools/",     tools used to generated some headers;
 
-* "MEX/",          MATLAB interface for PRIMME;
+* "Matlab/",       Matlab interface for PRIMME;
 
 * "PYTHON/",       Python interface for PRIMME;
 
