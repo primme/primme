@@ -97,8 +97,8 @@ There are two steps to build a MATLAB MEX file.
    PRIMME MEX. Alternatively, if $TOP is the path to the PRIMME installation, 
    in the MATLAB command prompt type:
 
-   mex -v -O -largeArrayDims PRIMME_mex.c -L$TOP/PRIMME \
-	-I$TOP/PRIMME/PRIMMESRC/COMMONSRC -lprimme -lm  -lmwlapack -lmwblas 
+   mex -v -O -largeArrayDims PRIMME_mex.c -L$TOP/lib \
+	-I$TOP/include -lprimme -lm  -lmwlapack -lmwblas 
 
 
 -----------------------------------------------------------------------------
