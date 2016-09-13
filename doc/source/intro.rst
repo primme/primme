@@ -179,9 +179,9 @@ Citing this code
 License Information
 ^^^^^^^^^^^^^^^^^^^
 
-PRIMME is license under the 3-clause license BSD.
+PRIMME is licensed under the 3-clause license BSD.
 Python and Matlab interfaces have BSD-compatible licenses.
-Source code under tests is compatible with LGPLv3.
+Source code under file:`tests` is compatible with LGPLv3.
 Details can be taken from COPYING.txt.
 
 Contact Information 
