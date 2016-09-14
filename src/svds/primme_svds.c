@@ -39,6 +39,7 @@
 #include <math.h>  
 #include <assert.h>  
 #include "numerical.h"
+#include "../eigs/ortho.h"
 #include "wtime.h"
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
@@ -138,11 +139,16 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
       return ALLOCATE_WORKSPACE_FAILURE;
    }
 
+   /* --------------- */
    /* Execute stage 1 */
+   /* --------------- */
+
    CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs,
                NULL, &allocatedTargetShifts)) == NULL,
          ALLOCATE_WORKSPACE_FAILURE);
+
    ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primme); 
+
    CHKERRS(copy_last_params_to_svds(primme_svds, 0, svals, svecs, resNorms,
             allocatedTargetShifts), ALLOCATE_WORKSPACE_FAILURE);
 
@@ -153,11 +159,20 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
       return 0;
    }
 
+   /* --------------- */
    /* Execute stage 2 */
+   /* --------------- */
+
    CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs,
             resNorms, &allocatedTargetShifts)) == NULL,
          ALLOCATE_WORKSPACE_FAILURE);
-   ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primmeStage2);
+
+   /* The value numSvals-primme->numEvals indicates how many svals */
+   /* are already converged. So shift svals and resnorms that much */
+   int nconv = primme_svds->numSvals - primme_svds->primmeStage2.numEvals;
+
+   ret = Sprimme(svals+nconv, svecs0, resNorms+nconv, &primme_svds->primmeStage2);
+
    CHKERRS(copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms,
          allocatedTargetShifts), ALLOCATE_WORKSPACE_FAILURE);
 
@@ -365,7 +380,35 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[1]),
             &svecs[primme_svds->nLocal], 1);
       primme->initSize = 1;
+      rnorms[1] = HUGE_VAL;
       primme->initBasisMode = primme_init_user;
+   }
+
+   /* If second stage, set as numOrthoConst the first ones that pass */
+   /* the convergence criterion.                                     */
+
+   if (stage == 1) {
+      for (i=0; primme->initSize > 0; i++) {
+         double ev = (double)svals[i], resnorm = rnorms[i];
+         int isConv=0, ierr=0;
+         CHKERRMS((primme->convTestFun(&ev, NULL, &resnorm, &isConv, primme,
+                     &ierr), ierr), NULL,
+               "Error code returned by 'convTestFun' %d", ierr);
+         if (!isConv) break;
+         primme->numOrthoConst++;
+         primme->initSize--;
+         primme->numEvals--;
+      }
+
+      /* Orthogonalize orthogonal constrain vectors */
+
+      SCALAR *rwork; 
+      CHKERRS(MALLOC_PRIMME(2*primme->numOrthoConst, &rwork), NULL);
+      size_t rworkSize =  2*primme->numOrthoConst;
+      CHKERRS(ortho_Sprimme(out_svecs, primme->nLocal, NULL, 0, 0,
+               primme->numOrthoConst-1, NULL, 0, 0, primme->nLocal,
+               primme->iseed, machEps, rwork, &rworkSize, primme), NULL);
+      free(rwork);
    }
 
    return out_svecs;
@@ -479,6 +522,15 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    if (method == primme_svds_op_none) {
       primme->maxMatvecs = 1;
       return 0;
+   }
+
+   /* Pass back the converged vectors in first stage to regular vectors */
+
+   if (stage == 1) {
+      int nconv = primme_svds->numSvals - primme->numEvals;
+      primme->initSize += nconv;
+      primme->numOrthoConst -= nconv;
+      primme->numEvals += nconv;
    }
 
    /* Record performance measurements */ 
