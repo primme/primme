@@ -296,19 +296,26 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       cut = 0;
    }
    primme->realWork = (SCALAR*)primme_svds->realWork + cut;
+   assert(primme_svds->realWorkSize >= cut*sizeof(SCALAR));
    primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(SCALAR);
  
    if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
        (stage == 1 && primme->targetShifts == NULL &&
          primme_svds->target == primme_svds_closest_abs)) {
-      primme->targetShifts = primme_svds->targetShifts;
       primme->numTargetShifts = primme_svds->numTargetShifts;
       if (stage == 0 &&
             (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
+         *allocatedTargetShifts = 1;
+         CHKERRS(MALLOC_PRIMME(primme_svds->numSvals, &primme->targetShifts),
+            NULL);
          for (i=0; i<primme->numTargetShifts; i++) {
-            primme->targetShifts[i] *= primme->targetShifts[i];
+            primme->targetShifts[i] = 
+               primme_svds->targetShifts[i]*primme_svds->targetShifts[i];
          }
       }
+      else {
+         primme->targetShifts = primme_svds->targetShifts;
+      } 
    }
    else if (stage == 1 && primme->targetShifts == NULL &&
             primme_svds->target == primme_svds_smallest) {
@@ -518,7 +525,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds_operator method;
    SCALAR *aux;
    REAL *norms2, *norms2_;
-   int n, nMax, i, cut, ierr;
+   int n, nMax, i, ierr;
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -647,13 +654,6 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    /* Zero references to primme workspaces to prevent to be release by primme_Free */
    primme->intWork = NULL;
    primme->realWork = NULL;
-
-   if (stage == 0 && primme_svds->targetShifts == primme->targetShifts &&
-       (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
-      for (i=0; i<primme_svds->numTargetShifts; i++) {
-         primme_svds->targetShifts[i] = sqrt(primme_svds->targetShifts[i]);
-      }
-   }
 
    if (allocatedTargetShifts) {
       free(primme->targetShifts);
