@@ -62,7 +62,7 @@ test_examples_C test_examples_F77 test_examples_CXX: test_examples% : examples%
 	else\
 		cat tests.log;\
 		echo "Some tests fail. Please consider to send us the file";\
-		echo "TEST/tests.log if the software doesn't work as expected.";\
+		echo "examples/tests.log if the software doesn't work as expected.";\
 		exit 1;\
 	fi
 

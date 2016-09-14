@@ -407,7 +407,7 @@ primme_svds_params
       Integer work array.
 
       If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will free it and allocate a new space.
+      enough, the code will return the error code ``-21``.
 
       Input/output:
 
@@ -419,7 +419,7 @@ primme_svds_params
       Real work array.
 
       If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will free it and allocate a new space.
+      enough, the code will return the error code ``-20``.
 
       Input/output:
 
@@ -592,6 +592,8 @@ The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of th
 * -17: ``svals`` is not set,
 * -18: ``svecs`` is not set,
 * -19: ``resNorms`` is not set
+* -20: not enough memory for |SrealWork|
+* -21: not enough memory for |SintWork|
 * -100 up to -199: eigensolver error from first stage; see the value plus 100 in :ref:`error-codes`.
 * -200 up to -299: eigensolver error from second stage; see the value plus 200 in :ref:`error-codes`.
 

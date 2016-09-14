@@ -536,7 +536,7 @@ primme_params
       Integer work array.
 
       If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will free it and allocate a new space.
+      enough, the code will return the error code ``-37``.
 
       On exit, the first element shows if a locking problem has occurred.
       Using locking for large |numEvals| may, in some rare cases,
@@ -554,7 +554,7 @@ primme_params
       Real work array.
 
       If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will free it and allocate a new space.
+      enough, the code will return the error code ``-36``.
 
       Input/output:
 
@@ -1088,6 +1088,8 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -33: if not |locking| and |minRestartSize| < |numEvals|.
 * -34: if |ldevecs| < |nLocal|
 * -35: if |ldOPs| is not zero and less than |nLocal|
+* -36: not enough memory for |realWork|
+* -37: not enough memory for |intWork|
 
 .. _methods:
 

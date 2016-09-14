@@ -466,6 +466,9 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
       assert(primme_svds->methodStage2 != primme_svds_op_AtA &&
              primme_svds->methodStage2 != primme_svds_op_AAt);
       primme = primme_svds->primmeStage2;
+      /* Check the case where all pairs from first stage are converged. */
+      /* More numOrthoConst requires more memory */
+      primme.numOrthoConst += primme.numEvals;
       Sprimme(NULL, NULL, NULL, &primme);
       intWorkSize = max(intWorkSize, primme.intWorkSize);
       realWorkSize = max(realWorkSize, primme.realWorkSize);
@@ -480,10 +483,11 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
    /*----------------------------------------------------------------------*/
    /* Allocate the required workspace, if the user did not provide enough  */
    /*----------------------------------------------------------------------*/
-   if (primme_svds->realWorkSize < realWorkSize || primme_svds->realWork == NULL) {
-      if (primme_svds->realWork != NULL) {
-         free(primme_svds->realWork);
-      }
+   if (primme_svds->realWork != NULL
+         && primme_svds->realWorkSize < realWorkSize) {
+      return -20;
+   }
+   else if (primme_svds->realWork == NULL) {
       primme_svds->realWorkSize = realWorkSize;
       if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
          "Allocating real workspace: %ld bytes\n", primme_svds->realWorkSize);
@@ -491,10 +495,10 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
             MALLOC_FAILURE, "Failed to allocate %zd bytes\n", realWorkSize);
    }
 
-   if (primme_svds->intWorkSize < intWorkSize || primme_svds->intWork==NULL) {
-      if (primme_svds->intWork != NULL) {
-         free(primme_svds->intWork);
-      }
+   if (primme_svds->intWork != NULL && primme_svds->intWorkSize < intWorkSize) {
+      return -21;
+   }
+   else if (primme_svds->intWork == NULL) {
       primme_svds->intWorkSize = intWorkSize;
       if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
          "Allocating integer workspace: %d bytes\n", primme_svds->intWorkSize);
@@ -640,19 +644,6 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds->iseed[3] = primme->iseed[3];
    primme_svds->maxMatvecs -= primme->stats.numMatvecs;
 
-   /* Check that primme didn't free the workspaces */
-
-   if ((primme->matrixMatvec == matrixMatvecSVDS) &&
-       (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
-      cut = primme->maxBlockSize * (method == primme_svds_op_AtA ?
-                     primme_svds->mLocal : primme_svds->nLocal);
-      assert((SCALAR*)primme_svds->realWork + cut == primme->realWork);
-   }
-   else {
-      cut = 0;
-   }
-   assert(primme_svds->intWork == primme->intWork);
-
    /* Zero references to primme workspaces to prevent to be release by primme_Free */
    primme->intWork = NULL;
    primme->realWork = NULL;
@@ -749,6 +740,7 @@ static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms,
       ret = -18;
    else if (resNorms == NULL)
       ret = -19;
+   /* Booked -20 and -21*/
 
    return ret;
    /***************************************************************************/

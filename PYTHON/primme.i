@@ -607,7 +607,7 @@ dprimme_svds and zprimme_svds.
 Example
 -------
 >>> import Primme, scipy.sparse, numpy as np
->>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+>>> A = scipy.sparse.spdiags(range(1,11), [0], 100, 10) # sparse diag. rect. matrix
 >>> class PSP(Primme.PrimmeSvdsParams):
 ... 	def __init__(self):
 ... 		Primme.PrimmeSvdsParams.__init__(self)

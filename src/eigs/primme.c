@@ -410,10 +410,10 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /*----------------------------------------------------------------------*/
    /* Allocate the required workspace, if the user did not provide enough  */
    /*----------------------------------------------------------------------*/
-   if (primme->realWorkSize < rworkByteSize || primme->realWork == NULL) {
-      if (primme->realWork != NULL) {
-         free(primme->realWork);
-      }
+   if (primme->realWork != NULL && primme->realWorkSize < rworkByteSize) {
+      return -35;
+   }
+   else if (primme->realWork == NULL) {
       primme->realWorkSize = rworkByteSize;
       if (primme->printLevel >= 5) fprintf(primme->outputFile, 
          "Allocating real workspace: %zd bytes\n", primme->realWorkSize);
@@ -421,10 +421,11 @@ static int allocate_workspace(primme_params *primme, int allocate) {
             "Failed to allocate %zd bytes\n", rworkByteSize);
    }
 
-   if (primme->intWorkSize < intWorkSize*(int)sizeof(int) || primme->intWork==NULL) {
-      if (primme->intWork != NULL) {
-         free(primme->intWork);
-      }
+   if (primme->intWork != NULL
+         && primme->intWorkSize < intWorkSize*(int)sizeof(int)) {
+      return -36;
+   }
+   else if (primme->intWork == NULL) {
       primme->intWorkSize = intWorkSize*sizeof(int);
       if (primme->printLevel >= 5) fprintf(primme->outputFile, 
          "Allocating integer workspace: %d bytes\n", primme->intWorkSize);
@@ -529,6 +530,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
       ret = -34;
    else if (primme->ldOPs != 0 && primme->ldOPs < primme->nLocal)
       ret = -35;
+   /* Booked -36 and -37 */
    /* Please keep this if instruction at the end */
    else if ( primme->target == primme_largest_abs ||
              primme->target == primme_closest_geq ||

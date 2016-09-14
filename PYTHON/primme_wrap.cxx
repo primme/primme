@@ -17261,7 +17261,7 @@ static PyMethodDef SwigMethods[] = {
 		"Example\n"
 		"-------\n"
 		">>> import Primme, scipy.sparse, numpy as np\n"
-		">>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix\n"
+		">>> A = scipy.sparse.spdiags(range(1,11), [0], 100, 10) # sparse diag. rect. matrix\n"
 		">>> class PSP(Primme.PrimmeSvdsParams):\n"
 		"... 	def __init__(self):\n"
 		"... 		Primme.PrimmeSvdsParams.__init__(self)\n"
