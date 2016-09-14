@@ -199,7 +199,7 @@ def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc):
 
    # Check singular values are close enough to the exact ones
    ANorm = np.amax(exact_svals)
-   assert_allclose(sva, sol_svals, atol=ANorm*tol, rtol=1, err_msg=case_desc)
+   assert_allclose(sorted(sva), sorted(sol_svals), atol=ANorm*tol, rtol=1, err_msg=case_desc)
 
    # Check the residual norm associated to the returned pairs
    R = A.dot(svr) - svl.dot(np.diag(sva))

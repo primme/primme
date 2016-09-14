@@ -1694,8 +1694,8 @@ primme_params
       Integer work array.
 
       If NULL, the code will allocate its own workspace. If the
-      provided space is not enough, the code will free it and allocate
-      a new space.
+      provided space is not enough, the code will return the error
+      code "-37".
 
       On exit, the first element shows if a locking problem has
       occurred. Using locking for large "numEvals" may, in some rare
@@ -1714,8 +1714,8 @@ primme_params
       Real work array.
 
       If NULL, the code will allocate its own workspace. If the
-      provided space is not enough, the code will free it and allocate
-      a new space.
+      provided space is not enough, the code will return the error
+      code "-36".
 
       Input/output:
 
@@ -2306,6 +2306,10 @@ values:
 * -34: if "ldevecs" < "nLocal"
 
 * -35: if "ldOPs" is not zero and less than "nLocal"
+
+* -36: not enough memory for "realWork"
+
+* -37: not enough memory for "intWork"
 
 
 Preset Methods
@@ -3839,8 +3843,8 @@ primme_svds_params
          Integer work array.
 
          If NULL, the code will allocate its own workspace. If the
-         provided space is not enough, the code will free it and
-         allocate a new space.
+         provided space is not enough, the code will return the error
+         code "-21".
 
          Input/output:
 
@@ -3852,8 +3856,8 @@ primme_svds_params
          Real work array.
 
          If NULL, the code will allocate its own workspace. If the
-         provided space is not enough, the code will free it and
-         allocate a new space.
+         provided space is not enough, the code will return the error
+         code "-20".
 
          Input/output:
 
@@ -4060,6 +4064,10 @@ next values:
 
 * -19: "resNorms" is not set
 
+* -20: not enough memory for "realWork"
+
+* -21: not enough memory for "intWork"
+
 * -100 up to -199: eigensolver error from first stage; see the value
   plus 100 in Error Codes.
 
@@ -4223,7 +4231,7 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    -[ Examples ]-
 
    >>> import Primme, scipy.sparse
-   >>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+   >>> A = scipy.sparse.spdiags(range(1, 11), [0], 100, 10) # sparse diag. rect. matrix
    >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which='SM')
    >>> svals # the three smallest singular values of A
    array([ 1.,  2.,  3.])

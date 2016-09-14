@@ -17,7 +17,7 @@ _Primme = Extension("_Primme",
                    include_dirs = [numpy_include],
                    library_dirs = ["../lib"],
                    libraries = ["primme", "blas", "lapack"],
-                   #extra_compile_args = ["-g", "-O0"]
+                   #extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"]
                    )
 
 # NumyTypemapTests setup

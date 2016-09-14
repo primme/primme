@@ -831,7 +831,7 @@ class PrimmeSvdsParams(primme_svds_params):
     Example
     -------
     >>> import Primme, scipy.sparse, numpy as np
-    >>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+    >>> A = scipy.sparse.spdiags(range(1,11), [0], 100, 10) # sparse diag. rect. matrix
     >>> class PSP(Primme.PrimmeSvdsParams):
     ... 	def __init__(self):
     ... 		Primme.PrimmeSvdsParams.__init__(self)
@@ -877,7 +877,7 @@ class PrimmeSvdsParams(primme_svds_params):
         Example
         -------
         >>> import Primme, scipy.sparse, numpy as np
-        >>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+        >>> A = scipy.sparse.spdiags(range(1,11), [0], 100, 10) # sparse diag. rect. matrix
         >>> class PSP(Primme.PrimmeSvdsParams):
         ... 	def __init__(self):
         ... 		Primme.PrimmeSvdsParams.__init__(self)
@@ -989,7 +989,9 @@ _PRIMMEErrors = {
 -32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
 -33: "not 'locking' and 'minRestartSize' < 'numEvals'",
 -34: "'ldevecs' is less than 'nLocal'",
--35: "'ldOPs' is non-zero and less than 'nLocal'"
+-35: "'ldOPs' is non-zero and less than 'nLocal'",
+-36 : "not enough memory for realWork",
+-37 : "not enough memory for intWork"
 }
 
 _PRIMMESvdsErrors = {
@@ -1012,7 +1014,9 @@ _PRIMMESvdsErrors = {
 -16 : "Wrong value for printLevel",
 -17 : "svals is not set",
 -18 : "svecs is not set",
--19 : "resNorms is not set"
+-19 : "resNorms is not set",
+-20 : "not enough memory for realWork",
+-21 : "not enough memory for intWork"
 }
 
 
@@ -1386,7 +1390,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     Examples
     --------
     >>> import Primme, scipy.sparse
-    >>> A = scipy.sparse.spdiags(range(10), [0], 100, 10) # sparse diag. rect. matrix
+    >>> A = scipy.sparse.spdiags(range(1, 11), [0], 100, 10) # sparse diag. rect. matrix
     >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which='SM')
     >>> svals # the three smallest singular values of A
     array([ 1.,  2.,  3.])

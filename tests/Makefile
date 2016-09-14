@@ -89,6 +89,8 @@ all: drivers
 
 drivers: primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex
 
+primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex: ../lib/libprimme.a
+
 ifeq ($(USE_MPI), yes)
   MPIRUN ?= mpirun -np 4
 endif
@@ -116,7 +118,7 @@ all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme% tests_prim
 	else\
 		cat tests.log;\
 		echo "Some tests fail. Please consider to send us the file";\
-		echo "TEST/tests.log if the software doesn't work as expected.";\
+		echo "tests/tests.log if the software doesn't work as expected.";\
 		exit 1;\
 	fi
 
@@ -133,7 +135,7 @@ all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: pri
 	else\
 		cat tests.log;\
 		echo "Some tests fail. Please consider to send us the file";\
-		echo "TEST/tests.log if the software doesn't work as expected.";\
+		echo "tests/tests.log if the software doesn't work as expected.";\
 		exit 1;\
 	fi
 

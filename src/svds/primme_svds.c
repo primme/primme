@@ -39,6 +39,7 @@
 #include <math.h>  
 #include <assert.h>  
 #include "numerical.h"
+#include "../eigs/ortho.h"
 #include "wtime.h"
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
@@ -138,11 +139,16 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
       return ALLOCATE_WORKSPACE_FAILURE;
    }
 
+   /* --------------- */
    /* Execute stage 1 */
+   /* --------------- */
+
    CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs,
                NULL, &allocatedTargetShifts)) == NULL,
          ALLOCATE_WORKSPACE_FAILURE);
+
    ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primme); 
+
    CHKERRS(copy_last_params_to_svds(primme_svds, 0, svals, svecs, resNorms,
             allocatedTargetShifts), ALLOCATE_WORKSPACE_FAILURE);
 
@@ -153,11 +159,20 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
       return 0;
    }
 
+   /* --------------- */
    /* Execute stage 2 */
+   /* --------------- */
+
    CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs,
             resNorms, &allocatedTargetShifts)) == NULL,
          ALLOCATE_WORKSPACE_FAILURE);
-   ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primmeStage2);
+
+   /* The value numSvals-primme->numEvals indicates how many svals */
+   /* are already converged. So shift svals and resnorms that much */
+   int nconv = primme_svds->numSvals - primme_svds->primmeStage2.numEvals;
+
+   ret = Sprimme(svals+nconv, svecs0, resNorms+nconv, &primme_svds->primmeStage2);
+
    CHKERRS(copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms,
          allocatedTargetShifts), ALLOCATE_WORKSPACE_FAILURE);
 
@@ -281,19 +296,26 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       cut = 0;
    }
    primme->realWork = (SCALAR*)primme_svds->realWork + cut;
+   assert(primme_svds->realWorkSize >= cut*sizeof(SCALAR));
    primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(SCALAR);
  
    if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
        (stage == 1 && primme->targetShifts == NULL &&
          primme_svds->target == primme_svds_closest_abs)) {
-      primme->targetShifts = primme_svds->targetShifts;
       primme->numTargetShifts = primme_svds->numTargetShifts;
       if (stage == 0 &&
             (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
+         *allocatedTargetShifts = 1;
+         CHKERRS(MALLOC_PRIMME(primme_svds->numSvals, &primme->targetShifts),
+            NULL);
          for (i=0; i<primme->numTargetShifts; i++) {
-            primme->targetShifts[i] *= primme->targetShifts[i];
+            primme->targetShifts[i] = 
+               primme_svds->targetShifts[i]*primme_svds->targetShifts[i];
          }
       }
+      else {
+         primme->targetShifts = primme_svds->targetShifts;
+      } 
    }
    else if (stage == 1 && primme->targetShifts == NULL &&
             primme_svds->target == primme_svds_smallest) {
@@ -365,7 +387,35 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[1]),
             &svecs[primme_svds->nLocal], 1);
       primme->initSize = 1;
+      rnorms[1] = HUGE_VAL;
       primme->initBasisMode = primme_init_user;
+   }
+
+   /* If second stage, set as numOrthoConst the first ones that pass */
+   /* the convergence criterion.                                     */
+
+   if (stage == 1) {
+      for (i=0; primme->initSize > 0; i++) {
+         double ev = (double)svals[i], resnorm = rnorms[i];
+         int isConv=0, ierr=0;
+         CHKERRMS((primme->convTestFun(&ev, NULL, &resnorm, &isConv, primme,
+                     &ierr), ierr), NULL,
+               "Error code returned by 'convTestFun' %d", ierr);
+         if (!isConv) break;
+         primme->numOrthoConst++;
+         primme->initSize--;
+         primme->numEvals--;
+      }
+
+      /* Orthogonalize orthogonal constrain vectors */
+
+      SCALAR *rwork; 
+      CHKERRS(MALLOC_PRIMME(2*primme->numOrthoConst, &rwork), NULL);
+      size_t rworkSize =  2*primme->numOrthoConst;
+      CHKERRS(ortho_Sprimme(out_svecs, primme->nLocal, NULL, 0, 0,
+               primme->numOrthoConst-1, NULL, 0, 0, primme->nLocal,
+               primme->iseed, machEps, rwork, &rworkSize, primme), NULL);
+      free(rwork);
    }
 
    return out_svecs;
@@ -423,6 +473,9 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
       assert(primme_svds->methodStage2 != primme_svds_op_AtA &&
              primme_svds->methodStage2 != primme_svds_op_AAt);
       primme = primme_svds->primmeStage2;
+      /* Check the case where all pairs from first stage are converged. */
+      /* More numOrthoConst requires more memory */
+      primme.numOrthoConst += primme.numEvals;
       Sprimme(NULL, NULL, NULL, &primme);
       intWorkSize = max(intWorkSize, primme.intWorkSize);
       realWorkSize = max(realWorkSize, primme.realWorkSize);
@@ -437,10 +490,11 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
    /*----------------------------------------------------------------------*/
    /* Allocate the required workspace, if the user did not provide enough  */
    /*----------------------------------------------------------------------*/
-   if (primme_svds->realWorkSize < realWorkSize || primme_svds->realWork == NULL) {
-      if (primme_svds->realWork != NULL) {
-         free(primme_svds->realWork);
-      }
+   if (primme_svds->realWork != NULL
+         && primme_svds->realWorkSize < realWorkSize) {
+      return -20;
+   }
+   else if (primme_svds->realWork == NULL) {
       primme_svds->realWorkSize = realWorkSize;
       if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
          "Allocating real workspace: %ld bytes\n", primme_svds->realWorkSize);
@@ -448,10 +502,10 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
             MALLOC_FAILURE, "Failed to allocate %zd bytes\n", realWorkSize);
    }
 
-   if (primme_svds->intWorkSize < intWorkSize || primme_svds->intWork==NULL) {
-      if (primme_svds->intWork != NULL) {
-         free(primme_svds->intWork);
-      }
+   if (primme_svds->intWork != NULL && primme_svds->intWorkSize < intWorkSize) {
+      return -21;
+   }
+   else if (primme_svds->intWork == NULL) {
       primme_svds->intWorkSize = intWorkSize;
       if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
          "Allocating integer workspace: %d bytes\n", primme_svds->intWorkSize);
@@ -471,7 +525,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds_operator method;
    SCALAR *aux;
    REAL *norms2, *norms2_;
-   int n, nMax, i, cut, ierr;
+   int n, nMax, i, ierr;
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -479,6 +533,15 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    if (method == primme_svds_op_none) {
       primme->maxMatvecs = 1;
       return 0;
+   }
+
+   /* Pass back the converged vectors in first stage to regular vectors */
+
+   if (stage == 1) {
+      int nconv = primme_svds->numSvals - primme->numEvals;
+      primme->initSize += nconv;
+      primme->numOrthoConst -= nconv;
+      primme->numEvals += nconv;
    }
 
    /* Record performance measurements */ 
@@ -588,28 +651,9 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds->iseed[3] = primme->iseed[3];
    primme_svds->maxMatvecs -= primme->stats.numMatvecs;
 
-   /* Check that primme didn't free the workspaces */
-   if ((primme->matrixMatvec == matrixMatvecSVDS) &&
-       (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
-      cut = primme->maxBlockSize * (method == primme_svds_op_AtA ?
-                     primme_svds->mLocal : primme_svds->nLocal);
-   }
-   else {
-      cut = 0;
-   }
-   assert(primme_svds->intWork == primme->intWork);
-   assert((SCALAR*)primme_svds->realWork + cut == primme->realWork);
-
    /* Zero references to primme workspaces to prevent to be release by primme_Free */
    primme->intWork = NULL;
    primme->realWork = NULL;
-
-   if (stage == 0 && primme_svds->targetShifts == primme->targetShifts &&
-       (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
-      for (i=0; i<primme_svds->numTargetShifts; i++) {
-         primme_svds->targetShifts[i] = sqrt(primme_svds->targetShifts[i]);
-      }
-   }
 
    if (allocatedTargetShifts) {
       free(primme->targetShifts);
@@ -696,6 +740,7 @@ static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms,
       ret = -18;
    else if (resNorms == NULL)
       ret = -19;
+   /* Booked -20 and -21*/
 
    return ret;
    /***************************************************************************/
