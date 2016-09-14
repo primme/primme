@@ -44,13 +44,15 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
 
 #undef __FUNCT__
 #define __FUNCT__ "readMatrixPetsc"
-int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int *nLocal,
-                    int *numProcs, int *procID, Mat **matrix, double *fnorm_, int **perm) {
+int readMatrixPetsc(const char* matrixFileName, PRIMME_INT *m, PRIMME_INT *n,
+      PRIMME_INT *mLocal, PRIMME_INT *nLocal, int *numProcs, int *procID,
+      Mat **matrix, double *fnorm_, int **perm) {
 
    PetscErrorCode ierr;
    PetscReal fnorm;
    PetscBool pattern;
    PetscViewer viewer;
+   PetscInt m0, n0, mLocal0, nLocal0;
 
    PetscFunctionBegin;
 
@@ -74,7 +76,9 @@ int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int
       *fnorm_ = fnorm;
    }
 
-   ierr = MatGetSize(**matrix, m, n); CHKERRQ(ierr);
+   ierr = MatGetSize(**matrix, &m0, &n0); CHKERRQ(ierr);
+   *m = m0;
+   *n = n0;
 
    if (perm && *m == *n) {
       Mat Atemp;
@@ -86,7 +90,9 @@ int readMatrixPetsc(const char* matrixFileName, int *m, int *n, int *mLocal, int
       *perm = NULL;
    }
 
-   ierr = MatGetLocalSize(**matrix, mLocal, nLocal); CHKERRQ(ierr);
+   ierr = MatGetLocalSize(**matrix, &mLocal0, &nLocal0); CHKERRQ(ierr);
+   *mLocal = mLocal0;
+   *nLocal = nLocal0;
    MPI_Comm_size(MPI_COMM_WORLD, numProcs);
    MPI_Comm_rank(MPI_COMM_WORLD, procID);
 
@@ -300,7 +306,7 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
 }
 
 
-void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
+void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
    int i;
    Mat *matrix;
    Vec xvec, yvec;
@@ -321,8 +327,8 @@ void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    #endif
    for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + primme->nLocal*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
       ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
@@ -331,8 +337,8 @@ void PETScMatvec(void *x, void *y, int *blockSize, primme_params *primme) {
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
 }
 
-void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *trans,
-                    primme_svds_params *primme_svds) {
+void PETScMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, int *trans, primme_svds_params *primme_svds, int *err) {
    int i;
    Mat *matrix;
    Vec xvec, yvec;
@@ -368,10 +374,11 @@ void PETScMatvecSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, int *t
    }
    ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
+   err = 0;
 }
 
-static void ApplyPCPrecPETSCGen(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
-                                int trans, PC *pc, MPI_Comm comm) {
+static void ApplyPCPrecPETSCGen(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, int trans, PC *pc, MPI_Comm comm) {
    int i;
    Vec xvec, yvec;
    Mat matrix;
@@ -407,13 +414,15 @@ static void ApplyPCPrecPETSCGen(void *x, int *ldx, void *y, int *ldy, int *block
 }
 
 
-void ApplyPCPrecPETSC(void *x, void *y, int *blockSize, primme_params *primme) {
-   ApplyPCPrecPETSCGen(x, &primme->nLocal, y, &primme->nLocal, blockSize, 0,
-      primme->preconditioner, *(MPI_Comm*)primme->commInfo);
+void ApplyPCPrecPETSC(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, primme_params *primme, int *ierr) {
+   ApplyPCPrecPETSCGen(x, ldx, y, ldy, blockSize, 0,
+         (PC*)primme->preconditioner, *(MPI_Comm*)primme->commInfo);
+   *ierr = 0;
 }
 
-void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize, 
-                         int *mode, primme_svds_params *primme_svds) {
+void ApplyPCPrecPETSCSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr) {
    int i, one=1;
    SCALAR *aux;
 
@@ -443,11 +452,12 @@ void ApplyPCPrecPETSCSVD(void *x, int *ldx, void *y, int *ldy, int *blockSize,
       ApplyPCPrecPETSCGen(x, ldx, (SCALAR*)y+primme_svds->nLocal, ldy, blockSize, 1,
          primme_svds->preconditioner, *(MPI_Comm*)primme_svds->commInfo);
    }
+   *ierr = 0;
 }
 
 
-void ApplyInvDavidsonDiagPrecPETSc(void *x, void *y, int *blockSize, 
-                                        primme_params *primme) {
+void ApplyInvDavidsonDiagPrecPETSc(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
    int i, j;
    double shift, d, minDenominator;
    SCALAR *xvec, *yvec;
@@ -467,16 +477,11 @@ void ApplyInvDavidsonDiagPrecPETSc(void *x, void *y, int *blockSize,
       for (j=0; j<nLocal; j++) {
          d = diag[j] - shift;
          d = (fabs(d) > minDenominator) ? d : copysign(minDenominator, d);
-         yvec[primme->n*i+j] = xvec[primme->n*i+j]/d;
+         yvec[*ldy*i+j] = xvec[*ldx*i+j]/d;
       }
    }
    ierr = VecRestoreArrayRead(vec, &diag); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-}
-
-void ApplyInvDavidsonDiagPrecPETScSVD(void *x, void *y, int *blockSize, 
-                        primme_svds_params *primme_svds, const char *trans) {
-
-   ApplyInvDavidsonDiagPrecPETSc(x, y, blockSize, &primme_svds->primme);
+   *err = 0;
 }
 
 /******************************************************************************

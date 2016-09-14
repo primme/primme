@@ -511,7 +511,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
          Mat *matrix,A;
          PC *pc;
          Vec *vec;
-         int m, mLocal;
+         PRIMME_INT m, mLocal;
          if (readMatrixPetsc(driver->matrixFileName, &primme->n, &m, &primme->nLocal, &mLocal,
                          &primme->numProcs, &primme->procID, &matrix, &aNorm, permutation) != 0)
             return -1;
@@ -610,7 +610,7 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
    if (primme->aNorm < 0) primme->aNorm = aNorm;
 
 #if defined(USE_MPI)
-   primme->globalSumDouble = par_GlobalSumDouble;
+   primme->globalSumReal = par_GlobalSumDouble;
 #endif
    return 0;
 }

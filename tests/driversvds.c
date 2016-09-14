@@ -718,7 +718,7 @@ static int setMatrixAndPrecond(driver_params *driver,
    if (primme_svds->aNorm < 0) primme_svds->aNorm = aNorm;
 
 #if defined(USE_MPI)
-   primme_svds->globalSumDouble = par_GlobalSumDoubleSvds;
+   primme_svds->globalSumReal = par_GlobalSumDoubleSvds;
 #endif
    return 0;
 }

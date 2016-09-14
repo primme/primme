@@ -96,9 +96,9 @@ void driver_display_methodsvd(primme_svds_preset_method method, const char *meth
 #ifdef USE_MPI
 #include <mpi.h>
 void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                         primme_params *primme);
+                         primme_params *primme, int *ierr);
 void par_GlobalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
-                         primme_svds_params *primme);
+                         primme_svds_params *primme, int *ierr);
 void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *method,
    primme_preset_method *primmemethod, primme_preset_method *primmemethod0,
    driver_params *driver, int master, MPI_Comm comm);

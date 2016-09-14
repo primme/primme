@@ -824,36 +824,30 @@ void broadCast_svds(primme_svds_params *primme_svds, primme_svds_preset_method *
  *
 ******************************************************************************/
 void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count, 
-                         primme_params *primme) {
+                         primme_params *primme, int *ierr) {
    MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-   int ierr;
 
 #ifdef USE_PETSC
    extern PetscLogEvent PRIMME_GLOBAL_SUM;
    PetscLogEventBegin(PRIMME_GLOBAL_SUM,0,0,0,0);
-   ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
-   assert(ierr == MPI_SUCCESS);
+   *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
    PetscLogEventEnd(PRIMME_GLOBAL_SUM,0,0,0,0);
 #else
-   ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
-   assert(ierr == MPI_SUCCESS);
+   *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
 #endif
 }
 
 void par_GlobalSumDoubleSvds(void *sendBuf, void *recvBuf, int *count, 
-                         primme_svds_params *primme_svds) {
+                         primme_svds_params *primme_svds, int *ierr) {
    MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
-   int ierr;
 
 #ifdef USE_PETSC
    extern PetscLogEvent PRIMME_GLOBAL_SUM;
    PetscLogEventBegin(PRIMME_GLOBAL_SUM,0,0,0,0);
-   ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
-   assert(ierr == MPI_SUCCESS);
+   *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
    PetscLogEventEnd(PRIMME_GLOBAL_SUM,0,0,0,0);
 #else
-   ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
-   assert(ierr == MPI_SUCCESS);
+   *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
 #endif
 }
 
