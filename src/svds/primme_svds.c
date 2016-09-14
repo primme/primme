@@ -641,16 +641,17 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds->maxMatvecs -= primme->stats.numMatvecs;
 
    /* Check that primme didn't free the workspaces */
+
    if ((primme->matrixMatvec == matrixMatvecSVDS) &&
        (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
       cut = primme->maxBlockSize * (method == primme_svds_op_AtA ?
                      primme_svds->mLocal : primme_svds->nLocal);
+      assert((SCALAR*)primme_svds->realWork + cut == primme->realWork);
    }
    else {
       cut = 0;
    }
    assert(primme_svds->intWork == primme->intWork);
-   assert((SCALAR*)primme_svds->realWork + cut == primme->realWork);
 
    /* Zero references to primme workspaces to prevent to be release by primme_Free */
    primme->intWork = NULL;
