@@ -337,6 +337,9 @@ static int real_main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts   : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs    : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds   : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+      fprintf(primme.outputFile, "Time matvecs  : %f\n",  primme.stats.timeMatvec);
+      fprintf(primme.outputFile, "Time precond  : %f\n",  primme.stats.timePrecond);
+      fprintf(primme.outputFile, "Time ortho  : %f\n",  primme.stats.timeOrtho);
       if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme.outputFile,
@@ -611,6 +614,10 @@ static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int
 
 #if defined(USE_MPI)
    primme->globalSumReal = par_GlobalSumDouble;
+#endif
+
+#ifdef NOT_USE_ALIGNMENT
+   primme->ldOPs = primme->nLocal ? primme->nLocal : primme->n;
 #endif
    return 0;
 }

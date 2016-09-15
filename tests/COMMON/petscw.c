@@ -36,7 +36,6 @@
 #include <petscpc.h>
 #include <petscmat.h>
 #include <petsc/private/matimpl.h>
-#include <../src/mat/impls/dense/mpi/mpidense.h>
 #include "primme_svds.h"
 #include "petscw.h"
 
@@ -346,7 +345,7 @@ static void PETScMatvecGenNoBlock(void *x, PRIMME_INT ldx, void *y, PRIMME_INT l
 }
 
 /******************************************************************************/
-/* Matvecs blocked and row-major                                              */
+/* Matvecs blocked and row-major (not useful now)                             */
 /******************************************************************************/
 
 #undef __FUNCT__
@@ -496,10 +495,11 @@ static void PETScMatvecGenColumnMajor(void *x, PRIMME_INT ldx, void *y, PRIMME_I
       xcompact = mLocal == ldx;
       ycompact = nLocal == ldy;
    }
-   Mat_MPIDense *mx=(Mat_MPIDense*)X->data, *my=(Mat_MPIDense*)Y->data;
-   Mat_SeqDense *xseq=(Mat_SeqDense*)(mx->A)->data, *yseq=(Mat_SeqDense*)(my->A)->data;
-   xseq->lda = ldx;
-   yseq->lda = ldy;
+   ierr = MatDenseGetLocalMatrix(X, &X0);CHKERRABORT(comm, ierr);
+   ierr = MatSeqDenseSetLDA(X0, (PetscInt)ldx);CHKERRABORT(comm, ierr);
+   ierr = MatDenseGetLocalMatrix(Y, &Y0);CHKERRABORT(comm, ierr);
+   ierr = MatSeqDenseSetLDA(Y0, (PetscInt)ldy);CHKERRABORT(comm, ierr);
+
    /* MatMatMult doesn't support X to be non-contiguous */
    if (xcompact) {
       X0 = X;

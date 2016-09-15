@@ -216,6 +216,24 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------- */
    primme_svds_set_method(method, primmemethod, primmemethodStage2, &primme_svds);
 
+#ifdef NOT_USE_ALIGNMENT
+   /* --------------------------------------- */
+   /* Set alignment (optional)                */
+   /* --------------------------------------- */
+   if (primme_svds.method == primme_svds_op_AtA) {
+      primme_svds.primme.ldOPs = primme_svds.nLocal;
+   }
+   else if (primme_svds.method == primme_svds_op_AAt) {
+      primme_svds.primme.ldOPs = primme_svds.mLocal;
+   }
+   else {
+      primme_svds.primme.ldOPs = primme_svds.mLocal + primme_svds.nLocal;
+   }
+   if (primme_svds.methodStage2 == primme_svds_op_augmented) {
+      primme_svds.primmeStage2.ldOPs = primme_svds.mLocal + primme_svds.nLocal;
+   }
+#endif
+
    /* --------------------------------------- */
    /* Optional: report memory requirements    */
    /* --------------------------------------- */
