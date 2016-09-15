@@ -120,9 +120,16 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 
 * Other performance and documentation improvements.
 
+License Information
+^^^^^^^^^^^^^^^^^^^
 
-Citing this code 
-^^^^^^^^^^^^^^^^ 
+PRIMME is licensed under the 3-clause license BSD.
+Python and Matlab interfaces have BSD-compatible licenses.
+Source code under file:`tests` is compatible with LGPLv3.
+Details can be taken from COPYING.txt.
+
+Citing the code 
+^^^^^^^^^^^^^^^ 
 
 .. only:: latex
 
@@ -176,14 +183,6 @@ Citing this code
   pp. S365-S388.
 
 
-License Information
-^^^^^^^^^^^^^^^^^^^
-
-PRIMME is licensed under the 3-clause license BSD.
-Python and Matlab interfaces have BSD-compatible licenses.
-Source code under file:`tests` is compatible with LGPLv3.
-Details can be taken from COPYING.txt.
-
 Contact Information 
 ^^^^^^^^^^^^^^^^^^^
 
@@ -208,11 +207,11 @@ The next directories and files should be available:
    * :file:`svds/`,      singular value interface and implementation;
    * :file:`tools/`,     tools used to generated some headers;
 
-* :file:`Matlab/`,       Matlab interface for PRIMME;
-* :file:`PYTHON/`,       Python interface for PRIMME;
+* :file:`Matlab/`,       Matlab interface;
+* :file:`PYTHON/`,       Python interface;
 * :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
 * :file:`tests/`,        drivers for testing purpose and test cases;
-* :file:`libprimme.a`,   the PRIMME library (to be made);
+* :file:`lib/libprimme.a`,   the PRIMME library (to be made);
 * :file:`makefile`       main make file;
 * :file:`readme.txt`     text version of the documentation;
 * :file:`doc/`           directory with the HTML and PDF versions of the documentation.

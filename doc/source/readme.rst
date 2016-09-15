@@ -10,15 +10,15 @@
       For hyperlinked html and pdf versions of this document see
       directory :file:`doc`.
 
-Welcome to PRIMME's documentation!
-==================================
+PRIMME Documentation
+====================
 
 .. only:: text
 
    Table Of Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :includehidden:
 
    intro
@@ -26,8 +26,8 @@ Welcome to PRIMME's documentation!
 
 .. only:: not text and not singlehtml
 
-   Indices and tables
-   ==================
+   Indices
+   =======
    
    * :ref:`genindex`
    * :ref:`search`

@@ -1,20 +1,20 @@
 
-Eigenproblems
--------------
+Eigenvalue Problems
+-------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    primmec
    primmef77
    pyeigsh
    appendix
 
-Singular values
----------------
+Singular Value Problems
+-----------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    svdsc
    svdsf77
