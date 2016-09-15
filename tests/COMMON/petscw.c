@@ -35,6 +35,8 @@
 #include "mmio.h"
 #include <petscpc.h>
 #include <petscmat.h>
+#include <petsc/private/matimpl.h>
+#include <../src/mat/impls/dense/mpi/mpidense.h>
 #include "primme_svds.h"
 #include "petscw.h"
 
@@ -305,78 +307,280 @@ static PetscErrorCode permutematrix(Mat Ain, Mat Bin, Mat *Aout, Mat *Bout, int 
    PetscFunctionReturn(0);
 }
 
+/******************************************************************************/
+/* Matvecs column by column                                                   */
+/******************************************************************************/
 
-void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
+static void PETScMatvecGenNoBlock(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy,
+      int blockSize, int trans, Mat matrix, MPI_Comm comm) {
    int i;
-   Mat *matrix;
-   Vec xvec, yvec;
-   PetscInt m, n, mLocal, nLocal;
-   PetscErrorCode ierr;
-
-   matrix = (Mat *)primme->matrix;
-
-   assert(sizeof(PetscScalar) == sizeof(SCALAR));   
-   ierr = MatGetSize(*matrix, &m, &n);  CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   ierr = MatGetLocalSize(*matrix, &mLocal, &nLocal);  CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   assert(m == primme->n && n == primme->n && mLocal == primme->nLocal
-         && nLocal == primme->nLocal);
-
-   #if PETSC_VERSION_LT(3,6,0)
-   ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   #else
-   ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   #endif
-   for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   }
-   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-}
-
-void PETScMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
-      int *blockSize, int *trans, primme_svds_params *primme_svds, int *err) {
-   int i;
-   Mat *matrix;
    Vec xvec, yvec;
    PetscInt m, n, mLocal, nLocal;
    PetscErrorCode ierr;
    
-   matrix = (Mat *)primme_svds->matrix;
+   assert(sizeof(PetscScalar) == sizeof(SCALAR));   
+   ierr = MatGetSize(matrix, &m, &n); CHKERRABORT(comm, ierr);
+   ierr = MatGetLocalSize(matrix, &mLocal, &nLocal); CHKERRABORT(comm, ierr);
+
+   #if PETSC_VERSION_LT(3,6,0)
+      ierr = MatGetVecs(matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
+   #else
+      ierr = MatCreateVecs(matrix, &xvec, &yvec); CHKERRABORT(comm, ierr);
+   #endif
+   if (trans == 1) {
+      Vec aux = xvec; xvec = yvec; yvec = aux;
+   }
+   for (i=0; i<blockSize; i++) {
+      ierr = VecPlaceArray(xvec, ((SCALAR*)x) + ldx*i); CHKERRABORT(comm, ierr);
+      ierr = VecPlaceArray(yvec, ((SCALAR*)y) + ldy*i); CHKERRABORT(comm, ierr);
+      if (trans == 0) {
+         ierr = MatMult(matrix, xvec, yvec); CHKERRABORT(comm, ierr);
+      } else {
+         ierr = MatMultHermitianTranspose(matrix, xvec, yvec); CHKERRABORT(comm, ierr);
+      }
+      ierr = VecResetArray(xvec); CHKERRABORT(comm, ierr);
+      ierr = VecResetArray(yvec); CHKERRABORT(comm, ierr);
+   }
+   ierr = VecDestroy(&xvec); CHKERRABORT(comm, ierr);
+   ierr = VecDestroy(&yvec); CHKERRABORT(comm, ierr);
+}
+
+/******************************************************************************/
+/* Matvecs blocked and row-major                                              */
+/******************************************************************************/
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_MPIAIJ_MPIDense0"
+static PetscErrorCode MatMatMult_MPIAIJ_MPIDense0(Mat A,PetscScalar *Barray, PetscInt BN, PRIMME_INT ldb,PetscScalar *Carray, PetscInt ldc)
+{
+  PetscErrorCode      ierr;
+  PetscInt            i,j,m=A->rmap->n,n=A->cmap->n;
+  PetscScalar         *btarray,*ctarray;
+  Vec                 bt,ct;
+  Mat                 mA;
+
+  PetscFunctionBegin;
+  /* create MAIJ matrix mA from A -- should be done in symbolic phase */
+  ierr = MatCreateMAIJ(A,BN,&mA);CHKERRQ(ierr);
+
+  /* create vectors bt and ct to hold locally transposed arrays of B and C */
+  ierr = VecCreate(PetscObjectComm((PetscObject)A),&bt);CHKERRQ(ierr);
+  ierr = VecSetSizes(bt,n*BN,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(bt,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)A),&ct);CHKERRQ(ierr);
+  ierr = VecSetSizes(ct,m*BN,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(ct,VECSTANDARD);CHKERRQ(ierr);
+
+  /* transpose local arry of B, then copy it to vector bt */
+  ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
+
+  for (j=0; j<BN; j++) {
+    for (i=0; i<n; i++) btarray[i*BN + j] = Barray[ldb*j+i];
+  }
+  ierr = VecRestoreArray(bt,&btarray);CHKERRQ(ierr);
+
+  /* compute ct = mA^T * cb */
+  ierr = MatMult(mA,bt,ct);CHKERRQ(ierr);
+
+  /* transpose local arry of ct to matrix C */
+  ierr = VecGetArray(ct,&ctarray);CHKERRQ(ierr);
+  for (j=0; j<BN; j++) {
+    for (i=0; i<m; i++) Carray[j*ldc+i] = ctarray[i*BN + j];
+  }
+  ierr = VecRestoreArray(ct,&ctarray);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&bt);CHKERRQ(ierr);
+  ierr = VecDestroy(&ct);CHKERRQ(ierr);
+  ierr = MatDestroy(&mA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatHermitianTransposeMatMult_MPIAIJ_MPIDense0"
+static PetscErrorCode MatHermitianTransposeMatMult_MPIAIJ_MPIDense0(Mat A,PetscScalar *Barray, PetscInt BN, PRIMME_INT ldb,PetscScalar *Carray, PetscInt ldc)
+{
+  PetscErrorCode      ierr;
+  PetscInt            i,j,m=A->rmap->n,n=A->cmap->n;
+  PetscScalar         *btarray,*ctarray;
+  Vec                 bt,ct;
+  Mat                 mA;
+
+  PetscFunctionBegin;
+  /* create MAIJ matrix mA from A -- should be done in symbolic phase */
+  ierr = MatCreateMAIJ(A,BN,&mA);CHKERRQ(ierr);
+
+  /* create vectors bt and ct to hold locally transposed arrays of B and C */
+  ierr = VecCreate(PetscObjectComm((PetscObject)A),&bt);CHKERRQ(ierr);
+  ierr = VecSetSizes(bt,m*BN,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(bt,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)A),&ct);CHKERRQ(ierr);
+  ierr = VecSetSizes(ct,n*BN,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(ct,VECSTANDARD);CHKERRQ(ierr);
+
+  /* transpose local arry of B, then copy it to vector bt */
+  ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
+
+  for (j=0; j<BN; j++) {
+    for (i=0; i<m; i++) btarray[i*BN + j] = PetscConj(Barray[ldb*j+i]);
+  }
+  ierr = VecRestoreArray(bt,&btarray);CHKERRQ(ierr);
+
+  /* compute ct = mA^T * cb */
+  ierr = MatMultTranspose(mA,bt,ct);CHKERRQ(ierr);
+
+  /* transpose local arry of ct to matrix C */
+  ierr = VecGetArray(ct,&ctarray);CHKERRQ(ierr);
+  for (j=0; j<BN; j++) {
+    for (i=0; i<n; i++) Carray[j*ldc+i] = PetscConj(ctarray[i*BN + j]);
+  }
+  ierr = VecRestoreArray(ct,&ctarray);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&bt);CHKERRQ(ierr);
+  ierr = VecDestroy(&ct);CHKERRQ(ierr);
+  ierr = MatDestroy(&mA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static void PETScMatvecGenRowMajor(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy,
+      int blockSize, int trans, Mat matrix, MPI_Comm comm) {
+   PetscInt m, n, mLocal, nLocal;
+   PetscErrorCode ierr;
+   Mat X, Y;
+  
+   if (blockSize == 1) { 
+      PETScMatvecGenNoBlock(x, ldx, y, ldy, blockSize, trans, matrix, comm);
+      return;
+   }
 
    assert(sizeof(PetscScalar) == sizeof(SCALAR));   
+   ierr = MatGetSize(matrix, &m, &n); CHKERRABORT(comm, ierr);
+   ierr = MatGetLocalSize(matrix, &mLocal, &nLocal); CHKERRABORT(comm, ierr);
+
+   if (trans == 0) {
+      ierr = MatMatMult_MPIAIJ_MPIDense0(matrix,(PetscScalar*)x,blockSize,ldx,(PetscScalar*)y,ldy);CHKERRABORT(comm, ierr);
+   }
+   else {
+      ierr = MatHermitianTransposeMatMult_MPIAIJ_MPIDense0(matrix,(PetscScalar*)x,blockSize,ldx,(PetscScalar*)y,ldy);CHKERRABORT(comm, ierr);
+   }
+}
+
+/******************************************************************************/
+/* Matvecs blocked and column-major                                           */
+/******************************************************************************/
+
+static void PETScMatvecGenColumnMajor(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy,
+      int blockSize, int trans, Mat matrix, MPI_Comm comm) {
+   PetscInt m, n, mLocal, nLocal;
+   PetscErrorCode ierr;
+   Mat X, Y, X0, Y0;
+   int xcompact, ycompact;
+  
+   if (blockSize == 1) { 
+      PETScMatvecGenNoBlock(x, ldx, y, ldy, blockSize, trans, matrix, comm);
+      return;
+   }
+
+   assert(sizeof(PetscScalar) == sizeof(SCALAR));   
+   ierr = MatGetSize(matrix, &m, &n); CHKERRABORT(comm, ierr);
+   ierr = MatGetLocalSize(matrix, &mLocal, &nLocal); CHKERRABORT(comm, ierr);
+
+   if (trans == 0) {
+      ierr = MatCreateDense(comm,nLocal,PETSC_DECIDE,n,blockSize,x,&X);CHKERRABORT(comm, ierr);
+      ierr = MatCreateDense(comm,mLocal,PETSC_DECIDE,m,blockSize,y,&Y);CHKERRABORT(comm, ierr);
+      xcompact = nLocal == ldx;
+      ycompact = mLocal == ldy;
+   }
+   else {
+      ierr = MatCreateDense(comm,mLocal,PETSC_DECIDE,m,blockSize,x,&X);CHKERRABORT(comm, ierr);
+      ierr = MatCreateDense(comm,nLocal,PETSC_DECIDE,n,blockSize,y,&Y);CHKERRABORT(comm, ierr);
+      xcompact = mLocal == ldx;
+      ycompact = nLocal == ldy;
+   }
+   Mat_MPIDense *mx=(Mat_MPIDense*)X->data, *my=(Mat_MPIDense*)Y->data;
+   Mat_SeqDense *xseq=(Mat_SeqDense*)(mx->A)->data, *yseq=(Mat_SeqDense*)(my->A)->data;
+   xseq->lda = ldx;
+   yseq->lda = ldy;
+   /* MatMatMult doesn't support X to be non-contiguous */
+   if (xcompact) {
+      X0 = X;
+   }
+   else {
+      ierr = MatDuplicate(X, MAT_COPY_VALUES, &X0);CHKERRABORT(comm, ierr);
+   }
+   if (trans == 0) {
+      if (ycompact) {
+         ierr = MatMatMult(matrix, X0, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y); CHKERRABORT(comm, ierr);
+      }
+      else {
+         ierr = MatMatMult(matrix, X0, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y0); CHKERRABORT(comm, ierr);
+         ierr = MatCopy(Y0, Y, SAME_NONZERO_PATTERN); CHKERRABORT(comm, ierr);
+         ierr = MatDestroy(&Y0); CHKERRABORT(comm, ierr);
+      }
+   }
+   else {
+      /* A^H*X is not implemented in PETSc, do instead (A^T*X^c)^c */
+      ierr = MatConjugate(X0); CHKERRABORT(comm, ierr);
+      if (ycompact) {
+         ierr = MatTransposeMatMult(matrix, X0, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y); CHKERRABORT(comm, ierr);
+      }
+      else {
+         ierr = MatTransposeMatMult(matrix, X0, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y0); CHKERRABORT(comm, ierr);
+         ierr = MatCopy(Y0, Y, SAME_NONZERO_PATTERN); CHKERRABORT(comm, ierr);
+         ierr = MatDestroy(&Y0); CHKERRABORT(comm, ierr);
+      }
+      ierr = MatConjugate(Y); CHKERRABORT(comm, ierr);
+      if (xcompact) {
+         ierr = MatConjugate(X0); CHKERRABORT(comm, ierr);
+      }
+   }
+   if (!xcompact) {
+      ierr = MatDestroy(&X0);CHKERRABORT(comm, ierr);
+   }
+   ierr = MatDestroy(&X);CHKERRABORT(comm, ierr);
+   ierr = MatDestroy(&Y);CHKERRABORT(comm, ierr);
+}
+
+static void PETScMatvecGen(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy,
+      int blockSize, int trans, Mat matrix, MPI_Comm comm) {
+#ifdef PETSC_MATVEC_BLOCK_ROW_MAJOR
+   PETScMatvecGenRowMajor (x, ldx, y, ldy, blockSize, trans, matrix, comm);
+#elif defined(PETSC_MATVEC_BLOCK_COLUMN_MAJOR)
+   PETScMatvecGenColumnMajor(x, ldx, y, ldy, blockSize, trans, matrix, comm);
+#else
+   PETScMatvecGenNoBlock(x, ldx, y, ldy, blockSize, trans, matrix, comm);
+#endif
+}
+
+void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
+   Mat *matrix;
+   PetscInt m, n, mLocal, nLocal;
+   PetscErrorCode ierr;
+
+   matrix = (Mat *)primme->matrix;
+   ierr = MatGetSize(*matrix, &m, &n);  CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   ierr = MatGetLocalSize(*matrix, &mLocal, &nLocal);  CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   assert(m == primme->n && n == primme->n && mLocal == primme->nLocal
+         && nLocal == primme->nLocal);
+   PETScMatvecGen(x, *ldx, y, *ldy, *blockSize, 0, *matrix, *(MPI_Comm*)primme->commInfo);
+   *err = 0;
+}
+
+
+void PETScMatvecSVD(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, int *trans, primme_svds_params *primme_svds, int *err) {
+   PetscInt m, n, mLocal, nLocal;
+   Mat *matrix;
+   PetscErrorCode ierr;
+
+   matrix = (Mat *)primme_svds->matrix;
    ierr = MatGetSize(*matrix, &m, &n); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    ierr = MatGetLocalSize(*matrix, &mLocal, &nLocal); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
    assert(m == primme_svds->m && n == primme_svds->n && mLocal == primme_svds->mLocal
          && nLocal == primme_svds->nLocal);
-
-   #if PETSC_VERSION_LT(3,6,0)
-      ierr = MatGetVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-   #else
-      ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-   #endif
-   if (*trans == 1) {
-      Vec aux = xvec; xvec = yvec; yvec = aux;
-   }
-   for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((SCALAR*)x) + (*ldx)*i); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((SCALAR*)y) + (*ldy)*i); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-      if (*trans == 0) {
-         ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-      } else {
-         ierr = MatMultHermitianTranspose(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-      }
-      ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-      ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-   }
-   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme_svds->commInfo, ierr);
-   err = 0;
+   PETScMatvecGen(x, *ldx, y, *ldy, *blockSize, *trans, *matrix, *(MPI_Comm*)primme_svds->commInfo);
+   *err = 0;
 }
-
+ 
 static void ApplyPCPrecPETSCGen(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, int trans, PC *pc, MPI_Comm comm) {
    int i;
