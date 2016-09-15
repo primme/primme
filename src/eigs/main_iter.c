@@ -184,7 +184,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                             /* hermitian preconditioner.                     */
    SCALAR *UDU = NULL;      /* The factorization of M=Q'KQ                   */
    SCALAR *evecsHat = NULL; /* K^{-1}evecs                                   */
-   PRIMME_INT ldevecsHat;   /* The leading dimension of evecsHat             */
+   PRIMME_INT ldevecsHat=0; /* The leading dimension of evecsHat             */
    SCALAR *rwork;           /* Real work space.                              */
    SCALAR *hVecs;           /* Eigenvectors of H                             */
    SCALAR *hU=NULL;         /* Left singular vectors of R                    */

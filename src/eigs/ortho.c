@@ -417,7 +417,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       Num_gemm_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, y0, nQ, 1.0,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
-         Num_copy_matrix_columns_Sprimme(X0, m, NULL, nX, ldX, &X[i], inX, ldX);
+         Num_copy_matrix_columns_Sprimme(X0, m, NULL, nX, m, &X[i], inX, ldX);
       }
       if (norms) for (j=0; j<nX; j++) {
          SCALAR *v = inX ? &X0[j*m] : &X[j*ldX+i];
