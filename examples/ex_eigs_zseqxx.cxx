@@ -95,9 +95,9 @@ int main (int argc, char *argv[]) {
    primme_display_params(primme);
 
    /* Allocate space for converged Ritz values and residual norms */
-   evals = (double*)malloc(primme.numEvals*sizeof(double));
-   evecs = (std::complex<double>*)malloc(primme.n*primme.numEvals*sizeof(std::complex<double>));
-   rnorms = (double*)malloc(primme.numEvals*sizeof(double));
+   evals = new double[primme.numEvals];
+   evecs = new std::complex<double>[primme.n*primme.numEvals];
+   rnorms = new double[primme.numEvals];
 
    /* Call primme  */
    ret = zprimme(evals, evecs, rnorms, &primme);

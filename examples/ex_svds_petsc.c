@@ -160,7 +160,6 @@ int main (int argc, char *argv[]) {
          *primme_svds.numSvals*sizeof(PetscScalar));
    rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
 
-
    /* Call primme_svds  */
 #if defined(PETSC_USE_COMPLEX)
    ret = zprimme_svds(svals, svecs, rnorms, &primme_svds);

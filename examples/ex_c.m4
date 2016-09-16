@@ -140,10 +140,13 @@ ifdef(`USE_PETSC', `   /* Set parallel parameters */
 ifdef(`USE_PETSC', `   if (primme.procID == 0) /* Reports process with ID 0 */
    ')   primme_display_params(primme);
 
-   /* Allocate space for converged Ritz values and residual norms */
+   /* Allocate space for converged Ritz values and residual norms */ifdef(`USE_COMPLEX_CXX', `
+   evals = new double[primme.numEvals];
+   evecs = new PRIMME_NUM[primme.n*primme.numEvals];
+   rnorms = new double[primme.numEvals];',`
    evals = (double*)malloc(primme.numEvals*sizeof(double));
    evecs = (PRIMME_NUM*)malloc(primme.n*primme.numEvals*sizeof(PRIMME_NUM));
-   rnorms = (double*)malloc(primme.numEvals*sizeof(double));
+   rnorms = (double*)malloc(primme.numEvals*sizeof(double));')
 
 define(`CALL_PRIMME', `   /* Call primme  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)

@@ -126,7 +126,6 @@ int main (int argc, char *argv[]) {
          *primme_svds.numSvals*sizeof(double));
    rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
 
-
    /* Call primme_svds  */
    ret = dprimme_svds(svals, svecs, rnorms, &primme_svds);
 
