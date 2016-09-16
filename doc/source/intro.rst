@@ -8,6 +8,21 @@ eigenvalues are supported. Preconditioning can be used to accelerate
 convergence. 
 PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB and Python.
   
+Incompatibilities
+^^^^^^^^^^^^^^^^^
+
+From PRIMME 1.x to 2.0:
+
+* Prototype of callbacks has changed: |matrixMatvec|, |applyPreconditioner|, |massMatrixMatvec| and |globalSumReal|.
+
+* The next parameters are :c:type:`PRIMME_INT`: |n|, |nLocal|, |maxMatvecs|, |iseed|, |numOuterIterations|, |numRestarts|, |numMatvecs| and |numMatvecs|; use the macro ``PRIMME_INT_P`` to print the values.
+
+* Rename the values of the enum :c:type:`primme_preset_method`.
+
+* Integer parameters in Fortran functions are of the same size as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
+
+* Extra parameter in many Fortran functions to return the error code.
+
 Changelog
 ^^^^^^^^^
 
@@ -307,6 +322,14 @@ Many users have reported builds on several other platforms/compilers:
 * Cray XC30
 * SunOS 5.9, quad processor Sun-Fire-280R, and several other UltraSparcs
 * AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at nersc.gov)
+
+Main Contributors
+^^^^^^^^^^^^^^^^^
+
+* James R. McCombs
+* Eloy Romero Alcalde
+* Andreas Stathopoulos
+* Lingfei Wu
 
 .. _`github`: https://github.com/primme/primme
 

@@ -17,12 +17,12 @@ respectively:
 
       int :c:func:`sprimme <sprimme>` (float \*evals, float \*evecs, float \*resNorms,
                               primme_params \*primme)
-      int :c:func:`cprimme <cprimme>` (float \*evals, PRIMME_COMPLEX_FLOAT \*evecs, float \*resNorms,
-                              primme_params \*primme)
+      int :c:func:`cprimme <cprimme>` (float \*evals, PRIMME_COMPLEX_FLOAT \*evecs,
+                       float \*resNorms, primme_params \*primme)
       int :c:func:`dprimme <dprimme>` (double \*evals, double \*evecs, double \*resNorms,
                               primme_params \*primme)
-      int :c:func:`zprimme <zprimme>` (double \*evals, PRIMME_COMPLEX_DOUBLE \*evecs, double \*resNorms,
-                              primme_params \*primme)
+      int :c:func:`zprimme <zprimme>` (double \*evals, PRIMME_COMPLEX_DOUBLE \*evecs,
+                       double \*resNorms, primme_params \*primme)
 
 .. only:: text
 
@@ -47,7 +47,8 @@ Other useful functions:
    .. parsed-literal::
 
       void :c:func:`primme_initialize <primme_initialize>` (primme_params \*primme)
-      int :c:func:`primme_set_method <primme_set_method>` (primme_preset_method method, primme_params \*params)
+      int :c:func:`primme_set_method <primme_set_method>` (primme_preset_method method,
+                                                           primme_params \*params)
       void :c:func:`primme_display_params <primme_display_params>` (primme_params primme)
       void :c:func:`primme_Free <primme_Free>` (primme_params \*primme)
 
@@ -301,7 +302,7 @@ The next enumerations and functions are declared in ``primme.h``.
 sprimme
 """""""
 
-.. c:function:: int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
+.. c:function:: int sprimme (float *evals, float *evecs, float *resNorms, primme_params *primme)
 
    Solve a real symmetric standard eigenproblem.
 

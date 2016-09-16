@@ -60,7 +60,7 @@ primme_svds_params
 
       * ``primme_svds_op_AtA``: :math:`y = A^*Ax - \sigma^2 I`,
       * ``primme_svds_op_AAt``: :math:`y = AA^*x - \sigma^2 I`,
-      * ``primme_svds_op_augmented``: :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right) - \sigma I`.
+      * ``primme_svds_op_augmented``: :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) - \sigma I`.
 
       Where :math:`\sigma` is the current target (see |targetShifts|) (for finding the smallest :math:`\sigma` is zero).
       If ``mode`` is ``primme_svds_op_AtA``, then ``x`` and ``y`` are array of dimensions |SnLocal| x ``blockSize``; if mode is
@@ -474,7 +474,7 @@ primme_svds_params
 
       * ``primme_svds_op_AtA``: :math:`A^*Ax = \sigma^2 x`,
       * ``primme_svds_op_AAt``: :math:`AA^*x = \sigma^2 x`,
-      * ``primme_svds_op_augmented``: :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right) x = \sigma x`.
+      * ``primme_svds_op_augmented``: :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) x = \sigma x`.
 
       The options for this solver are stored in |Sprimme|.
 
@@ -619,8 +619,8 @@ Preset Methods
  
    .. c:member:: primme_svds_augmented
 
-      Solve the equivalent eigenvalue problem :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right) X = \sigma X`
-      with :math:`X = \left(\begin{array}{}V\\U\end{array}\right)`.
+      Solve the equivalent eigenvalue problem :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) X = \sigma X`
+      with :math:`X = \left(\begin{array}{cc}V\\U\end{array}\right)`.
   
       With :c:member:`primme_svds_augmented` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_augmented`` and |SmethodStage2| to ``primme_svds_op_none``.

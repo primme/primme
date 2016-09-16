@@ -74,7 +74,7 @@ primme_svds_set_method_f77
 
       * |PRIMME_SVDS_default|, currently set as |PRIMME_SVDS_hybrid|.
       * |PRIMME_SVDS_normalequations|, compute the eigenvectors of :math:`A^*A` or :math:`A A^*`.
-      * |PRIMME_SVDS_augmented|, compute the eigenvectors of the augmented matrix, :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right)`.
+      * |PRIMME_SVDS_augmented|, compute the eigenvectors of the augmented matrix, :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right)`.
       * |PRIMME_SVDS_hybrid|, start with |PRIMME_SVDS_normalequations|; use the
         resulting approximate singular vectors as initial vectors for
         |PRIMME_SVDS_augmented| if the required accuracy was not achieved.

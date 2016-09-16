@@ -15,13 +15,13 @@ To solve real and complex singular value problems call respectively:
    .. parsed-literal::
 
       int :c:func:`sprimme_svds <sprimme_svds>` (float \*svals, float \*svecs, float \*resNorms,
-                              primme_svds_params \*primme_svds)
-      int :c:func:`cprimme_svds <zprimme_svds>` (float \*svals, :c:type:`PRIMME_COMPLEX_FLOAT` \*svecs, float \*resNorms,
-                              primme_svds_params \*primme_svds)
+                              :c:type:`primme_svds_params` \*primme_svds)
+      int :c:func:`cprimme_svds <zprimme_svds>` (float \*svals, :c:type:`PRIMME_COMPLEX_FLOAT` \*svecs,
+                       float \*resNorms, primme_svds_params \*primme_svds)
       int :c:func:`dprimme_svds <dprimme_svds>` (double \*svals, double \*svecs, double \*resNorms,
-                              primme_svds_params \*primme_svds)
-      int :c:func:`zprimme_svds <zprimme_svds>` (double \*svals, :c:type:`PRIMME_COMPLEX_DOUBLE` \*svecs, double \*resNorms,
-                              primme_svds_params \*primme_svds)
+                             primme_svds_params \*primme_svds)
+      int :c:func:`zprimme_svds <zprimme_svds>` (double \*svals, :c:type:`PRIMME_COMPLEX_DOUBLE` \*svecs,
+                       double \*resNorms, primme_svds_params \*primme_svds)
 
 .. only:: text
 
@@ -36,7 +36,7 @@ To solve real and complex singular value problems call respectively:
       int dprimme_svds(double *svals, double *svecs, double *resNorms, 
                   primme_svds_params *primme);
 
-      int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms, 
+      int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, 
                   primme_svds_params *primme);
 
 Other useful functions:
@@ -47,7 +47,8 @@ Other useful functions:
 
       void :c:func:`primme_svds_initialize <primme_svds_initialize>` (primme_svds_params \*primme_svds)
       int :c:func:`primme_svds_set_method <primme_svds_set_method>` (primme_svds_preset_method method,
-         primme_preset_method methodStage1, primme_preset_method methodStage2, primme_svds_params \*primme_svds)
+         primme_preset_method methodStage1,
+         primme_preset_method methodStage2, primme_svds_params \*primme_svds)
       void :c:func:`primme_svds_display_params <primme_svds_display_params>` (primme_svds_params primme_svds)
       void :c:func:`primme_svds_Free <primme_svds_Free>` (primme_svds_params \*primme_svds)
 
@@ -100,10 +101,11 @@ To use PRIMME SVDS, follow this basic steps.
       .. parsed-literal::
 
          primme_svds.\ |SmatrixMatvec| = matrixMatvec; /\* MV product \*/
-         primme_svds.\ |Sm| = 1000;                    /\* set the matrix dimensions \*/
+         primme_svds.\ |Sm| = 1000;     /\* set the matrix dimensions \*/
          primme_svds.\ |Sn| = 100;
-         primme_svds.\ |SnumSvals| = 10;         /\* Number of wanted singular values \*/
-         :c:func:`primmesvds_set_method <primme_svds_set_method>` (method, DEFAULT_METHOD, DEFAULT_METHOD, &primme_svds);
+         primme_svds.\ |SnumSvals| = 10; /\* Number of singular values \*/
+         :c:func:`primmesvds_set_method <primme_svds_set_method>` (primme_svds_hybrid, PRIMME_DEFAULT_METHOD,
+                                  PRIMME_DEFAULT_METHOD, &primme_svds);
          ...
 
    .. only:: text
@@ -114,7 +116,8 @@ To use PRIMME SVDS, follow this basic steps.
          primme_svds.m = 1000;                    /* set problem dimension */
          primme_svds.n = 100;
          primme_svds.numSvals = 10;    /* Number of wanted singular values */
-         primme_svds_set_method(method, DEFAULT_METHOD, DEFAULT_METHOD, &primme_svds);
+         primme_svds_set_method(primme_svds_hybrid, PRIMME_DEFAULT_METHOD,
+                                   PRIMME_DEFAULT_METHOD, &primme_svds);
          ...
 
 #. Then to solve a real singular value problem call:
@@ -370,7 +373,7 @@ primme_svds_set_method
 
       * |primme_svds_default|, currently set as |primme_svds_hybrid|.
       * |primme_svds_normalequations|, compute the eigenvectors of :math:`A^*A` or :math:`A A^*`.
-      * |primme_svds_augmented|, compute the eigenvectors of the augmented matrix, :math:`\left(\begin{array}{} 0 & A^* \\ A & 0 \end{array}\right)`.
+      * |primme_svds_augmented|, compute the eigenvectors of the augmented matrix, :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right)`.
       * |primme_svds_hybrid|, start with |primme_svds_normalequations|; use the
         resulting approximate singular vectors as initial vectors for
         |primme_svds_augmented| if the required accuracy was not achieved.
