@@ -45,6 +45,9 @@
 #define   RUSAGE_SELF     0      /*needed in osx*/
 #endif
 
+/* Only define these functions ones */
+#ifdef USE_DOUBLE
+
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 double primme_wTimer(int zeroTimer) {
    static struct timeval tv;
@@ -126,3 +129,5 @@ double primme_wTimer(int zeroTimer) {
 }
 
 #endif
+
+#endif /* USE_DOUBLE */
