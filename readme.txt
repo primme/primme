@@ -35,6 +35,8 @@ Table Of Contents:
 
   * Python Interface
 
+  * MATLAB Interface
+
   * Appendix
 
 * Singular Value Problems
@@ -467,7 +469,7 @@ Other useful functions:
    void primme_free(primme_params primme);
 
 PRIMME stores its data on the structure "primme_params". See
-Parameters Guide for an introduction about its fields.
+*Parameters Guide* for an introduction about its fields.
 
 
 Running
@@ -485,7 +487,7 @@ To use PRIMME, follow this basic steps.
 
       primme_initialize(&primme);
 
-3. Set problem parameters (see also Parameters Guide), and,
+3. Set problem parameters (see also *Parameters Guide*), and,
    optionally, set one of the "preset methods":
 
       primme.matrixMatvec = LaplacianMatrixMatvec; /* MV product */
@@ -622,7 +624,7 @@ int sprimme(float *evals, float *evecs, float *resNorms, primme_params *prim
       * **primme** -- parameters structure.
 
    Returns:
-      error indicator; see Error Codes.
+      error indicator; see *Error Codes*.
 
 
 dprimme
@@ -648,7 +650,7 @@ int dprimme(double *evals, double *evecs, double *resNorms, primme_params *p
       * **primme** -- parameters structure.
 
    Returns:
-      error indicator; see Error Codes.
+      error indicator; see *Error Codes*.
 
 
 cprimme
@@ -708,7 +710,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme)
 
       * **primme** -- parameters structure.
 
-   See also Preset Methods.
+   See also *Preset Methods*.
 
 
 primme_display_params
@@ -825,8 +827,8 @@ dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
       * **primme** (*ptr*) -- parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see Error
-        Codes.
+      * **ierr** (*integer*) -- (output) error indicator; see *Error
+        Codes*.
 
 
 zprimme_f77
@@ -846,8 +848,8 @@ zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
       * **primme** (*ptr*) -- (input) parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see Error
-        Codes.
+      * **ierr** (*integer*) -- (output) error indicator; see *Error
+        Codes*.
 
 
 primmetop_set_member_f77
@@ -1115,7 +1117,7 @@ PRIMME_INT
    and counters (such as "numMatvecs").
 
    The integer size is controlled by the compilation flag
-   "PRIMME_INT_SIZE", see Making and Linking.
+   "PRIMME_INT_SIZE", see *Making and Linking*.
 
 PRIMME_COMPLEX_FLOAT
 
@@ -1303,7 +1305,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 1;
-            this field is read by "primme_set_method()" (see Preset Methods) and "dprimme()".
+            this field is read by "primme_set_method()" (see *Preset Methods*) and "dprimme()".
 
    primme_target target
 
@@ -1495,7 +1497,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            written by "primme_set_method()" (see Preset Methods);
+            written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
       Note: Even for expert users we do not recommend setting
@@ -1516,7 +1518,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to -1;
-            written by "primme_set_method()" (see Preset Methods);
+            written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int initSize
@@ -1574,7 +1576,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read and written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int minRestartSize
@@ -1584,7 +1586,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read and written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int maxBlockSize
@@ -1600,7 +1602,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 1;
-            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read and written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
       Note: Inner iterations of QMR are not performed in a block
@@ -1800,7 +1802,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to "primme_thick";
-            written by "primme_set_method()" (see Preset Methods);
+            written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int restartingParams.maxPrevRetain
@@ -1813,7 +1815,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read and written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int correctionParams.precondition
@@ -1824,7 +1826,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read and written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int correctionParams.robustShifts
@@ -1837,7 +1839,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            written by "primme_set_method()" (see Preset Methods);
+            written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    int correctionParams.maxInnerIterations
@@ -1855,7 +1857,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see Preset Methods);
+            this field is read and written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
       See also "convTest".
@@ -1868,7 +1870,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            written by "primme_set_method()" (see Preset Methods);
+            written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
    primme_convergencetest correctionParams.convTest
@@ -1894,7 +1896,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to "primme_adaptive_ETolerance";
-            written by "primme_set_method()" (see Preset Methods);
+            written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
       Note: Avoid to set "maxInnerIterations" to -1 and "convTest"
@@ -1990,7 +1992,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets all of them to 0;
-            this field is written by "primme_set_method()" (see Preset Methods);
+            this field is written by "primme_set_method()" (see *Preset Methods*);
             this field is read by "dprimme()".
 
       See [r3] for a study about different projector configurations in
@@ -2734,6 +2736,210 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    >>> evals # the next three largest eigenvalues
    array([ 96.,  95.,  94.])
 
+MATLAB Interface
+****************
+
+function [varargout] = primme_eigs(varargin)
+
+   "primme_eigs()" finds a few eigenvalues and eigenvectors of a real
+   symmetric or Hermitian matrix, A, by calling the function
+   "PRIMME_mex" (flag,dim,...). This in turn calls PRIMME. Full PRIMME
+   functionality is supported.
+
+   Input: [A, numEvals, target, opts, eigsMethod, P]
+
+   Output: [evals, evecs, norms, primmeout]
+
+   We provide different levels of function calls, similarly to MATLAB
+   eigs():
+
+      primme_eigs(A)
+      primme_eigs(A, numEvals)
+      primme_eigs(A, numEvals, target)
+      primme_eigs(A, numEvals, target, opts)
+      primme_eigs(A, numEvals, target, opts, eigsMethod)
+      primme_eigs(A, numEvals, target, opts, eigsMethod, P)
+      primme_eigs(A, numEvals, target, opts, eigsMethod, P1,P2)
+      primme_eigs(A, numEvals, target, opts, eigsMethod, Pfun)
+      primme_eigs(Afun, dim,...)
+
+   "primme_eigs(A)" returns a vector of A's 6 largest algebraic
+   eigenvalues. A must be real symmetric or complex Hermitian and
+   should be large and sparse.
+
+   "primme_eigs(Afun, dim)" accepts a function AFUN instead of a
+   matrix. AFUN is a function handle and "y = Afun(x)" returns the
+   matrix-vector product A*x. "primme_eigs(A,...)" could be replaced
+   by primme_eigs(Afun, dim,...) in any of above levels of function
+   calls. Examples are given in PRIMME_MEX_Readme.txt in the root
+   directory of PRIMME_MEX folder.
+
+   "[V, D] = primme_eigs(A)" returns a diagonal matrix D, of A's 6
+   largest algebraic eigenvalues and a matrix V whose columns are the
+   corresponding eigenvectors.
+
+   "[V, D, norms, primmeout] = primme_eigs(A)" also returns an array
+   of the residual norms of the computed eigenpairs, and a struct to
+   report statistical information about "numOuterIterations",
+   "numRestarts", "numMatvecs" and "numPreconds".
+
+   "primme_eigs(A, numEvals)" finds the "numEvals" largest algebraic
+   eigenvalues. numEvals must be less than the dimension of the matrix
+   A.
+
+   "primme_eigs(A, numEvals, target)" returns numEvals target
+   eigenvalues. "target" could be a string like below:
+
+   * 'LA' : "primme_largest" (default)
+
+   * 'SA' : "primme_smallest"
+
+   * 'CGT': "primme_closest_geq"
+
+   * 'CLT': "primme_closest_leq"
+
+   * 'CT' : "primme_closest_abs"
+
+   "primme_eigs(A, numEvals, target, opts, eigsMethod)" specifies any
+   of a set of possible options as explained below in the opts
+   structure.
+
+   "eigsMethod" is an integer specifying one of the preset methods in
+   PRIMME:
+
+   * 0:    "PRIMME_DYNAMIC", (default)        Switches dynamically
+     to the best method
+
+   * 1:    "PRIMME_DEFAULT_MIN_TIME",         Currently set at
+     JDQMR_ETol
+
+   * 2:    "PRIMME_DEFAULT_MIN_MATVECS",      Currently set at
+     GD+block
+
+   * 3:    "PRIMME_Arnoldi",                  obviously not an
+     efficient choice
+
+   * 4:    "PRIMME_GD",                       classical block
+     Generalized Davidson
+
+   * 5:    "PRIMME_GD_plusK",                 GD+k block GD with
+     recurrence restarting
+
+   * 6:    "PRIMME_GD_Olsen_plusK",           GD+k with approximate
+     Olsen precond.
+
+   * 7:    "PRIMME_JD_Olsen_plusK",           GD+k, exact Olsen (two
+     precond per step)
+
+   * 8:    "PRIMME_RQI",                      Rayleigh Quotient
+     Iteration. Also INVIT, but for INVIT provide targetShifts
+
+   * 9:    "PRIMME_JDQR",                     Original block, Jacobi
+     Davidson
+
+   * 10:   "PRIMME_JDQMR",                    Our block JDQMR method
+     (similar to JDCG)
+
+   * 11:   "PRIMME_JDQMR_ETol",               Slight, but efficient
+     JDQMR modification
+
+   * 12:   "PRIMME_SUBSPACE_ITERATION",       equiv. to
+     GD(block,2*block)
+
+   * 13:   "PRIMME_LOBPCG_OrthoBasis",        equiv. to
+     GD(nev,3*nev)+nev
+
+   * 14:   "PRIMME_LOBPCG_OrthoBasis_Window"  equiv. to
+     GD(block,3*block)+block nev>block
+
+   "primme_eigs(A, numEvals, target, opts, eigsMethod, P)"
+
+   "primme_eigs(A, numEvals, target, opts, eigsMethod, P1, P2)" uses
+   preconditioner P or P = P1*P2 to accelerate convergence of the
+   methods. If P is [] then a preconditioner is not applied. P may be
+   a function handle Pfun such that Pfun(x) returns Px.
+
+   "opts" is an option structure which contain following parameters:
+
+   * "aNorm": the estimate norm value of matrix A [{0.0}|scaler]
+
+   * "eps": desired computing accuracy [{1e-12}|scaler]
+
+   * "maxBlockSize": maximum block size the PRIMME uses [{1}|scaler]
+
+   * "printLevel": different level reporting(0-5) [{1}|scaler]
+
+   * "outputFile": output file name where user wants to save results
+
+   * "precondition": set to 1 if use preconditioner [{0}|1]
+
+   * isreal: the complexity of A represented by AFUN [{ture}|false]
+
+   * "numTargetShifts": number of shifts for interior eigenvalues
+     [{0}|scaler]
+
+   * "targetShifts": shifts for interior eigenvalues [{}|vector]
+
+   * "initSize": On INPUT, the number of initial guesses provided in
+     evecs array. ON OUTPUT, the number of converged eigenpairs
+     [{0}|scaler]
+
+   * "numOrthoConst": Number of external orthogonalization
+     constraints provided in the first numOrthoConst vectors of evecs
+     [{0}|scaler]
+
+   * locking: If set to 1, hard locking will be used, otherwise the
+     code will try to use soft locking [{0}|1]
+
+   * "maxBasisSize": maximum basis size allowed in the main
+     iteration
+
+   * "minRestartSize": minimum Ritz vectors to restart
+
+   * "maxMatvecs": maximum number of matrix vector multiplications
+     [{INT_MAX}|scaler]
+
+   * "maxOuterIterations": maximum number of outer iterations
+     [{INT_MAX}|scaler]
+
+   * restartingParams. "scheme": the restart scheme [{primme_thick}|
+     primme_dtr]
+
+   * restartingParams. "maxPrevRetain": number of approximations
+     from previous iteration to be retained after restart [{1}|scaler]
+
+   * "robustShifts": set to 1 if use robustShifting to help avoid
+     stagnation and misconverge [{0}|1]
+
+   * "maxInnerIterations": number of inner QMR iterations
+     [{0}|scaler]
+
+   * "LeftQ": a projector with Q must be applied on the left [{0}|1]
+
+   * "LeftX": a projector with X must be applied on the left [{0}|1]
+
+   * "RightQ": a projector with Q must be applied on the right
+     [{0}|1]
+
+   * "RightX": a projector with X must be applied on the right
+     [{0}|1]
+
+   * "SkewQ": the Q right projector must be skew [{0}|1]
+
+   * "SkewX": the X right projector must be skew [{0}|1]
+
+   * "relTolBase": a legacy from calssical JDQR (recommend not use)
+
+   * "convTest": how to stop the inner QMR Method
+
+   * "iseed": set iseed value for initialization
+
+   * "intWorkSize": memory size for integer workspace
+
+   * "realWorkSize": memory size for real or complex workspace
+
+   See also "Matlab/readme.txt".
+
 C Library Interface
 *******************
 
@@ -2762,7 +2968,7 @@ Other useful functions:
    void primme_svds_Free(primme_svds_params *primme_svds);
 
 PRIMME SVDS stores its data on the structure "primme_svds_params". See
-Parameters Guide for an introduction about its fields.
+*Parameters Guide* for an introduction about its fields.
 
 
 Running
@@ -2781,7 +2987,7 @@ To use PRIMME SVDS, follow this basic steps.
 
       primme_svds_initialize(&primme_svds);
 
-3. Set problem parameters (see also Parameters Guide), and,
+3. Set problem parameters (see also *Parameters Guide*), and,
    optionally, set one of the "preset methods":
 
       primme_svds.matrixMatvec = matrixMatvec; /* MV product */
@@ -2916,7 +3122,7 @@ int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_par
       * **primme_svds** -- parameters structure.
 
    Returns:
-      error indicator; see Error Codes.
+      error indicator; see *Error Codes*.
 
 
 dprimme_svds
@@ -2942,7 +3148,7 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_
       * **primme_svds** -- parameters structure.
 
    Returns:
-      error indicator; see Error Codes.
+      error indicator; see *Error Codes*.
 
 
 cprimme_svds
@@ -3012,7 +3218,7 @@ int primme_svds_set_method(primme_svds_preset_method method, primme_preset_meth
 
       * **primme_svds** -- parameters structure.
 
-   See also Preset Methods.
+   See also *Preset Methods*.
 
 
 primme_svds_display_params
@@ -3070,7 +3276,7 @@ dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
-      error indicator; see Error Codes.
+      error indicator; see *Error Codes*.
 
 
 zprimme_svds_f77
@@ -3099,7 +3305,7 @@ zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
-      error indicator; see Error Codes.
+      error indicator; see *Error Codes*.
 
 
 primme_svds_initialize_f77
@@ -3595,7 +3801,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 1;
-               this field is read by "primme_svds_set_method()" (see Preset Methods) and "dprimme_svds()".
+               this field is read by "primme_svds_set_method()" (see *Preset Methods*) and "dprimme_svds()".
 
       primme_svds_target target
 
@@ -3695,7 +3901,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to -1;
-               written by "primme_svds_set_method()" (see Preset Methods);
+               written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       int initSize
@@ -3746,7 +3952,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       int maxBlockSize
@@ -3762,7 +3968,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 1;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       PRIMME_INT maxMatvecs
@@ -3881,7 +4087,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       primme_svds_op_operator method
@@ -3900,7 +4106,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       primme_svds_op_operator methodStage2
@@ -3917,7 +4123,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       primme_params primme
@@ -3929,7 +4135,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" initialize this structure;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
       primme_params primmeStage2
@@ -3941,7 +4147,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" initialize this structure;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
       PRIMME_INT stats.numOuterIterations
@@ -4045,10 +4251,10 @@ next values:
 * -21: not enough memory for "intWork"
 
 * -100 up to -199: eigensolver error from first stage; see the value
-  plus 100 in Error Codes.
+  plus 100 in *Error Codes*.
 
 * -200 up to -299: eigensolver error from second stage; see the
-  value plus 200 in Error Codes.
+  value plus 200 in *Error Codes*.
 
 
 Preset Methods
