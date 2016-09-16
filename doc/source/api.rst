@@ -8,6 +8,7 @@ Eigenvalue Problems
    primmec
    primmef77
    pyeigsh
+   mateigs
    appendix
 
 Singular Value Problems

@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.abspath('../../PYTHON'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'sphinx.ext.autodoc', 'sphinxcontrib.napoleon']
+extensions = ['sphinxcontrib.matlab', 'sphinx.ext.mathjax', 'sphinx.ext.autodoc', 'sphinxcontrib.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -101,7 +101,7 @@ highlight_language = 'c'
 # a list of builtin themes.
 html_theme = 'sphinxdoc'
 html_theme = 'alabaster'
-html_theme_options = {'fixed_sidebar': True}
+html_theme_options = {'fixed_sidebar': True, 'logo_name': 'PRIMME', 'github_user':'primme', 'github_repo':'primme', 'github_button':True}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
