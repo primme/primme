@@ -185,11 +185,15 @@ ifdef(`ADVANCED_HYBRID', `   /* Set parameters for the underneath eigensolver if
 ifdef(`USE_PETSC', `   if (primme_svds.procID == 0) /* Reports process with ID 0 */
    ')   primme_svds_display_params(primme_svds);
 
-   /* Allocate space for converged Ritz values and residual norms */
+   /* Allocate space for converged Ritz values and residual norms */ifdef(`USE_COMPLEX_CXX', `
+   svals = new double[primme_svds.numSvals];
+   svecs = new PRIMME_NUM[(primme_svds.n+primme_svds.m)
+                          *primme_svds.numSvals];
+   rnorms = new double[primme_svds.numSvals];',`
    svals = (double*)malloc(primme_svds.numSvals*sizeof(double));
    svecs = (PRIMME_NUM*)malloc((primme_svds.n+primme_svds.m)
          *primme_svds.numSvals*sizeof(PRIMME_NUM));
-   rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
+   rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));')dnl
 
 define(`CALL_PRIMME_SVDS', `   /* Call primme_svds  */
 ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)

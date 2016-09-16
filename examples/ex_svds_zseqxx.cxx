@@ -109,11 +109,10 @@ int main (int argc, char *argv[]) {
    primme_svds_display_params(primme_svds);
 
    /* Allocate space for converged Ritz values and residual norms */
-   svals = (double*)malloc(primme_svds.numSvals*sizeof(double));
-   svecs = (std::complex<double>*)malloc((primme_svds.n+primme_svds.m)
-         *primme_svds.numSvals*sizeof(std::complex<double>));
-   rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
-
+   svals = new double[primme_svds.numSvals];
+   svecs = new std::complex<double>[(primme_svds.n+primme_svds.m)
+                          *primme_svds.numSvals];
+   rnorms = new double[primme_svds.numSvals];
 
    /* Call primme_svds  */
    ret = zprimme_svds(svals, svecs, rnorms, &primme_svds);
