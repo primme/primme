@@ -151,7 +151,7 @@ void primme_initialize(primme_params *primme) {
 
 }
 
-void primme_Free(primme_params *params) {
+void primme_free(primme_params *params) {
 
    free(params->intWork);
    free(params->realWork);

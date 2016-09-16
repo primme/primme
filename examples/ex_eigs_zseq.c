@@ -139,7 +139,7 @@ int main (int argc, char *argv[]) {
    }
 
 
-   /* Note that d/zprimme can be called more than once before call primme_Free. */
+   /* Note that d/zprimme can be called more than once before call primme_free. */
    /* Find the 5 eigenpairs closest to .5 */
    primme.numTargetShifts = 1;
    targetShifts[0] = .5;
@@ -282,7 +282,7 @@ int main (int argc, char *argv[]) {
             "Recommended method for next run: DYNAMIC (close call)\n"); break;
    }
 
-   primme_Free(&primme);
+   primme_free(&primme);
    free(evals);
    free(evecs);
    free(rnorms);

@@ -393,7 +393,7 @@ static int real_main (int argc, char *argv[]) {
 
    fclose(primme_svds.outputFile);
    destroyMatrixAndPrecond(&driver, &primme_svds, permutation);
-   primme_svds_Free(&primme_svds);
+   primme_svds_free(&primme_svds);
    free(svals);
    free(svecs);
    free(rnorms);

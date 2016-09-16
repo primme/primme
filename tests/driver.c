@@ -363,7 +363,7 @@ static int real_main (int argc, char *argv[]) {
 
    fclose(primme.outputFile);
    destroyMatrixAndPrecond(&driver, &primme, permutation);
-   primme_Free(&primme);
+   primme_free(&primme);
    free(evals);
    free(evecs);
    free(rnorms);

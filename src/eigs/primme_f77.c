@@ -73,7 +73,7 @@ void AS_FORTRAN(primme_initialize)(primme_params **primme) {
  *   *****************************************************************************/
 void AS_FORTRAN(primme_free)(primme_params **primme) {
 
-   primme_Free(*primme);
+   primme_free(*primme);
    free(*primme);
    *primme = NULL;
 }

@@ -19,9 +19,13 @@ From PRIMME 1.x to 2.0:
 
 * Rename the values of the enum :c:type:`primme_preset_method`.
 
+* Rename ``primme_Free`` to :c:func:`primme_free`.
+
 * Integer parameters in Fortran functions are of the same size as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
 
 * Extra parameter in many Fortran functions to return the error code.
+
+* Removed ``primme_display_stats_f77``.
 
 Changelog
 ^^^^^^^^^

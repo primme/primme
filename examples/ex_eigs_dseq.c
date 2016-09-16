@@ -137,7 +137,7 @@ int main (int argc, char *argv[]) {
             "Recommended method for next run: DYNAMIC (close call)\n"); break;
    }
 
-   primme_Free(&primme);
+   primme_free(&primme);
    free(evals);
    free(evecs);
    free(rnorms);

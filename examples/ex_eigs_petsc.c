@@ -175,7 +175,7 @@ int main (int argc, char *argv[]) {
       }
    }
 
-   primme_Free(&primme);
+   primme_free(&primme);
    free(evals);
    free(evecs);
    free(rnorms);

@@ -84,12 +84,12 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore primme_display_params;
 %ignore primme_set_method;
 %ignore primme_initialize;
-%ignore primme_Free;
+%ignore primme_free;
 
 %ignore primme_svds_display_params;
 %ignore primme_svds_set_method;
 %ignore primme_svds_initialize;
-%ignore primme_svds_Free;
+%ignore primme_svds_free;
 
 %ignore tprimme;
 %ignore tprimme_svds;

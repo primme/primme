@@ -235,7 +235,7 @@ int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms,
 void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
-void primme_Free(primme_params *primme);
+void primme_free(primme_params *primme);
 
 #ifdef __cplusplus
 }

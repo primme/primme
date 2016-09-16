@@ -50,7 +50,7 @@ Other useful functions:
          primme_preset_method methodStage1,
          primme_preset_method methodStage2, primme_svds_params \*primme_svds)
       void :c:func:`primme_svds_display_params <primme_svds_display_params>` (primme_svds_params primme_svds)
-      void :c:func:`primme_svds_Free <primme_svds_Free>` (primme_svds_params \*primme_svds)
+      void :c:func:`primme_svds_free <primme_svds_Free>` (primme_svds_params \*primme_svds)
 
 .. only:: text
 
@@ -161,13 +161,13 @@ To use PRIMME SVDS, follow this basic steps.
   
       .. parsed-literal::
  
-         :c:func:`primme_svds_Free <primme_svds_Free>` (&primme_svds);
+         :c:func:`primme_svds_free <primme_svds_Free>` (&primme_svds);
    
    .. only:: text
    
       ::
    
-         primme_svds_Free(&primme_svds);
+         primme_svds_free(&primme_svds);
 
 .. _svds-guide-params:
 
@@ -396,10 +396,10 @@ primme_svds_display_params
 
    :param primme_svds: parameters structure.
 
-primme_svds_Free
+primme_svds_free
 """"""""""""""""
 
-.. c:function:: void primme_svds_Free(primme_svds_params *primme_svds)
+.. c:function:: void primme_svds_free(primme_svds_params *primme_svds)
 
    Free memory allocated by PRIMME SVDS.
 

@@ -50,7 +50,7 @@ Other useful functions:
       int :c:func:`primme_set_method <primme_set_method>` (primme_preset_method method,
                                                            primme_params \*params)
       void :c:func:`primme_display_params <primme_display_params>` (primme_params primme)
-      void :c:func:`primme_Free <primme_Free>` (primme_params \*primme)
+      void :c:func:`primme_free <primme_Free>` (primme_params \*primme)
 
 .. only:: text
 
@@ -60,7 +60,7 @@ Other useful functions:
       int primme_set_method(primme_preset_method method,
                                            primme_params *params);
       void primme_display_params(primme_params primme);
-      void primme_Free(primme_params primme);
+      void primme_free(primme_params primme);
 
 PRIMME stores its data on the structure :c:type:`primme_params`.
 See :ref:`guide-params` for an introduction about its fields.
@@ -156,13 +156,13 @@ To use PRIMME, follow this basic steps.
   
       .. parsed-literal::
  
-         :c:func:`primme_Free <primme_Free>` (&primme);
+         :c:func:`primme_free <primme_Free>` (&primme);
    
    .. only:: text
    
       ::
    
-         primme_Free(&primme);
+         primme_free(&primme);
 
 .. _guide-params:
 
@@ -402,10 +402,10 @@ primme_display_params
 
    :param primme: parameters structure.
 
-primme_Free
+primme_free
 """""""""""
 
-.. c:function:: void primme_Free(primme_params *primme)
+.. c:function:: void primme_free(primme_params *primme)
 
    Free memory allocated by PRIMME.
 

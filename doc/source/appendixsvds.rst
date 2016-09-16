@@ -379,7 +379,7 @@ primme_svds_params
 
       Otherwise if |SintWorkSize| is not 0, it should be the size of the integer work array
       *in bytes* that the user provides in |SintWork|. If |SintWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_svds_Free`.
+      will allocate the required space, which can be freed later by calling :c:func:`primme_svds_free`.
 
       Input/output:
 
@@ -395,7 +395,7 @@ primme_svds_params
 
       Otherwise if |SrealWorkSize| is not 0, it should be the size of the real work array
       *in bytes* that the user provides in |SrealWork|. If |SrealWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_svds_Free`.
+      will allocate the required space, which can be freed later by calling :c:func:`primme_svds_free`.
 
       Input/output:
 

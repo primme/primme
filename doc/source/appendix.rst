@@ -508,7 +508,7 @@ primme_params
 
       Otherwise if |intWorkSize| is not 0, it should be the size of the integer work array
       *in bytes* that the user provides in |intWork|. If |intWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_Free`.
+      will allocate the required space, which can be freed later by calling :c:func:`primme_free`.
 
       Input/output:
 
@@ -524,7 +524,7 @@ primme_params
 
       Otherwise if |realWorkSize| is not 0, it should be the size of the real work array
       *in bytes* that the user provides in |realWork|. If |realWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_Free`.
+      will allocate the required space, which can be freed later by calling :c:func:`primme_free`.
 
       Input/output:
 

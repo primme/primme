@@ -651,7 +651,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds->iseed[3] = primme->iseed[3];
    primme_svds->maxMatvecs -= primme->stats.numMatvecs;
 
-   /* Zero references to primme workspaces to prevent to be release by primme_Free */
+   /* Zero references to primme workspaces to prevent to be release by primme_free */
    primme->intWork = NULL;
    primme->realWork = NULL;
 

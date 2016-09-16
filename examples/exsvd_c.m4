@@ -244,7 +244,7 @@ ifdef(`ADVANCED_HYBRID', `
 ')dnl
 REPORT_PRIMME_SVDS
 ifdef(`ADVANCED', `
-   /* Note that d/zprimme_svds can be called more than once before call primme_svds_Free. */
+   /* Note that d/zprimme_svds can be called more than once before call primme_svds_free. */
 
    /* Find the next 5 largest singular values */
    primme_svds.numEvals = 5;
@@ -256,7 +256,7 @@ ifdef(`ADVANCED', `
 CALL_PRIMME_SVDS
 REPORT_PRIMME_SVDS
 ')dnl
-   primme_svds_Free(&primme_svds);
+   primme_svds_free(&primme_svds);
    free(svals);
    free(svecs);
    free(rnorms);

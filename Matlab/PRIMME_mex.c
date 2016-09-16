@@ -576,7 +576,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mxFree(evals);
       mxFree(evecs);
       mxFree(rnorms);
-      primme_Free(&primme);
+      primme_free(&primme);
       if (outputfilename != NULL)
          mxFree(outputfilename);
    }
@@ -695,7 +695,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mxFree(evals);
       mxFree(evecs);
       mxFree(rnorms);
-      primme_Free(&primme);
+      primme_free(&primme);
       if (outputfilename != NULL)
          mxFree(outputfilename);
 

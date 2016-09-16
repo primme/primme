@@ -51,7 +51,7 @@ class PrimmeParams : public primme_params {
 
    virtual ~PrimmeParams() {
       if (targetShifts) delete [] targetShifts;
-      primme_Free(static_cast<primme_params*>(this));
+      primme_free(static_cast<primme_params*>(this));
    }
 
    void display() {
@@ -102,7 +102,7 @@ class PrimmeSvdsParams : public primme_svds_params {
 
    virtual ~PrimmeSvdsParams() {
       if (targetShifts) delete [] targetShifts;
-      primme_svds_Free(static_cast<primme_svds_params*>(this));
+      primme_svds_free(static_cast<primme_svds_params*>(this));
    }
 
    void display() {

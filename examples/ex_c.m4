@@ -197,7 +197,7 @@ ifdef(`USE_PETSC', `   }
 ')dnl end of CALL_PRIMME
 CALL_PRIMME
 ifdef(`ADVANCED', `
-   /* Note that d/zprimme can be called more than once before call primme_Free. */
+   /* Note that d/zprimme can be called more than once before call primme_free. */
    /* Find the 5 eigenpairs closest to .5 */
    primme.numTargetShifts = 1;
    targetShifts[0] = .5;
@@ -227,7 +227,7 @@ CALL_PRIMME
 
 CALL_PRIMME
 ')dnl
-   primme_Free(&primme);
+   primme_free(&primme);
    free(evals);
    free(evecs);
    free(rnorms);

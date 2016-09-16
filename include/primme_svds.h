@@ -148,7 +148,7 @@ int primme_svds_set_method(primme_svds_preset_method method,
       primme_preset_method methodStage1, primme_preset_method methodStage2,
       primme_svds_params *primme_svds);
 void primme_svds_display_params(primme_svds_params primme_svds);
-void primme_svds_Free(primme_svds_params *primme_svds);
+void primme_svds_free(primme_svds_params *primme_svds);
 
 #ifdef __cplusplus
 }

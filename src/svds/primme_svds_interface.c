@@ -388,7 +388,7 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
 } /* end of display params */
 
 
-void primme_svds_Free(primme_svds_params *params) {
+void primme_svds_free(primme_svds_params *params) {
     
    free(params->intWork);
    free(params->realWork);
