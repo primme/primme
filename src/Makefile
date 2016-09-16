@@ -88,6 +88,9 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 	ar rv $@ $^;\
 	$(RANLIB) $@
 
+../lib/$(SOLIBRARY): ../lib/$(LIBRARY)
+	$(CC) -shared -o ../lib/$(SOLIBRARY) -Wl,--whole-archive ../lib/$(LIBRARY) -Wl,--no-whole-archive
+
 #
 # Generate CTAGS
 #

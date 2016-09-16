@@ -294,8 +294,9 @@ to add/remove ``-DPRIMME_BLASINT_SIZE=64`` from `CFLAGS`.
 
 Full description of actions that `make` can take:
 
-* `make lib`, builds :file:`libprimme.a`; alternatively:
-* `make test`, build and execute simple examples; 
+* `make lib`, builds the static library :file:`libprimme.a`.
+* `make solib`, builds the shared library :file:`libprimme.so`.
+* `make test`, build and execute simple examples.
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
 
 Considerations using an IDE

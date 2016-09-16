@@ -16,6 +16,9 @@ include Make_flags
 lib:
 	@make -C src ../lib/$(LIBRARY)
 
+solib:
+	@make -C src ../lib/$(SOLIBRARY)
+
 clean: 
 	@make -C src clean
 

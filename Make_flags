@@ -5,6 +5,7 @@
 
 # Define the path to the created PRIMME library
 LIBRARY = libprimme.a
+SOLIBRARY = libprimme.so
 
 # Define compilers and flags
 #---------------------------------------------------------------
