@@ -2,18 +2,20 @@ Note: For hyperlinked html and pdf versions of this document see
   directory "doc".
 
 
-Welcome to PRIMME's documentation!
-**********************************
+PRIMME Documentation
+********************
 
 Table Of Contents:
 
 * PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 
+  * Incompatibilities
+
   * Changelog
 
-  * Citing this code
-
   * License Information
+
+  * Citing the code
 
   * Contact Information
 
@@ -21,95 +23,29 @@ Table Of Contents:
 
   * Making and Linking
 
-    * Considerations using an IDE
-
   * Tested Systems
 
-* Eigenproblems
+  * Main Contributors
+
+* Eigenvalue Problems
 
   * C Library Interface
 
-    * Running
-
-    * Parameters Guide
-
-    * Interface Description
-
   * FORTRAN Library Interface
-
-    * primme_initialize_f77
-
-    * primme_set_method_f77
-
-    * primme_free_f77
-
-    * dprimme_f77
-
-    * zprimme_f77
-
-    * primmetop_set_member_f77
-
-    * primmetop_get_member_f77
-
-    * primmetop_get_prec_shift_f77
-
-    * primme_set_member_f77
-
-    * primme_get_member_f77
-
-    * primme_get_prec_shift_f77
 
   * Python Interface
 
   * Appendix
 
-    * primme_params
-
-    * Error Codes
-
-    * Preset Methods
-
-* Singular values
+* Singular Value Problems
 
   * C Library Interface
 
-    * Running
-
-    * Parameters Guide
-
-    * Interface Description
-
   * FORTRAN Library Interface
-
-    * dprimme_svds_f77
-
-    * zprimme_svds_f77
-
-    * primme_svds_initialize_f77
-
-    * primme_svds_set_method_f77
-
-    * primme_svds_display_params_f77
-
-    * primme_svds_free_f77
-
-    * primme_svdstop_set_member_f77
-
-    * primme_svdstop_get_member_f77
-
-    * primme_svds_set_member_f77
-
-    * primme_svds_get_member_f77
 
   * Python Interface
 
   * Appendix
-
-    * primme_svds_params
-
-    * Error Codes
-
-    * Preset Methods
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ********************************************************
@@ -120,6 +56,31 @@ matrix A. Largest, smallest and interior eigenvalues are supported.
 Preconditioning can be used to accelerate convergence. PRIMME is
 written in C99, but complete interfaces are provided for Fortran 77,
 MATLAB and Python.
+
+
+Incompatibilities
+=================
+
+From PRIMME 1.x to 2.0:
+
+* Prototype of callbacks has changed: "matrixMatvec",
+  "applyPreconditioner", "massMatrixMatvec" and "globalSumReal".
+
+* The next parameters are "PRIMME_INT": "n", "nLocal", "maxMatvecs",
+  "iseed", "numOuterIterations", "numRestarts", "numMatvecs" and
+  "numMatvecs"; use the macro "PRIMME_INT_P" to print the values.
+
+* Rename the values of the enum "primme_preset_method".
+
+* Rename "primme_Free" to "primme_free()".
+
+* Integer parameters in Fortran functions are of the same size as
+  "PRIMME_INT", which is "integer*8" by default.
+
+* Extra parameter in many Fortran functions to return the error
+  code.
+
+* Removed "primme_display_stats_f77".
 
 
 Changelog
@@ -244,8 +205,17 @@ Changes in PRIMME 1.2 (released on December 21, 2014):
 * Other performance and documentation improvements.
 
 
-Citing this code
-================
+License Information
+===================
+
+PRIMME is licensed under the 3-clause license BSD. Python and Matlab
+interfaces have BSD-compatible licenses. Source code under
+file:*tests* is compatible with LGPLv3. Details can be taken from
+COPYING.txt.
+
+
+Citing the code
+===============
 
 Please cite:
 
@@ -286,15 +256,6 @@ supported by a number of grants from the National Science Foundation.
      Matrices*, SIAM J. Sci. Comput. 37-5(2015), pp. S365-S388.
 
 
-License Information
-===================
-
-PRIMME is licensed under the 3-clause license BSD. Python and Matlab
-interfaces have BSD-compatible licenses. Source code under
-file:*tests* is compatible with LGPLv3. Details can be taken from
-COPYING.txt.
-
-
 Contact Information
 ===================
 
@@ -329,16 +290,16 @@ The next directories and files should be available:
 
      * "tools/",     tools used to generated some headers;
 
-* "Matlab/",       Matlab interface for PRIMME;
+* "Matlab/",       Matlab interface;
 
-* "PYTHON/",       Python interface for PRIMME;
+* "PYTHON/",       Python interface;
 
 * "examples/",     sample programs in C, C++ and F77, both
   sequential and parallel;
 
 * "tests/",        drivers for testing purpose and test cases;
 
-* "libprimme.a",   the PRIMME library (to be made);
+* "lib/libprimme.a",   the PRIMME library (to be made);
 
 * "makefile"       main make file;
 
@@ -412,9 +373,11 @@ execution fails consider to add/remove "-DPRIMME_BLASINT_SIZE=64" from
 
 Full description of actions that *make* can take:
 
-* *make lib*, builds "libprimme.a"; alternatively:
+* *make lib*, builds the static library "libprimme.a".
 
-* *make test*, build and execute simple examples;
+* *make solib*, builds the shared library "libprimme.so".
+
+* *make test*, build and execute simple examples.
 
 * *make clean*, removes all "*.o", "a.out", and core files from
   "src".
@@ -465,6 +428,18 @@ platforms/compilers:
 * AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at
   nersc.gov)
 
+
+Main Contributors
+=================
+
+* James R. McCombs
+
+* Eloy Romero Alcalde
+
+* Andreas Stathopoulos
+
+* Lingfei Wu
+
 C Library Interface
 *******************
 
@@ -489,7 +464,7 @@ Other useful functions:
    int primme_set_method(primme_preset_method method,
                                         primme_params *params);
    void primme_display_params(primme_params primme);
-   void primme_Free(primme_params primme);
+   void primme_free(primme_params primme);
 
 PRIMME stores its data on the structure "primme_params". See
 Parameters Guide for an introduction about its fields.
@@ -540,7 +515,7 @@ To use PRIMME, follow this basic steps.
 
 5. Before exiting, free the work arrays in PRIMME:
 
-      primme_Free(&primme);
+      primme_free(&primme);
 
 
 Parameters Guide
@@ -748,10 +723,10 @@ void primme_display_params(primme_params primme)
       * **primme** -- parameters structure.
 
 
-primme_Free
+primme_free
 -----------
 
-void primme_Free(primme_params *primme)
+void primme_free(primme_params *primme)
 
    Free memory allocated by PRIMME.
 
@@ -1664,7 +1639,7 @@ primme_params
       the integer work array *in bytes* that the user provides in
       "intWork". If "intWorkSize" is 0, the code will allocate the
       required space, which can be freed later by calling
-      "primme_Free()".
+      "primme_free()".
 
       Input/output:
 
@@ -1682,7 +1657,7 @@ primme_params
       the real work array *in bytes* that the user provides in
       "realWork". If "realWorkSize" is 0, the code will allocate the
       required space, which can be freed later by calling
-      "primme_Free()".
+      "primme_free()".
 
       Input/output:
 
@@ -2774,7 +2749,7 @@ solve real and complex singular value problems call respectively:
    int dprimme_svds(double *svals, double *svecs, double *resNorms,
                primme_svds_params *primme);
 
-   int zprimme_svds(double *svals, Complex_Z *svecs, double *resNorms,
+   int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
                primme_svds_params *primme);
 
 Other useful functions:
@@ -2813,7 +2788,8 @@ To use PRIMME SVDS, follow this basic steps.
       primme_svds.m = 1000;                    /* set problem dimension */
       primme_svds.n = 100;
       primme_svds.numSvals = 10;    /* Number of wanted singular values */
-      primme_svds_set_method(method, DEFAULT_METHOD, DEFAULT_METHOD, &primme_svds);
+      primme_svds_set_method(primme_svds_hybrid, PRIMME_DEFAULT_METHOD,
+                                PRIMME_DEFAULT_METHOD, &primme_svds);
       ...
 
 4. Then to solve a real singular value problem call:
@@ -2838,7 +2814,7 @@ To use PRIMME SVDS, follow this basic steps.
 
 5. Before exiting, free the work arrays in PRIMME SVDS:
 
-      primme_svds_Free(&primme_svds);
+      primme_svds_free(&primme_svds);
 
 
 Parameters Guide
@@ -3017,7 +2993,7 @@ int primme_svds_set_method(primme_svds_preset_method method, primme_preset_meth
           A^*A or A A^*.
 
         * "primme_svds_augmented", compute the eigenvectors of the
-          augmented matrix, \left(\begin{array}{} 0 & A^* \\ A & 0
+          augmented matrix, \left(\begin{array}{cc} 0 & A^* \\ A & 0
           \end{array}\right).
 
         * "primme_svds_hybrid", start with
@@ -3051,10 +3027,10 @@ void primme_svds_display_params(primme_svds_params primme_svds)
       * **primme_svds** -- parameters structure.
 
 
-primme_svds_Free
+primme_svds_free
 ----------------
 
-void primme_svds_Free(primme_svds_params *primme_svds)
+void primme_svds_free(primme_svds_params *primme_svds)
 
    Free memory allocated by PRIMME SVDS.
 
@@ -3157,7 +3133,7 @@ primme_svds_set_method_f77(method, methodStage1, methodStage2, primme_svds, ierr
           A^*A or A A^*.
 
         * "PRIMME_SVDS_augmented", compute the eigenvectors of the
-          augmented matrix, \left(\begin{array}{} 0 & A^* \\ A & 0
+          augmented matrix, \left(\begin{array}{cc} 0 & A^* \\ A & 0
           \end{array}\right).
 
         * "PRIMME_SVDS_hybrid", start with
@@ -3466,8 +3442,8 @@ primme_svds_params
 
          * "primme_svds_op_AAt": y = AA^*x - \sigma^2 I,
 
-         * "primme_svds_op_augmented": \left(\begin{array}{} 0 & A^*
-           \\ A & 0 \end{array}\right) - \sigma I.
+         * "primme_svds_op_augmented": \left(\begin{array}{cc} 0 &
+           A^* \\ A & 0 \end{array}\right) - \sigma I.
 
          Where \sigma is the current target (see "targetShifts") (for
          finding the smallest \sigma is zero). If "mode" is
@@ -3812,7 +3788,7 @@ primme_svds_params
          the integer work array *in bytes* that the user provides in
          "intWork". If "intWorkSize" is 0, the code will allocate the
          required space, which can be freed later by calling
-         "primme_svds_Free()".
+         "primme_svds_free()".
 
          Input/output:
 
@@ -3831,7 +3807,7 @@ primme_svds_params
          of the real work array *in bytes* that the user provides in
          "realWork". If "realWorkSize" is 0, the code will allocate
          the required space, which can be freed later by calling
-         "primme_svds_Free()".
+         "primme_svds_free()".
 
          Input/output:
 
@@ -3916,8 +3892,8 @@ primme_svds_params
 
          * "primme_svds_op_AAt": AA^*x = \sigma^2 x,
 
-         * "primme_svds_op_augmented": \left(\begin{array}{} 0 & A^*
-           \\ A & 0 \end{array}\right) x = \sigma x.
+         * "primme_svds_op_augmented": \left(\begin{array}{cc} 0 &
+           A^* \\ A & 0 \end{array}\right) x = \sigma x.
 
          The options for this solver are stored in "primme".
 
@@ -4097,9 +4073,9 @@ primme_svds_preset_method
 
    primme_svds_augmented
 
-      Solve the equivalent eigenvalue problem \left(\begin{array}{} 0
-      & A^* \\ A & 0 \end{array}\right) X = \sigma X with X =
-      \left(\begin{array}{}V\\U\end{array}\right).
+      Solve the equivalent eigenvalue problem \left(\begin{array}{cc}
+      0 & A^* \\ A & 0 \end{array}\right) X = \sigma X with X =
+      \left(\begin{array}{cc}V\\U\end{array}\right).
 
       With "primme_svds_augmented" "primme_svds_set_method()" sets
       "method" to "primme_svds_op_augmented" and "methodStage2" to
