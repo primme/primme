@@ -299,7 +299,7 @@ function [varargout] = primme_eigs(varargin)
        % Test whether the given preconditioner function is valid
        try
           xvec = randn(dim,1);
-          yvev = P1(xvec);
+          yvec = P1(xvec);
           clear xvec, yvec;
        catch ME
           if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
