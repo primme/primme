@@ -8,9 +8,6 @@ all: $(GENERATED) primmew.h primmew.cxx Primme.py setup.py
 test: tests.py examples.py
 	python tests.py
 
-$(GENERATED): primme.i numpy.i wrappers.py primmew.h pyfragments.swg
-	-@swig -c++ -Wextra -python primme.i
-
 # Clean target
 clean:
 	$(RM) -rf build
