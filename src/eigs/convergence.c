@@ -292,8 +292,6 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
 
-      assert(blockNorms[iev[i]] >= overlaps[i]);
-
       /* ------------------------------------------------------------------ */
       /* NOTE: previous versions than 2.0 used the next criterion instead:  */
       /*                                                                    */
