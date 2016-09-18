@@ -727,6 +727,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   iwork, iworkSize, primme);
 
             /* Updated the number of converged pairs */
+            /* Intentionally we include the pairs flagged SKIP_UNTIL_RESTART */
 
             for (i=0, numConverged=numLocked; i<basisSize; i++) {
                if (flags[i] != UNCONVERGED && numConverged < primme->numEvals
@@ -998,7 +999,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
 /*******************************************************************************
  * Subroutine prepare_candidates - This subroutine puts into the block the first
- *    unconverged Ritz pairs, up to maxBlockSize.
+ *    unconverged Ritz pairs, up to maxBlockSize. If needed, compute residuals
+ *    and rearrange the coefficient vectors in hVecs.
  * 
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -1012,7 +1014,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
  * hVals          The Ritz values
  * maxBasisSize   maximum allowed size of the basis
  * numSoftLocked  Number of vectors that have converged (not updated here)
- * numEvals       Remained number of eigenpairs that the user wants computed
+ * remainedEvals  Remained number of eigenpairs that the user wants computed
  * blockNormsSize Number of already computed residuals
  * maxBlockSize   maximum allowed size of the block
  * evecs          Converged eigenvectors
@@ -1033,6 +1035,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
  *
  * OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------
+ * recentlyConverged  Number of pairs converged
  * reset         flag to reset V and W in the next restart
  * 
  ******************************************************************************/
@@ -1041,7 +1044,7 @@ TEMPLATE_PLEASE
 int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, PRIMME_INT nLocal, SCALAR *H, int ldH, int basisSize,
       SCALAR *X, SCALAR *R, SCALAR *hVecs, int ldhVecs, REAL *hVals,
-      REAL *hSVals, int *flags, int numEvals, REAL *blockNorms,
+      REAL *hSVals, int *flags, int remainedEvals, REAL *blockNorms,
       int blockNormsSize, int maxBlockSize, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, REAL *evals, REAL *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
@@ -1145,7 +1148,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                 && hVals[iev[blki]]+blockNorms[blki] < targetShift)) {
          }
          else if (flagsBlock[i] != UNCONVERGED
-                         && *recentlyConverged < numEvals
+                         && *recentlyConverged < remainedEvals
                          && (iev[blki] < primme->numEvals-numLocked
                             /* Refined and prepare_vecs may not completely    */
                             /* order pairs considering closest_leq/geq; so we */
@@ -1216,7 +1219,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
       /* If no new candidates or all required solutions converged yet, go out */
 
-      if (blki == *blockSize || *recentlyConverged >= numEvals) break;
+      if (blki == *blockSize || *recentlyConverged >= remainedEvals) break;
       blockNormsSize = blki - *blockSize;
 
       /* Pack hVals & hVecs */

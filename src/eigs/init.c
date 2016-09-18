@@ -187,7 +187,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    /* Handle case when some or all initial guesses are provided by */ 
    /* the user                                                     */
    if (!primme->locking) {
-      initSize = primme->initSize;
+      initSize = min(primme->maxBasisSize, primme->initSize);
    }
    else {
       initSize = min(primme->minRestartSize, primme->initSize);

@@ -178,7 +178,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       /* ----------------------------------------------------------------- */
 
       else if (blockNorms[i-left] <= primme->stats.estimateResidualError) {
-         flags[i] = CONVERGED;
+         flags[i] = SKIP_UNTIL_RESTART;
          *reset = 1;
       }
 

@@ -569,12 +569,12 @@ void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i,
  *************************************************************************/
 void AS_FORTRAN(primmetop_get_member)(primme_params **primme, int *label,
       union f77_value_ptr *ptr, int *ierr) {
-   primme_get_member_f77_(*primme, label, ptr, ierr);
+   AS_FORTRAN(primme_get_member)(*primme, label, ptr, ierr);
 }
 
 void AS_FORTRAN(primmetop_get_prec_shift)(primme_params **primme, int *i,
       double *shift) {
-   primme_get_prec_shift_f77_(*primme, i, shift);
+   AS_FORTRAN(primme_get_prec_shift)(*primme, i, shift);
 }
 
 #endif /* USE_DOUBLE */

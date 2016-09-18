@@ -234,8 +234,10 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* evecs: [----------------|--------------)                       */
    /*                         ^ numLocked                            */
    /*                                                                */
-   /* X & R will have the eigenvectors and residual vectors of the   */
-   /* first sizeBlockNorms candidates pairs.                         */
+   /* X & R have the eigenvectors and residual vectors of the        */
+   /* first sizeBlockNorms candidates pairs to be targeted after     */
+   /* restart. Their computation is performed more efficiently here  */
+   /* together with the V, W                                         */
    /* -------------------------------------------------------------- */
 
    maxBlockSize = max(0, min(min(
