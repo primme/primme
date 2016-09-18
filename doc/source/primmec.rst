@@ -69,7 +69,7 @@ See :ref:`guide-params` for an introduction about its fields.
 Running
 ^^^^^^^
 
-To use PRIMME, follow this basic steps.
+To use PRIMME, follow these basic steps.
 
 #. Include::
 
@@ -115,7 +115,7 @@ To use PRIMME, follow this basic steps.
          ret = primme_set_method(method, &primme);
          ...
 
-#. Then to solve a real symmetric standard eigenproblems call:
+#. Then to solve real symmetric standard eigenproblems call:
 
    .. only:: not text
   
@@ -129,19 +129,9 @@ To use PRIMME, follow this basic steps.
    
          ret = dprimme(evals, evecs, resNorms, &primme);
 
-   To solve Hermitian standard eigenproblems call:
-
-   .. only:: not text
-   
-      .. parsed-literal::
-
-         ret = :c:func:`zprimme <zprimme>` (evals, evecs, resNorms, &primme);
-   
-   .. only:: text
-   
-      ::
-   
-         ret = zprimme(evals, evecs, resNorms, &primme);
+   The previous is the double precision call. There is available calls for complex
+   double, single and complex single; check it out :c:func:`zprimme`, :c:func:`sprimme`
+   and :c:func:`cprimme`.
 
    The call arguments are:
 
@@ -150,7 +140,7 @@ To use PRIMME, follow this basic steps.
    * `resNorms`, array to return the residual norms of the found eigenpairs; and
    * `ret`, returned error code.
 
-#. Before exiting, free the work arrays in PRIMME:
+#. To free the work arrays in PRIMME:
 
    .. only:: not text
   
@@ -174,7 +164,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
 .. only:: not text
 
       | *Basic*
-      | ``int`` |n|,  matrix dimension.
+      | ``PRIMME_INT`` |n|,  matrix dimension.
       | ``void (*`` |matrixMatvec| ``)(...)``, matrix-vector product.
       | ``int`` |numEvals|, how many eigenpairs to find.
       | ``primme_target`` |target|, which eigenvalues to find.
@@ -183,10 +173,10 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``double`` |eps|, tolerance of the residual norm of converged eigenpairs.
       |
       | *For parallel programs*
-      | ``int`` |numProcs|
-      | ``int`` |procID|
-      | ``int`` |nLocal|
-      | ``void (*`` |globalSumReal| ``)(...)``
+      | ``int`` |numProcs|, number of processes
+      | ``int`` |procID|,  rank of this process
+      | ``PRIMME_INT`` |nLocal|,  number of rows stored in this process
+      | ``void (*`` |globalSumReal| ``)(...)``, sum reduction among processes
       |
       | *Accelerate the convergence*
       | ``void (*`` |applyPreconditioner| ``)(...)``, preconditioner-vector product.
@@ -205,11 +195,11 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``int`` |numOrthoConst|, orthogonal constrains to the eigenvectors.
       | ``int`` |dynamicMethodSwitch|
       | ``int`` |locking|
-      | ``int`` |maxMatvecs|
-      | ``int`` |maxOuterIterations|
+      | ``PRIMME_INT`` |maxMatvecs|
+      | ``PRIMME_INT`` |maxOuterIterations|
       | ``int`` |intWorkSize|
-      | ``long int`` |realWorkSize|
-      | ``int`` |iseed| ``[4]``
+      | ``size_t`` |realWorkSize|
+      | ``PRIMME_INT`` |iseed| ``[4]``
       | ``int *`` |intWork|
       | ``void *`` |realWork|
       | ``double`` |aNorm|
@@ -229,7 +219,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
    ::
 
       /* Basic */
-      int n;                                      // matrix dimension
+      PRIMME_INT n;                                      // matrix dimension
       void (*matrixMatvec)(...);             // matrix-vector product
       int numEvals;                    // how many eigenpairs to find
       primme_target target;              // which eigenvalues to find
@@ -238,10 +228,10 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       double eps;            // tolerance of the converged eigenpairs
       
       /* For parallel programs */
-      int numProcs;
-      int procID;
-      int nLocal;
-      void (*globalSumReal)(...);
+      int numProcs;           // number of processes
+      int procID;             // rank of this process 
+      PRIMME_INT nLocal;      // number of rows stored in this process
+      void (*globalSumReal)(...); // sum reduction among processes
       
       /* Accelerate the convergence */
       void (*applyPreconditioner)(...);     // precond-vector product
@@ -260,11 +250,11 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       int numOrthoConst; // orthogonal constrains to the eigenvectors
       int dynamicMethodSwitch;
       int locking;
-      int maxMatvecs;
-      int maxOuterIterations;
+      PRIMME_INT maxMatvecs;
+      PRIMME_INT maxOuterIterations;
       int intWorkSize;
-      long int realWorkSize;
-      int iseed[4];
+      size_t realWorkSize;
+      PRIMME_INT iseed[4];
       int *intWork;
       void *realWork;
       double aNorm;

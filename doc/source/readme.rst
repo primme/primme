@@ -22,7 +22,8 @@ PRIMME Documentation
    :includehidden:
 
    intro
-   api
+   apieigs
+   apisvds
 
 .. only:: not text and not singlehtml
 

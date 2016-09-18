@@ -32,9 +32,11 @@ Changelog
 
 Changes in PRIMME 2.0 (released on XXX):
 
-* Added interface for singular value problems; see :c:func:`dprimme_svds`.
+* Changed license to BSD 3-clause.
 
-* Support for ``float`` and ``complex float`` arithmetic.
+* New support for singular value problems; see :c:func:`dprimme_svds`.
+
+* New support for ``float`` and ``complex float`` arithmetic.
 
 * Support for problem dimensions larger than 2^31, without requiring
   BLAS_ and LAPACK_ compiled with 64-bits integers.
@@ -48,11 +50,11 @@ Changes in PRIMME 2.0 (released on XXX):
   return an error code in callbacks |matrixMatvec|, |applyPreconditioner|,
   |massMatrixMatvec| and |globalSumReal|.
 
-* Changed to type :c:type:`PRIMME_NUM` the options |n|, |nLocal|, |maxMatvecs|
+* Changed to type :c:type:`PRIMME_INT` the options |n|, |nLocal|, |maxMatvecs|
   and |iseed|, and the stats counters |numOuterIterations|, |numRestarts|, |numMatvecs|,
   |numPreconds|. Also changed |realWorkSize| to ``size_t``. Fortran interface functions
-  will expect an ``interger`` of size compatible with :c:type:`PRIMME_NUM` for
-  all parameters with integer type: ``int``, :c:type:`PRIMME_NUM` and ``size_t``;
+  will expect an ``interger`` of size compatible with :c:type:`PRIMME_INT` for
+  all parameters with integer type: ``int``, :c:type:`PRIMME_INT` and ``size_t``;
   see also parameter ``value`` in functions
   :c:func:`primmetop_set_member_f77`,
   :c:func:`primmetop_get_member_f77`,
@@ -243,21 +245,23 @@ Making and Linking
 :file:`Make_flags` has the flags and compilers used to make :file:`libprimme.a`:
 
 * `CC`, compiler program such as ``gcc``, ``clang`` or ``icc``.
-* `CFLAGS`, compiler options such as ``-g`` or ``-O3``. Also include some of the following
-  options if required for the BLAS_ and LAPACK_ libraries to be linked:
+* `CFLAGS`, compiler options such as ``-g`` or ``-O3`` and macro definitions
+   like the ones described next.
 
-  * ``-DF77UNDERSCORE``, if Fortran appends an underscore to function names
-    (usually they does).
-  * ``-DPRIMME_BLASINT_SIZE=64``, if the library integers are 64-bit integer (``kind=8``) type
-    (usually they are not).
+Compiler flags for the BLAS_ and LAPACK_ libraries:
 
-  By default PRIMME sets the integer type for matrix dimensions and counters (:c:type:`PRIMME_INT`)
-  to 64 bits integer ``int64_t``. This can be changed by setting the macro ``PRIMME_INT_SIZE``
-  to one of the following values:
+* ``-DF77UNDERSCORE``, if Fortran appends an underscore to function names
+  (usually it does).
+* ``-DPRIMME_BLASINT_SIZE=64``, if the library integers are 64-bit integer (``kind=8``) type,
+  aka ILP64 interface; usually integers are 32-bits even in 64-bit architectures (aka LP64 interface).
 
-  - ``0``: use the regular ``int``.
-  - ``32``: use C99 ``int32_t``. 
-  - ``64``: use C99 ``int64_t``. 
+By default PRIMME sets the integer type for matrix dimensions and counters (:c:type:`PRIMME_INT`)
+to 64 bits integer ``int64_t``. This can be changed by setting the macro ``PRIMME_INT_SIZE``
+to one of the following values:
+
+- ``0``: use the regular ``int`` of your compiler.
+- ``32``: use C99 ``int32_t``. 
+- ``64``: use C99 ``int64_t``. 
 
 .. note::
 

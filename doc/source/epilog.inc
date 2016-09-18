@@ -65,6 +65,7 @@
 .. |primme_closest_geq|    replace:: :c:member:`primme_closest_geq    <primme_params.target>`
 .. |primme_closest_leq|    replace:: :c:member:`primme_closest_leq    <primme_params.target>`
 .. |primme_closest_abs|    replace:: :c:member:`primme_closest_abs    <primme_params.target>`
+.. |primme_largest_abs|    replace:: :c:member:`primme_largest_abs    <primme_params.target>`
 .. |primme_proj_default|   replace:: :c:member:`primme_proj_default   <primme_params.projectionParams.projection>`
 .. |primme_proj_RR|        replace:: :c:member:`primme_proj_RR        <primme_params.projectionParams.projection>`
 .. |primme_proj_Harm|      replace:: :c:member:`primme_proj_Harm      <primme_params.projectionParams.projection>`
