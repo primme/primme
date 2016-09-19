@@ -41,7 +41,7 @@ AUTOMATED_HEADERS_EIGS := \
 
 CPPFLAGS_ONLY_PREPROCESS ?= -E
 
-$(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c
+$(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c tools/AUTO_HEADER
 	@cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" > $@.t; \
 	echo "#define $(*F)_H" >> $@.t; \
@@ -51,7 +51,7 @@ $(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c
 	cat $@.t >> $@; rm -f $@.t; \
 	echo "#endif" >> $@
 
-$(AUTOMATED_HEADERS_EIGS): %.h : %.c
+$(AUTOMATED_HEADERS_EIGS): %.h : %.c tools/AUTO_HEADER
 	@cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" > $@.t; \
 	echo "#define $(*F)_H" >> $@.t; \
