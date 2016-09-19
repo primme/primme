@@ -331,7 +331,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    CHKERR(solve_correction_Sprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 
             NULL, NULL, maxEvecsSize, 0, NULL, NULL, NULL, NULL, 
             primme->maxBasisSize, NULL, NULL, primme->maxBlockSize, 
-            1.0, 0.0, 1.0, NULL, &realWorkSize, &intWorkSize, 0, primme), -1);
+            0.0, NULL, &realWorkSize, &intWorkSize, 0, primme), -1);
 
    /*----------------------------------------------------------------------*/
    /* Determine workspace required by restarting and its children          */

@@ -121,10 +121,6 @@ static int dist_dot_real(SCALAR *x, int incx,
  * shift       Correction eq. shift. The closer the shift is to the target 
  *             eigenvalue, the more accurate the correction will be.
  *
- * eresTol     The convergence tolerance for the eigenpair residual
- *
- * aNormEstimate Some approximate norm of A.
- *
  * machEps     machine precision
  *
  * rwork       Real workspace of size 
@@ -156,12 +152,11 @@ static int dist_dot_real(SCALAR *x, int incx,
 TEMPLATE_PLEASE
 int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       PRIMME_INT ldevecs, SCALAR *UDU, int *ipivot, SCALAR *xKinvx,
-      SCALAR *Lprojector, PRIMME_INT ldLprojector,
-      SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX,
-      PRIMME_INT ldRprojectorX, int sizeLprojector, int sizeRprojectorQ, 
-      int sizeRprojectorX, SCALAR *sol, REAL eval, REAL shift, 
-      double eresTol, double aNormEstimate, double machEps, SCALAR *rwork, 
-      size_t rworkSize, primme_params *primme) {
+      SCALAR *Lprojector, PRIMME_INT ldLprojector, SCALAR *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, SCALAR *sol,
+      REAL eval, REAL shift, double machEps, SCALAR *rwork, size_t rworkSize,
+      primme_params *primme) {
 
    int i;             /* loop variable                                       */
    int numIts;        /* Number of inner iterations                          */
@@ -182,14 +177,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
    REAL Gamma=0.0, Phi=0.0;
    REAL gamma;
 
-   /* The convergence criteria of the inner linear system must satisfy:       */
-   /* || current residual || <= relativeTolerance * || initial residual ||    */
-   /*                                               + absoluteTol             */
-
-   double relativeTolerance; 
-   double absoluteTolerance;
-   double LTolerance, ETolerance=0.0;
+   REAL LTolerance, ETolerance, LTolerance_factor, ETolerance_factor;
    int isConv;
+   double aNorm;
 
    /* -------------------------------------------*/
    /* Subdivide the workspace into needed arrays */
@@ -207,27 +197,45 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
    /* Set up convergence criteria by Tolerance */
    /* -----------------------------------------*/
 
-   if (primme->aNorm <= 0.0L) {
-      absoluteTolerance = aNormEstimate*machEps;
-      eresTol = eresTol*aNormEstimate;
-   }
-   else {
-      absoluteTolerance = primme->aNorm*machEps;
-   }
+   aNorm = max(primme->stats.estimateLargestSVal, primme->aNorm);
    tau_prev = tau_init = *rnorm;       /* Assumes zero initial guess */
-   LTolerance = eresTol;
 
-   if (primme->correctionParams.convTest == primme_decreasing_LTolerance) {
-      relativeTolerance = pow(primme->correctionParams.relTolBase, 
-         (double)-primme->stats.numOuterIterations);
-      LTolerance = relativeTolerance * tau_init 
-                   + absoluteTolerance + eresTol;
-   /*printf(" RL %e INI %e abso %e LToler %e aNormEstimate %e \n", */
-   /*relativeTolerance, tau_init, absoluteTolerance,LTolerance,aNormEstimate);*/
-   }
-   else {
-      LTolerance = absoluteTolerance;          
-   }
+   /* NOTE: In any case stop when linear system residual is less than         */
+   /*       max(machEps,eps)*aNorm.                                           */
+   LTolerance = machEps*aNorm;
+   LTolerance_factor = 1.0;
+   ETolerance = 0.0;
+   ETolerance_factor = 0.0;
+
+   switch(primme->correctionParams.convTest) {
+   case primme_full_LTolerance:
+      /* stop when linear system residual norm is less than aNorm*eps.        */
+      /* NOTE: the criterion is covered by the default values set before.     */
+       break;
+   case primme_decreasing_LTolerance:
+      /* stop when linear system residual norm is less than relTolBase^-its   */
+      /* TODO: probably 'its' should be the number of outer iterations this   */
+      /* pair has been targeted, instead of the total number of iterations.   */
+      LTolerance = max(LTolerance,
+            pow(primme->correctionParams.relTolBase, 
+               (double)-primme->stats.numOuterIterations));
+      break;
+   case primme_adaptive:
+      /* stop when estimate eigenvalue residual norm is less than aNorm*eps.  */
+      /* Eigenresidual tol may not be achievable, because it iterates on      */
+      /* P(A-s)P not on (A-s). But tau reflects the residual norm on P(A-s)P. */
+      /* So stop when linear system residual norm or the estimate eigenvalue  */
+      /* residual norm is less than aNorm*eps/1.8.                            */
+      LTolerance_factor = 1.0/1.8;
+      ETolerance_factor = 1.0/1.8;
+      break; 
+   case primme_adaptive_ETolerance:
+      /* Besides the primme_adaptive criteria, stop when estimate eigenvalue  */
+      /* residual norm is less than tau_init*0.1                              */
+      LTolerance_factor = 1.0/1.8;
+      ETolerance_factor = 1.0/1.8;
+      ETolerance = tau_init*0.1;
+     }
    
    /* --------------------------------------------------------*/
    /* Set up convergence criteria by max number of iterations */
@@ -332,8 +340,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          }
          break;
       }
-      else if (primme->correctionParams.convTest == primme_adaptive_ETolerance
-            || primme->correctionParams.convTest == primme_adaptive) {
+      if (ETolerance > 0.0 || ETolerance_factor > 0.0) {
          /* --------------------------------------------------------*/
          /* Adaptive stopping based on dynamic monitoring of eResid */
          /* --------------------------------------------------------*/
@@ -369,28 +376,6 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
          R = max(0.9878, sqrt(tau/tau_prev))*sqrt(1+dot_sol);
         
-         /* Andreas: note that eigenresidual tol may not be achievable, because we */
-         /* iterate on P(A-s)P not (A-s). But tau reflects linSys on P(A-s)P. */
-         /* Lingfei: if refine projection is used, there is no need to change eresTol */
-         if(primme->correctionParams.precondition == 1 ||
-               primme->projectionParams.projection == primme_proj_RR) {
-            ETolerance = eres_updated*1.8L;
-         }
-         else {
-            ETolerance = eres_updated;
-         }
-
-         CHKERR(convTestFun_Sprimme(eval_updated, NULL, ETolerance, &isConv,
-                  primme), -1);
-
-         if (numIts > 1 && (isConv || eres_updated < absoluteTolerance)) {
-            if (primme->printLevel >= 5 && primme->procID == 0) {
-               fprintf(primme->outputFile, " eigenvalue and residual norm "
-                     "passed convergence criterion \n");
-            }
-            break;
-         }
-
          if (numIts > 1 && (tau <= R*eres_updated || eres_updated <= tau*R) ) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, " tau < R eres \n");
@@ -411,12 +396,29 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             break;
          }
          
-         if (numIts > 1 && 
-               primme->correctionParams.convTest == primme_adaptive_ETolerance
-               && eres_updated < tau_init*0.1L) {
-
+         if (numIts > 1 && eres_updated < ETolerance) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eres < eresTol %e \n",eres_updated);
+            }
+            break;
+         }
+
+         /* Check if some of the next conditions is satisfied:                */
+         /* a) estimate eigenvalue residual norm (eres_updated) is less       */
+         /*    than eps*aNorm*Etolerance_factor                               */
+         /* b) linear system residual norm is less                            */
+         /*    than eps*aNorm*LTolerance_factor                               */
+         /* The result is to check if eps*aNorm is less than                  */
+         /* max(tau/LTolerance_factor, eres_updated/ETolerance_factor).       */
+
+         double tol = max(tau/LTolerance_factor, eres_updated/ETolerance_factor);
+         CHKERR(convTestFun_Sprimme(eval_updated, NULL, tol, &isConv, primme),
+               -1);
+
+         if (numIts > 1 && isConv) {
+            if (primme->printLevel >= 5 && primme->procID == 0) {
+               fprintf(primme->outputFile, " eigenvalue and residual norm "
+                     "passed convergence criterion \n");
             }
             break;
          }
@@ -435,7 +437,11 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       } /* End of if adaptive JDQMR section                        */
         /* --------------------------------------------------------*/
       else {
-         CHKERR(convTestFun_Sprimme(eval, NULL, tau, &isConv, primme), -1);
+         /* Check if the linear system residual norm (tau) is less            */
+         /* than eps*aNorm*LTolerance_factor                                  */
+
+         CHKERR(convTestFun_Sprimme(eval, NULL, tau/LTolerance_factor, &isConv,
+                  primme), -1);
 
          if (numIts > 1 && isConv) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
