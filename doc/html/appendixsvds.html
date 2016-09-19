@@ -438,11 +438,12 @@ double <code class="descname">eps</code><a class="headerlink" href="#c.primme_sv
 of the residual vectors is less than <a class="reference internal" href="#c.primme_svds_params.eps" title="primme_svds_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a> * <a class="reference internal" href="#c.primme_svds_params.aNorm" title="primme_svds_params.aNorm"><code class="xref c c-member docutils literal"><span class="pre">aNorm</span></code></a>.
 The residual vectors are <span class="math">\(A v - \sigma u\)</span> and <span class="math">\(A^* u - \sigma v\)</span> for the
 triplet <span class="math">\((u,\sigma,v)\)</span>.</p>
+<p>The default value is machine precision times <span class="math">\(10^4\)</span>.</p>
 <p>Input/output:</p>
 <blockquote>
 <div><div class="line-block">
-<div class="line"><a class="reference internal" href="svdsc.html#c.primme_svds_initialize" title="primme_svds_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_svds_initialize()</span></code></a> sets this field to <span class="math">\(10^{-12}\)</span>;</div>
-<div class="line">this field is read by <a class="reference internal" href="svdsc.html#c.dprimme_svds" title="dprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">dprimme_svds()</span></code></a> and <a class="reference internal" href="svdsc.html#c.zprimme_svds" title="zprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">zprimme_svds()</span></code></a>.</div>
+<div class="line"><a class="reference internal" href="svdsc.html#c.primme_svds_initialize" title="primme_svds_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_svds_initialize()</span></code></a> sets this field to 0.0;</div>
+<div class="line">this field is read and written by <a class="reference internal" href="svdsc.html#c.dprimme_svds" title="dprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">dprimme_svds()</span></code></a> and <a class="reference internal" href="svdsc.html#c.zprimme_svds" title="zprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">zprimme_svds()</span></code></a>.</div>
 </div>
 </div></blockquote>
 </dd></dl>

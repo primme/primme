@@ -502,11 +502,12 @@ double <code class="descname">eps</code><a class="headerlink" href="#c.primme_pa
 <dd><p>If <a class="reference internal" href="#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal"><span class="pre">convTestFun</span></code></a> is NULL, an eigenpairs is marked as converged when the 2-norm
 of the residual vector is less than <a class="reference internal" href="#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a> * <a class="reference internal" href="#c.primme_params.aNorm" title="primme_params.aNorm"><code class="xref c c-member docutils literal"><span class="pre">aNorm</span></code></a>.
 The residual vector is <span class="math">\(A x - \lambda x\)</span> or <span class="math">\(A x - \lambda B x\)</span>.</p>
+<p>The default value is machine precision times <span class="math">\(10^4\)</span>.</p>
 <p>Input/output:</p>
 <blockquote>
 <div><div class="line-block">
-<div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to <span class="math">\(10^{-12}\)</span>;</div>
-<div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
+<div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0.0;</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
 </dd></dl>
