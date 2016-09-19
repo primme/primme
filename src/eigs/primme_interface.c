@@ -63,7 +63,7 @@ void primme_initialize(primme_params *primme) {
    primme->numEvals                = 1;
    primme->target                  = primme_smallest;
    primme->aNorm                   = 0.0L;
-   primme->eps                     = 1e-12;
+   primme->eps                     = 0.0;
 
    /* Matvec and preconditioner */
    primme->matrixMatvec            = NULL;

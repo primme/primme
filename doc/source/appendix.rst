@@ -345,10 +345,12 @@ primme_params
       of the residual vector is less than |eps| \* |aNorm|.
       The residual vector is :math:`A x - \lambda x` or :math:`A x - \lambda B x`.
 
+      The default value is machine precision times :math:`10^4`.
+
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to :math:`10^{-12}`;
-         | this field is read by :c:func:`dprimme`.
+         | :c:func:`primme_initialize` sets this field to 0.0;
+         | this field is read and written by :c:func:`dprimme`.
  
    .. c:member:: FILE *outputFile
 
