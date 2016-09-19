@@ -10,7 +10,7 @@ override INCLUDE += -I../include
 override FINCLUDE += -I../include
 LIBDIRS += -L../lib
 
-EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_svds_dseq ex_svds_zseq
+EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_svds_dseq ex_svds_zseq ex_eigs_dseq_phi
 EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx
 EXAMPLES_F77 = ex_eigs_dseqf77 ex_eigs_zseqf77 ex_svds_dseqf77 ex_svds_zseqf77
 
