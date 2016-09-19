@@ -173,7 +173,6 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    int *ipivot;             /* The pivot for the UDU factorization of M      */
    int *iev;                /* Evalue index each block vector corresponds to */
 
-   double tol;              /* Required tolerance for residual norms         */
    SCALAR *V;               /* Basis vectors                                 */
    PRIMME_INT ldV;          /* The leading dimension of V                    */
    SCALAR *W;               /* Work space storing A*V                        */
@@ -296,6 +295,12 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.timeGlobalSum = 0.0;
    primme->stats.volumeGlobalSum = 0.0;
    primme->stats.numOrthoInnerProds = 0.0;
+   primme->stats.estimateMaxEVal   = -HUGE_VAL;
+   primme->stats.estimateMinEVal   = HUGE_VAL;
+   primme->stats.estimateLargestSVal = -HUGE_VAL;
+   primme->stats.maxConvTol        = 0.0L;
+   primme->stats.estimateResidualError = 0.0L;
+
    numLocked = 0;
    converged = FALSE;
    LockingProblem = 0;
@@ -304,22 +309,6 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    blockSize = 0; 
 
    for (i=0; i<primme->numEvals; i++) perm[i] = i;
-
-   /* ---------------------------------------- */
-   /* Set the tolerance for the residual norms */
-   /* ---------------------------------------- */
-
-   primme->stats.estimateMaxEVal   = -HUGE_VAL;
-   primme->stats.estimateMinEVal   = HUGE_VAL;
-   primme->stats.estimateLargestSVal = -HUGE_VAL;
-   primme->stats.maxConvTol        = 0.0L;
-   primme->stats.estimateResidualError = 0.0L;
-   if (primme->aNorm > 0.0L) {
-      tol = primme->eps*primme->aNorm;
-   }
-   else {
-      tol = primme->eps; /* tol*estimateLargestSVal will be checked */
-   }
 
    /* -------------------------------------- */
    /* Quick return for matrix of dimension 1 */
@@ -561,9 +550,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                         evecsHat, ldevecsHat, UDU, ipivot, evals, numLocked,
                         numConvergedStored, hVals, prevRitzVals,
                         &numPrevRitzVals, flags, basisSize, blockNorms, iev,
-                        blockSize, tol, machEps,
-                        primme->stats.estimateLargestSVal, rwork, &rworkSize,
-                        iwork, iworkSize, primme), -1);
+                        blockSize, machEps, rwork, &rworkSize, iwork, iworkSize,
+                        primme), -1);
 
                /* ------------------------------------------------------ */
                /* If dynamic method switch, accumulate inner method time */

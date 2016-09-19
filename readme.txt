@@ -89,7 +89,7 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
-Changes in PRIMME 2.0 (released on XXX):
+Changes in PRIMME 2.0 (released on September 19, 2016):
 
 * Changed license to BSD 3-clause.
 
@@ -943,7 +943,7 @@ primme_set_member_f77(primme, label, value)
            "PRIMME_procID"
            "PRIMME_commInfo"
            "PRIMME_nLocal"
-           "PRIMME_globalSumDouble"
+           "PRIMME_globalSumReal"
            "PRIMME_numEvals"
            "PRIMME_target"
            "PRIMME_numTargetShifts"
@@ -3116,7 +3116,7 @@ which has the next fields:
    int procID;            // rank of this process
    PRIMME_INT mLocal;     // number of rows stored in this process
    PRIMME_INT nLocal;     // number of columns stored in this process
-   void (*globalSumDouble)(...); // sum reduction among processes
+   void (*globalSumReal)(...); // sum reduction among processes
 
    /* Accelerate the convergence */
    void (*applyPreconditioner)(...); // preconditioner-vector product
@@ -3569,7 +3569,7 @@ primme_svds_set_member_f77(primme_svds, label, value)
            "PRIMME_SVDS_mLocal"
            "PRIMME_SVDS_nLocal"
            "PRIMME_SVDS_commInfo"
-           "PRIMME_SVDS_globalSumDouble"
+           "PRIMME_SVDS_globalSumReal"
            "PRIMME_SVDS_numSvals"
            "PRIMME_SVDS_target"
            "PRIMME_SVDS_numTargetShifts"

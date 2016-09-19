@@ -54,7 +54,6 @@ static void mergeSort(REAL *lockedEvals, int numLocked, REAL *ritzVals,
 static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
       PRIMME_INT ldx, int blockSize, SCALAR *rwork, primme_params *primme);
 
-
 static int setup_JD_projectors(SCALAR *x, SCALAR *evecs, PRIMME_INT ldevecs,
       SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *Kinvx, SCALAR *xKinvx, 
       SCALAR **Lprojector, PRIMME_INT *ldLprojector, SCALAR **RprojectorQ,
@@ -101,11 +100,7 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *evecs, PRIMME_INT ldevecs,
  *
  * blockSize      The current block size
  *
- * eresTol        the eigenvalue residual tolerance
- *
  * machEps        machine precision 
- *
- * aNormEstimate if primme->aNorm<=0, eresTol*aNormEstimate (=largestRitzValue)
  *
  * rwork          Real workspace of size          
  *                3*maxEvecsSize + 2*primme->maxBlockSize 
@@ -155,9 +150,9 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldevecsHat, SCALAR *UDU, int *ipivot, REAL *lockedEvals, 
       int numLocked, int numConvergedStored, REAL *ritzVals, 
       REAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
-      REAL *blockNorms, int *iev, int blockSize, double eresTol, 
-      double machEps, double aNormEstimate, SCALAR *rwork, size_t *rworkSize,
-      int *iwork, int iworkSize, primme_params *primme) {
+      REAL *blockNorms, int *iev, int blockSize, double machEps,
+      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme) {
 
    int blockIndex;         /* Loop index.  Ranges from 0..blockSize-1.       */
    int ritzIndex;          /* Ritz value index blockIndex corresponds to.    */
@@ -453,8 +448,8 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                   ldevecs, UDU, ipivot, &xKinvx,
                   Lprojector, ldLprojector, RprojectorQ, ldRprojectorQ,
                   RprojectorX, ldRprojectorX, sizeLprojector, sizeRprojectorQ,
-                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift, eresTol,
-                  aNormEstimate, machEps, linSolverRWork, linSolverRWorkSize,
+                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift,
+                  machEps, linSolverRWork, linSolverRWorkSize,
                   primme), -1);
 
          Num_copy_Sprimme(primme->nLocal, sol, 1, 

@@ -245,7 +245,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       int procID;            // rank of this process
       PRIMME_INT mLocal;     // number of rows stored in this process
       PRIMME_INT nLocal;     // number of columns stored in this process
-      void (*globalSumDouble)(...); // sum reduction among processes
+      void (*globalSumReal)(...); // sum reduction among processes
       
       /* Accelerate the convergence */
       void (*applyPreconditioner)(...); // preconditioner-vector product
