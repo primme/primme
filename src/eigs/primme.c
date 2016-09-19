@@ -163,6 +163,9 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
 
    if (!primme->convTestFun) {
       primme->convTestFun = convTestFunAbsolute;
+      if (primme->eps == 0.0) {
+         primme->eps = machEps*1e4;
+      }
    }
 
    /* ------------------------------------------------------- */
@@ -472,7 +475,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
       ret = -10;
    else if (primme->numEvals < 0)
       ret = -11;
-   else if (primme->eps > 0.0L && primme->eps < Num_lamch_Rprimme("E") )
+   else if (fabs(primme->eps) != 0.0L && primme->eps < Num_lamch_Rprimme("E") )
       ret = -12;
    else if ( primme->target != primme_smallest  &&
              primme->target != primme_largest  &&

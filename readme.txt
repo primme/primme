@@ -1524,10 +1524,12 @@ primme_params
       "aNorm". The residual vector is A x - \lambda x or A x - \lambda
       B x.
 
+      The default value is machine precision times 10^4.
+
       Input/output:
 
-            "primme_initialize()" sets this field to 10^{-12};
-            this field is read by "dprimme()".
+            "primme_initialize()" sets this field to 0.0;
+            this field is read and written by "dprimme()".
 
    FILE *outputFile
 
@@ -4026,10 +4028,12 @@ primme_svds_params
          vectors are A v - \sigma u and A^* u - \sigma v for the
          triplet (u,\sigma,v).
 
+         The default value is machine precision times 10^4.
+
          Input/output:
 
-               "primme_svds_initialize()" sets this field to 10^{-12};
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+               "primme_svds_initialize()" sets this field to 0.0;
+               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
       FILE *outputFile
 
