@@ -75,7 +75,16 @@
 #  define PRIMME_INT_MAX INT_MAX
 #endif
 
+#if defined(ENABLE_OFFLOAD)
+#pragma offload_attribute (push,target(mic))
+#endif
+
 #include "primme_eigs.h"
 #include "primme_svds.h"
+
+#if defined(ENABLE_OFFLOAD)
+#pragma offload_attribute (pop)
+#endif
+
 
 #endif /* PRIMME_H */

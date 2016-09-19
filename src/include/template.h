@@ -334,4 +334,8 @@
 #  define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
+#if defined(ENABLE_OFFLOAD)
+#pragma offload_attribute (push,target(mic))
+#endif
+
 #endif
