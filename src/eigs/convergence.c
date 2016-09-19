@@ -178,7 +178,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       /* ----------------------------------------------------------------- */
 
       else if (blockNorms[i-left] <= primme->stats.estimateResidualError) {
-         flags[i] = CONVERGED;
+         flags[i] = SKIP_UNTIL_RESTART;
          *reset = 1;
       }
 
@@ -291,8 +291,6 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
                                - overlaps[i]*overlaps[i]);   /* || (I-QQ')res || */
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
-
-      assert(blockNorms[iev[i]] >= overlaps[i]);
 
       /* ------------------------------------------------------------------ */
       /* NOTE: previous versions than 2.0 used the next criterion instead:  */

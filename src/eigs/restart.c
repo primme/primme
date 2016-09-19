@@ -222,13 +222,14 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
  *
  * numArbitraryVecs The number of columns of hVecsRot
  *
- * hVecsRot         hVecs = hV*hVecsRot
+ * hVecsRot         hVecs = hV*hVecsRot, where hV are the original coefficient
+ *                  vectors returned by solve_H
  *
  * ldhVecsRot       The leading dimension of hVecsRot
  *
  * restartsSinceReset Number of restarts since last reset of V and W
  *
- * reset            flag to reset V and W in the next restart
+ * reset            flag to reset V and W at this restart
  *
  *
  * Return value
@@ -304,6 +305,27 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    }
 
    /* ----------------------------------------------------------- */
+   /* Remove the SKIP_UNTIL_RESTART flags.                        */
+   /* ----------------------------------------------------------- */
+
+   for (i=0, *numConverged=*numLocked; i<basisSize; i++) {
+      if (flags[i] == SKIP_UNTIL_RESTART) {
+         flags[i] = UNCONVERGED;
+      }
+      else if (flags[i] != UNCONVERGED &&
+            /* Don't check more than numEvals */
+               *numConverged < primme->numEvals &&
+            /* Check only the first pairs, except if finding closest_leq/geq  */
+            /* because with refined extraction the pairs may not be ordered   */
+            /* by this criterion.                                             */
+               (i < primme->numEvals-*numLocked
+                || primme->target == primme_closest_geq
+                || primme->target == primme_closest_leq)) {
+         (*numConverged)++;
+      }
+   }
+
+   /* ----------------------------------------------------------- */
    /* Special case: If (basisSize+numLocked) is the entire space, */
    /* then everything should be converged. Do not test, just flag */
    /* everything as converged                                     */
@@ -316,20 +338,20 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
       restartSize = basisSize;
       *numPrevRetained = 0;
    }
-
    /* --------------------------------------------------------------------- */
    /* If basis isn't full, restart with the current basis size.             */
+   /* --------------------------------------------------------------------- */
+   else if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
+      restartSize = basisSize;
+      *numPrevRetained = 0;
+   }
+   /* --------------------------------------------------------------------- */
    /* If dynamic thick restarting is to be used, then determine the minimum */
    /* number of free spaces to be maintained and call the DTR routine.      */
    /* The DTR routine will determine how many coefficient vectors from the  */
    /* left and right of H-spectrum to retain at restart. If DTR is not used */
    /* then set the restart size to the minimum restart size.                */
    /* --------------------------------------------------------------------- */
-
-   else if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
-      restartSize = basisSize;
-      *numPrevRetained = 0;
-   }
    else if (primme->restartingParams.scheme == primme_dtr) {
       int numFree = *numPrevRetained+max(3, primme->maxBlockSize);
       restartSize = dtr_Sprimme(*numLocked, hVecs, hVals, flags, basisSize, numFree, 
@@ -345,7 +367,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    /* sqrt(restarts)*machEps*aNorm. For now the last norm is tracked here   */
    /* and used by check_convergence to consider the error computing the     */
    /* residual norm. V and W are asked to be reset when the error is as     */
-   /* much as the current residual norm.                                    */
+   /* much as the current residual norm. If using refined, only W is        */
+   /* reset: we haven't seen any benefit by resetting V also.               */
    /* --------------------------------------------------------------------- */
 
    if (!*reset) {
@@ -353,7 +376,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    }
    else {
       *restartsSinceReset = 0;
-      if (!Q) *reset = 2;
+      if (!Q) *reset = 2; /* only reset W, not V */
    }
 
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
@@ -368,13 +391,16 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
 
    /* ----------------------------------------------------------------------- */
    /* Insert as many initial guesses as eigenpairs have converged.            */
+   /* Leave sufficient restarting room in the restarted basis so that to      */
+   /* insert (in main_iter) as many initial guesses as the number of          */
+   /* eigenpairs that converged.                                              */
    /* ----------------------------------------------------------------------- */
 
    restartSize -= min(min(numGuesses, *numConverged-*numLocked), restartSize);
 
    /* ----------------------------------------------------------------------- */
-   /* Don't insert more vectors from iterations than the actual restart size  */
-   /* and don't make the final basis size larger than the current one.        */
+   /* Limit the number of previous retained vectors such that the final basis */
+   /* size isn't larger than the current basis size.                          */
    /* ----------------------------------------------------------------------- */
 
    *numPrevRetained = max(0, min(min(
@@ -464,7 +490,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
             ldhVecsRot, rworkSize, rwork, iworkSize0, iwork0, machEps, primme),
          -1);
 
-   /* If all request eigenpair converged, force the converged vectors at the  */
+   /* If all request eigenpairs converged, force the converged vectors at the */
    /* beginning of V                                                          */
 
    if (*numConverged >= primme->numEvals && !primme->locking) {
@@ -566,14 +592,10 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
  *
  * hVecsPerm        The permutation that orders the output hVals and hVecs as primme.target
  *
- * numArbitraryVecs On input, the number of leading coefficient vectors in
- *                  hVecs that do not come from solving the projected problem.
- *                  On output, the number of such vectors that are in the
- *                  restarted basis
  * 
  * OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------
- * reset            flag to reset V and W in the next restart
+ * reset            flag to reset V and W at this restart
  * 
  *
  * Return value
@@ -670,8 +692,10 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
    /*                           [--------------) numPrevRetained     */
    /*                                  ievSize [-------)             */
    /*                                                                */
-   /* X & R has the eigenvectors and residual vectors of the         */
-   /* first ievSize candidates pairs.                                */
+   /* X & R have the eigenvectors and residual vectors of the        */
+   /* first ievSize candidates pairs to be targeted after restart.   */
+   /* Their computation is performed more efficiently here together  */
+   /* with the V, W                                                  */
    /* -------------------------------------------------------------- */
 
    *indexOfPreviousVecs = *restartSize;
@@ -683,8 +707,7 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
                   primme->numEvals-*numConverged+1),
                   primme->maxBasisSize-*restartSize-numPrevRetained),
                   basisSize-*numConverged));
-   *ievSize = max(0, min(*numConverged+*ievSize, primme->minRestartSize)
-         - *numConverged);
+   *ievSize = max(0, min(*ievSize, primme->minRestartSize - *numConverged));
 
    /* Generate restartPerm */
 
@@ -941,7 +964,7 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
          NULL, 0, 0,
          rwork, TO_INT(*lrwork), primme);
 
-   /* Reortho [X2 X0] against evecs if asked */
+   /* Reortho [evecs(evecSize:) X0] against evecs if asked */
 
    if (reset > 1) {
       CHKERR(ortho_Sprimme(evecs, ldevecs, NULL, 0, evecsSize, 
@@ -1111,6 +1134,11 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
  *
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  *
+ * numArbitraryVecs On input, the number of coefficients vectors that do
+ *                  not correspond to solutions of the projected problem.
+ *                  They appear in the first numArbitraryVecs positions of hVecs.
+ *                  On output, the number of such vectors that are in the
+ *                  restarted basis.
  *
  * Return value
  * ------------
@@ -1467,6 +1495,11 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
  *
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  *
+ * numArbitraryVecs On input, the number of coefficients vectors that do
+ *                  not correspond to solutions of the projected problem.
+ *                  They appear in the first numArbitraryVecs positions of hVecs.
+ *                  On output, the number of such vectors that are in the
+ *                  restarted basis.
  * 
  * Return value
  * ------------
@@ -1497,6 +1530,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    int *restartPerm0;
    int *invhVecsPerm;
    int *iwork0;
+   double aNorm = primme?max(primme->aNorm, primme->stats.estimateLargestSVal):0.0;
 
    /* Return memory requirement */
  
@@ -1540,8 +1574,9 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* NOTE: Force to pass the next condition if you want to rebuild the QR    */
    /* factorization at every restart.                                         */
 
-   if (*targetShiftIndex < 0 || primme->targetShifts[*targetShiftIndex]
-         != primme->targetShifts[min(primme->numTargetShifts-1, numConverged)]) {
+   if (*targetShiftIndex < 0 || fabs(primme->targetShifts[*targetShiftIndex]
+            - primme->targetShifts[min(primme->numTargetShifts-1, numConverged)])
+         > machEps*aNorm) {
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
 
@@ -1613,7 +1648,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
          RPrevhVecs, basisSize);
  
    /* Do hVecsRot0 = diag(hSvals)*hVecsRot(hVecsPerm(restartPerm)) limited */
-   /* to the columsn 0:newNumArbitraryVecs-1                               */
+   /* to the columns 0:newNumArbitraryVecs-1 (in 3 steps)                  */
    
    nRegular = restartSize - numPrevRetained;
    for (i=0, mhVecsRot0=*numArbitraryVecs; i < nRegular; i++)
@@ -1622,21 +1657,21 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    hVecsRot0 = rwork0; rwork0 += mhVecsRot0*nRegular;
    rworkSize0 -= (size_t)mhVecsRot0*nRegular;
 
-   /* hVecsRot0 = hVecsRot(hVecsPerm(restartPerm(0:newNumArbitraryVecs-1))) */
+   /* 1) hVecsRot0 = hVecsRot(hVecsPerm(restartPerm(0:newNumArbitraryVecs-1))) */
    Num_zero_matrix_Sprimme(hVecsRot0, mhVecsRot0, nRegular, mhVecsRot0);
    Num_copy_matrix_columns_Sprimme(hVecsRot, *numArbitraryVecs,
          restartPerm0, newNumArbitraryVecs, ldhVecsRot, hVecsRot0, NULL,
          mhVecsRot0);
 
-   /* hVecsRot0 = diag(hSVals)*hVecsRot0 */
+   /* 2) hVecsRot0 = diag(hSVals)*hVecsRot0 */
    for (i=0; i<newNumArbitraryVecs; i++) {
       for (j=0; j<*numArbitraryVecs; j++) {
          hVecsRot0[mhVecsRot0*i+j] *= hSVals[j];
       }
    }
 
-   /* hVecsRot0(:,c = diag(hSVals)*I(:,restartPerm0(c))  */
-   /* for c = newNumArbVecs:nRegular-1                   */
+   /* 3) hVecsRot0(:,c) = diag(hSVals)*I(:,restartPerm0(c))  */
+   /*  for c = newNumArbVecs:nRegular-1                   */
    for (i=newNumArbitraryVecs; i<nRegular; i++) {
       hVecsRot0[mhVecsRot0*i+restartPerm0[i]] = hSVals[restartPerm0[i]];
    }
@@ -1703,13 +1738,13 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
             rwork, TO_INT(*rworkSize), primme), -1);
 
    /* ---------------------------------------------------------------------- */
-   /* R may lost the structure after the previous permutation, so the        */
+   /* R may lost the triangular structure after the previous permutation, so */
    /* the easiest way to recompute the projected matrices hVecs, hU and      */
    /* and hSVals is to call solve_H. For LOBPCG style, it means to           */
    /* solve twice the projected problem, and it may be a performance issue.  */
    /*                                                                        */
    /* TODO: solve only the columns of R corresponding to the new             */
-   /*       arbitrary vectors or the retained vectors.                       */
+   /*       arbitrary vectors and the retained vectors.                      */
    /* ---------------------------------------------------------------------- */
 
    /* Compute the singular value decomposition of R.                         */
@@ -1741,11 +1776,12 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
          rwork, iwork0);
 
    /* ----------------------------------------------------------------- */
-   /* Update numArbitraryVecs as the number of arbitrary vectors in     */
-   /* the restarted basis. When the retained coefficient vectors were   */
+   /* After all the changes in hVecs and R new arbitrary vectors may    */
+   /* have been introduced. When the retained coefficient vectors are   */
    /* orthogonalized against all arbitrary vectors then the new number  */
-   /* arbitrary vectors will the largest permutation in hVecsPerm.      */
-   /* Otherwise the easiest way is to consider all arbitrary vectors.   */
+   /* of arbitrary vectors is at most the largest index out of order    */
+   /* in hVecsPerm, plus one. Otherwise the easiest way is to consider  */
+   /* all restarted vectors as arbitrary vectors.                       */
    /* ----------------------------------------------------------------- */
 
    if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
@@ -1863,6 +1899,11 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  *
+ * numArbitraryVecs On input, the number of coefficients vectors that do
+ *                  not correspond to solutions of the projected problem.
+ *                  They appear in the first numArbitraryVecs positions of hVecs.
+ *                  On output, the number of such vectors that are in the
+ *                  restarted basis.
  * 
  * Return value
  * ------------
@@ -2133,6 +2174,8 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
 
    if (primme->projectionParams.projection == primme_proj_harmonic) {
 
+      /* TODO: pending to explain this, see solve_H_Harm for some guidance */
+
       CHKERR(ortho_Sprimme(hVecs?&hVecs[ldhVecs*indexOfPreviousVecs]:NULL,
                ldhVecs, NULL, 0, 0, *numPrevRetained-1,
                &hU[ldhU*indexOfPreviousVecs], ldhU, indexOfPreviousVecs,
@@ -2143,10 +2186,9 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
 
    }
    else if (hVecs && primme->projectionParams.projection == primme_proj_refined) {
-      /* Avoid that ortho replace linear dependent vectors by random vectors. */
-      /* This has shown benefit finding the smallest singular values. In that */
-      /* case the random vectors make the restarting W with large singular    */
-      /* values.                                                              */
+      /* Avoid that ortho replaces linear dependent vectors by random vectors.*/
+      /* The random vectors make the restarting W with large singular value.  */
+      /* This change has shown benefit finding the smallest singular values.  */
 
       outR = rwork;
       rwork += basisSize*(*numPrevRetained);

@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="next" title="Eigenvalue Problems" href="api.html" />
+    <link rel="next" title="Eigenvalue Problems" href="apieigs.html" />
     <link rel="prev" title="PRIMME Documentation" href="readme.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -62,7 +62,7 @@
 <ul>
   <li><a href="readme.html">Documentation overview</a><ul>
       <li>Previous: <a href="readme.html" title="previous chapter">PRIMME Documentation</a></li>
-      <li>Next: <a href="api.html" title="next chapter">Eigenvalue Problems</a></li>
+      <li>Next: <a href="apieigs.html" title="next chapter">Eigenvalue Problems</a></li>
   </ul></li>
 </ul>
 </div>
@@ -113,8 +113,9 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77, M
 <h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h2>
 <p>Changes in PRIMME 2.0 (released on XXX):</p>
 <ul class="simple">
-<li>Added interface for singular value problems; see <a class="reference internal" href="svdsc.html#c.dprimme_svds" title="dprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">dprimme_svds()</span></code></a>.</li>
-<li>Support for <code class="docutils literal"><span class="pre">float</span></code> and <code class="docutils literal"><span class="pre">complex</span> <span class="pre">float</span></code> arithmetic.</li>
+<li>Changed license to BSD 3-clause.</li>
+<li>New support for singular value problems; see <a class="reference internal" href="svdsc.html#c.dprimme_svds" title="dprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">dprimme_svds()</span></code></a>.</li>
+<li>New support for <code class="docutils literal"><span class="pre">float</span></code> and <code class="docutils literal"><span class="pre">complex</span> <span class="pre">float</span></code> arithmetic.</li>
 <li>Support for problem dimensions larger than 2^31, without requiring
 <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> compiled with 64-bits integers.</li>
 <li>Improve robustness and performance for interior problems; implemented advanced refined
@@ -123,18 +124,18 @@ and harmonic-Ritz extractions.</li>
 <li>Added parameter to indicate the leading dimension of the input/output matrices and to
 return an error code in callbacks <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a>,
 <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">massMatrixMatvec</span></code></a> and <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal"><span class="pre">globalSumReal</span></code></a>.</li>
-<li>Changed to type <code class="xref c c-type docutils literal"><span class="pre">PRIMME_NUM</span></code> the options <a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal"><span class="pre">maxMatvecs</span></code></a>
+<li>Changed to type <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal"><span class="pre">PRIMME_INT</span></code></a> the options <a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal"><span class="pre">maxMatvecs</span></code></a>
 and <a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal"><span class="pre">iseed</span></code></a>, and the stats counters <a class="reference internal" href="appendix.html#c.primme_params.stats.numOuterIterations" title="primme_params.stats.numOuterIterations"><code class="xref c c-member docutils literal"><span class="pre">numOuterIterations</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numRestarts" title="primme_params.stats.numRestarts"><code class="xref c c-member docutils literal"><span class="pre">numRestarts</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numMatvecs" title="primme_params.stats.numMatvecs"><code class="xref c c-member docutils literal"><span class="pre">numMatvecs</span></code></a>,
 <a class="reference internal" href="appendix.html#c.primme_params.stats.numPreconds" title="primme_params.stats.numPreconds"><code class="xref c c-member docutils literal"><span class="pre">numPreconds</span></code></a>. Also changed <a class="reference internal" href="appendix.html#c.primme_params.realWorkSize" title="primme_params.realWorkSize"><code class="xref c c-member docutils literal"><span class="pre">realWorkSize</span></code></a> to <code class="docutils literal"><span class="pre">size_t</span></code>. Fortran interface functions
-will expect an <code class="docutils literal"><span class="pre">interger</span></code> of size compatible with <code class="xref c c-type docutils literal"><span class="pre">PRIMME_NUM</span></code> for
-all parameters with integer type: <code class="docutils literal"><span class="pre">int</span></code>, <code class="xref c c-type docutils literal"><span class="pre">PRIMME_NUM</span></code> and <code class="docutils literal"><span class="pre">size_t</span></code>;
+will expect an <code class="docutils literal"><span class="pre">interger</span></code> of size compatible with <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal"><span class="pre">PRIMME_INT</span></code></a> for
+all parameters with integer type: <code class="docutils literal"><span class="pre">int</span></code>, <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal"><span class="pre">PRIMME_INT</span></code></a> and <code class="docutils literal"><span class="pre">size_t</span></code>;
 see also parameter <code class="docutils literal"><span class="pre">value</span></code> in functions
-<a class="reference internal" href="primmef77.html#c.primmetop_set_member_f77" title="primmetop_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primmetop_set_member_f77()</span></code></a>,
+<code class="xref c c-func docutils literal"><span class="pre">primmetop_set_member_f77()</span></code>,
 <a class="reference internal" href="primmef77.html#c.primmetop_get_member_f77" title="primmetop_get_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primmetop_get_member_f77()</span></code></a>,
 <a class="reference internal" href="primmef77.html#c.primme_set_member_f77" title="primme_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_set_member_f77()</span></code></a> and
 <a class="reference internal" href="primmef77.html#c.primme_get_member_f77" title="primme_get_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_get_member_f77()</span></code></a>.</li>
 <li>Added parameter to return an error code in Fortran interface functions:
-<a class="reference internal" href="primmef77.html#c.primmetop_set_member_f77" title="primmetop_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primmetop_set_member_f77()</span></code></a>,
+<code class="xref c c-func docutils literal"><span class="pre">primmetop_set_member_f77()</span></code>,
 <a class="reference internal" href="primmef77.html#c.primmetop_get_member_f77" title="primmetop_get_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primmetop_get_member_f77()</span></code></a>,
 <a class="reference internal" href="primmef77.html#c.primme_set_member_f77" title="primme_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_set_member_f77()</span></code></a> and
 <a class="reference internal" href="primmef77.html#c.primme_get_member_f77" title="primme_get_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_get_member_f77()</span></code></a>.</li>
@@ -327,23 +328,27 @@ the webpage <a class="reference external" href="http://www.cs.wm.edu/~andreas/so
 <ul>
 <li><p class="first"><cite>CC</cite>, compiler program such as <code class="docutils literal"><span class="pre">gcc</span></code>, <code class="docutils literal"><span class="pre">clang</span></code> or <code class="docutils literal"><span class="pre">icc</span></code>.</p>
 </li>
-<li><p class="first"><cite>CFLAGS</cite>, compiler options such as <code class="docutils literal"><span class="pre">-g</span></code> or <code class="docutils literal"><span class="pre">-O3</span></code>. Also include some of the following
-options if required for the <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> libraries to be linked:</p>
+<li><dl class="first docutils">
+<dt><cite>CFLAGS</cite>, compiler options such as <code class="docutils literal"><span class="pre">-g</span></code> or <code class="docutils literal"><span class="pre">-O3</span></code> and macro definitions</dt>
+<dd><p class="first last">like the ones described next.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Compiler flags for the <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> libraries:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">-DF77UNDERSCORE</span></code>, if Fortran appends an underscore to function names
-(usually they does).</li>
-<li><code class="docutils literal"><span class="pre">-DPRIMME_BLASINT_SIZE=64</span></code>, if the library integers are 64-bit integer (<code class="docutils literal"><span class="pre">kind=8</span></code>) type
-(usually they are not).</li>
+(usually it does).</li>
+<li><code class="docutils literal"><span class="pre">-DPRIMME_BLASINT_SIZE=64</span></code>, if the library integers are 64-bit integer (<code class="docutils literal"><span class="pre">kind=8</span></code>) type,
+aka ILP64 interface; usually integers are 32-bits even in 64-bit architectures (aka LP64 interface).</li>
 </ul>
 <p>By default PRIMME sets the integer type for matrix dimensions and counters (<a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal"><span class="pre">PRIMME_INT</span></code></a>)
 to 64 bits integer <code class="docutils literal"><span class="pre">int64_t</span></code>. This can be changed by setting the macro <code class="docutils literal"><span class="pre">PRIMME_INT_SIZE</span></code>
 to one of the following values:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">0</span></code>: use the regular <code class="docutils literal"><span class="pre">int</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">0</span></code>: use the regular <code class="docutils literal"><span class="pre">int</span></code> of your compiler.</li>
 <li><code class="docutils literal"><span class="pre">32</span></code>: use C99 <code class="docutils literal"><span class="pre">int32_t</span></code>.</li>
 <li><code class="docutils literal"><span class="pre">64</span></code>: use C99 <code class="docutils literal"><span class="pre">int64_t</span></code>.</li>
-</ul>
-</li>
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>

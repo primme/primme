@@ -25,9 +25,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Eigenvalue Problems" href="api.html" />
+    <link rel="up" title="Eigenvalue Problems" href="apieigs.html" />
     <link rel="next" title="FORTRAN Library Interface" href="primmef77.html" />
-    <link rel="prev" title="Eigenvalue Problems" href="api.html" />
+    <link rel="prev" title="Eigenvalue Problems" href="apieigs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -63,8 +63,8 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="readme.html">Documentation overview</a><ul>
-  <li><a href="api.html">Eigenvalue Problems</a><ul>
-      <li>Previous: <a href="api.html" title="previous chapter">Eigenvalue Problems</a></li>
+  <li><a href="apieigs.html">Eigenvalue Problems</a><ul>
+      <li>Previous: <a href="apieigs.html" title="previous chapter">Eigenvalue Problems</a></li>
       <li>Next: <a href="primmef77.html" title="next chapter">FORTRAN Library Interface</a></li>
   </ul></li>
   </ul></li>
@@ -120,7 +120,7 @@ void <code class="xref c c-func docutils literal"><span class="pre">primme_free<
 See <a class="reference internal" href="#guide-params"><em>Parameters Guide</em></a> for an introduction about its fields.</p>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
-<p>To use PRIMME, follow this basic steps.</p>
+<p>To use PRIMME, follow these basic steps.</p>
 <ol class="arabic">
 <li><p class="first">Include:</p>
 <div class="highlight-c"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;primme.h&quot;   /* header file is required to run primme */</span><span class="cp"></span>
@@ -143,14 +143,13 @@ ret = <a class="reference internal" href="#c.primme_set_method" title="primme_se
 ...
 </pre>
 </li>
-<li><p class="first">Then to solve a real symmetric standard eigenproblems call:</p>
+<li><p class="first">Then to solve real symmetric standard eigenproblems call:</p>
 <pre class="literal-block">
 ret = <a class="reference internal" href="#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme</span></code></a> (evals, evecs, resNorms, &amp;primme);
 </pre>
-<p>To solve Hermitian standard eigenproblems call:</p>
-<pre class="literal-block">
-ret = <a class="reference internal" href="#c.zprimme" title="zprimme"><code class="xref c c-func docutils literal"><span class="pre">zprimme</span></code></a> (evals, evecs, resNorms, &amp;primme);
-</pre>
+<p>The previous is the double precision call. There is available calls for complex
+double, single and complex single; check it out <a class="reference internal" href="#c.zprimme" title="zprimme"><code class="xref c c-func docutils literal"><span class="pre">zprimme()</span></code></a>, <a class="reference internal" href="#c.sprimme" title="sprimme"><code class="xref c c-func docutils literal"><span class="pre">sprimme()</span></code></a>
+and <a class="reference internal" href="#c.cprimme" title="cprimme"><code class="xref c c-func docutils literal"><span class="pre">cprimme()</span></code></a>.</p>
 <p>The call arguments are:</p>
 <ul class="simple">
 <li><cite>evals</cite>, array to return the found eigenvalues;</li>
@@ -159,7 +158,7 @@ ret = <a class="reference internal" href="#c.zprimme" title="zprimme"><code clas
 <li><cite>ret</cite>, returned error code.</li>
 </ul>
 </li>
-<li><p class="first">Before exiting, free the work arrays in PRIMME:</p>
+<li><p class="first">To free the work arrays in PRIMME:</p>
 <pre class="literal-block">
 <code class="xref c c-func docutils literal"><span class="pre">primme_free</span></code> (&amp;primme);
 </pre>
@@ -171,7 +170,7 @@ ret = <a class="reference internal" href="#c.zprimme" title="zprimme"><code clas
 <p>PRIMME stores the data on the structure <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal"><span class="pre">primme_params</span></code></a>, which has the next fields:</p>
 <div class="line-block">
 <div class="line"><em>Basic</em></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>,  matrix dimension.</div>
+<div class="line"><code class="docutils literal"><span class="pre">PRIMME_INT</span></code> <a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>,  matrix dimension.</div>
 <div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">(*</span></code> <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a> <code class="docutils literal"><span class="pre">)(...)</span></code>, matrix-vector product.</div>
 <div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>, how many eigenpairs to find.</div>
 <div class="line"><code class="docutils literal"><span class="pre">primme_target</span></code> <a class="reference internal" href="appendix.html#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a>, which eigenvalues to find.</div>
@@ -180,10 +179,10 @@ ret = <a class="reference internal" href="#c.zprimme" title="zprimme"><code clas
 <div class="line"><code class="docutils literal"><span class="pre">double</span></code> <a class="reference internal" href="appendix.html#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a>, tolerance of the residual norm of converged eigenpairs.</div>
 <div class="line"><br /></div>
 <div class="line"><em>For parallel programs</em></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.numProcs" title="primme_params.numProcs"><code class="xref c c-member docutils literal"><span class="pre">numProcs</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.procID" title="primme_params.procID"><code class="xref c c-member docutils literal"><span class="pre">procID</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">(*</span></code> <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal"><span class="pre">globalSumReal</span></code></a> <code class="docutils literal"><span class="pre">)(...)</span></code></div>
+<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.numProcs" title="primme_params.numProcs"><code class="xref c c-member docutils literal"><span class="pre">numProcs</span></code></a>, number of processes</div>
+<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.procID" title="primme_params.procID"><code class="xref c c-member docutils literal"><span class="pre">procID</span></code></a>,  rank of this process</div>
+<div class="line"><code class="docutils literal"><span class="pre">PRIMME_INT</span></code> <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>,  number of rows stored in this process</div>
+<div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">(*</span></code> <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal"><span class="pre">globalSumReal</span></code></a> <code class="docutils literal"><span class="pre">)(...)</span></code>, sum reduction among processes</div>
 <div class="line"><br /></div>
 <div class="line"><em>Accelerate the convergence</em></div>
 <div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">(*</span></code> <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a> <code class="docutils literal"><span class="pre">)(...)</span></code>, preconditioner-vector product.</div>
@@ -202,11 +201,11 @@ ret = <a class="reference internal" href="#c.zprimme" title="zprimme"><code clas
 <div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal"><span class="pre">numOrthoConst</span></code></a>, orthogonal constrains to the eigenvectors.</div>
 <div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.dynamicMethodSwitch" title="primme_params.dynamicMethodSwitch"><code class="xref c c-member docutils literal"><span class="pre">dynamicMethodSwitch</span></code></a></div>
 <div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal"><span class="pre">maxMatvecs</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.maxOuterIterations" title="primme_params.maxOuterIterations"><code class="xref c c-member docutils literal"><span class="pre">maxOuterIterations</span></code></a></div>
+<div class="line"><code class="docutils literal"><span class="pre">PRIMME_INT</span></code> <a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal"><span class="pre">maxMatvecs</span></code></a></div>
+<div class="line"><code class="docutils literal"><span class="pre">PRIMME_INT</span></code> <a class="reference internal" href="appendix.html#c.primme_params.maxOuterIterations" title="primme_params.maxOuterIterations"><code class="xref c c-member docutils literal"><span class="pre">maxOuterIterations</span></code></a></div>
 <div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.intWorkSize" title="primme_params.intWorkSize"><code class="xref c c-member docutils literal"><span class="pre">intWorkSize</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">long</span> <span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.realWorkSize" title="primme_params.realWorkSize"><code class="xref c c-member docutils literal"><span class="pre">realWorkSize</span></code></a></div>
-<div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal"><span class="pre">iseed</span></code></a> <code class="docutils literal"><span class="pre">[4]</span></code></div>
+<div class="line"><code class="docutils literal"><span class="pre">size_t</span></code> <a class="reference internal" href="appendix.html#c.primme_params.realWorkSize" title="primme_params.realWorkSize"><code class="xref c c-member docutils literal"><span class="pre">realWorkSize</span></code></a></div>
+<div class="line"><code class="docutils literal"><span class="pre">PRIMME_INT</span></code> <a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal"><span class="pre">iseed</span></code></a> <code class="docutils literal"><span class="pre">[4]</span></code></div>
 <div class="line"><code class="docutils literal"><span class="pre">int</span> <span class="pre">*</span></code> <a class="reference internal" href="appendix.html#c.primme_params.intWork" title="primme_params.intWork"><code class="xref c c-member docutils literal"><span class="pre">intWork</span></code></a></div>
 <div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">*</span></code> <a class="reference internal" href="appendix.html#c.primme_params.realWork" title="primme_params.realWork"><code class="xref c c-member docutils literal"><span class="pre">realWork</span></code></a></div>
 <div class="line"><code class="docutils literal"><span class="pre">double</span></code> <a class="reference internal" href="appendix.html#c.primme_params.aNorm" title="primme_params.aNorm"><code class="xref c c-member docutils literal"><span class="pre">aNorm</span></code></a></div>

@@ -28,12 +28,7 @@ primme_svds_params
 
    .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
 
-      Block matrix-multivector multiplication, :math:`y = A x` if ``transpose`` is zero and :math:`y = A^*x` otherwise.
-
-      If ``transpose`` is zero, then ``x`` and ``y`` are array of dimensions |SnLocal| x ``blockSize`` and |SmLocal| x ``blockSize``
-      respectively. Elsewhere they have dimensions |SmLocal| x ``blockSize`` and |SnLocal| x ``blockSize``. Both arrays are column-major
-      (consecutive rows are consecutive in memory) and their real type is ``double*`` and ``double complex*`` when called from
-      :c:func:`dprimme_svds` :c:func:`zprimme_svds` respectively.
+      Block matrix-multivector multiplication, :math:`y = A x` if ``transpose`` is zero, and :math:`y = A^*x` otherwise.
 
       :param x: input array.
       :param ldx: leading dimension of ``x``.
@@ -43,6 +38,14 @@ primme_svds_params
       :param transpose: if non-zero, the transpose A should be applied.
       :param primme_svds: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      If ``transpose`` is zero, then ``x`` and ``y`` are arrays of dimensions |SnLocal| x ``blockSize`` and |SmLocal| x ``blockSize``
+      respectively. Elsewhere they have dimensions |SmLocal| x ``blockSize`` and |SnLocal| x ``blockSize``. Both arrays are column-major
+      (consecutive rows are consecutive in memory).
+
+      The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
+      for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
+      for :c:func:`cprimme_svds` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
 
       Input/output:
 
@@ -63,11 +66,6 @@ primme_svds_params
       * ``primme_svds_op_augmented``: :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) - \sigma I`.
 
       Where :math:`\sigma` is the current target (see |targetShifts|) (for finding the smallest :math:`\sigma` is zero).
-      If ``mode`` is ``primme_svds_op_AtA``, then ``x`` and ``y`` are array of dimensions |SnLocal| x ``blockSize``; if mode is
-      ``primme_svds_op_AAt``, they are |SmLocal| x ``blockSize``; and otherwise they are (|SmLocal| + |SnLocal|) x ``blockSize``.
-      Both arrays are column-major
-      (consecutive rows are consecutive in memory) and their real type is ``double*`` and ``double complex*`` when called from
-      :c:func:`dprimme_svds` :c:func:`zprimme_svds` respectively.
 
       :param x: input array.
       :param ldx: leading dimension of ``x``.
@@ -77,6 +75,14 @@ primme_svds_params
       :param mode: one of ``primme_svds_op_AtA``, ``primme_svds_op_AAt`` or ``primme_svds_op_augmented``.
       :param primme_svds: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      If ``mode`` is ``primme_svds_op_AtA``, then ``x`` and ``y`` are arrays of dimensions |SnLocal| x ``blockSize``; if mode is
+      ``primme_svds_op_AAt``, they are |SmLocal| x ``blockSize``; and otherwise they are (|SmLocal| + |SnLocal|) x ``blockSize``.
+      Both arrays are column-major (consecutive rows are consecutive in memory).
+
+      The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
+      for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
+      for :c:func:`cprimme_svds` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
 
       Input/output:
 
@@ -162,7 +168,7 @@ primme_svds_params
          | :c:func:`dprimme_svds` sets this field to an internal function if |SnumProcs| is 1 and |SglobalSumReal| is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-      When MPI is used this can be a simply wrapper to MPI_Allreduce().
+      When MPI is used, this can be a simply wrapper to MPI_Allreduce() as shown below:
 
       .. code:: c
 
@@ -193,7 +199,7 @@ primme_svds_params
 
    .. c:member:: primme_svds_target target
 
-      Which eigenpairs to find:
+      Which singular values to find:
 
       ``primme_svds_smallest``
          Smallest singular values; |StargetShifts| is ignored.
@@ -227,15 +233,16 @@ primme_svds_params
    .. c:member:: double *targetShifts
 
       Array of shifts, at least of size |SnumTargetShifts|.
-      Used only when |Starget| is |primme_closest_abs|.
+      Used only when |Starget| is |primme_svds_closest_abs|.
+
+      Singular values are computed in order so that the
+      i-th singular value is the closest to the i-th shift. If |SnumTargetShifts| < |SnumSvals|, the last shift given
+      is used for all the remaining i's.
 
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
-
-      The i-th shift (or the last one, if it is not given) is taken into account in
-      finding the i-th singular value.
 
       .. note::
 
@@ -245,7 +252,9 @@ primme_svds_params
    .. c:member:: int printLevel
 
       The level of message reporting from the code. For now it controls the reporting
-      level of the underneath eigensolvers. See |printLevel|.
+      level of the underneath eigensolvers. See |printLevel| in primme_params.
+
+      All output is writen in |SoutputFile|.
 
       Input/output:
 
@@ -315,8 +324,8 @@ primme_svds_params
     .. c:member:: int numOrthoConst
 
       Number of vectors to be used as external orthogonalization constraints.
-      The left and the right vector constrains are provided in the first 2x|SnumOrthoConst| vectors of
-      the ``svecs`` argument in :c:func:`dprimme_svds` and :c:func:`zprimme_svds`, and must be orthonormal.
+      The left and the right vector constraints are provided as input of
+      the ``svecs`` argument in :c:func:`sprimme_svds` or other variant, and must be orthonormal.
 
       PRIMME SVDS finds new triplets orthogonal to these constraints (equivalent to solving
       the problem :math:`(I-UU^*)A(I-VV^*)` where :math:`U` and :math:`V` are the given left and right
@@ -480,7 +489,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_svds_op_none``;
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
@@ -494,7 +503,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_svds_op_none``;
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 

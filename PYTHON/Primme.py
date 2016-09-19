@@ -977,7 +977,7 @@ _PRIMMEErrors = {
 -20: "'maxPrevRetain' < 0",
 -21: "'scheme' is not one of *primme_thick* or *primme_dtr*",
 -22: "'initSize' < 0",
--23: "not 'locking' and 'initSize' > 'maxBasisSize'",
+-23: "'locking' == 0 and 'initSize' > 'maxBasisSize'",
 -24: "'locking' and 'initSize' > 'numEvals'",
 -25: "'maxPrevRetain' + 'minRestartSize' >= 'maxBasisSize'",
 -26: "'minRestartSize' >= 'n'",
@@ -987,7 +987,7 @@ _PRIMMEErrors = {
 -30: "'evals' is NULL, but not 'evecs' and 'resNorms'",
 -31: "'evecs' is NULL, but not 'evals' and 'resNorms'",
 -32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
--33: "not 'locking' and 'minRestartSize' < 'numEvals'",
+-33: "'locking' == 0 and 'minRestartSize' < 'numEvals'",
 -34: "'ldevecs' is less than 'nLocal'",
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
 -36 : "not enough memory for realWork",
@@ -1061,14 +1061,13 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     Parameters
     ----------
-    A : An N x N matrix, array, sparse matrix, or LinearOperator representing
+    A : An N x N matrix, array, sparse matrix, or LinearOperator
         the operation A * x, where A is a real symmetric matrix or complex
         Hermitian.
     k : int, optional
         The number of eigenvalues and eigenvectors desired.
-        `k` must be smaller than N. It is not possible to compute all
-        eigenvectors of a matrix.
-    M : An N x N matrix, array, sparse matrix, or LinearOperator representing
+    M : An N x N matrix, array, sparse matrix, or LinearOperator
+        (not supported yet)
         the operation M * x for the generalized eigenvalue problem
 
             A * x = w * M * x.

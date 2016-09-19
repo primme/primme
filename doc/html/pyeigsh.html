@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Eigenvalue Problems" href="api.html" />
+    <link rel="up" title="Eigenvalue Problems" href="apieigs.html" />
     <link rel="next" title="MATLAB Interface" href="mateigs.html" />
     <link rel="prev" title="FORTRAN Library Interface" href="primmef77.html" />
    
@@ -43,7 +43,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="readme.html">Documentation overview</a><ul>
-  <li><a href="api.html">Eigenvalue Problems</a><ul>
+  <li><a href="apieigs.html">Eigenvalue Problems</a><ul>
       <li>Previous: <a href="primmef77.html" title="previous chapter">FORTRAN Library Interface</a></li>
       <li>Next: <a href="mateigs.html" title="next chapter">MATLAB Interface</a></li>
   </ul></li>
@@ -90,12 +90,11 @@ with corresponding eigenvectors x[i]</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>A</strong> (<em>An N x N matrix, array, sparse matrix, or LinearOperator representing</em>) &#8211; the operation A * x, where A is a real symmetric matrix or complex
+<li><strong>A</strong> (<em>An N x N matrix, array, sparse matrix, or LinearOperator</em>) &#8211; the operation A * x, where A is a real symmetric matrix or complex
 Hermitian.</li>
-<li><strong>k</strong> (<em>int, optional</em>) &#8211; The number of eigenvalues and eigenvectors desired.
-<cite>k</cite> must be smaller than N. It is not possible to compute all
-eigenvectors of a matrix.</li>
-<li><strong>M</strong> (<em>An N x N matrix, array, sparse matrix, or LinearOperator representing</em>) &#8211; <p>the operation M * x for the generalized eigenvalue problem</p>
+<li><strong>k</strong> (<em>int, optional</em>) &#8211; The number of eigenvalues and eigenvectors desired.</li>
+<li><strong>M</strong> (<em>An N x N matrix, array, sparse matrix, or LinearOperator</em>) &#8211; <p>(not supported yet)
+the operation M * x for the generalized eigenvalue problem</p>
 <blockquote>
 <div>A * x = w * M * x.</div></blockquote>
 <p>M must represent a real, symmetric matrix if A is real, and must

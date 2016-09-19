@@ -39,7 +39,8 @@
 #define TRUE  1
 #define FALSE 0
 #define UNCONVERGED   0
-#define CONVERGED   1
+#define SKIP_UNTIL_RESTART 1
+#define CONVERGED 2
 
 /* Used in kernels in auxiliary_eigs.c, ortho.c and restart.c */
 #define PRIMME_BLOCK_SIZE 512

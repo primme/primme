@@ -64,9 +64,7 @@
 #include "ortho.h"
 #include "solve_projection.h"
 #include "restart.h"
-#include "locking.h"
 #include "correction.h"
-#include "convergence.h"
 #include "update_projection.h"
 #include "primme_interface.h"
 
@@ -467,7 +465,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
    else if (primme->matrixMatvec == NULL) 
       ret = -7;
    else if (primme->applyPreconditioner == NULL && 
-            primme->correctionParams.precondition ) 
+            primme->correctionParams.precondition > 0 ) 
       ret = -8;
    /* ret = -9 is free */
    else if (primme->numEvals > primme->n)
@@ -498,7 +496,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
       ret = -21;
    else if (primme->initSize < 0) 
       ret = -22;
-   else if (!primme->locking && primme->initSize > primme->maxBasisSize)
+   else if (primme->locking == 0 && primme->initSize > primme->maxBasisSize)
       ret = -23;
    else if (primme->locking && primme->initSize > primme->numEvals)
       ret = -24;
@@ -523,7 +521,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
       ret = -31;
    else if (resNorms == NULL)
       ret = -32;
-   else if (!primme->locking && primme->minRestartSize < primme->numEvals &&
+   else if (primme->locking == 0 && primme->minRestartSize < primme->numEvals &&
             primme->n > 2)
       ret = -33;
    else if (primme->ldevecs < primme->nLocal)

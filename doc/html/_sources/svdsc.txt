@@ -70,7 +70,7 @@ See :ref:`svds-guide-params` for an introduction about its fields.
 Running
 ^^^^^^^
 
-To use PRIMME SVDS, follow this basic steps.
+To use PRIMME SVDS, follow these basic steps.
 
 #. Include::
 
@@ -134,6 +134,10 @@ To use PRIMME SVDS, follow this basic steps.
    
          ret = dprimme_svds(svals, svecs, resNorms, &primme_svds);
 
+   The previous is the double precision call. There is available calls for complex
+   double, single and complex single; check it out :c:func:`zprimme_svds`, :c:func:`sprimme_svds`
+   and :c:func:`cprimme_svds`.
+
    To solve complex singular value problems call:
 
    .. only:: not text
@@ -155,7 +159,7 @@ To use PRIMME SVDS, follow this basic steps.
    * `resNorms`, array to return the residual norms of the found triplets; and
    * `ret`, returned error code.
 
-#. Before exiting, free the work arrays in PRIMME SVDS:
+#. To free the work arrays in PRIMME SVDS:
 
    .. only:: not text
   
@@ -179,19 +183,19 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
 .. only:: not text
 
       | *Basic*
-      | ``int`` |Sm|,  number of rows of the matrix.
-      | ``int`` |Sn|,  number of columns of the matrix.
+      | ``PRIMME_INT`` |Sm|,  number of rows of the matrix.
+      | ``PRIMME_INT`` |Sn|,  number of columns of the matrix.
       | ``void (*`` |SmatrixMatvec| ``)(...)``, matrix-vector product.
       | ``int`` |SnumSvals|, how many singular triplets to find.
       | ``primme_svds_target`` |Starget|, which singular values to find.
       | ``double`` |Seps|, tolerance of the residual norm of converged triplets.
       |
       | *For parallel programs*
-      | ``int`` |SnumProcs|
-      | ``int`` |SprocID|
-      | ``int`` |SmLocal|
-      | ``int`` |SnLocal|
-      | ``void (*`` |SglobalSumReal| ``)(...)``
+      | ``int`` |SnumProcs|, number of processes
+      | ``int`` |SprocID|,  rank of this process
+      | ``PRIMME_INT`` |SmLocal|, number of rows stored in this process
+      | ``PRIMME_INT`` |SnLocal|, number of columns stored in this process
+      | ``void (*`` |SglobalSumReal| ``)(...)``, sum reduction among processes
       |
       | *Accelerate the convergence*
       | ``void (*`` |SapplyPreconditioner| ``)(...)``, preconditioner-vector product.
@@ -210,10 +214,10 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       | ``double *`` |StargetShifts|
       | ``int`` |SnumOrthoConst|, orthogonal constrains to the singular vectors.
       | ``int`` |Slocking|
-      | ``int`` |SmaxMatvecs|
+      | ``PRIMME_INT`` |SmaxMatvecs|
       | ``int`` |SintWorkSize|
-      | ``long int`` |SrealWorkSize|
-      | ``int`` |Siseed| ``[4]``
+      | ``size_t`` |SrealWorkSize|
+      | ``PRIMME_INT`` |Siseed| ``[4]``
       | ``int *`` |SintWork|
       | ``void *`` |SrealWork|
       | ``double`` |SaNorm|
@@ -229,19 +233,19 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
    ::
 
       /* Basic */
-      int m;                           // number of rows of the matrix
-      int n;                        // number of columns of the matrix
+      PRIMME_INT m;                    // number of rows of the matrix
+      PRIMME_INT n;                 // number of columns of the matrix
       void (*matrixMatvec)(...);              // matrix-vector product
       int numSvals;              // how many singular triplets to find
       primme_svds_target target;      // which singular values to find
       double eps;               // tolerance of the converged triplets
       
       /* For parallel programs */
-      int numProcs;
-      int procID;
-      int mLocal;
-      int nLocal;
-      void (*globalSumDouble)(...);
+      int numProcs;          // number of processes
+      int procID;            // rank of this process
+      PRIMME_INT mLocal;     // number of rows stored in this process
+      PRIMME_INT nLocal;     // number of columns stored in this process
+      void (*globalSumDouble)(...); // sum reduction among processes
       
       /* Accelerate the convergence */
       void (*applyPreconditioner)(...); // preconditioner-vector product
@@ -260,10 +264,10 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       double *targetShifts;
       int numOrthoConst;   // orthogonal constrains to the vectors
       int locking;
-      int maxMatvecs;
+      PRIMME_INT maxMatvecs;
       int intWorkSize;
-      long int realWorkSize;
-      int iseed[4];
+      size_t realWorkSize;
+      PRIMME_INT iseed[4];
       int *intWork;
       void *realWork;
       double aNorm;
@@ -317,6 +321,15 @@ sprimme_svds
 
    :return: error indicator; see :ref:`error-codes-svds`.
 
+   On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
+   followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
+   followed by the |SinitSize| right vectors. The i-th left vector starts at svecs[i\* |SmLocal| ].
+   The i-th right vector starts at svecs[( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + i\* |SnLocal| ].
+ 
+   On return, the i-th left singular vector starts at svecs[( |SnumOrthoConst| +i)\* |SmLocal| ].
+   The i-th right singular vector starts at svecs[( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| +i)\* |SnLocal| ].
+   The first vector has i=0.
+ 
 dprimme_svds
 """"""""""""
 
@@ -338,6 +351,16 @@ dprimme_svds
    :param primme_svds: parameters structure.
 
    :return: error indicator; see :ref:`error-codes-svds`.
+
+   On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
+   followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
+   followed by the |SinitSize| right vectors. The i-th left vector starts at svecs[i\* |SmLocal| ].
+   The i-th right vector starts at svecs[( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + i\* |SnLocal| ].
+
+   On return, the i-th left singular vector starts at svecs[( |SnumOrthoConst| +i)\* |SmLocal| ].
+   The i-th right singular vector starts at svecs[( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| +i)\* |SnLocal| ].
+   The first vector has i=0.
+
 
 cprimme_svds
 """"""""""""

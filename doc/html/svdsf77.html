@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Eigenvalue Problems" href="api.html" />
+    <link rel="up" title="Singular Value Problems" href="apisvds.html" />
     <link rel="next" title="Python Interface" href="pysvds.html" />
     <link rel="prev" title="C Library Interface" href="svdsc.html" />
    
@@ -43,15 +43,16 @@
   <h3><a href="readme.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">FORTRAN Library Interface</a><ul>
+<li><a class="reference internal" href="#sprimme-svds-f77">sprimme_svds_f77</a></li>
+<li><a class="reference internal" href="#cprimme-svds-f77">cprimme_svds_f77</a></li>
 <li><a class="reference internal" href="#dprimme-svds-f77">dprimme_svds_f77</a></li>
 <li><a class="reference internal" href="#zprimme-svds-f77">zprimme_svds_f77</a></li>
 <li><a class="reference internal" href="#primme-svds-initialize-f77">primme_svds_initialize_f77</a></li>
 <li><a class="reference internal" href="#primme-svds-set-method-f77">primme_svds_set_method_f77</a></li>
 <li><a class="reference internal" href="#primme-svds-display-params-f77">primme_svds_display_params_f77</a></li>
 <li><a class="reference internal" href="#primme-svds-free-f77">primme_svds_free_f77</a></li>
-<li><a class="reference internal" href="#primme-svdstop-set-member-f77">primme_svdstop_set_member_f77</a></li>
-<li><a class="reference internal" href="#primme-svdstop-get-member-f77">primme_svdstop_get_member_f77</a></li>
 <li><a class="reference internal" href="#primme-svds-set-member-f77">primme_svds_set_member_f77</a></li>
+<li><a class="reference internal" href="#primme-svdstop-get-member-f77">primme_svdstop_get_member_f77</a></li>
 <li><a class="reference internal" href="#primme-svds-get-member-f77">primme_svds_get_member_f77</a></li>
 </ul>
 </li>
@@ -60,7 +61,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="readme.html">Documentation overview</a><ul>
-  <li><a href="api.html">Eigenvalue Problems</a><ul>
+  <li><a href="apisvds.html">Singular Value Problems</a><ul>
       <li>Previous: <a href="svdsc.html" title="previous chapter">C Library Interface</a></li>
       <li>Next: <a href="pysvds.html" title="next chapter">Python Interface</a></li>
   </ul></li>
@@ -93,12 +94,74 @@
   <div class="section" id="fortran-library-interface">
 <h1>FORTRAN Library Interface<a class="headerlink" href="#fortran-library-interface" title="Permalink to this headline">¶</a></h1>
 <p>The next enumerations and functions are declared in <code class="docutils literal"><span class="pre">primme_svds_f77.h</span></code>.</p>
+<div class="section" id="sprimme-svds-f77">
+<h2>sprimme_svds_f77<a class="headerlink" href="#sprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.sprimme_svds_f77">
+<code class="descname">sprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.sprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a real singular value problem using single precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svals(*)</strong> (<em>real</em>) &#8211; (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal"><span class="pre">numSvals</span></code></a> to store the
+computed singular values; all processes in a parallel run return this local array with the same values.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) &#8211; array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal"><span class="pre">numSvals</span></code></a> to store the
+residual norms of the computed triplets; all processes in parallel run return this local array with
+the same values.</li>
+<li><strong>svecs(*)</strong> (<em>real</em>) &#8211; array at least of size (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal"><span class="pre">mLocal</span></code></a> + <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>) times <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal"><span class="pre">numSvals</span></code></a>
+to store columnwise the (local part of the) computed left singular vectors
+and the right singular vectors.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; parameters structure.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><em>Error Codes</em></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="cprimme-svds-f77">
+<h2>cprimme_svds_f77<a class="headerlink" href="#cprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.cprimme_svds_f77">
+<code class="descname">cprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a complex singular value problem using single precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svals(*)</strong> (<em>real</em>) &#8211; (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal"><span class="pre">numSvals</span></code></a> to store the
+computed singular values; all processes in a parallel run return this local array with the same values.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) &#8211; array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal"><span class="pre">numSvals</span></code></a> to store the
+residual norms of the computed triplets; all processes in parallel run return this local array with
+the same values.</li>
+<li><strong>svecs(*)</strong> (<em>complex</em>) &#8211; array at least of size (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal"><span class="pre">mLocal</span></code></a> + <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>) times <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal"><span class="pre">numSvals</span></code></a>
+to store columnwise the (local part of the) computed left singular vectors
+and the right singular vectors.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; parameters structure.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><em>Error Codes</em></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="dprimme-svds-f77">
 <h2>dprimme_svds_f77<a class="headerlink" href="#dprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.dprimme_svds_f77">
 <code class="descname">dprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.dprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
-<dd><p>Solve a real singular value problem.</p>
+<dd><p>Solve a real singular value problem using double precision.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -129,7 +192,7 @@ and the right singular vectors.</li>
 <dl class="function">
 <dt id="c.zprimme_svds_f77">
 <code class="descname">zprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
-<dd><p>Solve a real singular value problem.</p>
+<dd><p>Solve a complex singular value problem using double precision.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -249,11 +312,11 @@ the second stage of <a class="reference internal" href="appendixsvds.html#c.prim
 </dd></dl>
 
 </div>
-<div class="section" id="primme-svdstop-set-member-f77">
-<h2>primme_svdstop_set_member_f77<a class="headerlink" href="#primme-svdstop-set-member-f77" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="primme-svds-set-member-f77">
+<h2>primme_svds_set_member_f77<a class="headerlink" href="#primme-svds-set-member-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.primme_svdstop_set_member_f77">
-<code class="descname">primme_svdstop_set_member_f77</code><span class="sig-paren">(</span>primme_svds, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svdstop_set_member_f77" title="Permalink to this definition">¶</a></dt>
+<dt id="c.primme_svds_set_member_f77">
+<code class="descname">primme_svds_set_member_f77</code><span class="sig-paren">(</span>primme_svds, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_set_member_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a value in some field of the parameter structure.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -315,8 +378,7 @@ the second stage of <a class="reference internal" href="appendixsvds.html#c.prim
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last"><strong>Don&#8217;t use</strong> this function inside PRIMME SVDS&#8217;s callback functions, e.g., <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a> or
-<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions. In those cases use
-<a class="reference internal" href="#c.primme_svds_set_member_f77" title="primme_svds_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_svds_set_member_f77()</span></code></a>.</p>
+<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions.</p>
 </div>
 </dd></dl>
 
@@ -376,35 +438,6 @@ For instance:</p>
 </dd></dl>
 
 </div>
-<div class="section" id="primme-svds-set-member-f77">
-<h2>primme_svds_set_member_f77<a class="headerlink" href="#primme-svds-set-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.primme_svds_set_member_f77">
-<code class="descname">primme_svds_set_member_f77</code><span class="sig-paren">(</span>primme_svds, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_set_member_f77" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set a value in some field of the parameter structure.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; (input) parameters structure.</li>
-<li><strong>label</strong> (<em>integer</em>) &#8211; field where to set value. One of the vales defined
-in <a class="reference internal" href="#c.primme_svdstop_set_member_f77" title="primme_svdstop_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_svdstop_set_member_f77()</span></code></a>.</li>
-<li><strong>value</strong> &#8211; (input) value to set.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Use this function exclusively inside PRIMME SVDS&#8217;s callback functions, e.g., <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a>
-or <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions. Otherwise, e.g.,
-from the main program, use the function <a class="reference internal" href="#c.primme_svdstop_set_member_f77" title="primme_svdstop_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_svdstop_set_member_f77()</span></code></a>.</p>
-</div>
-</dd></dl>
-
-</div>
 <div class="section" id="primme-svds-get-member-f77">
 <h2>primme_svds_get_member_f77<a class="headerlink" href="#primme-svds-get-member-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
@@ -418,7 +451,7 @@ from the main program, use the function <a class="reference internal" href="#c.p
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; (input) parameters structure.</li>
 <li><strong>label</strong> (<em>integer</em>) &#8211; (input) field where to get value. One of
-the detailed in function <a class="reference internal" href="#c.primme_svdstop_set_member_f77" title="primme_svdstop_set_member_f77"><code class="xref c c-func docutils literal"><span class="pre">primme_svdstop_set_member_f77()</span></code></a>.</li>
+the detailed in function <code class="xref c c-func docutils literal"><span class="pre">primme_svdstop_set_member_f77()</span></code>.</li>
 <li><strong>value</strong> &#8211; (output) value of the field.</li>
 </ul>
 </td>

@@ -58,12 +58,56 @@ primme_free_f77
 
    :param ptr primme: (input/output) parameters structure.
 
+sprimme_f77
+"""""""""""
+
+.. c:function:: sprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a real symmetric standard eigenproblem using single precision.
+
+   :param evals(*): (output) array at least of size |numEvals| to store the
+      computed eigenvalues; all parallel calls return the same value in this array.
+   :type evals(*): real
+
+   :param resNorms(*): (output) array at least of size |numEvals| to store the
+      residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
+   :type resNorms(*): real
+
+   :param evecs(*): (input/output) array at least of size |nLocal| times |numEvals|
+      to store columnwise the (local part of the) computed eigenvectors.
+   :type evecs(*): real
+
+   :param ptr primme: parameters structure.
+
+   :param integer ierr: (output) error indicator; see :ref:`error-codes`.
+
+cprimme_f77
+"""""""""""
+
+.. c:function:: cprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a Hermitian standard eigenproblem. The arguments have the
+   same meaning as in function :c:func:`sprimme_f77`.
+
+   :param evals(*): (output) 
+   :type evals(*): real
+
+   :param resNorms(*): (output)
+   :type resNorms(*): real
+
+   :param evecs(*): (input/output) 
+   :type evecs(*): complex real
+
+   :param ptr primme: (input) parameters structure.
+
+   :param integer ierr: (output) error indicator; see :ref:`error-codes`.
+
 dprimme_f77
 """""""""""
 
 .. c:function:: dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
-   Solve a real symmetric standard eigenproblem.
+   Solve a real symmetric standard eigenproblem using double precision.
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
@@ -102,10 +146,10 @@ zprimme_f77
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-primmetop_set_member_f77
+primme_set_member_f77
 """"""""""""""""""""""""
 
-.. c:function:: primmetop_set_member_f77(primme, label, value)
+.. c:function:: primme_set_member_f77(primme, label, value)
 
    Set a value in some field of the parameter structure.
 
@@ -173,8 +217,7 @@ primmetop_set_member_f77
    .. note::
 
       **Don't use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
-      |applyPreconditioner|, or in functions called by these functions. In those cases use
-      :c:func:`primme_set_member_f77`.
+      |applyPreconditioner|, or in functions called by these functions.
 
 
 primmetop_get_member_f77
@@ -238,29 +281,6 @@ primmetop_get_prec_shift_f77
    :param integer index: (input) position of the array; the first position is 1.
 
    :param value: (output) value of the array at that position.
-
-primme_set_member_f77
-"""""""""""""""""""""
-
-.. c:function:: primme_set_member_f77(primme, label, value)
-
-   Set a value in some field of the parameter structure.
-
-   :param ptr primme: (input) parameters structure.
-
-   :param integer label: field where to set value. One of the vales defined
-       in :c:func:`primmetop_set_member_f77`.
-
-   :param value: (input) value to set.
-
-      If the type of the option is integer (``int``, :c:type:`PRIMME_INT`, ``size_t``), the
-      type of ``value`` should be as long as :c:type:`PRIMME_INT`, which is ``integer*8`` by default.
-
-   .. note::
-
-      Use this function exclusively inside PRIMME's callback functions, e.g., |matrixMatvec|
-      or |applyPreconditioner|, or in functions called by these functions. Otherwise, e.g.,
-      from the main program, use the function :c:func:`primmetop_set_member_f77`.
 
 primme_get_member_f77
 """""""""""""""""""""

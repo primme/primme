@@ -4,12 +4,62 @@ FORTRAN Library Interface
 
 The next enumerations and functions are declared in ``primme_svds_f77.h``.
 
+sprimme_svds_f77
+""""""""""""""""
+
+.. c:function:: sprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+
+   Solve a real singular value problem using single precision.
+
+   :param svals(*): (output) array at least of size |SnumSvals| to store the
+      computed singular values; all processes in a parallel run return this local array with the same values.
+   :type svals(*): real
+
+   :param resNorms(*): array at least of size |SnumSvals| to store the
+      residual norms of the computed triplets; all processes in parallel run return this local array with
+      the same values.
+   :type resNorms(*): real
+
+   :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times |SnumSvals|
+      to store columnwise the (local part of the) computed left singular vectors
+      and the right singular vectors.
+   :type svecs(*): real
+
+   :param ptr primme_svds: parameters structure.
+
+   :return: error indicator; see :ref:`error-codes-svds`.
+
+cprimme_svds_f77
+""""""""""""""""
+
+.. c:function:: cprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+
+   Solve a complex singular value problem using single precision.
+
+   :param svals(*): (output) array at least of size |SnumSvals| to store the
+      computed singular values; all processes in a parallel run return this local array with the same values.
+   :type svals(*): real
+
+   :param resNorms(*): array at least of size |SnumSvals| to store the
+      residual norms of the computed triplets; all processes in parallel run return this local array with
+      the same values.
+   :type resNorms(*): real
+
+   :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times |SnumSvals|
+      to store columnwise the (local part of the) computed left singular vectors
+      and the right singular vectors.
+   :type svecs(*): complex
+
+   :param ptr primme_svds: parameters structure.
+
+   :return: error indicator; see :ref:`error-codes-svds`.
+
 dprimme_svds_f77
 """"""""""""""""
 
 .. c:function:: dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
 
-   Solve a real singular value problem.
+   Solve a real singular value problem using double precision.
 
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
@@ -34,7 +84,7 @@ zprimme_svds_f77
 
 .. c:function:: zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
 
-   Solve a real singular value problem.
+   Solve a complex singular value problem using double precision.
 
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
@@ -106,10 +156,10 @@ primme_svds_free_f77
 
    :param ptr primme_svds: (input/output) parameters structure.
 
-primme_svdstop_set_member_f77
+primme_svds_set_member_f77
 """""""""""""""""""""""""""""
 
-.. c:function:: primme_svdstop_set_member_f77(primme_svds, label, value)
+.. c:function:: primme_svds_set_member_f77(primme_svds, label, value)
 
    Set a value in some field of the parameter structure.
 
@@ -164,8 +214,7 @@ primme_svdstop_set_member_f77
    .. note::
 
       **Don't use** this function inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec| or
-      |SapplyPreconditioner|, or in functions called by these functions. In those cases use
-      :c:func:`primme_svds_set_member_f77`.
+      |SapplyPreconditioner|, or in functions called by these functions.
 
 primme_svdstop_get_member_f77
 """""""""""""""""""""""""""""
@@ -212,26 +261,6 @@ primme_svdstop_get_member_f77
          call MPI_Allreduce(x,y,k,MPI_DOUBLE,MPI_SUM,comm,ierr)
 
       Most users would not need to retrieve these pointers in their programs.
-
-primme_svds_set_member_f77
-""""""""""""""""""""""""""
-
-.. c:function:: primme_svds_set_member_f77(primme_svds, label, value)
-
-   Set a value in some field of the parameter structure.
-
-   :param ptr primme_svds: (input) parameters structure.
-
-   :param integer label: field where to set value. One of the vales defined
-       in :c:func:`primme_svdstop_set_member_f77`.
-
-   :param value: (input) value to set.
-
-   .. note::
-
-      Use this function exclusively inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec|
-      or |SapplyPreconditioner|, or in functions called by these functions. Otherwise, e.g.,
-      from the main program, use the function :c:func:`primme_svdstop_set_member_f77`.
 
 primme_svds_get_member_f77
 """"""""""""""""""""""""""
