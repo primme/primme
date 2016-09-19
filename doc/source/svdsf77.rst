@@ -178,7 +178,7 @@ primme_svds_set_member_f77
      | :c:member:`PRIMME_SVDS_mLocal                         <primme_svds_params.mLocal>`
      | :c:member:`PRIMME_SVDS_nLocal                         <primme_svds_params.nLocal>`
      | :c:member:`PRIMME_SVDS_commInfo                       <primme_svds_params.commInfo>`
-     | :c:member:`PRIMME_SVDS_globalSumDouble                <primme_svds_params.globalSumDouble>`
+     | :c:member:`PRIMME_SVDS_globalSumReal                  <primme_svds_params.globalSumReal>`
      | :c:member:`PRIMME_SVDS_numSvals                       <primme_svds_params.numSvals>`
      | :c:member:`PRIMME_SVDS_target                         <primme_svds_params.target>`
      | :c:member:`PRIMME_SVDS_numTargetShifts                <primme_svds_params.numTargetShifts>`

@@ -164,7 +164,7 @@ primme_set_member_f77
       | :c:member:`PRIMME_procID                              <primme_params.procID>`
       | :c:member:`PRIMME_commInfo                            <primme_params.commInfo>`
       | :c:member:`PRIMME_nLocal                              <primme_params.nLocal>`
-      | :c:member:`PRIMME_globalSumDouble                     <primme_params.globalSumDouble>`
+      | :c:member:`PRIMME_globalSumReal                       <primme_params.globalSumReal>`
       | :c:member:`PRIMME_numEvals                            <primme_params.numEvals>`
       | :c:member:`PRIMME_target                              <primme_params.target>`
       | :c:member:`PRIMME_numTargetShifts                     <primme_params.numTargetShifts>`
