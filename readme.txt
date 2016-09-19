@@ -3981,8 +3981,8 @@ primme_svds_params
 
          Singular values are computed in order so that the i-th
          singular value is the closest to the i-th shift. If
-         "numTargetShifts" < >>|numSvals|<<, the last shift given is
-         used for all the remaining i's.
+         "numTargetShifts" < "numSvals", the last shift given is used
+         for all the remaining i's.
 
          Input/output:
 
@@ -4073,9 +4073,9 @@ primme_svds_params
 
             Number of vectors to be used as external orthogonalization
             constraints. The left and the right vector constraints are
-            provided in the first 2x "numOrthoConst" vectors of the
-            "svecs" argument in "dprimme_svds()" and "zprimme_svds()",
-            and must be orthonormal.
+            provided as input of the "svecs" argument in
+            "sprimme_svds()" or other variant, and must be
+            orthonormal.
 
             PRIMME SVDS finds new triplets orthogonal to these
             constraints (equivalent to solving the problem

@@ -236,7 +236,7 @@ primme_svds_params
       Used only when |Starget| is |primme_svds_closest_abs|.
 
       Singular values are computed in order so that the
-      i-th singular value is the closest to the i-th shift. If |SnumTargetShifts| < |numSvals|, the last shift given
+      i-th singular value is the closest to the i-th shift. If |SnumTargetShifts| < |SnumSvals|, the last shift given
       is used for all the remaining i's.
 
       Input/output:
