@@ -89,7 +89,7 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
-Changes in PRIMME 2.0 (released on XXX):
+Changes in PRIMME 2.0 (released on September 19, 2016):
 
 * Changed license to BSD 3-clause.
 
