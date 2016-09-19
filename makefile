@@ -27,11 +27,11 @@ test:
 	echo "------------------------------------------------"; \
 	echo " Test C examples                                "; \
 	echo "------------------------------------------------"; \
-	make -C examples test_examples_C USE_PETSC=no
+	make -C examples veryclean test_examples_C USE_PETSC=no
 
 all_tests:
-	@make -C examples test_examples;\
-	make -C tests all_tests
+	@make -C examples veryclean test_examples;\
+	make -C tests veryclean all_tests
 
 check_style:
 	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
