@@ -114,6 +114,9 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    /* Set some defaults  */
    /* ------------------ */
    primme_svds_set_defaults(primme_svds);
+   if (fabs(primme_svds->eps) == 0.0) {
+      primme_svds->eps = Num_lamch_Rprimme("E")*1e4;
+   }
 
    /* -------------------------------------------------------------- */
    /* If needed, we are ready to estimate required memory and return */
@@ -194,7 +197,7 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    primme_svds_operator method;
    SCALAR *aux, *out_svecs = svecs;
    int n, nMax, i, cut;
-   const double machEps = Num_lamch_dprimme("E");
+   const double machEps = Num_lamch_Rprimme("E");
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -840,7 +843,7 @@ static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count,
             "Error returned by 'globalSumReal' %d", ierr);
    }
    else {
-      Num_copy_dprimme(count, (double*)sendBuf, 1, (double*)recvBuf, 1);
+      Num_copy_Rprimme(count, sendBuf, 1, recvBuf, 1);
    }
 
    return 0;

@@ -281,10 +281,12 @@ primme_svds_params
       The residual vectors are :math:`A v - \sigma u` and :math:`A^* u - \sigma v` for the
       triplet :math:`(u,\sigma,v)`.
 
+      The default value is machine precision times :math:`10^4`.
+
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to :math:`10^{-12}`;
-         | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+         | :c:func:`primme_svds_initialize` sets this field to 0.0;
+         | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
  
    .. c:member:: FILE *outputFile
 

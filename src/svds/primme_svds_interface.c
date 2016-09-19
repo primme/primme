@@ -86,7 +86,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
 
    /* Other important parameters users may set */
    primme_svds->aNorm                   = 0.0L;
-   primme_svds->eps                     = 1e-12;
+   primme_svds->eps                     = 0.0;
    primme_svds->precondition            = -1;
    primme_svds->initSize                = 0;
    primme_svds->maxBasisSize            = 0;
