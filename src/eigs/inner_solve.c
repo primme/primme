@@ -411,7 +411,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          /* The result is to check if eps*aNorm is less than                  */
          /* max(tau/LTolerance_factor, eres_updated/ETolerance_factor).       */
 
-         double tol = max(tau/LTolerance_factor, eres_updated/ETolerance_factor);
+         double tol = min(tau/LTolerance_factor, eres_updated/ETolerance_factor);
          CHKERR(convTestFun_Sprimme(eval_updated, NULL, tol, &isConv, primme),
                -1);
 
