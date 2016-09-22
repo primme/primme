@@ -1,10 +1,9 @@
 #-----------------------------------------------------------------
 # make 
-#   lib	      makes the libprimme.a library (both double and complex)
-#   libd      makes the libdprimme.a library (only double)
-#   libz      makes the libzprimme.a library (only complex)
-#   clean     removes all .o a.out and core files
-#   test      build and execute a simple example
+#   lib	      makes the libprimme.a library
+#   solib     makes the libprimme.so library
+#   clean     removes all *.o files
+#   test      build and execute simple examples
 #-----------------------------------------------------------------
 include Make_flags
 
