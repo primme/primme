@@ -40,17 +40,23 @@ all:
 	$(MEX) $(MEXFLAGS) $(LIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).c
 
 test:
-	$(MATLAB) -nodesktop -nodisplay -r "A=diag(1:50);E=primme_eigs(A,6);assert(norm(E-(50:-1:45)')<1e-9);E=primme_eigs(@(x)A*x,50,6);assert(norm(E-(50:-1:45)')<1e-9;exit" &> test.log < /dev/null
-	@if `grep -q 'Assertion failed' test.log` ; then \
-	   cat test.log;\
-	       echo;\
-	       echo "Something went wrong. Please make sure PRIMME was compiled"\
-	       echo "with -DPRIMME_BLASINT_SIZE=64. Consider to send us the file 'test.log'";\
-	       echo "if the software doesn't work as expected.";\
-	       exit 1;\
-	else\
-	  echo "Test passed!";\
-	fi
+	nohup $(MATLAB) -nodesktop -nodisplay -r "A=diag(1:50);E=primme_eigs(A,6);assert(norm(E-(50:-1:45)')<1e-9);E=primme_eigs(@(x)A*x,50,6);assert(norm(E-(50:-1:45)')<1e-9);exit" > test.log < /dev/null && wait 
+	@if [ -s test.log ]; then \
+		if `grep -q 'Assertion failed' test.log` ; then \
+			cat test.log ;\
+			echo ;\
+			echo "Something went wrong. Please make sure PRIMME was compiled" ;\
+			echo "with -DPRIMME_BLASINT_SIZE=64. Consider to send us the file 'test.log'" ;\
+			echo "if the software doesn't work as expected." ;\
+			exit 1;\
+		else \
+	  		echo "Test passed!" ;\
+		fi ;\
+	else \
+		echo ;\
+		echo "'test.log' was not produced or is empty.";\
+		exit 1 ;\
+	fi ;\
 
 clean:
 	rm -f $(MEXNAME).[^c]*
