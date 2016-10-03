@@ -488,7 +488,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             if (numConverged >= primme->numEvals ||
                 (primme->locking && recentlyConverged > 0
                   && primme->target != primme_smallest
-                  && primme->target != primme_largest) ||
+                  && primme->target != primme_largest
+                  && primme->projectionParams.projection == primme_proj_RR) ||
                 targetShiftIndex < 0 ||
                 (Q && primme->targetShifts[targetShiftIndex] !=
                   primme->targetShifts[

@@ -38,9 +38,15 @@
 
 #define TRUE  1
 #define FALSE 0
-#define UNCONVERGED   0
-#define SKIP_UNTIL_RESTART 1
-#define CONVERGED 2
+
+/* Values for flags */
+
+enum conv_flags {
+   UNCONVERGED,
+   SKIP_UNTIL_RESTART,
+   CONVERGED,
+   PRACTICALLY_CONVERGED
+};
 
 /* Used in kernels in auxiliary_eigs.c, ortho.c and restart.c */
 #define PRIMME_BLOCK_SIZE 512
