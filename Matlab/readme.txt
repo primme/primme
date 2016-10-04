@@ -60,7 +60,8 @@ primme_eigs.m         <- MATLAB function for solving eigenpair problems
 getMatvecHandle.m     <- perform matvec operations or get user's matvec function handle
 getPrecondHandle.m    <- perform preconditioning or get user's preconditioner 
 primme_eigs_example.m <- sample code using primme_eigs
-PRIMME_MEX_Readme.txt <- this file
+test_primme.m         <- basic tests
+readme.txt            <- this file
 
 -----------------------------------------------------------------------------
 2.	PRIMME Making & Linking 
@@ -68,6 +69,8 @@ PRIMME_MEX_Readme.txt <- this file
 Users first must generate the libprimme.a library in the PRIMME root directory.
 For more information about Making and Linking in PRIMME, please refer to the 
 readme, Make_flags, Link_flags, makefile files in the PRIMME root directory.
+
+a) MATLAB
 
 PRIMME and PRIMME MEX interface both require the BLAS and LAPACK libraries.
 MATLAB 2012a provides the mwlapack and mwblas libraries in 
@@ -78,9 +81,18 @@ PRIMME distribution must include the following definition:
 
    CFLAGS += -DPRIMME_BLASINT_SIZE=64
 
+b) Octave
+
+Octave is usually linked with regular BLAS and LAPACK libraries, which
+are 32-bits or LP64. So probably no special macro is required to compile
+PRIMME.
+
 -----------------------------------------------------------------------------
 3.	PRIMME MEX Compilation 
 -----------------------------------------------------------------------------
+
+a) MATLAB
+
 For general information about building a MATLAB MEX file, please refer to 
 www.mathworks.com/help/MATLAB/MATLAB_external/building-mex-files.html.
 There are two steps to build a MATLAB MEX file.
@@ -94,12 +106,19 @@ There are two steps to build a MATLAB MEX file.
    and on MAC OSX 10.10 with R2015a. 
 
 2. build the PRIMME_mex.c using the makefile in the root directory of 
-   PRIMME MEX. Alternatively, if $TOP is the path to the PRIMME installation, 
-   in the MATLAB command prompt type:
+   PRIMME MEX. Alternatively, type in the MATLAB command prompt:
 
-   mex -v -O -largeArrayDims PRIMME_mex.c -L$TOP/lib \
-	-I$TOP/include -lprimme -lm  -lmwlapack -lmwblas 
+   mex -O -largeArrayDims PRIMME_mex.c -L../lib -I../include -lprimme -lm  -lmwlapack -lmwblas 
 
+b) Octave
+
+Using make just execute:
+
+  make octave
+
+Alternatively the module can be compiled by executing:
+
+  mkoctfile --mex -L../lib -lprimme -lm -I../include PRIMME_mex.c
 
 -----------------------------------------------------------------------------
 4.	Workflow in PRIMME MEX 

@@ -98,8 +98,6 @@
  ******************************************************************************/
 
 #include "mex.h"
-#include "lapack.h"
-#include "blas.h"
 #include "primme.h" 
 #include <math.h>
 #include <string.h>
