@@ -119,16 +119,31 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    void *EVecs;
    primme_params primme;
    mwSize i;
-   mwSize ndim;
    mxArray *tmp; /* tmp stores each field value pointer of opts*/
    char *read_target_string = NULL;
-   char *read_method_string = NULL; /* will be used in future version*/   
-   char *read_projection_string = NULL; 
    double *read_iseed = NULL;
    double *read_initialevecs = NULL;
    double *read_initialevecsimag = NULL;
 
    primme_preset_method method = PRIMME_DYNAMIC;
+
+   const char *strMethod[] = {
+      "PRIMME_DEFAULT_METHOD",
+      "PRIMME_DYNAMIC",
+      "PRIMME_DEFAULT_MIN_TIME",
+      "PRIMME_DEFAULT_MIN_MATVECS",
+      "PRIMME_Arnoldi",
+      "PRIMME_GD",
+      "PRIMME_GD_plusK",
+      "PRIMME_GD_Olsen_plusK",
+      "PRIMME_JD_Olsen_plusK",
+      "PRIMME_RQI",
+      "PRIMME_JDQR",
+      "PRIMME_JDQMR",
+      "PRIMME_JDQMR_ETol",
+      "PRIMME_SUBSPACE_ITERATION",
+      "PRIMME_LOBPCG_OrthoBasis",
+      "PRIMME_LOBPCG_OrthoBasis_Window"};
 
    /* check: The number of input arguments are between 1 and 6 */
    if (nrhs == 0)
@@ -205,76 +220,31 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mxFree(read_target_string);
    }
    if (nrhs >= 5) {
-      if ((int)mxGetScalar(prhs[4]) >=0 && (int)mxGetScalar(prhs[4])<=14)
+      if ((int)mxGetScalar(prhs[4]) >=0 && (int)mxGetScalar(prhs[4])<=15)
          method = (int)mxGetScalar(prhs[4]); /*get the solver method the user chooses*/ 
       else
-         mexErrMsgTxt("The method number must be in 0-14");  
-      /*method   One of the following 12 enum methods:
+         mexErrMsgTxt("The method number must be in 0-15");  
+      /*method   One of the following 16 enum methods:
        * typedef enum{
-       * DYNAMIC,                  ---0: Switches dynamically to the best method
-       * DEFAULT_MIN_TIME,         ---1: Currently set at JDQMR_ETol
-       * DEFAULT_MIN_MATVECS,      ---2: Currently set at GD+block
-       * Arnoldi,                  ---3: obviously not an efficient choice 
-       * GD,                       ---4: classical block Generalized Davidson 
-       * GD_plusK,                 ---5: GD+k block GD with recurrence restarting
-       * GD_Olsen_plusK,           ---6: GD+k with approximate Olsen precond.
-       * JD_Olsen_plusK,           ---7: GD+k, exact Olsen (two precond per step)
-       * RQI,                      ---8: Rayleigh Quotient Iteration. Also INVIT,
+       * DYNAMIC,                  ---1: Switches dynamically to the best method
+       * DEFAULT_MIN_TIME,         ---2: Currently set at JDQMR_ETol
+       * DEFAULT_MIN_MATVECS,      ---3: Currently set at GD+block
+       * Arnoldi,                  ---4: obviously not an efficient choice 
+       * GD,                       ---5: classical block Generalized Davidson 
+       * GD_plusK,                 ---6: GD+k block GD with recurrence restarting
+       * GD_Olsen_plusK,           ---7: GD+k with approximate Olsen precond.
+       * JD_Olsen_plusK,           ---8: GD+k, exact Olsen (two precond per step)
+       * RQI,                      ---9: Rayleigh Quotient Iteration. Also INVIT,
        *                                 but for INVIT provide targetShifts
-       * JDQR,                     ---9: Original block, Jacobi Davidson
-       * JDQMR,                    ---10: Our block JDQMR method (similar to JDCG)
-       * JDQMR_ETol,               ---11: Slight, but efficient JDQMR modification
-       * SUBSPACE_ITERATION,       ---12: equiv. to GD(block,2*block)
-       * LOBPCG_OrthoBasis,        ---13: equiv. to GD(nev,3*nev)+nev
-       * LOBPCG_OrthoBasis_Window  ---14: equiv. to GD(block,3*block)+block nev>block 
+       * JDQR,                     ---10: Original block, Jacobi Davidson
+       * JDQMR,                    ---11: Our block JDQMR method (similar to JDCG)
+       * JDQMR_ETol,               ---12: Slight, but efficient JDQMR modification
+       * SUBSPACE_ITERATION,       ---13: equiv. to GD(block,2*block)
+       * LOBPCG_OrthoBasis,        ---14: equiv. to GD(nev,3*nev)+nev
+       * LOBPCG_OrthoBasis_Window  ---15: equiv. to GD(block,3*block)+block nev>block 
        * }*/
-      switch(method) {
-         case 0:
-            mexPrintf("The solver method is DYNAMIC\n");
-            break;
-         case 1:
-            mexPrintf("The solver method is DEFAULT_MIN_TIME\n");
-            break;
-         case 2:
-            mexPrintf("The solver method is DEFAULT_MIN_MATVECS\n");
-            break;
-         case 3:                
-            mexPrintf("The solver method is Arnoldi\n");
-            break;
-         case 4:
-            mexPrintf("The solver method is GD\n");     
-            break;
-         case 5:
-            mexPrintf("The solver method is GD_plusK\n");   
-            break;
-         case 6:  
-            mexPrintf("GD_Olsen_plusK\n");
-            break;
-         case 7:     
-            mexPrintf("JD_Olsen_plusK\n");   
-            break;
-         case 8:  
-            mexPrintf("The solver method is RQI\n");     
-            break;
-         case 9:
-            mexPrintf("The solver method is JDQR\n");   
-            break;
-         case 10:  
-            mexPrintf("The solver method is JDQMR\n");   
-            break;
-         case 11:  
-            mexPrintf("The solver method is JDQMR_ETol\n");    
-            break;
-         case 12: 
-            mexPrintf("The solver method is SUBSPACE_ITERATION\n");     
-            break;
-         case 13:
-            mexPrintf("The solver method is LOBPCG_OrthoBasis\n"); 
-            break;
-         case 14:    
-            mexPrintf("The solver method is LOBPCG_OrthoBasis_Window\n");   
-            break;
-      }  
+ 
+      mexPrintf("The solver method is %s\n", strMethod[method]);
    }
    primme_set_method(method, &primme);
    if (nrhs == 6) {
@@ -422,7 +392,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             outputfilename = mxArrayToString(tmp);
             primme.outputFile = fopen(outputfilename, "a+");
             mexPrintf("primme.outputFileName is:%s\n",outputfilename);
-            ndim = mxGetN(prhs[5]); /*get the column dimension of struct*/
          }
          tmp = mxGetField(prhs[5], 0, "iseed");
          if (tmp != NULL) {
@@ -457,7 +426,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
       double *evecs = (double *)EVecs;
       int num, ret;
-      double *Outevals, *Outevecs, *Outrnorms, *Outstates;
+      double *Outevals=NULL, *Outevecs=NULL, *Outrnorms=NULL, *Outstates=NULL;
 
       mexPrintf("The matrix A is real\n");
       /* set Matrix-vector multiplication function */
@@ -526,15 +495,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /* Show recommended method for future runs */
       if (outputfilename != NULL) {
          for (i=0; i < primme.numEvals; i++) {
-            fprintf(primme.outputFile, "Eval[%lu]: %-22.15E rnorm: %-22.15E\n", i+1,evals[i], rnorms[i]); 
+            fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", (int)i+1,evals[i], rnorms[i]); 
          }
          fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
          fprintf(primme.outputFile, "Tolerance : %-22.15E\n", primme.aNorm*primme.eps);
-         fprintf(primme.outputFile, "Iterations: %-d\n", primme.stats.numOuterIterations); 
-         fprintf(primme.outputFile, "Restarts  : %-d\n", primme.stats.numRestarts);
-         fprintf(primme.outputFile, "Matvecs   : %-d\n", primme.stats.numMatvecs);
-         fprintf(primme.outputFile, "Preconds  : %-d\n", primme.stats.numPreconds); 
-         fprintf(primme.outputFile, "\n#,%d,%.1f\n\n", primme.stats.numMatvecs, primme.stats.elapsedTime);
+         fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", primme.stats.numOuterIterations); 
+         fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+         fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+         fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds); 
+         fprintf(primme.outputFile, "Time      : %.1f\n", primme.stats.elapsedTime);
 
          switch (primme.dynamicMethodSwitch) {
             case -1: fprintf(primme.outputFile, "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
@@ -581,7 +550,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    else {
       double *evecs =(double *)EVecs;
       int num, ret;
-      double *Outevals, *OutevecsR, *OutevecsI, *Outrnorms, *Outstates;
+      double *Outevals=NULL, *OutevecsR=NULL, *OutevecsI=NULL, *Outrnorms=NULL, *Outstates=NULL;
 
       mexPrintf("The matrix A is complex\n");
       /* set the Matrix-vector multiplication */
