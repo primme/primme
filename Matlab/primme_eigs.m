@@ -122,6 +122,11 @@ function [varargout] = primme_eigs(varargin)
    clear global eigsFunCallFlag;
    clear functions;
 
+   % Check PRIMME_mex exists
+   if ~ exist('PRIMME_mex')
+      error 'PRIMME_mex is not available. Try to recompile the MATLAB''s PRIMME module'
+   end
+
    minInputs = 1;
    maxInputs = 8;
    narginchk(minInputs,maxInputs);
