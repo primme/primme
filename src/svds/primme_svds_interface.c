@@ -264,8 +264,9 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       primme->initBasisMode = primme_init_user;
    }
 
-   if (method == primme_svds_op_augmented && 
-         primme_svds->target != primme_svds_largest &&
+   if (((method == primme_svds_op_augmented && 
+         primme_svds->target != primme_svds_largest) ||
+        primme_svds->target == primme_svds_closest_abs) &&
          primme->projectionParams.projection == primme_proj_default) {
       /* NOTE: refined extraction seems to work better than RR */
       primme->projectionParams.projection = primme_proj_refined;

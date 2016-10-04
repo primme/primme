@@ -481,8 +481,10 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
             *numLocked, primme);
          (*numLocked)++;
 
-         /* Update maxConvTol */
-         primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorm);
+         /* Update maxConvTol if it wasn't practically converged */
+         if (flags[i] == CONVERGED) {
+            primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorm);
+         }
 
          if (primme->printLevel >= 2 && primme->procID == 0) { 
             fprintf(primme->outputFile, 

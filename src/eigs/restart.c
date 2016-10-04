@@ -377,6 +377,11 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    else {
       *restartsSinceReset = 0;
       if (!Q) *reset = 2; /* only reset W, not V */
+      if (primme->printLevel >= 5 && primme->procID == 0) {
+         fprintf(primme->outputFile, 
+               "Resetting V, W and QR.\n");
+         fflush(primme->outputFile);
+      }
    }
 
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;

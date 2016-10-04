@@ -305,8 +305,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       Num_gemm_Sprimme("C", "N", numLocked, numLocked, nLocal, 1.0, locked,
             ldLocked, locked, ldLocked, 0.0, H, numLocked);
       for(i=0; i < numLocked; i++) {
-         for(j=0; j < i; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
-         assert(fabs(1 - *(double*)&H[numLocked*i+i]) < 1e-13);
+         for(j=0; j < i; j++) assert(ABS(H[numLocked*i+j]) < 1e-13);
+         assert(fabs(1 - ABS(H[numLocked*i+i])) < 1e-13);
       }
       free(H);
    }
@@ -315,8 +315,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       Num_gemm_Sprimme("C", "N", b2+1, b2+1, nLocal, 1.0, basis,
             ldBasis, basis, ldBasis, 0.0, H, b2+1);
       for(i=0; i < b2+1; i++) {
-         for(j=0; j < i; j++) assert(fabs(*(double*)&H[(b2+1)*i+j]) < 1e-13);
-         assert(*(double*)&H[(b2+1)*i+i] == 0.0 || fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
+         for(j=0; j < i; j++) assert(ABS(H[(b2+1)*i+j]) < 1e-13);
+         assert(H[(b2+1)*i+i] == 0.0 || fabs(1 - ABS(H[(b2+1)*i+i])) < 1e-13);
       }
       free(H);
    }
@@ -325,7 +325,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       Num_gemm_Sprimme("C", "N", numLocked, b2+1, nLocal, 1.0, locked,
             ldLocked, basis, ldBasis, 0.0, H, numLocked);
       for(i=0; i < b2+1; i++) {
-         for(j=0; j < numLocked; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+         for(j=0; j < numLocked; j++) assert(ABS(H[numLocked*i+j]) < 1e-13);
       }
       free(H);
    }
@@ -393,8 +393,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       Num_gemm_Sprimme("C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ);
    }
    else {
-      for (i=0; i<nQ*nX; i++)
-         y[i] = 0.0;
+      Num_zero_matrix_Sprimme(y, nQ, nX, nQ);
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
          Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
          Num_gemm_Sprimme("C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, X0, m, 1.0,
@@ -414,6 +413,9 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
    /* X = X - Q*y0; norms0(i) = norms(X(i))^2 */
    if (norms) for (i=0; i<nX; i++) norms0[i] = 0.0;
    for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
+      if (inX) {
+         Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
+      }
       Num_gemm_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, y0, nQ, 1.0,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {

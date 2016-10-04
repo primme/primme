@@ -42,8 +42,6 @@
 #include "ortho.h"
 #include "auxiliary_eigs.h"
 
-/* Extra estates for flags */
-#define PRACTICALLY_CONVERGED  2
 
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
@@ -287,8 +285,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
 
    for (i=0; i < numToProject; i++) {
 
-      double normPr   = sqrt(blockNorms[iev[i]]*blockNorms[iev[i]]
-                               - overlaps[i]*overlaps[i]);   /* || (I-QQ')res || */
+      double normPr   = sqrt(max(0.0, blockNorms[iev[i]]*blockNorms[iev[i]]
+                               - overlaps[i]*overlaps[i]));  /* || (I-QQ')res || */
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
 
