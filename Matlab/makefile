@@ -50,7 +50,7 @@ matlab:
 	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).c
 
 octave:
-	$(MKOCTFILE) --mex $(OCTFLAGS) -DUSING_OCTAVE $(MEXNAME).c
+	$(MKOCTFILE) --mex $(OCTFLAGS) $(LIBS) $(INCLUDE) $(MEXNAME).c
 
 test: test_matlab
 

@@ -120,7 +120,6 @@ function [varargout] = primme_eigs(varargin)
 %  For more details on PRIMME's functionality see PRIMMEtopdir/readme.txt 
 
    clear global eigsFunCallFlag;
-   clear functions;
 
    % Check PRIMME_mex exists
    if ~ exist('PRIMME_mex')
@@ -145,13 +144,13 @@ function [varargout] = primme_eigs(varargin)
     global P1matrix;  % flag if P1 preconditioner is a matrix (or a function)
     global P2;        % if P2 second preconditioner is given it must be a matrix
 
-    if isfloat(varargin{1}) % check if the first input is matrix or matrix funtion
+    if isfloat(varargin{1}) % check if the first input is matrix or matrix function
         primmeA = varargin{1};
         Amatrix = true;
     else
         % By checking the function A with fcnchk, we can now use direct
         % function evaluation on the result, without resorting to feval
-        primmeA = fcnchk(varargin{1}); % get the function handle of user's funciton
+        primmeA = fcnchk_gen(varargin{1}); % get the function handle of user's function
         Amatrix = false;
     end
 
@@ -216,7 +215,7 @@ function [varargout] = primme_eigs(varargin)
             else% the sixth input is matrix function
                 % By checking the function P1 with fcnchk, we can now use direct
                 % function evaluation on the result, without resorting to feval
-                P1 = fcnchk(varargin{6}); % get the function handle of user's function
+                P1 = fcnchk_gen(varargin{6}); % get the function handle of user's function
                 P1matrix = false;
             end
        end
@@ -282,8 +281,8 @@ function [varargout] = primme_eigs(varargin)
             else% the seventh input is matrix function
                 % By checking the function P1 with fcnchk, we can now use direct
                 % function evaluation on the result, without resorting to feval
-                % get the function handle of user's funciton
-                P1 = fcnchk(varargin{7}); 
+                % get the function handle of user's function
+                P1 = fcnchk_gen(varargin{7}); 
                 P1matrix = false;
             end
        end
@@ -329,5 +328,12 @@ function [varargout] = primme_eigs(varargin)
    if (nargout >= 4)
        varargout{4} = primmeout;
    end
+end
 
+function [f] = fcnchk_gen(x, n)
+   if exist('fcnchk')
+      f = fcnchk(x);
+   else 
+      f = x;
+   end
 end
