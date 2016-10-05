@@ -191,7 +191,30 @@
 #define CHKERR(ERRN, RETURN) { \
    int err = (ERRN); assert(err==0);\
    if (err) {\
-      if (primme->outputFile) \
+      if (primme->printLevel > 0 && primme->outputFile) \
+         fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+      return (RETURN);\
+   }\
+}
+
+/**********************************************************************
+ * Macro CHKERRNOABORT - If ERRN != 0, it is printed out in
+ *    primme->outputFile the file and the line of the caller, and
+ *    force the caller function to return RETURN.
+ *
+ *    ERRN is only evaluated once.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * ERRN    Expression that returns an error code
+ * RETURN  Value that the caller function will return in case of error
+ *
+ **********************************************************************/
+
+#define CHKERRNOABORT(ERRN, RETURN) { \
+   int err = (ERRN);\
+   if (err) {\
+      if (primme->printLevel > 0 && primme->outputFile) \
          fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
       return (RETURN);\
    }\
@@ -220,7 +243,38 @@
 #define CHKERRM(ERRN, RETURN, ...) { \
    int err = (ERRN); assert(err==0);\
    if (err) {\
-      if (primme->outputFile) {\
+      if (primme->printLevel > 0 && primme->outputFile) {\
+         fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+         fprintf(primme->outputFile, "PRIMME: " __VA_ARGS__);\
+      }\
+      return (RETURN);\
+   }\
+}
+
+/**********************************************************************
+ * Macro CHKERRNOABORTM - If ERRN == 0, it is printed out in
+ *    primme->outputFile the file and the line of the caller, in
+ *    addition to an error message passed as arguments. As CHKERR
+ *    the caller function is forced to return RETURN in case of error.
+ *
+ *    ERRN is only evaluated once.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * ERRN    Expression that returns an error code
+ * RETURN  Value that the caller function will return in case of error
+ *
+ * EXAMPLE
+ * -------
+ *   CHKERRNOABORTM((ptr = malloc(n*sizeof(double))) == NULL, -1,
+ *        "malloc could not allocate %d doubles\n", n);
+ *
+ **********************************************************************/
+
+#define CHKERRNOABORTM(ERRN, RETURN, ...) { \
+   int err = (ERRN);\
+   if (err) {\
+      if (primme->printLevel > 0 && primme->outputFile) {\
          fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
          fprintf(primme->outputFile, "PRIMME: " __VA_ARGS__);\
       }\
@@ -245,7 +299,9 @@
 #define CHKERRS(ERRN, RETURN) { \
    int err = (ERRN); assert(err==0);\
    if (err) {\
-      fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+      if (primme_svds->printLevel > 0 && primme_svds->outputFile) {\
+         fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+      }\
       return (RETURN);\
    }\
 }
@@ -273,8 +329,10 @@
 #define CHKERRMS(ERRN, RETURN, ...) { \
    int err = (ERRN); assert(err==0);\
    if (err) {\
-      fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
-      fprintf(primme_svds->outputFile, "PRIMME: " __VA_ARGS__);\
+      if (primme_svds->printLevel > 0 && primme_svds->outputFile) {\
+         fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
+         fprintf(primme_svds->outputFile, "PRIMME: " __VA_ARGS__);\
+      }\
       return (RETURN);\
    }\
 }

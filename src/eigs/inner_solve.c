@@ -299,6 +299,10 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because SIGMA %e\n",sigma_prev);
          }
+         /* sol = r if first iteration */
+         if (numIts == 0) {
+            Num_copy_Sprimme(primme->nLocal, r, 1, sol, 1);
+         }
          break;
       }
 
@@ -306,6 +310,10 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       if (fabs(alpha_prev) < machEps || fabs(alpha_prev) > 1.0L/machEps){
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because ALPHA %e\n",alpha_prev);
+         }
+         /* sol = r if first iteration */
+         if (numIts == 0) {
+            Num_copy_Sprimme(primme->nLocal, r, 1, sol, 1);
          }
          break;
       }

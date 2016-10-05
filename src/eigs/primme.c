@@ -172,25 +172,25 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* Check primme input data for bounds, correct values etc. */
    /* ------------------------------------------------------- */
 
-   CHKERR(ret = check_input(evals, evecs, resNorms, primme), ret);
+   CHKERRNOABORT(ret = check_input(evals, evecs, resNorms, primme), ret);
 
    /* ----------------------------------------------------------------------- */
    /* Compute AND allocate memory requirements for main_iter and subordinates */
    /* ----------------------------------------------------------------------- */
 
-   CHKERR(allocate_workspace(primme, TRUE), ALLOCATE_WORKSPACE_FAILURE);
+   CHKERRNOABORT(allocate_workspace(primme, TRUE), ALLOCATE_WORKSPACE_FAILURE);
 
    /* --------------------------------------------------------- */
    /* Allocate workspace that will be needed locally by Sprimme */
    /* --------------------------------------------------------- */
-   CHKERR(MALLOC_PRIMME(primme->numEvals, &perm), MALLOC_FAILURE);
+   CHKERRNOABORT(MALLOC_PRIMME(primme->numEvals, &perm), MALLOC_FAILURE);
 
    /*----------------------------------------------------------------------*/
    /* Call the solver                                                      */
    /*----------------------------------------------------------------------*/
 
-   CHKERR(main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms,
-            machEps, primme->intWork, primme->realWork, primme),
+   CHKERRNOABORT(main_iter_Sprimme(evals, perm, evecs, primme->ldevecs,
+            resNorms, machEps, primme->intWork, primme->realWork, primme),
          MAIN_ITER_FAILURE);
 
    /*----------------------------------------------------------------------*/

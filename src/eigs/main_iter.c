@@ -688,6 +688,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                availableBlockSize = min(availableBlockSize, maxRecentlyConverged+1);
             }
 
+            /* Limit basisSize to the matrix dimension */
+
+            availableBlockSize = min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst);
+
             /* -------------------------------------------------------------- */
             /* NOTE: setting smallestResNorm to zero may overpass the inner   */
             /* product condition (ip) and result in a smaller                 */
@@ -875,7 +880,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             return 0;
          }
          else {
-            CHKERRM(-1, -1, "Maximum iterations or matvecs reached");
+            CHKERRNOABORTM(-1, -1, "Maximum iterations or matvecs reached");
          }
 
       }
@@ -936,7 +941,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                return 0;
             }
             else {
-	       CHKERRM(-1, -1, "Maximum iterations or matvecs reached");
+	       CHKERRNOABORTM(-1, -1, "Maximum iterations or matvecs reached");
             }
 
          }

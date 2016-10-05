@@ -277,6 +277,10 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       Num_copy_matrix_Sprimme(aux, primme_svds->mLocal, n, primme_svds->mLocal,
          &svecs[primme_svds->nLocal], primme->nLocal);
       free(aux);
+
+      /* Normalize the orthogonal constrains */
+      Num_scal_Sprimme(primme->nLocal*primme_svds->numOrthoConst, 1./sqrt(2.),
+            svecs, 1);
       break;
    case primme_svds_op_none:
       break;
@@ -415,9 +419,10 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       SCALAR *rwork; 
       CHKERRS(MALLOC_PRIMME(2*primme->numOrthoConst, &rwork), NULL);
       size_t rworkSize =  2*primme->numOrthoConst;
-      CHKERRS(ortho_Sprimme(out_svecs, primme->nLocal, NULL, 0, 0,
-               primme->numOrthoConst-1, NULL, 0, 0, primme->nLocal,
-               primme->iseed, machEps, rwork, &rworkSize, primme), NULL);
+      CHKERRS(ortho_Sprimme(out_svecs, primme->nLocal, NULL, 0,
+               primme_svds->numOrthoConst, primme->numOrthoConst-1, NULL, 0, 0,
+               primme->nLocal, primme->iseed, machEps, rwork, &rworkSize,
+               primme), NULL);
       free(rwork);
    }
 
@@ -610,6 +615,10 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       break;
    case primme_svds_op_augmented:
       assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
+
+      /* Normalize back the orthogonal constrains */
+      Num_scal_Sprimme(primme->nLocal*primme_svds->numOrthoConst, sqrt(2.),
+            svecs, 1);
 
       /* Shuffle svecs from [Vc V; Uc U] to [Uc U Vc V] */
       CHKERRS(MALLOC_PRIMME(primme->nLocal*n, &aux), -1);
