@@ -98,7 +98,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
-          maxPrevRetain=0, method=None):
+          maxPrevRetain=0, method=None, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -202,6 +202,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         - "estimateMinEVal": the leftmost Ritz value seen
         - "estimateMaxEVal": the rightmost Ritz value seen
         - "estimateLargestSVal": the largest singular value seen
+        - "rnorms" : ||A*x[i] - x[i]*w[i]||
 
     Raises
     ------
@@ -302,13 +303,30 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
         pp.numOrthoConst = min(lock.shape[1], pp.n)
 
+    # Set other parameters
+    for dk, dv in kargs.items():
+      setattr(pp, dk, dv)
+
     if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
         dtype = A.dtype
 
-    evals = np.zeros(pp.numEvals)
-    norms = np.zeros(pp.numEvals)
+    if dtype.type is np.complex64:
+        Xprimme = cprimme
+        rtype = np.dtype(np.float32)
+    elif dtype.type is np.float32:
+        Xprimme = sprimme
+        rtype = np.dtype(np.float32)
+    elif dtype.type is np.float64:
+        Xprimme = dprimme
+        rtype = np.dtype(np.float64)
+    else:
+        Xprimme = zprimme
+        rtype = np.dtype(np.float64)
+
+    evals = np.zeros(pp.numEvals, rtype)
+    norms = np.zeros(pp.numEvals, rtype)
     evecs = np.zeros((pp.n, pp.numOrthoConst+pp.numEvals), dtype, order='F')
 
     if lock is not None:
@@ -331,24 +349,21 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if method is not None:
         pp.set_method(method)
  
-    if dtype.type is np.complex64:
-        err = cprimme(evals, evecs, norms, pp)
-    elif dtype.type is np.float:
-        err = sprimme(evals, evecs, norms, pp)
-    elif dtype.type is np.double:
-        err = dprimme(evals, evecs, norms, pp)
-    else:
-        err = zprimme(evals, evecs, norms, pp)
+    err = Xprimme(evals, evecs, norms, pp)
 
     if err != 0:
         raise PrimmeError(err)
 
-    evecs = evecs[:, pp.numOrthoConst:]
+    evals = evals[0:pp.initSize]
+    norms = norms[0:pp.initSize]
+    evecs = evecs[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize]
+
     if return_stats:
         stats = dict((f, getattr(pp.stats, f)) for f in [
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime", "estimateMinEVal",
             "estimateMaxEVal", "estimateLargestSVal"])
+        stats['rnorms'] = norms
         return evals, evecs, stats
     else:
         return evals, evecs
@@ -358,7 +373,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
-         return_stats=False, maxBlockSize=0):
+         return_stats=False, maxBlockSize=0, **kargs):
     """
     Compute k singular values and vectors for a sparse matrix.
 
@@ -429,6 +444,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         - "numMatvecs": number of A*v
         - "numPreconds": number of OPinv*v
         - "elapsedTime": time that took 
+        - "rnorms" : ||A*v[i] - u[i]*s[i]||
 
         Returned if `return_stats` is True.
 
@@ -555,15 +571,32 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if locku0 is not None:
         pp.numOrthoConst = min(locku0.shape[1], min(m,n))
 
+    # Set other parameters
+    for dk, dv in kargs.items():
+      setattr(pp, dk, dv)
+
     if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
         dtype = A.dtype
 
-    svals = np.zeros(pp.numSvals)
+    if dtype.type is np.complex64:
+        Xprimme_svds = cprimme_svds
+        rtype = np.dtype(np.float32)
+    elif dtype.type is np.float32:
+        Xprimme_svds = sprimme_svds
+        rtype = np.dtype(np.float32)
+    elif dtype.type is np.float64:
+        Xprimme_svds = dprimme_svds
+        rtype = np.dtype(np.float64)
+    else:
+        Xprimme_svds = zprimme_svds
+        rtype = np.dtype(np.float64)
+
+    svals = np.zeros(pp.numSvals, rtype)
     svecsl = np.zeros((pp.m, pp.numOrthoConst+pp.numSvals), dtype, order='F')
     svecsr = np.zeros((pp.n, pp.numOrthoConst+pp.numSvals), dtype, order='F')
-    norms = np.zeros(pp.numSvals)
+    norms = np.zeros(pp.numSvals, rtype)
 
     if locku0 is not None:
         np.copyto(svecsl[:, 0:pp.numOrthoConst], locku0[:, 0:pp.numOrthoConst])
@@ -576,14 +609,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
         np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
 
-    if dtype.type is np.complex64:
-        err = cprimme_svds(svals, svecsl, svecsr, norms, pp)
-    elif dtype.type is np.float:
-        err = sprimme_svds(svals, svecsl, svecsr, norms, pp)
-    elif dtype.type is np.double:
-        err = dprimme_svds(svals, svecsl, svecsr, norms, pp)
-    else:
-        err = zprimme_svds(svals, svecsl, svecsr, norms, pp)
+    err = Xprimme_svds(svals, svecsl, svecsr, norms, pp)
 
     if err != 0:
         raise PrimmeSvdsError(err)
@@ -592,12 +618,15 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         stats = dict((f, getattr(pp.stats, f)) for f in [
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime"])
+        stats["rnorms"] = norms
  
     if not return_singular_vectors:
         return svals if not return_stats else (svals, stats)
 
-    svecsl = svecsl[:, pp.numOrthoConst:]
-    svecsr = svecsr[:, pp.numOrthoConst:]
+    svals = svals[0:pp.initSize]
+    norms = norms[0:pp.initSize]
+    svecsl = svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize]
+    svecsr = svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize]
 
     # Transpose conjugate svecsr
     svecsr = svecsr.T.conj()

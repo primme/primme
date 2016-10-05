@@ -284,31 +284,54 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 }
 %enddef    /* %numpy_typemaps_ext() macro */
 
-%numpy_typemaps_ext(double            , NPY_DOUBLE   , int)
+%numpy_typemaps_ext(double              , NPY_DOUBLE , int)
 %numpy_typemaps_ext(std::complex<double>, NPY_CDOUBLE, int)
+%numpy_typemaps_ext(float               , NPY_FLOAT  , int)
+%numpy_typemaps_ext(std::complex<float> , NPY_CFLOAT , int)
+
 
 
 %apply (int DIM1, double* INPLACE_ARRAY1) {
    (int lenEvals, double* evals),
    (int lenSvals, double* svals),
    (int lenResNorms, double* resNorms)};
+%apply (int DIM1, float* INPLACE_ARRAY1) {
+   (int lenEvals, float* evals),
+   (int lenSvals, float* svals),
+   (int lenResNorms, float* resNorms)};
 %apply (int DIM1, int DIM2, double* INPLACE_FARRAY2) {
    (int len1Evecs, int len2Evecs, double* evecs),
    (int len1SvecsLeft, int len2SvecsLeft, double* svecsLeft),
    (int len1SvecsRight, int len2SvecsRight, double* svecsRight)};
+%apply (int DIM1, int DIM2, float* INPLACE_FARRAY2) {
+   (int len1Evecs, int len2Evecs, float* evecs),
+   (int len1SvecsLeft, int len2SvecsLeft, float* svecsLeft),
+   (int len1SvecsRight, int len2SvecsRight, float* svecsRight)};
 %apply (int DIM1, int DIM2, std::complex<double>* INPLACE_FARRAY2) {
    (int len1Evecs, int len2Evecs, std::complex<double>* evecs),
    (int len1SvecsLeft, int len2SvecsLeft, std::complex<double>* svecsLeft),
    (int len1SvecsRight, int len2SvecsRight, std::complex<double>* svecsRight)};
+%apply (int DIM1, int DIM2, std::complex<float>* INPLACE_FARRAY2) {
+   (int len1Evecs, int len2Evecs, std::complex<float>* evecs),
+   (int len1SvecsLeft, int len2SvecsLeft, std::complex<float>* svecsLeft),
+   (int len1SvecsRight, int len2SvecsRight, std::complex<float>* svecsRight)};
 
 %apply (int DIM1, int DIM2, int LD, double* IN_FARRAY2D) {
    (int len1YD, int len2YD, int ldYD, double* yd)};
+%apply (int DIM1, int DIM2, int LD, float* IN_FARRAY2D) {
+   (int len1YD, int len2YD, int ldYD, float* yd)};
 %apply (int DIM1, int DIM2, int LD, double* OUT_FARRAY2D) {
    (int len1XD, int len2XD, int ldXD, double* xd)};
+%apply (int DIM1, int DIM2, int LD, float* OUT_FARRAY2D) {
+   (int len1XD, int len2XD, int ldXD, float* xd)};
 %apply (int DIM1, int DIM2, int LD, std::complex<double>* IN_FARRAY2D) {
    (int len1YD, int len2YD, int ldYD, std::complex<double>* yd)};
+%apply (int DIM1, int DIM2, int LD, std::complex<float>* IN_FARRAY2D) {
+   (int len1YD, int len2YD, int ldYD, std::complex<float>* yd)};
 %apply (int DIM1, int DIM2, int LD, std::complex<double>* OUT_FARRAY2D) {
    (int len1XD, int len2XD, int ldXD, std::complex<double>* xd)};
+%apply (int DIM1, int DIM2, int LD, std::complex<float>* OUT_FARRAY2D) {
+   (int len1XD, int len2XD, int ldXD, std::complex<float>* xd)};
 
 /* typemaps for targetShift and numTargetShifts */
  
@@ -317,11 +340,15 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %apply (double **ARGOUTVIEW_ARRAY1, int *DIM1) {
    (double **targetShifts, int *n)};
 
-/* typemaps for globalSumDouble */
+/* typemaps for globalSumReal */
 %apply (int DIM1, double* IN_ARRAY1D) {
    (int lenYD, double *yd)};
+%apply (int DIM1, float* IN_ARRAY1D) {
+   (int lenYD, float *yd)};
 %apply (int DIM1, double *OUT_ARRAY1D) {
    (int lenXD, double *xd)};
+%apply (int DIM1, float *OUT_ARRAY1D) {
+   (int lenXD, float *xd)};
 
 %inline %{
 template <typename T, typename I, typename J>
