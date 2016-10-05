@@ -259,19 +259,20 @@ void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
 TEMPLATE_PLEASE
 SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
-#ifdef USE_COMPLEX
+/* NOTE: vecLib doesn't follow BLAS reference for sdot */
+#if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__)))
 /* ---- Explicit implementation of the zdotc() --- */
    PRIMME_INT i;
    SCALAR zdotc = 0.0;
    if (n <= 0) return(zdotc);
    if (incx == 1 && incy == 1) {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += conj(x[i]) * y[i];
+         zdotc += CONJ(x[i]) * y[i];
       }
    }
    else {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += conj(x[i*incx]) * y[i*incy];
+         zdotc += CONJ(x[i*incx]) * y[i*incy];
       }
    }
    return zdotc;
