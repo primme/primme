@@ -115,7 +115,7 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    /* ------------------ */
    primme_svds_set_defaults(primme_svds);
    if (fabs(primme_svds->eps) == 0.0) {
-      primme_svds->eps = Num_lamch_Rprimme("E")*1e4;
+      primme_svds->eps = MACHINE_EPSILON*1e4;
    }
 
    /* -------------------------------------------------------------- */
@@ -197,7 +197,7 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    primme_svds_operator method;
    SCALAR *aux, *out_svecs = svecs;
    int n, nMax, i, cut;
-   const double machEps = Num_lamch_Rprimme("E");
+   const double machEps = MACHINE_EPSILON;
 
    primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
@@ -879,7 +879,7 @@ static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count,
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr) {
 
-   const double machEps = Num_lamch_Rprimme("E");
+   const double machEps = MACHINE_EPSILON;
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
    (void)evec;  /* unused argument */
@@ -909,7 +909,7 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr) {
 
-   const double machEps = Num_lamch_Rprimme("E");
+   const double machEps = MACHINE_EPSILON;
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
    (void)evec;  /* unused argument */

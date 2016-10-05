@@ -130,7 +130,7 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* ----------------------- */
    /*  Find machine precision */
    /* ----------------------- */
-   machEps = Num_lamch_Rprimme("E");
+   machEps = MACHINE_EPSILON;
 
    /* ------------------ */
    /* Set some defaults  */
@@ -475,7 +475,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
       ret = -10;
    else if (primme->numEvals < 0)
       ret = -11;
-   else if (fabs(primme->eps) != 0.0L && primme->eps < Num_lamch_Rprimme("E") )
+   else if (fabs(primme->eps) != 0.0L && primme->eps < MACHINE_EPSILON )
       ret = -12;
    else if ( primme->target != primme_smallest  &&
              primme->target != primme_largest  &&
@@ -571,7 +571,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
       int *isConv, primme_params *primme, int *ierr) {
 
-   const double machEps = Num_lamch_Rprimme("E");
+   const double machEps = MACHINE_EPSILON;
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
    (void)eval; /* unused parameter */

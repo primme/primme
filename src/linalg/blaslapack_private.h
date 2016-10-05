@@ -91,7 +91,6 @@
 #define XGESVD    LAPACK_FUNCTION(sgesvd, cgesvd, dgesvd, zgesvd)
 #define XHETRF    LAPACK_FUNCTION(ssytrf, chetrf, dsytrf, zhetrf)
 #define XHETRS    LAPACK_FUNCTION(ssytrs, chetrs, dsytrs, zhetrs)
-#define XLAMCH    LAPACK_FUNCTION(slamch, clamch, dlamch, zlamch)
 
 #ifdef NUM_ESSL
 #include <essl.h>
@@ -118,7 +117,6 @@
 #define XAXPY  LAPACK_FUNCTION(SAXPY  , zaxpy )
 #define XGEMV  LAPACK_FUNCTION(SGEMV  , zgemv )
 #define XDOT   LAPACK_FUNCTION(SDOT   ,       )
-#define XLAMCH LAPACK_FUNCTION(SLAMCH , zlarnv)
 #define XSCAL  LAPACK_FUNCTION(SSCAL  , zscal )
 #define XLARNV LAPACK_FUNCTION(SLARNV ,       )
 #define XSYEV  LAPACK_FUNCTION(SSYEV  , zheev )
@@ -155,7 +153,6 @@ void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCA
 void XHEEV(STRING jobz, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *w, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
 void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *s, SCALAR *u, PRIMME_BLASINT *ldu, SCALAR *vt, PRIMME_BLASINT *ldvt, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
 #endif
-SCALAR XLAMCH(STRING cmach);
 void XSCAL(PRIMME_BLASINT *n, SCALAR *alpha, SCALAR *x, PRIMME_BLASINT *incx);
 void XLARNV(PRIMME_BLASINT *idist, PRIMME_BLASINT *iseed, PRIMME_BLASINT *n, SCALAR *x);
 void XHETRF(STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);

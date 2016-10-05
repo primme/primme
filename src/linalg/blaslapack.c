@@ -626,21 +626,3 @@ void Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
    XTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 #endif
 }
-
-/*******************************************************************************
- * Subroutine Num_lamch_Sprimme - return numerical constants
- ******************************************************************************/
-
-#ifndef USE_COMPLEX
-TEMPLATE_PLEASE
-SCALAR Num_lamch_Sprimme(const char *cmach) {
-#ifdef NUM_CRAY
-   _fcd cmach_fcd;
-
-   cmach_fcd = _cptofcd(cmach, strlen(cmach));
-   return XLAMCH(cmach_fcd);
-#else
-   return XLAMCH(cmach);
-#endif
-}
-#endif

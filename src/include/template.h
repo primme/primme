@@ -37,6 +37,7 @@
 #define TEMPLATE_H
 
 #include <limits.h>    
+#include <float.h>
 #include "primme.h"
 
 /*****************************************************************************/
@@ -74,6 +75,7 @@
 #  define REAL_SUF dprimme
 #  define SCALAR double
 #  define REAL double
+#  define MACHINE_EPSILON DBL_EPSILON
 #elif defined(USE_DOUBLECOMPLEX)
 #  define SCALAR_PRE z
 #  define REAL_PRE d
@@ -82,6 +84,7 @@
 #  define USE_COMPLEX
 #  define SCALAR PRIMME_COMPLEX_DOUBLE
 #  define REAL double
+#  define MACHINE_EPSILON DBL_EPSILON
 #elif defined(USE_FLOAT)
 #  define SCALAR_PRE s
 #  define REAL_PRE s
@@ -89,6 +92,7 @@
 #  define REAL_SUF sprimme
 #  define SCALAR float
 #  define REAL float
+#  define MACHINE_EPSILON FLT_EPSILON
 #elif defined(USE_FLOATCOMPLEX)
 #  define SCALAR_PRE c
 #  define REAL_PRE s
@@ -97,6 +101,7 @@
 #  define USE_COMPLEX
 #  define SCALAR PRIMME_COMPLEX_FLOAT
 #  define REAL float
+#  define MACHINE_EPSILON FLT_EPSILON
 #else
 #  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
 #endif
@@ -131,8 +136,6 @@
 #ifndef __cplusplus
 #include <tgmath.h>   /* select proper function abs from fabs, cabs... */
 #endif
-
-#define MACHINE_EPSILON 1.11e-16
 
 /* TEMPLATE_PLEASE tags the functions whose prototypes depends on macros and  */
 /* are used in other files. The macro has value only when the tool ctemplate  */
