@@ -150,7 +150,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldevecsHat, SCALAR *UDU, int *ipivot, REAL *lockedEvals, 
       int numLocked, int numConvergedStored, REAL *ritzVals, 
       REAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
-      REAL *blockNorms, int *iev, int blockSize, double machEps,
+      REAL *blockNorms, int *iev, int blockSize, int *touch, double machEps,
       SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme) {
 
@@ -448,7 +448,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                   ldevecs, UDU, ipivot, &xKinvx,
                   Lprojector, ldLprojector, RprojectorQ, ldRprojectorQ,
                   RprojectorX, ldRprojectorX, sizeLprojector, sizeRprojectorQ,
-                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift,
+                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift, touch,
                   machEps, linSolverRWork, linSolverRWorkSize,
                   primme), -1);
 
