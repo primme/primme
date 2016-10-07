@@ -328,6 +328,24 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
       gamma = c*c*Theta_prev*Theta_prev;
       eta = alpha_prev*c*c;
+
+      if (fabs(eta) < machEps){
+         if (primme->printLevel >= 4 && primme->procID == 0) {
+            fprintf(primme->outputFile, "Exiting because eta=%e < machEps\n",
+                  eta);
+         }
+         /* sol = r if first iteration */
+         if (numIts == 0) {
+            Num_copy_Sprimme(primme->nLocal, r, 1, sol, 1);
+         }
+         /* If stagnation is detected, the shift may be so close to an        */
+         /* unwanted eigenvalue. Changing to ETol may avoid over-solving the  */
+         /* linear system. This change improves test_206.                     */
+         /* TODO: set the original value back when this eigenvalue converges */
+         primme->correctionParams.convTest = primme_adaptive_ETolerance;
+         break;
+      }
+
       for (i = 0; i < primme->nLocal; i++) {
           delta[i] = gamma*delta[i] + eta*d[i];
           sol[i] = delta[i]+sol[i];
@@ -382,7 +400,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          /* Stopping criteria                                       */
          /* --------------------------------------------------------*/
 
-         if (numIts > 1 && tau_prev < eres_updated) {
+         if (numIts > 1 && tau_prev <= eres_updated) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, " tau < R eres \n");
             }
