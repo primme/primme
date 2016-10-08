@@ -52,6 +52,11 @@
 #  define PRIMME_COMPLEX_DOUBLE double complex
 #endif
 
+/* Required by some C++ compilers when including inttypes.h */
+#if defined(__cplusplus) && !defined(__STDC_FORMAT_MACROS)
+#  define __STDC_FORMAT_MACROS
+#endif
+
 #if !defined(PRIMME_INT_SIZE) || PRIMME_INT_SIZE == 64
 #  include <stdint.h>
 #  include <inttypes.h>
