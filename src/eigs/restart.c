@@ -387,14 +387,6 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
    
    /* ----------------------------------------------------------------------- */
-   /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
-   /* vectors do not exceed basisSize.                                        */
-   /* ----------------------------------------------------------------------- */
-
-   if (primme->locking)
-      restartSize = min(restartSize, basisSize-(*numConverged-*numLocked));
-
-   /* ----------------------------------------------------------------------- */
    /* Insert as many initial guesses as eigenpairs have converged.            */
    /* Leave sufficient restarting room in the restarted basis so that to      */
    /* insert (in main_iter) as many initial guesses as the number of          */
@@ -402,6 +394,14 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    /* ----------------------------------------------------------------------- */
 
    restartSize -= min(min(numGuesses, *numConverged-*numLocked), restartSize);
+
+   /* ----------------------------------------------------------------------- */
+   /* Limit restartSize so that it plus 'to be locked' plus previous Ritz     */
+   /* vectors do not exceed basisSize.                                        */
+   /* ----------------------------------------------------------------------- */
+
+   if (primme->locking)
+      restartSize = min(restartSize, basisSize-(*numConverged-*numLocked));
 
    /* ----------------------------------------------------------------------- */
    /* Limit the number of previous retained vectors such that the final basis */

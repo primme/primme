@@ -515,15 +515,24 @@ void primme_set_defaults(primme_params *params) {
    /* --------------------------------------------------------------------- */
    /* Decide on whether to use locking (hard locking), or not (soft locking)*/
    /* --------------------------------------------------------------------- */
-   if (params->target != primme_smallest && params->target != primme_largest ) {
+   if (params->locking >= 0) {
+      /* Honor the user setup (do nothing) */
+   }
+   else if (params->target != primme_smallest && params->target != primme_largest
+         && params->projectionParams.projection == primme_proj_RR) {
       /* Locking is necessary as interior Ritz values can cross shifts */
+      params->locking = 1;
+   }
+   else if (params->target != primme_smallest && params->target != primme_largest
+         && params->projectionParams.projection == primme_proj_refined
+         && params->numTargetShifts > 1) {
       params->locking = 1;
    }
    else if (params->numEvals > params->minRestartSize) {
       /* use locking when not enough vectors to restart with */
       params->locking = 1;
    }
-   else if (params->locking < 0) {
+   else {
       params->locking = 0;   
    }
 }

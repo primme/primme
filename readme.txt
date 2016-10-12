@@ -89,6 +89,10 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 2.1 (released on XXX):
+
+* Support Octave.
+
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
 * Changed license to BSD 3-clause.
@@ -1835,13 +1839,13 @@ primme_params
       * "primme_proj_RR", Rayleigh-Ritz, Ax_i - Bx_i\lambda_i \perp
         \mathcal V.
 
-      * "primme_proj_Harm", Harmonic Rayleigh-Ritz, Ax_i -
+      * "primme_proj_harmonic", Harmonic Rayleigh-Ritz, Ax_i -
         Bx_i\lambda_i \perp (A-\tau B)\mathcal V, where \tau is the
         current target shift (see "targetShifts").
 
-      * "primme_proj_ref", refined extraction, compute ||x_i||=1 so
-        that minimizes ||(A-\tau B)x_i||; the eigenvalues are computed
-        as the Rayleigh quotients,
+      * "primme_proj_refined", refined extraction, compute ||x_i||=1
+        so that minimizes ||(A-\tau B)x_i||; the eigenvalues are
+        computed as the Rayleigh quotients,
         \lambda_i=\frac{x_i^*Ax_i}{x_i^*Bx_i}.
 
       Input/output:
@@ -2341,13 +2345,19 @@ values:
 
 * -33: if "locking" == 0 and "minRestartSize" < "numEvals".
 
-* -34: if "ldevecs" < "nLocal"
+* -34: if "ldevecs" < "nLocal".
 
-* -35: if "ldOPs" is not zero and less than "nLocal"
+* -35: if "ldOPs" is not zero and less than "nLocal".
 
-* -36: not enough memory for "realWork"
+* -36: not enough memory for "realWork".
 
-* -37: not enough memory for "intWork"
+* -37: not enough memory for "intWork".
+
+* -38: if "locking" == 0 and "target" isn't "primme_smallest" nor
+  "primme_largest",
+
+     and "projection" is "primme_proj_refined" or
+     "primme_proj_harmonic", and "numTargetShifts" > 1.
 
 
 Preset Methods
@@ -2622,7 +2632,7 @@ primme_preset_method
 Python Interface
 ****************
 
-Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None)
+Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, **kargs)
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -2757,6 +2767,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         * "estimateMaxEVal": the rightmost Ritz value seen
 
         * "estimateLargestSVal": the largest singular value seen
+
+        * "rnorms" : ||A*x[i] - x[i]*w[i]||
 
    Raises:
       "PrimmeError" -- When the requested convergence is not obtained.
@@ -4452,7 +4464,7 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, **kargs)
 
    Compute k singular values and vectors for a sparse matrix.
 
@@ -4548,6 +4560,8 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         * "numPreconds": number of OPinv*v
 
         * "elapsedTime": time that took
+
+        * "rnorms" : ||A*v[i] - u[i]*s[i]||
 
         Returned if *return_stats* is True.
 

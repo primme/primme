@@ -640,10 +640,10 @@ primme_params
       eigenvalues :math:`\lambda_i` are computed from the search subspace :math:`\mathcal V`:
 
       * ``primme_proj_RR``, Rayleigh-Ritz, :math:`Ax_i - Bx_i\lambda_i \perp \mathcal V`.
-      * ``primme_proj_Harm``, Harmonic Rayleigh-Ritz,
+      * ``primme_proj_harmonic``, Harmonic Rayleigh-Ritz,
         :math:`Ax_i - Bx_i\lambda_i \perp (A-\tau B)\mathcal V`, where :math:`\tau` is the current
         target shift (see |targetShifts|).
-      * ``primme_proj_ref``, refined extraction, compute :math:`||x_i||=1` so that
+      * ``primme_proj_refined``, refined extraction, compute :math:`||x_i||=1` so that
         minimizes :math:`||(A-\tau B)x_i||`; the eigenvalues are computed as the
         Rayleigh quotients, :math:`\lambda_i=\frac{x_i^*Ax_i}{x_i^*Bx_i}`.
 
@@ -1098,10 +1098,13 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
 * -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
 * -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
-* -34: if |ldevecs| < |nLocal|
-* -35: if |ldOPs| is not zero and less than |nLocal|
-* -36: not enough memory for |realWork|
-* -37: not enough memory for |intWork|
+* -34: if |ldevecs| < |nLocal|.
+* -35: if |ldOPs| is not zero and less than |nLocal|.
+* -36: not enough memory for |realWork|.
+* -37: not enough memory for |intWork|.
+* -38: if |locking| == 0 and |target| isn't |primme_smallest| nor |primme_largest|,
+   and |projection| is |primme_proj_refined| or |primme_proj_harmonic|,
+   and |numTargetShifts| > 1.
 
 .. _methods:
 
