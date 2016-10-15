@@ -409,7 +409,6 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    if (a == NULL) a = &dummys;
    if (llda < 1) llda = 1;
    if (w == NULL) w = &dummyr;
-   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -442,7 +441,6 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    if (a == NULL) a = &dummys;
    if (llda < 1) llda = 1;
    if (w == NULL) w = &dummyr;
-   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -490,7 +488,6 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    if (lldu < 1) lldu = 1;
    if (vt == NULL) vt = &dummys;
    if (lldvt < 1) lldvt = 1;
-   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobu_fcd, jobvt_fcd;
@@ -531,7 +528,6 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    if (lldu < 1) lldu = 1;
    if (vt == NULL) vt = &dummys;
    if (lldvt < 1) lldvt = 1;
-   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobu_fcd, jobvt_fcd;
@@ -581,7 +577,6 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    if (a == NULL) a = &dummys;
    if (llda < 1) llda = 1;
    if (lipivot == NULL) lipivot = &dummyi;
-   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
