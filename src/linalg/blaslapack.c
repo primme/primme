@@ -399,9 +399,17 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
- 
+   SCALAR dummys=0;
+   REAL   dummyr=0;
+
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (w == NULL) w = &dummyr;
+   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -424,9 +432,17 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (w == NULL) w = &dummyr;
+   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobz_fcd, uplo_fcd;
@@ -460,9 +476,21 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_BLASINT lldvt = ldvt;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (s == NULL) s = &dummyr;
+   if (u == NULL) u = &dummys;
+   if (lldu < 1) lldu = 1;
+   if (vt == NULL) vt = &dummys;
+   if (lldvt < 1) lldvt = 1;
+   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobu_fcd, jobvt_fcd;
@@ -489,9 +517,21 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_BLASINT lldvt = ldvt;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (s == NULL) s = &dummyr;
+   if (u == NULL) u = &dummys;
+   if (lldu < 1) lldu = 1;
+   if (vt == NULL) vt = &dummys;
+   if (lldvt < 1) lldvt = 1;
+   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd jobu_fcd, jobvt_fcd;
@@ -522,6 +562,8 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+   SCALAR dummys=0;
+   PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
@@ -534,6 +576,12 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    } else {
       lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (lipivot == NULL) lipivot = &dummyi;
+   if (lldwork < 1) lldwork = 1;
 
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
