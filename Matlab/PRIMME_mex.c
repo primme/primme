@@ -396,7 +396,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          tmp = mxGetField(prhs[5], 0, "iseed");
          if (tmp != NULL) {
             read_iseed = mxGetPr(tmp);   
-            for (i=0; i< 5; i++)
+            for (i=0; i< 4; i++)
                primme.iseed[i] = (int)read_iseed[i];
             mexPrintf("primme.iseed is:[%d, %d, %d, %d]\n",
                   primme.iseed[0], primme.iseed[1], primme.iseed[2], primme.iseed[3]);  

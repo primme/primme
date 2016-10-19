@@ -461,7 +461,7 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
 
    if (primme == NULL)
       ret = -4;
-   else if (primme->n <= 0 || primme->nLocal <= 0) 
+   else if (primme->n < 0 || primme->nLocal < 0 || primme->nLocal > primme->n) 
       ret = -5;
    else if (primme->numProcs < 1)
       ret = -6;
@@ -484,13 +484,15 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
              primme->target != primme_closest_leq  &&
              primme->target != primme_closest_abs    )
       ret = -13;
-   else if (primme->numOrthoConst < 0 || primme->numOrthoConst >=primme->n)
+   else if (primme->numOrthoConst < 0 || primme->numOrthoConst > primme->n)
       ret = -16;
    else if (primme->maxBasisSize < 2 && primme->maxBasisSize != primme->n) 
       ret = -17;
-   else if (primme->minRestartSize <= 0 && primme->n > 2) 
+   else if (primme->minRestartSize < 0 || (primme->minRestartSize == 0
+                                    && primme->n > 2 && primme->numEvals > 0))
       ret = -18;
-   else if (primme->maxBlockSize <= 0) 
+   else if (primme->maxBlockSize < 0
+             || (primme->maxBlockSize == 0 && primme->numEvals > 0)) 
       ret = -19;
    else if (primme->restartingParams.maxPrevRetain < 0)
       ret = -20;

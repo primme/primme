@@ -283,9 +283,9 @@ int main (int argc, char *argv[]) {
    }
 
    primme_free(&primme);
-   free(evals);
-   free(evecs);
-   free(rnorms);
+   delete [] evals;
+   delete [] evecs;
+   delete [] rnorms;
 
   return(0);
 }

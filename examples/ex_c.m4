@@ -230,10 +230,13 @@ CALL_PRIMME
 
 CALL_PRIMME
 ')dnl
-   primme_free(&primme);
+   primme_free(&primme);ifdef(`USE_COMPLEX_CXX', `
+   delete [] evals;
+   delete [] evecs;
+   delete [] rnorms;',`
    free(evals);
    free(evecs);
-   free(rnorms);
+   free(rnorms);')
 
 ifdef(`USE_PETSC', `   ierr = PetscFinalize(); CHKERRQ(ierr);
 

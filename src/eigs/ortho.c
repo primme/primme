@@ -157,7 +157,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
    /*----------------------------------*/
    assert(nLocal >= 0 && numLocked >= 0 && *rworkSize >= minWorkSize &&
           ldBasis >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
-          (R == NULL || ldR >= b2));
+          (R == NULL || ldR > b2));
 
    tol = sqrt(2.0L)/2.0L;
 
