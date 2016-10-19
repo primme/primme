@@ -380,12 +380,11 @@ ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMME_matrix, 
         end
         subroutine par_GlobalSum(x,y,k,primme,ierr)
 !       ----------------------------------------------------------------
-ifdef([USE_POINTER], [        use iso_c_binding
-])dnl
+        use iso_c_binding
         implicit none
         include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
-        real*8 x(*), y(*)
+        real*8, target :: x(k), y(k)
         integer*8 primme
         integer k,ierr
 ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
@@ -394,8 +393,13 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         call primme_get_member_f77(primme, PRIMME_commInfo, pcomm, ierr)
         call c_f_pointer(pcomm, comm)
 ])dnl
-        call MPI_Allreduce(x, y, k, MPIU_REAL, MPIU_SUM,
+        if (c_associated(c_loc(x),c_loc(y))) then
+          call MPI_Allreduce(MPI_IN_PLACE, y, k, MPIU_REAL, MPIU_SUM,
      :                                 ifdef([USE_POINTER], [comm], [PETSC_COMM_WORLD]), ierr)
+        else
+          call MPI_Allreduce(x, y, k, MPIU_REAL, MPIU_SUM,
+     :                                 ifdef([USE_POINTER], [comm], [PETSC_COMM_WORLD]), ierr)
+        endif
         end
 ], [
 !       1-D Laplacian block matrix-vector product, Y = A * X, where

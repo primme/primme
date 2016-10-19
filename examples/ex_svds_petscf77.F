@@ -350,12 +350,18 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         end
         subroutine par_GlobalSum(x,y,k,primme_svds,ierr)
 !       ----------------------------------------------------------------
+        use iso_c_binding
         implicit none
         include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
-        real*8 x(*), y(*)
+        real*8, target :: x(k), y(k)
         integer*8 primme_svds
         integer k,ierr
-        call MPI_Allreduce(x, y, k, MPIU_REAL, MPIU_SUM,
+        if (c_associated(c_loc(x),c_loc(y))) then
+          call MPI_Allreduce(MPI_IN_PLACE, y, k, MPIU_REAL, MPIU_SUM,
      :                                 PETSC_COMM_WORLD, ierr)
+        else
+          call MPI_Allreduce(x, y, k, MPIU_REAL, MPIU_SUM,
+     :                                 PETSC_COMM_WORLD, ierr)
+        endif
         end

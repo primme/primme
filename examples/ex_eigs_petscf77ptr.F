@@ -347,7 +347,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         implicit none
         include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
-        real*8 x(*), y(*)
+        real*8, target :: x(k), y(k)
         integer*8 primme
         integer k,ierr
         MPI_Comm, pointer :: comm
@@ -355,6 +355,11 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
         call primme_get_member_f77(primme, PRIMME_commInfo, pcomm, ierr)
         call c_f_pointer(pcomm, comm)
-        call MPI_Allreduce(x, y, k, MPIU_REAL, MPIU_SUM,
+        if (c_associated(c_loc(x),c_loc(y))) then
+          call MPI_Allreduce(MPI_IN_PLACE, y, k, MPIU_REAL, MPIU_SUM,
      :                                 comm, ierr)
+        else
+          call MPI_Allreduce(x, y, k, MPIU_REAL, MPIU_SUM,
+     :                                 comm, ierr)
+        endif
         end
