@@ -104,9 +104,9 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
 
    int i;
 
-   /* Avoid that every process has different hVecs and hU. For that only      */
-   /* processor 0 solves the projected problem and broadcast the resulting    */
-   /* matrices to the rest of the processes.                                  */
+   /* In parallel (especially with heterogeneous processors/libraries) ensure */
+   /* that every process has the same hVecs and hU. Only processor 0 solves   */
+   /* the projected problem and broadcasts the resulting matrices to the rest */
 
    if (primme->procID == 0) {
       switch (primme->projectionParams.projection) {
@@ -662,7 +662,7 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
  *       projected problem (hVals, hSVals, hVecs, hU) from process 0 to the rest.
  *
  * NOTE: the optimal implementation will use an user-defined broadcast function.
- *       To avoid modifying primme_params it is used globalSum instead.
+ *       To ensure backward compatibility, we used globalSum instead.
  * 
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
