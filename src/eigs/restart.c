@@ -1760,7 +1760,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    assert(*rworkSize >= (size_t)restartSize);
    rworkSize0 = *rworkSize - (size_t)restartSize;
    CHKERR(solve_H_Sprimme(H, restartSize, ldH, R, ldR, NULL, 0, hU, newldhU,
-         hVecs, newldhVecs, (REAL*)rwork+restartSize, hSVals, numConverged,
+         hVecs, newldhVecs, (REAL*)rwork, hSVals, numConverged,
          machEps, &rworkSize0, rwork+restartSize, iworkSize, iwork, primme),
          -1);
 
@@ -2160,7 +2160,6 @@ static int dtr_Sprimme(int numLocked, SCALAR *hVecs, REAL *hVals, int *flags,
  * R                The factors of the QR decomposition of (A - targetShift*B)*V
  * ldR              The leading dimension of R
  * outR             Rotations of orthogonalizing hVecs
- * ldoutR           The leading dimension of outR
  * iwork            Integer work array
  * rwork            Work array
  * rworkSize        Length of the work array
@@ -2174,7 +2173,6 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
 
    int i;
    SCALAR *outR = NULL;
-   PRIMME_INT ldoutR=0;
    size_t rworkSize0 = hVecs ? *rworkSize : 0;
 
    if (primme->projectionParams.projection == primme_proj_harmonic) {
@@ -2202,13 +2200,13 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
    }
 
    CHKERR(ortho_Sprimme(hVecs, ldhVecs, !outR ? NULL :
-         &outR[-ldoutR*indexOfPreviousVecs], basisSize, indexOfPreviousVecs,
+         &outR[-basisSize*indexOfPreviousVecs], basisSize, indexOfPreviousVecs,
          indexOfPreviousVecs+*numPrevRetained-1, NULL, 0, 0, basisSize,
          primme->iseed, machEps, rwork, &rworkSize0, NULL), -1);
 
    if (outR) {
       for (i=0; i<*numPrevRetained; i++)
-         if (REAL_PART(outR[ldoutR*i+indexOfPreviousVecs+i]) < machEps)
+         if (REAL_PART(outR[basisSize*i+indexOfPreviousVecs+i]) < machEps)
             break;
       *numPrevRetained = i;
    }

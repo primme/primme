@@ -249,6 +249,7 @@
       if (primme->printLevel > 0 && primme->outputFile) {\
          fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
          fprintf(primme->outputFile, "PRIMME: " __VA_ARGS__);\
+         fprintf(primme->outputFile, "\n");\
       }\
       return (RETURN);\
    }\
@@ -280,6 +281,7 @@
       if (primme->printLevel > 0 && primme->outputFile) {\
          fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
          fprintf(primme->outputFile, "PRIMME: " __VA_ARGS__);\
+         fprintf(primme->outputFile, "\n");\
       }\
       return (RETURN);\
    }\
@@ -335,6 +337,7 @@
       if (primme_svds->printLevel > 0 && primme_svds->outputFile) {\
          fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", err, __LINE__, #ERRN );\
          fprintf(primme_svds->outputFile, "PRIMME: " __VA_ARGS__);\
+         fprintf(primme_svds->outputFile, "\n");\
       }\
       return (RETURN);\
    }\
