@@ -89,6 +89,10 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 2.1 (released on XXX):
+
+* Support Octave.
+
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
 * Changed license to BSD 3-clause.
@@ -2277,7 +2281,7 @@ values:
 
 * -4: if argument "primme" is NULL.
 
-* -5: if "n" <= 0 or "nLocal" <= 0.
+* -5: if "n" < 0 or "nLocal" < 0 or "nLocal" > "n".
 
 * -6: if "numProcs" < 1.
 
@@ -2301,14 +2305,15 @@ values:
   "primme_closest_leq", "primme_closest_abs" or "primme_largest_abs"
   but "targetShifts" is NULL  (no shifts array).
 
-* -16: if "numOrthoConst" < 0 or "numOrthoConst" >= "n". (no free
+* -16: if "numOrthoConst" < 0 or "numOrthoConst" > "n". (no free
   dimensions left).
 
 * -17: if "maxBasisSize" < 2.
 
-* -18: if "minRestartSize" <= 0.
+* -18: if "minRestartSize" < 0 or "minRestartSize" shouldn't be
+  zero.
 
-* -19: if "maxBlockSize" <= 0.
+* -19: if "maxBlockSize" < 0 or "maxBlockSize" shouldn't be zero.
 
 * -20: if "maxPrevRetain" < 0.
 
@@ -2622,7 +2627,7 @@ primme_preset_method
 Python Interface
 ****************
 
-Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None)
+Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, **kargs)
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -2757,6 +2762,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         * "estimateMaxEVal": the rightmost Ritz value seen
 
         * "estimateLargestSVal": the largest singular value seen
+
+        * "rnorms" : ||A*x[i] - x[i]*w[i]||
 
    Raises:
       "PrimmeError" -- When the requested convergence is not obtained.
@@ -4369,7 +4376,7 @@ next values:
 
 * -4: "primme_svds" is NULL,
 
-* -5: Wrong value for "m" or "n",
+* -5: Wrong value for "m" or "n" or "mLocal" or "nLocal",
 
 * -6: Wrong value for "numProcs",
 
@@ -4452,7 +4459,7 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, **kargs)
 
    Compute k singular values and vectors for a sparse matrix.
 
@@ -4548,6 +4555,8 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         * "numPreconds": number of OPinv*v
 
         * "elapsedTime": time that took
+
+        * "rnorms" : ||A*v[i] - u[i]*s[i]||
 
         Returned if *return_stats* is True.
 

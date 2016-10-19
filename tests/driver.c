@@ -281,8 +281,6 @@ static int real_main (int argc, char *argv[]) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
    } else if (primme.initSize > 0) {
       Num_larnv_Sprimme(2, primme.iseed, primme.initSize*primme.nLocal, evecs);
-   } else {
-      Num_larnv_Sprimme(2, primme.iseed, primme.nLocal, evecs);
    }
 
 
