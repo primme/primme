@@ -37,3 +37,5 @@ check_style:
 
 tags:
 	@make -C src ../tags
+
+.NOTPARALLEL:

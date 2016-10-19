@@ -589,7 +589,7 @@ The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of th
 * -2: malloc failed in allocating a permutation integer array,
 * -3: main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr',
 * -4: ``primme_svds`` is NULL,
-* -5: Wrong value for |Sm| or |Sn|,
+* -5: Wrong value for |Sm| or |Sn| or |SmLocal| or |SnLocal|,
 * -6: Wrong value for |SnumProcs|,
 * -7: |SmatrixMatvec| is not set,
 * -8: |SapplyPreconditioner| is not set but |Sprecondition| == 1 ,
