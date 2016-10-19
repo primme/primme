@@ -91,6 +91,8 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore primme_svds_initialize;
 %ignore primme_svds_free;
 
+%ignore PRId64;
+
 %ignore tprimme;
 %ignore tprimme_svds;
 
