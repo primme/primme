@@ -147,7 +147,6 @@ def generate_definitions(s):
 def test_generate_definitions():
 	s = "APPEND_FUNC(,d) int f0(int a, int b) {return f1(a);}"
 	r = generate_definitions(s)
-	print r
 	assert("int f0d(int a, int b)" in r)
 	assert("{" not in r)
 	assert("}" not in r)
@@ -155,7 +154,6 @@ def test_generate_definitions():
 
 	s = 'APPEND_FUNC(x,d) USE(r,"R_PREFIX") int f0x(int a, int b) {return f1(a);}'
 	r = generate_definitions(s)
-	print r
 	assert("int f0d(int a, int b)" in r)
 	assert("{" not in r)
 	assert("}" not in r)
