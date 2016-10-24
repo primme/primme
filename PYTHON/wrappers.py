@@ -42,7 +42,8 @@ _PRIMMEErrors = {
 -34: "'ldevecs' is less than 'nLocal'",
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
 -36 : "not enough memory for realWork",
--37 : "not enough memory for intWork"
+-37 : "not enough memory for intWork",
+-38 : "'locking' == 0 and 'numTargetShifts' > 1 and 'target' isn't 'primme_smallest' nor 'primme_largest' and 'projection' is 'primme_proj_harmonic' or 'primme_proj_refined'"
 }
 
 _PRIMMESvdsErrors = {
@@ -373,7 +374,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
-         return_stats=False, maxBlockSize=0, **kargs):
+         return_stats=False, maxBlockSize=0,
+         method=None, methodStage1=None, methodStage2=None, **kargs):
     """
     Compute k singular values and vectors for a sparse matrix.
 
@@ -608,6 +610,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         pp.initSize = min(v0.shape[1], pp.numSvals)
         np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
         np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
+
+    # Set method
+    if method is not None or methodStage1 is not None or methodStage2 is not None:
+        if method is None: method = primme_svds_default
+        if methodStage1 is None: methodStage1 = PRIMME_DEFAULT_METHOD
+        if methodStage2 is None: methodStage2 = PRIMME_DEFAULT_METHOD
+        pp.set_method(method, methodStage1, methodStage2)
 
     err = Xprimme_svds(svals, svecsl, svecsr, norms, pp)
 
