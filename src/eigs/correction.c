@@ -135,6 +135,7 @@ static int setup_JD_projectors(SCALAR *x, SCALAR *evecs, PRIMME_INT ldevecs,
  *
  * numPrevRitzVals  The of size prevRitzVals updated every outer step
  *
+ * touch            Parameter used in inner solve stopping criteria
  *
  * Return Value
  * ------------
@@ -150,7 +151,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldevecsHat, SCALAR *UDU, int *ipivot, REAL *lockedEvals, 
       int numLocked, int numConvergedStored, REAL *ritzVals, 
       REAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize, 
-      REAL *blockNorms, int *iev, int blockSize, double machEps,
+      REAL *blockNorms, int *iev, int blockSize, int *touch, double machEps,
       SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme) {
 
@@ -418,6 +419,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    /*  JDQMR --- JD inner-outer variants                           */
    /* ------------------------------------------------------------ */
    else {  /* maxInnerIterations > 0  We perform inner-outer JDQMR */
+      int touch0 = *touch;
 
       /* Solve the correction for each block vector. */
 
@@ -444,13 +446,18 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          shift = blockOfShifts[blockIndex];
          primme->ShiftsForPreconditioner = &blockOfShifts[blockIndex];
 
+         /* Pass the original value of touch and update touch as the maximum  */
+         /* value that takes for all inner_solve calls                        */
+         int touch1 = touch0;
+
          CHKERR(inner_solve_Sprimme(x, r, &blockNorms[blockIndex], evecs,
                   ldevecs, UDU, ipivot, &xKinvx,
                   Lprojector, ldLprojector, RprojectorQ, ldRprojectorQ,
                   RprojectorX, ldRprojectorX, sizeLprojector, sizeRprojectorQ,
-                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift,
+                  sizeRprojectorX, sol, ritzVals[ritzIndex], shift, &touch1,
                   machEps, linSolverRWork, linSolverRWorkSize,
                   primme), -1);
+         *touch = max(*touch, touch1);
 
          Num_copy_Sprimme(primme->nLocal, sol, 1, 
             &V[ldV*(basisSize+blockIndex)], 1);

@@ -44,27 +44,27 @@ int inner_solve_dprimme(double *x, double *r, double *rnorm, double *evecs,
       double *Lprojector, int64_t ldLprojector, double *RprojectorQ,
       int64_t ldRprojectorQ, double *RprojectorX, int64_t ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, double *sol,
-      double eval, double shift, double machEps, double *rwork, size_t rworkSize,
-      primme_params *primme);
+      double eval, double shift, int *touch, double machEps, double *rwork,
+      size_t rworkSize, primme_params *primme);
 int inner_solve_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_COMPLEX_DOUBLE *r, double *rnorm, PRIMME_COMPLEX_DOUBLE *evecs,
       int64_t ldevecs, PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, PRIMME_COMPLEX_DOUBLE *xKinvx,
       PRIMME_COMPLEX_DOUBLE *Lprojector, int64_t ldLprojector, PRIMME_COMPLEX_DOUBLE *RprojectorQ,
       int64_t ldRprojectorQ, PRIMME_COMPLEX_DOUBLE *RprojectorX, int64_t ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, PRIMME_COMPLEX_DOUBLE *sol,
-      double eval, double shift, double machEps, PRIMME_COMPLEX_DOUBLE *rwork, size_t rworkSize,
-      primme_params *primme);
+      double eval, double shift, int *touch, double machEps, PRIMME_COMPLEX_DOUBLE *rwork,
+      size_t rworkSize, primme_params *primme);
 int inner_solve_sprimme(float *x, float *r, float *rnorm, float *evecs,
       int64_t ldevecs, float *UDU, int *ipivot, float *xKinvx,
       float *Lprojector, int64_t ldLprojector, float *RprojectorQ,
       int64_t ldRprojectorQ, float *RprojectorX, int64_t ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, float *sol,
-      float eval, float shift, double machEps, float *rwork, size_t rworkSize,
-      primme_params *primme);
+      float eval, float shift, int *touch, double machEps, float *rwork,
+      size_t rworkSize, primme_params *primme);
 int inner_solve_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_COMPLEX_FLOAT *r, float *rnorm, PRIMME_COMPLEX_FLOAT *evecs,
       int64_t ldevecs, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, PRIMME_COMPLEX_FLOAT *xKinvx,
       PRIMME_COMPLEX_FLOAT *Lprojector, int64_t ldLprojector, PRIMME_COMPLEX_FLOAT *RprojectorQ,
       int64_t ldRprojectorQ, PRIMME_COMPLEX_FLOAT *RprojectorX, int64_t ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, PRIMME_COMPLEX_FLOAT *sol,
-      float eval, float shift, double machEps, PRIMME_COMPLEX_FLOAT *rwork, size_t rworkSize,
-      primme_params *primme);
+      float eval, float shift, int *touch, double machEps, PRIMME_COMPLEX_FLOAT *rwork,
+      size_t rworkSize, primme_params *primme);
 #endif

@@ -49,7 +49,7 @@ def diagonal(n, dtype=np.dtype("d")):
 
 def Lauchli_like(m, n=None, c=1e-5, dtype=float):
    k = min(m-1, n)
-   diagonal = diag(np.linspace(1.0, 5*c, k, dtype=dtype))
+   diagonal = diag(np.array(np.linspace(1.0, 5*c, k), dtype=dtype))
    d = np.c_[diagonal, np.zeros((k, n-k), dtype=dtype)]
    return np.r_[ones((1,n), dtype), d, np.zeros((m-k-1,n), dtype=dtype)]
 

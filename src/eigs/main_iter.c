@@ -167,6 +167,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    int iworkSize;           /* Size of iwork array                           */
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
    int ret;                 /* Return value                                  */
+   int touch=0;             /* param used in inner solver stopping criteria  */
 
    int *iwork;              /* Integer workspace pointer                     */
    int *flags;              /* Indicates which Ritz values have converged    */
@@ -494,6 +495,10 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             numConverged += recentlyConverged;
 
+            /* Reset touch every time an eigenpair converges */
+
+            if (recentlyConverged > 0) touch = 0;
+
             if (numConverged >= primme->numEvals ||
                 (primme->locking && recentlyConverged > 0
                   && primme->target != primme_smallest
@@ -560,7 +565,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                         evecsHat, ldevecsHat, UDU, ipivot, evals, numLocked,
                         numConvergedStored, hVals, prevRitzVals,
                         &numPrevRitzVals, flags, basisSize, blockNorms, iev,
-                        blockSize, machEps, rwork, &rworkSize, iwork, iworkSize,
+                        blockSize, &touch, machEps, rwork, &rworkSize, iwork, iworkSize,
                         primme), -1);
 
                /* ------------------------------------------------------ */
