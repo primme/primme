@@ -311,6 +311,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       else {
          flags[left+iev[i]] = UNCONVERGED;
       }
+      blockNorms[iev[i]] = normPr;
 
    }
 

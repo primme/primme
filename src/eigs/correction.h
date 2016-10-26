@@ -44,7 +44,7 @@ int solve_correction_dprimme(double *V, int64_t ldV, double *W,
       int64_t ldevecsHat, double *UDU, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, double machEps,
+      double *blockNorms, int *iev, int blockSize, int *touch, double machEps,
       double *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
 int solve_correction_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t ldV, PRIMME_COMPLEX_DOUBLE *W,
@@ -52,7 +52,7 @@ int solve_correction_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t ldV, PRIMME_COMPL
       int64_t ldevecsHat, PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, double machEps,
+      double *blockNorms, int *iev, int blockSize, int *touch, double machEps,
       PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
 int solve_correction_sprimme(float *V, int64_t ldV, float *W,
@@ -60,7 +60,7 @@ int solve_correction_sprimme(float *V, int64_t ldV, float *W,
       int64_t ldevecsHat, float *UDU, int *ipivot, float *lockedEvals,
       int numLocked, int numConvergedStored, float *ritzVals,
       float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, double machEps,
+      float *blockNorms, int *iev, int blockSize, int *touch, double machEps,
       float *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
 int solve_correction_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t ldV, PRIMME_COMPLEX_FLOAT *W,
@@ -68,7 +68,7 @@ int solve_correction_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t ldV, PRIMME_COMPLE
       int64_t ldevecsHat, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, float *lockedEvals,
       int numLocked, int numConvergedStored, float *ritzVals,
       float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, double machEps,
+      float *blockNorms, int *iev, int blockSize, int *touch, double machEps,
       PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
 #endif

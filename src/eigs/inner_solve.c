@@ -137,6 +137,7 @@ static int dist_dot_real(SCALAR *x, int incx,
  *         return.
  * rnorm   On input, the 2 norm of r. No need to recompute it initially.
  *         On output, the estimated 2 norm of the updated eigenvalue residual
+ * touch   Parameter used in inner solve stopping criteria
  * 
  * Output parameters
  * -----------------
@@ -155,8 +156,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       SCALAR *Lprojector, PRIMME_INT ldLprojector, SCALAR *RprojectorQ,
       PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, SCALAR *sol,
-      REAL eval, REAL shift, double machEps, SCALAR *rwork, size_t rworkSize,
-      primme_params *primme) {
+      REAL eval, REAL shift, int *touch, double machEps, SCALAR *rwork,
+      size_t rworkSize, primme_params *primme) {
 
    int i;             /* loop variable                                       */
    int numIts;        /* Number of inner iterations                          */
@@ -172,7 +173,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
    /* Parameters used to dynamically update eigenpair */
    REAL Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
-   REAL dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0, R;
+   REAL dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0;
+   REAL eres_prev=0.0;
    REAL Gamma_prev, Phi_prev;
    REAL Gamma=0.0, Phi=0.0;
    REAL gamma;
@@ -214,11 +216,10 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
        break;
    case primme_decreasing_LTolerance:
       /* stop when linear system residual norm is less than relTolBase^-its   */
-      /* TODO: probably 'its' should be the number of outer iterations this   */
-      /* pair has been targeted, instead of the total number of iterations.   */
       LTolerance = max(LTolerance,
             pow(primme->correctionParams.relTolBase, 
-               (double)-primme->stats.numOuterIterations));
+               -(double)*touch));
+      (*touch)++;
       break;
    case primme_adaptive:
       /* stop when estimate eigenvalue residual norm is less than aNorm*eps.  */
@@ -226,14 +227,14 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       /* P(A-s)P not on (A-s). But tau reflects the residual norm on P(A-s)P. */
       /* So stop when linear system residual norm or the estimate eigenvalue  */
       /* residual norm is less than aNorm*eps/1.8.                            */
-      LTolerance_factor = 1.0/1.8;
-      ETolerance_factor = 1.0/1.8;
+      LTolerance_factor = pow(1.8, -(double)*touch);
+      ETolerance_factor = pow(1.8, -(double)*touch);
       break; 
    case primme_adaptive_ETolerance:
       /* Besides the primme_adaptive criteria, stop when estimate eigenvalue  */
       /* residual norm is less than tau_init*0.1                              */
-      LTolerance_factor = 1.0/1.8;
-      ETolerance_factor = 1.0/1.8;
+      LTolerance_factor = pow(1.8, -(double)*touch);
+      ETolerance_factor = pow(1.8, -(double)*touch);
       ETolerance = tau_init*0.1;
      }
    
@@ -372,6 +373,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             (eval_updated - shift)*(eval_updated - shift);
 
          /* If numerical problems, let eres about the same as tau */
+         eres_prev = eres_updated;
          if (eres2_updated < 0){
             eres_updated = sqrt( (tau*tau)/(1 + dot_sol) );
          }
@@ -382,9 +384,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          /* Stopping criteria                                       */
          /* --------------------------------------------------------*/
 
-         R = max(0.9878, sqrt(tau/tau_prev))*sqrt(1+dot_sol);
-        
-         if (numIts > 1 && (tau <= R*eres_updated || eres_updated <= tau*R) ) {
+         if (numIts > 1 && (tau_prev <= eres_updated || eres_prev <= tau)) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, " tau < R eres \n");
             }
@@ -403,7 +403,14 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             }
             break;
          }
-         
+         else if (primme->target == primme_closest_abs
+               && fabs(eval-eval_updated) > tau_init+eres_updated){
+            if (primme->printLevel >= 5 && primme->procID == 0) {
+               fprintf(primme->outputFile, "|eval-eval_updated| > tau0+eres\n");
+            }
+            break;
+         }
+          
          if (numIts > 1 && eres_updated < ETolerance) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
                fprintf(primme->outputFile, "eres < eresTol %e \n",eres_updated);
@@ -428,6 +435,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
                fprintf(primme->outputFile, " eigenvalue and residual norm "
                      "passed convergence criterion \n");
             }
+            (*touch)++;
             break;
          }
 
