@@ -136,7 +136,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
                                   /* for the rest */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
-   REAL s0=0.0, s02=0.0, s1=0.0, s12=0.0, s00=0.0;
+   REAL s0=0.0, s02=0.0, s1=0.0, s12=0.0;
    REAL temp;
    SCALAR *overlaps;
    double t0;
@@ -237,7 +237,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          }
  
          if (nOrth == 1) {
-            s00 = s0 = sqrt(s02 = REAL_PART(overlaps[i+numLocked]));
+            s0 = sqrt(s02 = REAL_PART(overlaps[i+numLocked]));
          }
 
          /* Compute the norm of the resulting vector implicitly */
@@ -256,7 +256,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
             s1 = sqrt(s12);
          }
 
-         if (R && (s1 <= machEps*s00 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
+         if (R && (s1 <= machEps*s0 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
             if (messages) {
                fprintf(primme->outputFile, "Zeroing column %d\n", i);
             }
@@ -265,7 +265,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
             R[ldR*i + i] = 0.0;
             reorth = 0;
          }
-         else if (s1 <= machEps*s00) {
+         else if (s1 <= machEps*s0) {
             if (messages) {
                fprintf(primme->outputFile, 
                  "Vector %d lost all significant digits in ortho\n", i-b1);

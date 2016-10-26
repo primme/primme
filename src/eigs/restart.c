@@ -2172,8 +2172,20 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
       size_t *rworkSize, primme_params *primme) {
 
    int i;
-   SCALAR *outR = NULL;
-   size_t rworkSize0 = hVecs ? *rworkSize : 0;
+   SCALAR *rwork0;
+   int newNumPrevRetained=0;
+
+   /* Return memory requirement */
+
+   if (!hVecs) {
+      size_t rworkSize0 = 0;
+      CHKERR(ortho_Sprimme(NULL, ldhVecs, NULL, 0, 0, basisSize, NULL, 0, 0,
+               basisSize, NULL, 0.0, rwork, &rworkSize0, NULL), -1);
+      /* for dummyR and broadcasting previous retained vectors in hVecs */
+      rworkSize0 += (size_t)basisSize*(*numPrevRetained)*2+2;
+      *rworkSize = max(*rworkSize, rworkSize0);
+      return 0;
+   }
 
    if (primme->projectionParams.projection == primme_proj_harmonic) {
 
@@ -2188,36 +2200,50 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
             ldhVecs);
 
    }
-   else if (hVecs && primme->projectionParams.projection == primme_proj_refined) {
+
+   if (primme->procID == 0) {
       /* Avoid that ortho replaces linear dependent vectors by random vectors.*/
       /* The random vectors make the restarting W with large singular value.  */
       /* This change has shown benefit finding the smallest singular values.  */
 
-      outR = rwork;
-      rwork += basisSize*(*numPrevRetained);
-      assert(rworkSize0 >= (size_t)basisSize*(*numPrevRetained));
-      rworkSize0 -= (size_t)basisSize*(*numPrevRetained);
-   }
+      SCALAR *dummyR = rwork;
+      rwork0 = rwork + basisSize*(*numPrevRetained);
+      assert(*rworkSize >= (size_t)basisSize*(*numPrevRetained));
+      size_t rworkSize0 = *rworkSize - (size_t)basisSize*(*numPrevRetained);
 
-   CHKERR(ortho_Sprimme(hVecs, ldhVecs, !outR ? NULL :
-         &outR[-basisSize*indexOfPreviousVecs], basisSize, indexOfPreviousVecs,
-         indexOfPreviousVecs+*numPrevRetained-1, NULL, 0, 0, basisSize,
-         primme->iseed, machEps, rwork, &rworkSize0, NULL), -1);
+      CHKERR(ortho_Sprimme(hVecs, ldhVecs,
+               &dummyR[-basisSize*indexOfPreviousVecs], basisSize,
+               indexOfPreviousVecs, indexOfPreviousVecs+*numPrevRetained-1,
+               NULL, 0, 0, basisSize, primme->iseed, machEps, rwork0,
+               &rworkSize0, NULL), -1);
 
-   if (outR) {
-      for (i=0; i<*numPrevRetained; i++)
-         if (REAL_PART(outR[basisSize*i+indexOfPreviousVecs+i]) < machEps)
+      for (i=0; i<*numPrevRetained; i++) {
+         if (REAL_PART(dummyR[basisSize*i+indexOfPreviousVecs+i]) == 0.0) {
             break;
-      *numPrevRetained = i;
+         }
+      }
+      newNumPrevRetained = i;
    }
 
-   /* Return memory requirement */
-   if (!hVecs) {
-      if (primme->projectionParams.projection == primme_proj_refined) {
-         rworkSize0 += (size_t)basisSize*(*numPrevRetained); /* for outR */
-      }
-      *rworkSize = max(*rworkSize, rworkSize0);
+   /* Broadcast hVecs(indexOfPreviousVecs:indexOfPreviousVecs+numPrevRetained) */
+
+   if (primme->procID == 0) {
+      rwork[0] = (SCALAR)newNumPrevRetained;
+      Num_copy_matrix_Sprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,
+            *numPrevRetained, ldhVecs, rwork+1, basisSize);
    }
+   else {
+      rwork[0] = 0.0;
+      Num_zero_matrix_Sprimme(rwork+1, basisSize, *numPrevRetained, basisSize);
+   }
+
+   rwork0 = rwork + basisSize*(*numPrevRetained) + 1;
+   assert(*rworkSize >= 2u*basisSize*(*numPrevRetained) + 2);
+   CHKERR(globalSum_Sprimme(rwork, rwork0, basisSize*(*numPrevRetained)+1,
+            primme), -1);
+   *numPrevRetained = (int)REAL_PART(rwork0[0]);
+   Num_copy_matrix_Sprimme(rwork0+1, basisSize, *numPrevRetained, basisSize,
+         &hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs);
 
   return 0;
 }
