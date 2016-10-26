@@ -1101,9 +1101,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -35: if |ldOPs| is not zero and less than |nLocal|.
 * -36: not enough memory for |realWork|.
 * -37: not enough memory for |intWork|.
-* -38: if |locking| == 0 and |target| isn't |primme_smallest| nor |primme_largest|,
-   and |projection| is |primme_proj_refined| or |primme_proj_harmonic|,
-   and |numTargetShifts| > 1.
+* -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
 
 .. _methods:
 

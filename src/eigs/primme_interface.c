@@ -518,15 +518,8 @@ void primme_set_defaults(primme_params *params) {
    if (params->locking >= 0) {
       /* Honor the user setup (do nothing) */
    }
-   else if (params->target != primme_smallest && params->target != primme_largest
-         && params->projectionParams.projection == primme_proj_RR) {
-      /* Locking is necessary as interior Ritz values can cross shifts */
-      params->locking = 1;
-   }
-   else if (params->target != primme_smallest && params->target != primme_largest
-         && params->projectionParams.projection == primme_proj_refined
-         && params->numTargetShifts > 1) {
-      params->locking = 1;
+   if (params->target != primme_smallest && params->target != primme_largest) {
+       params->locking = 1;
    }
    else if (params->numEvals > params->minRestartSize) {
       /* use locking when not enough vectors to restart with */

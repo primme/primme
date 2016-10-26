@@ -534,11 +534,9 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
    else if (primme->ldOPs != 0 && primme->ldOPs < primme->nLocal)
       ret = -35;
    /* Booked -36 and -37 */
-   else if (primme->locking == 0 && primme->numTargetShifts > 1
-         && primme->target != primme_smallest
-         && primme->target != primme_largest
-         && (primme->projectionParams.projection == primme_proj_refined
-            || primme->projectionParams.projection == primme_proj_harmonic))
+   else if (primme->locking == 0
+         && (primme->target == primme_closest_leq
+            || primme->target == primme_closest_geq))
       ret = -38;
    /* Please keep this if instruction at the end */
    else if ( primme->target == primme_largest_abs ||

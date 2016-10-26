@@ -43,7 +43,7 @@ _PRIMMEErrors = {
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
 -36 : "not enough memory for realWork",
 -37 : "not enough memory for intWork",
--38 : "'locking' == 0 and 'numTargetShifts' > 1 and 'target' isn't 'primme_smallest' nor 'primme_largest' and 'projection' is 'primme_proj_harmonic' or 'primme_proj_refined'"
+-38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'"
 }
 
 _PRIMMESvdsErrors = {

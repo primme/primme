@@ -2354,11 +2354,8 @@ values:
 
 * -37: not enough memory for "intWork".
 
-* -38: if "locking" == 0 and "target" isn't "primme_smallest" nor
-  "primme_largest",
-
-     and "projection" is "primme_proj_refined" or
-     "primme_proj_harmonic", and "numTargetShifts" > 1.
+* -38: if "locking" == 0 and "target" is "primme_closest_leq" or
+  "primme_closest_geq".
 
 
 Preset Methods
