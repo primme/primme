@@ -260,10 +260,13 @@ ifdef(`ADVANCED', `
 CALL_PRIMME_SVDS
 REPORT_PRIMME_SVDS
 ')dnl
-   primme_svds_free(&primme_svds);
+   primme_svds_free(&primme_svds);ifdef(`USE_COMPLEX_CXX', `
+   delete [] svals;
+   delete [] svecs;
+   delete [] rnorms;',`
    free(svals);
    free(svecs);
-   free(rnorms);
+   free(rnorms);')
 
 ifdef(`USE_PETSC', `   ierr = PetscFinalize(); CHKERRQ(ierr);
 

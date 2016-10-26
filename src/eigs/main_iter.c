@@ -314,6 +314,15 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Quick return for matrix of dimension 1 */
    /* -------------------------------------- */
 
+   if (primme->numEvals == 0) {
+      primme->initSize = 0;
+      return 0;
+   }
+
+   /* -------------------------------------- */
+   /* Quick return for matrix of dimension 1 */
+   /* -------------------------------------- */
+
    if (primme->n == 1) {
       evecs[0] = 1.0;
       CHKERR(matrixMatvec_Sprimme(&evecs[0], primme->nLocal, ldevecs,

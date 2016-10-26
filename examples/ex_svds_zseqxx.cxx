@@ -152,9 +152,9 @@ int main (int argc, char *argv[]) {
 
 
    primme_svds_free(&primme_svds);
-   free(svals);
-   free(svecs);
-   free(rnorms);
+   delete [] svals;
+   delete [] svecs;
+   delete [] rnorms;
 
   return(0);
 }

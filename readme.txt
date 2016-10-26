@@ -2281,7 +2281,7 @@ values:
 
 * -4: if argument "primme" is NULL.
 
-* -5: if "n" <= 0 or "nLocal" <= 0.
+* -5: if "n" < 0 or "nLocal" < 0 or "nLocal" > "n".
 
 * -6: if "numProcs" < 1.
 
@@ -2305,14 +2305,15 @@ values:
   "primme_closest_leq", "primme_closest_abs" or "primme_largest_abs"
   but "targetShifts" is NULL  (no shifts array).
 
-* -16: if "numOrthoConst" < 0 or "numOrthoConst" >= "n". (no free
+* -16: if "numOrthoConst" < 0 or "numOrthoConst" > "n". (no free
   dimensions left).
 
 * -17: if "maxBasisSize" < 2.
 
-* -18: if "minRestartSize" <= 0.
+* -18: if "minRestartSize" < 0 or "minRestartSize" shouldn't be
+  zero.
 
-* -19: if "maxBlockSize" <= 0.
+* -19: if "maxBlockSize" < 0 or "maxBlockSize" shouldn't be zero.
 
 * -20: if "maxPrevRetain" < 0.
 
@@ -4381,7 +4382,7 @@ next values:
 
 * -4: "primme_svds" is NULL,
 
-* -5: Wrong value for "m" or "n",
+* -5: Wrong value for "m" or "n" or "mLocal" or "nLocal",
 
 * -6: Wrong value for "numProcs",
 

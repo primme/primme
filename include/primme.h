@@ -63,6 +63,9 @@
 #  define PRIMME_INT int64_t
 #  define PRIMME_INT_P PRId64
 #  define PRIMME_INT_MAX INT64_MAX
+#  ifndef PRId64
+#     define PRId64 "ld"
+#  endif
 #elif PRIMME_INT_SIZE == 0
 #  include <limits.h>
 #  define PRIMME_INT int
@@ -74,6 +77,9 @@
 #  define PRIMME_INT int32_t
 #  define PRIMME_INT_P PRId32
 #  define PRIMME_INT_MAX INT32_MAX
+#  ifndef PRId64
+#     define PRId64 "d"
+#  endif
 #else
 #  define PRIMME_INT PRIMME_INT_SIZE
 #  define PRIMME_INT_P "d"

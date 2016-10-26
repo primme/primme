@@ -959,7 +959,7 @@ _PRIMMEErrors = {
 -2: "malloc failed in allocating a permutation integer array",
 -3: "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
 -4: "argument 'primme' is NULL",
--5: "'n' <= 0 or 'nLocal' <= 0",
+-5: "'n' < 0 or 'nLocal' < 0 or 'nLocal' > 'n'",
 -6: "'numProcs' < 1",
 -7: "'matrixMatvec' is NULL",
 -8: "'applyPreconditioner' is NULL and 'precondition' is not NULL",
@@ -970,10 +970,10 @@ _PRIMMEErrors = {
 -13: "'target' is not properly defined",
 -14: "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'numTargetShifts' <= 0 (no shifts)",
 -15: "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'targetShifts' is NULL  (no shifts array)",
--16: "'numOrthoConst' < 0 or 'numOrthoConst' >= 'n'. (no free dimensions left)",
+-16: "'numOrthoConst' < 0 or 'numOrthoConst' > 'n'. (no free dimensions left)",
 -17: "'maxBasisSize' < 2",
--18: "'minRestartSize' <= 0",
--19: "'maxBlockSize' <= 0",
+-18: "'minRestartSize' < 0 or 'minRestartSize' shouldn't be zero",
+-19: "'maxBlockSize' < 0 or 'maxBlockSize' shouldn't be zero",
 -20: "'maxPrevRetain' < 0",
 -21: "'scheme' is not one of *primme_thick* or *primme_dtr*",
 -22: "'initSize' < 0",
@@ -991,7 +991,8 @@ _PRIMMEErrors = {
 -34: "'ldevecs' is less than 'nLocal'",
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
 -36 : "not enough memory for realWork",
--37 : "not enough memory for intWork"
+-37 : "not enough memory for intWork",
+-38 : "'locking' == 0 and 'numTargetShifts' > 1 and 'target' isn't 'primme_smallest' nor 'primme_largest' and 'projection' is 'primme_proj_harmonic' or 'primme_proj_refined'"
 }
 
 _PRIMMESvdsErrors = {
@@ -1001,7 +1002,7 @@ _PRIMMESvdsErrors = {
 -2  : "malloc failed in allocating a permutation integer array",
 -3  : "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
 -4  : "primme_svds is NULL",
--5  : "Wrong value for m or n",
+-5  : "Wrong value for m or n or mLocal or nLocal",
 -6  : "Wrong value for numProcs",
 -7  : "matrixMatvec is not set",
 -8  : "applyPreconditioner is not set but precondition == 1 ",
@@ -1322,7 +1323,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
-         return_stats=False, maxBlockSize=0, **kargs):
+         return_stats=False, maxBlockSize=0,
+         method=None, methodStage1=None, methodStage2=None, **kargs):
     """
     Compute k singular values and vectors for a sparse matrix.
 
@@ -1557,6 +1559,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         pp.initSize = min(v0.shape[1], pp.numSvals)
         np.copyto(svecsl[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], u0[:, 0:pp.initSize])
         np.copyto(svecsr[:, pp.numOrthoConst:pp.numOrthoConst+pp.initSize], v0[:, 0:pp.initSize])
+
+# Set method
+    if method is not None or methodStage1 is not None or methodStage2 is not None:
+        if method is None: method = primme_svds_default
+        if methodStage1 is None: methodStage1 = PRIMME_DEFAULT_METHOD
+        if methodStage2 is None: methodStage2 = PRIMME_DEFAULT_METHOD
+        pp.set_method(method, methodStage1, methodStage2)
 
     err = Xprimme_svds(svals, svecsl, svecsr, norms, pp)
 

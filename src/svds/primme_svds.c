@@ -715,7 +715,9 @@ static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms,
 
    if (primme_svds == NULL)
       ret = -4;
-   else if (primme_svds->n <= 0 || primme_svds->m <= 0) 
+   else if (primme_svds->n < 0 || primme_svds->m < 0 || primme_svds->nLocal < 0
+            || primme_svds->mLocal < 0 || primme_svds->nLocal > primme_svds->n
+            || primme_svds->mLocal > primme_svds->m) 
       ret = -5;
    else if (primme_svds->numProcs < 1)
       ret = -6;

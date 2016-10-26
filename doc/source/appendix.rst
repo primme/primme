@@ -1062,7 +1062,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -3: main_iter() encountered problem; the calling stack of the
   functions where the error occurred was printed in ``stderr``.
 * -4: if argument ``primme`` is NULL.
-* -5: if |n| <= 0 or |nLocal| <= 0.
+* -5: if |n| < 0 or |nLocal| < 0 or |nLocal| > |n|.
 * -6: if |numProcs| < 1.
 * -7: if |matrixMatvec| is NULL.
 * -8: if |applyPreconditioner| is NULL and |precondition| > 0.
@@ -1076,12 +1076,11 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -15: if |target| is one of |primme_closest_geq|,
   |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
   |targetShifts| is NULL  (no shifts array).
-* -16: if |numOrthoConst| < 0 or
-  |numOrthoConst| >= |n|.
+* -16: if |numOrthoConst| < 0 or |numOrthoConst| > |n|.
   (no free dimensions left).
 * -17: if |maxBasisSize| < 2.
-* -18: if |minRestartSize| <= 0.
-* -19: if |maxBlockSize| <= 0.
+* -18: if |minRestartSize| < 0 or |minRestartSize| shouldn't be zero.
+* -19: if |maxBlockSize| < 0 or |maxBlockSize| shouldn't be zero.
 * -20: if |maxPrevRetain| < 0.
 * -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
 * -22: if |initSize| < 0.
