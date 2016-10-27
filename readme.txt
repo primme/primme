@@ -1839,13 +1839,13 @@ primme_params
       * "primme_proj_RR", Rayleigh-Ritz, Ax_i - Bx_i\lambda_i \perp
         \mathcal V.
 
-      * "primme_proj_Harm", Harmonic Rayleigh-Ritz, Ax_i -
+      * "primme_proj_harmonic", Harmonic Rayleigh-Ritz, Ax_i -
         Bx_i\lambda_i \perp (A-\tau B)\mathcal V, where \tau is the
         current target shift (see "targetShifts").
 
-      * "primme_proj_ref", refined extraction, compute ||x_i||=1 so
-        that minimizes ||(A-\tau B)x_i||; the eigenvalues are computed
-        as the Rayleigh quotients,
+      * "primme_proj_refined", refined extraction, compute ||x_i||=1
+        so that minimizes ||(A-\tau B)x_i||; the eigenvalues are
+        computed as the Rayleigh quotients,
         \lambda_i=\frac{x_i^*Ax_i}{x_i^*Bx_i}.
 
       Input/output:
@@ -2346,13 +2346,16 @@ values:
 
 * -33: if "locking" == 0 and "minRestartSize" < "numEvals".
 
-* -34: if "ldevecs" < "nLocal"
+* -34: if "ldevecs" < "nLocal".
 
-* -35: if "ldOPs" is not zero and less than "nLocal"
+* -35: if "ldOPs" is not zero and less than "nLocal".
 
-* -36: not enough memory for "realWork"
+* -36: not enough memory for "realWork".
 
-* -37: not enough memory for "intWork"
+* -37: not enough memory for "intWork".
+
+* -38: if "locking" == 0 and "target" is "primme_closest_leq" or
+  "primme_closest_geq".
 
 
 Preset Methods
@@ -4459,7 +4462,7 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, **kargs)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, **kargs)
 
    Compute k singular values and vectors for a sparse matrix.
 

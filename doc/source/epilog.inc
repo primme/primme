@@ -66,10 +66,11 @@
 .. |primme_closest_leq|    replace:: :c:member:`primme_closest_leq    <primme_params.target>`
 .. |primme_closest_abs|    replace:: :c:member:`primme_closest_abs    <primme_params.target>`
 .. |primme_largest_abs|    replace:: :c:member:`primme_largest_abs    <primme_params.target>`
+.. |projection|            replace:: :c:member:`projection            <primme_params.projectionParams.projection>`
 .. |primme_proj_default|   replace:: :c:member:`primme_proj_default   <primme_params.projectionParams.projection>`
 .. |primme_proj_RR|        replace:: :c:member:`primme_proj_RR        <primme_params.projectionParams.projection>`
-.. |primme_proj_Harm|      replace:: :c:member:`primme_proj_Harm      <primme_params.projectionParams.projection>`
-.. |primme_proj_ref|       replace:: :c:member:`primme_proj_ref       <primme_params.projectionParams.projection>`
+.. |primme_proj_harmonic|  replace:: :c:member:`primme_proj_harmonic  <primme_params.projectionParams.projection>`
+.. |primme_proj_refined|   replace:: :c:member:`primme_proj_refined   <primme_params.projectionParams.projection>`
 .. |primme_thick|                  replace:: :c:member:`primme_thick                  <primme_params.restartingParams.scheme>`
 .. |primme_init_default|           replace:: :c:member:`primme_init_default   <primme_params.initBasisMode>`
 .. |primme_init_krylov|            replace:: :c:member:`primme_init_krylov    <primme_params.initBasisMode>`

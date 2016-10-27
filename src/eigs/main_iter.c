@@ -682,12 +682,18 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                maxRecentlyConverged = 0;
             }
 
-            /* When QR are computed and there are more than one target shift, */
+            /* When there are more than one target shift,                     */
             /* limit blockSize and the converged values to one.               */
 
-            else if (primme->numTargetShifts > numConverged+1 && Q) {
-               availableBlockSize = 1;
-               maxRecentlyConverged = numConverged-numLocked+1;
+            else if (primme->numTargetShifts > numConverged+1) {
+               if (primme->locking) {
+                  maxRecentlyConverged =
+                     max(min(primme->numEvals, numLocked+1) - numConverged, 0);
+               }
+               else {
+                  maxRecentlyConverged = 1;
+               }
+               availableBlockSize = maxRecentlyConverged;
             }
 
             else {
@@ -733,6 +739,16 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
                   hVecsRot, primme->maxBasisSize, &reset, rwork, &rworkSize,
                   iwork, iworkSize, primme);
+
+            /* When QR is computed and there are more than one target shift   */
+            /* and some eigenpair has converged values to one, don't provide  */
+            /* candidate for the next iteration, because it may be the closest*/
+            /* to a different target.                                         */
+
+            if (Q && numConverged+recentlyConverged > numLocked
+                  && primme->numTargetShifts > numLocked+1) {
+               blockSize = 0;
+            }
 
             /* Updated the number of converged pairs */
             /* Intentionally we include the pairs flagged SKIP_UNTIL_RESTART */
@@ -811,8 +827,9 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             numGuesses -= numNew;
 
             CHKERR(ortho_Sprimme(V, ldV, NULL, 0, basisSize, basisSize+numNew-1,
-                     evecs, ldevecs, numLocked, primme->nLocal, primme->iseed,
-                     machEps, rwork, &rworkSize, primme), -1);
+                     evecs, ldevecs, numLocked+primme->numOrthoConst,
+                     primme->nLocal, primme->iseed, machEps, rwork, &rworkSize,
+                     primme), -1);
 
             /* Compute W = A*V for the orthogonalized corrections */
 
