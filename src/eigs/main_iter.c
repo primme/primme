@@ -492,6 +492,9 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             /* For locking interior, restart and lock now any converged. */
             /* If Q, restart after an eigenpair converged to recompute   */
             /* QR with a different shift.                                */
+            /* Also if it has been converged as many pairs as initial    */
+            /* guesses has introduced in V, then restart and introduce   */
+            /* new guesses.                                              */
 
             numConverged += recentlyConverged;
 
@@ -507,7 +510,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                 targetShiftIndex < 0 ||
                 (Q && primme->targetShifts[targetShiftIndex] !=
                   primme->targetShifts[
-                     min(primme->numTargetShifts-1, numConverged)])) {
+                     min(primme->numTargetShifts-1, numConverged)])
+               || (numConverged >= nextGuess && numGuesses > 0)) {
 
                break;
 
@@ -818,7 +822,23 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          /* into the basis.                                          */
 
          if (numGuesses > 0) {
-            int numNew = max(0, min(primme->minRestartSize-basisSize, numGuesses));
+            /* Try to keep minRestartSize guesses in the search subspace */
+
+            int numNew = max(0, min(
+                     primme->minRestartSize + numConverged - nextGuess,
+                     numGuesses));
+
+            /* Don't make the resulting basis size larger than maxBasisSize */
+
+            numNew = max(0,
+                  min(basisSize+numNew, primme->maxBasisSize) - basisSize);
+
+            /* Don't increase basis size beyond matrix dimension */
+
+            numNew = max(0,
+                  min(basisSize+numNew+primme->numOrthoConst+numLocked,
+                     primme->n)
+                  - primme->numOrthoConst - numLocked - basisSize);
 
             Num_copy_matrix_Sprimme(&evecs[nextGuess*ldevecs], primme->nLocal,
                   numNew, ldevecs, &V[basisSize*ldV], ldV);
