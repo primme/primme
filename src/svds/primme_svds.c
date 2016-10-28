@@ -413,17 +413,6 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
          primme->initSize--;
          primme->numEvals--;
       }
-
-      /* Orthogonalize orthogonal constrain vectors */
-
-      SCALAR *rwork; 
-      CHKERRS(MALLOC_PRIMME(2*primme->numOrthoConst, &rwork), NULL);
-      size_t rworkSize =  2*primme->numOrthoConst;
-      CHKERRS(ortho_Sprimme(out_svecs, primme->nLocal, NULL, 0,
-               primme_svds->numOrthoConst, primme->numOrthoConst-1, NULL, 0, 0,
-               primme->nLocal, primme->iseed, machEps, rwork, &rworkSize,
-               primme), NULL);
-      free(rwork);
    }
 
    return out_svecs;
