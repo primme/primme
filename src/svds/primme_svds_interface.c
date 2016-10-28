@@ -147,7 +147,9 @@ int primme_svds_set_method(primme_svds_preset_method method,
    primme_set_method(methodStage1, &primme_svds->primme);
 
    /* Set method for the second state */
-   if (methodStage2 == PRIMME_DEFAULT_METHOD) methodStage2 = PRIMME_JDQMR;
+   if (methodStage2 == PRIMME_DEFAULT_METHOD
+         && primme_svds->target != primme_svds_largest)
+      methodStage2 = PRIMME_JDQMR;
    if (primme_svds->methodStage2 != primme_svds_op_none)
       primme_set_method(methodStage2, &primme_svds->primmeStage2);
 
