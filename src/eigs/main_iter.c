@@ -511,7 +511,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                 (Q && primme->targetShifts[targetShiftIndex] !=
                   primme->targetShifts[
                      min(primme->numTargetShifts-1, numConverged)])
-               || (numConverged >= nextGuess && numGuesses > 0)) {
+               || (numConverged >= nextGuess-primme->numOrthoConst
+                  && numGuesses > 0)) {
 
                break;
 
@@ -825,8 +826,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             /* Try to keep minRestartSize guesses in the search subspace */
 
             int numNew = max(0, min(
-                     primme->minRestartSize + numConverged - nextGuess,
-                     numGuesses));
+                     primme->minRestartSize + numConverged 
+                     - (nextGuess - primme->numOrthoConst), numGuesses));
 
             /* Don't make the resulting basis size larger than maxBasisSize */
 
