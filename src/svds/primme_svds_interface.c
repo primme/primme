@@ -274,21 +274,16 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       primme->projectionParams.projection = primme_proj_refined;
    }
 
-   if (primme->target == primme_smallest || primme->target == primme_largest){
-      if (primme_svds->locking >= 0)
-         primme->locking = primme_svds->locking;
-   }
-   else {
-      if (primme_svds->locking >= 0)
-         primme->locking = primme_svds->locking;
-      else if (primme->locking < 0)
-         primme->locking = 1;
+   if (primme_svds->locking >= 0) {
+      primme->locking = primme_svds->locking;
    }
 
-   if (primme_svds->precondition >= 0)
+   if (primme_svds->precondition >= 0) {
       primme->correctionParams.precondition = primme_svds->precondition;
-   else if (primme->correctionParams.precondition < 0)
+   }
+   else if (primme->correctionParams.precondition < 0) {
       primme->correctionParams.precondition = primme_svds->applyPreconditioner ? 1 : 0;
+   }
 
 }
 

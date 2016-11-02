@@ -415,6 +415,12 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       }
    }
 
+   /* Set locking */   
+
+   if (primme_svds->locking >= 0) {
+      primme->locking = primme_svds->locking;
+   }
+
    return out_svecs;
 }
 
