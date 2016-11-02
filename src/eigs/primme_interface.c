@@ -518,7 +518,7 @@ void primme_set_defaults(primme_params *params) {
    if (params->locking >= 0) {
       /* Honor the user setup (do nothing) */
    }
-   if (params->target != primme_smallest && params->target != primme_largest) {
+   else if (params->target != primme_smallest && params->target != primme_largest) {
        params->locking = 1;
    }
    else if (params->numEvals > params->minRestartSize) {
