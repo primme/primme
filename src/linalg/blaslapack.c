@@ -253,7 +253,7 @@ void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
 }
 
 /*******************************************************************************
- * Subroutine Num_axpy_Sprimme - y += alpha*x
+ * Subroutine Num_dot_Sprimme - y'*x
  ******************************************************************************/
 
 TEMPLATE_PLEASE

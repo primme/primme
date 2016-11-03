@@ -889,7 +889,13 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 /*******************************************************************************
  * Subroutine convTestFunAugmented - This routine implements primme_params.
  *    convTestFun and returns an approximate eigenpair converged when           
- *    resNorm < eps / sqrt(2) * primme_svds.aNorm = eps / sqrt(2) * primme.aNorm.          
+ *
+ *       sqrt(||Av - su||^2 + ||A'u - sv||^2) < ||A|| * eps = aNorm/sqrt(2)*eps
+ *
+ *    However, the previous test is expensive so it is only checked after the
+ *    next one passes:
+ *
+ *       resNorm < ||A||*eps = aNorm/sqrt(2)*eps
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -903,17 +909,82 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
  * isConv      if it isn't zero the approximate pair is marked as converged
  ******************************************************************************/
 
-static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme, int *ierr) {
+static void convTestFunAugmented(double *eval, void *evec_, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr) {
 
    const double machEps = MACHINE_EPSILON;
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
-   (void)evec;  /* unused argument */
+   primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+   SCALAR *evec = (SCALAR*)evec_;
+
+   /* Pre-test */
+
    *isConv = 
       *rNorm < max(
                primme->eps / sqrt(2.0) * aNorm,
                machEps * 3.16 * aNorm) 
       && *eval >= aNorm*machEps;
+
+   /* Actual test */
+
+   if (*isConv && evec) {
+      int one = 1;
+      SCALAR *r = (SCALAR*)malloc(sizeof(SCALAR)*primme->nLocal);
+      if (r == NULL) {*ierr = 1; return;}
+
+      /* r = [0 A';A 0] * evec = [ A'u; Av ] */
+
+      matrixMatvecSVDS(evec, &primme->nLocal, r, &primme->nLocal, &one, primme,
+            ierr);
+      if (*ierr != 0) return;
+      primme->stats.numMatvecs++;
+      
+      /* ip[0] = ||evec[0:nLocal-1]|| = ||v|| */
+      /* ip[1] = ||evec[nLocal:nLocal+mLocal-1]|| = ||u|| */
+
+      REAL ip0[2], ip[2];
+      ip0[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, evec, 1, evec,
+               1));
+      ip0[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal,
+               &evec[primme_svds->nLocal], 1, &evec[primme_svds->nLocal], 1));
+      *ierr = globalSum_Rprimme_svds(ip0, ip, 2, primme_svds);
+      if (*ierr != 0) return;
+
+      /* r[0:nLocal-1] = r[0:nLocal-1]/ip[1] - eval * evec[0:nLocal-1]/ip[0]  */
+      /*               = A'u/||u|| - eval*v/||v||                             */
+
+      Num_scal_Sprimme(primme_svds->nLocal, 1.0/ip[1], r, 1);
+      Num_axpy_Sprimme(primme_svds->nLocal, -(SCALAR)*eval/ip[1], evec, 1, r,
+            1);
+
+      /* r[nLocal:end] = r[nLocal:end]/ip[1] - eval * evec[nLocal:end]/ip[0] */
+      /*               = Av/||v|| - eval*u/||u||                             */
+
+      Num_scal_Sprimme(primme_svds->mLocal, 1.0/ip[0], &r[primme_svds->nLocal],
+            1);
+      Num_axpy_Sprimme(primme_svds->mLocal, -(SCALAR)*eval/ip[0],
+            &evec[primme_svds->nLocal], 1, &r[primme_svds->nLocal], 1);
+
+      /* normr = sqrt(||Av - su||^2 + ||A'u - sv||^2) */
+
+      REAL normr0, normr;
+      normr0 = REAL_PART(Num_dot_Sprimme(primme->nLocal, r, 1, r, 1));
+      *ierr = globalSum_Rprimme_svds(&normr0, &normr, 1, primme_svds);
+      if (*ierr != 0) return;
+      normr = sqrt(normr);
+
+      /* isConv = 1 iff normr <= ||A||*eps = aNorm/sqrt(2)*eps */
+
+      if (normr < aNorm/sqrt(2.0)*primme->eps) {
+         *isConv = 1;
+      }
+      else {
+         *isConv = 0;
+      }
+
+      free(r);
+   }
+
    *ierr = 0;
 } 
