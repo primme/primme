@@ -1054,7 +1054,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
  * W              A*V
  * nLocal         Local length of vectors in the basis
  * basisSize      Size of the basis V and W
- * ldV            The leading dimension of V, W, X and R
+ * ldV            The leading dimension of V and X
+ * ldW            The leading dimension of W and R
  * hVecs          The projected vectors
  * ldhVecs        The leading dimension of hVecs
  * hVals          The Ritz values
@@ -1174,7 +1175,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       for (i=*blockSize; i<blockNormsSize; i++)
          flagsBlock[i-*blockSize] = flags[iev[i]];
       CHKERR(check_convergence_Sprimme(X?&X[(*blockSize)*ldV]:NULL, nLocal,
-            ldV, R?&R[(*blockSize)*ldV]:NULL, ldV, evecs, numLocked,
+            ldV, R?&R[(*blockSize)*ldW]:NULL, ldW, evecs, numLocked,
             ldevecs, 0, blockNormsSize, flagsBlock,
             &blockNorms[*blockSize], hValsBlock, reset, machEps, rwork,
             &rworkSize0, iwork, iworkSize, primme), -1);
@@ -1238,8 +1239,8 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             iev[*blockSize] = iev[blki];
             if (X) Num_copy_matrix_Sprimme(&X[blki*ldV], nLocal, 1, ldV,
                   &X[(*blockSize)*ldV], ldV);
-            if (R) Num_copy_matrix_Sprimme(&R[blki*ldV], nLocal, 1, ldV,
-                  &R[(*blockSize)*ldV], ldV);
+            if (R) Num_copy_matrix_Sprimme(&R[blki*ldW], nLocal, 1, ldW,
+                  &R[(*blockSize)*ldW], ldW);
             (*blockSize)++;
          }
 
