@@ -269,8 +269,8 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
       /* y0 <- preconditioner for A^t*A  * y0 */
       LauchliApplyPreconditioner(aux, &ldaux, y, ldy, blockSize, &modeAtA, primme_svds, ierr);
       /* y1 <- preconditioner for A*A^t  * y1 */
-      yvec = (double *)aux + primme_svds->n;
-      LauchliApplyPreconditioner(yvec, &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
+      yvec = (double *)y + primme_svds->n;
+      LauchliApplyPreconditioner(&aux[primme_svds->n], &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
       free(aux);
    }
    *ierr = 0;
