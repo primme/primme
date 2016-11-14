@@ -51,11 +51,15 @@
 #ifdef USE_DOUBLE
 #include "notemplate.h"
 
-/***************************************************************************
+/*******************************************************************************
+ * Subroutine primme_initialize - Set primme_params members to default values.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ * primme  Structure containing various solver parameters and statistics
+ *
+ ******************************************************************************/
 
-   Initialize the primme data structure
-  
-***************************************************************************/
 void primme_initialize(primme_params *primme) {
 
    /* Essential parameters */
@@ -151,19 +155,27 @@ void primme_initialize(primme_params *primme) {
 
 }
 
-void primme_free(primme_params *params) {
+/*******************************************************************************
+ * Subroutine primme_free - Free memory resources allocated by Sprimme.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ * primme  Structure containing various solver parameters and statistics
+ *
+ ******************************************************************************/
 
-   free(params->intWork);
-   free(params->realWork);
-   params->intWorkSize  = 0;
-   params->realWorkSize = 0;
+void primme_free(primme_params *primme) {
 
-} /**************************************************************************/
+   free(primme->intWork);
+   free(primme->realWork);
+   primme->intWorkSize  = 0;
+   primme->realWorkSize = 0;
+
+}
 
 /******************************************************************************
- * int primme_set_method(primme_preset_method method,primme_params *params)
- *
- *    Set the eigensolver parameters to implement a method requested by the user
+ * Subroutine primme_set_method - Set the eigensolver parameters to implement a
+ *    method requested by the user.
  *    A choice of 15 preset methods is provided. These implement 12 well 
  *    known methods. The two default methods are shells for easy access to
  *    the best performing GD+k and JDQMR_ETol with expertly chosen parameters.
@@ -209,7 +221,7 @@ void primme_free(primme_params *params) {
  *
  * INPUT/OUTPUT
  * ------
- *    params    The main structure to be used by Primme, with parameters
+ *    primme    The main structure to be used by Primme, with parameters
  *              reflecting the user's choice of method 
  *
  *
@@ -221,7 +233,7 @@ void primme_free(primme_params *params) {
  *          been set for maxBasisSize, minRestartSize, and maxBlockSize.
  *
  ******************************************************************************/
-int primme_set_method(primme_preset_method method, primme_params *params) {
+int primme_set_method(primme_preset_method method, primme_params *primme) {
 
    /* Set default method as DYNAMIC */
    if (method == PRIMME_DEFAULT_METHOD)
@@ -234,7 +246,7 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    else if (method == PRIMME_DEFAULT_MIN_TIME) {
       /* JDQMR works better than JDQMR_ETol in interior problems. */
-      if (params->target == primme_smallest || params->target == primme_largest) {
+      if (primme->target == primme_smallest || primme->target == primme_largest) {
          method = PRIMME_JDQMR_ETol;
       }
       else {
@@ -243,236 +255,238 @@ int primme_set_method(primme_preset_method method, primme_params *params) {
    }
    if (method == PRIMME_DYNAMIC) {
       /* JDQMR works better than JDQMR_ETol in interior problems. */
-      if (params->target == primme_smallest || params->target == primme_largest) {
+      if (primme->target == primme_smallest || primme->target == primme_largest) {
          method = PRIMME_JDQMR_ETol;
       }
       else {
          method = PRIMME_JDQMR;
       }
-      params->dynamicMethodSwitch = 1;
+      primme->dynamicMethodSwitch = 1;
    }
    else {
-      params->dynamicMethodSwitch = 0;
+      primme->dynamicMethodSwitch = 0;
    }
 
-   if (params->maxBlockSize == 0) {
-      params->maxBlockSize = 1;
+   if (primme->maxBlockSize == 0) {
+      primme->maxBlockSize = 1;
    }
-   if (params->correctionParams.precondition == -1) {
-      params->correctionParams.precondition = params->applyPreconditioner ? 1 : 0;
+   if (primme->correctionParams.precondition == -1) {
+      primme->correctionParams.precondition = primme->applyPreconditioner ? 1 : 0;
    }
 
    if (method == PRIMME_Arnoldi) {
-      params->restartingParams.maxPrevRetain      = 0;
-      params->correctionParams.precondition       = 0;
-      params->correctionParams.maxInnerIterations = 0;
+      primme->restartingParams.maxPrevRetain      = 0;
+      primme->correctionParams.precondition       = 0;
+      primme->correctionParams.maxInnerIterations = 0;
    }
    else if (method == PRIMME_GD) {
-      params->restartingParams.maxPrevRetain      = 0;
-      params->correctionParams.robustShifts       = 1;
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 0;
-      params->correctionParams.projectors.SkewX   = 0;
+      primme->restartingParams.maxPrevRetain      = 0;
+      primme->correctionParams.robustShifts       = 1;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 0;
+      primme->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == PRIMME_GD_plusK) {
-      if (params->restartingParams.maxPrevRetain <= 0) {
-         if (params->maxBlockSize == 1 && params->numEvals > 1) {
-            params->restartingParams.maxPrevRetain = 2;
+      if (primme->restartingParams.maxPrevRetain <= 0) {
+         if (primme->maxBlockSize == 1 && primme->numEvals > 1) {
+            primme->restartingParams.maxPrevRetain = 2;
          }
          else {
-            params->restartingParams.maxPrevRetain = params->maxBlockSize;
+            primme->restartingParams.maxPrevRetain = primme->maxBlockSize;
          }
       }
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 0;
-      params->correctionParams.projectors.SkewX   = 0;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 0;
+      primme->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == PRIMME_GD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain <= 0) {
-         if (params->maxBlockSize == 1 && params->numEvals > 1) {
-            params->restartingParams.maxPrevRetain = 2;
+      if (primme->restartingParams.maxPrevRetain <= 0) {
+         if (primme->maxBlockSize == 1 && primme->numEvals > 1) {
+            primme->restartingParams.maxPrevRetain = 2;
          }
          else {
-            params->restartingParams.maxPrevRetain = params->maxBlockSize;
+            primme->restartingParams.maxPrevRetain = primme->maxBlockSize;
          }
       }
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewX   = 0;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == PRIMME_JD_Olsen_plusK) {
-      if (params->restartingParams.maxPrevRetain <= 0) {
-         if (params->maxBlockSize == 1 && params->numEvals > 1) {
-            params->restartingParams.maxPrevRetain = 2;
+      if (primme->restartingParams.maxPrevRetain <= 0) {
+         if (primme->maxBlockSize == 1 && primme->numEvals > 1) {
+            primme->restartingParams.maxPrevRetain = 2;
          }
          else {
-            params->restartingParams.maxPrevRetain = params->maxBlockSize;
+            primme->restartingParams.maxPrevRetain = primme->maxBlockSize;
          }
       }
-      params->correctionParams.robustShifts       = 1;
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewX   = 1;
+      primme->correctionParams.robustShifts       = 1;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewX   = 1;
    }
    else if (method == PRIMME_RQI) {
      /* This is accelerated RQI as basisSize may be > 2                 */
      /* NOTE: If numTargetShifts > 0 and targetShifts[*] are provided,  *
       * the interior problem solved uses these shifts in the correction *
       * equation. Therefore RQI becomes INVIT in that case.             */
-      params->locking                             = 1;
-      params->restartingParams.maxPrevRetain      = 0;
-      params->correctionParams.robustShifts       = 1;
-      params->correctionParams.maxInnerIterations = -1;
-      params->correctionParams.projectors.LeftQ   = 1;
-      params->correctionParams.projectors.LeftX   = 1;
-      params->correctionParams.projectors.RightQ  = 0;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewQ   = 0;
-      params->correctionParams.projectors.SkewX   = 0;
-      params->correctionParams.convTest           = primme_full_LTolerance;
+      primme->locking                             = 1;
+      primme->restartingParams.maxPrevRetain      = 0;
+      primme->correctionParams.robustShifts       = 1;
+      primme->correctionParams.maxInnerIterations = -1;
+      primme->correctionParams.projectors.LeftQ   = 1;
+      primme->correctionParams.projectors.LeftX   = 1;
+      primme->correctionParams.projectors.RightQ  = 0;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewQ   = 0;
+      primme->correctionParams.projectors.SkewX   = 0;
+      primme->correctionParams.convTest           = primme_full_LTolerance;
    }
    else if (method == PRIMME_JDQR) {
-      params->locking                             = 1;
-      params->restartingParams.maxPrevRetain      = 1;
-      params->correctionParams.robustShifts       = 0;
-      if (params->correctionParams.maxInnerIterations == -INT_MAX) {
-         params->correctionParams.maxInnerIterations = 10;
+      primme->locking                             = 1;
+      primme->restartingParams.maxPrevRetain      = 1;
+      primme->correctionParams.robustShifts       = 0;
+      if (primme->correctionParams.maxInnerIterations == -INT_MAX) {
+         primme->correctionParams.maxInnerIterations = 10;
       }
-      params->correctionParams.projectors.LeftQ   = 0;
-      params->correctionParams.projectors.LeftX   = 1;
-      params->correctionParams.projectors.RightQ  = 1;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewQ   = 1;
-      params->correctionParams.projectors.SkewX   = 1;
-      params->correctionParams.relTolBase         = 1.5;
-      params->correctionParams.convTest           = primme_full_LTolerance;
+      primme->correctionParams.projectors.LeftQ   = 0;
+      primme->correctionParams.projectors.LeftX   = 1;
+      primme->correctionParams.projectors.RightQ  = 1;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewQ   = 1;
+      primme->correctionParams.projectors.SkewX   = 1;
+      primme->correctionParams.relTolBase         = 1.5;
+      primme->correctionParams.convTest           = primme_full_LTolerance;
    }
    else if (method == PRIMME_JDQMR) {
-      if (params->restartingParams.maxPrevRetain < 0) {
-         params->restartingParams.maxPrevRetain   = 1;
+      if (primme->restartingParams.maxPrevRetain < 0) {
+         primme->restartingParams.maxPrevRetain   = 1;
       }
-      params->correctionParams.maxInnerIterations = -1;
-      if (params->correctionParams.precondition) {
-         params->correctionParams.projectors.LeftQ   = 1;
+      primme->correctionParams.maxInnerIterations = -1;
+      if (primme->correctionParams.precondition) {
+         primme->correctionParams.projectors.LeftQ   = 1;
       }
       else {
-         params->correctionParams.projectors.LeftQ   = 0;
+         primme->correctionParams.projectors.LeftQ   = 0;
       }
-      params->correctionParams.projectors.LeftX   = 1;
-      params->correctionParams.projectors.RightQ  = 0;
-      params->correctionParams.projectors.RightX  = 0;
-      params->correctionParams.projectors.SkewQ   = 0;
-      params->correctionParams.projectors.SkewX   = 1;
-      params->correctionParams.convTest           = primme_adaptive;
+      primme->correctionParams.projectors.LeftX   = 1;
+      primme->correctionParams.projectors.RightQ  = 0;
+      primme->correctionParams.projectors.RightX  = 0;
+      primme->correctionParams.projectors.SkewQ   = 0;
+      primme->correctionParams.projectors.SkewX   = 1;
+      primme->correctionParams.convTest           = primme_adaptive;
    }
    else if (method == PRIMME_JDQMR_ETol) {
-      if (params->restartingParams.maxPrevRetain < 0) {
-         params->restartingParams.maxPrevRetain   = 1;
+      if (primme->restartingParams.maxPrevRetain < 0) {
+         primme->restartingParams.maxPrevRetain   = 1;
       }
-      params->correctionParams.maxInnerIterations = -1;
-      if (params->correctionParams.precondition) {
-         params->correctionParams.projectors.LeftQ   = 1;
+      primme->correctionParams.maxInnerIterations = -1;
+      if (primme->correctionParams.precondition) {
+         primme->correctionParams.projectors.LeftQ   = 1;
       }
       else {
-         params->correctionParams.projectors.LeftQ   = 0;
+         primme->correctionParams.projectors.LeftQ   = 0;
       }
-      params->correctionParams.projectors.LeftX   = 1;
-      params->correctionParams.projectors.RightQ  = 0;
-      params->correctionParams.projectors.RightX  = 0;
-      params->correctionParams.projectors.SkewQ   = 0;
-      params->correctionParams.projectors.SkewX   = 1;
-      params->correctionParams.convTest           = primme_adaptive_ETolerance;
+      primme->correctionParams.projectors.LeftX   = 1;
+      primme->correctionParams.projectors.RightQ  = 0;
+      primme->correctionParams.projectors.RightX  = 0;
+      primme->correctionParams.projectors.SkewQ   = 0;
+      primme->correctionParams.projectors.SkewX   = 1;
+      primme->correctionParams.convTest           = primme_adaptive_ETolerance;
    }
    else if (method == PRIMME_SUBSPACE_ITERATION) {
-      params->locking                             = 1;
-      params->maxBasisSize                        = params->numEvals*2;
-      params->minRestartSize                      = params->numEvals;
-      params->maxBlockSize                        = params->numEvals;
-      params->restartingParams.scheme             = primme_thick;
-      params->restartingParams.maxPrevRetain      = 0;
-      params->correctionParams.robustShifts       = 0;
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewX   = 0;
+      primme->locking                             = 1;
+      primme->maxBasisSize                        = primme->numEvals*2;
+      primme->minRestartSize                      = primme->numEvals;
+      primme->maxBlockSize                        = primme->numEvals;
+      primme->restartingParams.scheme             = primme_thick;
+      primme->restartingParams.maxPrevRetain      = 0;
+      primme->correctionParams.robustShifts       = 0;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == PRIMME_LOBPCG_OrthoBasis) {
-      params->maxBasisSize                        = params->numEvals*3;
-      params->minRestartSize                      = params->numEvals;
-      params->maxBlockSize                        = params->numEvals;
-      params->restartingParams.maxPrevRetain      = params->numEvals;
-      params->restartingParams.scheme             = primme_thick;
-      params->correctionParams.robustShifts       = 0;
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewX   = 0;
+      primme->maxBasisSize                        = primme->numEvals*3;
+      primme->minRestartSize                      = primme->numEvals;
+      primme->maxBlockSize                        = primme->numEvals;
+      primme->restartingParams.maxPrevRetain      = primme->numEvals;
+      primme->restartingParams.scheme             = primme_thick;
+      primme->correctionParams.robustShifts       = 0;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewX   = 0;
    }
    else if (method == PRIMME_LOBPCG_OrthoBasis_Window) {
       /* Observed needing to restart with two vectors at least to converge    */
       /* in some tests like for instance testi-10-LOBPCG_OrthoBasis_Window-3- */
       /* primme_closest_geq-primme_proj_refined.F                             */
-      if (params->maxBlockSize == 1
-            && (params->target == primme_closest_leq
-               || params->target == primme_closest_geq)) {
-         params->maxBasisSize                        = 4;
-         params->minRestartSize                      = 2;
-         params->restartingParams.maxPrevRetain      = 1;
+      if (primme->maxBlockSize == 1
+            && (primme->target == primme_closest_leq
+               || primme->target == primme_closest_geq)) {
+         primme->maxBasisSize                        = 4;
+         primme->minRestartSize                      = 2;
+         primme->restartingParams.maxPrevRetain      = 1;
       }
       else {
-         params->maxBasisSize                        = params->maxBlockSize*3;
-         params->minRestartSize                      = params->maxBlockSize;
-         params->restartingParams.maxPrevRetain      = params->maxBlockSize;
+         primme->maxBasisSize                        = primme->maxBlockSize*3;
+         primme->minRestartSize                      = primme->maxBlockSize;
+         primme->restartingParams.maxPrevRetain      = primme->maxBlockSize;
       }
-      params->restartingParams.scheme             = primme_thick;
-      params->correctionParams.robustShifts       = 0;
-      params->correctionParams.maxInnerIterations = 0;
-      params->correctionParams.projectors.RightX  = 1;
-      params->correctionParams.projectors.SkewX   = 0;
+      primme->restartingParams.scheme             = primme_thick;
+      primme->correctionParams.robustShifts       = 0;
+      primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 1;
+      primme->correctionParams.projectors.SkewX   = 0;
    }
    else {
       return -1;
    }
 
-   primme_set_defaults(params);
+   primme_set_defaults(primme);
 
    return 0;
 
-  /**************************************************************************/
-} /* end of primme_set_method */
-  /**************************************************************************/
+}
 
 /******************************************************************************
  * Subroutine primme_set_defaults - Set valid values for options that still
  *    has the initial invalid value set in primme_initialize.
  *
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ * primme  Structure containing various solver parameters and statistics
+ *
  ******************************************************************************/
 
-void primme_set_defaults(primme_params *params) {
-   if (params->dynamicMethodSwitch < 0) {
-      primme_set_method(PRIMME_DYNAMIC, params);
+void primme_set_defaults(primme_params *primme) {
+   if (primme->dynamicMethodSwitch < 0) {
+      primme_set_method(PRIMME_DYNAMIC, primme);
    }
 
    /* ----------------------------------------- */
    /* Set some defaults for sequential programs */
    /* ----------------------------------------- */
-   if (params->numProcs <= 1) {
-      params->nLocal = params->n;
-      params->procID = 0;
+   if (primme->numProcs <= 1) {
+      primme->nLocal = primme->n;
+      primme->procID = 0;
    }
 
-   if (params->ldevecs == 0)
-      params->ldevecs = params->nLocal;
-   if (params->projectionParams.projection == primme_proj_default)
-      params->projectionParams.projection = primme_proj_RR;
-   if (params->initBasisMode == primme_init_default)
-      params->initBasisMode = primme_init_krylov;
+   if (primme->ldevecs == 0)
+      primme->ldevecs = primme->nLocal;
+   if (primme->projectionParams.projection == primme_proj_default)
+      primme->projectionParams.projection = primme_proj_RR;
+   if (primme->initBasisMode == primme_init_default)
+      primme->initBasisMode = primme_init_krylov;
 
    /* If we are free to choose the leading dimension of V and W, use    */
    /* a multiple of PRIMME_BLOCK_SIZE. This may improve the performance */
    /* of Num_update_VWXR_Sprimme.                                       */
 
-   if (params->ldOPs == 0) {
-      params->ldOPs = min(((params->nLocal + PRIMME_BLOCK_SIZE - 1)
-               /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, params->nLocal);
+   if (primme->ldOPs == 0) {
+      primme->ldOPs = min(((primme->nLocal + PRIMME_BLOCK_SIZE - 1)
+               /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, primme->nLocal);
    }
       
    /* Now that most of the parameters have been set, set defaults  */
@@ -480,63 +494,66 @@ void primme_set_defaults(primme_params *params) {
    /* For interior, larger basisSize and restartSize are advisable */
    /* If maxBlockSize is provided, assign at least 4*blocksize     */
    /* and consider also minRestartSize and maxPrevRetain           */
-   if (params->maxBasisSize == 0) {
-      if (params->target==primme_smallest || params->target==primme_largest)
-         params->maxBasisSize   = min(params->n, max(
-            max(15, 4*params->maxBlockSize+params->restartingParams.maxPrevRetain), 
-            (int) 2.5*params->minRestartSize+params->restartingParams.maxPrevRetain));
+   if (primme->maxBasisSize == 0) {
+      if (primme->target==primme_smallest || primme->target==primme_largest)
+         primme->maxBasisSize   = min(primme->n, max(
+            max(15, 4*primme->maxBlockSize+primme->restartingParams.maxPrevRetain), 
+            (int) 2.5*primme->minRestartSize+primme->restartingParams.maxPrevRetain));
       else
-         params->maxBasisSize   = min(params->n, max(
-            max(35, 5*params->maxBlockSize+params->restartingParams.maxPrevRetain),
-            (int) 1.7*params->minRestartSize+params->restartingParams.maxPrevRetain));
+         primme->maxBasisSize   = min(primme->n, max(
+            max(35, 5*primme->maxBlockSize+primme->restartingParams.maxPrevRetain),
+            (int) 1.7*primme->minRestartSize+primme->restartingParams.maxPrevRetain));
    }
 
-   if (params->minRestartSize == 0) {
-      if (params->target==primme_smallest || params->target==primme_largest)
-         params->minRestartSize = (int) (0.5 + 0.4*params->maxBasisSize);
+   if (primme->minRestartSize == 0) {
+      if (primme->target==primme_smallest || primme->target==primme_largest)
+         primme->minRestartSize = (int) (0.5 + 0.4*primme->maxBasisSize);
       else
-         params->minRestartSize = (int) (0.5 + 0.6*params->maxBasisSize);
+         primme->minRestartSize = (int) (0.5 + 0.6*primme->maxBasisSize);
 
       /* Adjust so that an integer number of blocks are added between restarts*/
       /* restart=basis-block*ceil((basis-restart-prevRetain)/block)-prevRetain*/
-      if (params->maxBlockSize > 1) {
-         if (params->restartingParams.maxPrevRetain > 0) 
-            params->minRestartSize = params->maxBasisSize-params->maxBlockSize*
-            (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1 
-                         -params->restartingParams.maxPrevRetain ) / (double) 
-            params->maxBlockSize) ) - params->restartingParams.maxPrevRetain ;
+      if (primme->maxBlockSize > 1) {
+         if (primme->restartingParams.maxPrevRetain > 0) 
+            primme->minRestartSize = primme->maxBasisSize-primme->maxBlockSize*
+            (1 + (int) ((primme->maxBasisSize - primme->minRestartSize - 1 
+                         -primme->restartingParams.maxPrevRetain ) / (double) 
+            primme->maxBlockSize) ) - primme->restartingParams.maxPrevRetain ;
          else 
-            params->minRestartSize = params->maxBasisSize-params->maxBlockSize*
-            (1 + (int) ((params->maxBasisSize - params->minRestartSize - 1)
-                        /(double) params->maxBlockSize) );
+            primme->minRestartSize = primme->maxBasisSize-primme->maxBlockSize*
+            (1 + (int) ((primme->maxBasisSize - primme->minRestartSize - 1)
+                        /(double) primme->maxBlockSize) );
       }
    }
 
    /* --------------------------------------------------------------------- */
    /* Decide on whether to use locking (hard locking), or not (soft locking)*/
    /* --------------------------------------------------------------------- */
-   if (params->locking >= 0) {
+   if (primme->locking >= 0) {
       /* Honor the user setup (do nothing) */
    }
-   else if (params->target != primme_smallest && params->target != primme_largest) {
-       params->locking = 1;
+   else if (primme->target != primme_smallest && primme->target != primme_largest) {
+       primme->locking = 1;
    }
-   else if (params->numEvals > params->minRestartSize) {
+   else if (primme->numEvals > primme->minRestartSize) {
       /* use locking when not enough vectors to restart with */
-      params->locking = 1;
+      primme->locking = 1;
    }
    else {
-      params->locking = 0;   
+      primme->locking = 0;   
    }
 }
 
-/******************************************************************************
+/*******************************************************************************
+ * Subroutine primme_display_params - Displays the current configuration of
+ *    primme data structure.
+ * 
+ * INPUT PARAMETERS
+ * ----------------------------------
+ * primme  Structure containing various solver parameters and statistics
  *
- * void primme_display_params(primme_params *primme);
- *
- *    Displays the current configuration of primme data structure
- *
- *****************************************************************************/
+ ******************************************************************************/
+
 void primme_display_params(primme_params primme) {
 
    fprintf(primme.outputFile,
@@ -547,6 +564,18 @@ void primme_display_params(primme_params primme) {
    primme_display_params_prefix("primme", primme);
    fflush(primme.outputFile);
 }
+
+/*******************************************************************************
+ * Subroutine primme_params_prefix - Displays the current configuration of
+ *    primme data structure. The options are printed as
+ *    prefix.optionName = value.
+ * 
+ * INPUT PARAMETERS
+ * ----------------------------------
+ * prefix  Name of the structure
+ * primme  Structure containing various solver parameters and statistics
+ *
+ ******************************************************************************/
 
 void primme_display_params_prefix(const char* prefix, primme_params primme) {
 
@@ -647,9 +676,6 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 #undef PRINTIF
 #undef PRINTParams
 #undef PRINTParamsIF
-
-  /**************************************************************************/
-} /* end of display params */
-  /**************************************************************************/
+}
 
 #endif /* USE_DOUBLE */

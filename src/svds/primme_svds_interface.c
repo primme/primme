@@ -49,11 +49,16 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
 static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme, int *ierr);
 
-/***************************************************************************
+/*******************************************************************************
+ * Subroutine primme__svdsinitialize - Set primme_svds_params members to default
+ *    values.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ * primme_svds  Structure containing various solver parameters and statistics
+ *
+ ******************************************************************************/
 
-   Initialize the primme_svds data structure
-  
-***************************************************************************/
 void primme_svds_initialize(primme_svds_params *primme_svds) {
 
    /* Essential parameters */
@@ -119,6 +124,33 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
  
 }
 
+/******************************************************************************
+ * Subroutine primme_svds_set_method - Set the approach to solve the singular
+ *    value problem.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ *    method   singular value method, one of:
+ *
+ *       primme_svds_default, currently set as primme_svds_hybrid.
+ *       primme_svds_normalequations, compute the eigenvectors of A'*A or A*A'.
+ *       primme_svds_augmented|, compute the eigenvectors of the augmented
+ *          matrix, [zeros() A'; A zeros()].
+ *       primme_svds_hybrid, start with primme_svds_normalequations; use the
+ *       resulting approximate singular vectors as initial vectors for
+ *       primme_svds_augmented if the required accuracy was not achieved.
+ *
+ *    methodStage1: preset method to compute the eigenpairs at the first stage.
+ *
+ *    methodStage2: preset method to compute the eigenpairs with the second
+ *       stage of primme_svds_hybrid.
+ *
+ * INPUT/OUTPUT PARAMATERS
+ * -----------------------
+ *    primme_svds   parameters structure 
+ *
+ ******************************************************************************/
+
 int primme_svds_set_method(primme_svds_preset_method method,
       primme_preset_method methodStage1, primme_preset_method methodStage2,
       primme_svds_params *primme_svds) {
@@ -127,11 +159,13 @@ int primme_svds_set_method(primme_svds_preset_method method,
    switch(method) {
    case primme_svds_default:
    case primme_svds_hybrid:
-      primme_svds->method = primme_svds->n <= primme_svds->m ? primme_svds_op_AtA : primme_svds_op_AAt;
+      primme_svds->method = (primme_svds->n <= primme_svds->m ?
+            primme_svds_op_AtA : primme_svds_op_AAt);
       primme_svds->methodStage2 = primme_svds_op_augmented;
       break;
    case primme_svds_normalequations:
-      primme_svds->method = primme_svds->n <= primme_svds->m ? primme_svds_op_AtA : primme_svds_op_AAt;
+      primme_svds->method = (primme_svds->n <= primme_svds->m ?
+            primme_svds_op_AtA : primme_svds_op_AAt);
       primme_svds->methodStage2 = primme_svds_op_none;
       break;
    case primme_svds_augmented:
@@ -155,6 +189,16 @@ int primme_svds_set_method(primme_svds_preset_method method,
 
    return 0;
 }
+
+/******************************************************************************
+ * Subroutine primme_svds_set_defaults - Set valid values for options that still
+ *    has the initial invalid value set in primme_svds_initialize.
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ *    primme_svds   parameters structure 
+ *
+ ******************************************************************************/
 
 void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
@@ -180,6 +224,17 @@ void primme_svds_set_defaults(primme_svds_params *primme_svds) {
       copy_params_from_svds(primme_svds, 1);
    }
 }
+
+/*******************************************************************************
+ * Subroutine copy_params_from_svds - Transfer some options in primme_svds to
+ *    the primme_params for the given stage.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ * stage        First stage (0) or second stage (1)
+ * primme_svds  Structure containing various solver parameters and statistics
+ *
+ ******************************************************************************/
 
 static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    primme_params *primme;
@@ -287,13 +342,16 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
 
 }
 
-/******************************************************************************
+/*******************************************************************************
+ * Subroutine primme_svds_display_params - Displays the current configuration of
+ *    primme svds data structure.
+ * 
+ * INPUT PARAMETERS
+ * ----------------------------------
+ * primme_svds  Structure containing various solver parameters and statistics
  *
- * void primme_svds_display_params(primme_params *primme);
- *
- *    Displays the current configuration of primme data structure
- *
- *****************************************************************************/
+ ******************************************************************************/
+
 void primme_svds_display_params(primme_svds_params primme_svds) {
 
    int i;
@@ -382,17 +440,31 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
    }
    fflush(outputFile);
 
-  /**************************************************************************/
-} /* end of display params */
-
-
-void primme_svds_free(primme_svds_params *params) {
-    
-   free(params->intWork);
-   free(params->realWork);
-   params->intWorkSize  = 0;
-   params->realWorkSize = 0;
 }
+
+
+/*******************************************************************************
+ * Subroutine primme_svds_free - Free memory resources allocated by Sprimme_svds
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------------------------
+ * primme_svds  Structure containing various solver parameters and statistics
+ *
+ ******************************************************************************/
+
+void primme_svds_free(primme_svds_params *primme) {
+    
+   free(primme->intWork);
+   free(primme->realWork);
+   primme->intWorkSize  = 0;
+   primme->realWorkSize = 0;
+}
+
+/*******************************************************************************
+ * Subroutine globalSumRealSvds - implementation of primme_params' globalSumReal
+ *    that uses the callback defined in primme_svds_params.
+ * 
+ ******************************************************************************/
 
 static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme, int *ierr) {
