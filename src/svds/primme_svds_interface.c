@@ -36,6 +36,7 @@
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
+#include <string.h>    
 #include <limits.h>    
 #include "numerical.h"
 #include "primme_svds_interface.h"
@@ -470,6 +471,555 @@ static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count,
                          primme_params *primme, int *ierr) {
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_svds->globalSumReal(sendBuf, recvBuf, count, primme_svds, ierr);
+}
+
+/*******************************************************************************
+ * Subroutine primme_svds_get_member - get the value of a parameter in
+ *    primme_svds_params
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * primme_svds  Structure containing various solver parameters and statistics
+ * label   reference to the parameter
+ *
+ * OUTPUT PARAMETERS
+ * -----------------
+ * value   value of the parameter
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_svds_get_member(primme_svds_params *primme_svds,
+      primme_svds_params_label label, void *value) {
+
+   int i;
+   union {
+      PRIMME_INT int_v;
+      void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
+      void *ptr_v;
+      void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
+      primme_svds_target target_v;
+      primme_svds_operator operator_v;
+      double double_v;
+      FILE *file_v;
+   } *v = value;
+
+   switch(label) {
+      case PRIMME_SVDS_primme :
+         v->ptr_v = &primme_svds->primme;
+         break;
+      case PRIMME_SVDS_primmeStage2 :
+         v->ptr_v = &primme_svds->primmeStage2;
+         break;
+      case PRIMME_SVDS_m :
+         v->int_v = primme_svds->m;
+         break;
+      case PRIMME_SVDS_n :
+         v->int_v = primme_svds->n;
+         break;
+      case PRIMME_SVDS_matrixMatvec :
+         v->matFunc_v = primme_svds->matrixMatvec;
+         break;
+      case PRIMME_SVDS_applyPreconditioner :
+         v->matFunc_v = primme_svds->applyPreconditioner;
+         break;
+      case PRIMME_SVDS_numProcs :
+         v->int_v = primme_svds->numProcs;
+         break;
+      case PRIMME_SVDS_procID :
+         v->int_v = primme_svds->procID;
+         break;
+      case PRIMME_SVDS_mLocal :
+         v->int_v = primme_svds->mLocal;
+         break;
+      case PRIMME_SVDS_nLocal :
+         v->int_v = primme_svds->nLocal;
+         break;
+      case PRIMME_SVDS_commInfo :
+         v->ptr_v = primme_svds->commInfo;
+         break;
+      case PRIMME_SVDS_globalSumReal :
+         v->globalSumRealFunc_v = primme_svds->globalSumReal;
+         break;
+      case PRIMME_SVDS_numSvals :
+         v->int_v = primme_svds->numSvals;
+         break;
+      case PRIMME_SVDS_target :
+         v->target_v = primme_svds->target;
+         break;
+      case PRIMME_SVDS_numTargetShifts :
+         v->int_v = primme_svds->numTargetShifts;
+         break;
+      case PRIMME_SVDS_targetShifts :
+         for (i=0; i< primme_svds->numTargetShifts; i++) {
+             (&v->double_v)[i] = primme_svds->targetShifts[i];
+         }
+         break;
+      case PRIMME_SVDS_method :
+         v->operator_v = primme_svds->method;
+         break;
+      case PRIMME_SVDS_methodStage2 :
+         v->operator_v = primme_svds->methodStage2;
+         break;
+      case PRIMME_SVDS_intWorkSize :
+         v->int_v = primme_svds->intWorkSize;
+         break;
+      case PRIMME_SVDS_realWorkSize :
+         v->int_v = (PRIMME_INT)primme_svds->realWorkSize;
+         break;
+      case PRIMME_SVDS_intWork :
+         v->ptr_v = primme_svds->intWork;
+         break;
+      case PRIMME_SVDS_realWork :
+         v->ptr_v = primme_svds->realWork;
+         break;
+      case PRIMME_SVDS_matrix :
+         v->ptr_v = primme_svds->matrix;
+         break;
+      case PRIMME_SVDS_preconditioner :
+         v->ptr_v = primme_svds->preconditioner;
+         break;
+      case PRIMME_SVDS_locking :
+         v->int_v = primme_svds->locking;
+         break;
+      case PRIMME_SVDS_numOrthoConst :
+         v->int_v = primme_svds->numOrthoConst;
+         break;
+      case PRIMME_SVDS_aNorm :
+         v->double_v = primme_svds->aNorm;
+         break;
+      case PRIMME_SVDS_eps :
+         v->double_v = primme_svds->eps;
+         break;
+      case PRIMME_SVDS_precondition :
+         v->int_v = primme_svds->precondition;
+         break;
+      case PRIMME_SVDS_initSize :
+         v->int_v = primme_svds->initSize;
+         break;
+      case PRIMME_SVDS_maxBasisSize :
+         v->int_v = primme_svds->maxBasisSize;
+         break;
+      case PRIMME_SVDS_maxBlockSize :
+         v->int_v = primme_svds->maxBlockSize;
+         break;
+      case PRIMME_SVDS_maxMatvecs :
+         v->int_v = primme_svds->maxMatvecs;
+         break;
+      case PRIMME_SVDS_iseed :
+         for (i=0; i<4; i++) {
+            (&v->int_v)[i] = primme_svds->iseed[i];
+         }
+         break;
+      case PRIMME_SVDS_printLevel :
+         v->int_v = primme_svds->printLevel;
+         break;
+      case PRIMME_SVDS_outputFile :
+         v->file_v = primme_svds->outputFile;
+         break;
+      case PRIMME_SVDS_stats_numOuterIterations :
+         v->int_v = primme_svds->stats.numOuterIterations;
+         break;
+      case PRIMME_SVDS_stats_numRestarts :
+         v->int_v = primme_svds->stats.numRestarts;
+         break;
+      case PRIMME_SVDS_stats_numMatvecs :
+         v->int_v = primme_svds->stats.numMatvecs;
+         break;
+      case PRIMME_SVDS_stats_numPreconds :
+         v->int_v = primme_svds->stats.numPreconds;
+         break;
+      case PRIMME_SVDS_stats_elapsedTime :
+         v->double_v = primme_svds->stats.elapsedTime;
+         break;
+      default:
+         return 1;
+   }
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine primme_svds_set_member - set the value to a parameter in
+ *    primme_svds_params
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * label   reference to the parameter
+ * value   value of the parameter
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------
+ * primme_svds  Structure containing various solver parameters and statistics
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_svds_set_member(primme_svds_params *primme_svds,
+      primme_svds_params_label label, void *value) {
+   int i;
+   union value_t {
+      PRIMME_INT *int_v;
+      void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
+      void *ptr_v;
+      void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
+      primme_svds_target *target_v;
+      primme_svds_operator *operator_v;
+      double *double_v;
+      FILE *file_v;
+   } v = *(union value_t*)&value;
+
+   switch(label) {
+      case PRIMME_SVDS_primme :
+         return 1;
+         break;
+      case PRIMME_SVDS_primmeStage2 :
+         return 1;
+         break;
+      case PRIMME_SVDS_m :
+         primme_svds->m = *v.int_v;
+         break;
+      case PRIMME_SVDS_n :
+         primme_svds->n = *v.int_v;
+         break;
+      case PRIMME_SVDS_matrixMatvec :
+         primme_svds->matrixMatvec = v.matFunc_v;
+         break;
+      case PRIMME_SVDS_applyPreconditioner :
+         primme_svds->applyPreconditioner = v.matFunc_v;
+         break;
+      case PRIMME_SVDS_numProcs :
+         if (*v.int_v > INT_MAX) return 1; else
+         primme_svds->numProcs = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_procID :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->procID = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_mLocal :
+         primme_svds->mLocal = *v.int_v;
+         break;
+      case PRIMME_SVDS_nLocal :
+         primme_svds->nLocal = *v.int_v;
+         break;
+      case PRIMME_SVDS_commInfo :
+         primme_svds->commInfo = v.ptr_v;
+         break;
+      case PRIMME_SVDS_globalSumReal :
+         primme_svds->globalSumReal = v.globalSumRealFunc_v;
+         break;
+      case PRIMME_SVDS_numSvals :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->numSvals = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_target :
+         primme_svds->target = *v.target_v;
+         break;
+      case PRIMME_SVDS_numTargetShifts :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->numTargetShifts = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_targetShifts :
+         primme_svds->targetShifts = v.double_v;
+         break;
+      case PRIMME_SVDS_method :
+         primme_svds->method = *v.operator_v;
+         break;
+      case PRIMME_SVDS_methodStage2 :
+         primme_svds->methodStage2 = *v.operator_v;
+         break;
+      case PRIMME_SVDS_intWorkSize :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->intWorkSize = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_realWorkSize :
+         primme_svds->realWorkSize = (size_t)*v.int_v;
+         break;
+      case PRIMME_SVDS_intWork :
+         primme_svds->intWork = (int*)v.int_v;
+         break;
+      case PRIMME_SVDS_realWork :
+         primme_svds->realWork = v.ptr_v;
+         break;
+      case PRIMME_SVDS_matrix :
+         primme_svds->matrix = v.ptr_v;
+         break;
+      case PRIMME_SVDS_preconditioner :
+         primme_svds->preconditioner = v.ptr_v;
+         break;
+      case PRIMME_SVDS_locking :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->locking = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_numOrthoConst :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->numOrthoConst = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_aNorm :
+         primme_svds->aNorm = *v.double_v;
+         break;
+      case PRIMME_SVDS_eps :
+         primme_svds->eps = *v.double_v;
+         break;
+      case PRIMME_SVDS_precondition :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->precondition = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_initSize :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->initSize = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_maxBasisSize :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->maxBasisSize = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_maxBlockSize :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->maxBlockSize = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_maxMatvecs :
+         primme_svds->maxMatvecs = *v.int_v;
+         break;
+      case PRIMME_SVDS_iseed :
+         for (i=0; i<4; i++) {
+            primme_svds->iseed[i] = v.int_v[i];
+         }
+         break;
+      case PRIMME_SVDS_printLevel :
+         if (*v.int_v > INT_MAX) return 1; else 
+         primme_svds->printLevel = (int)*v.int_v;
+         break;
+      case PRIMME_SVDS_outputFile :
+         primme_svds->outputFile = v.file_v;
+         break;
+      case PRIMME_SVDS_stats_numOuterIterations :
+         primme_svds->stats.numOuterIterations = *v.int_v;
+         break;
+      case PRIMME_SVDS_stats_numRestarts :
+         primme_svds->stats.numRestarts = *v.int_v;
+         break;
+      case PRIMME_SVDS_stats_numMatvecs :
+         primme_svds->stats.numMatvecs = *v.int_v;
+         break;
+      case PRIMME_SVDS_stats_numPreconds :
+         primme_svds->stats.numPreconds = *v.int_v;
+         break;
+      case PRIMME_SVDS_stats_elapsedTime :
+         primme_svds->stats.elapsedTime = *v.double_v;
+         break;
+      default:
+         return 1;
+   }
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine primme_svds_member_info - return the label value or the label
+ *    name, the type and the arity of some member of primme_svds_params.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------
+ * label       reference to the parameter by the value in primme_svds_params_label
+ * label_name  reference by the string associated to the parameter
+ *
+ * OUTPUT PARAMETERS
+ * -----------------
+ * type        kind of value
+ * arity       number of elements
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_svds_member_info(primme_svds_params_label *label_,
+      const char** label_name_, primme_type *type, int *arity) {
+   primme_svds_params_label label = (primme_svds_params_label)1000;
+   const char *label_name;
+
+   /* Quick exit when neither label nor label_name is given */
+
+   if (label_ == NULL && (label_name_ == NULL || *label_name_ == NULL)) {
+      return 1;
+   }
+
+   /* Get the label from label_name_ and label_name from label_ */
+
+#define IF_IS(F) \
+   if ((label_name_ && *label_name_ && strcmp(#F, *label_name_) == 0) \
+         || (label_ && *label_ == PRIMME_SVDS_ ## F)) { \
+      label = PRIMME_SVDS_ ## F; \
+      label_name = #F; \
+   }
+
+   IF_IS(primme);
+   IF_IS(primmeStage2);
+   IF_IS(m);
+   IF_IS(n);
+   IF_IS(matrixMatvec);
+   IF_IS(applyPreconditioner);
+   IF_IS(numProcs);
+   IF_IS(procID);
+   IF_IS(mLocal);
+   IF_IS(nLocal);
+   IF_IS(commInfo);
+   IF_IS(globalSumReal);
+   IF_IS(numSvals);
+   IF_IS(target);
+   IF_IS(numTargetShifts);
+   IF_IS(targetShifts);
+   IF_IS(method);
+   IF_IS(methodStage2);
+   IF_IS(intWorkSize);
+   IF_IS(realWorkSize);
+   IF_IS(intWork);
+   IF_IS(realWork);
+   IF_IS(matrix);
+   IF_IS(preconditioner);
+   IF_IS(locking);
+   IF_IS(numOrthoConst);
+   IF_IS(aNorm);
+   IF_IS(eps);
+   IF_IS(precondition);
+   IF_IS(initSize);
+   IF_IS(maxBasisSize);
+   IF_IS(maxBlockSize);
+   IF_IS(maxMatvecs);
+   IF_IS(iseed);
+   IF_IS(printLevel);
+   IF_IS(outputFile);
+   IF_IS(stats_numOuterIterations);
+   IF_IS(stats_numRestarts);
+   IF_IS(stats_numMatvecs);
+   IF_IS(stats_numPreconds);
+   IF_IS(stats_elapsedTime);
+#undef IF_IS
+
+   /* Return label/label_name */
+
+   if (label_) *label_ = label;
+   if (label_name_) *label_name_ = label_name;
+
+   /* Return type and arity */
+
+   switch(label) {
+      /* members with type int */
+
+      case PRIMME_SVDS_m: 
+      case PRIMME_SVDS_n:
+      case PRIMME_SVDS_numSvals:
+      case PRIMME_SVDS_target:
+      case PRIMME_SVDS_method:
+      case PRIMME_SVDS_methodStage2:
+      case PRIMME_SVDS_locking:
+      case PRIMME_SVDS_numOrthoConst:
+      case PRIMME_SVDS_precondition:
+      case PRIMME_SVDS_initSize:
+      case PRIMME_SVDS_maxBasisSize:
+      case PRIMME_SVDS_maxBlockSize:
+      case PRIMME_SVDS_maxMatvecs:
+      case PRIMME_SVDS_printLevel:
+      case PRIMME_SVDS_stats_numOuterIterations:
+      case PRIMME_SVDS_stats_numRestarts:
+      case PRIMME_SVDS_stats_numMatvecs:
+      case PRIMME_SVDS_stats_numPreconds:
+      case PRIMME_SVDS_iseed:
+      case PRIMME_SVDS_numProcs: 
+      case PRIMME_SVDS_procID: 
+      case PRIMME_SVDS_mLocal: 
+      case PRIMME_SVDS_nLocal: 
+      case PRIMME_SVDS_numTargetShifts:
+      case PRIMME_SVDS_intWorkSize:
+      case PRIMME_SVDS_realWorkSize:
+      if (type) *type = primme_int;
+      if (arity) *arity = 1;
+      break;
+
+      /* members with type double */
+
+      case PRIMME_SVDS_aNorm:
+      case PRIMME_SVDS_eps:
+      case PRIMME_SVDS_stats_elapsedTime:
+      if (type) *type = primme_double;
+      if (arity) *arity = 1;
+      break;
+  
+      case PRIMME_SVDS_targetShifts:
+      if (type) *type = primme_double;
+      if (arity) *arity = 0;
+      break;
+
+      /* members with type pointer */
+
+      case PRIMME_SVDS_matrixMatvec: 
+      case PRIMME_SVDS_applyPreconditioner:
+      case PRIMME_SVDS_commInfo:
+      case PRIMME_SVDS_globalSumReal:
+      case PRIMME_SVDS_intWork:
+      case PRIMME_SVDS_realWork:
+      case PRIMME_SVDS_matrix:
+      case PRIMME_SVDS_preconditioner:
+      case PRIMME_SVDS_outputFile:
+      if (type) *type = primme_pointer;
+      if (arity) *arity = 1;
+      break;
+
+      default: 
+      return 1;
+   }
+
+   return 0;
+}
+ 
+/*******************************************************************************
+ * Subroutine primme_svds_constant_info - return the value of a primme svds enum
+ *    constant.
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * label_name  name of the constant
+ *
+ * OUTPUT PARAMETERS
+ * -----------------
+ * value       numerical value of the constant
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_svds_constant_info(const char* label_name, int *value) {
+
+#define IF_IS(F) if (strcmp(#F, label_name) == 0) {*value = (int)F; return 0;}
+
+   /* method in primme_svds_set_method */
+   
+   IF_IS(primme_svds_default);
+   IF_IS(primme_svds_hybrid);
+   IF_IS(primme_svds_normalequations);
+   IF_IS(primme_svds_augmented);
+   
+   /* enum members for targeting and operator */
+   
+   IF_IS(primme_svds_largest);
+   IF_IS(primme_svds_smallest);
+   IF_IS(primme_svds_closest_abs);
+   IF_IS(primme_svds_op_none);
+   IF_IS(primme_svds_op_AtA);
+   IF_IS(primme_svds_op_AAt);
+   IF_IS(primme_svds_op_augmented);
+#undef IF_IS
+
+   /* return error if label not found */
+
+   return 1;   
 }
 
 #endif /* USE_DOUBLE */

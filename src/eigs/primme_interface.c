@@ -42,6 +42,7 @@
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
+#include <string.h>  /* strcmp */  
 #include <limits.h>    
 #include "template.h"
 #include "primme_interface.h"
@@ -676,6 +677,734 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
 #undef PRINTIF
 #undef PRINTParams
 #undef PRINTParamsIF
+}
+
+/*******************************************************************************
+ * Subroutine primme_get_member - get the value of a parameter in primme_params
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * primme  Structure containing various solver parameters and statistics
+ * label   reference to the parameter
+ *
+ * OUTPUT PARAMETERS
+ * -----------------
+ * value   value of the parameter
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_get_member(primme_params *primme, primme_params_label label,
+      void *value) {
+
+   int i;
+   union {
+      PRIMME_INT int_v;
+      void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
+      void *ptr_v;
+      void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_params *,int*);
+      void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*,int*);
+      primme_target target_v;
+      double double_v;
+      FILE *file_v;
+      primme_init init_v;
+      primme_projection projection_v;
+      primme_restartscheme restartscheme_v;
+      primme_convergencetest convergencetest_v;
+   } *v = value;
+
+   switch (label) {
+      case PRIMME_n:
+              v->int_v = primme->n;
+      break;
+      case PRIMME_matrixMatvec:
+              v->matFunc_v = primme->matrixMatvec;
+      break;
+      case PRIMME_massMatrixMatvec:
+              v->matFunc_v = primme->massMatrixMatvec;
+      break;
+      case PRIMME_applyPreconditioner:
+              v->matFunc_v = primme->applyPreconditioner;
+      break;
+      case PRIMME_numProcs:
+              v->int_v = primme->numProcs;
+      break;
+      case PRIMME_procID:
+              v->int_v = primme->procID;
+      break;
+      case PRIMME_commInfo:
+              v->ptr_v = primme->commInfo;
+      break;
+      case PRIMME_nLocal:
+              v->int_v = primme->nLocal;
+      break;
+      case PRIMME_globalSumReal:
+              v->globalSumRealFunc_v = primme->globalSumReal;
+      break;
+      case PRIMME_numEvals:
+              v->int_v = primme->numEvals;
+      break;
+      case PRIMME_target:
+              v->target_v = primme->target;
+      break;
+      case PRIMME_numTargetShifts:
+              v->int_v = primme->numTargetShifts;
+      break;
+      case PRIMME_targetShifts:
+         for (i=0; i< primme->numTargetShifts; i++) {
+             (&v->double_v)[i] = primme->targetShifts[i];
+         }
+      break;
+      case PRIMME_locking:
+              v->int_v = primme->locking;
+      break;
+      case PRIMME_initSize:
+              v->int_v = primme->initSize;
+      break;
+      case PRIMME_numOrthoConst:
+              v->int_v = primme->numOrthoConst;
+      break;
+      case PRIMME_dynamicMethodSwitch:
+              v->int_v = primme->dynamicMethodSwitch;
+      break;
+      case PRIMME_maxBasisSize:
+              v->int_v = primme->maxBasisSize;
+      break;
+      case PRIMME_minRestartSize:
+              v->int_v = primme->minRestartSize;
+      break;
+      case PRIMME_maxBlockSize:
+              v->int_v = primme->maxBlockSize;
+      break;
+      case PRIMME_maxMatvecs:
+              v->int_v = primme->maxMatvecs;
+      break;
+      case PRIMME_maxOuterIterations:
+              v->int_v = primme->maxOuterIterations;
+      break;
+      case PRIMME_intWorkSize:
+              v->int_v = primme->intWorkSize;
+      break;
+      case PRIMME_realWorkSize:
+              v->int_v = primme->realWorkSize;
+      break;
+      case PRIMME_iseed:
+         for (i=0; i< 4; i++) {
+            (&v->int_v)[i] = primme->iseed[i];
+         }
+      break;
+      case PRIMME_intWork:
+              v->ptr_v = primme->intWork;
+      break;
+      case PRIMME_realWork:
+              v->ptr_v = primme->realWork;
+      break;
+      case PRIMME_aNorm:
+              v->double_v = primme->aNorm;
+      break;
+      case PRIMME_eps:
+              v->double_v = primme->eps;
+      break;
+      case PRIMME_printLevel:
+              v->int_v = primme->printLevel;
+      break;
+      case PRIMME_outputFile:
+              v->file_v = primme->outputFile;
+      break;
+      case PRIMME_matrix:
+              v->ptr_v = primme->matrix;
+      break;
+      case PRIMME_preconditioner:
+              v->ptr_v = primme->preconditioner;
+      break;
+      case PRIMME_restartingParams_scheme:
+              v->restartscheme_v = primme->restartingParams.scheme;
+      break;
+      case PRIMME_restartingParams_maxPrevRetain:
+              v->int_v = primme->restartingParams.maxPrevRetain;
+      break;
+      case PRIMME_correctionParams_precondition:
+              v->int_v = primme->correctionParams.precondition;
+      break;
+      case PRIMME_correctionParams_robustShifts:
+              v->int_v = primme->correctionParams.robustShifts;
+      break;
+      case PRIMME_correctionParams_maxInnerIterations:
+              v->int_v = primme->correctionParams.maxInnerIterations;
+      break;
+      case PRIMME_correctionParams_projectors_LeftQ:
+              v->int_v = primme->correctionParams.projectors.LeftQ;
+      break;
+      case PRIMME_correctionParams_projectors_LeftX:
+              v->int_v = primme->correctionParams.projectors.LeftX;
+      break;
+      case PRIMME_correctionParams_projectors_RightQ:
+              v->int_v = primme->correctionParams.projectors.RightQ;
+      break;
+      case PRIMME_correctionParams_projectors_RightX:
+              v->int_v = primme->correctionParams.projectors.RightX;
+      break;
+      case PRIMME_correctionParams_projectors_SkewQ:
+              v->int_v = primme->correctionParams.projectors.SkewQ;
+      break;
+      case PRIMME_correctionParams_projectors_SkewX:
+              v->int_v = primme->correctionParams.projectors.SkewX;
+      break;
+      case PRIMME_correctionParams_convTest:
+              v->convergencetest_v = primme->correctionParams.convTest;
+      break;
+      case PRIMME_correctionParams_relTolBase:
+              v->double_v = primme->correctionParams.relTolBase;
+      break;
+      case PRIMME_stats_numOuterIterations:
+              v->int_v = primme->stats.numOuterIterations;
+      break;
+      case PRIMME_stats_numRestarts:
+              v->int_v = primme->stats.numRestarts;
+      break;
+      case PRIMME_stats_numMatvecs:
+              v->int_v = primme->stats.numMatvecs;
+      break;
+      case PRIMME_stats_numPreconds:
+              v->int_v = primme->stats.numPreconds;
+      break;
+      case PRIMME_stats_elapsedTime:
+              v->double_v = primme->stats.elapsedTime;
+      break;
+      case PRIMME_ldevecs:
+              v->int_v = primme->ldevecs;
+      break;
+      case PRIMME_ldOPs:
+              v->int_v = primme->ldOPs;
+      break;
+      default :
+      return 1;
+   }
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine primme_set_member - set the value to a parameter in primme_params
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * label   reference to the parameter
+ * value   value of the parameter
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------
+ * primme  Structure containing various solver parameters and statistics
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_set_member(primme_params *primme, primme_params_label label,
+      void *value) {
+   int i;
+
+   union value_t {
+      PRIMME_INT *int_v;
+      void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
+      void *ptr_v;
+      void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_params *,int*);
+      void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*,int*);
+      primme_target *target_v;
+      double *double_v;
+      FILE *file_v;
+      primme_init *init_v;
+      primme_projection *projection_v;
+      primme_restartscheme *restartscheme_v;
+      primme_convergencetest *convergencetest_v;
+   } v = *(union value_t*)&value;
+
+   switch (label) {
+      case PRIMME_n:
+              primme->n = *v.int_v;
+      break;
+      case PRIMME_matrixMatvec:
+              primme->matrixMatvec = v.matFunc_v;
+      break;
+      case PRIMME_massMatrixMatvec:
+              primme->massMatrixMatvec = v.matFunc_v;
+      break;
+      case PRIMME_applyPreconditioner:
+              primme->applyPreconditioner = v.matFunc_v;
+      break;
+      case PRIMME_numProcs:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->numProcs = (int)*v.int_v;
+      break;
+      case PRIMME_procID:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->procID = (int)*v.int_v;
+      break;
+      case PRIMME_commInfo:
+              primme->commInfo = v.ptr_v;
+      break;
+      case PRIMME_nLocal:
+              primme->nLocal = *v.int_v;
+      break;
+      case PRIMME_globalSumReal:
+              primme->globalSumReal = v.globalSumRealFunc_v;
+      break;
+      case PRIMME_numEvals:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->numEvals = (int)*v.int_v;
+      break;
+      case PRIMME_target:
+              primme->target = *v.target_v;
+      break;
+      case PRIMME_numTargetShifts:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->numTargetShifts = (int)*v.int_v;
+      break;
+      case PRIMME_targetShifts:
+              primme->targetShifts = v.double_v;
+      break;
+      case PRIMME_locking:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->locking = (int)*v.int_v;
+      break;
+      case PRIMME_initSize:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->initSize = (int)*v.int_v;
+      break;
+      case PRIMME_numOrthoConst:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->numOrthoConst = (int)*v.int_v;
+      break;
+      case PRIMME_dynamicMethodSwitch:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->dynamicMethodSwitch = (int)*v.int_v;
+      break;
+      case PRIMME_maxBasisSize:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->maxBasisSize = (int)*v.int_v;
+      break;
+      case PRIMME_minRestartSize:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->minRestartSize = (int)*v.int_v;
+      break;
+      case PRIMME_maxBlockSize:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->maxBlockSize = (int)*v.int_v;
+      break;
+      case PRIMME_maxMatvecs:
+              primme->maxMatvecs = *v.int_v;
+      break;
+      case PRIMME_maxOuterIterations:
+              primme->maxOuterIterations = *v.int_v;
+      break;
+      case PRIMME_intWorkSize:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->intWorkSize = (int)*v.int_v;
+      break;
+      case PRIMME_realWorkSize:
+              primme->realWorkSize = (size_t)*v.int_v;
+      break;
+      case PRIMME_iseed:
+         for (i=0; i< 4; i++) {
+            primme->iseed[i] = v.int_v[i];
+         }
+      break;
+      case PRIMME_intWork:
+              primme->intWork = (int*)v.int_v;
+      break;
+      case PRIMME_realWork:
+              primme->realWork = v.ptr_v;
+      break;
+      case PRIMME_aNorm:
+              primme->aNorm = *v.double_v;
+      break;
+      case PRIMME_eps:
+              primme->eps = *v.double_v;
+      break;
+      case PRIMME_printLevel:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->printLevel = (int)*v.int_v;
+      break;
+      case PRIMME_outputFile:
+              primme->outputFile = v.file_v;
+      break;
+      case PRIMME_matrix:
+              primme->matrix = v.ptr_v;
+      break;
+      case PRIMME_preconditioner:
+              primme->preconditioner = v.ptr_v;
+      break;
+      case PRIMME_initBasisMode:
+              primme->initBasisMode = *v.init_v;
+      break;
+      case PRIMME_projectionParams_projection:
+              primme->projectionParams.projection = *v.projection_v;
+      break;
+      case PRIMME_restartingParams_scheme:
+              primme->restartingParams.scheme = *v.restartscheme_v;
+      break;
+      case PRIMME_restartingParams_maxPrevRetain:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->restartingParams.maxPrevRetain = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_precondition:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.precondition = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_robustShifts:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.robustShifts = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_maxInnerIterations:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.maxInnerIterations = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_projectors_LeftQ:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.projectors.LeftQ = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_projectors_LeftX:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.projectors.LeftX = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_projectors_RightQ:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.projectors.RightQ = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_projectors_RightX:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.projectors.RightX = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_projectors_SkewQ:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.projectors.SkewQ = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_projectors_SkewX:
+              if (*v.int_v > INT_MAX) return 1; else 
+              primme->correctionParams.projectors.SkewX = (int)*v.int_v;
+      break;
+      case PRIMME_correctionParams_convTest:
+              primme->correctionParams.convTest = *v.convergencetest_v;
+      break;
+      case PRIMME_correctionParams_relTolBase:
+              primme->correctionParams.relTolBase = *v.double_v;
+      break;
+      case PRIMME_stats_numOuterIterations:
+              primme->stats.numOuterIterations = *v.int_v;
+      break;
+      case PRIMME_stats_numRestarts:
+              primme->stats.numRestarts = *v.int_v;
+      break;
+      case PRIMME_stats_numMatvecs:
+              primme->stats.numMatvecs = *v.int_v;
+      break;
+      case PRIMME_stats_numPreconds:
+              primme->stats.numPreconds = *v.int_v;
+      break;
+      case PRIMME_stats_elapsedTime:
+              primme->stats.elapsedTime = *v.double_v;
+      break;
+      case PRIMME_stats_estimateMinEVal:
+              primme->stats.estimateMinEVal = *v.double_v;
+      break;
+      case PRIMME_stats_estimateMaxEVal:
+              primme->stats.estimateMaxEVal = *v.double_v;
+      break;
+      case PRIMME_stats_estimateLargestSVal:
+              primme->stats.estimateLargestSVal = *v.double_v;
+      break;
+      case PRIMME_stats_maxConvTol:
+              primme->stats.maxConvTol = *v.double_v;
+      break;
+      case PRIMME_convTestFun:
+              primme->convTestFun = v.convTestFun_v;
+      break;
+      case PRIMME_ldevecs:
+              primme->ldevecs = *v.int_v;
+      break;
+      case PRIMME_ldOPs:
+              primme->ldOPs = *v.int_v;
+      break;
+      default : 
+      return 1;
+   }
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine primme_member_info - return the label value or the label name,
+ *    the type and the arity of some member of primme_params.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------
+ * label       reference to the parameter by the value in primme_params_label
+ * label_name  reference by the string associated to the parameter
+ *
+ * OUTPUT PARAMETERS
+ * -----------------
+ * type        kind of value
+ * arity       number of elements
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_member_info(primme_params_label *label_, const char** label_name_,
+      primme_type *type, int *arity) {
+   primme_params_label label = (primme_params_label)1000;
+   const char *label_name;
+
+   /* Quick exit when neither label nor label_name is given */
+
+   if (label_ == NULL && (label_name_ == NULL || *label_name_ == NULL)) {
+      return 1;
+   }
+
+   /* Get the label from label_name_ and label_name from label_ */
+
+#define IF_IS(F,O) \
+   if ((label_name_ && *label_name_ && strcmp(#F, *label_name_) == 0) \
+         || (label_ && *label_ == PRIMME_ ## O)) { \
+      label = PRIMME_ ## O; \
+      label_name = #F; \
+   }
+
+   IF_IS(n                            , n);
+   IF_IS(matrixMatvec                 , matrixMatvec);
+   IF_IS(massMatrixMatvec             , massMatrixMatvec);
+   IF_IS(applyPreconditioner          , applyPreconditioner);
+   IF_IS(numProcs                     , numProcs);
+   IF_IS(procID                       , procID);
+   IF_IS(commInfo                     , commInfo);
+   IF_IS(nLocal                       , nLocal);
+   IF_IS(globalSumReal                , globalSumReal);
+   IF_IS(numEvals                     , numEvals);
+   IF_IS(target                       , target);
+   IF_IS(numTargetShifts              , numTargetShifts);
+   IF_IS(targetShifts                 , targetShifts);
+   IF_IS(locking                      , locking);
+   IF_IS(initSize                     , initSize);
+   IF_IS(numOrthoConst                , numOrthoConst);
+   IF_IS(dynamicMethodSwitch          , dynamicMethodSwitch);
+   IF_IS(maxBasisSize                 , maxBasisSize);
+   IF_IS(minRestartSize               , minRestartSize);
+   IF_IS(maxBlockSize                 , maxBlockSize);
+   IF_IS(maxMatvecs                   , maxMatvecs);
+   IF_IS(maxOuterIterations           , maxOuterIterations);
+   IF_IS(intWorkSize                  , intWorkSize);
+   IF_IS(realWorkSize                 , realWorkSize);
+   IF_IS(iseed                        , iseed);
+   IF_IS(intWork                      , intWork);
+   IF_IS(realWork                     , realWork);
+   IF_IS(aNorm                        , aNorm);
+   IF_IS(eps                          , eps);
+   IF_IS(printLevel                   , printLevel);
+   IF_IS(outputFile                   , outputFile);
+   IF_IS(matrix                       , matrix);
+   IF_IS(preconditioner               , preconditioner);
+   IF_IS(initBasisMode                , initBasisMode);
+   IF_IS(projection_projection        , projectionParams_projection);
+   IF_IS(restarting_scheme            , restartingParams_scheme);
+   IF_IS(restarting_maxPrevRetain     , restartingParams_maxPrevRetain);
+   IF_IS(correction_precondition      , correctionParams_precondition);
+   IF_IS(correction_robustShifts      , correctionParams_robustShifts);
+   IF_IS(correction_maxInnerIterations, correctionParams_maxInnerIterations);
+   IF_IS(correction_projectors_LeftQ  , correctionParams_projectors_LeftQ);
+   IF_IS(correction_projectors_LeftX  , correctionParams_projectors_LeftX);
+   IF_IS(correction_projectors_RightQ , correctionParams_projectors_RightQ);
+   IF_IS(correction_projectors_RightX , correctionParams_projectors_RightX);
+   IF_IS(correction_projectors_SkewQ  , correctionParams_projectors_SkewQ);
+   IF_IS(correction_projectors_SkewX  , correctionParams_projectors_SkewX);
+   IF_IS(correction_convTest          , correctionParams_convTest);
+   IF_IS(correction_relTolBase        , correctionParams_relTolBase);
+   IF_IS(stats_numOuterIterations     , stats_numOuterIterations);
+   IF_IS(stats_numRestarts            , stats_numRestarts);
+   IF_IS(stats_numMatvecs             , stats_numMatvecs);
+   IF_IS(stats_numPreconds            , stats_numPreconds);
+   IF_IS(stats_elapsedTime            , stats_elapsedTime);
+   IF_IS(stats_estimateMinEVal        , stats_estimateMinEVal);
+   IF_IS(stats_estimateMaxEVal        , stats_estimateMaxEVal);
+   IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
+   IF_IS(stats_maxConvTol             , stats_maxConvTol);
+   IF_IS(convTestFun                  , convTestFun);
+   IF_IS(ldevecs                      , ldevecs);
+   IF_IS(ldOPs                        , ldOPs);
+#undef IF_IS
+
+   /* Return label/label_name */
+
+   if (label_) *label_ = label;
+   if (label_name_) *label_name_ = label_name;
+
+   /* Return type and arity */
+
+   switch(label) {
+      /* members with type int */
+
+      case PRIMME_n:
+      case PRIMME_numEvals:
+      case PRIMME_target:
+      case PRIMME_locking:
+      case PRIMME_initSize:
+      case PRIMME_numOrthoConst:
+      case PRIMME_dynamicMethodSwitch:
+      case PRIMME_maxBasisSize:
+      case PRIMME_minRestartSize:
+      case PRIMME_maxBlockSize:
+      case PRIMME_maxMatvecs:
+      case PRIMME_maxOuterIterations:
+      case PRIMME_initBasisMode:
+      case PRIMME_projectionParams_projection:
+      case PRIMME_restartingParams_scheme:
+      case PRIMME_restartingParams_maxPrevRetain:
+      case PRIMME_correctionParams_precondition:
+      case PRIMME_correctionParams_robustShifts:
+      case PRIMME_correctionParams_maxInnerIterations:
+      case PRIMME_correctionParams_projectors_LeftQ:
+      case PRIMME_correctionParams_projectors_LeftX:
+      case PRIMME_correctionParams_projectors_RightQ:
+      case PRIMME_correctionParams_projectors_RightX:
+      case PRIMME_correctionParams_projectors_SkewQ:
+      case PRIMME_correctionParams_projectors_SkewX:
+      case PRIMME_correctionParams_convTest:
+      case PRIMME_stats_numOuterIterations:
+      case PRIMME_stats_numRestarts:
+      case PRIMME_stats_numMatvecs:
+      case PRIMME_stats_numPreconds:
+      case PRIMME_numProcs:
+      case PRIMME_procID:
+      case PRIMME_nLocal:
+      case PRIMME_numTargetShifts:
+      case PRIMME_intWorkSize:
+      case PRIMME_realWorkSize:
+      case PRIMME_printLevel:
+      case PRIMME_ldevecs:
+      case PRIMME_ldOPs:
+      if (type) *type = primme_int;
+      if (arity) *arity = 1;
+      break;
+
+      case PRIMME_iseed:
+      if (type) *type = primme_int;
+      if (arity) *arity = 4;
+      break;
+
+      /* members with type double */
+
+      case PRIMME_aNorm:
+      case PRIMME_eps:
+      case PRIMME_correctionParams_relTolBase:
+      case PRIMME_stats_elapsedTime:
+      case PRIMME_stats_estimateMinEVal:
+      case PRIMME_stats_estimateMaxEVal:
+      case PRIMME_stats_estimateLargestSVal:
+      case PRIMME_stats_maxConvTol:
+      if (type) *type = primme_double;
+      if (arity) *arity = 1;
+      break;
+ 
+      case PRIMME_targetShifts:
+      if (type) *type = primme_double;
+      if (arity) *arity = 0;
+      break;
+
+      /* members with type pointer */
+
+      case PRIMME_matrixMatvec:
+      case PRIMME_applyPreconditioner:
+      case PRIMME_commInfo:
+      case PRIMME_globalSumReal:
+      case PRIMME_intWork:
+      case PRIMME_realWork:
+      case PRIMME_massMatrixMatvec:
+      case PRIMME_outputFile:
+      case PRIMME_matrix:
+      case PRIMME_preconditioner:
+      case PRIMME_convTestFun:
+      if (type) *type = primme_pointer;
+      if (arity) *arity = 1;
+      break;
+
+      default: 
+      return 1;
+   }
+
+   return 0;
+}
+ 
+/*******************************************************************************
+ * Subroutine primme_constant_info - return the value of a primme enum constant.
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * label_name  name of the constant
+ *
+ * OUTPUT PARAMETERS
+ * -----------------
+ * value       numerical value of the constant
+ *
+ * RETURN
+ * ------
+ * error code  zero if ok
+ *
+ ******************************************************************************/
+
+int primme_constant_info(const char* label_name, int *value) {
+
+#define IF_IS(F) if (strcmp(#F, label_name) == 0) {*value = (int)F; return 0;}
+
+   /* primme_preset_method */
+
+   IF_IS(PRIMME_DEFAULT_METHOD);
+   IF_IS(PRIMME_DYNAMIC);
+   IF_IS(PRIMME_DEFAULT_MIN_TIME);
+   IF_IS(PRIMME_DEFAULT_MIN_MATVECS);
+   IF_IS(PRIMME_Arnoldi);
+   IF_IS(PRIMME_GD);
+   IF_IS(PRIMME_GD_plusK);
+   IF_IS(PRIMME_GD_Olsen_plusK);
+   IF_IS(PRIMME_JD_Olsen_plusK);
+   IF_IS(PRIMME_RQI);
+   IF_IS(PRIMME_JDQR);
+   IF_IS(PRIMME_JDQMR);
+   IF_IS(PRIMME_JDQMR_ETol);
+   IF_IS(PRIMME_SUBSPACE_ITERATION);
+   IF_IS(PRIMME_LOBPCG_OrthoBasis);
+   IF_IS(PRIMME_LOBPCG_OrthoBasis_Window);
+   
+   /* enum members for targeting; restarting and innertest */
+   
+   IF_IS(primme_smallest);
+   IF_IS(primme_largest);
+   IF_IS(primme_closest_geq);
+   IF_IS(primme_closest_leq);
+   IF_IS(primme_closest_abs);
+   IF_IS(primme_largest_abs);
+   IF_IS(primme_proj_default);
+   IF_IS(primme_proj_RR);
+   IF_IS(primme_proj_harmonic);
+   IF_IS(primme_proj_refined);
+   IF_IS(primme_init_default);
+   IF_IS(primme_init_krylov);
+   IF_IS(primme_init_random);
+   IF_IS(primme_init_user);
+   IF_IS(primme_thick);
+   IF_IS(primme_dtr);
+   IF_IS(primme_full_LTolerance);
+   IF_IS(primme_decreasing_LTolerance);
+   IF_IS(primme_adaptive_ETolerance);
+   IF_IS(primme_adaptive);
+#undef IF_IS
+
+   /* return error if label not found */
+
+   return 1;   
 }
 
 #endif /* USE_DOUBLE */

@@ -223,6 +223,74 @@ typedef enum {
    PRIMME_LOBPCG_OrthoBasis_Window
 } primme_preset_method;
 
+typedef enum {
+   primme_int,
+   primme_double,
+   primme_pointer
+} primme_type;
+
+typedef enum {
+   PRIMME_n =  0,
+   PRIMME_matrixMatvec =  1,
+   PRIMME_applyPreconditioner =  2,
+   PRIMME_numProcs =  3,
+   PRIMME_procID =  4,
+   PRIMME_commInfo =  5,
+   PRIMME_nLocal =  6,
+   PRIMME_globalSumReal =  7,
+   PRIMME_numEvals =  8,
+   PRIMME_target =  9,
+   PRIMME_numTargetShifts =  10,
+   PRIMME_targetShifts =  11,
+   PRIMME_locking =  12,
+   PRIMME_initSize =  13,
+   PRIMME_numOrthoConst =  14,
+   PRIMME_maxBasisSize =  15,
+   PRIMME_minRestartSize =  16,
+   PRIMME_maxBlockSize =  17,
+   PRIMME_maxMatvecs =  18,
+   PRIMME_maxOuterIterations =  19,
+   PRIMME_intWorkSize =  20,
+   PRIMME_realWorkSize =  21,
+   PRIMME_iseed =  22,
+   PRIMME_intWork =  23,
+   PRIMME_realWork =  24,
+   PRIMME_aNorm =  25,
+   PRIMME_eps =  26,
+   PRIMME_printLevel =  27,
+   PRIMME_outputFile =  28,
+   PRIMME_matrix =  29,
+   PRIMME_preconditioner =  30,
+   PRIMME_initBasisMode =   301,
+   PRIMME_projectionParams_projection =  302,
+   PRIMME_restartingParams_scheme =  31,
+   PRIMME_restartingParams_maxPrevRetain =  32,
+   PRIMME_correctionParams_precondition =  33,
+   PRIMME_correctionParams_robustShifts =  34,
+   PRIMME_correctionParams_maxInnerIterations =  35,
+   PRIMME_correctionParams_projectors_LeftQ =  36,
+   PRIMME_correctionParams_projectors_LeftX =  37,
+   PRIMME_correctionParams_projectors_RightQ =  38,
+   PRIMME_correctionParams_projectors_RightX =  39,
+   PRIMME_correctionParams_projectors_SkewQ =  40,
+   PRIMME_correctionParams_projectors_SkewX =  41,
+   PRIMME_correctionParams_convTest =  42,
+   PRIMME_correctionParams_relTolBase =  43,
+   PRIMME_stats_numOuterIterations =  44,
+   PRIMME_stats_numRestarts =  45,
+   PRIMME_stats_numMatvecs =  46,
+   PRIMME_stats_numPreconds =  47,
+   PRIMME_stats_elapsedTime =  48,
+   PRIMME_stats_estimateMinEVal =  481,
+   PRIMME_stats_estimateMaxEVal =  482,
+   PRIMME_stats_estimateLargestSVal =  483,
+   PRIMME_stats_maxConvTol =  484,
+   PRIMME_dynamicMethodSwitch = 49,
+   PRIMME_massMatrixMatvec =  50,
+   PRIMME_convTestFun =  51,
+   PRIMME_ldevecs =  52,
+   PRIMME_ldOPs =  53
+} primme_params_label;
 
 int sprimme(float *evals, float *evecs, float *resNorms, 
       primme_params *primme);
@@ -236,6 +304,13 @@ void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
 void primme_free(primme_params *primme);
+int primme_get_member(primme_params *primme, primme_params_label label,
+      void *value);
+int primme_set_member(primme_params *primme, primme_params_label label,
+      void *value);
+int primme_member_info(primme_params_label *label, const char** label_name,
+      primme_type *type, int *arity);
+int primme_constant_info(const char* label_name, int *value);
 
 #ifdef __cplusplus
 }

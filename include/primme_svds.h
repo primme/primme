@@ -135,6 +135,50 @@ typedef struct primme_svds_params {
 
 } primme_svds_params;
 
+typedef enum {
+   PRIMME_SVDS_primme = 0,
+   PRIMME_SVDS_primmeStage2 = 1,
+   PRIMME_SVDS_m = 2,
+   PRIMME_SVDS_n = 3,
+   PRIMME_SVDS_matrixMatvec = 4,
+   PRIMME_SVDS_applyPreconditioner = 5,
+   PRIMME_SVDS_numProcs = 6,
+   PRIMME_SVDS_procID = 7,
+   PRIMME_SVDS_mLocal = 8,
+   PRIMME_SVDS_nLocal = 9,
+   PRIMME_SVDS_commInfo = 10,
+   PRIMME_SVDS_globalSumReal = 11,
+   PRIMME_SVDS_numSvals = 12,
+   PRIMME_SVDS_target = 13,
+   PRIMME_SVDS_numTargetShifts = 14,
+   PRIMME_SVDS_targetShifts = 15,
+   PRIMME_SVDS_method = 16,
+   PRIMME_SVDS_methodStage2 = 17,
+   PRIMME_SVDS_intWorkSize = 18,
+   PRIMME_SVDS_realWorkSize = 19,
+   PRIMME_SVDS_intWork = 20,
+   PRIMME_SVDS_realWork = 21,
+   PRIMME_SVDS_matrix = 22,
+   PRIMME_SVDS_preconditioner = 23,
+   PRIMME_SVDS_locking = 24,
+   PRIMME_SVDS_numOrthoConst = 25,
+   PRIMME_SVDS_aNorm = 26,
+   PRIMME_SVDS_eps = 27,
+   PRIMME_SVDS_precondition = 28,
+   PRIMME_SVDS_initSize = 29,
+   PRIMME_SVDS_maxBasisSize = 30,
+   PRIMME_SVDS_maxBlockSize = 31,
+   PRIMME_SVDS_maxMatvecs = 32,
+   PRIMME_SVDS_iseed = 33,
+   PRIMME_SVDS_printLevel = 34,
+   PRIMME_SVDS_outputFile = 35,
+   PRIMME_SVDS_stats_numOuterIterations = 36,
+   PRIMME_SVDS_stats_numRestarts = 37,
+   PRIMME_SVDS_stats_numMatvecs = 38,
+   PRIMME_SVDS_stats_numPreconds = 39,
+   PRIMME_SVDS_stats_elapsedTime = 40
+} primme_svds_params_label;
+
 int sprimme_svds(float *svals, float *svecs, float *resNorms,
       primme_svds_params *primme_svds);
 int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
@@ -149,6 +193,13 @@ int primme_svds_set_method(primme_svds_preset_method method,
       primme_svds_params *primme_svds);
 void primme_svds_display_params(primme_svds_params primme_svds);
 void primme_svds_free(primme_svds_params *primme_svds);
+int primme_svds_get_member(primme_svds_params *primme_svds,
+      primme_svds_params_label label, void *value);
+int primme_svds_set_member(primme_svds_params *primme_svds,
+      primme_svds_params_label label, void *value);
+int primme_svds_member_info(primme_svds_params_label *label,
+      const char** label_name, primme_type *type, int *arity);
+int primme_svds_constant_info(const char* label_name, int *value);
 
 #ifdef __cplusplus
 }
