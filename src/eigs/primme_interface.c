@@ -714,7 +714,7 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       primme_projection projection_v;
       primme_restartscheme restartscheme_v;
       primme_convergencetest convergencetest_v;
-   } *v = (value_t*)value;
+   } *v = (union value_t*)value;
 
    switch (label) {
       case PRIMME_n:
@@ -873,6 +873,15 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_elapsedTime:
               v->double_v = primme->stats.elapsedTime;
+      break;
+      case PRIMME_stats_estimateMinEVal:
+              v->double_v = primme->stats.estimateMinEVal;
+      break;
+      case PRIMME_stats_estimateMaxEVal:
+              v->double_v = primme->stats.estimateMaxEVal;
+      break;
+      case PRIMME_stats_estimateLargestSVal:
+              v->double_v = primme->stats.estimateLargestSVal;
       break;
       case PRIMME_ldevecs:
               v->int_v = primme->ldevecs;
