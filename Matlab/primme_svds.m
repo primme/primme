@@ -36,7 +36,7 @@ function [varargout] = primme_svds(varargin)
 %   OPTIONS.maxBlockSize maximum block size                        1
 %   OPTIONS.iseed    random seed
 %   OPTIONS.primme   options for first stage solver                -
-%   OPTIONS.primmeStage1 options for second stage solver           -
+%   OPTIONS.primmeStage2 options for second stage solver           -
 %
 %   The available options for OPTIONS.primme and primmeStage1 are
 %   the same as PRIMME_EIGS, plus the option 'method'. For detailed
@@ -84,10 +84,10 @@ function [varargout] = primme_svds(varargin)
 %      [s,rnorms] = primme_svds(A,10,'S',opts) % find another 10
 %
 %      % Define a preconditioner only for first stage (A'*A)
-%      Pstruct = struct('AHA', diag(A'*A) - 30.5^2*eye(50)),...
-%                       'AAH', eye(200), 'aug', eye(250));
-%      Pfun = @(x,mode)Pstruct.(mode)\x;
-%      s = primme_svds(A,5,30.5,[],Pfun) % find the closest 5 to 30.5
+%      Pstruct = struct('AHA', diag(A'*A),...
+%                       'AAH', ones(200,1), 'aug', ones(250,1));
+%      Pfun = @(x,mode)Pstruct.(mode).\x;
+%      s = primme_svds(A,5,'S',[],Pfun) % find the 5 smallest values
 %
 %   For more details see PRIMME documentation at
 %   http://www.cs.wm.edu/~andreas/software/doc/readme.html 
@@ -156,8 +156,8 @@ function [varargout] = primme_svds(varargin)
          end
          opts.target = getfield(targets, target(1));
       elseif isnumeric(target)
-         opts.targetShits = target;
-         opts.target = 'primme_closest_abs';
+         opts.targetShifts = target;
+         opts.target = 'primme_svds_closest_abs';
       else
          error('target must be L, S or a real number');
       end
@@ -166,14 +166,16 @@ function [varargout] = primme_svds(varargin)
       opts.target = 'primme_svds_largest';
    end
 
-   if nargin >= nextArg && ~isempty(varargin{nextArg})
-      opts0 = varargin{nextArg};
-      if ~isstruct(opts0)
-         error('opts must be a struct');
-      end
-      opts0_names = fieldnames(opts0);
-      for i=1:numel(opts0_names)
-         opts.(opts0_names{i}) = opts0.(opts0_names{i});
+   if nargin >= nextArg
+      if ~isempty(varargin{nextArg})
+         opts0 = varargin{nextArg};
+         if ~isstruct(opts0)
+            error('opts must be a struct');
+         end
+         opts0_names = fieldnames(opts0);
+         for i=1:numel(opts0_names)
+            opts.(opts0_names{i}) = opts0.(opts0_names{i});
+         end
       end
       nextArg = nextArg + 1;
    end
@@ -428,7 +430,7 @@ function primme_svds_set_members(opts, primme_svds, f, prefix)
       if isstruct(value) && ~strcmp('primme', label) && ~strcmp('primmeStage2', label)
          primme_svds_set_members(value, primme_svds, f, [prefix label '_']);
       elseif isstruct(value)
-         primme0 = primme_mex('primme_svds_get_member', primme_svds, label);
+         primme0 = primme_mex('primme_svds_get_member', primme_svds, [prefix label]);
          primme_svds_set_members(value, primme0, 'primme_set_member');
       else
          try

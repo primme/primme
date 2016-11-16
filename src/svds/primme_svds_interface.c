@@ -957,6 +957,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
 
       /* members with type pointer */
 
+      case PRIMME_SVDS_primme:
+      case PRIMME_SVDS_primmeStage2:
       case PRIMME_SVDS_matrixMatvec: 
       case PRIMME_SVDS_applyPreconditioner:
       case PRIMME_SVDS_commInfo:

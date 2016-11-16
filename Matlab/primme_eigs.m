@@ -108,8 +108,8 @@ function [varargout] = primme_eigs(varargin)
 %      opts.orthoConst = x;  
 %      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
 %
-%      % Define a preconditioner only for first stage (A'*A)
-%      Pfun = @(x)(diag(A) - 30.5*eye(100))\x;
+%      % Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
+%      Pfun = @(x)(diag(A) - 30.5)\x;
 %      d = primme_eigs(A,5,30.5,[],[],Pfun) % find the closest 5 to 30.5
 %
 %   For more details see PRIMME documentation at
@@ -193,26 +193,29 @@ function [varargout] = primme_eigs(varargin)
       opts.targetShifts = 0;
    end
 
-   if nargin >= nextArg && ~isempty(varargin{nextArg})
-      opts0 = varargin{nextArg};
-      if ~isstruct(opts0)
-         error('opts must be a struct');
-      end
-      opts0_names = fieldnames(opts0);
-      for i=1:numel(opts0_names)
-         opts.(opts0_names{i}) = opts0.(opts0_names{i});
+   if nargin >= nextArg
+      if ~isempty(varargin{nextArg})
+         opts0 = varargin{nextArg};
+         if ~isstruct(opts0)
+            error('opts must be a struct');
+         end
+         opts0_names = fieldnames(opts0);
+         for i=1:numel(opts0_names)
+            opts.(opts0_names{i}) = opts0.(opts0_names{i});
+         end
       end
       nextArg = nextArg + 1;
    end
 
-   if nargin >= nextArg && ~isempty(varargin{nextArg})
-      method = varargin{nextArg};
-      if ischar(method)
-         method = ['PRIMME_' method];
+   method = 'PRIMME_DEFAULT_METHOD';
+   if nargin >= nextArg
+      if ~isempty(varargin{nextArg})
+         method = varargin{nextArg};
+         if ischar(method)
+            method = ['PRIMME_' method];
+         end
       end
       nextArg = nextArg + 1;
-   else
-      method = 'PRIMME_DEFAULT_METHOD';
    end
 
    if nargin >= nextArg
@@ -239,7 +242,7 @@ function [varargout] = primme_eigs(varargin)
    end
    if ~isempty(P)
       opts.applyPreconditioner = P;
-      opts.correctionParams.precondition = 1;
+      opts.correction.precondition = 1;
    end
  
    % Test whether the given matrix and preconditioner are valid
@@ -367,6 +370,7 @@ function [varargout] = primme_eigs(varargin)
       stats.elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
       stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
       stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
+      stats.estimateAnorm = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
       varargout{4} = stats;
    end
 end

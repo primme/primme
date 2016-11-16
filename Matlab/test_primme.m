@@ -29,13 +29,24 @@
 
 % Compute the 6 largest eigenvalues of a matrix with tolerance 1e-6
 
+t=cputime;
 A = diag(1:50);
 ops = struct();
-ops.eps = 1e-6; % residual norm tolerance 
+ops.tol = 1e-6; % residual norm tolerance 
 k = 6;          % number of eigenvalues
 evals = primme_eigs(A, k, 'LA', ops);
 
 assert(norm(evals - (50:-1:50-k+1)') < 1e-6*norm(A))
+
+% Compute in single arithmetic the 6 eigenvalues closest to 25.2
+% using DEFAULT_MIN_TIME
+
+[evecs, evals, rnorms, stats] = primme_eigs(single(A), k, 25.2, ops, ...
+                                            'DEFAULT_MIN_TIME');
+
+[a,p] = sort(abs((1:50) - 25.2));
+assert(all(abs(diag(evals) - p(1:k)') < 1e-6*stats.estimateAnorm))
+assert(all(rnorms < 1e-6*stats.estimateAnorm));
 
 % Compute the 6 smallest eigenvalues and vectors of a matrix defined by
 % the matrix-vector product
@@ -49,6 +60,13 @@ for i=1:k
   assert(norm(A*evecs(:,i) - evecs(:,i)*evals(i,i)) < 1e-6*norm(A))
 end
 
+% Compute the 6 closest eigenvalues to 30.5 using the Jacobi preconditioner
+% (too much convenient for a diagonal matrix)
+
+Adiag = diag(A);
+Pfun = @(x)((Adiag - 30.5).\x);
+evals = primme_eigs(A, k, 30.5, [], [], Pfun);
+ 
 % Compute the 6 largest singular values of a matrix with tolerance 1e-6
 
 A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -76,5 +94,24 @@ assert(norm(diag(svals) - (1:k)') < 1e-6*norm(A))
 for i=1:k
   assert(norm(A*svecsr(:,i) - svecsl(:,i)*svals(i,i)) < 1e-6*norm(A))
 end
+
+% Compute the 10 singular values closest to 30.5 using the normal equation
+% approach, with a tolerance of 1e-4. Also set the method (DEFAULT_MIN_TIME) and
+% the block size (2) to the solver that computes the eigenvalues on A'*A.
+
+ops = struct();
+ops.tol = 1e-4; % set tolerance
+ops.method = 'primme_svds_normalequations'; % set solver method
+ops.primme.method = 'DEFAULT_MIN_TIME'; % set first stage solver method
+ops.primme.maxBlockSize = 2; % set block size for first stage
+[svecsl, svals, svecsr] = primme_svds(A, 10, 'S', ops);
+
+% Compute the 5 smallest singular values, using a preconditioner only
+% for the first stage
+
+Pstruct = struct('AHA', diag(A'*A), ...
+                 'AAH', ones(200, 1), 'aug', ones(250, 1));
+Pfun = @(x,mode)Pstruct.(mode).\x;
+svals = primme_svds(A, 5, 'S', [], Pfun);
 
 disp('Success');

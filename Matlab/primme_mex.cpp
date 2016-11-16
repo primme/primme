@@ -1073,7 +1073,7 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
       int nrhs, const mxArray *prhs[])
 {
    ASSERT_NUMARGSIN(2);
-   ASSERT_NUMARGSOUT(0);
+   ASSERT_NUMARGSOUT(1);
    ASSERT_POINTER(0);
    ASSERT_NUMERIC_OR_CHAR(1);
 
