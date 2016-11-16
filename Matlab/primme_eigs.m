@@ -1,332 +1,373 @@
 function [varargout] = primme_eigs(varargin)
-
-%  primme_eigs finds a few eigenvalues and eigenvectors of a real symmetric
-%  or Hermitian matrix, A, by calling the function PRIMME_mex(flag,dim,...).
-%  This in turn calls PRIMME. Full PRIMME functionality is supported.
-%  
-%  Input: [A, numEvals, target, opts, eigsMethod, P]
+%PRIMME_EIGS   Find few eigenvalues and vectors on large, sparse Hermitian matrices
+%   PRIMME_EIGS finds few eigenvalues and eigenvectors of a real symmetric
+%   or Hermitian matrix, A, by calling the PRIMME driver PRIMME_MEX.
+%   Almost full PRIMME functionality is supported.
+%
+%   D = PRIMME_EIGS(A) returns a vector of A's 6 largest algebraic eigenvalues.
+%
+%   D = PRIMME_EIGS(AFUN,DIM) accepts a function AFUN instead of a matrix. AFUN
+%   is a function handle and y = AFUN(x) returns the matrix-vector product A*x.
+%
+%   D = PRIMME_EIGS(...,K) finds the K largest magnitude eigenvalues. K must be
+%   less than the dimension of the matrix A.
+%
+%   D = PRIMME_EIGS(...,K,TARGET) returns K eigenvalues from different parts of
+%   the spectrum. If TARGET is
+%       'LM' or 'SM', find eigenvalues D with the largest or smallest ABS(D-S)
+%       'LA' or 'SA', find eigenvalues with the largest or smallest value
+%       'CLT' or 'CGT', find eigenvalues closest to S but less or greater than S.
+%   S is each value in OPTS.targetShifts.
+%   If TARGET is a real number, it finds the closest eigenvalues to TARGET.
+%
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS) specifies extra solver parameters. Some
+%     default values are indicated in brackets {}:
+%
+%     OPTS.aNorm: the estimate 2-norm of matrix A {estimate the norm}
+%     OPTS.tol: convergence tolerance: NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
+%     OPTS.maxBlockSize: maximum block size {1}
+%     OPTS.disp: different level reporting(0-5) {no output 0}
+%     OPTS.isreal: the complexity of A represented by AFUN {false}
+%     OPTS.targetShifts: shifts for interior eigenvalues (see target)
+%     OPTS.v0: approximate eigenvectors {[]}
+%     OPTS.orthoConst: external orthogonalization constraints {[]}
+%     OPTS.locking: 1, hard locking; 0, soft locking
+%     OPTS.p: maximum size of the search subspace
+%     OPTS.minRestartSize: minimum Ritz vectors to keep in restarting
+%     OPTS.maxMatvecs: maximum number of matrix vector multiplications {Inf}
+%     OPTS.maxit: maximum number of outer iterations {Inf}
+%     OPTS.scheme: the restart scheme {'primme_thick'}
+%     OPTS.maxPrevRetain: number of approximate eigenvectors retained from
+%       previous iteration, that are kept after restart.
+%     OPTS.robustShifts: set to true to avoid stagnation.
+%     OPTS.maxInnerIterations: maximum number of inner QMR iterations
+%     OPTS.LeftQ: use the locked vectors in the left projector
+%     OPTS.LeftX: use the approx. eigenvector in the left projector
+%     OPTS.RightQ: use the locked vectors in the right projector
+%     OPTS.RightX: use the approx. eigenvector in the right projector
+%     OPTS.SkewQ: use the preconditioned locked vectors in the right projector
+%     OPTS.SkewX: use the preconditioned approx. eigenvector in the right projector
+%     OPTS.relTolBase: a legacy from classical JDQR (recommend not use)
+%     OPTS.convTest: how to stop the inner QMR Method
+%     OPTS.iseed: random seed
+%
+%   For detailed descriptions of the above options, visit:
+%   http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide
+%
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
+%     'DYNAMIC', (default)        switches dynamically to the best method
+%     'DEFAULT_MIN_TIME',         best method for light matrix-vector product
+%     'DEFAULT_MIN_MATVECS',      best method for heavy matvec/preconditioner
+%     'Arnoldi',                  Arnoldi not implemented efficiently
+%     'GD',                       classical block Generalized Davidson 
+%     'GD_plusK',                 GD+k block GD with recurrence restarting
+%     'GD_Olsen_plusK',           GD+k with approximate Olsen precond.
+%     'JD_Olsen_plusK',           GD+k, exact Olsen (two precond per step)
+%     'RQI',                      Rayleigh Quotient Iteration. Also INVIT,
+%                                 but for INVIT provide targetShifts
+%     'JDQR',                     Original block, Jacobi Davidson
+%     'JDQMR',                    Our block JDQMR method (similar to JDCG)
+%     'JDQMR_ETol',               Slight, but efficient JDQMR modification
+%     'SUBSPACE_ITERATION',       equiv. to GD(block,2*block)
+%     'LOBPCG_OrthoBasis',        equiv. to GD(nev,3*nev)+nev
+%     'LOBPCG_OrthoBasis_Window'  equiv. to GD(block,3*block)+block nev>block
+%
+%   For further description of the method visit:
+%   http://www.cs.wm.edu/~andreas/software/doc/appendix.html#preset-methods
+%
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P) 
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
+%   P = P1*P2 to accelerate convergence of the method.
+%   If P is [] then a preconditioner is not applied. P may be a function 
+%   handle PFUN such that PFUN(x) returns P\x.
+%
+%   [X,D] = PRIMME_EIGS(...) returns a diagonal matrix D with the eigenvalues
+%   and a matrix X whose columns are the corresponding eigenvectors. 
 % 
-%  Output: [evals, evecs, norms, primmeout]
-%  
-%  We provide different levels of function calls, similarly to MATLAB eigs():
+%   [X,D,R] = PRIMME_EIGS(...) also returns an array of the residual norms of
+%   the computed eigenpairs.
 %
-%   primme_eigs(A)
-%   primme_eigs(A, numEvals)
-%   primme_eigs(A, numEvals, target)
-%   primme_eigs(A, numEvals, target, opts)
-%   primme_eigs(A, numEvals, target, opts, eigsMethod)
-%   primme_eigs(A, numEvals, target, opts, eigsMethod, P)
-%   primme_eigs(A, numEvals, target, opts, eigsMethod, P1,P2)
-%   primme_eigs(A, numEvals, target, opts, eigsMethod, Pfun)
-%   primme_eigs(Afun, dim,...)
+%   [X,D,R,STATS] = PRIMME_EIGS(...) returns a struct to report statistical
+%   information about number of matvecs, elapsed time, and estimates for the
+%   largest and the smallest algebraic eigenvalues on A.
 %
-%  primme_eigs(A) returns a vector of A's 6 largest algebraic eigenvalues.
-%  A must be real symmetric or complex Hermitian and should be large and sparse.
+%   Examples:
+%      A = diag(1:100);
 %
-%  primme_eigs(Afun, dim) accepts a function AFUN instead of a matrix. AFUN is
-%  a function handle and y = Afun(x) returns the matrix-vector product A*x.
-%  primme_eigs(A,...) could be replaced by primme_eigs(Afun, dim,...) in any of
-%  above levels of function calls. Examples are given in PRIMME_MEX_Readme.txt
-%  in the root directory of PRIMME_MEX folder.
+%      d = primme_eigs(A,10) % the 10 largest magnitude eigenvalues
 %
-%  [V, D] = primme_eigs(A) returns a diagonal matrix D, of A's 6 largest 
-%  algebraic eigenvalues and a matrix V whose columns are the corresponding
-%  eigenvectors. 
-% 
-%  [V, D, norms, primmeout] = primme_eigs(A) also returns an array of the 
-%  residual norms of the computed eigenpairs, and a struct to report statistical
-%  information about numOuterIterations, numRestarts, numMatvecs and numPreconds.
+%      d = primme_eigs(A,10,'SM') % the 10 smallest magnitude eigenvalues
 %
-%  primme_eigs(A, numEvals) finds the numEvals largest algebraic eigenvalues.
-%  numEvals must be less than the dimension of the matrix A.
+%      d = primme_eigs(A,10,25) % the 10 closest eigenvalues to 25
 %
-%  primme_eigs(A, numEvals, target) returns numEvals target eigenvalues.
-%  target could be a string like below:
-%     'LA' ------ primme_largest (default)
-%     'SA' ------ primme_smallest    
-%     'CGT'------ primme_closest_geq  
-%     'CLT'------ primme_closest_leq  
-%     'CT' ------ primme_closest_abs   
+%      opts = struct();
+%      opts.tol = 1e-4; % set tolerance
+%      opts.maxBlockSize = 2; % set block size
+%      [x,d] = primme_eigs(A,10,'S',opts,'DEFAULT_MIN_TIME')
 %
-%  primme_eigs(A, numEvals, target, opts, eigsMethod) specifies any of a 
-%  set of possible options as explained below in the opts structure. 
+%      opts.orthoConst = x;  
+%      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
 %
-%  eigsMethod is an integer specifying one of the preset methods in PRIMME:
-%  eigsMethod   corresponding PRIMME method
-%    0:    DYNAMIC, (default)        Switches dynamically to the best method
-%    1:    DEFAULT_MIN_TIME,         Currently set at JDQMR_ETol
-%    2:    DEFAULT_MIN_MATVECS,      Currently set at GD+block
-%    3:    Arnoldi,                  obviously not an efficient choice 
-%    4:    GD,                       classical block Generalized Davidson 
-%    5:    GD_plusK,                 GD+k block GD with recurrence restarting
-%    6:    GD_Olsen_plusK,           GD+k with approximate Olsen precond.
-%    7:    JD_Olsen_plusK,           GD+k, exact Olsen (two precond per step)
-%    8:    RQI,                      Rayleigh Quotient Iteration. Also INVIT,
-%                                    but for INVIT provide targetShifts
-%    9:    JDQR,                     Original block, Jacobi Davidson
-%    10:   JDQMR,                    Our block JDQMR method (similar to JDCG)
-%    11:   JDQMR_ETol,               Slight, but efficient JDQMR modification
-%    12:   SUBSPACE_ITERATION,       equiv. to GD(block,2*block)
-%    13:   LOBPCG_OrthoBasis,        equiv. to GD(nev,3*nev)+nev
-%    14:   LOBPCG_OrthoBasis_Window  equiv. to GD(block,3*block)+block nev>block
+%      % Define a preconditioner only for first stage (A'*A)
+%      Pfun = @(x)(diag(A) - 30.5*eye(100))\x;
+%      d = primme_eigs(A,5,30.5,[],[],Pfun) % find the closest 5 to 30.5
 %
-%  primme_eigs(A, numEvals, target, opts, eigsMethod, P) 
-%  primme_eigs(A, numEvals, target, opts, eigsMethod, P1, P2) uses 
-%  preconditioner P or P = P1*P2 to accelerate convergence of the methods.
-%  If P is [] then a preconditioner is not applied. P may be a function 
-%  handle Pfun such that Pfun(x) returns P\x.
+%   For more details see PRIMME documentation at
+%   http://www.cs.wm.edu/~andreas/software/doc/readme.html 
 %
-%  opts is an option structure which contain following parameters:         
-%  opts.aNorm: the estimate norm value of matrix A [{0.0}|scaler]
-%  opts.eps: desired computing accuracy [{1e-12}|scaler]
-%  opts.maxBlockSize: maximum block size the PRIMME uses [{1}|scaler]
-%  opts.printLevel: different level reporting(0-5) [{1}|scaler]
-%  opts.outputFile: output file name where user wants to save results
-%  opts.precondition: set to 1 if use preconditioner [{0}|1]
-%  opts.isreal: the complexity of A represented by AFUN [{ture}|false]
-%  opts.numTargetShifts: number of shifts for interior eigenvalues [{0}|scaler]
-%  opts.targetShifts: shifts for interior eigenvalues [{}|vector]
-%  opts.initSize: On INPUT, the number of initial guesses provided in evecs 
-%  array. ON OUTPUT, the number of converged eigenpairs [{0}|scaler]
-%  opts.numOrthoConst: Number of external orthogonalization constraints 
-%  provided in the first numOrthoConst vectors of evecs [{0}|scaler]
-%  opts.locking: If set to 1, hard locking will be used, otherwise the code
-%  will try to use soft locking [{0}|1]
-%  opts.maxBasisSize: maximum basis size allowed in the main iteration
-%  opts.minRestartSize: minimum Ritz vectors to restart
-%  opts.maxMatvecs: maximum number of matrix vector multiplications
-%  [{INT_MAX}|scaler]
-%  opts.maxOuterIterations: maximum number of outer iterations
-%  [{INT_MAX}|scaler]
-%  opts.restartingParams.scheme: the restart scheme [{primme_thick}| primme_dtr]
-%  opts.restartingParams.maxPrevRetain: number of approximations from 
-%  previous iteration to be retained after restart [{1}|scaler]
-%  opts.robustShifts: set to 1 if use robustShifting to help avoid
-%  stagnation and misconverge [{0}|1]
-%  opts.maxInnerIterations: number of inner QMR iterations [{0}|scaler]
-%  opts.LeftQ: a projector with Q must be applied on the left [{0}|1]
-%  opts.LeftX: a projector with X must be applied on the left [{0}|1]
-%  opts.RightQ: a projector with Q must be applied on the right [{0}|1]
-%  opts.RightX: a projector with X must be applied on the right [{0}|1]
-%  opts.SkewQ: the Q right projector must be skew [{0}|1]
-%  opts.SkewX: the X right projector must be skew [{0}|1]
-%  opts.relTolBase: a legacy from calssical JDQR (recommend not use)
-%  opts.convTest: how to stop the inner QMR Method
-%  opts.iseed: set iseed value for initialization
-%  opts.intWorkSize: memory size for integer workspace
-%  opts.realWorkSize: memory size for real or complex workspace
-%
-%  See also PRIMME_MEX_Readme.txt
-%  For more details on PRIMME's functionality see PRIMMEtopdir/readme.txt 
+%   See also PRIMME_SVDS, EIGS.
 
-   clear global eigsFunCallFlag;
-
-   % Check PRIMME_mex exists
-   if ~ exist('PRIMME_mex')
-      error 'PRIMME_mex is not available. Try to recompile the MATLAB''s PRIMME module'
+   % Check primme_mex exists
+   if ~ exist('primme_mex')
+      error 'primme_mex is not available. Try to recompile the MATLAB''s PRIMME module'
    end
 
+   % Check arity of input and output arguments
    minInputs = 1;
    maxInputs = 8;
    narginchk(minInputs,maxInputs);
+
    minOutputs = 0;
    maxOutputs = 4;
    nargoutchk(minOutputs,maxOutputs);
 
-   global eigsFunCallFlag; % flag if user called primme_eigs function
-   if isempty(eigsFunCallFlag) 
-      eigsFunCallFlag = true;
+   % Check input arguments
+   opts = struct();
+   A = varargin{1};
+   nextArg = 2;
+   if isnumeric(A)
+      % Check matrix is Hermitian and get matrix dimension
+      [m, n] = size(A);
+      if ~ishermitian(A)
+         error('Input matrix must be real symmetric or complex Hermitian');
+      end
+      opts.n = n;
+      opts.matrixMatvec = @(x)A*x;
+
+      % Get type and complexity
+      Acomplex = ~isreal(A);
+      Adouble = class(A) == 'double';
+   else
+      opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
+      n = round(varargin{nextArg});
+      if ~isscalar(n) || ~isreal(n) || (n<0) || ~isfinite(n)
+         error(message('The size of input matrix A must be an positive integer'));
+      end
+      opts.n = n;
+      nextArg = nextArg + 1;
+
+      % Assume complex double matrix
+      Acomplex = 1;
+      Adouble = 1;
    end
 
-    global primmeA;  
-    global Amatrix;   % flag if A is a matrix (otherwise a matrix function)
-    global P1;  
-    global P1matrix;  % flag if P1 preconditioner is a matrix (or a function)
-    global P2;        % if P2 second preconditioner is given it must be a matrix
-
-    if isfloat(varargin{1}) % check if the first input is matrix or matrix function
-        primmeA = varargin{1};
-        Amatrix = true;
-    else
-        % By checking the function A with fcnchk, we can now use direct
-        % function evaluation on the result, without resorting to feval
-        primmeA = fcnchk_gen(varargin{1}); % get the function handle of user's function
-        Amatrix = false;
-    end
-
-   if (Amatrix) % A is an matrix
-       [M, N] = size(primmeA); % get the dimension of input matrix A
-       if isequal(primmeA,primmeA')
-          dim = M;
-       else
-          error('Input matrix must be real symmetric or complex hermitian');
-       end
-
-       if isreal(primmeA)   % mark input matrix A is real or complex
-          flag = 1;
-       else
-          flag = 1+1i;
-       end
-
-       if (nargin >= 2)
-            numEvals = varargin{2};
-       else
-            numEvals = min(6,dim);
-       end
-       if (nargin >= 3)
-           if (ischar(varargin{3}))
-                target = varargin{3};
-           else
-                error('target must be a string');
-           end
-       else
-           target = 'LA';
-       end             
-       if (nargin >= 4)
-           if (isstruct(varargin{4}))
-               opts = varargin{4};
-           else
-               error('opts must be a struct');
-           end
-       else
-           opts = struct();
-       end                   
-       if (nargin >= 5)
-           if (isreal(varargin{5}) && 0<= varargin{5} <=14)
-               eigsMethod = varargin{5};                       
-           else
-               error('eigsMethod must be a real number between 0 and 14');
-           end
-       else
-           eigsMethod = 0; 
-       end
-
-       if (nargin >= 6) % check if the sixth input is matrix or matrix function      
-            if isfloat(varargin{6}) % the sixth input is matrix
-                P1 = varargin{6};
-                P1matrix = true;
-                if (nargin == 7)
-                    if isfloat(varargin{7}) % check if the seventh input is matrix
-                        P2 = varargin{7};                                 
-                    else
-                        error('The second preconditioner must be a matrix');
-                    end
-                end
-            else% the sixth input is matrix function
-                % By checking the function P1 with fcnchk, we can now use direct
-                % function evaluation on the result, without resorting to feval
-                P1 = fcnchk_gen(varargin{6}); % get the function handle of user's function
-                P1matrix = false;
-            end
-       end
-   else  % A is a matrix function
-       dim = varargin{2};
-       if ~isscalar(dim) || ~isreal(dim) || (dim<0) || ~isfinite(dim)
-            error(message('The size of input matrix A must be an positive integer'));
-       end            
-       % Test whether the given matvec function is valid
-       try
-          xvec = randn(dim,1);
-          yvec = primmeA(xvec);
-          clear xvec, yvec;
-       catch ME
-          if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
-             disp('Matvec function AFUN does not exist.');
-             rethrow(ME);
-          end
-       end
-       if (nargin >= 3)
-            numEvals = varargin{3};
-       else
-            numEvals = min(6,dim);
-       end
-       if (nargin >= 4)
-           if (ischar(varargin{4}))
-                target = varargin{4};
-           else
-                error('target must be a string');
-           end
-       else
-           target = 'LA';
-       end             
-       if (nargin >= 5)
-           if (isstruct(varargin{5}))
-               opts = varargin{5};
-           else
-               error('opts must be a struct');
-           end
-       else
-           opts = struct();
-       end                   
-       if (nargin >= 6)
-           if (isreal(varargin{6}) && 0<= varargin{6} <=14)
-               eigsMethod = varargin{6};                       
-           else
-               error('eigsMethod must be a real number between 0 and 14');
-           end
-       else
-           eigsMethod = 0; 
-       end
-       if (nargin >= 7) % check if the seventh input is matrix or matrix funtion
-            if isfloat(varargin{7}) % the seventh input is matrix 
-                P1 = varargin{7};
-                P1matrix = true;
-                if (nargin == 8)
-                    if isfloat(varargin{8}) % check if the eighth input is matrix
-                        P2 = varargin{8};
-                    else
-                        error('The second preconditioner must be a matrix');
-                    end
-                end
-            else% the seventh input is matrix function
-                % By checking the function P1 with fcnchk, we can now use direct
-                % function evaluation on the result, without resorting to feval
-                % get the function handle of user's function
-                P1 = fcnchk_gen(varargin{7}); 
-                P1matrix = false;
-            end
-       end
-
-       % if the user does not specifies the field "opts.isreal"
-       if (isfield(opts,'isreal') == 0) 
-           flag = 1; % The complexity of matrix function is default real.
-       else
-            if (opts.isreal)
-                flag = 1;
-            else
-                flag = 1+1i;
-            end
-       end
+   if nargin >= nextArg
+      opts.numEvals = round(varargin{nextArg});
+      nextArg = nextArg + 1;
+   else
+      opts.numEvals = min(6, opts.n);
    end
 
-   if (~isempty(P1) && ~P1matrix)
-       % Test whether the given preconditioner function is valid
-       try
-          xvec = randn(dim,1);
-          yvec = P1(xvec);
-          clear xvec, yvec;
-       catch ME
-          if strcmp(ME.identifier,'MATLAB:UndefinedFunction')
-             disp('Preconditioner P1 function does not exist.');
-             rethrow(ME);
-          end
-       end
+   if nargin >= nextArg
+      target = varargin{nextArg};
+      if isnumeric(target)
+         opts.target = 'primme_closest_abs';
+         opts.targetShifts = target;
+      elseif ischar(target)
+         targets = struct('LA', 'primme_largest', ...
+                          'LM', 'primme_largest_abs', ...
+                          'SA', 'primme_smallest', ...
+                          'CGT', 'primme_closest_geq', ...
+                          'CLT', 'primme_closest_leq', ...
+                          'SM', 'primme_closest_abs');
+         if ~isfield(targets, target)
+            error('target must be LA, SA, LM, SM, CGT or CLT');
+         end
+         opts.target = getfield(targets, target);
+      else
+         error('target must be a number or a string');
+      end
+      nextArg = nextArg + 1;
+   else
+      opts.target = 'primme_largest_abs';
+      opts.targetShifts = 0;
    end
 
-   [evals,evecs,norms,primmeout]= PRIMME_mex(flag, dim, numEvals, target, eigsMethod, opts); 
+   if nargin >= nextArg && ~isempty(varargin{nextArg})
+      opts0 = varargin{nextArg};
+      if ~isstruct(opts0)
+         error('opts must be a struct');
+      end
+      opts0_names = fieldnames(opts0);
+      for i=1:numel(opts0_names)
+         opts.(opts0_names{i}) = opts0.(opts0_names{i});
+      end
+      nextArg = nextArg + 1;
+   end
+
+   if nargin >= nextArg && ~isempty(varargin{nextArg})
+      method = varargin{nextArg};
+      if ischar(method)
+         method = ['PRIMME_' method];
+      end
+      nextArg = nextArg + 1;
+   else
+      method = 'PRIMME_DEFAULT_METHOD';
+   end
+
+   if nargin >= nextArg
+      P = varargin{nextArg};
+      if isnumeric(P)
+         P = @(x)P\x;
+      else
+         P = fcnchk_gen(P); % get the function handle of user's function
+      end
+      nextArg = nextArg + 1;
+   else
+      P = [];
+   end
+
+   if nargin >= nextArg
+      P2 = varargin{nextArg};
+      if isnumeric(P2)
+         P2 = @(x)P2\x;
+      else
+         P2 = fcnchk_gen(P2); % get the function handle of user's function
+      end
+      P = @(x)P2(P(x));
+      nextArg = nextArg + 1;
+   end
+   if ~isempty(P)
+      opts.applyPreconditioner = P;
+      opts.correctionParams.precondition = 1;
+   end
+ 
+   % Test whether the given matrix and preconditioner are valid
+   try
+      x = opts.matrixMatvec(ones(opts.n, 1));
+      if isfield(opts, 'applyPreconditioner')
+         x = opts.applyPreconditioner(ones(opts.n, 1));
+      end
+      clear x;
+   catch ME
+      rethrow(ME);
+   end
+
+   % Process 'isreal' in opts
+   if isfield(opts, 'isreal')
+      Acomplex = ~opts.isreal;
+      opts = rmfield(opts, 'isreal');
+   end
+
+   % Process 'isdouble' in opts
+   if isfield(opts, 'isdouble')
+      Adouble = opts.isdouble;
+      opts = rmfield(opts, 'isdouble');
+   end
+
+   % Rename tol, maxit, p and disp as eps, maxOuterIterations, maxBasisSize and
+   % printLevel. Also move options that are outside of primme_params' hierarchy.
+   changes = {{'tol', 'eps'}, {'maxit', 'maxOuterIterations'}, {'p', 'maxBasisSize'}, ...
+              {'disp', 'printLevel'}, ...
+              {'projection',         'projection_projection'}, ...
+              {'scheme',             'restarting_scheme'}, ...
+              {'maxPrevRetain',      'restarting_maxPrevRetain'}, ...
+              {'precondition',       'correction_precondition'}, ...
+              {'robustShifts',       'correction_robustShifts'}, ...
+              {'maxInnerIterations', 'correction_maxInnerIterations'}, ...
+              {'LeftQ',              'correction_projectors_LeftQ'}, ...
+              {'LeftX',              'correction_projectors_LeftX'}, ...
+              {'RightQ',             'correction_projectors_RightQ'}, ...
+              {'RightX',             'correction_projectors_RightX'}, ...
+              {'SkewQ',              'correction_projectors_SkewQ'}, ...
+              {'SkewX',              'correction_projectors_SkewX'}, ...
+              {'convTest',           'correction_convTest'}, ...
+              {'relTolBase',         'correction_relTolBase'}};
+
+   for i=1:numel(changes)
+      if isfield(opts, changes{i}{1})
+         opts.(changes{i}{2}) = opts.(changes{i}{1});
+         opts = rmfield(opts, changes{i}{1});
+      end
+   end
+
+   % Prepare numOrthoConst and initSize
+   if isfield(opts, 'orthoConst')
+      init = opts.orthoConst;
+      if size(init, 1) ~= opts.n
+         error('Invalid matrix dimensions in opts.orthoConst');
+      end
+      opts = rmfield(opts, 'orthoConst');
+      opts.numOrthoConst = size(init, 2);
+   else
+      init = [];
+   end
+
+   if isfield(opts, 'init')
+      init0 = opts.init;
+      if size(init0, 1) ~= opts.n
+         error('Invalid matrix dimensions in opts.init');
+      end
+      opts = rmfield(opts, 'init');
+      opts.initSize = size(init0, 2);
+      init = [init init0];
+   end
+
+   % Default printLevel is 0
+   if ~isfield(opts, 'printLevel')
+      opts.printLevel = 0;
+   end
+
+   % Create primme_params
+   primme = primme_mex('primme_initialize');
+
+   % Set other options in primme_params
+   primme_set_members(opts, primme);
+
+   % Set method
+   primme_mex('primme_set_method', method, primme);
+
+   % Select solver
+   if Adouble
+      if Acomplex
+         type = 'z';
+      else
+         type = 'd';
+      end
+   else
+      if Acomplex
+         type = 'c';
+      else
+         type = 's';
+      end
+   end
+   xprimme = [type 'primme'];
+
+   % Call xprimme
+   [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
+
+   % Process error code and return the required arguments
+   if ierr ~= 0
+      error([xprimme ' returned ' num2str(ierr)]);
+   end
 
    if (nargout <= 1)
-       varargout{1} = evals;
+      varargout{1} = evals;
    end
    if (nargout >= 2)
-       varargout{1} = evecs;
-       varargout{2} = diag(evals);
+      varargout{1} = evecs;
+      varargout{2} = diag(evals);
    end
    if (nargout >= 3)
-       varargout{3} = norms;
+      varargout{3} = norms;
    end
    if (nargout >= 4)
-       varargout{4} = primmeout;
+      stats = struct();
+      stats.numMatvecs = primme_mex('primme_get_member', primme, 'stats_numMatvecs');
+      stats.elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
+      stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
+      stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
+      varargout{4} = stats;
    end
 end
 
@@ -335,5 +376,40 @@ function [f] = fcnchk_gen(x, n)
       f = fcnchk(x);
    else 
       f = x;
+   end
+end
+
+function primme_set_members(opts, primme, prefix)
+%PRIMME_SET_MEMBERS  Set options in primme_params
+%   PRIMME_SET_MEMBERS(S, P) sets the options in struct S into the primme_params
+%   reference P.
+%
+%   Example:
+%     primme = primme_mex('primme_initialize');
+%     ops.n = 10;
+%     ops.target = 'primme_largest';
+%     primme_set_members(ops, primme);
+
+   % NOTE: Expensive Mathworks' MATLAB doesn't support default values in function
+   %       declaration, Octave does.
+   if nargin < 3, prefix = ''; end
+   
+   fields = fieldnames(opts);
+   for i=1:numel(fields)
+      value = getfield(opts, fields{i});
+      label = fields{i};
+      if isstruct(value)
+         primme_set_members(value, primme, [prefix label '_']);
+      else
+        try
+      	  primme_mex('primme_set_member', primme, [prefix label], value);
+        catch ME
+          if isnumeric(value)
+            error(['Error setting the option ' prefix label ' to value ' num2str(value)]);
+          else
+            error(['Error setting the option ' prefix label ' to value ' value]);
+          end
+        end
+      end
    end
 end

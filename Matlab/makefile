@@ -3,7 +3,7 @@
 #-------------------------------------------------------------
 
 # Name of MEX source file
-MEXNAME = PRIMME_mex
+MEXNAME = primme_mex
 
 # PRIMME includes and linking
 INCLUDE = -I../include
@@ -47,10 +47,10 @@ OCTAVE ?= octave --no-gui -H -q
 all: matlab
 
 matlab:
-	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).c
+	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp
 
 octave:
-	$(MKOCTFILE) --mex $(OCTFLAGS) $(LIBS) $(INCLUDE) $(MEXNAME).c
+	$(MKOCTFILE) --mex $(OCTFLAGS) $(LIBS) $(INCLUDE) $(MEXNAME).cpp
 
 test: test_matlab
 
