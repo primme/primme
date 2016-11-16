@@ -701,7 +701,7 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       void *value) {
 
    int i;
-   union {
+   union value_t {
       PRIMME_INT int_v;
       void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
       void *ptr_v;
@@ -714,7 +714,7 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       primme_projection projection_v;
       primme_restartscheme restartscheme_v;
       primme_convergencetest convergencetest_v;
-   } *v = value;
+   } *v = (value_t*)value;
 
    switch (label) {
       case PRIMME_n:

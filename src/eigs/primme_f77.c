@@ -34,7 +34,6 @@
  ******************************************************************************/
 
 #include <stdlib.h>   /* free */
-#include <limits.h>   /* INT_MAX */
 #include "primme_f77_private.h"
 
 /******************************************************************************/
@@ -118,7 +117,7 @@ void AS_FORTRAN(primme_set_method)(primme_params **primme,
 
 void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
       void *v, int *ierr) {
-   *ierr = primme_set_member(*primme, *label, v);
+   *ierr = primme_set_member(*primme, (primme_params_label)*label, v);
 }
 
 /*************************************************************************
@@ -150,7 +149,7 @@ void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
 
 void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,
       void *v, int *ierr) {
-   *ierr = primme_get_member(primme, *label, v);
+   *ierr = primme_get_member(primme, (primme_params_label)*label, v);
 }
 
 /*************************************************************************
@@ -186,7 +185,7 @@ void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i,
  *************************************************************************/
 void AS_FORTRAN(primmetop_get_member)(primme_params **primme, int *label,
       void *ptr, int *ierr) {
-   *ierr = primme_get_member(*primme, *label, ptr);
+   *ierr = primme_get_member(*primme, (primme_params_label)*label, ptr);
 }
 
 void AS_FORTRAN(primmetop_get_prec_shift)(primme_params **primme, int *i,

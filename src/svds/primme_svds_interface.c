@@ -496,7 +496,7 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       primme_svds_params_label label, void *value) {
 
    int i;
-   union {
+   union value_t {
       PRIMME_INT int_v;
       void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
       void *ptr_v;
@@ -505,7 +505,7 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       primme_svds_operator operator_v;
       double double_v;
       FILE *file_v;
-   } *v = value;
+   } *v = (union value_t*)value;
 
    switch(label) {
       case PRIMME_SVDS_primme :

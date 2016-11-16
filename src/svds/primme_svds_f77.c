@@ -34,7 +34,6 @@
  ******************************************************************************/
 
 #include <stdlib.h>   /* free */
-#include <limits.h>   /* INT_MAX */
 #include "primme_svds_interface.h"
 #include "primme_svds_f77_private.h"
 
@@ -73,17 +72,20 @@ void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds) {
 
 void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds,
       int *label, void *v, int *ierr) {
-   *ierr = primme_svds_set_member(*primme_svds, *label, v);
+   *ierr = primme_svds_set_member(*primme_svds,
+         (primme_svds_params_label)*label, v);
 }
 
 void AS_FORTRAN(primme_svdstop_get_member)(
       primme_svds_params **primme_svds, int *label, void *v, int *ierr) {
-   *ierr = primme_svds_get_member(*primme_svds, *label, v);
+   *ierr = primme_svds_get_member(*primme_svds,
+         (primme_svds_params_label)*label, v);
 }
 
 void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds,
       int *label, void *v, int *ierr) {
-   *ierr = primme_svds_get_member(primme_svds, *label, v);
+   *ierr = primme_svds_get_member(primme_svds,
+         (primme_svds_params_label)*label, v);
 }
 
 #endif /* USE_DOUBLE */
