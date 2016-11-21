@@ -761,7 +761,6 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
 
    else {
       REAL *fakeResNorms = (REAL*)rwork;
-      int reset;
       size_t rworkSize0 = *rworkSize;
 
       for (i=0; i<*restartSize; i++)
@@ -769,7 +768,7 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
       assert(rworkSize0 >= (size_t)*restartSize);
       rworkSize0 -= (size_t)*restartSize;
       CHKERR(check_convergence_Sprimme(V, nLocal, ldV, NULL, 0, NULL, 0, 0,
-               0, *restartSize, flags, fakeResNorms, hVals, &reset, machEps,
+               0, *restartSize, flags, fakeResNorms, hVals, NULL, machEps,
                rwork+*restartSize, &rworkSize0, iwork, iworkSize, primme), -1);
 
       *numConverged = 0;

@@ -322,7 +322,7 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    CHKERR(check_convergence_Sprimme(&V[ldV*left],
             nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-            left+numPacked, flags, lockedResNorms, hVals, &reset /*dummy*/,
+            left+numPacked, flags, lockedResNorms, hVals, NULL,
             machEps, rwork, &rworkSize0, iwork, iworkSize, primme), -1);
 
    /* -------------------------------------------------------------- */
