@@ -976,7 +976,7 @@ static void convTestFunAugmented(double *eval, void *evec_, double *rNorm,
 
       /* isConv = 1 iff normr <= ||A||*eps = aNorm/sqrt(2)*eps */
 
-      if (normr < aNorm/sqrt(2.0)*primme->eps) {
+      if (normr < max(aNorm/sqrt(2.0)*primme->eps, machEps * 3.16 * aNorm)) { 
          *isConv = 1;
       }
       else {
