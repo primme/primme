@@ -224,10 +224,8 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       neededRsize = neededRsize + linSolverRWorkSize;
    }
    sortedRitzVals = (REAL *)(linSolverRWork + linSolverRWorkSize);
-   #define ALIGN(ptr,T) (((uintptr_t)(ptr)+sizeof(T)-1) & -sizeof(T))
-   blockOfShifts  = (double*)ALIGN(sortedRitzVals + (numLocked+basisSize), double);
-   approxOlsenEps = (REAL*)ALIGN(blockOfShifts  + blockSize, REAL);
-   #undef ALIGN
+   blockOfShifts  = ALIGN(sortedRitzVals + (numLocked+basisSize), double);
+   approxOlsenEps = ALIGN(blockOfShifts  + blockSize, REAL);
    neededRsize = neededRsize + numLocked+basisSize
       + blockSize*(1+sizeof(double)/sizeof(REAL)) + 2;
 

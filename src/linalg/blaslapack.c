@@ -369,29 +369,10 @@ void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
 /*******************************************************************************
  * Subroutines for dense eigenvalue decomposition
+ * NOTE: xheevx is used instead of xheev because xheev is not in ESSL
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-#ifdef NUM_ESSL
-
-int Num_hpev_Sprimme(int iopt, SCALAR *ap, REAL *w, SCALAR *z, int ldz, 
-   int n, SCALAR *aux, int naux) {
-
-   PRIMME_BLASINT liopt = iopt;
-   PRIMME_BLASINT lldz = ldz;
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT lnaux = naux;
-
-#ifdef USE_DOUBLE
-   return dspev(liopt, ap, w, z, lldz, ln, aux, lnaux);
-#elif defined(USE_DOUBLECOMPLEX)
-   return zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
-#endif
-}
-
-#else
-#  ifndef USE_COMPLEX
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       int lda, REAL *w, SCALAR *work, int ldwork, int *info) {
 
@@ -399,8 +380,15 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+   SCALAR *z;
+   REAL abstol=0.0;
+#ifdef USE_COMPLEX
+   REAL *rwork;
+#endif
+   PRIMME_BLASINT *iwork, *ifail;
    SCALAR dummys=0;
    REAL   dummyr=0;
+   PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
@@ -410,52 +398,63 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    if (llda < 1) llda = 1;
    if (w == NULL) w = &dummyr;
 
-#ifdef NUM_CRAY
-   _fcd jobz_fcd, uplo_fcd;
-
-   jobz_fcd = _cptofcd(jobz, strlen(jobz));
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-
-   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo);
-#else
-   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo);
+   /* Borrow space from work for z, rwork and iwork or set dummy values */
+   if (ldwork != -1) {
+      if (
+               WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
+#ifdef USE_COMPLEX
+            || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
 #endif
-   *info = (int)linfo;
-}
-#  else
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
-      int lda, REAL *w, SCALAR *work, int ldwork, REAL *rwork, int *info) {
-
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldwork = ldwork;
-   PRIMME_BLASINT linfo = 0;
-   SCALAR dummys=0;
-   REAL   dummyr=0;
-
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
-
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (w == NULL) w = &dummyr;
+            || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
+            || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
+         ) {
+         *info = -1;
+         return;
+      }
+   }
+   else {
+      z = &dummys;
+#ifdef USE_COMPLEX
+      rwork = &dummyr;
+#endif
+      iwork = &dummyi;
+      ifail = &dummyi;
+   }
 
 #ifdef NUM_CRAY
-   _fcd jobz_fcd, uplo_fcd;
+   _fcd jobz_fcd, range_fcd, uplo_fcd;
 
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
+   range_fcd = _cptofcd("A", 1);
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
-#else
-   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo);
-#endif
-   *info = (int)linfo;
-}
+   XHEEVX(jobz_fcd, range_fcd, uplo_fcd, &ln, a, &llda, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
 #  endif
+         iwork, ifail, &linfo);
+#else
+   XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         iwork, ifail, &linfo);
 #endif
+
+   /* Copy z to a or add the extra space for z, iwork and ifail */
+   if (ldwork != -1) {
+      Num_copy_matrix_Sprimme(z, n, n, n, a, lda);
+   }
+   else {
+      work[0] += (SCALAR)n*n + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
+#ifdef USE_COMPLEX
+      work[0] += (SCALAR)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
+#endif
+   }
+   *info = (int)linfo;
+}
 
 /*******************************************************************************
  * Subroutines for dense singular value decomposition

@@ -201,31 +201,16 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    REAL  *doubleWork;
 #endif
 
-#ifdef NUM_ESSL
-   int apSize, idx;
-#endif
-
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
 
    /* Return memory requirements */
    if (H == NULL) {
-#ifdef NUM_ESSL
-      *lrwork = max(*lrwork, (size_t)2*basisSize
-                    + (size_t)basisSize*(basisSize + 1)/2);
-#else
       SCALAR rwork0;
-#  ifdef USE_COMPLEX
-      CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, basisSize, hVals,
-               &rwork0, -1, hVals, &info), info), -1);
-      *lrwork = max(*lrwork, (size_t)REAL_PART(rwork0) + 2*basisSize);
-#  else
       CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, basisSize, hVals,
                &rwork0, -1, &info), info), -1);
       *lrwork = max(*lrwork, (size_t)rwork0);
-#  endif
       return 0;
-#endif
    }
 
    /* ---------------------- */
@@ -243,42 +228,6 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    /* basisSize submatrix of H is copied into hvecs.                      */
    /* ------------------------------------------------------------------- */
 
-#ifdef NUM_ESSL
-   idx = 0;
-
-   if (primme->target != primme_largest) { /* smallest or any of closest_XXX */
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i <= j; i++) {
-            rwork[idx] = H[ldH*j+i];
-            idx++;
-         }
-      }
-   }
-   else { /* (primme->target == primme_largest)  */
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i <= j; i++) {
-            rwork[idx] = -H[ldH*j+i];
-            idx++;
-         }
-      }
-   }
-   
-   apSize = basisSize*(basisSize + 1)/2;
-   assert(*lrwork >= (size_t)apSize);
-#  ifdef USE_COMPLEX
-   /* -------------------------------------------------------------------- */
-   /* Assign also 3N double work space after the 2N complex rwork finishes */
-   /* -------------------------------------------------------------------- */
-   doubleWork = (REAL *) (&rwork[apsize + 2*basisSize]);
-
-   CHKERR(Num_hpev_Sprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
-      &rwork[apSize], TO_INT(*lrwork)), -1);
-#  else
-   CHKERR(Num_hpev_Sprimme(21, rwork, hVals, hVecs, ldhVecs, basisSize, 
-      &rwork[apSize], TO_INT(*lrwork-apSize)), -1);
-#  endif
-
-#else /* NUM_ESSL */
    if (primme->target != primme_largest) {
       for (j=0; j < basisSize; j++) {
          for (i=0; i <= j; i++) { 
@@ -294,19 +243,8 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
       }
    }
 
-#  ifdef USE_COMPLEX
-   /* -------------------------------------------------------------------- */
-   /* Assign also 3N double work space after the 2N complex rwork finishes */
-   /* -------------------------------------------------------------------- */
-   doubleWork = (REAL *) (rwork+ 2*basisSize);
-
-   CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
-                2*basisSize, doubleWork, &info), info), -1);
-#  else
    CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
                 TO_INT(*lrwork), &info), info), -1);
-#  endif
-#endif /* NUM_ESSL */
 
    /* ---------------------------------------------------------------------- */
    /* ORDER the eigenvalues and their eigenvectors according to the desired  */

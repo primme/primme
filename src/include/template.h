@@ -375,6 +375,50 @@
 
 #define MALLOC_PRIMME(NELEM, X) (*((void**)X) = malloc((NELEM)*sizeof(**(X))), *(X) == NULL)
 
+
+/**********************************************************************
+ * Macro WRKSP_MALLOC_PRIMME - borrow NELEM of type **X from workspace *rwork;
+ *    on return *X is an aligned pointer to the borrowed space and workspace
+ *    *rwork points to the first free address.
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------------
+ * NELEM   Number of sizeof(**X) to allocate
+ * X       Where to store the pointer of the borrowed space
+ * RWORK   Reference to the workspace from take space; *RWORK is updated
+ *         with the first free address
+ * LRWORK  Reference to the number of elements in *RWORK; *LRWORK is updated
+ *         with the left number of elements in *RWORK
+ *
+ * RETURN VALUE
+ * ------------
+ * error code
+ *
+ * EXAMPLE
+ * -------
+ *   double *values, *rwork; size_t *rworkSize;
+ *   CHKERR(WRKSP_MALLOC_PRIMME(n, &values, &rwork, &rworkSize), -1);
+ *
+ **********************************************************************/
+
+#define WRKSP_MALLOC_PRIMME(NELEM, X, RWORK, LRWORK) (\
+      *(uintptr_t*)(X) = ALIGN_BY_SIZE(*(RWORK), sizeof(**(X))), \
+      *(uintptr_t*)(RWORK) = ALIGN_BY_SIZE(*(X)+(NELEM), sizeof(**(RWORK))), \
+      /* Check that there are enough elements in *RWORK */ \
+      /* NOTE: the check is pessimistic */ \
+      (sizeof(**(X))*((NELEM)+1) + sizeof(**(RWORK)) - 2 \
+        <= *(LRWORK)*sizeof(**(RWORK))) \
+        /* If there is, subtract the used number of elements */ \
+        ? (*(LRWORK) -= (sizeof(**(X))*((NELEM)+1) + sizeof(**(RWORK)) - 2) \
+                           / sizeof(**(RWORK)), 0 /* return success */)\
+        /* Else, return error */ \
+        : -1)
+
+#define ALIGN_BY_SIZE(ptr,size_of_T) (((uintptr_t)(ptr)+(size_of_T)-1) & -(size_of_T))
+
+#define ALIGN(ptr, T) (T*) ALIGN_BY_SIZE(ptr, sizeof(T))
+
+
 /*****************************************************************************/
 /* Miscellanea                                                               */
 /*****************************************************************************/

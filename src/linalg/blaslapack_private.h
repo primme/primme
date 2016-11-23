@@ -87,14 +87,10 @@
 #define XDOT      LAPACK_FUNCTION(sdot  ,       , ddot  ,       )
 #define XSCAL     LAPACK_FUNCTION(sscal , cscal , dscal , zscal )
 #define XLARNV    LAPACK_FUNCTION(slarnv, clarnv, dlarnv, zlarnv)
-#define XHEEV     LAPACK_FUNCTION(ssyev , cheev , dsyev , zheev )
+#define XHEEVX    LAPACK_FUNCTION(ssyevx, cheevx, dsyevx, zheevx)
 #define XGESVD    LAPACK_FUNCTION(sgesvd, cgesvd, dgesvd, zgesvd)
 #define XHETRF    LAPACK_FUNCTION(ssytrf, chetrf, dsytrf, zhetrf)
 #define XHETRS    LAPACK_FUNCTION(ssytrs, chetrs, dsytrs, zhetrs)
-
-#ifdef NUM_ESSL
-#include <essl.h>
-#endif
 
 #else /* NUM_CRAY */
 
@@ -119,7 +115,7 @@
 #define XDOT   LAPACK_FUNCTION(SDOT   ,       )
 #define XSCAL  LAPACK_FUNCTION(SSCAL  , zscal )
 #define XLARNV LAPACK_FUNCTION(SLARNV ,       )
-#define XSYEV  LAPACK_FUNCTION(SSYEV  , zheev )
+#define XHEEV  LAPACK_FUNCTION(SSYEV  , zheev )
 #define XGESVD LAPACK_FUNCTION(SGESVD , zhetrf)
 #define XSYTRF LAPACK_FUNCTION(SSYTRF , zgesvd)
 #define XSYTRS LAPACK_FUNCTION(SSYTRS , zhetrs)
@@ -147,24 +143,16 @@ void XHEMV(STRING uplo, PRIMME_BLASINT *n, SCALAR *alpha, SCALAR *a, PRIMME_BLAS
 void XAXPY(PRIMME_BLASINT *n, SCALAR *alpha, SCALAR *x, PRIMME_BLASINT *incx, SCALAR *y, PRIMME_BLASINT *incy);
 #ifndef USE_COMPLEX
 SCALAR XDOT(PRIMME_BLASINT *n, SCALAR *x, PRIMME_BLASINT *incx, SCALAR *y, PRIMME_BLASINT *incy);
-void XHEEV(STRING jobz, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, SCALAR *w, SCALAR *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
+void XHEEVX(STRING jobz, STRING range, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, SCALAR *vl, SCALAR *vu, PRIMME_BLASINT *il, PRIMME_BLASINT *iu,  SCALAR *abstol, PRIMME_BLASINT *m,  SCALAR *w, SCALAR *z, PRIMME_BLASINT *ldz, SCALAR *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *iwork, PRIMME_BLASINT *ifail, PRIMME_BLASINT *info);
 void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, SCALAR *s, SCALAR *u, PRIMME_BLASINT *ldu, SCALAR *vt, PRIMME_BLASINT *ldvt, SCALAR *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info); 
 #else
-void XHEEV(STRING jobz, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *w, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
+void XHEEVX(STRING jobz, STRING range, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *vl, REAL *vu, PRIMME_BLASINT *il, PRIMME_BLASINT *iu, REAL *abstol, PRIMME_BLASINT *m,  REAL *w, SCALAR *z, PRIMME_BLASINT *ldz, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *iwork, PRIMME_BLASINT *ifail, PRIMME_BLASINT *info);
 void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *s, SCALAR *u, PRIMME_BLASINT *ldu, SCALAR *vt, PRIMME_BLASINT *ldvt, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
 #endif
 void XSCAL(PRIMME_BLASINT *n, SCALAR *alpha, SCALAR *x, PRIMME_BLASINT *incx);
 void XLARNV(PRIMME_BLASINT *idist, PRIMME_BLASINT *iseed, PRIMME_BLASINT *n, SCALAR *x);
 void XHETRF(STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
 void XHETRS(STRING uplo, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
-
-#ifdef NUM_ESSL
-#  ifdef USE_DOUBLE
-PRIMME_BLASINT dspev(PRIMME_BLASINT iopt, SCALAR *ap, SCALAR *w, SCALAR *z, PRIMME_BLASINT ldz, PRIMME_BLASINT n, SCALAR *aux, PRIMME_BLASINT naux);
-#  elif defined(USE_DOUBLECOMPLEX)
-PRIMME_BLASINT zhpev(PRIMME_BLASINT iopt, void *ap, SCALAR *w, void *z, PRIMME_BLASINT ldz, PRIMME_BLASINT n, void *aux, PRIMME_BLASINT naux);
-#  endif
-#endif
 
 #ifdef __cplusplus
 }

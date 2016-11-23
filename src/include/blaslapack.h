@@ -188,7 +188,7 @@ void Num_larnv_zprimme(int idist, int64_t *iseed, int64_t length,
 void Num_scal_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx);
 void Num_swap_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
 void Num_heev_zprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a,
-      int lda, double *w, PRIMME_COMPLEX_DOUBLE *work, int ldwork, double *rwork, int *info);
+      int lda, double *w, PRIMME_COMPLEX_DOUBLE *work, int ldwork, int *info);
 void Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_COMPLEX_DOUBLE *a, int lda, double *s, PRIMME_COMPLEX_DOUBLE *u, int ldu, PRIMME_COMPLEX_DOUBLE *vt, int ldvt,
    PRIMME_COMPLEX_DOUBLE *work, int ldwork, double *rwork, int *info);
@@ -258,7 +258,7 @@ void Num_larnv_cprimme(int idist, int64_t *iseed, int64_t length,
 void Num_scal_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx);
 void Num_swap_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
 void Num_heev_cprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a,
-      int lda, float *w, PRIMME_COMPLEX_FLOAT *work, int ldwork, float *rwork, int *info);
+      int lda, float *w, PRIMME_COMPLEX_FLOAT *work, int ldwork, int *info);
 void Num_gesvd_cprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_COMPLEX_FLOAT *a, int lda, float *s, PRIMME_COMPLEX_FLOAT *u, int ldu, PRIMME_COMPLEX_FLOAT *vt, int ldvt,
    PRIMME_COMPLEX_FLOAT *work, int ldwork, float *rwork, int *info);

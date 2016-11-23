@@ -20,7 +20,7 @@ FFLAGS   ?= -fno-second-underscore -O
 # IBM architectures
 #CC       = xlc
 #F77      = xlf
-#DEFINES  = -DF77UNDERSCORE -DNUM_ESSL
+#DEFINES  = -DF77UNDERSCORE
 #CFLAGS   = -O2
 #FFLAGS   = -O2
 #---------------------------------------------------------------
