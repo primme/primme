@@ -29,7 +29,6 @@
 
 % Compute the 6 largest eigenvalues of a matrix with tolerance 1e-6
 
-t=cputime;
 A = diag(1:50);
 ops = struct();
 ops.tol = 1e-6; % residual norm tolerance 

@@ -1340,7 +1340,6 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
    int i;         /* Loop variable                                     */
    REAL *dwork = (REAL *) rwork; /* pointer to cast rwork to REAL*/
-   int reset;    /* doomy variable */
 
    /* Compute the residual vectors */
 
@@ -1357,7 +1356,7 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* Check for convergence of the residual norms. */
 
    CHKERR(check_convergence_Sprimme(V, primme->nLocal, ldV, W, ldW, NULL, 0,
-            0, 0, basisSize, flags, resNorms, hVals, &reset, machEps, rwork,
+            0, 0, basisSize, flags, resNorms, hVals, NULL, machEps, rwork,
             rworkSize, iwork, iworkSize, primme), -1);
 
    /* Set converged to 1 if the first basisSize pairs are converged */
