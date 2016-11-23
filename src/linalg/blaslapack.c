@@ -448,9 +448,9 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       Num_copy_matrix_Sprimme(z, n, n, n, a, lda);
    }
    else {
-      work[0] += (SCALAR)n*n + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
+      work[0] += (REAL)n*n + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
 #ifdef USE_COMPLEX
-      work[0] += (SCALAR)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
+      work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
 #endif
    }
    *info = (int)linfo;

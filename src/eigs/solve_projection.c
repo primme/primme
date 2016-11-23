@@ -209,7 +209,7 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
       SCALAR rwork0;
       CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, basisSize, hVals,
                &rwork0, -1, &info), info), -1);
-      *lrwork = max(*lrwork, (size_t)rwork0);
+      *lrwork = max(*lrwork, (size_t)REAL_PART(rwork0));
       return 0;
    }
 
