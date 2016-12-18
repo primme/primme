@@ -201,6 +201,7 @@ typedef struct primme_params {
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
          struct primme_params *primme, int *ierr);
+   void *convtest;
 } primme_params;
 /*---------------------------------------------------------------------------*/
 
