@@ -1119,7 +1119,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       int liw=0;
 
       CHKERR(check_convergence_Sprimme(NULL, nLocal, 0, NULL, 0, NULL,
-               numLocked, 0, basisSize-maxBlockSize, basisSize, NULL, NULL,
+               numLocked, 0, 0, basisSize, NULL, NULL,
                NULL, NULL, 0.0, NULL, &lrw, &liw, 0, primme), -1);
       lrw = max(lrw,
             (size_t)Num_update_VWXR_Sprimme(NULL, NULL, nLocal, basisSize,
@@ -1168,9 +1168,6 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    *recentlyConverged = 0;
    while (1) {
-      /* Workspace limited by maxBlockSize */
-      assert(blockNormsSize <= maxBlockSize);
-
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i=*blockSize; i<blockNormsSize; i++)
          flagsBlock[i-*blockSize] = flags[iev[i]];
