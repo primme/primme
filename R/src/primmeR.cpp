@@ -52,10 +52,10 @@ using namespace Rcpp;
 // Template version of dprimme and zprimme
 
 static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
-      return dprimme(evals, evecs, resNorms, primme);
+   return dprimme(evals, evecs, resNorms, primme);
 }
 static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
-      return zprimme(evals, evecs, resNorms, primme);
+   return zprimme(evals, evecs, resNorms, primme);
 }
 
 // Template version of dprimme_svds and zprimme_svds
@@ -352,12 +352,12 @@ static void matrixMatvecEigs(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 {  
    // Create input vector
    Matrix<S,NoProtectStorage> vx =
-      createMatrix<TS,Matrix<S,NoProtectStorage> >((TS*)x, primme->nLocal,
+      createMatrix<TS,Matrix<S> >((TS*)x, primme->nLocal,
             *blockSize, *ldx);
 
    // Call the callback
    Function *f = (Function*)F::get(primme);
-   Matrix<S,NoProtectStorage> vy = (*f)(vx);
+   Matrix<S> vy = (*f)(vx);
 
    // Copy output vector
    copyMatrix(vy, (TS*)y, primme->nLocal, *blockSize, *ldy);
