@@ -394,7 +394,7 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[1]),
             &svecs[primme_svds->nLocal], 1);
       primme->initSize = 1;
-      rnorms[1] = HUGE_VAL;
+      if (rnorms) rnorms[0] = HUGE_VAL;
       primme->initBasisMode = primme_init_user;
    }
 
