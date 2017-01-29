@@ -456,7 +456,7 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
    Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
    CHKERR(ortho_Sprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
-         basisSize, primme->iseed, machEps, rwork, lrwork, primme), -1);
+         basisSize, primme->iseed, machEps, rwork, lrwork, NULL), -1);
  
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 

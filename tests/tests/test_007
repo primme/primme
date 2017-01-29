@@ -1,0 +1,26 @@
+// Test GD without preconditioner solving interior problem
+// using harmonic extraction
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = LUNDA.mtx
+driver.checkXFile    = tests/sol_007
+driver.PrecChoice    = noprecond
+driver.checkInterface = 1
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 50
+primme.eps = 1.000000e-12
+primme.maxOuterIterations = 7500
+primme.target = primme_closest_abs
+primme.numTargetShifts = 1
+primme.targetShifts = 0
+primme.projection.projection = primme_proj_harmonic
+
+method               = PRIMME_GD_Olsen_plusK
