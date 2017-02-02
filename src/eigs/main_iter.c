@@ -508,9 +508,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   && primme->target != primme_largest
                   && primme->projectionParams.projection == primme_proj_RR) ||
                 targetShiftIndex < 0 ||
-                (Q && primme->targetShifts[targetShiftIndex] !=
+                /* NOTE: use the same condition as in restart_refined */
+                (Q && fabs(primme->targetShifts[targetShiftIndex] -
                   primme->targetShifts[
-                     min(primme->numTargetShifts-1, numConverged)])
+                     min(primme->numTargetShifts-1, numConverged)]) >= 
+                        max(primme->aNorm, primme->stats.estimateLargestSVal))
                || (numConverged >= nextGuess-primme->numOrthoConst
                   && numGuesses > 0)) {
 

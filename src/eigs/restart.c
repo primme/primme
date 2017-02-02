@@ -1578,6 +1578,8 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* NOTE: Force to pass the next condition if you want to rebuild the QR    */
    /* factorization at every restart.                                         */
 
+   /* NOTE: keep the same condition here as in main_iter */
+
    if (*targetShiftIndex < 0 || fabs(primme->targetShifts[*targetShiftIndex]
             - primme->targetShifts[min(primme->numTargetShifts-1, numConverged)])
          > machEps*aNorm) {
