@@ -816,7 +816,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
-   double aNorm;
+   double aNorm, eps;
 
    /* Quick exit */
 
@@ -862,6 +862,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
 
    aNorm = (primme->aNorm <= 0.0) ?
       primme->stats.estimateLargestSVal : primme->aNorm;
+   eps = max(3.14*machEps, primme->stats.maxConvTol);
 
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {
@@ -899,7 +900,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
          /* we don't use the value when it is zero.                           */
 
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
-            (aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+            (aNorm*eps/fabs(hVals[i]-hVals[i-1]));
          double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 
