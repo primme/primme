@@ -862,7 +862,14 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
 
    aNorm = (primme->aNorm <= 0.0) ?
       primme->stats.estimateLargestSVal : primme->aNorm;
-   eps = max(3.14*machEps, primme->stats.maxConvTol);
+
+   /* Before the first eigenpair converges, there's no information about the  */
+   /* requested tolerance. In that case eps is set as ten times less than the */
+   /* the current smallest residual norm, if smallestResNorm provides that    */
+   /* information.                                                            */
+   eps = primme->stats.maxConvTol > 0.0 ? primme->stats.maxConvTol : (
+         smallestResNorm < HUGE_VAL ? smallestResNorm/10.0 : 0.0);
+   eps = max(3.14*machEps, eps);
 
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {
