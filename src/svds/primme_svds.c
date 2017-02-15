@@ -550,7 +550,9 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    /* Record performance measurements */ 
    primme_svds->stats.numOuterIterations += primme->stats.numOuterIterations;
    primme_svds->stats.numRestarts        += primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         += primme->stats.numMatvecs;
+   primme_svds->stats.numMatvecs         += primme->stats.numMatvecs*2;
+   /* NOTE: for the augmented and for normal equations, every matvec for the  */
+   /* eigensolver involves the direct and the transpose matrix-vector product */
    primme_svds->stats.numPreconds        += primme->stats.numPreconds;
    primme_svds->stats.elapsedTime        += primme->stats.elapsedTime;
 
