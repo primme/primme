@@ -303,6 +303,9 @@ Full description of actions that `make` can take:
 
 * `make lib`, builds the static library :file:`libprimme.a`.
 * `make solib`, builds the shared library :file:`libprimme.so`.
+* `make matlab`, builds `libprimme.a` compatible with MATLAB and the MATLAB module.
+* `make octave`, builds `libprimme.a` and the Octave module.
+* `make python`, builds `libprimme.a` and the Python module.
 * `make test`, build and execute simple examples.
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
 
