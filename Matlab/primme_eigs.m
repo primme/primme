@@ -8,7 +8,7 @@ function [varargout] = primme_eigs(varargin)
 %
 %   D = PRIMME_EIGS(AFUN,DIM) accepts a function AFUN instead of a matrix. AFUN
 %   is a function handle and y = AFUN(x) returns the matrix-vector product A*x.
-%   In all the following signatures, A can be replaced by AFUN,DIM.
+%   In all the following syntaxes, A can be replaced by AFUN,DIM.
 %
 %   D = PRIMME_EIGS(A,K) finds the K largest magnitude eigenvalues. K must be
 %   less than the dimension of the matrix A.
