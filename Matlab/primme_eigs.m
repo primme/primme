@@ -1,35 +1,42 @@
 function [varargout] = primme_eigs(varargin)
-%PRIMME_EIGS   Find few eigenvalues and vectors on large, sparse Hermitian matrices
-%   PRIMME_EIGS finds few eigenvalues and eigenvectors of a real symmetric
-%   or Hermitian matrix, A, by calling the PRIMME driver PRIMME_MEX.
-%   Almost full PRIMME functionality is supported.
+%PRIMME_EIGS Find a few eigenvalues/vectors of large, sparse Hermitian matrices
+%   PRIMME_EIGS finds a few eigenvalues and their corresponding eigenvectors 
+%   of a real symmetric or Hermitian matrix, A, by calling PRIMME through the 
+%   driver PRIMME_MEX. Almost full PRIMME functionality is supported.
 %
 %   D = PRIMME_EIGS(A) returns a vector of A's 6 largest algebraic eigenvalues.
 %
 %   D = PRIMME_EIGS(AFUN,DIM) accepts a function AFUN instead of a matrix. AFUN
 %   is a function handle and y = AFUN(x) returns the matrix-vector product A*x.
+%   In all the following signatures, A can be replaced by AFUN,DIM.
 %
-%   D = PRIMME_EIGS(...,K) finds the K largest magnitude eigenvalues. K must be
+%   D = PRIMME_EIGS(A,K) finds the K largest magnitude eigenvalues. K must be
 %   less than the dimension of the matrix A.
 %
-%   D = PRIMME_EIGS(...,K,TARGET) returns K eigenvalues from different parts of
-%   the spectrum. If TARGET is
-%       'LM' or 'SM', find eigenvalues D with the largest or smallest ABS(D-S)
-%       'LA' or 'SA', find eigenvalues with the largest or smallest value
-%       'CLT' or 'CGT', find eigenvalues closest to S but less or greater than S.
-%   S is each value in OPTS.targetShifts.
-%   If TARGET is a real number, it finds the closest eigenvalues to TARGET.
+%   D = PRIMME_EIGS(A,K,TARGET) returns K eigenvalues such that: 
+%     If TARGET is a real number, it finds the closest eigenvalues to TARGET.
+%     If TARGET is
+%       'LA' or 'SA', eigenvalues with the largest or smallest algebraic value
+%       'LM' or 'SM', eigenvalues with the largest or smallest distance from
+%                 the given values in OPTS.targetShifts, or zero if
+%                 OPTS.targetShifts is empty. If m values are provided, the
+%                 first m eigenvalues D are found s.t.
+%                 max/min ABS(D(i)-OPTS.targetShifts(i)), i=1:m.
+%                 OPTS.targerShifts(m) is used for i=m+1:K.
+%       'CLT' or 'CGT', find eigenvalues closest to but less or greater than
+%                 the given values in OPTS.targetShifts.
 %
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS) specifies extra solver parameters. Some
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS) specifies extra solver parameters. Some
 %     default values are indicated in brackets {}:
 %
-%     OPTS.aNorm: the estimate 2-norm of matrix A {estimate the norm}
-%     OPTS.tol: convergence tolerance: NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
-%     OPTS.maxBlockSize: maximum block size {1}
-%     OPTS.disp: different level reporting(0-5) {no output 0}
-%     OPTS.isreal: the complexity of A represented by AFUN {false}
-%     OPTS.targetShifts: shifts for interior eigenvalues (see target)
-%     OPTS.v0: approximate eigenvectors {[]}
+%     OPTS.aNorm: the estimated 2-norm of A {estimate the norm internally}
+%     OPTS.tol: convergence tolerance: 
+%                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
+%     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
+%     OPTS.disp: different level reporting (0-5) {no output 0}
+%     OPTS.isreal: whether A represented by AFUN is real or complex {false}
+%     OPTS.targetShifts: shifts for interior eigenvalues (see TARGET) {[]}
+%     OPTS.v0: any number of initial guesses to the eigenvectors {[]}
 %     OPTS.orthoConst: external orthogonalization constraints {[]}
 %     OPTS.locking: 1, hard locking; 0, soft locking
 %     OPTS.p: maximum size of the search subspace
@@ -37,10 +44,10 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.maxMatvecs: maximum number of matrix vector multiplications {Inf}
 %     OPTS.maxit: maximum number of outer iterations {Inf}
 %     OPTS.scheme: the restart scheme {'primme_thick'}
-%     OPTS.maxPrevRetain: number of approximate eigenvectors retained from
-%       previous iteration, that are kept after restart.
-%     OPTS.robustShifts: set to true to avoid stagnation.
-%     OPTS.maxInnerIterations: maximum number of inner QMR iterations
+%     OPTS.maxPrevRetain: number of Ritz vectors from previous iteration
+%          that are kept after restart {typically >0, see PRIMME doc}
+%     OPTS.robustShifts: set to true may avoid stagnation or misconvergence 
+%     OPTS.maxInnerIterations: maximum number of inner solver iterations
 %     OPTS.LeftQ: use the locked vectors in the left projector
 %     OPTS.LeftX: use the approx. eigenvector in the left projector
 %     OPTS.RightQ: use the locked vectors in the right projector
@@ -54,9 +61,9 @@ function [varargout] = primme_eigs(varargin)
 %   For detailed descriptions of the above options, visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide
 %
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
 %     'DYNAMIC', (default)        switches dynamically to the best method
-%     'DEFAULT_MIN_TIME',         best method for light matrix-vector product
+%     'DEFAULT_MIN_TIME',         best method for low-cost matrix-vector product
 %     'DEFAULT_MIN_MATVECS',      best method for heavy matvec/preconditioner
 %     'Arnoldi',                  Arnoldi not implemented efficiently
 %     'GD',                       classical block Generalized Davidson 
@@ -64,7 +71,7 @@ function [varargout] = primme_eigs(varargin)
 %     'GD_Olsen_plusK',           GD+k with approximate Olsen precond.
 %     'JD_Olsen_plusK',           GD+k, exact Olsen (two precond per step)
 %     'RQI',                      Rayleigh Quotient Iteration. Also INVIT,
-%                                 but for INVIT provide targetShifts
+%                                 but for INVIT provide OPTS.targetShifts
 %     'JDQR',                     Original block, Jacobi Davidson
 %     'JDQMR',                    Our block JDQMR method (similar to JDCG)
 %     'JDQMR_ETol',               Slight, but efficient JDQMR modification
@@ -75,8 +82,8 @@ function [varargout] = primme_eigs(varargin)
 %   For further description of the method visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/appendix.html#preset-methods
 %
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P) 
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P) 
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
 %   P = P1*P2 to accelerate convergence of the method.
 %   If P is [] then a preconditioner is not applied. P may be a function 
 %   handle PFUN such that PFUN(x) returns P\x.
