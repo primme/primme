@@ -40,4 +40,4 @@ For Octave just execute:
    make octave
 
 Please find information about how to use this interface in the help of
-PRIMME_EIGS and PRIMME_SVDS, further examples in the file test_primme.m
+PRIMME_EIGS and PRIMME_SVDS, and further examples in test_primme.m.
