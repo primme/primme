@@ -34,7 +34,8 @@ function [varargout] = primme_svds(varargin)
 %                    - 'primme_svds_augmented': [0 A';A 0]
 %                    - 'primme_svds_hybrid':               (default)
 %                       first normal eqs and then augmented
-%   OPTIONS.v0       approx. left and right singular vectors {[],[]}
+%   OPTIONS.u0       approx. left singular vectors                []
+%   OPTIONS.v0       approx. right singular vectors               []
 %   OPTIONS.orthoConst external orthogonalization constraints     [] 
 %   OPTIONS.locking  1, hard locking; 0, soft locking              -
 %   OPTIONS.maxBlockSize maximum block size                        1
@@ -310,11 +311,10 @@ function [varargout] = primme_svds(varargin)
       init = {[],[]};
    end
 
-   if isfield(opts, 'v0')
-      init0 = opts.v0;
-      if ~iscell(init0) || numel(init0) ~= 2 || (isempty(init0{1}) && isempty(init0{2}))
-         error('opts.v0 should be {left_vectors, right_vectors}');
-      end
+   if isfield(opts, 'v0') || isfield(opts, 'u0')
+      if !isfield(opts, 'v0'), opts.v0 = []; end
+      if !isfield(opts, 'u0'), opts.u0 = []; end
+      init0 = {opts.v0, opts.u0};
       if isempty(init0{1})
          init0{1} = opts.matrixMatvec(init0{2}, 'notransp');
       elseif isempty(init{2})
@@ -324,6 +324,7 @@ function [varargout] = primme_svds(varargin)
          size(init0{1}, 2) ~= size(init0{2}, 2)
          error('Invalid matrix dimensions in opts.init');
       end
+      opts = rmfield(opts, 'u0');
       opts = rmfield(opts, 'v0');
       opts.initSize = size(init0{1}, 2);
       init = {[init{1} init0{1}], [init{2} init0{2}]};
