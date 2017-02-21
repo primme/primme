@@ -191,6 +191,9 @@ function [varargout] = primme_eigs(varargin)
             error('target must be LA, SA, LM, SM, CGT or CLT');
          end
          opts.target = getfield(targets, target);
+         if (target == 'SM' || target == 'LM') && ~isfield(opts, 'targetShifts')
+            opts.targetShifts = 0;
+         end
       else
          error('target must be a number or a string');
       end
@@ -313,12 +316,12 @@ function [varargout] = primme_eigs(varargin)
       init = [];
    end
 
-   if isfield(opts, 'init')
-      init0 = opts.init;
+   if isfield(opts, 'v0')
+      init0 = opts.v0;
       if size(init0, 1) ~= opts.n
-         error('Invalid matrix dimensions in opts.init');
+         error('Invalid matrix dimensions in opts.v0');
       end
-      opts = rmfield(opts, 'init');
+      opts = rmfield(opts, 'v0');
       opts.initSize = size(init0, 2);
       init = [init init0];
    end
