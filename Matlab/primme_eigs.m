@@ -153,7 +153,7 @@ function [varargout] = primme_eigs(varargin)
 
       % Get type and complexity
       Acomplex = ~isreal(A);
-      Adouble = class(A) == 'double';
+      Adouble = strcmp(class(A), 'double');
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
       n = round(varargin{nextArg});
@@ -191,7 +191,7 @@ function [varargout] = primme_eigs(varargin)
             error('target must be LA, SA, LM, SM, CGT or CLT');
          end
          opts.target = getfield(targets, target);
-         if (target == 'SM' || target == 'LM') && ~isfield(opts, 'targetShifts')
+         if (strcmp(target, 'SM') || strcmp(target, 'LM')) && ~isfield(opts, 'targetShifts')
             opts.targetShifts = 0;
          end
       else

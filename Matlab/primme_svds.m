@@ -127,7 +127,7 @@ function [varargout] = primme_svds(varargin)
 
       % Get type and complexity
       Acomplex = ~isreal(A);
-      Adouble = class(A) == 'double';
+      Adouble = strcmp(class(A), 'double');
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
       m = round(varargin{nextArg});
@@ -312,8 +312,8 @@ function [varargout] = primme_svds(varargin)
    end
 
    if isfield(opts, 'v0') || isfield(opts, 'u0')
-      if !isfield(opts, 'v0'), opts.v0 = []; end
-      if !isfield(opts, 'u0'), opts.u0 = []; end
+      if ~isfield(opts, 'v0'), opts.v0 = []; end
+      if ~isfield(opts, 'u0'), opts.u0 = []; end
       init0 = {opts.v0, opts.u0};
       if isempty(init0{1})
          init0{1} = opts.matrixMatvec(init0{2}, 'notransp');
@@ -396,9 +396,9 @@ function [y] = matvecsvds(A, x, mode)
 end
 
 function [y] = precondsvds(P, x, mode)
-   if mode == 'AHA'
+   if strcmp(mode, 'AHA')
       y = P\(P'\x);
-   elseif mode == 'AAH'
+   elseif strcmp(mode, 'AAH')
       y = P'\(P\x);
    else
       y = [P'\(P\x(1:size(P,1),:)); P\(P'\x(size(P,1):end,:))];
