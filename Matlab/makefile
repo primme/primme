@@ -29,7 +29,7 @@ MEXFLAGS += -O -largeArrayDims
 # Extra libraries to link
 MEXLIBS += -lmwlapack -lmwblas
 
-# MATLAB binary (only for testing)
+# MATLAB executable app (only for testing)
 MATLAB ?= matlab
 
 #------------------------------------------------------------
