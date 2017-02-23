@@ -46,7 +46,7 @@ octave:
 
 python:
 	@make clean lib
-	@make -C PYTHON
+	@make -C Python
 
 check_style:
 	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
