@@ -31,14 +31,14 @@
  * 
  * Purpose - PRIMME MEX interface.
  * 
- * Currently, we only support sequential computing. The PRIMME MEX
+ * Currently we don't support distributed computing. The PRIMME MEX
  * reads the inputs from MATLAB, constructs the necessary structures
  * and then calls PRIMME. The desired results are then returned to MATLAB.
  * 
  * Matrix-vector and preconditioning functions are performed by callbacks
  * to MATLAB functions.
  *
- *  For details about PRIMME parameters, methods, and settings see ../readme.txt
+ * For details about PRIMME parameters, methods, and settings see ../readme.txt
  *
  ******************************************************************************/
 
