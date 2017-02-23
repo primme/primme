@@ -195,7 +195,7 @@ laplace%.mtx:
 	done
 
 clean:
-	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o tests.log
+	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o tests.log tests/*.F $(patsubst %,laplace%.mtx,$(T_sizes)) ._test00
 
 veryclean: clean
 	@rm -f primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex
