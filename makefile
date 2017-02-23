@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib clean test all_tests check_style
+.PHONY: lib clean test all_tests check_style matlab octave python tags
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
