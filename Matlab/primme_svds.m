@@ -158,14 +158,16 @@ function [varargout] = primme_svds(varargin)
          targets = struct('L', 'primme_svds_largest', ...
                           'S', 'primme_svds_smallest');
          if ~isfield(targets, target(1))
-            error('target must be L, S or C');
+            error('target must be L, S or real non-negative numbers');
          end
          opts.target = getfield(targets, target(1));
-      elseif isnumeric(target)
+      elseif isnumeric(target) && all(target == 0)
+         opts.target = 'primme_svds_smallest';
+      elseif isnumeric(target) && all(target >= 0)
          opts.targetShifts = target;
          opts.target = 'primme_svds_closest_abs';
       else
-         error('target must be L, S or a real number');
+         error('target must be L, S or real non-negative numbers');
       end
       nextArg = nextArg + 1;
    else

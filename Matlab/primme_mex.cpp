@@ -168,6 +168,7 @@ static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
    mwSize ndims = mxGetNumberOfDimensions(x);
    assert(ldy >= m);
    if (!((ndims == 1 && dims[0] == m && n == 1)
+            || (ndims == 2 && dims[0] == 1 && dims[1] == m && n == 1)
             || (ndims == 2 && dims[0] == m && dims[1] == n))) {
       mexErrMsgTxtPrintf2("Unsupported matrix dimension; it should be %dx%d",
             (int)m, (int)n);
