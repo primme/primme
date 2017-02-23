@@ -301,7 +301,7 @@ The next directories and files should be available:
 
 * "Matlab/",       Matlab interface;
 
-* "PYTHON/",       Python interface;
+* "Python/",       Python interface;
 
 * "examples/",     sample programs in C, C++ and F77, both
   sequential and parallel;

@@ -232,7 +232,7 @@ The next directories and files should be available:
    * :file:`tools/`,     tools used to generated some headers;
 
 * :file:`Matlab/`,       Matlab interface;
-* :file:`PYTHON/`,       Python interface;
+* :file:`Python/`,       Python interface;
 * :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
 * :file:`tests/`,        drivers for testing purpose and test cases;
 * :file:`lib/libprimme.a`,   the PRIMME library (to be made);
