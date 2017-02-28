@@ -146,6 +146,10 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    /* Execute stage 1 */
    /* --------------- */
 
+   if (primme_svds->eps == 0.0) {
+      primme_svds->eps = MACHINE_EPSILON*1e4;
+   }
+
    CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs,
                NULL, &allocatedTargetShifts)) == NULL,
          ALLOCATE_WORKSPACE_FAILURE);
@@ -978,7 +982,7 @@ static void convTestFunAugmented(double *eval, void *evec_, double *rNorm,
 
       /* isConv = 1 iff normr <= ||A||*eps = aNorm/sqrt(2)*eps */
 
-      if (normr < max(aNorm/sqrt(2.0)*primme->eps, machEps * 3.16 * aNorm)) { 
+      if (normr < max(aNorm/sqrt(2.0)*primme->eps, machEps * 5 * aNorm)) { 
          *isConv = 1;
       }
       else {
