@@ -248,6 +248,11 @@ function [varargout] = primme_svds(varargin)
       end
    end
 
+   % Set default tol to 1e-10
+   if ~isfield(opts, 'eps')
+      opts.eps = 1e-10;
+   end 
+
    % Move options that are outside of primme_parms' hierarchy
    changes = {{'projection',         'projection_projection'}, ...
               {'scheme',             'restarting_scheme'}, ...

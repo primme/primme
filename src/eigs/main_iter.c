@@ -448,7 +448,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             }
             else {
                availableBlockSize = primme->maxBlockSize;
-               maxRecentlyConverged = primme->numEvals-numConverged;
+               maxRecentlyConverged = max(0, primme->numEvals-numConverged);
             }
 
             /* Limit blockSize to vacant vectors in the basis */
@@ -461,8 +461,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize = min(availableBlockSize, 
-                  primme->n - basisSize - numLocked - primme->numOrthoConst);
+            availableBlockSize = max(0, min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst));
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {
@@ -476,6 +476,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
                   hVecsRot, primme->maxBasisSize, &reset, rwork, &rworkSize,
                   iwork, iworkSize, primme);
+               assert(recentlyConverged >= 0);
             }
             else {
                blockSize = recentlyConverged = 0;
@@ -508,6 +509,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   && primme->target != primme_largest
                   && primme->projectionParams.projection == primme_proj_RR) ||
                 targetShiftIndex < 0 ||
+                  (blockSize == 0 && recentlyConverged > 0) ||
                 /* NOTE: use the same condition as in restart_refined */
                 (Q && fabs(primme->targetShifts[targetShiftIndex] -
                   primme->targetShifts[
@@ -704,11 +706,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             }
 
             else {
-               maxRecentlyConverged = primme->numEvals-numConverged;
+               maxRecentlyConverged = max(0, primme->numEvals-numConverged);
 
                /* Limit blockSize to vacant vectors in the basis */
 
-               availableBlockSize = min(primme->maxBlockSize, primme->maxBasisSize-(numConverged-numLocked));
+               availableBlockSize = max(0, min(primme->maxBlockSize, primme->maxBasisSize-(numConverged-numLocked)));
 
                /* Limit blockSize to remaining values to converge plus one */
 
@@ -717,8 +719,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize = min(availableBlockSize, 
-                  primme->n - basisSize - numLocked - primme->numOrthoConst);
+            availableBlockSize = max(0, min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst));
 
             /* -------------------------------------------------------------- */
             /* NOTE: setting smallestResNorm to zero may overpass the inner   */
@@ -746,6 +748,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
                   hVecsRot, primme->maxBasisSize, &reset, rwork, &rworkSize,
                   iwork, iworkSize, primme);
+            assert(recentlyConverged >= 0);
 
             /* When QR is computed and there are more than one target shift   */
             /* and some eigenpair has converged values to one, don't provide  */
@@ -1109,6 +1112,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    SCALAR *hVecsBlock0; /* workspace for hVecsBlock */
    double targetShift;  /* current target shift */
    size_t rworkSize0;   /* current size of rwork */
+   int lasti;           /* last tested pair */
 
    /* -------------------------- */
    /* Return memory requirements */
@@ -1152,6 +1156,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    iworkSize -= maxBlockSize;
    assert(iworkSize >= 0);
    targetShift = primme->targetShifts ? primme->targetShifts[targetShiftIndex] : 0.0;
+   lasti = -1;
 
    /* Pack hVals for already computed residual pairs */
 
@@ -1243,24 +1248,21 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             (*blockSize)++;
          }
 
+         lasti = iev[blki];
       }
 
       /* Generate well conditioned coefficient vectors; start from the last   */
       /* position visited (variable i)                                        */
 
-      if (blki > 0)
-         i = iev[blki-1]+1;
-      else
-         i = 0;
       blki = *blockSize;
-      prepare_vecs_Sprimme(basisSize, i, maxBlockSize-blki, H, ldH, hVals,
+      prepare_vecs_Sprimme(basisSize, lasti+1, maxBlockSize-blki, H, ldH, hVals,
             hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs,
             *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot, machEps,
             &rworkSize0, rwork, iworkSize, iwork, primme);
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
-      for ( ; i<basisSize && blki < maxBlockSize; i++)
+      for (i=lasti+1; i<basisSize && blki < maxBlockSize; i++)
          if (flags[i] == UNCONVERGED) iev[blki++] = i;
 
       /* If no new candidates or all required solutions converged yet, go out */
