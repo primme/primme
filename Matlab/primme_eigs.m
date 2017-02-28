@@ -248,7 +248,6 @@ function [varargout] = primme_eigs(varargin)
          P2 = fcnchk_gen(P2); % get the function handle of user's function
       end
       P = @(x)P2(P(x));
-      nextArg = nextArg + 1;
    end
    if ~isempty(P)
       opts.applyPreconditioner = P;

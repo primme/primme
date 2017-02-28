@@ -11,11 +11,11 @@ SOLIBRARY = libprimme.so
 #---------------------------------------------------------------
 # POSIX systems (e.g., Linux, MinGW, Cygwin)
 #---------------------------------------------------------------
-CC       ?= cc
-F77      ?= gfortran
-DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?= -O -fPIC
-FFLAGS   ?= -fno-second-underscore -O
+#CC       ?= cc
+#F77      ?= gfortran
+#DEFINES  ?= -DF77UNDERSCORE 
+#CFLAGS   ?= -O -fPIC
+#FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc
@@ -25,11 +25,11 @@ FFLAGS   ?= -fno-second-underscore -O
 #FFLAGS   = -O2
 #---------------------------------------------------------------
 # Mac OS X
-#CC       = clang
-#F77      = gfortran
-#DEFINES  = -DF77UNDERSCORE 
-#CFLAGS   = -O2
-#FFLAGS   = -fno-second-underscore -O2
+CC       = clang
+F77      = gfortran-6
+DEFINES  = -DF77UNDERSCORE 
+CFLAGS   = -O2
+FFLAGS   = -fno-second-underscore -O2
 #---------------------------------------------------------------
 # Using Intel compilers
 #CC       = icc
