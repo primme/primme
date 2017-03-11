@@ -40,6 +40,7 @@
 #include <assert.h>  
 #include "numerical.h"
 #include "../eigs/ortho.h"
+#include "../eigs/const.h"
 #include "wtime.h"
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
@@ -66,6 +67,26 @@ static void convTestFunAugmented(double *eval, void *evec, double *rNorm, int *i
    primme_params *primme, int *ierr);
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
+static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, int *stage,
+      primme_svds_params *primme_svds, int *err);
+static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err);
+static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err);
+static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err);
 
 /*******************************************************************************
  * Subroutine Sprimme_svds - This routine is a front end used to perform 
@@ -140,6 +161,14 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    ret = allocate_workspace_svds(primme_svds, 1 /* allocate */);
    if (ret != 0) {
       return ALLOCATE_WORKSPACE_FAILURE;
+   }
+
+   /* ----------------------- */
+   /* Set default monitor     */
+   /* ----------------------- */
+
+   if (!primme_svds->monitorFun) {
+      primme_svds->monitorFun = default_monitor;
    }
 
    /* --------------- */
@@ -406,13 +435,29 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    /* the convergence criterion.                                     */
 
    if (stage == 1) {
+      int flags[primme->initSize];
       for (i=0; primme->initSize > 0; i++) {
-         double ev = (double)svals[i], resnorm = rnorms[i];
+         /* NOTE: convTestFun at this stage expects the residual norm for the */
+         /*       the augmented problem; this is why the residual norm is     */
+         /*       divided by sqrt(2).                                         */
+         double ev = (double)svals[i], resnorm = rnorms[i]/sqrt(2.0);
          int isConv=0, ierr=0;
+         primme_svds->stats.elapsedTime = primme_wTimer(0);
          CHKERRMS((primme->convTestFun(&ev, NULL, &resnorm, &isConv, primme,
                      &ierr), ierr), NULL,
                "Error code returned by 'convTestFun' %d", ierr);
          if (!isConv) break;
+
+         /* Report a triplet is locked */
+         int ip1 = i+1;
+         flags[i] = CONVERGED;
+         primme_event EVENT_LOCKED = primme_event_locked;
+         int ZERO = 0;
+         CHKERRMS((primme_svds->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
+                     NULL, svals, &ip1, flags, rnorms, NULL, NULL,
+                     &EVENT_LOCKED, &ZERO, primme_svds, &ierr), ierr), NULL,
+                  "Error code returned by 'monitorFun' %d", ierr);
+
          primme->numOrthoConst++;
          primme->initSize--;
          primme->numEvals--;
@@ -423,6 +468,18 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
 
    if (primme_svds->locking >= 0) {
       primme->locking = primme_svds->locking;
+   }
+
+   /* Set monitor */
+
+   if (primme->monitorFun == NULL) {
+      if (primme_svds->methodStage2 == primme_svds_op_none) {
+         primme->monitorFun = monitor_single_stage;
+      } else if (stage == 0) {
+         primme->monitorFun = monitor_stage1;
+      } else {
+         primme->monitorFun = monitor_stage2;
+      }
    }
 
    return out_svecs;
@@ -993,4 +1050,410 @@ static void convTestFunAugmented(double *eval, void *evec_, double *rNorm,
    }
 
    *ierr = 0;
-} 
+}
+
+
+/*******************************************************************************
+ * Subroutine default_monitor - report iterations, #MV, residual norm,
+ *    singular values, etc. at every inner/outer iteration and when some triplet
+ *    converges.       
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisSvals   The approximate singular values of the basis
+ * basisSize    The size of the basis
+ * basisFlags   The state of every approximate triplet of the basis (see conv_flags)
+ * iblock       Indices of the approximate triplet in the block
+ * blockSize    The size of the block
+ * basisNorms   The approximate residual norms of the triplet of the basis
+ * numConverged The number of triplets converged in the basis and the locked triplets
+ *              (this value isn't monotonic!)
+ * lockedSvals  The locked singular values
+ * numLocked    The number of triplets locked
+ * lockedFlags  The state of each locked triplet (see conv_flags)
+ * lockedNorms  The residual norms of the locked pairs
+ * inner_its    The number of performed QMR iterations in the current correction equation
+ * LSRes        The residual norm of the linear system at the current QMR iteration
+ * event        The event reported
+ * stage        0 for first stage and 1 for second stage
+ * primme_svds  Structure containing various solver parameters and statistics
+ *
+ * OUTPUT
+ * ------
+ * err          Error code
+ * 
+ ******************************************************************************/
+
+static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, int *stage,
+      primme_svds_params *primme_svds, int *err)
+{
+   REAL *basisSvals = (REAL*)basisSvals_, *basisNorms = (REAL*)basisNorms_,
+        *lockedSvals = (REAL*)lockedSvals_, *lockedNorms = (REAL*)lockedNorms_,
+        *LSRes = (REAL*)LSRes_;
+   assert(event != NULL && primme_svds != NULL && stage != NULL);
+
+   /* Only print report if this is proc zero */
+   if (primme_svds->procID == 0) {
+      switch(*event) {
+      case primme_event_outer_iteration:
+         assert(basisSvals && basisSize && basisFlags && iblock && blockSize
+                && basisNorms && numConverged);
+         if (primme_svds->printLevel >= 3) {
+            int i;  /* Loop variable */
+            for (i=0; i < *blockSize; i++) {
+               fprintf(primme_svds->outputFile, 
+                     "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E SV %13E |r| %.3E stage %d\n",
+                     primme_svds->stats.numOuterIterations, *numConverged, i,
+                     primme_svds->stats.numMatvecs,
+                     primme_svds->stats.elapsedTime, basisSvals[iblock[i]],
+                     (double)basisNorms[iblock[i]], *stage+1);
+            }
+         }
+         break;
+      case primme_event_inner_iteration:
+         assert(basisSize && iblock && basisNorms && inner_its && LSRes);
+         (void)inner_its;
+         if (primme_svds->printLevel >= 4) {
+            fprintf(primme_svds->outputFile,
+                  "INN MV %" PRIMME_INT_P " Sec %e Sval %e Lin|r| %.3e SV|r| %.3e stage %d\n",
+                  primme_svds->stats.numMatvecs, primme_svds->stats.elapsedTime,
+                  (double)basisSvals[iblock[0]], (double)*LSRes,
+                  (double)basisNorms[iblock[0]], *stage+1);
+         }
+        break;
+      case primme_event_restart:
+         break;
+      case primme_event_reset:
+         break;
+      case primme_event_converged:
+         if ((*stage == 0 && primme_svds->printLevel >= 2)
+               || (primme_svds->printLevel >= 5))
+            fprintf(primme_svds->outputFile, 
+                  "#Converged %d sval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g stage %d\n",
+                  *numConverged, iblock[0], basisSvals[iblock[0]],
+                  basisNorms[iblock[0]], primme_svds->stats.numMatvecs,
+                  primme_svds->stats.elapsedTime, *stage+1);
+         break;
+      case primme_event_locked:
+         if (primme_svds->printLevel >= 2) { 
+            fprintf(primme_svds->outputFile, 
+                  "Lock striplet[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d stage %d\n",
+                  *numLocked-1, lockedSvals[*numLocked-1],
+                  lockedNorms[*numLocked-1], primme_svds->stats.numMatvecs,
+                  primme_svds->stats.elapsedTime, lockedFlags[*numLocked-1],
+                  *stage+1);
+         }
+         break;
+      }
+      fflush(primme_svds->outputFile);
+   }
+   *err = 0;
+}
+
+
+/*******************************************************************************
+ * Subroutine monitor_single_stage - report iterations, #MV, residual norm,
+ *    eigenvalues, etc. at every inner/outer iteration and when some pair
+ *    converges.       
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisEvals   The approximate eigenvalues of the basis
+ * basisSize    The size of the basis
+ * basisFlags   The state of every approximate pair of the basis (see conv_flags)
+ * iblock       Indices of the approximate pairs in the block
+ * blockSize    The size of the block
+ * basisNorms   The approximate residual norms of the pairs of the basis
+ * numConverged The number of pairs converged in the basis and the locked pairs
+ *              (this value isn't monotonic!)
+ * lockedEvals  The locked eigenvalues
+ * numLocked    The number of pairs locked
+ * lockedFlags  The state of each locked eigenpair (see conv_flags)
+ * lockedNorms  The residual norms of the locked pairs
+ * inner_its    The number of performed QMR iterations in the current correction equation
+ * LSRes        The residual norm of the linear system at the current QMR iteration
+ * event        The event reported
+ * primme       Structure containing various solver parameters and statistics
+ *
+ * OUTPUT
+ * ------
+ * err          Error code
+ * 
+ ******************************************************************************/
+
+static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err)
+{
+   int i;
+   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
+        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
+        *LSRes = (REAL*)LSRes_;
+   assert(event != NULL && primme != NULL);
+
+   REAL basisSvals[basisEvals&&basisSize?*basisSize:0],
+        basisSVNorms[basisEvals&&basisSize?*basisSize:0],
+        lockedSvals[lockedEvals&&numLocked?*numLocked:0],
+        lockedSVNorms[lockedEvals&&numLocked?*numLocked:0];
+   primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+
+   if (primme_svds->method == primme_svds_op_AtA
+         || primme_svds->method == primme_svds_op_AAt) {
+      /* sval = sqrt(abs(eval)) and SVrnorm = rnorm/sval */
+
+      if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
+         basisSvals[i] = sqrt(fabs(basisEvals[i]));
+         basisSVNorms[i] = basisNorms[i]/basisSvals[i];
+      }
+
+      if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++) {
+         lockedSvals[i] = sqrt(fabs(lockedEvals[i]));
+         lockedSVNorms[i] = lockedNorms[i]/lockedSvals[i];
+      }
+   }
+   else if (primme_svds->method == primme_svds_op_augmented) {
+      /* SVrnorm = rnorm/sqrt(2) */
+
+      if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
+         basisSVNorms[i] = basisNorms[i]/sqrt(2.0);
+      }
+
+      if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++) {
+         lockedSVNorms[i] = lockedNorms[i]/sqrt(2.0);
+      }
+   }
+
+   /* When two stages, set primme_event_locked as primme_event_converged */
+
+   primme_event event_svds = *event;
+   if (primme_svds->methodStage2 != primme_svds_op_none
+         && event_svds == primme_event_locked) {
+      event_svds = primme_event_converged;
+   }
+
+   /* Record performance measurements */ 
+
+   primme_svds_stats stats = primme_svds->stats;
+   primme_svds->stats.numOuterIterations = primme->stats.numOuterIterations;
+   primme_svds->stats.numRestarts        = primme->stats.numRestarts;
+   primme_svds->stats.numMatvecs         = primme->stats.numMatvecs*2;
+   /* NOTE: for the augmented and for normal equations, every matvec for the  */
+   /* eigensolver involves the direct and the transpose matrix-vector product */
+   primme_svds->stats.numPreconds        = primme->stats.numPreconds;
+   primme_svds->stats.elapsedTime        = primme_wTimer(0);
+
+   /* Call the user function report */
+
+   int ZERO = 0;
+   primme_svds->monitorFun(basisSvals, basisSize, basisFlags, iblock, blockSize,
+         basisSVNorms, numConverged, lockedSvals, numLocked, lockedFlags,
+         lockedSVNorms, inner_its, LSRes, &event_svds, &ZERO, primme_svds, err);
+   primme_svds->stats = stats; /* restore original values */
+}
+
+
+/*******************************************************************************
+ * Subroutine monitor_stage1 - translate monitored information from eigenvalues
+ *    to singular values and call the monitor in primme_svds. Notice that
+ *    because there is a second stage, the locked pairs at this stage are
+ *    reported as converged. 
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisEvals   The approximate eigenvalues of the basis
+ * basisSize    The size of the basis
+ * basisFlags   The state of every approximate pair of the basis (see conv_flags)
+ * iblock       Indices of the approximate pairs in the block
+ * blockSize    The size of the block
+ * basisNorms   The approximate residual norms of the pairs of the basis
+ * numConverged The number of pairs converged in the basis and the locked pairs
+ *              (this value isn't monotonic!)
+ * lockedEvals  The locked eigenvalues
+ * numLocked    The number of pairs locked
+ * lockedFlags  The state of each locked eigenpair (see conv_flags)
+ * lockedNorms  The residual norms of the locked pairs
+ * inner_its    The number of performed QMR iterations in the current correction equation
+ * LSRes        The residual norm of the linear system at the current QMR iteration
+ * event        The event reported
+ * primme       Structure containing various solver parameters and statistics
+ *
+ * OUTPUT
+ * ------
+ * err          Error code
+ * 
+ ******************************************************************************/
+
+static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err)
+{
+   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
+        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
+        *LSRes = (REAL*)LSRes_;
+   assert(event != NULL && primme != NULL);
+
+   /* Ignore the converged events if locking is active and printLevel <= 4 */
+
+   if (*event == primme_event_converged && primme->locking
+         && primme->printLevel <= 4) {
+      *err = 0;
+      return;
+   }
+
+   /* Show locked pairs as converged pairs of the basis */
+
+   int numLocked0 = lockedEvals&&numLocked?*numLocked:0;
+   int basisSize0 = (basisEvals&&basisSize?*basisSize:0) + numLocked0;
+   REAL basisSvals[basisSize0], basisSVNorms[basisSize0];
+   int basisSVFlags[basisSize0], iblockSV[blockSize?*blockSize:1];
+   int numConvergedSV = (numConverged?*numConverged:0) + numLocked0;
+
+   primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+
+   assert(primme_svds->method == primme_svds_op_AtA
+         || primme_svds->method == primme_svds_op_AAt);
+
+   /* sval = sqrt(abs(eval)) and SVrnorm = rnorm/sval */
+
+   int i, j=0;
+   if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++, j++) {
+      basisSvals[j] = sqrt(fabs(lockedEvals[i]));
+      basisSVNorms[j] = lockedNorms[i]/basisSvals[i];
+      basisSVFlags[j] = lockedFlags[i];
+   }
+
+   if (basisEvals && basisSize) for (i=0; i<*basisSize; i++, j++) {
+      basisSvals[j] = sqrt(fabs(basisEvals[i]));
+      basisSVNorms[j] = basisNorms[i]/basisSvals[i];
+      basisSVFlags[j] = basisFlags ? basisFlags[i] : UNCONVERGED;
+   }
+
+   if (iblock && blockSize) for (i=0; i<*blockSize; i++) {
+      iblockSV[i] = iblock[i] + numLocked0;
+   }
+
+   primme_event eventSV = *event;
+   if (*event == primme_event_locked) {
+      eventSV = primme_event_converged;
+      iblockSV[0] = *numLocked-1;
+   }
+  
+   /* Record performance measurements */ 
+
+   primme_svds_stats stats = primme_svds->stats;
+   primme_svds->stats.numOuterIterations = primme->stats.numOuterIterations;
+   primme_svds->stats.numRestarts        = primme->stats.numRestarts;
+   primme_svds->stats.numMatvecs         = primme->stats.numMatvecs*2;
+   /* NOTE: for the augmented and for normal equations, every matvec for the  */
+   /* eigensolver involves the direct and the transpose matrix-vector product */
+   primme_svds->stats.numPreconds        = primme->stats.numPreconds;
+   primme_svds->stats.elapsedTime        = primme_wTimer(0);
+
+   /* Call the user function report */
+
+   int ZERO = 0;
+   primme_svds->monitorFun(basisSvals, &basisSize0, basisSVFlags, iblockSV,
+         blockSize, basisSVNorms, &numConvergedSV, NULL, NULL, NULL, NULL,
+         inner_its, LSRes, &eventSV, &ZERO, primme_svds, err);
+   primme_svds->stats = stats; /* restore original values */
+}
+
+/*******************************************************************************
+ * Subroutine monitor_stage2 - report iterations, #MV, residual norm,
+ *    eigenvalues, etc. at every inner/outer iteration and when some pair
+ *    converges.       
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisEvals   The approximate eigenvalues of the basis
+ * basisSize    The size of the basis
+ * basisFlags   The state of every approximate pair of the basis (see conv_flags)
+ * iblock       Indices of the approximate pairs in the block
+ * blockSize    The size of the block
+ * basisNorms   The approximate residual norms of the pairs of the basis
+ * numConverged The number of pairs converged in the basis and the locked pairs
+ *              (this value isn't monotonic!)
+ * lockedEvals  The locked eigenvalues
+ * numLocked    The number of pairs locked
+ * lockedFlags  The state of each locked eigenpair (see conv_flags)
+ * lockedNorms  The residual norms of the locked pairs
+ * inner_its    The number of performed QMR iterations in the current correction equation
+ * LSRes        The residual norm of the linear system at the current QMR iteration
+ * event        The event reported
+ * primme       Structure containing various solver parameters and statistics
+ *
+ * OUTPUT
+ * ------
+ * err          Error code
+ * 
+ ******************************************************************************/
+
+static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err)
+{
+   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
+        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
+        *LSRes = (REAL*)LSRes_;
+   assert(event != NULL && primme != NULL);
+   primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+
+   /* Included the converged triplets after the first stage as locked */
+
+   int numLockedExtra = lockedEvals&&numLocked ?
+      primme_svds->numSvals - primme->numEvals : 0;
+   int numLockedSV = (lockedEvals&&numLocked?*numLocked:0) + numLockedExtra;
+   int basisSize0 = (basisEvals&&basisSize?*basisSize:0);
+   REAL basisSVNorms[basisSize0],
+        lockedSvals[numLockedSV], lockedSVNorms[numLockedSV];
+   int lockedSVFlags[numLockedSV];
+
+
+   /* SVrnorm = rnorm/sqrt(2) */
+
+   int i;
+   if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
+      basisSVNorms[i] = basisNorms[i]/sqrt(2.0);
+   }
+
+   lockedEvals -= numLockedExtra;
+   lockedNorms -= numLockedExtra;
+
+   for (i=0; i<numLockedExtra; i++) {
+      lockedSVNorms[i] = lockedNorms[i];
+      lockedSVFlags[i] = CONVERGED;
+   }
+
+   for (i=numLockedExtra; i<numLockedSV; i++) {
+      lockedSVNorms[i] = lockedNorms[i]/sqrt(2.0);
+      lockedSVFlags[i] = lockedFlags[i-numLockedExtra];
+   }
+
+   /* Record performance measurements */ 
+
+   primme_svds_stats stats = primme_svds->stats;
+   primme_svds->stats.numOuterIterations = primme_svds->primme.stats.numOuterIterations + primme->stats.numOuterIterations;
+   primme_svds->stats.numRestarts        = primme_svds->primme.stats.numRestarts        + primme->stats.numRestarts;
+   primme_svds->stats.numMatvecs         = primme_svds->primme.stats.numMatvecs*2       + primme->stats.numMatvecs*2;
+   /* NOTE: for the augmented and for normal equations, every matvec for the  */
+   /* eigensolver involves the direct and the transpose matrix-vector product */
+   primme_svds->stats.numPreconds        = primme_svds->primme.stats.numPreconds        + primme->stats.numPreconds;
+   primme_svds->stats.elapsedTime        = primme_svds->primme.stats.elapsedTime        + primme_wTimer(0);
+
+   /* Call the user function report */
+
+   int ONE = 1;
+   primme_svds->monitorFun(basisEvals, basisSize, basisFlags, iblock, blockSize,
+      basisSVNorms, numConverged, lockedEvals, &numLockedSV, lockedSVFlags,
+      lockedSVNorms, inner_its, LSRes, event, &ONE, primme_svds, err);
+   primme_svds->stats = stats; /* restore original values */
+}

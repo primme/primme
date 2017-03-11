@@ -197,10 +197,6 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    int *permu, *permw;
    double targetShift;
 
-#ifdef USE_COMPLEX
-   REAL  *doubleWork;
-#endif
-
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
 

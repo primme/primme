@@ -33,7 +33,7 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.tol: convergence tolerance: 
 %                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
 %     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
-%     OPTS.disp: different level reporting (0-5) {no output 0}
+%     OPTS.disp: different level reporting (0-3) (see HIST) {no output 0}
 %     OPTS.isreal: whether A represented by AFUN is real or complex {false}
 %     OPTS.targetShifts: shifts for interior eigenvalues (see TARGET) {[]}
 %     OPTS.v0: any number of initial guesses to the eigenvectors {[]}
@@ -98,6 +98,23 @@ function [varargout] = primme_eigs(varargin)
 %   information about number of matvecs, elapsed time, and estimates for the
 %   largest and the smallest algebraic eigenvalues on A.
 %
+%   [X,D,R,STATS,HIST] = PRIMME_EIGS(...) instead of printing the convergence
+%   history, it is returned. Every row is a record, and the columns report:
+%  
+%   HIST(:,1): number of matvecs
+%   HIST(:,2): time
+%   HIST(:,3): number of converged/locked pairs
+%   HIST(:,4): block index
+%   HIST(:,5): approximate eigenvalue
+%   HIST(:,6): residual norm
+%   HIST(:,7): QMR residual norm
+%
+%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
+%   has one row per converged eigenpair and only the first three columns are
+%   reported; if OPTS.disp == 2, HIST has one row per outer iteration and only
+%   the first six columns are reported; and otherwise HIST has one row per QMR
+%   iteration and all columns are reported.
+%  
 %   Examples:
 %      A = diag(1:100);
 %
@@ -126,7 +143,7 @@ function [varargout] = primme_eigs(varargin)
 
    % Check primme_mex exists
    if ~ exist('primme_mex')
-      error 'primme_mex is not available. Try to recompile the MATLAB''s PRIMME module'
+      error 'primme_mex is not available. Try to recompile the MATLAB/Octave''s PRIMME module'
    end
 
    % Check arity of input and output arguments
@@ -135,7 +152,7 @@ function [varargout] = primme_eigs(varargin)
    narginchk(minInputs,maxInputs);
 
    minOutputs = 0;
-   maxOutputs = 4;
+   maxOutputs = 5;
    nargoutchk(minOutputs,maxOutputs);
 
    % Check input arguments
@@ -278,10 +295,22 @@ function [varargout] = primme_eigs(varargin)
       opts = rmfield(opts, 'isdouble');
    end
 
-   % Rename tol, maxit, p and disp as eps, maxOuterIterations, maxBasisSize and
-   % printLevel. Also move options that are outside of primme_params' hierarchy.
+   % Process 'disp' in opts
+   if isfield(opts, 'disp')
+      dispLevel = opts.disp;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'disp');
+   elseif nargout >= 5
+      dispLevel = 1;
+   else
+      dispLevel = 0;
+   end
+
+   % Rename tol, maxit and p as eps, maxOuterIterations and maxBasisSize.
+   %  Also move options that are outside of primme_params' hierarchy.
    changes = {{'tol', 'eps'}, {'maxit', 'maxOuterIterations'}, {'p', 'maxBasisSize'}, ...
-              {'disp', 'printLevel'}, ...
               {'projection',         'projection_projection'}, ...
               {'scheme',             'restarting_scheme'}, ...
               {'maxPrevRetain',      'restarting_maxPrevRetain'}, ...
@@ -326,11 +355,6 @@ function [varargout] = primme_eigs(varargin)
       init = [init init0];
    end
 
-   % Default printLevel is 0
-   if ~isfield(opts, 'printLevel')
-      opts.printLevel = 0;
-   end
-
    % Create primme_params
    primme = primme_mex('primme_initialize');
 
@@ -339,6 +363,26 @@ function [varargout] = primme_eigs(varargin)
 
    % Set method
    primme_mex('primme_set_method', method, primme);
+
+   % Set monitor and shared variables with the monitor
+   hist = [];
+   locking = primme_mex('primme_get_member', primme, 'locking');
+   nconv = [];
+   return_hist = 0;
+   if dispLevel > 0
+      % NOTE: Octave doesn't support function handler for nested functions
+      primme_mex('primme_set_member', primme, 'monitorFun', ...
+            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10));
+   end
+   if nargout >= 5
+      return_hist = 1;
+   elseif dispLevel == 1
+      fprintf('#MV\tTime\t\tNConv\n');
+   elseif dispLevel == 2
+      fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\n');
+   elseif dispLevel == 3
+      fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\tQMR_Res\n');
+   end
 
    % Select solver
    if Adouble
@@ -382,6 +426,62 @@ function [varargout] = primme_eigs(varargin)
       stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
       stats.estimateAnorm = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
       varargout{4} = stats;
+   end
+   if (nargout >= 5)
+      varargout{5} = hist;
+   end
+
+   function record_history(basisEvals, basisFlags, iblock, basisNorms, ...
+         numConverged, lockedEvals, lockedFlags, lockedNorms, inner_its, ...
+         LSRes, event)
+
+      numMatvecs = double(primme_mex('primme_get_member', primme, 'stats_numMatvecs'));
+      maxInnerIterations = primme_mex('primme_get_member', primme, 'correction_maxInnerIterations');
+      elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
+      hist_rows = size(hist, 1);
+      if event == 0 || (event == 4 && ~locking) || event == 5
+         if ~locking
+            nconv = double(numConverged);
+         else
+            nconv = numel(lockedEvals);
+         end
+      end
+      if dispLevel == 0
+      elseif dispLevel == 1
+         if (event == 4 && ~locking) || event == 5
+            hist = [hist; numMatvecs elapsedTime nconv];
+         end
+      elseif dispLevel == 2
+         if event == 0 || (nconv == opts.numEvals && ((event == 4 && ~locking) || event == 5))
+            for i=1:numel(iblock)
+               hist = [hist; numMatvecs elapsedTime nconv i basisEvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+            end
+         end
+      elseif dispLevel == 3
+         if event == 1
+            if ~isempty(basisEvals)
+               value = basisEvals(iblock(1)+1);
+               resNorm = basisNorms(iblock(1)+1);
+            else
+               value = nan;
+               resNorm = nan;
+            end
+            hist = [hist; numMatvecs elapsedTime nconv nan value resNorm  LSRes];
+         elseif (maxInnerIterations == 0 || nconv == opts.numEvals) && (event == 0 || ((event == 4 && ~locking) || event == 5))
+            for i=1:numel(iblock)
+               hist = [hist; numMatvecs elapsedTime nconv i basisEvals(iblock(i)+1) basisNorms(iblock(i)+1) nan];
+            end
+         end
+      end
+      if ~return_hist && size(hist,1) > hist_rows
+         template{1} = '%d\t%f\t%d\n';
+         template{2} = '%d\t%f\t%d\t%d\t%g\t%e\n';
+         template{3} = '%d\t%f\t%d\t%d\t%g\t%e\t%e\n';
+         for i=hist_rows+1:size(hist,1)
+            a = num2cell(hist(i,:));
+            fprintf(template{dispLevel}, a{:});
+         end
+      end
    end
 end
 

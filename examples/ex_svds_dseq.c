@@ -82,7 +82,7 @@ int main (int argc, char *argv[]) {
    /* Set problem parameters */
    primme_svds.m = 500;
    primme_svds.n = 100; /* set problem dimension */
-   primme_svds.numSvals = 4;   /* Number of wanted eigenpairs */
+   primme_svds.numSvals = 4;   /* Number of wanted singular values */
    primme_svds.eps = 1e-12;     /* ||r|| <= eps * ||matrix|| */
    primme_svds.target = primme_svds_smallest;
                                /* Seeking for the largest singular values  */
@@ -141,7 +141,7 @@ int main (int argc, char *argv[]) {
       fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
          svals[i], rnorms[i]); 
    }
-   fprintf(primme_svds.outputFile, " %d eigenpairs converged\n", primme_svds.initSize);
+   fprintf(primme_svds.outputFile, " %d singular triplets converged\n", primme_svds.initSize);
    fprintf(primme_svds.outputFile, "Tolerance : %-22.15E\n", 
                                                          primme_svds.aNorm*primme_svds.eps);
    fprintf(primme_svds.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
@@ -151,7 +151,7 @@ int main (int argc, char *argv[]) {
    fprintf(primme_svds.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme_svds.stats.numPreconds);
    if (primme_svds.primme.locking && primme_svds.primme.intWork && primme_svds.primme.intWork[0] == 1) {
       fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n"
-         "Some eigenpairs do not have a residual norm less than the tolerance.\n"
+         "Some triplets do not have a residual norm less than the tolerance.\n"
          "However, the subspace of evecs is accurate to the required tolerance.\n");
    }
 

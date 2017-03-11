@@ -56,8 +56,9 @@ int prepare_candidates_dprimme(double *V, int64_t ldV, double *W,
       int64_t ldevecs, double *evals, double *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, double *hVecsRot,
-      int ldhVecsRot, int *reset, double *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme);
+      int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
+      double *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 int main_iter_zprimme(double *evals, int *perm, PRIMME_COMPLEX_DOUBLE *evecs, int64_t ldevecs,
    double *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
@@ -69,8 +70,9 @@ int prepare_candidates_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t ldV, PRIMME_COM
       int64_t ldevecs, double *evals, double *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_DOUBLE *hVecsRot,
-      int ldhVecsRot, int *reset, PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme);
+      int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
+      PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 int main_iter_sprimme(float *evals, int *perm, float *evecs, int64_t ldevecs,
    float *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
@@ -82,8 +84,9 @@ int prepare_candidates_sprimme(float *V, int64_t ldV, float *W,
       int64_t ldevecs, float *evals, float *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, float *hVecsRot,
-      int ldhVecsRot, int *reset, float *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme);
+      int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
+      float *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 int main_iter_cprimme(float *evals, int *perm, PRIMME_COMPLEX_FLOAT *evecs, int64_t ldevecs,
    float *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
@@ -95,6 +98,7 @@ int prepare_candidates_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t ldV, PRIMME_COMP
       int64_t ldevecs, float *evals, float *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_FLOAT *hVecsRot,
-      int ldhVecsRot, int *reset, PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme);
+      int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
+      PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme);
 #endif

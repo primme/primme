@@ -153,7 +153,8 @@ void primme_initialize(primme_params *primme) {
    primme->convTestFun             = NULL;
    primme->ldevecs                 = 0;
    primme->ldOPs                   = 0;
-
+   primme->monitorFun              = NULL;
+   primme->monitor                 = NULL;
 }
 
 /*******************************************************************************
@@ -714,6 +715,11 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       primme_projection projection_v;
       primme_restartscheme restartscheme_v;
       primme_convergencetest convergencetest_v;
+      void (*monitorFun_v)(void *basisEvals, int *basisSize, int *basisFlags,
+            int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+            void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+            int *inner_its, void *LSRes, primme_event *event,
+            struct primme_params *primme, int *err);
    } *v = (union value_t*)value;
 
    switch (label) {
@@ -889,6 +895,12 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_ldOPs:
               v->int_v = primme->ldOPs;
       break;
+      case PRIMME_monitorFun:
+              v->monitorFun_v = primme->monitorFun;
+      break;
+      case PRIMME_monitor:
+              v->ptr_v = primme->monitor;
+      break;
       default :
       return 1;
    }
@@ -930,6 +942,11 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       primme_projection *projection_v;
       primme_restartscheme *restartscheme_v;
       primme_convergencetest *convergencetest_v;
+      void (*monitorFun_v)(void *basisEvals, int *basisSize, int *basisFlags,
+            int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+            void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+            int *inner_its, void *LSRes, primme_event *event,
+            struct primme_params *primme, int *err);
    } v = *(union value_t*)&value;
 
    switch (label) {
@@ -1138,6 +1155,12 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_ldOPs:
               primme->ldOPs = *v.int_v;
       break;
+      case PRIMME_monitorFun:
+              primme->monitorFun = v.monitorFun_v;
+      break;
+      case PRIMME_monitor:
+              primme->monitor = v.ptr_v;
+      break;
       default : 
       return 1;
    }
@@ -1244,6 +1267,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(convTestFun                  , convTestFun);
    IF_IS(ldevecs                      , ldevecs);
    IF_IS(ldOPs                        , ldOPs);
+   IF_IS(monitorFun                   , monitorFun);
+   IF_IS(monitor                      , monitor);
 #undef IF_IS
 
    /* Return label/label_name */
@@ -1336,6 +1361,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_matrix:
       case PRIMME_preconditioner:
       case PRIMME_convTestFun:
+      case PRIMME_monitorFun:
+      case PRIMME_monitor:
       if (type) *type = primme_pointer;
       if (arity) *arity = 1;
       break;
@@ -1409,6 +1436,15 @@ int primme_constant_info(const char* label_name, int *value) {
    IF_IS(primme_decreasing_LTolerance);
    IF_IS(primme_adaptive_ETolerance);
    IF_IS(primme_adaptive);
+
+   /* enum member for event */
+
+   IF_IS(primme_event_outer_iteration);
+   IF_IS(primme_event_inner_iteration);
+   IF_IS(primme_event_restart);
+   IF_IS(primme_event_reset);
+   IF_IS(primme_event_converged);
+   IF_IS(primme_event_locked);
 #undef IF_IS
 
    /* return error if label not found */

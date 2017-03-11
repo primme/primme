@@ -14,7 +14,7 @@ SOLIBRARY = libprimme.so
 CC       ?= cc
 F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?= -O -fPIC
+CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 # IBM architectures
