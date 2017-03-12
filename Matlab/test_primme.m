@@ -66,6 +66,18 @@ Adiag = diag(A);
 Pfun = @(x)((Adiag - 30.5).\x);
 evals = primme_eigs(A, k, 30.5, [], [], Pfun);
  
+% Test different methods and return history record
+
+eigs_meths = {'DEFAULT_METHOD', 'DYNAMIC', 'DEFAULT_MIN_TIME', ...
+              'DEFAULT_MIN_MATVECS', 'Arnoldi', 'GD_plusK', 'GD_Olsen_plusK', ...
+              'JD_Olsen_plusK', 'JDQR', 'JDQMR', 'JDQMR_ETol', ...
+              'SUBSPACE_ITERATION', 'LOBPCG_OrthoBasis', ...
+              'LOBPCG_OrthoBasis_Window'}; 
+for i = 1:numel(eigs_meths)
+   [x,d,r,s,h] = primme_eigs(diag(1:100), 2, 'SA', struct('disp', 3), ...
+                             eigs_meths{i});
+end
+
 % Compute the 6 largest singular values of a matrix with tolerance 1e-6
 
 A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -112,5 +124,20 @@ Pstruct = struct('AHA', diag(A'*A), ...
                  'AAH', ones(200, 1), 'aug', ones(250, 1));
 Pfun = @(x,mode)Pstruct.(mode).\x;
 svals = primme_svds(A, 5, 'S', [], Pfun);
+
+% Test different methods and return history record
+
+svds_meths = {'primme_svds_normalequations', 'primme_svds_augmented', ...
+              'primme_svds_hybrid'};
+eigs_meths = {'DYNAMIC', 'DEFAULT_MIN_TIME', 'DEFAULT_MIN_MATVECS', ...
+              'JD_Olsen_plusK', 'JDQR', 'JDQMR', 'JDQMR_ETol'}; 
+for i = 1:numel(svds_meths)
+   opts = struct('disp', 3, 'method', svds_meths{i});
+   for j = 1:numel(eigs_meths)
+      opts.primme.method = eigs_meths{j};
+      opts
+      [u,sv,v,r,s,h] = primme_svds(diag(1:100), 2, 'S', opts);
+   end
+end
 
 disp('Success');

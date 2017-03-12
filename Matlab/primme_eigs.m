@@ -405,7 +405,7 @@ function [varargout] = primme_eigs(varargin)
 
    % Process error code and return the required arguments
    if ierr ~= 0
-      error([xprimme ' returned ' num2str(ierr)]);
+      error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
    end
 
    if (nargout <= 1)
@@ -481,6 +481,7 @@ function [varargout] = primme_eigs(varargin)
             a = num2cell(hist(i,:));
             fprintf(template{dispLevel}, a{:});
          end
+         hist = [];
       end
    end
 end
@@ -525,5 +526,57 @@ function primme_set_members(opts, primme, prefix)
           end
         end
       end
+   end
+end
+
+function s = primme_error_msg(errorCode)
+
+   msg = {};
+   msg{39+  0} = 'success';
+   msg{39+  1} = 'reported only amount of required memory';
+   msg{39+ -1} = 'failed in allocating int or real workspace';
+   msg{39+ -2} = 'malloc failed in allocating a permutation integer array';
+   msg{39+ -3} = 'main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in stderr';
+   msg{39+ -4} = 'argument primme is NULL';
+   msg{39+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
+   msg{39+ -6} = 'numProcs' < 1';
+   msg{39+ -7} = 'matrixMatvec is NULL';
+   msg{39+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
+   msg{39+ -9} = 'not used';
+   msg{39+-10} = 'numEvals > n';
+   msg{39+-11} = 'numEvals < 0';
+   msg{39+-12} = 'eps > 0 and eps < machine precision';
+   msg{39+-13} = 'target is not properly defined';
+   msg{39+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
+   msg{39+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
+   msg{39+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
+   msg{39+-17} = 'maxBasisSize < 2';
+   msg{39+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
+   msg{39+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
+   msg{39+-20} = 'maxPrevRetain < 0';
+   msg{39+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
+   msg{39+-22} = 'initSize < 0';
+   msg{39+-23} = 'locking == 0 and initSize > maxBasisSize';
+   msg{39+-24} = 'locking and initSize > numEvals';
+   msg{39+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
+   msg{39+-26} = 'minRestartSize >= n';
+   msg{39+-27} = 'printLevel < 0 or printLevel > 5';
+   msg{39+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
+   msg{39+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
+   msg{39+-30} = 'evals is NULL, but not evecs and resNorms';
+   msg{39+-31} = 'evecs is NULL, but not evals and resNorms';
+   msg{39+-32} = 'resNorms is NULL, but not evecs and evals';
+   msg{39+-33} = 'locking == 0 and minRestartSize < numEvals';
+   msg{39+-34} = 'ldevecs is less than nLocal';
+   msg{39+-35} = 'ldOPs is non-zero and less than nLocal';
+   msg{39+-36} = 'not enough memory for realWork';
+   msg{39+-37} = 'not enough memory for intWork';
+   msg{39+-38} = '"locking == 0 and target is primme_closest_leq or primme_closet_geq';
+
+   errorCode = errorCode + 39;
+   if errorCode > 0 && errorCode <= numel(msg)
+      s = msg{errorCode};
+   else
+      s = 'Unknown error code';
    end
 end
