@@ -1414,7 +1414,7 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    int numLockedSV = (lockedEvals&&numLocked?*numLocked:0) + numLockedExtra;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0);
    REAL basisSVNorms[basisSize0],
-        lockedSvals[numLockedSV], lockedSVNorms[numLockedSV];
+        lockedSVNorms[numLockedSV];
    int lockedSVFlags[numLockedSV];
 
 

@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "wtime.h"
+#include "const.h"
 #include "numerical.h"
 #include "inner_solve.h"
 #include "factorize.h"
@@ -473,13 +474,13 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
          else if (primme->monitorFun) {
             /* Report for non adaptive inner iterations */
-            int ZERO = 0;
+            int ZERO = 0, ONE = 1, UNCO = UNCONVERGED;
             primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
             int err;
             primme->stats.elapsedTime = primme_wTimer(0);
-            CHKERRM((primme->monitorFun(NULL, &ZERO, NULL, &ZERO,
-                        &ZERO, NULL, NULL, NULL, NULL, NULL,
-                        NULL, &numIts, &tau, &EVENT_INNER_ITERATION, primme, &err),
+            CHKERRM((primme->monitorFun(&eval, &ONE, &UNCO, &ZERO, &ONE, rnorm,
+                        NULL, NULL, NULL, NULL, NULL, &numIts, &tau,
+                        &EVENT_INNER_ITERATION, primme, &err),
                      err), -1, "Error returned by monitorFun: %d", err);
          }
       }
