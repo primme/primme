@@ -134,6 +134,12 @@ primme_full_LTolerance = _Primme.primme_full_LTolerance
 primme_decreasing_LTolerance = _Primme.primme_decreasing_LTolerance
 primme_adaptive_ETolerance = _Primme.primme_adaptive_ETolerance
 primme_adaptive = _Primme.primme_adaptive
+primme_event_outer_iteration = _Primme.primme_event_outer_iteration
+primme_event_inner_iteration = _Primme.primme_event_inner_iteration
+primme_event_restart = _Primme.primme_event_restart
+primme_event_reset = _Primme.primme_event_reset
+primme_event_converged = _Primme.primme_event_converged
+primme_event_locked = _Primme.primme_event_locked
 class primme_stats(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, primme_stats, name, value)
@@ -502,6 +508,71 @@ PRIMME_JDQMR_ETol = _Primme.PRIMME_JDQMR_ETol
 PRIMME_SUBSPACE_ITERATION = _Primme.PRIMME_SUBSPACE_ITERATION
 PRIMME_LOBPCG_OrthoBasis = _Primme.PRIMME_LOBPCG_OrthoBasis
 PRIMME_LOBPCG_OrthoBasis_Window = _Primme.PRIMME_LOBPCG_OrthoBasis_Window
+primme_int = _Primme.primme_int
+primme_double = _Primme.primme_double
+primme_pointer = _Primme.primme_pointer
+PRIMME_n = _Primme.PRIMME_n
+PRIMME_matrixMatvec = _Primme.PRIMME_matrixMatvec
+PRIMME_applyPreconditioner = _Primme.PRIMME_applyPreconditioner
+PRIMME_numProcs = _Primme.PRIMME_numProcs
+PRIMME_procID = _Primme.PRIMME_procID
+PRIMME_commInfo = _Primme.PRIMME_commInfo
+PRIMME_nLocal = _Primme.PRIMME_nLocal
+PRIMME_globalSumReal = _Primme.PRIMME_globalSumReal
+PRIMME_numEvals = _Primme.PRIMME_numEvals
+PRIMME_target = _Primme.PRIMME_target
+PRIMME_numTargetShifts = _Primme.PRIMME_numTargetShifts
+PRIMME_targetShifts = _Primme.PRIMME_targetShifts
+PRIMME_locking = _Primme.PRIMME_locking
+PRIMME_initSize = _Primme.PRIMME_initSize
+PRIMME_numOrthoConst = _Primme.PRIMME_numOrthoConst
+PRIMME_maxBasisSize = _Primme.PRIMME_maxBasisSize
+PRIMME_minRestartSize = _Primme.PRIMME_minRestartSize
+PRIMME_maxBlockSize = _Primme.PRIMME_maxBlockSize
+PRIMME_maxMatvecs = _Primme.PRIMME_maxMatvecs
+PRIMME_maxOuterIterations = _Primme.PRIMME_maxOuterIterations
+PRIMME_intWorkSize = _Primme.PRIMME_intWorkSize
+PRIMME_realWorkSize = _Primme.PRIMME_realWorkSize
+PRIMME_iseed = _Primme.PRIMME_iseed
+PRIMME_intWork = _Primme.PRIMME_intWork
+PRIMME_realWork = _Primme.PRIMME_realWork
+PRIMME_aNorm = _Primme.PRIMME_aNorm
+PRIMME_eps = _Primme.PRIMME_eps
+PRIMME_printLevel = _Primme.PRIMME_printLevel
+PRIMME_outputFile = _Primme.PRIMME_outputFile
+PRIMME_matrix = _Primme.PRIMME_matrix
+PRIMME_preconditioner = _Primme.PRIMME_preconditioner
+PRIMME_initBasisMode = _Primme.PRIMME_initBasisMode
+PRIMME_projectionParams_projection = _Primme.PRIMME_projectionParams_projection
+PRIMME_restartingParams_scheme = _Primme.PRIMME_restartingParams_scheme
+PRIMME_restartingParams_maxPrevRetain = _Primme.PRIMME_restartingParams_maxPrevRetain
+PRIMME_correctionParams_precondition = _Primme.PRIMME_correctionParams_precondition
+PRIMME_correctionParams_robustShifts = _Primme.PRIMME_correctionParams_robustShifts
+PRIMME_correctionParams_maxInnerIterations = _Primme.PRIMME_correctionParams_maxInnerIterations
+PRIMME_correctionParams_projectors_LeftQ = _Primme.PRIMME_correctionParams_projectors_LeftQ
+PRIMME_correctionParams_projectors_LeftX = _Primme.PRIMME_correctionParams_projectors_LeftX
+PRIMME_correctionParams_projectors_RightQ = _Primme.PRIMME_correctionParams_projectors_RightQ
+PRIMME_correctionParams_projectors_RightX = _Primme.PRIMME_correctionParams_projectors_RightX
+PRIMME_correctionParams_projectors_SkewQ = _Primme.PRIMME_correctionParams_projectors_SkewQ
+PRIMME_correctionParams_projectors_SkewX = _Primme.PRIMME_correctionParams_projectors_SkewX
+PRIMME_correctionParams_convTest = _Primme.PRIMME_correctionParams_convTest
+PRIMME_correctionParams_relTolBase = _Primme.PRIMME_correctionParams_relTolBase
+PRIMME_stats_numOuterIterations = _Primme.PRIMME_stats_numOuterIterations
+PRIMME_stats_numRestarts = _Primme.PRIMME_stats_numRestarts
+PRIMME_stats_numMatvecs = _Primme.PRIMME_stats_numMatvecs
+PRIMME_stats_numPreconds = _Primme.PRIMME_stats_numPreconds
+PRIMME_stats_elapsedTime = _Primme.PRIMME_stats_elapsedTime
+PRIMME_stats_estimateMinEVal = _Primme.PRIMME_stats_estimateMinEVal
+PRIMME_stats_estimateMaxEVal = _Primme.PRIMME_stats_estimateMaxEVal
+PRIMME_stats_estimateLargestSVal = _Primme.PRIMME_stats_estimateLargestSVal
+PRIMME_stats_maxConvTol = _Primme.PRIMME_stats_maxConvTol
+PRIMME_dynamicMethodSwitch = _Primme.PRIMME_dynamicMethodSwitch
+PRIMME_massMatrixMatvec = _Primme.PRIMME_massMatrixMatvec
+PRIMME_convTestFun = _Primme.PRIMME_convTestFun
+PRIMME_ldevecs = _Primme.PRIMME_ldevecs
+PRIMME_ldOPs = _Primme.PRIMME_ldOPs
+PRIMME_monitorFun = _Primme.PRIMME_monitorFun
+PRIMME_monitor = _Primme.PRIMME_monitor
 
 def sprimme(*args):
     return _Primme.sprimme(*args)
@@ -518,6 +589,22 @@ dprimme = _Primme.dprimme
 def zprimme(*args):
     return _Primme.zprimme(*args)
 zprimme = _Primme.zprimme
+
+def primme_get_member(primme, label, value):
+    return _Primme.primme_get_member(primme, label, value)
+primme_get_member = _Primme.primme_get_member
+
+def primme_set_member(primme, label, value):
+    return _Primme.primme_set_member(primme, label, value)
+primme_set_member = _Primme.primme_set_member
+
+def primme_member_info(label, label_name, type, arity):
+    return _Primme.primme_member_info(label, label_name, type, arity)
+primme_member_info = _Primme.primme_member_info
+
+def primme_constant_info(label_name, value):
+    return _Primme.primme_constant_info(label_name, value)
+primme_constant_info = _Primme.primme_constant_info
 primme_svds_largest = _Primme.primme_svds_largest
 primme_svds_smallest = _Primme.primme_svds_smallest
 primme_svds_closest_abs = _Primme.primme_svds_closest_abs
@@ -685,6 +772,49 @@ class primme_svds_params(_object):
 primme_svds_params_swigregister = _Primme.primme_svds_params_swigregister
 primme_svds_params_swigregister(primme_svds_params)
 
+PRIMME_SVDS_primme = _Primme.PRIMME_SVDS_primme
+PRIMME_SVDS_primmeStage2 = _Primme.PRIMME_SVDS_primmeStage2
+PRIMME_SVDS_m = _Primme.PRIMME_SVDS_m
+PRIMME_SVDS_n = _Primme.PRIMME_SVDS_n
+PRIMME_SVDS_matrixMatvec = _Primme.PRIMME_SVDS_matrixMatvec
+PRIMME_SVDS_applyPreconditioner = _Primme.PRIMME_SVDS_applyPreconditioner
+PRIMME_SVDS_numProcs = _Primme.PRIMME_SVDS_numProcs
+PRIMME_SVDS_procID = _Primme.PRIMME_SVDS_procID
+PRIMME_SVDS_mLocal = _Primme.PRIMME_SVDS_mLocal
+PRIMME_SVDS_nLocal = _Primme.PRIMME_SVDS_nLocal
+PRIMME_SVDS_commInfo = _Primme.PRIMME_SVDS_commInfo
+PRIMME_SVDS_globalSumReal = _Primme.PRIMME_SVDS_globalSumReal
+PRIMME_SVDS_numSvals = _Primme.PRIMME_SVDS_numSvals
+PRIMME_SVDS_target = _Primme.PRIMME_SVDS_target
+PRIMME_SVDS_numTargetShifts = _Primme.PRIMME_SVDS_numTargetShifts
+PRIMME_SVDS_targetShifts = _Primme.PRIMME_SVDS_targetShifts
+PRIMME_SVDS_method = _Primme.PRIMME_SVDS_method
+PRIMME_SVDS_methodStage2 = _Primme.PRIMME_SVDS_methodStage2
+PRIMME_SVDS_intWorkSize = _Primme.PRIMME_SVDS_intWorkSize
+PRIMME_SVDS_realWorkSize = _Primme.PRIMME_SVDS_realWorkSize
+PRIMME_SVDS_intWork = _Primme.PRIMME_SVDS_intWork
+PRIMME_SVDS_realWork = _Primme.PRIMME_SVDS_realWork
+PRIMME_SVDS_matrix = _Primme.PRIMME_SVDS_matrix
+PRIMME_SVDS_preconditioner = _Primme.PRIMME_SVDS_preconditioner
+PRIMME_SVDS_locking = _Primme.PRIMME_SVDS_locking
+PRIMME_SVDS_numOrthoConst = _Primme.PRIMME_SVDS_numOrthoConst
+PRIMME_SVDS_aNorm = _Primme.PRIMME_SVDS_aNorm
+PRIMME_SVDS_eps = _Primme.PRIMME_SVDS_eps
+PRIMME_SVDS_precondition = _Primme.PRIMME_SVDS_precondition
+PRIMME_SVDS_initSize = _Primme.PRIMME_SVDS_initSize
+PRIMME_SVDS_maxBasisSize = _Primme.PRIMME_SVDS_maxBasisSize
+PRIMME_SVDS_maxBlockSize = _Primme.PRIMME_SVDS_maxBlockSize
+PRIMME_SVDS_maxMatvecs = _Primme.PRIMME_SVDS_maxMatvecs
+PRIMME_SVDS_iseed = _Primme.PRIMME_SVDS_iseed
+PRIMME_SVDS_printLevel = _Primme.PRIMME_SVDS_printLevel
+PRIMME_SVDS_outputFile = _Primme.PRIMME_SVDS_outputFile
+PRIMME_SVDS_stats_numOuterIterations = _Primme.PRIMME_SVDS_stats_numOuterIterations
+PRIMME_SVDS_stats_numRestarts = _Primme.PRIMME_SVDS_stats_numRestarts
+PRIMME_SVDS_stats_numMatvecs = _Primme.PRIMME_SVDS_stats_numMatvecs
+PRIMME_SVDS_stats_numPreconds = _Primme.PRIMME_SVDS_stats_numPreconds
+PRIMME_SVDS_stats_elapsedTime = _Primme.PRIMME_SVDS_stats_elapsedTime
+PRIMME_SVDS_monitorFun = _Primme.PRIMME_SVDS_monitorFun
+PRIMME_SVDS_monitor = _Primme.PRIMME_SVDS_monitor
 
 def sprimme_svds(*args):
     return _Primme.sprimme_svds(*args)
@@ -701,6 +831,22 @@ dprimme_svds = _Primme.dprimme_svds
 def zprimme_svds(*args):
     return _Primme.zprimme_svds(*args)
 zprimme_svds = _Primme.zprimme_svds
+
+def primme_svds_get_member(primme_svds, label, value):
+    return _Primme.primme_svds_get_member(primme_svds, label, value)
+primme_svds_get_member = _Primme.primme_svds_get_member
+
+def primme_svds_set_member(primme_svds, label, value):
+    return _Primme.primme_svds_set_member(primme_svds, label, value)
+primme_svds_set_member = _Primme.primme_svds_set_member
+
+def primme_svds_member_info(label, label_name, type, arity):
+    return _Primme.primme_svds_member_info(label, label_name, type, arity)
+primme_svds_member_info = _Primme.primme_svds_member_info
+
+def primme_svds_constant_info(label_name, value):
+    return _Primme.primme_svds_constant_info(label_name, value)
+primme_svds_constant_info = _Primme.primme_svds_constant_info
 class PrimmeParams(primme_params):
     """
     Abstract class to specify the eigenvalue problem and the options for calling
@@ -816,6 +962,13 @@ class PrimmeParams(primme_params):
     __swig_getmethods__["globalSum_set"] = _Primme.PrimmeParams_globalSum_set_get
     if _newclass:
         globalSum_set = _swig_property(_Primme.PrimmeParams_globalSum_set_get, _Primme.PrimmeParams_globalSum_set_set)
+
+    def mon(self, *args):
+        return _Primme.PrimmeParams_mon(self, *args)
+    __swig_setmethods__["monitor_set"] = _Primme.PrimmeParams_monitor_set_set
+    __swig_getmethods__["monitor_set"] = _Primme.PrimmeParams_monitor_set_get
+    if _newclass:
+        monitor_set = _swig_property(_Primme.PrimmeParams_monitor_set_get, _Primme.PrimmeParams_monitor_set_set)
     def __disown__(self):
         self.this.disown()
         _Primme.disown_PrimmeParams(self)
@@ -940,6 +1093,13 @@ class PrimmeSvdsParams(primme_svds_params):
     __swig_getmethods__["globalSum_set"] = _Primme.PrimmeSvdsParams_globalSum_set_get
     if _newclass:
         globalSum_set = _swig_property(_Primme.PrimmeSvdsParams_globalSum_set_get, _Primme.PrimmeSvdsParams_globalSum_set_set)
+
+    def mon(self, *args):
+        return _Primme.PrimmeSvdsParams_mon(self, *args)
+    __swig_setmethods__["monitor_set"] = _Primme.PrimmeSvdsParams_monitor_set_set
+    __swig_getmethods__["monitor_set"] = _Primme.PrimmeSvdsParams_monitor_set_get
+    if _newclass:
+        monitor_set = _swig_property(_Primme.PrimmeSvdsParams_monitor_set_get, _Primme.PrimmeSvdsParams_monitor_set_set)
     def __disown__(self):
         self.this.disown()
         _Primme.disown_PrimmeSvdsParams(self)
@@ -1049,7 +1209,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
-          maxPrevRetain=0, method=None, **kargs):
+          maxPrevRetain=0, method=None, return_history=False, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -1132,8 +1292,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         See a detailed description of the methods and other possible values
         in [2]_.
 
-    report_stats : bool, optional
+    return_stats : bool, optional
         If True, it is also returned extra information from PRIMME.
+    return_history: bool, optional
+        If True, it is also returned performance information at every iteration.
 
     Returns
     -------
@@ -1154,6 +1316,13 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         - "estimateMaxEVal": the rightmost Ritz value seen
         - "estimateLargestSVal": the largest singular value seen
         - "rnorms" : ||A*x[i] - x[i]*w[i]||
+        - "hist" : (if return_history) report at every outer iteration of:
+
+          - "elapsedTime": time spent up to now
+          - "numMatvecs": number of A*v spent up to now
+          - "nconv": number of converged pair
+          - "eval": eigenvalue of the first unconverged pair
+          - "resNorm": residual norm of the first unconverged pair
 
     Raises
     ------
@@ -1197,6 +1366,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if M is not None:
         raise ValueError('generalized problems (M != None) are not supported')
 
+    hist = {"numMatvecs": [], "elapsedTime": [], "nconv": [],
+            "eval": [], "resNorm": []}
+
     class PP(PrimmeParams):
         def __init__(self):
             PrimmeParams.__init__(self)
@@ -1204,6 +1376,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             return A.matmat(X)
         def prevec(self, X):
             return OPinv.matmat(X)
+        def mon(self, basisEvals, basisFlags, iblock, basisNorms, numConverged,
+                    lockedEvals, lockedFlags, lockedNorms, inner_its, LSRes, event):
+            if event == 0 and len(iblock)>0: # event iteration
+                hist["numMatvecs"].append(self.stats.numMatvecs)
+                hist["elapsedTime"].append(self.stats.elapsedTime)
+                hist["nconv"].append(numConverged)
+                hist["eval"].append(basisEvals[iblock[0]])
+                hist["resNorm"].append(basisNorms[iblock[0]])
 
     pp = PP()
 
@@ -1253,6 +1433,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if lock.shape[0] != pp.n:
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
         pp.numOrthoConst = min(lock.shape[1], pp.n)
+
+    if return_history and return_stats:
+        pp.monitor_set = 1
 
 # Set other parameters
     for dk, dv in kargs.items():
@@ -1315,6 +1498,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             "numPreconds", "elapsedTime", "estimateMinEVal",
             "estimateMaxEVal", "estimateLargestSVal"])
         stats['rnorms'] = norms
+        if return_history:
+            stats["hist"] = hist
         return evals, evecs, stats
     else:
         return evals, evecs
@@ -1325,7 +1510,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
          return_stats=False, maxBlockSize=0,
-         method=None, methodStage1=None, methodStage2=None, **kargs):
+         method=None, methodStage1=None, methodStage2=None,
+         return_history=False, **kargs):
     """
     Compute k singular values and vectors for a sparse matrix.
 
@@ -1375,8 +1561,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Right orthogonal vector constrain. See locku0.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
-    report_stats : bool, optional
+    return_stats : bool, optional
         If True, it is also returned extra information from PRIMME.
+    return_history: bool, optional
+        If True, it is also returned performance information at every iteration.
 
     Returns
     -------
@@ -1397,8 +1585,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         - "numPreconds": number of OPinv*v
         - "elapsedTime": time that took 
         - "rnorms" : ||A*v[i] - u[i]*s[i]||
+        - "hist" : (if return_history) report at every outer iteration of:
 
-        Returned if `return_stats` is True.
+          - "elapsedTime": time spent up to now
+          - "numMatvecs": number of A*v spent up to now
+          - "nconv": number of converged pair
+          - "eval": eigenvalue of the first unconverged pair
+          - "resNorm": residual norm of the first unconverged pair
 
     See Also
     --------
@@ -1444,6 +1637,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         if precAug.shape[0] != precAug.shape[1] or precAug.shape[0] != m+n:
             raise ValueError('precAug: expected square matrix with size %d' % (m+n))
 
+    hist = {"numMatvecs": [], "elapsedTime": [], "nconv": [],
+            "sval": [], "resNorm": []}
+
     class PSP(PrimmeSvdsParams):
         def __init__(self):
             PrimmeSvdsParams.__init__(self)
@@ -1462,6 +1658,16 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             elif mode == primme_svds_op_augmented and precAug is not None:
                 return precAug.matmat(X) 
             return X
+
+        def mon(self, basisSvals, basisFlags, iblock, basisNorms, numConverged,
+                    lockedSvals, lockedFlags, lockedNorms, inner_its, LSRes,
+                    event, stage):
+            if event == 0 and len(iblock)>0: # event iteration
+                hist["numMatvecs"].append(self.stats.numMatvecs)
+                hist["elapsedTime"].append(self.stats.elapsedTime)
+                hist["nconv"].append(numConverged)
+                hist["sval"].append(basisSvals[iblock[0]])
+                hist["resNorm"].append(basisNorms[iblock[0]])
 
     pp = PSP()
 
@@ -1523,6 +1729,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if locku0 is not None:
         pp.numOrthoConst = min(locku0.shape[1], min(m,n))
 
+    if return_history and return_stats:
+        pp.monitor_set = 1
+
 # Set other parameters
     for dk, dv in kargs.items():
       setattr(pp, dk, dv)
@@ -1578,6 +1787,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime"])
         stats["rnorms"] = norms
+        if return_history:
+            stats["hist"] = hist
 
     if not return_singular_vectors:
         return svals if not return_stats else (svals, stats)

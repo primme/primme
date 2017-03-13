@@ -2771,7 +2771,7 @@ primme_preset_method
 Python Interface
 ****************
 
-Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, **kargs)
+Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_history=False, **kargs)
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -2881,8 +2881,11 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         See a detailed description of the methods and other possible
         values in [2].
 
-      * **report_stats** (*bool**, **optional*) -- If True, it is
+      * **return_stats** (*bool**, **optional*) -- If True, it is
         also returned extra information from PRIMME.
+
+      * **return_history** (*bool**, **optional*) -- If True, it is
+        also returned performance information at every iteration.
 
    Returns:
       * **w** (*array*) -- Array of k eigenvalues
@@ -2911,6 +2914,19 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         * "estimateLargestSVal": the largest singular value seen
 
         * "rnorms" : ||A*x[i] - x[i]*w[i]||
+
+        * "hist" : (if return_history) report at every outer
+          iteration of:
+
+          * "elapsedTime": time spent up to now
+
+          * "numMatvecs": number of A*v spent up to now
+
+          * "nconv": number of converged pair
+
+          * "eval": eigenvalue of the first unconverged pair
+
+          * "resNorm": residual norm of the first unconverged pair
 
    Raises:
       "PrimmeError" -- When the requested convergence is not obtained.
@@ -4800,7 +4816,7 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, **kargs)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
 
    Compute k singular values and vectors for a sparse matrix.
 
@@ -4873,8 +4889,11 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
       * **maxBlockSize** (*int**, **optional*) -- Maximum number of
         vectors added at every iteration.
 
-      * **report_stats** (*bool**, **optional*) -- If True, it is
+      * **return_stats** (*bool**, **optional*) -- If True, it is
         also returned extra information from PRIMME.
+
+      * **return_history** (*bool**, **optional*) -- If True, it is
+        also returned performance information at every iteration.
 
    Returns:
       * **u** (*ndarray, shape=(M, k), optional*) -- Unitary matrix
@@ -4902,7 +4921,18 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
         * "rnorms" : ||A*v[i] - u[i]*s[i]||
 
-        Returned if *return_stats* is True.
+        * "hist" : (if return_history) report at every outer
+          iteration of:
+
+          * "elapsedTime": time spent up to now
+
+          * "numMatvecs": number of A*v spent up to now
+
+          * "nconv": number of converged pair
+
+          * "eval": eigenvalue of the first unconverged pair
+
+          * "resNorm": residual norm of the first unconverged pair
 
    See also:
 

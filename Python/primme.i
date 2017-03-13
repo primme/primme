@@ -100,6 +100,7 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore PrimmeParams::massMatrixMatvec;
 %ignore PrimmeParams::applyPreconditioner;
 %ignore PrimmeParams::convTestFun;
+%ignore PrimmeParams::monitorFun;
 %ignore PrimmeParams::targetShifts;
 %ignore PrimmeParams::numTargetShifts;
 %ignore PrimmeParams::globalSumDouble;
@@ -110,10 +111,13 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore PrimmeParams::matrix;
 %ignore PrimmeParams::preconditioner;
 %ignore PrimmeParams::ShiftsForPreconditioner;
+%ignore PrimmeParams::convTest;
+%ignore PrimmeParams::monitor;
 %ignore primme_params::matrixMatvec;
 %ignore primme_params::massMatrixMatvec;
 %ignore primme_params::applyPreconditioner;
 %ignore primme_params::convTestFun;
+%ignore primme_params::monitorFun;
 %ignore primme_params::targetShifts;
 %ignore primme_params::numTargetShifts;
 %ignore primme_params::globalSumDouble;
@@ -124,6 +128,8 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore primme_params::matrix;
 %ignore primme_params::preconditioner;
 %ignore primme_params::ShiftsForPreconditioner;
+%ignore primme_params::convTest;
+%ignore primme_params::monitor;
 %ignore PrimmeSvdsParams::matrixMatvec;
 %ignore PrimmeSvdsParams::applyPreconditioner;
 %ignore PrimmeSvdsParams::convTestFun;
@@ -139,6 +145,8 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore PrimmeSvdsParams::ShiftsForPreconditioner;
 %ignore PrimmeSvdsParams::primme;
 %ignore PrimmeSvdsParams::primmeStage2;
+%ignore PrimmeSvdsParams::monitorFun;
+%ignore PrimmeSvdsParams::monitor;
 %ignore primme_svds_params::matrixMatvec;
 %ignore primme_svds_params::applyPreconditioner;
 %ignore primme_svds_params::convTestFun;
@@ -154,6 +162,8 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %ignore primme_svds_params::ShiftsForPreconditioner;
 %ignore primme_svds_params::primme;
 %ignore primme_svds_params::primmeStage2;
+%ignore primme_svds_params::monitorFun;
+%ignore primme_svds_params::monitor;
 
 
 %fragment("NumPy_Array_Requirements_extra",
@@ -290,6 +300,7 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 %numpy_typemaps_ext(std::complex<double>, NPY_CDOUBLE, int)
 %numpy_typemaps_ext(float               , NPY_FLOAT  , int)
 %numpy_typemaps_ext(std::complex<float> , NPY_CFLOAT , int)
+%numpy_typemaps_ext(int                 , NPY_INT32  , int)
 
 
 
@@ -343,6 +354,7 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
    (double **targetShifts, int *n)};
 
 /* typemaps for globalSumReal */
+
 %apply (int DIM1, double* IN_ARRAY1D) {
    (int lenYD, double *yd)};
 %apply (int DIM1, float* IN_ARRAY1D) {
@@ -351,6 +363,30 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
    (int lenXD, double *xd)};
 %apply (int DIM1, float *OUT_ARRAY1D) {
    (int lenXD, float *xd)};
+
+/* typemaps for monitorFun */
+
+%apply (int DIM1, double* IN_ARRAY1D) {
+   (int lenbasisEvals, double *basisEvals),
+   (int lenbasisNorms, double *basisNorms),
+   (int lenlockedEvals, double *lockedEvals),
+   (int lenlockedNorms, double *lockedNorms),
+   (int lenbasisSvals, double *basisSvals),
+   (int lenlockedSvals, double *lockedSvals)
+};
+%apply (int DIM1, float* IN_ARRAY1D) {
+   (int lenbasisEvals, float *basisEvals),
+   (int lenbasisNorms, float *basisNorms),
+   (int lenlockedEvals, float *lockedEvals),
+   (int lenlockedNorms, float *lockedNorms),
+   (int lenbasisSvals, float *basisSvals),
+   (int lenlockedSvals, float *lockedSvals)
+};
+%apply (int DIM1, int* IN_ARRAY1D) {
+   (int lenbasisFlags, int *basisFlags),
+   (int leniblock, int *iblock),
+   (int lenlockedFlags, int *lockedFlags)
+};
 
 %inline %{
 template <typename T, typename I, typename J>
@@ -432,6 +468,29 @@ static void myglobalSum(void *sendBuf, void *recvBuf, int *count, struct primme_
     *ierr = 0;
 }
 
+
+template <typename T>
+static void mymonitorFun(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
+      void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
+{
+    PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
+    pp->mon(
+            basisSize?*basisSize:0, static_cast<typename Real<T>::type*>(basisEvals),
+            basisFlags?*basisSize:0, basisFlags,
+            blockSize?*blockSize:0, iblock,
+            basisNorms?*basisSize:0, static_cast<typename Real<T>::type*>(basisNorms),
+            numConverged?*numConverged:-1,
+            numLocked?*numLocked:0, static_cast<typename Real<T>::type*>(lockedEvals),
+            lockedFlags?*numLocked:0, lockedFlags,
+            lockedNorms?*numLocked:0, static_cast<typename Real<T>::type*>(lockedNorms),
+            inner_its?*inner_its:-1,
+            LSRes?*static_cast<typename Real<T>::type*>(LSRes):static_cast<typename Real<T>::type>(-1.0),
+            (int)*event); 
+    *ierr = 0;
+}
+
+
 template <typename T, typename R>
 int my_primme(int lenEvals, R *evals,
             int len1Evecs, int len2Evecs, T *evecs,
@@ -462,6 +521,8 @@ int my_primme(int lenEvals, R *evals,
       primme->applyPreconditioner = myprevec<T>;
    if (primme->globalSum_set)
       primme->globalSumReal = myglobalSum<T>;
+   if (primme->monitor_set)
+      primme->monitorFun = mymonitorFun<T>;
    int ret = tprimme(evals, evecs, resNorms, static_cast<primme_params*>(primme));
    return ret;
 }
@@ -517,6 +578,29 @@ static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
    *ierr = 0;
 }
 
+template <typename T>
+static void mymonitorFun_svds(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
+      void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
+{
+    PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
+    pp->mon(
+            basisSize?*basisSize:0, static_cast<typename Real<T>::type*>(basisEvals),
+            basisFlags?*basisSize:0, basisFlags,
+            blockSize?*blockSize:0, iblock,
+            basisNorms?*basisSize:0, static_cast<typename Real<T>::type*>(basisNorms),
+            numConverged?*numConverged:-1,
+            numLocked?*numLocked:0, static_cast<typename Real<T>::type*>(lockedEvals),
+            lockedFlags?*numLocked:0, lockedFlags,
+            lockedNorms?*numLocked:0, static_cast<typename Real<T>::type*>(lockedNorms),
+            inner_its?*inner_its:-1,
+            LSRes?*static_cast<typename Real<T>::type*>(LSRes):static_cast<typename Real<T>::type>(-1.0),
+            (int)*event,
+            *stage); 
+    *ierr = 0;
+}
+
+
 template <typename T, typename R>
 int my_primme_svds(int lenSvals, R *svals,
             int len1SvecsLeft, int len2SvecsLeft, T *svecsLeft,
@@ -556,6 +640,8 @@ int my_primme_svds(int lenSvals, R *svals,
       primme_svds->applyPreconditioner = myprevec_svds<T>;
    if (primme_svds->globalSum_set)
       primme_svds->globalSumReal = myglobalSum_svds<T>;
+   if (primme_svds->monitor_set)
+      primme_svds->monitorFun = mymonitorFun_svds<T>;
    T *svecs = new T[(primme_svds->nLocal+primme_svds->mLocal)*(primme_svds->numOrthoConst+primme_svds->numSvals)];
    copy_matrix(svecsLeft, primme_svds->mLocal, primme_svds->numOrthoConst,
          (PRIMME_INT)len1SvecsLeft, svecs, primme_svds->mLocal);

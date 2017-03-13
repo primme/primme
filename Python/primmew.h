@@ -47,6 +47,7 @@ class PrimmeParams : public primme_params {
       primme_initialize(static_cast<primme_params*>(this));
       correctionParams.precondition = 0;
       globalSum_set = 0;
+      monitor_set = 0;
    }
 
    virtual ~PrimmeParams() {
@@ -89,6 +90,15 @@ class PrimmeParams : public primme_params {
    virtual void globalSum(int lenYD, float *yd, int lenXD, float *xd)=0;
    virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd)=0;
    int globalSum_set;
+   virtual void mon(int lenbasisEvals, float *basisEvals, int lenbasisFlags, int *basisFlags,
+      int leniblock, int *iblock, int lenbasisNorms, float *basisNorms, int numConverged,
+      int lenlockedEvals, float *lockedEvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, float *lockedNorms,
+      int inner_its, float LSRes, int event)=0;
+   virtual void mon(int lenbasisEvals, double *basisEvals, int lenbasisFlags, int *basisFlags,
+      int leniblock, int *iblock, int lenbasisNorms, double *basisNorms, int numConverged,
+      int lenlockedEvals, double *lockedEvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, double *lockedNorms,
+      int inner_its, double LSRes, int event)=0;
+   int monitor_set;
 };
 
 class PrimmeSvdsParams : public primme_svds_params {
@@ -98,6 +108,7 @@ class PrimmeSvdsParams : public primme_svds_params {
       primme_svds_initialize(static_cast<primme_svds_params*>(this));
       precondition = 0;
       globalSum_set = 0;
+      monitor_set = 0;
    }
 
    virtual ~PrimmeSvdsParams() {
@@ -141,4 +152,13 @@ class PrimmeSvdsParams : public primme_svds_params {
    virtual void globalSum(int lenYD, float *yd, int lenXD, float *xd)=0;
    virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd)=0;
    int globalSum_set;
+   virtual void mon(int lenbasisSvals, float *basisSvals, int lenbasisFlags, int *basisFlags,
+      int leniblock, int *iblock, int lenbasisNorms, float *basisNorms, int numConverged,
+      int lenlockedSvals, float *lockedSvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, float *lockedNorms,
+      int inner_its, float LSRes, int event, int stage)=0;
+   virtual void mon(int lenbasisSvals, double *basisSvals, int lenbasisFlags, int *basisFlags,
+      int leniblock, int *iblock, int lenbasisNorms, double *basisNorms, int numConverged,
+      int lenlockedSvals, double *lockedSvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, double *lockedNorms,
+      int inner_its, double LSRes, int event, int stage)=0;
+   int monitor_set;
 };
