@@ -189,6 +189,8 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``void *`` |commInfo|
       | ``void *`` |matrix|
       | ``void *`` |preconditioner|
+      | ``void *`` convTest
+      | ``void *`` monitor
       |
       | *Advanced options*
       | ``PRIMME_INT`` |ldevecs|, leading dimension of the evecs.
@@ -211,8 +213,9 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``struct restarting_params`` :c:member:`restartingParams <primme_params.restartingParams.scheme>`
       | ``struct correction_params`` :c:member:`correctionParams <primme_params.correctionParams.precondition>`
       | ``struct primme_stats`` :c:member:`stats <primme_params.stats.numOuterIterations>`
-      | ``void (*`` |convTestFun| ``)(...)``
-      | ``PRIMME_INT`` |ldOPS|, leading dimension to use in |matrixMatvec|...
+      | ``void (*`` |convTestFun| ``)(...)``, custom convergence criterion.
+      | ``PRIMME_INT`` |ldOPS|, leading dimension to use in |matrixMatvec|.
+      | ``void (*`` |monitorFun| ``)(...)``, custom convergence history.
 
 .. only:: text
 
@@ -244,6 +247,8 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       void *commInfo;
       void *matrix;
       void *preconditioner;
+      void *convTest;
+      void *monitor;
       
       /* Advanced options */
       PRIMME_INT ldevecs; // leading dimension of the evecs
@@ -266,8 +271,9 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       struct restarting_params restartingParams;
       struct correction_params correctionParams;
       struct primme_stats stats;
-      void (*convTestFun)(...);
-      PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec...
+      void (*convTestFun)(...); // custom convergence criterion
+      PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec
+      void (*monitorFun)(...); // custom convergence history
  
 PRIMME requires the user to set at least the dimension of the matrix (|n|) and
 the matrix-vector product (|matrixMatvec|), as they define the problem to be solved.

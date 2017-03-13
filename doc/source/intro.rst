@@ -31,6 +31,8 @@ Changelog
 ^^^^^^^^^
 Changes in PRIMME 2.1 (released on XXX):
 
+* Proper convergence history for singular value solvers.
+
 * Support Octave.
 
 Changes in PRIMME 2.0 (released on September 19, 2016):

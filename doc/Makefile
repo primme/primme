@@ -133,15 +133,12 @@ text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
 	@echo
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
-	@cat $(BUILDDIR)/text/readme.txt $(BUILDDIR)/text/intro.txt \
-	   $(BUILDDIR)/text/apieigs.txt \
-	   $(BUILDDIR)/text/primmec.txt $(BUILDDIR)/text/primmef77.txt \
-	   $(BUILDDIR)/text/appendix.txt $(BUILDDIR)/text/pyeigsh.txt \
-	   $(BUILDDIR)/text/mateigs.txt \
-	   $(BUILDDIR)/text/apisvds.txt \
-	   $(BUILDDIR)/text/svdsc.txt $(BUILDDIR)/text/svdsf77.txt \
-	   $(BUILDDIR)/text/appendixsvds.txt $(BUILDDIR)/text/pysvds.txt \
-	   > ../readme.txt
+	@rm -f ../readme.txt
+	@for i in readme intro apieigs primmec primmef77 appendix pyeigsh mateigs \
+	          apisvds svdsc svdsf77 appendixsvds pysvds; do \
+		cat $(BUILDDIR)/text/$${i}.txt >> ../readme.txt; \
+		echo >> ../readme.txt; \
+	done
 
 man:
 	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) $(BUILDDIR)/man
