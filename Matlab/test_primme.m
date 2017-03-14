@@ -63,9 +63,19 @@ end
 % (too much convenient for a diagonal matrix)
 
 Adiag = diag(A);
-Pfun = @(x)((Adiag - 30.5).\x);
+
+Pfun = @(x)((Adiag - 30.5).\x); % Pass a function handler
 evals = primme_eigs(A, k, 30.5, [], [], Pfun);
+
+P = spdiags(Adiag - 30.5, 0, 50, 50); % Pass a matrix
+evals = primme_eigs(A, k, 30.5, [], [], P);
  
+% Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+
+A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+[L,U] = ilu(A, struct('type', 'nofill'));
+evals = primme_eigs(A, k, 30.5, [], [], L, U);
+
 % Compute the 6 largest singular values of a matrix with tolerance 1e-6
 
 A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -112,5 +122,12 @@ Pstruct = struct('AHA', diag(A'*A), ...
                  'AAH', ones(200, 1), 'aug', ones(250, 1));
 Pfun = @(x,mode)Pstruct.(mode).\x;
 svals = primme_svds(A, 5, 'S', [], Pfun);
+
+% Compute the 5 smallest singular values of a square matrix using ILU(0)
+% as a preconditioner
+
+A = sparse(diag(1:50) + diag(ones(49,1), 1));
+[L,U] = ilu(A, struct('type', 'nofill'));
+svals = primme_svds(A, 5, 'S', [], L, U);
 
 disp('Success');
