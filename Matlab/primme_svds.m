@@ -55,7 +55,7 @@ function [varargout] = primme_svds(varargin)
 %   applying P\X or (P1*P2)\X. If P is [] then a preconditioner is not
 %   applied. P may be a function handle PFUN such that PFUN(X,'AHA')
 %   returns an approximation of (A'*A)\X, PFUN(X,'AAH'), of (A*A')\X and
-%   PFUN(X,'aug'), of [zeros(M,N) A;A' zeros(N,M)]\X.
+%   PFUN(X,'aug'), of [zeros(N,N) A';A zeros(M,M)]\X.
 %
 %   [U,S,V] = PRIMME_SVDS(...) returns also the corresponding singular vectors.
 %   If A is M-by-N and K singular triplets are computed, then U is M-by-K
@@ -206,7 +206,7 @@ function [varargout] = primme_svds(varargin)
       nextArg = nextArg + 1;
    end
 
-   if nargin >= nextArg
+   if nargin == nextArg
       P = varargin{nextArg};
       if isnumeric(P)
          P = @(x,mode)precondsvds(P,x,mode);
@@ -216,6 +216,17 @@ function [varargout] = primme_svds(varargin)
       opts.applyPreconditioner = P;
       opts.precondition = 1;
       nextArg = nextArg + 1;
+   end
+   
+   if nargin >= nextArg
+      P1 = varargin{nextArg};
+      P2 = varargin{nextArg+1};
+      if ~isnumeric(P1) || ~isnumeric(P2)
+         error('p1 and p2 must be matrices');
+      end
+      P = @(x,mode)precondsvds2(P1, P2, x, mode);
+      opts.applyPreconditioner = P;
+      opts.precondition = 1;
    end
  
    % Test whether the given matrix and preconditioner are valid
@@ -526,7 +537,17 @@ function [y] = precondsvds(P, x, mode)
    elseif strcmp(mode, 'AAH')
       y = P'\(P\x);
    else
-      y = [P'\(P\x(1:size(P,1),:)); P\(P'\x(size(P,1):end,:))];
+      y = [P\x(size(P,1)+1:end,:); P'\x(1:size(P,1),:)];
+   end
+end
+
+function [y] = precondsvds2(P1, P2, x, mode)
+   if strcmp(mode, 'AHA')
+      y = P2\(P1\(P1'\(P2'\x)));
+   elseif strcmp(mode, 'AAH')
+      y = P1'\(P2'\(P2\(P1\x)));
+   else
+      y = [P2\(P1\x(size(P1,1)+1:end,:)); P1'\(P2'\x(1:size(P1,1),:))];
    end
 end
 
