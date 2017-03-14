@@ -16,8 +16,8 @@ FLDR ?= $(F77)
 #---------------------------------------------------------------
 # Debian, Ubuntu, SuSE Linux (>= 13.2)
 #
-#LDFLAGS ?=
-#LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
+LDFLAGS ?=
+LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
 #---------------------------------------------------------------
 # SuSE Linux (<= 13.1), Centos
 #
@@ -34,8 +34,8 @@ FLDR ?= $(F77)
 # Mac OS X
 #
 # LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
-LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
-LIBS = -lprimme -lm
+# LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
+# LIBS = -lprimme -lm
 #---------------------------------------------------------------
 # Using Intel compilers
 #
