@@ -132,9 +132,16 @@ function [varargout] = primme_eigs(varargin)
 %      opts.orthoConst = x;  
 %      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
 %
-%      % Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
+%      % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+%      % by passing the matrices L and U.
+%      A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+%      [L,U] = ilu(A, struct('type', 'nofill'));
+%      d = primme_eigs(A, k, 30.5, [], [], L, U);
+%
+%      % Compute the 6 closest eigenvalues to 30.5 using Jacobi preconditioner
+%      % by passing a function.
 %      Pfun = @(x)(diag(A) - 30.5)\x;
-%      d = primme_eigs(A,5,30.5,[],[],Pfun) % find the closest 5 to 30.5
+%      d = primme_eigs(A,6,30.5,[],[],Pfun);
 %
 %   For more details see PRIMME documentation at
 %   http://www.cs.wm.edu/~andreas/software/doc/readme.html 

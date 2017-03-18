@@ -1,3 +1,4 @@
+.. highlight:: bash
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
@@ -10,6 +11,12 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77, M
   
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
+
+From PRIMME 2.0 to 2.1:
+
+* Added members |monitorFun| and ``monitor`` to :c:type:`primme_params`.
+
+* Added members |SmonitorFun| and ``monitor`` to :c:type:`primme_svds_params`.
 
 From PRIMME 1.x to 2.0:
 
@@ -31,7 +38,17 @@ Changelog
 ^^^^^^^^^
 Changes in PRIMME 2.1 (released on XXX):
 
+* Improve robustness by broadcasting the result of critical LAPACK_ operations instead of
+  replicating them in every process; this is specially convenient when using a threaded BLAS_/LAPACK_
+  or not all processes run on the same processor model.
+
+* New stopping criteria in QMR that improve performance in interior problems.
+
+* MATLAB interface for singular value problems, :mat:func:`primme_svds`.
+
 * Proper convergence history for singular value solvers.
+
+* Single precision support in MATLAB interface.
 
 * Support Octave.
 

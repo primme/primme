@@ -107,7 +107,16 @@ function [varargout] = primme_svds(varargin)
 %      opts.orthoConst = {u,v};  
 %      [s,rnorms] = primme_svds(A,10,'S',opts) % find another 10
 %
-%      % Define a preconditioner only for first stage (A'*A)
+%      % Compute the 5 smallest singular values of a square matrix using ILU(0)
+%      % as a preconditioner
+%      A = sparse(diag(1:50) + diag(ones(49,1), 1));
+%      [L,U] = ilu(A, struct('type', 'nofill'));
+%      svals = primme_svds(A, 5, 'S', [], L, U);
+%      
+%      % Compute the 5 smallest singular values of a rectangular matrix using
+%      % Jacobi preconditioner on (A'*A)
+%      A = sparse(diag(1:50) + diag(ones(49,1), 1));
+%      A(200,50) = 1;  % size(A)=[200 50]
 %      Pstruct = struct('AHA', diag(A'*A),...
 %                       'AAH', ones(200,1), 'aug', ones(250,1));
 %      Pfun = @(x,mode)Pstruct.(mode).\x;

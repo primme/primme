@@ -150,6 +150,7 @@
 
 
 
+.. _PRIMME: https://github.com/primme/primme
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/
 .. _LAPACK: http://www.netlib.org/lapack/
 .. _BLAS: http://www.netlib.org/blas/
@@ -158,3 +159,5 @@
 .. _column-major: https://en.wikipedia.org/wiki/Row-major_order
 .. _NumPy: http://www.numpy.org/
 .. _`SciPy Library`: https://www.scipy.org/scipylib/index.html
+.. _`MATLAB eigs`: https://www.mathworks.com/help/matlab/ref/eigs.html
+.. _`MATLAB svds`: https://www.mathworks.com/help/matlab/ref/svds.html

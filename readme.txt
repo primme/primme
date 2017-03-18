@@ -47,6 +47,8 @@ Table Of Contents:
 
   * Python Interface
 
+  * MATLAB Interface
+
   * Appendix
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
@@ -63,6 +65,12 @@ MATLAB and Python.
 
 Incompatibilities
 =================
+
+From PRIMME 2.0 to 2.1:
+
+* Added members "monitorFun" and "monitor" to "primme_params".
+
+* Added members "monitorFun" and "monitor" to "primme_svds_params".
 
 From PRIMME 1.x to 2.0:
 
@@ -91,7 +99,19 @@ Changelog
 
 Changes in PRIMME 2.1 (released on XXX):
 
+* Improve robustness by broadcasting the result of critical LAPACK
+  operations instead of replicating them in every process; this is
+  specially convenient when using a threaded BLAS/LAPACK or not all
+  processes run on the same processor model.
+
+* New stopping criteria in QMR that improve performance in interior
+  problems.
+
+* MATLAB interface for singular value problems, "primme_svds()".
+
 * Proper convergence history for singular value solvers.
+
+* Single precision support in MATLAB interface.
 
 * Support Octave.
 
@@ -2972,204 +2992,231 @@ MATLAB Interface
 
 function [varargout] = primme_eigs(varargin)
 
-   "primme_eigs()" finds a few eigenvalues and eigenvectors of a real
-   symmetric or Hermitian matrix, A, by calling the function
-   "PRIMME_mex" (flag,dim,...). This in turn calls PRIMME. Full PRIMME
-   functionality is supported.
+   "primme_eigs()" finds a few eigenvalues and their corresponding
+   eigenvectors of a real symmetric or Hermitian matrix, "A", by
+   calling PRIMME.
 
-   Input: [A, numEvals, target, opts, eigsMethod, P]
+   "D = primme_eigs(A)" returns a vector of "A"'s 6 largest algebraic
+   eigenvalues.
 
-   Output: [evals, evecs, norms, primmeout]
+   "D = primme_eigs(Afun,dim)" accepts a function "Afun" instead of a
+   matrix. "Afun" is a function handle and "y = Afun(x)" returns the
+   matrix-vector product "A*x". In all the following signatures, "A"
+   can be replaced by "Afun, dim".
 
-   We provide different levels of function calls, similarly to MATLAB
-   eigs():
+   "D = primme_eigs(A,k)" finds the "k" largest magnitude eigenvalues.
+   "k" must be less than the dimension of the matrix "A".
 
-      primme_eigs(A)
-      primme_eigs(A, numEvals)
-      primme_eigs(A, numEvals, target)
-      primme_eigs(A, numEvals, target, opts)
-      primme_eigs(A, numEvals, target, opts, eigsMethod)
-      primme_eigs(A, numEvals, target, opts, eigsMethod, P)
-      primme_eigs(A, numEvals, target, opts, eigsMethod, P1,P2)
-      primme_eigs(A, numEvals, target, opts, eigsMethod, Pfun)
-      primme_eigs(Afun, dim,...)
+   "D = primme_eigs(A,k,target)" returns "k" eigenvalues such that: If
+   "target" is a real number, it finds the closest eigenvalues to
+   "target". If "target" is
 
-   "primme_eigs(A)" returns a vector of A's 6 largest algebraic
-   eigenvalues. A must be real symmetric or complex Hermitian and
-   should be large and sparse.
+      "'LA'" or "'SA'", eigenvalues with the largest or smallest
+      algebraic value
 
-   "primme_eigs(Afun, dim)" accepts a function AFUN instead of a
-   matrix. AFUN is a function handle and "y = Afun(x)" returns the
-   matrix-vector product A*x. "primme_eigs(A,...)" could be replaced
-   by primme_eigs(Afun, dim,...) in any of above levels of function
-   calls. Examples are given in PRIMME_MEX_Readme.txt in the root
-   directory of PRIMME_MEX folder.
+      "'LM'" or "'SM'", eigenvalues with the largest or smallest
+      distance from the given values in "OPTS.targetShifts", or zero
+      if "OPTS.targetShifts" is empty. If *m* values are provided, the
+      first *m* eigenvalues *D* are found s.t. max/min
+      "ABS(D(i)-OPTS.targetShifts(i))", for "i=1:m".
+      "OPTS.targerShifts(m)" is used for "i=m+1:k".
 
-   "[V, D] = primme_eigs(A)" returns a diagonal matrix D, of A's 6
-   largest algebraic eigenvalues and a matrix V whose columns are the
-   corresponding eigenvectors.
+      "'CLT'" or "'CGT'", find eigenvalues closest to but less or
+      greater than the given values in "OPTS.targetShifts".
 
-   "[V, D, norms, primmeout] = primme_eigs(A)" also returns an array
-   of the residual norms of the computed eigenpairs, and a struct to
-   report statistical information about "numOuterIterations",
-   "numRestarts", "numMatvecs" and "numPreconds".
+   "D = primme_eigs(A,k,target,OPTS)" specifies extra solver
+   parameters. Some default values are indicated in brackets {}:
 
-   "primme_eigs(A, numEvals)" finds the "numEvals" largest algebraic
-   eigenvalues. numEvals must be less than the dimension of the matrix
-   A.
+      * "aNorm": the estimated 2-norm of A {estimate the norm
+        internally}
 
-   "primme_eigs(A, numEvals, target)" returns numEvals target
-   eigenvalues. "target" could be a string like below:
+      * "tol": convergence tolerance: "NORM(A*X(:,i)-X(:,i)*D(i,i))
+        < tol*NORM(A)" (see "eps")
 
-   * 'LA' : "primme_largest" (default)
+      * "maxBlockSize": maximum block size (useful for high
+        multiplicities) {1}
 
-   * 'SA' : "primme_smallest"
+      * "disp": different level reporting (0-3) (see HIST) {no
+        output 0}
 
-   * 'CGT': "primme_closest_geq"
+      * "isreal": whether A represented by "Afun" is real or complex
+        {false}
 
-   * 'CLT': "primme_closest_leq"
+      * "targetShifts": shifts for interior eigenvalues (see
+        "target") {[]}
 
-   * 'CT' : "primme_closest_abs"
+      * "v0": any number of initial guesses to the eigenvectors (see
+        "initSize" {[]}
 
-   "primme_eigs(A, numEvals, target, opts, eigsMethod)" specifies any
-   of a set of possible options as explained below in the opts
-   structure.
+      * "orthoConst": external orthogonalization constraints (see
+        "numOrthoConst" {[]}
 
-   "eigsMethod" is an integer specifying one of the preset methods in
-   PRIMME:
+      * "locking": 1, hard locking; 0, soft locking
 
-   * 0:    "PRIMME_DYNAMIC", (default)        Switches dynamically
-     to the best method
+      * "p": maximum size of the search subspace (see
+        "maxBasisSize")
 
-   * 1:    "PRIMME_DEFAULT_MIN_TIME",         Currently set at
-     JDQMR_ETol
+      * "minRestartSize": minimum Ritz vectors to keep in restarting
 
-   * 2:    "PRIMME_DEFAULT_MIN_MATVECS",      Currently set at
-     GD+block
+      * "maxMatvecs": maximum number of matrix vector
+        multiplications {Inf}
 
-   * 3:    "PRIMME_Arnoldi",                  obviously not an
-     efficient choice
+      * "maxit": maximum number of outer iterations (see
+        "maxOuterIterations") {Inf}
 
-   * 4:    "PRIMME_GD",                       classical block
-     Generalized Davidson
+      * "scheme": the restart scheme {'primme_thick'}
 
-   * 5:    "PRIMME_GD_plusK",                 GD+k block GD with
-     recurrence restarting
+      * "maxPrevRetain": number of Ritz vectors from previous
+        iteration that are kept after restart {typically >0}
 
-   * 6:    "PRIMME_GD_Olsen_plusK",           GD+k with approximate
-     Olsen precond.
+      * "robustShifts": set to true may avoid stagnation or
+        misconvergence
 
-   * 7:    "PRIMME_JD_Olsen_plusK",           GD+k, exact Olsen (two
-     precond per step)
+      * "maxInnerIterations": maximum number of inner solver
+        iterations
 
-   * 8:    "PRIMME_RQI",                      Rayleigh Quotient
-     Iteration. Also INVIT, but for INVIT provide targetShifts
+      * "LeftQ": use the locked vectors in the left projector
 
-   * 9:    "PRIMME_JDQR",                     Original block, Jacobi
-     Davidson
+      * "LeftX": use the approx. eigenvector in the left projector
 
-   * 10:   "PRIMME_JDQMR",                    Our block JDQMR method
-     (similar to JDCG)
+      * "RightQ": use the locked vectors in the right projector
 
-   * 11:   "PRIMME_JDQMR_ETol",               Slight, but efficient
-     JDQMR modification
+      * "RightX": use the approx. eigenvector in the right projector
 
-   * 12:   "PRIMME_SUBSPACE_ITERATION",       equiv. to
-     GD(block,2*block)
+      * "SkewQ": use the preconditioned locked vectors in the right
+        projector
 
-   * 13:   "PRIMME_LOBPCG_OrthoBasis",        equiv. to
-     GD(nev,3*nev)+nev
+      * "SkewX": use the preconditioned approx. eigenvector in the
+        right projector
 
-   * 14:   "PRIMME_LOBPCG_OrthoBasis_Window"  equiv. to
-     GD(block,3*block)+block nev>block
+      * "relTolBase": a legacy from classical JDQR (recommend not
+        use)
 
-   "primme_eigs(A, numEvals, target, opts, eigsMethod, P)"
+      * "convTest": how to stop the inner QMR Method
 
-   "primme_eigs(A, numEvals, target, opts, eigsMethod, P1, P2)" uses
-   preconditioner P or P = P1*P2 to accelerate convergence of the
-   methods. If P is [] then a preconditioner is not applied. P may be
-   a function handle Pfun such that Pfun(x) returns Px.
+      * "iseed": random seed
 
-   "opts" is an option structure which contain following parameters:
+   "D = primme_eigs(A,k,target,OPTS,METHOD)" specifies the eigensolver
+   method. METHOD can be one of the next strings:
 
-   * "aNorm": the estimate norm value of matrix A [{0.0}|scaler]
+      * '"PRIMME_DYNAMIC"', (default)        switches dynamically to
+        the best method
 
-   * "eps": desired computing accuracy [{1e-12}|scaler]
+      * '"PRIMME_DEFAULT_MIN_TIME"',         best method for low-
+        cost matrix-vector product
 
-   * "maxBlockSize": maximum block size the PRIMME uses [{1}|scaler]
+      * '"PRIMME_DEFAULT_MIN_MATVECS"',      best method for heavy
+        matvec/preconditioner
 
-   * "printLevel": different level reporting(0-5) [{1}|scaler]
+      * '"PRIMME_Arnoldi"',                  Arnoldi not implemented
+        efficiently
 
-   * "outputFile": output file name where user wants to save results
+      * '"PRIMME_GD"',                       classical block
+        Generalized Davidson
 
-   * "precondition": set to 1 if use preconditioner [{0}|1]
+      * '"PRIMME_GD_plusK"',                 GD+k block GD with
+        recurrence restarting
 
-   * isreal: the complexity of A represented by AFUN [{ture}|false]
+      * '"PRIMME_GD_Olsen_plusK"',           GD+k with approximate
+        Olsen precond.
 
-   * "numTargetShifts": number of shifts for interior eigenvalues
-     [{0}|scaler]
+      * '"PRIMME_JD_Olsen_plusK"',           GD+k, exact Olsen (two
+        precond per step)
 
-   * "targetShifts": shifts for interior eigenvalues [{}|vector]
+      * '"PRIMME_RQI"',                      Rayleigh Quotient
+        Iteration. Also INVIT, but for INVIT provide OPTS.targetShifts
 
-   * "initSize": On INPUT, the number of initial guesses provided in
-     evecs array. ON OUTPUT, the number of converged eigenpairs
-     [{0}|scaler]
+      * '"PRIMME_JDQR"',                     Original block, Jacobi
+        Davidson
 
-   * "numOrthoConst": Number of external orthogonalization
-     constraints provided in the first numOrthoConst vectors of evecs
-     [{0}|scaler]
+      * '"PRIMME_JDQMR"',                    Our block JDQMR method
+        (similar to JDCG)
 
-   * locking: If set to 1, hard locking will be used, otherwise the
-     code will try to use soft locking [{0}|1]
+      * '"PRIMME_JDQMR_ETol"',               Slight, but efficient
+        JDQMR modification
 
-   * "maxBasisSize": maximum basis size allowed in the main
-     iteration
+      * '"PRIMME_SUBSPACE_ITERATION"',       equivalent to
+        GD(block,2*block)
 
-   * "minRestartSize": minimum Ritz vectors to restart
+      * '"PRIMME_LOBPCG_OrthoBasis"',        equivalent to
+        GD(nev,3*nev)+nev
 
-   * "maxMatvecs": maximum number of matrix vector multiplications
-     [{INT_MAX}|scaler]
+      * '"PRIMME_LOBPCG_OrthoBasis_Window"'  equivalent to
+        GD(block,3*block)+block nev>block
 
-   * "maxOuterIterations": maximum number of outer iterations
-     [{INT_MAX}|scaler]
+   "D = primme_eigs(A,k,target,OPTS,METHOD,P)" "D =
+   primme_eigs(A,k,target,OPTS,METHOD,P1,P2)" uses preconditioner "P"
+   or "P = P1*P2" to accelerate convergence of the method. If "P" is
+   "[]" then a preconditioner is not applied. "P" may be a function
+   handle "PFUN" such that "PFUN(x)" returns "P\x".
 
-   * restartingParams. "scheme": the restart scheme [{primme_thick}|
-     primme_dtr]
+   "[X,D] = primme_eigs(...)" returns a diagonal matrix "D" with the
+   eigenvalues and a matrix "X" whose columns are the corresponding
+   eigenvectors.
 
-   * restartingParams. "maxPrevRetain": number of approximations
-     from previous iteration to be retained after restart [{1}|scaler]
+   "[X,D,R] = primme_eigs(...)" also returns an array of the residual
+   norms of the computed eigenpairs.
 
-   * "robustShifts": set to 1 if use robustShifting to help avoid
-     stagnation and misconverge [{0}|1]
+   "[X,D,R,STATS] = primme_eigs(...)" returns a "struct" to report
+   statistical information about number of matvecs, elapsed time, and
+   estimates for the largest and the smallest algebraic eigenvalues on
+   "A".
 
-   * "maxInnerIterations": number of inner QMR iterations
-     [{0}|scaler]
+   "[X,D,R,STATS,HIST] = primme_eigs(...)" instead of printing the
+   convergence history, it is returned. Every row is a record, and the
+   columns report:
 
-   * "LeftQ": a projector with Q must be applied on the left [{0}|1]
+      * "HIST(:,1)": number of matvecs
 
-   * "LeftX": a projector with X must be applied on the left [{0}|1]
+      * "HIST(:,2)": time
 
-   * "RightQ": a projector with Q must be applied on the right
-     [{0}|1]
+      * "HIST(:,3)": number of converged/locked pairs
 
-   * "RightX": a projector with X must be applied on the right
-     [{0}|1]
+      * "HIST(:,4)": block index
 
-   * "SkewQ": the Q right projector must be skew [{0}|1]
+      * "HIST(:,5)": approximate eigenvalue
 
-   * "SkewX": the X right projector must be skew [{0}|1]
+      * "HIST(:,6)": residual norm
 
-   * "relTolBase": a legacy from calssical JDQR (recommend not use)
+      * "HIST(:,7)": QMR residual norm
 
-   * "convTest": how to stop the inner QMR Method
+   "OPTS.disp" controls the granularity of the record. If "OPTS.disp
+   == 1", "HIST" has one row per converged eigenpair and only the
+   first three columns are reported; if "OPTS.disp == 2", "HIST" has
+   one row per outer iteration and only the first six columns are
+   reported; and otherwise "HIST" has one row per QMR iteration and
+   all columns are reported.
 
-   * "iseed": set iseed value for initialization
+   Examples:
 
-   * "intWorkSize": memory size for integer workspace
+      A = diag(1:100);
 
-   * "realWorkSize": memory size for real or complex workspace
+      d = primme_eigs(A,10) % the 10 largest magnitude eigenvalues
 
-   See also "Matlab/readme.txt".
+      d = primme_eigs(A,10,'SM') % the 10 smallest magnitude eigenvalues
+
+      d = primme_eigs(A,10,25) % the 10 closest eigenvalues to 25
+
+      opts = struct();
+      opts.tol = 1e-4; % set tolerance
+      opts.maxBlockSize = 2; % set block size
+      [x,d] = primme_eigs(A,10,'S',opts,'DEFAULT_MIN_TIME')
+
+      opts.orthoConst = x;
+      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
+
+      % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+      % by passing the matrices L and U.
+      A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+      [L,U] = ilu(A, struct('type', 'nofill'));
+      d = primme_eigs(A, k, 30.5, [], [], L, U);
+
+      % Compute the 6 closest eigenvalues to 30.5 using Jacobi preconditioner
+      % by passing a function.
+      Pfun = @(x)(diag(A) - 30.5)\x;
+      d = primme_eigs(A,6,30.5,[],[],Pfun) % find the closest 5 to 30.5
+
+   See also: MATLAB eigs, "primme_svds()"
 
 Singular Value Problems
 ***********************
@@ -3179,6 +3226,8 @@ Singular Value Problems
 * FORTRAN Library Interface
 
 * Python Interface
+
+* MATLAB Interface
 
 * Appendix
 
@@ -4959,4 +5008,164 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
    >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
    ['5.99871', '5.99057', '6.01065']
+
+MATLAB Interface
+****************
+
+function [varargout] = primme_svds(varargin)
+
+   "primme_svds()" find a few singular values and vectors of large,
+   sparse matrices. by calling PRIMME.
+
+   "S = primme_svds(A)" computes the 6 largest singular values of "A".
+
+   "S = primme_svds(AFUN,M,N)" accepts the function handle "AFUN" to
+   perform the matrix vector products with an M-by-N matrix "A".
+   "AFUN(X,'notransp')" returns "A*X" while "AFUN(X,'transp')" returns
+   "A’*X". In all the following, "A" can be replaced by "AFUN,M,N".
+
+   "S = primme_svds(A,K)" computes the "K" largest singular values of
+   "A".
+
+   "S = primme_svds(A,K,SIGMA)" computes the K singular values closest
+   to the scalar shift "SIGMA".
+
+      * If "SIGMA" is a vector, find a singular value closest to
+        each "SIGMA(i)"
+
+      * If "SIGMA" is "'L'", it computes the largest singular
+        values.
+
+      * if "SIGMA" is "'S'", it computes the smallest singular
+        values.
+
+   "S = primme_svds(A,K,SIGMA,OPTIONS)" specifies extra solver
+   parameters. Some default values are indicated in brackets {}:
+
+      * "aNorm":    estimation of the 2-norm A
+
+      * "tol":     convergence tolerance "NORM([A*V-U*S;A'*U-V*S])
+        <= tol * NORM(A)" (see "eps") { "1e-10"}
+
+      * "maxit":   maximum number of iterations (see "maxMatvecs")
+        {inf}
+
+      * "p":       maximum basis size (see "maxBasisSize")
+
+      * "disp":    level of reporting 0-3 (see HIST) {0: no output}
+
+      * "isreal":  if 0, the matrix is complex; else it's real {1:
+        complex}
+
+      * "isdouble": if 0, the matrix is single; else it's double {1:
+        double}
+
+      * "method":  which equivalent eigenproblem to solve
+
+           * '"primme_svds_normalequations"': "A'*A" or "A*A'"
+
+           * '"primme_svds_augmented"': "[0 A';A 0]"
+
+           * '"primme_svds_hybrid"': first normal equations and then
+             augmented
+
+      * "u0":       approximate left singular vectors (see
+        "initSize") {[]}
+
+      * "v0":       approximate right singular vectors {[]}
+
+      * "orthoConst": external orthogonalization constraints (see
+        "numOrthoConst") {[]}
+
+      * "locking":  1, hard locking; 0, soft locking
+
+      * "maxBlockSize": maximum block size
+
+      * "iseed":    random seed
+
+      * "primme":   options for first stage solver
+
+      * "primmeStage2": options for second stage solver
+
+   The available options for "OPTIONS.primme" and "primmeStage2" are
+   the same as "primme_eigs()", plus the option "'method'".
+
+   "S = primme_svds(A,K,SIGMA,OPTIONS,P)" "S =
+   primme_svds(A,K,SIGMA,OPTIONS,P1,P2)" makes use of a
+   preconditioner, applying "P\X" or "(P1*P2)\X". If "P" is "[]" then
+   a preconditioner is not applied. "P" may be a function handle
+   "PFUN" such that "PFUN(X,'AHA')" returns an approximation of
+   "(A'*A)\X", "PFUN(X,'AAH')", of "(A*A')\X" and "PFUN(X,'aug')", of
+   "[zeros(N,N) A';A zeros(M,M)]\X".
+
+   "[U,S,V] = primme_svds(...)" returns also the corresponding
+   singular vectors. If "A" is M-by-N and "K" singular triplets are
+   computed, then "U" is M-by-K with orthonormal columns, "S" is
+   K-by-K diagonal, and "V" is N-by-K with orthonormal columns.
+
+   "[S,R] = primme_svds(...)" "[U,S,V,R] = primme_svds(...)" returns
+   upper bounds of the residual norm of each "K" triplet,
+   "NORM([A*V(:,i)-S(i,i)*U(:,i); A'*U(:,i)-S(i,i)*V(:,i)])".
+
+   "[U,S,V,R,STATS] = primme_svds(...)" returns how many times "A" and
+   "P" were used and elapsed time. The application of "A" is counted
+   independently from the application of "A'".
+
+   "[U,S,V,R,STATS,HIST] = primme_svds(...)" instead of printing the
+   convergence history, it is returned. Every row is a record, and the
+   columns report:
+
+      * "HIST(:,1)": number of matvecs
+
+      * "HIST(:,2)": time
+
+      * "HIST(:,3)": number of converged/locked triplets
+
+      * "HIST(:,4)": stage
+
+      * "HIST(:,5)": block index
+
+      * "HIST(:,6)": approximate singular value
+
+      * "HIST(:,7)": residual norm
+
+      * "HIST(:,8)": QMR residual norm
+
+   "OPTS.disp" controls the granularity of the record. If "OPTS.disp
+   == 1", "HIST" has one row per converged triplet and only the first
+   four columns are reported; if "OPTS.disp == 2", "HIST" has one row
+   per outer iteration and only the first seven columns are reported;
+   and otherwise "HIST" has one row per QMR iteration and all columns
+   are reported.
+
+   Examples:
+
+      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
+
+      s = primme_svds(A,10) % the 10 largest singular values
+
+      s = primme_svds(A,10,'S') % the 10 smallest singular values
+
+      s = primme_svds(A,10,25) % the 10 closest singular values to 25
+
+      opts = struct();
+      opts.tol = 1e-4; % set tolerance
+      opts.method = 'primme_svds_normalequations' % set svd solver method
+      opts.primme.method = 'DEFAULT_MIN_TIME' % set first stage eigensolver method
+      opts.primme.maxBlockSize = 2; % set block size for first stage
+      [u,s,v] = primme_svds(A,10,'S',opts); % find 10 smallest svd triplets
+
+      opts.orthoConst = {u,v};
+      [s,rnorms] = primme_svds(A,10,'S',opts) % find another 10
+
+      % Compute the 5 smallest singular values of a rectangular matrix using
+      % Jacobi preconditioner on (A'*A)
+      A = sparse(diag(1:50) + diag(ones(49,1), 1));
+      A(200,50) = 1;  % size(A)=[200 50]
+      Pstruct = struct('AHA', diag(A'*A),...
+                       'AAH', ones(200,1), 'aug', ones(250,1));
+      Pfun = @(x,mode)Pstruct.(mode).\x;
+      s = primme_svds(A,5,'S',[],Pfun) % find the 5 smallest values
+
+   See also: MATLAB svds, "primme_eigs()"
 
