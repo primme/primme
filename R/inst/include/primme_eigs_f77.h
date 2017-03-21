@@ -136,7 +136,11 @@ C-------------------------------------------------------
      : PRIMME_stats_maxConvTol,
      : PRIMME_dynamicMethodSwitch,
      : PRIMME_massMatrixMatvec,
-     : PRIMME_convTestFun
+     : PRIMME_convTestFun,
+     : PRIMME_ldevecs,
+     : PRIMME_ldOPs,
+     : PRIMME_monitorFun,
+     : PRIMME_monitor
 
       parameter(
      : PRIMME_n = 0,
@@ -196,7 +200,11 @@ C-------------------------------------------------------
      : PRIMME_stats_maxConvTol = 484,
      : PRIMME_dynamicMethodSwitch = 49,
      : PRIMME_massMatrixMatvec = 50,
-     : PRIMME_convTestFun = 51
+     : PRIMME_convTestFun = 51,
+     : PRIMME_ldevecs = 52,
+     : PRIMME_ldOPs = 53,
+     : PRIMME_monitorFun = 54,
+     : PRIMME_monitor = 55
      : )
 
 C-------------------------------------------------------
@@ -224,7 +232,13 @@ C-------------------------------------------------------
      : primme_full_LTolerance,
      : primme_decreasing_LTolerance,
      : primme_adaptive_ETolerance,
-     : primme_adaptive
+     : primme_adaptive,
+     : primme_event_outer_iteration,
+     : primme_event_inner_iteration,
+     : primme_event_restart,
+     : primme_event_reset,
+     : primme_event_converged,
+     : primme_event_locked
 
       parameter(
      : primme_smallest = 0,
@@ -246,5 +260,11 @@ C-------------------------------------------------------
      : primme_full_LTolerance = 0,
      : primme_decreasing_LTolerance = 1,
      : primme_adaptive_ETolerance = 2,
-     : primme_adaptive = 3
+     : primme_adaptive = 3,
+     : primme_event_outer_iteration = 0,
+     : primme_event_inner_iteration = 1,
+     : primme_event_restart = 2,
+     : primme_event_reset = 3,
+     : primme_event_converged = 4,
+     : primme_event_locked = 5
      : )

@@ -31,14 +31,14 @@
  * 
  * Purpose - PRIMME MEX interface.
  * 
- * Currently, we only support sequential computing. The PRIMME MEX
+ * Currently we don't support distributed computing. The PRIMME MEX
  * reads the inputs from MATLAB, constructs the necessary structures
  * and then calls PRIMME. The desired results are then returned to MATLAB.
  * 
  * Matrix-vector and preconditioning functions are performed by callbacks
  * to MATLAB functions.
  *
- *  For details about PRIMME parameters, methods, and settings see ../readme.txt
+ * For details about PRIMME parameters, methods, and settings see ../readme.txt
  *
  ******************************************************************************/
 
@@ -168,6 +168,7 @@ static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
    mwSize ndims = mxGetNumberOfDimensions(x);
    assert(ldy >= m);
    if (!((ndims == 1 && dims[0] == m && n == 1)
+            || (ndims == 2 && dims[0] == 1 && dims[1] == m && n == 1)
             || (ndims == 2 && dims[0] == m && dims[1] == n))) {
       mexErrMsgTxtPrintf2("Unsupported matrix dimension; it should be %dx%d",
             (int)m, (int)n);
@@ -514,6 +515,7 @@ static void mexFunction_primme_free(int nlhs, mxArray *plhs[], int nrhs,
    if (primme->targetShifts) delete [] primme->targetShifts;
    if (primme->matrix) mxDestroyArray((mxArray*)primme->matrix);
    if (primme->preconditioner) mxDestroyArray((mxArray*)primme->preconditioner);
+   if (primme->monitor) mxDestroyArray((mxArray*)primme->monitor);
    primme_free(primme);
    delete primme;
 }
@@ -575,6 +577,16 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
          primme->preconditioner = (void*)a;
          break;
       }
+      case PRIMME_monitorFun:
+      {
+         ASSERT_FUNCTION(2);
+         if (primme->monitor) mxDestroyArray((mxArray*)primme->monitor);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme->monitor = (void*)a;
+         break;
+      }
+
 
       // Forbidden members
  
@@ -595,6 +607,7 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
       case PRIMME_massMatrixMatvec:
+      case PRIMME_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
 
@@ -678,7 +691,12 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          plhs[0] = (mxArray*)primme->preconditioner;
          break;
       }
- 
+      case PRIMME_monitorFun:
+      {
+         plhs[0] = (mxArray*)primme->monitor;
+         break;
+      }
+  
       // Forbidden members
 
       case PRIMME_numProcs:
@@ -698,6 +716,7 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
       case PRIMME_massMatrixMatvec:
+      case PRIMME_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
 
@@ -786,6 +805,62 @@ static void matrixMatvecEigs(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    mxDestroyArray(prhs[1]); 
 }
 
+template <typename T>
+static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+      void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event,
+      struct primme_params *primme, int *ierr)
+{  
+   mxArray *prhs[12];
+
+   // Create input vectors (avoid copy if possible)
+
+   prhs[1] = create_mxArray<typename Real<T>::type,int>((T*)basisEvals,
+         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
+   prhs[2] = create_mxArray<int,int>(basisFlags,
+         basisFlags?*basisSize:0, 1, basisFlags?*basisSize:0, true);
+   prhs[3] = create_mxArray<int,int>(iblock,
+         blockSize?*blockSize:0, 1, blockSize?*blockSize:0, true);
+   prhs[4] = create_mxArray<typename Real<T>::type,int>((T*)basisNorms,
+         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
+   prhs[5] = create_mxArray<int,int>(numConverged, numConverged?1:0,
+         1, 1, true);
+   prhs[6] = create_mxArray<typename Real<T>::type,int>((T*)lockedEvals,
+         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
+   prhs[7] = create_mxArray<int,int>(lockedFlags,
+         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
+   prhs[8] = create_mxArray<typename Real<T>::type,int>((T*)lockedNorms,
+         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
+   prhs[9] = create_mxArray<int,int>(inner_its, inner_its?1:0,
+         1, 1, true);
+   prhs[10] = create_mxArray<typename Real<T>::type,int>((T*)LSRes, LSRes?1:0,
+         1, 1, true);
+   prhs[11] = create_mxArray<int,int>((int*)event, event?1:0,
+         1, 1, true);
+
+   // Call the callback
+
+   prhs[0] = (mxArray*)primme->monitor;
+   *ierr = mexCallMATLAB(0, NULL, 12, prhs, "feval");
+
+   // Destroy prhs[1..11]
+
+   if (mxGetData(prhs[1]) == basisEvals)   mxSetData(prhs[1], NULL);
+   if (mxGetData(prhs[2]) == basisFlags)   mxSetData(prhs[2], NULL);
+   if (mxGetData(prhs[3]) == iblock)       mxSetData(prhs[3], NULL);
+   if (mxGetData(prhs[4]) == basisNorms)   mxSetData(prhs[4], NULL);
+   if (mxGetData(prhs[5]) == numConverged) mxSetData(prhs[5], NULL);
+   if (mxGetData(prhs[6]) == lockedEvals)  mxSetData(prhs[6], NULL);
+   if (mxGetData(prhs[7]) == lockedFlags)  mxSetData(prhs[7], NULL);
+   if (mxGetData(prhs[8]) == lockedNorms)  mxSetData(prhs[8], NULL);
+   if (mxGetData(prhs[9]) == inner_its)    mxSetData(prhs[9], NULL);
+   if (mxGetData(prhs[10]) == LSRes)       mxSetData(prhs[10], NULL);
+   if (mxGetData(prhs[11]) == event)       mxSetData(prhs[11], NULL);
+   for (int i=1; i<12; i++) mxDestroyArray(prhs[i]); 
+}
+
+
 // Wrapper around xprimme; prototype:
 // [ret, evals, rnorms, evecs] = mexFunction_xprimme(init_guesses, primme)
 
@@ -844,11 +919,14 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
             (PRIMME_INT)primme->numOrthoConst+primme->initSize, primme->n);
    }
 
-   // Set matvec and preconditioner
+   // Set matvec and preconditioner and monitorFun
 
    primme->matrixMatvec = matrixMatvecEigs<T, getMatrixField>;
    if (primme->correctionParams.precondition) {
       primme->applyPreconditioner = matrixMatvecEigs<T, getPreconditinerField>;
+   }
+   if (primme->monitor) {
+      primme->monitorFun = monitorFunEigs<T>;
    }
 
    // Call xprimme
@@ -947,6 +1025,7 @@ static void mexFunction_primme_svds_free(int nlhs, mxArray *plhs[], int nrhs,
    if (primme_svds->targetShifts) delete [] primme_svds->targetShifts;
    if (primme_svds->matrix) mxDestroyArray((mxArray*)primme_svds->matrix);
    if (primme_svds->preconditioner) mxDestroyArray((mxArray*)primme_svds->preconditioner);
+   if (primme_svds->monitor) mxDestroyArray((mxArray*)primme_svds->monitor);
    primme_svds_free(primme_svds);
    delete primme_svds;
 }
@@ -1008,6 +1087,16 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
          primme_svds->preconditioner = (void*)a;
          break;
       }
+      case PRIMME_SVDS_monitorFun:
+      {
+         ASSERT_FUNCTION(2);
+         if (primme_svds->monitor) mxDestroyArray((mxArray*)primme_svds->monitor);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme_svds->monitor = (void*)a;
+         break;
+      }
+
 
       // Forbidden members
  
@@ -1027,6 +1116,7 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
 
@@ -1109,6 +1199,11 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
          plhs[0] = (mxArray*)primme_svds->preconditioner;
          break;
       }
+      case PRIMME_SVDS_monitorFun:
+      {
+         plhs[0] = (mxArray*)primme_svds->monitor;
+         break;
+      }
 
       // Get primme_params references
 
@@ -1139,6 +1234,7 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
 
@@ -1277,6 +1373,64 @@ static void matrixMatvecSvds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    mxDestroyArray(prhs[2]); 
 }
 
+template <typename T>
+static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+      void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event, int *stage,
+      struct primme_svds_params *primme_svds, int *ierr)
+{  
+   mxArray *prhs[13];
+
+   // Create input vectors (avoid copy if possible)
+
+   prhs[1] = create_mxArray<typename Real<T>::type,int>((T*)basisSvals,
+         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
+   prhs[2] = create_mxArray<int,int>(basisFlags,
+         basisFlags?*basisSize:0, 1, basisFlags?*basisSize:0, true);
+   prhs[3] = create_mxArray<int,int>(iblock,
+         blockSize?*blockSize:0, 1, blockSize?*blockSize:0, true);
+   prhs[4] = create_mxArray<typename Real<T>::type,int>((T*)basisNorms,
+         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
+   prhs[5] = create_mxArray<int,int>(numConverged, numConverged?1:0,
+         1, 1, true);
+   prhs[6] = create_mxArray<typename Real<T>::type,int>((T*)lockedSvals,
+         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
+   prhs[7] = create_mxArray<int,int>(lockedFlags,
+         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
+   prhs[8] = create_mxArray<typename Real<T>::type,int>((T*)lockedNorms,
+         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
+   prhs[9] = create_mxArray<int,int>(inner_its, inner_its?1:0,
+         1, 1, true);
+   prhs[10] = create_mxArray<typename Real<T>::type,int>((T*)LSRes, LSRes?1:0,
+         1, 1, true);
+   prhs[11] = create_mxArray<int,int>((int*)event, event?1:0,
+         1, 1, true);
+   prhs[12] = create_mxArray<int,int>(stage, 1, 1, 1, true);
+
+   // Call the callback
+
+   prhs[0] = (mxArray*)primme_svds->monitor;
+   *ierr = mexCallMATLAB(0, NULL, 13, prhs, "feval");
+
+   // Destroy prhs[1..12]
+
+   if (mxGetData(prhs[1]) == basisSvals)   mxSetData(prhs[1], NULL);
+   if (mxGetData(prhs[2]) == basisFlags)   mxSetData(prhs[2], NULL);
+   if (mxGetData(prhs[3]) == iblock)       mxSetData(prhs[3], NULL);
+   if (mxGetData(prhs[4]) == basisNorms)   mxSetData(prhs[4], NULL);
+   if (mxGetData(prhs[5]) == numConverged) mxSetData(prhs[5], NULL);
+   if (mxGetData(prhs[6]) == lockedSvals)  mxSetData(prhs[6], NULL);
+   if (mxGetData(prhs[7]) == lockedFlags)  mxSetData(prhs[7], NULL);
+   if (mxGetData(prhs[8]) == lockedNorms)  mxSetData(prhs[8], NULL);
+   if (mxGetData(prhs[9]) == inner_its)    mxSetData(prhs[9], NULL);
+   if (mxGetData(prhs[10]) == LSRes)       mxSetData(prhs[10], NULL);
+   if (mxGetData(prhs[11]) == event)       mxSetData(prhs[11], NULL);
+   if (mxGetData(prhs[12]) == stage)       mxSetData(prhs[12], NULL);
+   for (int i=1; i<13; i++) mxDestroyArray(prhs[i]); 
+}
+
+
 // Wrapper around xprimme_svds; prototype:
 // [ret, evals, rnorms, evecs] = mexFunction_xprimme_svds(...
 //                            init_guesses_left, init_guesses_right, primme_svds)
@@ -1333,12 +1487,15 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
             (PRIMME_INT)ninit, primme_svds->n);
    }
 
-   // Set matvec and preconditioner
+   // Set matvec and preconditioner and monitorFun
 
    primme_svds->matrixMatvec = matrixMatvecSvds<T, getSvdsForMatrix>;
    if (primme_svds->preconditioner) {
       primme_svds->applyPreconditioner =
          matrixMatvecSvds<T, getSvdsForPreconditioner>;
+   }
+   if (primme_svds->monitor) {
+      primme_svds->monitorFun = monitorFunSvds<T>;
    }
 
    // Call xprimme_svds

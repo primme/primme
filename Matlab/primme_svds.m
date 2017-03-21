@@ -1,19 +1,23 @@
 function [varargout] = primme_svds(varargin)
-%PRIMME_SVDS   Find few singular values and vectors on large, sparse matrices
+%PRIMME_SVDS   Find a few singular values and vectors of large, sparse matrices
+%
 %   S = PRIMME_SVDS(A) computes the 6 largest singular values of A.
 %
-%   S = PRIMME_SVDS(AFUN,M,N) accepts the matvec function handle AFUN instead of
-%   the matrix A. AFUN(X,'notransp') returns A*X while AFUN(X,'transp') returns
-%   A'*X. The matrix A is M-by-N.
+%   S = PRIMME_SVDS(AFUN,M,N) accepts the function handle AFUN to perform
+%   the matrix vector products with an M-by-N matrix A. 
+%   AFUN(X,'notransp') returns A*X while AFUN(X,'transp') returns A’*X.
+%   In all the following, A can be replaced by AFUN,M,N.
 % 
-%   S = PRIMME_SVDS(...,K) computes the K largest singular values of A.
+%   S = PRIMME_SVDS(A,K) computes the K largest singular values of A.
 %
-%   S = PRIMME_SVDS(...,K,SIGMA) computes the K singular values closest to the
-%   scalar shift SIGMA. If SIGMA is a vector, find the closest singular value to
-%   each element in SIGMA. If SIGMA is 'L', it computes the largest singular
-%   values; if SIGMA is 'S', it computes the smallest.
+%   S = PRIMME_SVDS(A,K,SIGMA) computes the K singular values closest to the
+%   scalar shift SIGMA. 
+%   If SIGMA is a vector, find a singular value closest to each SIGMA(i)
+%   If SIGMA is 'L', it computes the largest singular values.
+%   if SIGMA is 'S', it computes the smallest singular values.
 %
 %   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS) specifies extra solver parameters:
+%   (for some parameters we refer to PRIMME_EIGS)
 %
 %   Field name       Parameter                               Default
 %
@@ -22,15 +26,16 @@ function [varargout] = primme_svds(varargin)
 %                    NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A).
 %   OPTIONS.maxit    maximum number of iterat. (see maxMatvecs)  inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
-%   OPTIONS.disp     level of message reporting (see printLevel)   0
+%   OPTIONS.disp     level of reporting 0-3 (see HIST)             0
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   1
 %   OPTIONS.isdouble if 0, the matrix is single; else it's double  1
-%   OPTIONS.method   which equivalent eigenproblemto to solve
-%                    - 'primme_svds_normalequation': A'*A or A*A'
+%   OPTIONS.method   which equivalent eigenproblem to solve
+%                    - 'primme_svds_normalequations': A'*A or A*A'
 %                    - 'primme_svds_augmented': [0 A';A 0]
-%                    - 'primme_svds_hybrid': first normal eq. and
-%                      then augmented (default).                   
-%   OPTIONS.v0       approx. left and right singular vectors {[],[]}
+%                    - 'primme_svds_hybrid':               (default)
+%                       first normal eqs and then augmented
+%   OPTIONS.u0       approx. left singular vectors                []
+%   OPTIONS.v0       approx. right singular vectors               []
 %   OPTIONS.orthoConst external orthogonalization constraints     [] 
 %   OPTIONS.locking  1, hard locking; 0, soft locking              -
 %   OPTIONS.maxBlockSize maximum block size                        1
@@ -38,21 +43,21 @@ function [varargout] = primme_svds(varargin)
 %   OPTIONS.primme   options for first stage solver                -
 %   OPTIONS.primmeStage2 options for second stage solver           -
 %
-%   The available options for OPTIONS.primme and primmeStage1 are
+%   The available options for OPTIONS.primme and primmeStage2 are
 %   the same as PRIMME_EIGS, plus the option 'method'. For detailed
 %   descriptions of the above options, visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide
 %   and for further descriptions of the methods visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/appendixsvds.html#preset-methods
 %
-%   S = PRIMME_SVDS(...,K,SIGMA,OPTIONS,P)
-%   S = PRIMME_SVDS(...,K,SIGMA,OPTIONS,P1,P2) makes use of a preconditioner,
+%   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P)
+%   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P1,P2) makes use of a preconditioner,
 %   applying P\X or (P1*P2)\X. If P is [] then a preconditioner is not
 %   applied. P may be a function handle PFUN such that PFUN(X,'AHA')
 %   returns an approximation of (A'*A)\X, PFUN(X,'AAH'), of (A*A')\X and
-%   PFUN(X,'aug'), of [zeros(M,N) A;A' zeros(N,M)]\X.
+%   PFUN(X,'aug'), of [zeros(N,N) A';A zeros(M,M)]\X.
 %
-%   [U,S,V] = PRIMME_SVDS(...) returns the singular vectors as well.
+%   [U,S,V] = PRIMME_SVDS(...) returns also the corresponding singular vectors.
 %   If A is M-by-N and K singular triplets are computed, then U is M-by-K
 %   with orthonormal columns, S is K-by-K diagonal, and V is N-by-K with
 %   orthonormal columns.
@@ -62,7 +67,26 @@ function [varargout] = primme_svds(varargin)
 %   of each K triplet, NORM([A*V(:,i)-S(i,i)*U(:,i); A'*U(:,i)-S(i,i)*V(:,i)]).
 %
 %   [U,S,V,R,STATS] = PRIMME_SVDS(...) returns how many times A and P were
-%   used and elapsed time.
+%   used and elapsed time. The application of A is counted independently from
+%   the application of A'.
+%
+%   [U,S,V,R,STATS,HIST] = PRIMME_SVDS(...) instead of printing the convergence
+%   history, it is returned. Every row is a record, and the columns report:
+%  
+%   HIST(:,1): number of matvecs
+%   HIST(:,2): time
+%   HIST(:,3): number of converged/locked triplets
+%   HIST(:,4): stage
+%   HIST(:,5): block index
+%   HIST(:,6): approximate singular value
+%   HIST(:,7): residual norm
+%   HIST(:,8): QMR residual norm
+%
+%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
+%   has one row per converged triplet and only the first four columns are
+%   reported; if OPTS.disp == 2, HIST has one row per outer iteration and only
+%   the first seven columns are reported; and otherwise HIST has one row per QMR
+%   iteration and all columns are reported.
 %
 %   Examples:
 %      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -75,15 +99,24 @@ function [varargout] = primme_svds(varargin)
 %
 %      opts = struct();
 %      opts.tol = 1e-4; % set tolerance
-%      opts.method = 'primme_svds_normalequations' % set solver method
-%      opts.primme.method = 'DEFAULT_MIN_TIME' % set first stage solver method
+%      opts.method = 'primme_svds_normalequations' % set svd solver method
+%      opts.primme.method = 'DEFAULT_MIN_TIME' % set first stage eigensolver method
 %      opts.primme.maxBlockSize = 2; % set block size for first stage
-%      [u,s,v] = primme_svds(A,10,'S',opts)
+%      [u,s,v] = primme_svds(A,10,'S',opts); % find 10 smallest svd triplets
 %
 %      opts.orthoConst = {u,v};  
 %      [s,rnorms] = primme_svds(A,10,'S',opts) % find another 10
 %
-%      % Define a preconditioner only for first stage (A'*A)
+%      % Compute the 5 smallest singular values of a square matrix using ILU(0)
+%      % as a preconditioner
+%      A = sparse(diag(1:50) + diag(ones(49,1), 1));
+%      [L,U] = ilu(A, struct('type', 'nofill'));
+%      svals = primme_svds(A, 5, 'S', [], L, U);
+%      
+%      % Compute the 5 smallest singular values of a rectangular matrix using
+%      % Jacobi preconditioner on (A'*A)
+%      A = sparse(diag(1:50) + diag(ones(49,1), 1));
+%      A(200,50) = 1;  % size(A)=[200 50]
 %      Pstruct = struct('AHA', diag(A'*A),...
 %                       'AAH', ones(200,1), 'aug', ones(250,1));
 %      Pfun = @(x,mode)Pstruct.(mode).\x;
@@ -96,7 +129,7 @@ function [varargout] = primme_svds(varargin)
 
    % Check primme_mex exists
    if ~ exist('primme_mex')
-      error 'primme_mex is not available. Try to recompile the MATLAB''s PRIMME module'
+      error 'primme_mex is not available. Try to recompile the MATLAB/Octave''s PRIMME module'
    end
 
    % Check arity of input and output arguments
@@ -105,7 +138,7 @@ function [varargout] = primme_svds(varargin)
    narginchk(minInputs,maxInputs);
 
    minOutputs = 0;
-   maxOutputs = 5;
+   maxOutputs = 6;
    nargoutchk(minOutputs,maxOutputs);
 
    % Check input arguments
@@ -121,7 +154,7 @@ function [varargout] = primme_svds(varargin)
 
       % Get type and complexity
       Acomplex = ~isreal(A);
-      Adouble = class(A) == 'double';
+      Adouble = strcmp(class(A), 'double');
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
       m = round(varargin{nextArg});
@@ -152,14 +185,16 @@ function [varargout] = primme_svds(varargin)
          targets = struct('L', 'primme_svds_largest', ...
                           'S', 'primme_svds_smallest');
          if ~isfield(targets, target(1))
-            error('target must be L, S or C');
+            error('target must be L, S or real non-negative numbers');
          end
          opts.target = getfield(targets, target(1));
-      elseif isnumeric(target)
+      elseif isnumeric(target) && all(target == 0)
+         opts.target = 'primme_svds_smallest';
+      elseif isnumeric(target) && all(target >= 0)
          opts.targetShifts = target;
          opts.target = 'primme_svds_closest_abs';
       else
-         error('target must be L, S or a real number');
+         error('target must be L, S or real non-negative numbers');
       end
       nextArg = nextArg + 1;
    else
@@ -180,7 +215,7 @@ function [varargout] = primme_svds(varargin)
       nextArg = nextArg + 1;
    end
 
-   if nargin >= nextArg
+   if nargin == nextArg
       P = varargin{nextArg};
       if isnumeric(P)
          P = @(x,mode)precondsvds(P,x,mode);
@@ -190,6 +225,17 @@ function [varargout] = primme_svds(varargin)
       opts.applyPreconditioner = P;
       opts.precondition = 1;
       nextArg = nextArg + 1;
+   end
+   
+   if nargin >= nextArg
+      P1 = varargin{nextArg};
+      P2 = varargin{nextArg+1};
+      if ~isnumeric(P1) || ~isnumeric(P2)
+         error('p1 and p2 must be matrices');
+      end
+      P = @(x,mode)precondsvds2(P1, P2, x, mode);
+      opts.applyPreconditioner = P;
+      opts.precondition = 1;
    end
  
    % Test whether the given matrix and preconditioner are valid
@@ -218,16 +264,32 @@ function [varargout] = primme_svds(varargin)
       opts = rmfield(opts, 'isdouble');
    end
 
-   % Rename tol, maxit, p and disp as eps, maxMatvecs, maxBasisSize and
-   % printLevel
-   changes = {{'tol', 'eps'}, {'maxit', 'maxMatvecs'}, {'p', 'maxBasisSize'}, ...
-              {'disp', 'printLevel'}};
+   % Process 'disp' in opts
+   if isfield(opts, 'disp')
+      dispLevel = opts.disp;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'disp');
+   elseif nargout >= 6
+      dispLevel = 1;
+   else
+      dispLevel = 0;
+   end
+
+   % Rename tol, maxit and p as eps, maxMatvecs and maxBasisSize
+   changes = {{'tol', 'eps'}, {'maxit', 'maxMatvecs'}, {'p', 'maxBasisSize'}};
    for i=1:numel(changes)
       if isfield(opts, changes{i}{1})
          opts.(changes{i}{2}) = opts.(changes{i}{1});
          opts = rmfield(opts, changes{i}{1});
       end
    end
+
+   % Set default tol to 1e-10
+   if ~isfield(opts, 'eps')
+      opts.eps = 1e-10;
+   end 
 
    % Move options that are outside of primme_parms' hierarchy
    changes = {{'projection',         'projection_projection'}, ...
@@ -244,7 +306,7 @@ function [varargout] = primme_svds(varargin)
               {'SkewX',              'correction_projectors_SkewX'}, ...
               {'convTest',           'correction_convTest'}, ...
               {'relTolBase',         'correction_relTolBase'}};
-   primme_fields = {'primme', 'primmeStage1'};
+   primme_fields = {'primme', 'primmeStage2'};
    for j=1:numel(primme_fields)
       if isfield(opts, primme_fields{j})
          opts0 = opts.(primme_fields{j});
@@ -258,7 +320,7 @@ function [varargout] = primme_svds(varargin)
       end
    end
 
-   % Process method, primme.method and primmeStage1.method
+   % Process method, primme.method and primmeStage2.method
    if isfield(opts, 'method')
       method = opts.method;
       opts = rmfield(opts, 'method');
@@ -274,9 +336,9 @@ function [varargout] = primme_svds(varargin)
    else
       primmeStage0method = 'PRIMME_DEFAULT_METHOD';
    end
-   if isfield(opts, 'primmeStage1') && isfield(opts.primmeStage1, 'method')
-      primmeStage1method = opts.primmeStage1.method;
-      opts.primmeStage1 = rmfield(opts.primmeStage1, 'method');
+   if isfield(opts, 'primmeStage2') && isfield(opts.primmeStage2, 'method')
+      primmeStage1method = opts.primmeStage2.method;
+      opts.primmeStage2 = rmfield(opts.primmeStage2, 'method');
       if ischar(primmeStage1method)
          primmeStage1method = ['PRIMME_' primmeStage1method];
       end
@@ -305,11 +367,10 @@ function [varargout] = primme_svds(varargin)
       init = {[],[]};
    end
 
-   if isfield(opts, 'v0')
-      init0 = opts.v0;
-      if ~iscell(init0) || numel(init0) ~= 2 || (isempty(init0{1}) && isempty(init0{2}))
-         error('opts.v0 should be {left_vectors, right_vectors}');
-      end
+   if isfield(opts, 'v0') || isfield(opts, 'u0')
+      if ~isfield(opts, 'v0'), opts.v0 = []; end
+      if ~isfield(opts, 'u0'), opts.u0 = []; end
+      init0 = {opts.v0, opts.u0};
       if isempty(init0{1})
          init0{1} = opts.matrixMatvec(init0{2}, 'notransp');
       elseif isempty(init{2})
@@ -319,6 +380,7 @@ function [varargout] = primme_svds(varargin)
          size(init0{1}, 2) ~= size(init0{2}, 2)
          error('Invalid matrix dimensions in opts.init');
       end
+      opts = rmfield(opts, 'u0');
       opts = rmfield(opts, 'v0');
       opts.initSize = size(init0{1}, 2);
       init = {[init{1} init0{1}], [init{2} init0{2}]};
@@ -333,6 +395,26 @@ function [varargout] = primme_svds(varargin)
    % Set method in primme_svds_params
    primme_mex('primme_svds_set_method', method, primmeStage0method, ...
                                         primmeStage1method, primme_svds);
+
+   % Set monitor and shared variables with the monitor
+   hist = [];
+   %locking = primme_mex('primme_get_member', primme, 'locking');
+   nconv = 0;
+   return_hist = 0;
+   if dispLevel > 0
+      % NOTE: Octave doesn't support function handler for nested functions
+      primme_mex('primme_svds_set_member', primme_svds, 'monitorFun', ...
+            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11));
+   end
+   if nargout >= 5
+      return_hist = 1;
+   elseif dispLevel == 1
+      fprintf('#MV\tTime\t\tNConv\tStage\n');
+   elseif dispLevel == 2
+      fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\n');
+   elseif dispLevel == 3
+      fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\tQMR_Res\n');
+   end
 
    % Select solver
    if Adouble
@@ -356,7 +438,7 @@ function [varargout] = primme_svds(varargin)
 
    % Process error code and return the required arguments
    if ierr ~= 0
-      error([xprimme_svds ' returned ' num2str(ierr)]);
+      error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
    end
 
    if nargout == 1
@@ -379,6 +461,75 @@ function [varargout] = primme_svds(varargin)
       stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
       varargout{5} = stats;
    end
+   if (nargout >= 6)
+      varargout{6} = hist;
+   end
+
+   function record_history(basisSvals, basisFlags, iblock, basisNorms, ...
+         numConverged, lockedSvals, lockedFlags, lockedNorms, inner_its, ...
+         LSRes, event, stage)
+
+      numMatvecs = double(primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs'));
+      methodStage2 = double(primme_mex('primme_svds_get_member', primme_svds, 'methodStage2'));
+      if stage == 0
+         primme = primme_mex('primme_svds_get_member', primme_svds, 'primme');
+      else
+         primme = primme_mex('primme_svds_get_member', primme_svds, 'primmeStage2');
+      end
+      if stage == 0 && methodStage2 ~= 0
+         locking = 1;
+      else
+         locking = primme_mex('primme_get_member', primme, 'locking');
+      end
+      maxInnerIterations = primme_mex('primme_get_member', primme, 'correction_maxInnerIterations');
+      elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
+      hist_rows = size(hist, 1);
+      if event == 0 || (event == 4 && ~locking) || event == 5
+         if ~locking && ~isempty(numConverged)
+            nconv = double(numConverged);
+         elseif locking && ~isempty(lockedSvals)
+            nconv = numel(lockedSvals);
+         end
+      end
+      stage = double(stage) + 1;
+      if dispLevel == 0
+      elseif dispLevel == 1
+         if (event == 4 && ~locking) || event == 5
+            hist = [hist; numMatvecs elapsedTime nconv stage];
+         end
+      elseif dispLevel == 2
+         if event == 0 || (nconv == opts.numSvals && ((event == 4 && ~locking) || event == 5))
+            for i=1:numel(iblock)
+               hist = [hist; numMatvecs elapsedTime nconv stage i basisSvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+            end
+         end
+      elseif dispLevel == 3
+         if event == 1
+            if ~isempty(basisSvals)
+               value = basisSvals(iblock(1)+1);
+               resNorm = basisNorms(iblock(1)+1);
+            else
+               value = nan;
+               resNorm = nan;
+            end
+            hist = [hist; numMatvecs elapsedTime nconv stage nan value resNorm  LSRes];
+         elseif (maxInnerIterations == 0 || nconv == opts.numSvals) && (event == 0 || ((event == 4 && ~locking) || event == 5))
+            for i=1:numel(iblock)
+               hist = [hist; numMatvecs elapsedTime nconv stage i basisSvals(iblock(i)+1) basisNorms(iblock(i)+1) nan];
+            end
+         end
+      end
+      if ~return_hist && size(hist,1) > hist_rows
+         template{1} = '%d\t%f\t%d\t%d\n';
+         template{2} = '%d\t%f\t%d\t%d\t%d\t%g\t%e\n';
+         template{3} = '%d\t%f\t%d\t%d\t%d\t%g\t%e\t%e\n';
+         for i=hist_rows+1:size(hist,1)
+            a = num2cell(hist(i,:));
+            fprintf(template{dispLevel}, a{:});
+         end
+         hist = [];
+      end
+   end
 end
 
 function [y] = matvecsvds(A, x, mode)
@@ -390,12 +541,22 @@ function [y] = matvecsvds(A, x, mode)
 end
 
 function [y] = precondsvds(P, x, mode)
-   if mode == 'AHA'
+   if strcmp(mode, 'AHA')
       y = P\(P'\x);
-   elseif mode == 'AAH'
+   elseif strcmp(mode, 'AAH')
       y = P'\(P\x);
    else
-      y = [P'\(P\x(1:size(P,1),:)); P\(P'\x(size(P,1):end,:))];
+      y = [P\x(size(P,1)+1:end,:); P'\x(1:size(P,1),:)];
+   end
+end
+
+function [y] = precondsvds2(P1, P2, x, mode)
+   if strcmp(mode, 'AHA')
+      y = P2\(P1\(P1'\(P2'\x)));
+   elseif strcmp(mode, 'AAH')
+      y = P1'\(P2'\(P2\(P1\x)));
+   else
+      y = [P2\(P1\x(size(P1,1)+1:end,:)); P1'\(P2'\x(1:size(P1,1),:))];
    end
 end
 
@@ -418,7 +579,7 @@ function primme_svds_set_members(opts, primme_svds, f, prefix)
 %     ops.target = 'primme_svds_largest';
 %     primme_svds_set_members(ops, primme_svds);
 
-   % NOTE: Expensive Mathworks' MATLAB doesn't support default values in function
+   % NOTE: MATLAB doesn't support default values in function
    %       declaration, Octave does.
    if nargin < 3, f = 'primme_svds_set_member'; end
    if nargin < 4, prefix = ''; end
@@ -443,5 +604,97 @@ function primme_svds_set_members(opts, primme_svds, f, prefix)
             end
          end
       end
+   end
+end
+
+
+function s = primme_error_msg(errorCode)
+
+   msg = {};
+   msg{39+  0} = 'success';
+   msg{39+  1} = 'reported only amount of required memory';
+   msg{39+ -1} = 'failed in allocating int or real workspace';
+   msg{39+ -2} = 'malloc failed in allocating a permutation integer array';
+   msg{39+ -3} = 'main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in stderr';
+   msg{39+ -4} = 'argument primme is NULL';
+   msg{39+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
+   msg{39+ -6} = 'numProcs' < 1';
+   msg{39+ -7} = 'matrixMatvec is NULL';
+   msg{39+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
+   msg{39+ -9} = 'not used';
+   msg{39+-10} = 'numEvals > n';
+   msg{39+-11} = 'numEvals < 0';
+   msg{39+-12} = 'eps > 0 and eps < machine precision';
+   msg{39+-13} = 'target is not properly defined';
+   msg{39+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
+   msg{39+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
+   msg{39+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
+   msg{39+-17} = 'maxBasisSize < 2';
+   msg{39+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
+   msg{39+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
+   msg{39+-20} = 'maxPrevRetain < 0';
+   msg{39+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
+   msg{39+-22} = 'initSize < 0';
+   msg{39+-23} = 'locking == 0 and initSize > maxBasisSize';
+   msg{39+-24} = 'locking and initSize > numEvals';
+   msg{39+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
+   msg{39+-26} = 'minRestartSize >= n';
+   msg{39+-27} = 'printLevel < 0 or printLevel > 5';
+   msg{39+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
+   msg{39+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
+   msg{39+-30} = 'evals is NULL, but not evecs and resNorms';
+   msg{39+-31} = 'evecs is NULL, but not evals and resNorms';
+   msg{39+-32} = 'resNorms is NULL, but not evecs and evals';
+   msg{39+-33} = 'locking == 0 and minRestartSize < numEvals';
+   msg{39+-34} = 'ldevecs is less than nLocal';
+   msg{39+-35} = 'ldOPs is non-zero and less than nLocal';
+   msg{39+-36} = 'not enough memory for realWork';
+   msg{39+-37} = 'not enough memory for intWork';
+   msg{39+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
+
+   errorCode = errorCode + 39;
+   if errorCode > 0 && errorCode <= numel(msg)
+      s = msg{errorCode};
+   else
+      s = 'Unknown error code';
+   end
+end
+
+function s = primme_svds_error_msg(errorCode)
+   msg = {};
+   msg{22+  0} = 'success';
+   msg{22+  1} = 'reported only amount of required memory';
+   msg{22+ -1} = 'failed in allocating int or real workspace';
+   msg{22+ -2} = 'malloc failed in allocating a permutation integer array';
+   msg{22+ -3} = 'main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in stderr';
+   msg{22+ -4} = 'primme_svds is NULL';
+   msg{22+ -5} = 'Wrong value for m or n or mLocal or nLocal';
+   msg{22+ -6} = 'Wrong value for numProcs';
+   msg{22+ -7} = 'matrixMatvec is not set';
+   msg{22+ -8} = 'applyPreconditioner is not set but precondition == 1 ';
+   msg{22+ -9} = 'numProcs >1 but globalSumDouble is not set';
+   msg{22+-10} = 'Wrong value for numSvals, it''s larger than min(m, n)';
+   msg{22+-11} = 'Wrong value for numSvals, it''s smaller than 1';
+   msg{22+-13} = 'Wrong value for target';
+   msg{22+-14} = 'Wrong value for method';
+   msg{22+-15} = 'Not supported combination of method and methodStage2';
+   msg{22+-16} = 'Wrong value for printLevel';
+   msg{22+-17} = 'svals is not set';
+   msg{22+-18} = 'svecs is not set';
+   msg{22+-19} = 'resNorms is not set';
+   msg{22+-20} = 'not enough memory for realWork';
+   msg{22+-21} = 'not enough memory for intWork';
+
+   if errorCode >= -100
+      errorCode = errorCode + 22;
+      if errorCode > 0 && errorCode < numel(msg)
+         s = msg{errorCode};
+      else
+         s = 'Unknown error code';
+      end
+   elseif errorCode >= -200
+      s = ['Error from first stage: ' primme_error_code(errorCode+100)];
+   else
+      s = ['Error from second stage: ' primme_error_code(errorCode+200)];
    end
 end

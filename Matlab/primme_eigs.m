@@ -1,35 +1,42 @@
 function [varargout] = primme_eigs(varargin)
-%PRIMME_EIGS   Find few eigenvalues and vectors on large, sparse Hermitian matrices
-%   PRIMME_EIGS finds few eigenvalues and eigenvectors of a real symmetric
-%   or Hermitian matrix, A, by calling the PRIMME driver PRIMME_MEX.
-%   Almost full PRIMME functionality is supported.
+%PRIMME_EIGS Find a few eigenvalues/vectors of large, sparse Hermitian matrices
+%   PRIMME_EIGS finds a few eigenvalues and their corresponding eigenvectors 
+%   of a real symmetric or Hermitian matrix, A, by calling PRIMME through the 
+%   driver PRIMME_MEX. Almost full PRIMME functionality is supported.
 %
 %   D = PRIMME_EIGS(A) returns a vector of A's 6 largest algebraic eigenvalues.
 %
 %   D = PRIMME_EIGS(AFUN,DIM) accepts a function AFUN instead of a matrix. AFUN
 %   is a function handle and y = AFUN(x) returns the matrix-vector product A*x.
+%   In all the following syntaxes, A can be replaced by AFUN,DIM.
 %
-%   D = PRIMME_EIGS(...,K) finds the K largest magnitude eigenvalues. K must be
+%   D = PRIMME_EIGS(A,K) finds the K largest magnitude eigenvalues. K must be
 %   less than the dimension of the matrix A.
 %
-%   D = PRIMME_EIGS(...,K,TARGET) returns K eigenvalues from different parts of
-%   the spectrum. If TARGET is
-%       'LM' or 'SM', find eigenvalues D with the largest or smallest ABS(D-S)
-%       'LA' or 'SA', find eigenvalues with the largest or smallest value
-%       'CLT' or 'CGT', find eigenvalues closest to S but less or greater than S.
-%   S is each value in OPTS.targetShifts.
-%   If TARGET is a real number, it finds the closest eigenvalues to TARGET.
+%   D = PRIMME_EIGS(A,K,TARGET) returns K eigenvalues such that: 
+%     If TARGET is a real number, it finds the closest eigenvalues to TARGET.
+%     If TARGET is
+%       'LA' or 'SA', eigenvalues with the largest or smallest algebraic value
+%       'LM' or 'SM', eigenvalues with the largest or smallest distance from
+%                 the given values in OPTS.targetShifts, or zero if
+%                 OPTS.targetShifts is empty. If m values are provided, the
+%                 first m eigenvalues D are found s.t.
+%                 max/min ABS(D(i)-OPTS.targetShifts(i)), i=1:m.
+%                 OPTS.targerShifts(m) is used for i=m+1:K.
+%       'CLT' or 'CGT', find eigenvalues closest to but less or greater than
+%                 the given values in OPTS.targetShifts.
 %
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS) specifies extra solver parameters. Some
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS) specifies extra solver parameters. Some
 %     default values are indicated in brackets {}:
 %
-%     OPTS.aNorm: the estimate 2-norm of matrix A {estimate the norm}
-%     OPTS.tol: convergence tolerance: NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
-%     OPTS.maxBlockSize: maximum block size {1}
-%     OPTS.disp: different level reporting(0-5) {no output 0}
-%     OPTS.isreal: the complexity of A represented by AFUN {false}
-%     OPTS.targetShifts: shifts for interior eigenvalues (see target)
-%     OPTS.v0: approximate eigenvectors {[]}
+%     OPTS.aNorm: the estimated 2-norm of A {estimate the norm internally}
+%     OPTS.tol: convergence tolerance: 
+%                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
+%     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
+%     OPTS.disp: different level reporting (0-3) (see HIST) {no output 0}
+%     OPTS.isreal: whether A represented by AFUN is real or complex {false}
+%     OPTS.targetShifts: shifts for interior eigenvalues (see TARGET) {[]}
+%     OPTS.v0: any number of initial guesses to the eigenvectors {[]}
 %     OPTS.orthoConst: external orthogonalization constraints {[]}
 %     OPTS.locking: 1, hard locking; 0, soft locking
 %     OPTS.p: maximum size of the search subspace
@@ -37,10 +44,10 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.maxMatvecs: maximum number of matrix vector multiplications {Inf}
 %     OPTS.maxit: maximum number of outer iterations {Inf}
 %     OPTS.scheme: the restart scheme {'primme_thick'}
-%     OPTS.maxPrevRetain: number of approximate eigenvectors retained from
-%       previous iteration, that are kept after restart.
-%     OPTS.robustShifts: set to true to avoid stagnation.
-%     OPTS.maxInnerIterations: maximum number of inner QMR iterations
+%     OPTS.maxPrevRetain: number of Ritz vectors from previous iteration
+%          that are kept after restart {typically >0, see PRIMME doc}
+%     OPTS.robustShifts: set to true may avoid stagnation or misconvergence 
+%     OPTS.maxInnerIterations: maximum number of inner solver iterations
 %     OPTS.LeftQ: use the locked vectors in the left projector
 %     OPTS.LeftX: use the approx. eigenvector in the left projector
 %     OPTS.RightQ: use the locked vectors in the right projector
@@ -54,9 +61,9 @@ function [varargout] = primme_eigs(varargin)
 %   For detailed descriptions of the above options, visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide
 %
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
 %     'DYNAMIC', (default)        switches dynamically to the best method
-%     'DEFAULT_MIN_TIME',         best method for light matrix-vector product
+%     'DEFAULT_MIN_TIME',         best method for low-cost matrix-vector product
 %     'DEFAULT_MIN_MATVECS',      best method for heavy matvec/preconditioner
 %     'Arnoldi',                  Arnoldi not implemented efficiently
 %     'GD',                       classical block Generalized Davidson 
@@ -64,7 +71,7 @@ function [varargout] = primme_eigs(varargin)
 %     'GD_Olsen_plusK',           GD+k with approximate Olsen precond.
 %     'JD_Olsen_plusK',           GD+k, exact Olsen (two precond per step)
 %     'RQI',                      Rayleigh Quotient Iteration. Also INVIT,
-%                                 but for INVIT provide targetShifts
+%                                 but for INVIT provide OPTS.targetShifts
 %     'JDQR',                     Original block, Jacobi Davidson
 %     'JDQMR',                    Our block JDQMR method (similar to JDCG)
 %     'JDQMR_ETol',               Slight, but efficient JDQMR modification
@@ -75,8 +82,8 @@ function [varargout] = primme_eigs(varargin)
 %   For further description of the method visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/appendix.html#preset-methods
 %
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P) 
-%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P) 
+%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
 %   P = P1*P2 to accelerate convergence of the method.
 %   If P is [] then a preconditioner is not applied. P may be a function 
 %   handle PFUN such that PFUN(x) returns P\x.
@@ -91,6 +98,23 @@ function [varargout] = primme_eigs(varargin)
 %   information about number of matvecs, elapsed time, and estimates for the
 %   largest and the smallest algebraic eigenvalues on A.
 %
+%   [X,D,R,STATS,HIST] = PRIMME_EIGS(...) instead of printing the convergence
+%   history, it is returned. Every row is a record, and the columns report:
+%  
+%   HIST(:,1): number of matvecs
+%   HIST(:,2): time
+%   HIST(:,3): number of converged/locked pairs
+%   HIST(:,4): block index
+%   HIST(:,5): approximate eigenvalue
+%   HIST(:,6): residual norm
+%   HIST(:,7): QMR residual norm
+%
+%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
+%   has one row per converged eigenpair and only the first three columns are
+%   reported; if OPTS.disp == 2, HIST has one row per outer iteration and only
+%   the first six columns are reported; and otherwise HIST has one row per QMR
+%   iteration and all columns are reported.
+%  
 %   Examples:
 %      A = diag(1:100);
 %
@@ -108,9 +132,16 @@ function [varargout] = primme_eigs(varargin)
 %      opts.orthoConst = x;  
 %      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
 %
-%      % Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
+%      % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+%      % by passing the matrices L and U.
+%      A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+%      [L,U] = ilu(A, struct('type', 'nofill'));
+%      d = primme_eigs(A, k, 30.5, [], [], L, U);
+%
+%      % Compute the 6 closest eigenvalues to 30.5 using Jacobi preconditioner
+%      % by passing a function.
 %      Pfun = @(x)(diag(A) - 30.5)\x;
-%      d = primme_eigs(A,5,30.5,[],[],Pfun) % find the closest 5 to 30.5
+%      d = primme_eigs(A,6,30.5,[],[],Pfun);
 %
 %   For more details see PRIMME documentation at
 %   http://www.cs.wm.edu/~andreas/software/doc/readme.html 
@@ -119,7 +150,7 @@ function [varargout] = primme_eigs(varargin)
 
    % Check primme_mex exists
    if ~ exist('primme_mex')
-      error 'primme_mex is not available. Try to recompile the MATLAB''s PRIMME module'
+      error 'primme_mex is not available. Try to recompile the MATLAB/Octave''s PRIMME module'
    end
 
    % Check arity of input and output arguments
@@ -128,7 +159,7 @@ function [varargout] = primme_eigs(varargin)
    narginchk(minInputs,maxInputs);
 
    minOutputs = 0;
-   maxOutputs = 4;
+   maxOutputs = 5;
    nargoutchk(minOutputs,maxOutputs);
 
    % Check input arguments
@@ -146,7 +177,7 @@ function [varargout] = primme_eigs(varargin)
 
       % Get type and complexity
       Acomplex = ~isreal(A);
-      Adouble = class(A) == 'double';
+      Adouble = strcmp(class(A), 'double');
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
       n = round(varargin{nextArg});
@@ -184,6 +215,9 @@ function [varargout] = primme_eigs(varargin)
             error('target must be LA, SA, LM, SM, CGT or CLT');
          end
          opts.target = getfield(targets, target);
+         if (strcmp(target, 'SM') || strcmp(target, 'LM')) && ~isfield(opts, 'targetShifts')
+            opts.targetShifts = 0;
+         end
       else
          error('target must be a number or a string');
       end
@@ -238,7 +272,6 @@ function [varargout] = primme_eigs(varargin)
          P2 = fcnchk_gen(P2); % get the function handle of user's function
       end
       P = @(x)P2(P(x));
-      nextArg = nextArg + 1;
    end
    if ~isempty(P)
       opts.applyPreconditioner = P;
@@ -268,10 +301,22 @@ function [varargout] = primme_eigs(varargin)
       opts = rmfield(opts, 'isdouble');
    end
 
-   % Rename tol, maxit, p and disp as eps, maxOuterIterations, maxBasisSize and
-   % printLevel. Also move options that are outside of primme_params' hierarchy.
+   % Process 'disp' in opts
+   if isfield(opts, 'disp')
+      dispLevel = opts.disp;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'disp');
+   elseif nargout >= 5
+      dispLevel = 1;
+   else
+      dispLevel = 0;
+   end
+
+   % Rename tol, maxit and p as eps, maxOuterIterations and maxBasisSize.
+   %  Also move options that are outside of primme_params' hierarchy.
    changes = {{'tol', 'eps'}, {'maxit', 'maxOuterIterations'}, {'p', 'maxBasisSize'}, ...
-              {'disp', 'printLevel'}, ...
               {'projection',         'projection_projection'}, ...
               {'scheme',             'restarting_scheme'}, ...
               {'maxPrevRetain',      'restarting_maxPrevRetain'}, ...
@@ -306,19 +351,14 @@ function [varargout] = primme_eigs(varargin)
       init = [];
    end
 
-   if isfield(opts, 'init')
-      init0 = opts.init;
+   if isfield(opts, 'v0')
+      init0 = opts.v0;
       if size(init0, 1) ~= opts.n
-         error('Invalid matrix dimensions in opts.init');
+         error('Invalid matrix dimensions in opts.v0');
       end
-      opts = rmfield(opts, 'init');
+      opts = rmfield(opts, 'v0');
       opts.initSize = size(init0, 2);
       init = [init init0];
-   end
-
-   % Default printLevel is 0
-   if ~isfield(opts, 'printLevel')
-      opts.printLevel = 0;
    end
 
    % Create primme_params
@@ -329,6 +369,26 @@ function [varargout] = primme_eigs(varargin)
 
    % Set method
    primme_mex('primme_set_method', method, primme);
+
+   % Set monitor and shared variables with the monitor
+   hist = [];
+   locking = primme_mex('primme_get_member', primme, 'locking');
+   nconv = [];
+   return_hist = 0;
+   if dispLevel > 0
+      % NOTE: Octave doesn't support function handler for nested functions
+      primme_mex('primme_set_member', primme, 'monitorFun', ...
+            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10));
+   end
+   if nargout >= 5
+      return_hist = 1;
+   elseif dispLevel == 1
+      fprintf('#MV\tTime\t\tNConv\n');
+   elseif dispLevel == 2
+      fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\n');
+   elseif dispLevel == 3
+      fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\tQMR_Res\n');
+   end
 
    % Select solver
    if Adouble
@@ -351,7 +411,7 @@ function [varargout] = primme_eigs(varargin)
 
    % Process error code and return the required arguments
    if ierr ~= 0
-      error([xprimme ' returned ' num2str(ierr)]);
+      error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
    end
 
    if (nargout <= 1)
@@ -372,6 +432,63 @@ function [varargout] = primme_eigs(varargin)
       stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
       stats.estimateAnorm = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
       varargout{4} = stats;
+   end
+   if (nargout >= 5)
+      varargout{5} = hist;
+   end
+
+   function record_history(basisEvals, basisFlags, iblock, basisNorms, ...
+         numConverged, lockedEvals, lockedFlags, lockedNorms, inner_its, ...
+         LSRes, event)
+
+      numMatvecs = double(primme_mex('primme_get_member', primme, 'stats_numMatvecs'));
+      maxInnerIterations = primme_mex('primme_get_member', primme, 'correction_maxInnerIterations');
+      elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
+      hist_rows = size(hist, 1);
+      if event == 0 || (event == 4 && ~locking) || event == 5
+         if ~locking
+            nconv = double(numConverged);
+         else
+            nconv = numel(lockedEvals);
+         end
+      end
+      if dispLevel == 0
+      elseif dispLevel == 1
+         if (event == 4 && ~locking) || event == 5
+            hist = [hist; numMatvecs elapsedTime nconv];
+         end
+      elseif dispLevel == 2
+         if event == 0 || (nconv == opts.numEvals && ((event == 4 && ~locking) || event == 5))
+            for i=1:numel(iblock)
+               hist = [hist; numMatvecs elapsedTime nconv i basisEvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+            end
+         end
+      elseif dispLevel == 3
+         if event == 1
+            if ~isempty(basisEvals)
+               value = basisEvals(iblock(1)+1);
+               resNorm = basisNorms(iblock(1)+1);
+            else
+               value = nan;
+               resNorm = nan;
+            end
+            hist = [hist; numMatvecs elapsedTime nconv nan value resNorm  LSRes];
+         elseif (maxInnerIterations == 0 || nconv == opts.numEvals) && (event == 0 || ((event == 4 && ~locking) || event == 5))
+            for i=1:numel(iblock)
+               hist = [hist; numMatvecs elapsedTime nconv i basisEvals(iblock(i)+1) basisNorms(iblock(i)+1) nan];
+            end
+         end
+      end
+      if ~return_hist && size(hist,1) > hist_rows
+         template{1} = '%d\t%f\t%d\n';
+         template{2} = '%d\t%f\t%d\t%d\t%g\t%e\n';
+         template{3} = '%d\t%f\t%d\t%d\t%g\t%e\t%e\n';
+         for i=hist_rows+1:size(hist,1)
+            a = num2cell(hist(i,:));
+            fprintf(template{dispLevel}, a{:});
+         end
+         hist = [];
+      end
    end
 end
 
@@ -415,5 +532,57 @@ function primme_set_members(opts, primme, prefix)
           end
         end
       end
+   end
+end
+
+function s = primme_error_msg(errorCode)
+
+   msg = {};
+   msg{39+  0} = 'success';
+   msg{39+  1} = 'reported only amount of required memory';
+   msg{39+ -1} = 'failed in allocating int or real workspace';
+   msg{39+ -2} = 'malloc failed in allocating a permutation integer array';
+   msg{39+ -3} = 'main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in stderr';
+   msg{39+ -4} = 'argument primme is NULL';
+   msg{39+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
+   msg{39+ -6} = 'numProcs' < 1';
+   msg{39+ -7} = 'matrixMatvec is NULL';
+   msg{39+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
+   msg{39+ -9} = 'not used';
+   msg{39+-10} = 'numEvals > n';
+   msg{39+-11} = 'numEvals < 0';
+   msg{39+-12} = 'eps > 0 and eps < machine precision';
+   msg{39+-13} = 'target is not properly defined';
+   msg{39+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
+   msg{39+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
+   msg{39+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
+   msg{39+-17} = 'maxBasisSize < 2';
+   msg{39+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
+   msg{39+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
+   msg{39+-20} = 'maxPrevRetain < 0';
+   msg{39+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
+   msg{39+-22} = 'initSize < 0';
+   msg{39+-23} = 'locking == 0 and initSize > maxBasisSize';
+   msg{39+-24} = 'locking and initSize > numEvals';
+   msg{39+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
+   msg{39+-26} = 'minRestartSize >= n';
+   msg{39+-27} = 'printLevel < 0 or printLevel > 5';
+   msg{39+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
+   msg{39+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
+   msg{39+-30} = 'evals is NULL, but not evecs and resNorms';
+   msg{39+-31} = 'evecs is NULL, but not evals and resNorms';
+   msg{39+-32} = 'resNorms is NULL, but not evecs and evals';
+   msg{39+-33} = 'locking == 0 and minRestartSize < numEvals';
+   msg{39+-34} = 'ldevecs is less than nLocal';
+   msg{39+-35} = 'ldOPs is non-zero and less than nLocal';
+   msg{39+-36} = 'not enough memory for realWork';
+   msg{39+-37} = 'not enough memory for intWork';
+   msg{39+-38} = '"locking == 0 and target is primme_closest_leq or primme_closet_geq';
+
+   errorCode = errorCode + 39;
+   if errorCode > 0 && errorCode <= numel(msg)
+      s = msg{errorCode};
+   else
+      s = 'Unknown error code';
    end
 end

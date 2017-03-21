@@ -63,9 +63,31 @@ end
 % (too much convenient for a diagonal matrix)
 
 Adiag = diag(A);
-Pfun = @(x)((Adiag - 30.5).\x);
+
+Pfun = @(x)((Adiag - 30.5).\x); % Pass a function handler
 evals = primme_eigs(A, k, 30.5, [], [], Pfun);
+
+P = spdiags(Adiag - 30.5, 0, 50, 50); % Pass a matrix
+evals = primme_eigs(A, k, 30.5, [], [], P);
  
+% Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+
+A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+[L,U] = ilu(A, struct('type', 'nofill'));
+evals = primme_eigs(A, k, 30.5, [], [], L, U);
+
+% Test different methods and return history record
+
+eigs_meths = {'DEFAULT_METHOD', 'DYNAMIC', 'DEFAULT_MIN_TIME', ...
+              'DEFAULT_MIN_MATVECS', 'Arnoldi', 'GD_plusK', 'GD_Olsen_plusK', ...
+              'JD_Olsen_plusK', 'JDQR', 'JDQMR', 'JDQMR_ETol', ...
+              'SUBSPACE_ITERATION', 'LOBPCG_OrthoBasis', ...
+              'LOBPCG_OrthoBasis_Window'}; 
+for i = 1:numel(eigs_meths)
+   [x,d,r,s,h] = primme_eigs(diag(1:100), 2, 'SA', struct('disp', 3), ...
+                             eigs_meths{i});
+end
+
 % Compute the 6 largest singular values of a matrix with tolerance 1e-6
 
 A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -112,5 +134,27 @@ Pstruct = struct('AHA', diag(A'*A), ...
                  'AAH', ones(200, 1), 'aug', ones(250, 1));
 Pfun = @(x,mode)Pstruct.(mode).\x;
 svals = primme_svds(A, 5, 'S', [], Pfun);
+
+% Compute the 5 smallest singular values of a square matrix using ILU(0)
+% as a preconditioner
+
+A = sparse(diag(1:50) + diag(ones(49,1), 1));
+[L,U] = ilu(A, struct('type', 'nofill'));
+svals = primme_svds(A, 5, 'S', [], L, U);
+
+% Test different methods and return history record
+
+svds_meths = {'primme_svds_normalequations', 'primme_svds_augmented', ...
+              'primme_svds_hybrid'};
+eigs_meths = {'DYNAMIC', 'DEFAULT_MIN_TIME', 'DEFAULT_MIN_MATVECS', ...
+              'JD_Olsen_plusK', 'JDQR', 'JDQMR', 'JDQMR_ETol'}; 
+for i = 1:numel(svds_meths)
+   opts = struct('disp', 3, 'method', svds_meths{i});
+   for j = 1:numel(eigs_meths)
+      opts.primme.method = eigs_meths{j};
+      opts
+      [u,sv,v,r,s,h] = primme_svds(diag(1:100), 2, 'S', opts);
+   end
+end
 
 disp('Success');

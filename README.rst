@@ -24,6 +24,11 @@ Making can be also done at the command line::
 
     make lib CC=clang CFLAGS='-O3'
 
+Optionally for building some of the external interfaces just do::
+
+    make matlab
+    make octave
+    make python
 
 C Library Interface
 -------------------

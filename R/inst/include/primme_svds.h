@@ -133,6 +133,12 @@ typedef struct primme_svds_params {
    FILE *outputFile;
    struct primme_svds_stats stats;
 
+   void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+      void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event, int *stage,
+      struct primme_svds_params *primme_svds, int *err);
+   void *monitor;
 } primme_svds_params;
 
 typedef enum {
@@ -176,7 +182,9 @@ typedef enum {
    PRIMME_SVDS_stats_numRestarts = 37,
    PRIMME_SVDS_stats_numMatvecs = 38,
    PRIMME_SVDS_stats_numPreconds = 39,
-   PRIMME_SVDS_stats_elapsedTime = 40
+   PRIMME_SVDS_stats_elapsedTime = 40,
+   PRIMME_SVDS_monitorFun = 41,
+   PRIMME_SVDS_monitor = 42
 } primme_svds_params_label;
 
 int sprimme_svds(float *svals, float *svecs, float *resNorms,

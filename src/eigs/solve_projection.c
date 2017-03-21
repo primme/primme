@@ -197,10 +197,6 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    int *permu, *permw;
    double targetShift;
 
-#ifdef USE_COMPLEX
-   REAL  *doubleWork;
-#endif
-
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
 
@@ -456,7 +452,7 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
    Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
    CHKERR(ortho_Sprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
-         basisSize, primme->iseed, machEps, rwork, lrwork, primme), -1);
+         basisSize, primme->iseed, machEps, rwork, lrwork, NULL), -1);
  
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
@@ -816,7 +812,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
-   double aNorm;
+   double aNorm, eps;
 
    /* Quick exit */
 
@@ -863,6 +859,16 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
    aNorm = (primme->aNorm <= 0.0) ?
       primme->stats.estimateLargestSVal : primme->aNorm;
 
+   /* Before the first eigenpair converges, there's no information about the  */
+   /* requested tolerance. In that case eps is set as ten times less than the */
+   /* the current smallest residual norm, if smallestResNorm provides that    */
+   /* information.                                                            */
+   eps = primme->stats.maxConvTol > 0.0 ? primme->stats.maxConvTol : (
+         smallestResNorm < HUGE_VAL ? smallestResNorm/10.0 : 0.0);
+   /* NOTE: the constant 6.28 is needed to pass                               */
+   /* testi-100-LOBPCG_OrthoBasis-2-primme_closest_abs-primme_proj_refined.F  */
+   eps = max(6.28*machEps, eps);
+
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {
 
@@ -899,7 +905,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
          /* we don't use the value when it is zero.                           */
 
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*machEps/
-            (aNorm*primme->eps/fabs(hVals[i]-hVals[i-1]));
+            (aNorm*eps/fabs(hVals[i]-hVals[i-1]));
          double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 

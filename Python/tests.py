@@ -242,11 +242,11 @@ def test_primme_svds():
             svl, sva, svr = np.linalg.svd(A, full_matrices=False)
             sigma0 = sva[0]*.51 + sva[-1]*.49
             for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
-               for prec in ({}, sqr_diagonal_prec(A, sigma)):
+               for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
                   for k in (1, 2, 3, 5, 10, 15):
                      if k > n: continue
-                     case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
-                           (gen_name, n, dtype, k, bool(prec), which))
+                     case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
+                           (gen_name, n, dtype, k, bool(prec), which, tol))
                      yield (svds_check, svds, A, k, prec, which, tol, sva, case_desc)
 
 def test_primme_svds_matrix_types():
@@ -273,6 +273,17 @@ def test_examples_from_doc():
 
 def test_examples():
     exec(compile(open("examples.py").read(), "examples.py", "exec"))
+
+def test_return_stats():
+    A, _ = diagonal(100)
+    evals, evecs, stats = Primme.eigsh(A, 3, tol=1e-6, which='LA',
+            return_stats=True, return_history=True)
+    assert(stats["hist"]["numMatvecs"])
+
+    svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, tol=1e-6,
+            which='SM', return_stats=True, return_history=True)
+    assert(stats["hist"]["numMatvecs"])
+
 
 if __name__ == "__main__":
     run_module_suite()

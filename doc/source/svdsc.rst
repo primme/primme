@@ -208,6 +208,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       | ``void *`` |ScommInfo|
       | ``void *`` |Smatrix|
       | ``void *`` |Spreconditioner|
+      | ``void *`` monitor
       |
       | *Advanced options*
       | ``int`` |SnumTargetShifts|, for targeting interior singular values.
@@ -227,6 +228,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       | ``primme_svds_operator`` |SmethodStage2|
       | |primme_params| |Sprimme|
       | |primme_params| |SprimmeStage2|
+      | ``void (*`` |SmonitorFun| ``)(...)``, custom convergence history.
 
 .. only:: text
 
@@ -258,6 +260,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       void *commInfo;
       void *matrix;
       void *preconditioner;
+      void *monitor;
       
       /* Advanced options */
       int numTargetShifts;        // for targeting interior values
@@ -277,6 +280,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       primme_svds_operator methodStage2;
       primme_params primme;
       primme_params primmeStage2;
+      void (*monitorFun)(...); // custom convergence history
 
 
 PRIMME SVDS requires the user to set at least the matrix dimensions (|Sm| x |Sn|) and

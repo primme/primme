@@ -149,9 +149,10 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
 
       CHKERR(globalSum_Sprimme(rwork, &rwork[count], count, primme), -1);
 
-      Num_copy_matrix_Sprimme(&rwork[count], m, blockSize, ldZ, &Z[ldZ*numCols], m);
-      Num_copy_matrix_Sprimme(&rwork[count+m*blockSize], blockSize, numCols, ldZ,
-            &Z[numCols], blockSize);
+      Num_copy_matrix_Sprimme(&rwork[count], m, blockSize, m, &Z[ldZ*numCols],
+            ldZ);
+      Num_copy_matrix_Sprimme(&rwork[count+m*blockSize], blockSize, numCols,
+            blockSize, &Z[numCols], ldZ);
    }
 
    return 0;

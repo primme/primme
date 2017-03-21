@@ -119,6 +119,8 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->realWorkSize            = 0;
    primme_svds->intWork                 = NULL;
    primme_svds->realWork                = NULL;
+   primme_svds->monitorFun              = NULL;
+   primme_svds->monitor                 = NULL;
 
    primme_initialize(&primme_svds->primme);
    primme_initialize(&primme_svds->primmeStage2);
@@ -505,6 +507,11 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       primme_svds_operator operator_v;
       double double_v;
       FILE *file_v;
+      void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
+            int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+            void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+            int *inner_its, void *LSRes, primme_event *event, int *stage,
+            struct primme_svds_params *primme_svds, int *err);
    } *v = (union value_t*)value;
 
    switch(label) {
@@ -635,6 +642,12 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_elapsedTime :
          v->double_v = primme_svds->stats.elapsedTime;
          break;
+      case PRIMME_SVDS_monitorFun:
+         v->monitorFun_v = primme_svds->monitorFun;
+         break;
+      case PRIMME_SVDS_monitor:
+         v->ptr_v = primme_svds->monitor;
+         break;
       default:
          return 1;
    }
@@ -672,6 +685,12 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       primme_svds_operator *operator_v;
       double *double_v;
       FILE *file_v;
+      void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
+            int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+            void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+            int *inner_its, void *LSRes, primme_event *event, int *stage,
+            struct primme_svds_params *primme_svds, int *err);
+
    } v = *(union value_t*)&value;
 
    switch(label) {
@@ -812,6 +831,12 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_elapsedTime :
          primme_svds->stats.elapsedTime = *v.double_v;
          break;
+      case PRIMME_SVDS_monitorFun:
+         primme_svds->monitorFun = v.monitorFun_v;
+         break;
+      case PRIMME_SVDS_monitor:
+         primme_svds->monitor = v.ptr_v;
+      break;
       default:
          return 1;
    }
@@ -899,6 +924,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_numMatvecs);
    IF_IS(stats_numPreconds);
    IF_IS(stats_elapsedTime);
+   IF_IS(monitorFun);
+   IF_IS(monitor);
 #undef IF_IS
 
    /* Return label/label_name */
@@ -968,6 +995,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_monitorFun:
+      case PRIMME_SVDS_monitor:
       if (type) *type = primme_pointer;
       if (arity) *arity = 1;
       break;

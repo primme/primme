@@ -8,4 +8,5 @@ Singular Value Problems
    svdsc
    svdsf77
    pysvds
+   matsvds  
    appendixsvds

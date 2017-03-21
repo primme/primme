@@ -77,6 +77,11 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
                        primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
+static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+      void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event, primme_params *primme,
+      int *err);
 
 
 /*******************************************************************************
@@ -166,6 +171,14 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
       if (primme->eps == 0.0) {
          primme->eps = machEps*1e4;
       }
+   }
+
+   /* ----------------------- */
+   /* Set default monitor     */
+   /* ----------------------- */
+
+   if (!primme->monitorFun) {
+      primme->monitorFun = default_monitor;
    }
 
    /* ------------------------------------------------------- */
@@ -343,7 +356,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    CHKERR(restart_Sprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
             0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, 0,
             NULL, NULL, NULL, evecsHat, 0, NULL, 0, NULL, 0, NULL,
-            &primme->numEvals, &primme->numEvals, &primme->numEvals, NULL,
+            &primme->numEvals, &primme->numEvals, &primme->numEvals, NULL, NULL,
             &primme->restartingParams.maxPrevRetain, primme->maxBasisSize,
             primme->initSize, NULL, &primme->maxBasisSize, NULL,
             primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, NULL,
@@ -361,8 +374,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
             primme->maxBasisSize, NULL, NULL, NULL, 0, NULL, NULL, NULL,
             primme->numEvals, NULL, 0, primme->maxBlockSize,
             NULL, primme->numEvals, 0, NULL, NULL, 0, 0.0, NULL,
-            &primme->maxBlockSize, NULL, NULL, NULL, NULL, 0, NULL, NULL,
-            &realWorkSize, &intWorkSize, 0, primme), -1);
+            &primme->maxBlockSize, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL,
+            NULL, &realWorkSize, &intWorkSize, 0, primme), -1);
 
    CHKERR(retain_previous_coefficients_Sprimme(NULL, 0, NULL, 0, NULL, 0,
             0, 0, NULL, primme->maxBlockSize, NULL,
@@ -381,7 +394,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    doubleSize += 4     /* padding cause by TO_REAL aligning them to SCALAR */
       + primme->maxBasisSize                       /* Size of hVals        */
       + primme->numEvals+primme->maxBasisSize      /* Size of prevRitzVals */
-      + primme->maxBlockSize;                      /* Size of blockNorms   */
+      + primme->maxBlockSize                       /* Size of blockNorms   */
+      + primme->maxBasisSize;                      /* Size of basisNorms   */
 
    /*----------------------------------------------------------------------*/
    /* Determine the integer workspace needed                               */
@@ -390,6 +404,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    intWorkSize += primme->maxBasisSize /* Size of flag               */
       + 2*primme->maxBlockSize         /* Size of iev and ilev       */
       + maxEvecsSize;                  /* Size of ipivot             */
+   if (primme->locking) {
+      intWorkSize += primme->numEvals; /* Size of lockedFlags        */
+   }
 
    /*----------------------------------------------------------------------*/
    /* byte sizes:                                                          */
@@ -586,4 +603,109 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
                primme->eps * aNorm,
                machEps * 3.16 * primme->stats.estimateLargestSVal);
    *ierr = 0;
+}
+
+/*******************************************************************************
+ * Subroutine default_monitor - report iterations, #MV, residual norm,
+ *    eigenvalues, etc. at every inner/outer iteration and when some pair
+ *    converges.       
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * basisEvals   The approximate eigenvalues of the basis
+ * basisSize    The size of the basis
+ * basisFlags   The state of every approximate pair of the basis (see conv_flags)
+ * iblock       Indices of the approximate pairs in the block
+ * blockSize    The size of the block
+ * basisNorms   The approximate residual norms of the pairs of the basis
+ * numConverged The number of pairs converged in the basis and the locked pairs
+ *              (this value isn't monotonic!)
+ * lockedEvals  The locked eigenvalues
+ * numLocked    The number of pairs locked
+ * lockedFlags  The state of each locked eigenpair (see conv_flags)
+ * lockedNorms  The residual norms of the locked pairs
+ * inner_its    The number of performed QMR iterations in the current correction equation
+ * LSRes        The residual norm of the linear system at the current QMR iteration
+ * event        The event reported
+ * primme       Structure containing various solver parameters and statistics
+ *
+ * OUTPUT
+ * ------
+ * err          Error code
+ * 
+ ******************************************************************************/
+
+static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *err)
+{
+   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
+        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
+        *LSRes = (REAL*)LSRes_;
+   assert(event != NULL && primme != NULL);
+
+   /* Only print report if this is proc zero */
+   if (primme->procID == 0 && primme->outputFile) {
+      switch(*event) {
+      case primme_event_outer_iteration:
+         assert(basisEvals && basisSize && basisFlags && iblock && blockSize
+                && basisNorms && numConverged);
+         assert(!primme->locking || (lockedEvals && numLocked && lockedFlags
+                 && lockedNorms));
+         if (primme->printLevel >= 3) {
+            int i;  /* Loop variable */
+            int found;  /* Reported eigenpairs found */
+
+            if (primme->locking) 
+               found = *numLocked;
+            else 
+               found = *numConverged;
+
+            for (i=0; i < *blockSize; i++) {
+               fprintf(primme->outputFile, 
+                     "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
+                     primme->stats.numOuterIterations, found, i,
+                     primme->stats.numMatvecs, primme_wTimer(0),
+                     basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
+            }
+         }
+         break;
+      case primme_event_inner_iteration:
+         assert(basisSize && iblock && basisNorms && inner_its && LSRes);
+         (void)inner_its;
+         if (primme->printLevel >= 4) {
+            fprintf(primme->outputFile,
+                  "INN MV %" PRIMME_INT_P " Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n",
+                  primme->stats.numMatvecs, primme_wTimer(0),
+                  (double)basisEvals[iblock[0]], (double)*LSRes,
+                  (double)basisNorms[iblock[0]]);
+         }
+        break;
+      case primme_event_converged:
+         assert(numConverged && iblock && basisEvals && basisNorms);
+         if ((!primme->locking && primme->printLevel >= 2)
+               || (primme->locking && primme->printLevel >= 5))
+            fprintf(primme->outputFile, 
+                  "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
+                  *numConverged, iblock[0], basisEvals[iblock[0]],
+                  basisNorms[iblock[0]], primme->stats.numMatvecs,
+                  primme_wTimer(0));
+         break;
+      case primme_event_locked:
+         assert(numLocked && lockedEvals && lockedNorms && lockedFlags);
+         if (primme->printLevel >= 2) { 
+            fprintf(primme->outputFile, 
+                  "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
+                  *numLocked-1, lockedEvals[*numLocked-1], lockedNorms[*numLocked-1], 
+                  primme->stats.numMatvecs, primme_wTimer(0), lockedFlags[*numLocked-1]);
+         }
+         break;
+      default:
+         break;
+      }
+      fflush(primme->outputFile);
+   }
+   *err = 0;
 }

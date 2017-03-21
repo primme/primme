@@ -58,10 +58,6 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
       int iworkSize, primme_params *primme);
 
-static void print_residuals(REAL *ritzValues, REAL *blockNorms,
-   int numConverged, int numLocked, int *iev, int blockSize, 
-   primme_params *primme);
-
 /******************************************************************************
  * Subroutine main_iter - This routine implements a more general, parallel, 
  *    block (Jacobi)-Davidson outer iteration with a variety of options.
@@ -171,6 +167,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
    int *iwork;              /* Integer workspace pointer                     */
    int *flags;              /* Indicates which Ritz values have converged    */
+   int *lockedFlags;        /* Flags for the locked pairs                    */
    int *ipivot;             /* The pivot for the UDU factorization of M      */
    int *iev;                /* Evalue index each block vector corresponds to */
 
@@ -198,11 +195,12 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    SCALAR *QtV = NULL;      /* Q'*V                                          */
    SCALAR *hVecsRot=NULL;   /* transformation of hVecs in arbitrary vectors  */
 
-   REAL *hVals;           /* Eigenvalues of H                              */
-   REAL *hSVals=NULL;     /* Singular values of R                          */
-   REAL *prevRitzVals;    /* Eigenvalues of H at previous outer iteration  */
+   REAL *hVals;             /* Eigenvalues of H                              */
+   REAL *hSVals=NULL;       /* Singular values of R                          */
+   REAL *prevRitzVals;      /* Eigenvalues of H at previous outer iteration  */
                             /* by robust shifting algorithm in correction.c  */
-   REAL *blockNorms;      /* Residual norms corresponding to current block */
+   REAL *basisNorms;        /* Residual norms of basis at pairs              */
+   REAL *blockNorms;        /* Residual norms corresponding to current block */
                             /* vectors.                                      */
    double smallestResNorm;  /* the smallest residual norm in the block       */
    int reset=0;             /* Flag to reset V and W                         */
@@ -269,18 +267,20 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    }
    prevRitzVals  = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize+primme->numEvals);
    blockNorms    = (REAL *)rwork; rwork += TO_REAL(primme->maxBlockSize);
+   basisNorms    = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize);
    #undef TO_REAL
 
    rworkSize     = primme->realWorkSize/sizeof(SCALAR) - (rwork - (SCALAR*)realWork);
 
    /* Integer workspace */
 
-   flags = intWork;
-   iev = flags + primme->maxBasisSize;
-   ipivot = iev + primme->maxBlockSize;
-   iwork = ipivot + maxEvecsSize;
-   iworkSize = (int)(primme->intWorkSize/sizeof(int)) - primme->maxBasisSize
-      - primme->maxBlockSize - maxEvecsSize;
+   iwork = intWork; iworkSize = (int)(primme->intWorkSize/sizeof(int));
+   if (primme->locking) {
+      lockedFlags = iwork; iwork += primme->numEvals; iworkSize -= primme->numEvals;
+   }
+   flags = iwork; iwork += primme->maxBasisSize; iworkSize -= primme->maxBasisSize;
+   iev = iwork; iwork += primme->maxBlockSize; iworkSize -= primme->maxBlockSize;
+   ipivot = iwork; iwork += maxEvecsSize; iworkSize -= maxEvecsSize;
 
    /* -------------------------------------------------------------- */
    /* Initialize counters and flags                                  */
@@ -448,7 +448,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             }
             else {
                availableBlockSize = primme->maxBlockSize;
-               maxRecentlyConverged = primme->numEvals-numConverged;
+               maxRecentlyConverged = max(0, primme->numEvals-numConverged);
             }
 
             /* Limit blockSize to vacant vectors in the basis */
@@ -461,8 +461,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize = min(availableBlockSize, 
-                  primme->n - basisSize - numLocked - primme->numOrthoConst);
+            availableBlockSize = max(0, min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst));
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {
@@ -474,16 +474,13 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   availableBlockSize, evecs, numLocked, ldevecs, evals,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
-                  hVecsRot, primme->maxBasisSize, &reset, rwork, &rworkSize,
-                  iwork, iworkSize, primme);
+                  hVecsRot, primme->maxBasisSize, numConverged, basisNorms,
+                  &reset, rwork, &rworkSize, iwork, iworkSize, primme);
+               assert(recentlyConverged >= 0);
             }
             else {
                blockSize = recentlyConverged = 0;
             }
-
-            /* print residuals */
-            print_residuals(hVals, blockNorms, numConverged, numLocked, iev, blockSize,
-                  primme);
 
             /* If the total number of converged pairs, including the     */
             /* recentlyConverged ones, are greater than or equal to the  */
@@ -498,6 +495,19 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             numConverged += recentlyConverged;
 
+            /* Report iteration */
+
+            if (primme->monitorFun) {
+               primme_event EVENT_OUTER_ITERATION = primme_event_outer_iteration;
+               primme->stats.elapsedTime = primme_wTimer(0);
+               int err;
+               CHKERRM((primme->monitorFun(hVals, &basisSize, flags, iev,
+                           &blockSize, basisNorms, &numConverged, evals,
+                           &numLocked, lockedFlags, resNorms, NULL, NULL,
+                           &EVENT_OUTER_ITERATION, primme, &err),
+                        err), -1, "Error returned by monitorFun: %d", err);
+            }
+
             /* Reset touch every time an eigenpair converges */
 
             if (recentlyConverged > 0) touch = 0;
@@ -508,9 +518,12 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   && primme->target != primme_largest
                   && primme->projectionParams.projection == primme_proj_RR) ||
                 targetShiftIndex < 0 ||
-                (Q && primme->targetShifts[targetShiftIndex] !=
+                  (blockSize == 0 && recentlyConverged > 0) ||
+                /* NOTE: use the same condition as in restart_refined */
+                (Q && fabs(primme->targetShifts[targetShiftIndex] -
                   primme->targetShifts[
-                     min(primme->numTargetShifts-1, numConverged)])
+                     min(primme->numTargetShifts-1, numConverged)]) >= 
+                        max(primme->aNorm, primme->stats.estimateLargestSVal))
                || (numConverged >= nextGuess-primme->numOrthoConst
                   && numGuesses > 0)) {
 
@@ -702,11 +715,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             }
 
             else {
-               maxRecentlyConverged = primme->numEvals-numConverged;
+               maxRecentlyConverged = max(0, primme->numEvals-numConverged);
 
                /* Limit blockSize to vacant vectors in the basis */
 
-               availableBlockSize = min(primme->maxBlockSize, primme->maxBasisSize-(numConverged-numLocked));
+               availableBlockSize = max(0, min(primme->maxBlockSize, primme->maxBasisSize-(numConverged-numLocked)));
 
                /* Limit blockSize to remaining values to converge plus one */
 
@@ -715,8 +728,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize = min(availableBlockSize, 
-                  primme->n - basisSize - numLocked - primme->numOrthoConst);
+            availableBlockSize = max(0, min(availableBlockSize, 
+                  primme->n - basisSize - numLocked - primme->numOrthoConst));
 
             /* -------------------------------------------------------------- */
             /* NOTE: setting smallestResNorm to zero may overpass the inner   */
@@ -742,8 +755,9 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   availableBlockSize, evecs, numLocked, ldevecs, evals,
                   resNorms, targetShiftIndex, machEps, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
-                  hVecsRot, primme->maxBasisSize, &reset, rwork, &rworkSize,
-                  iwork, iworkSize, primme);
+                  hVecsRot, primme->maxBasisSize, numConverged, basisNorms,
+                  &reset, rwork, &rworkSize, iwork, iworkSize, primme);
+            assert(recentlyConverged >= 0);
 
             /* When QR is computed and there are more than one target shift   */
             /* and some eigenpair has converged values to one, don't provide  */
@@ -810,10 +824,10 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          restart_Sprimme(V, W, primme->nLocal, basisSize, ldV, hVals, hSVals,
                flags, iev, &blockSize, blockNorms, evecs, ldevecs, perm,
                evals, resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU,
-               0, ipivot, &numConverged, &numLocked, &numConvergedStored,
-               previousHVecs, &numPrevRetained, primme->maxBasisSize,
-               numGuesses, prevRitzVals, &numPrevRitzVals, H,
-               primme->maxBasisSize, Q, ldQ, R, primme->maxBasisSize,
+               0, ipivot, &numConverged, &numLocked, lockedFlags,
+               &numConvergedStored, previousHVecs, &numPrevRetained,
+               primme->maxBasisSize, numGuesses, prevRitzVals, &numPrevRitzVals,
+               H, primme->maxBasisSize, Q, ldQ, R, primme->maxBasisSize,
                QtV, primme->maxBasisSize, hU, basisSize, 0, hVecs, basisSize, 0,
                &basisSize, &targetShiftIndex, &numArbitraryVecs, hVecsRot,
                primme->maxBasisSize, &restartsSinceReset, &reset, machEps,
@@ -1012,8 +1026,6 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             if (primme->printLevel >= 2 && primme->procID == 0) {
                fprintf(primme->outputFile, 
                  "Verifying before return: Some vectors are unconverged. ");
-               fprintf(primme->outputFile, "Restarting at #MV %" PRIMME_INT_P "\n",
-                 primme->stats.numMatvecs);
                fflush(primme->outputFile);
             }
 
@@ -1067,6 +1079,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
  * evecs          Converged eigenvectors
  * evecsSize      The size of evecs
  * numLocked      The number of vectors currently locked (if locking)
+ * numConverged   Number of converged pairs (soft+hard locked)
  * rwork          Real work array, used by check_convergence and Num_update_VWXR
  * primme         Structure containing various solver parameters
  *
@@ -1096,8 +1109,9 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldevecs, REAL *evals, REAL *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, SCALAR *hVecsRot,
-      int ldhVecsRot, int *reset, SCALAR *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme) {
+      int ldhVecsRot, int numConverged, REAL *basisNorms, int *reset,
+      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
+      primme_params *primme) {
 
    int i, blki;         /* loop variables */
    REAL *hValsBlock;    /* contiguous copy of the hVals to be tested */
@@ -1107,6 +1121,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    SCALAR *hVecsBlock0; /* workspace for hVecsBlock */
    double targetShift;  /* current target shift */
    size_t rworkSize0;   /* current size of rwork */
+   int lasti;           /* last tested pair */
 
    /* -------------------------- */
    /* Return memory requirements */
@@ -1119,7 +1134,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       int liw=0;
 
       CHKERR(check_convergence_Sprimme(NULL, nLocal, 0, NULL, 0, NULL,
-               numLocked, 0, basisSize-maxBlockSize, basisSize, NULL, NULL,
+               numLocked, 0, 0, basisSize, NULL, NULL,
                NULL, NULL, 0.0, NULL, &lrw, &liw, 0, primme), -1);
       lrw = max(lrw,
             (size_t)Num_update_VWXR_Sprimme(NULL, NULL, nLocal, basisSize,
@@ -1150,6 +1165,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    iworkSize -= maxBlockSize;
    assert(iworkSize >= 0);
    targetShift = primme->targetShifts ? primme->targetShifts[targetShiftIndex] : 0.0;
+   lasti = -1;
 
    /* Pack hVals for already computed residual pairs */
 
@@ -1168,9 +1184,6 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    *recentlyConverged = 0;
    while (1) {
-      /* Workspace limited by maxBlockSize */
-      assert(blockNormsSize <= maxBlockSize);
-
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i=*blockSize; i<blockNormsSize; i++)
          flagsBlock[i-*blockSize] = flags[iev[i]];
@@ -1185,8 +1198,9 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* actions for converged pairs.                                */
 
       for (blki=*blockSize, i=0; i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
-         /* Write back flags */
+         /* Write back flags and residual norms */
          flags[iev[blki]] = flagsBlock[i];
+         basisNorms[iev[blki]] = blockNorms[blki];
 
          /* Ignore some cases */
          if ((primme->target == primme_closest_leq
@@ -1209,12 +1223,6 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             /* Also print the converged eigenvalue.                                 */
 
             if (!primme->locking) {
-               if (primme->procID == 0 && primme->printLevel >= 2)
-                  fprintf(primme->outputFile, 
-                        "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
-                        iev[blki]-*blockSize, iev[blki], hVals[iev[blki]],
-                        blockNorms[blki], primme->stats.numMatvecs,
-                        primme_wTimer(0));
                evals[iev[blki]] = hVals[iev[blki]];
                resNorms[iev[blki]] = blockNorms[blki];
                primme->stats.maxConvTol = max(primme->stats.maxConvTol, blockNorms[blki]);
@@ -1226,6 +1234,17 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             /* Reset smallestResNorm if some pair converged */
             if (*blockSize == 0) {
                *smallestResNorm = HUGE_VAL;
+            }
+
+            /* Report a pair was soft converged */
+            if (primme->monitorFun) {
+               int ONE = 1, numConverged0 = numConverged+*recentlyConverged;
+               primme_event EVENT_CONVERGED = primme_event_converged;
+               int err;
+               CHKERRM((primme->monitorFun(hVals, &basisSize, flags, &iev[blki],
+                           &ONE, basisNorms, &numConverged0, NULL, NULL, NULL,
+                           NULL, NULL, NULL, &EVENT_CONVERGED, primme, &err),
+                        err), -1, "Error returned by monitorFun: %d", err);
             }
          }
          else if (flagsBlock[i] == UNCONVERGED) {
@@ -1244,24 +1263,21 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             (*blockSize)++;
          }
 
+         lasti = iev[blki];
       }
 
       /* Generate well conditioned coefficient vectors; start from the last   */
       /* position visited (variable i)                                        */
 
-      if (blki > 0)
-         i = iev[blki-1]+1;
-      else
-         i = 0;
       blki = *blockSize;
-      prepare_vecs_Sprimme(basisSize, i, maxBlockSize-blki, H, ldH, hVals,
+      prepare_vecs_Sprimme(basisSize, lasti+1, maxBlockSize-blki, H, ldH, hVals,
             hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs,
             *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot, machEps,
             &rworkSize0, rwork, iworkSize, iwork, primme);
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
-      for ( ; i<basisSize && blki < maxBlockSize; i++)
+      for (i=lasti+1; i<basisSize && blki < maxBlockSize; i++)
          if (flags[i] == UNCONVERGED) iev[blki++] = i;
 
       /* If no new candidates or all required solutions converged yet, go out */
@@ -1370,48 +1386,6 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
     
    return 0;
 }
-
-/*******************************************************************************
- * Subroutine print_residuals - This function displays the residual norms of 
- *    each Ritz vector computed at this iteration.
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * ritzValues     The Ritz values
- * blockNorms     Residual norms of the corresponding Ritz vectors
- * numConverged   Number of already converged epairs
- * numLocked      Number of locked (converged) epairs
- * iev            indicates which eigenvalue each block vector corresponds to
- * blockSize      Number of pairs in the block
- * primme         Structure containing various solver parameters
- ******************************************************************************/
-
-static void print_residuals(REAL *ritzValues, REAL *blockNorms,
-   int numConverged, int numLocked, int *iev, int blockSize, 
-   primme_params *primme) {
-
-   int i;  /* Loop variable */
-   int found;  /* Loop variable */
-
-   if (primme->printLevel >= 3 && primme->procID == 0) {
-
-      if (primme->locking) 
-         found = numLocked;
-      else 
-         found = numConverged;
-
-      for (i=0; i < blockSize; i++) {
-         fprintf(primme->outputFile, 
-            "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
-         primme->stats.numOuterIterations, found, i, primme->stats.numMatvecs,
-         primme_wTimer(0), ritzValues[iev[i]], (double)blockNorms[i]);
-      }
-
-      fflush(primme->outputFile);
-   }
-
-}
-
 
 /******************************************************************************
            Dynamic Method Switching uses the following functions 

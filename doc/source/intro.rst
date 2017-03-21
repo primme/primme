@@ -1,3 +1,4 @@
+.. highlight:: bash
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
@@ -10,6 +11,12 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77, M
   
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
+
+From PRIMME 2.0 to 2.1:
+
+* Added members |monitorFun| and ``monitor`` to :c:type:`primme_params`.
+
+* Added members |SmonitorFun| and ``monitor`` to :c:type:`primme_svds_params`.
 
 From PRIMME 1.x to 2.0:
 
@@ -30,6 +37,18 @@ From PRIMME 1.x to 2.0:
 Changelog
 ^^^^^^^^^
 Changes in PRIMME 2.1 (released on XXX):
+
+* Improve robustness by broadcasting the result of critical LAPACK_ operations instead of
+  replicating them in every process; this is specially convenient when using a threaded BLAS_/LAPACK_
+  or not all processes run on the same processor model.
+
+* New stopping criteria in QMR that improve performance in interior problems.
+
+* MATLAB interface for singular value problems, :mat:func:`primme_svds`.
+
+* Proper convergence history for singular value solvers.
+
+* Single precision support in MATLAB interface.
 
 * Support Octave.
 
@@ -232,7 +251,7 @@ The next directories and files should be available:
    * :file:`tools/`,     tools used to generated some headers;
 
 * :file:`Matlab/`,       Matlab interface;
-* :file:`PYTHON/`,       Python interface;
+* :file:`Python/`,       Python interface;
 * :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
 * :file:`tests/`,        drivers for testing purpose and test cases;
 * :file:`lib/libprimme.a`,   the PRIMME library (to be made);
@@ -303,6 +322,9 @@ Full description of actions that `make` can take:
 
 * `make lib`, builds the static library :file:`libprimme.a`.
 * `make solib`, builds the shared library :file:`libprimme.so`.
+* `make matlab`, builds `libprimme.a` compatible with MATLAB and the MATLAB module.
+* `make octave`, builds `libprimme.a` and the Octave module.
+* `make python`, builds `libprimme.a` and the Python module.
 * `make test`, build and execute simple examples.
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
 

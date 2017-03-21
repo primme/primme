@@ -47,6 +47,8 @@ Table Of Contents:
 
   * Python Interface
 
+  * MATLAB Interface
+
   * Appendix
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
@@ -63,6 +65,12 @@ MATLAB and Python.
 
 Incompatibilities
 =================
+
+From PRIMME 2.0 to 2.1:
+
+* Added members "monitorFun" and "monitor" to "primme_params".
+
+* Added members "monitorFun" and "monitor" to "primme_svds_params".
 
 From PRIMME 1.x to 2.0:
 
@@ -90,6 +98,20 @@ Changelog
 =========
 
 Changes in PRIMME 2.1 (released on XXX):
+
+* Improve robustness by broadcasting the result of critical LAPACK
+  operations instead of replicating them in every process; this is
+  specially convenient when using a threaded BLAS/LAPACK or not all
+  processes run on the same processor model.
+
+* New stopping criteria in QMR that improve performance in interior
+  problems.
+
+* MATLAB interface for singular value problems, "primme_svds()".
+
+* Proper convergence history for singular value solvers.
+
+* Single precision support in MATLAB interface.
 
 * Support Octave.
 
@@ -301,7 +323,7 @@ The next directories and files should be available:
 
 * "Matlab/",       Matlab interface;
 
-* "PYTHON/",       Python interface;
+* "Python/",       Python interface;
 
 * "examples/",     sample programs in C, C++ and F77, both
   sequential and parallel;
@@ -389,6 +411,13 @@ Full description of actions that *make* can take:
 * *make lib*, builds the static library "libprimme.a".
 
 * *make solib*, builds the shared library "libprimme.so".
+
+* *make matlab*, builds *libprimme.a* compatible with MATLAB and the
+  MATLAB module.
+
+* *make octave*, builds *libprimme.a* and the Octave module.
+
+* *make python*, builds *libprimme.a* and the Python module.
 
 * *make test*, build and execute simple examples.
 
@@ -493,7 +522,7 @@ Other useful functions:
    void primme_free(primme_params primme);
 
 PRIMME stores its data on the structure "primme_params". See
-*Parameters Guide* for an introduction about its fields.
+Parameters Guide for an introduction about its fields.
 
 
 Running
@@ -511,7 +540,7 @@ To use PRIMME, follow these basic steps.
 
       primme_initialize(&primme);
 
-3. Set problem parameters (see also *Parameters Guide*), and,
+3. Set problem parameters (see also Parameters Guide), and,
    optionally, set one of the "preset methods":
 
       primme.matrixMatvec = LaplacianMatrixMatvec; /* MV product */
@@ -576,6 +605,8 @@ next fields:
    void *commInfo;
    void *matrix;
    void *preconditioner;
+   void *convTest;
+   void *monitor;
 
    /* Advanced options */
    PRIMME_INT ldevecs; // leading dimension of the evecs
@@ -598,8 +629,9 @@ next fields:
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
-   void (*convTestFun)(...);
-   PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec...
+   void (*convTestFun)(...); // custom convergence criterion
+   PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec
+   void (*monitorFun)(...); // custom convergence history
 
 PRIMME requires the user to set at least the dimension of the matrix
 ("n") and the matrix-vector product ("matrixMatvec"), as they define
@@ -648,7 +680,7 @@ int sprimme(float *evals, float *evecs, float *resNorms, primme_params *prim
       * **primme** -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
 
 dprimme
@@ -674,7 +706,7 @@ int dprimme(double *evals, double *evecs, double *resNorms, primme_params *p
       * **primme** -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
 
 cprimme
@@ -734,7 +766,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme)
 
       * **primme** -- parameters structure.
 
-   See also *Preset Methods*.
+   See also Preset Methods.
 
 
 primme_display_params
@@ -852,8 +884,8 @@ sprimme_f77(evals, evecs, resNorms, primme, ierr)
 
       * **primme** (*ptr*) -- parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see *Error
-        Codes*.
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
 
 
 cprimme_f77
@@ -873,8 +905,8 @@ cprimme_f77(evals, evecs, resNorms, primme, ierr)
 
       * **primme** (*ptr*) -- (input) parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see *Error
-        Codes*.
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
 
 
 dprimme_f77
@@ -901,8 +933,8 @@ dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
       * **primme** (*ptr*) -- parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see *Error
-        Codes*.
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
 
 
 zprimme_f77
@@ -922,8 +954,8 @@ zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
       * **primme** (*ptr*) -- (input) parameters structure.
 
-      * **ierr** (*integer*) -- (output) error indicator; see *Error
-        Codes*.
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
 
 
 primme_set_member_f77
@@ -1165,7 +1197,7 @@ PRIMME_INT
    and counters (such as "numMatvecs").
 
    The integer size is controlled by the compilation flag
-   "PRIMME_INT_SIZE", see *Making and Linking*.
+   "PRIMME_INT_SIZE", see Making and Linking.
 
 PRIMME_COMPLEX_FLOAT
 
@@ -1357,7 +1389,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 1;
-            this field is read by "primme_set_method()" (see *Preset Methods*) and "dprimme()".
+            this field is read by "primme_set_method()" (see Preset Methods) and "dprimme()".
 
    primme_target target
 
@@ -1440,7 +1472,7 @@ primme_params
    int printLevel
 
       The level of message reporting from the code. All output is
-      writen in "outputFile".
+      written in "outputFile".
 
       One of:
 
@@ -1560,7 +1592,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            written by "primme_set_method()" (see *Preset Methods*);
+            written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
       Note: Even for expert users we do not recommend setting
@@ -1581,7 +1613,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to -1;
-            written by "primme_set_method()" (see *Preset Methods*);
+            written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int initSize
@@ -1639,7 +1671,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see *Preset Methods*);
+            this field is read and written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int minRestartSize
@@ -1649,7 +1681,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see *Preset Methods*);
+            this field is read and written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int maxBlockSize
@@ -1665,7 +1697,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 1;
-            this field is read and written by "primme_set_method()" (see *Preset Methods*);
+            this field is read and written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
       Note: Inner iterations of QMR are not performed in a block
@@ -1866,7 +1898,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to "primme_thick";
-            written by "primme_set_method()" (see *Preset Methods*);
+            written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int restartingParams.maxPrevRetain
@@ -1879,7 +1911,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see *Preset Methods*);
+            this field is read and written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int correctionParams.precondition
@@ -1890,7 +1922,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see *Preset Methods*);
+            this field is read and written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int correctionParams.robustShifts
@@ -1903,7 +1935,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            written by "primme_set_method()" (see *Preset Methods*);
+            written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    int correctionParams.maxInnerIterations
@@ -1921,7 +1953,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            this field is read and written by "primme_set_method()" (see *Preset Methods*);
+            this field is read and written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
       See also "convTest".
@@ -1934,7 +1966,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
-            written by "primme_set_method()" (see *Preset Methods*);
+            written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
    primme_convergencetest correctionParams.convTest
@@ -1960,7 +1992,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to "primme_adaptive_ETolerance";
-            written by "primme_set_method()" (see *Preset Methods*);
+            written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
       Note: Avoid to set "maxInnerIterations" to -1 and "convTest"
@@ -2056,7 +2088,7 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets all of them to 0;
-            this field is written by "primme_set_method()" (see *Preset Methods*);
+            this field is written by "primme_set_method()" (see Preset Methods);
             this field is read by "dprimme()".
 
       See [r3] for a study about different projector configurations in
@@ -2073,6 +2105,135 @@ primme_params
       Input/output:
 
             "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
+
+   void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
+
+      Convergence monitor. Usually used to customize how it is
+      reported the unconverged and converged pairs and the residual
+      norms.
+
+      Parameters:
+         * **basisEvals** -- array with approximate eigenvalues of
+           the basis.
+
+         * **basisSize** -- size of the arrays "basisEvals",
+           "basisFlags" and "basisNorms".
+
+         * **basisFlags** -- state of every approximate pair of the
+           basis (see conv_flags).
+
+         * **iblock** -- indices of the approximate pairs in the
+           block.
+
+         * **blockSize** -- size of array "iblock".
+
+         * **basisNorms** -- array with residual norms of the pairs
+           in the basis.
+
+         * **numConverged** -- number of pairs converged in the
+           basis plus the number of the locked pairs (note that this
+           value isn't monotonic).
+
+         * **lockedEvals** -- array with the locked eigenvalues.
+
+         * **numLocked** -- size of the arrays "lockedEvals",
+           "lockedFlags" and "lockedNorms".
+
+         * **lockedFlags** -- state of each locked eigenpair (see
+           conv_flags).
+
+         * **lockedNorms** -- array with residual norms of the
+           locked pairs.
+
+         * **inner_its** -- number of performed QMR iterations in
+           the current correction equation.
+
+         * **LSRes** -- residual norm of the linear system at the
+           current QMR iteration.
+
+         * **event** -- event reported.
+
+         * **primme** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      This function is called at the next events:
+
+      * "*event == primme_event_outer_iteration": every outer
+        iterations.
+
+        It is provided "basisEvals", "basisSize", "basisFlags",
+        "iblock" and "blockSize".
+
+        "basisNorms[iblock[i]]" has the residual norms for the
+        selected pairs in the block. PRIMME avoids to compute the
+        residual of soft-locked pairs, "basisNorms[i]" for
+        "i<iblock[0]". So those values may correspond to previous
+        iterations. The values "basisNorms[i]" for
+        "i>iblock[blockSize-1]" are not valid.
+
+        If "locking" is enabled, it is provided "lockedEvals",
+        "numLocked", "lockedFlags" and "lockedNorms".
+
+        "inner_its" and  "LSRes" are not provided.
+
+      * "*event == primme_event_inner_iteration": every QMR
+        iteration.
+
+        "basisEvals[0]" and "basisNorms[0]" provides the approximate
+        eigenvalue and the residual norm of the pair which the
+        correction equation is being computed for. If "convTest" is
+        "primme_adaptive" or "primme_adaptive_ETolerance",
+        "basisEvals[0]" and "basisNorms[0]" is updated every QMR
+        iteration.
+
+        "inner_its" and  "LSRes" are also provided.
+
+        "lockedEvals", "numLocked", "lockedFlags" and "lockedNorms"
+        may not provided.
+
+      * "*event == primme_event_convergence": new eigenpair in the
+        basis passed the convergence criterion
+
+        "iblock[0]" is the index of the pair in the basis that passes
+        the convergence criterion, and the solver probably will soft
+        lock. It is also provided "basisEvals", "basisSize",
+        "basisFlags" and "blockSize[0]==1".
+
+        "lockedEvals", "numLocked", "lockedFlags" and "lockedNorms"
+        may not provided.
+
+        "inner_its" and  "LSRes" are not provided.
+
+      * "*event == primme_event_locked": new pair added to the
+        locking basis.
+
+        "lockedEvals", "numLocked", "lockedFlags" and "lockedNorms"
+        are provided. The last element of "lockedEvals", "lockedFlags"
+        and "lockedNorms" corresponds to the recent locked pair.
+
+        "basisEvals", "numConverged", "basisFlags" and "basisNorms"
+        may not provided.
+
+        "inner_its" and  "LSRes" are not provided.
+
+      The values of "basisFlags" and "lockedFlags" are:
+
+      * "0": unconverged.
+
+      * "1": internal use; only in "basisFlags".
+
+      * "2": passed convergence test "convTestFun".
+
+      * "3": converged because the solver may not be able to reduce
+        the residual norm further.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            "dprimme()" sets this field to an internal function if it is NULL;
             this field is read by "dprimme()".
 
    PRIMME_INT stats.numOuterIterations
@@ -2630,7 +2791,7 @@ primme_preset_method
 Python Interface
 ****************
 
-Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, **kargs)
+Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_history=False, **kargs)
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -2643,15 +2804,15 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    corresponding eigenvectors x[i]
 
    Parameters:
-      * **A** (*An N x N matrix, array, sparse matrix, or
-        LinearOperator*) -- the operation A * x, where A is a real
+      * **A** (*An N x N matrix**, **array**, **sparse matrix**, or
+        **LinearOperator*) -- the operation A * x, where A is a real
         symmetric matrix or complex Hermitian.
 
-      * **k** (*int, optional*) -- The number of eigenvalues and
+      * **k** (*int**, **optional*) -- The number of eigenvalues and
         eigenvectors desired.
 
-      * **M** (*An N x N matrix, array, sparse matrix, or
-        LinearOperator*) --
+      * **M** (*An N x N matrix**, **array**, **sparse matrix**, or
+        **LinearOperator*) --
 
         (not supported yet) the operation M * x for the generalized
         eigenvalue problem
@@ -2663,14 +2824,17 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         For best results, the data type of M should be the same as
         that of A.
 
-      * **sigma** (*real, optional*) -- Find eigenvalues near sigma.
+      * **sigma** (*real**, **optional*) -- Find eigenvalues near
+        sigma.
 
-      * **v0** (*N x i, ndarray, optional*) -- Starting vectors for
-        iteration.
+      * **v0** (*N x i**, **ndarray**, **optional*) -- Starting
+        vectors for iteration.
 
-      * **ncv** (*int, optional*) -- The maximum size of the basis
+      * **ncv** (*int**, **optional*) -- The maximum size of the
+        basis
 
-      * **which** (*str ['LM' | 'SM' | 'LA' | 'SA' | 'BE']*) --
+      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA' | 'BE'**]***)
+        --
 
         If A is a complex hermitian matrix, 'BE' is invalid. Which *k*
         eigenvectors and eigenvalues to find:
@@ -2689,41 +2853,41 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         When sigma != None, 'which' refers to the shifted eigenvalues
         "w'[i]"
 
-      * **maxiter** (*int, optional*) -- Maximum number of
+      * **maxiter** (*int**, **optional*) -- Maximum number of
         iterations.
 
       * **tol** (*float*) -- Accuracy for eigenvalues (stopping
         criterion). The default value is sqrt of machine precision.
 
-      * **Minv** (*(not supported)*) --
+      * **Minv** (***(**not supported**)***) --
 
-      * **OPinv** (*N x N matrix, array, sparse matrix, or
-        LinearOperator*) -- Preconditioner to accelerate the
+      * **OPinv** (*N x N matrix**, **array**, **sparse matrix**, or
+        **LinearOperator*) -- Preconditioner to accelerate the
         convergence. Usually it is an approximation of the inverse of
         (A - sigma*M).
 
       * **return_eigenvectors** (*bool*) -- Return eigenvectors
         (True) in addition to eigenvalues
 
-      * **mode** (*string ['normal' | 'buckling' | 'cayley']*) --
-        Only 'normal' mode is supported.
+      * **mode** (*string** [**'normal' | 'buckling' |
+        'cayley'**]***) -- Only 'normal' mode is supported.
 
-      * **lock** (*N x i, ndarray, optional*) -- Seek the
+      * **lock** (*N x i**, **ndarray**, **optional*) -- Seek the
         eigenvectors orthogonal to these ones. The provided vectors
         *should* be orthonormal. Useful to not converge some already
         computed solutions.
 
-      * **maxBlockSize** (*int, optional*) -- Maximum number of
+      * **maxBlockSize** (*int**, **optional*) -- Maximum number of
         vectors added at every iteration.
 
-      * **minRestartSize** (*int, optional*) -- Number of
+      * **minRestartSize** (*int**, **optional*) -- Number of
         approximate eigenvectors kept from last iteration in restart.
 
-      * **maxPrevRetain** (*int, optional*) -- Number of approximate
-        eigenvectors kept from previous iteration in restart. Also
-        referred as +k vectors in GD+k.
+      * **maxPrevRetain** (*int**, **optional*) -- Number of
+        approximate eigenvectors kept from previous iteration in
+        restart. Also referred as +k vectors in GD+k.
 
-      * **method** (*int, optional*) --
+      * **method** (*int**, **optional*) --
 
         Preset method, one of:
 
@@ -2737,8 +2901,11 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         See a detailed description of the methods and other possible
         values in [2].
 
-      * **report_stats** (*bool, optional*) -- If True, it is also
-        returned extra information from PRIMME.
+      * **return_stats** (*bool**, **optional*) -- If True, it is
+        also returned extra information from PRIMME.
+
+      * **return_history** (*bool**, **optional*) -- If True, it is
+        also returned performance information at every iteration.
 
    Returns:
       * **w** (*array*) -- Array of k eigenvalues
@@ -2767,6 +2934,19 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         * "estimateLargestSVal": the largest singular value seen
 
         * "rnorms" : ||A*x[i] - x[i]*w[i]||
+
+        * "hist" : (if return_history) report at every outer
+          iteration of:
+
+          * "elapsedTime": time spent up to now
+
+          * "numMatvecs": number of A*v spent up to now
+
+          * "nconv": number of converged pair
+
+          * "eval": eigenvalue of the first unconverged pair
+
+          * "resNorm": residual norm of the first unconverged pair
 
    Raises:
       "PrimmeError" -- When the requested convergence is not obtained.
@@ -2812,204 +2992,231 @@ MATLAB Interface
 
 function [varargout] = primme_eigs(varargin)
 
-   "primme_eigs()" finds a few eigenvalues and eigenvectors of a real
-   symmetric or Hermitian matrix, A, by calling the function
-   "PRIMME_mex" (flag,dim,...). This in turn calls PRIMME. Full PRIMME
-   functionality is supported.
+   "primme_eigs()" finds a few eigenvalues and their corresponding
+   eigenvectors of a real symmetric or Hermitian matrix, "A", by
+   calling PRIMME.
 
-   Input: [A, numEvals, target, opts, eigsMethod, P]
+   "D = primme_eigs(A)" returns a vector of "A"'s 6 largest algebraic
+   eigenvalues.
 
-   Output: [evals, evecs, norms, primmeout]
+   "D = primme_eigs(Afun,dim)" accepts a function "Afun" instead of a
+   matrix. "Afun" is a function handle and "y = Afun(x)" returns the
+   matrix-vector product "A*x". In all the following signatures, "A"
+   can be replaced by "Afun, dim".
 
-   We provide different levels of function calls, similarly to MATLAB
-   eigs():
+   "D = primme_eigs(A,k)" finds the "k" largest magnitude eigenvalues.
+   "k" must be less than the dimension of the matrix "A".
 
-      primme_eigs(A)
-      primme_eigs(A, numEvals)
-      primme_eigs(A, numEvals, target)
-      primme_eigs(A, numEvals, target, opts)
-      primme_eigs(A, numEvals, target, opts, eigsMethod)
-      primme_eigs(A, numEvals, target, opts, eigsMethod, P)
-      primme_eigs(A, numEvals, target, opts, eigsMethod, P1,P2)
-      primme_eigs(A, numEvals, target, opts, eigsMethod, Pfun)
-      primme_eigs(Afun, dim,...)
+   "D = primme_eigs(A,k,target)" returns "k" eigenvalues such that: If
+   "target" is a real number, it finds the closest eigenvalues to
+   "target". If "target" is
 
-   "primme_eigs(A)" returns a vector of A's 6 largest algebraic
-   eigenvalues. A must be real symmetric or complex Hermitian and
-   should be large and sparse.
+      "'LA'" or "'SA'", eigenvalues with the largest or smallest
+      algebraic value
 
-   "primme_eigs(Afun, dim)" accepts a function AFUN instead of a
-   matrix. AFUN is a function handle and "y = Afun(x)" returns the
-   matrix-vector product A*x. "primme_eigs(A,...)" could be replaced
-   by primme_eigs(Afun, dim,...) in any of above levels of function
-   calls. Examples are given in PRIMME_MEX_Readme.txt in the root
-   directory of PRIMME_MEX folder.
+      "'LM'" or "'SM'", eigenvalues with the largest or smallest
+      distance from the given values in "OPTS.targetShifts", or zero
+      if "OPTS.targetShifts" is empty. If *m* values are provided, the
+      first *m* eigenvalues *D* are found s.t. max/min
+      "ABS(D(i)-OPTS.targetShifts(i))", for "i=1:m".
+      "OPTS.targerShifts(m)" is used for "i=m+1:k".
 
-   "[V, D] = primme_eigs(A)" returns a diagonal matrix D, of A's 6
-   largest algebraic eigenvalues and a matrix V whose columns are the
-   corresponding eigenvectors.
+      "'CLT'" or "'CGT'", find eigenvalues closest to but less or
+      greater than the given values in "OPTS.targetShifts".
 
-   "[V, D, norms, primmeout] = primme_eigs(A)" also returns an array
-   of the residual norms of the computed eigenpairs, and a struct to
-   report statistical information about "numOuterIterations",
-   "numRestarts", "numMatvecs" and "numPreconds".
+   "D = primme_eigs(A,k,target,OPTS)" specifies extra solver
+   parameters. Some default values are indicated in brackets {}:
 
-   "primme_eigs(A, numEvals)" finds the "numEvals" largest algebraic
-   eigenvalues. numEvals must be less than the dimension of the matrix
-   A.
+      * "aNorm": the estimated 2-norm of A {estimate the norm
+        internally}
 
-   "primme_eigs(A, numEvals, target)" returns numEvals target
-   eigenvalues. "target" could be a string like below:
+      * "tol": convergence tolerance: "NORM(A*X(:,i)-X(:,i)*D(i,i))
+        < tol*NORM(A)" (see "eps")
 
-   * 'LA' : "primme_largest" (default)
+      * "maxBlockSize": maximum block size (useful for high
+        multiplicities) {1}
 
-   * 'SA' : "primme_smallest"
+      * "disp": different level reporting (0-3) (see HIST) {no
+        output 0}
 
-   * 'CGT': "primme_closest_geq"
+      * "isreal": whether A represented by "Afun" is real or complex
+        {false}
 
-   * 'CLT': "primme_closest_leq"
+      * "targetShifts": shifts for interior eigenvalues (see
+        "target") {[]}
 
-   * 'CT' : "primme_closest_abs"
+      * "v0": any number of initial guesses to the eigenvectors (see
+        "initSize" {[]}
 
-   "primme_eigs(A, numEvals, target, opts, eigsMethod)" specifies any
-   of a set of possible options as explained below in the opts
-   structure.
+      * "orthoConst": external orthogonalization constraints (see
+        "numOrthoConst" {[]}
 
-   "eigsMethod" is an integer specifying one of the preset methods in
-   PRIMME:
+      * "locking": 1, hard locking; 0, soft locking
 
-   * 0:    "PRIMME_DYNAMIC", (default)        Switches dynamically
-     to the best method
+      * "p": maximum size of the search subspace (see
+        "maxBasisSize")
 
-   * 1:    "PRIMME_DEFAULT_MIN_TIME",         Currently set at
-     JDQMR_ETol
+      * "minRestartSize": minimum Ritz vectors to keep in restarting
 
-   * 2:    "PRIMME_DEFAULT_MIN_MATVECS",      Currently set at
-     GD+block
+      * "maxMatvecs": maximum number of matrix vector
+        multiplications {Inf}
 
-   * 3:    "PRIMME_Arnoldi",                  obviously not an
-     efficient choice
+      * "maxit": maximum number of outer iterations (see
+        "maxOuterIterations") {Inf}
 
-   * 4:    "PRIMME_GD",                       classical block
-     Generalized Davidson
+      * "scheme": the restart scheme {'primme_thick'}
 
-   * 5:    "PRIMME_GD_plusK",                 GD+k block GD with
-     recurrence restarting
+      * "maxPrevRetain": number of Ritz vectors from previous
+        iteration that are kept after restart {typically >0}
 
-   * 6:    "PRIMME_GD_Olsen_plusK",           GD+k with approximate
-     Olsen precond.
+      * "robustShifts": set to true may avoid stagnation or
+        misconvergence
 
-   * 7:    "PRIMME_JD_Olsen_plusK",           GD+k, exact Olsen (two
-     precond per step)
+      * "maxInnerIterations": maximum number of inner solver
+        iterations
 
-   * 8:    "PRIMME_RQI",                      Rayleigh Quotient
-     Iteration. Also INVIT, but for INVIT provide targetShifts
+      * "LeftQ": use the locked vectors in the left projector
 
-   * 9:    "PRIMME_JDQR",                     Original block, Jacobi
-     Davidson
+      * "LeftX": use the approx. eigenvector in the left projector
 
-   * 10:   "PRIMME_JDQMR",                    Our block JDQMR method
-     (similar to JDCG)
+      * "RightQ": use the locked vectors in the right projector
 
-   * 11:   "PRIMME_JDQMR_ETol",               Slight, but efficient
-     JDQMR modification
+      * "RightX": use the approx. eigenvector in the right projector
 
-   * 12:   "PRIMME_SUBSPACE_ITERATION",       equiv. to
-     GD(block,2*block)
+      * "SkewQ": use the preconditioned locked vectors in the right
+        projector
 
-   * 13:   "PRIMME_LOBPCG_OrthoBasis",        equiv. to
-     GD(nev,3*nev)+nev
+      * "SkewX": use the preconditioned approx. eigenvector in the
+        right projector
 
-   * 14:   "PRIMME_LOBPCG_OrthoBasis_Window"  equiv. to
-     GD(block,3*block)+block nev>block
+      * "relTolBase": a legacy from classical JDQR (recommend not
+        use)
 
-   "primme_eigs(A, numEvals, target, opts, eigsMethod, P)"
+      * "convTest": how to stop the inner QMR Method
 
-   "primme_eigs(A, numEvals, target, opts, eigsMethod, P1, P2)" uses
-   preconditioner P or P = P1*P2 to accelerate convergence of the
-   methods. If P is [] then a preconditioner is not applied. P may be
-   a function handle Pfun such that Pfun(x) returns Px.
+      * "iseed": random seed
 
-   "opts" is an option structure which contain following parameters:
+   "D = primme_eigs(A,k,target,OPTS,METHOD)" specifies the eigensolver
+   method. METHOD can be one of the next strings:
 
-   * "aNorm": the estimate norm value of matrix A [{0.0}|scaler]
+      * '"PRIMME_DYNAMIC"', (default)        switches dynamically to
+        the best method
 
-   * "eps": desired computing accuracy [{1e-12}|scaler]
+      * '"PRIMME_DEFAULT_MIN_TIME"',         best method for low-
+        cost matrix-vector product
 
-   * "maxBlockSize": maximum block size the PRIMME uses [{1}|scaler]
+      * '"PRIMME_DEFAULT_MIN_MATVECS"',      best method for heavy
+        matvec/preconditioner
 
-   * "printLevel": different level reporting(0-5) [{1}|scaler]
+      * '"PRIMME_Arnoldi"',                  Arnoldi not implemented
+        efficiently
 
-   * "outputFile": output file name where user wants to save results
+      * '"PRIMME_GD"',                       classical block
+        Generalized Davidson
 
-   * "precondition": set to 1 if use preconditioner [{0}|1]
+      * '"PRIMME_GD_plusK"',                 GD+k block GD with
+        recurrence restarting
 
-   * isreal: the complexity of A represented by AFUN [{ture}|false]
+      * '"PRIMME_GD_Olsen_plusK"',           GD+k with approximate
+        Olsen precond.
 
-   * "numTargetShifts": number of shifts for interior eigenvalues
-     [{0}|scaler]
+      * '"PRIMME_JD_Olsen_plusK"',           GD+k, exact Olsen (two
+        precond per step)
 
-   * "targetShifts": shifts for interior eigenvalues [{}|vector]
+      * '"PRIMME_RQI"',                      Rayleigh Quotient
+        Iteration. Also INVIT, but for INVIT provide OPTS.targetShifts
 
-   * "initSize": On INPUT, the number of initial guesses provided in
-     evecs array. ON OUTPUT, the number of converged eigenpairs
-     [{0}|scaler]
+      * '"PRIMME_JDQR"',                     Original block, Jacobi
+        Davidson
 
-   * "numOrthoConst": Number of external orthogonalization
-     constraints provided in the first numOrthoConst vectors of evecs
-     [{0}|scaler]
+      * '"PRIMME_JDQMR"',                    Our block JDQMR method
+        (similar to JDCG)
 
-   * locking: If set to 1, hard locking will be used, otherwise the
-     code will try to use soft locking [{0}|1]
+      * '"PRIMME_JDQMR_ETol"',               Slight, but efficient
+        JDQMR modification
 
-   * "maxBasisSize": maximum basis size allowed in the main
-     iteration
+      * '"PRIMME_SUBSPACE_ITERATION"',       equivalent to
+        GD(block,2*block)
 
-   * "minRestartSize": minimum Ritz vectors to restart
+      * '"PRIMME_LOBPCG_OrthoBasis"',        equivalent to
+        GD(nev,3*nev)+nev
 
-   * "maxMatvecs": maximum number of matrix vector multiplications
-     [{INT_MAX}|scaler]
+      * '"PRIMME_LOBPCG_OrthoBasis_Window"'  equivalent to
+        GD(block,3*block)+block nev>block
 
-   * "maxOuterIterations": maximum number of outer iterations
-     [{INT_MAX}|scaler]
+   "D = primme_eigs(A,k,target,OPTS,METHOD,P)" "D =
+   primme_eigs(A,k,target,OPTS,METHOD,P1,P2)" uses preconditioner "P"
+   or "P = P1*P2" to accelerate convergence of the method. If "P" is
+   "[]" then a preconditioner is not applied. "P" may be a function
+   handle "PFUN" such that "PFUN(x)" returns "P\x".
 
-   * restartingParams. "scheme": the restart scheme [{primme_thick}|
-     primme_dtr]
+   "[X,D] = primme_eigs(...)" returns a diagonal matrix "D" with the
+   eigenvalues and a matrix "X" whose columns are the corresponding
+   eigenvectors.
 
-   * restartingParams. "maxPrevRetain": number of approximations
-     from previous iteration to be retained after restart [{1}|scaler]
+   "[X,D,R] = primme_eigs(...)" also returns an array of the residual
+   norms of the computed eigenpairs.
 
-   * "robustShifts": set to 1 if use robustShifting to help avoid
-     stagnation and misconverge [{0}|1]
+   "[X,D,R,STATS] = primme_eigs(...)" returns a "struct" to report
+   statistical information about number of matvecs, elapsed time, and
+   estimates for the largest and the smallest algebraic eigenvalues on
+   "A".
 
-   * "maxInnerIterations": number of inner QMR iterations
-     [{0}|scaler]
+   "[X,D,R,STATS,HIST] = primme_eigs(...)" instead of printing the
+   convergence history, it is returned. Every row is a record, and the
+   columns report:
 
-   * "LeftQ": a projector with Q must be applied on the left [{0}|1]
+      * "HIST(:,1)": number of matvecs
 
-   * "LeftX": a projector with X must be applied on the left [{0}|1]
+      * "HIST(:,2)": time
 
-   * "RightQ": a projector with Q must be applied on the right
-     [{0}|1]
+      * "HIST(:,3)": number of converged/locked pairs
 
-   * "RightX": a projector with X must be applied on the right
-     [{0}|1]
+      * "HIST(:,4)": block index
 
-   * "SkewQ": the Q right projector must be skew [{0}|1]
+      * "HIST(:,5)": approximate eigenvalue
 
-   * "SkewX": the X right projector must be skew [{0}|1]
+      * "HIST(:,6)": residual norm
 
-   * "relTolBase": a legacy from calssical JDQR (recommend not use)
+      * "HIST(:,7)": QMR residual norm
 
-   * "convTest": how to stop the inner QMR Method
+   "OPTS.disp" controls the granularity of the record. If "OPTS.disp
+   == 1", "HIST" has one row per converged eigenpair and only the
+   first three columns are reported; if "OPTS.disp == 2", "HIST" has
+   one row per outer iteration and only the first six columns are
+   reported; and otherwise "HIST" has one row per QMR iteration and
+   all columns are reported.
 
-   * "iseed": set iseed value for initialization
+   Examples:
 
-   * "intWorkSize": memory size for integer workspace
+      A = diag(1:100);
 
-   * "realWorkSize": memory size for real or complex workspace
+      d = primme_eigs(A,10) % the 10 largest magnitude eigenvalues
 
-   See also "Matlab/readme.txt".
+      d = primme_eigs(A,10,'SM') % the 10 smallest magnitude eigenvalues
+
+      d = primme_eigs(A,10,25) % the 10 closest eigenvalues to 25
+
+      opts = struct();
+      opts.tol = 1e-4; % set tolerance
+      opts.maxBlockSize = 2; % set block size
+      [x,d] = primme_eigs(A,10,'S',opts,'DEFAULT_MIN_TIME')
+
+      opts.orthoConst = x;
+      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
+
+      % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+      % by passing the matrices L and U.
+      A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+      [L,U] = ilu(A, struct('type', 'nofill'));
+      d = primme_eigs(A, k, 30.5, [], [], L, U);
+
+      % Compute the 6 closest eigenvalues to 30.5 using Jacobi preconditioner
+      % by passing a function.
+      Pfun = @(x)(diag(A) - 30.5)\x;
+      d = primme_eigs(A,6,30.5,[],[],Pfun) % find the closest 5 to 30.5
+
+   See also: MATLAB eigs, "primme_svds()"
 
 Singular Value Problems
 ***********************
@@ -3019,6 +3226,8 @@ Singular Value Problems
 * FORTRAN Library Interface
 
 * Python Interface
+
+* MATLAB Interface
 
 * Appendix
 
@@ -3050,7 +3259,7 @@ Other useful functions:
    void primme_svds_Free(primme_svds_params *primme_svds);
 
 PRIMME SVDS stores its data on the structure "primme_svds_params". See
-*Parameters Guide* for an introduction about its fields.
+Parameters Guide for an introduction about its fields.
 
 
 Running
@@ -3069,7 +3278,7 @@ To use PRIMME SVDS, follow these basic steps.
 
       primme_svds_initialize(&primme_svds);
 
-3. Set problem parameters (see also *Parameters Guide*), and,
+3. Set problem parameters (see also Parameters Guide), and,
    optionally, set one of the "preset methods":
 
       primme_svds.matrixMatvec = matrixMatvec; /* MV product */
@@ -3141,6 +3350,7 @@ which has the next fields:
    void *commInfo;
    void *matrix;
    void *preconditioner;
+   void *monitor;
 
    /* Advanced options */
    int numTargetShifts;        // for targeting interior values
@@ -3160,6 +3370,7 @@ which has the next fields:
    primme_svds_operator methodStage2;
    primme_params primme;
    primme_params primmeStage2;
+   void (*monitorFun)(...); // custom convergence history
 
 PRIMME SVDS requires the user to set at least the matrix dimensions
 ("m" x "n") and the matrix-vector product ("matrixMatvec"), as they
@@ -3208,7 +3419,7 @@ int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_par
       * **primme_svds** -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
    On input, "svecs" should start with the content of the
    "numOrthoConst" left vectors, followed by the "initSize" left
@@ -3246,7 +3457,7 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_
       * **primme_svds** -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
    On input, "svecs" should start with the content of the
    "numOrthoConst" left vectors, followed by the "initSize" left
@@ -3328,7 +3539,7 @@ int primme_svds_set_method(primme_svds_preset_method method, primme_preset_meth
 
       * **primme_svds** -- parameters structure.
 
-   See also *Preset Methods*.
+   See also Preset Methods.
 
 
 primme_svds_display_params
@@ -3386,7 +3597,7 @@ sprimme_svds_f77(svals, svecs, resNorms, primme_svds)
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
 
 cprimme_svds_f77
@@ -3415,7 +3626,7 @@ cprimme_svds_f77(svals, svecs, resNorms, primme_svds)
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
 
 dprimme_svds_f77
@@ -3444,7 +3655,7 @@ dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
 
 zprimme_svds_f77
@@ -3473,7 +3684,7 @@ zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
-      error indicator; see *Error Codes*.
+      error indicator; see Error Codes.
 
 
 primme_svds_initialize_f77
@@ -3956,7 +4167,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 1;
-               this field is read by "primme_svds_set_method()" (see *Preset Methods*) and "dprimme_svds()".
+               this field is read by "primme_svds_set_method()" (see Preset Methods) and "dprimme_svds()".
 
       primme_svds_target target
 
@@ -4006,16 +4217,76 @@ primme_svds_params
 
       int printLevel
 
-         The level of message reporting from the code. For now it
-         controls the reporting level of the underneath eigensolvers.
-         See "printLevel" in primme_params.
+            The level of message reporting from the code. All output
+            is written in "outputFile".
 
-         All output is writen in "outputFile".
+            One of:
 
-         Input/output:
+            * 0: silent.
 
-               "primme_svds_initialize()" sets this field to 1;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            * 1: print some error messages when these occur.
+
+            * 2: as 1, and info about targeted singular triplets
+              when they are marked as converged:
+
+                 #Converged $1 sval[ $2 ]= $3 norm $4 Mvecs $5 Time $7 stage 1
+
+              or locked:
+
+                 #Lock striplet[ $1 ]= $3 norm $4 Mvecs $5 Time $7 stage 1
+
+            * 3: as 2, and info about targeted singular triplets
+              every outer iteration:
+
+                 OUT $6 conv $1 blk $8 MV $5 Sec $7 SV $3 |r| $4 stage $10
+
+              Also, if it is used the dynamic method, show JDQMR/GDk
+              performance ratio and the current method in use.
+
+            * 4: as 3, and info about targeted singular triplets
+              every inner iteration:
+
+                 INN MV $5 Sec $7 Sval $3 Lin|r| $9 SV|r| $4 stage $10
+
+            * 5: as 4, and verbose info about certain choices of the
+              algorithm.
+
+            Output key:
+
+               $1: Number of converged triplets up to now.
+               $2: The index of the triplet currently converged.
+               $3: The singular value.
+               $4: Its residual norm.
+               $5: The current number of matrix-vector products.
+               $6: The current number of outer iterations.
+               $7: The current elapsed time.
+               $8: Index within the block of the targeted triplet.
+               $9: QMR norm of the linear system residual.
+               $10: stage
+
+            In parallel programs, output is produced in call with
+            "procID" 0 when "printLevel" is from 0 to 4. If
+            "printLevel" is 5 output can be produced in any of the
+            parallel calls.
+
+            Input/output:
+
+                  "primme_svds_initialize()" sets this field to 1;
+                  this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+         Note: Convergence history for plotting may be produced
+           simply by:
+
+              grep OUT outpufile | awk '{print $8" "$14}' > out
+              grep INN outpufile | awk '{print $3" "$11}' > inn
+
+           Then in Matlab:
+
+              plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
+
+           Or in gnuplot:
+
+              plot 'out' w lp, 'inn' w lp
 
       double aNorm
 
@@ -4062,7 +4333,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to -1;
-               written by "primme_svds_set_method()" (see *Preset Methods*);
+               written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       int initSize
@@ -4113,7 +4384,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       int maxBlockSize
@@ -4129,7 +4400,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 1;
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       PRIMME_INT maxMatvecs
@@ -4248,7 +4519,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       primme_svds_op_operator method
@@ -4267,7 +4538,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to "primme_svds_op_none";
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       primme_svds_op_operator methodStage2
@@ -4284,7 +4555,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" sets this field to "primme_svds_op_none";
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       primme_params primme
@@ -4296,7 +4567,7 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" initialize this structure;
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
       primme_params primmeStage2
@@ -4308,8 +4579,140 @@ primme_svds_params
          Input/output:
 
                "primme_svds_initialize()" initialize this structure;
-               this field is read and written by "primme_svds_set_method()" (see *Preset Methods*);
+               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
+
+      void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_params *primme, int *ierr)
+
+         Convergence monitor. Usually used to customize how it is
+         reported the unconverged and converged pairs and the residual
+         norms.
+
+         Parameters:
+            * **basisSvals** -- array with approximate singular
+              values of the basis.
+
+            * **basisSize** -- size of the arrays "basisSvals",
+              "basisFlags" and "basisNorms".
+
+            * **basisFlags** -- state of every approximate triplet
+              in the basis.
+
+            * **iblock** -- indices of the approximate triplet in
+              the block.
+
+            * **blockSize** -- size of array "iblock".
+
+            * **basisNorms** -- array with residual norms of the
+              triplet in the basis.
+
+            * **numConverged** -- number of triplets converged in
+              the basis plus the number of the locked triplets (note
+              that this value isn't monotonic).
+
+            * **lockedSvals** -- array with the locked triplets.
+
+            * **numLocked** -- size of the arrays "lockedSvals",
+              "lockedFlags" and "lockedNorms".
+
+            * **lockedFlags** -- state of each locked triplets.
+
+            * **lockedNorms** -- array with residual norms of the
+              locked triplets.
+
+            * **inner_its** -- number of performed QMR iterations in
+              the current correction equation.
+
+            * **LSRes** -- residual norm of the linear system at the
+              current QMR iteration.
+
+            * **event** -- event reported.
+
+            * **stage** -- "0" for first stage, "1" for second
+              stage.
+
+            * **primme** -- parameters structure.
+
+            * **ierr** -- output error code; if it is set to non-
+              zero, the current call to PRIMME will stop.
+
+         This function is called at the next events:
+
+         * "*event == primme_event_outer_iteration": every outer
+           iterations.
+
+           It is provided "basisSvals", "basisSize", "basisFlags",
+           "iblock" and "blockSize".
+
+           "basisNorms[iblock[i]]" has the residual norms for the
+           selected triplets in the block. PRIMME avoids to compute
+           the residual of soft-locked triplets, "basisNorms[i]" for
+           "i<iblock[0]". So those values may correspond to previous
+           iterations. The values "basisNorms[i]" for
+           "i>iblock[blockSize-1]" are not valid.
+
+           If "locking" is enabled, it is provided "lockedSvals",
+           "numLocked", "lockedFlags" and "lockedNorms".
+
+           "inner_its" and  "LSRes" are not provided.
+
+         * "*event == primme_event_inner_iteration": every QMR
+           iteration.
+
+           "basisSvals[0]" and "basisNorms[0]" provides the
+           approximate singular value and the residual norm of the
+           triplet which the correction equation is being computed
+           for. If "convTest" is "primme_adaptive" or
+           "primme_adaptive_ETolerance", "basisSvals[0]" and
+           "basisNorms[0]" is updated every QMR iteration.
+
+           "inner_its" and  "LSRes" are also provided.
+
+           "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
+           may not provided.
+
+         * "*event == primme_event_convergence": new triplet in the
+           basis passed the convergence criterion
+
+           "iblock[0]" is the index of the triplet in the basis that
+           passes the convergence criterion, and the solver probably
+           will soft lock. It is also provided "basisSvals",
+           "basisSize", "basisFlags" and "blockSize[0]==1".
+
+           "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
+           may not provided.
+
+           "inner_its" and  "LSRes" are not provided.
+
+         * "*event == primme_event_locked": new triplet added to the
+           locking basis.
+
+           "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
+           are provided. The last element of "lockedSvals",
+           "lockedFlags" and "lockedNorms" corresponds to the recent
+           locked triplet.
+
+           "basisSvals", "numConverged", "basisFlags" and "basisNorms"
+           may not provided.
+
+           "inner_its" and  "LSRes" are not provided.
+
+         The values of "basisFlags" and "lockedFlags" are:
+
+         * "0": unconverged.
+
+         * "1": internal use; only in "basisFlags".
+
+         * "2": passed convergence test (see "eps").
+
+         * "3": converged because the solver may not be able to
+           reduce the residual norm further.
+
+         Input/output:
+
+               "primme_initialize()" sets this field to NULL;
+               "dprimme_svds()" sets this field to an internal function if it is NULL;
+               this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       PRIMME_INT stats.numOuterIterations
 
@@ -4412,10 +4815,10 @@ next values:
 * -21: not enough memory for "intWork"
 
 * -100 up to -199: eigensolver error from first stage; see the value
-  plus 100 in *Error Codes*.
+  plus 100 in Error Codes.
 
 * -200 up to -299: eigensolver error from second stage; see the
-  value plus 200 in *Error Codes*.
+  value plus 200 in Error Codes.
 
 
 Preset Methods
@@ -4462,23 +4865,25 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, **kargs)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
 
    Compute k singular values and vectors for a sparse matrix.
 
    Parameters:
-      * **A** (*{sparse matrix, LinearOperator}*) -- Array to
+      * **A** (*{sparse matrix**, **LinearOperator}*) -- Array to
         compute the SVD on, of shape (M, N)
 
-      * **k** (*int, optional*) -- Number of singular values and
+      * **k** (*int**, **optional*) -- Number of singular values and
         vectors to compute. Must be 1 <= k < min(A.shape).
 
-      * **ncv** (*int, optional*) -- The maximum size of the basis
+      * **ncv** (*int**, **optional*) -- The maximum size of the
+        basis
 
-      * **tol** (*float, optional*) -- Tolerance for singular
+      * **tol** (*float**, **optional*) -- Tolerance for singular
         values. Zero (default) means machine precision.
 
-      * **which** (*str ['LM' | 'SM'] or number, optional*) --
+      * **which** (*str** [**'LM' | 'SM'**] or **number**,
+        **optional*) --
 
         Which *k* singular values to find:
 
@@ -4489,35 +4894,36 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
            * number : closest singular values to (referred as sigma
              later)
 
-      * **u0** (*ndarray, optional*) --
+      * **u0** (*ndarray**, **optional*) --
 
         Left starting vectors for the iterations.
 
         Should be approximate left singular vectors. If only u0 or v0
         is provided, the other is computed.
 
-      * **v0** (*ndarray, optional*) -- Right starting vectors for
-        the iterations.
+      * **v0** (*ndarray**, **optional*) -- Right starting vectors
+        for the iterations.
 
-      * **maxiter** (*int, optional*) -- Maximum number of
+      * **maxiter** (*int**, **optional*) -- Maximum number of
         iterations.
 
-      * **precAHA** (*{N x N matrix, array, sparse matrix,
-        LinearOperator}, optional*) -- Approximate inverse of (A.H*A -
-        sigma**2*I). If provided and M>N, it usually accelerates the
-        convergence.
+      * **precAHA** (*{N x N matrix**, **array**, **sparse matrix**,
+        **LinearOperator}**, **optional*) -- Approximate inverse of
+        (A.H*A - sigma**2*I). If provided and M>N, it usually
+        accelerates the convergence.
 
-      * **precAAH** (*{M x M matrix, array, sparse matrix,
-        LinearOperator}, optional*) -- Approximate inverse of (A*A.H -
-        sigma**2*I). If provided and M<N, it usually accelerates the
-        convergence.
+      * **precAAH** (*{M x M matrix**, **array**, **sparse matrix**,
+        **LinearOperator}**, **optional*) -- Approximate inverse of
+        (A*A.H - sigma**2*I). If provided and M<N, it usually
+        accelerates the convergence.
 
-      * **precAug** (*{(M+N) x (M+N) matrix, array, sparse matrix,
-        LinearOperator}, optional*) -- Approximate inverse of
-        ([zeros() A.H; zeros() A] - sigma*I). It usually accelerates
-        the convergence if tol<dtype.eps**.5.
+      * **precAug** (*{**(**M+N**) **x** (**M+N**) **matrix**,
+        **array**, **sparse matrix**, **LinearOperator}**,
+        **optional*) -- Approximate inverse of ([zeros() A.H; zeros()
+        A] - sigma*I). It usually accelerates the convergence if
+        tol<dtype.eps**.5.
 
-      * **locku0** (*ndarray, optional*) --
+      * **locku0** (*ndarray**, **optional*) --
 
         Left orthogonal vector constrain.
 
@@ -4526,14 +4932,17 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         lockv0 is provided, the other is computed. Useful to not
         converge some already computed solutions.
 
-      * **lockv0** (*ndarray, optional*) -- Right orthogonal vector
-        constrain. See locku0.
+      * **lockv0** (*ndarray**, **optional*) -- Right orthogonal
+        vector constrain. See locku0.
 
-      * **maxBlockSize** (*int, optional*) -- Maximum number of
+      * **maxBlockSize** (*int**, **optional*) -- Maximum number of
         vectors added at every iteration.
 
-      * **report_stats** (*bool, optional*) -- If True, it is also
-        returned extra information from PRIMME.
+      * **return_stats** (*bool**, **optional*) -- If True, it is
+        also returned extra information from PRIMME.
+
+      * **return_history** (*bool**, **optional*) -- If True, it is
+        also returned performance information at every iteration.
 
    Returns:
       * **u** (*ndarray, shape=(M, k), optional*) -- Unitary matrix
@@ -4561,7 +4970,18 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
         * "rnorms" : ||A*v[i] - u[i]*s[i]||
 
-        Returned if *return_stats* is True.
+        * "hist" : (if return_history) report at every outer
+          iteration of:
+
+          * "elapsedTime": time spent up to now
+
+          * "numMatvecs": number of A*v spent up to now
+
+          * "nconv": number of converged pair
+
+          * "eval": eigenvalue of the first unconverged pair
+
+          * "resNorm": residual norm of the first unconverged pair
 
    See also:
 
@@ -4588,3 +5008,164 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
    >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
    ['5.99871', '5.99057', '6.01065']
+
+MATLAB Interface
+****************
+
+function [varargout] = primme_svds(varargin)
+
+   "primme_svds()" find a few singular values and vectors of large,
+   sparse matrices. by calling PRIMME.
+
+   "S = primme_svds(A)" computes the 6 largest singular values of "A".
+
+   "S = primme_svds(AFUN,M,N)" accepts the function handle "AFUN" to
+   perform the matrix vector products with an M-by-N matrix "A".
+   "AFUN(X,'notransp')" returns "A*X" while "AFUN(X,'transp')" returns
+   "A’*X". In all the following, "A" can be replaced by "AFUN,M,N".
+
+   "S = primme_svds(A,K)" computes the "K" largest singular values of
+   "A".
+
+   "S = primme_svds(A,K,SIGMA)" computes the K singular values closest
+   to the scalar shift "SIGMA".
+
+      * If "SIGMA" is a vector, find a singular value closest to
+        each "SIGMA(i)"
+
+      * If "SIGMA" is "'L'", it computes the largest singular
+        values.
+
+      * if "SIGMA" is "'S'", it computes the smallest singular
+        values.
+
+   "S = primme_svds(A,K,SIGMA,OPTIONS)" specifies extra solver
+   parameters. Some default values are indicated in brackets {}:
+
+      * "aNorm":    estimation of the 2-norm A
+
+      * "tol":     convergence tolerance "NORM([A*V-U*S;A'*U-V*S])
+        <= tol * NORM(A)" (see "eps") { "1e-10"}
+
+      * "maxit":   maximum number of iterations (see "maxMatvecs")
+        {inf}
+
+      * "p":       maximum basis size (see "maxBasisSize")
+
+      * "disp":    level of reporting 0-3 (see HIST) {0: no output}
+
+      * "isreal":  if 0, the matrix is complex; else it's real {1:
+        complex}
+
+      * "isdouble": if 0, the matrix is single; else it's double {1:
+        double}
+
+      * "method":  which equivalent eigenproblem to solve
+
+           * '"primme_svds_normalequations"': "A'*A" or "A*A'"
+
+           * '"primme_svds_augmented"': "[0 A';A 0]"
+
+           * '"primme_svds_hybrid"': first normal equations and then
+             augmented
+
+      * "u0":       approximate left singular vectors (see
+        "initSize") {[]}
+
+      * "v0":       approximate right singular vectors {[]}
+
+      * "orthoConst": external orthogonalization constraints (see
+        "numOrthoConst") {[]}
+
+      * "locking":  1, hard locking; 0, soft locking
+
+      * "maxBlockSize": maximum block size
+
+      * "iseed":    random seed
+
+      * "primme":   options for first stage solver
+
+      * "primmeStage2": options for second stage solver
+
+   The available options for "OPTIONS.primme" and "primmeStage2" are
+   the same as "primme_eigs()", plus the option "'method'".
+
+   "S = primme_svds(A,K,SIGMA,OPTIONS,P)" "S =
+   primme_svds(A,K,SIGMA,OPTIONS,P1,P2)" makes use of a
+   preconditioner, applying "P\X" or "(P1*P2)\X". If "P" is "[]" then
+   a preconditioner is not applied. "P" may be a function handle
+   "PFUN" such that "PFUN(X,'AHA')" returns an approximation of
+   "(A'*A)\X", "PFUN(X,'AAH')", of "(A*A')\X" and "PFUN(X,'aug')", of
+   "[zeros(N,N) A';A zeros(M,M)]\X".
+
+   "[U,S,V] = primme_svds(...)" returns also the corresponding
+   singular vectors. If "A" is M-by-N and "K" singular triplets are
+   computed, then "U" is M-by-K with orthonormal columns, "S" is
+   K-by-K diagonal, and "V" is N-by-K with orthonormal columns.
+
+   "[S,R] = primme_svds(...)" "[U,S,V,R] = primme_svds(...)" returns
+   upper bounds of the residual norm of each "K" triplet,
+   "NORM([A*V(:,i)-S(i,i)*U(:,i); A'*U(:,i)-S(i,i)*V(:,i)])".
+
+   "[U,S,V,R,STATS] = primme_svds(...)" returns how many times "A" and
+   "P" were used and elapsed time. The application of "A" is counted
+   independently from the application of "A'".
+
+   "[U,S,V,R,STATS,HIST] = primme_svds(...)" instead of printing the
+   convergence history, it is returned. Every row is a record, and the
+   columns report:
+
+      * "HIST(:,1)": number of matvecs
+
+      * "HIST(:,2)": time
+
+      * "HIST(:,3)": number of converged/locked triplets
+
+      * "HIST(:,4)": stage
+
+      * "HIST(:,5)": block index
+
+      * "HIST(:,6)": approximate singular value
+
+      * "HIST(:,7)": residual norm
+
+      * "HIST(:,8)": QMR residual norm
+
+   "OPTS.disp" controls the granularity of the record. If "OPTS.disp
+   == 1", "HIST" has one row per converged triplet and only the first
+   four columns are reported; if "OPTS.disp == 2", "HIST" has one row
+   per outer iteration and only the first seven columns are reported;
+   and otherwise "HIST" has one row per QMR iteration and all columns
+   are reported.
+
+   Examples:
+
+      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
+
+      s = primme_svds(A,10) % the 10 largest singular values
+
+      s = primme_svds(A,10,'S') % the 10 smallest singular values
+
+      s = primme_svds(A,10,25) % the 10 closest singular values to 25
+
+      opts = struct();
+      opts.tol = 1e-4; % set tolerance
+      opts.method = 'primme_svds_normalequations' % set svd solver method
+      opts.primme.method = 'DEFAULT_MIN_TIME' % set first stage eigensolver method
+      opts.primme.maxBlockSize = 2; % set block size for first stage
+      [u,s,v] = primme_svds(A,10,'S',opts); % find 10 smallest svd triplets
+
+      opts.orthoConst = {u,v};
+      [s,rnorms] = primme_svds(A,10,'S',opts) % find another 10
+
+      % Compute the 5 smallest singular values of a rectangular matrix using
+      % Jacobi preconditioner on (A'*A)
+      A = sparse(diag(1:50) + diag(ones(49,1), 1));
+      A(200,50) = 1;  % size(A)=[200 50]
+      Pstruct = struct('AHA', diag(A'*A),...
+                       'AAH', ones(200,1), 'aug', ones(250,1));
+      Pfun = @(x,mode)Pstruct.(mode).\x;
+      s = primme_svds(A,5,'S',[],Pfun) % find the 5 smallest values
+
+   See also: MATLAB svds, "primme_eigs()"
+
