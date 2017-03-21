@@ -383,7 +383,7 @@ function [varargout] = primme_svds(varargin)
       error([xprimme_svds ' returned ' num2str(ierr)]);
    end
 
-   if nargout == 1
+   if nargout <= 1
       varargout{1} = svals;
    elseif nargout == 2
       varargout{1} = svals;
@@ -433,7 +433,7 @@ function [y] = precondsvds2(P1, P2, x, mode)
    end
 end
 
-function [f] = fcnchk_gen(x, n)
+function [f] = fcnchk_gen(x)
    if exist('fcnchk')
       f = fcnchk(x);
    else 
