@@ -55,7 +55,7 @@ function [varargout] = primme_svds(varargin)
 %   applying P\X or (P1*P2)\X. If P is [] then a preconditioner is not
 %   applied. P may be a function handle PFUN such that PFUN(X,'AHA')
 %   returns an approximation of (A'*A)\X, PFUN(X,'AAH'), of (A*A')\X and
-%   PFUN(X,'aug'), of [zeros(M,N) A;A' zeros(N,M)]\X.
+%   PFUN(X,'aug'), of [zeros(N,N) A';A zeros(M,M)]\X.
 %
 %   [U,S,V] = PRIMME_SVDS(...) returns also the corresponding singular vectors.
 %   If A is M-by-N and K singular triplets are computed, then U is M-by-K
