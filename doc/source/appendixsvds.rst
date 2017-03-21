@@ -251,15 +251,71 @@ primme_svds_params
 
    .. c:member:: int printLevel
 
-      The level of message reporting from the code. For now it controls the reporting
-      level of the underneath eigensolvers. See |printLevel| in primme_params.
+      The level of message reporting from the code. All output is written in |SoutputFile|.
 
-      All output is writen in |SoutputFile|.
+      One of:
+ 
+      * 0: silent.
+      * 1: print some error messages when these occur.
+      * 2: as 1, and info about targeted singular triplets when they are marked as converged::
+      
+            #Converged $1 sval[ $2 ]= $3 norm $4 Mvecs $5 Time $7 stage 1
+
+        or locked::
+
+            #Lock striplet[ $1 ]= $3 norm $4 Mvecs $5 Time $7 stage 1
+
+      * 3: as 2, and info about targeted singular triplets every outer iteration::
+      
+            OUT $6 conv $1 blk $8 MV $5 Sec $7 SV $3 |r| $4 stage $10
+
+        Also, if it is used the dynamic method, show JDQMR/GDk performance ratio and
+        the current method in use.
+      * 4: as 3, and info about targeted singular triplets every inner iteration::
+      
+            INN MV $5 Sec $7 Sval $3 Lin|r| $9 SV|r| $4 stage $10
+      
+      * 5: as 4, and verbose info about certain choices of the algorithm.
+      
+      Output key:
+
+      | $1: Number of converged triplets up to now.
+      | $2: The index of the triplet currently converged.
+      | $3: The singular value.
+      | $4: Its residual norm.
+      | $5: The current number of matrix-vector products.
+      | $6: The current number of outer iterations.
+      | $7: The current elapsed time.
+      | $8: Index within the block of the targeted triplet.
+      | $9: QMR norm of the linear system residual.
+      | $10: stage
+
+      In parallel programs, output is produced in call with
+      |SprocID| 0 when |SprintLevel|
+      is from 0 to 4.
+      If |SprintLevel| is 5 output can be produced in any of
+      the parallel calls.
 
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to 1;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+
+    .. note::
+
+      Convergence history for plotting may be produced simply by::
+
+         grep OUT outpufile | awk '{print $8" "$14}' > out
+         grep INN outpufile | awk '{print $3" "$11}' > inn
+
+      Then in Matlab::
+
+         plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
+
+      Or in gnuplot::
+
+         plot 'out' w lp, 'inn' w lp
+
 
    .. c:member:: double aNorm
 
@@ -530,6 +586,89 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` initialize this structure;
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+
+   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_params *primme, int *ierr)
+
+
+      Convergence monitor. Usually used to customize how it is reported the
+      unconverged and converged pairs and the residual norms.
+
+      :param basisSvals:   array with approximate singular values of the basis.
+      :param basisSize:    size of the arrays ``basisSvals``, ``basisFlags`` and ``basisNorms``.
+      :param basisFlags:   state of every approximate triplet in the basis.
+      :param iblock:       indices of the approximate triplet in the block.
+      :param blockSize:    size of array ``iblock``.
+      :param basisNorms:   array with residual norms of the triplet in the basis.
+      :param numConverged: number of triplets converged in the basis plus the number of the locked triplets (note that this value isn't monotonic).
+      :param lockedSvals:  array with the locked triplets.
+      :param numLocked:    size of the arrays ``lockedSvals``, ``lockedFlags`` and ``lockedNorms``.
+      :param lockedFlags:  state of each locked triplets.
+      :param lockedNorms:  array with residual norms of the locked triplets.
+      :param inner_its:    number of performed QMR iterations in the current correction equation.
+      :param LSRes:        residual norm of the linear system at the current QMR iteration.
+      :param event:        event reported.
+      :param stage:        ``0`` for first stage, ``1`` for second stage.
+      :param primme:       parameters structure.
+      :param ierr:         output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      This function is called at the next events:
+
+      * ``*event == primme_event_outer_iteration``: every outer iterations.
+
+        It is provided ``basisSvals``, ``basisSize``, ``basisFlags``, ``iblock`` and ``blockSize``.
+
+        ``basisNorms[iblock[i]]`` has the residual norms for the selected triplets in the block.
+        PRIMME avoids to compute the residual of soft-locked triplets, ``basisNorms[i]`` for ``i<iblock[0]``.
+        So those values may correspond to previous iterations. The values ``basisNorms[i]`` for ``i>iblock[blockSize-1]``
+        are not valid.
+
+        If |Slocking| is enabled, it is provided ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms``.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      * ``*event == primme_event_inner_iteration``: every QMR iteration.
+
+        ``basisSvals[0]`` and ``basisNorms[0]`` provides the approximate singular value and the residual norm
+        of the triplet which the correction equation is being computed for. If |convTest| is |primme_adaptive|
+        or |primme_adaptive_ETolerance|, ``basisSvals[0]`` and ``basisNorms[0]`` is updated every QMR iteration.
+
+        ``inner_its`` and  ``LSRes`` are also provided.
+
+        ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+
+      * ``*event == primme_event_convergence``: new triplet in the basis passed the convergence criterion
+
+        ``iblock[0]`` is the index of the triplet in the basis that passes the convergence criterion, and the
+        solver probably will soft lock. 
+        It is also provided ``basisSvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
+
+        ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      * ``*event == primme_event_locked``: new triplet added to the locking basis.
+
+        ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are provided.
+        The last element of ``lockedSvals``, ``lockedFlags`` and ``lockedNorms`` corresponds
+        to the recent locked triplet.
+ 
+        ``basisSvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not provided.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      The values of ``basisFlags`` and ``lockedFlags`` are:
+
+      * ``0``: unconverged.
+      * ``1``: internal use; only in ``basisFlags``.
+      * ``2``: passed convergence test (see |Seps|).
+      * ``3``: converged because the solver may not be able to reduce the residual norm further.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
+         | :c:func:`dprimme_svds` sets this field to an internal function if it is NULL;
+         | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+
 
    .. c:member:: PRIMME_INT stats.numOuterIterations
 

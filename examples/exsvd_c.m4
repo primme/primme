@@ -114,7 +114,7 @@ ifdef(`USE_PETSC', `   ierr = MatGetSize(A, &m, &n); CHKERRQ(ierr);
    primme_svds.n = (PRIMME_INT)n;',
 `   primme_svds.m = 500;
    primme_svds.n = 100;') /* set problem dimension */
-   primme_svds.numSvals = 4;   /* Number of wanted eigenpairs */
+   primme_svds.numSvals = 4;   /* Number of wanted singular values */
    primme_svds.eps = 1e-12;     /* ||r|| <= eps * ||matrix|| */
    primme_svds.target = primme_svds_smallest;
                                /* Seeking for the largest singular values  */
@@ -220,7 +220,7 @@ ifdef(`USE_PETSC', ``   if (primme_svds.procID == 0) { /* Reports process with I
    sp()   fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
    sp()      svals[i], rnorms[i]); 
    sp()}
-   sp()fprintf(primme_svds.outputFile, " %d eigenpairs converged\n", primme_svds.initSize);
+   sp()fprintf(primme_svds.outputFile, " %d singular triplets converged\n", primme_svds.initSize);
    sp()fprintf(primme_svds.outputFile, "Tolerance : %-22.15E\n", 
    sp()                                                      primme_svds.aNorm*primme_svds.eps);
    sp()fprintf(primme_svds.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
@@ -230,7 +230,7 @@ ifdef(`USE_PETSC', ``   if (primme_svds.procID == 0) { /* Reports process with I
    sp()fprintf(primme_svds.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme_svds.stats.numPreconds);
    sp()if (primme_svds.primme.locking && primme_svds.primme.intWork && primme_svds.primme.intWork[0] == 1) {
    sp()   fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n"
-   sp()      "Some eigenpairs do not have a residual norm less than the tolerance.\n"
+   sp()      "Some triplets do not have a residual norm less than the tolerance.\n"
    sp()      "However, the subspace of evecs is accurate to the required tolerance.\n");
    sp()}
 

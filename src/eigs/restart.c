@@ -213,6 +213,8 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
  *
  * numLocked        The number of locked eigenpairs
  *
+ * lockedFlags      The flags of the locked pairs
+ *
  * numConvergedStored The # of converged vectors copied to evecs
  *
  * numPrevRetained  As input the number of columns of previousHVecs. As output the
@@ -247,14 +249,14 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
        int *ievSize, REAL *blockNorms, SCALAR *evecs, PRIMME_INT ldevecs,
        int *evecsPerm, REAL *evals, REAL *resNorms, SCALAR *evecsHat,
        PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
-       int *ipivot, int *numConverged, int *numLocked, int *numConvergedStored,
-       SCALAR *previousHVecs, int *numPrevRetained, int ldpreviousHVecs,
-       int numGuesses, REAL *prevRitzVals, int *numPrevRitzVals, SCALAR *H,
-       int ldH, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR, SCALAR* QtV,
-       int ldQtV, SCALAR *hU, int ldhU, int newldhU, SCALAR *hVecs,
-       int ldhVecs, int newldhVecs, int *restartSizeOutput,
-       int *targetShiftIndex, int *numArbitraryVecs, SCALAR *hVecsRot,
-       int ldhVecsRot, int *restartsSinceReset, int *reset,
+       int *ipivot, int *numConverged, int *numLocked, int *lockedFlags,
+       int *numConvergedStored, SCALAR *previousHVecs, int *numPrevRetained,
+       int ldpreviousHVecs, int numGuesses, REAL *prevRitzVals,
+       int *numPrevRitzVals, SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
+       SCALAR *R, int ldR, SCALAR* QtV, int ldQtV, SCALAR *hU, int ldhU,
+       int newldhU, SCALAR *hVecs, int ldhVecs, int newldhVecs,
+       int *restartSizeOutput, int *targetShiftIndex, int *numArbitraryVecs,
+       SCALAR *hVecsRot, int ldhVecsRot, int *restartsSinceReset, int *reset,
        double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
        int iworkSize, primme_params *primme) {
 
@@ -280,7 +282,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
          CHKERR(restart_locking_Sprimme(&basisSize, NULL, NULL, nLocal,
                   basisSize, 0, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL,
                   ievSize, NULL, NULL, 0, NULL, numConverged, numConverged,
-                  NULL, NULL, *numPrevRetained, NULL, NULL, 0, 0.0, NULL,
+                  NULL, NULL, NULL, *numPrevRetained, NULL, NULL, 0, 0.0, NULL,
                   rworkSize, &iworkSize0, 0, primme), -1);
       }
       else {
@@ -461,7 +463,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
       CHKERR(restart_locking_Sprimme(&restartSize, V, W, nLocal, basisSize,
                ldV, &X, &Res, hVecs, ldhVecs, restartPerm, hVals, flags, iev,
                ievSize, blockNorms, evecs, ldevecs, evals, numConverged,
-               numLocked, resNorms, evecsPerm, *numPrevRetained,
+               numLocked, resNorms, lockedFlags, evecsPerm, *numPrevRetained,
                &indexOfPreviousVecs, hVecsPerm, *reset, machEps, rwork,
                rworkSize, iwork0, iworkSize0, primme), -1);
    }

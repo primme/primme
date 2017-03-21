@@ -83,6 +83,16 @@ typedef enum {
 } primme_convergencetest;
 
 
+/* Identifies the type of event for which monitor is being called */
+typedef enum {
+   primme_event_outer_iteration,    /* report at every outer iteration        */
+   primme_event_inner_iteration,    /* report at every QMR iteration          */
+   primme_event_restart,            /* report at every basis restart          */
+   primme_event_reset,              /* event launch if basis reset            */
+   primme_event_converged,          /* report new pair marked as converged    */
+   primme_event_locked              /* report new pair marked as locked       */
+} primme_event;
+
 typedef struct primme_stats {
    PRIMME_INT numOuterIterations;
    PRIMME_INT numRestarts;
@@ -201,6 +211,12 @@ typedef struct primme_params {
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
          struct primme_params *primme, int *ierr);
+   void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+      void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+      int *inner_its, void *LSRes, primme_event *event,
+      struct primme_params *primme, int *err);
+   void *monitor;
 } primme_params;
 /*---------------------------------------------------------------------------*/
 
@@ -289,7 +305,9 @@ typedef enum {
    PRIMME_massMatrixMatvec =  50,
    PRIMME_convTestFun =  51,
    PRIMME_ldevecs =  52,
-   PRIMME_ldOPs =  53
+   PRIMME_ldOPs =  53,
+   PRIMME_monitorFun = 54,
+   PRIMME_monitor = 55
 } primme_params_label;
 
 int sprimme(float *evals, float *evecs, float *resNorms, 

@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "wtime.h"
+#include "const.h"
 #include "numerical.h"
 #include "inner_solve.h"
 #include "factorize.h"
@@ -441,12 +442,16 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
          eval_prev = eval_updated;
 
-         if (primme->printLevel >= 4 && primme->procID == 0) {
-            fprintf(primme->outputFile,
-                  "INN MV %" PRIMME_INT_P " Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n",
-                  primme->stats.numMatvecs, primme_wTimer(0), eval_updated,
-                  tau, eres_updated);
-            fflush(primme->outputFile);
+         /* Report inner iteration */
+         if (primme->monitorFun) {
+            int ZERO = 0, ONE = 1;
+            primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
+            int err;
+            primme->stats.elapsedTime = primme_wTimer(0);
+            CHKERRM((primme->monitorFun(&eval_updated, &ONE, NULL, &ZERO,
+                        &ONE, &eres_updated, NULL, NULL, NULL, NULL,
+                        NULL, &numIts, &tau, &EVENT_INNER_ITERATION, primme, &err),
+                     err), -1, "Error returned by monitorFun: %d", err);
          }
 
         /* --------------------------------------------------------*/
@@ -467,12 +472,16 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             break;
          }
 
-         else if (primme->printLevel >= 4 && primme->procID == 0) {
+         else if (primme->monitorFun) {
             /* Report for non adaptive inner iterations */
-            fprintf(primme->outputFile,
-                  "INN MV %" PRIMME_INT_P " Sec %e Lin|r| %e\n",
-                  primme->stats.numMatvecs, primme_wTimer(0),tau);
-            fflush(primme->outputFile);
+            int ZERO = 0, ONE = 1, UNCO = UNCONVERGED;
+            primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
+            int err;
+            primme->stats.elapsedTime = primme_wTimer(0);
+            CHKERRM((primme->monitorFun(&eval, &ONE, &UNCO, &ZERO, &ONE, rnorm,
+                        NULL, NULL, NULL, NULL, NULL, &numIts, &tau,
+                        &EVENT_INNER_ITERATION, primme, &err),
+                     err), -1, "Error returned by monitorFun: %d", err);
          }
       }
 

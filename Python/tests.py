@@ -274,5 +274,16 @@ def test_examples_from_doc():
 def test_examples():
     exec(compile(open("examples.py").read(), "examples.py", "exec"))
 
+def test_return_stats():
+    A, _ = diagonal(100)
+    evals, evecs, stats = Primme.eigsh(A, 3, tol=1e-6, which='LA',
+            return_stats=True, return_history=True)
+    assert(stats["hist"]["numMatvecs"])
+
+    svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, tol=1e-6,
+            which='SM', return_stats=True, return_history=True)
+    assert(stats["hist"]["numMatvecs"])
+
+
 if __name__ == "__main__":
     run_module_suite()

@@ -60,6 +60,7 @@
 .. |convTestFun|                           replace:: :c:member:`convTestFun                        <primme_params.convTestFun>`
 .. |ldevecs|                               replace:: :c:member:`ldevecs                            <primme_params.ldevecs>`
 .. |ldOPs|                                 replace:: :c:member:`ldOPs                              <primme_params.ldOPs>`
+.. |monitorFun|                            replace:: :c:member:`monitorFun                         <primme_params.monitorFun>`
 .. |primme_smallest|       replace:: :c:member:`primme_smallest       <primme_params.target>`
 .. |primme_largest|        replace:: :c:member:`primme_largest        <primme_params.target>`
 .. |primme_closest_geq|    replace:: :c:member:`primme_closest_geq    <primme_params.target>`
@@ -134,6 +135,7 @@
 .. |SmethodStage2|           replace:: :c:member:`methodStage2                 <primme_svds_params.methodStage2>`
 .. |Sprimme|                 replace:: :c:member:`primme                       <primme_svds_params.primme>`
 .. |SprimmeStage2|           replace:: :c:member:`primmeStage2                 <primme_svds_params.primmeStage2>`
+.. |SmonitorFun|             replace:: :c:member:`monitorFun                   <primme_svds_params.monitorFun>`
 .. |primme_svds_smallest|       replace:: :c:member:`primme_svds_smallest       <primme_svds_params.target>`
 .. |primme_svds_largest|        replace:: :c:member:`primme_svds_largest        <primme_svds_params.target>`
 .. |primme_svds_closest_abs|    replace:: :c:member:`primme_svds_closest_abs    <primme_svds_params.target>`
@@ -148,6 +150,7 @@
 
 
 
+.. _PRIMME: https://github.com/primme/primme
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/
 .. _LAPACK: http://www.netlib.org/lapack/
 .. _BLAS: http://www.netlib.org/blas/
@@ -156,3 +159,5 @@
 .. _column-major: https://en.wikipedia.org/wiki/Row-major_order
 .. _NumPy: http://www.numpy.org/
 .. _`SciPy Library`: https://www.scipy.org/scipylib/index.html
+.. _`MATLAB eigs`: https://www.mathworks.com/help/matlab/ref/eigs.html
+.. _`MATLAB svds`: https://www.mathworks.com/help/matlab/ref/svds.html

@@ -9,7 +9,7 @@ BUILDDIR      = build
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
-$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
+$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed together with napoleon and matlabdomain extension. If you don't know what I'm talking about try 'pip install numpy scipy Sphinx sphinxcontrib-napoleon sphinxcontrib-matlabdomain')
 endif
 
 # Internal variables.
@@ -133,15 +133,12 @@ text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
 	@echo
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
-	@cat $(BUILDDIR)/text/readme.txt $(BUILDDIR)/text/intro.txt \
-	   $(BUILDDIR)/text/apieigs.txt \
-	   $(BUILDDIR)/text/primmec.txt $(BUILDDIR)/text/primmef77.txt \
-	   $(BUILDDIR)/text/appendix.txt $(BUILDDIR)/text/pyeigsh.txt \
-	   $(BUILDDIR)/text/mateigs.txt \
-	   $(BUILDDIR)/text/apisvds.txt \
-	   $(BUILDDIR)/text/svdsc.txt $(BUILDDIR)/text/svdsf77.txt \
-	   $(BUILDDIR)/text/appendixsvds.txt $(BUILDDIR)/text/pysvds.txt \
-	   > ../readme.txt
+	@rm -f ../readme.txt
+	@for i in readme intro apieigs primmec primmef77 appendix pyeigsh mateigs \
+	          apisvds svdsc svdsf77 appendixsvds pysvds matsvds; do \
+		cat $(BUILDDIR)/text/$${i}.txt >> ../readme.txt; \
+		echo >> ../readme.txt; \
+	done
 
 man:
 	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) $(BUILDDIR)/man

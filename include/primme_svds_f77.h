@@ -96,7 +96,9 @@ C-------------------------------------------------------
      : PRIMME_SVDS_stats_numRestarts,
      : PRIMME_SVDS_stats_numMatvecs,
      : PRIMME_SVDS_stats_numPreconds,
-     : PRIMME_SVDS_stats_elapsedTime
+     : PRIMME_SVDS_stats_elapsedTime,
+     : PRIMME_SVDS_monitorFun,
+     : PRIMME_SVDS_monitor
 
       parameter(
      : PRIMME_SVDS_primme = 0,
@@ -139,7 +141,9 @@ C-------------------------------------------------------
      : PRIMME_SVDS_stats_numRestarts = 37,
      : PRIMME_SVDS_stats_numMatvecs = 38,
      : PRIMME_SVDS_stats_numPreconds = 39,
-     : PRIMME_SVDS_stats_elapsedTime = 40
+     : PRIMME_SVDS_stats_elapsedTime = 40,
+     : PRIMME_SVDS_monitorFun = 41,
+     : PRIMME_SVDS_monitor = 42
      :)
 
 C-------------------------------------------------------

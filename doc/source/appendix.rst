@@ -262,7 +262,7 @@ primme_params
 
    .. c:member:: int printLevel
 
-      The level of message reporting from the code. All output is writen in |outputFile|.
+      The level of message reporting from the code. All output is written in |outputFile|.
 
       One of:
  
@@ -875,6 +875,88 @@ primme_params
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to 0;
+         | this field is read by :c:func:`dprimme`.
+
+
+   .. c:member:: void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
+
+
+      Convergence monitor. Usually used to customize how it is reported the
+      unconverged and converged pairs and the residual norms.
+
+      :param basisEvals:   array with approximate eigenvalues of the basis.
+      :param basisSize:    size of the arrays ``basisEvals``, ``basisFlags`` and ``basisNorms``.
+      :param basisFlags:   state of every approximate pair of the basis (see conv_flags).
+      :param iblock:       indices of the approximate pairs in the block.
+      :param blockSize:    size of array ``iblock``.
+      :param basisNorms:   array with residual norms of the pairs in the basis.
+      :param numConverged: number of pairs converged in the basis plus the number of the locked pairs (note that this value isn't monotonic).
+      :param lockedEvals:  array with the locked eigenvalues.
+      :param numLocked:    size of the arrays ``lockedEvals``, ``lockedFlags`` and ``lockedNorms``.
+      :param lockedFlags:  state of each locked eigenpair (see conv_flags).
+      :param lockedNorms:  array with residual norms of the locked pairs.
+      :param inner_its:    number of performed QMR iterations in the current correction equation.
+      :param LSRes:        residual norm of the linear system at the current QMR iteration.
+      :param event:        event reported.
+      :param primme:       parameters structure.
+      :param ierr:         output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      This function is called at the next events:
+
+      * ``*event == primme_event_outer_iteration``: every outer iterations.
+
+        It is provided ``basisEvals``, ``basisSize``, ``basisFlags``, ``iblock`` and ``blockSize``.
+
+        ``basisNorms[iblock[i]]`` has the residual norms for the selected pairs in the block.
+        PRIMME avoids to compute the residual of soft-locked pairs, ``basisNorms[i]`` for ``i<iblock[0]``.
+        So those values may correspond to previous iterations. The values ``basisNorms[i]`` for ``i>iblock[blockSize-1]``
+        are not valid.
+
+        If |locking| is enabled, it is provided ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms``.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      * ``*event == primme_event_inner_iteration``: every QMR iteration.
+
+        ``basisEvals[0]`` and ``basisNorms[0]`` provides the approximate eigenvalue and the residual norm
+        of the pair which the correction equation is being computed for. If |convTest| is |primme_adaptive|
+        or |primme_adaptive_ETolerance|, ``basisEvals[0]`` and ``basisNorms[0]`` is updated every QMR iteration.
+
+        ``inner_its`` and  ``LSRes`` are also provided.
+
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+
+      * ``*event == primme_event_convergence``: new eigenpair in the basis passed the convergence criterion
+
+        ``iblock[0]`` is the index of the pair in the basis that passes the convergence criterion, and the
+        solver probably will soft lock. 
+        It is also provided ``basisEvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
+
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      * ``*event == primme_event_locked``: new pair added to the locking basis.
+
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are provided.
+        The last element of ``lockedEvals``, ``lockedFlags`` and ``lockedNorms`` corresponds
+        to the recent locked pair.
+ 
+        ``basisEvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not provided.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      The values of ``basisFlags`` and ``lockedFlags`` are:
+
+      * ``0``: unconverged.
+      * ``1``: internal use; only in ``basisFlags``.
+      * ``2``: passed convergence test |convTestFun|.
+      * ``3``: converged because the solver may not be able to reduce the residual norm further.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
+         | :c:func:`dprimme` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme`.
 
 

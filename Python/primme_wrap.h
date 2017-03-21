@@ -30,6 +30,8 @@ public:
     virtual void prevec(int len1YD, int len2YD, int ldYD, std::complex< double > *yd, int len1XD, int len2XD, int ldXD, std::complex< double > *xd);
     virtual void globalSum(int lenYD, float *yd, int lenXD, float *xd);
     virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd);
+    virtual void mon(int lenbasisEvals, float *basisEvals, int lenbasisFlags, int *basisFlags, int leniblock, int *iblock, int lenbasisNorms, float *basisNorms, int numConverged, int lenlockedEvals, float *lockedEvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, float *lockedNorms, int inner_its, float LSRes, int event);
+    virtual void mon(int lenbasisEvals, double *basisEvals, int lenbasisFlags, int *basisFlags, int leniblock, int *iblock, int lenbasisNorms, double *basisNorms, int numConverged, int lenlockedEvals, double *lockedEvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, double *lockedNorms, int inner_its, double LSRes, int event);
 
 /* Internal director utilities */
 public:
@@ -60,7 +62,7 @@ private:
       return method;
     }
 private:
-    mutable swig::SwigVar_PyObject vtable[10];
+    mutable swig::SwigVar_PyObject vtable[12];
 #endif
 
 };
@@ -81,6 +83,8 @@ public:
     virtual void prevec(int len1YD, int len2YD, int ldYD, std::complex< double > *yd, int len1XD, int len2XD, int ldXD, std::complex< double > *xd, int mode);
     virtual void globalSum(int lenYD, float *yd, int lenXD, float *xd);
     virtual void globalSum(int lenYD, double *yd, int lenXD, double *xd);
+    virtual void mon(int lenbasisSvals, float *basisSvals, int lenbasisFlags, int *basisFlags, int leniblock, int *iblock, int lenbasisNorms, float *basisNorms, int numConverged, int lenlockedSvals, float *lockedSvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, float *lockedNorms, int inner_its, float LSRes, int event, int stage);
+    virtual void mon(int lenbasisSvals, double *basisSvals, int lenbasisFlags, int *basisFlags, int leniblock, int *iblock, int lenbasisNorms, double *basisNorms, int numConverged, int lenlockedSvals, double *lockedSvals, int lenlockedFlags, int *lockedFlags, int lenlockedNorms, double *lockedNorms, int inner_its, double LSRes, int event, int stage);
 
 /* Internal director utilities */
 public:
@@ -111,7 +115,7 @@ private:
       return method;
     }
 private:
-    mutable swig::SwigVar_PyObject vtable[10];
+    mutable swig::SwigVar_PyObject vtable[12];
 #endif
 
 };

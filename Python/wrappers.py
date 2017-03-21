@@ -100,7 +100,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
-          maxPrevRetain=0, method=None, **kargs):
+          maxPrevRetain=0, method=None, return_history=False, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -183,8 +183,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         See a detailed description of the methods and other possible values
         in [2]_.
         
-    report_stats : bool, optional
+    return_stats : bool, optional
         If True, it is also returned extra information from PRIMME.
+    return_history: bool, optional
+        If True, it is also returned performance information at every iteration.
 
     Returns
     -------
@@ -205,6 +207,13 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         - "estimateMaxEVal": the rightmost Ritz value seen
         - "estimateLargestSVal": the largest singular value seen
         - "rnorms" : ||A*x[i] - x[i]*w[i]||
+        - "hist" : (if return_history) report at every outer iteration of:
+
+          - "elapsedTime": time spent up to now
+          - "numMatvecs": number of A*v spent up to now
+          - "nconv": number of converged pair
+          - "eval": eigenvalue of the first unconverged pair
+          - "resNorm": residual norm of the first unconverged pair
 
     Raises
     ------
@@ -248,6 +257,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if M is not None:
         raise ValueError('generalized problems (M != None) are not supported')
 
+    hist = {"numMatvecs": [], "elapsedTime": [], "nconv": [],
+            "eval": [], "resNorm": []}
+
     class PP(PrimmeParams):
         def __init__(self):
             PrimmeParams.__init__(self)
@@ -255,6 +267,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             return A.matmat(X)
         def prevec(self, X):
             return OPinv.matmat(X)
+        def mon(self, basisEvals, basisFlags, iblock, basisNorms, numConverged,
+                    lockedEvals, lockedFlags, lockedNorms, inner_its, LSRes, event):
+            if event == 0 and len(iblock)>0: # event iteration
+                hist["numMatvecs"].append(self.stats.numMatvecs)
+                hist["elapsedTime"].append(self.stats.elapsedTime)
+                hist["nconv"].append(numConverged)
+                hist["eval"].append(basisEvals[iblock[0]])
+                hist["resNorm"].append(basisNorms[iblock[0]])
 
     pp = PP()
  
@@ -304,6 +324,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if lock.shape[0] != pp.n:
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
         pp.numOrthoConst = min(lock.shape[1], pp.n)
+
+    if return_history and return_stats:
+        pp.monitor_set = 1
 
     # Set other parameters
     for dk, dv in kargs.items():
@@ -366,6 +389,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             "numPreconds", "elapsedTime", "estimateMinEVal",
             "estimateMaxEVal", "estimateLargestSVal"])
         stats['rnorms'] = norms
+        if return_history:
+            stats["hist"] = hist
         return evals, evecs, stats
     else:
         return evals, evecs
@@ -376,7 +401,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          precAHA=None, precAAH=None, precAug=None,
          u0=None, locku0=None, lockv0=None,
          return_stats=False, maxBlockSize=0,
-         method=None, methodStage1=None, methodStage2=None, **kargs):
+         method=None, methodStage1=None, methodStage2=None,
+         return_history=False, **kargs):
     """
     Compute k singular values and vectors for a sparse matrix.
 
@@ -426,8 +452,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Right orthogonal vector constrain. See locku0.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
-    report_stats : bool, optional
+    return_stats : bool, optional
         If True, it is also returned extra information from PRIMME.
+    return_history: bool, optional
+        If True, it is also returned performance information at every iteration.
 
     Returns
     -------
@@ -448,8 +476,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         - "numPreconds": number of OPinv*v
         - "elapsedTime": time that took 
         - "rnorms" : ||A*v[i] - u[i]*s[i]||
+        - "hist" : (if return_history) report at every outer iteration of:
 
-        Returned if `return_stats` is True.
+          - "elapsedTime": time spent up to now
+          - "numMatvecs": number of A*v spent up to now
+          - "nconv": number of converged pair
+          - "eval": eigenvalue of the first unconverged pair
+          - "resNorm": residual norm of the first unconverged pair
 
     See Also
     --------
@@ -495,6 +528,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         if precAug.shape[0] != precAug.shape[1] or precAug.shape[0] != m+n:
             raise ValueError('precAug: expected square matrix with size %d' % (m+n))
 
+    hist = {"numMatvecs": [], "elapsedTime": [], "nconv": [],
+            "sval": [], "resNorm": []}
+
     class PSP(PrimmeSvdsParams):
         def __init__(self):
             PrimmeSvdsParams.__init__(self)
@@ -513,6 +549,16 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             elif mode == primme_svds_op_augmented and precAug is not None:
                 return precAug.matmat(X) 
             return X
+
+        def mon(self, basisSvals, basisFlags, iblock, basisNorms, numConverged,
+                    lockedSvals, lockedFlags, lockedNorms, inner_its, LSRes,
+                    event, stage):
+            if event == 0 and len(iblock)>0: # event iteration
+                hist["numMatvecs"].append(self.stats.numMatvecs)
+                hist["elapsedTime"].append(self.stats.elapsedTime)
+                hist["nconv"].append(numConverged)
+                hist["sval"].append(basisSvals[iblock[0]])
+                hist["resNorm"].append(basisNorms[iblock[0]])
 
     pp = PSP()
 
@@ -574,6 +620,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if locku0 is not None:
         pp.numOrthoConst = min(locku0.shape[1], min(m,n))
 
+    if return_history and return_stats:
+        pp.monitor_set = 1
+
     # Set other parameters
     for dk, dv in kargs.items():
       setattr(pp, dk, dv)
@@ -629,6 +678,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime"])
         stats["rnorms"] = norms
+        if return_history:
+            stats["hist"] = hist
  
     if not return_singular_vectors:
         return svals if not return_stats else (svals, stats)
