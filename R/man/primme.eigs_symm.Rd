@@ -2,7 +2,7 @@
 % Please edit documentation in R/eigs.R
 \name{primme.eigs_symm}
 \alias{primme.eigs_symm}
-\title{Find few eigenvalues and vectors on large, sparse Hermitian matrix}
+\title{Find a few eigenvalues and vectors on large, sparse Hermitian matrix}
 \usage{
 primme.eigs_symm(A, NEig = 1, which = "LA", targetShifts = NULL,
   tol = 1e-06, x0 = NULL, ortho = NULL, prec = NULL, isreal = NULL,
@@ -65,7 +65,7 @@ Compute a few eigenpairs from a specified region (the largest, the smallest,
 the closest to a point) on a symmetric/Hermitian matrix using PRIMME [1].
 Only the matrix-vector product of the matrix is required. The used method is
 usually faster than a direct method (such as \code{\link{eigen}}) if
-seeking few eigenpairs and the matrix-vector product is cheap. For
+seeking a few eigenpairs and the matrix-vector product is cheap. For
 accelerating the convergence consider to use preconditioning and/or educated
 initial guesses.
 }
@@ -170,4 +170,3 @@ primme.eigs_symm(A, 4, "SA", tol=1e-3, ortho=r$evecs)$evals
 \code{\link{eigen}} for computing all values;
 \code{\link{primme.svds}} for computing the singular values
 }
-

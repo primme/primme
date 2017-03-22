@@ -10,7 +10,7 @@ primme.svds(A, NSvals, which = "L", tol = 1e-06, u0 = NULL, v0 = NULL,
 \arguments{
 \item{A}{matrix or a function with signature f(x, trans) that returns
 \code{A \%*\% x} when \code{trans == "n"} and
-\code{crossprod(A,x)} when \code{trans == "c"}.}
+\code{t(Conj(A)) \%*\% x} when \code{trans == "c"}.}
 
 \item{NSvals}{number of singular triplets to seek.}
 
@@ -160,4 +160,3 @@ primme.svds(A, 4, "S", tol=1e-3, orthov=r$svecsv)$svals
 \code{\link{primme.eigs_symm}} for computing few eigenvalues and vectors
    from a symmetric/Hermitian matrix.
 }
-

@@ -1,0 +1,141 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+#PRIMME
+This R package is an interface to PRIMME, a library devoted to the efficient
+computation of a few eigenvalues and their corresponding eigenvectors of large
+real symmetric or Hermitian matrices. It provides functions to compute the
+eigenpairs and singular triplets of the largest, smallest and interior values.
+Optionally preconditioners and educated initial guesses can be used to
+accelerate convergence. 
+
+Use references provided by PRIMME to cite this package:
+
+* A. Stathopoulos and J. R. McCombs *PRIMME: PReconditioned Iterative
+  MultiMethod Eigensolver: Methods and software description*, ACM
+  Transaction on Mathematical Software Vol. 37, No. 2, (2010),
+  21:1-21:30.
+
+* L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
+  Preconditioned SVD Solver for Accurate Large-Scale Computations*,
+  arXiv:1607.01404
+
+#Installation Instructions
+We will try that the latest version of package to be on CRAN soon as possible.
+Meanwhile, to install the latest version:
+```{r, eval=FALSE}
+library(devtools)
+install_github("primme/primme", subdir="R")
+```
+
+#Usage
+Load the package as usual:
+```{r results='hide'}
+library(PRIMME)
+```
+
+The next example computes the three largest eigenvalues of the matrix `A`,
+which in this case is a dense diagonal matrix. It shows all the eigenvalues
+`evals`, the eigenvectors `evecs`, the residual norms `rnorms` and some stats,
+such as the time `stats$elapsedTime` and the number of matrix vector
+multiplications spent `stats$numMatvecs`:
+```{r }
+A <- diag(1:10) 
+r <- primme.eigs_symm(A, 3);
+r
+```
+
+The next examples show how to compute for different parts of the spectrum:
+```{r }
+A <- diag(1:10)
+
+r <- primme.eigs_symm(A, 3, 'SA'); # compute the three smallest values
+r$evals
+
+r <- primme.eigs_symm(A, 3, 5.1); # compute the three closest values to 5.1
+r$evals
+```
+
+For difficult problems, we can ask to raise the tolerance:
+```{r }
+A <- diag(1:1000)
+
+r <- primme.eigs_symm(A, 10, 'SA');
+r$stats$numMatvecs
+r$stats$elapsedTime
+
+r <- primme.eigs_symm(A, 10, 'SA', tol=1e-4); 
+r$stats$numMatvecs
+r$stats$elapsedTime
+```
+
+Preconditioners, if available can reduce the time significantly:
+```{r }
+# A is a tridiagonal
+A <- diag(1:1000)
+for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
+
+r <- primme.eigs_symm(A, 10, 'SA');
+r$stats$numMatvecs
+
+# Jacobi preconditioner
+P = diag(diag(A));
+r <- primme.eigs_symm(A, 10, 'SA', prec=P);
+r$stats$numMatvecs
+```
+
+Dense matrices, sparse matrices and functions that return the matrix-vector
+product can be passed as the matrix problem `A`:
+```{r results='hide'}
+r <- primme.eigs_symm(diag(1:10), 1); # dense matrix
+require(Matrix)
+r <- primme.eigs_symm(Matrix(diag(1:10), sparse=TRUE), 1); # sparse matrix
+Afun = function(x) matrix(1:10)*x;  # function that does diag(1:10) %*% x
+r <- primme.eigs_symm(Afun, 1, n=10); # n is the matrix dimension
+```
+
+For SVD problems, the package provides a similar interface:
+```{r }
+A <- diag(1:10, 20,10) # rectangular matrix of dimension 20x10
+r <- primme.svds(A, 3); # compute the three largest singular values
+r
+```
+
+The next examples show how to compute the smallest singular values
+and how to specify some tolerance:
+```{r }
+A <- diag(1:100, 500,100)
+
+r <- primme.svds(A, 3, 'S'); # compute the three smallest values
+r$svals
+
+r <- primme.svds(A, 3, 'S', tol=1e-5);
+r$rnorms # this is should be smaller than ||A||*tol
+
+```
+
+The next example shows the use of a diagonal preconditioner based on $A^*A$:
+```{r }
+A <- rbind(rep(1,n=100), diag(1:100, 500,100))
+r <- primme.svds(A, 3, 'S');
+r$stats$numMatvecs
+
+P = diag(diag(crossprod(A)));
+r <- primme.svds(A, 3, 'S', prec=list(AHA=P));
+r$stats$numMatvecs
+```
+
+

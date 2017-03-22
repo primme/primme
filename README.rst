@@ -66,7 +66,7 @@ Citing this code
 
 Please cite:
 
-* A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned Iterative
+* A. Stathopoulos and J. R. McCombs *PRIMME: PReconditioned Iterative
   MultiMethod Eigensolver: Methods and software description*, ACM
   Transaction on Mathematical Software Vol. 37, No. 2, (2010),
   21:1-21:30.

@@ -45,7 +45,7 @@
 #'
 #' @param A matrix or a function with signature f(x, trans) that returns
 #'        \code{A \%*\% x} when \code{trans == "n"} and
-#'        \code{crossprod(A,x)} when \code{trans == "c"}.
+#'        \code{t(Conj(A)) \%*\% x} when \code{trans == "c"}.
 #' @param NSvals number of singular triplets to seek.
 #' @param which which singular values to find:
 #'    \describe{
@@ -173,7 +173,7 @@
 #' r <- primme.svds(A, 4, "S", tol=1e-3); r$svals
 #' primme.svds(A, 4, "S", tol=1e-3, orthov=r$svecsv)$svals
 #'
-#' @useDynLib Primme
+#' @useDynLib PRIMME
 #' @importFrom Rcpp evalCpp
 #' @export
 
@@ -187,17 +187,32 @@ primme.svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    if (is.function(A)) {
       if (!.is.wholenumber(opts$n) || !.is.wholenumber(opts$m))
          stop("matrix dimension not set (set 'm' and 'n')");
-      Af <- A
+      Af <- A;
+      isreal_suggestion <- FALSE;
    }
-   else if (!is.matrix(A) || length(dim(A)) != 2) {
+   else if (length(dim(A)) != 2) {
       stop("A should be a matrix or a function")
    }
    else {
       opts$m <- nrow(A);
       opts$n <- ncol(A);
-      isreal <- is.numeric(A);
-      Af <- function(x,trans)
-         if (trans == "n") A %*% x else crossprod(A, x);
+      if (is.matrix(A)) {
+        Af <- A;
+        isreal_suggestion <- is.numeric(A);
+      }
+      else if (any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A))) {
+        Af <- A;
+        isreal_suggestion <- TRUE;
+      }
+      else if (any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A))) {
+        Af <- A;
+        isreal_suggestion <- FALSE;
+      }
+      else {
+         Af <- function(x,trans)
+            if (trans == "n") A %*% x else Conj(t(crossprod(Conj(x),A)));
+         isreal_suggestion <- FALSE;
+      }
    }
 
    # Check nsvals and set the option
@@ -214,7 +229,8 @@ primme.svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    else if (is.numeric(which)) {
       opts$targetShifts <- which;
       opts$target <- "primme_svds_closest_abs";
-   } else {
+   }
+   else {
       stop("target should be numeric or L or S");
    }
  
@@ -289,13 +305,12 @@ primme.svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    methodStage2 <- opts$methodStage2;
    opts$methodStage2 <- NULL;
 
-   # Extract isreal
-   if (!is.null(opts$isreal) && !is.logical(opts$isreal)) {
+   # Process isreal
+   if (!is.null(isreal) && !is.logical(isreal)) {
       stop("isreal should be logical");
    }
-   else if (is.logical(opts$isreal)) {
-      isreal <- opts$isreal;
-      opts$isreal <- NULL;
+   else if (is.null(isreal)) {
+      isreal <- isreal_suggestion;
    }
 
    # Initialize PRIMME SVDS
@@ -322,7 +337,7 @@ primme.svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    }
 
    # Call PRIMME SVDS
-   r <- if (is.null(isreal) || !isreal)
+   r <- if (!isreal)
       .zprimme_svds(ortho$u, ortho$v, init$u, init$v, Af, precf, primme_svds)
    else
       .dprimme_svds(ortho$u, ortho$v, init$u, init$v, Af, precf, primme_svds)

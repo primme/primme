@@ -3,4 +3,4 @@
 export(primme.eigs_symm)
 export(primme.svds)
 importFrom(Rcpp,evalCpp)
-useDynLib(Primme)
+useDynLib(PRIMME)

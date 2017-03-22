@@ -31,6 +31,7 @@ clean:
 	find . -name '*.pdf' -exec rm {} \;
 	find . -name '*.o' -exec rm {} \;
 	find . -name '*.so' -exec rm {} \;
+	find . -name '*.orig' -exec rm {} \;
 	rm -f src/primme/libprimme.a
 
 .PHONY: update doc install clean

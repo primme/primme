@@ -47,3 +47,9 @@ INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
 libprimme.a: $(OBJS)
 	$(AR) rv $@ $(OBJS);\
 	$(RANLIB) $@
+
+clean:
+	-@rm -f $(OBJS)
+
+.DELETE_ON_ERROR: $(OBJS) 
+.PHONY: clean

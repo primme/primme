@@ -33,13 +33,13 @@
 # 
 #*****************************************************************************
 
-#' Find few eigenvalues and vectors on large, sparse Hermitian matrix
+#' Find a few eigenvalues and vectors on large, sparse Hermitian matrix
 #'
 #' Compute a few eigenpairs from a specified region (the largest, the smallest,
 #' the closest to a point) on a symmetric/Hermitian matrix using PRIMME [1].
 #' Only the matrix-vector product of the matrix is required. The used method is
 #' usually faster than a direct method (such as \code{\link{eigen}}) if
-#' seeking few eigenpairs and the matrix-vector product is cheap. For
+#' seeking a few eigenpairs and the matrix-vector product is cheap. For
 #' accelerating the convergence consider to use preconditioning and/or educated
 #' initial guesses.
 #'
@@ -183,7 +183,7 @@
 #' r <- primme.eigs_symm(A, 4, "SA", tol=1e-3); r$evals
 #' primme.eigs_symm(A, 4, "SA", tol=1e-3, ortho=r$evecs)$evals
 #' 
-#' @useDynLib Primme
+#' @useDynLib PRIMME
 #' @importFrom Rcpp evalCpp
 #' @export
 
@@ -198,15 +198,26 @@ primme.eigs_symm <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
    if (is.function(A)) {
       if (!.is.wholenumber(opts$n))
          stop("matrix dimension not set (set 'n')");
-      Af <- A
+      Af <- A;
+      isreal_suggestion <- FALSE;
    }
-   else if (!is.matrix(A) || length(dim(A)) != 2 || ncol(A) != nrow(A)) {
+   else if (length(dim(A)) != 2 || ncol(A) != nrow(A)) {
       stop("A should be a square matrix or a function")
    }
    else {
       opts$n <- nrow(A);
-      isreal <- is.numeric(A);
-      Af <- function(x) A %*% x;
+      isreal_suggestion <-
+         if (is.matrix(A)) is.numeric(A)
+         else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
+      if ((is.null(isreal) || isreal == isreal_suggestion) && (
+               is.matrix(A) ||
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
+               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
+        Af <- A;
+      }
+      else {
+        Af <- function(x) A %*% x;
+      }
    }
 
    # Check NEig and set the option
@@ -276,13 +287,12 @@ primme.eigs_symm <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
    method <- opts$method;
    opts$method <- NULL;
 
-   # Extract isreal
-   if (!is.null(opts$isreal) && !is.logical(opts$isreal)) {
+   # Process isreal
+   if (!is.null(isreal) && !is.logical(isreal)) {
       stop("isreal should be logical");
    }
-   else if (is.logical(opts$isreal)) {
-      isreal <- opts$isreal;
-      opts$isreal <- NULL;
+   else if (is.null(isreal)) {
+      isreal <- isreal_suggestion;
    }
 
    # Initialize PRIMME
@@ -297,7 +307,7 @@ primme.eigs_symm <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
       .primme_set_method(method, primme);
 
    # Call PRIMME
-   r <- if (is.null(isreal) || !isreal)
+   r <- if (!isreal)
       .zprimme(ortho, x0, Af, NULL, precf, convTest, primme)
    else
       .dprimme(ortho, x0, Af, NULL, precf, convTest, primme);
