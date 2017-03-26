@@ -2,7 +2,7 @@
 % Please edit documentation in R/svds.R
 \name{primme.svds}
 \alias{primme.svds}
-\title{Find few singular values and vectors on large, sparse matrix}
+\title{Find a few singular values and vectors on large, sparse matrix}
 \usage{
 primme.svds(A, NSvals, which = "L", tol = 1e-06, u0 = NULL, v0 = NULL,
   orthou = NULL, orthov = NULL, prec = NULL, isreal = NULL, ...)
@@ -157,6 +157,6 @@ primme.svds(A, 4, "S", tol=1e-3, orthov=r$svecsv)$svals
 }
 \seealso{
 \code{\link{svd}} for computing all singular triplets;
-\code{\link{primme.eigs_symm}} for computing few eigenvalues and vectors
+\code{\link{primme.eigs_symm}} for computing a few eigenvalues and vectors
    from a symmetric/Hermitian matrix.
 }

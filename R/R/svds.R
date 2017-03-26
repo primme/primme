@@ -33,7 +33,7 @@
 # 
 #*****************************************************************************
 
-#' Find few singular values and vectors on large, sparse matrix
+#' Find a few singular values and vectors on large, sparse matrix
 #'
 #' Compute a few singular triplets from a specified region (the largest, the
 #' smallest, the closest to a point) on a matrix using PRIMME [1].
@@ -131,7 +131,7 @@
 #'
 #' @seealso
 #' \code{\link{svd}} for computing all singular triplets;
-#' \code{\link{primme.eigs_symm}} for computing few eigenvalues and vectors
+#' \code{\link{primme.eigs_symm}} for computing a few eigenvalues and vectors
 #'    from a symmetric/Hermitian matrix.
 #'
 #' @examples

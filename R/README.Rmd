@@ -82,7 +82,7 @@ r$stats$numMatvecs
 r$stats$elapsedTime
 ```
 
-Preconditioners, if available can reduce the time significantly:
+Preconditioners, if available can reduce the time/matrix-vector multiplications significantly (see TODO):
 ```{r }
 # A is a tridiagonal
 A <- diag(1:1000)
@@ -127,7 +127,8 @@ r$rnorms # this is should be smaller than ||A||*tol
 
 ```
 
-The next example shows the use of a diagonal preconditioner based on $A^*A$:
+The next example shows the use of a diagonal preconditioner based on $A^*A$
+(see TODO):
 ```{r }
 A <- rbind(rep(1,n=100), diag(1:100, 500,100))
 r <- primme.svds(A, 3, 'S');
@@ -138,4 +139,25 @@ r <- primme.svds(A, 3, 'S', prec=list(AHA=P));
 r$stats$numMatvecs
 ```
 
+#TODO
+* Optimize the application of preconditioner when it is passed as a dense or
+  sparse matrix. When solving small problems the overhead of calling the R
+  function that applies the preconditioner can dominate over the reduction of
+  iterations:
+```{r }
+# A is a tridiagonal
+A <- diag(1:1000)
+for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
 
+r <- primme.eigs_symm(A, 10, 'SA');
+r$stats$numMatvecs
+r$stats$elapsedTime
+
+# Jacobi preconditioner
+P = diag(diag(A));
+r <- primme.eigs_symm(A, 10, 'SA', prec=P);
+r$stats$numMatvecs
+r$stats$elapsedTime
+```
+
+* Add support for matrices distributed among processes.

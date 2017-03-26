@@ -168,5 +168,5 @@ primme.eigs_symm(A, 4, "SA", tol=1e-3, ortho=r$evecs)$evals
 }
 \seealso{
 \code{\link{eigen}} for computing all values;
-\code{\link{primme.svds}} for computing the singular values
+\code{\link{primme.svds}} for computing a few singular values
 }
