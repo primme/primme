@@ -4304,10 +4304,10 @@ primme_svds_params
 
       double eps
 
-         A triplet is marked as converged when the 2-norm of the
-         residual vectors is less than "eps" * "aNorm". The residual
-         vectors are A v - \sigma u and A^* u - \sigma v for the
-         triplet (u,\sigma,v).
+         A triplet (u,\sigma,v) is marked as converged when \sqrt{\|A
+         v - \sigma u\|^2 + \|A^* u - \sigma v\|^2} is less than "eps"
+         * "aNorm", or close to the minimum tolerance that the
+         selected method can achieve. See Preset Methods.
 
          The default value is machine precision times 10^4.
 
@@ -4841,6 +4841,10 @@ primme_svds_preset_method
       than "n", and to "primme_svds_op_AAt" otherwise; and
       "methodStage2" is set to "primme_svds_op_none".
 
+      The minimum tolerance that this method can achieve is
+      \|A\|\epsilon\sigma^{-1}, where \epsilon is the machine
+      precision.
+
    primme_svds_augmented
 
       Solve the equivalent eigenvalue problem \left(\begin{array}{cc}
@@ -4850,6 +4854,11 @@ primme_svds_preset_method
       With "primme_svds_augmented" "primme_svds_set_method()" sets
       "method" to "primme_svds_op_augmented" and "methodStage2" to
       "primme_svds_op_none".
+
+      The minimum tolerance that this method can achieve is
+      \|A\|\epsilon, where \epsilon is the machine precision. However
+      it may not return triplets with singular values smaller than
+      \|A\|\epsilon.
 
    primme_svds_hybrid
 
@@ -4861,6 +4870,11 @@ primme_svds_preset_method
       sets "method" to "primme_svds_op_AtA" if "m" is larger or equal
       than "n", and to "primme_svds_op_AAt" otherwise; and
       "methodStage2" is set to "primme_svds_op_augmented".
+
+      The minimum tolerance that this method can achieve is
+      \|A\|\epsilon, where \epsilon is the machine precision. However
+      it may not return triplets with singular values smaller than
+      \|A\|\epsilon if "eps" is smaller than \|A\|\epsilon\sigma^{-1}.
 
 Python Interface
 ****************
@@ -4879,8 +4893,15 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
       * **ncv** (*int**, **optional*) -- The maximum size of the
         basis
 
-      * **tol** (*float**, **optional*) -- Tolerance for singular
-        values. Zero (default) means machine precision.
+      * **tol** (*float**, **optional*) --
+
+        Tolerance for singular values. Zero (default) means machine
+        precision.
+
+        A triplet (u,sigma,v)` is marked as converged when (||A*v -
+        sigma*u||^2 + ||A.H*u - sigma*v||^2)**.5` is less than "tol" *
+        ||A||, or close to the minimum tolerance that the method can
+        achieve. See the note.
 
       * **which** (*str** [**'LM' | 'SM'**] or **number**,
         **optional*) --
@@ -4982,6 +5003,14 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
           * "eval": eigenvalue of the first unconverged pair
 
           * "resNorm": residual norm of the first unconverged pair
+
+   Note: The default method used is the hybrid method, which first
+     solves the equivalent eigenvalue problem A.H*A or A*A.H (normal
+     equations) and then refines the solution solving the augmented
+     problem. The minimum tolerance that this method can achieve is
+     ||A||*epsilon, where epsilon` is the machine precision. However
+     it may not return triplets with singular values smaller than
+     ||A||*epsilon`if "tol" is smaller than ||A||*epsilon/sigma.`.
 
    See also:
 
