@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 #PRIMME
-The PRIMME_R package is an interface to PRIMME, a C library for computing a 
+This package is an interface to PRIMME, a C library for computing a 
 few eigenvalues and their corresponding eigenvectors of a real symmetric or 
 complex Hermitian matrix. It can also compute singular values and vectors. 
 It can find largest, smallest, or interior eigenvalues or singular values 
