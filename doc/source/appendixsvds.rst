@@ -332,10 +332,10 @@ primme_svds_params
 
    .. c:member:: double eps
 
-      A triplet is marked as converged when the 2-norm
-      of the residual vectors is less than |Seps| \* |SaNorm|.
-      The residual vectors are :math:`A v - \sigma u` and :math:`A^* u - \sigma v` for the
-      triplet :math:`(u,\sigma,v)`.
+      A triplet :math:`(u,\sigma,v)` is marked as converged when
+      :math:`\sqrt{\|A v - \sigma u\|^2 + \|A^* u - \sigma v\|^2}`
+      is less than |Seps| \* |SaNorm|, or close to the minimum tolerance that
+      the selected method can achieve. See :ref:`methods_svds`.
 
       The default value is machine precision times :math:`10^4`.
 
@@ -766,6 +766,9 @@ Preset Methods
       With :c:member:`primme_svds_normalequations` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_AtA`` if |Sm| is larger or equal than |Sn|, and to ``primme_svds_op_AAt``
       otherwise; and |SmethodStage2| is set to ``primme_svds_op_none``.
+
+      The minimum tolerance that this method can achieve is :math:`\|A\|\epsilon\sigma^{-1}`,
+      where :math:`\epsilon` is the machine precision.
  
    .. c:member:: primme_svds_augmented
 
@@ -774,6 +777,10 @@ Preset Methods
   
       With :c:member:`primme_svds_augmented` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_augmented`` and |SmethodStage2| to ``primme_svds_op_none``.
+ 
+      The minimum tolerance that this method can achieve is :math:`\|A\|\epsilon`,
+      where :math:`\epsilon` is the machine precision.
+      However it may not return triplets with singular values smaller than :math:`\|A\|\epsilon`.
  
    .. c:member:: primme_svds_hybrid
 
@@ -784,4 +791,9 @@ Preset Methods
       |Smethod| to ``primme_svds_op_AtA`` if |Sm| is larger or equal than |Sn|, and to ``primme_svds_op_AAt``
       otherwise; and |SmethodStage2| is set to ``primme_svds_op_augmented``.
  
+      The minimum tolerance that this method can achieve is :math:`\|A\|\epsilon`,
+      where :math:`\epsilon` is the machine precision.
+      However it may not return triplets with singular values smaller than :math:`\|A\|\epsilon`
+      if |Seps| is smaller than :math:`\|A\|\epsilon\sigma^{-1}`.
+
 .. include:: epilog.inc

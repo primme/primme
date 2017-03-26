@@ -417,6 +417,11 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         The maximum size of the basis
     tol : float, optional
         Tolerance for singular values. Zero (default) means machine precision.
+
+        A triplet (u,sigma,v)` is marked as converged when
+        (||A*v - sigma*u||^2 + ||A.H*u - sigma*v||^2)**.5`
+        is less than "tol" * ||A||, or close to the minimum tolerance that
+        the method can achieve. See the note.
     which : str ['LM' | 'SM'] or number, optional
         Which `k` singular values to find:
 
@@ -484,6 +489,15 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
           - "eval": eigenvalue of the first unconverged pair
           - "resNorm": residual norm of the first unconverged pair
 
+    Note
+    ----
+    The default method used is the hybrid method, which first solves the
+    equivalent eigenvalue problem A.H*A or A*A.H (normal equations) and then
+    refines the solution solving the augmented problem. The minimum tolerance
+    that this method can achieve is ||A||*epsilon, where epsilon` is the
+    machine precision. However it may not return triplets with singular values
+    smaller than ||A||*epsilon`if "tol" is smaller than ||A||*epsilon/sigma.`.
+ 
     See Also
     --------
     Primme.eigsh : eigenvalue decomposition for a sparse symmetrix/complex Hermitian matrix A
