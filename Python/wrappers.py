@@ -237,6 +237,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     ----------
     .. [1] PRIMME Software, https://github.com/primme/primme
     .. [2] Preset Methods, http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods
+    .. [3] A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
+           Iterative MultiMethod Eigensolver: Methods and software
+           description, ACM Transaction on Mathematical Software Vol. 37,
+           No. 2, (2010), 21:1-21:30.
 
     Examples
     --------
@@ -489,15 +493,26 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
           - "eval": eigenvalue of the first unconverged pair
           - "resNorm": residual norm of the first unconverged pair
 
-    Note
-    ----
+    Notes
+    -----
     The default method used is the hybrid method, which first solves the
     equivalent eigenvalue problem A.H*A or A*A.H (normal equations) and then
     refines the solution solving the augmented problem. The minimum tolerance
     that this method can achieve is ||A||*epsilon, where epsilon` is the
     machine precision. However it may not return triplets with singular values
     smaller than ||A||*epsilon`if "tol" is smaller than ||A||*epsilon/sigma.`.
- 
+
+    This function is a wrapper to PRIMME functions to find singular values and
+    vectors [1]_.
+
+    References
+    ----------
+    .. [1] PRIMME Software, https://github.com/primme/primme
+
+    .. [2] L. Wu, E. Romero and A. Stathopoulos, PRIMME_SVDS: A High-
+           Performance Preconditioned SVD Solver for Accurate Large-Scale
+           Computations. https://arxiv.org/abs/1607.01404
+
     See Also
     --------
     Primme.eigsh : eigenvalue decomposition for a sparse symmetrix/complex Hermitian matrix A
