@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -f src/*.o src/primme/libprimme.a
+cd src/primme
+make -f make_primme clean
