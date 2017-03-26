@@ -53,8 +53,10 @@
 #'       \item{\code{"S"}}{the smallest values;}
 #'       \item{vector of numbers}{the closest values to these points.}
 #'    }
-#' @param tol a converged triplet \eqn{(\sigma,u,v)} satisfies:
-#'    \eqn{\sqrt{\|Av - \sigma u\|^2+\|A^*u - \sigma v\|^2} \le tol\|A\|}{sqrt(||A*v - sigma*u||^2 + ||A'*u - \sigma*v||^2 <= tol*||A||}.
+#' @param tol a triplet \eqn{(\sigma,u,v)} is marked as converged when
+#'    \eqn{\sqrt{\|Av - \sigma u\|^2+\|A^*u - \sigma v\|^2} \le tol\|A\|}{sqrt(||A*v - sigma*u||^2 + ||A'*u - \sigma*v||^2}
+#'    is smaller than \eqn{tol*||A||}, or close to the minimum tolerance that
+#'    the selected method can achieve.
 #' @param u0 matrix whose columns are educated guesses of the left singular
 #'        vectors to find.
 #' @param v0 matrix whose columns are educated guesses of the right singular
@@ -121,6 +123,13 @@
 #'    \item{\code{primmeStage1, primmeStage2}}{list with options for ithe first
 #'       and the second stage solver; see \code{\link{primme.eigs_symm}}}
 #' }
+#'
+#' If \code{method} is \code{"primme_svds_normalequation"}, the minimum
+#' tolerance that can be achieved is \eqn{\|A\|\epsilon/\sigma}, where \eqn{\epsilon}
+#' is the machine precision. If \code{method} is \code{"primme_svds_augmented"}
+#' or \code{"primme_svds_hybrid"}, the minimum tolerance is \eqn{\|A\|\epsilon}.
+#' However it may not return triplets with singular values smaller than
+#' \eqn{\|A\|\epsilon}.
 #'
 #' @references
 #' [1]  L. Wu, E. Romero and A. Stathopoulos, \emph{PRIMME_SVDS: A High-Performance
