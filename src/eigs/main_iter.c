@@ -167,7 +167,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
    int *iwork;              /* Integer workspace pointer                     */
    int *flags;              /* Indicates which Ritz values have converged    */
-   int *lockedFlags;        /* Flags for the locked pairs                    */
+   int *lockedFlags=NULL;   /* Flags for the locked pairs                    */
    int *ipivot;             /* The pivot for the UDU factorization of M      */
    int *iev;                /* Evalue index each block vector corresponds to */
 
