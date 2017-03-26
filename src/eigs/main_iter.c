@@ -1025,7 +1025,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             if (primme->printLevel >= 2 && primme->procID == 0) {
                fprintf(primme->outputFile, 
-                 "Verifying before return: Some vectors are unconverged. ");
+                 "Verifying before return: Some vectors are unconverged.\n");
                fflush(primme->outputFile);
             }
 
