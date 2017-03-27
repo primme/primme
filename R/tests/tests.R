@@ -33,20 +33,19 @@
 # 
 #*****************************************************************************
 
-test.examples <- function () {
-   example(primme.eigs_symm);
-   example(primme.svds);
-}
+require(PRIMME)
 
-test.specialized.matrices <- function() {
-   Adense <- c(diag(1:100), complex(diag(1:100)));
-   if (requireNamespace("Matrix", quietly = TRUE))
-      As <- c(Adense, sapply(Adense, function(x) Matrix(x, sparse=TRUE)));
-   for (A in As) {
-      d <- primme.eigs_symm(A, 3);
-      stopifnot(all.equal(c(100,99,98), Re(d$evals), tolerance=1e-7));
+# Test for dense and sparse matrices
 
-      d <- primme.svds(A, 3);
-      stopifnot(all.equal(c(100,99,98), d$svals, tolerance=1e-7));
-   }
+As <- list(diag(1:100), diag(as.complex(1:100)));
+if (requireNamespace("Matrix", quietly = TRUE))
+   As[[3]] <- Matrix(diag(1:100), sparse=TRUE);
+
+for (i in 1:length(As)) {
+   A = As[[i]];
+   d <- primme.eigs_symm(A, 3);
+   stopifnot(all.equal(c(100,99,98), d$evals, tolerance=1e-7));
+
+   d <- primme.svds(A, 3);
+   stopifnot(all.equal(c(100,99,98), d$svals, tolerance=1e-7));
 }
