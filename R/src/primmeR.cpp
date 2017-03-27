@@ -1021,7 +1021,7 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
    ASSERT(chm->nrow == primme_svds->mLocal && chm->ncol == primme_svds->nLocal);
 
    cholmod_dense chx, chy;
-   chy.nrow = (*transpose ? primme_svds->mLocal : primme_svds->nLocal);
+   chx.nrow = (*transpose ? primme_svds->mLocal : primme_svds->nLocal);
    chx.ncol = *blockSize;
    chx.nzmax = chx.nrow*chx.ncol;
    chx.d = *ldx;
