@@ -34,6 +34,7 @@ Optionally for building some of the external interfaces just do::
     make R_install
 
 Alternatively to install the development version of PRIMME on R:
+
 ``` r
 library(devtools)
 install_github("primme/primme", subdir="R")
