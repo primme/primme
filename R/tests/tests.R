@@ -39,7 +39,7 @@ require(PRIMME)
 
 As <- list(diag(1:100), diag(as.complex(1:100)));
 if (requireNamespace("Matrix", quietly = TRUE))
-   As[[3]] <- Matrix(diag(1:100), sparse=TRUE);
+   As[[3]] <- Matrix::Matrix(diag(1:100), sparse=TRUE);
 
 for (i in 1:length(As)) {
    A = As[[i]];
