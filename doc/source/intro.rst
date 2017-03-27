@@ -46,13 +46,12 @@ Changes in PRIMME 2.1 (released on XXX):
 
 * New stopping criteria in QMR that improve performance in interior problems.
 
-* MATLAB interface for singular value problems, :mat:func:`primme_svds`.
+* MATLAB interface reimplementation with support for singular value problems, :mat:func:`primme_svds`,
+  and single precision, and compatible with Octave.
+
+* R interface
 
 * Proper convergence history for singular value solvers.
-
-* Single precision support in MATLAB interface.
-
-* Support Octave.
 
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
