@@ -52,8 +52,8 @@ using namespace Rcpp;
 // Auxiliary functions and macros
 //
 
-#define ASSERT(X) if(!X) stop("This should happen (" #X "); but it isn't");
-#define CHKERR(X) if(X) stop("This shouldn't happen (" #X ")");
+#define ASSERT(X) if(!(X)) stop("This should happen (" #X "); but it isn't");
+#define CHKERR(X) if((X)) stop("This shouldn't happen (" #X ")");
 
 // Template version of dprimme and zprimme
 
