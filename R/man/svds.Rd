@@ -5,7 +5,8 @@
 \title{Find a few singular values and vectors on large, sparse matrix}
 \usage{
 svds(A, NSvals, which = "L", tol = 1e-06, u0 = NULL, v0 = NULL,
-  orthou = NULL, orthov = NULL, prec = NULL, isreal = NULL, ...)
+  orthou = NULL, orthov = NULL, prec = NULL, isreal = NULL,
+  method = NULL, methodStage1 = NULL, methodStage2 = NULL, ...)
 }
 \arguments{
 \item{A}{matrix or a function with signature f(x, trans) that returns
@@ -106,8 +107,8 @@ Optional arguments to pass to PRIMME eignesolver (see further details at
       }                   
    }
    \item{\code{locking}}{1, hard locking; 0, soft locking}
-   \item{\code{primmeStage1, primmeStage2}}{list with options for ithe first
-      and the second stage solver; see \code{\link{primme.eigs_symm}}}
+   \item{\code{primmeStage1, primmeStage2}}{list with options for the first
+      and the second stage solver; see \code{\link{eigs_sym}}}
 }
 
 If \code{method} is \code{"primme_svds_normalequation"}, the minimum
