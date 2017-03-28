@@ -32,16 +32,16 @@ library(PRIMME)
 Eigenvalue problems
 -------------------
 
-The next example computes the three largest eigenvalues of the matrix `A`, which in this case is a dense diagonal matrix. It shows all the eigenvalues `evals`, the eigenvectors `evecs`, the residual norms `rnorms` and some stats, such as the time `stats$elapsedTime` and the number of matrix vector multiplications performed `stats$numMatvecs`:
+The next example computes the three largest eigenvalues of the matrix `A`, which in this case is a dense diagonal matrix. It shows all the eigenvalues `values`, the eigenvectors `vectors`, the residual norms `rnorms` and some stats, such as the time `stats$elapsedTime` and the number of matrix vector multiplications performed `stats$numMatvecs`:
 
 ``` r
 A <- diag(1:10) 
-r <- primme.eigs_symm(A, 3);
+r <- eigs_sym(A, 3);
 r
-#> $evals
+#> $values
 #> [1] 10  9  8
 #> 
-#> $evecs
+#> $vectors
 #>                [,1]          [,2]          [,3]
 #>  [1,] -7.907476e-17  1.440058e-16  1.683224e-17
 #>  [2,] -2.158240e-17 -4.239230e-17 -2.406929e-17
@@ -79,12 +79,12 @@ The next examples show how to compute eigenvalues in other parts of the spectrum
 ``` r
 A <- diag(1:10)
 
-r <- primme.eigs_symm(A, 3, 'SA'); # compute the three smallest values
-r$evals
+r <- eigs_sym(A, 3, 'SA'); # compute the three smallest values
+r$values
 #> [1] 1 2 3
 
-r <- primme.eigs_symm(A, 3, 5.1); # compute the three closest values to 5.1
-r$evals
+r <- eigs_sym(A, 3, 5.1); # compute the three closest values to 5.1
+r$values
 #> [1] 5 6 4
 ```
 
@@ -93,13 +93,13 @@ In some cases, a larger convergence tolerance may suffice:
 ``` r
 A <- diag(1:1000)
 
-r <- primme.eigs_symm(A, 10, 'SA');
+r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
 #> [1] 643
 r$stats$elapsedTime
 #> [1] 1.645482
 
-r <- primme.eigs_symm(A, 10, 'SA', tol=1e-4); 
+r <- eigs_sym(A, 10, 'SA', tol=1e-4); 
 r$stats$numMatvecs
 #> [1] 359
 r$stats$elapsedTime
@@ -113,13 +113,13 @@ Preconditioners, if available can reduce the time/matrix-vector multiplications 
 A <- diag(1:1000)
 for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
 
-r <- primme.eigs_symm(A, 10, 'SA');
+r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
 #> [1] 565
 
 # Jacobi preconditioner
 P = diag(diag(A));
-r <- primme.eigs_symm(A, 10, 'SA', prec=P);
+r <- eigs_sym(A, 10, 'SA', prec=P);
 r$stats$numMatvecs
 #> [1] 58
 ```
@@ -127,11 +127,11 @@ r$stats$numMatvecs
 Dense matrices, sparse matrices, and functions that return the matrix-vector product can be passed as the matrix problem `A`:
 
 ``` r
-r <- primme.eigs_symm(diag(1:10), 1); # dense matrix
+r <- eigs_sym(diag(1:10), 1); # dense matrix
 require(Matrix)
-r <- primme.eigs_symm(Matrix(diag(1:10), sparse=TRUE), 1); # sparse matrix
+r <- eigs_sym(Matrix(diag(1:10), sparse=TRUE), 1); # sparse matrix
 Afun = function(x) matrix(1:10)*x;  # function that does diag(1:10) %*% x
-r <- primme.eigs_symm(Afun, 1, n=10); # n is the matrix dimension corresponding to Afun
+r <- eigs_sym(Afun, 1, n=10); # n is the matrix dimension corresponding to Afun
 ```
 
 Singular value problems
@@ -141,12 +141,12 @@ For SVD problems, the package provides a similar interface:
 
 ``` r
 A <- diag(1:10, 20,10) # rectangular matrix of dimension 20x10
-r <- primme.svds(A, 3); # compute the three largest singular values
+r <- svds(A, 3); # compute the three largest singular values
 r
-#> $svals
+#> $d
 #> [1] 10  9  8
 #> 
-#> $svecsu
+#> $u
 #>                [,1]          [,2]          [,3]
 #>  [1,] -2.342300e-17 -6.664832e-18 -4.472334e-19
 #>  [2,] -3.604701e-17  2.200328e-17  4.239230e-17
@@ -169,7 +169,7 @@ r
 #> [19,]  0.000000e+00  0.000000e+00  0.000000e+00
 #> [20,]  0.000000e+00  0.000000e+00  0.000000e+00
 #> 
-#> $svecsv
+#> $v
 #>                [,1]          [,2]          [,3]
 #>  [1,] -2.342300e-16 -5.998349e-17 -3.577867e-18
 #>  [2,] -1.802351e-16  9.901476e-17  1.695692e-16
@@ -201,11 +201,11 @@ The next examples show how to compute the smallest singular values and how to sp
 ``` r
 A <- diag(1:100, 500,100)
 
-r <- primme.svds(A, 3, 'S'); # compute the three smallest values
-r$svals
+r <- svds(A, 3, 'S'); # compute the three smallest values
+r$d
 #> [1] 1 2 3
 
-r <- primme.svds(A, 3, 'S', tol=1e-5);
+r <- svds(A, 3, 'S', tol=1e-5);
 r$rnorms # this is should be smaller than ||A||*tol
 #> [1] 0.0010734258 0.0009443993 0.0011803952
 ```
@@ -214,12 +214,12 @@ The next example shows the use of a diagonal preconditioner based on \(A^*A\) (s
 
 ``` r
 A <- rbind(rep(1,n=100), diag(1:100, 500,100))
-r <- primme.svds(A, 3, 'S');
+r <- svds(A, 3, 'S');
 r$stats$numMatvecs
 #> [1] 764
 
 P = diag(diag(crossprod(A)));
-r <- primme.svds(A, 3, 'S', prec=list(AHA=P));
+r <- svds(A, 3, 'S', prec=list(AHA=P));
 r$stats$numMatvecs
 #> [1] 44
 ```
@@ -234,7 +234,7 @@ TODO
 A <- diag(1:1000)
 for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
 
-r <- primme.eigs_symm(A, 10, 'SA');
+r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
 #> [1] 571
 r$stats$elapsedTime
@@ -242,7 +242,7 @@ r$stats$elapsedTime
 
 # Jacobi preconditioner
 P = diag(diag(A));
-r <- primme.eigs_symm(A, 10, 'SA', prec=P);
+r <- eigs_sym(A, 10, 'SA', prec=P);
 r$stats$numMatvecs
 #> [1] 64
 r$stats$elapsedTime

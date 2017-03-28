@@ -72,8 +72,8 @@
 #' @param ... other PRIMME options (see details).
 #' @return list with the next elements
 #'    \describe{
-#'       \item{\code{evals}}{the eigenvalues \eqn{\lambda_i}}
-#'       \item{\code{evecs}}{the eigenvectors \eqn{x_i}}
+#'       \item{\code{values}}{the eigenvalues \eqn{\lambda_i}}
+#'       \item{\code{vectors}}{the eigenvectors \eqn{x_i}}
 #'       \item{\code{rnorms}}{the residual vector norms
 #'          \eqn{\|A x_i - \lambda_i x_i\|}{||A*x_i - lambda_i*x_i||}.}
 #'       \item{\code{stats$numMatvecs}}{matrix-vector products performed}
@@ -143,51 +143,51 @@
 #'
 #' @seealso
 #' \code{\link{eigen}} for computing all values;
-#' \code{\link{primme.svds}} for computing a few singular values
+#' \code{\link{svds}} for computing a few singular values
 #'
 #' @examples
 #' A <- diag(1:10)  # the eigenvalues of this matrix are 1:10 and the
 #'                  # eigenvectors are the columns of diag(10)
-#' r <- primme.eigs_symm(A, 3);
-#' r$evals  # the three largest eigenvalues on diag(1:10)
-#' r$evecs  # the corresponding approximate eigenvectors
+#' r <- eigs_sym(A, 3);
+#' r$values  # the three largest eigenvalues on diag(1:10)
+#' r$vectors # the corresponding approximate eigenvectors
 #' r$rnorms # the corresponding residual norms
 #' r$stats$numMatvecs # total matrix-vector products spend
 #'
-#' r <- primme.eigs_symm(A, 3, 'SA') # compute the three smallest values
+#' r <- eigs_sym(A, 3, 'SA') # compute the three smallest values
 #'
-#' r <- primme.eigs_symm(A, 3, 2.5) # compute the three closest values to 2.5
+#' r <- eigs_sym(A, 3, 2.5) # compute the three closest values to 2.5
 #'
-#' r <- primme.eigs_symm(A, 3, 2.5, tol=1e-3); # compute the values with
+#' r <- eigs_sym(A, 3, 2.5, tol=1e-3); # compute the values with
 #' r$rnorms                                    # residual norm <= 1e-3*||A||
 #'
 #' # Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
 #' # and see how reduce the number matrix-vector products
 #' A <- diag(1:1000)   # we use a larger matrix to amplify the difference
 #' P <- diag(diag(A) - 2.5)
-#' primme.eigs_symm(A, 3, 2.5, tol=1e-3)$stats$numMatvecs
-#' primme.eigs_symm(A, 3, 2.5, tol=1e-3, prec=P)$stats$numMatvecs
+#' eigs_sym(A, 3, 2.5, tol=1e-3)$stats$numMatvecs
+#' eigs_sym(A, 3, 2.5, tol=1e-3, prec=P)$stats$numMatvecs
 #' 
 #' # Passing A and the preconditioner as functions
 #' Af <- function(x) (1:100) * x; # = diag(1:100) %*% x
 #' Pf <- function(x) x / (1:100 - 2.5); # = solve(diag(1:100 - 2.5), x)
-#' r <- primme.eigs_symm(Af, 3, 2.5, tol=1e-3, prec=Pf, n=100)
+#' r <- eigs_sym(Af, 3, 2.5, tol=1e-3, prec=Pf, n=100)
 #'
 #' # Passing initial guesses
 #' A <- diag(1:1000)   # we use a larger matrix to amplify the difference
 #' x0 <- diag(1,1000,4) + matrix(rnorm(4000), 1000, 4)/100;
-#' primme.eigs_symm(A, 4, "SA", tol=1e-3)$stats$numMatvecs
-#' primme.eigs_symm(A, 4, "SA", tol=1e-3, x0=x0)$stats$numMatvecs
+#' eigs_sym(A, 4, "SA", tol=1e-3)$stats$numMatvecs
+#' eigs_sym(A, 4, "SA", tol=1e-3, x0=x0)$stats$numMatvecs
 #' 
 #' # Passing orthogonal constrain, in this case, already compute eigenvectors
-#' r <- primme.eigs_symm(A, 4, "SA", tol=1e-3); r$evals
-#' primme.eigs_symm(A, 4, "SA", tol=1e-3, ortho=r$evecs)$evals
+#' r <- eigs_sym(A, 4, "SA", tol=1e-3); r$values
+#' eigs_sym(A, 4, "SA", tol=1e-3, ortho=r$vectors)$values
 #' 
 #' @useDynLib PRIMME
 #' @importFrom Rcpp evalCpp
 #' @export
 
-primme.eigs_symm <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
+eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
       x0=NULL, ortho=NULL, prec=NULL, isreal=NULL, ...) {
 
    # Extra arguments are considered PRIMME options

@@ -43,9 +43,9 @@ if (requireNamespace("Matrix", quietly = TRUE))
 
 for (i in 1:length(As)) {
    A = As[[i]];
-   d <- primme.eigs_symm(A, 3);
-   stopifnot(all.equal(c(100,99,98), d$evals, tolerance=1e-7));
+   d <- eigs_sym(A, 3);
+   stopifnot(all.equal(c(100,99,98), d$values, tolerance=1e-7));
 
-   d <- primme.svds(A, 3);
-   stopifnot(all.equal(c(100,99,98), d$svals, tolerance=1e-7));
+   d <- svds(A, 3);
+   stopifnot(all.equal(c(100,99,98), d$d, tolerance=1e-7));
 }

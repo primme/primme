@@ -655,8 +655,8 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
    // Return
    return List::create(
       Named("ret") = IntegerVector::create(ret),
-      Named("evals") = vevals,
-      Named("evecs") = revecs,
+      Named("values") = vevals,
+      Named("vectors") = revecs,
       Named("rnorms") = vrnorms);
 }
 
@@ -1147,9 +1147,9 @@ static List xprimme_svds(Matrix<S> orthol, Matrix<S> orthor, Matrix<S> initl,
    // Return
    return List::create(
       Named("ret") = IntegerVector::create(ret),
-      Named("svals") = vsvals,
-      Named("svecsu") = svecsl,
-      Named("svecsv") = svecsr,
+      Named("d") = vsvals,
+      Named("u") = svecsl,
+      Named("v") = svecsr,
       Named("rnorms") = vrnorms);
 }
 
