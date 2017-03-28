@@ -286,21 +286,23 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Initialize counters and flags                                  */
    /* -------------------------------------------------------------- */
 
-   primme->stats.numOuterIterations = 0;
-   primme->stats.numRestarts = 0;
-   primme->stats.numMatvecs = 0;
-   primme->stats.elapsedTime = 0.0;
-   primme->stats.timeMatvec = 0.0;
-   primme->stats.timePrecond = 0.0;
-   primme->stats.timeOrtho = 0.0;
-   primme->stats.timeGlobalSum = 0.0;
-   primme->stats.volumeGlobalSum = 0.0;
-   primme->stats.numOrthoInnerProds = 0.0;
-   primme->stats.estimateMaxEVal   = -HUGE_VAL;
-   primme->stats.estimateMinEVal   = HUGE_VAL;
-   primme->stats.estimateLargestSVal = -HUGE_VAL;
-   primme->stats.maxConvTol        = 0.0L;
-   primme->stats.estimateResidualError = 0.0L;
+   primme->stats.numOuterIterations            = 0; 
+   primme->stats.numRestarts                   = 0;
+   primme->stats.numMatvecs                    = 0;
+   primme->stats.numPreconds                   = 0;
+   primme->stats.numGlobalSum                  = 0;
+   primme->stats.volumeGlobalSum               = 0;
+   primme->stats.numOrthoInnerProds            = 0.0;
+   primme->stats.elapsedTime                   = 0.0;
+   primme->stats.timeMatvec                    = 0.0;
+   primme->stats.timePrecond                   = 0.0;
+   primme->stats.timeOrtho                     = 0.0;
+   primme->stats.timeGlobalSum                 = 0.0;
+   primme->stats.estimateMinEVal               = HUGE_VAL;
+   primme->stats.estimateMaxEVal               = -HUGE_VAL;
+   primme->stats.estimateLargestSVal           = -HUGE_VAL;
+   primme->stats.maxConvTol                    = 0.0;
+   primme->stats.estimateResidualError         = 0.0;
 
    numLocked = 0;
    converged = FALSE;

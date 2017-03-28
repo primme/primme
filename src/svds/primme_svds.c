@@ -88,6 +88,24 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
       int *err);
 
+#define UPDATE_STATS(PRIMME_SVDS_STATS, OP, PRIMME_STATS) {\
+   (PRIMME_SVDS_STATS).numOuterIterations OP  (PRIMME_STATS).numOuterIterations;\
+   (PRIMME_SVDS_STATS).numRestarts        OP  (PRIMME_STATS).numRestarts       ;\
+   /* NOTE: for the augmented and for normal equations, every matvec for the  */\
+   /* eigensolver involves the direct and the transpose matrix-vector product */\
+   (PRIMME_SVDS_STATS).numMatvecs         OP  (PRIMME_STATS).numMatvecs*2      ;\
+   (PRIMME_SVDS_STATS).numPreconds        OP  (PRIMME_STATS).numPreconds       ;\
+   (PRIMME_SVDS_STATS).numGlobalSum       OP  (PRIMME_STATS).numGlobalSum      ;\
+   (PRIMME_SVDS_STATS).volumeGlobalSum    OP  (PRIMME_STATS).volumeGlobalSum   ;\
+   (PRIMME_SVDS_STATS).numOrthoInnerProds OP  (PRIMME_STATS).numOrthoInnerProds;\
+   (PRIMME_SVDS_STATS).elapsedTime        OP  (PRIMME_STATS).elapsedTime       ;\
+   (PRIMME_SVDS_STATS).timeMatvec         OP  (PRIMME_STATS).timeMatvec        ;\
+   (PRIMME_SVDS_STATS).timePrecond        OP  (PRIMME_STATS).timePrecond       ;\
+   (PRIMME_SVDS_STATS).timeOrtho          OP  (PRIMME_STATS).timeOrtho         ;\
+   (PRIMME_SVDS_STATS).timeGlobalSum      OP  (PRIMME_STATS).timeGlobalSum     ;\
+}
+
+
 /*******************************************************************************
  * Subroutine Sprimme_svds - This routine is a front end used to perform 
  *    error checking on the input parameters, perform validation, 
@@ -170,6 +188,23 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    if (!primme_svds->monitorFun) {
       primme_svds->monitorFun = default_monitor;
    }
+
+   /* ----------------------- */
+   /* Reset stats             */
+   /* ----------------------- */
+
+   primme_svds->stats.numOuterIterations            = 0; 
+   primme_svds->stats.numRestarts                   = 0;
+   primme_svds->stats.numMatvecs                    = 0;
+   primme_svds->stats.numPreconds                   = 0;
+   primme_svds->stats.numGlobalSum                  = 0;
+   primme_svds->stats.volumeGlobalSum               = 0;
+   primme_svds->stats.numOrthoInnerProds            = 0.0;
+   primme_svds->stats.elapsedTime                   = 0.0;
+   primme_svds->stats.timeMatvec                    = 0.0;
+   primme_svds->stats.timePrecond                   = 0.0;
+   primme_svds->stats.timeOrtho                     = 0.0;
+   primme_svds->stats.timeGlobalSum                 = 0.0;
 
    /* --------------- */
    /* Execute stage 1 */
@@ -616,14 +651,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    }
 
    /* Record performance measurements */ 
-   primme_svds->stats.numOuterIterations += primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        += primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         += primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        += primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        += primme->stats.elapsedTime;
-
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    if (primme->aNorm > 0.0) {
       switch(method) {
@@ -1251,13 +1279,7 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFl
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
-   primme_svds->stats.numOuterIterations = primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        = primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         = primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        = primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        = primme_wTimer(0);
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    /* Call the user function report */
 
@@ -1360,13 +1382,7 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
-   primme_svds->stats.numOuterIterations = primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        = primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         = primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        = primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        = primme_wTimer(0);
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    /* Call the user function report */
 
@@ -1453,13 +1469,7 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
-   primme_svds->stats.numOuterIterations = primme_svds->primme.stats.numOuterIterations + primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        = primme_svds->primme.stats.numRestarts        + primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         = primme_svds->primme.stats.numMatvecs*2       + primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        = primme_svds->primme.stats.numPreconds        + primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        = primme_svds->primme.stats.elapsedTime        + primme_wTimer(0);
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    /* Call the user function report */
 

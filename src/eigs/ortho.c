@@ -371,6 +371,8 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       return 0;
    }
 
+   double t0 = primme_wTimer(0);
+
    assert((size_t)nQ*nX*2 + (size_t)m*nX <= *lrwork);
 
    /* Warning: norms0 and y overlap, so don't use them at the same time */
@@ -401,6 +403,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
                y, nQ);
       }
    }
+   primme->stats.numOrthoInnerProds += nQ*nX;
 
    /* Store the reduction of y in y0 */
    CHKERR(globalSum_Sprimme(y, y0, nQ*nX, primme), -1);
@@ -433,7 +436,10 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       CHKERR(globalSum_Rprimme(norms0, norms, nX, primme), -1);
  
       for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
+      primme->stats.numOrthoInnerProds += nX;
    }
+
+   primme->stats.timeOrtho += primme_wTimer(0) - t0;
 
    return 0;
 }

@@ -96,7 +96,14 @@ C-------------------------------------------------------
      : PRIMME_SVDS_stats_numRestarts,
      : PRIMME_SVDS_stats_numMatvecs,
      : PRIMME_SVDS_stats_numPreconds,
+     : PRIMME_SVDS_stats_numGlobalSum,
+     : PRIMME_SVDS_stats_volumeGlobalSum,
+     : PRIMME_SVDS_stats_numOrthoInnerProds,
      : PRIMME_SVDS_stats_elapsedTime,
+     : PRIMME_SVDS_stats_timeMatvec,
+     : PRIMME_SVDS_stats_timePrecond,
+     : PRIMME_SVDS_stats_timeOrtho,
+     : PRIMME_SVDS_stats_timeGlobalSum,
      : PRIMME_SVDS_monitorFun,
      : PRIMME_SVDS_monitor
 
@@ -141,7 +148,14 @@ C-------------------------------------------------------
      : PRIMME_SVDS_stats_numRestarts = 37,
      : PRIMME_SVDS_stats_numMatvecs = 38,
      : PRIMME_SVDS_stats_numPreconds = 39,
+     : PRIMME_SVDS_stats_numGlobalSum = 391,
+     : PRIMME_SVDS_stats_volumeGlobalSum = 392,
+     : PRIMME_SVDS_stats_numOrthoInnerProds = 393,
      : PRIMME_SVDS_stats_elapsedTime = 40,
+     : PRIMME_SVDS_stats_timeMatvec = 401,
+     : PRIMME_SVDS_stats_timePrecond = 402,
+     : PRIMME_SVDS_stats_timeOrtho = 403,
+     : PRIMME_SVDS_stats_timeGlobalSum = 404,
      : PRIMME_SVDS_monitorFun = 41,
      : PRIMME_SVDS_monitor = 42
      :)
