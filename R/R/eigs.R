@@ -143,7 +143,7 @@
 #'
 #' @seealso
 #' \code{\link{eigen}} for computing all values;
-#' \code{\link{primme.svds}} for computing a few singular values
+#' \code{\link{svds}} for computing a few singular values
 #'
 #' @examples
 #' A <- diag(1:10)  # the eigenvalues of this matrix are 1:10 and the

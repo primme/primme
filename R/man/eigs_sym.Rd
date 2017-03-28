@@ -123,7 +123,7 @@ A <- diag(1:10)  # the eigenvalues of this matrix are 1:10 and the
                  # eigenvectors are the columns of diag(10)
 r <- eigs_sym(A, 3);
 r$values  # the three largest eigenvalues on diag(1:10)
-r$vectors  # the corresponding approximate eigenvectors
+r$vectors # the corresponding approximate eigenvectors
 r$rnorms # the corresponding residual norms
 r$stats$numMatvecs # total matrix-vector products spend
 
@@ -167,5 +167,5 @@ eigs_sym(A, 4, "SA", tol=1e-3, ortho=r$vectors)$values
 }
 \seealso{
 \code{\link{eigen}} for computing all values;
-\code{\link{primme.svds}} for computing a few singular values
+\code{\link{svds}} for computing a few singular values
 }
