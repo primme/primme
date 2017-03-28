@@ -187,8 +187,7 @@
 #' @export
 
 svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
-      orthou=NULL, orthov=NULL, prec=NULL, isreal=NULL, method=NULL,
-      methodStage1=NULL, methodStage2=NULL, ...) {
+      orthou=NULL, orthov=NULL, prec=NULL, isreal=NULL, ...) {
 
    # Extra arguments are considered PRIMME options
    opts <- list(...);
@@ -306,6 +305,14 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
          else function(v) solve(x, v);
      precf <- function(x, mode) tofunc(prec[[mode]])(x);
    }
+
+   # Extract method* from opts
+   method <- opts$method;
+   opts$method <- NULL;
+   methodStage1 <- opts$methodStage1
+   opts$methodStage1 <- NULL;
+   methodStage2 <- opts$methodStage2;
+   opts$methodStage2 <- NULL;
 
    # Process isreal
    if (!is.null(isreal) && !is.logical(isreal)) {
