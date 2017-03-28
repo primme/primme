@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
                  Primme.py: A Python Interface for PRIMME
    
-Copyright (c) 2016, College of William & Mary
+Copyright (c) 2017, College of William & Mary
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
