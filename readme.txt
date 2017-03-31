@@ -55,12 +55,12 @@ PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ********************************************************
 
 PRIMME, pronounced as *prime*, finds a number of eigenvalues and their
-corresponding eigenvectors of a real symmetric, or Hermitian matrix.
-Also singular values and vectors can be computed. Largest, smallest
-and interior eigenvalues and singular values are supported.
-Preconditioning can be used to accelerate convergence. PRIMME is
-written in C99, but complete interfaces are provided for Fortran 77,
-MATLAB and Python.
+corresponding eigenvectors of a real symmetric or Hermitian matrix. It
+can also compute singular values and vectors of a square or
+rectangular matrix. Largest, smallest, and interior eigenvalues and
+singular values are supported. Preconditioning can be used to
+accelerate convergence. PRIMME is written in C99, but complete
+interfaces are provided for Fortran 77, MATLAB, Python, and R.
 
 
 Incompatibilities
@@ -107,13 +107,13 @@ Changes in PRIMME 2.1 (released on XXX):
 * New stopping criteria in QMR that improve performance in interior
   problems.
 
-* MATLAB interface for singular value problems, "primme_svds()".
+* MATLAB interface reimplementation with support for singular value
+  problems, "primme_svds()", and single precision, and compatible with
+  Octave.
+
+* R interface
 
 * Proper convergence history for singular value solvers.
-
-* Single precision support in MATLAB interface.
-
-* Support Octave.
 
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
@@ -418,6 +418,8 @@ Full description of actions that *make* can take:
 * *make octave*, builds *libprimme.a* and the Octave module.
 
 * *make python*, builds *libprimme.a* and the Python module.
+
+* *make R_install*, builds and installs the R package.
 
 * *make test*, build and execute simple examples.
 
@@ -2976,6 +2978,11 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
        http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-
        methods
 
+   [3] A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
+       Iterative MultiMethod Eigensolver: Methods and software
+       description, ACM Transaction on Mathematical Software Vol. 37,
+       No. 2, (2010), 21:1-21:30.
+
    -[ Examples ]-
 
    >>> import Primme, scipy.sparse
@@ -4304,10 +4311,10 @@ primme_svds_params
 
       double eps
 
-         A triplet is marked as converged when the 2-norm of the
-         residual vectors is less than "eps" * "aNorm". The residual
-         vectors are A v - \sigma u and A^* u - \sigma v for the
-         triplet (u,\sigma,v).
+         A triplet (u,\sigma,v) is marked as converged when \sqrt{\|A
+         v - \sigma u\|^2 + \|A^* u - \sigma v\|^2} is less than "eps"
+         * "aNorm", or close to the minimum tolerance that the
+         selected method can achieve. See Preset Methods.
 
          The default value is machine precision times 10^4.
 
@@ -4841,6 +4848,10 @@ primme_svds_preset_method
       than "n", and to "primme_svds_op_AAt" otherwise; and
       "methodStage2" is set to "primme_svds_op_none".
 
+      The minimum tolerance that this method can achieve is
+      \|A\|\epsilon\sigma^{-1}, where \epsilon is the machine
+      precision.
+
    primme_svds_augmented
 
       Solve the equivalent eigenvalue problem \left(\begin{array}{cc}
@@ -4850,6 +4861,11 @@ primme_svds_preset_method
       With "primme_svds_augmented" "primme_svds_set_method()" sets
       "method" to "primme_svds_op_augmented" and "methodStage2" to
       "primme_svds_op_none".
+
+      The minimum tolerance that this method can achieve is
+      \|A\|\epsilon, where \epsilon is the machine precision. However
+      it may not return triplets with singular values smaller than
+      \|A\|\epsilon.
 
    primme_svds_hybrid
 
@@ -4861,6 +4877,11 @@ primme_svds_preset_method
       sets "method" to "primme_svds_op_AtA" if "m" is larger or equal
       than "n", and to "primme_svds_op_AAt" otherwise; and
       "methodStage2" is set to "primme_svds_op_augmented".
+
+      The minimum tolerance that this method can achieve is
+      \|A\|\epsilon, where \epsilon is the machine precision. However
+      it may not return triplets with singular values smaller than
+      \|A\|\epsilon if "eps" is smaller than \|A\|\epsilon\sigma^{-1}.
 
 Python Interface
 ****************
@@ -4879,8 +4900,15 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
       * **ncv** (*int**, **optional*) -- The maximum size of the
         basis
 
-      * **tol** (*float**, **optional*) -- Tolerance for singular
-        values. Zero (default) means machine precision.
+      * **tol** (*float**, **optional*) --
+
+        Tolerance for singular values. Zero (default) means machine
+        precision.
+
+        A triplet (u,sigma,v)` is marked as converged when (||A*v -
+        sigma*u||^2 + ||A.H*u - sigma*v||^2)**.5` is less than "tol" *
+        ||A||, or close to the minimum tolerance that the method can
+        achieve. See the note.
 
       * **which** (*str** [**'LM' | 'SM'**] or **number**,
         **optional*) --
@@ -4982,6 +5010,27 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
           * "eval": eigenvalue of the first unconverged pair
 
           * "resNorm": residual norm of the first unconverged pair
+
+   -[ Notes ]-
+
+   The default method used is the hybrid method, which first solves
+   the equivalent eigenvalue problem A.H*A or A*A.H (normal equations)
+   and then refines the solution solving the augmented problem. The
+   minimum tolerance that this method can achieve is ||A||*epsilon,
+   where epsilon` is the machine precision. However it may not return
+   triplets with singular values smaller than ||A||*epsilon`if "tol"
+   is smaller than ||A||*epsilon/sigma.`.
+
+   This function is a wrapper to PRIMME functions to find singular
+   values and vectors [1].
+
+   -[ References ]-
+
+   [1] PRIMME Software, https://github.com/primme/primme
+
+   [2] L. Wu, E. Romero and A. Stathopoulos, PRIMME_SVDS: A High-
+       Performance Preconditioned SVD Solver for Accurate Large-Scale
+       Computations. https://arxiv.org/abs/1607.01404
 
    See also:
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,14 @@ typedef struct primme_svds_stats {
    PRIMME_INT numRestarts;
    PRIMME_INT numMatvecs;
    PRIMME_INT numPreconds;
-   double elapsedTime;
+   PRIMME_INT numGlobalSum;         /* times called globalSumReal */
+   PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
+   double numOrthoInnerProds;       /* number of inner prods done by Ortho */
+   double elapsedTime; 
+   double timeMatvec;               /* time expend by matrixMatvec */
+   double timePrecond;              /* time expend by applyPreconditioner */
+   double timeOrtho;                /* time expend by ortho  */
+   double timeGlobalSum;            /* time expend by globalSumReal  */
 } primme_svds_stats;
 
 typedef struct primme_svds_params {
@@ -182,7 +189,14 @@ typedef enum {
    PRIMME_SVDS_stats_numRestarts = 37,
    PRIMME_SVDS_stats_numMatvecs = 38,
    PRIMME_SVDS_stats_numPreconds = 39,
+   PRIMME_SVDS_stats_numGlobalSum = 391,
+   PRIMME_SVDS_stats_volumeGlobalSum = 392,
+   PRIMME_SVDS_stats_numOrthoInnerProds = 393,
    PRIMME_SVDS_stats_elapsedTime = 40,
+   PRIMME_SVDS_stats_timeMatvec = 401,
+   PRIMME_SVDS_stats_timePrecond = 402,
+   PRIMME_SVDS_stats_timeOrtho = 403,
+   PRIMME_SVDS_stats_timeGlobalSum = 404,
    PRIMME_SVDS_monitorFun = 41,
    PRIMME_SVDS_monitor = 42
 } primme_svds_params_label;

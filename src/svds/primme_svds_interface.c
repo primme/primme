@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,11 +104,18 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->numOrthoConst           = 0;
 
    /* Reporting performance */
-   primme_svds->stats.numOuterIterations= 0;
-   primme_svds->stats.numRestarts       = 0;
-   primme_svds->stats.numMatvecs        = 0;
-   primme_svds->stats.numPreconds       = 0;
-   primme_svds->stats.elapsedTime       = 0.0L;
+   primme_svds->stats.numOuterIterations            = 0; 
+   primme_svds->stats.numRestarts                   = 0;
+   primme_svds->stats.numMatvecs                    = 0;
+   primme_svds->stats.numPreconds                   = 0;
+   primme_svds->stats.numGlobalSum                  = 0;
+   primme_svds->stats.volumeGlobalSum               = 0;
+   primme_svds->stats.numOrthoInnerProds            = 0.0;
+   primme_svds->stats.elapsedTime                   = 0.0;
+   primme_svds->stats.timeMatvec                    = 0.0;
+   primme_svds->stats.timePrecond                   = 0.0;
+   primme_svds->stats.timeOrtho                     = 0.0;
+   primme_svds->stats.timeGlobalSum                 = 0.0;
 
    /* Internally used variables */
    primme_svds->iseed[0] = -1;   /* To set iseed, we first need procID           */ 
@@ -639,8 +646,29 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_numPreconds :
          v->int_v = primme_svds->stats.numPreconds;
          break;
+      case PRIMME_SVDS_stats_numGlobalSum:
+         v->int_v = primme_svds->stats.numGlobalSum;
+         break;
+      case PRIMME_SVDS_stats_volumeGlobalSum:
+         v->int_v = primme_svds->stats.volumeGlobalSum;
+         break;
+      case PRIMME_SVDS_stats_numOrthoInnerProds:
+         v->double_v = primme_svds->stats.numOrthoInnerProds;
+         break;
       case PRIMME_SVDS_stats_elapsedTime :
          v->double_v = primme_svds->stats.elapsedTime;
+         break;
+      case PRIMME_SVDS_stats_timeMatvec:
+         v->double_v = primme_svds->stats.timeMatvec;
+         break;
+      case PRIMME_SVDS_stats_timePrecond:
+         v->double_v = primme_svds->stats.timePrecond;
+         break;
+      case PRIMME_SVDS_stats_timeOrtho:
+         v->double_v = primme_svds->stats.timeOrtho;
+         break;
+      case PRIMME_SVDS_stats_timeGlobalSum:
+         v->double_v = primme_svds->stats.timeGlobalSum;
          break;
       case PRIMME_SVDS_monitorFun:
          v->monitorFun_v = primme_svds->monitorFun;
@@ -828,8 +856,26 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_numPreconds :
          primme_svds->stats.numPreconds = *v.int_v;
          break;
+      case PRIMME_SVDS_stats_volumeGlobalSum:
+         primme_svds->stats.volumeGlobalSum = *v.int_v;
+         break;
+      case PRIMME_SVDS_stats_numOrthoInnerProds:
+         primme_svds->stats.numOrthoInnerProds = *v.double_v;
+         break;
       case PRIMME_SVDS_stats_elapsedTime :
          primme_svds->stats.elapsedTime = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_timeMatvec:
+         primme_svds->stats.timeMatvec = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_timePrecond:
+         primme_svds->stats.timePrecond = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_timeOrtho:
+         primme_svds->stats.timeOrtho = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_timeGlobalSum:
+         primme_svds->stats.timeGlobalSum = *v.double_v;
          break;
       case PRIMME_SVDS_monitorFun:
          primme_svds->monitorFun = v.monitorFun_v;
@@ -923,7 +969,14 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_numRestarts);
    IF_IS(stats_numMatvecs);
    IF_IS(stats_numPreconds);
+   IF_IS(stats_numGlobalSum);
+   IF_IS(stats_volumeGlobalSum);
+   IF_IS(stats_numOrthoInnerProds);
    IF_IS(stats_elapsedTime);
+   IF_IS(stats_timeMatvec);
+   IF_IS(stats_timePrecond);
+   IF_IS(stats_timeOrtho);
+   IF_IS(stats_timeGlobalSum);
    IF_IS(monitorFun);
    IF_IS(monitor);
 #undef IF_IS
@@ -956,6 +1009,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_stats_numRestarts:
       case PRIMME_SVDS_stats_numMatvecs:
       case PRIMME_SVDS_stats_numPreconds:
+      case PRIMME_SVDS_stats_numGlobalSum:
+      case PRIMME_SVDS_stats_volumeGlobalSum:
       case PRIMME_SVDS_iseed:
       case PRIMME_SVDS_numProcs: 
       case PRIMME_SVDS_procID: 
@@ -973,6 +1028,11 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_aNorm:
       case PRIMME_SVDS_eps:
       case PRIMME_SVDS_stats_elapsedTime:
+      case PRIMME_SVDS_stats_numOrthoInnerProds:
+      case PRIMME_SVDS_stats_timeMatvec:
+      case PRIMME_SVDS_stats_timePrecond:
+      case PRIMME_SVDS_stats_timeOrtho:
+      case PRIMME_SVDS_stats_timeGlobalSum:
       if (type) *type = primme_double;
       if (arity) *arity = 1;
       break;

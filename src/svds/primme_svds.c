@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,24 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
       int *err);
 
+#define UPDATE_STATS(PRIMME_SVDS_STATS, OP, PRIMME_STATS) {\
+   (PRIMME_SVDS_STATS).numOuterIterations OP  (PRIMME_STATS).numOuterIterations;\
+   (PRIMME_SVDS_STATS).numRestarts        OP  (PRIMME_STATS).numRestarts       ;\
+   /* NOTE: for the augmented and for normal equations, every matvec for the  */\
+   /* eigensolver involves the direct and the transpose matrix-vector product */\
+   (PRIMME_SVDS_STATS).numMatvecs         OP  (PRIMME_STATS).numMatvecs*2      ;\
+   (PRIMME_SVDS_STATS).numPreconds        OP  (PRIMME_STATS).numPreconds       ;\
+   (PRIMME_SVDS_STATS).numGlobalSum       OP  (PRIMME_STATS).numGlobalSum      ;\
+   (PRIMME_SVDS_STATS).volumeGlobalSum    OP  (PRIMME_STATS).volumeGlobalSum   ;\
+   (PRIMME_SVDS_STATS).numOrthoInnerProds OP  (PRIMME_STATS).numOrthoInnerProds;\
+   (PRIMME_SVDS_STATS).elapsedTime        OP  (PRIMME_STATS).elapsedTime       ;\
+   (PRIMME_SVDS_STATS).timeMatvec         OP  (PRIMME_STATS).timeMatvec        ;\
+   (PRIMME_SVDS_STATS).timePrecond        OP  (PRIMME_STATS).timePrecond       ;\
+   (PRIMME_SVDS_STATS).timeOrtho          OP  (PRIMME_STATS).timeOrtho         ;\
+   (PRIMME_SVDS_STATS).timeGlobalSum      OP  (PRIMME_STATS).timeGlobalSum     ;\
+}
+
+
 /*******************************************************************************
  * Subroutine Sprimme_svds - This routine is a front end used to perform 
  *    error checking on the input parameters, perform validation, 
@@ -170,6 +188,23 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    if (!primme_svds->monitorFun) {
       primme_svds->monitorFun = default_monitor;
    }
+
+   /* ----------------------- */
+   /* Reset stats             */
+   /* ----------------------- */
+
+   primme_svds->stats.numOuterIterations            = 0; 
+   primme_svds->stats.numRestarts                   = 0;
+   primme_svds->stats.numMatvecs                    = 0;
+   primme_svds->stats.numPreconds                   = 0;
+   primme_svds->stats.numGlobalSum                  = 0;
+   primme_svds->stats.volumeGlobalSum               = 0;
+   primme_svds->stats.numOrthoInnerProds            = 0.0;
+   primme_svds->stats.elapsedTime                   = 0.0;
+   primme_svds->stats.timeMatvec                    = 0.0;
+   primme_svds->stats.timePrecond                   = 0.0;
+   primme_svds->stats.timeOrtho                     = 0.0;
+   primme_svds->stats.timeGlobalSum                 = 0.0;
 
    /* --------------- */
    /* Execute stage 1 */
@@ -371,12 +406,19 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       /* |m-n| eigenpairs with value zero that don't correspond to         */
       /* singular triplets of A. To avoid to return incorrect triplets set */
       /* shifts not smaller than machEps*|A|.                              */
+      /* If d^2 and d'^2 are the exact and the approximate eigenvalues     */
+      /* from normal equations respectively, and assuming that d' >= d,    */
+      /* then d can be lower bounded as:                                   */
+      /*    d'^2 - d^2 <= |r_AtA| -> sqrt(d'^2-|r_AtA|) <= d               */
+      /*                             sqrt(d'^2-|r|*d')  <= d               */
 
+      double min_val = primme_svds->aNorm*machEps; 
       for (i=0; i<primme_svds->initSize; i++) {
-         primme->targetShifts[i] = max(svals[i]-rnorms[i], primme_svds->aNorm*machEps);
+         primme->targetShifts[i] = max(
+               sqrt(fabs(max(svals[i]-rnorms[i], 0.0)*svals[i])), min_val);
       }
       for ( ; i<primme_svds->numSvals; i++) {
-         primme->targetShifts[i] = primme_svds->aNorm*machEps;
+         primme->targetShifts[i] = min_val;
       }
 
       /* Sort the shifts in ascending order */
@@ -609,14 +651,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    }
 
    /* Record performance measurements */ 
-   primme_svds->stats.numOuterIterations += primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        += primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         += primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        += primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        += primme->stats.elapsedTime;
-
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    if (primme->aNorm > 0.0) {
       switch(method) {
@@ -1005,28 +1040,33 @@ static void convTestFunAugmented(double *eval, void *evec_, double *rNorm,
       
       /* ip[0] = ||evec[0:nLocal-1]|| = ||v|| */
       /* ip[1] = ||evec[nLocal:nLocal+mLocal-1]|| = ||u|| */
+      /* ip[2:4] = u'*A*v */
 
-      REAL ip0[2], ip[2];
+      REAL ip0[4], ip[4];
       ip0[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, evec, 1, evec,
                1));
       ip0[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal,
                &evec[primme_svds->nLocal], 1, &evec[primme_svds->nLocal], 1));
-      *ierr = globalSum_Rprimme_svds(ip0, ip, 2, primme_svds);
+      ip0[3] = 0.0;
+      *(SCALAR*)&ip0[2] = Num_dot_Sprimme(primme_svds->mLocal,
+               &evec[primme_svds->nLocal], 1, &r[primme_svds->nLocal], 1);
+      *ierr = globalSum_Rprimme_svds(ip0, ip, 4, primme_svds);
       if (*ierr != 0) return;
-
-      /* r[0:nLocal-1] = r[0:nLocal-1]/ip[1] - eval * evec[0:nLocal-1]/ip[0]  */
-      /*               = A'u/||u|| - eval*v/||v||                             */
+      ip[0] = sqrt(ip[0]);
+      ip[1] = sqrt(ip[1]);
+      SCALAR sval = *(SCALAR*)&ip[2]/ip[0]/ip[1];
+      /* r[0:nLocal-1] = r[0:nLocal-1]/ip[1] - sval * evec[0:nLocal-1]/ip[0]  */
+      /*               = A'u/||u|| - sval*v/||v||                             */
 
       Num_scal_Sprimme(primme_svds->nLocal, 1.0/ip[1], r, 1);
-      Num_axpy_Sprimme(primme_svds->nLocal, -(SCALAR)*eval/ip[1], evec, 1, r,
-            1);
+      Num_axpy_Sprimme(primme_svds->nLocal, -sval/ip[0], evec, 1, r, 1);
 
-      /* r[nLocal:end] = r[nLocal:end]/ip[1] - eval * evec[nLocal:end]/ip[0] */
-      /*               = Av/||v|| - eval*u/||u||                             */
+      /* r[nLocal:end] = r[nLocal:end]/ip[0] - sval * evec[nLocal:end]/ip[1] */
+      /*               = Av/||v|| - sval*u/||u||                             */
 
       Num_scal_Sprimme(primme_svds->mLocal, 1.0/ip[0], &r[primme_svds->nLocal],
             1);
-      Num_axpy_Sprimme(primme_svds->mLocal, -(SCALAR)*eval/ip[0],
+      Num_axpy_Sprimme(primme_svds->mLocal, -sval/ip[1],
             &evec[primme_svds->nLocal], 1, &r[primme_svds->nLocal], 1);
 
       /* normr = sqrt(||Av - su||^2 + ||A'u - sv||^2) */
@@ -1239,13 +1279,7 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFl
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
-   primme_svds->stats.numOuterIterations = primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        = primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         = primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        = primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        = primme_wTimer(0);
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    /* Call the user function report */
 
@@ -1313,7 +1347,7 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0) + numLocked0;
    REAL basisSvals[basisSize0], basisSVNorms[basisSize0];
    int basisSVFlags[basisSize0], iblockSV[blockSize?*blockSize:1];
-   int numConvergedSV = (numConverged?*numConverged:0) + numLocked0;
+   int numConvergedSV = (numConverged?*numConverged:numLocked0);
 
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
 
@@ -1348,13 +1382,7 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
-   primme_svds->stats.numOuterIterations = primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        = primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         = primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        = primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        = primme_wTimer(0);
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    /* Call the user function report */
 
@@ -1441,13 +1469,7 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
-   primme_svds->stats.numOuterIterations = primme_svds->primme.stats.numOuterIterations + primme->stats.numOuterIterations;
-   primme_svds->stats.numRestarts        = primme_svds->primme.stats.numRestarts        + primme->stats.numRestarts;
-   primme_svds->stats.numMatvecs         = primme_svds->primme.stats.numMatvecs*2       + primme->stats.numMatvecs*2;
-   /* NOTE: for the augmented and for normal equations, every matvec for the  */
-   /* eigensolver involves the direct and the transpose matrix-vector product */
-   primme_svds->stats.numPreconds        = primme_svds->primme.stats.numPreconds        + primme->stats.numPreconds;
-   primme_svds->stats.elapsedTime        = primme_svds->primme.stats.elapsedTime        + primme_wTimer(0);
+   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
    /* Call the user function report */
 

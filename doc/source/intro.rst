@@ -3,11 +3,13 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
 
-PRIMME, pronounced as *prime*, finds a number of eigenvalues and their corresponding eigenvectors of a 
-real symmetric, or Hermitian matrix. Also singular values and vectors can be computed. Largest, smallest and interior 
-eigenvalues and singular values are supported. Preconditioning can be used to accelerate 
-convergence. 
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB and Python.
+PRIMME, pronounced as *prime*, finds a number of eigenvalues and their
+corresponding eigenvectors of a real symmetric or Hermitian matrix.
+It can also compute singular values and vectors of a square or rectangular
+matrix. Largest, smallest, and interior eigenvalues and singular values
+are supported. Preconditioning can be used to accelerate convergence.
+PRIMME is written in C99, but complete interfaces are provided for
+Fortran 77, MATLAB, Python, and R.
   
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
@@ -44,13 +46,12 @@ Changes in PRIMME 2.1 (released on XXX):
 
 * New stopping criteria in QMR that improve performance in interior problems.
 
-* MATLAB interface for singular value problems, :mat:func:`primme_svds`.
+* MATLAB interface reimplementation with support for singular value problems, :mat:func:`primme_svds`,
+  and single precision, and compatible with Octave.
+
+* R interface
 
 * Proper convergence history for singular value solvers.
-
-* Single precision support in MATLAB interface.
-
-* Support Octave.
 
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
@@ -325,6 +326,7 @@ Full description of actions that `make` can take:
 * `make matlab`, builds `libprimme.a` compatible with MATLAB and the MATLAB module.
 * `make octave`, builds `libprimme.a` and the Octave module.
 * `make python`, builds `libprimme.a` and the Python module.
+* `make R_install`, builds and installs the R package.
 * `make test`, build and execute simple examples.
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
 

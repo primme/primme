@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -767,6 +767,7 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
 
       for (i=0; i<*restartSize; i++)
          fakeResNorms[i] = aNorm*machEps;
+      primme->stats.estimateResidualError = 0;
       assert(rworkSize0 >= (size_t)*restartSize);
       rworkSize0 -= (size_t)*restartSize;
       CHKERR(check_convergence_Sprimme(V, nLocal, ldV, NULL, 0, NULL, 0, 0,

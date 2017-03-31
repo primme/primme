@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib clean test all_tests check_style matlab octave python tags
+.PHONY: lib clean test all_tests check_style matlab octave python R_install tags
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
@@ -40,13 +40,14 @@ matlab:
 	@make clean lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64"
 	@make -C Matlab matlab
 
-octave:
-	@make clean lib
+octave: clean lib
 	@make -C Matlab octave
 
-python:
-	@make clean lib
+python: clean lib
 	@make -C Python
+
+R_install: clean
+	@R CMD INSTALL R
 
 check_style:
 	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true

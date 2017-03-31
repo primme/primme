@@ -1,0 +1,164 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+#PRIMME
+This package is an interface to PRIMME, a C library for computing a 
+few eigenvalues and their corresponding eigenvectors of a real symmetric or 
+complex Hermitian matrix. It can also compute singular values and vectors. 
+It can find largest, smallest, or interior eigenvalues or singular values 
+and can use preconditioning to accelerate convergence. It is a useful tool 
+for both non-experts and experts.
+
+Use the following two references to cite this package:
+
+* A. Stathopoulos and J. R. McCombs *PRIMME: PReconditioned Iterative
+  MultiMethod Eigensolver: Methods and software description*, ACM
+  Transaction on Mathematical Software Vol. 37, No. 2, (2010),
+  21:1-21:30.
+
+* L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
+  Preconditioned SVD Solver for Accurate Large-Scale Computations*,
+  arXiv:1607.01404
+
+#Installation Instructions
+We are currently working to put the PRIMME package on CRAN. 
+Meanwhile, to install the latest version:
+```{r, eval=FALSE}
+library(devtools)
+install_github("primme/primme", subdir="R")
+```
+
+#Usage
+Load the package as usual:
+```{r results='hide'}
+library(PRIMME)
+```
+## Eigenvalue problems
+The next example computes the three largest eigenvalues of the matrix `A`,
+which in this case is a dense diagonal matrix. It shows all the eigenvalues
+`values`, the eigenvectors `vectors`, the residual norms `rnorms` and some stats,
+such as the time `stats$elapsedTime` and the number of matrix vector
+multiplications performed `stats$numMatvecs`:
+```{r }
+A <- diag(1:10) 
+r <- eigs_sym(A, 3);
+r
+```
+
+The next examples show how to compute eigenvalues in other parts of the spectrum:
+```{r }
+A <- diag(1:10)
+
+r <- eigs_sym(A, 3, 'SA'); # compute the three smallest values
+r$values
+
+r <- eigs_sym(A, 3, 5.1); # compute the three closest values to 5.1
+r$values
+```
+
+In some cases, a larger convergence tolerance may suffice: 
+```{r }
+A <- diag(1:1000)
+
+r <- eigs_sym(A, 10, 'SA');
+r$stats$numMatvecs
+r$stats$elapsedTime
+
+r <- eigs_sym(A, 10, 'SA', tol=1e-4); 
+r$stats$numMatvecs
+r$stats$elapsedTime
+```
+
+Preconditioners, if available can reduce the time/matrix-vector multiplications significantly (see TODO):
+```{r }
+# A is a tridiagonal
+A <- diag(1:1000)
+for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
+
+r <- eigs_sym(A, 10, 'SA');
+r$stats$numMatvecs
+
+# Jacobi preconditioner
+P = diag(diag(A));
+r <- eigs_sym(A, 10, 'SA', prec=P);
+r$stats$numMatvecs
+```
+
+Dense matrices, sparse matrices, and functions that return the matrix-vector
+product can be passed as the matrix problem `A`:
+```{r results='hide'}
+r <- eigs_sym(diag(1:10), 1); # dense matrix
+require(Matrix)
+r <- eigs_sym(Matrix(diag(1:10), sparse=TRUE), 1); # sparse matrix
+Afun = function(x) matrix(1:10)*x;  # function that does diag(1:10) %*% x
+r <- eigs_sym(Afun, 1, n=10); # n is the matrix dimension corresponding to Afun
+```
+
+## Singular value problems
+For SVD problems, the package provides a similar interface:
+```{r }
+A <- diag(1:10, 20,10) # rectangular matrix of dimension 20x10
+r <- svds(A, 3); # compute the three largest singular values
+r
+```
+
+The next examples show how to compute the smallest singular values
+and how to specify some tolerance:
+```{r }
+A <- diag(1:100, 500,100)
+
+r <- svds(A, 3, 'S'); # compute the three smallest values
+r$d
+
+r <- svds(A, 3, 'S', tol=1e-5);
+r$rnorms # this is should be smaller than ||A||*tol
+
+```
+
+The next example shows the use of a diagonal preconditioner based on $A^*A$
+(see TODO):
+```{r }
+A <- rbind(rep(1,n=100), diag(1:100, 500,100))
+r <- svds(A, 3, 'S');
+r$stats$numMatvecs
+
+P = diag(diag(crossprod(A)));
+r <- svds(A, 3, 'S', prec=list(AHA=P));
+r$stats$numMatvecs
+```
+
+#TODO
+* Optimize the application of preconditioner when it is passed as a dense or
+  sparse matrix. When solving small problems the overhead of calling the R
+  function that applies the preconditioner can dominate over the reduction of
+  iterations:
+```{r }
+# A is a tridiagonal
+A <- diag(1:1000)
+for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
+
+r <- eigs_sym(A, 10, 'SA');
+r$stats$numMatvecs
+r$stats$elapsedTime
+
+# Jacobi preconditioner
+P = diag(diag(A));
+r <- eigs_sym(A, 10, 'SA', prec=P);
+r$stats$numMatvecs
+r$stats$elapsedTime
+```
+
+* Add support for matrices distributed among processes.

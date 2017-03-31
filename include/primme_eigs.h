@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -211,6 +211,7 @@ typedef struct primme_params {
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
          struct primme_params *primme, int *ierr);
+   void *convtest;
    void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -296,7 +297,14 @@ typedef enum {
    PRIMME_stats_numRestarts =  45,
    PRIMME_stats_numMatvecs =  46,
    PRIMME_stats_numPreconds =  47,
+   PRIMME_stats_numGlobalSum =  471,
+   PRIMME_stats_volumeGlobalSum =  472,
+   PRIMME_stats_numOrthoInnerProds =  473,
    PRIMME_stats_elapsedTime =  48,
+   PRIMME_stats_timeMatvec =  4801,
+   PRIMME_stats_timePrecond =  4802,
+   PRIMME_stats_timeOrtho =  4803,
+   PRIMME_stats_timeGlobalSum =  4804,
    PRIMME_stats_estimateMinEVal =  481,
    PRIMME_stats_estimateMaxEVal =  482,
    PRIMME_stats_estimateLargestSVal =  483,

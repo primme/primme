@@ -693,8 +693,8 @@ function s = primme_svds_error_msg(errorCode)
          s = 'Unknown error code';
       end
    elseif errorCode >= -200
-      s = ['Error from first stage: ' primme_error_code(errorCode+100)];
+      s = ['Error from first stage: ' primme_error_msg(errorCode+100)];
    else
-      s = ['Error from second stage: ' primme_error_code(errorCode+200)];
+      s = ['Error from second stage: ' primme_error_msg(errorCode+200)];
    end
 end
