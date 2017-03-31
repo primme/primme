@@ -5,7 +5,7 @@ function [varargout] = primme_svds(varargin)
 %
 %   S = PRIMME_SVDS(AFUN,M,N) accepts the function handle AFUN to perform
 %   the matrix vector products with an M-by-N matrix A. 
-%   AFUN(X,'notransp') returns A*X while AFUN(X,'transp') returns A’*X.
+%   AFUN(X,'notransp') returns A*X while AFUN(X,'transp') returns A'*X.
 %   In all the following, A can be replaced by AFUN,M,N.
 % 
 %   S = PRIMME_SVDS(A,K) computes the K largest singular values of A.

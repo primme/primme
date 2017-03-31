@@ -14,12 +14,18 @@ function [varargout] = primme_eigs(varargin)
 %     If TARGET is a real number, it finds the closest eigenvalues to TARGET.
 %     If TARGET is
 %       'LA' or 'SA', eigenvalues with the largest or smallest algebraic value
-%       'LM' or 'SM', eigenvalues with the largest or smallest distance from
-%                 the given values in OPTS.targetShifts, or zero if
-%                 OPTS.targetShifts is empty. If m values are provided, the
-%                 first m eigenvalues D are found s.t.
-%                 max/min ABS(D(i)-OPTS.targetShifts(i)), i=1:m.
-%                 OPTS.targerShifts(m) is used for i=m+1:K.
+%       'LM' or 'SM', eigenvalues with the largest or smallest magnitude if
+%                 OPTS.targetShifts is empty. If TARGET is a real or complex 
+%                 scalar including 0, PRIMME_EIGS finds the eigenvalues closest 
+%                 to TARGET.
+%                 In addition, if m values are provided in OPTS.targetShifts, 
+%                 find eigenvalues that are farthest (LM) or closest (SM) in 
+%                 absolute value from the given values. 
+%                 Examples: 
+%                 k=1, 'LM', OPTS.targetShifts=[] returns the largest magnitude lambda(A).
+%                 k=1, 'SM', OPTS.targetShifts=[] returns the smallest magnitude lambda(A).
+%                 k=3, 'SM', OPTS.targetShifts=[2, 5] returns the closest eigenvalue in 
+%                 absolute sense to 2, and the two closest eigenvalues to 5.
 %       'CLT' or 'CGT', find eigenvalues closest to but less or greater than
 %                 the given values in OPTS.targetShifts.
 %
@@ -120,6 +126,10 @@ function [varargout] = primme_eigs(varargin)
 %      d = primme_eigs(A,10,'SM') % the 10 smallest magnitude eigenvalues
 %
 %      d = primme_eigs(A,10,25) % the 10 closest eigenvalues to 25
+%
+%      opts.targetShifts = [2 20];
+%      d = primme_eigs(A,10,'SM',opts) % 1 closest eigenvalues to 2 and 9
+%                                      % clostest eigenvaluets to 20
 %
 %      opts = struct();
 %      opts.tol = 1e-4; % set tolerance
@@ -409,6 +419,17 @@ function [varargout] = primme_eigs(varargin)
    % Process error code and return the required arguments
    if ierr ~= 0
       error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
+   end
+   
+   % Return smallest magnitude or interior eigenvalues in descending order
+   if strcmp(target,'SM') == 1 || isnumeric(target) == 1
+      [evals,ind] = sort(evals,'descend');
+      evecs = evecs(:,ind);
+   end
+   % Return interior eigenvalues in descending order
+   if strcmp(target,'CLT') == 1 || strcmp(target,'CGT') == 1
+      [evals,ind] = sort(evals,'descend');
+      evecs = evecs(:,ind);
    end
 
    if (nargout <= 1)
