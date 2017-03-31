@@ -1,8 +1,5 @@
 function [varargout] = primme_eigs(varargin)
-%PRIMME_EIGS Find a few eigenvalues/vectors of large, sparse Hermitian matrices
-%   PRIMME_EIGS finds a few eigenvalues and their corresponding eigenvectors 
-%   of a real symmetric or Hermitian matrix, A, by calling PRIMME through the 
-%   driver PRIMME_MEX. Almost full PRIMME functionality is supported.
+%PRIMME_EIGS  Find a few eigenvalues/vectors of large, sparse Hermitian matrices
 %
 %   D = PRIMME_EIGS(A) returns a vector of A's 6 largest algebraic eigenvalues.
 %
@@ -492,8 +489,8 @@ function [varargout] = primme_eigs(varargin)
    end
 end
 
-function [f] = fcnchk_gen(x, n)
-   if exist('fcnchk')
+function [f] = fcnchk_gen(x)
+   if exist('fcnchk', 'var')
       f = fcnchk(x);
    else 
       f = x;

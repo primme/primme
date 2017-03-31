@@ -1,5 +1,5 @@
 function [varargout] = primme_svds(varargin)
-%PRIMME_SVDS   Find a few singular values and vectors of large, sparse matrices
+%PRIMME_SVDS  Find a few singular values and vectors of large, sparse matrices
 %
 %   S = PRIMME_SVDS(A) computes the 6 largest singular values of A.
 %
@@ -561,7 +561,7 @@ function [y] = precondsvds2(P1, P2, x, mode)
 end
 
 function [f] = fcnchk_gen(x)
-   if exist('fcnchk')
+   if exist('fcnchk', 'var')
       f = fcnchk(x);
    else 
       f = x;
