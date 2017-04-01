@@ -73,7 +73,7 @@ evals = primme_eigs(A, k, 30.1, [], [], P);
 % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
 
 A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
-[L,U] = ilu(A - eye(50)*30.1, struct('type', 'nofill'));
+[L,U] = ilu(A - speye(50)*30.1, struct('type', 'nofill'));
 evals = primme_eigs(A, k, 30.1, [], [], L, U);
 
 % Test different methods and return history record
