@@ -940,6 +940,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Return evals
 
    if (nlhs >= 2) {
+      mxSetM(mxEvals, primme->initSize);
       plhs[1] = mxEvals;
    }
    else {
@@ -949,6 +950,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Return rnorms
 
    if (nlhs >= 3) {
+      mxSetM(mxRnorms, primme->initSize);
       plhs[2] = mxRnorms;
    }
    else {
@@ -1509,6 +1511,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
    // Return svals
 
    if (nlhs >= 2) {
+      mxSetM(mxSvals, primme_svds->initSize);
       plhs[1] = mxSvals;
    }
    else {
@@ -1518,6 +1521,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
    // Return rnorms
 
    if (nlhs >= 3) {
+      mxSetM(mxRnorms, primme_svds->initSize);
       plhs[2] = mxRnorms;
    }
    else {
