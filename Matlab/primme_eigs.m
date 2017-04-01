@@ -134,10 +134,10 @@ function [varargout] = primme_eigs(varargin)
 %      opts = struct();
 %      opts.tol = 1e-4; % set tolerance
 %      opts.maxBlockSize = 2; % set block size
-%      [x,d] = primme_eigs(A,10,'S',opts,'DEFAULT_MIN_TIME')
+%      [x,d] = primme_eigs(A,10,'SA',opts,'DEFAULT_MIN_TIME')
 %
 %      opts.orthoConst = x;  
-%      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10
+%      [d,rnorms] = primme_eigs(A,10,'SA',opts) % find another 10
 %
 %      % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
 %      % by passing the matrices L and U.

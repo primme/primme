@@ -444,7 +444,7 @@ function [varargout] = primme_svds(varargin)
    end
    
    % Return smallest or interior singular triplets in descending order
-   if strcmp(target,'S') == 1 || isnumeric(target) == 1
+   if strcmp(opts.target,'primme_svds_smallest') || strcmp(opts.target,'primme_svds_closest_abs')
       [svals,ind] = sort(svals,'descend');
       svecsl = svecsl(:,ind);
       svecsr = svecsr(:,ind);
