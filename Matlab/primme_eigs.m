@@ -1,7 +1,7 @@
 function [varargout] = primme_eigs(varargin)
 %PRIMME_EIGS  Find a few eigenvalues/vectors of large, sparse Hermitian matrices
 %
-%   D = PRIMME_EIGS(A) returns a vector of A's 6 largest algebraic eigenvalues.
+%   D = PRIMME_EIGS(A) returns a vector of A's 6 largest magnitude eigenvalues.
 %
 %   D = PRIMME_EIGS(AFUN,DIM) accepts a function AFUN instead of a matrix. AFUN
 %   is a function handle and y = AFUN(x) returns the matrix-vector product A*x.
@@ -430,13 +430,13 @@ function [varargout] = primme_eigs(varargin)
       error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
    end
    
-   % Return smallest magnitude or interior eigenvalues in descending order
-   if strcmp(target,'SM') == 1 || isnumeric(target) == 1
+   % Return smallest magnitude eigenvalues in descending order
+   if strcmp(opts.target,'primme_closest_abs')
       [evals,ind] = sort(evals,'descend');
       evecs = evecs(:,ind);
    end
    % Return interior eigenvalues in descending order
-   if strcmp(target,'CLT') == 1 || strcmp(target,'CGT') == 1
+   if strcmp(opts.target,'primme_closest_geq') || strcmp(opts.target,'primme_closest_leq')
       [evals,ind] = sort(evals,'descend');
       evecs = evecs(:,ind);
    end
