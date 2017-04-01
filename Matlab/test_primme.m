@@ -64,17 +64,17 @@ end
 
 Adiag = diag(A);
 
-Pfun = @(x)((Adiag - 30.5).\x); % Pass a function handler
-evals = primme_eigs(A, k, 30.5, [], [], Pfun);
+Pfun = @(x)((Adiag - 30.1).\x); % Pass a function handler
+evals = primme_eigs(A, k, 30.1, [], [], Pfun);
 
-P = spdiags(Adiag - 30.5, 0, 50, 50); % Pass a matrix
-evals = primme_eigs(A, k, 30.5, [], [], P);
- 
+P = spdiags(Adiag - 30.1, 0, 50, 50); % Pass a matrix
+evals = primme_eigs(A, k, 30.1, [], [], P);
+
 % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
 
 A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
-[L,U] = ilu(A, struct('type', 'nofill'));
-evals = primme_eigs(A, k, 30.5, [], [], L, U);
+[L,U] = ilu(A - speye(50)*30.1, struct('type', 'nofill'));
+evals = primme_eigs(A, k, 30.1, [], [], L, U);
 
 % Test different methods and return history record
 
@@ -152,7 +152,6 @@ for i = 1:numel(svds_meths)
    opts = struct('disp', 3, 'method', svds_meths{i});
    for j = 1:numel(eigs_meths)
       opts.primme.method = eigs_meths{j};
-      opts
       [u,sv,v,r,s,h] = primme_svds(diag(1:100), 2, 'S', opts);
    end
 end
