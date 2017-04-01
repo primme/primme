@@ -30,7 +30,7 @@ function [varargout] = primme_eigs(varargin)
 %     default values are indicated in brackets {}:
 %
 %     OPTS.aNorm: the estimated 2-norm of A {estimate the norm internally}
-%     OPTS.tol: convergence tolerance:                      {eps*10}
+%     OPTS.tol: convergence tolerance:                      {eps*100}
 %                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
 %     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
 %     OPTS.disp: different level reporting (0-3) (see HIST) {no output 0}
@@ -361,12 +361,12 @@ function [varargout] = primme_eigs(varargin)
       init = [init init0];
    end
 
-   % Set default tol to eps for double precision and sqrt(eps) for single
+   % Set default tol
    if ~isfield(opts, 'eps')
       if Adouble
-         opts.eps = eps*10.0;
+         opts.eps = eps*100.0;
       else
-         opts.eps = sqrt(eps)*10.0;
+         opts.eps = sqrt(eps)*100.0;
       end
    end 
 
