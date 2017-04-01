@@ -76,8 +76,8 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       int newldhVecs, REAL *hVals, int restartSize, int basisSize,
       int numLocked, int numPrevRetained, int indexOfPreviousVecs,
-      int *hVecsPerm, double machEps, size_t *rworkSize, SCALAR *rwork,
-      int iworkSize, int *iwork, primme_params *primme);
+      int *hVecsPerm, int *targetShiftIndex, double machEps, size_t *rworkSize,
+      SCALAR *rwork, int iworkSize, int *iwork, primme_params *primme);
 
 static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
@@ -330,13 +330,19 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    /* ----------------------------------------------------------- */
    /* Special case: If (basisSize+numLocked) is the entire space, */
    /* then everything should be converged. Do not test, just flag */
-   /* everything as converged                                     */
+   /* everything as converged. But only do that when multiple     */
+   /* shifts are not involved.                                    */
    /* ----------------------------------------------------------- */
 
    if (basisSize + *numLocked + primme->numOrthoConst >= primme->n) {
-      for (i = 0; i < basisSize; i++)
-         flags[i] = CONVERGED;
-      *numConverged = basisSize + *numLocked;
+      if (primme->target == primme_largest || primme->target == primme_smallest
+            || (primme->target != primme_closest_leq
+               && primme->target != primme_closest_geq
+               && *numLocked >= primme->numTargetShifts-1)) {
+         for (i = 0; i < basisSize; i++)
+            flags[i] = CONVERGED;
+         *numConverged = basisSize + *numLocked;
+      }
       restartSize = basisSize;
       *numPrevRetained = 0;
    }
@@ -386,8 +392,6 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
       }
    }
 
-   primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
-   
    /* ----------------------------------------------------------------------- */
    /* Insert as many initial guesses as eigenpairs have converged.            */
    /* Leave sufficient restarting room in the restarted basis so that to      */
@@ -469,6 +473,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    }
 
    *reset = 0;
+   primme->stats.estimateResidualError = 2*sqrt((double)*restartsSinceReset)*machEps*aNorm;
 
    /* Rearrange prevRitzVals according to restartPerm */
 
@@ -1178,7 +1183,8 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    case primme_proj_RR:
       CHKERR(restart_RR(H, ldH, hVecs, ldhVecs, newldhVecs, hVals, restartSize,
             basisSize, numConverged, numPrevRetained, indexOfPreviousVecs,
-            hVecsPerm, machEps, rworkSize, rwork, iworkSize, iwork, primme), -1);
+            hVecsPerm, targetShiftIndex, machEps, rworkSize, rwork, iworkSize,
+            iwork, primme), -1);
       break;
 
    case primme_proj_harmonic:
@@ -1305,6 +1311,7 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  * hVals  The eigenvalues of the restarted H
  * 
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  * 
  * Return value
  * ------------
@@ -1316,11 +1323,12 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       int newldhVecs, REAL *hVals, int restartSize, int basisSize,
       int numLocked, int numPrevRetained, int indexOfPreviousVecs,
-      int *hVecsPerm, double machEps, size_t *rworkSize, SCALAR *rwork,
-      int iworkSize, int *iwork, primme_params *primme) {
+      int *hVecsPerm, int *targetShiftIndex, double machEps, size_t *rworkSize,
+      SCALAR *rwork, int iworkSize, int *iwork, primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
    int orderedIndexOfPreviousVecs;  /* index of prev. vecs after applying hVecsPerm */
+   double aNorm = primme?max(primme->aNorm, primme->stats.estimateLargestSVal):0.0;
 
    /* Return memory requirement */
 
@@ -1369,6 +1377,25 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       }
       H[ldH*j+j] = hVals[j];
    }
+
+   /* ---------------------------------------------------------------------- */
+   /* Solve the whole matrix when the targetShift has to change              */ 
+   /* ---------------------------------------------------------------------- */
+
+   if (targetShiftIndex && primme->targetShifts && (*targetShiftIndex < 0
+            || fabs(primme->targetShifts[*targetShiftIndex]
+               - primme->targetShifts[min(primme->numTargetShifts-1,
+                  numLocked)])) > machEps*aNorm) {
+
+      *targetShiftIndex = min(primme->numTargetShifts-1, numLocked);
+
+      CHKERR(solve_H_Sprimme(H, restartSize, ldH, NULL, 0, NULL, 0, NULL, 0,
+               hVecs, newldhVecs, hVals, NULL, numLocked, machEps, rworkSize,
+               rwork, iworkSize, iwork, primme), -1);
+
+      return 0;
+   }
+
 
    /* --------------------------------------------------------------------- */
    /* Find the index of the first column with a retained vector. All        */

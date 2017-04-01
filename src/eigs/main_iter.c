@@ -711,7 +711,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                      max(min(primme->numEvals, numLocked+1) - numConverged, 0);
                }
                else {
-                  maxRecentlyConverged = 1;
+                  maxRecentlyConverged =
+                     max(min(primme->numEvals, numConverged+1) - numConverged, 0);
                }
                availableBlockSize = maxRecentlyConverged;
             }
@@ -731,7 +732,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             /* Limit basisSize to the matrix dimension */
 
             availableBlockSize = max(0, min(availableBlockSize, 
-                  primme->n - basisSize - numLocked - primme->numOrthoConst));
+                  primme->n - numLocked - primme->numOrthoConst));
 
             /* -------------------------------------------------------------- */
             /* NOTE: setting smallestResNorm to zero may overpass the inner   */
@@ -822,6 +823,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          /* Restart the basis  */
          /* ------------------ */
 
+         int oldNumLocked = numLocked;
          assert(ldV == ldW); /* this function assumes ldV == ldW */
          restart_Sprimme(V, W, primme->nLocal, basisSize, ldV, hVals, hSVals,
                flags, iev, &blockSize, blockNorms, evecs, ldevecs, perm,
@@ -912,7 +914,22 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(switch_from_GDpk(&CostModel, primme), -1);
          } /* ---------------------------------------------------------- */
 
-         if (wholeSpace) break;
+         /* ----------------------------------------------------------- */
+         /* After having exhausted the search subspace, everything      */
+         /* should be converged. However the code can only mark one     */
+         /* pair as converged per iteration when multiple shifts still  */
+         /* remain active. In this situation, exit when no pair         */
+         /* converges at some iteration.                                */
+         /* ----------------------------------------------------------- */
+
+         if (wholeSpace && (
+                  primme->target == primme_largest
+                  || primme->target == primme_smallest
+                  || (primme->target != primme_closest_leq
+                     && primme->target != primme_closest_geq
+                     && oldNumLocked >= primme->numTargetShifts-1)
+                  || oldNumLocked == numLocked))
+               break;
 
         /* ----------------------------------------------------------- */
       } /* while ((numConverged < primme->numEvals)  (restarting loop)
