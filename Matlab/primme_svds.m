@@ -33,7 +33,7 @@ function [varargout] = primme_svds(varargin)
 %                    - 'primme_svds_normalequations': A'*A or A*A'
 %                    - 'primme_svds_augmented': [0 A';A 0]
 %                    - 'primme_svds_hybrid':               (default)
-%                       first normal eqs and then augmented
+%                       first normal equations and then augmented
 %   OPTIONS.u0       approx. left singular vectors                []
 %   OPTIONS.v0       approx. right singular vectors               []
 %   OPTIONS.orthoConst external orthogonalization constraints     [] 
@@ -52,10 +52,12 @@ function [varargout] = primme_svds(varargin)
 %
 %   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P)
 %   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P1,P2) makes use of a preconditioner,
-%   applying P\X or (P1*P2)\X. If P is [] then a preconditioner is not
-%   applied. P may be a function handle PFUN such that PFUN(X,'AHA')
-%   returns an approximation of (A'*A)\X, PFUN(X,'AAH'), of (A*A')\X and
-%   PFUN(X,'aug'), of [zeros(N,N) A';A zeros(M,M)]\X.
+%   applying P\X or (P1*P2)\X to approximate A\X. If P is [] then a preconditioner 
+%   is not applied. P may be a function handle PFUN where user must specify three
+%   different modes such that:
+%       PFUN(X,'AHA'), returns an approximation of (A'*A)\X, 
+%       PFUN(X,'AAH'), returns an approximation of (A*A')\X,
+%       PFUN(X,'aug'), returns an approximation of [zeros(N,N) A';A zeros(M,M)]\X.
 %
 %   [U,S,V] = PRIMME_SVDS(...) returns also the corresponding singular vectors.
 %   If A is M-by-N and K singular triplets are computed, then U is M-by-K
@@ -439,6 +441,13 @@ function [varargout] = primme_svds(varargin)
    % Process error code and return the required arguments
    if ierr ~= 0
       error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+   end
+   
+   % Return smallest or interior singular triplets in descending order
+   if strcmp(target,'S') == 1 || isnumeric(target) == 1
+      [svals,ind] = sort(svals,'descend');
+      svecsl = svecsl(:,ind);
+      svecsr = svecsr(:,ind);
    end
 
    if nargout <= 1
