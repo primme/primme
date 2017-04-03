@@ -5103,22 +5103,22 @@ function [varargout] = primme_svds(varargin)
    "AFUN(X,'notransp')" returns "A*X" while "AFUN(X,'transp')" returns
    "A’*X". In all the following, "A" can be replaced by "AFUN,M,N".
 
-   "S = primme_svds(A,K)" computes the "K" largest singular values of
+   "S = primme_svds(A,k)" computes the "k" largest singular values of
    "A".
 
-   "S = primme_svds(A,K,SIGMA)" computes the K singular values closest
-   to the scalar shift "SIGMA".
+   "S = primme_svds(A,k,sigma)" computes the "k" singular values
+   closest to the scalar shift "sigma".
 
-      * If "SIGMA" is a vector, find the singular value "S(i)"
-        closest to each "SIGMA(i)", for "i<=K".
+      * If "sigma" is a vector, find the singular value "S(i)"
+        closest to each "sigma(i)", for "i<=k".
 
-      * If "SIGMA" is "'L'", it computes the largest singular
+      * If "sigma" is "'L'", it computes the largest singular
         values.
 
-      * if "SIGMA" is "'S'", it computes the smallest singular
+      * if "sigma" is "'S'", it computes the smallest singular
         values.
 
-   "S = primme_svds(A,K,SIGMA,OPTIONS)" specifies extra solver
+   "S = primme_svds(A,k,sigma,OPTIONS)" specifies extra solver
    parameters. Some default values are indicated in brackets {}:
 
       * "aNorm":    estimation of the 2-norm of "A" {0.0 (estimate
@@ -5207,14 +5207,14 @@ function [varargout] = primme_svds(varargin)
         applied.
 
    "[U,S,V] = primme_svds(...)" returns also the corresponding
-   singular vectors. If "A" is M-by-N and "K" singular triplets are
-   computed, then "U" is M-by-K with orthonormal columns, "S" is
-   K-by-K diagonal, and "V" is N-by-K with orthonormal columns.
+   singular vectors. If "A" is M-by-N and "k" singular triplets are
+   computed, then "U" is M-by-k with orthonormal columns, "S" is
+   k-by-k diagonal, and "V" is N-by-k with orthonormal columns.
 
    "[S,R] = primme_svds(...)"
 
    "[U,S,V,R] = primme_svds(...)" returns the residual norm of each
-   "K" triplet, "NORM([A*V(:,i)-S(i,i)*U(:,i);
+   "k" triplet, "NORM([A*V(:,i)-S(i,i)*U(:,i);
    A'*U(:,i)-S(i,i)*V(:,i)])".
 
    "[U,S,V,R,STATS] = primme_svds(...)" returns how many times "A" and
