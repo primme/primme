@@ -129,8 +129,8 @@ function [varargout] = primme_eigs(varargin)
 %      d = primme_eigs(A,10,25.0) % the 10 closest eigenvalues to 25.0
 %
 %      opts.targetShifts = [2 20];
-%      d = primme_eigs(A,10,'SM',opts) % 1 closest eigenvalues to 2 and 9
-%                                      % clostest eigenvaluets to 20
+%      d = primme_eigs(A,10,'SM',opts) % 1 eigenvalue closest to 2 and 
+%                                      % 9 eigenvalues closest to 20
 %
 %      opts = struct();
 %      opts.tol = 1e-4; % set tolerance
@@ -431,13 +431,10 @@ function [varargout] = primme_eigs(varargin)
       error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
    end
    
-   % Return smallest magnitude eigenvalues in descending order
-   if strcmp(opts.target,'primme_closest_abs')
-      [evals,ind] = sort(evals,'descend');
-      evecs = evecs(:,ind);
-   end
    % Return interior eigenvalues in descending order
-   if strcmp(opts.target,'primme_closest_geq') || strcmp(opts.target,'primme_closest_leq')
+   if ~strcmp(opts.target,'primme_largest') ...
+         && ~strcmp(opts.target,'primme_smallest') ...
+         && ~strcmp(opts.target,'primme_largest_abs')
       [evals,ind] = sort(evals,'descend');
       evecs = evecs(:,ind);
    end
