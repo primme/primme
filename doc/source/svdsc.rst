@@ -135,7 +135,7 @@ To use PRIMME SVDS, follow these basic steps.
          ret = dprimme_svds(svals, svecs, resNorms, &primme_svds);
 
    The previous is the double precision call. There is available calls for complex
-   double, single and complex single; check it out :c:func:`zprimme_svds`, :c:func:`sprimme_svds`
+   double, single and complex single; check :c:func:`zprimme_svds`, :c:func:`sprimme_svds`
    and :c:func:`cprimme_svds`.
 
    To solve complex singular value problems call:

@@ -32,7 +32,7 @@ function [varargout] = primme_eigs(varargin)
 %   D = PRIMME_EIGS(A,K,TARGET,OPTS) specifies extra solver parameters. Some
 %     default values are indicated in brackets {}:
 %
-%     OPTS.aNorm: the estimated 2-norm of A {estimate the norm internally}
+%     OPTS.aNorm: the estimated 2-norm of A {0.0 (estimate the norm internally)}
 %     OPTS.tol: convergence tolerance:                      {eps*1e4}
 %                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
 %     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
@@ -49,7 +49,7 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.scheme: the restart scheme {'primme_thick'}
 %     OPTS.maxPrevRetain: number of Ritz vectors from previous iteration
 %          that are kept after restart {typically >0, see PRIMME doc}
-%     OPTS.robustShifts: set to true may avoid stagnation or misconvergence 
+%     OPTS.robustShifts: setting to true may avoid stagnation or misconvergence 
 %     OPTS.maxInnerIterations: maximum number of inner solver iterations
 %     OPTS.LeftQ: use the locked vectors in the left projector
 %     OPTS.LeftX: use the approx. eigenvector in the left projector
@@ -57,7 +57,7 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.RightX: use the approx. eigenvector in the right projector
 %     OPTS.SkewQ: use the preconditioned locked vectors in the right projector
 %     OPTS.SkewX: use the preconditioned approx. eigenvector in the right projector
-%     OPTS.relTolBase: a legacy from classical JDQR (recommend not use)
+%     OPTS.relTolBase: a legacy from classical JDQR (not recommended)
 %     OPTS.convTest: how to stop the inner QMR Method
 %     OPTS.iseed: random seed
 %
@@ -87,7 +87,8 @@ function [varargout] = primme_eigs(varargin)
 %
 %   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P) 
 %   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
-%   P = P1*P2 to accelerate convergence of the method.
+%   P = P1*P2 to accelerate convergence of the method. Applying P\x should
+%   approximate (A-sigma*eye(N))\x, for sigma near the wanted eigenvalue(s).
 %   If P is [] then a preconditioner is not applied. P may be a function 
 %   handle PFUN such that PFUN(x) returns P\x.
 %
@@ -99,10 +100,10 @@ function [varargout] = primme_eigs(varargin)
 %
 %   [X,D,R,STATS] = PRIMME_EIGS(...) returns a struct to report statistical
 %   information about number of matvecs, elapsed time, and estimates for the
-%   largest and the smallest algebraic eigenvalues on A.
+%   largest and smallest algebraic eigenvalues of A.
 %
-%   [X,D,R,STATS,HIST] = PRIMME_EIGS(...) instead of printing the convergence
-%   history, it is returned. Every row is a record, and the columns report:
+%   [X,D,R,STATS,HIST] = PRIMME_EIGS(...) it returns the convergence history,
+%   instead of printing it. Every row is a record, and the columns report:
 %  
 %   HIST(:,1): number of matvecs
 %   HIST(:,2): time
@@ -125,7 +126,7 @@ function [varargout] = primme_eigs(varargin)
 %
 %      d = primme_eigs(A,10,'SM') % the 10 smallest magnitude eigenvalues
 %
-%      d = primme_eigs(A,10,25) % the 10 closest eigenvalues to 25
+%      d = primme_eigs(A,10,25.0) % the 10 closest eigenvalues to 25.0
 %
 %      opts.targetShifts = [2 20];
 %      d = primme_eigs(A,10,'SM',opts) % 1 closest eigenvalues to 2 and 9
@@ -139,13 +140,13 @@ function [varargout] = primme_eigs(varargin)
 %      opts.orthoConst = x;  
 %      [d,rnorms] = primme_eigs(A,10,'SA',opts) % find another 10
 %
-%      % Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+%      % Compute the 6 eigenvalues closest to 30.5 using ILU(0) as a precond.
 %      % by passing the matrices L and U.
 %      A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
 %      [L,U] = ilu(A, struct('type', 'nofill'));
 %      d = primme_eigs(A, k, 30.5, [], [], L, U);
 %
-%      % Compute the 6 closest eigenvalues to 30.5 using Jacobi preconditioner
+%      % Compute the 6 eigenvalues closest to 30.5 using Jacobi preconditioner
 %      % by passing a function.
 %      Pfun = @(x)(diag(A) - 30.5)\x;
 %      d = primme_eigs(A,6,30.5,[],[],Pfun);

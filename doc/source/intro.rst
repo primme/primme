@@ -40,18 +40,21 @@ Changelog
 ^^^^^^^^^
 Changes in PRIMME 2.1 (released on XXX):
 
-* Improve robustness by broadcasting the result of critical LAPACK_ operations instead of
-  replicating them in every process; this is specially convenient when using a threaded BLAS_/LAPACK_
-  or not all processes run on the same processor model.
+* Improve robustness by broadcasting the result of critical LAPACK_
+  operations instead of replicating them on every process; this is
+  useful when using a threaded BLAS_/LAPACK_ or when some parallel
+  processes may run on different architectures or libraries.
 
-* New stopping criteria in QMR that improve performance in interior problems.
+* New stopping criteria in QMR that improve performance for interior
+  problems.
 
-* MATLAB interface reimplementation with support for singular value problems, :mat:func:`primme_svds`,
-  and single precision, and compatible with Octave.
+* MATLAB interface reimplementation with support for singular value
+  problems, :mat:func:`primme_svds()`, with double and single precision, and 
+  compatible with Octave.
 
 * R interface
 
-* Proper convergence history for singular value solvers.
+* Proper reporting of convergence history for singular value solvers.
 
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
@@ -168,7 +171,7 @@ License Information
 ^^^^^^^^^^^^^^^^^^^
 
 PRIMME is licensed under the 3-clause license BSD.
-Python and Matlab interfaces have BSD-compatible licenses.
+Python and MATLAB interfaces have BSD-compatible licenses.
 Source code under file:`tests` is compatible with LGPLv3.
 Details can be taken from COPYING.txt.
 
@@ -205,12 +208,12 @@ Citing the code
    software can be found in the rest of the papers. The work has been
    supported by a number of grants from the National Science Foundation.
 
-.. [r2] A. Stathopoulos, *Nearly optimal preconditioned methods for hermitian
+.. [r2] A. Stathopoulos, *Nearly optimal preconditioned methods for Hermitian
    eigenproblems under limited memory. Part I: Seeking one eigenvalue*, SIAM
    J. Sci. Comput., Vol. 29, No. 2, (2007), 481--514.
 
 .. [r3] A. Stathopoulos and J. R. McCombs, *Nearly optimal preconditioned
-   methods for hermitian eigenproblems under limited memory. Part II:
+   methods for Hermitian eigenproblems under limited memory. Part II:
    Seeking many eigenvalues*, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
    2162-2188.
 
@@ -220,7 +223,7 @@ Citing the code
    2337-2358.
 
 .. [r5] A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
-   of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
+   of Hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
 .. [r7] L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD Method for Computing
   Accurately Singular Triplets of Large Matrices*, SIAM J. Sci. Comput. 37-5(2015),
@@ -251,7 +254,7 @@ The next directories and files should be available:
    * :file:`svds/`,      singular value interface and implementation;
    * :file:`tools/`,     tools used to generated some headers;
 
-* :file:`Matlab/`,       Matlab interface;
+* :file:`Matlab/`,       MATLAB interface;
 * :file:`Python/`,       Python interface;
 * :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
 * :file:`tests/`,        drivers for testing purpose and test cases;

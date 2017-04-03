@@ -60,7 +60,7 @@ for i=1:k
   assert(norm(A*evecs(:,i) - evecs(:,i)*evals(i,i)) < 1e-6*norm(A))
 end
 
-% Compute the 6 closest eigenvalues to 30.5 using the Jacobi preconditioner
+% Compute the 6 eigenvalues closest to 30.5 using the Jacobi preconditioner
 % (too much convenient for a diagonal matrix)
 
 Adiag = diag(A);
@@ -71,7 +71,7 @@ evals = primme_eigs(A, k, 30.1, [], [], Pfun);
 P = spdiags(Adiag - 30.1, 0, 50, 50); % Pass a matrix
 evals = primme_eigs(A, k, 30.1, [], [], P);
 
-% Compute the 6 closest eigenvalues to 30.5 using ILU(0) as a preconditioner
+% Compute the 6 eigenvalues closest to 30.5 using ILU(0) as a preconditioner
 
 A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
 [L,U] = ilu(A - speye(50)*30.1, struct('type', 'nofill'));

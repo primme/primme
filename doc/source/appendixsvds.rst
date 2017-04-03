@@ -40,8 +40,8 @@ primme_svds_params
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
       If ``transpose`` is zero, then ``x`` and ``y`` are arrays of dimensions |SnLocal| x ``blockSize`` and |SmLocal| x ``blockSize``
-      respectively. Elsewhere they have dimensions |SmLocal| x ``blockSize`` and |SnLocal| x ``blockSize``. Both arrays are column-major
-      (consecutive rows are consecutive in memory).
+      respectively. Elsewhere they have dimensions |SmLocal| x ``blockSize`` and |SnLocal| x ``blockSize``.
+      Both arrays are in column-major_ order (elements in the same column with consecutive row indices are consecutive in memory).
 
       The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
       for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
@@ -59,13 +59,12 @@ primme_svds_params
 
    .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
-      Block preconditioner-multivector application. Depending on ``mode`` it is expected an approximation of the inverse of
+      Block preconditioner-multivector application, :math:`y = M^{-1}x` for finding singular values close to :math:`\sigma`.
+      Depending on ``mode``, :math:`M` is expected to be an approximation of the following operators:
 
-      * ``primme_svds_op_AtA``: :math:`y = A^*Ax - \sigma^2 I`,
-      * ``primme_svds_op_AAt``: :math:`y = AA^*x - \sigma^2 I`,
-      * ``primme_svds_op_augmented``: :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) - \sigma I`.
-
-      Where :math:`\sigma` is the current target (see |targetShifts|) (for finding the smallest :math:`\sigma` is zero).
+      * ``primme_svds_op_AtA``: :math:`M \approx A^*Ax - \sigma^2 I`,
+      * ``primme_svds_op_AAt``: :math:`M \approx AA^*x - \sigma^2 I`,
+      * ``primme_svds_op_augmented``: :math:`M \approx \left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) - \sigma I`.
 
       :param x: input array.
       :param ldx: leading dimension of ``x``.
@@ -78,7 +77,7 @@ primme_svds_params
 
       If ``mode`` is ``primme_svds_op_AtA``, then ``x`` and ``y`` are arrays of dimensions |SnLocal| x ``blockSize``; if mode is
       ``primme_svds_op_AAt``, they are |SmLocal| x ``blockSize``; and otherwise they are (|SmLocal| + |SnLocal|) x ``blockSize``.
-      Both arrays are column-major (consecutive rows are consecutive in memory).
+      Both arrays are in column-major_ order (elements in the same column with consecutive row indices are consecutive in memory).
 
       The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
       for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
@@ -257,25 +256,25 @@ primme_svds_params
  
       * 0: silent.
       * 1: print some error messages when these occur.
-      * 2: as 1, and info about targeted singular triplets when they are marked as converged::
+      * 2: as in 1, and info about targeted singular triplets when they are marked as converged::
       
-            #Converged $1 sval[ $2 ]= $3 norm $4 Mvecs $5 Time $7 stage 1
+            #Converged $1 sval[ $2 ]= $3 norm $4 Mvecs $5 Time $7 stage $10
 
         or locked::
 
-            #Lock striplet[ $1 ]= $3 norm $4 Mvecs $5 Time $7 stage 1
+            #Lock striplet[ $1 ]= $3 norm $4 Mvecs $5 Time $7 stage $10
 
-      * 3: as 2, and info about targeted singular triplets every outer iteration::
+      * 3: as in 2, and info about targeted singular triplets every outer iteration::
       
             OUT $6 conv $1 blk $8 MV $5 Sec $7 SV $3 |r| $4 stage $10
 
-        Also, if it is used the dynamic method, show JDQMR/GDk performance ratio and
+        Also, if using |DYNAMIC|, show JDQMR/GD+k performance ratio and
         the current method in use.
-      * 4: as 3, and info about targeted singular triplets every inner iteration::
+      * 4: as in 3, and info about targeted singular triplets every inner iteration::
       
             INN MV $5 Sec $7 Sval $3 Lin|r| $9 SV|r| $4 stage $10
       
-      * 5: as 4, and verbose info about certain choices of the algorithm.
+      * 5: as in 4, and verbose info about certain choices of the algorithm.
       
       Output key:
 
@@ -288,13 +287,10 @@ primme_svds_params
       | $7: The current elapsed time.
       | $8: Index within the block of the targeted triplet.
       | $9: QMR norm of the linear system residual.
-      | $10: stage
+      | $10: stage (1 or 2)
 
-      In parallel programs, output is produced in call with
-      |SprocID| 0 when |SprintLevel|
-      is from 0 to 4.
-      If |SprintLevel| is 5 output can be produced in any of
-      the parallel calls.
+      In parallel programs, when |SprintLevel| is 0 to 4 only |SprocID| 0 produces output.
+      For |SprintLevel| 5 output can be produced in any of the parallel calls.
 
       Input/output:
 
@@ -307,10 +303,6 @@ primme_svds_params
 
          grep OUT outpufile | awk '{print $8" "$14}' > out
          grep INN outpufile | awk '{print $3" "$11}' > inn
-
-      Then in Matlab::
-
-         plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
 
       Or in gnuplot::
 
@@ -335,7 +327,7 @@ primme_svds_params
       A triplet :math:`(u,\sigma,v)` is marked as converged when
       :math:`\sqrt{\|A v - \sigma u\|^2 + \|A^* u - \sigma v\|^2}`
       is less than |Seps| \* |SaNorm|, or close to the minimum tolerance that
-      the selected method can achieve. See :ref:`methods_svds`.
+      the selected method can achieve in the given machine precision. See :ref:`methods_svds`.
 
       The default value is machine precision times :math:`10^4`.
 
@@ -587,18 +579,19 @@ primme_svds_params
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_params *primme, int *ierr)
+   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
 
 
-      Convergence monitor. Usually used to customize how it is reported the
-      unconverged and converged pairs and the residual norms.
+      Convergence monitor. Used to customize how to report solver 
+      information during execution (stage, iteration number, matvecs, time, 
+      residual norms, targets, etc).
 
       :param basisSvals:   array with approximate singular values of the basis.
       :param basisSize:    size of the arrays ``basisSvals``, ``basisFlags`` and ``basisNorms``.
       :param basisFlags:   state of every approximate triplet in the basis.
       :param iblock:       indices of the approximate triplet in the block.
       :param blockSize:    size of array ``iblock``.
-      :param basisNorms:   array with residual norms of the triplet in the basis.
+      :param basisNorms:   array with residual norms of the triplets in the basis.
       :param numConverged: number of triplets converged in the basis plus the number of the locked triplets (note that this value isn't monotonic).
       :param lockedSvals:  array with the locked triplets.
       :param numLocked:    size of the arrays ``lockedSvals``, ``lockedFlags`` and ``lockedNorms``.
@@ -608,7 +601,7 @@ primme_svds_params
       :param LSRes:        residual norm of the linear system at the current QMR iteration.
       :param event:        event reported.
       :param stage:        ``0`` for first stage, ``1`` for second stage.
-      :param primme:       parameters structure.
+      :param primme_svds:  parameters structure; the counter in ``stats`` are updated with the current number of matrix-vector products, iterations, elapsed time, etc., since start.
       :param ierr:         output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
       This function is called at the next events:
@@ -618,43 +611,42 @@ primme_svds_params
         It is provided ``basisSvals``, ``basisSize``, ``basisFlags``, ``iblock`` and ``blockSize``.
 
         ``basisNorms[iblock[i]]`` has the residual norms for the selected triplets in the block.
-        PRIMME avoids to compute the residual of soft-locked triplets, ``basisNorms[i]`` for ``i<iblock[0]``.
+        PRIMME avoids computing the residual of soft-locked triplets, ``basisNorms[i]`` for ``i<iblock[0]``.
         So those values may correspond to previous iterations. The values ``basisNorms[i]`` for ``i>iblock[blockSize-1]``
         are not valid.
 
-        If |Slocking| is enabled, it is provided ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms``.
+        If |Slocking| is enabled, ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are also provided.
 
         ``inner_its`` and  ``LSRes`` are not provided.
 
       * ``*event == primme_event_inner_iteration``: every QMR iteration.
 
         ``basisSvals[0]`` and ``basisNorms[0]`` provides the approximate singular value and the residual norm
-        of the triplet which the correction equation is being computed for. If |convTest| is |primme_adaptive|
-        or |primme_adaptive_ETolerance|, ``basisSvals[0]`` and ``basisNorms[0]`` is updated every QMR iteration.
+        of the triplet which is improved in the current correction equation. If |convTest| is |primme_adaptive|
+        or |primme_adaptive_ETolerance|, ``basisSvals[0]``, and ``basisNorms[0]`` are updated every QMR iteration.
 
         ``inner_its`` and  ``LSRes`` are also provided.
 
-        ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+        ``lockedSvals``, ``numLocked``, ``lockedFlags``, and ``lockedNorms`` may not be provided.
 
-      * ``*event == primme_event_convergence``: new triplet in the basis passed the convergence criterion
+      * ``*event == primme_event_convergence``: a new triplet in the basis passed the convergence criterion
 
-        ``iblock[0]`` is the index of the triplet in the basis that passes the convergence criterion, and the
-        solver probably will soft lock. 
-        It is also provided ``basisSvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
+        ``iblock[0]`` is the index of the newly converged triplet in the basis which will be locked or soft locked.
+        The following are provided: ``basisSvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
 
-        ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+        ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not be provided.
 
         ``inner_its`` and  ``LSRes`` are not provided.
 
-      * ``*event == primme_event_locked``: new triplet added to the locking basis.
+      * ``*event == primme_event_locked``: a new triplet added to the locked singular vectors.
 
         ``lockedSvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are provided.
         The last element of ``lockedSvals``, ``lockedFlags`` and ``lockedNorms`` corresponds
         to the recent locked triplet.
  
-        ``basisSvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not provided.
+        ``basisSvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not be provided.
 
-        ``inner_its`` and  ``LSRes`` are not provided.
+        ``inner_its`` and  ``LSRes`` are not be provided.
 
       The values of ``basisFlags`` and ``lockedFlags`` are:
 
@@ -767,8 +759,8 @@ Preset Methods
       |Smethod| to ``primme_svds_op_AtA`` if |Sm| is larger or equal than |Sn|, and to ``primme_svds_op_AAt``
       otherwise; and |SmethodStage2| is set to ``primme_svds_op_none``.
 
-      The minimum tolerance that this method can achieve is :math:`\|A\|\epsilon\sigma^{-1}`,
-      where :math:`\epsilon` is the machine precision.
+      The minimum residual norm that this method can achieve is :math:`\|A\|\epsilon\sigma^{-1}`,
+      where :math:`\epsilon` is the machine precision and :math:`\sigma` the required singular value.
  
    .. c:member:: primme_svds_augmented
 
@@ -778,7 +770,7 @@ Preset Methods
       With :c:member:`primme_svds_augmented` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_augmented`` and |SmethodStage2| to ``primme_svds_op_none``.
  
-      The minimum tolerance that this method can achieve is :math:`\|A\|\epsilon`,
+      The minimum residual norm that this method can achieve is :math:`\|A\|\epsilon`,
       where :math:`\epsilon` is the machine precision.
       However it may not return triplets with singular values smaller than :math:`\|A\|\epsilon`.
  
@@ -791,7 +783,7 @@ Preset Methods
       |Smethod| to ``primme_svds_op_AtA`` if |Sm| is larger or equal than |Sn|, and to ``primme_svds_op_AAt``
       otherwise; and |SmethodStage2| is set to ``primme_svds_op_augmented``.
  
-      The minimum tolerance that this method can achieve is :math:`\|A\|\epsilon`,
+      The minimum residual norm that this method can achieve is :math:`\|A\|\epsilon`,
       where :math:`\epsilon` is the machine precision.
       However it may not return triplets with singular values smaller than :math:`\|A\|\epsilon`
       if |Seps| is smaller than :math:`\|A\|\epsilon\sigma^{-1}`.

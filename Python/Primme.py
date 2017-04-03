@@ -478,6 +478,10 @@ class primme_params(_object):
     __swig_getmethods__["stats"] = _Primme.primme_params_stats_get
     if _newclass:
         stats = _swig_property(_Primme.primme_params_stats_get, _Primme.primme_params_stats_set)
+    __swig_setmethods__["convtest"] = _Primme.primme_params_convtest_set
+    __swig_getmethods__["convtest"] = _Primme.primme_params_convtest_get
+    if _newclass:
+        convtest = _swig_property(_Primme.primme_params_convtest_get, _Primme.primme_params_convtest_set)
 
     def __init__(self):
         this = _Primme.new_primme_params()
@@ -559,7 +563,14 @@ PRIMME_stats_numOuterIterations = _Primme.PRIMME_stats_numOuterIterations
 PRIMME_stats_numRestarts = _Primme.PRIMME_stats_numRestarts
 PRIMME_stats_numMatvecs = _Primme.PRIMME_stats_numMatvecs
 PRIMME_stats_numPreconds = _Primme.PRIMME_stats_numPreconds
+PRIMME_stats_numGlobalSum = _Primme.PRIMME_stats_numGlobalSum
+PRIMME_stats_volumeGlobalSum = _Primme.PRIMME_stats_volumeGlobalSum
+PRIMME_stats_numOrthoInnerProds = _Primme.PRIMME_stats_numOrthoInnerProds
 PRIMME_stats_elapsedTime = _Primme.PRIMME_stats_elapsedTime
+PRIMME_stats_timeMatvec = _Primme.PRIMME_stats_timeMatvec
+PRIMME_stats_timePrecond = _Primme.PRIMME_stats_timePrecond
+PRIMME_stats_timeOrtho = _Primme.PRIMME_stats_timeOrtho
+PRIMME_stats_timeGlobalSum = _Primme.PRIMME_stats_timeGlobalSum
 PRIMME_stats_estimateMinEVal = _Primme.PRIMME_stats_estimateMinEVal
 PRIMME_stats_estimateMaxEVal = _Primme.PRIMME_stats_estimateMaxEVal
 PRIMME_stats_estimateLargestSVal = _Primme.PRIMME_stats_estimateLargestSVal
@@ -636,10 +647,38 @@ class primme_svds_stats(_object):
     __swig_getmethods__["numPreconds"] = _Primme.primme_svds_stats_numPreconds_get
     if _newclass:
         numPreconds = _swig_property(_Primme.primme_svds_stats_numPreconds_get, _Primme.primme_svds_stats_numPreconds_set)
+    __swig_setmethods__["numGlobalSum"] = _Primme.primme_svds_stats_numGlobalSum_set
+    __swig_getmethods__["numGlobalSum"] = _Primme.primme_svds_stats_numGlobalSum_get
+    if _newclass:
+        numGlobalSum = _swig_property(_Primme.primme_svds_stats_numGlobalSum_get, _Primme.primme_svds_stats_numGlobalSum_set)
+    __swig_setmethods__["volumeGlobalSum"] = _Primme.primme_svds_stats_volumeGlobalSum_set
+    __swig_getmethods__["volumeGlobalSum"] = _Primme.primme_svds_stats_volumeGlobalSum_get
+    if _newclass:
+        volumeGlobalSum = _swig_property(_Primme.primme_svds_stats_volumeGlobalSum_get, _Primme.primme_svds_stats_volumeGlobalSum_set)
+    __swig_setmethods__["numOrthoInnerProds"] = _Primme.primme_svds_stats_numOrthoInnerProds_set
+    __swig_getmethods__["numOrthoInnerProds"] = _Primme.primme_svds_stats_numOrthoInnerProds_get
+    if _newclass:
+        numOrthoInnerProds = _swig_property(_Primme.primme_svds_stats_numOrthoInnerProds_get, _Primme.primme_svds_stats_numOrthoInnerProds_set)
     __swig_setmethods__["elapsedTime"] = _Primme.primme_svds_stats_elapsedTime_set
     __swig_getmethods__["elapsedTime"] = _Primme.primme_svds_stats_elapsedTime_get
     if _newclass:
         elapsedTime = _swig_property(_Primme.primme_svds_stats_elapsedTime_get, _Primme.primme_svds_stats_elapsedTime_set)
+    __swig_setmethods__["timeMatvec"] = _Primme.primme_svds_stats_timeMatvec_set
+    __swig_getmethods__["timeMatvec"] = _Primme.primme_svds_stats_timeMatvec_get
+    if _newclass:
+        timeMatvec = _swig_property(_Primme.primme_svds_stats_timeMatvec_get, _Primme.primme_svds_stats_timeMatvec_set)
+    __swig_setmethods__["timePrecond"] = _Primme.primme_svds_stats_timePrecond_set
+    __swig_getmethods__["timePrecond"] = _Primme.primme_svds_stats_timePrecond_get
+    if _newclass:
+        timePrecond = _swig_property(_Primme.primme_svds_stats_timePrecond_get, _Primme.primme_svds_stats_timePrecond_set)
+    __swig_setmethods__["timeOrtho"] = _Primme.primme_svds_stats_timeOrtho_set
+    __swig_getmethods__["timeOrtho"] = _Primme.primme_svds_stats_timeOrtho_get
+    if _newclass:
+        timeOrtho = _swig_property(_Primme.primme_svds_stats_timeOrtho_get, _Primme.primme_svds_stats_timeOrtho_set)
+    __swig_setmethods__["timeGlobalSum"] = _Primme.primme_svds_stats_timeGlobalSum_set
+    __swig_getmethods__["timeGlobalSum"] = _Primme.primme_svds_stats_timeGlobalSum_get
+    if _newclass:
+        timeGlobalSum = _swig_property(_Primme.primme_svds_stats_timeGlobalSum_get, _Primme.primme_svds_stats_timeGlobalSum_set)
 
     def __init__(self):
         this = _Primme.new_primme_svds_stats()
@@ -810,7 +849,14 @@ PRIMME_SVDS_stats_numOuterIterations = _Primme.PRIMME_SVDS_stats_numOuterIterati
 PRIMME_SVDS_stats_numRestarts = _Primme.PRIMME_SVDS_stats_numRestarts
 PRIMME_SVDS_stats_numMatvecs = _Primme.PRIMME_SVDS_stats_numMatvecs
 PRIMME_SVDS_stats_numPreconds = _Primme.PRIMME_SVDS_stats_numPreconds
+PRIMME_SVDS_stats_numGlobalSum = _Primme.PRIMME_SVDS_stats_numGlobalSum
+PRIMME_SVDS_stats_volumeGlobalSum = _Primme.PRIMME_SVDS_stats_volumeGlobalSum
+PRIMME_SVDS_stats_numOrthoInnerProds = _Primme.PRIMME_SVDS_stats_numOrthoInnerProds
 PRIMME_SVDS_stats_elapsedTime = _Primme.PRIMME_SVDS_stats_elapsedTime
+PRIMME_SVDS_stats_timeMatvec = _Primme.PRIMME_SVDS_stats_timeMatvec
+PRIMME_SVDS_stats_timePrecond = _Primme.PRIMME_SVDS_stats_timePrecond
+PRIMME_SVDS_stats_timeOrtho = _Primme.PRIMME_SVDS_stats_timeOrtho
+PRIMME_SVDS_stats_timeGlobalSum = _Primme.PRIMME_SVDS_stats_timeGlobalSum
 PRIMME_SVDS_monitorFun = _Primme.PRIMME_SVDS_monitorFun
 PRIMME_SVDS_monitor = _Primme.PRIMME_SVDS_monitor
 
@@ -1205,7 +1251,7 @@ class PrimmeSvdsError(RuntimeError):
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
-          Minv=None, OPinv=None, mode='normal', lock=None,
+          Minv=None, OPinv=None, mode='normal', ortho=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
           maxPrevRetain=0, method=None, return_history=False, **kargs):
     """
@@ -1225,7 +1271,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         the operation A * x, where A is a real symmetric matrix or complex
         Hermitian.
     k : int, optional
-        The number of eigenvalues and eigenvectors desired.
+        The number of eigenvalues and eigenvectors to be computed. Must be
+        1 <= k < min(A.shape).
     M : An N x N matrix, array, sparse matrix, or LinearOperator
         (not supported yet)
         the operation M * x for the generalized eigenvalue problem
@@ -1233,50 +1280,52 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             A * x = w * M * x.
 
         M must represent a real, symmetric matrix if A is real, and must
-        represent a complex, hermitian matrix if A is complex. For best
+        represent a complex, Hermitian matrix if A is complex. For best
         results, the data type of M should be the same as that of A.
     sigma : real, optional
         Find eigenvalues near sigma.
     v0 : N x i, ndarray, optional
-        Starting vectors for iteration.
+        Initial guesses to the eigenvectors.
     ncv : int, optional
         The maximum size of the basis
-    which : str ['LM' | 'SM' | 'LA' | 'SA' | 'BE']
-        If A is a complex hermitian matrix, 'BE' is invalid.
+    which : str ['LM' | 'SM' | 'LA' | 'SA']
         Which `k` eigenvectors and eigenvalues to find:
 
-            'LM' : Largest (in magnitude) eigenvalues
+            'LM' : Largest in magnitude eigenvalues; the farthest from sigma
 
-            'SM' : Smallest (in magnitude) eigenvalues
+            'SM' : Smallest in magnitude eigenvalues; the closest to sigma
 
-            'LA' : Largest (algebraic) eigenvalues
+            'LA' : Largest algebraic eigenvalues
 
-            'SA' : Smallest (algebraic) eigenvalues
+            'SA' : Smallest algebraic eigenvalues
 
-            'BE' : Half (k/2) from each end of the spectrum (not supported)
+            'CLT' : closest but left to sigma
 
-        When sigma != None, 'which' refers to the shifted eigenvalues ``w'[i]``
+            'CGT' : closest but greater than sigma
+
+        When sigma == None, 'LM', 'SM', 'CLT', and 'CGT' treat sigma as zero. 
     maxiter : int, optional
         Maximum number of iterations.
     tol : float
-        Accuracy for eigenvalues (stopping criterion).
+        Required accuracy for eigenpairs (stopping criterion).
         The default value is sqrt of machine precision.
-    Minv : (not supported)
-    OPinv : N x N matrix, array, sparse matrix, or LinearOperator
+    Minv : (not supported yet)
+        The inverse of M in the generalized eigenproblem.
+    OPinv : N x N matrix, array, sparse matrix, or LinearOperator, optional
         Preconditioner to accelerate the convergence. Usually it is an
         approximation of the inverse of (A - sigma*M).
-    return_eigenvectors : bool
+    return_eigenvectors : bool, optional
         Return eigenvectors (True) in addition to eigenvalues
     mode : string ['normal' | 'buckling' | 'cayley']
         Only 'normal' mode is supported.
-    lock : N x i, ndarray, optional
+    ortho : N x i, ndarray, optional
         Seek the eigenvectors orthogonal to these ones. The provided
-        vectors *should* be orthonormal. Useful to not converge some already
+        vectors *should* be orthonormal. Useful to avoid converging to previously
         computed solutions.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     minRestartSize : int, optional
-        Number of approximate eigenvectors kept from last iteration in restart.
+        Number of approximate eigenvectors kept during restart.
     maxPrevRetain: int, optional
         Number of approximate eigenvectors kept from previous iteration in
         restart. Also referred as +k vectors in GD+k.
@@ -1285,20 +1334,21 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         - DEFAULT_MIN_TIME : a variant of JDQMR,
         - DEFAULT_MIN_MATVECS : GD+k
-        - DYNAMIC : choose dynamically between both previous methods.
+        - DYNAMIC : choose dynamically between these previous methods.
 
         See a detailed description of the methods and other possible values
         in [2]_.
 
     return_stats : bool, optional
-        If True, it is also returned extra information from PRIMME.
+        If True, the function returns extra information (see stats in Returns).
     return_history: bool, optional
-        If True, it is also returned performance information at every iteration.
+        If True, the function returns performance information at every iteration
+        (see hist in Returns).
 
     Returns
     -------
     w : array
-        Array of k eigenvalues
+        Array of k eigenvalues ordered to best satisfy "which".
     v : array
         An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
         the eigenvector corresponding to the eigenvalue ``w[i]``.
@@ -1356,8 +1406,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
     >>> evals # the three largest eigenvalues of A
     array([ 99.,  98.,  97.])
-    >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
-    >>> evals # the next three largest eigenvalues
+    >>> new_evals, new_evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', ortho=evecs)
+    >>> new_evals # the next three largest eigenvalues
     array([ 96.,  95.,  94.])
     """
 
@@ -1411,6 +1461,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         pp.target = primme_closest_abs
         if sigma is None:
             sigma = 0.0
+    elif which == 'CLT':
+        pp.target = primme_closest_leq
+        if sigma is None:
+            sigma = 0.0
+    elif which == 'CGT':
+        pp.target = primme_closest_geq
+        if sigma is None:
+            sigma = 0.0
     else:
         raise ValueError("which='%s' not supported" % which)
 
@@ -1431,10 +1489,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,))
         pp.correctionParams.precondition = 1
 
-    if lock is not None:
-        if lock.shape[0] != pp.n:
-            raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,))
-        pp.numOrthoConst = min(lock.shape[1], pp.n)
+    if ortho is not None:
+        if ortho.shape[0] != pp.n:
+            raise ValueError('ortho: expected matrix with the same columns as A (shape=%s)' % (ortho.shape,))
+        pp.numOrthoConst = min(ortho.shape[1], pp.n)
 
     if return_history and return_stats:
         pp.monitor_set = 1
@@ -1465,8 +1523,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     norms = np.zeros(pp.numEvals, rtype)
     evecs = np.zeros((pp.n, pp.numOrthoConst+pp.numEvals), dtype, order='F')
 
-    if lock is not None:
-        np.copyto(evecs[:, 0:pp.numOrthoConst], lock[:, 0:pp.numOrthoConst])
+    if ortho is not None:
+        np.copyto(evecs[:, 0:pp.numOrthoConst], ortho[:, 0:pp.numOrthoConst])
 
     if v0 is not None:
         pp.initSize = min(v0.shape[1], pp.numEvals)
@@ -1510,12 +1568,12 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
-         u0=None, locku0=None, lockv0=None,
+         u0=None, orthou0=None, orthov0=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
          return_history=False, **kargs):
     """
-    Compute k singular values and vectors for a sparse matrix.
+    Compute k singular values and vectors of the matrix A.
 
     Parameters
     ----------
@@ -1527,10 +1585,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     ncv : int, optional
         The maximum size of the basis
     tol : float, optional
-        Tolerance for singular values. Zero (default) means machine precision.
+        Tolerance for singular values. Zero (default) means 10**4 times the machine precision.
 
-        A triplet (u,sigma,v)` is marked as converged when
-        (||A*v - sigma*u||^2 + ||A.H*u - sigma*v||^2)**.5`
+        A triplet ``(u,sigma,v)`` is marked as converged when
+        (||A*v - sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5
         is less than "tol" * ||A||, or close to the minimum tolerance that
         the method can achieve. See the note.
     which : str ['LM' | 'SM'] or number, optional
@@ -1541,37 +1599,36 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             - number : closest singular values to (referred as sigma later)
 
     u0 : ndarray, optional
-        Left starting vectors for the iterations.
+        Initial guesses for the left singular vectors.
 
-        Should be approximate left singular vectors. If only u0 or v0 is
-        provided, the other is computed.
+        If only u0 or v0 is provided, the other is computed. If both are
+        provided, u0 and v0 should have the same number of columns.
     v0 : ndarray, optional
-        Right starting vectors for the iterations.
+        Initial guesses for the right singular vectors.
     maxiter : int, optional
-        Maximum number of iterations.
+        Maximum number of matvecs with A and A.H. 
     precAHA : {N x N matrix, array, sparse matrix, LinearOperator}, optional
-        Approximate inverse of (A.H*A - sigma**2*I). If provided and M>N, it
+        Approximate inverse of (A.H*A - sigma**2*I). If provided and M>=N, it
         usually accelerates the convergence.
     precAAH : {M x M matrix, array, sparse matrix, LinearOperator}, optional
         Approximate inverse of (A*A.H - sigma**2*I). If provided and M<N, it
         usually accelerates the convergence.
     precAug : {(M+N) x (M+N) matrix, array, sparse matrix, LinearOperator}, optional
-        Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I). It usually
-        accelerates the convergence if tol<dtype.eps**.5.
-    locku0 : ndarray, optional
+        Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).
+    orthou0 : ndarray, optional
         Left orthogonal vector constrain.
 
-        Seek singular triplets orthogonal to locku0 and lockv0. The provided vectors
-        *should* be orthonormal. If only locku0 or lockv0 is provided, the other
-        is computed. Useful to not converge some already computed solutions.
-    lockv0 : ndarray, optional
-        Right orthogonal vector constrain. See locku0.
+        Seek singular triplets orthogonal to orthou0 and orthov0. The provided vectors
+        *should* be orthonormal. If only orthou0 or orthov0 is provided, the other
+        is computed. Useful to avoid converging to previously computed solutions.
+    orthov0 : ndarray, optional
+        Right orthogonal vector constrain. See orthou0.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     return_stats : bool, optional
-        If True, it is also returned extra information from PRIMME.
+        If True, the function returns extra information (see stats in Returns).
     return_history: bool, optional
-        If True, it is also returned performance information at every iteration.
+        If True, the function returns performance information at every iteration
 
     Returns
     -------
@@ -1588,26 +1645,27 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
         - "numOuterIterations": number of outer iterations
         - "numRestarts": number of restarts
-        - "numMatvecs": number of A*v
-        - "numPreconds": number of OPinv*v
+        - "numMatvecs": number of matvecs with A and A.H
+        - "numPreconds": cumulative number of applications of precAHA, precAAH
+          and precAug
         - "elapsedTime": time that took 
-        - "rnorms" : ||A*v[i] - u[i]*s[i]||
+        - "rnorms" : (||A*v[:,i] - sigma[i]*u[:,i]||**2 + ||A.H*u[:,i] - sigma[i]*v[:,i]||**2)**.5
         - "hist" : (if return_history) report at every outer iteration of:
 
           - "elapsedTime": time spent up to now
-          - "numMatvecs": number of A*v spent up to now
-          - "nconv": number of converged pair
-          - "eval": eigenvalue of the first unconverged pair
-          - "resNorm": residual norm of the first unconverged pair
+          - "numMatvecs": number of A*v and A.H*v spent up to now
+          - "nconv": number of converged triplets
+          - "sval": singular value of the first unconverged triplet
+          - "resNorm": residual norm of the first unconverged triplet
 
     Notes
     -----
     The default method used is the hybrid method, which first solves the
     equivalent eigenvalue problem A.H*A or A*A.H (normal equations) and then
     refines the solution solving the augmented problem. The minimum tolerance
-    that this method can achieve is ||A||*epsilon, where epsilon` is the
+    that this method can achieve is ||A||*epsilon, where epsilon is the
     machine precision. However it may not return triplets with singular values
-    smaller than ||A||*epsilon`if "tol" is smaller than ||A||*epsilon/sigma.`.
+    smaller than ||A||*epsilon if "tol" is smaller than ||A||*epsilon/sigma.
 
     This function is a wrapper to PRIMME functions to find singular values and
     vectors [1]_.
@@ -1751,10 +1809,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
         return u, v
 
-    locku0, lockv0 = check_pair(locku0, lockv0, "lockv0 or locku0")
+    orthou0, orthov0 = check_pair(orthou0, orthov0, "orthov0 or orthou0")
 
-    if locku0 is not None:
-        pp.numOrthoConst = min(locku0.shape[1], min(m,n))
+    if orthou0 is not None:
+        pp.numOrthoConst = min(orthou0.shape[1], min(m,n))
 
     if return_history and return_stats:
         pp.monitor_set = 1
@@ -1786,9 +1844,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     svecsr = np.zeros((pp.n, pp.numOrthoConst+pp.numSvals), dtype, order='F')
     norms = np.zeros(pp.numSvals, rtype)
 
-    if locku0 is not None:
-        np.copyto(svecsl[:, 0:pp.numOrthoConst], locku0[:, 0:pp.numOrthoConst])
-        np.copyto(svecsr[:, 0:pp.numOrthoConst], lockv0[:, 0:pp.numOrthoConst])
+    if orthou0 is not None:
+        np.copyto(svecsl[:, 0:pp.numOrthoConst], orthou0[:, 0:pp.numOrthoConst])
+        np.copyto(svecsr[:, 0:pp.numOrthoConst], orthov0[:, 0:pp.numOrthoConst])
 
     u0, v0 = check_pair(u0, v0, "v0 or u0")
 
