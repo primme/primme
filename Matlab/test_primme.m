@@ -130,10 +130,12 @@ ops.primme.maxBlockSize = 2; % set block size for first stage
 % Compute the 5 smallest singular values, using a preconditioner only
 % for the first stage
 
-Pstruct = struct('AHA', diag(A'*A), ...
-                 'AAH', ones(200, 1), 'aug', ones(250, 1));
-Pfun = @(x,mode)Pstruct.(mode).\x;
-svals = primme_svds(A, 5, 'S', [], Pfun);
+Pstruct = struct('AHA', diag(diag(A'*A))); % passing preconditioner as a matrix
+svals = primme_svds(A, 5, 'S', [], Pstruct);
+
+PAtA = diag(A'*A);
+Pstruct = struct('AHA', @(x)PAtA.\x); % passing preconditioner as a function
+svals = primme_svds(A, 5, 'S', [], Pstruct);
 
 % Compute the 5 smallest singular values of a square matrix using ILU(0)
 % as a preconditioner
@@ -141,6 +143,12 @@ svals = primme_svds(A, 5, 'S', [], Pfun);
 A = sparse(diag(1:50) + diag(ones(49,1), 1));
 [L,U] = ilu(A, struct('type', 'nofill'));
 svals = primme_svds(A, 5, 'S', [], L, U);
+
+% Compute the 5 smallest singular values of a square matrix using the R factor
+% of QR=A as a preconditioner
+
+R = qr(A, 0);
+svals = primme_svds(A, 5, 'S', [], [], R);
 
 % Test different methods and return history record
 
