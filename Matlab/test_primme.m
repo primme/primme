@@ -42,9 +42,9 @@ assert(norm(evals - (50:-1:50-k+1)') < 1e-6*norm(A))
 
 [evecs, evals, rnorms, stats] = primme_eigs(single(A), k, 25.2, ops, ...
                                             'DEFAULT_MIN_TIME');
-[v,d] = eigs(A, k, 25.2);
 
-assert(all(abs(diag(evals) - diag(d)) < 1e-6*stats.estimateAnorm))
+[a,p] = sort(abs((1:50) - 25.2)); p = sort(p(1:k), 'descend');
+assert(all(abs(diag(evals) - p(1:k)') < 1e-6*stats.estimateAnorm))
 assert(all(rnorms < 1e-6*stats.estimateAnorm));
 
 % Compute the 6 smallest eigenvalues and vectors of a matrix defined by
@@ -53,9 +53,8 @@ assert(all(rnorms < 1e-6*stats.estimateAnorm));
 fun = @(x)A*x;
 matrix_dim = 50;
 [evecs, evals] = primme_eigs(fun, matrix_dim, k, 'SA', ops);
-[v,d] = eigs(A, k, 'SA');
 
-assert(norm(diag(evals) - diag(d)) < 1e-6*norm(A))
+assert(norm(diag(evals) - (1:k)') < 1e-6*norm(A))
 for i=1:k
   assert(norm(A*evecs(:,i) - evecs(:,i)*evals(i,i)) < 1e-6*norm(A))
 end
@@ -96,9 +95,8 @@ ops = struct();
 ops.eps = 1e-6; % residual norm tolerance 
 k = 6;          % number of singular values
 svals = primme_svds(A, k, 'L', ops);
-[u,s,v] = svds(A, k, 'largest');
 
-assert(norm(svals - diag(s)) < 1e-6*norm(A))
+assert(norm(svals - (50:-1:50-k+1)') < 1e-6*norm(A))
 
 % Compute the 6 smallest singular values and vectors of a matrix defined by
 % the matrix-vector product
@@ -112,9 +110,8 @@ matrix_dim_m = 200;
 matrix_dim_n = 50;
 
 [svecsl, svals, svecsr] = primme_svds(fun, matrix_dim_m, matrix_dim_n, k, 'S', ops);
-[u,s,v] = svds(A, k, 'smallest');
 
-assert(norm(diag(svals) - diag(s)) < 1e-6*norm(A))
+assert(norm(diag(svals) - (k:-1:1)') < 1e-6*norm(A))
 for i=1:k
   assert(norm(A*svecsr(:,i) - svecsl(:,i)*svals(i,i)) < 1e-6*norm(A))
 end
