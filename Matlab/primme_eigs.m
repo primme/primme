@@ -78,7 +78,7 @@ function [varargout] = primme_eigs(varargin)
 %     'JDQR',                     Original block, Jacobi Davidson
 %     'JDQMR',                    Our block JDQMR method (similar to JDCG)
 %     'JDQMR_ETol',               Slight, but efficient JDQMR modification
-%     'SUBSPACE_ITERATION',       equiv. to GD(block,2*block)
+%     'STEEPEST_DESCENT',         equiv. to GD(block,2*block)
 %     'LOBPCG_OrthoBasis',        equiv. to GD(nev,3*nev)+nev
 %     'LOBPCG_OrthoBasis_Window'  equiv. to GD(block,3*block)+block nev>block
 %

@@ -94,7 +94,7 @@
 .. |JDQR|                          replace:: :c:member:`PRIMME_JDQR                          <primme_preset_method.PRIMME_JDQR>`
 .. |JDQMR|                         replace:: :c:member:`PRIMME_JDQMR                         <primme_preset_method.PRIMME_JDQMR>`
 .. |JDQMR_ETol|                    replace:: :c:member:`PRIMME_JDQMR_ETol                    <primme_preset_method.PRIMME_JDQMR_ETol>`
-.. |SUBSPACE_ITERATION|            replace:: :c:member:`PRIMME_SUBSPACE_ITERATION            <primme_preset_method.PRIMME_SUBSPACE_ITERATION>`
+.. |STEEPEST_DESCENT|              replace:: :c:member:`PRIMME_STEEPEST_DESCENT              <primme_preset_method.PRIMME_STEEPEST_DESCENT>`
 .. |LOBPCG_OrthoBasis|             replace:: :c:member:`PRIMME_LOBPCG_OrthoBasis             <primme_preset_method.PRIMME_LOBPCG_OrthoBasis>`
 .. |LOBPCG_OrthoBasis_Window|      replace:: :c:member:`PRIMME_LOBPCG_OrthoBasis_Window      <primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window>`
 

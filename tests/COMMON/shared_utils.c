@@ -94,7 +94,7 @@ int read_solver_params(char *configFileName, char *outputFileName,
                READ_METHOD(PRIMME_JDQR);
                READ_METHOD(PRIMME_JDQMR);
                READ_METHOD(PRIMME_JDQMR_ETol);
-               READ_METHOD(PRIMME_SUBSPACE_ITERATION);
+               READ_METHOD(PRIMME_STEEPEST_DESCENT);
                READ_METHOD(PRIMME_LOBPCG_OrthoBasis);
                READ_METHOD(PRIMME_LOBPCG_OrthoBasis_Window);
                #undef READ_METHOD
@@ -480,7 +480,7 @@ void driver_display_method(primme_preset_method method, const char* methodstr, F
       "PRIMME_JDQR",
       "PRIMME_JDQMR",
       "PRIMME_JDQMR_ETol",
-      "PRIMME_SUBSPACE_ITERATION",
+      "PRIMME_STEEPEST_DESCENT",
       "PRIMME_LOBPCG_OrthoBasis",
       "PRIMME_LOBPCG_OrthoBasis_Window"};
 

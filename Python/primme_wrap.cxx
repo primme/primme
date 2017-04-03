@@ -20820,7 +20820,7 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "PRIMME_JDQR",SWIG_From_int(static_cast< int >(PRIMME_JDQR)));
   SWIG_Python_SetConstant(d, "PRIMME_JDQMR",SWIG_From_int(static_cast< int >(PRIMME_JDQMR)));
   SWIG_Python_SetConstant(d, "PRIMME_JDQMR_ETol",SWIG_From_int(static_cast< int >(PRIMME_JDQMR_ETol)));
-  SWIG_Python_SetConstant(d, "PRIMME_SUBSPACE_ITERATION",SWIG_From_int(static_cast< int >(PRIMME_SUBSPACE_ITERATION)));
+  SWIG_Python_SetConstant(d, "PRIMME_STEEPEST_DESCENT",SWIG_From_int(static_cast< int >(PRIMME_STEEPEST_DESCENT)));
   SWIG_Python_SetConstant(d, "PRIMME_LOBPCG_OrthoBasis",SWIG_From_int(static_cast< int >(PRIMME_LOBPCG_OrthoBasis)));
   SWIG_Python_SetConstant(d, "PRIMME_LOBPCG_OrthoBasis_Window",SWIG_From_int(static_cast< int >(PRIMME_LOBPCG_OrthoBasis_Window)));
   SWIG_Python_SetConstant(d, "primme_int",SWIG_From_int(static_cast< int >(primme_int)));

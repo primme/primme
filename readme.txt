@@ -72,6 +72,8 @@ From PRIMME 2.0 to 2.1:
 
 * Added members "monitorFun" and "monitor" to "primme_svds_params".
 
+* Renamed "PRIMME_SUBSPACE_ITERATION" as "PRIMME_STEEPEST_DESCENT".
+
 From PRIMME 1.x to 2.0:
 
 * Prototype of callbacks has changed: "matrixMatvec",
@@ -763,7 +765,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme)
            "PRIMME_JDQR"
            "PRIMME_JDQMR"
            "PRIMME_JDQMR_ETol"
-           "PRIMME_SUBSPACE_ITERATION"
+           "PRIMME_STEEPEST_DESCENT"
            "PRIMME_LOBPCG_OrthoBasis"
            "PRIMME_LOBPCG_OrthoBasis_Window"
 
@@ -840,7 +842,7 @@ primme_set_method_f77(method, primme, ierr)
            "PRIMME_JDQR"
            "PRIMME_JDQMR"
            "PRIMME_JDQMR_ETol"
-           "PRIMME_SUBSPACE_ITERATION"
+           "PRIMME_STEEPEST_DESCENT"
            "PRIMME_LOBPCG_OrthoBasis"
            "PRIMME_LOBPCG_OrthoBasis_Window"
 
@@ -2713,11 +2715,11 @@ primme_preset_method
       changes as for the method "PRIMME_JDQMR" and sets "convTest" =
       "primme_adaptive_ETolerance".
 
-   PRIMME_SUBSPACE_ITERATION
+   PRIMME_STEEPEST_DESCENT
 
       Subspace iteration.
 
-      With "PRIMME_SUBSPACE_ITERATION" "primme_set_method()" sets:
+      With "PRIMME_STEEPEST_DESCENT" "primme_set_method()" sets:
 
       * "locking"    = 1;
 
@@ -3148,7 +3150,7 @@ function [varargout] = primme_eigs(varargin)
       * '"PRIMME_JDQMR_ETol"',               Slight, but efficient
         JDQMR modification
 
-      * '"PRIMME_SUBSPACE_ITERATION"',       equivalent to
+      * '"PRIMME_STEEPEST_DESCENT"',         equivalent to
         GD(block,2*block)
 
       * '"PRIMME_LOBPCG_OrthoBasis"',        equivalent to
@@ -4895,7 +4897,7 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
 
    Compute k singular values and vectors of the matrix A.
 

@@ -219,7 +219,7 @@ void primme_free(primme_params *primme) {
  *        JDQR,                    : Original block, Jacobi Davidson
  *        JDQMR,                   : Our block JDQMR method (similar to JDCG)
  *        JDQMR_ETol,              : Slight, but efficient JDQMR modification
- *        SUBSPACE_ITERATION,      : equiv. to GD(block,2*block)
+ *        STEEPEST_DESCENT,      : equiv. to GD(block,2*block)
  *        LOBPCG_OrthoBasis,       : equiv. to GD(nev,3*nev)+nev
  *        LOBPCG_OrthoBasis_Window : equiv. to GD(block,3*block)+block nev>block
  *
@@ -400,7 +400,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.projectors.SkewX   = 1;
       primme->correctionParams.convTest           = primme_adaptive_ETolerance;
    }
-   else if (method == PRIMME_SUBSPACE_ITERATION) {
+   else if (method == PRIMME_STEEPEST_DESCENT) {
       primme->locking                             = 1;
       primme->maxBasisSize                        = primme->numEvals*2;
       primme->minRestartSize                      = primme->numEvals;
@@ -1466,7 +1466,7 @@ int primme_constant_info(const char* label_name, int *value) {
    IF_IS(PRIMME_JDQR);
    IF_IS(PRIMME_JDQMR);
    IF_IS(PRIMME_JDQMR_ETol);
-   IF_IS(PRIMME_SUBSPACE_ITERATION);
+   IF_IS(PRIMME_STEEPEST_DESCENT);
    IF_IS(PRIMME_LOBPCG_OrthoBasis);
    IF_IS(PRIMME_LOBPCG_OrthoBasis_Window);
    

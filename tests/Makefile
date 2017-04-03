@@ -140,7 +140,7 @@ all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: pri
 		exit 1;\
 	fi
 
-T_methods = DEFAULT_METHOD DYNAMIC DEFAULT_MIN_TIME DEFAULT_MIN_MATVECS Arnoldi GD_plusK GD_Olsen_plusK JD_Olsen_plusK JDQR JDQMR JDQMR_ETol SUBSPACE_ITERATION LOBPCG_OrthoBasis LOBPCG_OrthoBasis_Window 
+T_methods = DEFAULT_METHOD DYNAMIC DEFAULT_MIN_TIME DEFAULT_MIN_MATVECS Arnoldi GD_plusK GD_Olsen_plusK JD_Olsen_plusK JDQR JDQMR JDQMR_ETol STEEPEST_DESCENT LOBPCG_OrthoBasis LOBPCG_OrthoBasis_Window 
 T_sizes = 0 1 2 3 4 5 6 7 10 100
 
 tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
@@ -165,7 +165,7 @@ tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
 	for proj in primme_proj_RR primme_proj_refined ; do \
 		case "$$target-$$proj-$$method" in \
 			primme_closest*-primme_proj_RR-LOBPCG*) continue ;; \
-			primme_closest*-SUBSPACE*) continue ;; \
+			primme_closest*-STEEPEST_DESCENT*) continue ;; \
 			primme_closest*-Arnoldi*) continue ;; \
 			primme_closest*-GD*) continue ;; \
 			primme_closest*) ;; \

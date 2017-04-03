@@ -381,7 +381,7 @@ primme_set_method
       | |JDQR|
       | |JDQMR|
       | |JDQMR_ETol|
-      | |SUBSPACE_ITERATION|
+      | |STEEPEST_DESCENT|
       | |LOBPCG_OrthoBasis|
       | |LOBPCG_OrthoBasis_Window|
 

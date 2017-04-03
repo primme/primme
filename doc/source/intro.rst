@@ -20,6 +20,8 @@ From PRIMME 2.0 to 2.1:
 
 * Added members |SmonitorFun| and ``monitor`` to :c:type:`primme_svds_params`.
 
+* Renamed ``PRIMME_SUBSPACE_ITERATION`` as |STEEPEST_DESCENT|.
+
 From PRIMME 1.x to 2.0:
 
 * Prototype of callbacks has changed: |matrixMatvec|, |applyPreconditioner|, |massMatrixMatvec| and |globalSumReal|.

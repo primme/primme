@@ -39,7 +39,7 @@ primme_set_method_f77
       | ``PRIMME_JDQR``
       | ``PRIMME_JDQMR``
       | ``PRIMME_JDQMR_ETol``
-      | ``PRIMME_SUBSPACE_ITERATION``
+      | ``PRIMME_STEEPEST_DESCENT``
       | ``PRIMME_LOBPCG_OrthoBasis``
       | ``PRIMME_LOBPCG_OrthoBasis_Window``
 

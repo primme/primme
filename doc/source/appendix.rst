@@ -1344,11 +1344,11 @@ Preset Methods
       changes as for the method |JDQMR| and sets
       |convTest| = |primme_adaptive_ETolerance|.
 
-   .. c:member:: PRIMME_SUBSPACE_ITERATION
+   .. c:member:: PRIMME_STEEPEST_DESCENT
 
       Subspace iteration.
 
-      With |SUBSPACE_ITERATION| :c:func:`primme_set_method` sets:
+      With |STEEPEST_DESCENT| :c:func:`primme_set_method` sets:
 
       .. hlist::
 

@@ -51,7 +51,7 @@ C-------------------------------------------------------
      : PRIMME_JDQR,
      : PRIMME_JDQMR,
      : PRIMME_JDQMR_ETol,
-     : PRIMME_SUBSPACE_ITERATION,
+     : PRIMME_STEEPEST_DESCENT,
      : PRIMME_LOBPCG_OrthoBasis,
      : PRIMME_LOBPCG_OrthoBasis_Window
 
@@ -69,7 +69,7 @@ C-------------------------------------------------------
      : PRIMME_JDQR = 10,
      : PRIMME_JDQMR = 11,
      : PRIMME_JDQMR_ETol = 12,
-     : PRIMME_SUBSPACE_ITERATION = 13,
+     : PRIMME_STEEPEST_DESCENT = 13,
      : PRIMME_LOBPCG_OrthoBasis = 14,
      : PRIMME_LOBPCG_OrthoBasis_Window = 15
      :)
