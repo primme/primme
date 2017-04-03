@@ -415,7 +415,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
-         u0=None, locku0=None, lockv0=None,
+         u0=None, orthou0=None, orthov0=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
          return_history=False, **kargs):
