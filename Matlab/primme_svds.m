@@ -21,10 +21,10 @@ function [varargout] = primme_svds(varargin)
 %
 %   Field name       Parameter                               Default
 %
-%   OPTIONS.aNorm    estimation of the 2-norm A                    -
+%   OPTIONS.aNorm    estimation of the 2-norm A                  0.0
 %   OPTIONS.tol      convergence tolerance (see eps):          1e-10
 %                    NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A).
-%   OPTIONS.maxit    maximum number of iterat. (see maxMatvecs)  inf
+%   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
 %   OPTIONS.disp     level of reporting 0-3 (see HIST)             0
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   0
