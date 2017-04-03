@@ -12,7 +12,7 @@ MATLAB Interface
 
    ``D = primme_eigs(Afun,dim)`` accepts a function ``Afun`` instead of a matrix. ``Afun``
    is a function handle and ``y = Afun(x)`` returns the matrix-vector product ``A*x``.
-   In all the following signatures, ``A`` can be replaced by ``Afun, dim``.
+   In all the following syntaxes, ``A`` can be replaced by ``Afun, dim``.
 
    ``D = primme_eigs(A,k)`` finds the ``k`` largest magnitude eigenvalues. ``k`` must be
    less than the dimension of the matrix ``A``.
@@ -21,16 +21,26 @@ MATLAB Interface
    If ``target`` is a real number, it finds the closest eigenvalues to ``target``.
    If ``target`` is
 
-      ``'LA'`` or ``'SA'``, eigenvalues with the largest or smallest algebraic value
+      * ``'LA'`` or ``'SA'``, eigenvalues with the largest or smallest algebraic value.
 
-      ``'LM'`` or ``'SM'``, eigenvalues with the largest or smallest distance from
-      the given values in ``OPTS.targetShifts``, or zero if ``OPTS.targetShifts``
-      is empty. If `m` values are provided, the first `m` eigenvalues `D` are found s.t.
-      max/min ``ABS(D(i)-OPTS.targetShifts(i))``, for ``i=1:m``.
-      ``OPTS.targerShifts(m)`` is used for ``i=m+1:k``.
+      * ``'LM'`` or ``'SM'``, eigenvalues with the largest or smallest magnitude if
+        ``OPTS.targetShifts`` is empty. If ``target`` is a real or complex 
+        scalar including 0, :mat:func:`primme_eigs` finds the eigenvalues closest 
+        to ``target``.
 
-      ``'CLT'`` or ``'CGT'``, find eigenvalues closest to but less or greater than
-      the given values in ``OPTS.targetShifts``.
+        In addition, if some values are provided in ``OPTS.targetShifts``,
+        it finds eigenvalues that are farthest (``'LM'``) or closest (``'SM'``) in 
+        absolute value from the given values.
+
+        Examples:
+
+        ``k=1``, ``'LM'``, ``OPTS.targetShifts=[]`` returns the largest magnitude ``eig(A)``.
+        ``k=1``, ``'SM'``, ``OPTS.targetShifts=[]`` returns the smallest magnitude ``eig(A)``.
+        ``k=3``, ``'SM'``, ``OPTS.targetShifts=[2, 5]`` returns the closest eigenvalue in 
+        absolute sense to 2, and the two closest eigenvalues to 5.
+
+      * ``'CLT'`` or ``'CGT'``, find eigenvalues closest to but less or greater than
+        the given values in ``OPTS.targetShifts``.
 
    ``D = primme_eigs(A,k,target,OPTS)`` specifies extra solver parameters. Some
    default values are indicated in brackets {}:
@@ -127,13 +137,17 @@ MATLAB Interface
 
       d = primme_eigs(A,10,25.0) % the 10 closest eigenvalues to 25.0
 
+      opts.targetShifts = [2 20];
+      d = primme_eigs(A,10,'SM',opts) % 1 eigenvalue closest to 2 and 
+                                      % 9 eigenvalues closest to 20
+
       opts = struct();
       opts.tol = 1e-4; % set tolerance
       opts.maxBlockSize = 2; % set block size
-      [x,d] = primme_eigs(A,10,'S',opts,'DEFAULT_MIN_TIME')
+      [x,d] = primme_eigs(A,10,'SA',opts,'DEFAULT_MIN_TIME')
 
       opts.orthoConst = x;  
-      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10 with the default method
+      [d,rnorms] = primme_eigs(A,10,'SA',opts) % find another 10 with the default method
 
       % Compute the 6 eigenvalues closest to 30.5 using ILU(0) as a preconditioner
       % by passing the matrices L and U.

@@ -3015,8 +3015,8 @@ function [varargout] = primme_eigs(varargin)
 
    "D = primme_eigs(Afun,dim)" accepts a function "Afun" instead of a
    matrix. "Afun" is a function handle and "y = Afun(x)" returns the
-   matrix-vector product "A*x". In all the following signatures, "A"
-   can be replaced by "Afun, dim".
+   matrix-vector product "A*x". In all the following syntaxes, "A" can
+   be replaced by "Afun, dim".
 
    "D = primme_eigs(A,k)" finds the "k" largest magnitude eigenvalues.
    "k" must be less than the dimension of the matrix "A".
@@ -3025,18 +3025,29 @@ function [varargout] = primme_eigs(varargin)
    "target" is a real number, it finds the closest eigenvalues to
    "target". If "target" is
 
-      "'LA'" or "'SA'", eigenvalues with the largest or smallest
-      algebraic value
+      * "'LA'" or "'SA'", eigenvalues with the largest or smallest
+        algebraic value.
 
-      "'LM'" or "'SM'", eigenvalues with the largest or smallest
-      distance from the given values in "OPTS.targetShifts", or zero
-      if "OPTS.targetShifts" is empty. If *m* values are provided, the
-      first *m* eigenvalues *D* are found s.t. max/min
-      "ABS(D(i)-OPTS.targetShifts(i))", for "i=1:m".
-      "OPTS.targerShifts(m)" is used for "i=m+1:k".
+      * "'LM'" or "'SM'", eigenvalues with the largest or smallest
+        magnitude if "OPTS.targetShifts" is empty. If "target" is a
+        real or complex scalar including 0, "primme_eigs()" finds the
+        eigenvalues closest to "target".
 
-      "'CLT'" or "'CGT'", find eigenvalues closest to but less or
-      greater than the given values in "OPTS.targetShifts".
+        In addition, if some values are provided in
+        "OPTS.targetShifts", it finds eigenvalues that are farthest
+        ("'LM'") or closest ("'SM'") in absolute value from the given
+        values.
+
+        Examples:
+
+        "k=1", "'LM'", "OPTS.targetShifts=[]" returns the largest
+        magnitude "eig(A)". "k=1", "'SM'", "OPTS.targetShifts=[]"
+        returns the smallest magnitude "eig(A)". "k=3", "'SM'",
+        "OPTS.targetShifts=[2, 5]" returns the closest eigenvalue in
+        absolute sense to 2, and the two closest eigenvalues to 5.
+
+      * "'CLT'" or "'CGT'", find eigenvalues closest to but less or
+        greater than the given values in "OPTS.targetShifts".
 
    "D = primme_eigs(A,k,target,OPTS)" specifies extra solver
    parameters. Some default values are indicated in brackets {}:
@@ -3213,13 +3224,17 @@ function [varargout] = primme_eigs(varargin)
 
       d = primme_eigs(A,10,25.0) % the 10 closest eigenvalues to 25.0
 
+      opts.targetShifts = [2 20];
+      d = primme_eigs(A,10,'SM',opts) % 1 eigenvalue closest to 2 and
+                                      % 9 eigenvalues closest to 20
+
       opts = struct();
       opts.tol = 1e-4; % set tolerance
       opts.maxBlockSize = 2; % set block size
-      [x,d] = primme_eigs(A,10,'S',opts,'DEFAULT_MIN_TIME')
+      [x,d] = primme_eigs(A,10,'SA',opts,'DEFAULT_MIN_TIME')
 
       opts.orthoConst = x;
-      [d,rnorms] = primme_eigs(A,10,'S',opts) % find another 10 with the default method
+      [d,rnorms] = primme_eigs(A,10,'SA',opts) % find another 10 with the default method
 
       % Compute the 6 eigenvalues closest to 30.5 using ILU(0) as a preconditioner
       % by passing the matrices L and U.
@@ -4895,7 +4910,7 @@ primme_svds_preset_method
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, locku0=None, lockv0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
+Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
 
    Compute k singular values and vectors of the matrix A.
 
@@ -5130,7 +5145,7 @@ function [varargout] = primme_svds(varargin)
            * '"primme_svds_augmented"': "[0 A';A 0]"
 
            * '"primme_svds_hybrid"': first normal equations and then
-             augmented
+             augmented (default)
 
       * "u0":       initial guesses to the left singular vectors
         (see "initSize") {[]}
@@ -5154,14 +5169,40 @@ function [varargout] = primme_svds(varargin)
    The available options for "OPTIONS.primme" and "primmeStage2" are
    the same as "primme_eigs()", plus the option "'method'".
 
-   "S = primme_svds(A,K,SIGMA,OPTIONS,P)"
+   "S = primme_svds(A,k,sigma,OPTIONS,P)" applies a preconditioner "P"
+   as follows:
 
-   "S = primme_svds(A,K,SIGMA,OPTIONS,P1,P2)" applies the
-   preconditioner "P\X" or "(P1*P2)\X" to approximate "A\X". If "P" is
-   "[]" then a preconditioner is not applied. "P" may be a function
-   handle "PFUN" such that "PFUN(X,'AHA')" returns an approximation of
-   "(A'*A)\X", "PFUN(X,'AAH')", of "(A*A')\X" and "PFUN(X,'aug')", of
-   "[zeros(N,N) A';A zeros(M,M)]\X".
+      * If "P" is a matrix it applies "P\X" and "P'\X" to
+        approximate "A\X" and "A'\X".
+
+      * If "P" is a function handle, "PFUN", "PFUN(X,'notransp')"
+        returns "P\X" and "PFUN(X,'transp')" returns "P’\X",
+        approximating "A\X" and "A'\X" respectively.
+
+      * If "P" is a "struct", it can have one or more of the
+        following fields:
+
+           "P.AHA\X" or "P.AHA(X)" returns an approximation of
+           "(A'*A)\X", "P.AAH\X" or "P.AAH(X)" returns an
+           approximation of "(A*A')\X", "P.aug\X" or "P.aug(X)"
+           returns an approximation of "[zeros(N,N) A';A
+           zeros(M,M)]\X".
+
+      * If "P" is "[]" then no preconditioner is applied.
+
+   "S = primme_svds(A,k,sigma,OPTIONS,P1,P2") applies a factorized
+   preconditioner:
+
+      * If both "P1" and "P2" are nonempty, apply "(P1*P2)\X" to
+        approximate "A\X".
+
+      * If "P1" is "[]" and "P2" is nonempty, then "(P2'*P2)\X"
+        approximates "A'*A". "P2" can be the R factor of an
+        (incomplete) QR factorization of "A" or the L factor of an
+        (incomplete) LL' factorization of "A'*A" (RIF).
+
+      * If both "P1" and "P2" are "[]" then no preconditioner is
+        applied.
 
    "[U,S,V] = primme_svds(...)" returns also the corresponding
    singular vectors. If "A" is M-by-N and "K" singular triplets are

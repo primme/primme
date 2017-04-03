@@ -38,7 +38,7 @@ MATLAB Interface
 
          * '|primme_svds_normalequations|': ``A'*A`` or ``A*A'``
          * '|primme_svds_augmented|': ``[0 A';A 0]``
-         * '|primme_svds_hybrid|': first normal equations and then augmented
+         * '|primme_svds_hybrid|': first normal equations and then augmented (default)
 
       * ``u0``:       initial guesses to the left singular vectors (see |SinitSize|) {[]}
       * ``v0``:       initial guesses to the right singular vectors {[]}
@@ -52,13 +52,24 @@ MATLAB Interface
    The available options for ``OPTIONS.primme`` and ``primmeStage2`` are
    the same as :mat:func:`primme_eigs`, plus the option ``'method'``.
 
-   ``S = primme_svds(A,K,SIGMA,OPTIONS,P)``
+   ``S = primme_svds(A,k,sigma,OPTIONS,P)`` applies a preconditioner ``P`` as follows:
 
-   ``S = primme_svds(A,K,SIGMA,OPTIONS,P1,P2)`` applies the preconditioner
-   ``P\X`` or ``(P1*P2)\X`` to approximate ``A\X``. If ``P`` is ``[]`` then a preconditioner is not
-   applied. ``P`` may be a function handle ``PFUN`` such that ``PFUN(X,'AHA')``
-   returns an approximation of ``(A'*A)\X``, ``PFUN(X,'AAH')``, of ``(A*A')\X`` and
-   ``PFUN(X,'aug')``, of ``[zeros(N,N) A';A zeros(M,M)]\X``.
+      * If ``P`` is a matrix it applies ``P\X`` and ``P'\X`` to approximate ``A\X`` and ``A'\X``.
+      * If ``P`` is a function handle, ``PFUN``, ``PFUN(X,'notransp')`` returns ``P\X`` and
+        ``PFUN(X,'transp')`` returns ``P’\X``, approximating ``A\X`` and ``A'\X`` respectively.
+      * If ``P`` is a ``struct``, it can have one or more of the following fields:
+          ``P.AHA\X`` or ``P.AHA(X)`` returns an approximation of ``(A'*A)\X``, 
+          ``P.AAH\X`` or ``P.AAH(X)`` returns an approximation of ``(A*A')\X``,
+          ``P.aug\X`` or ``P.aug(X)`` returns an approximation of ``[zeros(N,N) A';A zeros(M,M)]\X``.
+      * If ``P`` is ``[]`` then no preconditioner is applied.
+
+   ``S = primme_svds(A,k,sigma,OPTIONS,P1,P2``) applies a factorized preconditioner:
+
+      * If both ``P1`` and ``P2`` are nonempty, apply ``(P1*P2)\X`` to approximate ``A\X``. 
+      * If ``P1`` is ``[]`` and ``P2`` is nonempty, then ``(P2'*P2)\X`` approximates ``A'*A``. 
+        ``P2`` can be the R factor of an (incomplete) QR factorization of ``A`` or 
+        the L factor of an (incomplete) LL' factorization of ``A'*A`` (RIF).
+      * If both ``P1`` and ``P2`` are ``[]`` then no preconditioner is applied.
 
    ``[U,S,V] = primme_svds(...)`` returns also the corresponding singular vectors.
    If ``A`` is M-by-N and ``K`` singular triplets are computed, then ``U`` is M-by-K
