@@ -50,14 +50,22 @@ function [varargout] = primme_svds(varargin)
 %   and for further descriptions of the methods visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/appendixsvds.html#preset-methods
 %
-%   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P)
-%   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P1,P2) applies the preconditioner P\X or
-%   (P1*P2)\X to approximate A\X. If P is [] then a preconditioner is not
-%   applied. P may be a function handle PFUN where user must specify three
-%   different modes such that:
-%       PFUN(X,'AHA'), returns an approximation of (A'*A)\X, 
-%       PFUN(X,'AAH'), returns an approximation of (A*A')\X,
-%       PFUN(X,'aug'), returns an approximation of [zeros(N,N) A';A zeros(M,M)]\X.
+%   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P) applies a preconditioner P as follows.
+%   If P is a matrix it applies P\X and P'\X to approximate A\X and A'\X.
+%   If P is a function handle, PFUN, PFUN(X,'notransp') returns P\X and
+%   PFUN(X,'transp') returns P’\X, approximating A\X and A'\X respectively.
+%   If P is a struct, it can have one or more of the following fields:
+%     P.AHA\X or P.AHA(X) returns an approximation of (A'*A)\X, 
+%     P.AAH\X or P.AAH(X) returns an approximation of (A*A')\X,
+%     P.aug\X or P.aug(X) returns an approximation of [zeros(N,N) A';A zeros(M,M)]\X.
+%   If P is [] then no preconditioner is applied.
+%
+%   S = PRIMME_SVDS(A,K,SIGMA,OPTIONS,P1,P2) applies a factorized preconditioner.
+%   If both P1,P2 are nonempty, apply (P1*P2)\X to approximate A\X. 
+%   If P1 is [] and P2 is nonempty, then (P2'*P2)\X approximates A'*A. 
+%   P2 can be the R factor of an (incomplete) QR factorization of A or the L
+%   factor of an (incomplete) LL' factorization of A'*A (RIF).
+%   If both P1 and P2 are [] then no preconditioner is applied.
 %
 %   [U,S,V] = PRIMME_SVDS(...) returns also the corresponding singular vectors.
 %   If A is M-by-N and K singular triplets are computed, then U is M-by-K
@@ -217,25 +225,29 @@ function [varargout] = primme_svds(varargin)
       nextArg = nextArg + 1;
    end
 
-   if nargin == nextArg
+   if nargin == nextArg || (nargin > nextArg && isempty(varargin{nextArg+1}))
       P = varargin{nextArg};
       if isnumeric(P)
-         P = @(x,mode)precondsvds(P,x,mode);
+         if ~isempty(P)
+            P = @(x,mode)precondsvds_Pmat(P,x,mode);
+         end
+      elseif isstruct(P)
+         P = @(x,mode)precondsvds_Pstruct(P,x,mode);
       else
          P = fcnchk_gen(P); % get the function handle of user's function
+         P = @(x,mode)precondsvds_Pfun(P,x,mode,opts.m);
       end
-      opts.applyPreconditioner = P;
-      opts.precondition = 1;
-      nextArg = nextArg + 1;
-   end
-   
-   if nargin >= nextArg
+      if ~isempty(P)
+         opts.applyPreconditioner = P;
+         opts.precondition = 1;
+      end
+   elseif nargin >= nextArg
       P1 = varargin{nextArg};
       P2 = varargin{nextArg+1};
-      if ~isnumeric(P1) || ~isnumeric(P2)
-         error('p1 and p2 must be matrices');
+      if (~isempty(P1) && ~isnumeric(P1)) || ~isnumeric(P2)
+         error('P1 and P2 must be matrices');
       end
-      P = @(x,mode)precondsvds2(P1, P2, x, mode);
+      P = @(x,mode)precondsvds_P1P2(P1, P2, x, mode);
       opts.applyPreconditioner = P;
       opts.precondition = 1;
    end
@@ -549,7 +561,7 @@ function [y] = matvecsvds(A, x, mode)
    end
 end
 
-function [y] = precondsvds(P, x, mode)
+function [y] = precondsvds_Pmat(P, x, mode)
    if strcmp(mode, 'AHA')
       y = P\(P'\x);
    elseif strcmp(mode, 'AAH')
@@ -559,15 +571,49 @@ function [y] = precondsvds(P, x, mode)
    end
 end
 
-function [y] = precondsvds2(P1, P2, x, mode)
+function [y] = precondsvds_Pfun(P, x, mode, m)
    if strcmp(mode, 'AHA')
-      y = P2\(P1\(P1'\(P2'\x)));
+      y = P(P(x, 'transp'), 'notransp');
    elseif strcmp(mode, 'AAH')
-      y = P1'\(P2'\(P2\(P1\x)));
+      y = P(P(x, 'notransp'), 'transp');
    else
-      y = [P2\(P1\x(size(P1,1)+1:end,:)); P1'\(P2'\x(1:size(P1,1),:))];
+      y = [P(x(m+1:end,:), 'notransp'); P(x(1:m,:), 'transp')];
    end
 end
+
+function [y] = precondsvds_P1P2(P1, P2, x, mode)
+   if ~isempty(P1)
+      if strcmp(mode, 'AHA')
+         y = P2\(P1\(P1'\(P2'\x)));
+      elseif strcmp(mode, 'AAH')
+         y = P1'\(P2'\(P2\(P1\x)));
+      else
+         y = [P2\(P1\x(size(P1,1)+1:end,:)); P1'\(P2'\x(1:size(P1,1),:))];
+      end
+   else
+      if strcmp(mode, 'AHA')
+         y = P2\(P2'\x);
+      elseif strcmp(mode, 'AAH')
+         y = P2'\(P2\x);
+      else
+         y = x;
+      end
+   end
+end
+
+function [y] = precondsvds_Pstruct(P, x, mode)
+   if isfield(P, mode)
+      M = P.(mode);
+      if isnumeric(M)
+         y = M\x;
+      else
+         y = M(x);
+      end
+   else
+      y = x;
+   end
+end
+
 
 function [f] = fcnchk_gen(x)
    if exist('fcnchk', 'var')
