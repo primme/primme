@@ -17,6 +17,7 @@ returns \code{A \%*\% x}.}
 \describe{
    \item{\code{"LA"}}{the largest (rightmost) values;}
    \item{\code{"SA"}}{the smallest (leftmost) values;}
+   \item{\code{"LM"}}{the farthest from \code{targetShifts};}
    \item{\code{"SM"}}{the closest to \code{targetShifts};}
    \item{\code{"CLT"}}{the closest but left to \code{targetShifts};}
    \item{\code{"CGT"}}{the closest but greater than \code{targetShifts};}

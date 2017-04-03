@@ -87,12 +87,12 @@ More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
 supported by a number of grants from the National Science Foundation.
 
-* A. Stathopoulos, *Nearly optimal preconditioned methods for hermitian
+* A. Stathopoulos, *Nearly optimal preconditioned methods for Hermitian
   eigenproblems under limited memory. Part I: Seeking one eigenvalue*, SIAM
   J. Sci. Comput., Vol. 29, No. 2, (2007), 481--514.
 
 * A. Stathopoulos and J. R. McCombs, *Nearly optimal preconditioned
-  methods for hermitian eigenproblems under limited memory. Part II:
+  methods for Hermitian eigenproblems under limited memory. Part II:
   Seeking many eigenvalues*, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
   2162-2188.
 
@@ -102,7 +102,7 @@ supported by a number of grants from the National Science Foundation.
   2337-2358.
 
 * A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
-  of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
+  of Hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
 * L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD Method for Computing
   Accurately Singular Triplets of Large Matrices*, SIAM J. Sci. Comput. 37-5(2015),

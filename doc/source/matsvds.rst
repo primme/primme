@@ -5,10 +5,10 @@ MATLAB Interface
 
 .. mat:function:: function [varargout] = primme_svds(varargin)
 
-   :mat:func:`primme_svds` find a few singular values and vectors of large,
-   sparse matrices. by calling PRIMME_.
+   :mat:func:`primme_svds` finds a few singular values and vectors of a matrix ``A``
+   by calling PRIMME_. ``A`` is typically large and sparse.
 
-   ``S = primme_svds(A)`` computes the 6 largest singular values of ``A``.
+   ``S = primme_svds(A)`` returns a vector with the 6 largest singular values of ``A``.
 
    ``S = primme_svds(AFUN,M,N)`` accepts the function handle ``AFUN`` to perform
    the matrix vector products with an M-by-N matrix ``A``. 
@@ -20,19 +20,19 @@ MATLAB Interface
    ``S = primme_svds(A,K,SIGMA)`` computes the K singular values closest to the
    scalar shift ``SIGMA``.
 
-      * If ``SIGMA`` is a vector, find a singular value closest to each ``SIGMA(i)``
+      * If ``SIGMA`` is a vector, find the singular value ``S(i)`` closest to each ``SIGMA(i)``, for ``i<=K``.
       * If ``SIGMA`` is ``'L'``, it computes the largest singular values.
       * if ``SIGMA`` is ``'S'``, it computes the smallest singular values.
 
    ``S = primme_svds(A,K,SIGMA,OPTIONS)`` specifies extra solver parameters.
    Some default values are indicated in brackets {}:
 
-      * |SaNorm|:    estimation of the 2-norm A                    
+      * |SaNorm|:    estimation of the 2-norm of ``A`` {0.0 (estimate the norm internally)}
       * ``tol``:     convergence tolerance ``NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A)`` (see |Seps|) { ``1e-10``}
-      * ``maxit``:   maximum number of iterations (see |SmaxMatvecs|)  {inf}
+      * ``maxit``:   maximum number of matvecs with ``A`` and ``A'`` (see |SmaxMatvecs|)  {inf}
       * ``p``:       maximum basis size (see |SmaxBasisSize|)
       * ``disp``:    level of reporting 0-3 (see HIST) {0: no output}
-      * ``isreal``:  if 0, the matrix is complex; else it's real {1: complex}
+      * ``isreal``:  if 0, the matrix is complex; else it's real {0: complex}
       * ``isdouble``: if 0, the matrix is single; else it's double {1: double}
       * ``method``:  which equivalent eigenproblem to solve
 
@@ -40,8 +40,8 @@ MATLAB Interface
          * '|primme_svds_augmented|': ``[0 A';A 0]``
          * '|primme_svds_hybrid|': first normal equations and then augmented
 
-      * ``u0``:       approximate left singular vectors (see |SinitSize|) {[]}
-      * ``v0``:       approximate right singular vectors {[]}
+      * ``u0``:       initial guesses to the left singular vectors (see |SinitSize|) {[]}
+      * ``v0``:       initial guesses to the right singular vectors {[]}
       * ``orthoConst``: external orthogonalization constraints (see |SnumOrthoConst|) {[]}
       * |Slocking|:  1, hard locking; 0, soft locking 
       * |SmaxBlockSize|: maximum block size
@@ -53,8 +53,9 @@ MATLAB Interface
    the same as :mat:func:`primme_eigs`, plus the option ``'method'``.
 
    ``S = primme_svds(A,K,SIGMA,OPTIONS,P)``
-   ``S = primme_svds(A,K,SIGMA,OPTIONS,P1,P2)`` makes use of a preconditioner,
-   applying ``P\X`` or ``(P1*P2)\X``. If ``P`` is ``[]`` then a preconditioner is not
+
+   ``S = primme_svds(A,K,SIGMA,OPTIONS,P1,P2)`` applies the preconditioner
+   ``P\X`` or ``(P1*P2)\X`` to approximate ``A\X``. If ``P`` is ``[]`` then a preconditioner is not
    applied. ``P`` may be a function handle ``PFUN`` such that ``PFUN(X,'AHA')``
    returns an approximation of ``(A'*A)\X``, ``PFUN(X,'AAH')``, of ``(A*A')\X`` and
    ``PFUN(X,'aug')``, of ``[zeros(N,N) A';A zeros(M,M)]\X``.
@@ -65,15 +66,16 @@ MATLAB Interface
    orthonormal columns.
 
    ``[S,R] = primme_svds(...)``
-   ``[U,S,V,R] = primme_svds(...)`` returns upper bounds of the residual norm
+
+   ``[U,S,V,R] = primme_svds(...)`` returns the residual norm
    of each ``K`` triplet, ``NORM([A*V(:,i)-S(i,i)*U(:,i); A'*U(:,i)-S(i,i)*V(:,i)])``.
 
    ``[U,S,V,R,STATS] = primme_svds(...)`` returns how many times ``A`` and ``P`` were
    used and elapsed time. The application of ``A`` is counted independently from
    the application of ``A'``.
 
-   ``[U,S,V,R,STATS,HIST] = primme_svds(...)`` instead of printing the convergence
-   history, it is returned. Every row is a record, and the columns report:
+   ``[U,S,V,R,STATS,HIST] = primme_svds(...)`` returns the convergence history,
+   instead of printing it. Every row is a record, and the columns report:
   
       * ``HIST(:,1)``: number of matvecs
       * ``HIST(:,2)``: time

@@ -268,7 +268,7 @@ primme_params
  
       * 0: silent.
       * 1: print some error messages when these occur.
-      * 2: as 1, and info about targeted eigenpairs when they are marked as converged::
+      * 2: as in 1, and info about targeted eigenpairs when they are marked as converged::
       
             #Converged $1 eval[ $2 ]= $3 norm $4 Mvecs $5 Time $7
 
@@ -276,17 +276,17 @@ primme_params
 
             #Lock epair[ $1 ]= $3 norm $4 Mvecs $5 Time $7
 
-      * 3: as 2, and info about targeted eigenpairs every outer iteration::
+      * 3: in as 2, and info about targeted eigenpairs every outer iteration::
       
             OUT $6 conv $1 blk $8 MV $5 Sec $7 EV $3 |r| $4
 
         Also, if it is used the dynamic method, show JDQMR/GDk performance ratio and
         the current method in use.
-      * 4: as 3, and info about targeted eigenpairs every inner iteration::
+      * 4: in as 3, and info about targeted eigenpairs every inner iteration::
       
             INN MV $5 Sec $7 Eval $3 Lin|r| $9 EV|r| $4
       
-      * 5: as 4, and verbose info about certain choices of the algorithm.
+      * 5: in as 4, and verbose info about certain choices of the algorithm.
       
       Output key:
 
@@ -318,11 +318,7 @@ primme_params
          grep OUT outpufile | awk '{print $8" "$14}' > out
          grep INN outpufile | awk '{print $3" "$11}' > inn
 
-      Then in Matlab::
-
-         plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
-
-      Or in gnuplot::
+      Then in gnuplot::
 
          plot 'out' w lp, 'inn' w lp
 
@@ -643,7 +639,7 @@ primme_params
       * ``primme_proj_harmonic``, Harmonic Rayleigh-Ritz,
         :math:`Ax_i - Bx_i\lambda_i \perp (A-\tau B)\mathcal V`, where :math:`\tau` is the current
         target shift (see |targetShifts|).
-      * ``primme_proj_refined``, refined extraction, compute :math:`||x_i||=1` so that
+      * ``primme_proj_refined``, refined extraction, compute :math:`x_i` with :math:`||x_i||=1` that
         minimizes :math:`||(A-\tau B)x_i||`; the eigenvalues are computed as the
         Rayleigh quotients, :math:`\lambda_i=\frac{x_i^*Ax_i}{x_i^*Bx_i}`.
 
@@ -881,77 +877,80 @@ primme_params
    .. c:member:: void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
 
 
-      Convergence monitor. Usually used to customize how it is reported the
-      unconverged and converged pairs and the residual norms.
+      Convergence monitor. Used to customize how to report solver 
+      information during execution (iteration number, matvecs, time, 
+      unconverged and converged eigenvalues, residual norms, targets, etc).
 
       :param basisEvals:   array with approximate eigenvalues of the basis.
-      :param basisSize:    size of the arrays ``basisEvals``, ``basisFlags`` and ``basisNorms``.
-      :param basisFlags:   state of every approximate pair of the basis (see conv_flags).
-      :param iblock:       indices of the approximate pairs in the block.
+      :param basisSize:    size of the arrays, ``basisEvals``, ``basisFlags`` and ``basisNorms``.
+      :param basisFlags:   state of every approximate pair in the basis.
+      :param iblock:       indices of the approximate pairs in the block targeted during current iteration.
       :param blockSize:    size of array ``iblock``.
       :param basisNorms:   array with residual norms of the pairs in the basis.
       :param numConverged: number of pairs converged in the basis plus the number of the locked pairs (note that this value isn't monotonic).
       :param lockedEvals:  array with the locked eigenvalues.
       :param numLocked:    size of the arrays ``lockedEvals``, ``lockedFlags`` and ``lockedNorms``.
-      :param lockedFlags:  state of each locked eigenpair (see conv_flags).
-      :param lockedNorms:  array with residual norms of the locked pairs.
-      :param inner_its:    number of performed QMR iterations in the current correction equation.
+      :param lockedFlags:  state of each locked eigenpair.
+      :param lockedNorms:  array with the residual norms of the locked pairs.
+      :param inner_its:    number of performed QMR iterations in the current correction equation. It resets for each block vector.
       :param LSRes:        residual norm of the linear system at the current QMR iteration.
       :param event:        event reported.
-      :param primme:       parameters structure.
+      :param primme:       parameters structure; the counter in ``stats`` are updated with the current number of matrix-vector products, iterations, elapsed time, etc., since start.
       :param ierr:         output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      This function is called at the next events:
+      This function is called at the following events:
 
       * ``*event == primme_event_outer_iteration``: every outer iterations.
 
-        It is provided ``basisEvals``, ``basisSize``, ``basisFlags``, ``iblock`` and ``blockSize``.
+        For this event the following inputs are provided:
+        ``basisEvals``, ``basisNorms``, ``basisSize``, ``basisFlags``, ``iblock`` and ``blockSize``.
 
-        ``basisNorms[iblock[i]]`` has the residual norms for the selected pairs in the block.
-        PRIMME avoids to compute the residual of soft-locked pairs, ``basisNorms[i]`` for ``i<iblock[0]``.
+        ``basisNorms[iblock[i]]`` has the residual norm for the selected pair in the block.
+        PRIMME avoids computing the residual of soft-locked pairs, ``basisNorms[i]`` for ``i<iblock[0]``.
         So those values may correspond to previous iterations. The values ``basisNorms[i]`` for ``i>iblock[blockSize-1]``
         are not valid.
 
-        If |locking| is enabled, it is provided ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms``.
+        If |locking| is enabled, ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are also provided.
 
         ``inner_its`` and  ``LSRes`` are not provided.
 
       * ``*event == primme_event_inner_iteration``: every QMR iteration.
 
         ``basisEvals[0]`` and ``basisNorms[0]`` provides the approximate eigenvalue and the residual norm
-        of the pair which the correction equation is being computed for. If |convTest| is |primme_adaptive|
-        or |primme_adaptive_ETolerance|, ``basisEvals[0]`` and ``basisNorms[0]`` is updated every QMR iteration.
+        of the pair which is improved in the current correction equation. If |convTest| is |primme_adaptive|
+        or |primme_adaptive_ETolerance|, ``basisEvals[0]`` and ``basisNorms[0]`` are updated every QMR iteration.
 
         ``inner_its`` and  ``LSRes`` are also provided.
 
-        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not be provided.
 
-      * ``*event == primme_event_convergence``: new eigenpair in the basis passed the convergence criterion
+      * ``*event == primme_event_convergence``: a new eigenpair in the basis passed the convergence criterion.
 
-        ``iblock[0]`` is the index of the pair in the basis that passes the convergence criterion, and the
-        solver probably will soft lock. 
-        It is also provided ``basisEvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
+        ``iblock[0]`` is the index of the newly converged pair in the basis which will be locked or soft-locked.
+        The following are provided: ``basisEvals``, ``basisNorms``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
 
-        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not provided.
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not be provided.
 
         ``inner_its`` and  ``LSRes`` are not provided.
 
-      * ``*event == primme_event_locked``: new pair added to the locking basis.
+      * ``*event == primme_event_locked``: new pair was added to the locked eigenvectors.
 
         ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are provided.
         The last element of ``lockedEvals``, ``lockedFlags`` and ``lockedNorms`` corresponds
         to the recent locked pair.
  
-        ``basisEvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not provided.
+        ``basisEvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not be provided.
 
-        ``inner_its`` and  ``LSRes`` are not provided.
+        ``inner_its`` and ``LSRes`` are not provided.
 
       The values of ``basisFlags`` and ``lockedFlags`` are:
 
       * ``0``: unconverged.
       * ``1``: internal use; only in ``basisFlags``.
       * ``2``: passed convergence test |convTestFun|.
-      * ``3``: converged because the solver may not be able to reduce the residual norm further.
+      * ``3``: *practically converged* because the solver may not be able 
+        to reduce the residual norm further without recombining 
+        the locked eigenvectors.
 
       Input/output:
 
