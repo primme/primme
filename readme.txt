@@ -99,7 +99,7 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
-Changes in PRIMME 2.1 (released on XXX):
+Changes in PRIMME 2.1 (released on April 4, 2017):
 
 * Improve robustness by broadcasting the result of critical LAPACK
   operations instead of replicating them on every process; this is

@@ -1,5 +1,5 @@
-Appendix
---------
+Parameter Description
+---------------------
 
 primme_svds_params
 """"""""""""""""""
@@ -707,42 +707,10 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
- .. _error-codes-svds:
-
-Error Codes
-"""""""""""
-
-The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of the next values:
-
-*  0: success,
-*  1: reported only amount of required memory,
-* -1: failed in allocating int or real workspace,
-* -2: malloc failed in allocating a permutation integer array,
-* -3: main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr',
-* -4: ``primme_svds`` is NULL,
-* -5: Wrong value for |Sm| or |Sn| or |SmLocal| or |SnLocal|,
-* -6: Wrong value for |SnumProcs|,
-* -7: |SmatrixMatvec| is not set,
-* -8: |SapplyPreconditioner| is not set but |Sprecondition| == 1 ,
-* -9: |SnumProcs| >1 but |SglobalSumReal| is not set,
-* -10: Wrong value for |SnumSvals|, it's larger than min(|Sm|, |Sn|),
-* -11: Wrong value for |SnumSvals|, it's smaller than 1,
-* -13: Wrong value for |Starget|,
-* -14: Wrong value for |Smethod|,
-* -15: Not supported combination of method and |SmethodStage2|,
-* -16: Wrong value for |SprintLevel|,
-* -17: ``svals`` is not set,
-* -18: ``svecs`` is not set,
-* -19: ``resNorms`` is not set
-* -20: not enough memory for |SrealWork|
-* -21: not enough memory for |SintWork|
-* -100 up to -199: eigensolver error from first stage; see the value plus 100 in :ref:`error-codes`.
-* -200 up to -299: eigensolver error from second stage; see the value plus 200 in :ref:`error-codes`.
-
 .. _methods_svds:
 
 Preset Methods
-""""""""""""""
+--------------
 
 .. c:type:: primme_svds_preset_method
 
@@ -787,5 +755,37 @@ Preset Methods
       where :math:`\epsilon` is the machine precision.
       However it may not return triplets with singular values smaller than :math:`\|A\|\epsilon`
       if |Seps| is smaller than :math:`\|A\|\epsilon\sigma^{-1}`.
+
+ .. _error-codes-svds:
+
+Error Codes
+-----------
+
+The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of the next values:
+
+*  0: success,
+*  1: reported only amount of required memory,
+* -1: failed in allocating int or real workspace,
+* -2: malloc failed in allocating a permutation integer array,
+* -3: main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr',
+* -4: ``primme_svds`` is NULL,
+* -5: Wrong value for |Sm| or |Sn| or |SmLocal| or |SnLocal|,
+* -6: Wrong value for |SnumProcs|,
+* -7: |SmatrixMatvec| is not set,
+* -8: |SapplyPreconditioner| is not set but |Sprecondition| == 1 ,
+* -9: |SnumProcs| >1 but |SglobalSumReal| is not set,
+* -10: Wrong value for |SnumSvals|, it's larger than min(|Sm|, |Sn|),
+* -11: Wrong value for |SnumSvals|, it's smaller than 1,
+* -13: Wrong value for |Starget|,
+* -14: Wrong value for |Smethod|,
+* -15: Not supported combination of method and |SmethodStage2|,
+* -16: Wrong value for |SprintLevel|,
+* -17: ``svals`` is not set,
+* -18: ``svecs`` is not set,
+* -19: ``resNorms`` is not set
+* -20: not enough memory for |SrealWork|
+* -21: not enough memory for |SintWork|
+* -100 up to -199: eigensolver error from first stage; see the value plus 100 in :ref:`error-codes`.
+* -200 up to -299: eigensolver error from second stage; see the value plus 200 in :ref:`error-codes`.
 
 .. include:: epilog.inc

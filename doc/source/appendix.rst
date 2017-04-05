@@ -1,6 +1,6 @@
 
-Appendix
---------
+Parameters Description
+----------------------
 
 Types
 """""
@@ -1129,65 +1129,10 @@ primme_params
          | this field is read by :c:func:`dprimme`.
 
 
-.. _error-codes:
-
-Error Codes
-"""""""""""
-
-The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next values:
-
-*  0: success.
-*  1: reported only amount of required memory.
-* -1: failed in allocating int or real workspace.
-* -2: malloc failed in allocating a permutation integer array.
-* -3: main_iter() encountered problem; the calling stack of the
-  functions where the error occurred was printed in ``stderr``.
-* -4: if argument ``primme`` is NULL.
-* -5: if |n| < 0 or |nLocal| < 0 or |nLocal| > |n|.
-* -6: if |numProcs| < 1.
-* -7: if |matrixMatvec| is NULL.
-* -8: if |applyPreconditioner| is NULL and |precondition| > 0.
-* -10: if |numEvals| > |n|.
-* -11: if |numEvals| < 0.
-* -12: if |eps| > 0 and |eps| < machine precision.
-* -13: if |target| is not properly defined.
-* -14: if |target| is one of |primme_closest_geq|,
-  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
-  |numTargetShifts| <= 0 (no shifts).
-* -15: if |target| is one of |primme_closest_geq|,
-  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
-  |targetShifts| is NULL  (no shifts array).
-* -16: if |numOrthoConst| < 0 or |numOrthoConst| > |n|.
-  (no free dimensions left).
-* -17: if |maxBasisSize| < 2.
-* -18: if |minRestartSize| < 0 or |minRestartSize| shouldn't be zero.
-* -19: if |maxBlockSize| < 0 or |maxBlockSize| shouldn't be zero.
-* -20: if |maxPrevRetain| < 0.
-* -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
-* -22: if |initSize| < 0.
-* -23: if |locking| == 0 and |initSize| > |maxBasisSize|.
-* -24: if |locking| and |initSize| > |numEvals|.
-* -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|.
-* -26: if |minRestartSize| >= |n|.
-* -27: if |printLevel| < 0 or |printLevel| > 5.
-* -28: if |convTest| is not one of
-  |primme_full_LTolerance|, |primme_decreasing_LTolerance|,
-  |primme_adaptive_ETolerance| or |primme_adaptive|.
-* -29: if |convTest| == |primme_decreasing_LTolerance| and |relTolBase| <= 1.
-* -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
-* -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
-* -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
-* -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
-* -34: if |ldevecs| < |nLocal|.
-* -35: if |ldOPs| is not zero and less than |nLocal|.
-* -36: not enough memory for |realWork|.
-* -37: not enough memory for |intWork|.
-* -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
-
 .. _methods:
 
 Preset Methods
-""""""""""""""
+--------------
 
 .. c:type:: primme_preset_method
 
@@ -1346,7 +1291,7 @@ Preset Methods
 
    .. c:member:: PRIMME_STEEPEST_DESCENT
 
-      Subspace iteration.
+      Steepest descent.
 
       With |STEEPEST_DESCENT| :c:func:`primme_set_method` sets:
 
@@ -1400,5 +1345,61 @@ Preset Methods
          * |maxInnerIterations| = 0;
          * |RightX|  = 1;
          * |SkewX|   = 0.
+
+.. _error-codes:
+
+Error Codes
+-----------
+
+The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next values:
+
+*  0: success.
+*  1: reported only amount of required memory.
+* -1: failed in allocating int or real workspace.
+* -2: malloc failed in allocating a permutation integer array.
+* -3: main_iter() encountered problem; the calling stack of the
+  functions where the error occurred was printed in ``stderr``.
+* -4: if argument ``primme`` is NULL.
+* -5: if |n| < 0 or |nLocal| < 0 or |nLocal| > |n|.
+* -6: if |numProcs| < 1.
+* -7: if |matrixMatvec| is NULL.
+* -8: if |applyPreconditioner| is NULL and |precondition| > 0.
+* -10: if |numEvals| > |n|.
+* -11: if |numEvals| < 0.
+* -12: if |eps| > 0 and |eps| < machine precision.
+* -13: if |target| is not properly defined.
+* -14: if |target| is one of |primme_closest_geq|,
+  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
+  |numTargetShifts| <= 0 (no shifts).
+* -15: if |target| is one of |primme_closest_geq|,
+  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
+  |targetShifts| is NULL  (no shifts array).
+* -16: if |numOrthoConst| < 0 or |numOrthoConst| > |n|.
+  (no free dimensions left).
+* -17: if |maxBasisSize| < 2.
+* -18: if |minRestartSize| < 0 or |minRestartSize| shouldn't be zero.
+* -19: if |maxBlockSize| < 0 or |maxBlockSize| shouldn't be zero.
+* -20: if |maxPrevRetain| < 0.
+* -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
+* -22: if |initSize| < 0.
+* -23: if |locking| == 0 and |initSize| > |maxBasisSize|.
+* -24: if |locking| and |initSize| > |numEvals|.
+* -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|.
+* -26: if |minRestartSize| >= |n|.
+* -27: if |printLevel| < 0 or |printLevel| > 5.
+* -28: if |convTest| is not one of
+  |primme_full_LTolerance|, |primme_decreasing_LTolerance|,
+  |primme_adaptive_ETolerance| or |primme_adaptive|.
+* -29: if |convTest| == |primme_decreasing_LTolerance| and |relTolBase| <= 1.
+* -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
+* -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
+* -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
+* -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
+* -34: if |ldevecs| < |nLocal|.
+* -35: if |ldOPs| is not zero and less than |nLocal|.
+* -36: not enough memory for |realWork|.
+* -37: not enough memory for |intWork|.
+* -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
+
 
 .. include:: epilog.inc
