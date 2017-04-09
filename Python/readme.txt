@@ -30,12 +30,13 @@ PRIMME: https://github.com/primme/primme
 Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 -----------------------------------------------------------------------------
 
-Primme.py is a Python interface for the free software PRIMME (PReconditioned
-Iterative MultiMethod Eigensolver), which finds a few eigenvalues and their
-corresponding eigenvectors of a real symmetric, or complex Hermitian matrix.
-It can also compute singular values and vectors. It can find largest, smallest,
-or interior eigenvalues or singular values and can use preconditioning to
-accelerate convergence. It is a useful tool for both non-experts and experts.
+Primme.py is a Python interface to PRIMME, a C library for computing a few
+eigenvalues and their corresponding eigenvectors of a real symmetric or complex
+Hermitian matrix. It can also compute singular values and vectors of a square
+or rectangular matrix. It can find largest, smallest, or interior
+singular/eigenvalues and can use preconditioning to accelerate convergence. It
+is especially optimized for large, difficult problems, and can be a useful tool
+for both non-experts and experts.
 
 -----------------------------------------------------------------------------
 1. Directory Structure 

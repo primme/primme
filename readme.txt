@@ -37,7 +37,11 @@ Table Of Contents:
 
   * MATLAB Interface
 
-  * Appendix
+  * Parameters Description
+
+  * Preset Methods
+
+  * Error Codes
 
 * Singular Value Problems
 
@@ -49,18 +53,24 @@ Table Of Contents:
 
   * MATLAB Interface
 
-  * Appendix
+  * Parameter Description
+
+  * Preset Methods
+
+  * Error Codes
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ********************************************************
 
-PRIMME, pronounced as *prime*, finds a number of eigenvalues and their
-corresponding eigenvectors of a real symmetric or Hermitian matrix. It
-can also compute singular values and vectors of a square or
-rectangular matrix. Largest, smallest, and interior eigenvalues and
-singular values are supported. Preconditioning can be used to
-accelerate convergence. PRIMME is written in C99, but complete
-interfaces are provided for Fortran 77, MATLAB, Python, and R.
+PRIMME, pronounced as *prime*, computes a few eigenvalues and their
+corresponding eigenvectors of a real symmetric or complex Hermitian
+matrix. It can also compute singular values and vectors of a square or
+rectangular matrix. It can find largest, smallest, or interior
+singular/eigenvalues and can use preconditioning to accelerate
+convergence. It is especially optimized for large, difficult problems,
+and can be a useful tool for both non-experts and experts. PRIMME is
+written in C99, but complete interfaces are provided for Fortran 77,
+MATLAB, Python, and R.
 
 
 Incompatibilities
@@ -498,7 +508,11 @@ Eigenvalue Problems
 
 * MATLAB Interface
 
-* Appendix
+* Parameters Description
+
+* Preset Methods
+
+* Error Codes
 
 C Library Interface
 *******************
@@ -1187,8 +1201,8 @@ primme_get_prec_shift_f77(primme, index, value)
      "matrixMatvec", "massMatrixMatvec", or "applyPreconditioner".
      Otherwise use the function "primmetop_get_prec_shift_f77()".
 
-Appendix
-********
+Parameters Description
+**********************
 
 
 Types
@@ -2429,104 +2443,8 @@ primme_params
             this field is read by "dprimme()".
 
 
-Error Codes
-===========
-
-The functions "dprimme()" and "zprimme()" return one of the next
-values:
-
-* 0: success.
-
-* 1: reported only amount of required memory.
-
-* -1: failed in allocating int or real workspace.
-
-* -2: malloc failed in allocating a permutation integer array.
-
-* -3: main_iter() encountered problem; the calling stack of the
-  functions where the error occurred was printed in "stderr".
-
-* -4: if argument "primme" is NULL.
-
-* -5: if "n" < 0 or "nLocal" < 0 or "nLocal" > "n".
-
-* -6: if "numProcs" < 1.
-
-* -7: if "matrixMatvec" is NULL.
-
-* -8: if "applyPreconditioner" is NULL and "precondition" > 0.
-
-* -10: if "numEvals" > "n".
-
-* -11: if "numEvals" < 0.
-
-* -12: if "eps" > 0 and "eps" < machine precision.
-
-* -13: if "target" is not properly defined.
-
-* -14: if "target" is one of "primme_closest_geq",
-  "primme_closest_leq", "primme_closest_abs" or "primme_largest_abs"
-  but "numTargetShifts" <= 0 (no shifts).
-
-* -15: if "target" is one of "primme_closest_geq",
-  "primme_closest_leq", "primme_closest_abs" or "primme_largest_abs"
-  but "targetShifts" is NULL  (no shifts array).
-
-* -16: if "numOrthoConst" < 0 or "numOrthoConst" > "n". (no free
-  dimensions left).
-
-* -17: if "maxBasisSize" < 2.
-
-* -18: if "minRestartSize" < 0 or "minRestartSize" shouldn't be
-  zero.
-
-* -19: if "maxBlockSize" < 0 or "maxBlockSize" shouldn't be zero.
-
-* -20: if "maxPrevRetain" < 0.
-
-* -21: if "scheme" is not one of *primme_thick* or *primme_dtr*.
-
-* -22: if "initSize" < 0.
-
-* -23: if "locking" == 0 and "initSize" > "maxBasisSize".
-
-* -24: if "locking" and "initSize" > "numEvals".
-
-* -25: if "maxPrevRetain" + "minRestartSize" >= "maxBasisSize".
-
-* -26: if "minRestartSize" >= "n".
-
-* -27: if "printLevel" < 0 or "printLevel" > 5.
-
-* -28: if "convTest" is not one of "primme_full_LTolerance",
-  "primme_decreasing_LTolerance", "primme_adaptive_ETolerance" or
-  "primme_adaptive".
-
-* -29: if "convTest" == "primme_decreasing_LTolerance" and
-  "relTolBase" <= 1.
-
-* -30: if "evals" is NULL, but not "evecs" and "resNorms".
-
-* -31: if "evecs" is NULL, but not "evals" and "resNorms".
-
-* -32: if "resNorms" is NULL, but not "evecs" and "evals".
-
-* -33: if "locking" == 0 and "minRestartSize" < "numEvals".
-
-* -34: if "ldevecs" < "nLocal".
-
-* -35: if "ldOPs" is not zero and less than "nLocal".
-
-* -36: not enough memory for "realWork".
-
-* -37: not enough memory for "intWork".
-
-* -38: if "locking" == 0 and "target" is "primme_closest_leq" or
-  "primme_closest_geq".
-
-
 Preset Methods
-==============
+**************
 
 primme_preset_method
 
@@ -2717,7 +2635,7 @@ primme_preset_method
 
    PRIMME_STEEPEST_DESCENT
 
-      Subspace iteration.
+      Steepest descent.
 
       With "PRIMME_STEEPEST_DESCENT" "primme_set_method()" sets:
 
@@ -2793,6 +2711,102 @@ primme_preset_method
       * "RightX"  = 1;
 
       * "SkewX"   = 0.
+
+
+Error Codes
+***********
+
+The functions "dprimme()" and "zprimme()" return one of the next
+values:
+
+* 0: success.
+
+* 1: reported only amount of required memory.
+
+* -1: failed in allocating int or real workspace.
+
+* -2: malloc failed in allocating a permutation integer array.
+
+* -3: main_iter() encountered problem; the calling stack of the
+  functions where the error occurred was printed in "stderr".
+
+* -4: if argument "primme" is NULL.
+
+* -5: if "n" < 0 or "nLocal" < 0 or "nLocal" > "n".
+
+* -6: if "numProcs" < 1.
+
+* -7: if "matrixMatvec" is NULL.
+
+* -8: if "applyPreconditioner" is NULL and "precondition" > 0.
+
+* -10: if "numEvals" > "n".
+
+* -11: if "numEvals" < 0.
+
+* -12: if "eps" > 0 and "eps" < machine precision.
+
+* -13: if "target" is not properly defined.
+
+* -14: if "target" is one of "primme_closest_geq",
+  "primme_closest_leq", "primme_closest_abs" or "primme_largest_abs"
+  but "numTargetShifts" <= 0 (no shifts).
+
+* -15: if "target" is one of "primme_closest_geq",
+  "primme_closest_leq", "primme_closest_abs" or "primme_largest_abs"
+  but "targetShifts" is NULL  (no shifts array).
+
+* -16: if "numOrthoConst" < 0 or "numOrthoConst" > "n". (no free
+  dimensions left).
+
+* -17: if "maxBasisSize" < 2.
+
+* -18: if "minRestartSize" < 0 or "minRestartSize" shouldn't be
+  zero.
+
+* -19: if "maxBlockSize" < 0 or "maxBlockSize" shouldn't be zero.
+
+* -20: if "maxPrevRetain" < 0.
+
+* -21: if "scheme" is not one of *primme_thick* or *primme_dtr*.
+
+* -22: if "initSize" < 0.
+
+* -23: if "locking" == 0 and "initSize" > "maxBasisSize".
+
+* -24: if "locking" and "initSize" > "numEvals".
+
+* -25: if "maxPrevRetain" + "minRestartSize" >= "maxBasisSize".
+
+* -26: if "minRestartSize" >= "n".
+
+* -27: if "printLevel" < 0 or "printLevel" > 5.
+
+* -28: if "convTest" is not one of "primme_full_LTolerance",
+  "primme_decreasing_LTolerance", "primme_adaptive_ETolerance" or
+  "primme_adaptive".
+
+* -29: if "convTest" == "primme_decreasing_LTolerance" and
+  "relTolBase" <= 1.
+
+* -30: if "evals" is NULL, but not "evecs" and "resNorms".
+
+* -31: if "evecs" is NULL, but not "evals" and "resNorms".
+
+* -32: if "resNorms" is NULL, but not "evecs" and "evals".
+
+* -33: if "locking" == 0 and "minRestartSize" < "numEvals".
+
+* -34: if "ldevecs" < "nLocal".
+
+* -35: if "ldOPs" is not zero and less than "nLocal".
+
+* -36: not enough memory for "realWork".
+
+* -37: not enough memory for "intWork".
+
+* -38: if "locking" == 0 and "target" is "primme_closest_leq" or
+  "primme_closest_geq".
 
 Python Interface
 ****************
@@ -3262,7 +3276,11 @@ Singular Value Problems
 
 * MATLAB Interface
 
-* Appendix
+* Parameter Description
+
+* Preset Methods
+
+* Error Codes
 
 C Library Interface
 *******************
@@ -3960,8 +3978,8 @@ primme_svds_get_member_f77(primme_svds, label, value)
      Most users would not need to retrieve these pointers in their
      programs.
 
-Appendix
-********
+Parameter Description
+*********************
 
 
 primme_svds_params
@@ -3969,835 +3987,888 @@ primme_svds_params
 
 primme_svds_params
 
-      Structure to set the problem matrix and the solver options.
+   Structure to set the problem matrix and the solver options.
 
-      PRIMME_INT m
+   PRIMME_INT m
 
-         Number of rows of the matrix.
+      Number of rows of the matrix.
 
-         Input/output:
+      Input/output:
 
-               "primme_initialize()" sets this field to 0;
-               this field is read by "dprimme()".
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
 
-      PRIMME_INT n
+   PRIMME_INT n
 
-         Number of columns of the matrix.
+      Number of columns of the matrix.
 
-         Input/output:
+      Input/output:
 
-               "primme_initialize()" sets this field to 0;
-               this field is read by "dprimme()".
+            "primme_initialize()" sets this field to 0;
+            this field is read by "dprimme()".
 
-      void (*matrixMatvec)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
+   void (*matrixMatvec)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
 
-         Block matrix-multivector multiplication, y = A x if
-         "transpose" is zero, and y = A^*x otherwise.
+      Block matrix-multivector multiplication, y = A x if "transpose"
+      is zero, and y = A^*x otherwise.
 
-         Parameters:
-            * **x** -- input array.
+      Parameters:
+         * **x** -- input array.
 
-            * **ldx** -- leading dimension of "x".
+         * **ldx** -- leading dimension of "x".
 
-            * **y** -- output array.
+         * **y** -- output array.
 
-            * **ldy** -- leading dimension of "y".
+         * **ldy** -- leading dimension of "y".
 
-            * **blockSize** -- number of columns in "x" and "y".
+         * **blockSize** -- number of columns in "x" and "y".
 
-            * **transpose** -- if non-zero, the transpose A should
-              be applied.
+         * **transpose** -- if non-zero, the transpose A should be
+           applied.
 
-            * **primme_svds** -- parameters structure.
+         * **primme_svds** -- parameters structure.
 
-            * **ierr** -- output error code; if it is set to non-
-              zero, the current call to PRIMME will stop.
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
 
-         If "transpose" is zero, then "x" and "y" are arrays of
-         dimensions "nLocal" x "blockSize" and "mLocal" x "blockSize"
-         respectively. Elsewhere they have dimensions "mLocal" x
-         "blockSize" and "nLocal" x "blockSize". Both arrays are in
-         column-major order (elements in the same column with
-         consecutive row indices are consecutive in memory).
+      If "transpose" is zero, then "x" and "y" are arrays of
+      dimensions "nLocal" x "blockSize" and "mLocal" x "blockSize"
+      respectively. Elsewhere they have dimensions "mLocal" x
+      "blockSize" and "nLocal" x "blockSize". Both arrays are in
+      column-major order (elements in the same column with consecutive
+      row indices are consecutive in memory).
 
-         The actual type of "x" and "y" depends on which function is
-         being calling. For "dprimme_svds()", it is "double", for
-         "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
-         "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
-         "PRIMME_COMPLEX_FLOAT".
+      The actual type of "x" and "y" depends on which function is
+      being calling. For "dprimme_svds()", it is "double", for
+      "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
+      "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
+      "PRIMME_COMPLEX_FLOAT".
 
-         Input/output:
+      Input/output:
 
-               "primme_initialize()" sets this field to NULL;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         Note: Integer arguments are passed by reference to make
-           easier the interface to other languages (like Fortran).
+      Note: Integer arguments are passed by reference to make easier
+        the interface to other languages (like Fortran).
 
-      void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
+   void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
-         Block preconditioner-multivector application, y = M^{-1}x for
-         finding singular values close to \sigma. Depending on "mode",
-         M is expected to be an approximation of the following
-         operators:
+      Block preconditioner-multivector application, y = M^{-1}x for
+      finding singular values close to \sigma. Depending on "mode", M
+      is expected to be an approximation of the following operators:
 
-         * "primme_svds_op_AtA": M \approx A^*Ax - \sigma^2 I,
+      * "primme_svds_op_AtA": M \approx A^*Ax - \sigma^2 I,
 
-         * "primme_svds_op_AAt": M \approx AA^*x - \sigma^2 I,
+      * "primme_svds_op_AAt": M \approx AA^*x - \sigma^2 I,
 
-         * "primme_svds_op_augmented": M \approx
-           \left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right)
-           - \sigma I.
+      * "primme_svds_op_augmented": M \approx
+        \left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) -
+        \sigma I.
 
-         Parameters:
-            * **x** -- input array.
+      Parameters:
+         * **x** -- input array.
 
-            * **ldx** -- leading dimension of "x".
+         * **ldx** -- leading dimension of "x".
 
-            * **y** -- output array.
+         * **y** -- output array.
 
-            * **ldy** -- leading dimension of "y".
+         * **ldy** -- leading dimension of "y".
 
-            * **blockSize** -- number of columns in "x" and "y".
+         * **blockSize** -- number of columns in "x" and "y".
 
-            * **mode** -- one of "primme_svds_op_AtA",
-              "primme_svds_op_AAt" or "primme_svds_op_augmented".
+         * **mode** -- one of "primme_svds_op_AtA",
+           "primme_svds_op_AAt" or "primme_svds_op_augmented".
 
-            * **primme_svds** -- parameters structure.
+         * **primme_svds** -- parameters structure.
 
-            * **ierr** -- output error code; if it is set to non-
-              zero, the current call to PRIMME will stop.
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
 
-         If "mode" is "primme_svds_op_AtA", then "x" and "y" are
-         arrays of dimensions "nLocal" x "blockSize"; if mode is
-         "primme_svds_op_AAt", they are "mLocal" x "blockSize"; and
-         otherwise they are ("mLocal" + "nLocal") x "blockSize". Both
-         arrays are in column-major order (elements in the same column
-         with consecutive row indices are consecutive in memory).
+      If "mode" is "primme_svds_op_AtA", then "x" and "y" are arrays
+      of dimensions "nLocal" x "blockSize"; if mode is
+      "primme_svds_op_AAt", they are "mLocal" x "blockSize"; and
+      otherwise they are ("mLocal" + "nLocal") x "blockSize". Both
+      arrays are in column-major order (elements in the same column
+      with consecutive row indices are consecutive in memory).
 
-         The actual type of "x" and "y" depends on which function is
-         being calling. For "dprimme_svds()", it is "double", for
-         "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
-         "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
-         "PRIMME_COMPLEX_FLOAT".
+      The actual type of "x" and "y" depends on which function is
+      being calling. For "dprimme_svds()", it is "double", for
+      "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
+      "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
+      "PRIMME_COMPLEX_FLOAT".
 
-         Input/output:
+      Input/output:
 
-               "primme_initialize()" sets this field to NULL;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      int numProcs
+   int numProcs
 
-         Number of processes calling "dprimme_svds()" or
-         "zprimme_svds()" in parallel.
+      Number of processes calling "dprimme_svds()" or "zprimme_svds()"
+      in parallel.
 
-         Input/output:
+      Input/output:
 
-               "primme_initialize()" sets this field to 1;
-               this field is read by "dprimme()" and "zprimme_svds()".
+            "primme_initialize()" sets this field to 1;
+            this field is read by "dprimme()" and "zprimme_svds()".
 
-      int procID
+   int procID
 
-         The identity of the local process within a parallel execution
-         calling "dprimme_svds()" or "zprimme_svds()". Only the
-         process with id 0 prints information.
+      The identity of the local process within a parallel execution
+      calling "dprimme_svds()" or "zprimme_svds()". Only the process
+      with id 0 prints information.
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to 0;
-               "dprimme_svds()" sets this field to 0 if "numProcs" is 1;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_svds_initialize()" sets this field to 0;
+            "dprimme_svds()" sets this field to 0 if "numProcs" is 1;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      PRIMME_INT mLocal
+   PRIMME_INT mLocal
 
-         Number of local rows on this process. The value depends on
-         how the matrix and preconditioner is distributed along the
-         processes.
+      Number of local rows on this process. The value depends on how
+      the matrix and preconditioner is distributed along the
+      processes.
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to 0;
-               "dprimme_svds()" sets this field to "m" if "numProcs" is 1;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_svds_initialize()" sets this field to 0;
+            "dprimme_svds()" sets this field to "m" if "numProcs" is 1;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         See also: "matrixMatvec" and "applyPreconditioner".
+      See also: "matrixMatvec" and "applyPreconditioner".
 
-      PRIMME_INT nLocal
+   PRIMME_INT nLocal
 
-         Number of local columns on this process. The value depends on
-         how the matrix and preconditioner is distributed along the
-         processes.
+      Number of local columns on this process. The value depends on
+      how the matrix and preconditioner is distributed along the
+      processes.
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to 0;
-               "dprimme_svds()" sets this field to to "n" if "numProcs" is 1;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_svds_initialize()" sets this field to 0;
+            "dprimme_svds()" sets this field to to "n" if "numProcs" is 1;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      void *commInfo
+   void *commInfo
 
-         A pointer to whatever parallel environment structures needed.
-         For example, with MPI, it could be a pointer to the MPI
-         communicator. PRIMME does not use this. It is available for
-         possible use in user functions defined in "matrixMatvec",
-         "applyPreconditioner" and "globalSumReal".
+      A pointer to whatever parallel environment structures needed.
+      For example, with MPI, it could be a pointer to the MPI
+      communicator. PRIMME does not use this. It is available for
+      possible use in user functions defined in "matrixMatvec",
+      "applyPreconditioner" and "globalSumReal".
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to NULL;
+            "primme_svds_initialize()" sets this field to NULL;
 
-      void (*globalSumReal)(double *sendBuf, double *recvBuf, int *count, primme_svds_params *primme_svds, int *ierr)
+   void (*globalSumReal)(double *sendBuf, double *recvBuf, int *count, primme_svds_params *primme_svds, int *ierr)
 
-         Global sum reduction function. No need to set for sequential
-         programs.
+      Global sum reduction function. No need to set for sequential
+      programs.
 
-         Parameters:
-            * **sendBuf** -- array of size "count" with the local
-              input values.
+      Parameters:
+         * **sendBuf** -- array of size "count" with the local input
+           values.
 
-            * **recvBuf** -- array of size "count" with the global
-              output values so that the i-th element of recvBuf is the
-              sum over all processes of the i-th element of "sendBuf".
+         * **recvBuf** -- array of size "count" with the global
+           output values so that the i-th element of recvBuf is the
+           sum over all processes of the i-th element of "sendBuf".
 
-            * **count** -- array size of "sendBuf" and "recvBuf".
+         * **count** -- array size of "sendBuf" and "recvBuf".
 
-            * **primme_svds** -- parameters structure.
+         * **primme_svds** -- parameters structure.
 
-            * **ierr** -- output error code; if it is set to non-
-              zero, the current call to PRIMME will stop.
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
 
-         The actual type of "sendBuf" and "recvBuf" depends on which
-         function is being calling. For "dprimme_svds()" and
-         "zprimme_svds()" it is "double", and for "sprimme_svds()" and
-         "cprimme_svds()" it is "float". Note that "count" is the
-         number of values of the actual type.
+      The actual type of "sendBuf" and "recvBuf" depends on which
+      function is being calling. For "dprimme_svds()" and
+      "zprimme_svds()" it is "double", and for "sprimme_svds()" and
+      "cprimme_svds()" it is "float". Note that "count" is the number
+      of values of the actual type.
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to an internal function;
-               "dprimme_svds()" sets this field to an internal function if "numProcs" is 1 and "globalSumReal" is NULL;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_svds_initialize()" sets this field to an internal function;
+            "dprimme_svds()" sets this field to an internal function if "numProcs" is 1 and "globalSumReal" is NULL;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         When MPI is used, this can be a simply wrapper to
-         MPI_Allreduce() as shown below:
+      When MPI is used, this can be a simply wrapper to
+      MPI_Allreduce() as shown below:
 
-            void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count,
-                                     primme_svds_params *primme_svds, int *ierr) {
-               MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
-               if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                             communicator) == MPI_SUCCESS) {
-                  *ierr = 0;
-               } else {
-                  *ierr = 1;
-               }
+         void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count,
+                                  primme_svds_params *primme_svds, int *ierr) {
+            MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
+            if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
             }
+         }
 
-            When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
+         When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
-      int numSvals
+   int numSvals
 
-         Number of singular triplets wanted.
+      Number of singular triplets wanted.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 1;
+            this field is read by "primme_svds_set_method()" (see Preset Methods) and "dprimme_svds()".
+
+   primme_svds_target target
+
+      Which singular values to find:
+
+      "primme_svds_smallest"
+         Smallest singular values; "targetShifts" is ignored.
+
+      "primme_svds_largest"
+         Largest singular values; "targetShifts" is ignored.
+
+      "primme_svds_closest_abs"
+         Closest in absolute value to the shifts in "targetShifts".
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to "primme_svds_smallest";
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+   int numTargetShifts
+
+      Size of the array "targetShifts". Used only when "target" is
+      "primme_svds_closest_abs". The default values is 0.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+   double *targetShifts
+
+      Array of shifts, at least of size "numTargetShifts". Used only
+      when "target" is "primme_svds_closest_abs".
+
+      Singular values are computed in order so that the i-th singular
+      value is the closest to the i-th shift. If "numTargetShifts" <
+      "numSvals", the last shift given is used for all the remaining
+      i's.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to NULL;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+      Note: Eventually this is used by  "dprimme()" and "zprimme()".
+        Please see considerations of "targetShifts".
+
+   int printLevel
+
+         The level of message reporting from the code. All output is
+         written in "outputFile".
+
+         One of:
+
+         * 0: silent.
+
+         * 1: print some error messages when these occur.
+
+         * 2: as in 1, and info about targeted singular triplets
+           when they are marked as converged:
+
+              #Converged $1 sval[ $2 ]= $3 norm $4 Mvecs $5 Time $7 stage $10
+
+           or locked:
+
+              #Lock striplet[ $1 ]= $3 norm $4 Mvecs $5 Time $7 stage $10
+
+         * 3: as in 2, and info about targeted singular triplets
+           every outer iteration:
+
+              OUT $6 conv $1 blk $8 MV $5 Sec $7 SV $3 |r| $4 stage $10
+
+           Also, if using "PRIMME_DYNAMIC", show JDQMR/GD+k
+           performance ratio and the current method in use.
+
+         * 4: as in 3, and info about targeted singular triplets
+           every inner iteration:
+
+              INN MV $5 Sec $7 Sval $3 Lin|r| $9 SV|r| $4 stage $10
+
+         * 5: as in 4, and verbose info about certain choices of the
+           algorithm.
+
+         Output key:
+
+            $1: Number of converged triplets up to now.
+            $2: The index of the triplet currently converged.
+            $3: The singular value.
+            $4: Its residual norm.
+            $5: The current number of matrix-vector products.
+            $6: The current number of outer iterations.
+            $7: The current elapsed time.
+            $8: Index within the block of the targeted triplet.
+            $9: QMR norm of the linear system residual.
+            $10: stage (1 or 2)
+
+         In parallel programs, when "printLevel" is 0 to 4 only
+         "procID" 0 produces output. For "printLevel" 5 output can be
+         produced in any of the parallel calls.
 
          Input/output:
 
                "primme_svds_initialize()" sets this field to 1;
-               this field is read by "primme_svds_set_method()" (see Preset Methods) and "dprimme_svds()".
-
-      primme_svds_target target
-
-         Which singular values to find:
-
-         "primme_svds_smallest"
-            Smallest singular values; "targetShifts" is ignored.
-
-         "primme_svds_largest"
-            Largest singular values; "targetShifts" is ignored.
-
-         "primme_svds_closest_abs"
-            Closest in absolute value to the shifts in "targetShifts".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to "primme_svds_smallest";
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      int numTargetShifts
+      Note: Convergence history for plotting may be produced simply
+        by:
 
-         Size of the array "targetShifts". Used only when "target" is
-         "primme_svds_closest_abs". The default values is 0.
+           grep OUT outpufile | awk '{print $8" "$14}' > out
+           grep INN outpufile | awk '{print $3" "$11}' > inn
 
-         Input/output:
+        Or in gnuplot:
 
-               "primme_svds_initialize()" sets this field to 0;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+           plot 'out' w lp, 'inn' w lp
 
-      double *targetShifts
+   double aNorm
 
-         Array of shifts, at least of size "numTargetShifts". Used
-         only when "target" is "primme_svds_closest_abs".
+      An estimate of the 2-norm of A, which is used in the default
+      convergence criterion (see "eps").
 
-         Singular values are computed in order so that the i-th
-         singular value is the closest to the i-th shift. If
-         "numTargetShifts" < "numSvals", the last shift given is used
-         for all the remaining i's.
+      If "aNorm" is less than or equal to 0, the code uses the largest
+      absolute Ritz value seen. On return, "aNorm" is then replaced
+      with that value.
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to NULL;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_svds_initialize()" sets this field to 0.0;
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-         Note: Eventually this is used by  "dprimme()" and
-           "zprimme()". Please see considerations of "targetShifts".
+   double eps
 
-      int printLevel
+      A triplet (u,\sigma,v) is marked as converged when \sqrt{\|A v -
+      \sigma u\|^2 + \|A^* u - \sigma v\|^2} is less than "eps" *
+      "aNorm", or close to the minimum tolerance that the selected
+      method can achieve in the given machine precision. See Preset
+      Methods.
 
-            The level of message reporting from the code. All output
-            is written in "outputFile".
+      The default value is machine precision times 10^4.
 
-            One of:
+      Input/output:
 
-            * 0: silent.
+            "primme_svds_initialize()" sets this field to 0.0;
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-            * 1: print some error messages when these occur.
+   FILE *outputFile
 
-            * 2: as in 1, and info about targeted singular triplets
-              when they are marked as converged:
+      Opened file to write down the output.
 
-                 #Converged $1 sval[ $2 ]= $3 norm $4 Mvecs $5 Time $7 stage $10
+      Input/output:
 
-              or locked:
+            "primme_svds_initialize()" sets this field to the standard output;
+            this field is read by "dprimme_svds()", "zprimme_svds()" and "primme_svds_display_params()"
 
-                 #Lock striplet[ $1 ]= $3 norm $4 Mvecs $5 Time $7 stage $10
+   int locking
 
-            * 3: as in 2, and info about targeted singular triplets
-              every outer iteration:
+      If set to 1, the underneath eigensolvers will use hard locking.
+      See "locking".
 
-                 OUT $6 conv $1 blk $8 MV $5 Sec $7 SV $3 |r| $4 stage $10
+      Input/output:
 
-              Also, if using "PRIMME_DYNAMIC", show JDQMR/GD+k
-              performance ratio and the current method in use.
+            "primme_svds_initialize()" sets this field to -1;
+            written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-            * 4: as in 3, and info about targeted singular triplets
-              every inner iteration:
+   int initSize
 
-                 INN MV $5 Sec $7 Sval $3 Lin|r| $9 SV|r| $4 stage $10
+         On input, the number of initial vector guesses provided in
+         "svecs" argument in "dprimme_svds()" and "zprimme_svds()".
 
-            * 5: as in 4, and verbose info about certain choices of
-              the algorithm.
+         On output, "initSize" holds the number of converged triplets.
+         Without "locking" all "numSvals" approximations are in
+         "svecs" but only the first "initSize" are converged.
 
-            Output key:
-
-               $1: Number of converged triplets up to now.
-               $2: The index of the triplet currently converged.
-               $3: The singular value.
-               $4: Its residual norm.
-               $5: The current number of matrix-vector products.
-               $6: The current number of outer iterations.
-               $7: The current elapsed time.
-               $8: Index within the block of the targeted triplet.
-               $9: QMR norm of the linear system residual.
-               $10: stage (1 or 2)
-
-            In parallel programs, when "printLevel" is 0 to 4 only
-            "procID" 0 produces output. For "printLevel" 5 output can
-            be produced in any of the parallel calls.
-
-            Input/output:
-
-                  "primme_svds_initialize()" sets this field to 1;
-                  this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-         Note: Convergence history for plotting may be produced
-           simply by:
-
-              grep OUT outpufile | awk '{print $8" "$14}' > out
-              grep INN outpufile | awk '{print $3" "$11}' > inn
-
-           Or in gnuplot:
-
-              plot 'out' w lp, 'inn' w lp
-
-      double aNorm
-
-         An estimate of the 2-norm of A, which is used in the default
-         convergence criterion (see "eps").
-
-         If "aNorm" is less than or equal to 0, the code uses the
-         largest absolute Ritz value seen. On return, "aNorm" is then
-         replaced with that value.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to 0.0;
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-      double eps
-
-         A triplet (u,\sigma,v) is marked as converged when \sqrt{\|A
-         v - \sigma u\|^2 + \|A^* u - \sigma v\|^2} is less than "eps"
-         * "aNorm", or close to the minimum tolerance that the
-         selected method can achieve in the given machine precision.
-         See Preset Methods.
-
-         The default value is machine precision times 10^4.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to 0.0;
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-      FILE *outputFile
-
-         Opened file to write down the output.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to the standard output;
-               this field is read by "dprimme_svds()", "zprimme_svds()" and "primme_svds_display_params()"
-
-      int locking
-
-         If set to 1, the underneath eigensolvers will use hard
-         locking. See "locking".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to -1;
-               written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-      int initSize
-
-            On input, the number of initial vector guesses provided in
-            "svecs" argument in "dprimme_svds()" and "zprimme_svds()".
-
-            On output, "initSize" holds the number of converged
-            triplets. Without "locking" all "numSvals" approximations
-            are in "svecs" but only the first "initSize" are
-            converged.
-
-            During execution, it holds the current number of converged
-            triplets.
-
-            Input/output:
-
-                  "primme_svds_initialize()" sets this field to 0;
-                  this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-         int numOrthoConst
-
-            Number of vectors to be used as external orthogonalization
-            constraints. The left and the right vector constraints are
-            provided as input of the "svecs" argument in
-            "sprimme_svds()" or other variant, and must be
-            orthonormal.
-
-            PRIMME SVDS finds new triplets orthogonal to these
-            constraints (equivalent to solving the problem
-            (I-UU^*)A(I-VV^*) where U and V are the given left and
-            right constraint vectors). This is a handy feature if some
-            singular triplets are already known, or for finding more
-            triplets after a call to "dprimme_svds()" or
-            "zprimme_svds()", possibly with different parameters (see
-            an example in "TEST/exsvd_zseq.c").
-
-            Input/output:
-
-                  "primme_svds_initialize()" sets this field to 0;
-                  this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-      int maxBasisSize
-
-         The maximum basis size allowed in the main iteration. This
-         has memory implications.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-      int maxBlockSize
-
-         The maximum block size the code will try to use.
-
-         The user should set this based on the architecture specifics
-         of the target computer, as well as any a priori knowledge of
-         multiplicities. The code does *not* require that
-         "maxBlockSize" > 1 to find multiple triplets. For some
-         methods, keeping to 1 yields the best overall performance.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to 1;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-      PRIMME_INT maxMatvecs
-
-         Maximum number of matrix vector multiplications
-         (approximately half the number of preconditioning operations)
-         that the code is allowed to perform before it exits.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to "INT_MAX";
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-      int intWorkSize
-
-         If "dprimme_svds()" or "zprimme_svds()" is called with all
-         arguments as NULL except for "primme_svds_params" then it
-         returns immediately with "intWorkSize" containing the size
-         *in bytes* of the integer workspace that will be required by
-         the parameters set.
-
-         Otherwise if "intWorkSize" is not 0, it should be the size of
-         the integer work array *in bytes* that the user provides in
-         "intWork". If "intWorkSize" is 0, the code will allocate the
-         required space, which can be freed later by calling
-         "primme_svds_free()".
+         During execution, it holds the current number of converged
+         triplets.
 
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
                this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-      size_t realWorkSize
+      int numOrthoConst
 
-         If "dprimme_svds()" or "zprimme_svds()" is called with all
-         arguments as NULL except for "primme_svds_params" then it
-         returns immediately with "realWorkSize" containing the size
-         *in bytes* of the real workspace that will be required by the
-         parameters set.
+         Number of vectors to be used as external orthogonalization
+         constraints. The left and the right vector constraints are
+         provided as input of the "svecs" argument in "sprimme_svds()"
+         or other variant, and must be orthonormal.
 
-         Otherwise if "realWorkSize" is not 0, it should be the size
-         of the real work array *in bytes* that the user provides in
-         "realWork". If "realWorkSize" is 0, the code will allocate
-         the required space, which can be freed later by calling
-         "primme_svds_free()".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-      int *intWork
-
-         Integer work array.
-
-         If NULL, the code will allocate its own workspace. If the
-         provided space is not enough, the code will return the error
-         code "-21".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to NULL;
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-      void *realWork
-
-         Real work array.
-
-         If NULL, the code will allocate its own workspace. If the
-         provided space is not enough, the code will return the error
-         code "-20".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to NULL;
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-      PRIMME_INT iseed
-
-         The "PRIMME_INT iseed[4]" is an array with the seeds needed
-         by the LAPACK dlarnv and zlarnv.
-
-         The default value is an array with values -1, -1, -1 and -1.
-         In that case, "iseed" is set based on the value of "procID"
-         to avoid every parallel process generating the same sequence
-         of pseudorandom numbers.
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to "[-1, -1, -1, -1]";
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-      void *matrix
-
-         This field may be used to pass any required information in
-         the matrix-vector product "matrixMatvec".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to NULL;
-
-      void *preconditioner
-
-         This field may be used to pass any required information in
-         the preconditioner function "applyPreconditioner".
-
-         Input/output:
-
-               "primme_svds_initialize()" sets this field to NULL;
-
-      int precondition
-
-         Set to 1 to use preconditioning. Make sure
-         "applyPreconditioner" is not NULL then!
+         PRIMME SVDS finds new triplets orthogonal to these
+         constraints (equivalent to solving the problem
+         (I-UU^*)A(I-VV^*) where U and V are the given left and right
+         constraint vectors). This is a handy feature if some singular
+         triplets are already known, or for finding more triplets
+         after a call to "dprimme_svds()" or "zprimme_svds()",
+         possibly with different parameters (see an example in
+         "TEST/exsvd_zseq.c").
 
          Input/output:
 
                "primme_svds_initialize()" sets this field to 0;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
                this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      primme_svds_op_operator method
+   int maxBasisSize
 
-         Select the equivalent eigenvalue problem that will be solved:
+      The maximum basis size allowed in the main iteration. This has
+      memory implications.
 
-         * "primme_svds_op_AtA": A^*Ax = \sigma^2 x,
+      Input/output:
 
-         * "primme_svds_op_AAt": AA^*x = \sigma^2 x,
+            "primme_svds_initialize()" sets this field to 0;
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         * "primme_svds_op_augmented": \left(\begin{array}{cc} 0 &
-           A^* \\ A & 0 \end{array}\right) x = \sigma x.
+   int maxBlockSize
 
-         The options for this solver are stored in "primme".
+      The maximum block size the code will try to use.
 
-         Input/output:
+      The user should set this based on the architecture specifics of
+      the target computer, as well as any a priori knowledge of
+      multiplicities. The code does *not* require that "maxBlockSize"
+      > 1 to find multiple triplets. For some methods, keeping to 1
+      yields the best overall performance.
 
-               "primme_svds_initialize()" sets this field to "primme_svds_op_none";
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+      Input/output:
 
-      primme_svds_op_operator methodStage2
+            "primme_svds_initialize()" sets this field to 1;
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         Select the equivalent eigenvalue problem that will be solved
-         to refine the solution. The allowed options are
-         "primme_svds_op_none" to not refine the solution and
-         "primme_svds_op_augmented" to refine the solution by solving
-         the augmented problem with the current solution as the
-         initial vectors. See "method".
+   PRIMME_INT maxMatvecs
 
-         The options for this solver are stored in "primmeStage2".
+      Maximum number of matrix vector multiplications (approximately
+      half the number of preconditioning operations) that the code is
+      allowed to perform before it exits.
 
-         Input/output:
+      Input/output:
 
-               "primme_svds_initialize()" sets this field to "primme_svds_op_none";
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+            "primme_svds_initialize()" sets this field to "INT_MAX";
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-      primme_params primme
+   int intWorkSize
 
-         Parameter structure storing the options for underneath
-         eigensolver that will be called at the first stage. See
-         "method".
+      If "dprimme_svds()" or "zprimme_svds()" is called with all
+      arguments as NULL except for "primme_svds_params" then it
+      returns immediately with "intWorkSize" containing the size *in
+      bytes* of the integer workspace that will be required by the
+      parameters set.
 
-         Input/output:
+      Otherwise if "intWorkSize" is not 0, it should be the size of
+      the integer work array *in bytes* that the user provides in
+      "intWork". If "intWorkSize" is 0, the code will allocate the
+      required space, which can be freed later by calling
+      "primme_svds_free()".
 
-               "primme_svds_initialize()" initialize this structure;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
+      Input/output:
 
-      primme_params primmeStage2
+            "primme_svds_initialize()" sets this field to 0;
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-         Parameter structure storing the options for underneath
-         eigensolver that will be called at the second stage. See
-         "methodStage2".
+   size_t realWorkSize
 
-         Input/output:
+      If "dprimme_svds()" or "zprimme_svds()" is called with all
+      arguments as NULL except for "primme_svds_params" then it
+      returns immediately with "realWorkSize" containing the size *in
+      bytes* of the real workspace that will be required by the
+      parameters set.
 
-               "primme_svds_initialize()" initialize this structure;
-               this field is read and written by "primme_svds_set_method()" (see Preset Methods);
-               this field is read and written by "dprimme_svds()" and "zprimme_svds()".
+      Otherwise if "realWorkSize" is not 0, it should be the size of
+      the real work array *in bytes* that the user provides in
+      "realWork". If "realWorkSize" is 0, the code will allocate the
+      required space, which can be freed later by calling
+      "primme_svds_free()".
 
-      void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
+      Input/output:
 
-         Convergence monitor. Used to customize how to report solver
-         information during execution (stage, iteration number,
-         matvecs, time, residual norms, targets, etc).
+            "primme_svds_initialize()" sets this field to 0;
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-         Parameters:
-            * **basisSvals** -- array with approximate singular
-              values of the basis.
+   int *intWork
 
-            * **basisSize** -- size of the arrays "basisSvals",
-              "basisFlags" and "basisNorms".
+      Integer work array.
 
-            * **basisFlags** -- state of every approximate triplet
-              in the basis.
+      If NULL, the code will allocate its own workspace. If the
+      provided space is not enough, the code will return the error
+      code "-21".
 
-            * **iblock** -- indices of the approximate triplet in
-              the block.
+      Input/output:
 
-            * **blockSize** -- size of array "iblock".
+            "primme_svds_initialize()" sets this field to NULL;
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-            * **basisNorms** -- array with residual norms of the
-              triplets in the basis.
+   void *realWork
 
-            * **numConverged** -- number of triplets converged in
-              the basis plus the number of the locked triplets (note
-              that this value isn't monotonic).
+      Real work array.
 
-            * **lockedSvals** -- array with the locked triplets.
+      If NULL, the code will allocate its own workspace. If the
+      provided space is not enough, the code will return the error
+      code "-20".
 
-            * **numLocked** -- size of the arrays "lockedSvals",
-              "lockedFlags" and "lockedNorms".
+      Input/output:
 
-            * **lockedFlags** -- state of each locked triplets.
+            "primme_svds_initialize()" sets this field to NULL;
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-            * **lockedNorms** -- array with residual norms of the
-              locked triplets.
+   PRIMME_INT iseed
 
-            * **inner_its** -- number of performed QMR iterations in
-              the current correction equation.
+      The "PRIMME_INT iseed[4]" is an array with the seeds needed by
+      the LAPACK dlarnv and zlarnv.
 
-            * **LSRes** -- residual norm of the linear system at the
-              current QMR iteration.
+      The default value is an array with values -1, -1, -1 and -1. In
+      that case, "iseed" is set based on the value of "procID" to
+      avoid every parallel process generating the same sequence of
+      pseudorandom numbers.
 
-            * **event** -- event reported.
+      Input/output:
 
-            * **stage** -- "0" for first stage, "1" for second
-              stage.
+            "primme_svds_initialize()" sets this field to "[-1, -1, -1, -1]";
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-            * **primme_svds** -- parameters structure; the counter
-              in "stats" are updated with the current number of
-              matrix- vector products, iterations, elapsed time, etc.,
-              since start.
+   void *matrix
 
-            * **ierr** -- output error code; if it is set to non-
-              zero, the current call to PRIMME will stop.
+      This field may be used to pass any required information in the
+      matrix-vector product "matrixMatvec".
 
-         This function is called at the next events:
+      Input/output:
 
-         * "*event == primme_event_outer_iteration": every outer
-           iterations.
+            "primme_svds_initialize()" sets this field to NULL;
 
-           It is provided "basisSvals", "basisSize", "basisFlags",
-           "iblock" and "blockSize".
+   void *preconditioner
 
-           "basisNorms[iblock[i]]" has the residual norms for the
-           selected triplets in the block. PRIMME avoids computing the
-           residual of soft-locked triplets, "basisNorms[i]" for
-           "i<iblock[0]". So those values may correspond to previous
-           iterations. The values "basisNorms[i]" for
-           "i>iblock[blockSize-1]" are not valid.
+      This field may be used to pass any required information in the
+      preconditioner function "applyPreconditioner".
 
-           If "locking" is enabled, "lockedSvals", "numLocked",
-           "lockedFlags" and "lockedNorms" are also provided.
+      Input/output:
 
-           "inner_its" and  "LSRes" are not provided.
+            "primme_svds_initialize()" sets this field to NULL;
 
-         * "*event == primme_event_inner_iteration": every QMR
-           iteration.
+   int precondition
 
-           "basisSvals[0]" and "basisNorms[0]" provides the
-           approximate singular value and the residual norm of the
-           triplet which is improved in the current correction
-           equation. If "convTest" is "primme_adaptive" or
-           "primme_adaptive_ETolerance", "basisSvals[0]", and
-           "basisNorms[0]" are updated every QMR iteration.
+      Set to 1 to use preconditioning. Make sure "applyPreconditioner"
+      is not NULL then!
 
-           "inner_its" and  "LSRes" are also provided.
+      Input/output:
 
-           "lockedSvals", "numLocked", "lockedFlags", and
-           "lockedNorms" may not be provided.
+            "primme_svds_initialize()" sets this field to 0;
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         * "*event == primme_event_convergence": a new triplet in
-           the basis passed the convergence criterion
+   primme_svds_op_operator method
 
-           "iblock[0]" is the index of the newly converged triplet in
-           the basis which will be locked or soft locked. The
-           following are provided: "basisSvals", "basisSize",
-           "basisFlags" and "blockSize[0]==1".
+      Select the equivalent eigenvalue problem that will be solved:
 
-           "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
-           may not be provided.
+      * "primme_svds_op_AtA": A^*Ax = \sigma^2 x,
 
-           "inner_its" and  "LSRes" are not provided.
+      * "primme_svds_op_AAt": AA^*x = \sigma^2 x,
 
-         * "*event == primme_event_locked": a new triplet added to
-           the locked singular vectors.
+      * "primme_svds_op_augmented": \left(\begin{array}{cc} 0 & A^*
+        \\ A & 0 \end{array}\right) x = \sigma x.
 
-           "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
-           are provided. The last element of "lockedSvals",
-           "lockedFlags" and "lockedNorms" corresponds to the recent
-           locked triplet.
+      The options for this solver are stored in "primme".
 
-           "basisSvals", "numConverged", "basisFlags" and "basisNorms"
-           may not be provided.
+      Input/output:
 
-           "inner_its" and  "LSRes" are not be provided.
+            "primme_svds_initialize()" sets this field to "primme_svds_op_none";
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         The values of "basisFlags" and "lockedFlags" are:
+   primme_svds_op_operator methodStage2
 
-         * "0": unconverged.
+      Select the equivalent eigenvalue problem that will be solved to
+      refine the solution. The allowed options are
+      "primme_svds_op_none" to not refine the solution and
+      "primme_svds_op_augmented" to refine the solution by solving the
+      augmented problem with the current solution as the initial
+      vectors. See "method".
 
-         * "1": internal use; only in "basisFlags".
+      The options for this solver are stored in "primmeStage2".
 
-         * "2": passed convergence test (see "eps").
+      Input/output:
 
-         * "3": converged because the solver may not be able to
-           reduce the residual norm further.
+            "primme_svds_initialize()" sets this field to "primme_svds_op_none";
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
-         Input/output:
+   primme_params primme
 
-               "primme_initialize()" sets this field to NULL;
-               "dprimme_svds()" sets this field to an internal function if it is NULL;
-               this field is read by "dprimme_svds()" and "zprimme_svds()".
+      Parameter structure storing the options for underneath
+      eigensolver that will be called at the first stage. See
+      "method".
 
-      PRIMME_INT stats.numOuterIterations
+      Input/output:
 
-         Hold the number of outer iterations.
+            "primme_svds_initialize()" initialize this structure;
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-         Input/output:
+   primme_params primmeStage2
 
-               "primme_svds_initialize()" sets this field to 0;
-               written by "dprimme_svds()" and "zprimme_svds()".
+      Parameter structure storing the options for underneath
+      eigensolver that will be called at the second stage. See
+      "methodStage2".
 
-      PRIMME_INT stats.numRestarts
+      Input/output:
 
-         Hold the number of restarts.
+            "primme_svds_initialize()" initialize this structure;
+            this field is read and written by "primme_svds_set_method()" (see Preset Methods);
+            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-         Input/output:
+   void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
 
-               "primme_svds_initialize()" sets this field to 0;
-               written by "dprimme_svds()" and "zprimme_svds()".
+      Convergence monitor. Used to customize how to report solver
+      information during execution (stage, iteration number, matvecs,
+      time, residual norms, targets, etc).
 
-      PRIMME_INT stats.numMatvecs
+      Parameters:
+         * **basisSvals** -- array with approximate singular values
+           of the basis.
 
-         Hold how many vectors the operator in "matrixMatvec" has been
-         applied on.
+         * **basisSize** -- size of the arrays "basisSvals",
+           "basisFlags" and "basisNorms".
 
-         Input/output:
+         * **basisFlags** -- state of every approximate triplet in
+           the basis.
 
-               "primme_svds_initialize()" sets this field to 0;
-               written by "dprimme_svds()" and "zprimme_svds()".
+         * **iblock** -- indices of the approximate triplet in the
+           block.
 
-      PRIMME_INT stats.numPreconds
+         * **blockSize** -- size of array "iblock".
 
-         Hold how many vectors the operator in "applyPreconditioner"
-         has been applied on.
+         * **basisNorms** -- array with residual norms of the
+           triplets in the basis.
 
-         Input/output:
+         * **numConverged** -- number of triplets converged in the
+           basis plus the number of the locked triplets (note that
+           this value isn't monotonic).
 
-               "primme_svds_initialize()" sets this field to 0;
-               written by "dprimme_svds()" and "zprimme_svds()".
+         * **lockedSvals** -- array with the locked triplets.
 
-      double stats.elapsedTime
+         * **numLocked** -- size of the arrays "lockedSvals",
+           "lockedFlags" and "lockedNorms".
 
-         Hold the wall clock time spent by the call to
-         "dprimme_svds()" or "zprimme_svds()".
+         * **lockedFlags** -- state of each locked triplets.
 
-         Input/output:
+         * **lockedNorms** -- array with residual norms of the
+           locked triplets.
 
-               "primme_svds_initialize()" sets this field to 0;
-               written by "dprimme_svds()" and "zprimme_svds()".
+         * **inner_its** -- number of performed QMR iterations in
+           the current correction equation.
+
+         * **LSRes** -- residual norm of the linear system at the
+           current QMR iteration.
+
+         * **event** -- event reported.
+
+         * **stage** -- "0" for first stage, "1" for second stage.
+
+         * **primme_svds** -- parameters structure; the counter in
+           "stats" are updated with the current number of matrix-
+           vector products, iterations, elapsed time, etc., since
+           start.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      This function is called at the next events:
+
+      * "*event == primme_event_outer_iteration": every outer
+        iterations.
+
+        It is provided "basisSvals", "basisSize", "basisFlags",
+        "iblock" and "blockSize".
+
+        "basisNorms[iblock[i]]" has the residual norms for the
+        selected triplets in the block. PRIMME avoids computing the
+        residual of soft-locked triplets, "basisNorms[i]" for
+        "i<iblock[0]". So those values may correspond to previous
+        iterations. The values "basisNorms[i]" for
+        "i>iblock[blockSize-1]" are not valid.
+
+        If "locking" is enabled, "lockedSvals", "numLocked",
+        "lockedFlags" and "lockedNorms" are also provided.
+
+        "inner_its" and  "LSRes" are not provided.
+
+      * "*event == primme_event_inner_iteration": every QMR
+        iteration.
+
+        "basisSvals[0]" and "basisNorms[0]" provides the approximate
+        singular value and the residual norm of the triplet which is
+        improved in the current correction equation. If "convTest" is
+        "primme_adaptive" or "primme_adaptive_ETolerance",
+        "basisSvals[0]", and "basisNorms[0]" are updated every QMR
+        iteration.
+
+        "inner_its" and  "LSRes" are also provided.
+
+        "lockedSvals", "numLocked", "lockedFlags", and "lockedNorms"
+        may not be provided.
+
+      * "*event == primme_event_convergence": a new triplet in the
+        basis passed the convergence criterion
+
+        "iblock[0]" is the index of the newly converged triplet in the
+        basis which will be locked or soft locked. The following are
+        provided: "basisSvals", "basisSize", "basisFlags" and
+        "blockSize[0]==1".
+
+        "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
+        may not be provided.
+
+        "inner_its" and  "LSRes" are not provided.
+
+      * "*event == primme_event_locked": a new triplet added to the
+        locked singular vectors.
+
+        "lockedSvals", "numLocked", "lockedFlags" and "lockedNorms"
+        are provided. The last element of "lockedSvals", "lockedFlags"
+        and "lockedNorms" corresponds to the recent locked triplet.
+
+        "basisSvals", "numConverged", "basisFlags" and "basisNorms"
+        may not be provided.
+
+        "inner_its" and  "LSRes" are not be provided.
+
+      The values of "basisFlags" and "lockedFlags" are:
+
+      * "0": unconverged.
+
+      * "1": internal use; only in "basisFlags".
+
+      * "2": passed convergence test (see "eps").
+
+      * "3": converged because the solver may not be able to reduce
+        the residual norm further.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            "dprimme_svds()" sets this field to an internal function if it is NULL;
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+   PRIMME_INT stats.numOuterIterations
+
+      Hold the number of outer iterations.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()" and "zprimme_svds()".
+
+   PRIMME_INT stats.numRestarts
+
+      Hold the number of restarts.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()" and "zprimme_svds()".
+
+   PRIMME_INT stats.numMatvecs
+
+      Hold how many vectors the operator in "matrixMatvec" has been
+      applied on.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()" and "zprimme_svds()".
+
+   PRIMME_INT stats.numPreconds
+
+      Hold how many vectors the operator in "applyPreconditioner" has
+      been applied on.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()" and "zprimme_svds()".
+
+   double stats.elapsedTime
+
+      Hold the wall clock time spent by the call to "dprimme_svds()"
+      or "zprimme_svds()".
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()" and "zprimme_svds()".
+
+
+Preset Methods
+**************
+
+primme_svds_preset_method
+
+      primme_svds_default
+
+         Set as "primme_svds_hybrid".
+
+      primme_svds_normalequations
+
+         Solve the equivalent eigenvalue problem A^*A V = \Sigma^2 V
+         and computes U by normalizing the vectors AV. If "m" is
+         smaller than "n", AA^* is solved instead.
+
+         With "primme_svds_normalequations" "primme_svds_set_method()"
+         sets "method" to "primme_svds_op_AtA" if "m" is larger or
+         equal than "n", and to "primme_svds_op_AAt" otherwise; and
+         "methodStage2" is set to "primme_svds_op_none".
+
+         The minimum residual norm that this method can achieve is
+         \|A\|\epsilon\sigma^{-1}, where \epsilon is the machine
+         precision and \sigma the required singular value.
+
+      primme_svds_augmented
+
+         Solve the equivalent eigenvalue problem
+         \left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) X
+         = \sigma X with X =
+         \left(\begin{array}{cc}V\\U\end{array}\right).
+
+         With "primme_svds_augmented" "primme_svds_set_method()" sets
+         "method" to "primme_svds_op_augmented" and "methodStage2" to
+         "primme_svds_op_none".
+
+         The minimum residual norm that this method can achieve is
+         \|A\|\epsilon, where \epsilon is the machine precision.
+         However it may not return triplets with singular values
+         smaller than \|A\|\epsilon.
+
+      primme_svds_hybrid
+
+         First solve the equivalent normal equations (see
+         "primme_svds_normalequations") and then refine the solution
+         solving the augmented problem (see "primme_svds_augmented").
+
+         With "primme_svds_normalequations" "primme_svds_set_method()"
+         sets "method" to "primme_svds_op_AtA" if "m" is larger or
+         equal than "n", and to "primme_svds_op_AAt" otherwise; and
+         "methodStage2" is set to "primme_svds_op_augmented".
+
+         The minimum residual norm that this method can achieve is
+         \|A\|\epsilon, where \epsilon is the machine precision.
+         However it may not return triplets with singular values
+         smaller than \|A\|\epsilon if "eps" is smaller than
+         \|A\|\epsilon\sigma^{-1}.
 
 
 Error Codes
-===========
+***********
 
 The functions "dprimme_svds()" and "zprimme_svds()" return one of the
 next values:
@@ -4852,62 +4923,6 @@ next values:
 
 * -200 up to -299: eigensolver error from second stage; see the
   value plus 200 in Error Codes.
-
-
-Preset Methods
-==============
-
-primme_svds_preset_method
-
-   primme_svds_default
-
-      Set as "primme_svds_hybrid".
-
-   primme_svds_normalequations
-
-      Solve the equivalent eigenvalue problem A^*A V = \Sigma^2 V and
-      computes U by normalizing the vectors AV. If "m" is smaller than
-      "n", AA^* is solved instead.
-
-      With "primme_svds_normalequations" "primme_svds_set_method()"
-      sets "method" to "primme_svds_op_AtA" if "m" is larger or equal
-      than "n", and to "primme_svds_op_AAt" otherwise; and
-      "methodStage2" is set to "primme_svds_op_none".
-
-      The minimum residual norm that this method can achieve is
-      \|A\|\epsilon\sigma^{-1}, where \epsilon is the machine
-      precision and \sigma the required singular value.
-
-   primme_svds_augmented
-
-      Solve the equivalent eigenvalue problem \left(\begin{array}{cc}
-      0 & A^* \\ A & 0 \end{array}\right) X = \sigma X with X =
-      \left(\begin{array}{cc}V\\U\end{array}\right).
-
-      With "primme_svds_augmented" "primme_svds_set_method()" sets
-      "method" to "primme_svds_op_augmented" and "methodStage2" to
-      "primme_svds_op_none".
-
-      The minimum residual norm that this method can achieve is
-      \|A\|\epsilon, where \epsilon is the machine precision. However
-      it may not return triplets with singular values smaller than
-      \|A\|\epsilon.
-
-   primme_svds_hybrid
-
-      First solve the equivalent normal equations (see
-      "primme_svds_normalequations") and then refine the solution
-      solving the augmented problem (see "primme_svds_augmented").
-
-      With "primme_svds_normalequations" "primme_svds_set_method()"
-      sets "method" to "primme_svds_op_AtA" if "m" is larger or equal
-      than "n", and to "primme_svds_op_AAt" otherwise; and
-      "methodStage2" is set to "primme_svds_op_augmented".
-
-      The minimum residual norm that this method can achieve is
-      \|A\|\epsilon, where \epsilon is the machine precision. However
-      it may not return triplets with singular values smaller than
-      \|A\|\epsilon if "eps" is smaller than \|A\|\epsilon\sigma^{-1}.
 
 Python Interface
 ****************

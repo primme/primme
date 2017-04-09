@@ -3,14 +3,13 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
 
-PRIMME, pronounced as *prime*, finds a number of eigenvalues and their
-corresponding eigenvectors of a real symmetric or Hermitian matrix.
-It can also compute singular values and vectors of a square or rectangular
-matrix. Largest, smallest, and interior eigenvalues and singular values
-are supported. Preconditioning can be used to accelerate convergence.
-PRIMME is written in C99, but complete interfaces are provided for
-Fortran 77, MATLAB, Python, and R.
-  
+PRIMME, pronounced as *prime*, computes
+a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. 
+It can also compute singular values and vectors of a square or rectangular matrix. 
+It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
+It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
+
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
 
