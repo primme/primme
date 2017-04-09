@@ -77,15 +77,18 @@
 #'       \item{\code{vectors}}{the eigenvectors \eqn{x_i}}
 #'       \item{\code{rnorms}}{the residual vector norms
 #'          \eqn{\|A x_i - \lambda_i x_i\|}{||A*x_i - lambda_i*x_i||}.}
-#'       \item{\code{stats$numMatvecs}}{matrix-vector products performed}
-#'       \item{\code{stats$elapsedTime}}{time expend by the eigensolver}
+#'       \item{\code{stats$numMatvecs}}{number of matrix-vector products performed}
+#'       \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
+#'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
+#'       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
+#'       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
 #'       \item{\code{stats$estimateMinEval}}{estimation of the smallest eigenvalue of A}
 #'       \item{\code{stats$estimateMaxEval}}{estimation of the largest eigenvalue of A}
 #'       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
 #'    }
 #'
 #' @details
-#' Optional arguments to pass to PRIMME eignesolver (see further details at [2]):
+#' Optional arguments to pass to PRIMME eigensolver (see further details at [2]):
 #'
 #' \describe{
 #' \item{\code{method}}{ used by the solver, one of:
@@ -214,10 +217,10 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
                is.matrix(A) ||
                any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
                any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
-        Af <- A;
+         Af <- A;
       }
       else {
-        Af <- function(x) A %*% x;
+         Af <- function(x) A %*% x;
       }
    }
 
@@ -237,7 +240,7 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
          SM="primme_closest_abs");
    if (is.character(which) && which %in% names(targets)) {
       if (which %in% list("CGT", "CLT", "SM") && is.null(targetShifts))
-         stop("Set `targetShifts` when `which` is 'CGT', 'CLT' or 'SM'");
+         targetShifts <- 0.0;
       opts$target <- targets[[which]];
       opts$targetShifts <- targetShifts;
    }
@@ -315,10 +318,13 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
 
    # Get stats
    r$stats$numMatvecs <- .primme_get_member("stats_numMatvecs", primme)
+   r$stats$numPreconds <- .primme_get_member("stats_numPreconds", primme)
    r$stats$elapsedTime <- .primme_get_member("stats_elapsedTime", primme)
    r$stats$estimateMinEval <- .primme_get_member("stats_estimateMinEVal", primme)
    r$stats$estimateMaxEval <- .primme_get_member("stats_estimateMaxEVal", primme)
    r$stats$estimateANorm <- .primme_get_member("stats_estimateLargestSVal", primme)
+   r$stats$timeMatvec <- .primme_get_member("stats_timeMatvec", primme)
+   r$stats$timePrecond <- .primme_get_member("stats_timePrecond", primme)
    
    # Free PRIMME structure
    .primme_free(primme);

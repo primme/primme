@@ -90,7 +90,10 @@
 #'       \item{\code{rnorms}}{the residual vector norms
 #'          \eqn{\sqrt{\|Av - \sigma u\|^2+\|A^*u - \sigma v\|^2}}{sqrt(||A*v - sigma*u||^2 + ||A'*u - \sigma*v||^2}}
 #'       \item{\code{stats$numMatvecs}}{matrix-vector products performed}
-#'       \item{\code{stats$elapsedTime}}{time expend by the eigensolver}
+#'       \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
+#'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
+#'       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
+#'       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
 #'       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
 #'    }
 #'
@@ -148,7 +151,7 @@
 #'                         # left and right singular vectors are the columns of
 #'                         # diag(1,100,10) and diag(10), respectively
 #' r <- svds(A, 3);
-#' r$d  # the three largest singular values on A
+#' r$d # the three largest singular values on A
 #' r$u # the corresponding approximate left singular vectors
 #' r$v # the corresponding approximate right singular vectors
 #' r$rnorms # the corresponding residual norms
@@ -164,7 +167,7 @@
 #'
 #' # Build the diagonal squared preconditioner
 #' # and see how reduce the number matrix-vector products
-#' P <- diag(diag(crossprod(A,A)))
+#' P <- colSums(A^2)
 #' svds(A, 3, "S", tol=1e-3)$stats$numMatvecs
 #' svds(A, 3, "S", tol=1e-3, prec=list(AHA=P))$stats$numMatvecs
 #' 
@@ -206,8 +209,8 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
       opts$m <- nrow(A);
       opts$n <- ncol(A);
       if (is.matrix(A)) {
-        Af <- A;
-        isreal_suggestion <- is.numeric(A);
+         Af <- A;
+         isreal_suggestion <- is.numeric(A);
       }
       else if (any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A))) {
         Af <- A;
@@ -307,12 +310,12 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    }
 
    # Extract method* from opts
-   method <- opts$method;
-   opts$method <- NULL;
-   methodStage1 <- opts$methodStage1
+   methodStage1 <- opts[["methodStage1"]];
    opts$methodStage1 <- NULL;
-   methodStage2 <- opts$methodStage2;
+   methodStage2 <- opts[["methodStage2"]];
    opts$methodStage2 <- NULL;
+   method <- opts[["method"]];
+   opts$method <- NULL;
 
    # Process isreal
    if (!is.null(isreal) && !is.logical(isreal)) {
@@ -353,8 +356,11 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
 
    # Get stats
    r$stats$numMatvecs <- .primme_svds_get_member("stats_numMatvecs", primme_svds)
+   r$stats$numPreconds <- .primme_svds_get_member("stats_numPreconds", primme_svds)
    r$stats$elapsedTime <- .primme_svds_get_member("stats_elapsedTime", primme_svds)
    r$stats$estimateANorm <- .primme_svds_get_member("aNorm", primme_svds)
+   r$stats$timeMatvec <- .primme_svds_get_member("stats_timeMatvec", primme_svds)
+   r$stats$timePrecond <- .primme_svds_get_member("stats_timePrecond", primme_svds)
    
    # Free PRIMME SVDS structure
    .primme_svds_free(primme_svds);
