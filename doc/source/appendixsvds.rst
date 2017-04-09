@@ -1,3 +1,5 @@
+.. highlight:: c
+
 Parameter Description
 ---------------------
 
@@ -167,9 +169,7 @@ primme_svds_params
          | :c:func:`dprimme_svds` sets this field to an internal function if |SnumProcs| is 1 and |SglobalSumReal| is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-      When MPI is used, this can be a simply wrapper to MPI_Allreduce() as shown below:
-
-      .. code:: c
+      When MPI is used, this can be a simply wrapper to MPI_Allreduce() as shown below::
 
          void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count, 
                                   primme_svds_params *primme_svds, int *ierr) {
@@ -182,7 +182,7 @@ primme_svds_params
             }
          }
 
-         When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
+      When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
    .. c:member:: int numSvals
 
@@ -301,10 +301,14 @@ primme_svds_params
 
       Convergence history for plotting may be produced simply by::
 
+      .. code-block:: bash
+
          grep OUT outpufile | awk '{print $8" "$14}' > out
          grep INN outpufile | awk '{print $3" "$11}' > inn
 
       Or in gnuplot::
+
+      .. code-block:: gnuplot
 
          plot 'out' w lp, 'inn' w lp
 

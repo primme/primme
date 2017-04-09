@@ -1,4 +1,6 @@
 
+.. highlight:: c
+
 Parameters Description
 ----------------------
 
@@ -313,12 +315,16 @@ primme_params
 
    .. note::
 
-      Convergence history for plotting may be produced simply by::
+      Convergence history for plotting may be produced simply by:
+
+      .. code-block:: bash
 
          grep OUT outpufile | awk '{print $8" "$14}' > out
          grep INN outpufile | awk '{print $3" "$11}' > inn
 
-      Then in gnuplot::
+      Then in gnuplot:
+
+      .. code-block:: gnuplot
 
          plot 'out' w lp, 'inn' w lp
 

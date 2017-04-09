@@ -1,4 +1,6 @@
 
+.. highlight:: fortran
+
 FORTRAN Library Interface
 -------------------------
 

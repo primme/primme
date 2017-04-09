@@ -261,7 +261,7 @@ COPYING.txt.
 Citing the code
 ===============
 
-Please cite:
+Please cite (find the bibtex in "doc/primme.doc"):
 
 [r1] A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned
      Iterative MultiMethod Eigensolver: Methods and software

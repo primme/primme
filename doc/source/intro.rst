@@ -173,7 +173,7 @@ License Information
 
 PRIMME is licensed under the 3-clause license BSD.
 Python and MATLAB interfaces have BSD-compatible licenses.
-Source code under file:`tests` is compatible with LGPLv3.
+Source code under :file:`tests` is compatible with LGPLv3.
 Details can be taken from COPYING.txt.
 
 Citing the code 
@@ -181,11 +181,38 @@ Citing the code
 
 .. only:: latex
 
-   Please cite [r1]_ and [r6]_.
+   Please cite [r1]_ and [r6]_. Find the BibTeX in the following and also in :file:`doc/primme.bib`:
 
-.. only:: not latex
+   .. code-block:: BibTeX
 
-   Please cite:
+      @Article{PRIMME,
+        author =       {Andreas Stathopoulos and James R. McCombs},
+        title =        {{PRIMME}: {PR}econditioned {I}terative {M}ulti{M}ethod
+                      {E}igensolver: Methods and software description},
+        journal =      {ACM Transactions on Mathematical Software},
+        volume =     {37},
+        number =     {2},
+        year =         {2010},
+        pages =       {21:1--21:30},
+      }
+      
+      @Article{svds_software,
+        author    = {Lingfei Wu and Eloy Romero and Andreas Stathopoulos},
+        title     = {PRIMME{\_}SVDS: {A} High-Performance Preconditioned {SVD} Solver for
+                     Accurate Large-Scale Computations},
+        journal   = {SIAM J. Sci. Comput., to appear},
+        volume    = {abs/1607.01404},
+        year      = {2016},
+        url       = {http://arxiv.org/abs/1607.01404},
+      }
+
+.. only:: text
+
+   Please cite (find the BibTeX in :file:`doc/primme.doc`):
+
+.. only:: not latex and not text
+
+   Please cite (`BibTeX`_):
 
 .. [r1] A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned Iterative
    MultiMethod Eigensolver: Methods and software description*, ACM
@@ -372,5 +399,6 @@ Main Contributors
 * Lingfei Wu
 
 .. _`github`: https://github.com/primme/primme
+.. _`BibTeX`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
 
 .. include:: epilog.inc

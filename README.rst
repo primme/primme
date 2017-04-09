@@ -71,7 +71,7 @@ The `examples` directory is plenty of self-contained examples in C, C++ and F77,
 Citing this code 
 ----------------
 
-Please cite:
+Please cite (bibtex_):
 
 * A. Stathopoulos and J. R. McCombs *PRIMME: PReconditioned Iterative
   MultiMethod Eigensolver: Methods and software description*, ACM
@@ -126,3 +126,4 @@ the webpage http://www.cs.wm.edu/~andreas/software.
 .. _`github`: https://github.com/primme/primme
 .. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
 .. _PETSc : http://www.mcs.anl.gov/petsc/
+.. _`bibtex`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
