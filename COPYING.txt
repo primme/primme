@@ -64,7 +64,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (end notice)
 
-Work under TEST contains "combined work" with the next copyright notice:
+Work under tests contains "combined work" with the next copyright notice:
 (begin notice)
 
  Copyright (C) 2005, the Regents of the University of Minnesota 

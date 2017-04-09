@@ -253,15 +253,17 @@ License Information
 ===================
 
 PRIMME is licensed under the 3-clause license BSD. Python and MATLAB
-interfaces have BSD-compatible licenses. Source code under
-file:*tests* is compatible with LGPLv3. Details can be taken from
-COPYING.txt.
+interfaces have BSD-compatible licenses. Source code under "tests" is
+compatible with LGPLv3. Details can be taken from "COPYING.txt":
+
+   Copyright (c) 2017, College of William & Mary
+   All rights reserved.
 
 
 Citing the code
 ===============
 
-Please cite (find the bibtex in "doc/primme.doc"):
+Please cite (find the BibTeX in "doc/primme.doc"):
 
 [r1] A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned
      Iterative MultiMethod Eigensolver: Methods and software
@@ -4209,7 +4211,8 @@ primme_svds_params
             }
          }
 
-         When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
+      When calling "sprimme_svds()" and "cprimme_svds()" replace
+      "MPI_DOUBLE" by "`MPI_FLOAT".
 
    int numSvals
 
