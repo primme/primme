@@ -2,7 +2,7 @@
 PRIMME
 ======
 
-This package is an interface to PRIMME, a C library for computing a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. It can also compute singular values and vectors. It can find largest, smallest, or interior eigenvalues or singular values and can use preconditioning to accelerate convergence. It is a useful tool for both non-experts and experts.
+This package is an R interface to PRIMME, a C library for computing a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. It can also compute singular values and vectors of a square or rectangular matrix. It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
 
 Use the following two references to cite this package:
 
@@ -43,26 +43,29 @@ r
 #> 
 #> $vectors
 #>                [,1]          [,2]          [,3]
-#>  [1,] -7.907476e-17  1.440058e-16  1.683224e-17
-#>  [2,] -2.158240e-17 -4.239230e-17 -2.406929e-17
-#>  [3,] -3.016793e-17 -1.602451e-16 -1.266348e-16
-#>  [4,] -1.908196e-17  2.211772e-17 -2.532696e-16
-#>  [5,] -1.526557e-16 -1.196959e-16  2.359224e-16
-#>  [6,]  6.005938e-16 -2.159731e-16 -1.040834e-16
-#>  [7,] -9.470506e-17  3.174544e-16 -1.960238e-15
-#>  [8,] -5.657909e-16  3.992032e-16 -1.000000e+00
-#>  [9,]  2.491104e-15 -1.000000e+00 -5.095750e-16
-#> [10,]  1.000000e+00  2.169617e-15 -6.078579e-16
+#>  [1,] -1.371868e-16  2.381771e-16 -2.252380e-16
+#>  [2,]  6.980780e-17  2.866614e-17  1.292433e-16
+#>  [3,] -2.299606e-16  1.269985e-16 -5.609795e-17
+#>  [4,] -1.960802e-16  2.701925e-17 -2.503660e-17
+#>  [5,] -4.857749e-17  2.462784e-16 -1.267024e-16
+#>  [6,] -2.577747e-16 -2.079437e-16 -1.676989e-16
+#>  [7,] -8.486805e-17 -7.529381e-16 -2.007853e-15
+#>  [8,] -1.120694e-15 -2.065498e-15 -1.000000e+00
+#>  [9,] -6.414024e-16 -1.000000e+00  1.560476e-15
+#> [10,]  1.000000e+00 -2.987345e-16 -1.484140e-15
 #> 
 #> $rnorms
-#> [1] 4.440892e-15 4.440892e-15 4.440892e-15
+#> [1] 5.155287e-15 4.440892e-15 4.740049e-15
 #> 
 #> $stats
 #> $stats$numMatvecs
 #> [1] 10
 #> 
+#> $stats$numPreconds
+#> [1] 0
+#> 
 #> $stats$elapsedTime
-#> [1] 0.0003149509
+#> [1] 0.0006670952
 #> 
 #> $stats$estimateMinEval
 #> [1] 1
@@ -72,6 +75,12 @@ r
 #> 
 #> $stats$estimateANorm
 #> [1] 10
+#> 
+#> $stats$timeMatvec
+#> [1] 0.0004501343
+#> 
+#> $stats$timePrecond
+#> [1] 0
 ```
 
 The next examples show how to compute eigenvalues in other parts of the spectrum:
@@ -91,48 +100,146 @@ r$values
 In some cases, a larger convergence tolerance may suffice:
 
 ``` r
-A <- diag(1:1000)
+A <- diag(1:5000)
 
 r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
-#> [1] 643
-r$stats$elapsedTime
-#> [1] 1.645482
+#> [1] 1146
 
-r <- eigs_sym(A, 10, 'SA', tol=1e-4); 
+r <- eigs_sym(A, 10, 'SA', tol=1e-3); 
 r$stats$numMatvecs
-#> [1] 359
-r$stats$elapsedTime
-#> [1] 0.9441411
+#> [1] 409
 ```
 
 Preconditioners, if available can reduce the time/matrix-vector multiplications significantly (see TODO):
 
 ``` r
 # A is a tridiagonal
-A <- diag(1:1000)
-for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
+A <- diag(1:5000)
+for(i in 1:4999) {A[i,i+1]<-1; A[i+1,i]<-1}
 
 r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
-#> [1] 565
+#> [1] 1179
+r$stats$elapsedTime
+#> [1] 5.297332
 
 # Jacobi preconditioner
-P = diag(diag(A));
-r <- eigs_sym(A, 10, 'SA', prec=P);
+P = diag(A);
+r <- eigs_sym(A, 10, 'SA', prec=function(x)x/P);
 r$stats$numMatvecs
-#> [1] 58
+#> [1] 51
+r$stats$elapsedTime
+#> [1] 0.2373209
 ```
 
 Dense matrices, sparse matrices, and functions that return the matrix-vector product can be passed as the matrix problem `A`:
 
 ``` r
 r <- eigs_sym(diag(1:10), 1); # dense matrix
-require(Matrix)
+library(Matrix)
 r <- eigs_sym(Matrix(diag(1:10), sparse=TRUE), 1); # sparse matrix
 Afun = function(x) matrix(1:10)*x;  # function that does diag(1:10) %*% x
 r <- eigs_sym(Afun, 1, n=10); # n is the matrix dimension corresponding to Afun
 ```
+
+The next benchmark function extends `rbenchmark` to return besides the time, the number of matrix-vector multiplications and the maximum residual norm among all returned eigenpairs.
+
+``` r
+library(knitr)
+
+bench_eigs <- function(..., A, environment=parent.frame()) {
+   arguments = match.call()[-1]
+   if (!is.null(names(arguments)))
+      arguments = arguments[!names(arguments) %in% c("A", "environment")]
+   testRes <- function(s,v)
+      sapply(1:ncol(v), function(i)
+         base::norm(A%*%v[,i]-v[,i]*s[i],"2"));
+   labels <- (if (!is.null(names(arguments))) names else as.character)(arguments) 
+   data.frame(row.names=NULL, test=labels, t(mapply(function(test) {
+      r_t <- system.time(r <- eval(test, environment));
+      if (!"values" %in% names(r)) r$values <- r$d;
+      if (!"vectors" %in% names(r)) r$vectors <- r$u;
+      resNorm <- max(testRes(r$values, r$vectors))
+      matvecs <- if ("mprod" %in% names(r)) r$mprod
+                 else if ("nops" %in% names(r)) r$nops
+                 else if ("stats" %in% names(r)) r$stats$numMatvecs
+                 else "--";
+      list(time=r_t[3], matvecs=matvecs, rnorm=resNorm)
+   }, arguments)))
+}
+```
+
+PRIMME eigs\_sym is based on Davidson-type methods and they may be faster than Lanczos/Arnoldi based method (e.g., svd, RSpectra and irlba) in difficult problems that eigenpairs take many iterations to convergence or an efficient preconditioner is available.
+
+``` r
+library(RSpectra, warn.conflicts=FALSE, pos=5)
+library(irlba, pos=5)
+library(svd, pos=5)
+
+Ad <- diag(1:12000);
+for(i in 1:11999) {Ad[i,i+1]<-1; Ad[i+1,i]<-1}
+set.seed(1)
+r <- bench_eigs(
+   PRIMME=PRIMME::eigs_sym(Ad,2,tol=1e-5),
+   irlba=partial_eigen(Ad,2,tol=1e-5),
+   RSpectra=RSpectra::eigs_sym(Ad,2,tol=1e-5),
+   trlan=svd::trlan.eigen(Ad,2,opts=list(tol=1e-5)),
+   A=Ad
+)
+kable(r, digits=2, caption="2 largest eigenvalues on dense matrix")
+```
+
+| test     | time    | matvecs | rnorm        |
+|:---------|:--------|:--------|:-------------|
+| PRIMME   | 13.312  | 500     | 0.1129397    |
+| irlba    | 86.767  | --      | 0.04308973   |
+| RSpectra | 57.78   | 2192    | 9.512001e-07 |
+| trlan    | 324.302 | --      | 0.1197901    |
+
+``` r
+Ad <- diag(1:6000);
+for(i in 1:5999) {Ad[i,i+1]<-1; Ad[i+1,i]<-1}
+P <- diag(Ad);
+set.seed(1)
+r <- bench_eigs(
+   PRIMME=PRIMME::eigs_sym(Ad,5,'SM',tol=1e-7),
+   "PRIMME Prec"=PRIMME::eigs_sym(Ad,5,'SM',tol=1e-7,prec=function(x)x/P),
+   RSpectra=RSpectra::eigs_sym(Ad,5,'SM',tol=1e-7),
+   A=Ad
+)
+kable(r, digits=2, caption="5 eigenvalues closest to zero on dense matrix")
+```
+
+| test        | time  | matvecs | rnorm        |
+|:------------|:------|:--------|:-------------|
+| PRIMME      | 3.852 | 555     | 0.0005940415 |
+| PRIMME Prec | 0.284 | 42      | 0.0004805318 |
+| RSpectra    | 9.067 | 1433    | 4.884529e-08 |
+
+By default PRIMME tries to guess the best configuration, but a little hint can help sometimes. The next example sets the preset method `'PRIMME_DEFAULT_MIN_TIME'` that takes advantage of very light matrix-vector products.
+
+``` r
+As <- as(sparseMatrix(i=1:50000,j=1:50000,x=1:50000),"dgCMatrix");
+for(i in 1:49999) {As[i,i+1]<-1; As[i+1,i]<-1}
+P = 1:50000; # Jacobi preconditioner of As
+set.seed(1)
+r <- bench_eigs(
+   "PRIMME defaults"=PRIMME::eigs_sym(As,40,'SM',tol=1e-10),
+   "PRIMME min time"=PRIMME::eigs_sym(As,40,'SM',tol=1e-10,method='PRIMME_DEFAULT_MIN_TIME'),
+   "PRIMME Prec"=PRIMME::eigs_sym(As,40,'SM',tol=1e-10,prec=function(x)x/P),
+   RSpectra=RSpectra::eigs_sym(As,40,'SM',tol=1e-10,opts=list(maxitr=9999)),
+   A=As
+)
+kable(r, digits=2, caption="40 eigenvalues closest to zero on dense matrix")
+```
+
+| test            | time   | matvecs | rnorm        |
+|:----------------|:-------|:--------|:-------------|
+| PRIMME defaults | 73.319 | 13436   | 4.991904e-06 |
+| PRIMME min time | 8.332  | 18945   | 4.935499e-06 |
+| PRIMME Prec     | 2.153  | 311     | 4.411372e-06 |
+| RSpectra        | 14.508 | 4343    | 4.224989e-09 |
 
 Singular value problems
 -----------------------
@@ -148,16 +255,16 @@ r
 #> 
 #> $u
 #>                [,1]          [,2]          [,3]
-#>  [1,] -2.342300e-17 -6.664832e-18 -4.472334e-19
-#>  [2,] -3.604701e-17  2.200328e-17  4.239230e-17
-#>  [3,]  2.289022e-18 -4.674718e-17 -4.878910e-17
-#>  [4,]  3.568651e-17  1.611847e-17  1.040834e-17
-#>  [5,] -2.662394e-17 -2.523782e-17  2.981556e-17
-#>  [6,]  2.483909e-16 -7.976114e-17  6.960578e-17
-#>  [7,] -1.623183e-16  6.806230e-17 -2.533442e-16
-#>  [8,]  9.121977e-17 -3.640058e-16 -1.000000e+00
-#>  [9,]  1.465345e-16 -1.000000e+00  1.934088e-16
-#> [10,]  1.000000e+00  3.636782e-16  2.432348e-17
+#>  [1,] -1.005532e-17 -2.363039e-17 -2.054460e-18
+#>  [2,] -1.258396e-17 -8.675434e-18  3.439066e-17
+#>  [3,] -7.359263e-18 -3.292225e-17 -8.656467e-18
+#>  [4,]  3.835071e-17  4.091713e-17  6.938004e-18
+#>  [5,] -1.440351e-17 -2.958001e-17  4.547859e-19
+#>  [6,]  7.167005e-17  1.429539e-16  8.137773e-20
+#>  [7,] -5.629758e-17  1.196127e-17  3.508478e-16
+#>  [8,] -2.642821e-17 -1.260746e-16 -1.000000e+00
+#>  [9,]  5.819616e-16 -1.000000e+00  1.740527e-16
+#> [10,]  1.000000e+00  1.131234e-15 -4.132377e-17
 #> [11,]  0.000000e+00  0.000000e+00  0.000000e+00
 #> [12,]  0.000000e+00  0.000000e+00  0.000000e+00
 #> [13,]  0.000000e+00  0.000000e+00  0.000000e+00
@@ -171,29 +278,38 @@ r
 #> 
 #> $v
 #>                [,1]          [,2]          [,3]
-#>  [1,] -2.342300e-16 -5.998349e-17 -3.577867e-18
-#>  [2,] -1.802351e-16  9.901476e-17  1.695692e-16
-#>  [3,]  7.630073e-18 -1.402416e-16 -1.301043e-16
-#>  [4,]  8.921629e-17  3.626656e-17  2.081668e-17
-#>  [5,] -5.324788e-17 -4.542807e-17  4.770490e-17
-#>  [6,]  4.139848e-16 -1.196417e-16  9.280771e-17
-#>  [7,] -2.318833e-16  8.750867e-17 -2.895362e-16
-#>  [8,]  1.140247e-16 -4.095065e-16 -1.000000e+00
-#>  [9,]  1.628161e-16 -1.000000e+00  1.719189e-16
-#> [10,]  1.000000e+00  3.273104e-16  1.945878e-17
+#>  [1,] -1.005532e-16 -2.126735e-16 -1.643568e-17
+#>  [2,] -6.291981e-17 -3.903946e-17  1.375627e-16
+#>  [3,] -2.453088e-17 -9.876675e-17 -2.308391e-17
+#>  [4,]  9.587679e-17  9.206354e-17  1.387601e-17
+#>  [5,] -2.880701e-17 -5.324401e-17  7.276574e-19
+#>  [6,]  1.194501e-16  2.144308e-16  1.085036e-19
+#>  [7,] -8.042512e-17  1.537878e-17  4.009689e-16
+#>  [8,] -3.303526e-17 -1.418340e-16 -1.000000e+00
+#>  [9,]  6.466240e-16 -1.000000e+00  1.547135e-16
+#> [10,]  1.000000e+00  1.018111e-15 -3.305902e-17
 #> 
 #> $rnorms
-#> [1] 6.332677e-15 1.191533e-14 7.850462e-15
+#> [1] 6.280370e-15 6.978189e-15 7.850462e-15
 #> 
 #> $stats
 #> $stats$numMatvecs
 #> [1] 20
 #> 
+#> $stats$numPreconds
+#> [1] 0
+#> 
 #> $stats$elapsedTime
-#> [1] 0.0071311
+#> [1] 0.0001549721
 #> 
 #> $stats$estimateANorm
 #> [1] 10
+#> 
+#> $stats$timeMatvec
+#> [1] 2.861023e-06
+#> 
+#> $stats$timePrecond
+#> [1] 0
 ```
 
 The next examples show how to compute the smallest singular values and how to specify some tolerance:
@@ -207,7 +323,7 @@ r$d
 
 r <- svds(A, 3, 'S', tol=1e-5);
 r$rnorms # this is should be smaller than ||A||*tol
-#> [1] 0.0010734258 0.0009443993 0.0011803952
+#> [1] 0.0009489247 0.0007254660 0.0010843363
 ```
 
 The next example shows the use of a diagonal preconditioner based on \(A^*A\) (see TODO):
@@ -216,13 +332,106 @@ The next example shows the use of a diagonal preconditioner based on \(A^*A\) (s
 A <- rbind(rep(1,n=100), diag(1:100, 500,100))
 r <- svds(A, 3, 'S');
 r$stats$numMatvecs
-#> [1] 764
+#> [1] 702
 
-P = diag(diag(crossprod(A)));
-r <- svds(A, 3, 'S', prec=list(AHA=P));
+P <- colSums(A^2);  # Jacobi preconditioner of Conj(t(A))%*%A
+r <- svds(A, 3, 'S', prec=list(AHA=function(x)x/P));
 r$stats$numMatvecs
 #> [1] 44
 ```
+
+The next benchmark function extends `rbenchmark` to return besides the time, the number of matrix-vector multiplications and the maximum residual norm of the returned triplets.
+
+``` r
+bench_svds <- function(..., A, environment=parent.frame()) {
+   arguments = match.call()[-1]
+   if (!is.null(names(arguments)))
+      arguments = arguments[!names(arguments) %in% c("A", "environment")]
+   testRes <- function(u,s,v)
+      sapply(1:ncol(u), function(i)
+         base::norm(rbind(A%*%v[,i]-u[,i]*s[i], Conj(t(as.matrix(Conj(t(u[,i]))%*%A)))-v[,i]*s[i]),"2"));
+   labels <- (if (!is.null(names(arguments))) names else as.character)(arguments) 
+   data.frame(row.names=NULL, test=labels, t(mapply(function(test) {
+      r_t <- system.time(r <- eval(test, environment));
+      if (is.null(r$v)) r$v <- sapply(1:ncol(r$u), function(i) crossprod(A,r$u[,i])/base::norm(crossprod(A,r$u[,i]),"2"));
+      resNorm <- max(testRes(r$u, r$d, r$v))
+      matvecs <- if ("mprod" %in% names(r)) r$mprod
+                 else if ("nops" %in% names(r)) r$nops
+                 else if ("stats" %in% names(r)) r$stats$numMatvecs
+                 else "--";
+      list(time=r_t[3], matvecs=matvecs, rnorm=resNorm)
+   }, arguments)))
+}
+```
+
+PRIMME svds may perform as good as similar methods in the packages svd, RSpectra and irlba in solving few singular values.
+
+``` r
+Ad <- matrix(rnorm(6000*6000),6000)
+set.seed(1)
+r <- bench_svds(
+   PRIMME=PRIMME::svds(Ad,2,tol=1e-5),
+   irlba=irlba(Ad,2,tol=1e-5),
+   RSpectra=RSpectra::svds(Ad,2,tol=1e-5),
+   trlan=trlan.svd(Ad,2,opts=list(tol=1e-5)),
+   propack=propack.svd(Ad,2,opts=list(tol=1e-5,maxiter=99999)),
+   A=Ad
+)
+kable(r, digits=2, caption="2 largest singular values on dense matrix")
+```
+
+| test     | time   | matvecs | rnorm        |
+|:---------|:-------|:--------|:-------------|
+| PRIMME   | 3.02   | 232     | 0.001487547  |
+| irlba    | 4.364  | 342     | 0.001719602  |
+| RSpectra | 10.816 | 636     | 2.995926e-09 |
+| trlan    | 6.058  | --      | 0.001331501  |
+| propack  | 3.072  | --      | 0.001757105  |
+
+PRIMME can take advantage of a light matrix-vector product:
+
+``` r
+As <- as(sparseMatrix(i=1:50000,j=1:50000,x=1:50000),"dgCMatrix");
+r <- bench_svds(
+   PRIMME=PRIMME::svds(As,40,tol=1e-5),
+   irlba=irlba(As,40,tol=1e-5,maxit=5000,work=100),
+   RSpectra=RSpectra::svds(As,40,tol=1e-5),
+   A=As
+)
+kable(r, digits=2, caption="40 largest singular values on sparse matrix")
+```
+
+| test     | time   | matvecs | rnorm        |
+|:---------|:-------|:--------|:-------------|
+| PRIMME   | 3.7    | 12216   | 0.4924661    |
+| irlba    | 12.657 | 4244    | 1.708491     |
+| RSpectra | 14.198 | 4236    | 5.444241e-06 |
+
+And for now it is the only package that supports computing the smallest singular values:
+
+``` r
+# Get LargeReFile from UF matrix collection
+tf <- tempfile();
+download.file('http://www.cise.ufl.edu/research/sparse/MM/Stevenson/LargeRegFile.tar.gz',tf);
+td <- tempdir();
+untar(tf, exdir=td);
+As <- as(readMM(paste(td,'LargeRegFile/LargeRegFile.mtx',sep='/')), "dgCMatrix");
+unlink(tf)
+unlink(td, recursive=TRUE)
+
+P <- colSums(As^2);  # Jacobi preconditioner of Conj(t(A))%*%A
+r <- bench_svds(
+   PRIMME=PRIMME::svds(As,5,'S',tol=1e-10),
+   "PRIMME Prec"=PRIMME::svds(As,5,'S',tol=1e-10,prec=list(AHA=function(x)x/P)),
+   A=As
+)
+kable(r, digits=2, caption="5 smallest singular values on sparse matrix")
+```
+
+| test        | time    | matvecs | rnorm        |
+|:------------|:--------|:--------|:-------------|
+| PRIMME      | 438.589 | 25528   | 2.715613e-07 |
+| PRIMME Prec | 19.636  | 1086    | 2.906932e-07 |
 
 TODO
 ====
@@ -236,17 +445,17 @@ for(i in 1:999) {A[i,i+1]<-1; A[i+1,i]<-1}
 
 r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
-#> [1] 571
+#> [1] 698
 r$stats$elapsedTime
-#> [1] 1.565808
+#> [1] 0.06746888
 
 # Jacobi preconditioner
 P = diag(diag(A));
 r <- eigs_sym(A, 10, 'SA', prec=P);
 r$stats$numMatvecs
-#> [1] 64
+#> [1] 58
 r$stats$elapsedTime
-#> [1] 4.666244
+#> [1] 1.027588
 ```
 
 -   Add support for matrices distributed among processes.

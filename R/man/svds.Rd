@@ -67,7 +67,10 @@ list with the next elements
       \item{\code{rnorms}}{the residual vector norms
          \eqn{\sqrt{\|Av - \sigma u\|^2+\|A^*u - \sigma v\|^2}}{sqrt(||A*v - sigma*u||^2 + ||A'*u - \sigma*v||^2}}
       \item{\code{stats$numMatvecs}}{matrix-vector products performed}
-      \item{\code{stats$elapsedTime}}{time expend by the eigensolver}
+      \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
+      \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
+      \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
+      \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
    }
 }
@@ -122,7 +125,7 @@ A <- diag(1:5,10,5)  # the singular values of this matrix are 1:10 and the
                         # left and right singular vectors are the columns of
                         # diag(1,100,10) and diag(10), respectively
 r <- svds(A, 3);
-r$d  # the three largest singular values on A
+r$d # the three largest singular values on A
 r$u # the corresponding approximate left singular vectors
 r$v # the corresponding approximate right singular vectors
 r$rnorms # the corresponding residual norms
@@ -138,13 +141,14 @@ r$rnorms                               # residual norm <= 1e-3*||A||
 
 # Build the diagonal squared preconditioner
 # and see how reduce the number matrix-vector products
-P <- diag(diag(crossprod(A,A)))
+P <- diag(colSums(A^2))
 svds(A, 3, "S", tol=1e-3)$stats$numMatvecs
 svds(A, 3, "S", tol=1e-3, prec=list(AHA=P))$stats$numMatvecs
 
 # Passing A and the preconditioner as functions
 Af <- function(x,mode) if (mode == "n") A\%*\%x else crossprod(A,x);
-PAHAf <- function(x) x / (1:100)^2;
+P = colSums(A^2);
+PAHAf <- function(x) x / P;
 r <- svds(Af, 3, "S", tol=1e-3, prec=list(AHA=PAHAf), m=500, n=100)
 
 # Passing initial guesses

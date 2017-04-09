@@ -53,8 +53,11 @@ list with the next elements
       \item{\code{vectors}}{the eigenvectors \eqn{x_i}}
       \item{\code{rnorms}}{the residual vector norms
          \eqn{\|A x_i - \lambda_i x_i\|}{||A*x_i - lambda_i*x_i||}.}
-      \item{\code{stats$numMatvecs}}{matrix-vector products performed}
-      \item{\code{stats$elapsedTime}}{time expend by the eigensolver}
+      \item{\code{stats$numMatvecs}}{number of matrix-vector products performed}
+      \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
+      \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
+      \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
+      \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
       \item{\code{stats$estimateMinEval}}{estimation of the smallest eigenvalue of A}
       \item{\code{stats$estimateMaxEval}}{estimation of the largest eigenvalue of A}
       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
@@ -70,7 +73,7 @@ accelerating the convergence consider to use preconditioning and/or educated
 initial guesses.
 }
 \details{
-Optional arguments to pass to PRIMME eignesolver (see further details at [2]):
+Optional arguments to pass to PRIMME eigensolver (see further details at [2]):
 
 \describe{
 \item{\code{method}}{ used by the solver, one of:
@@ -88,7 +91,7 @@ Optional arguments to pass to PRIMME eignesolver (see further details at [2]):
    \item{\code{"JDQR"}}{                     original block, Jacobi Davidson}
    \item{\code{"JDQMR"}}{                    our block JDQMR method (similar to JDCG)}
    \item{\code{"JDQMR_ETol"}}{               slight, but efficient JDQMR modification}
-   \item{\code{"SUBSPACE_ITERATION"}}{       equivalent to GD(\code{maxBlockSize},2*\code{maxBlockSize})}
+   \item{\code{"STEEPEST_DESCENT"}}{         equivalent to GD(\code{maxBlockSize},2*\code{maxBlockSize})}
    \item{\code{"LOBPCG_OrthoBasis"}}{        equivalent to GD(\code{neig},3*\code{neig})+\code{neig}}
    \item{\code{"LOBPCG_OrthoBasis_Window"}}{ equivalent to GD(\code{maxBlockSize},3*\code{maxBlockSize})+\code{maxBlockSize} when neig>\code{maxBlockSize}}
    }}
