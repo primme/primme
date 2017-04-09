@@ -286,17 +286,17 @@ tf <- tempfile();
 download.file('http://www.cise.ufl.edu/research/sparse/MM/Stevenson/LargeRegFile.tar.gz',tf);
 td <- tempdir();
 untar(tf, exdir=td);
-A <- as(readMM(paste(td,'LargeRegFile/LargeRegFile.mtx',sep='/')), "dgCMatrix");
+As <- as(readMM(paste(td,'LargeRegFile/LargeRegFile.mtx',sep='/')), "dgCMatrix");
 unlink(tf)
 unlink(td, recursive=TRUE)
 
-P <- colSums(A^2);  # Jacobi preconditioner of Conj(t(A))%*%A
+P <- colSums(As^2);  # Jacobi preconditioner of Conj(t(A))%*%A
 r <- bench_svds(
-   PRIMME=PRIMME::svds(As,40,'S',tol=1e-5),
-   "PRIMME Prec"=PRIMME::svds(As,40,'S',tol=1e-5,prec=list(AHA=function(x)x/P)),
+   PRIMME=PRIMME::svds(As,5,'S',tol=1e-10),
+   "PRIMME Prec"=PRIMME::svds(As,5,'S',tol=1e-10,prec=list(AHA=function(x)x/P)),
    A=As
 )
-kable(r, digits=2, caption="40 smallest singular values on sparse matrix")
+kable(r, digits=2, caption="5 smallest singular values on sparse matrix")
 ```
 
 ```{r results='hide', echo=FALSE}

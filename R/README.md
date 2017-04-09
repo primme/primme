@@ -65,7 +65,7 @@ r
 #> [1] 0
 #> 
 #> $stats$elapsedTime
-#> [1] 0.0006911755
+#> [1] 0.0006670952
 #> 
 #> $stats$estimateMinEval
 #> [1] 1
@@ -77,7 +77,7 @@ r
 #> [1] 10
 #> 
 #> $stats$timeMatvec
-#> [1] 0.0003812313
+#> [1] 0.0004501343
 #> 
 #> $stats$timePrecond
 #> [1] 0
@@ -122,7 +122,7 @@ r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
 #> [1] 1179
 r$stats$elapsedTime
-#> [1] 5.245106
+#> [1] 5.297332
 
 # Jacobi preconditioner
 P = diag(A);
@@ -130,7 +130,7 @@ r <- eigs_sym(A, 10, 'SA', prec=function(x)x/P);
 r$stats$numMatvecs
 #> [1] 51
 r$stats$elapsedTime
-#> [1] 0.2312338
+#> [1] 0.2373209
 ```
 
 Dense matrices, sparse matrices, and functions that return the matrix-vector product can be passed as the matrix problem `A`:
@@ -192,10 +192,10 @@ kable(r, digits=2, caption="2 largest eigenvalues on dense matrix")
 
 | test     | time    | matvecs | rnorm        |
 |:---------|:--------|:--------|:-------------|
-| PRIMME   | 12.959  | 500     | 0.1129397    |
-| irlba    | 83.432  | --      | 0.04308973   |
-| RSpectra | 56.337  | 2192    | 9.512001e-07 |
-| trlan    | 318.549 | --      | 0.1197901    |
+| PRIMME   | 13.312  | 500     | 0.1129397    |
+| irlba    | 86.767  | --      | 0.04308973   |
+| RSpectra | 57.78   | 2192    | 9.512001e-07 |
+| trlan    | 324.302 | --      | 0.1197901    |
 
 ``` r
 Ad <- diag(1:6000);
@@ -213,9 +213,9 @@ kable(r, digits=2, caption="5 eigenvalues closest to zero on dense matrix")
 
 | test        | time  | matvecs | rnorm        |
 |:------------|:------|:--------|:-------------|
-| PRIMME      | 3.85  | 555     | 0.0005940415 |
-| PRIMME Prec | 0.285 | 42      | 0.0004805318 |
-| RSpectra    | 9.022 | 1433    | 4.884529e-08 |
+| PRIMME      | 3.852 | 555     | 0.0005940415 |
+| PRIMME Prec | 0.284 | 42      | 0.0004805318 |
+| RSpectra    | 9.067 | 1433    | 4.884529e-08 |
 
 By default PRIMME tries to guess the best configuration, but a little hint can help sometimes. The next example sets the preset method `'PRIMME_DEFAULT_MIN_TIME'` that takes advantage of very light matrix-vector products.
 
@@ -236,10 +236,10 @@ kable(r, digits=2, caption="40 eigenvalues closest to zero on dense matrix")
 
 | test            | time   | matvecs | rnorm        |
 |:----------------|:-------|:--------|:-------------|
-| PRIMME defaults | 74.582 | 13436   | 4.991904e-06 |
-| PRIMME min time | 8.343  | 18945   | 4.935499e-06 |
-| PRIMME Prec     | 2.191  | 311     | 4.411372e-06 |
-| RSpectra        | 14.521 | 4343    | 4.224989e-09 |
+| PRIMME defaults | 73.319 | 13436   | 4.991904e-06 |
+| PRIMME min time | 8.332  | 18945   | 4.935499e-06 |
+| PRIMME Prec     | 2.153  | 311     | 4.411372e-06 |
+| RSpectra        | 14.508 | 4343    | 4.224989e-09 |
 
 Singular value problems
 -----------------------
@@ -306,7 +306,7 @@ r
 #> [1] 10
 #> 
 #> $stats$timeMatvec
-#> [1] 9.059906e-06
+#> [1] 2.861023e-06
 #> 
 #> $stats$timePrecond
 #> [1] 0
@@ -380,13 +380,13 @@ r <- bench_svds(
 kable(r, digits=2, caption="2 largest singular values on dense matrix")
 ```
 
-| test     | time  | matvecs | rnorm        |
-|:---------|:------|:--------|:-------------|
-| PRIMME   | 2.919 | 232     | 0.001487547  |
-| irlba    | 4.215 | 342     | 0.001719602  |
-| RSpectra | 9.146 | 636     | 2.995926e-09 |
-| trlan    | 6.054 | --      | 0.001331501  |
-| propack  | 3.056 | --      | 0.001757105  |
+| test     | time   | matvecs | rnorm        |
+|:---------|:-------|:--------|:-------------|
+| PRIMME   | 3.02   | 232     | 0.001487547  |
+| irlba    | 4.364  | 342     | 0.001719602  |
+| RSpectra | 10.816 | 636     | 2.995926e-09 |
+| trlan    | 6.058  | --      | 0.001331501  |
+| propack  | 3.072  | --      | 0.001757105  |
 
 PRIMME can take advantage of a light matrix-vector product:
 
@@ -403,9 +403,9 @@ kable(r, digits=2, caption="40 largest singular values on sparse matrix")
 
 | test     | time   | matvecs | rnorm        |
 |:---------|:-------|:--------|:-------------|
-| PRIMME   | 3.645  | 12216   | 0.4924661    |
-| irlba    | 12.638 | 4244    | 1.708491     |
-| RSpectra | 13.839 | 4236    | 5.444241e-06 |
+| PRIMME   | 3.7    | 12216   | 0.4924661    |
+| irlba    | 12.657 | 4244    | 1.708491     |
+| RSpectra | 14.198 | 4236    | 5.444241e-06 |
 
 And for now it is the only package that supports computing the smallest singular values:
 
@@ -415,23 +415,23 @@ tf <- tempfile();
 download.file('http://www.cise.ufl.edu/research/sparse/MM/Stevenson/LargeRegFile.tar.gz',tf);
 td <- tempdir();
 untar(tf, exdir=td);
-A <- as(readMM(paste(td,'LargeRegFile/LargeRegFile.mtx',sep='/')), "dgCMatrix");
+As <- as(readMM(paste(td,'LargeRegFile/LargeRegFile.mtx',sep='/')), "dgCMatrix");
 unlink(tf)
 unlink(td, recursive=TRUE)
 
-P <- colSums(A^2);  # Jacobi preconditioner of Conj(t(A))%*%A
+P <- colSums(As^2);  # Jacobi preconditioner of Conj(t(A))%*%A
 r <- bench_svds(
-   PRIMME=PRIMME::svds(As,40,'S',tol=1e-5),
-   "PRIMME Prec"=PRIMME::svds(As,40,'S',tol=1e-5,prec=list(ATA=function(x)x/P)),
+   PRIMME=PRIMME::svds(As,5,'S',tol=1e-10),
+   "PRIMME Prec"=PRIMME::svds(As,5,'S',tol=1e-10,prec=list(AHA=function(x)x/P)),
    A=As
 )
-kable(r, digits=2, caption="40 smallest singular values on sparse matrix")
+kable(r, digits=2, caption="5 smallest singular values on sparse matrix")
 ```
 
-| test        | time    | matvecs | rnorm     |
-|:------------|:--------|:--------|:----------|
-| PRIMME      | 241.447 | 680700  | 0.4962626 |
-| PRIMME Prec | 385.38  | 671452  | 0.4962626 |
+| test        | time    | matvecs | rnorm        |
+|:------------|:--------|:--------|:-------------|
+| PRIMME      | 438.589 | 25528   | 2.715613e-07 |
+| PRIMME Prec | 19.636  | 1086    | 2.906932e-07 |
 
 TODO
 ====
@@ -447,7 +447,7 @@ r <- eigs_sym(A, 10, 'SA');
 r$stats$numMatvecs
 #> [1] 698
 r$stats$elapsedTime
-#> [1] 0.07345891
+#> [1] 0.06746888
 
 # Jacobi preconditioner
 P = diag(diag(A));
@@ -455,7 +455,7 @@ r <- eigs_sym(A, 10, 'SA', prec=P);
 r$stats$numMatvecs
 #> [1] 58
 r$stats$elapsedTime
-#> [1] 1.036407
+#> [1] 1.027588
 ```
 
 -   Add support for matrices distributed among processes.

@@ -141,13 +141,14 @@ r$rnorms                               # residual norm <= 1e-3*||A||
 
 # Build the diagonal squared preconditioner
 # and see how reduce the number matrix-vector products
-P <- colSums(A^2)
+P <- diag(colSums(A^2))
 svds(A, 3, "S", tol=1e-3)$stats$numMatvecs
 svds(A, 3, "S", tol=1e-3, prec=list(AHA=P))$stats$numMatvecs
 
 # Passing A and the preconditioner as functions
 Af <- function(x,mode) if (mode == "n") A\%*\%x else crossprod(A,x);
-PAHAf <- function(x) x / (1:100)^2;
+P = colSum(A^2);
+PAHAf <- function(x) x / P;
 r <- svds(Af, 3, "S", tol=1e-3, prec=list(AHA=PAHAf), m=500, n=100)
 
 # Passing initial guesses
