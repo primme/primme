@@ -147,7 +147,7 @@ svds(A, 3, "S", tol=1e-3, prec=list(AHA=P))$stats$numMatvecs
 
 # Passing A and the preconditioner as functions
 Af <- function(x,mode) if (mode == "n") A\%*\%x else crossprod(A,x);
-P = colSum(A^2);
+P = colSums(A^2);
 PAHAf <- function(x) x / P;
 r <- svds(Af, 3, "S", tol=1e-3, prec=list(AHA=PAHAf), m=500, n=100)
 
