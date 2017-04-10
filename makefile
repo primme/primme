@@ -46,6 +46,9 @@ octave: clean lib
 python: clean lib
 	@make -C Python
 
+python_install: clean lib
+	@make -C Python install
+
 R_install: clean
 	@R CMD INSTALL R
 
