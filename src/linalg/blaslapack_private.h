@@ -87,10 +87,12 @@
 #define XDOT      LAPACK_FUNCTION(sdot  ,       , ddot  ,       )
 #define XSCAL     LAPACK_FUNCTION(sscal , cscal , dscal , zscal )
 #define XLARNV    LAPACK_FUNCTION(slarnv, clarnv, dlarnv, zlarnv)
+#define XHEEV     LAPACK_FUNCTION(ssyev , cheev , dsyev , zheev )
 #define XHEEVX    LAPACK_FUNCTION(ssyevx, cheevx, dsyevx, zheevx)
 #define XGESVD    LAPACK_FUNCTION(sgesvd, cgesvd, dgesvd, zgesvd)
 #define XHETRF    LAPACK_FUNCTION(ssytrf, chetrf, dsytrf, zhetrf)
 #define XHETRS    LAPACK_FUNCTION(ssytrs, chetrs, dsytrs, zhetrs)
+#define XGESV     LAPACK_FUNCTION(sgesv , cgesv , dgesv , zgesv )
 
 #else /* NUM_CRAY */
 
@@ -116,9 +118,11 @@
 #define XSCAL  LAPACK_FUNCTION(SSCAL  , zscal )
 #define XLARNV LAPACK_FUNCTION(SLARNV ,       )
 #define XHEEV  LAPACK_FUNCTION(SSYEV  , zheev )
+#define XHEEVX LAPACK_FUNCTION(SSYEVX , zheevx)
 #define XGESVD LAPACK_FUNCTION(SGESVD , zhetrf)
 #define XSYTRF LAPACK_FUNCTION(SSYTRF , zgesvd)
 #define XSYTRS LAPACK_FUNCTION(SSYTRS , zhetrs)
+#define XGESV  LAPACK_FUNCTION(SGESV  , zgesv )
 
 #endif /* NUM_CRAY */
 
