@@ -15,6 +15,8 @@ Install
 
 You can install the latest version with `pip`::
 
+    pip install numpy   # if numpy is not installed yet
+    pip install scipy   # if scipy is not installed yet
     pip install primme
 
 Optionally for building the development version do::
@@ -33,6 +35,7 @@ In the following examples it is computed few eigenvalues and eigenvectors from a
     >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
     >>> evals # the three largest eigenvalues of A
     array([ 99.,  98.,  97.])
+
     >>> new_evals, new_evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', ortho=evecs)
     >>> new_evals # the next three largest eigenvalues
     array([ 96.,  95.,  94.])
@@ -52,6 +55,8 @@ In the following examples it is computed few singular values and vectors::
     ...           precAHA=prec)
     >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
     ['5.99871', '5.99057', '6.01065']
+
+Check further examples_ and the documentation of eigsh_ and svds_.
 
 Citing this code 
 ----------------
@@ -85,3 +90,6 @@ the webpage http://www.cs.wm.edu/~andreas/software.
 .. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
 .. _PETSc : http://www.mcs.anl.gov/petsc/
 .. _`bibtex`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
+.. _eigsh: http://www.cs.wm.edu/~andreas/software/doc/pyeigsh.html
+.. _svds: http://www.cs.wm.edu/~andreas/software/doc/pysvds.html
+.. _examples: https://github.com/primme/primme/blob/master/Python/examples.py

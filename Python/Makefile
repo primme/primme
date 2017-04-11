@@ -1,10 +1,10 @@
 # SWIG
 GENERATED  = primme_wrap.cxx primme_wrap.h Primme.py
 
-all: $(GENERATED) primmew.h primmew.cxx Primme.py setup.py
+all: $(GENERATED) primmew.h Primme.py setup.py
 	./setup.py build_ext -i
 
-install: $(GENERATED) primmew.h primmew.cxx Primme.py setup.py
+install: $(GENERATED) primmew.h Primme.py setup.py
 	./setup.py install
 
 # Test target: run the tests
@@ -30,10 +30,11 @@ update:
 	cd ..; find include src -name '*.h' -exec cp {} Python/primme/{} \;
 	for f in `cd ../src; find . -name '*.c'` ; do \
 		cp ../src/$$f primme/src/$$f; \
-		echo "#define USE_DOUBLE\n#define F77UNDERSCORE\n#include \"`basename $$f`\"" > primme/src/$${f%%.c}double.c; \
-		echo "#define USE_DOUBLECOMPLEX\n#define F77UNDERSCORE\n#include \"`basename $$f`\"" > primme/src/$${f%%.c}doublecomplex.c; \
-		echo "#define USE_FLOAT\n#define F77UNDERSCORE\n#include \"`basename $$f`\"" > primme/src/$${f%%.c}float.c; \
-		echo "#define USE_FLOATCOMPLEX\n#define F77UNDERSCORE\n#include \"`basename $$f`\"" > primme/src/$${f%%.c}floatcomplex.c; \
+		enter=$$'\n'; \
+		echo "#define USE_DOUBLE$${enter}#define F77UNDERSCORE$${enter}#include \"`basename $$f`\"" > primme/src/$${f%%.c}double.c; \
+		echo "#define USE_DOUBLECOMPLEX$${enter}#define F77UNDERSCORE$${enter}#include \"`basename $$f`\"" > primme/src/$${f%%.c}doublecomplex.c; \
+		echo "#define USE_FLOAT$${enter}#define F77UNDERSCORE$${enter}#include \"`basename $$f`\"" > primme/src/$${f%%.c}float.c; \
+		echo "#define USE_FLOATCOMPLEX$${enter}#define F77UNDERSCORE$${enter}#include \"`basename $$f`\"" > primme/src/$${f%%.c}floatcomplex.c; \
 	done
 
 .PHONY : all clean veryclean test swig install update

@@ -1,3 +1,5 @@
 # Files that will be distributed
 recursive-include primme *.h *.c
+include primmew.h
+include primme_wrap.h
 include README.rst
