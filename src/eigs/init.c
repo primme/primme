@@ -132,7 +132,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    int i;
    int initSize;
-   int random;
+   int random=0;
 
    /* Return memory requirement */
 

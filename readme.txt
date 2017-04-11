@@ -434,6 +434,8 @@ Full description of actions that *make* can take:
 
 * *make python*, builds *libprimme.a* and the Python module.
 
+* *make python_install*, install the Python module.
+
 * *make R_install*, builds and installs the R package.
 
 * *make test*, build and execute simple examples.

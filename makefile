@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib clean test all_tests check_style matlab octave python R_install tags
+.PHONY: lib clean test all_tests check_style matlab octave python python_install R_install tags
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
@@ -45,6 +45,9 @@ octave: clean lib
 
 python: clean lib
 	@make -C Python
+
+python_install: python
+	@make -C Python install
 
 R_install: clean
 	@R CMD INSTALL R

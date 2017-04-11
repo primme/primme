@@ -41,7 +41,7 @@ extern "C" {
 #endif
 
 double primme_wTimer(int zeroTimer);
-extern double primme_get_wtime();
+extern double primme_get_wtime(void);
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 double primme_get_time(double *, double *);
 #endif

@@ -341,6 +341,7 @@ Full description of actions that `make` can take:
 * `make matlab`, builds `libprimme.a` compatible with MATLAB and the MATLAB module.
 * `make octave`, builds `libprimme.a` and the Octave module.
 * `make python`, builds `libprimme.a` and the Python module.
+* `make python_install`, install the Python module.
 * `make R_install`, builds and installs the R package.
 * `make test`, build and execute simple examples.
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
