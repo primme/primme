@@ -2,57 +2,91 @@
 # Makefile for building PRIMME MEX
 #-------------------------------------------------------------
 
-#------------------------------------------------------------
 # Name of MEX source file
-#------------------------------------------------------------
-  MEXNAME = PRIMME_mex
+MEXNAME = primme_mex
+
+# PRIMME includes and linking
+INCLUDE = -I../include
+LIBS = -L../lib -lprimme -lm
 
 #------------------------------------------------------------
+# MATLAB configuration
+
 # MATLAB MEX compiler
-#------------------------------------------------------------
 MEX ?= mex
 # Linux
 # MEX = /usr/local/matlab/bin/mex
-#------------------------------------------------------------
+#
 # Mac OS X
 # MEX = /Applications/MATLAB_R2014a.app/bin/mex
 # MEX = /Applications/MATLAB_R2015a.app/bin/mex
-#------------------------------------------------------------
 
-#------------------------------------------------------------
-# MATLAB binary (only for testing)
-#------------------------------------------------------------
+# Extra compiler flags 
+MEXFLAGS += -O -largeArrayDims
+# For debug:
+# MEXFLAGS += -g -largeArrayDims
+
+# Extra libraries to link
+MEXLIBS += -lmwlapack -lmwblas
+
+# MATLAB executable app (only for testing)
 MATLAB ?= matlab
 
-# Modify -O as -g to enter debug model
-MEXFLAGS += -O -largeArrayDims
-
 #------------------------------------------------------------
-# Link to PRIMME and MATLAB BLAS/LAPACK
-#------------------------------------------------------------
-# Set TOP to the path where PRIMME is installed
-TOP = ../
+# Octave configuration
 
-LIBS = -L../lib -lprimme -lm  -lmwlapack -lmwblas
-INCLUDE = -I../include
+# Octave compiler
+MKOCTFILE ?= mkoctfile
 
-all:
-	$(MEX) $(MEXFLAGS) $(LIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).c
+# Extra compiler flags 
+# OCTFLAGS += -g
 
-test:
-	$(MATLAB) -nodesktop -nodisplay -r "A=diag(1:50);E=primme_eigs(A,6);assert(norm(E-(50:-1:45)')<1e-9);E=primme_eigs(@(x)A*x,50,6);assert(norm(E-(50:-1:45)')<1e-9;exit" &> test.log < /dev/null
-	@if `grep -q 'Assertion failed' test.log` ; then \
-	   cat test.log;\
-	       echo;\
-	       echo "Something went wrong. Please make sure PRIMME was compiled"\
-	       echo "with -DPRIMME_BLASINT_SIZE=64. Consider to send us the file 'test.log'";\
-	       echo "if the software doesn't work as expected.";\
-	       exit 1;\
+# Octave binary (only for testing)
+OCTAVE ?= octave --no-gui -H -q
+
+all: matlab
+
+matlab:
+	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp
+
+octave:
+	$(MKOCTFILE) --mex $(OCTFLAGS) $(LIBS) $(INCLUDE) $(MEXNAME).cpp
+
+test: test_matlab
+
+test_matlab:
+	@trap 'echo MATLAB was killed' 9;\
+	rm -f test.log;\
+	nohup $(MATLAB) -nodesktop -nodisplay -r "try,test_primme,catch me,disp(getReport(me));end;exit" -logfile test.log > /dev/null; \
+	if [ -s test.log ] && grep -q 'Success' test.log; then \
+		echo "Test passed!" ;\
 	else\
-	  echo "Test passed!";\
-	fi
+		cat test.log || true ;\
+		echo ;\
+		echo "Something went wrong or the MATLAB output was not captured.";\
+		echo "Please make sure PRIMME is compiled with -DPRIMME_BLASINT_SIZE=64.";\
+		echo "Consider to send us the file 'test.log'" ;\
+		echo "if the software doesn't work as expected." ;\
+		exit 1;\
+	fi ;\
+
+test_octave:
+	@trap 'echo Octave was killed' 9;\
+	rm -f test.log;\
+	nohup $(OCTAVE) test_primme.m > test.log; \
+	if [ -s test.log ] && grep -q 'Success' test.log; then \
+		echo "Test passed!" ;\
+	else\
+		cat test.log || true ;\
+		echo ;\
+		echo "Something went wrong or the Octave output was not captured.";\
+		echo "Probably PRIMME shouldn't be compiled with -DPRIMME_BLASINT_SIZE=64.";\
+		echo "Consider to send us the file 'test.log'" ;\
+		echo "if the software doesn't work as expected." ;\
+		exit 1;\
+	fi ;\
 
 clean:
 	rm -f $(MEXNAME).[^c]*
 
-.PHONY: all test clean
+.PHONY: all matlab octave test test_matlab test_octave clean 

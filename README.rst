@@ -2,12 +2,13 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ========================================================
 
-PRIMME, pronounced as *prime*, finds a number of eigenvalues and their corresponding eigenvectors of a 
-real symmetric, or Hermitian matrix. Also singular values and vectors can be computed. Largest, smallest and interior 
-eigenvalues and singular values are supported. Preconditioning can be used to accelerate 
-convergence. 
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB and Python.
-  
+PRIMME, pronounced as *prime*, computes
+a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. 
+It can also compute singular values and vectors of a square or rectangular matrix. 
+It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
+It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
+
 Making and Linking
 ------------------
 
@@ -24,6 +25,17 @@ Making can be also done at the command line::
 
     make lib CC=clang CFLAGS='-O3'
 
+Optionally for building some of the external interfaces just do::
+
+    make matlab
+    make octave
+    make python
+    make R_install
+
+Alternatively to install the development version of PRIMME on R::
+
+    library(devtools)
+    install_github("primme/primme", subdir="R")
 
 C Library Interface
 -------------------
@@ -59,9 +71,9 @@ The `examples` directory is plenty of self-contained examples in C, C++ and F77,
 Citing this code 
 ----------------
 
-Please cite:
+Please cite (bibtex_):
 
-* A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned Iterative
+* A. Stathopoulos and J. R. McCombs *PRIMME: PReconditioned Iterative
   MultiMethod Eigensolver: Methods and software description*, ACM
   Transaction on Mathematical Software Vol. 37, No. 2, (2010),
   21:1-21:30.
@@ -74,12 +86,12 @@ More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
 supported by a number of grants from the National Science Foundation.
 
-* A. Stathopoulos, *Nearly optimal preconditioned methods for hermitian
+* A. Stathopoulos, *Nearly optimal preconditioned methods for Hermitian
   eigenproblems under limited memory. Part I: Seeking one eigenvalue*, SIAM
   J. Sci. Comput., Vol. 29, No. 2, (2007), 481--514.
 
 * A. Stathopoulos and J. R. McCombs, *Nearly optimal preconditioned
-  methods for hermitian eigenproblems under limited memory. Part II:
+  methods for Hermitian eigenproblems under limited memory. Part II:
   Seeking many eigenvalues*, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
   2162-2188.
 
@@ -89,7 +101,7 @@ supported by a number of grants from the National Science Foundation.
   2337-2358.
 
 * A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
-  of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
+  of Hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
 * L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD Method for Computing
   Accurately Singular Triplets of Large Matrices*, SIAM J. Sci. Comput. 37-5(2015),
@@ -114,3 +126,4 @@ the webpage http://www.cs.wm.edu/~andreas/software.
 .. _`github`: https://github.com/primme/primme
 .. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
 .. _PETSc : http://www.mcs.anl.gov/petsc/
+.. _`bibtex`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib

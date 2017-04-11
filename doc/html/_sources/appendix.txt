@@ -1,6 +1,8 @@
 
-Appendix
---------
+.. highlight:: c
+
+Parameters Description
+----------------------
 
 Types
 """""
@@ -262,13 +264,13 @@ primme_params
 
    .. c:member:: int printLevel
 
-      The level of message reporting from the code. All output is writen in |outputFile|.
+      The level of message reporting from the code. All output is written in |outputFile|.
 
       One of:
  
       * 0: silent.
       * 1: print some error messages when these occur.
-      * 2: as 1, and info about targeted eigenpairs when they are marked as converged::
+      * 2: as in 1, and info about targeted eigenpairs when they are marked as converged::
       
             #Converged $1 eval[ $2 ]= $3 norm $4 Mvecs $5 Time $7
 
@@ -276,17 +278,17 @@ primme_params
 
             #Lock epair[ $1 ]= $3 norm $4 Mvecs $5 Time $7
 
-      * 3: as 2, and info about targeted eigenpairs every outer iteration::
+      * 3: in as 2, and info about targeted eigenpairs every outer iteration::
       
             OUT $6 conv $1 blk $8 MV $5 Sec $7 EV $3 |r| $4
 
         Also, if it is used the dynamic method, show JDQMR/GDk performance ratio and
         the current method in use.
-      * 4: as 3, and info about targeted eigenpairs every inner iteration::
+      * 4: in as 3, and info about targeted eigenpairs every inner iteration::
       
             INN MV $5 Sec $7 Eval $3 Lin|r| $9 EV|r| $4
       
-      * 5: as 4, and verbose info about certain choices of the algorithm.
+      * 5: in as 4, and verbose info about certain choices of the algorithm.
       
       Output key:
 
@@ -313,16 +315,16 @@ primme_params
 
    .. note::
 
-      Convergence history for plotting may be produced simply by::
+      Convergence history for plotting may be produced simply by:
+
+      .. code-block:: bash
 
          grep OUT outpufile | awk '{print $8" "$14}' > out
          grep INN outpufile | awk '{print $3" "$11}' > inn
 
-      Then in Matlab::
+      Then in gnuplot:
 
-         plot(out(:,1),out(:,2),'bo');hold; plot(inn(:,1),inn(:,2),'r');
-
-      Or in gnuplot::
+      .. code-block:: gnuplot
 
          plot 'out' w lp, 'inn' w lp
 
@@ -640,10 +642,10 @@ primme_params
       eigenvalues :math:`\lambda_i` are computed from the search subspace :math:`\mathcal V`:
 
       * ``primme_proj_RR``, Rayleigh-Ritz, :math:`Ax_i - Bx_i\lambda_i \perp \mathcal V`.
-      * ``primme_proj_Harm``, Harmonic Rayleigh-Ritz,
+      * ``primme_proj_harmonic``, Harmonic Rayleigh-Ritz,
         :math:`Ax_i - Bx_i\lambda_i \perp (A-\tau B)\mathcal V`, where :math:`\tau` is the current
         target shift (see |targetShifts|).
-      * ``primme_proj_ref``, refined extraction, compute :math:`||x_i||=1` so that
+      * ``primme_proj_refined``, refined extraction, compute :math:`x_i` with :math:`||x_i||=1` that
         minimizes :math:`||(A-\tau B)x_i||`; the eigenvalues are computed as the
         Rayleigh quotients, :math:`\lambda_i=\frac{x_i^*Ax_i}{x_i^*Bx_i}`.
 
@@ -878,6 +880,91 @@ primme_params
          | this field is read by :c:func:`dprimme`.
 
 
+   .. c:member:: void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
+
+
+      Convergence monitor. Used to customize how to report solver 
+      information during execution (iteration number, matvecs, time, 
+      unconverged and converged eigenvalues, residual norms, targets, etc).
+
+      :param basisEvals:   array with approximate eigenvalues of the basis.
+      :param basisSize:    size of the arrays, ``basisEvals``, ``basisFlags`` and ``basisNorms``.
+      :param basisFlags:   state of every approximate pair in the basis.
+      :param iblock:       indices of the approximate pairs in the block targeted during current iteration.
+      :param blockSize:    size of array ``iblock``.
+      :param basisNorms:   array with residual norms of the pairs in the basis.
+      :param numConverged: number of pairs converged in the basis plus the number of the locked pairs (note that this value isn't monotonic).
+      :param lockedEvals:  array with the locked eigenvalues.
+      :param numLocked:    size of the arrays ``lockedEvals``, ``lockedFlags`` and ``lockedNorms``.
+      :param lockedFlags:  state of each locked eigenpair.
+      :param lockedNorms:  array with the residual norms of the locked pairs.
+      :param inner_its:    number of performed QMR iterations in the current correction equation. It resets for each block vector.
+      :param LSRes:        residual norm of the linear system at the current QMR iteration.
+      :param event:        event reported.
+      :param primme:       parameters structure; the counter in ``stats`` are updated with the current number of matrix-vector products, iterations, elapsed time, etc., since start.
+      :param ierr:         output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      This function is called at the following events:
+
+      * ``*event == primme_event_outer_iteration``: every outer iterations.
+
+        For this event the following inputs are provided:
+        ``basisEvals``, ``basisNorms``, ``basisSize``, ``basisFlags``, ``iblock`` and ``blockSize``.
+
+        ``basisNorms[iblock[i]]`` has the residual norm for the selected pair in the block.
+        PRIMME avoids computing the residual of soft-locked pairs, ``basisNorms[i]`` for ``i<iblock[0]``.
+        So those values may correspond to previous iterations. The values ``basisNorms[i]`` for ``i>iblock[blockSize-1]``
+        are not valid.
+
+        If |locking| is enabled, ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are also provided.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      * ``*event == primme_event_inner_iteration``: every QMR iteration.
+
+        ``basisEvals[0]`` and ``basisNorms[0]`` provides the approximate eigenvalue and the residual norm
+        of the pair which is improved in the current correction equation. If |convTest| is |primme_adaptive|
+        or |primme_adaptive_ETolerance|, ``basisEvals[0]`` and ``basisNorms[0]`` are updated every QMR iteration.
+
+        ``inner_its`` and  ``LSRes`` are also provided.
+
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not be provided.
+
+      * ``*event == primme_event_convergence``: a new eigenpair in the basis passed the convergence criterion.
+
+        ``iblock[0]`` is the index of the newly converged pair in the basis which will be locked or soft-locked.
+        The following are provided: ``basisEvals``, ``basisNorms``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
+
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not be provided.
+
+        ``inner_its`` and  ``LSRes`` are not provided.
+
+      * ``*event == primme_event_locked``: new pair was added to the locked eigenvectors.
+
+        ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` are provided.
+        The last element of ``lockedEvals``, ``lockedFlags`` and ``lockedNorms`` corresponds
+        to the recent locked pair.
+ 
+        ``basisEvals``, ``numConverged``, ``basisFlags`` and ``basisNorms`` may not be provided.
+
+        ``inner_its`` and ``LSRes`` are not provided.
+
+      The values of ``basisFlags`` and ``lockedFlags`` are:
+
+      * ``0``: unconverged.
+      * ``1``: internal use; only in ``basisFlags``.
+      * ``2``: passed convergence test |convTestFun|.
+      * ``3``: *practically converged* because the solver may not be able 
+        to reduce the residual norm further without recombining 
+        the locked eigenvectors.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
+         | :c:func:`dprimme` sets this field to an internal function if it is NULL;
+         | this field is read by :c:func:`dprimme`.
+
+
    .. c:member:: PRIMME_INT stats.numOuterIterations
 
       Hold the number of outer iterations. The value is available during execution and at the end.
@@ -1048,65 +1135,10 @@ primme_params
          | this field is read by :c:func:`dprimme`.
 
 
-.. _error-codes:
-
-Error Codes
-"""""""""""
-
-The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next values:
-
-*  0: success.
-*  1: reported only amount of required memory.
-* -1: failed in allocating int or real workspace.
-* -2: malloc failed in allocating a permutation integer array.
-* -3: main_iter() encountered problem; the calling stack of the
-  functions where the error occurred was printed in ``stderr``.
-* -4: if argument ``primme`` is NULL.
-* -5: if |n| <= 0 or |nLocal| <= 0.
-* -6: if |numProcs| < 1.
-* -7: if |matrixMatvec| is NULL.
-* -8: if |applyPreconditioner| is NULL and |precondition| > 0.
-* -10: if |numEvals| > |n|.
-* -11: if |numEvals| < 0.
-* -12: if |eps| > 0 and |eps| < machine precision.
-* -13: if |target| is not properly defined.
-* -14: if |target| is one of |primme_closest_geq|,
-  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
-  |numTargetShifts| <= 0 (no shifts).
-* -15: if |target| is one of |primme_closest_geq|,
-  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
-  |targetShifts| is NULL  (no shifts array).
-* -16: if |numOrthoConst| < 0 or
-  |numOrthoConst| >= |n|.
-  (no free dimensions left).
-* -17: if |maxBasisSize| < 2.
-* -18: if |minRestartSize| <= 0.
-* -19: if |maxBlockSize| <= 0.
-* -20: if |maxPrevRetain| < 0.
-* -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
-* -22: if |initSize| < 0.
-* -23: if |locking| == 0 and |initSize| > |maxBasisSize|.
-* -24: if |locking| and |initSize| > |numEvals|.
-* -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|.
-* -26: if |minRestartSize| >= |n|.
-* -27: if |printLevel| < 0 or |printLevel| > 5.
-* -28: if |convTest| is not one of
-  |primme_full_LTolerance|, |primme_decreasing_LTolerance|,
-  |primme_adaptive_ETolerance| or |primme_adaptive|.
-* -29: if |convTest| == |primme_decreasing_LTolerance| and |relTolBase| <= 1.
-* -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
-* -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
-* -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
-* -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
-* -34: if |ldevecs| < |nLocal|
-* -35: if |ldOPs| is not zero and less than |nLocal|
-* -36: not enough memory for |realWork|
-* -37: not enough memory for |intWork|
-
 .. _methods:
 
 Preset Methods
-""""""""""""""
+--------------
 
 .. c:type:: primme_preset_method
 
@@ -1263,11 +1295,11 @@ Preset Methods
       changes as for the method |JDQMR| and sets
       |convTest| = |primme_adaptive_ETolerance|.
 
-   .. c:member:: PRIMME_SUBSPACE_ITERATION
+   .. c:member:: PRIMME_STEEPEST_DESCENT
 
-      Subspace iteration.
+      Steepest descent.
 
-      With |SUBSPACE_ITERATION| :c:func:`primme_set_method` sets:
+      With |STEEPEST_DESCENT| :c:func:`primme_set_method` sets:
 
       .. hlist::
 
@@ -1319,5 +1351,61 @@ Preset Methods
          * |maxInnerIterations| = 0;
          * |RightX|  = 1;
          * |SkewX|   = 0.
+
+.. _error-codes:
+
+Error Codes
+-----------
+
+The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next values:
+
+*  0: success.
+*  1: reported only amount of required memory.
+* -1: failed in allocating int or real workspace.
+* -2: malloc failed in allocating a permutation integer array.
+* -3: main_iter() encountered problem; the calling stack of the
+  functions where the error occurred was printed in ``stderr``.
+* -4: if argument ``primme`` is NULL.
+* -5: if |n| < 0 or |nLocal| < 0 or |nLocal| > |n|.
+* -6: if |numProcs| < 1.
+* -7: if |matrixMatvec| is NULL.
+* -8: if |applyPreconditioner| is NULL and |precondition| > 0.
+* -10: if |numEvals| > |n|.
+* -11: if |numEvals| < 0.
+* -12: if |eps| > 0 and |eps| < machine precision.
+* -13: if |target| is not properly defined.
+* -14: if |target| is one of |primme_closest_geq|,
+  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
+  |numTargetShifts| <= 0 (no shifts).
+* -15: if |target| is one of |primme_closest_geq|,
+  |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
+  |targetShifts| is NULL  (no shifts array).
+* -16: if |numOrthoConst| < 0 or |numOrthoConst| > |n|.
+  (no free dimensions left).
+* -17: if |maxBasisSize| < 2.
+* -18: if |minRestartSize| < 0 or |minRestartSize| shouldn't be zero.
+* -19: if |maxBlockSize| < 0 or |maxBlockSize| shouldn't be zero.
+* -20: if |maxPrevRetain| < 0.
+* -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
+* -22: if |initSize| < 0.
+* -23: if |locking| == 0 and |initSize| > |maxBasisSize|.
+* -24: if |locking| and |initSize| > |numEvals|.
+* -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|.
+* -26: if |minRestartSize| >= |n|.
+* -27: if |printLevel| < 0 or |printLevel| > 5.
+* -28: if |convTest| is not one of
+  |primme_full_LTolerance|, |primme_decreasing_LTolerance|,
+  |primme_adaptive_ETolerance| or |primme_adaptive|.
+* -29: if |convTest| == |primme_decreasing_LTolerance| and |relTolBase| <= 1.
+* -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
+* -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
+* -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
+* -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
+* -34: if |ldevecs| < |nLocal|.
+* -35: if |ldOPs| is not zero and less than |nLocal|.
+* -36: not enough memory for |realWork|.
+* -37: not enough memory for |intWork|.
+* -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
+
 
 .. include:: epilog.inc

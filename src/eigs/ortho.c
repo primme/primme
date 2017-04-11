@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -128,7 +128,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
    size_t minWorkSize;         
    int nOrth, reorth;
    int randomizations;
-   int messages = 0;        /* messages = 1 prints the intermediate results */
+   int updateR;             /* update factor R */
+   int messages = 1;        /* messages = 1 prints the intermediate results */
    /* TODO: replace by a dynamic criterion when to stop orthogonalizing local */
    /* vectors. Observed performance improvement when maxNumOrthos increases.  */
    int maxNumOrthos = primme?3:7; /* We let 2 reorthogonalizations before randomize */
@@ -136,7 +137,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
                                   /* for the rest */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
-   REAL s0=0.0, s02=0.0, s1=0.0, s12=0.0, s00=0.0;
+   REAL s0=0.0, s02=0.0, s1=0.0, s12=0.0;
    REAL temp;
    SCALAR *overlaps;
    double t0;
@@ -157,7 +158,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
    /*----------------------------------*/
    assert(nLocal >= 0 && numLocked >= 0 && *rworkSize >= minWorkSize &&
           ldBasis >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
-          (R == NULL || ldR >= b2));
+          (R == NULL || ldR > b2));
 
    tol = sqrt(2.0L)/2.0L;
 
@@ -178,10 +179,20 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       nOrth = 0;
       reorth = 1;
       randomizations = 0;
+      updateR = (R ? 1 : 0);
+      s1 = 0.0;
 
       while (reorth) {
 
          if (nOrth >= maxNumOrthos) {
+            /* Stop updating R when replacing one of the columns of the basis */
+            /* with a random vector                                           */
+
+            if (updateR) {
+               R[ldR*i + i] = 0.0;
+               updateR = 0;
+            }
+
             if (randomizations >= maxNumRandoms) {
                return -3;
             }
@@ -189,7 +200,6 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
                fprintf(primme->outputFile, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P "\n", i, nLocal);
             }
 
-            assert(R == NULL);
             Num_larnv_Sprimme(2, iseed, nLocal, &basis[ldBasis*i]); 
             randomizations++;
             nOrth = 0;
@@ -220,7 +230,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          CHKERR(globalSum_Sprimme(rwork, overlaps, i + numLocked + 1,
                   primme), -1);
 
-         if (R != NULL) {
+         if (updateR) {
              Num_axpy_Sprimme(i, 1.0, overlaps, 1, &R[ldR*i], 1);
          }
 
@@ -237,7 +247,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
          }
  
          if (nOrth == 1) {
-            s00 = s0 = sqrt(s02 = REAL_PART(overlaps[i+numLocked]));
+            s0 = sqrt(s02 = REAL_PART(overlaps[i+numLocked]));
          }
 
          /* Compute the norm of the resulting vector implicitly */
@@ -256,16 +266,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
             s1 = sqrt(s12);
          }
 
-         if (R && (s1 <= machEps*s00 || (s1 <= tol*s0 && nOrth >= maxNumOrthos))) {
-            if (messages) {
-               fprintf(primme->outputFile, "Zeroing column %d\n", i);
-            }
-            /* No randomization when computing the QR decomposition */
-            Num_scal_Sprimme(nLocal, 0.0, &basis[ldBasis*i], 1);
-            R[ldR*i + i] = 0.0;
-            reorth = 0;
-         }
-         else if (s1 <= machEps*s00) {
+         if (s1 <= machEps*s0) {
             if (messages) {
                fprintf(primme->outputFile, 
                  "Vector %d lost all significant digits in ortho\n", i-b1);
@@ -278,7 +279,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
             s02 = s12;
          }
          else {
-            if (R != NULL) {
+            if (updateR) {
                if (!primme || nOrth == 1) {
                   temp = REAL_PART(Num_dot_Sprimme(nLocal,
                            &basis[ldBasis*i], 1, &basis[ldBasis*i], 1));
@@ -305,8 +306,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       Num_gemm_Sprimme("C", "N", numLocked, numLocked, nLocal, 1.0, locked,
             ldLocked, locked, ldLocked, 0.0, H, numLocked);
       for(i=0; i < numLocked; i++) {
-         for(j=0; j < i; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
-         assert(fabs(1 - *(double*)&H[numLocked*i+i]) < 1e-13);
+         for(j=0; j < i; j++) assert(ABS(H[numLocked*i+j]) < 1e-13);
+         assert(fabs(1 - ABS(H[numLocked*i+i])) < 1e-13);
       }
       free(H);
    }
@@ -315,8 +316,8 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       Num_gemm_Sprimme("C", "N", b2+1, b2+1, nLocal, 1.0, basis,
             ldBasis, basis, ldBasis, 0.0, H, b2+1);
       for(i=0; i < b2+1; i++) {
-         for(j=0; j < i; j++) assert(fabs(*(double*)&H[(b2+1)*i+j]) < 1e-13);
-         assert(*(double*)&H[(b2+1)*i+i] == 0.0 || fabs(1 - *(double*)&H[(b2+1)*i+i]) < 1e-13);
+         for(j=0; j < i; j++) assert(ABS(H[(b2+1)*i+j]) < 1e-13);
+         assert(H[(b2+1)*i+i] == 0.0 || fabs(1 - ABS(H[(b2+1)*i+i])) < 1e-13);
       }
       free(H);
    }
@@ -325,7 +326,7 @@ int ortho_Sprimme(SCALAR *basis, PRIMME_INT ldBasis, SCALAR *R,
       Num_gemm_Sprimme("C", "N", numLocked, b2+1, nLocal, 1.0, locked,
             ldLocked, basis, ldBasis, 0.0, H, numLocked);
       for(i=0; i < b2+1; i++) {
-         for(j=0; j < numLocked; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+         for(j=0; j < numLocked; j++) assert(ABS(H[numLocked*i+j]) < 1e-13);
       }
       free(H);
    }
@@ -370,6 +371,8 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       return 0;
    }
 
+   double t0 = primme_wTimer(0);
+
    assert((size_t)nQ*nX*2 + (size_t)m*nX <= *lrwork);
 
    /* Warning: norms0 and y overlap, so don't use them at the same time */
@@ -393,14 +396,14 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       Num_gemm_Sprimme("C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ);
    }
    else {
-      for (i=0; i<nQ*nX; i++)
-         y[i] = 0.0;
+      Num_zero_matrix_Sprimme(y, nQ, nX, nQ);
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
          Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
          Num_gemm_Sprimme("C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, X0, m, 1.0,
                y, nQ);
       }
    }
+   primme->stats.numOrthoInnerProds += nQ*nX;
 
    /* Store the reduction of y in y0 */
    CHKERR(globalSum_Sprimme(y, y0, nQ*nX, primme), -1);
@@ -414,6 +417,9 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
    /* X = X - Q*y0; norms0(i) = norms(X(i))^2 */
    if (norms) for (i=0; i<nX; i++) norms0[i] = 0.0;
    for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
+      if (inX) {
+         Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m);
+      }
       Num_gemm_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, y0, nQ, 1.0,
             inX?X0:&X[i], inX?m:ldX);
       if (inX) {
@@ -430,7 +436,10 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       CHKERR(globalSum_Rprimme(norms0, norms, nX, primme), -1);
  
       for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
+      primme->stats.numOrthoInnerProds += nX;
    }
+
+   primme->stats.timeOrtho += primme_wTimer(0) - t0;
 
    return 0;
 }

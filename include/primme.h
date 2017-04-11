@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -52,12 +52,20 @@
 #  define PRIMME_COMPLEX_DOUBLE double complex
 #endif
 
+/* Required by some C++ compilers when including inttypes.h */
+#if defined(__cplusplus) && !defined(__STDC_FORMAT_MACROS)
+#  define __STDC_FORMAT_MACROS
+#endif
+
 #if !defined(PRIMME_INT_SIZE) || PRIMME_INT_SIZE == 64
 #  include <stdint.h>
 #  include <inttypes.h>
 #  define PRIMME_INT int64_t
 #  define PRIMME_INT_P PRId64
 #  define PRIMME_INT_MAX INT64_MAX
+#  ifndef PRId64
+#     define PRId64 "ld"
+#  endif
 #elif PRIMME_INT_SIZE == 0
 #  include <limits.h>
 #  define PRIMME_INT int
@@ -69,6 +77,9 @@
 #  define PRIMME_INT int32_t
 #  define PRIMME_INT_P PRId32
 #  define PRIMME_INT_MAX INT32_MAX
+#  ifndef PRId64
+#     define PRId64 "d"
+#  endif
 #else
 #  define PRIMME_INT PRIMME_INT_SIZE
 #  define PRIMME_INT_P "d"

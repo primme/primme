@@ -1,0 +1,21 @@
+// Test seeking largest with low accuracy solving the
+// augmented problem
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = rect.mtx
+driver.checkXFile    = tests/sol_207
+driver.checkInterface = 1
+driver.PrecChoice    = noprecond
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme_svds.printLevel = 1
+
+// Solver parameters
+primme_svds.numSvals = 5
+primme_svds.eps = 1.000000e-6
+primme_svds.target = primme_svds_largest
+method = primme_svds_augmented

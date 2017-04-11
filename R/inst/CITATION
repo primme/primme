@@ -1,0 +1,24 @@
+
+bibentry(
+   bibtype="Article",
+   title = "{PRIMME}: {PR}econditioned {I}terative {M}ulti{M}ethod {E}igensolver -- Methods and software description",
+   author = c(person("Andreas", "Stathopoulos"), person("James R.", "McCombs")),
+   journal="ACM Transactions on Mathematical Software",
+   volume=37,
+   number=2,
+   pages="21:1--21:30",
+   year=2010,
+   publisher="ACM"
+);
+   
+bibentry(
+   bibtype="Article",
+   title="{PRIMME\\_SVDS}: A High-Performance Preconditioned {SVD} Solver for Accurate Large-Scale Computations",
+   author=c(person("Lingfei", "Wu"), person("Eloy", "Romero"), person("Andreas", "Stathopoulos")),
+   journal="SIAM J. Sci. Comput.",
+   volume = "abs/1607.01404",
+   year=2016,
+   note = "to appear",
+   url = "http://arxiv.org/abs/1607.01404"
+);
+ 

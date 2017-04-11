@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ int main (int argc, char *argv[]) {
    /* Set problem parameters */
    primme_svds.m = 500;
    primme_svds.n = 100; /* set problem dimension */
-   primme_svds.numSvals = 4;   /* Number of wanted eigenpairs */
+   primme_svds.numSvals = 4;   /* Number of wanted singular values */
    primme_svds.eps = 1e-12;     /* ||r|| <= eps * ||matrix|| */
    primme_svds.target = primme_svds_smallest;
                                /* Seeking for the largest singular values  */
@@ -136,7 +136,7 @@ int main (int argc, char *argv[]) {
       fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
          svals[i], rnorms[i]); 
    }
-   fprintf(primme_svds.outputFile, " %d eigenpairs converged\n", primme_svds.initSize);
+   fprintf(primme_svds.outputFile, " %d singular triplets converged\n", primme_svds.initSize);
    fprintf(primme_svds.outputFile, "Tolerance : %-22.15E\n", 
                                                          primme_svds.aNorm*primme_svds.eps);
    fprintf(primme_svds.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
@@ -146,15 +146,15 @@ int main (int argc, char *argv[]) {
    fprintf(primme_svds.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme_svds.stats.numPreconds);
    if (primme_svds.primme.locking && primme_svds.primme.intWork && primme_svds.primme.intWork[0] == 1) {
       fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n"
-         "Some eigenpairs do not have a residual norm less than the tolerance.\n"
+         "Some triplets do not have a residual norm less than the tolerance.\n"
          "However, the subspace of evecs is accurate to the required tolerance.\n");
    }
 
 
    primme_svds_free(&primme_svds);
-   free(svals);
-   free(svecs);
-   free(rnorms);
+   delete [] svals;
+   delete [] svecs;
+   delete [] rnorms;
 
   return(0);
 }
@@ -283,8 +283,8 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
       /* y0 <- preconditioner for A^t*A  * y0 */
       LauchliApplyPreconditioner(aux, &ldaux, y, ldy, blockSize, &modeAtA, primme_svds, ierr);
       /* y1 <- preconditioner for A*A^t  * y1 */
-      yvec = (std::complex<double> *)aux + primme_svds->n;
-      LauchliApplyPreconditioner(yvec, &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
+      yvec = (std::complex<double> *)y + primme_svds->n;
+      LauchliApplyPreconditioner(&aux[primme_svds->n], &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
       free(aux);
    }
    *ierr = 0;

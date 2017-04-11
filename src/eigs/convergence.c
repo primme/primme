@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,6 @@
 #include "ortho.h"
 #include "auxiliary_eigs.h"
 
-/* Extra estates for flags */
-#define PRACTICALLY_CONVERGED  2
 
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
@@ -100,8 +98,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
    /* -------------------------- */
 
    if (flags == NULL) {
-      if (R) check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
-            NULL, right-left, NULL, NULL, 0, NULL, rworkSize, primme);
+      CHKERR(check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
+            NULL, right-left, NULL, NULL, 0, NULL, rworkSize, primme), -1);
       *iwork = max(*iwork, right-left); /* for toProject */
       return 0;
    }
@@ -156,6 +154,17 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       }
 
       /* ----------------------------------------------------------------- */
+      /* If residual norm is around the bound of the error in the          */
+      /* residual norm, then stop converging this value and force reset    */
+      /* of V and W in the next restart.                                   */
+      /* ----------------------------------------------------------------- */
+
+      else if (blockNorms[i-left] <= primme->stats.estimateResidualError && reset) {
+         flags[i] = SKIP_UNTIL_RESTART;
+         *reset = 1;
+      }
+
+      /* ----------------------------------------------------------------- */
       /* If locking there may be an accuracy problem close to convergence. */
       /* Check if there is danger if R is provided. If the Ritz vector was */
       /* flagged practically converged before and R is not provided then   */
@@ -169,17 +178,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
          else if (flags[i] != PRACTICALLY_CONVERGED) {
             flags[i] = UNCONVERGED;
          }
-      }
-
-      /* ----------------------------------------------------------------- */
-      /* If residual norm is around the bound of the error in the          */
-      /* residual norm, then stop converging this value and force reset    */
-      /* of V and W in the next restart.                                   */
-      /* ----------------------------------------------------------------- */
-
-      else if (blockNorms[i-left] <= primme->stats.estimateResidualError) {
-         flags[i] = SKIP_UNTIL_RESTART;
-         *reset = 1;
       }
 
       else {
@@ -287,8 +285,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
 
    for (i=0; i < numToProject; i++) {
 
-      double normPr   = sqrt(blockNorms[iev[i]]*blockNorms[iev[i]]
-                               - overlaps[i]*overlaps[i]);   /* || (I-QQ')res || */
+      double normPr   = sqrt(max(0.0, blockNorms[iev[i]]*blockNorms[iev[i]]
+                               - overlaps[i]*overlaps[i]));  /* || (I-QQ')res || */
       double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
       double blockNorm = blockNorms[iev[i]];
 
@@ -313,6 +311,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       else {
          flags[left+iev[i]] = UNCONVERGED;
       }
+      blockNorms[iev[i]] = normPr;
 
    }
 

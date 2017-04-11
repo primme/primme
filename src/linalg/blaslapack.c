@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -253,25 +253,26 @@ void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
 }
 
 /*******************************************************************************
- * Subroutine Num_axpy_Sprimme - y += alpha*x
+ * Subroutine Num_dot_Sprimme - y'*x
  ******************************************************************************/
 
 TEMPLATE_PLEASE
 SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
-#ifdef USE_COMPLEX
+/* NOTE: vecLib doesn't follow BLAS reference for sdot */
+#if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__)))
 /* ---- Explicit implementation of the zdotc() --- */
    PRIMME_INT i;
    SCALAR zdotc = 0.0;
    if (n <= 0) return(zdotc);
    if (incx == 1 && incy == 1) {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += conj(x[i]) * y[i];
+         zdotc += CONJ(x[i]) * y[i];
       }
    }
    else {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += conj(x[i*incx]) * y[i*incy];
+         zdotc += CONJ(x[i*incx]) * y[i*incy];
       }
    }
    return zdotc;
@@ -368,29 +369,10 @@ void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 
 /*******************************************************************************
  * Subroutines for dense eigenvalue decomposition
+ * NOTE: xheevx is used instead of xheev because xheev is not in ESSL
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-#ifdef NUM_ESSL
-
-int Num_hpev_Sprimme(int iopt, SCALAR *ap, REAL *w, SCALAR *z, int ldz, 
-   int n, SCALAR *aux, int naux) {
-
-   PRIMME_BLASINT liopt = iopt;
-   PRIMME_BLASINT lldz = ldz;
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT lnaux = naux;
-
-#ifdef USE_DOUBLE
-   return dspev(liopt, ap, w, z, lldz, ln, aux, lnaux);
-#elif defined(USE_DOUBLECOMPLEX)
-   return zhpev(liopt, ap, w, z, lldz, ln, aux, lnaux);
-#endif
-}
-
-#else
-#  ifndef USE_COMPLEX
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       int lda, REAL *w, SCALAR *work, int ldwork, int *info) {
 
@@ -398,49 +380,81 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
- 
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
-
-#ifdef NUM_CRAY
-   _fcd jobz_fcd, uplo_fcd;
-
-   jobz_fcd = _cptofcd(jobz, strlen(jobz));
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-
-   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, &linfo);
-#else
-   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, &linfo);
+   SCALAR *z;
+   REAL abstol=0.0;
+#ifdef USE_COMPLEX
+   REAL *rwork;
 #endif
-   *info = (int)linfo;
-}
-#  else
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
-      int lda, REAL *w, SCALAR *work, int ldwork, REAL *rwork, int *info) {
-
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldwork = ldwork;
-   PRIMME_BLASINT linfo = 0;
+   PRIMME_BLASINT *iwork, *ifail;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
+   PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (w == NULL) w = &dummyr;
+
+   /* Borrow space from work for z, rwork and iwork or set dummy values */
+   if (ldwork != -1) {
+      if (
+               WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
+#ifdef USE_COMPLEX
+            || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
+#endif
+            || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
+            || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
+         ) {
+         *info = -1;
+         return;
+      }
+   }
+   else {
+      z = &dummys;
+#ifdef USE_COMPLEX
+      rwork = &dummyr;
+#endif
+      iwork = &dummyi;
+      ifail = &dummyi;
+   }
+
 #ifdef NUM_CRAY
-   _fcd jobz_fcd, uplo_fcd;
+   _fcd jobz_fcd, range_fcd, uplo_fcd;
 
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
+   range_fcd = _cptofcd("A", 1);
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
 
-   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork, rwork, &linfo); 
-#else
-   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork, rwork, &linfo);
-#endif
-   *info = (int)linfo;
-}
+   XHEEVX(jobz_fcd, range_fcd, uplo_fcd, &ln, a, &llda, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
 #  endif
+         iwork, ifail, &linfo);
+#else
+   XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         iwork, ifail, &linfo);
 #endif
+
+   /* Copy z to a or add the extra space for z, iwork and ifail */
+   if (ldwork != -1) {
+      Num_copy_matrix_Sprimme(z, n, n, n, a, lda);
+   }
+   else {
+      work[0] += (REAL)n*n + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
+#ifdef USE_COMPLEX
+      work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
+#endif
+   }
+   *info = (int)linfo;
+}
 
 /*******************************************************************************
  * Subroutines for dense singular value decomposition
@@ -459,9 +473,20 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_BLASINT lldvt = ldvt;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (s == NULL) s = &dummyr;
+   if (u == NULL) u = &dummys;
+   if (lldu < 1) lldu = 1;
+   if (vt == NULL) vt = &dummys;
+   if (lldvt < 1) lldvt = 1;
 
 #ifdef NUM_CRAY
    _fcd jobu_fcd, jobvt_fcd;
@@ -488,9 +513,20 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_BLASINT lldvt = ldvt;
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (s == NULL) s = &dummyr;
+   if (u == NULL) u = &dummys;
+   if (lldu < 1) lldu = 1;
+   if (vt == NULL) vt = &dummys;
+   if (lldvt < 1) lldvt = 1;
 
 #ifdef NUM_CRAY
    _fcd jobu_fcd, jobvt_fcd;
@@ -521,6 +557,8 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    PRIMME_BLASINT lldwork = ldwork;
    PRIMME_BLASINT linfo = 0; 
    int i;
+   SCALAR dummys=0;
+   PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
@@ -533,6 +571,11 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    } else {
       lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (lipivot == NULL) lipivot = &dummyi;
 
 #ifdef NUM_CRAY
    _fcd uplo_fcd;
@@ -626,21 +669,3 @@ void Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
    XTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 #endif
 }
-
-/*******************************************************************************
- * Subroutine Num_lamch_Sprimme - return numerical constants
- ******************************************************************************/
-
-#ifndef USE_COMPLEX
-TEMPLATE_PLEASE
-SCALAR Num_lamch_Sprimme(const char *cmach) {
-#ifdef NUM_CRAY
-   _fcd cmach_fcd;
-
-   cmach_fcd = _cptofcd(cmach, strlen(cmach));
-   return XLAMCH(cmach_fcd);
-#else
-   return XLAMCH(cmach);
-#endif
-}
-#endif

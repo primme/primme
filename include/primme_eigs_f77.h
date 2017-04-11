@@ -1,5 +1,5 @@
 C*******************************************************************************
-C  Copyright (c) 2016, College of William & Mary                                   
+C  Copyright (c) 2017, College of William & Mary                                   
 C  All rights reserved.                                                            
 C                                                                                  
 C  Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ C-------------------------------------------------------
      : PRIMME_JDQR,
      : PRIMME_JDQMR,
      : PRIMME_JDQMR_ETol,
-     : PRIMME_SUBSPACE_ITERATION,
+     : PRIMME_STEEPEST_DESCENT,
      : PRIMME_LOBPCG_OrthoBasis,
      : PRIMME_LOBPCG_OrthoBasis_Window
 
@@ -69,7 +69,7 @@ C-------------------------------------------------------
      : PRIMME_JDQR = 10,
      : PRIMME_JDQMR = 11,
      : PRIMME_JDQMR_ETol = 12,
-     : PRIMME_SUBSPACE_ITERATION = 13,
+     : PRIMME_STEEPEST_DESCENT = 13,
      : PRIMME_LOBPCG_OrthoBasis = 14,
      : PRIMME_LOBPCG_OrthoBasis_Window = 15
      :)
@@ -129,14 +129,25 @@ C-------------------------------------------------------
      : PRIMME_stats_numRestarts,
      : PRIMME_stats_numMatvecs,
      : PRIMME_stats_numPreconds,
+     : PRIMME_stats_numGlobalSum,
+     : PRIMME_stats_volumeGlobalSum,
+     : PRIMME_stats_numOrthoInnerProds,
      : PRIMME_stats_elapsedTime,
+     : PRIMME_stats_timeMatvec,
+     : PRIMME_stats_timePrecond,
+     : PRIMME_stats_timeOrtho,
+     : PRIMME_stats_timeGlobalSum,
      : PRIMME_stats_estimateMinEVal,
      : PRIMME_stats_estimateMaxEVal,
      : PRIMME_stats_estimateLargestSVal,
      : PRIMME_stats_maxConvTol,
      : PRIMME_dynamicMethodSwitch,
      : PRIMME_massMatrixMatvec,
-     : PRIMME_convTestFun
+     : PRIMME_convTestFun,
+     : PRIMME_ldevecs,
+     : PRIMME_ldOPs,
+     : PRIMME_monitorFun,
+     : PRIMME_monitor
 
       parameter(
      : PRIMME_n = 0,
@@ -189,14 +200,25 @@ C-------------------------------------------------------
      : PRIMME_stats_numRestarts = 45,
      : PRIMME_stats_numMatvecs = 46,
      : PRIMME_stats_numPreconds = 47,
+     : PRIMME_stats_numGlobalSum =  471,
+     : PRIMME_stats_volumeGlobalSum =  472,
+     : PRIMME_stats_numOrthoInnerProds =  473,
      : PRIMME_stats_elapsedTime = 48,
+     : PRIMME_stats_timeMatvec =  4801,
+     : PRIMME_stats_timePrecond =  4802,
+     : PRIMME_stats_timeOrtho =  4803,
+     : PRIMME_stats_timeGlobalSum =  4804,
      : PRIMME_stats_estimateMinEVal = 481,
      : PRIMME_stats_estimateMaxEVal = 482,
      : PRIMME_stats_estimateLargestSVal = 483,
      : PRIMME_stats_maxConvTol = 484,
      : PRIMME_dynamicMethodSwitch = 49,
      : PRIMME_massMatrixMatvec = 50,
-     : PRIMME_convTestFun = 51
+     : PRIMME_convTestFun = 51,
+     : PRIMME_ldevecs = 52,
+     : PRIMME_ldOPs = 53,
+     : PRIMME_monitorFun = 54,
+     : PRIMME_monitor = 55
      : )
 
 C-------------------------------------------------------
@@ -224,7 +246,13 @@ C-------------------------------------------------------
      : primme_full_LTolerance,
      : primme_decreasing_LTolerance,
      : primme_adaptive_ETolerance,
-     : primme_adaptive
+     : primme_adaptive,
+     : primme_event_outer_iteration,
+     : primme_event_inner_iteration,
+     : primme_event_restart,
+     : primme_event_reset,
+     : primme_event_converged,
+     : primme_event_locked
 
       parameter(
      : primme_smallest = 0,
@@ -246,5 +274,11 @@ C-------------------------------------------------------
      : primme_full_LTolerance = 0,
      : primme_decreasing_LTolerance = 1,
      : primme_adaptive_ETolerance = 2,
-     : primme_adaptive = 3
+     : primme_adaptive = 3,
+     : primme_event_outer_iteration = 0,
+     : primme_event_inner_iteration = 1,
+     : primme_event_restart = 2,
+     : primme_event_reset = 3,
+     : primme_event_converged = 4,
+     : primme_event_locked = 5
      : )

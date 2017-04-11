@@ -27,7 +27,9 @@ LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
 # IBM architectures
 #
 # LDFLAGS =
-# LIBS = -lprimme -lm /sp/vwe/lib/liblapack342_ppc7_xl_15.1.2-32.a /sp/vwe/lib/libblas342_ppc7_xl_15.1.2-32.a -L/opt/ibm/xlf/15.1.0/lib -lxlf90 -lxl -lxlfmath
+# LIBS = -lprimme -lessl -lm           # using ESSL
+#                                      # using BLAS/LAPACK
+# LIBS = -lprimme -llapack -lblas -lxlf90 -lxl -lxlfmath -lm
 #---------------------------------------------------------------
 # Mac OS X
 #

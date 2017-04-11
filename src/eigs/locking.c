@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, College of William & Mary
+ * Copyright (c) 2017, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,8 @@
 #include "restart.h"
 
 static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
-   REAL *resNorms, int *perm, int numLocked, primme_params *primme);
+   REAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
+   primme_params *primme);
 
 static int compute_residual_columns(PRIMME_INT m, REAL *evals, SCALAR *x,
       int n, int *p, PRIMME_INT ldx, SCALAR *Ax, PRIMME_INT ldAx,
@@ -136,6 +137,8 @@ static int compute_residual_columns(PRIMME_INT m, REAL *evals, SCALAR *x,
  *
  * evecsperm        The permutation that orders the converged pairs as primme.target
  *
+ * lockedFlags      The flags of the locked pairs
+ *
  * numPrevRetained  As input the number of columns of previousHVecs. As output the
  *                  number of columns added to V
  *
@@ -168,7 +171,7 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       SCALAR *hVecs, int ldhVecs, int *restartPerm, REAL *hVals, int *flags,
       int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs,
       PRIMME_INT ldevecs, REAL *evals, int *numConverged, int *numLocked,
-      REAL *resNorms, int *evecsperm, int numPrevRetained,
+      REAL *resNorms, int *lockedFlags, int *evecsperm, int numPrevRetained,
       int *indexOfPreviousVecs, int *hVecsPerm, int reset, double machEps,
       SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme) {
@@ -322,7 +325,7 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    permute_vecs_iprimme(flags, basisSize, restartPerm, iwork);
    CHKERR(check_convergence_Sprimme(&V[ldV*left],
             nLocal, ldV, NULL, 0, NULL, *numLocked, 0, left,
-            left+numPacked, flags, lockedResNorms, hVals, &reset /*dummy*/,
+            left+numPacked, flags, lockedResNorms, hVals, NULL,
             machEps, rwork, &rworkSize0, iwork, iworkSize, primme), -1);
 
    /* -------------------------------------------------------------- */
@@ -469,7 +472,7 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
    for (i=left; i < left+numPacked; i++) {
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
-         REAL resNorm = lockedResNorms[i-left];
+         REAL resNorm = resNorms[*numLocked] = lockedResNorms[i-left];
          REAL eval = evals[*numLocked];
          if (!overbooking) {
             Num_copy_matrix_Sprimme(
@@ -477,19 +480,28 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
                   nLocal, 1, ldevecs,
                   &evecs[(*numLocked+primme->numOrthoConst)*ldevecs], ldevecs);
          }
-         insertionSort(eval, evals, resNorm, resNorms, evecsperm,
-            *numLocked, primme);
+
          (*numLocked)++;
 
-         /* Update maxConvTol */
-         primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorm);
+         /* Report a pair was hard locked */
+         /* NOTE: do this before sorting evals */
+         if (primme->monitorFun) {
+            primme_event EVENT_LOCKED = primme_event_locked;
+            int err;
+            lockedFlags[*numLocked-1] = flags[i];
+            primme->stats.elapsedTime = primme_wTimer(0);
+            CHKERRM((primme->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
+                        NULL, evals, numLocked, lockedFlags, resNorms, NULL, NULL,
+                        &EVENT_LOCKED, primme, &err), err), -1,
+                  "Error returned by monitorFun: %d", err);
+         }
 
-         if (primme->printLevel >= 2 && primme->procID == 0) { 
-            fprintf(primme->outputFile, 
-                  "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
-                  *numLocked, eval, resNorm, 
-                  primme->stats.numMatvecs, primme_wTimer(0), flags[i]);
-            fflush(primme->outputFile);
+         insertionSort(eval, evals, resNorm, resNorms, flags[i], lockedFlags,
+               evecsperm, *numLocked-1, primme);
+
+         /* Update maxConvTol if it wasn't practically converged */
+         if (flags[i] == CONVERGED) {
+            primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorm);
          }
       }
    }
@@ -525,6 +537,8 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
  *
  * newNorm  The residual norm of the Ritz value to be locked
  *
+ * newFlag     The current flag
+ *
  * numLocked  The current number of locked Ritz vectors
  * 
  * primme  Structure containing various solver parameters
@@ -536,13 +550,16 @@ int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
  *
  * resNorms The residual norms corresponding to the locked Ritz values
  *
+ * flags    The flags of the locked pairs
+ *
  * perm     The permutation array indicating each Ritz values original
  *          unsorted position.
  *
  ******************************************************************************/
 
 static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
-   REAL *resNorms, int *perm, int numLocked, primme_params *primme) {
+   REAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
+   primme_params *primme) {
 
    int i, current; /* Indices used for sorting */
    REAL ithShift, currentShift;
@@ -613,6 +630,7 @@ static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
       evals[current+1] = evals[current];
       resNorms[current+1] = resNorms[current];
       perm[current+1] = perm[current];
+      flags[current+1] = flags[current];
    }
 
    /* Insert the new value */
@@ -620,6 +638,7 @@ static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
    evals[i] = newVal;
    resNorms[i] = newNorm;
    perm[i] = numLocked;
+   flags[i] = newFlag;
    return;
 
 }

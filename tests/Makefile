@@ -102,6 +102,7 @@ TESTSsvds_doublecomplex = tests/test_2??
 EXTRA =
 
 all_tests: all_tests_double all_tests_doublecomplex all_testssvds_double all_testssvds_doublecomplex
+all_tests_save: all_tests_double_save all_tests_doublecomplex_save all_testssvds_double_save all_testssvds_doublecomplex_save
 
 all_tests_double all_tests_doublecomplex \
 all_testssvds_double all_testssvds_doublecomplex: all_tests%: primme% tests_primme_interface
@@ -139,14 +140,14 @@ all_testssvds_double_save all_testssvds_doublecomplex_save: all_tests%_save: pri
 		exit 1;\
 	fi
 
-T_methods = DEFAULT_METHOD DYNAMIC DEFAULT_MIN_TIME DEFAULT_MIN_MATVECS Arnoldi GD_plusK GD_Olsen_plusK JD_Olsen_plusK JDQR JDQMR JDQMR_ETol SUBSPACE_ITERATION LOBPCG_OrthoBasis LOBPCG_OrthoBasis_Window 
-T_sizes = 1 2 3 4 5 6 7 10 100
+T_methods = DEFAULT_METHOD DYNAMIC DEFAULT_MIN_TIME DEFAULT_MIN_MATVECS Arnoldi GD_plusK GD_Olsen_plusK JD_Olsen_plusK JDQR JDQMR JDQMR_ETol STEEPEST_DESCENT LOBPCG_OrthoBasis LOBPCG_OrthoBasis_Window 
+T_sizes = 0 1 2 3 4 5 6 7 10 100
 
 tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
 	@rm -f tests/testi-*; \
 	for method in $(T_methods); do \
 	for n in $(T_sizes); do \
-	for nevals in 1 2 3 4 5 6 15 100; do \
+	for nevals in 0 1 2 3 4 5 6 15 100; do \
 	[ $$nevals -gt $$n ] && continue || true; \
 	for target in primme_smallest primme_largest primme_closest_abs primme_closest_geq; do \
 	case "$$target-$$n-$$nevals-$$method" in \
@@ -164,7 +165,7 @@ tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
 	for proj in primme_proj_RR primme_proj_refined ; do \
 		case "$$target-$$proj-$$method" in \
 			primme_closest*-primme_proj_RR-LOBPCG*) continue ;; \
-			primme_closest*-SUBSPACE*) continue ;; \
+			primme_closest*-STEEPEST_DESCENT*) continue ;; \
 			primme_closest*-Arnoldi*) continue ;; \
 			primme_closest*-GD*) continue ;; \
 			primme_closest*) ;; \
@@ -187,14 +188,14 @@ tests_primme_interface: $(patsubst %,laplace%.mtx,$(T_sizes))
 
 laplace%.mtx:
 	@echo "%%MatrixMarket matrix coordinate real symmetric" > $@; \
-	echo "$* $* $$((2*$*-1))" >> $@; \
+	echo "$* $* $$(($*>0?2*$*-1:0))" >> $@; \
 	for i in `seq 1 $*`; do \
 		echo "$$i $$i 2.0" >> $@; \
 		[  $$i -eq $* ] || echo "$$i $$((i+1)) -1.0" >> $@; \
 	done
 
 clean:
-	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o tests.log
+	@rm -f $(OBJSdouble) $(OBJSdoublecomplex) *.o tests.log tests/*.F $(patsubst %,laplace%.mtx,$(T_sizes)) ._test00
 
 veryclean: clean
 	@rm -f primme_double primme_doublecomplex primmesvds_double primmesvds_doublecomplex

@@ -1,15 +1,25 @@
+.. highlight:: bash
 
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
 
-PRIMME, pronounced as *prime*, finds a number of eigenvalues and their corresponding eigenvectors of a 
-real symmetric, or Hermitian matrix. Also singular values and vectors can be computed. Largest, smallest and interior 
-eigenvalues and singular values are supported. Preconditioning can be used to accelerate 
-convergence. 
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB and Python.
-  
+PRIMME, pronounced as *prime*, computes
+a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. 
+It can also compute singular values and vectors of a square or rectangular matrix. 
+It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
+It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
+
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
+
+From PRIMME 2.0 to 2.1:
+
+* Added members |monitorFun| and ``monitor`` to :c:type:`primme_params`.
+
+* Added members |SmonitorFun| and ``monitor`` to :c:type:`primme_svds_params`.
+
+* Renamed ``PRIMME_SUBSPACE_ITERATION`` as |STEEPEST_DESCENT|.
 
 From PRIMME 1.x to 2.0:
 
@@ -29,6 +39,23 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 ^^^^^^^^^
+Changes in PRIMME 2.1 (released on April 4, 2017):
+
+* Improve robustness by broadcasting the result of critical LAPACK_
+  operations instead of replicating them on every process; this is
+  useful when using a threaded BLAS_/LAPACK_ or when some parallel
+  processes may run on different architectures or libraries.
+
+* New stopping criteria in QMR that improve performance for interior
+  problems.
+
+* MATLAB interface reimplementation with support for singular value
+  problems, :mat:func:`primme_svds()`, with double and single precision, and 
+  compatible with Octave.
+
+* R interface
+
+* Proper reporting of convergence history for singular value solvers.
 
 Changes in PRIMME 2.0 (released on September 19, 2016):
 
@@ -145,20 +172,31 @@ License Information
 ^^^^^^^^^^^^^^^^^^^
 
 PRIMME is licensed under the 3-clause license BSD.
-Python and Matlab interfaces have BSD-compatible licenses.
-Source code under file:`tests` is compatible with LGPLv3.
-Details can be taken from COPYING.txt.
+Python and MATLAB interfaces have BSD-compatible licenses.
+Source code under :file:`tests` is compatible with LGPLv3.
+Details can be taken from :file:`COPYING.txt`::
+
+   Copyright (c) 2017, College of William & Mary
+   All rights reserved.
+
 
 Citing the code 
 ^^^^^^^^^^^^^^^ 
 
 .. only:: latex
 
-   Please cite [r1]_ and [r6]_.
+   Please cite [r1]_ and [r6]_. Find the BibTeX in the following and also in :file:`doc/primme.bib`:
 
-.. only:: not latex
+   .. literalinclude:: ../primme.bib
+      :language: bibtex
 
-   Please cite:
+.. only:: text
+
+   Please cite (find the BibTeX in :file:`doc/primme.doc`):
+
+.. only:: not latex and not text
+
+   Please cite (`BibTeX`_):
 
 .. [r1] A. Stathopoulos and J. R. McCombs PRIMME: *PReconditioned Iterative
    MultiMethod Eigensolver: Methods and software description*, ACM
@@ -182,12 +220,12 @@ Citing the code
    software can be found in the rest of the papers. The work has been
    supported by a number of grants from the National Science Foundation.
 
-.. [r2] A. Stathopoulos, *Nearly optimal preconditioned methods for hermitian
+.. [r2] A. Stathopoulos, *Nearly optimal preconditioned methods for Hermitian
    eigenproblems under limited memory. Part I: Seeking one eigenvalue*, SIAM
    J. Sci. Comput., Vol. 29, No. 2, (2007), 481--514.
 
 .. [r3] A. Stathopoulos and J. R. McCombs, *Nearly optimal preconditioned
-   methods for hermitian eigenproblems under limited memory. Part II:
+   methods for Hermitian eigenproblems under limited memory. Part II:
    Seeking many eigenvalues*, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
    2162-2188.
 
@@ -197,7 +235,7 @@ Citing the code
    2337-2358.
 
 .. [r5] A. Stathopoulos, *Locking issues for finding a large number of eigenvectors
-   of hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
+   of Hermitian matrices*, Tech Report: WM-CS-2005-03, July, 2005.
 
 .. [r7] L. Wu and A. Stathopoulos, *A Preconditioned Hybrid SVD Method for Computing
   Accurately Singular Triplets of Large Matrices*, SIAM J. Sci. Comput. 37-5(2015),
@@ -228,8 +266,8 @@ The next directories and files should be available:
    * :file:`svds/`,      singular value interface and implementation;
    * :file:`tools/`,     tools used to generated some headers;
 
-* :file:`Matlab/`,       Matlab interface;
-* :file:`PYTHON/`,       Python interface;
+* :file:`Matlab/`,       MATLAB interface;
+* :file:`Python/`,       Python interface;
 * :file:`examples/`,     sample programs in C, C++ and F77, both sequential and parallel;
 * :file:`tests/`,        drivers for testing purpose and test cases;
 * :file:`lib/libprimme.a`,   the PRIMME library (to be made);
@@ -300,6 +338,10 @@ Full description of actions that `make` can take:
 
 * `make lib`, builds the static library :file:`libprimme.a`.
 * `make solib`, builds the shared library :file:`libprimme.so`.
+* `make matlab`, builds `libprimme.a` compatible with MATLAB and the MATLAB module.
+* `make octave`, builds `libprimme.a` and the Octave module.
+* `make python`, builds `libprimme.a` and the Python module.
+* `make R_install`, builds and installs the R package.
 * `make test`, build and execute simple examples.
 * `make clean`, removes all :file:`*.o`, :file:`a.out`, and core files from :file:`src`.
 
@@ -341,5 +383,6 @@ Main Contributors
 * Lingfei Wu
 
 .. _`github`: https://github.com/primme/primme
+.. _`BibTeX`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
 
 .. include:: epilog.inc
