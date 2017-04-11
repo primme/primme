@@ -93,7 +93,7 @@ double primme_wTimer(int zeroTimer) {
  */
 
 /* Simply return the microseconds time of day */
-double primme_get_wtime() {
+double primme_get_wtime(void) {
    static struct timeval tv;
 
    gettimeofday(&tv, NULL); 

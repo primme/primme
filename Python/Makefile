@@ -1,8 +1,11 @@
 # SWIG
 GENERATED  = primme_wrap.cxx primme_wrap.h Primme.py
 
-all: $(GENERATED) primmew.h primmew.cxx Primme.py setup.py
+all: $(GENERATED) primmew.h Primme.py setup.py
 	./setup.py build_ext -i
+
+install: $(GENERATED) primmew.h Primme.py setup.py
+	./setup.py install
 
 # Test target: run the tests
 test: tests.py examples.py
@@ -20,4 +23,4 @@ clean:
 veryclean: clean
 	$(RM) $(GENERATED)
 
-.PHONY : all clean veryclean test swig
+.PHONY : all clean veryclean test swig install
