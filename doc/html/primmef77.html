@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FORTRAN Library Interface &#8212; PRIMME 2.0 documentation</title>
+    <title>FORTRAN Library Interface &#8212; PRIMME 2.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,18 +14,19 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Eigenvalue Problems" href="apieigs.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Python Interface" href="pyeigsh.html" />
     <link rel="prev" title="C Library Interface" href="primmec.html" />
    
@@ -75,7 +76,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/primmef77.txt"
+      <li><a href="_sources/primmef77.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -150,7 +151,7 @@ Use <code class="docutils literal"><span class="pre">integer*4</span></code> whe
 <div class="line"><code class="docutils literal"><span class="pre">PRIMME_JDQR</span></code></div>
 <div class="line"><code class="docutils literal"><span class="pre">PRIMME_JDQMR</span></code></div>
 <div class="line"><code class="docutils literal"><span class="pre">PRIMME_JDQMR_ETol</span></code></div>
-<div class="line"><code class="docutils literal"><span class="pre">PRIMME_SUBSPACE_ITERATION</span></code></div>
+<div class="line"><code class="docutils literal"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></div>
 <div class="line"><code class="docutils literal"><span class="pre">PRIMME_LOBPCG_OrthoBasis</span></code></div>
 <div class="line"><code class="docutils literal"><span class="pre">PRIMME_LOBPCG_OrthoBasis_Window</span></code></div>
 </div>
@@ -204,7 +205,7 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 <li><strong>evecs(*)</strong> (<em>real</em>) &#8211; (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a> times <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>
 to store columnwise the (local part of the) computed eigenvectors.</li>
 <li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; parameters structure.</li>
-<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><em>Error Codes</em></a>.</li>
+<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
 </td>
 </tr>
@@ -229,7 +230,7 @@ same meaning as in function <a class="reference internal" href="#c.sprimme_f77" 
 <li><strong>resNorms(*)</strong> (<em>real</em>) &#8211; (output)</li>
 <li><strong>evecs(*)</strong> (<em>complex real</em>) &#8211; (input/output)</li>
 <li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; (input) parameters structure.</li>
-<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><em>Error Codes</em></a>.</li>
+<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
 </td>
 </tr>
@@ -256,7 +257,7 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 <li><strong>evecs(*)</strong> (<em>double precision</em>) &#8211; (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a> times <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>
 to store columnwise the (local part of the) computed eigenvectors.</li>
 <li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; parameters structure.</li>
-<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><em>Error Codes</em></a>.</li>
+<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
 </td>
 </tr>
@@ -281,7 +282,7 @@ same meaning as in function <a class="reference internal" href="#c.dprimme_f77" 
 <li><strong>resNorms(*)</strong> (<em>double precision</em>) &#8211; (output)</li>
 <li><strong>evecs(*)</strong> (<em>complex double precision</em>) &#8211; (input/output)</li>
 <li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) &#8211; (input) parameters structure.</li>
-<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><em>Error Codes</em></a>.</li>
+<li><strong>ierr</strong> (<em>integer</em>) &#8211; (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
 </td>
 </tr>
@@ -409,22 +410,22 @@ type of <code class="docutils literal"><span class="pre">value</span></code> sho
 <code class="docutils literal"><span class="pre">PRIMME_intWork</span></code>, <code class="docutils literal"><span class="pre">PRIMME_realWork</span></code>, <code class="docutils literal"><span class="pre">PRIMME_matrix</span></code> and <code class="docutils literal"><span class="pre">PRIMME_preconditioner</span></code>,
 the returned <code class="docutils literal"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
 For instance:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">use</span> <span class="n">iso_c_binding</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
 <span class="n">MPI_Comm</span> <span class="n">comm</span>
 
 <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
-<span class="n">call</span> <span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
 <span class="p">...</span>
-<span class="n">subroutine</span> <span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme</span><span class="p">)</span>
-<span class="n">use</span> <span class="n">iso_c_binding</span>
-<span class="n">implicit</span> <span class="n">none</span>
+<span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme</span><span class="p">)</span>
+<span class="k">use </span><span class="nb">iso_c_binding</span>
+<span class="k">implicit none</span>
 <span class="p">...</span>
-<span class="n">MPI_Comm</span><span class="p">,</span> <span class="n">pointer</span> <span class="o">::</span> <span class="n">comm</span>
-<span class="n">type</span><span class="p">(</span><span class="n">c_ptr</span><span class="p">)</span> <span class="o">::</span> <span class="n">pcomm</span>
+<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
 
-<span class="n">call</span> <span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
-<span class="n">call</span> <span class="n">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
-<span class="n">call</span> <span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="last">Most users would not need to retrieve these pointers in their programs.</p>
@@ -489,22 +490,22 @@ from the main program, use the function <a class="reference internal" href="#c.p
 <code class="docutils literal"><span class="pre">PRIMME_intWork</span></code>, <code class="docutils literal"><span class="pre">PRIMME_realWork</span></code>, <code class="docutils literal"><span class="pre">PRIMME_matrix</span></code> and <code class="docutils literal"><span class="pre">PRIMME_preconditioner</span></code>,
 the returned <code class="docutils literal"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
 For instance:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">use</span> <span class="n">iso_c_binding</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
 <span class="n">MPI_Comm</span> <span class="n">comm</span>
 
 <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
-<span class="n">call</span> <span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
 <span class="p">...</span>
-<span class="n">subroutine</span> <span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme</span><span class="p">)</span>
-<span class="n">use</span> <span class="n">iso_c_binding</span>
-<span class="n">implicit</span> <span class="n">none</span>
+<span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme</span><span class="p">)</span>
+<span class="k">use </span><span class="nb">iso_c_binding</span>
+<span class="k">implicit none</span>
 <span class="p">...</span>
-<span class="n">MPI_Comm</span><span class="p">,</span> <span class="n">pointer</span> <span class="o">::</span> <span class="n">comm</span>
-<span class="n">type</span><span class="p">(</span><span class="n">c_ptr</span><span class="p">)</span> <span class="o">::</span> <span class="n">pcomm</span>
+<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
 
-<span class="n">call</span> <span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
-<span class="n">call</span> <span class="n">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
-<span class="n">call</span> <span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="last">Most users would not need to retrieve these pointers in their programs.</p>
@@ -548,14 +549,14 @@ Otherwise use the function <a class="reference internal" href="#c.primmetop_get_
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2016, College of William & Mary.
+      &copy;2017, College of William & Mary.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/primmef77.txt"
+      <a href="_sources/primmef77.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

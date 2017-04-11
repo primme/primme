@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Appendix &#8212; PRIMME 2.0 documentation</title>
+    <title>Parameters Description &#8212; PRIMME 2.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,18 +14,19 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Eigenvalue Problems" href="apieigs.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Singular Value Problems" href="apisvds.html" />
     <link rel="prev" title="MATLAB Interface" href="mateigs.html" />
    
@@ -45,13 +46,13 @@
             </a></p>
   <h3><a href="readme.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Appendix</a><ul>
+<li><a class="reference internal" href="#">Parameters Description</a><ul>
 <li><a class="reference internal" href="#types">Types</a></li>
 <li><a class="reference internal" href="#primme-params">primme_params</a></li>
-<li><a class="reference internal" href="#error-codes">Error Codes</a></li>
-<li><a class="reference internal" href="#preset-methods">Preset Methods</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#preset-methods">Preset Methods</a></li>
+<li><a class="reference internal" href="#error-codes">Error Codes</a></li>
 </ul>
 <div class="relations">
 <h3>Related Topics</h3>
@@ -67,7 +68,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/appendix.txt"
+      <li><a href="_sources/appendix.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -87,8 +88,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="appendix">
-<h1>Appendix<a class="headerlink" href="#appendix" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="parameters-description">
+<h1>Parameters Description<a class="headerlink" href="#parameters-description" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="types">
 <h2>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h2>
 <p>The following data types are macros used in PRIMME as followed.</p>
@@ -96,7 +97,7 @@
 <dt id="c.PRIMME_INT">
 <code class="descname">PRIMME_INT</code><a class="headerlink" href="#c.PRIMME_INT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Integer type used in matrix dimensions (such as <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a> and <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>) and counters (such as <a class="reference internal" href="#c.primme_params.stats.numMatvecs" title="primme_params.stats.numMatvecs"><code class="xref c c-member docutils literal"><span class="pre">numMatvecs</span></code></a>).</p>
-<p>The integer size is controlled by the compilation flag  <code class="docutils literal"><span class="pre">PRIMME_INT_SIZE</span></code>, see <a class="reference internal" href="intro.html#making"><em>Making and Linking</em></a>.</p>
+<p>The integer size is controlled by the compilation flag  <code class="docutils literal"><span class="pre">PRIMME_INT_SIZE</span></code>, see <a class="reference internal" href="intro.html#making"><span class="std std-ref">Making and Linking</span></a>.</p>
 </dd></dl>
 
 <dl class="type">
@@ -319,7 +320,7 @@ int <code class="descname">numEvals</code><a class="headerlink" href="#c.primme_
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 1;</div>
-<div class="line">this field is read by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>) and <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
+<div class="line">this field is read by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>) and <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
 </dd></dl>
@@ -407,14 +408,14 @@ than <a class="reference internal" href="#c.primme_params.target" title="primme_
 <dl class="member">
 <dt id="c.primme_params.printLevel">
 int <code class="descname">printLevel</code><a class="headerlink" href="#c.primme_params.printLevel" title="Permalink to this definition">¶</a></dt>
-<dd><p>The level of message reporting from the code. All output is writen in <a class="reference internal" href="#c.primme_params.outputFile" title="primme_params.outputFile"><code class="xref c c-member docutils literal"><span class="pre">outputFile</span></code></a>.</p>
+<dd><p>The level of message reporting from the code. All output is written in <a class="reference internal" href="#c.primme_params.outputFile" title="primme_params.outputFile"><code class="xref c c-member docutils literal"><span class="pre">outputFile</span></code></a>.</p>
 <p>One of:</p>
 <ul>
 <li><p class="first">0: silent.</p>
 </li>
 <li><p class="first">1: print some error messages when these occur.</p>
 </li>
-<li><p class="first">2: as 1, and info about targeted eigenpairs when they are marked as converged:</p>
+<li><p class="first">2: as in 1, and info about targeted eigenpairs when they are marked as converged:</p>
 <div class="highlight-c"><div class="highlight"><pre><span></span><span class="cp">#Converged $1 eval[ $2 ]= $3 norm $4 Mvecs $5 Time $7</span>
 </pre></div>
 </div>
@@ -423,19 +424,19 @@ int <code class="descname">printLevel</code><a class="headerlink" href="#c.primm
 </pre></div>
 </div>
 </li>
-<li><p class="first">3: as 2, and info about targeted eigenpairs every outer iteration:</p>
+<li><p class="first">3: in as 2, and info about targeted eigenpairs every outer iteration:</p>
 <div class="highlight-c"><div class="highlight"><pre><span></span>OUT $6 conv $1 blk $8 MV $5 Sec $7 EV $3 |r| $4
 </pre></div>
 </div>
 <p>Also, if it is used the dynamic method, show JDQMR/GDk performance ratio and
 the current method in use.</p>
 </li>
-<li><p class="first">4: as 3, and info about targeted eigenpairs every inner iteration:</p>
+<li><p class="first">4: in as 3, and info about targeted eigenpairs every inner iteration:</p>
 <div class="highlight-c"><div class="highlight"><pre><span></span>INN MV $5 Sec $7 Eval $3 Lin|r| $9 EV|r| $4
 </pre></div>
 </div>
 </li>
-<li><p class="first">5: as 4, and verbose info about certain choices of the algorithm.</p>
+<li><p class="first">5: in as 4, and verbose info about certain choices of the algorithm.</p>
 </li>
 </ul>
 <p>Output key:</p>
@@ -467,16 +468,12 @@ the parallel calls.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Convergence history for plotting may be produced simply by:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span>grep OUT outpufile | awk &#39;{print $8&quot; &quot;$14}&#39; &gt; out
-grep INN outpufile | awk &#39;{print $3&quot; &quot;$11}&#39; &gt; inn
+<div class="highlight-bash"><div class="highlight"><pre><span></span>grep OUT outpufile <span class="p">|</span> awk <span class="s1">&#39;{print $8&quot; &quot;$14}&#39;</span> &gt; out
+grep INN outpufile <span class="p">|</span> awk <span class="s1">&#39;{print $3&quot; &quot;$11}&#39;</span> &gt; inn
 </pre></div>
 </div>
-<p>Then in Matlab:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span>plot(out(:,1),out(:,2),&#39;bo&#39;);hold; plot(inn(:,1),inn(:,2),&#39;r&#39;);
-</pre></div>
-</div>
-<p>Or in gnuplot:</p>
-<div class="last highlight-c"><div class="highlight"><pre><span></span>plot &#39;out&#39; w lp, &#39;inn&#39; w lp
+<p>Then in gnuplot:</p>
+<div class="last highlight-gnuplot"><div class="highlight"><pre><span></span><span class="k">plot</span> <span class="s">&#39;out&#39;</span> <span class="nb">w</span> <span class="n">lp</span><span class="o">,</span> <span class="s">&#39;inn&#39;</span> <span class="nb">w</span> <span class="n">lp</span>
 </pre></div>
 </div>
 </div>
@@ -542,7 +539,7 @@ and <a class="reference internal" href="#c.primme_preset_method.PRIMME_DEFAULT_M
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -568,7 +565,7 @@ locking (à la ARPACK), when large enough <a class="reference internal" href="#c
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to -1;</div>
-<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -636,7 +633,7 @@ implications.</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -650,7 +647,7 @@ int <code class="descname">minRestartSize</code><a class="headerlink" href="#c.p
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -669,7 +666,7 @@ methods, keeping to 1 yields the best overall performance.</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 1;</div>
-<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -868,10 +865,10 @@ primme_projection <code class="descname">projectionParams.projection</code><a cl
 eigenvalues <span class="math">\(\lambda_i\)</span> are computed from the search subspace <span class="math">\(\mathcal V\)</span>:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">primme_proj_RR</span></code>, Rayleigh-Ritz, <span class="math">\(Ax_i - Bx_i\lambda_i \perp \mathcal V\)</span>.</li>
-<li><code class="docutils literal"><span class="pre">primme_proj_Harm</span></code>, Harmonic Rayleigh-Ritz,
+<li><code class="docutils literal"><span class="pre">primme_proj_harmonic</span></code>, Harmonic Rayleigh-Ritz,
 <span class="math">\(Ax_i - Bx_i\lambda_i \perp (A-\tau B)\mathcal V\)</span>, where <span class="math">\(\tau\)</span> is the current
 target shift (see <a class="reference internal" href="#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal"><span class="pre">targetShifts</span></code></a>).</li>
-<li><code class="docutils literal"><span class="pre">primme_proj_ref</span></code>, refined extraction, compute <span class="math">\(||x_i||=1\)</span> so that
+<li><code class="docutils literal"><span class="pre">primme_proj_refined</span></code>, refined extraction, compute <span class="math">\(x_i\)</span> with <span class="math">\(||x_i||=1\)</span> that
 minimizes <span class="math">\(||(A-\tau B)x_i||\)</span>; the eigenvalues are computed as the
 Rayleigh quotients, <span class="math">\(\lambda_i=\frac{x_i^*Ax_i}{x_i^*Bx_i}\)</span>.</li>
 </ul>
@@ -898,7 +895,7 @@ preconditioning but it is expensive to implement.</li>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to <a class="reference internal" href="#c.primme_params.restartingParams.scheme" title="primme_params.restartingParams.scheme"><code class="xref c c-member docutils literal"><span class="pre">primme_thick</span></code></a>;</div>
-<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -914,7 +911,7 @@ The restart size is <a class="reference internal" href="#c.primme_params.minRest
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -929,7 +926,7 @@ Make sure <a class="reference internal" href="#c.primme_params.applyPrecondition
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -945,7 +942,7 @@ the Ritz values displaced by an approximation of the eigenvalue error.</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -965,7 +962,7 @@ up to reach <a class="reference internal" href="#c.primme_params.maxMatvecs" tit
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is read and written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -981,7 +978,7 @@ is <a class="reference internal" href="#c.primme_params.correctionParams.convTes
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
-<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -1009,7 +1006,7 @@ times.</li>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to <code class="docutils literal"><span class="pre">primme_adaptive_ETolerance</span></code>;</div>
-<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -1175,7 +1172,7 @@ from solving:</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets all of them to 0;</div>
-<div class="line">this field is written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><em>Preset Methods</em></a>);</div>
+<div class="line">this field is written by <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> (see <a class="reference internal" href="#methods"><span class="std std-ref">Preset Methods</span></a>);</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -1192,6 +1189,90 @@ PRIMME computes ldOPs internally to get better memory performance.</p>
 <blockquote>
 <div><div class="line-block">
 <div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to 0;</div>
+<div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="member">
+<dt id="c.primme_params.monitorFun">
+void <code class="descname">(*monitorFun)</code><span class="sig-paren">(</span>void<em>&nbsp;*basisEvals</em>, int<em>&nbsp;*basisSize</em>, int<em>&nbsp;*basisFlags</em>, int<em>&nbsp;*iblock</em>, int<em>&nbsp;*blockSize</em>, void<em>&nbsp;*basisNorms</em>, int<em>&nbsp;*numConverged</em>, void<em>&nbsp;*lockedEvals</em>, int<em>&nbsp;*numLocked</em>, int<em>&nbsp;*lockedFlags</em>, void<em>&nbsp;*lockedNorms</em>, int<em>&nbsp;*inner_its</em>, void<em>&nbsp;*LSRes</em>, primme_event<em>&nbsp;*event</em>, struct <a class="reference internal" href="#c.primme_params" title="primme_params">primme_params</a><em>&nbsp;*primme</em>, int<em>&nbsp;*ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_params.monitorFun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convergence monitor. Used to customize how to report solver
+information during execution (iteration number, matvecs, time,
+unconverged and converged eigenvalues, residual norms, targets, etc).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>basisEvals</strong> &#8211; array with approximate eigenvalues of the basis.</li>
+<li><strong>basisSize</strong> &#8211; size of the arrays, <code class="docutils literal"><span class="pre">basisEvals</span></code>, <code class="docutils literal"><span class="pre">basisFlags</span></code> and <code class="docutils literal"><span class="pre">basisNorms</span></code>.</li>
+<li><strong>basisFlags</strong> &#8211; state of every approximate pair in the basis.</li>
+<li><strong>iblock</strong> &#8211; indices of the approximate pairs in the block targeted during current iteration.</li>
+<li><strong>blockSize</strong> &#8211; size of array <code class="docutils literal"><span class="pre">iblock</span></code>.</li>
+<li><strong>basisNorms</strong> &#8211; array with residual norms of the pairs in the basis.</li>
+<li><strong>numConverged</strong> &#8211; number of pairs converged in the basis plus the number of the locked pairs (note that this value isn&#8217;t monotonic).</li>
+<li><strong>lockedEvals</strong> &#8211; array with the locked eigenvalues.</li>
+<li><strong>numLocked</strong> &#8211; size of the arrays <code class="docutils literal"><span class="pre">lockedEvals</span></code>, <code class="docutils literal"><span class="pre">lockedFlags</span></code> and <code class="docutils literal"><span class="pre">lockedNorms</span></code>.</li>
+<li><strong>lockedFlags</strong> &#8211; state of each locked eigenpair.</li>
+<li><strong>lockedNorms</strong> &#8211; array with the residual norms of the locked pairs.</li>
+<li><strong>inner_its</strong> &#8211; number of performed QMR iterations in the current correction equation. It resets for each block vector.</li>
+<li><strong>LSRes</strong> &#8211; residual norm of the linear system at the current QMR iteration.</li>
+<li><strong>event</strong> &#8211; event reported.</li>
+<li><strong>primme</strong> &#8211; parameters structure; the counter in <code class="docutils literal"><span class="pre">stats</span></code> are updated with the current number of matrix-vector products, iterations, elapsed time, etc., since start.</li>
+<li><strong>ierr</strong> &#8211; output error code; if it is set to non-zero, the current call to PRIMME will stop.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function is called at the following events:</p>
+<ul>
+<li><p class="first"><code class="docutils literal"><span class="pre">*event</span> <span class="pre">==</span> <span class="pre">primme_event_outer_iteration</span></code>: every outer iterations.</p>
+<p>For this event the following inputs are provided:
+<code class="docutils literal"><span class="pre">basisEvals</span></code>, <code class="docutils literal"><span class="pre">basisNorms</span></code>, <code class="docutils literal"><span class="pre">basisSize</span></code>, <code class="docutils literal"><span class="pre">basisFlags</span></code>, <code class="docutils literal"><span class="pre">iblock</span></code> and <code class="docutils literal"><span class="pre">blockSize</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">basisNorms[iblock[i]]</span></code> has the residual norm for the selected pair in the block.
+PRIMME avoids computing the residual of soft-locked pairs, <code class="docutils literal"><span class="pre">basisNorms[i]</span></code> for <code class="docutils literal"><span class="pre">i&lt;iblock[0]</span></code>.
+So those values may correspond to previous iterations. The values <code class="docutils literal"><span class="pre">basisNorms[i]</span></code> for <code class="docutils literal"><span class="pre">i&gt;iblock[blockSize-1]</span></code>
+are not valid.</p>
+<p>If <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> is enabled, <code class="docutils literal"><span class="pre">lockedEvals</span></code>, <code class="docutils literal"><span class="pre">numLocked</span></code>, <code class="docutils literal"><span class="pre">lockedFlags</span></code> and <code class="docutils literal"><span class="pre">lockedNorms</span></code> are also provided.</p>
+<p><code class="docutils literal"><span class="pre">inner_its</span></code> and  <code class="docutils literal"><span class="pre">LSRes</span></code> are not provided.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">*event</span> <span class="pre">==</span> <span class="pre">primme_event_inner_iteration</span></code>: every QMR iteration.</p>
+<p><code class="docutils literal"><span class="pre">basisEvals[0]</span></code> and <code class="docutils literal"><span class="pre">basisNorms[0]</span></code> provides the approximate eigenvalue and the residual norm
+of the pair which is improved in the current correction equation. If <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">convTest</span></code></a> is <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_adaptive</span></code></a>
+or <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_adaptive_ETolerance</span></code></a>, <code class="docutils literal"><span class="pre">basisEvals[0]</span></code> and <code class="docutils literal"><span class="pre">basisNorms[0]</span></code> are updated every QMR iteration.</p>
+<p><code class="docutils literal"><span class="pre">inner_its</span></code> and  <code class="docutils literal"><span class="pre">LSRes</span></code> are also provided.</p>
+<p><code class="docutils literal"><span class="pre">lockedEvals</span></code>, <code class="docutils literal"><span class="pre">numLocked</span></code>, <code class="docutils literal"><span class="pre">lockedFlags</span></code> and <code class="docutils literal"><span class="pre">lockedNorms</span></code> may not be provided.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">*event</span> <span class="pre">==</span> <span class="pre">primme_event_convergence</span></code>: a new eigenpair in the basis passed the convergence criterion.</p>
+<p><code class="docutils literal"><span class="pre">iblock[0]</span></code> is the index of the newly converged pair in the basis which will be locked or soft-locked.
+The following are provided: <code class="docutils literal"><span class="pre">basisEvals</span></code>, <code class="docutils literal"><span class="pre">basisNorms</span></code>, <code class="docutils literal"><span class="pre">basisSize</span></code>, <code class="docutils literal"><span class="pre">basisFlags</span></code> and <code class="docutils literal"><span class="pre">blockSize[0]==1</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">lockedEvals</span></code>, <code class="docutils literal"><span class="pre">numLocked</span></code>, <code class="docutils literal"><span class="pre">lockedFlags</span></code> and <code class="docutils literal"><span class="pre">lockedNorms</span></code> may not be provided.</p>
+<p><code class="docutils literal"><span class="pre">inner_its</span></code> and  <code class="docutils literal"><span class="pre">LSRes</span></code> are not provided.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">*event</span> <span class="pre">==</span> <span class="pre">primme_event_locked</span></code>: new pair was added to the locked eigenvectors.</p>
+<p><code class="docutils literal"><span class="pre">lockedEvals</span></code>, <code class="docutils literal"><span class="pre">numLocked</span></code>, <code class="docutils literal"><span class="pre">lockedFlags</span></code> and <code class="docutils literal"><span class="pre">lockedNorms</span></code> are provided.
+The last element of <code class="docutils literal"><span class="pre">lockedEvals</span></code>, <code class="docutils literal"><span class="pre">lockedFlags</span></code> and <code class="docutils literal"><span class="pre">lockedNorms</span></code> corresponds
+to the recent locked pair.</p>
+<p><code class="docutils literal"><span class="pre">basisEvals</span></code>, <code class="docutils literal"><span class="pre">numConverged</span></code>, <code class="docutils literal"><span class="pre">basisFlags</span></code> and <code class="docutils literal"><span class="pre">basisNorms</span></code> may not be provided.</p>
+<p><code class="docutils literal"><span class="pre">inner_its</span></code> and <code class="docutils literal"><span class="pre">LSRes</span></code> are not provided.</p>
+</li>
+</ul>
+<p>The values of <code class="docutils literal"><span class="pre">basisFlags</span></code> and <code class="docutils literal"><span class="pre">lockedFlags</span></code> are:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">0</span></code>: unconverged.</li>
+<li><code class="docutils literal"><span class="pre">1</span></code>: internal use; only in <code class="docutils literal"><span class="pre">basisFlags</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">2</span></code>: passed convergence test <a class="reference internal" href="#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal"><span class="pre">convTestFun</span></code></a>.</li>
+<li><code class="docutils literal"><span class="pre">3</span></code>: <em>practically converged</em> because the solver may not be able
+to reduce the residual norm further without recombining
+the locked eigenvectors.</li>
+</ul>
+<p>Input/output:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><a class="reference internal" href="primmec.html#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_initialize()</span></code></a> sets this field to NULL;</div>
+<div class="line"><a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a> sets this field to an internal function if it is NULL;</div>
 <div class="line">this field is read by <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a>.</div>
 </div>
 </div></blockquote>
@@ -1442,61 +1523,9 @@ for <a class="reference internal" href="primmec.html#c.cprimme" title="cprimme">
 </dd></dl>
 
 </div>
-<div class="section" id="error-codes">
-<span id="id4"></span><h2>Error Codes<a class="headerlink" href="#error-codes" title="Permalink to this headline">¶</a></h2>
-<p>The functions <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a> and <a class="reference internal" href="primmec.html#c.zprimme" title="zprimme"><code class="xref c c-func docutils literal"><span class="pre">zprimme()</span></code></a> return one of the next values:</p>
-<ul class="simple">
-<li>0: success.</li>
-<li>1: reported only amount of required memory.</li>
-<li>-1: failed in allocating int or real workspace.</li>
-<li>-2: malloc failed in allocating a permutation integer array.</li>
-<li>-3: main_iter() encountered problem; the calling stack of the
-functions where the error occurred was printed in <code class="docutils literal"><span class="pre">stderr</span></code>.</li>
-<li>-4: if argument <code class="docutils literal"><span class="pre">primme</span></code> is NULL.</li>
-<li>-5: if <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a> &lt;= 0 or <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a> &lt;= 0.</li>
-<li>-6: if <a class="reference internal" href="#c.primme_params.numProcs" title="primme_params.numProcs"><code class="xref c c-member docutils literal"><span class="pre">numProcs</span></code></a> &lt; 1.</li>
-<li>-7: if <a class="reference internal" href="#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a> is NULL.</li>
-<li>-8: if <a class="reference internal" href="#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a> is NULL and <a class="reference internal" href="#c.primme_params.correctionParams.precondition" title="primme_params.correctionParams.precondition"><code class="xref c c-member docutils literal"><span class="pre">precondition</span></code></a> &gt; 0.</li>
-<li>-10: if <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.</li>
-<li>-11: if <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a> &lt; 0.</li>
-<li>-12: if <a class="reference internal" href="#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a> &gt; 0 and <a class="reference internal" href="#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a> &lt; machine precision.</li>
-<li>-13: if <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is not properly defined.</li>
-<li>-14: if <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is one of <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_geq</span></code></a>,
-<a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_leq</span></code></a>, <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_abs</span></code></a> or <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_largest_abs</span></code></a> but
-<a class="reference internal" href="#c.primme_params.numTargetShifts" title="primme_params.numTargetShifts"><code class="xref c c-member docutils literal"><span class="pre">numTargetShifts</span></code></a> &lt;= 0 (no shifts).</li>
-<li>-15: if <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is one of <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_geq</span></code></a>,
-<a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_leq</span></code></a>, <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_abs</span></code></a> or <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_largest_abs</span></code></a> but
-<a class="reference internal" href="#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal"><span class="pre">targetShifts</span></code></a> is NULL  (no shifts array).</li>
-<li>-16: if <a class="reference internal" href="#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal"><span class="pre">numOrthoConst</span></code></a> &lt; 0 or
-<a class="reference internal" href="#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal"><span class="pre">numOrthoConst</span></code></a> &gt;= <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.
-(no free dimensions left).</li>
-<li>-17: if <a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a> &lt; 2.</li>
-<li>-18: if <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &lt;= 0.</li>
-<li>-19: if <a class="reference internal" href="#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal"><span class="pre">maxBlockSize</span></code></a> &lt;= 0.</li>
-<li>-20: if <a class="reference internal" href="#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal"><span class="pre">maxPrevRetain</span></code></a> &lt; 0.</li>
-<li>-21: if <a class="reference internal" href="#c.primme_params.restartingParams.scheme" title="primme_params.restartingParams.scheme"><code class="xref c c-member docutils literal"><span class="pre">scheme</span></code></a> is not one of <cite>primme_thick</cite> or <cite>primme_dtr</cite>.</li>
-<li>-22: if <a class="reference internal" href="#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal"><span class="pre">initSize</span></code></a> &lt; 0.</li>
-<li>-23: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> == 0 and <a class="reference internal" href="#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal"><span class="pre">initSize</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a>.</li>
-<li>-24: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> and <a class="reference internal" href="#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal"><span class="pre">initSize</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>.</li>
-<li>-25: if <a class="reference internal" href="#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal"><span class="pre">maxPrevRetain</span></code></a> + <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &gt;= <a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a>.</li>
-<li>-26: if <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &gt;= <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.</li>
-<li>-27: if <a class="reference internal" href="#c.primme_params.printLevel" title="primme_params.printLevel"><code class="xref c c-member docutils literal"><span class="pre">printLevel</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.printLevel" title="primme_params.printLevel"><code class="xref c c-member docutils literal"><span class="pre">printLevel</span></code></a> &gt; 5.</li>
-<li>-28: if <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">convTest</span></code></a> is not one of
-<a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_full_LTolerance</span></code></a>, <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_decreasing_LTolerance</span></code></a>,
-<a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_adaptive_ETolerance</span></code></a> or <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_adaptive</span></code></a>.</li>
-<li>-29: if <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">convTest</span></code></a> == <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_decreasing_LTolerance</span></code></a> and <a class="reference internal" href="#c.primme_params.correctionParams.relTolBase" title="primme_params.correctionParams.relTolBase"><code class="xref c c-member docutils literal"><span class="pre">relTolBase</span></code></a> &lt;= 1.</li>
-<li>-30: if <code class="docutils literal"><span class="pre">evals</span></code> is NULL, but not <code class="docutils literal"><span class="pre">evecs</span></code> and <code class="docutils literal"><span class="pre">resNorms</span></code>.</li>
-<li>-31: if <code class="docutils literal"><span class="pre">evecs</span></code> is NULL, but not <code class="docutils literal"><span class="pre">evals</span></code> and <code class="docutils literal"><span class="pre">resNorms</span></code>.</li>
-<li>-32: if <code class="docutils literal"><span class="pre">resNorms</span></code> is NULL, but not <code class="docutils literal"><span class="pre">evecs</span></code> and <code class="docutils literal"><span class="pre">evals</span></code>.</li>
-<li>-33: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> == 0 and <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &lt; <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>.</li>
-<li>-34: if <a class="reference internal" href="#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal"><span class="pre">ldevecs</span></code></a> &lt; <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a></li>
-<li>-35: if <a class="reference internal" href="#c.primme_params.ldOPs" title="primme_params.ldOPs"><code class="xref c c-member docutils literal"><span class="pre">ldOPs</span></code></a> is not zero and less than <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a></li>
-<li>-36: not enough memory for <a class="reference internal" href="#c.primme_params.realWork" title="primme_params.realWork"><code class="xref c c-member docutils literal"><span class="pre">realWork</span></code></a></li>
-<li>-37: not enough memory for <a class="reference internal" href="#c.primme_params.intWork" title="primme_params.intWork"><code class="xref c c-member docutils literal"><span class="pre">intWork</span></code></a></li>
-</ul>
 </div>
 <div class="section" id="preset-methods">
-<span id="methods"></span><h2>Preset Methods<a class="headerlink" href="#preset-methods" title="Permalink to this headline">¶</a></h2>
+<span id="methods"></span><h1>Preset Methods<a class="headerlink" href="#preset-methods" title="Permalink to this headline">¶</a></h1>
 <dl class="type">
 <dt id="c.primme_preset_method">
 <code class="descname">primme_preset_method</code><a class="headerlink" href="#c.primme_preset_method" title="Permalink to this definition">¶</a></dt>
@@ -1680,10 +1709,10 @@ changes as for the method <a class="reference internal" href="#c.primme_preset_m
 </dd></dl>
 
 <dl class="member">
-<dt id="c.primme_preset_method.PRIMME_SUBSPACE_ITERATION">
-<code class="descname">PRIMME_SUBSPACE_ITERATION</code><a class="headerlink" href="#c.primme_preset_method.PRIMME_SUBSPACE_ITERATION" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subspace iteration.</p>
-<p>With <a class="reference internal" href="#c.primme_preset_method.PRIMME_SUBSPACE_ITERATION" title="primme_preset_method.PRIMME_SUBSPACE_ITERATION"><code class="xref c c-member docutils literal"><span class="pre">PRIMME_SUBSPACE_ITERATION</span></code></a> <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> sets:</p>
+<dt id="c.primme_preset_method.PRIMME_STEEPEST_DESCENT">
+<code class="descname">PRIMME_STEEPEST_DESCENT</code><a class="headerlink" href="#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Steepest descent.</p>
+<p>With <a class="reference internal" href="#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="primme_preset_method.PRIMME_STEEPEST_DESCENT"><code class="xref c c-member docutils literal"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></a> <a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal"><span class="pre">primme_set_method()</span></code></a> sets:</p>
 <table class="hlist"><tr><td><ul class="simple">
 <li><a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a>    = 1;</li>
 <li><a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a> = <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a> <cite>*</cite> 2;</li>
@@ -1748,6 +1777,58 @@ changes as for the method <a class="reference internal" href="#c.primme_preset_m
 </dd></dl>
 
 </div>
+<div class="section" id="error-codes">
+<span id="id4"></span><h1>Error Codes<a class="headerlink" href="#error-codes" title="Permalink to this headline">¶</a></h1>
+<p>The functions <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal"><span class="pre">dprimme()</span></code></a> and <a class="reference internal" href="primmec.html#c.zprimme" title="zprimme"><code class="xref c c-func docutils literal"><span class="pre">zprimme()</span></code></a> return one of the next values:</p>
+<ul class="simple">
+<li>0: success.</li>
+<li>1: reported only amount of required memory.</li>
+<li>-1: failed in allocating int or real workspace.</li>
+<li>-2: malloc failed in allocating a permutation integer array.</li>
+<li>-3: main_iter() encountered problem; the calling stack of the
+functions where the error occurred was printed in <code class="docutils literal"><span class="pre">stderr</span></code>.</li>
+<li>-4: if argument <code class="docutils literal"><span class="pre">primme</span></code> is NULL.</li>
+<li>-5: if <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.</li>
+<li>-6: if <a class="reference internal" href="#c.primme_params.numProcs" title="primme_params.numProcs"><code class="xref c c-member docutils literal"><span class="pre">numProcs</span></code></a> &lt; 1.</li>
+<li>-7: if <a class="reference internal" href="#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a> is NULL.</li>
+<li>-8: if <a class="reference internal" href="#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a> is NULL and <a class="reference internal" href="#c.primme_params.correctionParams.precondition" title="primme_params.correctionParams.precondition"><code class="xref c c-member docutils literal"><span class="pre">precondition</span></code></a> &gt; 0.</li>
+<li>-10: if <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.</li>
+<li>-11: if <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a> &lt; 0.</li>
+<li>-12: if <a class="reference internal" href="#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a> &gt; 0 and <a class="reference internal" href="#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal"><span class="pre">eps</span></code></a> &lt; machine precision.</li>
+<li>-13: if <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is not properly defined.</li>
+<li>-14: if <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is one of <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_geq</span></code></a>,
+<a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_leq</span></code></a>, <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_abs</span></code></a> or <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_largest_abs</span></code></a> but
+<a class="reference internal" href="#c.primme_params.numTargetShifts" title="primme_params.numTargetShifts"><code class="xref c c-member docutils literal"><span class="pre">numTargetShifts</span></code></a> &lt;= 0 (no shifts).</li>
+<li>-15: if <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is one of <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_geq</span></code></a>,
+<a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_leq</span></code></a>, <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_abs</span></code></a> or <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_largest_abs</span></code></a> but
+<a class="reference internal" href="#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal"><span class="pre">targetShifts</span></code></a> is NULL  (no shifts array).</li>
+<li>-16: if <a class="reference internal" href="#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal"><span class="pre">numOrthoConst</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal"><span class="pre">numOrthoConst</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.
+(no free dimensions left).</li>
+<li>-17: if <a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a> &lt; 2.</li>
+<li>-18: if <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> shouldn&#8217;t be zero.</li>
+<li>-19: if <a class="reference internal" href="#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal"><span class="pre">maxBlockSize</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal"><span class="pre">maxBlockSize</span></code></a> shouldn&#8217;t be zero.</li>
+<li>-20: if <a class="reference internal" href="#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal"><span class="pre">maxPrevRetain</span></code></a> &lt; 0.</li>
+<li>-21: if <a class="reference internal" href="#c.primme_params.restartingParams.scheme" title="primme_params.restartingParams.scheme"><code class="xref c c-member docutils literal"><span class="pre">scheme</span></code></a> is not one of <cite>primme_thick</cite> or <cite>primme_dtr</cite>.</li>
+<li>-22: if <a class="reference internal" href="#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal"><span class="pre">initSize</span></code></a> &lt; 0.</li>
+<li>-23: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> == 0 and <a class="reference internal" href="#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal"><span class="pre">initSize</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a>.</li>
+<li>-24: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> and <a class="reference internal" href="#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal"><span class="pre">initSize</span></code></a> &gt; <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>.</li>
+<li>-25: if <a class="reference internal" href="#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal"><span class="pre">maxPrevRetain</span></code></a> + <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &gt;= <a class="reference internal" href="#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal"><span class="pre">maxBasisSize</span></code></a>.</li>
+<li>-26: if <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &gt;= <a class="reference internal" href="#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>.</li>
+<li>-27: if <a class="reference internal" href="#c.primme_params.printLevel" title="primme_params.printLevel"><code class="xref c c-member docutils literal"><span class="pre">printLevel</span></code></a> &lt; 0 or <a class="reference internal" href="#c.primme_params.printLevel" title="primme_params.printLevel"><code class="xref c c-member docutils literal"><span class="pre">printLevel</span></code></a> &gt; 5.</li>
+<li>-28: if <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">convTest</span></code></a> is not one of
+<a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_full_LTolerance</span></code></a>, <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_decreasing_LTolerance</span></code></a>,
+<a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_adaptive_ETolerance</span></code></a> or <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_adaptive</span></code></a>.</li>
+<li>-29: if <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">convTest</span></code></a> == <a class="reference internal" href="#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal"><span class="pre">primme_decreasing_LTolerance</span></code></a> and <a class="reference internal" href="#c.primme_params.correctionParams.relTolBase" title="primme_params.correctionParams.relTolBase"><code class="xref c c-member docutils literal"><span class="pre">relTolBase</span></code></a> &lt;= 1.</li>
+<li>-30: if <code class="docutils literal"><span class="pre">evals</span></code> is NULL, but not <code class="docutils literal"><span class="pre">evecs</span></code> and <code class="docutils literal"><span class="pre">resNorms</span></code>.</li>
+<li>-31: if <code class="docutils literal"><span class="pre">evecs</span></code> is NULL, but not <code class="docutils literal"><span class="pre">evals</span></code> and <code class="docutils literal"><span class="pre">resNorms</span></code>.</li>
+<li>-32: if <code class="docutils literal"><span class="pre">resNorms</span></code> is NULL, but not <code class="docutils literal"><span class="pre">evecs</span></code> and <code class="docutils literal"><span class="pre">evals</span></code>.</li>
+<li>-33: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> == 0 and <a class="reference internal" href="#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal"><span class="pre">minRestartSize</span></code></a> &lt; <a class="reference internal" href="#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal"><span class="pre">numEvals</span></code></a>.</li>
+<li>-34: if <a class="reference internal" href="#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal"><span class="pre">ldevecs</span></code></a> &lt; <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>.</li>
+<li>-35: if <a class="reference internal" href="#c.primme_params.ldOPs" title="primme_params.ldOPs"><code class="xref c c-member docutils literal"><span class="pre">ldOPs</span></code></a> is not zero and less than <a class="reference internal" href="#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal"><span class="pre">nLocal</span></code></a>.</li>
+<li>-36: not enough memory for <a class="reference internal" href="#c.primme_params.realWork" title="primme_params.realWork"><code class="xref c c-member docutils literal"><span class="pre">realWork</span></code></a>.</li>
+<li>-37: not enough memory for <a class="reference internal" href="#c.primme_params.intWork" title="primme_params.intWork"><code class="xref c c-member docutils literal"><span class="pre">intWork</span></code></a>.</li>
+<li>-38: if <a class="reference internal" href="#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal"><span class="pre">locking</span></code></a> == 0 and <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">target</span></code></a> is <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_leq</span></code></a> or <a class="reference internal" href="#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal"><span class="pre">primme_closest_geq</span></code></a>.</li>
+</ul>
 </div>
 
 
@@ -1757,14 +1838,14 @@ changes as for the method <a class="reference internal" href="#c.primme_preset_m
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2016, College of William & Mary.
+      &copy;2017, College of William & Mary.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/appendix.txt"
+      <a href="_sources/appendix.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

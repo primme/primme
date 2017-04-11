@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PRIMME: PReconditioned Iterative MultiMethod Eigensolver &#8212; PRIMME 2.0 documentation</title>
+    <title>PRIMME: PReconditioned Iterative MultiMethod Eigensolver &#8212; PRIMME 2.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,17 +14,19 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Eigenvalue Problems" href="apieigs.html" />
     <link rel="prev" title="PRIMME Documentation" href="readme.html" />
    
@@ -72,7 +74,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/intro.txt"
+      <li><a href="_sources/intro.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -94,13 +96,20 @@
             
   <div class="section" id="primme-preconditioned-iterative-multimethod-eigensolver">
 <h1>PRIMME: PReconditioned Iterative MultiMethod Eigensolver<a class="headerlink" href="#primme-preconditioned-iterative-multimethod-eigensolver" title="Permalink to this headline">¶</a></h1>
-<p>PRIMME, pronounced as <em>prime</em>, finds a number of eigenvalues and their corresponding eigenvectors of a
-real symmetric, or Hermitian matrix. Also singular values and vectors can be computed. Largest, smallest and interior
-eigenvalues and singular values are supported. Preconditioning can be used to accelerate
-convergence.
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB and Python.</p>
+<p>PRIMME, pronounced as <em>prime</em>, computes
+a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix.
+It can also compute singular values and vectors of a square or rectangular matrix.
+It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence.
+It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.</p>
 <div class="section" id="incompatibilities">
 <h2>Incompatibilities<a class="headerlink" href="#incompatibilities" title="Permalink to this headline">¶</a></h2>
+<p>From PRIMME 2.0 to 2.1:</p>
+<ul class="simple">
+<li>Added members <a class="reference internal" href="appendix.html#c.primme_params.monitorFun" title="primme_params.monitorFun"><code class="xref c c-member docutils literal"><span class="pre">monitorFun</span></code></a> and <code class="docutils literal"><span class="pre">monitor</span></code> to <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal"><span class="pre">primme_params</span></code></a>.</li>
+<li>Added members <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.monitorFun" title="primme_svds_params.monitorFun"><code class="xref c c-member docutils literal"><span class="pre">monitorFun</span></code></a> and <code class="docutils literal"><span class="pre">monitor</span></code> to <a class="reference internal" href="appendixsvds.html#c.primme_svds_params" title="primme_svds_params"><code class="xref c c-type docutils literal"><span class="pre">primme_svds_params</span></code></a>.</li>
+<li>Renamed <code class="docutils literal"><span class="pre">PRIMME_SUBSPACE_ITERATION</span></code> as <a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="primme_preset_method.PRIMME_STEEPEST_DESCENT"><code class="xref c c-member docutils literal"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></a>.</li>
+</ul>
 <p>From PRIMME 1.x to 2.0:</p>
 <ul class="simple">
 <li>Prototype of callbacks has changed: <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">massMatrixMatvec</span></code></a> and <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal"><span class="pre">globalSumReal</span></code></a>.</li>
@@ -114,6 +123,20 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77, M
 </div>
 <div class="section" id="changelog">
 <h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h2>
+<p>Changes in PRIMME 2.1 (released on April 4, 2017):</p>
+<ul class="simple">
+<li>Improve robustness by broadcasting the result of critical <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a>
+operations instead of replicating them on every process; this is
+useful when using a threaded <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a>/<a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> or when some parallel
+processes may run on different architectures or libraries.</li>
+<li>New stopping criteria in QMR that improve performance for interior
+problems.</li>
+<li>MATLAB interface reimplementation with support for singular value
+problems, <code class="xref mat mat-func docutils literal"><span class="pre">primme_svds()</span></code>, with double and single precision, and
+compatible with Octave.</li>
+<li>R interface</li>
+<li>Proper reporting of convergence history for singular value solvers.</li>
+</ul>
 <p>Changes in PRIMME 2.0 (released on September 19, 2016):</p>
 <ul class="simple">
 <li>Changed license to BSD 3-clause.</li>
@@ -210,13 +233,17 @@ the interface in the sample programs and makefiles.</p>
 <div class="section" id="license-information">
 <h2>License Information<a class="headerlink" href="#license-information" title="Permalink to this headline">¶</a></h2>
 <p>PRIMME is licensed under the 3-clause license BSD.
-Python and Matlab interfaces have BSD-compatible licenses.
-Source code under file:<cite>tests</cite> is compatible with LGPLv3.
-Details can be taken from COPYING.txt.</p>
+Python and MATLAB interfaces have BSD-compatible licenses.
+Source code under <code class="file docutils literal"><span class="pre">tests</span></code> is compatible with LGPLv3.
+Details can be taken from <code class="file docutils literal"><span class="pre">COPYING.txt</span></code>:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>Copyright <span class="o">(</span>c<span class="o">)</span> <span class="m">2017</span>, College of William <span class="p">&amp;</span> Mary
+All rights reserved.
+</pre></div>
+</div>
 </div>
 <div class="section" id="citing-the-code">
 <h2>Citing the code<a class="headerlink" href="#citing-the-code" title="Permalink to this headline">¶</a></h2>
-<p>Please cite:</p>
+<p>Please cite (<a class="reference external" href="https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib">BibTeX</a>):</p>
 <table class="docutils citation" frame="void" id="r1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -240,7 +267,7 @@ supported by a number of grants from the National Science Foundation.</p>
 <table class="docutils citation" frame="void" id="r2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[r2]</a></td><td>A. Stathopoulos, <em>Nearly optimal preconditioned methods for hermitian
+<tr><td class="label"><a class="fn-backref" href="#id3">[r2]</a></td><td>A. Stathopoulos, <em>Nearly optimal preconditioned methods for Hermitian
 eigenproblems under limited memory. Part I: Seeking one eigenvalue</em>, SIAM
 J. Sci. Comput., Vol. 29, No. 2, (2007), 481&#8211;514.</td></tr>
 </tbody>
@@ -249,7 +276,7 @@ J. Sci. Comput., Vol. 29, No. 2, (2007), 481&#8211;514.</td></tr>
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id4">[r3]</a></td><td>A. Stathopoulos and J. R. McCombs, <em>Nearly optimal preconditioned
-methods for hermitian eigenproblems under limited memory. Part II:
+methods for Hermitian eigenproblems under limited memory. Part II:
 Seeking many eigenvalues</em>, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
 2162-2188.</td></tr>
 </tbody>
@@ -267,7 +294,7 @@ Eigenvalue Solvers</em>, SIAM J. Sci. Comput., Vol. 28, No. 6, (2006),
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id6">[r5]</a></td><td>A. Stathopoulos, <em>Locking issues for finding a large number of eigenvectors
-of hermitian matrices</em>, Tech Report: WM-CS-2005-03, July, 2005.</td></tr>
+of Hermitian matrices</em>, Tech Report: WM-CS-2005-03, July, 2005.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="r7" rules="none">
@@ -307,9 +334,9 @@ the webpage <a class="reference external" href="http://www.cs.wm.edu/~andreas/so
 </ul>
 </div></blockquote>
 </li>
-<li><p class="first"><code class="file docutils literal"><span class="pre">Matlab/</span></code>,       Matlab interface;</p>
+<li><p class="first"><code class="file docutils literal"><span class="pre">Matlab/</span></code>,       MATLAB interface;</p>
 </li>
-<li><p class="first"><code class="file docutils literal"><span class="pre">PYTHON/</span></code>,       Python interface;</p>
+<li><p class="first"><code class="file docutils literal"><span class="pre">Python/</span></code>,       Python interface;</p>
 </li>
 <li><p class="first"><code class="file docutils literal"><span class="pre">examples/</span></code>,     sample programs in C, C++ and F77, both sequential and parallel;</p>
 </li>
@@ -328,13 +355,11 @@ the webpage <a class="reference external" href="http://www.cs.wm.edu/~andreas/so
 <div class="section" id="making-and-linking">
 <span id="making"></span><h2>Making and Linking<a class="headerlink" href="#making-and-linking" title="Permalink to this headline">¶</a></h2>
 <p><code class="file docutils literal"><span class="pre">Make_flags</span></code> has the flags and compilers used to make <code class="file docutils literal"><span class="pre">libprimme.a</span></code>:</p>
-<ul>
-<li><p class="first"><cite>CC</cite>, compiler program such as <code class="docutils literal"><span class="pre">gcc</span></code>, <code class="docutils literal"><span class="pre">clang</span></code> or <code class="docutils literal"><span class="pre">icc</span></code>.</p>
-</li>
+<ul class="simple">
+<li><cite>CC</cite>, compiler program such as <code class="docutils literal"><span class="pre">gcc</span></code>, <code class="docutils literal"><span class="pre">clang</span></code> or <code class="docutils literal"><span class="pre">icc</span></code>.</li>
 <li><dl class="first docutils">
 <dt><cite>CFLAGS</cite>, compiler options such as <code class="docutils literal"><span class="pre">-g</span></code> or <code class="docutils literal"><span class="pre">-O3</span></code> and macro definitions</dt>
-<dd><p class="first last">like the ones described next.</p>
-</dd>
+<dd>like the ones described next.</dd>
 </dl>
 </li>
 </ul>
@@ -361,11 +386,11 @@ standard, you can set the corresponding type name supported, for instance
 <code class="docutils literal"><span class="pre">-DPRIMME_BLASINT_SIZE=__int64</span></code>.</p>
 </div>
 <p>After customizing <code class="file docutils literal"><span class="pre">Make_flags</span></code>, type this to generate <code class="file docutils literal"><span class="pre">libprimme.a</span></code>:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">lib</span>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>make lib
 </pre></div>
 </div>
 <p>Making can be also done at the command line:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span>make lib CC=clang CFLAGS=&#39;-O3&#39;
+<div class="highlight-bash"><div class="highlight"><pre><span></span>make lib <span class="nv">CC</span><span class="o">=</span>clang <span class="nv">CFLAGS</span><span class="o">=</span><span class="s1">&#39;-O3&#39;</span>
 </pre></div>
 </div>
 <p><code class="file docutils literal"><span class="pre">Link_flags</span></code> has the flags for linking with external libraries and making the executables
@@ -375,7 +400,7 @@ located in <code class="file docutils literal"><span class="pre">examples</span>
 <li><cite>LIBS</cite>, flags to link with libraries (<a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> are required), such as <code class="docutils literal"><span class="pre">-lprimme</span> <span class="pre">-llapack</span> <span class="pre">-lblas</span> <span class="pre">-lgfortran</span> <span class="pre">-lm</span></code>.</li>
 </ul>
 <p>After that, type this to compile and execute a simple test:</p>
-<div class="highlight-c"><div class="highlight"><pre><span></span>$ make test
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
 ...
 Test passed!
 ...
@@ -389,6 +414,11 @@ to add/remove <code class="docutils literal"><span class="pre">-DPRIMME_BLASINT_
 <ul class="simple">
 <li><cite>make lib</cite>, builds the static library <code class="file docutils literal"><span class="pre">libprimme.a</span></code>.</li>
 <li><cite>make solib</cite>, builds the shared library <code class="file docutils literal"><span class="pre">libprimme.so</span></code>.</li>
+<li><cite>make matlab</cite>, builds <cite>libprimme.a</cite> compatible with MATLAB and the MATLAB module.</li>
+<li><cite>make octave</cite>, builds <cite>libprimme.a</cite> and the Octave module.</li>
+<li><cite>make python</cite>, builds <cite>libprimme.a</cite> and the Python module.</li>
+<li><cite>make python_install</cite>, install the Python module.</li>
+<li><cite>make R_install</cite>, builds and installs the R package.</li>
 <li><cite>make test</cite>, build and execute simple examples.</li>
 <li><cite>make clean</cite>, removes all <code class="file docutils literal"><span class="pre">*.o</span></code>, <code class="file docutils literal"><span class="pre">a.out</span></code>, and core files from <code class="file docutils literal"><span class="pre">src</span></code>.</li>
 </ul>
@@ -440,14 +470,14 @@ Many users have reported builds on several other platforms/compilers:</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2016, College of William & Mary.
+      &copy;2017, College of William & Mary.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/intro.txt"
+      <a href="_sources/intro.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

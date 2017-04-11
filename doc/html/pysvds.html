@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python Interface &#8212; PRIMME 2.0 documentation</title>
+    <title>Python Interface &#8212; PRIMME 2.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,19 +14,20 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Singular Value Problems" href="apisvds.html" />
-    <link rel="next" title="Appendix" href="appendixsvds.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MATLAB Interface" href="matsvds.html" />
     <link rel="prev" title="FORTRAN Library Interface" href="svdsf77.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -48,7 +49,7 @@
   <li><a href="readme.html">Documentation overview</a><ul>
   <li><a href="apisvds.html">Singular Value Problems</a><ul>
       <li>Previous: <a href="svdsf77.html" title="previous chapter">FORTRAN Library Interface</a></li>
-      <li>Next: <a href="appendixsvds.html" title="next chapter">Appendix</a></li>
+      <li>Next: <a href="matsvds.html" title="next chapter">MATLAB Interface</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -56,7 +57,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/pysvds.txt"
+      <li><a href="_sources/pysvds.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -80,19 +81,24 @@
 <h1>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="Primme.svds">
-<code class="descclassname">Primme.</code><code class="descname">svds</code><span class="sig-paren">(</span><em>A</em>, <em>k=6</em>, <em>ncv=None</em>, <em>tol=0</em>, <em>which='LM'</em>, <em>v0=None</em>, <em>maxiter=None</em>, <em>return_singular_vectors=True</em>, <em>precAHA=None</em>, <em>precAAH=None</em>, <em>precAug=None</em>, <em>u0=None</em>, <em>locku0=None</em>, <em>lockv0=None</em>, <em>return_stats=False</em>, <em>maxBlockSize=0</em><span class="sig-paren">)</span><a class="headerlink" href="#Primme.svds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute k singular values and vectors for a sparse matrix.</p>
+<code class="descclassname">Primme.</code><code class="descname">svds</code><span class="sig-paren">(</span><em>A</em>, <em>k=6</em>, <em>ncv=None</em>, <em>tol=0</em>, <em>which='LM'</em>, <em>v0=None</em>, <em>maxiter=None</em>, <em>return_singular_vectors=True</em>, <em>precAHA=None</em>, <em>precAAH=None</em>, <em>precAug=None</em>, <em>u0=None</em>, <em>orthou0=None</em>, <em>orthov0=None</em>, <em>return_stats=False</em>, <em>maxBlockSize=0</em>, <em>method=None</em>, <em>methodStage1=None</em>, <em>methodStage2=None</em>, <em>return_history=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Primme.svds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute k singular values and vectors of the matrix A.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>A</strong> (<em>{sparse matrix, LinearOperator}</em>) &#8211; Array to compute the SVD on, of shape (M, N)</li>
-<li><strong>k</strong> (<em>int, optional</em>) &#8211; Number of singular values and vectors to compute.
+<li><strong>A</strong> (<em>{sparse matrix</em><em>, </em><em>LinearOperator}</em>) &#8211; Array to compute the SVD on, of shape (M, N)</li>
+<li><strong>k</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number of singular values and vectors to compute.
 Must be 1 &lt;= k &lt; min(A.shape).</li>
-<li><strong>ncv</strong> (<em>int, optional</em>) &#8211; The maximum size of the basis</li>
-<li><strong>tol</strong> (<em>float, optional</em>) &#8211; Tolerance for singular values. Zero (default) means machine precision.</li>
-<li><strong>which</strong> (<em>str ['LM' | 'SM'] or number, optional</em>) &#8211; <p>Which <cite>k</cite> singular values to find:</p>
+<li><strong>ncv</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; The maximum size of the basis</li>
+<li><strong>tol</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; <p>Tolerance for singular values. Zero (default) means 10**4 times the machine precision.</p>
+<p>A triplet <code class="docutils literal"><span class="pre">(u,sigma,v)</span></code> is marked as converged when
+(||A*v - sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5
+is less than &#8220;tol&#8221; * ||A||, or close to the minimum tolerance that
+the method can achieve. See the note.</p>
+</li>
+<li><strong>which</strong> (<em>str</em><em> [</em><em>'LM' | 'SM'</em><em>] or </em><em>number</em><em>, </em><em>optional</em>) &#8211; <p>Which <cite>k</cite> singular values to find:</p>
 <blockquote>
 <div><ul>
 <li>&#8216;LM&#8217; : largest singular values</li>
@@ -101,52 +107,81 @@ Must be 1 &lt;= k &lt; min(A.shape).</li>
 </ul>
 </div></blockquote>
 </li>
-<li><strong>u0</strong> (<em>ndarray, optional</em>) &#8211; <p>Left starting vectors for the iterations.</p>
-<p>Should be approximate left singular vectors. If only u0 or v0 is
-provided, the other is computed.</p>
+<li><strong>u0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) &#8211; <p>Initial guesses for the left singular vectors.</p>
+<p>If only u0 or v0 is provided, the other is computed. If both are
+provided, u0 and v0 should have the same number of columns.</p>
 </li>
-<li><strong>v0</strong> (<em>ndarray, optional</em>) &#8211; Right starting vectors for the iterations.</li>
-<li><strong>maxiter</strong> (<em>int, optional</em>) &#8211; Maximum number of iterations.</li>
-<li><strong>precAHA</strong> (<em>{N x N matrix, array, sparse matrix, LinearOperator}, optional</em>) &#8211; Approximate inverse of (A.H*A - sigma**2*I). If provided and M&gt;N, it
+<li><strong>v0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) &#8211; Initial guesses for the right singular vectors.</li>
+<li><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Maximum number of matvecs with A and A.H.</li>
+<li><strong>precAHA</strong> (<em>{N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, </em><em>LinearOperator}</em><em>, </em><em>optional</em>) &#8211; Approximate inverse of (A.H*A - sigma**2*I). If provided and M&gt;=N, it
 usually accelerates the convergence.</li>
-<li><strong>precAAH</strong> (<em>{M x M matrix, array, sparse matrix, LinearOperator}, optional</em>) &#8211; Approximate inverse of (A*A.H - sigma**2*I). If provided and M&lt;N, it
+<li><strong>precAAH</strong> (<em>{M x M matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, </em><em>LinearOperator}</em><em>, </em><em>optional</em>) &#8211; Approximate inverse of (A*A.H - sigma**2*I). If provided and M&lt;N, it
 usually accelerates the convergence.</li>
-<li><strong>precAug</strong> (<em>{(M+N) x (M+N) matrix, array, sparse matrix, LinearOperator}, optional</em>) &#8211; Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I). It usually
-accelerates the convergence if tol&lt;dtype.eps**.5.</li>
-<li><strong>locku0</strong> (<em>ndarray, optional</em>) &#8211; <p>Left orthogonal vector constrain.</p>
-<p>Seek singular triplets orthogonal to locku0 and lockv0. The provided vectors
-<em>should</em> be orthonormal. If only locku0 or lockv0 is provided, the other
-is computed. Useful to not converge some already computed solutions.</p>
+<li><strong>precAug</strong> (<em>{</em><em>(</em><em>M+N</em><em>) </em><em>x</em><em> (</em><em>M+N</em><em>) </em><em>matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, </em><em>LinearOperator}</em><em>, </em><em>optional</em>) &#8211; Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).</li>
+<li><strong>orthou0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) &#8211; <p>Left orthogonal vector constrain.</p>
+<p>Seek singular triplets orthogonal to orthou0 and orthov0. The provided vectors
+<em>should</em> be orthonormal. If only orthou0 or orthov0 is provided, the other
+is computed. Useful to avoid converging to previously computed solutions.</p>
 </li>
-<li><strong>lockv0</strong> (<em>ndarray, optional</em>) &#8211; Right orthogonal vector constrain. See locku0.</li>
-<li><strong>maxBlockSize</strong> (<em>int, optional</em>) &#8211; Maximum number of vectors added at every iteration.</li>
-<li><strong>report_stats</strong> (<em>bool, optional</em>) &#8211; If True, it is also returned extra information from PRIMME.</li>
+<li><strong>orthov0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) &#8211; Right orthogonal vector constrain. See orthou0.</li>
+<li><strong>maxBlockSize</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Maximum number of vectors added at every iteration.</li>
+<li><strong>return_stats</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; If True, the function returns extra information (see stats in Returns).</li>
+<li><strong>return_history</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; If True, the function returns performance information at every iteration</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
-<li><p class="first"><strong>u</strong> (<em>ndarray, shape=(M, k), optional</em>) &#8211; Unitary matrix having left singular vectors as columns.
-Returned if <cite>return_singular_vectors</cite> is True.</p>
-</li>
-<li><p class="first"><strong>s</strong> (<em>ndarray, shape=(k,)</em>) &#8211; The singular values.</p>
-</li>
-<li><p class="first"><strong>vt</strong> (<em>ndarray, shape=(k, N), optional</em>) &#8211; Unitary matrix having right singular vectors as rows.
-Returned if <cite>return_singular_vectors</cite> is True.</p>
-</li>
-<li><p class="first"><strong>stats</strong> (<em>dict, optional (if return_stats)</em>) &#8211; Extra information reported by PRIMME:</p>
-<ul class="simple">
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>u</strong> (<em>ndarray, shape=(M, k), optional</em>) &#8211; Unitary matrix having left singular vectors as columns.
+Returned if <cite>return_singular_vectors</cite> is True.</li>
+<li><strong>s</strong> (<em>ndarray, shape=(k,)</em>) &#8211; The singular values.</li>
+<li><strong>vt</strong> (<em>ndarray, shape=(k, N), optional</em>) &#8211; Unitary matrix having right singular vectors as rows.
+Returned if <cite>return_singular_vectors</cite> is True.</li>
+<li><strong>stats</strong> (<em>dict, optional (if return_stats)</em>) &#8211; Extra information reported by PRIMME:<ul>
 <li>&#8220;numOuterIterations&#8221;: number of outer iterations</li>
 <li>&#8220;numRestarts&#8221;: number of restarts</li>
-<li>&#8220;numMatvecs&#8221;: number of A*v</li>
-<li>&#8220;numPreconds&#8221;: number of OPinv*v</li>
+<li>&#8220;numMatvecs&#8221;: number of matvecs with A and A.H</li>
+<li>&#8220;numPreconds&#8221;: cumulative number of applications of precAHA, precAAH
+and precAug</li>
 <li>&#8220;elapsedTime&#8221;: time that took</li>
+<li>&#8220;rnorms&#8221; : (||A*v[:,i] - sigma[i]*u[:,i]||**2 + ||A.H*u[:,i] - sigma[i]*v[:,i]||**2)**.5</li>
+<li>&#8220;hist&#8221; : (if return_history) report at every outer iteration of:<ul>
+<li>&#8220;elapsedTime&#8221;: time spent up to now</li>
+<li>&#8220;numMatvecs&#8221;: number of A*v and A.H*v spent up to now</li>
+<li>&#8220;nconv&#8221;: number of converged triplets</li>
+<li>&#8220;sval&#8221;: singular value of the first unconverged triplet</li>
+<li>&#8220;resNorm&#8221;: residual norm of the first unconverged triplet</li>
 </ul>
-<p>Returned if <cite>return_stats</cite> is True.</p>
+</li>
+</ul>
 </li>
 </ul>
 </p>
 </td>
 </tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The default method used is the hybrid method, which first solves the
+equivalent eigenvalue problem A.H*A or A*A.H (normal equations) and then
+refines the solution solving the augmented problem. The minimum tolerance
+that this method can achieve is ||A||*epsilon, where epsilon is the
+machine precision. However it may not return triplets with singular values
+smaller than ||A||*epsilon if &#8220;tol&#8221; is smaller than ||A||*epsilon/sigma.</p>
+<p>This function is a wrapper to PRIMME functions to find singular values and
+vectors <a class="footnote-reference" href="#id2" id="id1">[1]</a>.</p>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>PRIMME Software, <a class="reference external" href="https://github.com/primme/primme">https://github.com/primme/primme</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td>L. Wu, E. Romero and A. Stathopoulos, PRIMME_SVDS: A High-
+Performance Preconditioned SVD Solver for Accurate Large-Scale
+Computations. <a class="reference external" href="https://arxiv.org/abs/1607.01404">https://arxiv.org/abs/1607.01404</a></td></tr>
 </tbody>
 </table>
 <div class="admonition seealso">
@@ -186,14 +221,14 @@ Returned if <cite>return_singular_vectors</cite> is True.</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2016, College of William & Mary.
+      &copy;2017, College of William & Mary.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/pysvds.txt"
+      <a href="_sources/pysvds.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

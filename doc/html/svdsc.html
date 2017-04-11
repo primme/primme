@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>C Library Interface &#8212; PRIMME 2.0 documentation</title>
+    <title>C Library Interface &#8212; PRIMME 2.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,18 +14,19 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Singular Value Problems" href="apisvds.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FORTRAN Library Interface" href="svdsf77.html" />
     <link rel="prev" title="Singular Value Problems" href="apisvds.html" />
    
@@ -76,7 +77,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/svdsc.txt"
+      <li><a href="_sources/svdsc.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -120,7 +121,7 @@ void <a class="reference internal" href="#c.primme_svds_display_params" title="p
 void <code class="xref c c-func docutils literal"><span class="pre">primme_svds_free</span></code> (primme_svds_params *primme_svds)
 </pre>
 <p>PRIMME SVDS stores its data on the structure <a class="reference internal" href="appendixsvds.html#c.primme_svds_params" title="primme_svds_params"><code class="xref c c-type docutils literal"><span class="pre">primme_svds_params</span></code></a>.
-See <a class="reference internal" href="#svds-guide-params"><em>Parameters Guide</em></a> for an introduction about its fields.</p>
+See <a class="reference internal" href="#svds-guide-params"><span class="std std-ref">Parameters Guide</span></a> for an introduction about its fields.</p>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
 <p>To use PRIMME SVDS, follow these basic steps.</p>
@@ -136,7 +137,7 @@ See <a class="reference internal" href="#svds-guide-params"><em>Parameters Guide
 <a class="reference internal" href="#c.primme_svds_initialize" title="primme_svds_initialize"><code class="xref c c-func docutils literal"><span class="pre">primme_svds_initialize</span></code></a> (&amp;primme_svds);
 </pre>
 </li>
-<li><p class="first">Set problem parameters (see also <a class="reference internal" href="#svds-guide-params"><em>Parameters Guide</em></a>), and,
+<li><p class="first">Set problem parameters (see also <a class="reference internal" href="#svds-guide-params"><span class="std std-ref">Parameters Guide</span></a>), and,
 optionally, set one of the <a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method" title="primme_svds_preset_method"><code class="xref c c-type docutils literal"><span class="pre">preset</span> <span class="pre">methods</span></code></a>:</p>
 <pre class="literal-block">
 primme_svds.<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a> = matrixMatvec; /* MV product */
@@ -153,7 +154,7 @@ primme_svds.<a class="reference internal" href="appendixsvds.html#c.primme_svds_
 ret = <a class="reference internal" href="#c.dprimme_svds" title="dprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">dprimme_svds</span></code></a> (svals, svecs, resNorms, &amp;primme_svds);
 </pre>
 <p>The previous is the double precision call. There is available calls for complex
-double, single and complex single; check it out <a class="reference internal" href="#c.zprimme_svds" title="zprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">zprimme_svds()</span></code></a>, <a class="reference internal" href="#c.sprimme_svds" title="sprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">sprimme_svds()</span></code></a>
+double, single and complex single; check <a class="reference internal" href="#c.zprimme_svds" title="zprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">zprimme_svds()</span></code></a>, <a class="reference internal" href="#c.sprimme_svds" title="sprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">sprimme_svds()</span></code></a>
 and <a class="reference internal" href="#c.cprimme_svds" title="cprimme_svds"><code class="xref c c-func docutils literal"><span class="pre">cprimme_svds()</span></code></a>.</p>
 <p>To solve complex singular value problems call:</p>
 <pre class="literal-block">
@@ -204,6 +205,7 @@ ret = <a class="reference internal" href="#c.zprimme_svds" title="zprimme_svds">
 <div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">*</span></code> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.commInfo" title="primme_svds_params.commInfo"><code class="xref c c-member docutils literal"><span class="pre">commInfo</span></code></a></div>
 <div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">*</span></code> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrix" title="primme_svds_params.matrix"><code class="xref c c-member docutils literal"><span class="pre">matrix</span></code></a></div>
 <div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">*</span></code> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.preconditioner" title="primme_svds_params.preconditioner"><code class="xref c c-member docutils literal"><span class="pre">preconditioner</span></code></a></div>
+<div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">*</span></code> monitor</div>
 <div class="line"><br /></div>
 <div class="line"><em>Advanced options</em></div>
 <div class="line"><code class="docutils literal"><span class="pre">int</span></code> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numTargetShifts" title="primme_svds_params.numTargetShifts"><code class="xref c c-member docutils literal"><span class="pre">numTargetShifts</span></code></a>, for targeting interior singular values.</div>
@@ -223,6 +225,7 @@ ret = <a class="reference internal" href="#c.zprimme_svds" title="zprimme_svds">
 <div class="line"><code class="docutils literal"><span class="pre">primme_svds_operator</span></code> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.methodStage2" title="primme_svds_params.methodStage2"><code class="xref c c-member docutils literal"><span class="pre">methodStage2</span></code></a></div>
 <div class="line"><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal"><span class="pre">primme_params</span></code></a> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.primme" title="primme_svds_params.primme"><code class="xref c c-member docutils literal"><span class="pre">primme</span></code></a></div>
 <div class="line"><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal"><span class="pre">primme_params</span></code></a> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.primmeStage2" title="primme_svds_params.primmeStage2"><code class="xref c c-member docutils literal"><span class="pre">primmeStage2</span></code></a></div>
+<div class="line"><code class="docutils literal"><span class="pre">void</span> <span class="pre">(*</span></code> <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.monitorFun" title="primme_svds_params.monitorFun"><code class="xref c c-member docutils literal"><span class="pre">monitorFun</span></code></a> <code class="docutils literal"><span class="pre">)(...)</span></code>, custom convergence history.</div>
 </div>
 <p>PRIMME SVDS requires the user to set at least the matrix dimensions (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.m" title="primme_svds_params.m"><code class="xref c c-member docutils literal"><span class="pre">m</span></code></a> x <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.n" title="primme_svds_params.n"><code class="xref c c-member docutils literal"><span class="pre">n</span></code></a>) and
 the matrix-vector product (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal"><span class="pre">matrixMatvec</span></code></a>), as they define the problem to be solved.
@@ -263,7 +266,7 @@ and the right singular vectors.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><em>Error Codes</em></a>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><span class="std std-ref">Error Codes</span></a>.</p>
 </td>
 </tr>
 </tbody>
@@ -301,7 +304,7 @@ and the right singular vectors.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><em>Error Codes</em></a>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><span class="std std-ref">Error Codes</span></a>.</p>
 </td>
 </tr>
 </tbody>
@@ -384,7 +387,7 @@ the second stage of <code class="docutils literal"><span class="pre">primme_svds
 </tr>
 </tbody>
 </table>
-<p>See also <a class="reference internal" href="appendixsvds.html#methods-svds"><em>Preset Methods</em></a>.</p>
+<p>See also <a class="reference internal" href="appendixsvds.html#methods-svds"><span class="std std-ref">Preset Methods</span></a>.</p>
 </dd></dl>
 
 </div>
@@ -438,14 +441,14 @@ void <code class="descname">primme_svds_free</code><span class="sig-paren">(</sp
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2016, College of William & Mary.
+      &copy;2017, College of William & Mary.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/svdsc.txt"
+      <a href="_sources/svdsc.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

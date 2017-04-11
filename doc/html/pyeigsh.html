@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python Interface &#8212; PRIMME 2.0 documentation</title>
+    <title>Python Interface &#8212; PRIMME 2.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,18 +14,19 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PRIMME 2.0 documentation" href="readme.html" />
-    <link rel="up" title="Eigenvalue Problems" href="apieigs.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="MATLAB Interface" href="mateigs.html" />
     <link rel="prev" title="FORTRAN Library Interface" href="primmef77.html" />
    
@@ -56,7 +57,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/pyeigsh.txt"
+      <li><a href="_sources/pyeigsh.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -80,7 +81,7 @@
 <h1>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="Primme.eigsh">
-<code class="descclassname">Primme.</code><code class="descname">eigsh</code><span class="sig-paren">(</span><em>A</em>, <em>k=6</em>, <em>M=None</em>, <em>sigma=None</em>, <em>which='LM'</em>, <em>v0=None</em>, <em>ncv=None</em>, <em>maxiter=None</em>, <em>tol=0</em>, <em>return_eigenvectors=True</em>, <em>Minv=None</em>, <em>OPinv=None</em>, <em>mode='normal'</em>, <em>lock=None</em>, <em>return_stats=False</em>, <em>maxBlockSize=0</em>, <em>minRestartSize=0</em>, <em>maxPrevRetain=0</em>, <em>method=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Primme.eigsh" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Primme.</code><code class="descname">eigsh</code><span class="sig-paren">(</span><em>A</em>, <em>k=6</em>, <em>M=None</em>, <em>sigma=None</em>, <em>which='LM'</em>, <em>v0=None</em>, <em>ncv=None</em>, <em>maxiter=None</em>, <em>tol=0</em>, <em>return_eigenvectors=True</em>, <em>Minv=None</em>, <em>OPinv=None</em>, <em>mode='normal'</em>, <em>ortho=None</em>, <em>return_stats=False</em>, <em>maxBlockSize=0</em>, <em>minRestartSize=0</em>, <em>maxPrevRetain=0</em>, <em>method=None</em>, <em>return_history=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Primme.eigsh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find k eigenvalues and eigenvectors of the real symmetric square matrix
 or complex Hermitian matrix A.</p>
 <p>Solves <code class="docutils literal"><span class="pre">A</span> <span class="pre">*</span> <span class="pre">x[i]</span> <span class="pre">=</span> <span class="pre">w[i]</span> <span class="pre">*</span> <span class="pre">x[i]</span></code>, the standard eigenvalue problem for
@@ -93,60 +94,63 @@ with corresponding eigenvectors x[i]</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>A</strong> (<em>An N x N matrix, array, sparse matrix, or LinearOperator</em>) &#8211; the operation A * x, where A is a real symmetric matrix or complex
+<li><strong>A</strong> (<em>An N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em>) &#8211; the operation A * x, where A is a real symmetric matrix or complex
 Hermitian.</li>
-<li><strong>k</strong> (<em>int, optional</em>) &#8211; The number of eigenvalues and eigenvectors desired.</li>
-<li><strong>M</strong> (<em>An N x N matrix, array, sparse matrix, or LinearOperator</em>) &#8211; <p>(not supported yet)
+<li><strong>k</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; The number of eigenvalues and eigenvectors to be computed. Must be
+1 &lt;= k &lt; min(A.shape).</li>
+<li><strong>M</strong> (<em>An N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em>) &#8211; <p>(not supported yet)
 the operation M * x for the generalized eigenvalue problem</p>
 <blockquote>
 <div>A * x = w * M * x.</div></blockquote>
 <p>M must represent a real, symmetric matrix if A is real, and must
-represent a complex, hermitian matrix if A is complex. For best
+represent a complex, Hermitian matrix if A is complex. For best
 results, the data type of M should be the same as that of A.</p>
 </li>
-<li><strong>sigma</strong> (<em>real, optional</em>) &#8211; Find eigenvalues near sigma.</li>
-<li><strong>v0</strong> (<em>N x i, ndarray, optional</em>) &#8211; Starting vectors for iteration.</li>
-<li><strong>ncv</strong> (<em>int, optional</em>) &#8211; The maximum size of the basis</li>
-<li><strong>which</strong> (<em>str ['LM' | 'SM' | 'LA' | 'SA' | 'BE']</em>) &#8211; <p>If A is a complex hermitian matrix, &#8216;BE&#8217; is invalid.
-Which <cite>k</cite> eigenvectors and eigenvalues to find:</p>
+<li><strong>sigma</strong> (<em>real</em><em>, </em><em>optional</em>) &#8211; Find eigenvalues near sigma.</li>
+<li><strong>v0</strong> (<em>N x i</em><em>, </em><em>ndarray</em><em>, </em><em>optional</em>) &#8211; Initial guesses to the eigenvectors.</li>
+<li><strong>ncv</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; The maximum size of the basis</li>
+<li><strong>which</strong> (<em>str</em><em> [</em><em>'LM' | 'SM' | 'LA' | 'SA'</em><em>]</em><em></em>) &#8211; <p>Which <cite>k</cite> eigenvectors and eigenvalues to find:</p>
 <blockquote>
-<div>&#8216;LM&#8217; : Largest (in magnitude) eigenvalues<p>&#8216;SM&#8217; : Smallest (in magnitude) eigenvalues</p>
-<p>&#8216;LA&#8217; : Largest (algebraic) eigenvalues</p>
-<p>&#8216;SA&#8217; : Smallest (algebraic) eigenvalues</p>
-<p>&#8216;BE&#8217; : Half (k/2) from each end of the spectrum (not supported)</p>
+<div>&#8216;LM&#8217; : Largest in magnitude eigenvalues; the farthest from sigma<p>&#8216;SM&#8217; : Smallest in magnitude eigenvalues; the closest to sigma</p>
+<p>&#8216;LA&#8217; : Largest algebraic eigenvalues</p>
+<p>&#8216;SA&#8217; : Smallest algebraic eigenvalues</p>
+<p>&#8216;CLT&#8217; : closest but left to sigma</p>
+<p>&#8216;CGT&#8217; : closest but greater than sigma</p>
 </div></blockquote>
-<p>When sigma != None, &#8216;which&#8217; refers to the shifted eigenvalues <code class="docutils literal"><span class="pre">w'[i]</span></code></p>
+<p>When sigma == None, &#8216;LM&#8217;, &#8216;SM&#8217;, &#8216;CLT&#8217;, and &#8216;CGT&#8217; treat sigma as zero.</p>
 </li>
-<li><strong>maxiter</strong> (<em>int, optional</em>) &#8211; Maximum number of iterations.</li>
-<li><strong>tol</strong> (<em>float</em>) &#8211; Accuracy for eigenvalues (stopping criterion).
+<li><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Maximum number of iterations.</li>
+<li><strong>tol</strong> (<em>float</em>) &#8211; Required accuracy for eigenpairs (stopping criterion).
 The default value is sqrt of machine precision.</li>
-<li><strong>Minv</strong> (<em>(not supported)</em>) &#8211; </li>
-<li><strong>OPinv</strong> (<em>N x N matrix, array, sparse matrix, or LinearOperator</em>) &#8211; Preconditioner to accelerate the convergence. Usually it is an
+<li><strong>Minv</strong> (<em></em><em>(</em><em>not supported yet</em><em>)</em><em></em>) &#8211; The inverse of M in the generalized eigenproblem.</li>
+<li><strong>OPinv</strong> (<em>N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em><em>, </em><em>optional</em>) &#8211; Preconditioner to accelerate the convergence. Usually it is an
 approximation of the inverse of (A - sigma*M).</li>
-<li><strong>return_eigenvectors</strong> (<em>bool</em>) &#8211; Return eigenvectors (True) in addition to eigenvalues</li>
-<li><strong>mode</strong> (<em>string ['normal' | 'buckling' | 'cayley']</em>) &#8211; Only &#8216;normal&#8217; mode is supported.</li>
-<li><strong>lock</strong> (<em>N x i, ndarray, optional</em>) &#8211; Seek the eigenvectors orthogonal to these ones. The provided
-vectors <em>should</em> be orthonormal. Useful to not converge some already
+<li><strong>return_eigenvectors</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Return eigenvectors (True) in addition to eigenvalues</li>
+<li><strong>mode</strong> (<em>string</em><em> [</em><em>'normal' | 'buckling' | 'cayley'</em><em>]</em><em></em>) &#8211; Only &#8216;normal&#8217; mode is supported.</li>
+<li><strong>ortho</strong> (<em>N x i</em><em>, </em><em>ndarray</em><em>, </em><em>optional</em>) &#8211; Seek the eigenvectors orthogonal to these ones. The provided
+vectors <em>should</em> be orthonormal. Useful to avoid converging to previously
 computed solutions.</li>
-<li><strong>maxBlockSize</strong> (<em>int, optional</em>) &#8211; Maximum number of vectors added at every iteration.</li>
-<li><strong>minRestartSize</strong> (<em>int, optional</em>) &#8211; Number of approximate eigenvectors kept from last iteration in restart.</li>
-<li><strong>maxPrevRetain</strong> (<em>int, optional</em>) &#8211; Number of approximate eigenvectors kept from previous iteration in
+<li><strong>maxBlockSize</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Maximum number of vectors added at every iteration.</li>
+<li><strong>minRestartSize</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number of approximate eigenvectors kept during restart.</li>
+<li><strong>maxPrevRetain</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number of approximate eigenvectors kept from previous iteration in
 restart. Also referred as +k vectors in GD+k.</li>
-<li><strong>method</strong> (<em>int, optional</em>) &#8211; <p>Preset method, one of:</p>
+<li><strong>method</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; <p>Preset method, one of:</p>
 <ul>
 <li>DEFAULT_MIN_TIME : a variant of JDQMR,</li>
 <li>DEFAULT_MIN_MATVECS : GD+k</li>
-<li>DYNAMIC : choose dynamically between both previous methods.</li>
+<li>DYNAMIC : choose dynamically between these previous methods.</li>
 </ul>
 <p>See a detailed description of the methods and other possible values
 in <a class="footnote-reference" href="#id4" id="id1">[2]</a>.</p>
 </li>
-<li><strong>report_stats</strong> (<em>bool, optional</em>) &#8211; If True, it is also returned extra information from PRIMME.</li>
+<li><strong>return_stats</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; If True, the function returns extra information (see stats in Returns).</li>
+<li><strong>return_history</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; If True, the function returns performance information at every iteration
+(see hist in Returns).</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
-<li><strong>w</strong> (<em>array</em>) &#8211; Array of k eigenvalues</li>
+<li><strong>w</strong> (<em>array</em>) &#8211; Array of k eigenvalues ordered to best satisfy &#8220;which&#8221;.</li>
 <li><strong>v</strong> (<em>array</em>) &#8211; An array representing the <cite>k</cite> eigenvectors.  The column <code class="docutils literal"><span class="pre">v[:,</span> <span class="pre">i]</span></code> is
 the eigenvector corresponding to the eigenvalue <code class="docutils literal"><span class="pre">w[i]</span></code>.</li>
 <li><strong>stats</strong> (<em>dict, optional (if return_stats)</em>) &#8211; Extra information reported by PRIMME:<ul>
@@ -158,6 +162,15 @@ the eigenvector corresponding to the eigenvalue <code class="docutils literal"><
 <li>&#8220;estimateMinEVal&#8221;: the leftmost Ritz value seen</li>
 <li>&#8220;estimateMaxEVal&#8221;: the rightmost Ritz value seen</li>
 <li>&#8220;estimateLargestSVal&#8221;: the largest singular value seen</li>
+<li>&#8220;rnorms&#8221; : ||A*x[i] - x[i]*w[i]||</li>
+<li>&#8220;hist&#8221; : (if return_history) report at every outer iteration of:<ul>
+<li>&#8220;elapsedTime&#8221;: time spent up to now</li>
+<li>&#8220;numMatvecs&#8221;: number of A*v spent up to now</li>
+<li>&#8220;nconv&#8221;: number of converged pair</li>
+<li>&#8220;eval&#8221;: eigenvalue of the first unconverged pair</li>
+<li>&#8220;resNorm&#8221;: residual norm of the first unconverged pair</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -196,14 +209,23 @@ eigenvectors <a class="footnote-reference" href="#id3" id="id2">[1]</a>.</p>
 <tr><td class="label"><a class="fn-backref" href="#id1">[2]</a></td><td>Preset Methods, <a class="reference external" href="http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods">http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods</a></td></tr>
 </tbody>
 </table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td>A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
+Iterative MultiMethod Eigensolver: Methods and software
+description, ACM Transaction on Mathematical Software Vol. 37,
+No. 2, (2010), 21:1-21:30.</td></tr>
+</tbody>
+</table>
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">Primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="c1"># sparse diag. matrix</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">Primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LA&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span> <span class="c1"># the three largest eigenvalues of A</span>
 <span class="go">array([ 99.,  98.,  97.])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">Primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LA&#39;</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">evecs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span> <span class="c1"># the next three largest eigenvalues</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_evals</span><span class="p">,</span> <span class="n">new_evecs</span> <span class="o">=</span> <span class="n">Primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LA&#39;</span><span class="p">,</span> <span class="n">ortho</span><span class="o">=</span><span class="n">evecs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_evals</span> <span class="c1"># the next three largest eigenvalues</span>
 <span class="go">array([ 96.,  95.,  94.])</span>
 </pre></div>
 </div>
@@ -218,14 +240,14 @@ eigenvectors <a class="footnote-reference" href="#id3" id="id2">[1]</a>.</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2016, College of William & Mary.
+      &copy;2017, College of William & Mary.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/pyeigsh.txt"
+      <a href="_sources/pyeigsh.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
