@@ -12,11 +12,14 @@
 
 
 update:
-	cp -r ../src/eigs ../src/include ../src/linalg ../src/svds src/primme
-	cp -r ../include inst
+	rm -rf inst/include src/primme/include src/primme/linalg src/primme/eigs src/primme/svds
+	mkdir -p src/primme inst/include src/primme/include src/primme/linalg src/primme/eigs src/primme/svds
+	cd ..; find include -name '*.h' -exec cp {} R/inst/{} \;
+	cd ../src; find . -name '*.[ch]' -exec cp {} ../R/src/primme/{} \;
 	R -e "require(Rcpp); compileAttributes();"
 	R -e "require(devtools); document()"
-	R -e 'require(rmarkdown); render("README.Rmd",output_format="all")'
+	#R -e 'require(rmarkdown); render("README.Rmd",output_format="all")'
+	./cleanup
 
 doc:
 	find . -name '*.pdf' -exec rm {} \;

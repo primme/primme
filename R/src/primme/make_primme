@@ -1,0 +1,55 @@
+
+
+SOURCES = \
+   eigs/auxiliary_eigs.c \
+   eigs/convergence.c \
+   eigs/correction.c \
+   eigs/factorize.c \
+   eigs/globalsum.c \
+   eigs/init.c \
+   eigs/inner_solve.c \
+   eigs/locking.c \
+   eigs/main_iter.c \
+   eigs/ortho.c \
+   eigs/primme.c \
+   eigs/primme_f77.c \
+   eigs/primme_interface.c \
+   eigs/restart.c \
+   eigs/solve_projection.c \
+   eigs/update_projection.c \
+   eigs/update_W.c \
+   linalg/auxiliary.c \
+   linalg/blaslapack.c \
+   linalg/wtime.c \
+   svds/primme_svds.c \
+   svds/primme_svds_f77.c \
+   svds/primme_svds_interface.c
+
+ARCHS = double doublecomplex
+OBJS = $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
+
+INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
+
+#
+# Compilation
+#
+
+%double.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -DUSE_DOUBLE -c $< -o $@
+
+%doublecomplex.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -DUSE_DOUBLECOMPLEX -c $< -o $@
+
+#
+# Archive object files in the full library
+#
+
+libprimme.a: $(OBJS)
+	$(AR) rv $@ $(OBJS);\
+	$(RANLIB) $@
+
+clean:
+	-@rm -f $(OBJS)
+
+.DELETE_ON_ERROR: $(OBJS) 
+.PHONY: clean
