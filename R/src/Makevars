@@ -5,5 +5,5 @@ $(SHLIB): primme/libprimme.a
 
 primme/libprimme.a:
 	@(cd primme && $(MAKE) -f make_primme libprimme.a \
-	  CC="$(CC)" CFLAGS="$(CFLAGS) $(CPICFLAGS) -DF77UNDERSCORE" AR="$(AR)" \
+	  CC="$(CC)" CFLAGS="$(CFLAGS) $(CPICFLAGS) -DF77UNDERSCORE -DUSE_XHEEV -DUSE_ZGESV" AR="$(AR)" \
 	  RANLIB="$(RANLIB)")

@@ -4,8 +4,8 @@
 #---------------------------------------------------------------
 
 # Define the path to the created PRIMME library
-LIBRARY = libprimme.a
-SOLIBRARY = libprimme.so
+LIBRARY ?= libprimme.a
+SOLIBRARY ?= libprimme.so
 
 # Define compilers and flags
 #---------------------------------------------------------------
@@ -61,7 +61,8 @@ FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
-#  Creating the library
+#  Creating the library and packages
 #---------------------------------------------------------------
 
-RANLIB = ranlib
+RANLIB ?= ranlib
+R ?= R
