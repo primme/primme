@@ -186,7 +186,7 @@
 #' r <- svds(A, 4, "S", tol=1e-3); r$d
 #' svds(A, 4, "S", tol=1e-3, orthov=r$v)$d
 #'
-#' @useDynLib PRIMME
+#' @useDynLib PRIMME, .registration=TRUE
 #' @importFrom Rcpp evalCpp
 #' @export
 

@@ -187,7 +187,7 @@
 #' r <- eigs_sym(A, 4, "SA", tol=1e-3); r$values
 #' eigs_sym(A, 4, "SA", tol=1e-3, ortho=r$vectors)$values
 #' 
-#' @useDynLib PRIMME
+#' @useDynLib PRIMME, .registration=TRUE
 #' @importFrom Rcpp evalCpp
 #' @export
 
@@ -216,7 +216,6 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
          A <- as.double(A);
          dim(A) = c(opts$n, opts$n);
       }
-      print(c(class(A), is.double(A), is.complex(A)))
 
       # Restrict matrix to double and complex
       ismatrix <- (is.matrix(A) && (is.double(A) || is.complex(A)));

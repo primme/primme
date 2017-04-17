@@ -39,7 +39,7 @@
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_Rprimme)
 #  define Num_copy_Rprimme CONCAT(Num_copy_,REAL_SUF)
 #endif
-void Num_copy_dprimme(int64_t n, double *x, int incx, double *y, int incy);
+void Num_copy_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_Sprimme)
 #  define Num_gemm_Sprimme CONCAT(Num_gemm_,SCALAR_SUF)
 #endif
@@ -73,7 +73,7 @@ void Num_trmm_dprimme(const char *side, const char *uplo,
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemv_Rprimme)
 #  define Num_gemv_Rprimme CONCAT(Num_gemv_,REAL_SUF)
 #endif
-void Num_gemv_dprimme(const char *transa, int64_t m, int n, double alpha,
+void Num_gemv_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
       double *a, int lda, double *x, int incx, double beta, double *y,
       int incy);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_hemv_Sprimme)
@@ -91,7 +91,7 @@ void Num_hemv_dprimme(const char *uplo, int n, double alpha,
 #if !defined(CHECK_TEMPLATE) && !defined(Num_axpy_Rprimme)
 #  define Num_axpy_Rprimme CONCAT(Num_axpy_,REAL_SUF)
 #endif
-void Num_axpy_dprimme(int64_t n, double alpha, double *x, int incx,
+void Num_axpy_dprimme(PRIMME_INT n, double alpha, double *x, int incx,
    double *y, int incy);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dot_Sprimme)
 #  define Num_dot_Sprimme CONCAT(Num_dot_,SCALAR_SUF)
@@ -99,14 +99,14 @@ void Num_axpy_dprimme(int64_t n, double alpha, double *x, int incx,
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dot_Rprimme)
 #  define Num_dot_Rprimme CONCAT(Num_dot_,REAL_SUF)
 #endif
-double Num_dot_dprimme(int64_t n, double *x, int incx, double *y, int incy);
+double Num_dot_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_larnv_Sprimme)
 #  define Num_larnv_Sprimme CONCAT(Num_larnv_,SCALAR_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(Num_larnv_Rprimme)
 #  define Num_larnv_Rprimme CONCAT(Num_larnv_,REAL_SUF)
 #endif
-void Num_larnv_dprimme(int idist, int64_t *iseed, int64_t length,
+void Num_larnv_dprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       double *x);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_scal_Sprimme)
 #  define Num_scal_Sprimme CONCAT(Num_scal_,SCALAR_SUF)
@@ -114,14 +114,14 @@ void Num_larnv_dprimme(int idist, int64_t *iseed, int64_t length,
 #if !defined(CHECK_TEMPLATE) && !defined(Num_scal_Rprimme)
 #  define Num_scal_Rprimme CONCAT(Num_scal_,REAL_SUF)
 #endif
-void Num_scal_dprimme(int64_t n, double alpha, double *x, int incx);
+void Num_scal_dprimme(PRIMME_INT n, double alpha, double *x, int incx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_swap_Sprimme)
 #  define Num_swap_Sprimme CONCAT(Num_swap_,SCALAR_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(Num_swap_Rprimme)
 #  define Num_swap_Rprimme CONCAT(Num_swap_,REAL_SUF)
 #endif
-void Num_swap_dprimme(int64_t n, double *x, int incx, double *y, int incy);
+void Num_swap_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Sprimme)
 #  define Num_heev_Sprimme CONCAT(Num_heev_,SCALAR_SUF)
 #endif
@@ -164,7 +164,7 @@ void Num_hetrs_dprimme(const char *uplo, int n, int nrhs, double *a,
 void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, double alpha, double *a, int lda,
       double *b, int ldb);
-void Num_copy_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
+void Num_copy_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
 void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
       PRIMME_COMPLEX_DOUBLE *c, int ldc);
@@ -174,19 +174,19 @@ void Num_hemm_zprimme(const char *side, const char *uplo, int m, int n,
 void Num_trmm_zprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, PRIMME_COMPLEX_DOUBLE alpha,
       PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb);
-void Num_gemv_zprimme(const char *transa, int64_t m, int n, PRIMME_COMPLEX_DOUBLE alpha,
+void Num_gemv_zprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_DOUBLE alpha,
       PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE beta, PRIMME_COMPLEX_DOUBLE *y,
       int incy);
 void Num_hemv_zprimme(const char *uplo, int n, PRIMME_COMPLEX_DOUBLE alpha,
    PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE beta,
    PRIMME_COMPLEX_DOUBLE *y, int incy);
-void Num_axpy_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx,
+void Num_axpy_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx,
    PRIMME_COMPLEX_DOUBLE *y, int incy);
-PRIMME_COMPLEX_DOUBLE Num_dot_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
-void Num_larnv_zprimme(int idist, int64_t *iseed, int64_t length,
+PRIMME_COMPLEX_DOUBLE Num_dot_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
+void Num_larnv_zprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       PRIMME_COMPLEX_DOUBLE *x);
-void Num_scal_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx);
-void Num_swap_zprimme(int64_t n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
+void Num_scal_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx);
+void Num_swap_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
 void Num_heev_zprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a,
       int lda, double *w, PRIMME_COMPLEX_DOUBLE *work, int ldwork, int *info);
 void Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n,
@@ -199,7 +199,7 @@ void Num_hetrs_zprimme(const char *uplo, int n, int nrhs, PRIMME_COMPLEX_DOUBLE 
 void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda,
       PRIMME_COMPLEX_DOUBLE *b, int ldb);
-void Num_copy_sprimme(int64_t n, float *x, int incx, float *y, int incy);
+void Num_copy_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy);
 void Num_gemm_sprimme(const char *transa, const char *transb, int m, int n,
       int k, float alpha, float *a, int lda, float *b, int ldb, float beta,
       float *c, int ldc);
@@ -209,19 +209,19 @@ void Num_hemm_sprimme(const char *side, const char *uplo, int m, int n,
 void Num_trmm_sprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, float alpha,
       float *a, int lda, float *b, int ldb);
-void Num_gemv_sprimme(const char *transa, int64_t m, int n, float alpha,
+void Num_gemv_sprimme(const char *transa, PRIMME_INT m, int n, float alpha,
       float *a, int lda, float *x, int incx, float beta, float *y,
       int incy);
 void Num_hemv_sprimme(const char *uplo, int n, float alpha,
    float *a, int lda, float *x, int incx, float beta,
    float *y, int incy);
-void Num_axpy_sprimme(int64_t n, float alpha, float *x, int incx,
+void Num_axpy_sprimme(PRIMME_INT n, float alpha, float *x, int incx,
    float *y, int incy);
-float Num_dot_sprimme(int64_t n, float *x, int incx, float *y, int incy);
-void Num_larnv_sprimme(int idist, int64_t *iseed, int64_t length,
+float Num_dot_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy);
+void Num_larnv_sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       float *x);
-void Num_scal_sprimme(int64_t n, float alpha, float *x, int incx);
-void Num_swap_sprimme(int64_t n, float *x, int incx, float *y, int incy);
+void Num_scal_sprimme(PRIMME_INT n, float alpha, float *x, int incx);
+void Num_swap_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy);
 void Num_heev_sprimme(const char *jobz, const char *uplo, int n, float *a,
       int lda, float *w, float *work, int ldwork, int *info);
 void Num_gesvd_sprimme(const char *jobu, const char *jobvt, int m, int n,
@@ -234,7 +234,7 @@ void Num_hetrs_sprimme(const char *uplo, int n, int nrhs, float *a,
 void Num_trsm_sprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, float alpha, float *a, int lda,
       float *b, int ldb);
-void Num_copy_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
+void Num_copy_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
 void Num_gemm_cprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
       PRIMME_COMPLEX_FLOAT *c, int ldc);
@@ -244,19 +244,19 @@ void Num_hemm_cprimme(const char *side, const char *uplo, int m, int n,
 void Num_trmm_cprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, PRIMME_COMPLEX_FLOAT alpha,
       PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb);
-void Num_gemv_cprimme(const char *transa, int64_t m, int n, PRIMME_COMPLEX_FLOAT alpha,
+void Num_gemv_cprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_FLOAT alpha,
       PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT beta, PRIMME_COMPLEX_FLOAT *y,
       int incy);
 void Num_hemv_cprimme(const char *uplo, int n, PRIMME_COMPLEX_FLOAT alpha,
    PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT beta,
    PRIMME_COMPLEX_FLOAT *y, int incy);
-void Num_axpy_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx,
+void Num_axpy_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx,
    PRIMME_COMPLEX_FLOAT *y, int incy);
-PRIMME_COMPLEX_FLOAT Num_dot_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
-void Num_larnv_cprimme(int idist, int64_t *iseed, int64_t length,
+PRIMME_COMPLEX_FLOAT Num_dot_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
+void Num_larnv_cprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       PRIMME_COMPLEX_FLOAT *x);
-void Num_scal_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx);
-void Num_swap_cprimme(int64_t n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
+void Num_scal_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx);
+void Num_swap_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
 void Num_heev_cprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a,
       int lda, float *w, PRIMME_COMPLEX_FLOAT *work, int ldwork, int *info);
 void Num_gesvd_cprimme(const char *jobu, const char *jobvt, int m, int n,
