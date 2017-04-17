@@ -270,7 +270,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    basisNorms    = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize);
    #undef TO_REAL
 
-   assert(primme->realWorkSize/sizeof(SCALAR) >= (rwork - (SCALAR*)realWork));
+   assert(primme->realWorkSize/sizeof(SCALAR) >= (size_t)(rwork - (SCALAR*)realWork));
    rworkSize     = primme->realWorkSize/sizeof(SCALAR) - (rwork - (SCALAR*)realWork);
 
    /* Integer workspace */

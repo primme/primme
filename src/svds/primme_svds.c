@@ -1346,7 +1346,7 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    int numLocked0 = lockedEvals&&numLocked?*numLocked:0;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0) + numLocked0;
    REAL basisSvals[basisSize0], basisSVNorms[basisSize0];
-   int basisSVFlags[basisSize0], iblockSV[blockSize?*blockSize:1];
+   int basisSVFlags[basisSize0], iblockSV[blockSize&&*blockSize>0?*blockSize:1];
    int numConvergedSV = (numConverged?*numConverged:numLocked0);
 
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;

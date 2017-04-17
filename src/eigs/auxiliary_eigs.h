@@ -55,7 +55,7 @@ int Num_update_VWXR_dprimme(double *V, double *W, int64_t mV, int nV,
       double *Wo, int nWob, int nWoe, int64_t ldWo,
       double *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
-      double *rwork, int lrwork, primme_params *primme);
+      double *rwork, size_t lrwork, primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Sprimme)
 #  define applyPreconditioner_Sprimme CONCAT(applyPreconditioner_,SCALAR_SUF)
 #endif
@@ -82,7 +82,7 @@ int Num_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, 
       PRIMME_COMPLEX_DOUBLE *Wo, int nWob, int nWoe, int64_t ldWo,
       PRIMME_COMPLEX_DOUBLE *R, int nRb, int nRe, int64_t ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
-      PRIMME_COMPLEX_DOUBLE *rwork, int lrwork, primme_params *primme);
+      PRIMME_COMPLEX_DOUBLE *rwork, size_t lrwork, primme_params *primme);
 int applyPreconditioner_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t nLocal, int64_t ldV,
       PRIMME_COMPLEX_DOUBLE *W, int64_t ldW, int blockSize, primme_params *primme);
 int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, double rNorm, int *isconv,
@@ -97,7 +97,7 @@ int Num_update_VWXR_sprimme(float *V, float *W, int64_t mV, int nV,
       float *Wo, int nWob, int nWoe, int64_t ldWo,
       float *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
-      float *rwork, int lrwork, primme_params *primme);
+      float *rwork, size_t lrwork, primme_params *primme);
 int applyPreconditioner_sprimme(float *V, int64_t nLocal, int64_t ldV,
       float *W, int64_t ldW, int blockSize, primme_params *primme);
 int convTestFun_sprimme(float eval, float *evec, float rNorm, int *isconv,
@@ -112,7 +112,7 @@ int Num_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, in
       PRIMME_COMPLEX_FLOAT *Wo, int nWob, int nWoe, int64_t ldWo,
       PRIMME_COMPLEX_FLOAT *R, int nRb, int nRe, int64_t ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
-      PRIMME_COMPLEX_FLOAT *rwork, int lrwork, primme_params *primme);
+      PRIMME_COMPLEX_FLOAT *rwork, size_t lrwork, primme_params *primme);
 int applyPreconditioner_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t nLocal, int64_t ldV,
       PRIMME_COMPLEX_FLOAT *W, int64_t ldW, int blockSize, primme_params *primme);
 int convTestFun_cprimme(float eval, PRIMME_COMPLEX_FLOAT *evec, float rNorm, int *isconv,
