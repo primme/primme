@@ -258,7 +258,7 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    size_t rworkByteSize=0; /* Size of all real data in bytes            */
    int intWorkSize=0;/* Size of integer work space in bytes             */
 
-   int dataSize;     /* Number of SCALAR positions allocated, excluding */
+   size_t dataSize;  /* Number of SCALAR positions allocated, excluding */
                      /* REAL (see doubleSize below) and work space.  */
    int doubleSize=0; /* Number of doubles allocated exclusively to the  */
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
