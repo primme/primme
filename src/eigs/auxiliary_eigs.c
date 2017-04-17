@@ -120,7 +120,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, REAL *Rnorms,
       REAL *rnorms, int nrb, int nre,
-      SCALAR *rwork, int lrwork, primme_params *primme) {
+      SCALAR *rwork, size_t lrwork, primme_params *primme) {
 
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
@@ -145,8 +145,9 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
    assert(nXe <= nh || nXb >= nXe); /* Check dimension */
    assert(nYe <= nh || nYb >= nYe); /* Check dimension */
-   assert((nXe-nXb+nYe-nYb)*m <= lrwork); /* Check workspace for X and Y */
-   assert(2*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
+   assert((size_t)(max(0,nXe-nXb)+max(0,nYe-nYb))*m <= lrwork);
+                                               /* Check workspace for X and Y */
+   assert(2u*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
    X = rwork;
    Y = rwork + m*(nXe-nXb);
