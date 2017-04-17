@@ -187,7 +187,7 @@
 #' r <- eigs_sym(A, 4, "SA", tol=1e-3); r$values
 #' eigs_sym(A, 4, "SA", tol=1e-3, ortho=r$vectors)$values
 #' 
-#' @useDynLib PRIMME
+#' @useDynLib PRIMME, .registration=TRUE
 #' @importFrom Rcpp evalCpp
 #' @export
 
@@ -210,11 +210,21 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
    }
    else {
       opts$n <- nrow(A);
+
+      # Convert integer and logical matrices to double
+      if (is.matrix(A) && (is.integer(A) || is.logical(A))) {
+         A <- as.double(A);
+         dim(A) = c(opts$n, opts$n);
+      }
+
+      # Restrict matrix to double and complex
+      ismatrix <- (is.matrix(A) && (is.double(A) || is.complex(A)));
+
       isreal_suggestion <-
-         if (is.matrix(A)) is.numeric(A)
+         if (ismatrix) is.double(A)
          else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
       if ((is.null(isreal) || isreal == isreal_suggestion) && (
-               is.matrix(A) ||
+               ismatrix ||
                any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
                any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
          Af <- A;

@@ -209,7 +209,7 @@ void copyMatrix_SEXP(SEXP mat, T *x, PRIMME_INT m, int n, PRIMME_INT ld,
 
    CHM_DN chm = AS_CHM_DN(mat);
 
-   if (checkDimensions && (chm->nrow != m || chm->ncol != n))
+   if (checkDimensions && ((PRIMME_INT)chm->nrow != m || (PRIMME_INT)chm->ncol != n))
       stop("expected matrix with different dimensions");
    ASSERT(chm->dtype == CHOLMOD_DOUBLE);
    if (chm->xtype == CHOLMOD_REAL) {
@@ -514,7 +514,7 @@ void matrixMatvecEigs_CHM_DN(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    checkUserInterrupt(primme);
 
    CHM_DN chm = (CHM_DN)primme->matrix;
-   ASSERT(chm->nrow == chm->ncol && chm->nrow == primme->nLocal);
+   ASSERT(chm->nrow == chm->ncol && (PRIMME_INT)chm->nrow == primme->nLocal);
    ASSERT(chm->dtype == CHOLMOD_DOUBLE);
    ASSERT((chm->xtype == CHOLMOD_REAL ? sizeof(double) : sizeof(Rcomplex)) == sizeof(TS));
 
@@ -530,7 +530,7 @@ void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    checkUserInterrupt(primme);
 
    const_CHM_SP chm = (const_CHM_SP)((void**)primme->matrix)[0];
-   ASSERT(chm->nrow == chm->ncol && chm->nrow == primme->nLocal);
+   ASSERT(chm->nrow == chm->ncol && (PRIMME_INT)chm->nrow == primme->nLocal);
 
    cholmod_dense chx, chy;
    chx.nrow = primme->nLocal; 
@@ -1045,7 +1045,7 @@ static void matrixMatvecSvds_CHM_DN(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
    checkUserInterrupt(primme_svds);
 
    CHM_DN chm = (CHM_DN)primme_svds->matrix;
-   ASSERT(chm->nrow == primme_svds->mLocal && chm->ncol == primme_svds->nLocal);
+   ASSERT((PRIMME_INT)chm->nrow == primme_svds->mLocal && (PRIMME_INT)chm->ncol == primme_svds->nLocal);
    ASSERT(chm->dtype == CHOLMOD_DOUBLE);
    ASSERT((chm->xtype == CHOLMOD_REAL ? sizeof(double) : sizeof(Rcomplex)) == sizeof(TS));
 
@@ -1067,7 +1067,7 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
    checkUserInterrupt(primme_svds);
 
    const_CHM_SP chm = (const_CHM_SP)((void**)primme_svds->matrix)[0];
-   ASSERT(chm->nrow == primme_svds->mLocal && chm->ncol == primme_svds->nLocal);
+   ASSERT((PRIMME_INT)chm->nrow == primme_svds->mLocal && (PRIMME_INT)chm->ncol == primme_svds->nLocal);
 
    cholmod_dense chx, chy;
    chx.nrow = (*transpose ? primme_svds->mLocal : primme_svds->nLocal);

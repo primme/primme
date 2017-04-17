@@ -186,7 +186,7 @@
 #' r <- svds(A, 4, "S", tol=1e-3); r$d
 #' svds(A, 4, "S", tol=1e-3, orthov=r$v)$d
 #'
-#' @useDynLib PRIMME
+#' @useDynLib PRIMME, .registration=TRUE
 #' @importFrom Rcpp evalCpp
 #' @export
 
@@ -209,17 +209,24 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    else {
       opts$m <- nrow(A);
       opts$n <- ncol(A);
-      if (is.matrix(A)) {
+
+      # Convert integer and logical matrices to double
+      if (is.matrix(A) && (is.integer(A) || is.logical(A))) {
+         A <- as.double(A);
+         dim(A) = c(opts$m, opts$n);
+      }
+
+      # Restrict matrix to double and complex
+      ismatrix <- (is.matrix(A) && (is.double(A) || is.complex(A)));
+
+      isreal_suggestion <-
+         if (ismatrix) is.double(A)
+         else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
+      if ((is.null(isreal) || isreal == isreal_suggestion) && (
+               ismatrix ||
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
+               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
          Af <- A;
-         isreal_suggestion <- is.numeric(A);
-      }
-      else if (any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A))) {
-        Af <- A;
-        isreal_suggestion <- TRUE;
-      }
-      else if (any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A))) {
-        Af <- A;
-        isreal_suggestion <- FALSE;
       }
       else {
          Af <- function(x,trans)

@@ -603,9 +603,9 @@ static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate
    else if (primme_svds->realWork == NULL) {
       primme_svds->realWorkSize = realWorkSize;
       if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
-         "Allocating real workspace: %ld bytes\n", primme_svds->realWorkSize);
+         "Allocating real workspace: %g bytes\n", (double)primme_svds->realWorkSize);
       CHKERRMS(MALLOC_PRIMME(realWorkSize, (char**)&primme_svds->realWork),
-            MALLOC_FAILURE, "Failed to allocate %zd bytes\n", realWorkSize);
+            MALLOC_FAILURE, "Failed to allocate %g bytes\n", (double)realWorkSize);
    }
 
    if (primme_svds->intWork != NULL && primme_svds->intWorkSize < intWorkSize) {

@@ -39,7 +39,7 @@
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Rprimme)
 #  define main_iter_Rprimme CONCAT(main_iter_,REAL_SUF)
 #endif
-int main_iter_dprimme(double *evals, int *perm, double *evecs, int64_t ldevecs,
+int main_iter_dprimme(double *evals, int *perm, double *evecs, PRIMME_INT ldevecs,
    double *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sprimme)
@@ -48,54 +48,54 @@ int main_iter_dprimme(double *evals, int *perm, double *evecs, int64_t ldevecs,
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rprimme)
 #  define prepare_candidates_Rprimme CONCAT(prepare_candidates_,REAL_SUF)
 #endif
-int prepare_candidates_dprimme(double *V, int64_t ldV, double *W,
-      int64_t ldW, int64_t nLocal, double *H, int ldH, int basisSize,
+int prepare_candidates_dprimme(double *V, PRIMME_INT ldV, double *W,
+      PRIMME_INT ldW, PRIMME_INT nLocal, double *H, int ldH, int basisSize,
       double *X, double *R, double *hVecs, int ldhVecs, double *hVals,
       double *hSVals, int *flags, int remainedEvals, double *blockNorms,
       int blockNormsSize, int maxBlockSize, double *evecs, int numLocked,
-      int64_t ldevecs, double *evals, double *resNorms, int targetShiftIndex,
+      PRIMME_INT ldevecs, double *evals, double *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, double *hVecsRot,
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
       double *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
-int main_iter_zprimme(double *evals, int *perm, PRIMME_COMPLEX_DOUBLE *evecs, int64_t ldevecs,
+int main_iter_zprimme(double *evals, int *perm, PRIMME_COMPLEX_DOUBLE *evecs, PRIMME_INT ldevecs,
    double *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
-int prepare_candidates_zprimme(PRIMME_COMPLEX_DOUBLE *V, int64_t ldV, PRIMME_COMPLEX_DOUBLE *W,
-      int64_t ldW, int64_t nLocal, PRIMME_COMPLEX_DOUBLE *H, int ldH, int basisSize,
+int prepare_candidates_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *W,
+      PRIMME_INT ldW, PRIMME_INT nLocal, PRIMME_COMPLEX_DOUBLE *H, int ldH, int basisSize,
       PRIMME_COMPLEX_DOUBLE *X, PRIMME_COMPLEX_DOUBLE *R, PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs, double *hVals,
       double *hSVals, int *flags, int remainedEvals, double *blockNorms,
       int blockNormsSize, int maxBlockSize, PRIMME_COMPLEX_DOUBLE *evecs, int numLocked,
-      int64_t ldevecs, double *evals, double *resNorms, int targetShiftIndex,
+      PRIMME_INT ldevecs, double *evals, double *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_DOUBLE *hVecsRot,
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
       PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
-int main_iter_sprimme(float *evals, int *perm, float *evecs, int64_t ldevecs,
+int main_iter_sprimme(float *evals, int *perm, float *evecs, PRIMME_INT ldevecs,
    float *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
-int prepare_candidates_sprimme(float *V, int64_t ldV, float *W,
-      int64_t ldW, int64_t nLocal, float *H, int ldH, int basisSize,
+int prepare_candidates_sprimme(float *V, PRIMME_INT ldV, float *W,
+      PRIMME_INT ldW, PRIMME_INT nLocal, float *H, int ldH, int basisSize,
       float *X, float *R, float *hVecs, int ldhVecs, float *hVals,
       float *hSVals, int *flags, int remainedEvals, float *blockNorms,
       int blockNormsSize, int maxBlockSize, float *evecs, int numLocked,
-      int64_t ldevecs, float *evals, float *resNorms, int targetShiftIndex,
+      PRIMME_INT ldevecs, float *evals, float *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, float *hVecsRot,
       int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
       float *rwork, size_t *rworkSize, int *iwork, int iworkSize,
       primme_params *primme);
-int main_iter_cprimme(float *evals, int *perm, PRIMME_COMPLEX_FLOAT *evecs, int64_t ldevecs,
+int main_iter_cprimme(float *evals, int *perm, PRIMME_COMPLEX_FLOAT *evecs, PRIMME_INT ldevecs,
    float *resNorms, double machEps, int *intWork, void *realWork,
    primme_params *primme);
-int prepare_candidates_cprimme(PRIMME_COMPLEX_FLOAT *V, int64_t ldV, PRIMME_COMPLEX_FLOAT *W,
-      int64_t ldW, int64_t nLocal, PRIMME_COMPLEX_FLOAT *H, int ldH, int basisSize,
+int prepare_candidates_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *W,
+      PRIMME_INT ldW, PRIMME_INT nLocal, PRIMME_COMPLEX_FLOAT *H, int ldH, int basisSize,
       PRIMME_COMPLEX_FLOAT *X, PRIMME_COMPLEX_FLOAT *R, PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs, float *hVals,
       float *hSVals, int *flags, int remainedEvals, float *blockNorms,
       int blockNormsSize, int maxBlockSize, PRIMME_COMPLEX_FLOAT *evecs, int numLocked,
-      int64_t ldevecs, float *evals, float *resNorms, int targetShiftIndex,
+      PRIMME_INT ldevecs, float *evals, float *resNorms, int targetShiftIndex,
       double machEps, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_FLOAT *hVecsRot,
       int ldhVecsRot, int numConverged, float *basisNorms, int *reset,

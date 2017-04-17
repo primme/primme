@@ -1,9 +1,9 @@
-PKG_CXXFLAGS = -I../../include
+PKG_CXXFLAGS = -I../../include -DPRIMME_INT_SIZE=0
 PKG_LIBS = -L../../lib -lprimme $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
 $(SHLIB): ../../lib/libprimme.a
 
 ../../lib/libprimme.a:
 	@(cd ../.. && $(MAKE) lib \
-	  CC="$(CC)" CFLAGS="$(CFLAGS) $(CPICFLAGS) -DF77UNDERSCORE" AR="$(AR)" \
+	  CC="$(CC)" CFLAGS="$(CFLAGS) $(CPICFLAGS) -DF77UNDERSCORE -DUSE_XHEEV -DUSE_ZGESV -DPRIMME_INT_SIZE=0" AR="$(AR)" \
 	  RANLIB="$(RANLIB)")

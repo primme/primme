@@ -39,24 +39,24 @@
 #if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Rprimme)
 #  define check_convergence_Rprimme CONCAT(check_convergence_,REAL_SUF)
 #endif
-int check_convergence_dprimme(double *X, int64_t nLocal, int64_t ldX,
-      double *R, int64_t ldR, double *evecs, int numLocked,
-      int64_t ldevecs, int left, int right, int *flags, double *blockNorms,
+int check_convergence_dprimme(double *X, PRIMME_INT nLocal, PRIMME_INT ldX,
+      double *R, PRIMME_INT ldR, double *evecs, int numLocked,
+      PRIMME_INT ldevecs, int left, int right, int *flags, double *blockNorms,
       double *hVals, int *reset, double machEps, double *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
-int check_convergence_zprimme(PRIMME_COMPLEX_DOUBLE *X, int64_t nLocal, int64_t ldX,
-      PRIMME_COMPLEX_DOUBLE *R, int64_t ldR, PRIMME_COMPLEX_DOUBLE *evecs, int numLocked,
-      int64_t ldevecs, int left, int right, int *flags, double *blockNorms,
+int check_convergence_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT nLocal, PRIMME_INT ldX,
+      PRIMME_COMPLEX_DOUBLE *R, PRIMME_INT ldR, PRIMME_COMPLEX_DOUBLE *evecs, int numLocked,
+      PRIMME_INT ldevecs, int left, int right, int *flags, double *blockNorms,
       double *hVals, int *reset, double machEps, PRIMME_COMPLEX_DOUBLE *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
-int check_convergence_sprimme(float *X, int64_t nLocal, int64_t ldX,
-      float *R, int64_t ldR, float *evecs, int numLocked,
-      int64_t ldevecs, int left, int right, int *flags, float *blockNorms,
+int check_convergence_sprimme(float *X, PRIMME_INT nLocal, PRIMME_INT ldX,
+      float *R, PRIMME_INT ldR, float *evecs, int numLocked,
+      PRIMME_INT ldevecs, int left, int right, int *flags, float *blockNorms,
       float *hVals, int *reset, double machEps, float *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
-int check_convergence_cprimme(PRIMME_COMPLEX_FLOAT *X, int64_t nLocal, int64_t ldX,
-      PRIMME_COMPLEX_FLOAT *R, int64_t ldR, PRIMME_COMPLEX_FLOAT *evecs, int numLocked,
-      int64_t ldevecs, int left, int right, int *flags, float *blockNorms,
+int check_convergence_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT nLocal, PRIMME_INT ldX,
+      PRIMME_COMPLEX_FLOAT *R, PRIMME_INT ldR, PRIMME_COMPLEX_FLOAT *evecs, int numLocked,
+      PRIMME_INT ldevecs, int left, int right, int *flags, float *blockNorms,
       float *hVals, int *reset, double machEps, PRIMME_COMPLEX_FLOAT *rwork,
       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme);
 #endif
