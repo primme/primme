@@ -11,6 +11,12 @@ ARCHS := float floatcomplex double doublecomplex
 OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
 
 INCLUDE += -I../include -Iinclude
+ifeq ($(UNAME), Darwin)
+LFLAGS += -all_load ../lib/$(LIBRARY)
+else
+LFLAGS += -Wl,--whole-archive ../lib/$(LIBRARY) -Wl,--no-whole-archive
+endif
+LFLAGS += $(BLAS) $(LAPACK)
 
 MACRO_HEADERS := \
    ../include/primme.h \
@@ -89,7 +95,7 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 	$(RANLIB) $@
 
 ../lib/$(SOLIBRARY): ../lib/$(LIBRARY)
-	$(CC) -shared -o ../lib/$(SOLIBRARY) -Wl,--whole-archive ../lib/$(LIBRARY) -Wl,--no-whole-archive
+	$(CC) -shared $(LFLAGS) -o ../lib/$(SOLIBRARY)
 
 #
 # Generate CTAGS
