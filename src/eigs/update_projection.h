@@ -39,20 +39,20 @@
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rprimme)
 #  define update_projection_Rprimme CONCAT(update_projection_,REAL_SUF)
 #endif
-int update_projection_dprimme(double *X, int64_t ldX, double *Y,
-      int64_t ldY, double *Z, int64_t ldZ, int64_t nLocal, int numCols,
+int update_projection_dprimme(double *X, PRIMME_INT ldX, double *Y,
+      PRIMME_INT ldY, double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
       int blockSize, double *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
-int update_projection_zprimme(PRIMME_COMPLEX_DOUBLE *X, int64_t ldX, PRIMME_COMPLEX_DOUBLE *Y,
-      int64_t ldY, PRIMME_COMPLEX_DOUBLE *Z, int64_t ldZ, int64_t nLocal, int numCols,
+int update_projection_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT ldX, PRIMME_COMPLEX_DOUBLE *Y,
+      PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
       int blockSize, PRIMME_COMPLEX_DOUBLE *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
-int update_projection_sprimme(float *X, int64_t ldX, float *Y,
-      int64_t ldY, float *Z, int64_t ldZ, int64_t nLocal, int numCols,
+int update_projection_sprimme(float *X, PRIMME_INT ldX, float *Y,
+      PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
       int blockSize, float *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
-int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, int64_t ldX, PRIMME_COMPLEX_FLOAT *Y,
-      int64_t ldY, PRIMME_COMPLEX_FLOAT *Z, int64_t ldZ, int64_t nLocal, int numCols,
+int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, PRIMME_COMPLEX_FLOAT *Y,
+      PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
       int blockSize, PRIMME_COMPLEX_FLOAT *rwork, size_t *lrwork, int isSymmetric,
       primme_params *primme);
 #endif

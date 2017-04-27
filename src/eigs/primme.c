@@ -434,9 +434,9 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    else if (primme->realWork == NULL) {
       primme->realWorkSize = rworkByteSize;
       if (primme->printLevel >= 5) fprintf(primme->outputFile, 
-         "Allocating real workspace: %zd bytes\n", primme->realWorkSize);
+         "Allocating real workspace: %g bytes\n", (double)primme->realWorkSize);
       CHKERRM(MALLOC_PRIMME(rworkByteSize, (char**)&primme->realWork), MALLOC_FAILURE,
-            "Failed to allocate %zd bytes\n", rworkByteSize);
+            "Failed to allocate %g bytes\n", (double)rworkByteSize);
    }
 
    if (primme->intWork != NULL

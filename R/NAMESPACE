@@ -3,4 +3,4 @@
 export(eigs_sym)
 export(svds)
 importFrom(Rcpp,evalCpp)
-useDynLib(PRIMME)
+useDynLib(PRIMME, .registration=TRUE)

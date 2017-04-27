@@ -38,6 +38,7 @@
 
 #include <limits.h>    
 #include <float.h>
+#include <stdint.h>
 #include "primme.h"
 
 /*****************************************************************************/
@@ -155,10 +156,11 @@
 #     define TEMPLATE_PLEASE \
         APPEND_FUNC(Sprimme,SCALAR_SUF)
 #  endif
-   /* Avoid to use the final type for complex in generated headers file.      */
-   /* Instead use PRIMME_COMPLEX_FLOAT and _DOUBLE.                           */
+   /* Avoid to use the final type for integers and complex in generated       */
+   /* headers file. Instead use PRIMME_COMPLEX_FLOAT and _DOUBLE.             */
 #  undef PRIMME_COMPLEX_FLOAT
 #  undef PRIMME_COMPLEX_DOUBLE
+#  undef PRIMME_INT
 #else
 #  define TEMPLATE_PLEASE
 #endif
