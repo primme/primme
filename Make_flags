@@ -4,7 +4,7 @@
 #---------------------------------------------------------------
 
 # Define the path to the created PRIMME library
-UNAME := $(shell uname)
+UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
     SLIB = dylib
 else

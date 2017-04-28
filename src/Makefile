@@ -1,6 +1,7 @@
 
 include ../Make_flags
 
+UNAME ?= $(shell uname)
 VPATH = ../include:include:linalg:eigs:svds
 
 find_sources = $(wildcard $(dir)/*.c)
