@@ -11,12 +11,6 @@ ARCHS := float floatcomplex double doublecomplex
 OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
 
 INCLUDE += -I../include -Iinclude
-ifeq ($(UNAME), Darwin)
-LFLAGS += -all_load ../lib/$(LIBRARY)
-else
-LFLAGS += -Wl,--whole-archive ../lib/$(LIBRARY) -Wl,--no-whole-archive
-endif
-LFLAGS += $(BLAS) $(LAPACK)
 
 MACRO_HEADERS := \
    ../include/primme.h \
@@ -90,12 +84,21 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 #
 
 ../lib/$(LIBRARY): $(OBJS)
-	@mkdir -p ../lib;\
-	ar rv $@ $(OBJS);\
+	mkdir -p ../lib
+ifeq ($(UNAME), Darwin)
+	libtool -static -o $@ $(OBJS) -no_warning_for_no_symbols
+else
+	$(AR) rv $@ $(OBJS)
 	$(RANLIB) $@
+endif
 
+ifeq ($(UNAME), Darwin)
+../lib/$(SOLIBRARY): $(OBJS)
+	$(CC) -shared -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SOLIBRARY)
+else
 ../lib/$(SOLIBRARY): ../lib/$(LIBRARY)
-	$(CC) -shared $(LFLAGS) -o ../lib/$(SOLIBRARY)
+	$(CC) -shared -o ../lib/$(SOLIBRARY) -Wl,--whole-archive ../lib/$(LIBRARY) -Wl,--no-whole-archive
+endif
 
 #
 # Generate CTAGS

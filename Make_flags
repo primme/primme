@@ -13,12 +13,6 @@ endif
 LIBRARY = libprimme.a
 SOLIBRARY = libprimme.$(SLIB)
 
-ifndef MKLROOT
-    BLAS = -lblas
-    LAPACK = -llapack
-else
-    BLAS = -lmkl_rt
-endif
 
 # Define compilers and flags
 #---------------------------------------------------------------
