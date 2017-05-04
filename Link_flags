@@ -18,15 +18,19 @@ FLDR ?= $(F77)
 #
 LDFLAGS ?=
 ifeq ($(origin LIBS), undefined)
-    LIBS = -lprimme -lm
+    LIBS = -lprimme
     ifndef MKLROOT
-        LIBS += -llapack -lblas
+        LIBS += -llapack -lblas -lm
         UNAME := $(shell uname)
         ifneq ($(UNAME), Darwin)
             LIBS += -gfortran
         endif
     else
-        LIBS = -lmkl_rt
+        ifneq (,$(findstring icc,$(shell $(CC) --version)))
+            LIBS += -mkl
+        else
+            LIBS += -L${MKLROOT}/lib/intel64 -lmkl_rt -lpthread -lm -ldl
+        endif
     endif
 endif
 
