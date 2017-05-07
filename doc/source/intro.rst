@@ -292,6 +292,8 @@ Compiler flags for the BLAS_ and LAPACK_ libraries:
   (usually it does).
 * ``-DPRIMME_BLASINT_SIZE=64``, if the library integers are 64-bit integer (``kind=8``) type,
   aka ILP64 interface; usually integers are 32-bits even in 64-bit architectures (aka LP64 interface).
+* ``-DPRIMME_BLAS_SUFFIX=<suffix>``, set a suffix to BLAS/LAPACK function names; for instance,
+  OpenBlas compiled with ILP64 may append ``_64`` to the function names.
 
 By default PRIMME sets the integer type for matrix dimensions and counters (:c:type:`PRIMME_INT`)
 to 64 bits integer ``int64_t``. This can be changed by setting the macro ``PRIMME_INT_SIZE``
