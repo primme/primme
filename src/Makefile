@@ -96,7 +96,7 @@ endif
 ifeq ($(UNAME), Darwin)
 ../lib/$(SOLIBRARY): $(OBJS)
 	mkdir -p ../lib
-	$(CC) -shared -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SOLIBRARY)
+	$(CC) -shared -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SOLIBRARY) $(LDFLAGS)
 else
 ../lib/$(SOLIBRARY): $(OBJS)
 	mkdir -p ../lib
