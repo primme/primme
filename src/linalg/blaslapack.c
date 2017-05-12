@@ -41,6 +41,7 @@
 #include "template.h"
 #include "blaslapack_private.h"
 #include "blaslapack.h"
+#include "auxiliary.h" // cyclic
 
 /*******************************************************************************
  * Subroutine Num_copy_Sprimme - y(0:n*incy-1:incy) = x(0:n*incx-1:incx)

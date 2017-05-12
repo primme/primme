@@ -6,12 +6,14 @@
 #             module for MATLAB
 #   octave    make libprimme.a and the Octave module
 #   python    make libprimme.a and the python module
+#   R_install install PRIMME's R interface
+#   deps      update header dependencies
 #   clean     removes all *.o files
 #   test      build and execute simple examples
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib clean test all_tests check_style matlab octave python python_install R_install tags
+.PHONY: lib clean test all_tests check_style matlab octave python python_install R_install tags deps
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
@@ -26,15 +28,14 @@ clean:
 	@make -C src clean
 
 test:
-	@\
-	echo "------------------------------------------------"; \
-	echo " Test C examples                                "; \
-	echo "------------------------------------------------"; \
-	make -C examples veryclean test_examples_C USE_PETSC=no
+	@echo "------------------------------------------------";
+	@echo " Test C examples                                ";
+	@echo "------------------------------------------------";
+	@make -C examples veryclean test_examples_C USE_PETSC=no
 
 all_tests:
-	@make -C examples veryclean test_examples;\
-	make -C tests veryclean all_tests
+	@make -C examples veryclean test_examples;
+	@make -C tests veryclean all_tests
 
 matlab:
 	@make clean lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64"
@@ -52,8 +53,12 @@ python_install: python
 R_install: clean
 	@R CMD INSTALL R
 
+deps:
+	@make -C src deps
+	@make -C src auto_headers
+
 check_style:
-	( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
+	@( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 tags:
 	@make -C src ../tags

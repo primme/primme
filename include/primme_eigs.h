@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-#include "primme.h"
+#include "primme.h" // cyclic
 
 #ifdef __cplusplus
 extern "C" {
