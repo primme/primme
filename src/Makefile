@@ -95,11 +95,11 @@ endif
 ifeq ($(UNAME), Darwin)
 ../lib/$(SOLIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SOLIBRARY)
+	@$(CC) -shared -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SOLIBRARY) $(LDFLAGS)
 else
-../lib/$(SOLIBRARY): ../lib/$(LIBRARY)
+../lib/$(SOLIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -o ../lib/$(SOLIBRARY) -Wl,--whole-archive ../lib/$(LIBRARY) -Wl,--no-whole-archive
+	@$(CC) -shared -o ../lib/$(SOLIBRARY) -Wl,--whole-archive $(OBJS) -Wl,--no-whole-archive $(LDFLAGS)
 endif
 
 #
