@@ -1,0 +1,157 @@
+#!/usr/bin/env python
+
+#  Copyright (c) 2017, College of William & Mary
+#  All rights reserved.
+#  
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#      * Redistributions of source code must retain the above copyright
+#        notice, this list of conditions and the following disclaimer.
+#      * Redistributions in binary form must reproduce the above copyright
+#        notice, this list of conditions and the following disclaimer in the
+#        documentation and/or other materials provided with the distribution.
+#      * Neither the name of the College of William & Mary nor the
+#        names of its contributors may be used to endorse or promote products
+#        derived from this software without specific prior written permission.
+#  
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#  DISCLAIMED. IN NO EVENT SHALL THE COLLEGE OF WILLIAM & MARY BE LIABLE FOR ANY
+#  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+#  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+#  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+#  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+#  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#  
+#  PRIMME: https://github.com/primme/primme
+#  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
+
+import re
+import sys
+import os
+
+"""
+This module prints header file dependencies in the form of make rules. It only
+considers arguments of ``#include`` delimited by quote marks, not angle brackets.
+
+Command line execution:
+
+   dependencies [-I</include/path>]* [-i<pattern>]+ [--ignore-self-headers] [-e<new_extension>] <source_file1.c> ...
+
+Options:
+
+* -I</include/path>: append path where to search for the header files.
+
+  For instance, consider the source file foo.c:
+
+     #include "a.h"
+     #include "b.h"
+
+  If "a.h" is in directory d1 and "b.h" is in d2, then the next execution:
+
+     dependencies -Id1 -Id2 foo.c
+
+  prints out:
+
+     foo.c : d1/a.h d2/b.h
+
+* --ignore-self-headers: ignore header files with the same name as the source file.
+
+  For instance, consider the source file foo.c:
+
+     #include "a.h"
+     #include "foo.h"
+
+  This module prints out:
+
+     foo.c : a.h
+
+* -i<pattern>: ignore text fragments matching that pattern.
+
+* -e<extension> : replace the extension of the source file by the given one with this option.
+
+  For instance, consider the source file foo.c:
+
+     #include "a.h"
+
+  The next execution:
+
+     dependencies -eo foo.c
+
+  prints out:
+
+     foo.o : a.h
+
+ISSUES:
+
+Comments /* ... */ with includes will not be ignored. For instance, consider the source file foo.c:
+
+     #include "a.h"
+     /* #include "b.h" */
+
+  This module prints out:
+
+     foo.c : a.h b.h
+"""
+
+def find_deps(filename, include_paths, ignore_patterns):
+	deps = []
+	# Include source file's path in the include paths
+	include_paths = [os.path.dirname(filename)] + include_paths
+
+	# Ignore indicated patterns
+	ignore = "|".join(["(" + p + ")" for p in ignore_patterns])
+	content = re.sub(ignore, "", open(filename).read())
+
+	# Search for #include "..."
+	# NOTE: commented out lines will not be ignored!
+	p = r'\s*'.join(r'\# include "(?P<f>[^"]*)"'.split())
+	for m in re.finditer(p, content):
+		fname = m.group('f')
+		path = None
+		for d in include_paths:
+			if os.path.exists(os.path.join(d, fname)):
+				path = os.path.join(d, fname)
+				break
+		if not path:
+			raise Exception("In '" + filename + ": file '" +  fname + "' not found!")
+		deps.append(path)
+	return deps
+
+if __name__ == "__main__":
+	include_paths = []
+	sources = []
+	ignore_header_with_same_name = False
+	ignore_patterns = [r"//.*\# *include.*"]
+	extension = None
+
+	# Process commandline arguments
+	for arg in sys.argv[1:]:
+		if arg.startswith("-I"):
+			include_paths.append(arg[2:])
+		elif arg.startswith("-e"):
+			extension = arg[2:]
+		elif arg == "--ignore-self-headers":
+			ignore_header_with_same_name = True
+		elif arg.startswith("-i"):
+			ignore_patterns.append(arg[2:])
+		else:
+			sources.append(arg)
+
+	# Find dependencies and print them out
+	for s in sources:
+		source_name, source_ext = os.path.splitext(s)
+		deps = find_deps(s, include_paths, ignore_patterns)
+
+		# Replace extension if asked
+		if extension:
+			s = source_name + extension
+
+		# Remove dependent headers files with the same name as the source if asked
+		if ignore_header_with_same_name:
+			source_filename_h = os.path.basename(source_name) + ".h"
+			deps = [d for d in deps if os.path.basename(d) != source_filename_h]
+
+		sys.stdout.write(s + " : " + " ".join(deps) + "\n")

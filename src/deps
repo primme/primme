@@ -1,0 +1,54 @@
+# This file is generated automatically. Please don't modify
+eigs/auxiliary_eigs.h : eigs/const.h include/numerical.h eigs/globalsum.h include/wtime.h
+eigs/convergence.h : eigs/const.h include/numerical.h eigs/ortho.h eigs/auxiliary_eigs.h
+eigs/correction.h : eigs/const.h include/numerical.h eigs/inner_solve.h eigs/globalsum.h eigs/auxiliary_eigs.h
+eigs/factorize.h : include/numerical.h
+eigs/globalsum.h : include/numerical.h include/wtime.h
+eigs/init.h : include/numerical.h eigs/update_projection.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h include/wtime.h
+eigs/inner_solve.h : include/wtime.h eigs/const.h include/numerical.h eigs/factorize.h eigs/update_W.h eigs/globalsum.h eigs/auxiliary_eigs.h
+eigs/main_iter.h : eigs/const.h include/wtime.h include/numerical.h eigs/main_iter_private.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/globalsum.h eigs/auxiliary_eigs.h
+eigs/ortho.h : include/numerical.h eigs/const.h eigs/globalsum.h include/wtime.h
+eigs/primme.h : eigs/const.h include/wtime.h include/numerical.h eigs/main_iter.h eigs/init.h eigs/ortho.h eigs/solve_projection.h eigs/restart.h eigs/correction.h eigs/update_projection.h include/primme_interface.h
+eigs/primme_f77.h : eigs/primme_f77_private.h include/notemplate.h
+eigs/primme_interface.h : include/template.h eigs/const.h include/notemplate.h
+eigs/restart.h : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/solve_projection.h eigs/factorize.h eigs/update_projection.h eigs/update_W.h eigs/convergence.h eigs/globalsum.h include/wtime.h
+eigs/solve_projection.h : eigs/const.h include/numerical.h eigs/ortho.h eigs/globalsum.h
+eigs/update_W.h : include/numerical.h eigs/auxiliary_eigs.h eigs/ortho.h include/wtime.h
+eigs/update_projection.h : eigs/const.h include/numerical.h eigs/globalsum.h
+linalg/auxiliary.h : include/template.h include/blaslapack.h
+linalg/blaslapack.h : include/template.h linalg/blaslapack_private.h
+linalg/wtime.h : 
+svds/primme_svds.h : include/numerical.h svds/../eigs/ortho.h svds/../eigs/const.h include/wtime.h include/primme_interface.h svds/primme_svds_interface.h
+svds/primme_svds_f77.h : svds/primme_svds_interface.h svds/primme_svds_f77_private.h include/notemplate.h
+svds/primme_svds_interface.h : include/numerical.h include/primme_interface.h include/notemplate.h
+eigs/auxiliary_eigs*.o : eigs/const.h include/numerical.h eigs/globalsum.h eigs/auxiliary_eigs.h include/wtime.h
+eigs/convergence*.o : eigs/const.h include/numerical.h eigs/convergence.h eigs/ortho.h eigs/auxiliary_eigs.h
+eigs/correction*.o : eigs/const.h include/numerical.h eigs/correction.h eigs/inner_solve.h eigs/globalsum.h eigs/auxiliary_eigs.h
+eigs/factorize*.o : include/numerical.h eigs/factorize.h
+eigs/globalsum*.o : include/numerical.h eigs/globalsum.h include/wtime.h
+eigs/init*.o : include/numerical.h eigs/init.h eigs/update_projection.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h include/wtime.h
+eigs/inner_solve*.o : include/wtime.h eigs/const.h include/numerical.h eigs/inner_solve.h eigs/factorize.h eigs/update_W.h eigs/globalsum.h eigs/auxiliary_eigs.h
+eigs/main_iter*.o : eigs/const.h include/wtime.h include/numerical.h eigs/main_iter.h eigs/main_iter_private.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/globalsum.h eigs/auxiliary_eigs.h
+eigs/ortho*.o : include/numerical.h eigs/ortho.h eigs/const.h eigs/globalsum.h include/wtime.h
+eigs/primme*.o : eigs/const.h include/wtime.h include/numerical.h eigs/main_iter.h eigs/init.h eigs/ortho.h eigs/solve_projection.h eigs/restart.h eigs/correction.h eigs/update_projection.h include/primme_interface.h
+eigs/primme_f77*.o : eigs/primme_f77_private.h include/notemplate.h
+eigs/primme_interface*.o : include/template.h include/primme_interface.h eigs/const.h include/notemplate.h
+eigs/restart*.o : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h eigs/restart.h eigs/ortho.h eigs/solve_projection.h eigs/factorize.h eigs/update_projection.h eigs/update_W.h eigs/convergence.h eigs/globalsum.h include/wtime.h
+eigs/solve_projection*.o : eigs/const.h include/numerical.h eigs/solve_projection.h eigs/ortho.h eigs/globalsum.h
+eigs/update_W*.o : include/numerical.h eigs/update_W.h eigs/auxiliary_eigs.h eigs/ortho.h include/wtime.h
+eigs/update_projection*.o : eigs/const.h include/numerical.h eigs/update_projection.h eigs/globalsum.h
+linalg/auxiliary*.o : include/template.h include/auxiliary.h include/blaslapack.h
+linalg/blaslapack*.o : include/template.h linalg/blaslapack_private.h include/blaslapack.h include/auxiliary.h
+linalg/wtime*.o : include/wtime.h
+svds/primme_svds*.o : include/numerical.h svds/../eigs/ortho.h svds/../eigs/const.h include/wtime.h include/primme_interface.h svds/primme_svds_interface.h
+svds/primme_svds_f77*.o : svds/primme_svds_interface.h svds/primme_svds_f77_private.h include/notemplate.h
+svds/primme_svds_interface*.o : include/numerical.h svds/primme_svds_interface.h include/primme_interface.h include/notemplate.h
+../include/primme.h : ../include/primme_eigs.h ../include/primme_svds.h
+../include/primme_eigs.h : 
+../include/primme_eigs_f77.h : 
+../include/primme_f77.h : 
+../include/primme_svds.h : ../include/primme_eigs.h
+../include/primme_svds_f77.h : 
+include/template.h : ../include/primme.h
+include/numerical.h : include/template.h include/blaslapack.h include/auxiliary.h
+include/primme_interface.h : 

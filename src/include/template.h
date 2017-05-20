@@ -432,7 +432,7 @@
 #define TO_INT(X) ((X) < INT_MAX ? (X) : INT_MAX)
 
 #ifdef F77UNDERSCORE
-#define FORTRAN_FUNCTION(X) X ## _
+#define FORTRAN_FUNCTION(X) CONCAT(X,_)
 #else
 #define FORTRAN_FUNCTION(X) X
 #endif
