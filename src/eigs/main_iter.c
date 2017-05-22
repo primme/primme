@@ -515,6 +515,29 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             if (recentlyConverged > 0) touch = 0;
 
+            if (CostModel.resid_0 == -1.0L)       /* remember the very */
+               CostModel.resid_0 = blockNorms[0]; /* first residual */
+
+            /* If some pairs converged OR we evaluate JDQMR at every step, */
+            /* update convergence statistics and consider switching        */
+            if (recentlyConverged > 0 || primme->dynamicMethodSwitch == 2)
+            {
+               CostModel.MV =
+                  primme->stats.timeMatvec/primme->stats.numMatvecs;
+               ret = update_statistics(&CostModel, primme, tstart, 
+                     recentlyConverged, 0, numConverged, blockNorms[0], 
+                     primme->stats.estimateLargestSVal); 
+
+               if (ret) switch (primme->dynamicMethodSwitch) {
+                  /* for few evals (dyn=1) evaluate GD+k only at restart*/
+                  case 3:
+                     CHKERR(switch_from_GDpk(&CostModel,primme), -1);
+                     break;
+                  case 2: case 4:
+                     CHKERR(switch_from_JDQMR(&CostModel,primme), -1);
+               }
+            }
+
             if (numConverged >= primme->numEvals ||
                 (primme->locking && recentlyConverged > 0
                   && primme->target != primme_smallest
@@ -552,35 +575,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                /* Solve the correction equations with the new blockSize Ritz */
                /* vectors and residuals.                                     */
 
-               /* - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
                /* If dynamic method switching, time the inner method     */
                if (primme->dynamicMethodSwitch > 0) {
                   tstart = primme_wTimer(0); /* accumulate correction time */
 
-                  if (CostModel.resid_0 == -1.0L)       /* remember the very */
-                     CostModel.resid_0 = blockNorms[0]; /* first residual */
-
-                  /*if some pairs converged OR we evaluate jdqmr at every step*/
-                  /* update convergence statistics and consider switching */
-                  if (recentlyConverged > 0 || primme->dynamicMethodSwitch == 2)
-                  {
-                     CostModel.MV =
-                        primme->stats.timeMatvec/primme->stats.numMatvecs;
-                     ret = update_statistics(&CostModel, primme, tstart, 
-                        recentlyConverged, 0, numConverged, blockNorms[0], 
-                        primme->stats.estimateLargestSVal); 
-
-                     if (ret) switch (primme->dynamicMethodSwitch) {
-                        /* for few evals (dyn=1) evaluate GD+k only at restart*/
-                        case 3:
-                           CHKERR(switch_from_GDpk(&CostModel,primme), -1);
-                           break;
-                        case 2: case 4:
-                           CHKERR(switch_from_JDQMR(&CostModel,primme), -1);
-                     } /* of if-switch */
-                  } /* of recentlyConv > 0 || dyn==2 */
-               } /* dynamic switching */
-               /* - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+               }
 
                CHKERR(solve_correction_Sprimme(V, ldV, W, ldW, evecs, ldevecs,
                         evecsHat, ldevecsHat, UDU, ipivot, evals, numLocked,
