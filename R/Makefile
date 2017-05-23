@@ -12,8 +12,6 @@
 
 
 update:
-	cp -r ../src/eigs ../src/include ../src/linalg ../src/svds src/primme
-	cp -r ../include inst
 	R -e "require(Rcpp); compileAttributes();"
 	R -e "require(devtools); document()"
 	R -e 'require(rmarkdown); render("README.Rmd",output_format="all")'
