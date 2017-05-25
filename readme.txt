@@ -2706,8 +2706,6 @@ primme_preset_method
 
       * "minRestartSize" = "maxBlockSize";
 
-      * "maxBlockSize" = "numEvals";
-
       * "scheme"  = "primme_thick";
 
       * "maxPrevRetain"      = "maxBlockSize";

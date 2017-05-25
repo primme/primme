@@ -1344,7 +1344,6 @@ Preset Methods
          * |locking|    = 0;
          * |maxBasisSize| = |maxBlockSize| \* 3;
          * |minRestartSize| = |maxBlockSize|;
-         * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
          * |maxPrevRetain|      = |maxBlockSize|;
          * |robustShifts|       = 0;
