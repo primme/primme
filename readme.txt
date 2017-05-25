@@ -376,6 +376,10 @@ Compiler flags for the BLAS and LAPACK libraries:
   integer ("kind=8") type, aka ILP64 interface; usually integers are
   32-bits even in 64-bit architectures (aka LP64 interface).
 
+* "-DPRIMME_BLAS_SUFFIX=<suffix>", set a suffix to BLAS/LAPACK
+  function names; for instance, OpenBlas compiled with ILP64 may
+  append "_64" to the function names.
+
 By default PRIMME sets the integer type for matrix dimensions and
 counters ("PRIMME_INT") to 64 bits integer "int64_t". This can be
 changed by setting the macro "PRIMME_INT_SIZE" to one of the following
@@ -2645,7 +2649,7 @@ primme_preset_method
 
       * "locking"    = 1;
 
-      * "maxBasisSize" = "numEvals" *** 2;
+      * "maxBasisSize" = "numEvals" * 2;
 
       * "minRestartSize" = "numEvals";
 
@@ -2671,7 +2675,7 @@ primme_preset_method
 
       * "locking"    = 0;
 
-      * "maxBasisSize" = "numEvals" *** 3;
+      * "maxBasisSize" = "numEvals" * 3;
 
       * "minRestartSize" = "numEvals";
 
@@ -2691,14 +2695,14 @@ primme_preset_method
 
    PRIMME_LOBPCG_OrthoBasis_Window
 
-      LOBPCG with sliding window of "maxBlockSize" < 3 *** "numEvals".
+      LOBPCG with sliding window of "maxBlockSize" < 3 * "numEvals".
 
       With "PRIMME_LOBPCG_OrthoBasis_Window" "primme_set_method()"
       sets:
 
       * "locking"    = 0;
 
-      * "maxBasisSize" = "maxBlockSize" *** 3;
+      * "maxBasisSize" = "maxBlockSize" * 3;
 
       * "minRestartSize" = "maxBlockSize";
 

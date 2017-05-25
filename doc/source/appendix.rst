@@ -1304,7 +1304,7 @@ Preset Methods
       .. hlist::
 
          * |locking|    = 1;
-         * |maxBasisSize| = |numEvals| `*` 2;
+         * |maxBasisSize| = |numEvals| \* 2;
          * |minRestartSize| = |numEvals|;
          * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
@@ -1323,7 +1323,7 @@ Preset Methods
       .. hlist::
 
          * |locking|    = 0;
-         * |maxBasisSize| = |numEvals| `*` 3;
+         * |maxBasisSize| = |numEvals| \* 3;
          * |minRestartSize| = |numEvals|;
          * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
@@ -1335,14 +1335,14 @@ Preset Methods
 
    .. c:member:: PRIMME_LOBPCG_OrthoBasis_Window
 
-      LOBPCG with sliding window of |maxBlockSize| < 3 `*` |numEvals|.
+      LOBPCG with sliding window of |maxBlockSize| < 3 \* |numEvals|.
 
       With |LOBPCG_OrthoBasis_Window| :c:func:`primme_set_method` sets:
 
       .. hlist::
 
          * |locking|    = 0;
-         * |maxBasisSize| = |maxBlockSize| `*` 3;
+         * |maxBasisSize| = |maxBlockSize| \* 3;
          * |minRestartSize| = |maxBlockSize|;
          * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
