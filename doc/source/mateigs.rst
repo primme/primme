@@ -71,6 +71,9 @@ MATLAB Interface
       * |SkewX|: use the preconditioned approx. eigenvector in the right projector
       * |relTolBase|: a legacy from classical JDQR (not recommended)
       * |convTest|: how to stop the inner QMR Method
+      * |convTestFun|: function handler with an alternative convergence criterion.
+        If ``FUN(EVAL,EVEC,RNORM)`` returns a nonzero value, the pair ``(EVAL,EVEC)``
+        with residual norm ``RNORM`` is considered converged.
       * |iseed|: random seed
 
    ``D = primme_eigs(A,k,target,OPTS,METHOD)`` specifies the eigensolver method.
