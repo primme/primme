@@ -998,25 +998,34 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
    primme_svds->stats.numMatvecs++;
    primme_svds->matrixMatvec(rightsvec, &primme_svds->nLocal, Av,
          &primme_svds->nLocal, &one, &notrans, primme_svds, ierr);
-   if (*ierr != 0) return;
+   if (*ierr != 0) {free(Atu); return;}
    primme_svds->stats.numMatvecs++;
 
    /* ip[0] = ||v|| */
    /* ip[1] = ||u|| */
-   /* ip[2,3] = u'*A*v = u'*Av */
+   /* ip[2] = u'*A*v = u'*Av */
 
-   REAL ip0[4], ip[4];
+   REAL ip0[3], ip[3];
    ip0[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, rightsvec, 1,
             rightsvec, 1));
    ip0[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1,
             leftsvec, 1));
-   ip0[3] = 0.0;
-   *(SCALAR*)&ip0[2] = Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1, Av, 1);
-   *ierr = globalSum_Rprimme_svds(ip0, ip, 4, primme_svds);
-   if (*ierr != 0) return;
+   ip0[2] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1, Av, 1));
+   *ierr = globalSum_Rprimme_svds(ip0, ip, 3, primme_svds);
+   if (*ierr != 0) {free(Atu); return;}
+
    ip[0] = sqrt(ip[0]);
    ip[1] = sqrt(ip[1]);
-   SCALAR sval = *(SCALAR*)&ip[2]/ip[0]/ip[1];
+   REAL sval = ip[2]/ip[0]/ip[1];
+
+   /* If u'*A*v is negative, set rNorm as a large number */
+
+   if (sval < -0.0) {
+      *rNorm = HUGE_VAL;
+      free(Atu);
+      *ierr = 0;
+      return;
+   }
 
    /* Atu = A'*u/||u|| - sval*v/||v|| */
 
@@ -1033,7 +1042,7 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
    REAL normr0;
    normr0 = REAL_PART(Num_dot_Sprimme(nLocal, Atu, 1, Atu, 1));
    *ierr = globalSum_Rprimme_svds(&normr0, rNorm, 1, primme_svds);
-   if (*ierr != 0) return;
+   if (*ierr != 0) {free(Atu); return;}
    *rNorm = sqrt(*rNorm);
 
    free(Atu);
@@ -1168,7 +1177,7 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
 
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    assert(primme_svds_op_augmented == (&primme_svds->primme == primme ?
-            primme_svds->method : primme_svds->methodStage2method));
+            primme_svds->method : primme_svds->methodStage2));
    double aNorm = (primme->aNorm > 0.0) ?
             primme->aNorm : primme->stats.estimateLargestSVal;
    double maxaNorm = max(primme->aNorm, primme->stats.estimateLargestSVal);
