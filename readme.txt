@@ -3159,6 +3159,11 @@ function [varargout] = primme_eigs(varargin)
 
       * "convTest": how to stop the inner QMR Method
 
+      * "convTestFun": function handler with an alternative
+        convergence criterion. If "FUN(EVAL,EVEC,RNORM)" returns a
+        nonzero value, the pair "(EVAL,EVEC)" with residual norm
+        "RNORM" is considered converged.
+
       * "iseed": random seed
 
    "D = primme_eigs(A,k,target,OPTS,METHOD)" specifies the eigensolver
@@ -5273,6 +5278,11 @@ function [varargout] = primme_svds(varargin)
 
       * "primmeStage2": options for second stage solver
 
+      * "convTestFun": function handler with an alternative
+        convergence criterion. If "FUN(SVAL,LSVEC,RSVEC,RNORM)"
+        returns a nonzero value, the triplet "(SVAL,LSVEC,RSVEC)" with
+        residual norm "RNORM" is considered converged.
+
    The available options for "OPTIONS.primme" and "primmeStage2" are
    the same as "primme_eigs()", plus the option "'method'".
 
@@ -5377,10 +5387,14 @@ function [varargout] = primme_svds(varargin)
       % Jacobi preconditioner on (A'*A)
       A = sparse(diag(1:50) + diag(ones(49,1), 1));
       A(200,50) = 1;  % size(A)=[200 50]
-      Pstruct = struct('AHA', diag(A'*A),...
-                       'AAH', ones(200,1), 'aug', ones(250,1));
-      Pfun = @(x,mode)Pstruct.(mode).\x;
-      s = primme_svds(A,5,'S',[],Pfun) % find the 5 smallest values
+      P = diag(sum(abs(A).^2));
+      precond.AHA = @(x)P\x;
+      s = primme_svds(A,5,'S',[],precond) % find the 5 smallest values
+
+      % Estimation of the smallest singular value
+      A = diag([1 repmat(2,1,1000) 3:100]);
+      [~,sval,~,rnorm] = primme_svds(A,1,'S',struct('convTestFun',@(s,u,v,r)r<s*.1));
+      sval - rnorm % approximate smallest singular value
 
    See also: MATLAB svds, "primme_eigs()"
 

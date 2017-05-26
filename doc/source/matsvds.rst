@@ -48,6 +48,10 @@ MATLAB Interface
       * |Siseed|:    random seed
       * |Sprimme|:   options for first stage solver
       * |SprimmeStage2|: options for second stage solver
+      * |SconvTestFun|: function handler with an alternative convergence criterion.
+        If ``FUN(SVAL,LSVEC,RSVEC,RNORM)`` returns a nonzero
+        value, the triplet ``(SVAL,LSVEC,RSVEC)`` with residual norm ``RNORM``
+        is considered converged.
 
    The available options for ``OPTIONS.primme`` and ``primmeStage2`` are
    the same as :mat:func:`primme_eigs`, plus the option ``'method'``.
@@ -127,10 +131,14 @@ MATLAB Interface
       % Jacobi preconditioner on (A'*A)
       A = sparse(diag(1:50) + diag(ones(49,1), 1));
       A(200,50) = 1;  % size(A)=[200 50]
-      Pstruct = struct('AHA', diag(A'*A),...
-                       'AAH', ones(200,1), 'aug', ones(250,1));
-      Pfun = @(x,mode)Pstruct.(mode).\x;
-      s = primme_svds(A,5,'S',[],Pfun) % find the 5 smallest values
+      P = diag(sum(abs(A).^2));
+      precond.AHA = @(x)P\x;
+      s = primme_svds(A,5,'S',[],precond) % find the 5 smallest values
+
+      % Estimation of the smallest singular value
+      A = diag([1 repmat(2,1,1000) 3:100]);
+      [~,sval,~,rnorm] = primme_svds(A,1,'S',struct('convTestFun',@(s,u,v,r)r<s*.1));
+      sval - rnorm % approximate smallest singular value
 
    See also: `MATLAB svds`_, :mat:func:`primme_eigs`
 
