@@ -154,6 +154,7 @@ void primme_initialize(primme_params *primme) {
    primme->realWork                = NULL;
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
+   primme->convtest                = NULL;
    primme->ldevecs                 = 0;
    primme->ldOPs                   = 0;
    primme->monitorFun              = NULL;
@@ -919,6 +920,12 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_ldOPs:
               v->int_v = primme->ldOPs;
       break;
+      case PRIMME_convTestFun:
+              v->convTestFun_v = primme->convTestFun;
+      break;
+      case PRIMME_convtest:
+              v->ptr_v = primme->convtest;
+      break;
       case PRIMME_monitorFun:
               v->monitorFun_v = primme->monitorFun;
       break;
@@ -1191,6 +1198,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_convTestFun:
               primme->convTestFun = v.convTestFun_v;
       break;
+      case PRIMME_convtest:
+              primme->convtest = v.ptr_v;
+      break;
       case PRIMME_ldevecs:
               primme->ldevecs = *v.int_v;
       break;
@@ -1314,6 +1324,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
    IF_IS(stats_maxConvTol             , stats_maxConvTol);
    IF_IS(convTestFun                  , convTestFun);
+   IF_IS(convtest                     , convtest);
    IF_IS(ldevecs                      , ldevecs);
    IF_IS(ldOPs                        , ldOPs);
    IF_IS(monitorFun                   , monitorFun);
@@ -1417,6 +1428,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_matrix:
       case PRIMME_preconditioner:
       case PRIMME_convTestFun:
+      case PRIMME_convtest:
       case PRIMME_monitorFun:
       case PRIMME_monitor:
       if (type) *type = primme_pointer;

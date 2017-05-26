@@ -312,6 +312,7 @@ typedef enum {
    PRIMME_dynamicMethodSwitch = 49,
    PRIMME_massMatrixMatvec =  50,
    PRIMME_convTestFun =  51,
+   PRIMME_convtest =  510,
    PRIMME_ldevecs =  52,
    PRIMME_ldOPs =  53,
    PRIMME_monitorFun = 54,
