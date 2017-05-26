@@ -1059,12 +1059,13 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
  * ierr        error code
  ******************************************************************************/
 
-static void default_convTestFun(double *sval, void *leftsvec, void *rightsvec,
+static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
       double *rNorm, int *isConv, primme_svds_params *primme_svds, int *ierr) {
 
    (void)sval; /* unused parameter */
    const double machEps = MACHINE_EPSILON;
    const double aNorm = primme_svds->aNorm;
+   SCALAR *leftsvec = (SCALAR*)leftsvec_, *rightsvec = (SCALAR*)rightsvec_;
 
    *isConv = *rNorm < max(primme_svds->eps, machEps * 3.16) * aNorm;
 
@@ -1074,8 +1075,7 @@ static void default_convTestFun(double *sval, void *leftsvec, void *rightsvec,
    /* vector norm is from the augmented problem. When solving the augmented   */
    /* problem the right and the left singular vectors are contiguous.         */
 
-   if (*isConv && (SCALAR*)leftsvec == (SCALAR*)rightsvec + primme_svds->nLocal
-         && (
+   if (*isConv && leftsvec == rightsvec + primme_svds->nLocal && (
             primme_svds->method == primme_svds_op_augmented
             || primme_svds->methodStage2 == primme_svds_op_augmented)) {
 
@@ -1167,9 +1167,8 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr) {
 
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
-   primme_svds_operator method = &primme_svds->primme == primme ?
-      primme_svds->method : primme_svds->methodStage2;
-   assert(method == primme_svds_op_augmented);
+   assert(primme_svds_op_augmented == (&primme_svds->primme == primme ?
+            primme_svds->method : primme_svds->methodStage2method));
    double aNorm = (primme->aNorm > 0.0) ?
             primme->aNorm : primme->stats.estimateLargestSVal;
    double maxaNorm = max(primme->aNorm, primme->stats.estimateLargestSVal);
