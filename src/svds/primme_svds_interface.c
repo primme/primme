@@ -126,6 +126,8 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->realWorkSize            = 0;
    primme_svds->intWork                 = NULL;
    primme_svds->realWork                = NULL;
+   primme_svds->convTestFun             = NULL;
+   primme_svds->convtest                = NULL;
    primme_svds->monitorFun              = NULL;
    primme_svds->monitor                 = NULL;
 
@@ -514,6 +516,9 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       primme_svds_operator operator_v;
       double double_v;
       FILE *file_v;
+      void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
+            double *rNorm, int *isconv, struct primme_svds_params *primme,
+            int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
             void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -670,6 +675,12 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeGlobalSum:
          v->double_v = primme_svds->stats.timeGlobalSum;
          break;
+      case PRIMME_SVDS_convTestFun:
+         v->convTestFun_v = primme_svds->convTestFun;
+         break;
+      case PRIMME_SVDS_convtest:
+         v->ptr_v = primme_svds->convtest;
+         break;
       case PRIMME_SVDS_monitorFun:
          v->monitorFun_v = primme_svds->monitorFun;
          break;
@@ -713,6 +724,9 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       primme_svds_operator *operator_v;
       double *double_v;
       FILE *file_v;
+      void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
+            double *rNorm, int *isconv, struct primme_svds_params *primme,
+            int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
             void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -877,12 +891,18 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeGlobalSum:
          primme_svds->stats.timeGlobalSum = *v.double_v;
          break;
+      case PRIMME_SVDS_convTestFun:
+         primme_svds->convTestFun = v.convTestFun_v;
+         break;
+      case PRIMME_SVDS_convtest:
+         primme_svds->convtest = v.ptr_v;
+         break;
       case PRIMME_SVDS_monitorFun:
          primme_svds->monitorFun = v.monitorFun_v;
          break;
       case PRIMME_SVDS_monitor:
          primme_svds->monitor = v.ptr_v;
-      break;
+         break;
       default:
          return 1;
    }
@@ -977,6 +997,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_timePrecond);
    IF_IS(stats_timeOrtho);
    IF_IS(stats_timeGlobalSum);
+   IF_IS(convTestFun);
+   IF_IS(convtest);
    IF_IS(monitorFun);
    IF_IS(monitor);
 #undef IF_IS
@@ -1055,6 +1077,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_convTestFun:
+      case PRIMME_SVDS_convtest:
       case PRIMME_SVDS_monitorFun:
       case PRIMME_SVDS_monitor:
       if (type) *type = primme_pointer;
