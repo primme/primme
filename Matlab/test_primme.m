@@ -164,4 +164,10 @@ for i = 1:numel(svds_meths)
    end
 end
 
+% Test convTetFun
+
+A = diag([1 repmat(2,1,1000) 3:100]);
+[~,sval,~,rnorm] = primme_svds(A,1,'S',struct('convTestFun',@(s,u,v,r)r<s*.1));
+assert(sval-rnorm>.8 && sval-rnorm<1.2)
+
 disp('Success');

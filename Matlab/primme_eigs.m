@@ -59,6 +59,9 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.SkewX: use the preconditioned approx. eigenvector in the right projector
 %     OPTS.relTolBase: a legacy from classical JDQR (not recommended)
 %     OPTS.convTest: how to stop the inner QMR Method
+%     OPTS.convTestFun: function handler with an alternative convergence criterion.
+%          If FUN(EVAL,EVEC,RNORM) returns a nonzero value, the pair (EVAL,EVEC)
+%          with residual norm RNORM is considered converged.
 %     OPTS.iseed: random seed
 %
 %   For detailed descriptions of the above options, visit:

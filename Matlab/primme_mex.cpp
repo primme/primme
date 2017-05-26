@@ -223,6 +223,9 @@ static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
    case mxUINT64_CLASS:
       copy_mxArray_kernel<uint64_T,typename Real<TY>::type,I>(x, y, m, n, ldy);
       break;
+   case mxLOGICAL_CLASS:
+      copy_mxArray_kernel<mxLogical,typename Real<TY>::type,I>(x, y, m, n, ldy);
+      break;
    default:
       mexErrMsgTxt("Unsupported matrix type");
    }      
@@ -530,6 +533,7 @@ static void mexFunction_primme_free(int nlhs, mxArray *plhs[], int nrhs,
    if (primme->targetShifts) delete [] primme->targetShifts;
    if (primme->matrix) mxDestroyArray((mxArray*)primme->matrix);
    if (primme->preconditioner) mxDestroyArray((mxArray*)primme->preconditioner);
+   if (primme->convtest) mxDestroyArray((mxArray*)primme->convtest);
    if (primme->monitor) mxDestroyArray((mxArray*)primme->monitor);
    primme_free(primme);
    delete primme;
@@ -592,6 +596,15 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
          primme->preconditioner = (void*)a;
          break;
       }
+      case PRIMME_convTestFun:
+      {
+         ASSERT_FUNCTION(2);
+         if (primme->convtest) mxDestroyArray((mxArray*)primme->convtest);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme->convtest = (void*)a;
+         break;
+      }
       case PRIMME_monitorFun:
       {
          ASSERT_FUNCTION(2);
@@ -618,11 +631,11 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_outputFile:
       case PRIMME_matrix:
       case PRIMME_preconditioner:
-      case PRIMME_convTestFun:
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
       case PRIMME_massMatrixMatvec:
       case PRIMME_monitor:
+      case PRIMME_convtest:
          mexErrMsgTxt("Unsupported to set this option");
          break;
 
@@ -706,6 +719,11 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          plhs[0] = (mxArray*)primme->preconditioner;
          break;
       }
+      case PRIMME_convTestFun:
+      {
+         plhs[0] = (mxArray*)primme->convtest;
+         break;
+      }
       case PRIMME_monitorFun:
       {
          plhs[0] = (mxArray*)primme->monitor;
@@ -727,7 +745,7 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_outputFile:
       case PRIMME_matrix:
       case PRIMME_preconditioner:
-      case PRIMME_convTestFun:
+      case PRIMME_convtest:
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
       case PRIMME_massMatrixMatvec:
@@ -826,6 +844,37 @@ static void matrixMatvecEigs(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 
    if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
    mxDestroyArray(prhs[1]); 
+}
+
+template <typename T>
+static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv, 
+         struct primme_params *primme, int *ierr)
+{  
+   mxArray *prhs[4], *plhs[1];
+
+   // Create input vectors (avoid copy if possible)
+
+   prhs[1] = create_mxArray<double,int>(eval, eval?1:0, 1, eval?1:0);
+   prhs[2] = create_mxArray<typename Real<T>::type,int>((T*)evec,
+         evec?primme->nLocal:0, 1, evec?primme->nLocal:0, true);
+   prhs[3] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0);
+
+   // Call the callback
+
+   prhs[0] = (mxArray*)primme->convtest;
+   *ierr = mexCallMATLAB(1, plhs, 4, prhs, "feval");
+
+   // Copy plhs[0] to isConv and destroy it
+
+   if (plhs[0]) {
+      copy_mxArray(plhs[0], isConv, 1, 1, 1);
+      mxDestroyArray(plhs[0]);
+   }
+
+   // Destroy prhs[1..3]
+
+   if (mxGetData(prhs[2]) == evec)         mxSetData(prhs[2], NULL);
+   for (int i=1; i<4; i++) mxDestroyArray(prhs[i]); 
 }
 
 template <typename T>
@@ -942,7 +991,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
             (PRIMME_INT)primme->numOrthoConst+primme->initSize, primme->n);
    }
 
-   // Set matvec and preconditioner and monitorFun
+   // Set matvec and preconditioner and monitorFun and convTestFun
 
    primme->matrixMatvec = matrixMatvecEigs<T, getMatrixField>;
    if (primme->correctionParams.precondition) {
@@ -951,6 +1000,10 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    if (primme->monitor) {
       primme->monitorFun = monitorFunEigs<T>;
    }
+   if (primme->convtest) {
+      primme->convTestFun = convTestFunEigs<T>;
+   }
+
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
    // Set ctrl+c handler
@@ -1064,6 +1117,7 @@ static void mexFunction_primme_svds_free(int nlhs, mxArray *plhs[], int nrhs,
    if (primme_svds->matrix) mxDestroyArray((mxArray*)primme_svds->matrix);
    if (primme_svds->preconditioner) mxDestroyArray((mxArray*)primme_svds->preconditioner);
    if (primme_svds->monitor) mxDestroyArray((mxArray*)primme_svds->monitor);
+   if (primme_svds->convtest) mxDestroyArray((mxArray*)primme_svds->convtest);
    primme_svds_free(primme_svds);
    delete primme_svds;
 }
@@ -1125,6 +1179,15 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
          primme_svds->preconditioner = (void*)a;
          break;
       }
+      case PRIMME_SVDS_convTestFun:
+      {
+         ASSERT_FUNCTION(2);
+         if (primme_svds->convtest) mxDestroyArray((mxArray*)primme_svds->convtest);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme_svds->convtest = (void*)a;
+         break;
+      }
       case PRIMME_SVDS_monitorFun:
       {
          ASSERT_FUNCTION(2);
@@ -1154,6 +1217,7 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_convtest:
       case PRIMME_SVDS_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
@@ -1237,6 +1301,11 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
          plhs[0] = (mxArray*)primme_svds->preconditioner;
          break;
       }
+      case PRIMME_SVDS_convTestFun:
+      {
+         plhs[0] = (mxArray*)primme_svds->convtest;
+         break;
+      }
       case PRIMME_SVDS_monitorFun:
       {
          plhs[0] = (mxArray*)primme_svds->monitor;
@@ -1272,6 +1341,7 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_convtest:
       case PRIMME_SVDS_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
@@ -1420,6 +1490,43 @@ static void matrixMatvecSvds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 }
 
 template <typename T>
+static void convTestFunSvds(double *sval, void *leftsvec, void *rightsvec,
+         double *rNorm, int *isConv, struct primme_svds_params *primme_svds,
+         int *ierr)
+{  
+   mxArray *prhs[5], *plhs[1];
+
+   // Create input vectors (avoid copy if possible)
+
+   prhs[1] = create_mxArray<double,int>(sval, sval?1:0, 1, sval?1:0);
+   prhs[2] = create_mxArray<typename Real<T>::type,int>((T*)leftsvec,
+         leftsvec?primme_svds->mLocal:0, 1, leftsvec?primme_svds->mLocal:0,
+         true);
+   prhs[3] = create_mxArray<typename Real<T>::type,int>((T*)rightsvec,
+         rightsvec?primme_svds->nLocal:0, 1, rightsvec?primme_svds->nLocal:0,
+         true);
+   prhs[4] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0);
+
+   // Call the callback
+
+   prhs[0] = (mxArray*)primme_svds->convtest;
+   *ierr = mexCallMATLAB(1, plhs, 5, prhs, "feval");
+
+   // Copy plhs[0] to isConv and destroy it
+
+   if (plhs[0]) {
+      copy_mxArray(plhs[0], isConv, 1, 1, 1);
+      mxDestroyArray(plhs[0]);
+   }
+
+   // Destroy prhs[1..4]
+
+   if (mxGetData(prhs[2]) == leftsvec)      mxSetData(prhs[2], NULL);
+   if (mxGetData(prhs[3]) == rightsvec)     mxSetData(prhs[3], NULL);
+   for (int i=1; i<5; i++) mxDestroyArray(prhs[i]); 
+}
+
+template <typename T>
 static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -1533,7 +1640,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
             (PRIMME_INT)ninit, primme_svds->n);
    }
 
-   // Set matvec and preconditioner and monitorFun
+   // Set matvec and preconditioner and monitorFun and convTestFun
 
    primme_svds->matrixMatvec = matrixMatvecSvds<T, getSvdsForMatrix>;
    if (primme_svds->preconditioner) {
@@ -1542,6 +1649,9 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
    }
    if (primme_svds->monitor) {
       primme_svds->monitorFun = monitorFunSvds<T>;
+   }
+   if (primme_svds->convtest) {
+      primme_svds->convTestFun = convTestFunSvds<T>;
    }
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
