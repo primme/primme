@@ -2668,7 +2668,7 @@ primme_preset_method
 
       * "locking"    = 1;
 
-      * "maxBasisSize" = "numEvals" *** 2;
+      * "maxBasisSize" = "numEvals" * 2;
 
       * "minRestartSize" = "numEvals";
 
@@ -2694,7 +2694,7 @@ primme_preset_method
 
       * "locking"    = 0;
 
-      * "maxBasisSize" = "numEvals" *** 3;
+      * "maxBasisSize" = "numEvals" * 3;
 
       * "minRestartSize" = "numEvals";
 
@@ -2714,18 +2714,16 @@ primme_preset_method
 
    PRIMME_LOBPCG_OrthoBasis_Window
 
-      LOBPCG with sliding window of "maxBlockSize" < 3 *** "numEvals".
+      LOBPCG with sliding window of "maxBlockSize" < 3 * "numEvals".
 
       With "PRIMME_LOBPCG_OrthoBasis_Window" "primme_set_method()"
       sets:
 
       * "locking"    = 0;
 
-      * "maxBasisSize" = "maxBlockSize" *** 3;
+      * "maxBasisSize" = "maxBlockSize" * 3;
 
       * "minRestartSize" = "maxBlockSize";
-
-      * "maxBlockSize" = "numEvals";
 
       * "scheme"  = "primme_thick";
 
