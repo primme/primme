@@ -189,8 +189,8 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``void *`` |commInfo|
       | ``void *`` |matrix|
       | ``void *`` |preconditioner|
-      | ``void *`` convTest
-      | ``void *`` monitor
+      | ``void *`` |convtest|
+      | ``void *`` |monitor|
       |
       | *Advanced options*
       | ``PRIMME_INT`` |ldevecs|, leading dimension of the evecs.
@@ -247,7 +247,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       void *commInfo;
       void *matrix;
       void *preconditioner;
-      void *convTest;
+      void *convtest;
       void *monitor;
       
       /* Advanced options */

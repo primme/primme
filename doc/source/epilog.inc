@@ -58,9 +58,11 @@
 .. |dynamicMethodSwitch|                   replace:: :c:member:`dynamicMethodSwitch                <primme_params.dynamicMethodSwitch>`
 .. |massMatrixMatvec|                      replace:: :c:member:`massMatrixMatvec                   <primme_params.massMatrixMatvec>`
 .. |convTestFun|                           replace:: :c:member:`convTestFun                        <primme_params.convTestFun>`
+.. |convtest|                              replace:: :c:member:`convtest                           <primme_params.convtest>`
 .. |ldevecs|                               replace:: :c:member:`ldevecs                            <primme_params.ldevecs>`
 .. |ldOPs|                                 replace:: :c:member:`ldOPs                              <primme_params.ldOPs>`
 .. |monitorFun|                            replace:: :c:member:`monitorFun                         <primme_params.monitorFun>`
+.. |monitor|                               replace:: :c:member:`monitor                            <primme_params.monitor>`
 .. |primme_smallest|       replace:: :c:member:`primme_smallest       <primme_params.target>`
 .. |primme_largest|        replace:: :c:member:`primme_largest        <primme_params.target>`
 .. |primme_closest_geq|    replace:: :c:member:`primme_closest_geq    <primme_params.target>`
@@ -135,7 +137,10 @@
 .. |SmethodStage2|           replace:: :c:member:`methodStage2                 <primme_svds_params.methodStage2>`
 .. |Sprimme|                 replace:: :c:member:`primme                       <primme_svds_params.primme>`
 .. |SprimmeStage2|           replace:: :c:member:`primmeStage2                 <primme_svds_params.primmeStage2>`
+.. |SconvTestFun|            replace:: :c:member:`convTestFun                  <primme_svds_params.convTestFun>`
+.. |Sconvtest|               replace:: :c:member:`convtest                     <primme_svds_params.convtest>`
 .. |SmonitorFun|             replace:: :c:member:`monitorFun                   <primme_svds_params.monitorFun>`
+.. |Smonitor|                replace:: :c:member:`monitor                      <primme_svds_params.monitor>`
 .. |primme_svds_smallest|       replace:: :c:member:`primme_svds_smallest       <primme_svds_params.target>`
 .. |primme_svds_largest|        replace:: :c:member:`primme_svds_largest        <primme_svds_params.target>`
 .. |primme_svds_closest_abs|    replace:: :c:member:`primme_svds_closest_abs    <primme_svds_params.target>`

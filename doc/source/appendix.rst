@@ -964,6 +964,14 @@ primme_params
          | :c:func:`dprimme` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme`.
 
+   .. c:member:: void *monitor
+
+      This field may be used to pass any required information 
+      to the function |monitorFun|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
 
    .. c:member:: PRIMME_INT stats.numOuterIterations
 
@@ -1114,26 +1122,35 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
-   .. c:member:: void (*convTestFun) (double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme, int *ierr)
+   .. c:member:: void (*convTestFun) (double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr)
 
       Function that evaluates if the approximate eigenpair has converged.
       If NULL, it is used the default convergence criteria (see |eps|).
    
       :param eval: the approximate value to evaluate.
-      :param x: one dimensional array of size |nLocal| containing the approximate vector; it can be NULL.
-         The actual type depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
-         for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and for
-         for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
-      :param resNorm: the norm of residual vector.
+      :param evec: one dimensional array of size |nLocal| containing the approximate vector; it can be NULL.
+      :param resNorm: the norm of the residual vector.
       :param isconv: (output) the function sets zero if the pair is not converged and non zero otherwise.
       :param primme: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      The actual type of ``evec`` depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
+      for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and
+      for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
 
+   .. c:member:: void *convtest
+
+      This field may be used to pass any required information 
+      to the function |convTestFun|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
 
 .. _methods:
 

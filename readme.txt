@@ -376,6 +376,10 @@ Compiler flags for the BLAS and LAPACK libraries:
   integer ("kind=8") type, aka ILP64 interface; usually integers are
   32-bits even in 64-bit architectures (aka LP64 interface).
 
+* "-DPRIMME_BLAS_SUFFIX=<suffix>", set a suffix to BLAS/LAPACK
+  function names; for instance, OpenBlas compiled with ILP64 may
+  append "_64" to the function names.
+
 By default PRIMME sets the integer type for matrix dimensions and
 counters ("PRIMME_INT") to 64 bits integer "int64_t". This can be
 changed by setting the macro "PRIMME_INT_SIZE" to one of the following
@@ -628,7 +632,7 @@ next fields:
    void *commInfo;
    void *matrix;
    void *preconditioner;
-   void *convTest;
+   void *convtest;
    void *monitor;
 
    /* Advanced options */
@@ -2260,6 +2264,15 @@ primme_params
             "dprimme()" sets this field to an internal function if it is NULL;
             this field is read by "dprimme()".
 
+   void *monitor
+
+      This field may be used to pass any required information to the
+      function "monitorFun".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+
    PRIMME_INT stats.numOuterIterations
 
       Hold the number of outer iterations. The value is available
@@ -2415,7 +2428,7 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-   void (*convTestFun)(double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme, int *ierr)
+   void (*convTestFun)(double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr)
 
       Function that evaluates if the approximate eigenpair has
       converged. If NULL, it is used the default convergence criteria
@@ -2424,14 +2437,10 @@ primme_params
       Parameters:
          * **eval** -- the approximate value to evaluate.
 
-         * **x** -- one dimensional array of size "nLocal"
-           containing the approximate vector; it can be NULL. The
-           actual type depends on which function is being calling. For
-           "dprimme()", it is "double", for "zprimme()" it is
-           "PRIMME_COMPLEX_DOUBLE", for "sprimme()" it is "float" and
-           for for "cprimme()" it is "PRIMME_COMPLEX_FLOAT".
+         * **evec** -- one dimensional array of size "nLocal"
+           containing the approximate vector; it can be NULL.
 
-         * **resNorm** -- the norm of residual vector.
+         * **resNorm** -- the norm of the residual vector.
 
          * **isconv** -- (output) the function sets zero if the pair
            is not converged and non zero otherwise.
@@ -2441,10 +2450,24 @@ primme_params
          * **ierr** -- output error code; if it is set to non-zero,
            the current call to PRIMME will stop.
 
+      The actual type of "evec" depends on which function is being
+      calling. For "dprimme()", it is "double", for "zprimme()" it is
+      "PRIMME_COMPLEX_DOUBLE", for "sprimme()" it is "float" and for
+      "cprimme()" it is "PRIMME_COMPLEX_FLOAT".
+
       Input/output:
 
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme()".
+
+   void *convtest
+
+      This field may be used to pass any required information to the
+      function "convTestFun".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
 
 
 Preset Methods
@@ -3405,6 +3428,7 @@ which has the next fields:
    void *commInfo;
    void *matrix;
    void *preconditioner;
+   void *convtest;
    void *monitor;
 
    /* Advanced options */
@@ -3425,6 +3449,7 @@ which has the next fields:
    primme_svds_operator methodStage2;
    primme_params primme;
    primme_params primmeStage2;
+   void (*convTestFun)(...); // custom convergence criterion
    void (*monitorFun)(...); // custom convergence history
 
 PRIMME SVDS requires the user to set at least the matrix dimensions
@@ -4355,18 +4380,18 @@ primme_svds_params
 
    double eps
 
-      A triplet (u,\sigma,v) is marked as converged when \sqrt{\|A v -
-      \sigma u\|^2 + \|A^* u - \sigma v\|^2} is less than "eps" *
-      "aNorm", or close to the minimum tolerance that the selected
-      method can achieve in the given machine precision. See Preset
-      Methods.
+      If "convTestFun" is NULL, a triplet (u,\sigma,v) is marked as
+      converged when \sqrt{\|A v - \sigma u\|^2 + \|A^* u - \sigma
+      v\|^2} is less than "eps" * "aNorm", or close to the minimum
+      tolerance that the selected method can achieve in the given
+      machine precision. See Preset Methods.
 
       The default value is machine precision times 10^4.
 
       Input/output:
 
             "primme_svds_initialize()" sets this field to 0.0;
-            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
+            this field is read by "dprimme_svds()" and "zprimme_svds()".
 
    FILE *outputFile
 
@@ -4632,7 +4657,60 @@ primme_svds_params
             this field is read and written by "primme_svds_set_method()" (see Preset Methods);
             this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-   void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
+   void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec, double *rNorm, int *isconv, primme_svds_params *primme_svds, int *ierr)
+
+      Function that evaluates if the approximate triplet has
+      converged. If NULL, it is used the default convergence criteria
+      (see "eps").
+
+      Parameters:
+         * **sval** -- the approximate singular value to evaluate.
+
+         * **leftsvec** -- one dimensional array of size "mLocal"
+           containing the approximate left singular vector; it can be
+           NULL.
+
+         * **rightsvec** -- one dimensional array of size "nLocal"
+           containing the approximate right singular vector; it can be
+           NULL.
+
+         * **resNorm** -- the norm of the residual vector.
+
+         * **isconv** -- (output) the function sets zero if the pair
+           is not converged and non zero otherwise.
+
+         * **primme_svds** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      The actual type of "leftsvec" and "rightsvec" depends on which
+      function is being calling. For "dprimme_svds()", it is "double",
+      for "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
+      "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
+      "PRIMME_COMPLEX_FLOAT".
+
+      Warning: When solving the augmented problem (for the method
+        "primme_svds_augmented" and at the second stage in the method
+        "primme_svds_hybrid"), the given residual vector norm
+        "resNorm" is an approximation of the actual residual. Also
+        "leftsvec" and "rightsvec" may not have length 1.
+
+      Input/output:
+
+            "svds_primme_initialize()" sets this field to NULL;
+            this field is read and written by "dprimme_svds()".
+
+   void *convtest
+
+      This field may be used to pass any required information to the
+      function "convTestFun".
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to NULL;
+
+   void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, primme_svds_params *primme_svds, int *ierr)
 
       Convergence monitor. Used to customize how to report solver
       information during execution (stage, iteration number, matvecs,
@@ -4764,6 +4842,15 @@ primme_svds_params
             "primme_initialize()" sets this field to NULL;
             "dprimme_svds()" sets this field to an internal function if it is NULL;
             this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+   void *monitor
+
+      This field may be used to pass any required information to the
+      function "monitorFun".
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to NULL;
 
    PRIMME_INT stats.numOuterIterations
 
