@@ -1182,13 +1182,10 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
             primme->aNorm : primme->stats.estimateLargestSVal;
    double maxaNorm = max(primme->aNorm, primme->stats.estimateLargestSVal);
 
-   /* Check machine precision limit */
-
-   if (rNorm && *rNorm < MACHINE_EPSILON * maxaNorm * 3.16) {
-      *isConv = 1;
-      *ierr = 0;
-      return;
-   }
+   /* NOTE: Don't check machine precision limit of the residual norm.      */
+   /* Regardless of how small the residual is, we don't want to mark as    */
+   /* converged pairs that approximate the null space of the augmented     */
+   /* problem.                                                             */
 
    /* Update primme_svds->aNorm */
 
