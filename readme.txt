@@ -2221,7 +2221,7 @@ primme_params
         "lockedEvals", "numLocked", "lockedFlags" and "lockedNorms"
         may not be provided.
 
-      * "*event == primme_event_convergence": a new eigenpair in the
+      * "*event == primme_event_converged": a new eigenpair in the
         basis passed the convergence criterion.
 
         "iblock[0]" is the index of the newly converged pair in the
@@ -4804,7 +4804,7 @@ primme_svds_params
         "lockedSvals", "numLocked", "lockedFlags", and "lockedNorms"
         may not be provided.
 
-      * "*event == primme_event_convergence": a new triplet in the
+      * "*event == primme_event_converged": a new triplet in the
         basis passed the convergence criterion
 
         "iblock[0]" is the index of the newly converged triplet in the

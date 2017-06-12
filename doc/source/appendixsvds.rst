@@ -670,7 +670,7 @@ primme_svds_params
 
         ``lockedSvals``, ``numLocked``, ``lockedFlags``, and ``lockedNorms`` may not be provided.
 
-      * ``*event == primme_event_convergence``: a new triplet in the basis passed the convergence criterion
+      * ``*event == primme_event_converged``: a new triplet in the basis passed the convergence criterion
 
         ``iblock[0]`` is the index of the newly converged triplet in the basis which will be locked or soft locked.
         The following are provided: ``basisSvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
