@@ -5235,7 +5235,8 @@ function [varargout] = primme_svds(varargin)
         the norm internally)}
 
       * "tol":     convergence tolerance "NORM([A*V-U*S;A'*U-V*S])
-        <= tol * NORM(A)" (see "eps") { "1e-10"}
+        <= tol * NORM(A)" (see "eps") { "1e-10" for double precision
+        and "1e-3" for single precision}
 
       * "maxit":   maximum number of matvecs with "A" and "A'" (see
         "maxMatvecs")  {inf}

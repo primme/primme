@@ -22,7 +22,7 @@ function [varargout] = primme_svds(varargin)
 %   Field name       Parameter                               Default
 %
 %   OPTIONS.aNorm    estimation of the 2-norm A                  0.0
-%   OPTIONS.tol      convergence tolerance (see eps):          1e-10
+%   OPTIONS.tol      convergence tolerance (see eps):    1e-10 (1e-3 for single)
 %                    NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A).
 %   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
@@ -261,20 +261,6 @@ function [varargout] = primme_svds(varargin)
       opts.precondition = 1;
    end
  
-   % Test whether the given matrix and preconditioner are valid
-   try
-      x = opts.matrixMatvec(ones(opts.n, 1), 'notransp');
-      x = opts.matrixMatvec(ones(opts.m, 1), 'transp');
-      if isfield(opts, 'applyPreconditioner')
-         x = opts.applyPreconditioner(ones(opts.n, 1), 'AHA');
-         x = opts.applyPreconditioner(ones(opts.m, 1), 'AAH');
-         x = opts.applyPreconditioner(ones(opts.m+opts.n, 1), 'aug');
-      end
-      clear x;
-   catch ME
-      rethrow(ME);
-   end
-
    % Process 'isreal' in opts
    if isfield(opts, 'isreal')
       Acomplex = ~opts.isreal;
@@ -285,6 +271,25 @@ function [varargout] = primme_svds(varargin)
    if isfield(opts, 'isdouble')
       Adouble = opts.isdouble;
       opts = rmfield(opts, 'isdouble');
+   end
+   if Adouble
+      Aclass = 'double';
+   else
+      Aclass = 'single';
+   end
+
+   % Test whether the given matrix and preconditioner are valid
+   try
+      x = opts.matrixMatvec(ones(opts.n, 1, Aclass), 'notransp');
+      x = opts.matrixMatvec(ones(opts.m, 1, Aclass), 'transp');
+      if isfield(opts, 'applyPreconditioner')
+         x = opts.applyPreconditioner(ones(opts.n, 1, Aclass), 'AHA');
+         x = opts.applyPreconditioner(ones(opts.m, 1, Aclass), 'AAH');
+         x = opts.applyPreconditioner(ones(opts.m+opts.n, 1, Aclass), 'aug');
+      end
+      clear x;
+   catch ME
+      rethrow(ME);
    end
 
    % Process 'disp' in opts
@@ -309,9 +314,13 @@ function [varargout] = primme_svds(varargin)
       end
    end
 
-   % Set default tol to 1e-10
+   % Set default tol
    if ~isfield(opts, 'eps')
-      opts.eps = 1e-10;
+      if Adouble
+         opts.eps = 1e-10;
+      else
+         opts.eps = eps(Aclass)*1e4;
+      end
    end 
 
    % Move options that are outside of primme_parms' hierarchy

@@ -28,7 +28,7 @@ MATLAB Interface
    Some default values are indicated in brackets {}:
 
       * |SaNorm|:    estimation of the 2-norm of ``A`` {0.0 (estimate the norm internally)}
-      * ``tol``:     convergence tolerance ``NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A)`` (see |Seps|) { ``1e-10``}
+      * ``tol``:     convergence tolerance ``NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A)`` (see |Seps|) { ``1e-10`` for double precision and ``1e-3`` for single precision}
       * ``maxit``:   maximum number of matvecs with ``A`` and ``A'`` (see |SmaxMatvecs|)  {inf}
       * ``p``:       maximum basis size (see |SmaxBasisSize|)
       * ``disp``:    level of reporting 0-3 (see HIST) {0: no output}
