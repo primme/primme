@@ -39,7 +39,8 @@
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Rprimme)
 #  define solve_H_Rprimme CONCAT(solve_H_,REAL_SUF)
 #endif
-int solve_H_dprimme(double *H, int basisSize, int ldH, double *R, int ldR,
+int solve_H_dprimme(double *H, int basisSize, int ldH, double *VtBV, int ldVtBV,
+   double *R, int ldR,
    double *QtV, int ldQtV, double *hU, int ldhU, double *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, size_t *lrwork,
    double *rwork, int liwork, int *iwork, primme_params *primme);
@@ -55,7 +56,8 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
       double smallestResNorm, int *flags, int RRForAll, double *hVecsRot,
       int ldhVecsRot, double machEps, size_t *rworkSize, double *rwork,
       int iworkSize, int *iwork, primme_params *primme);
-int solve_H_zprimme(PRIMME_COMPLEX_DOUBLE *H, int basisSize, int ldH, PRIMME_COMPLEX_DOUBLE *R, int ldR,
+int solve_H_zprimme(PRIMME_COMPLEX_DOUBLE *H, int basisSize, int ldH, PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV,
+   PRIMME_COMPLEX_DOUBLE *R, int ldR,
    PRIMME_COMPLEX_DOUBLE *QtV, int ldQtV, PRIMME_COMPLEX_DOUBLE *hU, int ldhU, PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs,
    double *hVals, double *hSVals, int numConverged, double machEps, size_t *lrwork,
    PRIMME_COMPLEX_DOUBLE *rwork, int liwork, int *iwork, primme_params *primme);
@@ -65,7 +67,8 @@ int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
       double smallestResNorm, int *flags, int RRForAll, PRIMME_COMPLEX_DOUBLE *hVecsRot,
       int ldhVecsRot, double machEps, size_t *rworkSize, PRIMME_COMPLEX_DOUBLE *rwork,
       int iworkSize, int *iwork, primme_params *primme);
-int solve_H_sprimme(float *H, int basisSize, int ldH, float *R, int ldR,
+int solve_H_sprimme(float *H, int basisSize, int ldH, float *VtBV, int ldVtBV,
+   float *R, int ldR,
    float *QtV, int ldQtV, float *hU, int ldhU, float *hVecs, int ldhVecs,
    float *hVals, float *hSVals, int numConverged, double machEps, size_t *lrwork,
    float *rwork, int liwork, int *iwork, primme_params *primme);
@@ -75,7 +78,8 @@ int prepare_vecs_sprimme(int basisSize, int i0, int blockSize,
       double smallestResNorm, int *flags, int RRForAll, float *hVecsRot,
       int ldhVecsRot, double machEps, size_t *rworkSize, float *rwork,
       int iworkSize, int *iwork, primme_params *primme);
-int solve_H_cprimme(PRIMME_COMPLEX_FLOAT *H, int basisSize, int ldH, PRIMME_COMPLEX_FLOAT *R, int ldR,
+int solve_H_cprimme(PRIMME_COMPLEX_FLOAT *H, int basisSize, int ldH, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV,
+   PRIMME_COMPLEX_FLOAT *R, int ldR,
    PRIMME_COMPLEX_FLOAT *QtV, int ldQtV, PRIMME_COMPLEX_FLOAT *hU, int ldhU, PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs,
    float *hVals, float *hSVals, int numConverged, double machEps, size_t *lrwork,
    PRIMME_COMPLEX_FLOAT *rwork, int liwork, int *iwork, primme_params *primme);
