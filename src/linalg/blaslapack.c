@@ -458,6 +458,91 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 }
 
 /*******************************************************************************
+ * Subroutines for dense generalize eigenvalue decomposition
+ * NOTE: xhegvx is used instead of xhegv because xhegv is not in ESSL
+ ******************************************************************************/
+ 
+TEMPLATE_PLEASE
+void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
+      int lda, SCALAR *b0, int ldb0, REAL *w, SCALAR *work, int ldwork,
+      int *info) {
+
+   /* Call heev if b is null */
+   if (b0 == NULL) {
+      Num_heev_Sprimme(jobz, uplo, n, a, lda, w, work, ldwork, info);
+      return;
+   }
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
+   PRIMME_BLASINT ONE = 1;
+   SCALAR *z, *b;
+   REAL abstol=0.0;
+#ifdef USE_COMPLEX
+   REAL *rwork;
+#endif
+   PRIMME_BLASINT *iwork, *ifail;
+   SCALAR dummys=0;
+   REAL   dummyr=0;
+   PRIMME_BLASINT dummyi=0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (w == NULL) w = &dummyr;
+
+   /* Borrow space from work for z, rwork and iwork or set dummy values */
+   if (ldwork != -1) {
+      if (
+               WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
+            || WRKSP_MALLOC_PRIMME(n*n, &b, &work, &lldwork) 
+#ifdef USE_COMPLEX
+            || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
+#endif
+            || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
+            || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
+         ) {
+         *info = -1;
+         return;
+      }
+      Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n);
+   }
+   else {
+      b = &dummys;
+      z = &dummys;
+#ifdef USE_COMPLEX
+      rwork = &dummyr;
+#endif
+      iwork = &dummyi;
+      ifail = &dummyi;
+   }
+
+   XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         iwork, ifail, &linfo);
+
+   /* Copy z to a or add the extra space for z, iwork and ifail */
+   if (ldwork != -1) {
+      Num_copy_matrix_Sprimme(z, n, n, n, a, lda);
+   }
+   else {
+      work[0] += (REAL)n*n*2 + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
+#ifdef USE_COMPLEX
+      work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
+#endif
+   }
+   *info = (int)linfo;
+}
+
+/*******************************************************************************
  * Subroutines for dense singular value decomposition
  ******************************************************************************/
  

@@ -70,24 +70,25 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       primme_params *primme);
 
 static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
-      PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV, int ldQtV, SCALAR *hU,
-      int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, REAL *hSVals,
-      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, SCALAR *evecs,
-      int *evecsSize, PRIMME_INT ldevecs, SCALAR *evecsHat,
-      PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
-      int *ipivot, int *targetShiftIndex, int numConverged,
-      int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV, SCALAR *Q,
+      PRIMME_INT ldQ, PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV,
+      int ldQtV, SCALAR *hU, int ldhU, int newldhU,
+      int indexOfPreviousVecsBeforeRestart, SCALAR *hVecs, int ldhVecs,
+      int newldhVecs, REAL *hVals, REAL *hSVals, int *restartPerm,
+      int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
+      int indexOfPreviousVecs, SCALAR *evecs, int *evecsSize,
+      PRIMME_INT ldevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M,
+      int ldM, SCALAR *UDU, int ldUDU, int *ipivot, int *targetShiftIndex,
+      int numConverged, int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
       size_t *rworkSize, SCALAR *rwork, int iworkSize, int *iwork,
       double machEps, primme_params *primme);
 
-static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
-      int newldhVecs, REAL *hVals, int restartSize, int basisSize,
-      int numLocked, int numPrevRetained, int indexOfPreviousVecs,
-      int *hVecsPerm, int *targetShiftIndex, double machEps, size_t *rworkSize,
-      SCALAR *rwork, int iworkSize, int *iwork, primme_params *primme);
+static int restart_RR(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, int restartSize,
+      int basisSize, int numLocked, int numPrevRetained,
+      int indexOfPreviousVecs, int *hVecsPerm, int *targetShiftIndex,
+      double machEps, size_t *rworkSize, SCALAR *rwork, int iworkSize,
+      int *iwork, primme_params *primme);
 
 static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
@@ -224,6 +225,10 @@ static int compute_residual_columns(PRIMME_INT m, REAL *evals, SCALAR *x,
  *
  * ldH              The leading dimension of H
  *
+ * VtBV             The projection V'*B*V
+ *
+ * ldVtBV           The leading dimension of VtBV
+ *
  * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
  *
  * ldQ, ldR         The leading dimension of Q and R
@@ -271,13 +276,13 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
        int *ipivot, int *numConverged, int *numLocked, int *lockedFlags,
        int *numConvergedStored, SCALAR *previousHVecs, int *numPrevRetained,
        int ldpreviousHVecs, int numGuesses, REAL *prevRitzVals,
-       int *numPrevRitzVals, SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
-       SCALAR *R, int ldR, SCALAR* QtV, int ldQtV, SCALAR *hU, int ldhU,
-       int newldhU, SCALAR *hVecs, int ldhVecs, int newldhVecs,
-       int *restartSizeOutput, int *targetShiftIndex, int *numArbitraryVecs,
-       SCALAR *hVecsRot, int ldhVecsRot, int *restartsSinceReset, int *reset,
-       double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
-       int iworkSize, primme_params *primme) {
+       int *numPrevRitzVals, SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+       SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR, SCALAR* QtV, int ldQtV,
+       SCALAR *hU, int ldhU, int newldhU, SCALAR *hVecs, int ldhVecs,
+       int newldhVecs, int *restartSizeOutput, int *targetShiftIndex,
+       int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+       int *restartsSinceReset, int *reset, double machEps, SCALAR *rwork,
+       size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme) {
 
    int i;                   /* Loop indices */
    int restartSize;         /* Basis size after restarting                   */
@@ -312,8 +317,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
                NULL, rworkSize, &iworkSize0, 0, primme), -1);
       }
 
-      CHKERR(restart_projection_Sprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0,
-               NULL, 0, NULL, 0, NULL, 0, 0, 0,
+      CHKERR(restart_projection_Sprimme(NULL, 0, NULL, 0, NULL, 0, VtBV, 0,
+               NULL, 0, 0, NULL, 0, NULL, 0, NULL, 0, 0, 0,
                NULL, 0, 0, NULL, NULL, NULL, NULL, basisSize, basisSize,
                *numPrevRetained, basisSize, NULL,
                NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, NULL, NULL, 0,
@@ -511,8 +516,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
 
    if (newldhVecs == 0) newldhVecs = restartSize;
    if (newldhU == 0) newldhU = restartSize;
-   CHKERR(restart_projection_Sprimme(V, ldV, W, ldV, H, ldH, Q, ldQ,
-            nLocal, R, ldR, QtV, ldQtV, hU, ldhU, newldhU,
+   CHKERR(restart_projection_Sprimme(V, ldV, W, ldV, H, ldH, VtBV, ldVtBV, Q,
+            ldQ, nLocal, R, ldR, QtV, ldQtV, hU, ldhU, newldhU,
             indexOfPreviousVecsBeforeRestart, hVecs, ldhVecs, newldhVecs, hVals,
             hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
             *numPrevRetained, indexOfPreviousVecs, evecs, numConvergedStored,
@@ -1579,6 +1584,10 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
  *
  * ldH              The leading dimension of H
  *
+ * VtBV             The projection V'*B*V
+ *
+ * ldVtBV           The leading dimension of VtBV
+ *
  * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
  *
  * ldQ, ldR         The leading dimension of Q and R
@@ -1647,16 +1656,16 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
  ******************************************************************************/
  
 static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
-      PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV, int ldQtV, SCALAR *hU,
-      int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, REAL *hSVals,
-      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, SCALAR *evecs,
-      int *evecsSize, PRIMME_INT ldevecs, SCALAR *evecsHat,
-      PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
-      int *ipivot, int *targetShiftIndex, int numConverged,
-      int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV, SCALAR *Q,
+      PRIMME_INT ldQ, PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV,
+      int ldQtV, SCALAR *hU, int ldhU, int newldhU,
+      int indexOfPreviousVecsBeforeRestart, SCALAR *hVecs, int ldhVecs,
+      int newldhVecs, REAL *hVals, REAL *hSVals, int *restartPerm,
+      int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
+      int indexOfPreviousVecs, SCALAR *evecs, int *evecsSize,
+      PRIMME_INT ldevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M,
+      int ldM, SCALAR *UDU, int ldUDU, int *ipivot, int *targetShiftIndex,
+      int numConverged, int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
       size_t *rworkSize, SCALAR *rwork, int iworkSize, int *iwork,
       double machEps, primme_params *primme) {
 
@@ -1666,10 +1675,10 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    switch (primme->projectionParams.projection) {
    case primme_proj_RR:
-      CHKERR(restart_RR(H, ldH, hVecs, ldhVecs, newldhVecs, hVals, restartSize,
-            basisSize, numConverged, numPrevRetained, indexOfPreviousVecs,
-            hVecsPerm, targetShiftIndex, machEps, rworkSize, rwork, iworkSize,
-            iwork, primme), -1);
+      CHKERR(restart_RR(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, newldhVecs, hVals,
+               restartSize, basisSize, numConverged, numPrevRetained,
+               indexOfPreviousVecs, hVecsPerm, targetShiftIndex, machEps,
+               rworkSize, rwork, iworkSize, iwork, primme), -1);
       break;
 
    case primme_proj_harmonic:
@@ -1783,6 +1792,14 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  * ldH    The leading dimension of H
  *
+ * VtBV   Will contain VtBV = V'*B*V given the restarted V. VtBV will be
+ *        diagonal since V will contain only Ritz vectors, unless previous
+ *        vectors are retained.  In that case, it will be diagonal except for
+ *        a numPrevRetained x numPrevRetained submatrix inserted at
+ *        VtBV(numPrevRetained, numPrevRetained)
+ *
+ * ldVtBV The leading dimension of VtBV
+ *
  * hVecs  If the new H is diagonal, then it will contain the standard basis
  *        vectors.  If previous coefficient vectors are retained, then 
  *        restartSize - numPrevRetained of the vectors will be standard basis
@@ -1805,11 +1822,12 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  ******************************************************************************/
 
-static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
-      int newldhVecs, REAL *hVals, int restartSize, int basisSize,
-      int numLocked, int numPrevRetained, int indexOfPreviousVecs,
-      int *hVecsPerm, int *targetShiftIndex, double machEps, size_t *rworkSize,
-      SCALAR *rwork, int iworkSize, int *iwork, primme_params *primme) {
+static int restart_RR(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, int restartSize,
+      int basisSize, int numLocked, int numPrevRetained,
+      int indexOfPreviousVecs, int *hVecsPerm, int *targetShiftIndex,
+      double machEps, size_t *rworkSize, SCALAR *rwork, int iworkSize,
+      int *iwork, primme_params *primme) {
 
    int i, j;          /* Loop variables                                       */
    int orderedIndexOfPreviousVecs;  /* index of prev. vecs after applying hVecsPerm */
@@ -1820,33 +1838,38 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
    if (H == NULL) {
       CHKERR(compute_submatrix_Sprimme(NULL, numPrevRetained, 0, NULL,
                basisSize, 0, NULL, 0, NULL, rworkSize), -1);
-      CHKERR(solve_H_Sprimme(NULL, numPrevRetained, 0, NULL, 0, NULL, 0,
-               NULL, 0, NULL, 0, NULL, NULL, numLocked, 0.0, rworkSize, NULL, 0,
-               iwork, primme), -1);
+      CHKERR(solve_H_Sprimme(NULL, numPrevRetained, 0, VtBV, 0, NULL, 0, NULL,
+               0, NULL, 0, NULL, 0, NULL, NULL, numLocked, 0.0, rworkSize, NULL,
+               0, iwork, primme), -1);
       return 0;
    }
 
    /* ---------------------------------------------------------------------- */
    /* If coefficient vectors from the previous iteration were retained, then */
-   /* insert the computed overlap matrix into the restarted H                */
+   /* insert the computed overlap matrix into the restarted H and VtBV       */
    /* ---------------------------------------------------------------------- */
 
    CHKERR(compute_submatrix_Sprimme(&hVecs[ldhVecs*indexOfPreviousVecs],
             numPrevRetained, ldhVecs, H,
             basisSize, ldH, &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs],
             ldH, rwork, rworkSize), -1);
+   if (VtBV) {
+      CHKERR(compute_submatrix_Sprimme(&hVecs[ldhVecs*indexOfPreviousVecs],
+               numPrevRetained, ldhVecs, VtBV, basisSize, ldVtBV,
+               &VtBV[ldVtBV*indexOfPreviousVecs+indexOfPreviousVecs],
+               ldVtBV, rwork, rworkSize), -1);
+   }
 
    /* ----------------------------------------------------------------- */
    /* Y = V*hVecs([0:indexOfPreviousVecs-1 \                            */
    /*                 indexOfPreviousVecs+numPrevRetained:restartSize]) */
-   /* are the new Ritz vectors so the upper part of H will be a         */
-   /* diagonal matrix composed of the Ritz values of A. Set H to a      */
-   /* diagonal matrix with these values and zero the upper part of the  */
-   /* columns corresponding to the previous vectors.                    */
+   /* are the new Ritz vectors so the new H and VtBV will be diag(hVals)*/
+   /* and I respectively. Note it is only stored the upper triangular   */
+   /* part of H and VtBV.                                               */
    /* ----------------------------------------------------------------- */
 
    for (j=0; j < indexOfPreviousVecs; j++) {
-      for (i=0; i <= j; i++) {
+      for (i=0; i < j; i++) {
          H[ldH*j+i] = 0.0;
       }
       H[ldH*j+j] = hVals[j];
@@ -1857,10 +1880,30 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       }
    }
    for (j=indexOfPreviousVecs+numPrevRetained; j < restartSize; j++) {
-      for (i=0; i <= j; i++) {
+      for (i=0; i < j; i++) {
          H[ldH*j+i] = 0.0;
       }
       H[ldH*j+j] = hVals[j];
+   }
+
+   if (VtBV) {
+      for (j=0; j < indexOfPreviousVecs; j++) {
+         for (i=0; i < j; i++) {
+            VtBV[ldVtBV*j+i] = 0.0;
+         }
+         VtBV[ldVtBV*j+j] = 1.0;
+      }
+      for (j=indexOfPreviousVecs; j<indexOfPreviousVecs+numPrevRetained; j++) {
+         for (i=0; i < indexOfPreviousVecs; i++) {
+            VtBV[ldVtBV*j+i] = 0.0;
+         }
+      }
+      for (j=indexOfPreviousVecs+numPrevRetained; j < restartSize; j++) {
+         for (i=0; i < j; i++) {
+            VtBV[ldVtBV*j+i] = 0.0;
+         }
+         VtBV[ldVtBV*j+j] = 1.0;
+      }
    }
 
    /* ---------------------------------------------------------------------- */
@@ -1874,9 +1917,9 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numLocked);
 
-      CHKERR(solve_H_Sprimme(H, restartSize, ldH, NULL, 0, NULL, 0, NULL, 0,
-               hVecs, newldhVecs, hVals, NULL, numLocked, machEps, rworkSize,
-               rwork, iworkSize, iwork, primme), -1);
+      CHKERR(solve_H_Sprimme(H, restartSize, ldH, VtBV, ldVtBV, NULL, 0, NULL,
+               0, NULL, 0, hVecs, newldhVecs, hVals, NULL, numLocked, machEps,
+               rworkSize, rwork, iworkSize, iwork, primme), -1);
 
       return 0;
    }
@@ -1923,7 +1966,9 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
 
    CHKERR(solve_H_Sprimme(
             &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs], numPrevRetained,
-            ldH, NULL, 0, NULL, 0, NULL, 0,
+            ldH,
+            VtBV ? &VtBV[ldVtBV*indexOfPreviousVecs+indexOfPreviousVecs] : NULL,
+            ldVtBV, NULL, 0, NULL, 0, NULL, 0,
             &hVecs[newldhVecs*orderedIndexOfPreviousVecs+indexOfPreviousVecs],
             newldhVecs, &hVals[orderedIndexOfPreviousVecs], NULL, numLocked,
             machEps, rworkSize, rwork, iworkSize, iwork, primme), -1);
@@ -2074,8 +2119,8 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
                NULL, 0, 0,
                NULL, 0, primme));
       CHKERR(solve_H_Sprimme(NULL, basisSize, 0, NULL, 0, NULL, 0, NULL, 0,
-               NULL, 0, NULL, NULL, numConverged, 0.0, rworkSize, NULL, 0,
-               iwork, primme), -1);
+               NULL, 0, NULL, 0, NULL, NULL, numConverged, 0.0, rworkSize,
+               NULL, 0, iwork, primme), -1);
       return 0;
    }
 
@@ -2105,7 +2150,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
                primme->targetShifts[*targetShiftIndex], 0,
                restartSize, rwork, rworkSize, machEps, primme), -1);
 
-      CHKERR(solve_H_Sprimme(H, restartSize, ldH, R, ldR, NULL, 0, hU,
+      CHKERR(solve_H_Sprimme(H, restartSize, ldH, NULL, 0, R, ldR, NULL, 0, hU,
                newldhU, hVecs, newldhVecs, hVals, hSVals, numConverged, machEps,
                rworkSize, rwork, iworkSize, iwork, primme), -1);
 
@@ -2275,9 +2320,9 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
    assert(*rworkSize >= (size_t)restartSize);
    rworkSize0 = *rworkSize - (size_t)restartSize;
-   CHKERR(solve_H_Sprimme(H, restartSize, ldH, R, ldR, NULL, 0, hU, newldhU,
-         hVecs, newldhVecs, (REAL*)rwork, hSVals, numConverged,
-         machEps, &rworkSize0, rwork+restartSize, iworkSize, iwork, primme),
+   CHKERR(solve_H_Sprimme(H, restartSize, ldH, NULL, 0, R, ldR, NULL, 0, hU,
+            newldhU, hVecs, newldhVecs, (REAL*)rwork, hSVals, numConverged,
+            machEps, &rworkSize0, rwork+restartSize, iworkSize, iwork, primme),
          -1);
 
    permute_vecs_Rprimme(hVals, 1, restartSize, 1, hVecsPerm, (REAL*)rwork, iwork);
@@ -2462,8 +2507,8 @@ static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(update_projection_Sprimme(NULL, 0, NULL, 0, NULL, 0, nLocal,
                0, basisSize, NULL, rworkSize, 0/*unsymmetric*/, primme), -1);
       CHKERR(solve_H_Sprimme(NULL, basisSize, 0, NULL, 0, NULL, 0, NULL, 0,
-               NULL, 0, NULL, NULL, numConverged, 0.0, rworkSize, NULL, 0,
-               iwork, primme), -1);
+               NULL, 0, NULL, 0, NULL, NULL, numConverged, 0.0, rworkSize,
+               NULL, 0, iwork, primme), -1);
       return 0;
    }
 
@@ -2499,7 +2544,7 @@ static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    /* Solve the projected problem     */
    /* ------------------------------- */
 
-   CHKERR(solve_H_Sprimme(H, restartSize, ldH, R, ldR, QtV, ldQtV, hU,
+   CHKERR(solve_H_Sprimme(H, restartSize, ldH, NULL, 0, R, ldR, QtV, ldQtV, hU,
             newldhU, hVecs, newldhVecs, hVals, hSVals, numConverged, machEps,
             rworkSize, rwork, iworkSize, iwork, primme), -1);
 

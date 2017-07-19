@@ -104,6 +104,7 @@ void primme_initialize(primme_params *primme) {
    primme->maxOuterIterations                  = INT_MAX;
    primme->restartingParams.scheme             = primme_thick;
    primme->restartingParams.maxPrevRetain      = -1;
+   primme->orth                                = primme_orth_default;
 
    /* correction parameters (inner) */
    primme->correctionParams.precondition       = -1;

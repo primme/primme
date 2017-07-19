@@ -93,6 +93,13 @@ typedef enum {
    primme_event_locked              /* report new pair marked as locked       */
 } primme_event;
 
+/* Orthogonalization variant */
+typedef enum {
+   primme_orth_default,
+   primme_orth_implicit_I,          /* assume for search subspace V, V'*B*V = I */
+   primme_orth_explicit_I           /* explicitly compute V'*B*V */
+} primme_orth;
+
 typedef struct primme_stats {
    PRIMME_INT numOuterIterations;
    PRIMME_INT numRestarts;
@@ -193,6 +200,7 @@ typedef struct primme_params {
    void *realWork;
    double aNorm;
    double eps;
+   primme_orth orth;
 
    int printLevel;
    FILE *outputFile;
