@@ -94,7 +94,9 @@ ifdef(`USE_PETSC', `ifdef(`USE_POINTER',
 ')dnl
         Mat AH, AHA
         PetscErrorCode ierr
-        integer i,numProcs,procID,mLocal,nLocal
+        PetscInt mLocalpetsc,nLocalpetsc
+        integer i,numProcsMpi,procIDMpi
+        integer*8 numProcs,procID,mLocal,nLocal
 ', `        integer i,ierr
 ')dnl
         real*8  epsil, aNorm
@@ -141,15 +143,19 @@ ifdef(`USE_POINTER', `        call primme_svds_set_member_f77(primme_svds,
 ')dnl
         
 ifdef(`USE_PETSC', `!       Set parallel parameters
-        call MatGetLocalSize(A, mLocal, nLocal, ierr)
+        call MatGetLocalSize(A, mLocalpetsc, nLocalpetsc, ierr)
+        mLocal = mLocalpetsc
+        nLocal = nLocalpetsc
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_mLocal, mLocal, ierr)
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_nLocal, nLocal, ierr)
-        call MPI_Comm_size(PETSC_COMM_WORLD, numProcs, ierr)
+        call MPI_Comm_size(PETSC_COMM_WORLD, numProcsMpi, ierr)
+        numProcs = numProcsMpi
         call primme_svds_set_member_f77(primme_svds,
      :                         PRIMME_SVDS_numProcs, numProcs, ierr)
-        call MPI_Comm_rank(PETSC_COMM_WORLD, procID, ierr);
+        call MPI_Comm_rank(PETSC_COMM_WORLD, procIDMpi, ierr)
+        procID = procIDMpi
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_procID, procID, ierr)
 ifdef(`USE_POINTER', `        comm = PETSC_COMM_WORLD

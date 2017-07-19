@@ -84,7 +84,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         MPI_Comm, target :: comm
         Mat AH, AHA
         PetscErrorCode ierr
-        integer i,numProcs,procID,mLocal,nLocal
+        PetscInt mLocalpetsc,nLocalpetsc
+        integer i,numProcsMpi,procIDMpi
+        integer*8 numProcs,procID,mLocal,nLocal
         real*8  epsil, aNorm
 
 !-----------------------------------------------------------------------
@@ -124,15 +126,19 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :                   PRIMME_SVDS_matrixMatvec, PETScMatvec, ierr)
         
 !       Set parallel parameters
-        call MatGetLocalSize(A, mLocal, nLocal, ierr)
+        call MatGetLocalSize(A, mLocalpetsc, nLocalpetsc, ierr)
+        mLocal = mLocalpetsc
+        nLocal = nLocalpetsc
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_mLocal, mLocal, ierr)
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_nLocal, nLocal, ierr)
-        call MPI_Comm_size(PETSC_COMM_WORLD, numProcs, ierr)
+        call MPI_Comm_size(PETSC_COMM_WORLD, numProcsMpi, ierr)
+        numProcs = numProcsMpi
         call primme_svds_set_member_f77(primme_svds,
      :                         PRIMME_SVDS_numProcs, numProcs, ierr)
-        call MPI_Comm_rank(PETSC_COMM_WORLD, procID, ierr);
+        call MPI_Comm_rank(PETSC_COMM_WORLD, procIDMpi, ierr)
+        procID = procIDMpi
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_procID, procID, ierr)
         comm = PETSC_COMM_WORLD
