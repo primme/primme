@@ -2,7 +2,9 @@
 PRIMME
 ======
 
-This package is an R interface to PRIMME, a C library for computing a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. It can also compute singular values and vectors of a square or rectangular matrix. It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts. The main contributors of PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
+This package is an R interface to PRIMME, a C library for computing a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. It can also compute singular values and vectors of a square or rectangular matrix. It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+
+The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
 
 Use the following two references to cite this package:
 
