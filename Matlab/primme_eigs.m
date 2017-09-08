@@ -431,7 +431,9 @@ function [varargout] = primme_eigs(varargin)
    [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
 
    % Process error code and return the required arguments
-   if ierr ~= 0
+   if ierr == -3
+      warning([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
+   elseif ierr ~= 0
       error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
    end
    

@@ -469,7 +469,9 @@ function [varargout] = primme_svds(varargin)
                init{2}, primme_svds); 
 
    % Process error code and return the required arguments
-   if ierr ~= 0
+   if mod(ierr, -100) == -3 % if it is -3, -103 or -203
+      warning([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+   elseif ierr ~= 0
       error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
    end
    
