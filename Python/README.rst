@@ -10,6 +10,8 @@ singular/eigenvalues and can use preconditioning to accelerate convergence. It
 is especially optimized for large, difficult problems, and can be a useful tool
 for both non-experts and experts.
 
+The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
+
 Install
 -------
 
