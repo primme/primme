@@ -524,8 +524,10 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             if (recentlyConverged > 0) touch = 0;
 
-            if (CostModel.resid_0 == -1.0L)       /* remember the very */
-               CostModel.resid_0 = blockNorms[0]; /* first residual */
+            if (primme->dynamicMethodSwitch > 0) {
+               if (CostModel.resid_0 == -1.0L)       /* remember the very */
+                  CostModel.resid_0 = blockNorms[0]; /* first residual */
+            }
 
             /* If some pairs converged OR we evaluate JDQMR at every step, */
             /* update convergence statistics and consider switching        */
