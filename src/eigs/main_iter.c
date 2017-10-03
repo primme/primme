@@ -385,8 +385,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* unconverged. Keep performing JD iterations until they remain converged */
    /* ---------------------------------------------------------------------- */
    while (!converged &&
-          ( primme->maxMatvecs == 0 || 
-            primme->stats.numMatvecs < primme->maxMatvecs ) &&
+          primme->stats.numMatvecs < primme->maxMatvecs &&
           ( primme->maxOuterIterations == 0 ||
             primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
@@ -430,8 +429,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
       /* required eigenpairs have been found (no verification)          */
       /* -------------------------------------------------------------- */
       while (numConverged < primme->numEvals &&
-             ( primme->maxMatvecs == 0 || 
-               primme->stats.numMatvecs < primme->maxMatvecs ) &&
+             primme->stats.numMatvecs < primme->maxMatvecs  &&
              ( primme->maxOuterIterations == 0 ||
                primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
@@ -444,8 +442,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          /* ----------------------------------------------------------------- */
          while (basisSize < primme->maxBasisSize &&
                 basisSize < primme->n - primme->numOrthoConst - numLocked &&
-                ( primme->maxMatvecs == 0 || 
-                  primme->stats.numMatvecs < primme->maxMatvecs) &&
+                primme->stats.numMatvecs < primme->maxMatvecs &&
                 ( primme->maxOuterIterations == 0 ||
                   primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
@@ -994,8 +991,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
          /* Determine if the maximum number of matvecs has been reached */
 
-         restartLimitReached = primme->maxMatvecs > 0 && 
-                               primme->stats.numMatvecs >= primme->maxMatvecs;
+         restartLimitReached = primme->stats.numMatvecs >= primme->maxMatvecs;
 
          /* ---------------------------------------------------------- */
          /* The norms of the converged Ritz vectors must be recomputed */
