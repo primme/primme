@@ -281,7 +281,7 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    *allocatedTargetShifts = 0;
 
    if (method == primme_svds_op_none) {
-      primme->maxMatvecs = 1;
+      primme->maxMatvecs = 0;
       return NULL;
    }
 
@@ -363,7 +363,12 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
    primme->iseed[1] = primme_svds->iseed[1];
    primme->iseed[2] = primme_svds->iseed[2];
    primme->iseed[3] = primme_svds->iseed[3];
-   primme->maxMatvecs = primme_svds->maxMatvecs;
+   if (stage == 0) {
+      primme->maxMatvecs = primme_svds->maxMatvecs/2;
+   }
+   else {
+      primme->maxMatvecs = primme_svds->maxMatvecs/2 - primme_svds->primme.stats.numMatvecs;
+   }
 
    primme->intWork = primme_svds->intWork;
    primme->intWorkSize = primme_svds->intWorkSize;
@@ -643,7 +648,7 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
 
    if (method == primme_svds_op_none) {
-      primme->maxMatvecs = 1;
+      primme->maxMatvecs = 0;
       return 0;
    }
 
@@ -760,7 +765,6 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
    primme_svds->iseed[1] = primme->iseed[1];
    primme_svds->iseed[2] = primme->iseed[2];
    primme_svds->iseed[3] = primme->iseed[3];
-   primme_svds->maxMatvecs -= primme->stats.numMatvecs;
 
    /* Zero references to primme workspaces to prevent to be release by primme_free */
    primme->intWork = NULL;
