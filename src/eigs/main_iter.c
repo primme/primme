@@ -524,25 +524,25 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             if (primme->dynamicMethodSwitch > 0) {
                if (CostModel.resid_0 == -1.0L)       /* remember the very */
                   CostModel.resid_0 = blockNorms[0]; /* first residual */
-            }
 
-            /* If some pairs converged OR we evaluate JDQMR at every step, */
-            /* update convergence statistics and consider switching        */
-            if (recentlyConverged > 0 || primme->dynamicMethodSwitch == 2)
-            {
-               CostModel.MV =
-                  primme->stats.timeMatvec/primme->stats.numMatvecs;
-               ret = update_statistics(&CostModel, primme, tstart, 
-                     recentlyConverged, 0, numConverged, blockNorms[0], 
-                     primme->stats.estimateLargestSVal); 
+               /* If some pairs converged OR we evaluate JDQMR at every step, */
+               /* update convergence statistics and consider switching        */
+               if (recentlyConverged > 0 || primme->dynamicMethodSwitch == 2)
+               {
+                  CostModel.MV =
+                     primme->stats.timeMatvec/primme->stats.numMatvecs;
+                  ret = update_statistics(&CostModel, primme, tstart, 
+                        recentlyConverged, 0, numConverged, blockNorms[0], 
+                        primme->stats.estimateLargestSVal); 
 
-               if (ret) switch (primme->dynamicMethodSwitch) {
-                  /* for few evals (dyn=1) evaluate GD+k only at restart*/
-                  case 3:
-                     CHKERR(switch_from_GDpk(&CostModel,primme), -1);
-                     break;
-                  case 2: case 4:
-                     CHKERR(switch_from_JDQMR(&CostModel,primme), -1);
+                  if (ret) switch (primme->dynamicMethodSwitch) {
+                     /* for few evals (dyn=1) evaluate GD+k only at restart*/
+                     case 3:
+                        CHKERR(switch_from_GDpk(&CostModel,primme), -1);
+                        break;
+                     case 2: case 4:
+                        CHKERR(switch_from_JDQMR(&CostModel,primme), -1);
+                  }
                }
             }
 

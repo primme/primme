@@ -77,8 +77,8 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    /* Parallel computing parameters */
    primme_svds->numProcs                = 1;
    primme_svds->procID                  = 0;
-   primme_svds->mLocal                  = 0;
-   primme_svds->nLocal                  = 0;
+   primme_svds->mLocal                  = -1;
+   primme_svds->nLocal                  = -1;
    primme_svds->commInfo                = NULL;
    primme_svds->globalSumReal           = NULL;
 
@@ -214,14 +214,6 @@ int primme_svds_set_method(primme_svds_preset_method method,
 
 void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
-   /* Set defaults for sequential programs */
-   if (primme_svds->numProcs <= 1) {
-      primme_svds->mLocal = primme_svds->m;
-      primme_svds->nLocal = primme_svds->n;
-      primme_svds->procID = 0;
-      primme_svds->numProcs = 1;
-   }
-
    /* Set svds method if none set */
    if (primme_svds->method == primme_svds_op_none) {
       primme_svds_set_method(primme_svds_default, PRIMME_DEFAULT_METHOD,
@@ -301,15 +293,19 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    switch(method) {
    case primme_svds_op_AtA:
       primme->n = primme_svds->n;
-      primme->nLocal = primme_svds->nLocal;
+      if (primme->nLocal == -1 && primme_svds->nLocal != -1)
+         primme->nLocal = primme_svds->nLocal;
       break;
    case primme_svds_op_AAt:
       primme->n = primme_svds->m;
-      primme->nLocal = primme_svds->mLocal;
+      if (primme->nLocal == -1 && primme_svds->mLocal != -1)
+         primme->nLocal = primme_svds->mLocal;
       break;
    case primme_svds_op_augmented:
       primme->n = primme_svds->m + primme_svds->n;
-      primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
+      if (primme->nLocal == -1 && primme_svds->mLocal != -1
+            && primme_svds->nLocal != -1)
+         primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
       break;
    case primme_svds_op_none:
       break;

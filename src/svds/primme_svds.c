@@ -153,6 +153,16 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    int ret, allocatedTargetShifts;
    SCALAR *svecs0;
 
+   /* ------------------------------------ */
+   /* Set defaults for sequential programs */
+   /* ------------------------------------ */
+   if (primme_svds->numProcs <= 1 && svals != NULL && svecs != NULL && resNorms != NULL) {
+      primme_svds->mLocal = primme_svds->m;
+      primme_svds->nLocal = primme_svds->n;
+      primme_svds->procID = 0;
+      primme_svds->numProcs = 1;
+   }
+
    /* ------------------ */
    /* Set some defaults  */
    /* ------------------ */

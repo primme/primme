@@ -137,6 +137,15 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* ----------------------- */
    machEps = MACHINE_EPSILON;
 
+   /* ----------------------------------------- */
+   /* Set some defaults for sequential programs */
+   /* ----------------------------------------- */
+   if (primme->numProcs <= 1 && evals != NULL && evecs != NULL
+         && resNorms != NULL) {
+      primme->nLocal = primme->n;
+      primme->procID = 0;
+   }
+
    /* ------------------ */
    /* Set some defaults  */
    /* ------------------ */

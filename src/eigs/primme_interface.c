@@ -82,7 +82,7 @@ void primme_initialize(primme_params *primme) {
    /* Parallel computing parameters */
    primme->numProcs                = 1;
    primme->procID                  = 0;
-   primme->nLocal                  = 0;
+   primme->nLocal                  = -1;
    primme->commInfo                = NULL;
    primme->globalSumReal           = NULL;
 
@@ -156,8 +156,8 @@ void primme_initialize(primme_params *primme) {
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
    primme->convtest                = NULL;
-   primme->ldevecs                 = 0;
-   primme->ldOPs                   = 0;
+   primme->ldevecs                 = -1;
+   primme->ldOPs                   = -1;
    primme->monitorFun              = NULL;
    primme->monitor                 = NULL;
 }
@@ -472,15 +472,7 @@ void primme_set_defaults(primme_params *primme) {
       primme_set_method(PRIMME_DYNAMIC, primme);
    }
 
-   /* ----------------------------------------- */
-   /* Set some defaults for sequential programs */
-   /* ----------------------------------------- */
-   if (primme->numProcs <= 1) {
-      primme->nLocal = primme->n;
-      primme->procID = 0;
-   }
-
-   if (primme->ldevecs == 0)
+   if (primme->ldevecs == -1 && primme->nLocal != -1)
       primme->ldevecs = primme->nLocal;
    if (primme->projectionParams.projection == primme_proj_default)
       primme->projectionParams.projection = primme_proj_RR;
@@ -491,7 +483,7 @@ void primme_set_defaults(primme_params *primme) {
    /* a multiple of PRIMME_BLOCK_SIZE. This may improve the performance */
    /* of Num_update_VWXR_Sprimme.                                       */
 
-   if (primme->ldOPs == 0) {
+   if (primme->ldOPs == -1 && primme->nLocal != -1) {
       primme->ldOPs = min(((primme->nLocal + PRIMME_BLOCK_SIZE - 1)
                /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, primme->nLocal);
    }
