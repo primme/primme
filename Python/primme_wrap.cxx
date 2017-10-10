@@ -3467,33 +3467,34 @@ namespace Swig {
 #define SWIGTYPE_p_primme_convergencetest swig_types[13]
 #define SWIGTYPE_p_primme_event swig_types[14]
 #define SWIGTYPE_p_primme_init swig_types[15]
-#define SWIGTYPE_p_primme_params swig_types[16]
-#define SWIGTYPE_p_primme_params_label swig_types[17]
-#define SWIGTYPE_p_primme_preset_method swig_types[18]
-#define SWIGTYPE_p_primme_projection swig_types[19]
-#define SWIGTYPE_p_primme_restartscheme swig_types[20]
-#define SWIGTYPE_p_primme_stats swig_types[21]
-#define SWIGTYPE_p_primme_svds_operator swig_types[22]
-#define SWIGTYPE_p_primme_svds_params swig_types[23]
-#define SWIGTYPE_p_primme_svds_params_label swig_types[24]
-#define SWIGTYPE_p_primme_svds_preset_method swig_types[25]
-#define SWIGTYPE_p_primme_svds_stats swig_types[26]
-#define SWIGTYPE_p_primme_svds_target swig_types[27]
-#define SWIGTYPE_p_primme_target swig_types[28]
-#define SWIGTYPE_p_primme_type swig_types[29]
-#define SWIGTYPE_p_projection_params swig_types[30]
-#define SWIGTYPE_p_restarting_params swig_types[31]
-#define SWIGTYPE_p_short swig_types[32]
-#define SWIGTYPE_p_signed_char swig_types[33]
-#define SWIGTYPE_p_std__complexT_double_t swig_types[34]
-#define SWIGTYPE_p_std__complexT_float_t swig_types[35]
-#define SWIGTYPE_p_unsigned_char swig_types[36]
-#define SWIGTYPE_p_unsigned_int swig_types[37]
-#define SWIGTYPE_p_unsigned_long_long swig_types[38]
-#define SWIGTYPE_p_unsigned_short swig_types[39]
-#define SWIGTYPE_p_void swig_types[40]
-static swig_type_info *swig_types[42];
-static swig_module_info swig_module = {swig_types, 41, 0, 0, 0, 0};
+#define SWIGTYPE_p_primme_orth swig_types[16]
+#define SWIGTYPE_p_primme_params swig_types[17]
+#define SWIGTYPE_p_primme_params_label swig_types[18]
+#define SWIGTYPE_p_primme_preset_method swig_types[19]
+#define SWIGTYPE_p_primme_projection swig_types[20]
+#define SWIGTYPE_p_primme_restartscheme swig_types[21]
+#define SWIGTYPE_p_primme_stats swig_types[22]
+#define SWIGTYPE_p_primme_svds_operator swig_types[23]
+#define SWIGTYPE_p_primme_svds_params swig_types[24]
+#define SWIGTYPE_p_primme_svds_params_label swig_types[25]
+#define SWIGTYPE_p_primme_svds_preset_method swig_types[26]
+#define SWIGTYPE_p_primme_svds_stats swig_types[27]
+#define SWIGTYPE_p_primme_svds_target swig_types[28]
+#define SWIGTYPE_p_primme_target swig_types[29]
+#define SWIGTYPE_p_primme_type swig_types[30]
+#define SWIGTYPE_p_projection_params swig_types[31]
+#define SWIGTYPE_p_restarting_params swig_types[32]
+#define SWIGTYPE_p_short swig_types[33]
+#define SWIGTYPE_p_signed_char swig_types[34]
+#define SWIGTYPE_p_std__complexT_double_t swig_types[35]
+#define SWIGTYPE_p_std__complexT_float_t swig_types[36]
+#define SWIGTYPE_p_unsigned_char swig_types[37]
+#define SWIGTYPE_p_unsigned_int swig_types[38]
+#define SWIGTYPE_p_unsigned_long_long swig_types[39]
+#define SWIGTYPE_p_unsigned_short swig_types[40]
+#define SWIGTYPE_p_void swig_types[41]
+static swig_type_info *swig_types[43];
+static swig_module_info swig_module = {swig_types, 42, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3729,7 +3730,7 @@ int my_primme(int lenEvals, R *evals,
                      primme->numEvals);
         return -30;
    }
-   if (primme->nLocal == 0)
+   if (primme->nLocal == -1)
         primme->nLocal = primme->n;
    if (len1Evecs < primme->nLocal || len2Evecs < primme->numEvals) {
         PyErr_Format(PyExc_ValueError,
@@ -3840,9 +3841,9 @@ int my_primme_svds(int lenSvals, R *svals,
                      primme_svds->numSvals);
         return -30;
    }
-   if (primme_svds->mLocal == 0)
+   if (primme_svds->mLocal == -1)
         primme_svds->mLocal = primme_svds->m;
-   if (primme_svds->nLocal == 0)
+   if (primme_svds->nLocal == -1)
         primme_svds->nLocal = primme_svds->n;
    if (len1SvecsLeft < primme_svds->mLocal || len2SvecsLeft < primme_svds->numSvals) {
         PyErr_Format(PyExc_ValueError,
@@ -10444,6 +10445,58 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_primme_params_orth_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  primme_orth arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_params_orth_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_orth_set" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "primme_params_orth_set" "', argument " "2"" of type '" "primme_orth""'");
+  } 
+  arg2 = static_cast< primme_orth >(val2);
+  if (arg1) (arg1)->orth = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_params_orth_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_params *arg1 = (primme_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  primme_orth result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_params_orth_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_params_orth_get" "', argument " "1"" of type '" "primme_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_params * >(argp1);
+  result = (primme_orth) ((arg1)->orth);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_primme_params_printLevel_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   primme_params *arg1 = (primme_params *) 0 ;
@@ -13779,6 +13832,56 @@ SWIGINTERN PyObject *_wrap_primme_svds_params_stats_get(PyObject *SWIGUNUSEDPARM
   arg1 = reinterpret_cast< primme_svds_params * >(argp1);
   result = (primme_svds_stats *)& ((arg1)->stats);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_primme_svds_stats, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_svds_params_convtest_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_svds_params *arg1 = (primme_svds_params *) 0 ;
+  void *arg2 = (void *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:primme_svds_params_convtest_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_svds_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_svds_params_convtest_set" "', argument " "1"" of type '" "primme_svds_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_svds_params * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1,SWIG_as_voidptrptr(&arg2), 0, SWIG_POINTER_DISOWN);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "primme_svds_params_convtest_set" "', argument " "2"" of type '" "void *""'"); 
+  }
+  if (arg1) (arg1)->convtest = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_primme_svds_params_convtest_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  primme_svds_params *arg1 = (primme_svds_params *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  void *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:primme_svds_params_convtest_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_primme_svds_params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "primme_svds_params_convtest_get" "', argument " "1"" of type '" "primme_svds_params *""'"); 
+  }
+  arg1 = reinterpret_cast< primme_svds_params * >(argp1);
+  result = (void *) ((arg1)->convtest);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_void, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -19692,6 +19795,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_params_aNorm_get", _wrap_primme_params_aNorm_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_eps_set", _wrap_primme_params_eps_set, METH_VARARGS, NULL},
 	 { (char *)"primme_params_eps_get", _wrap_primme_params_eps_get, METH_VARARGS, NULL},
+	 { (char *)"primme_params_orth_set", _wrap_primme_params_orth_set, METH_VARARGS, NULL},
+	 { (char *)"primme_params_orth_get", _wrap_primme_params_orth_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_printLevel_set", _wrap_primme_params_printLevel_set, METH_VARARGS, NULL},
 	 { (char *)"primme_params_printLevel_get", _wrap_primme_params_printLevel_get, METH_VARARGS, NULL},
 	 { (char *)"primme_params_initBasisMode_set", _wrap_primme_params_initBasisMode_set, METH_VARARGS, NULL},
@@ -19798,6 +19903,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"primme_svds_params_printLevel_get", _wrap_primme_svds_params_printLevel_get, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_stats_set", _wrap_primme_svds_params_stats_set, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_stats_get", _wrap_primme_svds_params_stats_get, METH_VARARGS, NULL},
+	 { (char *)"primme_svds_params_convtest_set", _wrap_primme_svds_params_convtest_set, METH_VARARGS, NULL},
+	 { (char *)"primme_svds_params_convtest_get", _wrap_primme_svds_params_convtest_get, METH_VARARGS, NULL},
 	 { (char *)"new_primme_svds_params", _wrap_new_primme_svds_params, METH_VARARGS, NULL},
 	 { (char *)"delete_primme_svds_params", _wrap_delete_primme_svds_params, METH_VARARGS, NULL},
 	 { (char *)"primme_svds_params_swigregister", primme_svds_params_swigregister, METH_VARARGS, NULL},
@@ -19934,6 +20041,7 @@ static swig_type_info _swigt__p_p_double = {"_p_p_double", "double **", 0, 0, (v
 static swig_type_info _swigt__p_primme_convergencetest = {"_p_primme_convergencetest", "enum primme_convergencetest *|primme_convergencetest *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_primme_event = {"_p_primme_event", "enum primme_event *|primme_event *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_primme_init = {"_p_primme_init", "enum primme_init *|primme_init *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_primme_orth = {"_p_primme_orth", "enum primme_orth *|primme_orth *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_primme_params = {"_p_primme_params", "primme_params *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_primme_params_label = {"_p_primme_params_label", "enum primme_params_label *|primme_params_label *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_primme_preset_method = {"_p_primme_preset_method", "enum primme_preset_method *|primme_preset_method *", 0, 0, (void*)0, 0};
@@ -19977,6 +20085,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_primme_convergencetest,
   &_swigt__p_primme_event,
   &_swigt__p_primme_init,
+  &_swigt__p_primme_orth,
   &_swigt__p_primme_params,
   &_swigt__p_primme_params_label,
   &_swigt__p_primme_preset_method,
@@ -20020,6 +20129,7 @@ static swig_cast_info _swigc__p_p_double[] = {  {&_swigt__p_p_double, 0, 0, 0},{
 static swig_cast_info _swigc__p_primme_convergencetest[] = {  {&_swigt__p_primme_convergencetest, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_primme_event[] = {  {&_swigt__p_primme_event, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_primme_init[] = {  {&_swigt__p_primme_init, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_primme_orth[] = {  {&_swigt__p_primme_orth, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_primme_params[] = {  {&_swigt__p_primme_params, 0, 0, 0},  {&_swigt__p_PrimmeParams, _p_PrimmeParamsTo_p_primme_params, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_primme_params_label[] = {  {&_swigt__p_primme_params_label, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_primme_preset_method[] = {  {&_swigt__p_primme_preset_method, 0, 0, 0},{0, 0, 0, 0}};
@@ -20063,6 +20173,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_primme_convergencetest,
   _swigc__p_primme_event,
   _swigc__p_primme_init,
+  _swigc__p_primme_orth,
   _swigc__p_primme_params,
   _swigc__p_primme_params_label,
   _swigc__p_primme_preset_method,
@@ -20807,6 +20918,9 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "primme_event_reset",SWIG_From_int(static_cast< int >(primme_event_reset)));
   SWIG_Python_SetConstant(d, "primme_event_converged",SWIG_From_int(static_cast< int >(primme_event_converged)));
   SWIG_Python_SetConstant(d, "primme_event_locked",SWIG_From_int(static_cast< int >(primme_event_locked)));
+  SWIG_Python_SetConstant(d, "primme_orth_default",SWIG_From_int(static_cast< int >(primme_orth_default)));
+  SWIG_Python_SetConstant(d, "primme_orth_implicit_I",SWIG_From_int(static_cast< int >(primme_orth_implicit_I)));
+  SWIG_Python_SetConstant(d, "primme_orth_explicit_I",SWIG_From_int(static_cast< int >(primme_orth_explicit_I)));
   SWIG_Python_SetConstant(d, "PRIMME_DEFAULT_METHOD",SWIG_From_int(static_cast< int >(PRIMME_DEFAULT_METHOD)));
   SWIG_Python_SetConstant(d, "PRIMME_DYNAMIC",SWIG_From_int(static_cast< int >(PRIMME_DYNAMIC)));
   SWIG_Python_SetConstant(d, "PRIMME_DEFAULT_MIN_TIME",SWIG_From_int(static_cast< int >(PRIMME_DEFAULT_MIN_TIME)));
@@ -20891,6 +21005,7 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "PRIMME_dynamicMethodSwitch",SWIG_From_int(static_cast< int >(PRIMME_dynamicMethodSwitch)));
   SWIG_Python_SetConstant(d, "PRIMME_massMatrixMatvec",SWIG_From_int(static_cast< int >(PRIMME_massMatrixMatvec)));
   SWIG_Python_SetConstant(d, "PRIMME_convTestFun",SWIG_From_int(static_cast< int >(PRIMME_convTestFun)));
+  SWIG_Python_SetConstant(d, "PRIMME_convtest",SWIG_From_int(static_cast< int >(PRIMME_convtest)));
   SWIG_Python_SetConstant(d, "PRIMME_ldevecs",SWIG_From_int(static_cast< int >(PRIMME_ldevecs)));
   SWIG_Python_SetConstant(d, "PRIMME_ldOPs",SWIG_From_int(static_cast< int >(PRIMME_ldOPs)));
   SWIG_Python_SetConstant(d, "PRIMME_monitorFun",SWIG_From_int(static_cast< int >(PRIMME_monitorFun)));
@@ -20954,6 +21069,8 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "PRIMME_SVDS_stats_timePrecond",SWIG_From_int(static_cast< int >(PRIMME_SVDS_stats_timePrecond)));
   SWIG_Python_SetConstant(d, "PRIMME_SVDS_stats_timeOrtho",SWIG_From_int(static_cast< int >(PRIMME_SVDS_stats_timeOrtho)));
   SWIG_Python_SetConstant(d, "PRIMME_SVDS_stats_timeGlobalSum",SWIG_From_int(static_cast< int >(PRIMME_SVDS_stats_timeGlobalSum)));
+  SWIG_Python_SetConstant(d, "PRIMME_SVDS_convTestFun",SWIG_From_int(static_cast< int >(PRIMME_SVDS_convTestFun)));
+  SWIG_Python_SetConstant(d, "PRIMME_SVDS_convtest",SWIG_From_int(static_cast< int >(PRIMME_SVDS_convtest)));
   SWIG_Python_SetConstant(d, "PRIMME_SVDS_monitorFun",SWIG_From_int(static_cast< int >(PRIMME_SVDS_monitorFun)));
   SWIG_Python_SetConstant(d, "PRIMME_SVDS_monitor",SWIG_From_int(static_cast< int >(PRIMME_SVDS_monitor)));
 #if PY_VERSION_HEX >= 0x03000000

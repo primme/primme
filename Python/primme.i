@@ -502,7 +502,7 @@ int my_primme(int lenEvals, R *evals,
                      primme->numEvals);
         return -30;
    }
-   if (primme->nLocal == 0)
+   if (primme->nLocal == -1)
         primme->nLocal = primme->n;
    if (len1Evecs < primme->nLocal || len2Evecs < primme->numEvals) {
         PyErr_Format(PyExc_ValueError,
@@ -613,9 +613,9 @@ int my_primme_svds(int lenSvals, R *svals,
                      primme_svds->numSvals);
         return -30;
    }
-   if (primme_svds->mLocal == 0)
+   if (primme_svds->mLocal == -1)
         primme_svds->mLocal = primme_svds->m;
-   if (primme_svds->nLocal == 0)
+   if (primme_svds->nLocal == -1)
         primme_svds->nLocal = primme_svds->n;
    if (len1SvecsLeft < primme_svds->mLocal || len2SvecsLeft < primme_svds->numSvals) {
         PyErr_Format(PyExc_ValueError,
