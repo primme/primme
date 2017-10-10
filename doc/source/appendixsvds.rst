@@ -118,7 +118,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to -1;
          | :c:func:`dprimme_svds` sets this field to |Sm| if |SnumProcs| is 1;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
@@ -131,7 +131,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to -1;
          | :c:func:`dprimme_svds` sets this field to to |n| if |SnumProcs| is 1;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 

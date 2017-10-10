@@ -1343,7 +1343,7 @@ primme_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to 0;
+            "primme_initialize()" sets this field to -1;
             "dprimme()" sets this field to "n" if "numProcs" is 1;
             this field is read by "dprimme()".
 
@@ -1663,7 +1663,7 @@ primme_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to 0;
+            "primme_initialize()" sets this field to -1;
             this field is read by "dprimme()".
 
    int numOrthoConst
@@ -2127,7 +2127,7 @@ primme_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to 0;
+            "primme_initialize()" sets this field to -1;
             this field is read by "dprimme()".
 
    void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
@@ -4165,7 +4165,7 @@ primme_svds_params
 
       Input/output:
 
-            "primme_svds_initialize()" sets this field to 0;
+            "primme_svds_initialize()" sets this field to -1;
             "dprimme_svds()" sets this field to "m" if "numProcs" is 1;
             this field is read by "dprimme_svds()" and "zprimme_svds()".
 
@@ -4179,7 +4179,7 @@ primme_svds_params
 
       Input/output:
 
-            "primme_svds_initialize()" sets this field to 0;
+            "primme_svds_initialize()" sets this field to -1;
             "dprimme_svds()" sets this field to to "n" if "numProcs" is 1;
             this field is read by "dprimme_svds()" and "zprimme_svds()".
 

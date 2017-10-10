@@ -117,7 +117,7 @@ primme_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_initialize` sets this field to -1;
          | :c:func:`dprimme` sets this field to |n| if |numProcs| is 1;
          | this field is read by :c:func:`dprimme`.
 
@@ -425,7 +425,7 @@ primme_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_initialize` sets this field to -1;
          | this field is read by :c:func:`dprimme`.
 
    .. c:member:: int numOrthoConst
@@ -876,7 +876,7 @@ primme_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_initialize` sets this field to -1;
          | this field is read by :c:func:`dprimme`.
 
 
