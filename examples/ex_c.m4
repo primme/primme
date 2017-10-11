@@ -40,7 +40,8 @@ ifdef(`USE_PETSC', ``#include <petscpc.h>
 #include <petscmat.h>
 '')dnl
 #include "primme.h"   /* header file is required to run primme */ 
-define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', `std::complex<double>', `complex double'), `double')))dnl
+define(`PRIMME_REAL', ifdef(`USE_PETSC', `PetscReal', ifdef(`USE_FLOAT', `float', `double')))dnl
+define(`PRIMME_SCALAR', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', ifdef(`USE_COMPLEX_CXX', `std::complex<PRIMME_REAL>', `complex PRIMME_REAL'), `PRIMME_REAL')))dnl
 ifdef(`USE_PETSC', `
 PetscErrorCode generateLaplacian1D(int n, Mat *A);
 void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -55,9 +56,9 @@ void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT 
 int main (int argc, char *argv[]) {
 
    /* Solver arrays and parameters */
-   double *evals;    /* Array with the computed eigenvalues */
-   double *rnorms;   /* Array with the computed eigenpairs residual norms */
-   PRIMME_NUM *evecs;    /* Array with the computed eigenvectors;
+   PRIMME_REAL *evals;    /* Array with the computed eigenvalues */
+   PRIMME_REAL *rnorms;   /* Array with the computed eigenpairs residual norms */
+   PRIMME_SCALAR *evecs;    /* Array with the computed eigenvectors;
                         first vector starts in evecs[0],
                         second vector starts in evecs[primme.n],
                         third vector starts in evecs[primme.n*2]...  */
@@ -96,7 +97,7 @@ ifdef(`USE_PETSC', `   ierr = MatGetSize(A, &n, NULL); CHKERRQ(ierr);
    primme.n = (PRIMME_INT)n;',
 `   primme.n = 100;') /* set problem dimension */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
-   primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
+   primme.eps = ifdef(`USE_PETSC', 1e-5, 1e-9);      /* ||r|| <= eps * ||matrix|| */
    primme.target = primme_smallest;
                            /* Wanted the smallest eigenvalues */
 
@@ -141,21 +142,25 @@ ifdef(`USE_PETSC', `   if (primme.procID == 0) /* Reports process with ID 0 */
    ')   primme_display_params(primme);
 
    /* Allocate space for converged Ritz values and residual norms */ifdef(`USE_COMPLEX_CXX', `
-   evals = new double[primme.numEvals];
-   evecs = new PRIMME_NUM[primme.n*primme.numEvals];
-   rnorms = new double[primme.numEvals];',`
-   evals = (double*)malloc(primme.numEvals*sizeof(double));
-   evecs = (PRIMME_NUM*)malloc(primme.n*primme.numEvals*sizeof(PRIMME_NUM));
-   rnorms = (double*)malloc(primme.numEvals*sizeof(double));')
+   evals = new PRIMME_REAL[primme.numEvals];
+   evecs = new PRIMME_SCALAR[primme.n*primme.numEvals];
+   rnorms = new PRIMME_REAL[primme.numEvals];',`
+   evals = (PRIMME_REAL*)malloc(primme.numEvals*sizeof(PRIMME_REAL));
+   evecs = (PRIMME_SCALAR*)malloc(primme.n*primme.numEvals*sizeof(PRIMME_SCALAR));
+   rnorms = (PRIMME_REAL*)malloc(primme.numEvals*sizeof(PRIMME_REAL));')
 
 define(`CALL_PRIMME', `   /* Call primme  */
-ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX)
+ifdef(`USE_PETSC', ``#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = cprimme(evals, evecs, rnorms, &primme);
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
    ret = zprimme(evals, evecs, rnorms, &primme);
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = sprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
    ret = dprimme(evals, evecs, rnorms, &primme);
 #endif
 '',
-`   ret = ifdef(`USE_COMPLEX',`z', `d')primme(evals, evecs, rnorms, &primme);
+`   ret = ifdef(`USE_COMPLEX', ifdef(`USE_FLOAT',`c',`z'), ifdef(`USE_FLOAT',`s',`d'))primme(evals, evecs, rnorms, &primme);
 ')dnl
 
    if (ret != 0) {
@@ -216,7 +221,7 @@ CALL_PRIMME
    /* Perturb the 5 approximate eigenvectors in evecs and used them as initial solution.
       This time the solver should converge faster than the last one. */
    for (i=0; i<primme.n*5; i++)
-      evecs[i] += rand()/(double)RAND_MAX*1e-4;
+      evecs[i] += rand()/(PRIMME_REAL)RAND_MAX*1e-4;
    primme.initSize = 5;
    primme.numEvals = 5;
 
@@ -316,12 +321,12 @@ void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, i
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-   PRIMME_NUM *xvec;     /* pointer to i-th input vector x */
-   PRIMME_NUM *yvec;     /* pointer to i-th output vector y */
+   PRIMME_SCALAR *xvec;     /* pointer to i-th input vector x */
+   PRIMME_SCALAR *yvec;     /* pointer to i-th output vector y */
    
    for (i=0; i<*blockSize; i++) {
-      xvec = (PRIMME_NUM *)x + *ldx*i;
-      yvec = (PRIMME_NUM *)y + *ldy*i;
+      xvec = (PRIMME_SCALAR *)x + *ldx*i;
+      yvec = (PRIMME_SCALAR *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = 0.0;
          if (row-1 >= 0) yvec[row] += -1.0*xvec[row-1];
@@ -377,12 +382,12 @@ void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT 
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-   PRIMME_NUM *xvec;     /* pointer to i-th input vector x */
-   PRIMME_NUM *yvec;     /* pointer to i-th output vector y */
+   PRIMME_SCALAR *xvec;     /* pointer to i-th input vector x */
+   PRIMME_SCALAR *yvec;     /* pointer to i-th output vector y */
     
    for (i=0; i<*blockSize; i++) {
-      xvec = (PRIMME_NUM *)x + *ldx*i;
-      yvec = (PRIMME_NUM *)y + *ldy*i;
+      xvec = (PRIMME_SCALAR *)x + *ldx*i;
+      yvec = (PRIMME_SCALAR *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = xvec[row]/2.;
       }      

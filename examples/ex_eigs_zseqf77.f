@@ -35,12 +35,12 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         Program primmeF77Example
 !-----------------------------------------------------------------------
         implicit none
+        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Pointer to the PRIMME data structure used internally by PRIMME
 !
 !       Note that for 64 bit systems, pointers are 8 bytes so use:
         integer*8 primme
-        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Problem setup
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

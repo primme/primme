@@ -34,16 +34,19 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
         Program primmeF77Example
 !-----------------------------------------------------------------------
-        implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscmat.h>
+        use petscvec
+        use petscmat
+        use petscpc
+        implicit none
+        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Pointer to the PRIMME data structure used internally by PRIMME
 !
 !       Note that for 64 bit systems, pointers are 8 bytes so use:
         integer*8 primme
-        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Problem setup
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,10 +234,8 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
         subroutine generateLaplacian1D(n0,A,ierr)
 !       ----------------------------------------------------------------
+        use petscmat
         implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
         integer*8 n0
         PetscInt n, one, two, three
         Mat A
@@ -275,11 +276,10 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         subroutine PETScMatvec(x,ldx,y,ldy,k,primme,err)
 !       ----------------------------------------------------------------
         use iso_c_binding
+        use petscvec
+        use petscmat
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
         integer*8 ldx,ldy
         PetscScalar x(ldx,*), y(ldy,*)
         integer*8 primme
@@ -307,12 +307,11 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         subroutine ApplyPCPrecPETSc(x,ldx,y,ldy,k,primme,err)
 !       ----------------------------------------------------------------
         use iso_c_binding
+        use petscvec
+        use petscmat
+        use petscpc
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
         integer*8 ldx,ldy
         PetscScalar x(ldx,*), y(ldy,*)
         integer*8 primme
@@ -344,9 +343,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         subroutine par_GlobalSum(x,y,k,primme,ierr)
 !       ----------------------------------------------------------------
         use iso_c_binding
+        use petscsys
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
         real*8, target :: x(k), y(k)
         integer*8 primme
         integer k,ierr

@@ -83,7 +83,7 @@ int main (int argc, char *argv[]) {
    primme_svds.m = 500;
    primme_svds.n = 100; /* set problem dimension */
    primme_svds.numSvals = 4;   /* Number of wanted singular values */
-   primme_svds.eps = 1e-12;     /* ||r|| <= eps * ||matrix|| */
+   primme_svds.eps = 1e-6;     /* ||r|| <= eps * ||matrix|| */
    primme_svds.target = primme_svds_smallest;
                                /* Seeking for the largest singular values  */
 

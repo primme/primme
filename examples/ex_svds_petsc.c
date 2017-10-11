@@ -49,7 +49,7 @@
 #endif
 
 
-PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A);
+PetscErrorCode generateLauchli(int m, int n, PetscReal mu, Mat *A);
 void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
                          int *transpose, primme_svds_params *primme_svds, int *ierr);
 void ApplyPCPrecAHA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
@@ -60,8 +60,8 @@ void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
 int main (int argc, char *argv[]) {
 
    /* Solver arrays and parameters */
-   double *svals;    /* Array with the computed singular values */
-   double *rnorms;   /* Array with the computed residual norms */
+   PetscReal *svals;    /* Array with the computed singular values */
+   PetscReal *rnorms;   /* Array with the computed residual norms */
    PetscScalar *svecs;    /* Array with the computed singular vectors;
                         first right (v) vector starts in svecs[0],
                         second right (v) vector starts in svecs[primme_svd.n],
@@ -72,7 +72,7 @@ int main (int argc, char *argv[]) {
    /* Other miscellaneous items */
    int ret;
    int i;
-   double mu = 1e-5;
+   PetscReal mu = 1e-5;
    Mat A; /* problem matrix */
    Mat AHA;          /* auxiliary matrix for A^t*A */
    PC pc;            /* preconditioner */
@@ -98,7 +98,7 @@ int main (int argc, char *argv[]) {
    primme_svds.m = (PRIMME_INT)m;
    primme_svds.n = (PRIMME_INT)n; /* set problem dimension */
    primme_svds.numSvals = 4;   /* Number of wanted singular values */
-   primme_svds.eps = 1e-12;     /* ||r|| <= eps * ||matrix|| */
+   primme_svds.eps = 1e-6;     /* ||r|| <= eps * ||matrix|| */
    primme_svds.target = primme_svds_smallest;
                                /* Seeking for the largest singular values  */
 
@@ -155,15 +155,19 @@ int main (int argc, char *argv[]) {
       primme_svds_display_params(primme_svds);
 
    /* Allocate space for converged Ritz values and residual norms */
-   svals = (double*)malloc(primme_svds.numSvals*sizeof(double));
+   svals = (PetscReal*)malloc(primme_svds.numSvals*sizeof(PetscReal));
    svecs = (PetscScalar*)malloc((primme_svds.n+primme_svds.m)
          *primme_svds.numSvals*sizeof(PetscScalar));
-   rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
+   rnorms = (PetscReal*)malloc(primme_svds.numSvals*sizeof(PetscReal));
 
    /* Call primme_svds  */
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = cprimme_svds(svals, svecs, rnorms, &primme_svds);
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
    ret = zprimme_svds(svals, svecs, rnorms, &primme_svds);
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = sprimme_svds(svals, svecs, rnorms, &primme_svds);
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
    ret = dprimme_svds(svals, svecs, rnorms, &primme_svds);
 #endif
 
@@ -219,7 +223,7 @@ int main (int argc, char *argv[]) {
         [ 0  0  0  0  0 ... en-1]
 */
 
-PetscErrorCode generateLauchli(int m, int n, double mu, Mat *A) {
+PetscErrorCode generateLauchli(int m, int n, PetscReal mu, Mat *A) {
    PetscInt       i,Istart,Iend;
    PetscErrorCode ierr;
 

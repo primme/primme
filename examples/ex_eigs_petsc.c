@@ -49,8 +49,8 @@ static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
 int main (int argc, char *argv[]) {
 
    /* Solver arrays and parameters */
-   double *evals;    /* Array with the computed eigenvalues */
-   double *rnorms;   /* Array with the computed eigenpairs residual norms */
+   PetscReal *evals;    /* Array with the computed eigenvalues */
+   PetscReal *rnorms;   /* Array with the computed eigenpairs residual norms */
    PetscScalar *evecs;    /* Array with the computed eigenvectors;
                         first vector starts in evecs[0],
                         second vector starts in evecs[primme.n],
@@ -84,7 +84,7 @@ int main (int argc, char *argv[]) {
    ierr = MatGetSize(A, &n, NULL); CHKERRQ(ierr);
    primme.n = (PRIMME_INT)n; /* set problem dimension */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
-   primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
+   primme.eps = 1e-5;      /* ||r|| <= eps * ||matrix|| */
    primme.target = primme_smallest;
                            /* Wanted the smallest eigenvalues */
 
@@ -126,14 +126,18 @@ int main (int argc, char *argv[]) {
       primme_display_params(primme);
 
    /* Allocate space for converged Ritz values and residual norms */
-   evals = (double*)malloc(primme.numEvals*sizeof(double));
+   evals = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
    evecs = (PetscScalar*)malloc(primme.n*primme.numEvals*sizeof(PetscScalar));
-   rnorms = (double*)malloc(primme.numEvals*sizeof(double));
+   rnorms = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
 
    /* Call primme  */
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = cprimme(evals, evecs, rnorms, &primme);
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
    ret = zprimme(evals, evecs, rnorms, &primme);
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = sprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
    ret = dprimme(evals, evecs, rnorms, &primme);
 #endif
 
