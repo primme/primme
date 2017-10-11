@@ -31,7 +31,8 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 *  Example to compute the k largest singular values in a Lauchli matrix.
 *
 *******************************************************************************
-define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex*16', `real*8')))dnl
+define(`PRIMME_SCALAR', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex*16', `real*8')))dnl
+define(`PRIMME_REAL', ifdef(`USE_PETSC', `PetscReal', `real*8'))dnl
 
         Program primmeSvdsF77Example
 !-----------------------------------------------------------------------
@@ -65,7 +66,7 @@ ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
      :            NUMSmax         = 5,
      :            BLOCKmax        = 1,
      :            maxMatvecs      = 300000,
-     :            TOL             = 1.0D-12,
+     :            TOL             = ifdef(`USE_PETSC', 1.0D-5, 1.0D-12),
      :            printLevel      = 2,
      :            whichSvals      = primme_svds_closest_abs,
      :            numTargetShifts = 1
@@ -82,8 +83,9 @@ ifdef(`USE_PETSC', `
 
 !       Singular values, vectors and their residual norms
 !
-        real*8   svals(NUMSmax), rnorms(NUMSmax)
-        PRIMME_NUM   svecs((m+n)*NUMSmax)
+        PRIMME_REAL svals(NUMSmax)
+        PRIMME_REAL rnorms(NUMSmax)
+        PRIMME_SCALAR svecs((m+n)*NUMSmax)
 
 !       Other vars
 !
@@ -170,7 +172,8 @@ ifdef(`USE_POINTER', `        comm = PETSC_COMM_WORLD
 ')dnl
 
 !       Set preconditioner based on A^H*A (optional)
-ifdef(`USE_PETSC', `        call PCCreate(PETSC_COMM_WORLD, pc, ierr)
+ifdef(`USE_PETSC', `        pc = tPC(0)
+        call PCCreate(PETSC_COMM_WORLD, pc, ierr)
         call MatHermitianTranspose(A, MAT_INITIAL_MATRIX, AH, ierr)
         call MatMatMult(AH, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT_REAL,
      :                                                        AHA, ierr)
@@ -217,13 +220,17 @@ ifdef(`USE_POINTER', `        call primme_svds_set_member_f77(primme_svds,
 !       Calling the PRIMME solver
 !       ----------------------------------------------------------------
 ifdef(`USE_PETSC', ``
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call cprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call zprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call sprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call dprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
 #endif
 '', `
-        call ifdef(`USE_COMPLEX',`z', `d')primme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+        call  ifdef(`USE_COMPLEX', ifdef(`USE_FLOAT',`c',`z'), ifdef(`USE_FLOAT',`s',`d'))primme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
 ')dnl
 
 !       ----------------------------------------------------------------
@@ -282,6 +289,7 @@ ifdef([USE_PETSC], [
         PetscInt i,i_1, Istart,Iend
         PetscErrorCode ierr
 
+        A = tMat(0)
         call MatCreate(PETSC_COMM_WORLD, A, ierr)
         m = m0
         n = n0
@@ -314,7 +322,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
         include 'primme_f77.h'
         integer*8 ldx,ldy
         integer k,transpose
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer j,err
 ifdef([USE_POINTER], [        Mat, pointer :: A
@@ -330,6 +338,8 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
      :                                  PRIMME_SVDS_matrix, pA, err)
         call c_f_pointer(pA, A)
 ])
+        xvec = tVec(0)
+        yvec = tVec(0)
 #if PETSC_VERSION_LT(3,6,0)
         call MatGetVecs(A, xvec, yvec, ierr)
 #else
@@ -366,7 +376,7 @@ ifdef([USE_POINTER], [        use iso_c_binding
         include 'primme_f77.h'
         integer*8 ldx,ldy,mLocal,nLocal
         integer k,mode,err
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer j
 ifdef([USE_POINTER], [        Mat, pointer :: A
@@ -391,8 +401,10 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
         call c_f_pointer(ppc, pc)
 ])
         if (mode.eq.PRIMME_SVDS_op_AtA) then
-           call MatCreateVecs(A, xvec, PETSC_NULL_SCALAR, ierr)
-           call MatCreateVecs(A, yvec, PETSC_NULL_SCALAR, ierr)
+           xvec = tVec(0)
+           yvec = tVec(0)
+           call MatCreateVecs(A, xvec, PETSC_NULL_VEC, ierr)
+           call MatCreateVecs(A, yvec, PETSC_NULL_VEC, ierr)
            do j=1,k
               call VecPlaceArray(xvec, x(1,j), ierr)
               call VecPlaceArray(yvec, y(1,j), ierr)
@@ -415,7 +427,7 @@ ifdef([USE_POINTER], [        call primme_svds_get_member_f77(primme_svds,
         use petscsys
         implicit none
         include 'primme_f77.h'
-        real*8, target :: x(k), y(k)
+        PRIMME_REAL, target :: x(k), y(k)
         integer*8 primme_svds
         integer k,ierr
 ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
@@ -453,7 +465,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         intrinsic min
         include 'primme_f77.h'
         integer*8 ldx,ldy
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer*8 m, n, i
         integer k,transpose,j, ierr
@@ -504,7 +516,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         intrinsic min
         include 'primme_f77.h'
         integer*8 ldx,ldy,m,n
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer k,mode,i,j,ierr
         real*8 c, ei, shift

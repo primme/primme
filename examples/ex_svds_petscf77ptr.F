@@ -63,7 +63,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :            NUMSmax         = 5,
      :            BLOCKmax        = 1,
      :            maxMatvecs      = 300000,
-     :            TOL             = 1.0D-12,
+     :            TOL             = 1.0D-5,
      :            printLevel      = 2,
      :            whichSvals      = primme_svds_closest_abs,
      :            numTargetShifts = 1
@@ -77,8 +77,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
 !       Singular values, vectors and their residual norms
 !
-        real*8   svals(NUMSmax), rnorms(NUMSmax)
-        PetscScalar   svecs((m+n)*NUMSmax)
+        PetscReal svals(NUMSmax)
+        PetscReal rnorms(NUMSmax)
+        PetscScalar svecs((m+n)*NUMSmax)
 
 !       Other vars
 !
@@ -151,6 +152,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :        PRIMME_SVDS_globalSumReal, par_GlobalSum, ierr)
 
 !       Set preconditioner based on A^H*A (optional)
+        pc = tPC(0)
         call PCCreate(PETSC_COMM_WORLD, pc, ierr)
         call MatHermitianTranspose(A, MAT_INITIAL_MATRIX, AH, ierr)
         call MatMatMult(AH, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT_REAL,
@@ -194,9 +196,13 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 !       Calling the PRIMME solver
 !       ----------------------------------------------------------------
 
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call cprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call zprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call sprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call dprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
 #endif
 
@@ -254,6 +260,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         PetscInt i,i_1, Istart,Iend
         PetscErrorCode ierr
 
+        A = tMat(0)
         call MatCreate(PETSC_COMM_WORLD, A, ierr)
         m = m0
         n = n0
@@ -297,6 +304,8 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :                                  PRIMME_SVDS_matrix, pA, err)
         call c_f_pointer(pA, A)
 
+        xvec = tVec(0)
+        yvec = tVec(0)
 #if PETSC_VERSION_LT(3,6,0)
         call MatGetVecs(A, xvec, yvec, ierr)
 #else
@@ -353,8 +362,10 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         call c_f_pointer(ppc, pc)
 
         if (mode.eq.PRIMME_SVDS_op_AtA) then
-           call MatCreateVecs(A, xvec, PETSC_NULL_SCALAR, ierr)
-           call MatCreateVecs(A, yvec, PETSC_NULL_SCALAR, ierr)
+           xvec = tVec(0)
+           yvec = tVec(0)
+           call MatCreateVecs(A, xvec, PETSC_NULL_VEC, ierr)
+           call MatCreateVecs(A, yvec, PETSC_NULL_VEC, ierr)
            do j=1,k
               call VecPlaceArray(xvec, x(1,j), ierr)
               call VecPlaceArray(yvec, y(1,j), ierr)
@@ -377,7 +388,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         use petscsys
         implicit none
         include 'primme_f77.h'
-        real*8, target :: x(k), y(k)
+        PetscReal, target :: x(k), y(k)
         integer*8 primme_svds
         integer k,ierr
         MPI_Comm, pointer :: comm

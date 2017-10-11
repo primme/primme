@@ -56,7 +56,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :            NUMEmax         = 5,
      :            BLOCKmax        = 1,
      :            maxMatvecs      = 300000,
-     :            ETOL            = 1.0D-14,
+     :            ETOL            = 1.0D-12,
      :            printLevel      = 5,
      :            whichEvals      = primme_smallest,
      :            numTargetShifts = 2,
@@ -69,8 +69,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
 !       Eigenvalues, eigenvectors, and their residual norms
 !
-        real*8   evals(NUMEmax), rnorms(NUMEmax)
-        complex*16   evecs(n*NUMEmax)
+        real*8 evals(NUMEmax)
+        real*8 rnorms(NUMEmax)
+        complex*16 evecs(n*NUMEmax)
 
 !       Other vars
 !
