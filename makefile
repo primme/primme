@@ -49,7 +49,7 @@ octave: clean clean_lib lib
 	@make -C Matlab octave
 
 python: clean clean_lib lib
-	@make -C Python
+	@make -C Python clean all
 
 python_install: python
 	@make -C Python install
