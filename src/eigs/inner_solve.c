@@ -276,7 +276,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
    eval_prev = eval;
    REAL rho_prev_real;
    CHKERR(dist_dot_real(g, 1, d, 1, primme, &rho_prev_real), -1);
-   rho_prev = rho_prev;
+   rho_prev = rho_prev_real;
 
    /* Initialize recurrences used to dynamically update the eigenpair */
 
