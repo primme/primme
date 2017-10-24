@@ -552,7 +552,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
          for (j=0; j<i; j++) n += REAL_PART(CONJ(VtBV[i*ldVtBV+j])*VtBV[i*ldVtBV+j]);
          n += REAL_PART(CONJ(VtBV[i*ldVtBV+i] - (SCALAR)1.0)*(VtBV[i*ldVtBV+i] - (SCALAR)1.0));
       }
-      if (*restartsSinceReset <= 0) {
+      if (*restartsSinceReset <= 1) {
          primme->stats.maxConvTol = max(primme->stats.maxConvTol,
                sqrt(n)*primme->stats.estimateLargestSVal);
       }
