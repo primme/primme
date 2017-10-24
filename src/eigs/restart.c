@@ -549,7 +549,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
       REAL n = 0.0;
       int i,j;
       for (i=0; i<restartSize; i++) {
-         for (j=0; j<i; j++) n += REAL_PART(CONJ(VtBV[i*ldVtBV+j])*VtBV[i*ldVtBV+j]);
+         for (j=0; j<i; j++) n += 2*REAL_PART(CONJ(VtBV[i*ldVtBV+j])*VtBV[i*ldVtBV+j]);
          n += REAL_PART(CONJ(VtBV[i*ldVtBV+i] - (SCALAR)1.0)*(VtBV[i*ldVtBV+i] - (SCALAR)1.0));
       }
       if (*restartsSinceReset <= 1) {

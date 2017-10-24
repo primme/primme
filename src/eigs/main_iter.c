@@ -1472,7 +1472,7 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
    int switchto=0;
-   double est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
+   REAL est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
 
    /* ----------------------------------------------------------------- */
    /* Asymptotic evaluation of the JDQMR versus GD+k for small numEvals */
@@ -1488,7 +1488,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
       /* If more many procs, make sure that all have the same ratio */
       if (primme->numProcs > 1) {
-         CHKERR(globalSum_dprimme(&ratio, &globalRatio, 1, primme), -1); 
+         CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1, primme), -1); 
          ratio = globalRatio/primme->numProcs;
       }
 
@@ -1519,7 +1519,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
    /* If more many procs, make sure that all have the same ratio */
    if (primme->numProcs > 1) {
-      CHKERR(globalSum_dprimme(&ratio, &globalRatio, 1, primme), -1);
+      CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1, primme), -1);
       ratio = globalRatio/primme->numProcs;
    }
    
@@ -1584,7 +1584,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 static int switch_from_GDpk(primme_CostModel *model, primme_params *primme) {
 
    int switchto=0;
-   double ratio, globalRatio;
+   REAL ratio, globalRatio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */
    /* do not include restart costs. Remain with GD+k until a restart occurs */
@@ -1616,7 +1616,7 @@ static int switch_from_GDpk(primme_CostModel *model, primme_params *primme) {
 
    /* If more many procs, make sure that all have the same ratio */
    if (primme->numProcs > 1) {
-      CHKERR(globalSum_dprimme(&ratio, &globalRatio, 1, primme), -1); 
+      CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1, primme), -1); 
       ratio = globalRatio/primme->numProcs;
    }
 
