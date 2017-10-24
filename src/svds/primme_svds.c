@@ -804,7 +804,6 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
 	 break;
       case primme_svds_op_none:
 	 break;
-      }
    }
 
    return 0;
