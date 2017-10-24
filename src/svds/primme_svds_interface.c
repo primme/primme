@@ -337,6 +337,15 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       primme->projectionParams.projection = primme_proj_refined;
    }
 
+   /* Disable explicit computation of V'*V for finding the smallest singular  */
+   /* values. It doesn't help.                                                */
+ 
+   if (stage == 0 && primme_svds->target == primme_svds_smallest &&
+         (method == primme_svds_op_AtA || method == primme_svds_op_AAt) &&
+         primme->orth == primme_orth_default) {
+      primme->orth = primme_orth_implicit_I;
+   }
+
    if (primme_svds->locking >= 0) {
       primme->locking = primme_svds->locking;
    }

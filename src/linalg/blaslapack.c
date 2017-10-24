@@ -727,7 +727,7 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
 }
 
 /*******************************************************************************
- * Subroutine Num_trsm_Sprimme - b = op(A)\b
+ * Subroutine Num_trsm_Sprimme - b = op(A)\b, where A is triangular
  ******************************************************************************/
  
 TEMPLATE_PLEASE

@@ -39,10 +39,20 @@
 #if !defined(CHECK_TEMPLATE) && !defined(ortho_Rprimme)
 #  define ortho_Rprimme CONCAT(ortho_,REAL_SUF)
 #endif
-int ortho_dprimme(double *basis, PRIMME_INT ldBasis, double *R,
-      PRIMME_INT ldR, int b1, int b2, double *locked, PRIMME_INT ldLocked,
+int ortho_dprimme(double *V, PRIMME_INT ldV, double *R,
+      int ldR, int b1, int b2, double *locked, PRIMME_INT ldLocked,
       int numLocked, PRIMME_INT nLocal, PRIMME_INT *iseed, double machEps,
       double *rwork, size_t *rworkSize, primme_params *primme);
+#if !defined(CHECK_TEMPLATE) && !defined(Bortho_local_Sprimme)
+#  define Bortho_local_Sprimme CONCAT(Bortho_local_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Bortho_local_Rprimme)
+#  define Bortho_local_Rprimme CONCAT(Bortho_local_,REAL_SUF)
+#endif
+int Bortho_local_dprimme(double *V, int ldV, double *R,
+      int ldR, int b1, int b2, double *locked, int ldLocked,
+      int numLocked, PRIMME_INT nLocal, double *B, int ldB, PRIMME_INT *iseed,
+      double machEps, double *rwork, size_t *rworkSize, primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(ortho_single_iteration_Sprimme)
 #  define ortho_single_iteration_Sprimme CONCAT(ortho_single_iteration_,SCALAR_SUF)
 #endif
@@ -53,26 +63,38 @@ int ortho_single_iteration_dprimme(double *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, double *X, int *inX, int nX, PRIMME_INT ldX,
       double *overlaps, double *norms, double *rwork, size_t *lrwork,
       primme_params *primme);
-int ortho_zprimme(PRIMME_COMPLEX_DOUBLE *basis, PRIMME_INT ldBasis, PRIMME_COMPLEX_DOUBLE *R,
-      PRIMME_INT ldR, int b1, int b2, PRIMME_COMPLEX_DOUBLE *locked, PRIMME_INT ldLocked,
+int ortho_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *R,
+      int ldR, int b1, int b2, PRIMME_COMPLEX_DOUBLE *locked, PRIMME_INT ldLocked,
       int numLocked, PRIMME_INT nLocal, PRIMME_INT *iseed, double machEps,
       PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, primme_params *primme);
+int Bortho_local_zprimme(PRIMME_COMPLEX_DOUBLE *V, int ldV, PRIMME_COMPLEX_DOUBLE *R,
+      int ldR, int b1, int b2, PRIMME_COMPLEX_DOUBLE *locked, int ldLocked,
+      int numLocked, PRIMME_INT nLocal, PRIMME_COMPLEX_DOUBLE *B, int ldB, PRIMME_INT *iseed,
+      double machEps, PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, primme_params *primme);
 int ortho_single_iteration_zprimme(PRIMME_COMPLEX_DOUBLE *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *X, int *inX, int nX, PRIMME_INT ldX,
       double *overlaps, double *norms, PRIMME_COMPLEX_DOUBLE *rwork, size_t *lrwork,
       primme_params *primme);
-int ortho_sprimme(float *basis, PRIMME_INT ldBasis, float *R,
-      PRIMME_INT ldR, int b1, int b2, float *locked, PRIMME_INT ldLocked,
+int ortho_sprimme(float *V, PRIMME_INT ldV, float *R,
+      int ldR, int b1, int b2, float *locked, PRIMME_INT ldLocked,
       int numLocked, PRIMME_INT nLocal, PRIMME_INT *iseed, double machEps,
       float *rwork, size_t *rworkSize, primme_params *primme);
+int Bortho_local_sprimme(float *V, int ldV, float *R,
+      int ldR, int b1, int b2, float *locked, int ldLocked,
+      int numLocked, PRIMME_INT nLocal, float *B, int ldB, PRIMME_INT *iseed,
+      double machEps, float *rwork, size_t *rworkSize, primme_params *primme);
 int ortho_single_iteration_sprimme(float *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, float *X, int *inX, int nX, PRIMME_INT ldX,
       float *overlaps, float *norms, float *rwork, size_t *lrwork,
       primme_params *primme);
-int ortho_cprimme(PRIMME_COMPLEX_FLOAT *basis, PRIMME_INT ldBasis, PRIMME_COMPLEX_FLOAT *R,
-      PRIMME_INT ldR, int b1, int b2, PRIMME_COMPLEX_FLOAT *locked, PRIMME_INT ldLocked,
+int ortho_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *R,
+      int ldR, int b1, int b2, PRIMME_COMPLEX_FLOAT *locked, PRIMME_INT ldLocked,
       int numLocked, PRIMME_INT nLocal, PRIMME_INT *iseed, double machEps,
       PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, primme_params *primme);
+int Bortho_local_cprimme(PRIMME_COMPLEX_FLOAT *V, int ldV, PRIMME_COMPLEX_FLOAT *R,
+      int ldR, int b1, int b2, PRIMME_COMPLEX_FLOAT *locked, int ldLocked,
+      int numLocked, PRIMME_INT nLocal, PRIMME_COMPLEX_FLOAT *B, int ldB, PRIMME_INT *iseed,
+      double machEps, PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, primme_params *primme);
 int ortho_single_iteration_cprimme(PRIMME_COMPLEX_FLOAT *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *X, int *inX, int nX, PRIMME_INT ldX,
       float *overlaps, float *norms, PRIMME_COMPLEX_FLOAT *rwork, size_t *lrwork,

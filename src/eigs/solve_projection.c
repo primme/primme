@@ -214,6 +214,7 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
       CHKERR((Num_hegv_Sprimme("V", "U", basisSize, hVecs, basisSize, VtBV,
                   basisSize, hVals, &rwork0, -1, &info), info), -1);
       *lrwork = max(*lrwork, (size_t)REAL_PART(rwork0));
+      *iwork = max(*iwork, 2*basisSize);
       return 0;
    }
 

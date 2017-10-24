@@ -414,7 +414,7 @@ static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int s
       } 
    }
    else if (stage == 1 && primme->targetShifts == NULL &&
-            primme_svds->target == primme_svds_smallest) {
+         primme_svds->target == primme_svds_smallest) {
 
       assert(method == primme_svds_op_augmented);
       *allocatedTargetShifts = 1;
@@ -785,9 +785,12 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
       primme->targetShifts = NULL;
    }
 
-   /* Update residual norms when final stage */
-   if (primme_svds->methodStage2 != primme_svds_op_none) {
-      switch(method) {
+   /* Update residual norms. For normal equations we have to divide by the    */
+   /* the singular value. For the augmented, nothing is required because the  */
+   /* user defined stopping criterion computes the actual residual vector     */
+   /* norm and update the value.                                              */
+   
+   switch(method) {
       case primme_svds_op_AtA:
       case primme_svds_op_AAt:
          for (i=0; i<primme_svds->initSize; i++) {
@@ -798,9 +801,9 @@ int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
          for (i=0; i<primme_svds->initSize; i++) {
             rnorms[i] *= sqrt(2.0);
          }
-         break;
+	 break;
       case primme_svds_op_none:
-         break;
+	 break;
       }
    }
 
@@ -1194,7 +1197,6 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
             primme_svds->method : primme_svds->methodStage2));
    double aNorm = (primme->aNorm > 0.0) ?
             primme->aNorm : primme->stats.estimateLargestSVal;
-   double maxaNorm = max(primme->aNorm, primme->stats.estimateLargestSVal);
 
    /* NOTE: Don't check machine precision limit of the residual norm.      */
    /* Regardless of how small the residual is, we don't want to mark as    */

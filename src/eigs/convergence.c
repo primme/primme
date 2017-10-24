@@ -146,6 +146,11 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
          continue;
       }
 
+      if (blockNorms[i-left] <= primme->stats.maxConvTol) {
+         flags[i] = CONVERGED;
+         continue;
+      }
+
       CHKERR(convTestFun_Sprimme(hVals[i], X?&X[ldX*(i-left)]:NULL,
                blockNorms[i-left], &isConv, primme), -1);
 
