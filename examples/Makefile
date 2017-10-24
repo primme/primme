@@ -57,7 +57,7 @@ test_examples_C test_examples_F77 test_examples_CXX: test_examples% : examples%
 	@ok="0";for ex in $(EXAMPLES$*); do \
 		echo "=========== Executing ./$$ex"; \
 	        case $$ex in \
-		*petsc*) ${MPIRUN} ./$$ex || ok="1";; \
+		*petsc*) ${MPIRUN} ./$$ex < /dev/null || ok="1";; \
 		*)                 ./$$ex || ok="1"; \
 	        esac; \
 	done < /dev/null > tests.log 2>&1; \
