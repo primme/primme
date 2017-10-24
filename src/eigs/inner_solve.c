@@ -301,7 +301,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
                sizeLprojector, w, workSpace, primme), -1);
       CHKERR(dist_dot_real(d, 1, w, 1, primme, &sigma_prev), -1);
 
-      if (!isfinite(sigma_prev) || sigma_prev == 0.0L) {
+      if (!ISFINITE(sigma_prev) || sigma_prev == 0.0L) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because SIGMA %e\n",sigma_prev);
          }
@@ -313,7 +313,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       }
 
       alpha_prev = rho_prev/sigma_prev;
-      if (!isfinite(alpha_prev) || fabs(alpha_prev) < machEps || fabs(alpha_prev) > 1.0L/machEps){
+      if (!ISFINITE(alpha_prev) || fabs(alpha_prev) < machEps || fabs(alpha_prev) > 1.0L/machEps){
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because ALPHA %e\n",alpha_prev);
          }
@@ -336,7 +336,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       gamma = c*c*Theta_prev*Theta_prev;
       eta = alpha_prev*c*c;
       for (i = 0; i < primme->nLocal; i++) {
-          delta[i] = gamma*delta[i] + eta*d[i];
+          delta[i] = delta[i]*(SCALAR)gamma + d[i]*(SCALAR)eta;
           sol[i] = delta[i]+sol[i];
       }
       numIts++;
@@ -386,9 +386,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          else 
             eres_updated = sqrt(eres2_updated);
 
-         assert(isfinite(Delta) && isfinite(Beta) && isfinite(Phi)
-               && isfinite(Psi) && isfinite(Gamma) && isfinite(eval_updated)
-               && isfinite(eres2_updated) && isfinite(eres_updated));
+         assert(ISFINITE(Delta) && ISFINITE(Beta) && ISFINITE(Phi)
+               && ISFINITE(Psi) && ISFINITE(Gamma) && ISFINITE(eval_updated)
+               && ISFINITE(eres2_updated) && ISFINITE(eres_updated));
 
          /* --------------------------------------------------------*/
          /* Stopping criteria                                       */

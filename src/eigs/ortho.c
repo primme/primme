@@ -324,7 +324,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
                R[ldR*i + i] = s1;
             }
 
-            if (isfinite((REAL)(1.0/s1))) {
+            if (ISFINITE((REAL)(1.0/s1))) {
                Num_scal_Sprimme(nLocal, 1.0/s1, &V[ldV*i], 1);
                break;
             }
