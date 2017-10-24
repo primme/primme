@@ -232,6 +232,9 @@ ifdef(`USE_PETSC', ``
 '', `
         call  ifdef(`USE_COMPLEX', ifdef(`USE_FLOAT',`c',`z'), ifdef(`USE_FLOAT',`s',`d'))primme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
 ')dnl
+        if (ierr.ne.0) then
+          stop 1
+        endif
 
 !       ----------------------------------------------------------------
 !       Reporting results

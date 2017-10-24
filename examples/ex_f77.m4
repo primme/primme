@@ -216,6 +216,9 @@ ifdef(`USE_PETSC', ``
 '', `
         call ifdef(`USE_COMPLEX', ifdef(`USE_FLOAT',`c',`z'), ifdef(`USE_FLOAT',`s',`d'))primme_f77(evals, evecs, rnorms, primme, ierr)
 ')dnl
+        if (ierr.ne.0) then
+          stop 1
+        endif
 
 !       ----------------------------------------------------------------
 !       Reporting results

@@ -198,6 +198,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 #elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call dprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
 #endif
+        if (ierr.ne.0) then
+          stop 1
+        endif
 
 !       ----------------------------------------------------------------
 !       Reporting results
