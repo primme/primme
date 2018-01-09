@@ -2835,7 +2835,7 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
       SCALAR *rwork, size_t *rworkSize, primme_params *primme) {
 
    int i;
-   SCALAR *rwork0;
+   SCALAR *rwork0=NULL;
    int newNumPrevRetained=0;
 
    /* Return memory requirement */
