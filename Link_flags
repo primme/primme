@@ -23,7 +23,7 @@ ifeq ($(origin LIBS), undefined)
         LIBS += -llapack -lblas -lm
         UNAME := $(shell uname)
         ifneq ($(UNAME), Darwin)
-            LIBS += -gfortran
+            LIBS += -lgfortran
         endif
     else
         ifneq (,$(findstring icc,$(shell $(CC) --version)))

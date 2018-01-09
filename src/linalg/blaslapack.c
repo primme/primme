@@ -544,6 +544,8 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       return;
    }
 
+#ifndef USE_XHEGV
+
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = ldwork;
@@ -551,9 +553,9 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT ONE = 1;
    SCALAR *z, *b;
    REAL abstol=0.0;
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
    REAL *rwork;
-#endif
+#  endif
    PRIMME_BLASINT *iwork, *ifail;
    SCALAR dummys=0;
    REAL   dummyr=0;
@@ -572,9 +574,9 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       if (
                WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
             || WRKSP_MALLOC_PRIMME(n*n, &b, &work, &lldwork) 
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
             || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
-#endif
+#  endif
             || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
             || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
          ) {
@@ -586,9 +588,9 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    else {
       b = &dummys;
       z = &dummys;
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
       rwork = &dummyr;
-#endif
+#  endif
       iwork = &dummyi;
       ifail = &dummyi;
    }
@@ -606,11 +608,70 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    }
    else {
       work[0] += (REAL)n*n*2 + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
       work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
-#endif
+#  endif
    }
    *info = (int)linfo;
+
+#else /* USE_XHEGV */
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
+   PRIMME_BLASINT ONE = 1;
+   SCALAR *b;
+#  ifdef USE_COMPLEX
+   REAL *rwork;
+#  endif
+   SCALAR dummys=0;
+   REAL   dummyr=0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (w == NULL) w = &dummyr;
+
+   /* Borrow space from work for rwork or set dummy values */
+   if (ldwork != -1) {
+      if (
+               WRKSP_MALLOC_PRIMME(n*n, &b, &work, &lldwork) 
+#  ifdef USE_COMPLEX
+            || WRKSP_MALLOC_PRIMME(3*n, &rwork, &work, &lldwork)
+#  endif
+         ) {
+         *info = -1;
+         return;
+      }
+      Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n);
+   }
+   else {
+      b = &dummys;
+#  ifdef USE_COMPLEX
+      rwork = &dummyr;
+#  endif
+   }
+
+   XHEGV(&ONE, jobz, uplo, &ln, a, &llda, b, &ln, w, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         &linfo);
+
+   /* Add the extra space for b and rwork */
+   if (ldwork == -1) {
+      work[0] += (REAL)n*n;
+#  ifdef USE_COMPLEX
+      work[0] += (REAL)sizeof(REAL)*3*n/sizeof(SCALAR) + 2.0;
+#  endif
+   }
+   *info = (int)linfo;
+
+#endif
 }
 
 /*******************************************************************************
