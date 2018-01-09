@@ -2765,6 +2765,9 @@ values:
 
 * -8: if "applyPreconditioner" is NULL and "precondition" > 0.
 
+* -9: if "massMatrixMatvec" is not NULL (generalized Hermitian
+  problem is not supported yet).
+
 * -10: if "numEvals" > "n".
 
 * -11: if "numEvals" < 0.

@@ -523,7 +523,8 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
    else if (primme->applyPreconditioner == NULL && 
             primme->correctionParams.precondition > 0 ) 
       ret = -8;
-   /* ret = -9 is free */
+   else if (primme->massMatrixMatvec != NULL)
+      ret = -9; 
    else if (primme->numEvals > primme->n)
       ret = -10;
    else if (primme->numEvals < 0)

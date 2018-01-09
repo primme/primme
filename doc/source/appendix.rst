@@ -1386,6 +1386,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -6: if |numProcs| < 1.
 * -7: if |matrixMatvec| is NULL.
 * -8: if |applyPreconditioner| is NULL and |precondition| > 0.
+* -9: if |massMatrixMatvec| is not NULL (generalized Hermitian problem is not supported yet).
 * -10: if |numEvals| > |n|.
 * -11: if |numEvals| < 0.
 * -12: if |eps| > 0 and |eps| < machine precision.
