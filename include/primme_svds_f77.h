@@ -104,6 +104,8 @@ C-------------------------------------------------------
      : PRIMME_SVDS_stats_timePrecond,
      : PRIMME_SVDS_stats_timeOrtho,
      : PRIMME_SVDS_stats_timeGlobalSum,
+     : PRIMME_SVDS_convTestFun,
+     : PRIMME_SVDS_convtest,
      : PRIMME_SVDS_monitorFun,
      : PRIMME_SVDS_monitor
 
@@ -156,6 +158,8 @@ C-------------------------------------------------------
      : PRIMME_SVDS_stats_timePrecond = 402,
      : PRIMME_SVDS_stats_timeOrtho = 403,
      : PRIMME_SVDS_stats_timeGlobalSum = 404,
+     : PRIMME_SVDS_convTestFun = 405,
+     : PRIMME_SVDS_convtest = 406,
      : PRIMME_SVDS_monitorFun = 41,
      : PRIMME_SVDS_monitor = 42
      :)

@@ -82,7 +82,7 @@ void primme_initialize(primme_params *primme) {
    /* Parallel computing parameters */
    primme->numProcs                = 1;
    primme->procID                  = 0;
-   primme->nLocal                  = 0;
+   primme->nLocal                  = -1;
    primme->commInfo                = NULL;
    primme->globalSumReal           = NULL;
 
@@ -104,6 +104,7 @@ void primme_initialize(primme_params *primme) {
    primme->maxOuterIterations                  = INT_MAX;
    primme->restartingParams.scheme             = primme_thick;
    primme->restartingParams.maxPrevRetain      = -1;
+   primme->orth                                = primme_orth_default;
 
    /* correction parameters (inner) */
    primme->correctionParams.precondition       = -1;
@@ -154,8 +155,9 @@ void primme_initialize(primme_params *primme) {
    primme->realWork                = NULL;
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
-   primme->ldevecs                 = 0;
-   primme->ldOPs                   = 0;
+   primme->convtest                = NULL;
+   primme->ldevecs                 = -1;
+   primme->ldOPs                   = -1;
    primme->monitorFun              = NULL;
    primme->monitor                 = NULL;
 }
@@ -470,15 +472,7 @@ void primme_set_defaults(primme_params *primme) {
       primme_set_method(PRIMME_DYNAMIC, primme);
    }
 
-   /* ----------------------------------------- */
-   /* Set some defaults for sequential programs */
-   /* ----------------------------------------- */
-   if (primme->numProcs <= 1) {
-      primme->nLocal = primme->n;
-      primme->procID = 0;
-   }
-
-   if (primme->ldevecs == 0)
+   if (primme->ldevecs == -1 && primme->nLocal != -1)
       primme->ldevecs = primme->nLocal;
    if (primme->projectionParams.projection == primme_proj_default)
       primme->projectionParams.projection = primme_proj_RR;
@@ -489,7 +483,7 @@ void primme_set_defaults(primme_params *primme) {
    /* a multiple of PRIMME_BLOCK_SIZE. This may improve the performance */
    /* of Num_update_VWXR_Sprimme.                                       */
 
-   if (primme->ldOPs == 0) {
+   if (primme->ldOPs == -1 && primme->nLocal != -1) {
       primme->ldOPs = min(((primme->nLocal + PRIMME_BLOCK_SIZE - 1)
                /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, primme->nLocal);
    }
@@ -919,6 +913,12 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_ldOPs:
               v->int_v = primme->ldOPs;
       break;
+      case PRIMME_convTestFun:
+              v->convTestFun_v = primme->convTestFun;
+      break;
+      case PRIMME_convtest:
+              v->ptr_v = primme->convtest;
+      break;
       case PRIMME_monitorFun:
               v->monitorFun_v = primme->monitorFun;
       break;
@@ -1191,6 +1191,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_convTestFun:
               primme->convTestFun = v.convTestFun_v;
       break;
+      case PRIMME_convtest:
+              primme->convtest = v.ptr_v;
+      break;
       case PRIMME_ldevecs:
               primme->ldevecs = *v.int_v;
       break;
@@ -1314,6 +1317,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
    IF_IS(stats_maxConvTol             , stats_maxConvTol);
    IF_IS(convTestFun                  , convTestFun);
+   IF_IS(convtest                     , convtest);
    IF_IS(ldevecs                      , ldevecs);
    IF_IS(ldOPs                        , ldOPs);
    IF_IS(monitorFun                   , monitorFun);
@@ -1417,6 +1421,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_matrix:
       case PRIMME_preconditioner:
       case PRIMME_convTestFun:
+      case PRIMME_convtest:
       case PRIMME_monitorFun:
       case PRIMME_monitor:
       if (type) *type = primme_pointer;

@@ -118,7 +118,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to -1;
          | :c:func:`dprimme_svds` sets this field to |Sm| if |SnumProcs| is 1;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
@@ -131,7 +131,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to -1;
          | :c:func:`dprimme_svds` sets this field to to |n| if |SnumProcs| is 1;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
@@ -328,7 +328,7 @@ primme_svds_params
 
    .. c:member:: double eps
 
-      A triplet :math:`(u,\sigma,v)` is marked as converged when
+      If |SconvTestFun| is NULL, a triplet :math:`(u,\sigma,v)` is marked as converged when
       :math:`\sqrt{\|A v - \sigma u\|^2 + \|A^* u - \sigma v\|^2}`
       is less than |Seps| \* |SaNorm|, or close to the minimum tolerance that
       the selected method can achieve in the given machine precision. See :ref:`methods_svds`.
@@ -338,7 +338,7 @@ primme_svds_params
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to 0.0;
-         | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+         | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
  
    .. c:member:: FILE *outputFile
 
@@ -583,7 +583,44 @@ primme_svds_params
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
+   .. c:member:: void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec, double *rNorm, int *isconv, primme_svds_params *primme_svds, int *ierr)
+
+      Function that evaluates if the approximate triplet has converged.
+      If NULL, it is used the default convergence criteria (see |Seps|).
+   
+      :param sval: the approximate singular value to evaluate.
+      :param leftsvec: one dimensional array of size |SmLocal| containing the approximate left singular vector; it can be NULL.
+      :param rightsvec: one dimensional array of size |SnLocal| containing the approximate right singular vector; it can be NULL.
+      :param resNorm: the norm of the residual vector.
+      :param isconv: (output) the function sets zero if the pair is not converged and non zero otherwise.
+      :param primme_svds: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      The actual type of ``leftsvec`` and ``rightsvec`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
+      for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
+      for :c:func:`cprimme_svds` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
+
+      .. warning::
+
+         When solving the augmented problem (for the method |primme_svds_augmented| and at the second stage in the method |primme_svds_hybrid|),
+         the given residual vector norm ``resNorm`` is an approximation of the actual residual. Also ``leftsvec`` and ``rightsvec`` may not have
+         length 1.
+
+      Input/output:
+
+         | :c:func:`svds_primme_initialize` sets this field to NULL;
+         | this field is read and written by :c:func:`dprimme_svds`.
+
+   .. c:member:: void *convtest
+
+      This field may be used to pass any required information 
+      to the function |SconvTestFun|.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to NULL;
+ 
+   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, primme_svds_params *primme_svds, int *ierr)
 
 
       Convergence monitor. Used to customize how to report solver 
@@ -633,7 +670,7 @@ primme_svds_params
 
         ``lockedSvals``, ``numLocked``, ``lockedFlags``, and ``lockedNorms`` may not be provided.
 
-      * ``*event == primme_event_convergence``: a new triplet in the basis passed the convergence criterion
+      * ``*event == primme_event_converged``: a new triplet in the basis passed the convergence criterion
 
         ``iblock[0]`` is the index of the newly converged triplet in the basis which will be locked or soft locked.
         The following are provided: ``basisSvals``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
@@ -665,6 +702,15 @@ primme_svds_params
          | :c:func:`dprimme_svds` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
+
+   .. c:member:: void *monitor
+
+      This field may be used to pass any required information 
+      to the function |SmonitorFun|.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to NULL;
 
    .. c:member:: PRIMME_INT stats.numOuterIterations
 

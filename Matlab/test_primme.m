@@ -164,4 +164,19 @@ for i = 1:numel(svds_meths)
    end
 end
 
+% Test convTestFun
+
+A = diag([1 repmat(2,1,1000) 3:100]);
+[~,sval,~,rnorm] = primme_svds(A,1,'S',struct('convTestFun',@(s,u,v,r)r<s*.1));
+assert(sval-rnorm>.8 && sval-rnorm<1.2)
+
+% Test that the already converged solutions are returned when the solver
+% reaches maximum number of iterations
+
+evals = primme_eigs(diag(1:1000),100,'SA',struct('maxit',500),'DEFAULT_MIN_MATVECS');
+assert(length(evals) > 0 && norm(evals - (1:length(evals))') < 1e-3)
+
+svals = primme_svds(diag(1:1000),100,'S',struct('maxit',5000,'primme',struct('method', 'DEFAULT_MIN_MATVECS')));
+assert(length(svals) > 0 && norm(svals - (length(svals):-1:1)') < 1e-3)
+
 disp('Success');

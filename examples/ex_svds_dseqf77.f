@@ -70,8 +70,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
 !       Singular values, vectors and their residual norms
 !
-        real*8   svals(NUMSmax), rnorms(NUMSmax)
-        real*8   svecs((m+n)*NUMSmax)
+        real*8 svals(NUMSmax)
+        real*8 rnorms(NUMSmax)
+        real*8 svecs((m+n)*NUMSmax)
 
 !       Other vars
 !
@@ -145,7 +146,10 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 !       Calling the PRIMME solver
 !       ----------------------------------------------------------------
 
-        call dprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+        call  dprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+        if (ierr.ne.0) then
+          stop 1
+        endif
 
 !       ----------------------------------------------------------------
 !       Reporting results

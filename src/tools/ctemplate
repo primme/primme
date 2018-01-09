@@ -32,7 +32,7 @@ import re
 import sys
 
 """
-This module extract function declarations from function implementations preceded by
+This module extracts function declarations from function implementations preceded by
 APPEND_FUNC and allows to change the name of the final symbol.
 
 It is expected the next pattern for the function to process:

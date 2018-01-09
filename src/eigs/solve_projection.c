@@ -41,9 +41,10 @@
 #include "ortho.h"
 #include "globalsum.h"
 
-static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
-   int ldhVecs, REAL *hVals, int basisSize, int numConverged, size_t *lrwork,
-   SCALAR *rwork, int liwork, int *iwork, primme_params *primme);
+static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+      SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
+      size_t *lrwork, SCALAR *rwork, int liwork, int *iwork,
+      primme_params *primme);
 
 static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
    SCALAR *R, int ldR, SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU,
@@ -71,6 +72,8 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
  * H              The matrix V'*A*V
  * basisSize      The dimension of H, R, QtV and hU
  * ldH            The leading dimension of H
+ * VtBV           The matrix V'*B*V
+ * ldVtBV         The leading dimension of VtBV
  * R              The factor R for the QR decomposition of (A - target*I)*V
  * ldR            The leading dimension of R
  * QtV            Q'*V
@@ -97,7 +100,8 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
+int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
+   SCALAR *R, int ldR,
    SCALAR *QtV, int ldQtV, SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs,
    REAL *hVals, REAL *hSVals, int numConverged, double machEps, size_t *lrwork,
    SCALAR *rwork, int liwork, int *iwork, primme_params *primme) {
@@ -111,8 +115,9 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
    if (primme->procID == 0) {
       switch (primme->projectionParams.projection) {
          case primme_proj_RR:
-            CHKERR(solve_H_RR_Sprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
-                     numConverged, lrwork, rwork, liwork, iwork, primme), -1);
+            CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs,
+                     hVals, basisSize, numConverged, lrwork, rwork, liwork,
+                     iwork, primme), -1);
             break;
 
          case primme_proj_harmonic:
@@ -168,6 +173,8 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
  * H              The matrix V'*A*V
  * basisSize      The dimension of H, R, hU
  * ldH            The leading dimension of H
+ * VtBV           The matrix V'*B*V
+ * ldVtBV         The leading dimension of VtBV
  * numConverged   Number of eigenvalues converged to determine ordering shift
  * lrwork         Length of the work array rwork
  * primme         Structure containing various solver parameters
@@ -187,9 +194,10 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *R, int ldR,
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
-   int ldhVecs, REAL *hVals, int basisSize, int numConverged, size_t *lrwork,
-   SCALAR *rwork, int liwork, int *iwork, primme_params *primme) {
+static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+      SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
+      size_t *lrwork, SCALAR *rwork, int liwork, int *iwork,
+      primme_params *primme) {
 
    int i, j; /* Loop variables    */
    int info; /* dsyev error value */
@@ -203,9 +211,10 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    /* Return memory requirements */
    if (H == NULL) {
       SCALAR rwork0;
-      CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, basisSize, hVals,
-               &rwork0, -1, &info), info), -1);
+      CHKERR((Num_hegv_Sprimme("V", "U", basisSize, hVecs, basisSize, VtBV,
+                  basisSize, hVals, &rwork0, -1, &info), info), -1);
       *lrwork = max(*lrwork, (size_t)REAL_PART(rwork0));
+      *iwork = max(*iwork, 2*basisSize);
       return 0;
    }
 
@@ -213,7 +222,7 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    /* Divide the iwork space */
    /* ---------------------- */
    assert(liwork >= 2*basisSize);
-   permu  = iwork;
+   permu = iwork;
    permw = permu + basisSize;
 
 
@@ -239,8 +248,8 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
       }
    }
 
-   CHKERR((Num_heev_Sprimme("V", "U", basisSize, hVecs, ldhVecs, hVals, rwork, 
-                TO_INT(*lrwork), &info), info), -1);
+   CHKERR((Num_hegv_Sprimme("V", "U", basisSize, hVecs, ldhVecs, VtBV, ldVtBV,
+               hVals, rwork, TO_INT(*lrwork), &info), info), -1);
 
    /* ---------------------------------------------------------------------- */
    /* ORDER the eigenvalues and their eigenvectors according to the desired  */
@@ -346,7 +355,8 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
       /* Reorder hVals and hVecs according to the permutation             */
       /* ---------------------------------------------------------------- */
       permute_vecs_Rprimme(hVals, 1, basisSize, 1, permu, (REAL*)rwork, permw);
-      permute_vecs_Sprimme(hVecs, basisSize, basisSize, ldhVecs, permu, rwork, permw);
+      permute_vecs_Sprimme(hVecs, basisSize, basisSize, ldhVecs, permu, rwork,
+            permw);
    }
 
    return 0;   
@@ -410,8 +420,8 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
 
    /* Return memory requirements */
    if (QtV == NULL) {
-      CHKERR(solve_H_RR_Sprimme(QtV, ldQtV, hVecs, ldhVecs, hVals, basisSize,
-         0, lrwork, rwork, liwork, iwork, primme), -1);
+      CHKERR(solve_H_RR_Sprimme(QtV, ldQtV, NULL, 0, hVecs, ldhVecs, hVals,
+               basisSize, 0, lrwork, rwork, liwork, iwork, primme), -1);
       return 0;
    }
 
@@ -439,7 +449,7 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
       default:
          assert(0);
    }
-   ret = solve_H_RR_Sprimme(hVecs, ldhVecs, hVecs, ldhVecs, hVals,
+   ret = solve_H_RR_Sprimme(hVecs, ldhVecs, NULL, 0, hVecs, ldhVecs, hVals,
          basisSize, 0, lrwork, rwork, liwork, iwork, primme);
    primme->targetShifts = oldTargetShifts;
    primme->target = oldTarget;
@@ -827,7 +837,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
       size_t rworkSize0=0;
       CHKERR(compute_submatrix_Sprimme(NULL, basisSize, 0, NULL,
                basisSize, 0, NULL, 0, NULL, &rworkSize0), -1);
-      CHKERR(solve_H_RR_Sprimme(NULL, 0, NULL, 0, NULL, basisSize, 0,
+      CHKERR(solve_H_RR_Sprimme(NULL, 0, NULL, 0, NULL, 0, NULL, basisSize, 0,
             &rworkSize0, NULL, 0, iwork, primme), -1);
       rworkSize0 += (size_t)basisSize*(size_t)basisSize; /* aH */
       *rworkSize = max(*rworkSize, rworkSize0);
@@ -848,7 +858,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
          + primme->numOrthoConst >= primme->n) {
 
       /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-      CHKERR(solve_H_RR_Sprimme(H, ldH, hVecs, ldhVecs, hVals, basisSize,
+      CHKERR(solve_H_RR_Sprimme(H, ldH, NULL, 0, hVecs, ldhVecs, hVals, basisSize,
             targetShiftIndex, rworkSize, rwork, iworkSize, iwork, primme), -1);
 
       *arbitraryVecs = 0;
@@ -948,7 +958,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
                &rworkSize0);
 
          /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-         CHKERR(solve_H_RR_Sprimme(aH, aBasisSize, ahVecs, ldhVecsRot,
+         CHKERR(solve_H_RR_Sprimme(aH, aBasisSize, NULL, 0, ahVecs, ldhVecsRot,
                &hVals[j], aBasisSize, targetShiftIndex, &rworkSize0, rwork0,
                iworkSize, iwork, primme), -1);
 

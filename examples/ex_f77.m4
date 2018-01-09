@@ -31,21 +31,25 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 *  Example to compute the k largest eigenvalues in a 1-D Laplacian matrix.
 *
 *******************************************************************************
-define(`PRIMME_NUM', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex*16', `real*8')))dnl
+define(`PRIMME_SCALAR', ifdef(`USE_PETSC', `PetscScalar', ifdef(`USE_COMPLEX', `complex*16', `real*8')))dnl
+define(`PRIMME_REAL', ifdef(`USE_PETSC', `PetscReal', `real*8'))dnl
 
         Program primmeF77Example
 !-----------------------------------------------------------------------
-        implicit none
 ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscmat.h>
+        use petscvec
+        use petscmat
+        use petscpc
 '')dnl
+        implicit none
+        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Pointer to the PRIMME data structure used internally by PRIMME
 !
 !       Note that for 64 bit systems, pointers are 8 bytes so use:
         integer*8 primme
-        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Problem setup
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,7 +65,7 @@ ifdef(`USE_PETSC', ``#include <petsc/finclude/petscsys.h>
      :            NUMEmax         = 5,
      :            BLOCKmax        = 1,
      :            maxMatvecs      = 300000,
-     :            ETOL            = 1.0D-14,
+     :            ETOL            = ifdef(`USE_PETSC', 1.0D-5, 1.0D-12),
      :            printLevel      = 5,
      :            whichEvals      = primme_smallest,
      :            numTargetShifts = 2,
@@ -78,8 +82,9 @@ ifdef(`USE_PETSC', `
 
 !       Eigenvalues, eigenvectors, and their residual norms
 !
-        real*8   evals(NUMEmax), rnorms(NUMEmax)
-        PRIMME_NUM   evecs(n*NUMEmax)
+        PRIMME_REAL evals(NUMEmax)
+        PRIMME_REAL rnorms(NUMEmax)
+        PRIMME_SCALAR evecs(n*NUMEmax)
 
 !       Other vars
 !
@@ -152,7 +157,8 @@ ifdef(`USE_POINTER', `        comm = PETSC_COMM_WORLD
 ')dnl
 
 !       Set preconditioner  (optional)
-ifdef(`USE_PETSC', `        call PCCreate(PETSC_COMM_WORLD, pc, ierr)
+ifdef(`USE_PETSC', `        pc = tPC(0)
+        call PCCreate(PETSC_COMM_WORLD, pc, ierr)
         call PCSetType(pc, PCJACOBI, ierr)
         call PCSetOperators(pc, A, A, ierr)
         call PCSetFromOptions(pc, ierr)
@@ -198,14 +204,21 @@ ifdef(`USE_POINTER', `        call primme_set_member_f77(primme,
 !       Calling the PRIMME solver
 !       ----------------------------------------------------------------
 ifdef(`USE_PETSC', ``
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call cprimme_f77(evals, evecs, rnorms, primme, ierr)
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call zprimme_f77(evals, evecs, rnorms, primme, ierr)
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call sprimme_f77(evals, evecs, rnorms, primme, ierr)
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call dprimme_f77(evals, evecs, rnorms, primme, ierr)
 #endif
 '', `
-        call ifdef(`USE_COMPLEX',`z', `d')primme_f77(evals, evecs, rnorms, primme, ierr)
+        call ifdef(`USE_COMPLEX', ifdef(`USE_FLOAT',`c',`z'), ifdef(`USE_FLOAT',`s',`d'))primme_f77(evals, evecs, rnorms, primme, ierr)
 ')dnl
+        if (ierr.ne.0) then
+          stop 1
+        endif
 
 !       ----------------------------------------------------------------
 !       Reporting results
@@ -259,10 +272,8 @@ changequote(`[',`]')
 ifdef([USE_PETSC], [
         subroutine generateLaplacian1D(n0,A,ierr)
 !       ----------------------------------------------------------------
+        use petscmat
         implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
         integer*8 n0
         PetscInt n, one, two, three
         Mat A
@@ -271,6 +282,7 @@ ifdef([USE_PETSC], [
         PetscInt i, Istart,Iend,col(3)
         PetscErrorCode ierr
 
+        A = tMat(0)
         call MatCreate(PETSC_COMM_WORLD, A, ierr)
         n = n0
         call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, n, n, ierr)
@@ -304,13 +316,12 @@ ifdef([USE_PETSC], [
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
+        use petscvec
+        use petscmat
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
         integer*8 ldx,ldy
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme
         integer k,err,j
 ifdef([USE_POINTER], [        Mat, pointer :: A
@@ -324,6 +335,8 @@ ifdef([USE_POINTER], [        Mat, pointer :: A
 ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMME_matrix, pA, err)
         call c_f_pointer(pA, A)
 ])
+        xvec = tVec(0)
+        yvec = tVec(0)
         call MatCreateVecs(A, xvec, yvec, ierr)
         do j=1,k
            call VecPlaceArray(xvec, x(1,j), ierr)
@@ -340,14 +353,13 @@ ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMME_matrix, 
 !       ----------------------------------------------------------------
 ifdef([USE_POINTER], [        use iso_c_binding
 ])dnl
+        use petscvec
+        use petscmat
+        use petscpc
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
         integer*8 ldx,ldy
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme
         integer k,err,j
 ifdef([USE_POINTER], [        Mat, pointer :: A
@@ -366,6 +378,8 @@ ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMME_matrix, 
         call c_f_pointer(pA, A)
         call c_f_pointer(ppc, pc)
 ])
+        xvec = tVec(0)
+        yvec = tVec(0)
         call MatCreateVecs(A, xvec, yvec, ierr)
         do j=1,k
            call VecPlaceArray(xvec, x(1,j), ierr)
@@ -381,9 +395,9 @@ ifdef([USE_POINTER], [        call primme_get_member_f77(primme, PRIMME_matrix, 
         subroutine par_GlobalSum(x,y,k,primme,ierr)
 !       ----------------------------------------------------------------
         use iso_c_binding
+        use petscsys
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
         real*8, target :: x(k), y(k)
         integer*8 primme
         integer k,ierr
@@ -418,7 +432,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         implicit none
         include 'primme_f77.h'
         integer*8 ldx, ldy
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme
         integer*8 n, i
         integer k,ierr,j
@@ -449,7 +463,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         implicit none
         include 'primme_f77.h'
         integer*8 ldx, ldy
-        PRIMME_NUM x(ldx,*), y(ldy,*)
+        PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme
         integer*8 n, i
         integer k,ierr,j

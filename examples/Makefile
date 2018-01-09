@@ -24,6 +24,7 @@ ifeq ($(USE_PETSC), yes)
   LIBS += $(PETSC_LIB)
   EXAMPLES_C += ex_eigs_petsc ex_svds_petsc
   EXAMPLES_F77 += ex_eigs_petscf77 ex_eigs_petscf77ptr ex_svds_petscf77 ex_svds_petscf77ptr
+  MPIRUN ?= mpirun -np 4
 endif
 
 $(EXAMPLES_C): %: %.o
@@ -55,8 +56,11 @@ test_examples: test_examples_C test_examples_F77 test_examples_CXX
 test_examples_C test_examples_F77 test_examples_CXX: test_examples% : examples%
 	@ok="0";for ex in $(EXAMPLES$*); do \
 		echo "=========== Executing ./$$ex"; \
-		./$$ex || ok="1"; \
-	done > tests.log 2>&1; \
+	        case $$ex in \
+		*petsc*) ${MPIRUN} ./$$ex < /dev/null || ok="1";; \
+		*)                 ./$$ex || ok="1"; \
+	        esac; \
+	done < /dev/null > tests.log 2>&1; \
 	if test $$ok -eq 0 ; then \
 		echo "All tests passed!"; \
 	else\

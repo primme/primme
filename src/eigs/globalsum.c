@@ -55,6 +55,7 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
                ierr), -1,
             "Error returned by 'globalSumReal' %d", ierr);
 
+      primme->stats.numGlobalSum++;
       primme->stats.timeGlobalSum += primme_wTimer(0) - t0;
       primme->stats.volumeGlobalSum += count;
    }

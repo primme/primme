@@ -22,7 +22,7 @@ function [varargout] = primme_svds(varargin)
 %   Field name       Parameter                               Default
 %
 %   OPTIONS.aNorm    estimation of the 2-norm A                  0.0
-%   OPTIONS.tol      convergence tolerance (see eps):          1e-10
+%   OPTIONS.tol      convergence tolerance (see eps):    1e-10 (1e-3 for single)
 %                    NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A).
 %   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
@@ -42,6 +42,11 @@ function [varargout] = primme_svds(varargin)
 %   OPTIONS.iseed    random seed
 %   OPTIONS.primme   options for first stage solver                -
 %   OPTIONS.primmeStage2 options for second stage solver           -
+%   OPTIONS.convTestFun  alternative convergence criterion         -
+%
+%   If OPTIONS.convTestFun(SVAL,LSVEC,RSVEC,RNORM) returns a nonzero
+%   value, the triplet (SVAL,LSVEC,RSVEC) with residual norm RNORM
+%   is considered converged.
 %
 %   The available options for OPTIONS.primme and primmeStage2 are
 %   the same as PRIMME_EIGS, plus the option 'method'. For detailed
@@ -127,10 +132,14 @@ function [varargout] = primme_svds(varargin)
 %      % Jacobi preconditioner on (A'*A)
 %      A = sparse(diag(1:50) + diag(ones(49,1), 1));
 %      A(200,50) = 1;  % size(A)=[200 50]
-%      Pstruct = struct('AHA', diag(A'*A),...
-%                       'AAH', ones(200,1), 'aug', ones(250,1));
-%      Pfun = @(x,mode)Pstruct.(mode).\x;
-%      s = primme_svds(A,5,'S',[],Pfun) % find the 5 smallest values
+%      P = diag(sum(abs(A).^2));
+%      precond.AHA = @(x)P\x;
+%      s = primme_svds(A,5,'S',[],precond) % find the 5 smallest values
+%
+%      % Estimation of the smallest singular value
+%      A = diag([1 repmat(2,1,1000) 3:100]);
+%      [~,sval,~,rnorm] = primme_svds(A,1,'S',struct('convTestFun',@(s,u,v,r)r<s*.1));
+%      sval - rnorm % approximate smallest singular value
 %
 %   For more details see PRIMME documentation at
 %   http://www.cs.wm.edu/~andreas/software/doc/readme.html 
@@ -252,20 +261,6 @@ function [varargout] = primme_svds(varargin)
       opts.precondition = 1;
    end
  
-   % Test whether the given matrix and preconditioner are valid
-   try
-      x = opts.matrixMatvec(ones(opts.n, 1), 'notransp');
-      x = opts.matrixMatvec(ones(opts.m, 1), 'transp');
-      if isfield(opts, 'applyPreconditioner')
-         x = opts.applyPreconditioner(ones(opts.n, 1), 'AHA');
-         x = opts.applyPreconditioner(ones(opts.m, 1), 'AAH');
-         x = opts.applyPreconditioner(ones(opts.m+opts.n, 1), 'aug');
-      end
-      clear x;
-   catch ME
-      rethrow(ME);
-   end
-
    % Process 'isreal' in opts
    if isfield(opts, 'isreal')
       Acomplex = ~opts.isreal;
@@ -276,6 +271,25 @@ function [varargout] = primme_svds(varargin)
    if isfield(opts, 'isdouble')
       Adouble = opts.isdouble;
       opts = rmfield(opts, 'isdouble');
+   end
+   if Adouble
+      Aclass = 'double';
+   else
+      Aclass = 'single';
+   end
+
+   % Test whether the given matrix and preconditioner are valid
+   try
+      x = opts.matrixMatvec(ones(opts.n, 1, Aclass), 'notransp');
+      x = opts.matrixMatvec(ones(opts.m, 1, Aclass), 'transp');
+      if isfield(opts, 'applyPreconditioner')
+         x = opts.applyPreconditioner(ones(opts.n, 1, Aclass), 'AHA');
+         x = opts.applyPreconditioner(ones(opts.m, 1, Aclass), 'AAH');
+         x = opts.applyPreconditioner(ones(opts.m+opts.n, 1, Aclass), 'aug');
+      end
+      clear x;
+   catch ME
+      rethrow(ME);
    end
 
    % Process 'disp' in opts
@@ -300,9 +314,13 @@ function [varargout] = primme_svds(varargin)
       end
    end
 
-   % Set default tol to 1e-10
+   % Set default tol
    if ~isfield(opts, 'eps')
-      opts.eps = 1e-10;
+      if Adouble
+         opts.eps = 1e-10;
+      else
+         opts.eps = eps(Aclass)*1e4;
+      end
    end 
 
    % Move options that are outside of primme_parms' hierarchy
@@ -451,7 +469,9 @@ function [varargout] = primme_svds(varargin)
                init{2}, primme_svds); 
 
    % Process error code and return the required arguments
-   if ierr ~= 0
+   if mod(ierr, -100) == -3 % if it is -3, -103 or -203
+      warning([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+   elseif ierr ~= 0
       error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
    end
    

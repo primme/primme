@@ -71,7 +71,7 @@
 #  define PRIMME_INT int
 #  define PRIMME_INT_P "d"
 #  define PRIMME_INT_MAX INT_MAX
-#elif PRIMME_INT == 32
+#elif PRIMME_INT_SIZE == 32
 #  include <stdint.h>
 #  include <inttypes.h>
 #  define PRIMME_INT int32_t

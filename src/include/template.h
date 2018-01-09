@@ -138,6 +138,12 @@
 #include <tgmath.h>   /* select proper function abs from fabs, cabs... */
 #endif
 
+#ifndef __cplusplus
+#  define ISFINITE isfinite
+#else
+#  define ISFINITE std::isfinite
+#endif
+
 /* TEMPLATE_PLEASE tags the functions whose prototypes depends on macros and  */
 /* are used in other files. The macro has value only when the tool ctemplate  */
 /* will inspect the source files, which happens when the macro CHECK_TEMPLATE */
@@ -432,7 +438,7 @@
 #define TO_INT(X) ((X) < INT_MAX ? (X) : INT_MAX)
 
 #ifdef F77UNDERSCORE
-#define FORTRAN_FUNCTION(X) X ## _
+#define FORTRAN_FUNCTION(X) CONCAT(X,_)
 #else
 #define FORTRAN_FUNCTION(X) X
 #endif

@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-#include "primme.h"
+#include "primme.h" // cyclic
 
 #ifdef __cplusplus
 extern "C" {
@@ -92,6 +92,13 @@ typedef enum {
    primme_event_converged,          /* report new pair marked as converged    */
    primme_event_locked              /* report new pair marked as locked       */
 } primme_event;
+
+/* Orthogonalization variant */
+typedef enum {
+   primme_orth_default,
+   primme_orth_implicit_I,          /* assume for search subspace V, V'*B*V = I */
+   primme_orth_explicit_I           /* explicitly compute V'*B*V */
+} primme_orth;
 
 typedef struct primme_stats {
    PRIMME_INT numOuterIterations;
@@ -193,6 +200,7 @@ typedef struct primme_params {
    void *realWork;
    double aNorm;
    double eps;
+   primme_orth orth;
 
    int printLevel;
    FILE *outputFile;
@@ -312,6 +320,7 @@ typedef enum {
    PRIMME_dynamicMethodSwitch = 49,
    PRIMME_massMatrixMatvec =  50,
    PRIMME_convTestFun =  51,
+   PRIMME_convtest =  510,
    PRIMME_ldevecs =  52,
    PRIMME_ldOPs =  53,
    PRIMME_monitorFun = 54,

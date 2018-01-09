@@ -130,6 +130,15 @@ void Num_swap_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy);
 #endif
 void Num_heev_dprimme(const char *jobz, const char *uplo, int n, double *a,
       int lda, double *w, double *work, int ldwork, int *info);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Sprimme)
+#  define Num_hegv_Sprimme CONCAT(Num_hegv_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Rprimme)
+#  define Num_hegv_Rprimme CONCAT(Num_hegv_,REAL_SUF)
+#endif
+void Num_hegv_dprimme(const char *jobz, const char *uplo, int n, double *a,
+      int lda, double *b0, int ldb0, double *w, double *work, int ldwork,
+      int *info);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gesvd_Sprimme)
 #  define Num_gesvd_Sprimme CONCAT(Num_gesvd_,SCALAR_SUF)
 #endif
@@ -189,6 +198,9 @@ void Num_scal_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_
 void Num_swap_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy);
 void Num_heev_zprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a,
       int lda, double *w, PRIMME_COMPLEX_DOUBLE *work, int ldwork, int *info);
+void Num_hegv_zprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a,
+      int lda, PRIMME_COMPLEX_DOUBLE *b0, int ldb0, double *w, PRIMME_COMPLEX_DOUBLE *work, int ldwork,
+      int *info);
 void Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_COMPLEX_DOUBLE *a, int lda, double *s, PRIMME_COMPLEX_DOUBLE *u, int ldu, PRIMME_COMPLEX_DOUBLE *vt, int ldvt,
    PRIMME_COMPLEX_DOUBLE *work, int ldwork, double *rwork, int *info);
@@ -224,6 +236,9 @@ void Num_scal_sprimme(PRIMME_INT n, float alpha, float *x, int incx);
 void Num_swap_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy);
 void Num_heev_sprimme(const char *jobz, const char *uplo, int n, float *a,
       int lda, float *w, float *work, int ldwork, int *info);
+void Num_hegv_sprimme(const char *jobz, const char *uplo, int n, float *a,
+      int lda, float *b0, int ldb0, float *w, float *work, int ldwork,
+      int *info);
 void Num_gesvd_sprimme(const char *jobu, const char *jobvt, int m, int n,
       float *a, int lda, float *s, float *u, int ldu, float *vt, int ldvt,
       float *work, int ldwork, int *info);
@@ -259,6 +274,9 @@ void Num_scal_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_F
 void Num_swap_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy);
 void Num_heev_cprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a,
       int lda, float *w, PRIMME_COMPLEX_FLOAT *work, int ldwork, int *info);
+void Num_hegv_cprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a,
+      int lda, PRIMME_COMPLEX_FLOAT *b0, int ldb0, float *w, PRIMME_COMPLEX_FLOAT *work, int ldwork,
+      int *info);
 void Num_gesvd_cprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_COMPLEX_FLOAT *a, int lda, float *s, PRIMME_COMPLEX_FLOAT *u, int ldu, PRIMME_COMPLEX_FLOAT *vt, int ldvt,
    PRIMME_COMPLEX_FLOAT *work, int ldwork, float *rwork, int *info);

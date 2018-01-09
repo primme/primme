@@ -59,6 +59,9 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.SkewX: use the preconditioned approx. eigenvector in the right projector
 %     OPTS.relTolBase: a legacy from classical JDQR (not recommended)
 %     OPTS.convTest: how to stop the inner QMR Method
+%     OPTS.convTestFun: function handler with an alternative convergence criterion.
+%          If FUN(EVAL,EVEC,RNORM) returns a nonzero value, the pair (EVAL,EVEC)
+%          with residual norm RNORM is considered converged.
 %     OPTS.iseed: random seed
 %
 %   For detailed descriptions of the above options, visit:
@@ -177,7 +180,7 @@ function [varargout] = primme_eigs(varargin)
    if isnumeric(A)
       % Check matrix is Hermitian and get matrix dimension
       [m, n] = size(A);
-      if ~ishermitian(A)
+      if m < 1e4 && ~ishermitian(A)
          error('Input matrix must be real symmetric or complex Hermitian');
       end
       opts.n = n;
@@ -286,17 +289,6 @@ function [varargout] = primme_eigs(varargin)
       opts.correction.precondition = 1;
    end
  
-   % Test whether the given matrix and preconditioner are valid
-   try
-      x = opts.matrixMatvec(ones(opts.n, 1));
-      if isfield(opts, 'applyPreconditioner')
-         x = opts.applyPreconditioner(ones(opts.n, 1));
-      end
-      clear x;
-   catch ME
-      rethrow(ME);
-   end
-
    % Process 'isreal' in opts
    if isfield(opts, 'isreal')
       Acomplex = ~opts.isreal;
@@ -307,6 +299,22 @@ function [varargout] = primme_eigs(varargin)
    if isfield(opts, 'isdouble')
       Adouble = opts.isdouble;
       opts = rmfield(opts, 'isdouble');
+   end
+   if Adouble
+      Aclass = 'double';
+   else
+      Aclass = 'single';
+   end
+
+   % Test whether the given matrix and preconditioner are valid
+   try
+      x = opts.matrixMatvec(ones(opts.n, 1, Aclass));
+      if isfield(opts, 'applyPreconditioner')
+         x = opts.applyPreconditioner(ones(opts.n, 1, Aclass));
+      end
+      clear x;
+   catch ME
+      rethrow(ME);
    end
 
    % Process 'disp' in opts
@@ -371,11 +379,7 @@ function [varargout] = primme_eigs(varargin)
 
    % Set default tol
    if ~isfield(opts, 'eps')
-      if Adouble
-         opts.eps = eps*1e4;
-      else
-         opts.eps = sqrt(eps)*1e4;
-      end
+      opts.eps = eps(Aclass)*1e4;
    end 
 
    % Create primme_params
@@ -427,7 +431,9 @@ function [varargout] = primme_eigs(varargin)
    [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
 
    % Process error code and return the required arguments
-   if ierr ~= 0
+   if ierr == -3
+      warning([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
+   elseif ierr ~= 0
       error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
    end
    

@@ -14,10 +14,26 @@ FLDR ?= $(F77)
 #---------------------------------------------------------------
 #  Basic Link flags for LAPACK/BLAS and math
 #---------------------------------------------------------------
-# Debian, Ubuntu, SuSE Linux (>= 13.2)
+# Debian, Ubuntu, SuSE Linux (>= 13.2), Darwin
 #
 LDFLAGS ?=
-LIBS ?= -lprimme -lm -llapack -lblas -lgfortran
+ifeq ($(origin LIBS), undefined)
+    LIBS = -lprimme
+    ifndef MKLROOT
+        LIBS += -llapack -lblas -lm
+        UNAME := $(shell uname)
+        ifneq ($(UNAME), Darwin)
+            LIBS += -gfortran
+        endif
+    else
+        ifneq (,$(findstring icc,$(shell $(CC) --version)))
+            LIBS += -mkl
+        else
+            LIBS += -L${MKLROOT}/lib/intel64 -lmkl_rt -lpthread -lm -ldl
+        endif
+    endif
+endif
+
 #---------------------------------------------------------------
 # SuSE Linux (<= 13.1), Centos
 #

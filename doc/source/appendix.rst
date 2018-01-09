@@ -117,7 +117,7 @@ primme_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_initialize` sets this field to -1;
          | :c:func:`dprimme` sets this field to |n| if |numProcs| is 1;
          | this field is read by :c:func:`dprimme`.
 
@@ -425,7 +425,7 @@ primme_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_initialize` sets this field to -1;
          | this field is read by :c:func:`dprimme`.
 
    .. c:member:: int numOrthoConst
@@ -876,7 +876,7 @@ primme_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_initialize` sets this field to -1;
          | this field is read by :c:func:`dprimme`.
 
 
@@ -930,7 +930,7 @@ primme_params
 
         ``lockedEvals``, ``numLocked``, ``lockedFlags`` and ``lockedNorms`` may not be provided.
 
-      * ``*event == primme_event_convergence``: a new eigenpair in the basis passed the convergence criterion.
+      * ``*event == primme_event_converged``: a new eigenpair in the basis passed the convergence criterion.
 
         ``iblock[0]`` is the index of the newly converged pair in the basis which will be locked or soft-locked.
         The following are provided: ``basisEvals``, ``basisNorms``, ``basisSize``, ``basisFlags`` and ``blockSize[0]==1``.
@@ -964,6 +964,14 @@ primme_params
          | :c:func:`dprimme` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme`.
 
+   .. c:member:: void *monitor
+
+      This field may be used to pass any required information 
+      to the function |monitorFun|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
 
    .. c:member:: PRIMME_INT stats.numOuterIterations
 
@@ -1114,26 +1122,35 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
-   .. c:member:: void (*convTestFun) (double *eval, void *evecs, double *resNorm, int *isconv, primme_params *primme, int *ierr)
+   .. c:member:: void (*convTestFun) (double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr)
 
       Function that evaluates if the approximate eigenpair has converged.
       If NULL, it is used the default convergence criteria (see |eps|).
    
       :param eval: the approximate value to evaluate.
-      :param x: one dimensional array of size |nLocal| containing the approximate vector; it can be NULL.
-         The actual type depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
-         for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and for
-         for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
-      :param resNorm: the norm of residual vector.
+      :param evec: one dimensional array of size |nLocal| containing the approximate vector; it can be NULL.
+      :param resNorm: the norm of the residual vector.
       :param isconv: (output) the function sets zero if the pair is not converged and non zero otherwise.
       :param primme: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      The actual type of ``evec`` depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
+      for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and
+      for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
 
+   .. c:member:: void *convtest
+
+      This field may be used to pass any required information 
+      to the function |convTestFun|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
 
 .. _methods:
 
@@ -1304,7 +1321,7 @@ Preset Methods
       .. hlist::
 
          * |locking|    = 1;
-         * |maxBasisSize| = |numEvals| `*` 2;
+         * |maxBasisSize| = |numEvals| \* 2;
          * |minRestartSize| = |numEvals|;
          * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
@@ -1323,7 +1340,7 @@ Preset Methods
       .. hlist::
 
          * |locking|    = 0;
-         * |maxBasisSize| = |numEvals| `*` 3;
+         * |maxBasisSize| = |numEvals| \* 3;
          * |minRestartSize| = |numEvals|;
          * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
@@ -1335,16 +1352,15 @@ Preset Methods
 
    .. c:member:: PRIMME_LOBPCG_OrthoBasis_Window
 
-      LOBPCG with sliding window of |maxBlockSize| < 3 `*` |numEvals|.
+      LOBPCG with sliding window of |maxBlockSize| < 3 \* |numEvals|.
 
       With |LOBPCG_OrthoBasis_Window| :c:func:`primme_set_method` sets:
 
       .. hlist::
 
          * |locking|    = 0;
-         * |maxBasisSize| = |maxBlockSize| `*` 3;
+         * |maxBasisSize| = |maxBlockSize| \* 3;
          * |minRestartSize| = |maxBlockSize|;
-         * |maxBlockSize| = |numEvals|;
          * |scheme|  = |primme_thick|;
          * |maxPrevRetain|      = |maxBlockSize|;
          * |robustShifts|       = 0;
@@ -1370,6 +1386,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -6: if |numProcs| < 1.
 * -7: if |matrixMatvec| is NULL.
 * -8: if |applyPreconditioner| is NULL and |precondition| > 0.
+* -9: if |massMatrixMatvec| is not NULL (generalized Hermitian problem is not supported yet).
 * -10: if |numEvals| > |n|.
 * -11: if |numEvals| < 0.
 * -12: if |eps| > 0 and |eps| < machine precision.

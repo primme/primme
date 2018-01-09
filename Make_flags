@@ -4,8 +4,15 @@
 #---------------------------------------------------------------
 
 # Define the path to the created PRIMME library
-LIBRARY ?= libprimme.a
-SOLIBRARY ?= libprimme.so
+UNAME ?= $(shell uname)
+ifeq ($(UNAME), Darwin)
+    SLIB = dylib
+else
+    SLIB = so
+endif
+LIBRARY = libprimme.a
+SOLIBRARY = libprimme.$(SLIB)
+
 
 # Define compilers and flags
 #---------------------------------------------------------------

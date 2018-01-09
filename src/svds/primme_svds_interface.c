@@ -77,8 +77,8 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    /* Parallel computing parameters */
    primme_svds->numProcs                = 1;
    primme_svds->procID                  = 0;
-   primme_svds->mLocal                  = 0;
-   primme_svds->nLocal                  = 0;
+   primme_svds->mLocal                  = -1;
+   primme_svds->nLocal                  = -1;
    primme_svds->commInfo                = NULL;
    primme_svds->globalSumReal           = NULL;
 
@@ -126,6 +126,8 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->realWorkSize            = 0;
    primme_svds->intWork                 = NULL;
    primme_svds->realWork                = NULL;
+   primme_svds->convTestFun             = NULL;
+   primme_svds->convtest                = NULL;
    primme_svds->monitorFun              = NULL;
    primme_svds->monitor                 = NULL;
 
@@ -212,14 +214,6 @@ int primme_svds_set_method(primme_svds_preset_method method,
 
 void primme_svds_set_defaults(primme_svds_params *primme_svds) {
 
-   /* Set defaults for sequential programs */
-   if (primme_svds->numProcs <= 1) {
-      primme_svds->mLocal = primme_svds->m;
-      primme_svds->nLocal = primme_svds->n;
-      primme_svds->procID = 0;
-      primme_svds->numProcs = 1;
-   }
-
    /* Set svds method if none set */
    if (primme_svds->method == primme_svds_op_none) {
       primme_svds_set_method(primme_svds_default, PRIMME_DEFAULT_METHOD,
@@ -299,15 +293,19 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    switch(method) {
    case primme_svds_op_AtA:
       primme->n = primme_svds->n;
-      primme->nLocal = primme_svds->nLocal;
+      if (primme->nLocal == -1 && primme_svds->nLocal != -1)
+         primme->nLocal = primme_svds->nLocal;
       break;
    case primme_svds_op_AAt:
       primme->n = primme_svds->m;
-      primme->nLocal = primme_svds->mLocal;
+      if (primme->nLocal == -1 && primme_svds->mLocal != -1)
+         primme->nLocal = primme_svds->mLocal;
       break;
    case primme_svds_op_augmented:
       primme->n = primme_svds->m + primme_svds->n;
-      primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
+      if (primme->nLocal == -1 && primme_svds->mLocal != -1
+            && primme_svds->nLocal != -1)
+         primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
       break;
    case primme_svds_op_none:
       break;
@@ -337,6 +335,15 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
          primme->projectionParams.projection == primme_proj_default) {
       /* NOTE: refined extraction seems to work better than RR */
       primme->projectionParams.projection = primme_proj_refined;
+   }
+
+   /* Disable explicit computation of V'*V for finding the smallest singular  */
+   /* values. It doesn't help.                                                */
+ 
+   if (stage == 0 && primme_svds->target == primme_svds_smallest &&
+         (method == primme_svds_op_AtA || method == primme_svds_op_AAt) &&
+         primme->orth == primme_orth_default) {
+      primme->orth = primme_orth_implicit_I;
    }
 
    if (primme_svds->locking >= 0) {
@@ -514,6 +521,9 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       primme_svds_operator operator_v;
       double double_v;
       FILE *file_v;
+      void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
+            double *rNorm, int *isconv, struct primme_svds_params *primme,
+            int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
             void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -670,6 +680,12 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeGlobalSum:
          v->double_v = primme_svds->stats.timeGlobalSum;
          break;
+      case PRIMME_SVDS_convTestFun:
+         v->convTestFun_v = primme_svds->convTestFun;
+         break;
+      case PRIMME_SVDS_convtest:
+         v->ptr_v = primme_svds->convtest;
+         break;
       case PRIMME_SVDS_monitorFun:
          v->monitorFun_v = primme_svds->monitorFun;
          break;
@@ -713,6 +729,9 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       primme_svds_operator *operator_v;
       double *double_v;
       FILE *file_v;
+      void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
+            double *rNorm, int *isconv, struct primme_svds_params *primme,
+            int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
             void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -877,12 +896,18 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeGlobalSum:
          primme_svds->stats.timeGlobalSum = *v.double_v;
          break;
+      case PRIMME_SVDS_convTestFun:
+         primme_svds->convTestFun = v.convTestFun_v;
+         break;
+      case PRIMME_SVDS_convtest:
+         primme_svds->convtest = v.ptr_v;
+         break;
       case PRIMME_SVDS_monitorFun:
          primme_svds->monitorFun = v.monitorFun_v;
          break;
       case PRIMME_SVDS_monitor:
          primme_svds->monitor = v.ptr_v;
-      break;
+         break;
       default:
          return 1;
    }
@@ -977,6 +1002,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_timePrecond);
    IF_IS(stats_timeOrtho);
    IF_IS(stats_timeGlobalSum);
+   IF_IS(convTestFun);
+   IF_IS(convtest);
    IF_IS(monitorFun);
    IF_IS(monitor);
 #undef IF_IS
@@ -1055,6 +1082,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
+      case PRIMME_SVDS_convTestFun:
+      case PRIMME_SVDS_convtest:
       case PRIMME_SVDS_monitorFun:
       case PRIMME_SVDS_monitor:
       if (type) *type = primme_pointer;

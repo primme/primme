@@ -34,11 +34,14 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
         Program primmeSvdsF77Example
 !-----------------------------------------------------------------------
-        implicit none
-        include 'primme_f77.h'
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscmat.h>
+        use petscvec
+        use petscmat
+        use petscpc
+        implicit none
+        include 'primme_f77.h'
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !       Pointer to the PRIMME SVDS data structure used internally by PRIMME
 !
@@ -60,7 +63,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :            NUMSmax         = 5,
      :            BLOCKmax        = 1,
      :            maxMatvecs      = 300000,
-     :            TOL             = 1.0D-12,
+     :            TOL             = 1.0D-5,
      :            printLevel      = 2,
      :            whichSvals      = primme_svds_closest_abs,
      :            numTargetShifts = 1
@@ -74,8 +77,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
 !       Singular values, vectors and their residual norms
 !
-        real*8   svals(NUMSmax), rnorms(NUMSmax)
-        PetscScalar   svecs((m+n)*NUMSmax)
+        PetscReal svals(NUMSmax)
+        PetscReal rnorms(NUMSmax)
+        PetscScalar svecs((m+n)*NUMSmax)
 
 !       Other vars
 !
@@ -84,7 +88,9 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         COMMON A, pc
         Mat AH, AHA
         PetscErrorCode ierr
-        integer i,numProcs,procID,mLocal,nLocal
+        PetscInt mLocalpetsc,nLocalpetsc
+        integer i,numProcsMpi,procIDMpi
+        integer*8 numProcs,procID,mLocal,nLocal
         real*8  epsil, aNorm
 
 !-----------------------------------------------------------------------
@@ -122,21 +128,26 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :                   PRIMME_SVDS_matrixMatvec, PETScMatvec, ierr)
         
 !       Set parallel parameters
-        call MatGetLocalSize(A, mLocal, nLocal, ierr)
+        call MatGetLocalSize(A, mLocalpetsc, nLocalpetsc, ierr)
+        mLocal = mLocalpetsc
+        nLocal = nLocalpetsc
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_mLocal, mLocal, ierr)
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_nLocal, nLocal, ierr)
-        call MPI_Comm_size(PETSC_COMM_WORLD, numProcs, ierr)
+        call MPI_Comm_size(PETSC_COMM_WORLD, numProcsMpi, ierr)
+        numProcs = numProcsMpi
         call primme_svds_set_member_f77(primme_svds,
      :                         PRIMME_SVDS_numProcs, numProcs, ierr)
-        call MPI_Comm_rank(PETSC_COMM_WORLD, procID, ierr);
+        call MPI_Comm_rank(PETSC_COMM_WORLD, procIDMpi, ierr)
+        procID = procIDMpi
         call primme_svds_set_member_f77(primme_svds,
      :                              PRIMME_SVDS_procID, procID, ierr)
         call primme_svds_set_member_f77(primme_svds,
      :        PRIMME_SVDS_globalSumReal, par_GlobalSum, ierr)
 
 !       Set preconditioner based on A^H*A (optional)
+        pc = tPC(0)
         call PCCreate(PETSC_COMM_WORLD, pc, ierr)
         call MatHermitianTranspose(A, MAT_INITIAL_MATRIX, AH, ierr)
         call MatMatMult(AH, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT_REAL,
@@ -178,11 +189,18 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 !       Calling the PRIMME solver
 !       ----------------------------------------------------------------
 
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call cprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call zprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
-#else
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+        call sprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
         call dprimme_svds_f77(svals, svecs, rnorms, primme_svds, ierr)
 #endif
+        if (ierr.ne.0) then
+          stop 1
+        endif
 
 !       ----------------------------------------------------------------
 !       Reporting results
@@ -227,10 +245,8 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
 
         subroutine generateLauchli(m0,n0,c,A,ierr)
 !       ----------------------------------------------------------------
+        use petscmat
         implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
         integer*8 m0, n0
         real*8 c
         PetscInt m, n, zeroi
@@ -240,6 +256,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         PetscInt i,i_1, Istart,Iend
         PetscErrorCode ierr
 
+        A = tMat(0)
         call MatCreate(PETSC_COMM_WORLD, A, ierr)
         m = m0
         n = n0
@@ -263,11 +280,11 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         end
         subroutine PETScMatvec(x,ldx,y,ldy,k,transpose,primme_svds,err)
 !       ----------------------------------------------------------------
+        use petscvec
+        use petscmat
+        use petscpc
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
         integer*8 ldx,ldy
         integer k,transpose
         PetscScalar x(ldx,*), y(ldy,*)
@@ -280,6 +297,8 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         PetscErrorCode ierr
 
 
+        xvec = tVec(0)
+        yvec = tVec(0)
 #if PETSC_VERSION_LT(3,6,0)
         call MatGetVecs(A, xvec, yvec, ierr)
 #else
@@ -307,12 +326,11 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         end
         subroutine ApplyPCPrecAHA(x,ldx,y,ldy,k,mode,primme_svds,err)
 !       ----------------------------------------------------------------
+        use petscvec
+        use petscmat
+        use petscpc
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
         integer*8 ldx,ldy,mLocal,nLocal
         integer k,mode,err
         PetscScalar x(ldx,*), y(ldy,*)
@@ -330,8 +348,10 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :                              PRIMME_SVDS_nLocal, nLocal, err)
 
         if (mode.eq.PRIMME_SVDS_op_AtA) then
-           call MatCreateVecs(A, xvec, PETSC_NULL_OBJECT, ierr)
-           call MatCreateVecs(A, yvec, PETSC_NULL_OBJECT, ierr)
+           xvec = tVec(0)
+           yvec = tVec(0)
+           call MatCreateVecs(A, xvec, PETSC_NULL_VEC, ierr)
+           call MatCreateVecs(A, yvec, PETSC_NULL_VEC, ierr)
            do j=1,k
               call VecPlaceArray(xvec, x(1,j), ierr)
               call VecPlaceArray(yvec, y(1,j), ierr)
@@ -351,10 +371,10 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
         subroutine par_GlobalSum(x,y,k,primme_svds,ierr)
 !       ----------------------------------------------------------------
         use iso_c_binding
+        use petscsys
         implicit none
         include 'primme_f77.h'
-#include <petsc/finclude/petscsys.h>
-        real*8, target :: x(k), y(k)
+        PetscReal, target :: x(k), y(k)
         integer*8 primme_svds
         integer k,ierr
         if (c_associated(c_loc(x),c_loc(y))) then

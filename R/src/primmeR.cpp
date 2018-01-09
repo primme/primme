@@ -603,7 +603,7 @@ template<typename T, int S, typename TS>
 static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
       SEXP prec, SEXP convTest, PrimmeParams primme)
 {
-   if (primme->nLocal == 0) primme->nLocal = primme->n;
+   if (primme->nLocal == -1) primme->nLocal = primme->n;
 
    // Check dimensions of ortho and init
 
@@ -1112,8 +1112,8 @@ template<typename T, int S, typename TS>
 static List xprimme_svds(Matrix<S> orthol, Matrix<S> orthor, Matrix<S> initl,
       Matrix<S> initr, SEXP A, SEXP prec, PrimmeSvdsParams primme_svds)
 {
-   if (primme_svds->mLocal == 0) primme_svds->mLocal = primme_svds->m;
-   if (primme_svds->nLocal == 0) primme_svds->nLocal = primme_svds->n;
+   if (primme_svds->mLocal == -1) primme_svds->mLocal = primme_svds->m;
+   if (primme_svds->nLocal == -1) primme_svds->nLocal = primme_svds->n;
 
    // Check dimensions of ortho and init
 

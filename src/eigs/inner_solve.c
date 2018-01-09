@@ -169,18 +169,20 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
    /* QMR parameters */
 
    SCALAR *g, *d, *delta, *w, *ptmp;
-   REAL alpha_prev, beta, rho_prev, rho;
-   REAL Theta_prev, Theta, c, sigma_prev, tau_init, tau_prev, tau; 
+   REAL sigma_prev;
+   double alpha_prev, beta, rho_prev, rho;
+   double Theta_prev, Theta, c, tau_init, tau_prev, tau; 
 
    /* Parameters used to dynamically update eigenpair */
-   REAL Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
-   REAL dot_sol, eval_updated, eval_prev, eres2_updated, eres_updated=0.0;
-   REAL eres_prev=0.0;
-   REAL Gamma_prev, Phi_prev;
-   REAL Gamma=0.0, Phi=0.0;
-   REAL gamma;
+   REAL dot_sol;
+   double Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
+   double eval_updated, eval_prev, eres2_updated, eres_updated=0.0;
+   double eres_prev=0.0;
+   double Gamma_prev, Phi_prev;
+   double Gamma=0.0, Phi=0.0;
+   double gamma;
 
-   REAL LTolerance, ETolerance, LTolerance_factor, ETolerance_factor;
+   double LTolerance, ETolerance, LTolerance_factor, ETolerance_factor;
    int isConv;
    double aNorm;
 
@@ -272,7 +274,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
    Theta_prev = 0.0L;
    eval_prev = eval;
-   CHKERR(dist_dot_real(g, 1, d, 1, primme, &rho_prev), -1);
+   REAL rho_prev_real;
+   CHKERR(dist_dot_real(g, 1, d, 1, primme, &rho_prev_real), -1);
+   rho_prev = rho_prev_real;
 
    /* Initialize recurrences used to dynamically update the eigenpair */
 
@@ -297,7 +301,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
                sizeLprojector, w, workSpace, primme), -1);
       CHKERR(dist_dot_real(d, 1, w, 1, primme, &sigma_prev), -1);
 
-      if (sigma_prev == 0.0L) {
+      if (!ISFINITE(sigma_prev) || sigma_prev == 0.0L) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because SIGMA %e\n",sigma_prev);
          }
@@ -309,7 +313,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       }
 
       alpha_prev = rho_prev/sigma_prev;
-      if (fabs(alpha_prev) < machEps || fabs(alpha_prev) > 1.0L/machEps){
+      if (!ISFINITE(alpha_prev) || fabs(alpha_prev) < machEps || fabs(alpha_prev) > 1.0L/machEps){
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,"Exiting because ALPHA %e\n",alpha_prev);
          }
@@ -322,8 +326,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
       Num_axpy_Sprimme(primme->nLocal, -alpha_prev, w, 1, g, 1);
 
-      CHKERR(dist_dot_real(g, 1, g, 1, primme, &Theta), -1);
-      Theta = sqrt(Theta);
+      REAL Theta2;
+      CHKERR(dist_dot_real(g, 1, g, 1, primme, &Theta2), -1);
+      Theta = sqrt(Theta2);
       Theta = Theta/tau_prev;
       c = 1.0L/sqrt(1+Theta*Theta);
       tau = tau_prev*Theta*c;
@@ -331,7 +336,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       gamma = c*c*Theta_prev*Theta_prev;
       eta = alpha_prev*c*c;
       for (i = 0; i < primme->nLocal; i++) {
-          delta[i] = gamma*delta[i] + eta*d[i];
+          delta[i] = delta[i]*(SCALAR)gamma + d[i]*(SCALAR)eta;
           sol[i] = delta[i]+sol[i];
       }
       numIts++;
@@ -368,18 +373,22 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
          /* residual norm.                                                   */
          
          CHKERR(dist_dot_real(sol, 1, sol, 1, primme, &dot_sol), -1);
-         eval_updated = shift + (eval - shift + 2*Beta + Gamma)/(1 + dot_sol);
+         eval_updated = shift + (eval - shift + 2*Beta + Gamma)/(1.0 + dot_sol);
          eres2_updated = (tau*tau)/(1 + dot_sol) + 
-            ((eval - shift + Beta)*(eval - shift + Beta))/(1 + dot_sol) - 
+            ((eval - shift + Beta)*(eval - shift + Beta))/(1.0 + dot_sol) - 
             (eval_updated - shift)*(eval_updated - shift);
 
          /* If numerical problems, let eres about the same as tau */
          eres_prev = eres_updated;
          if (eres2_updated < 0){
-            eres_updated = sqrt( (tau*tau)/(1 + dot_sol) );
+            eres_updated = sqrt( (tau*tau)/(1.0 + dot_sol) );
          }
          else 
             eres_updated = sqrt(eres2_updated);
+
+         assert(ISFINITE(Delta) && ISFINITE(Beta) && ISFINITE(Phi)
+               && ISFINITE(Psi) && ISFINITE(Gamma) && ISFINITE(eval_updated)
+               && ISFINITE(eres2_updated) && ISFINITE(eres_updated));
 
          /* --------------------------------------------------------*/
          /* Stopping criteria                                       */
@@ -448,9 +457,11 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
             int err;
             primme->stats.elapsedTime = primme_wTimer(0);
-            CHKERRM((primme->monitorFun(&eval_updated, &ONE, NULL, &ZERO,
-                        &ONE, &eres_updated, NULL, NULL, NULL, NULL,
-                        NULL, &numIts, &tau, &EVENT_INNER_ITERATION, primme, &err),
+            REAL evalr = eval_updated, resr = eres_updated, taur = tau;
+            
+            CHKERRM((primme->monitorFun(&evalr, &ONE, NULL, &ZERO,
+                        &ONE, &resr, NULL, NULL, NULL, NULL,
+                        NULL, &numIts, &taur, &EVENT_INNER_ITERATION, primme, &err),
                      err), -1, "Error returned by monitorFun: %d", err);
          }
 
@@ -478,8 +489,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
             int err;
             primme->stats.elapsedTime = primme_wTimer(0);
-            CHKERRM((primme->monitorFun(&eval, &ONE, &UNCO, &ZERO, &ONE, rnorm,
-                        NULL, NULL, NULL, NULL, NULL, &numIts, &tau,
+            REAL evalr = eval, resr = *rnorm, taur = tau;
+            CHKERRM((primme->monitorFun(&evalr, &ONE, &UNCO, &ZERO, &ONE, &resr,
+                        NULL, NULL, NULL, NULL, NULL, &numIts, &taur,
                         &EVENT_INNER_ITERATION, primme, &err),
                      err), -1, "Error returned by monitorFun: %d", err);
          }
@@ -491,7 +503,9 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             ldRprojectorQ, x, RprojectorX, ldRprojectorX, sizeRprojectorQ,
             sizeRprojectorX, xKinvx, UDU, ipivot, w, workSpace, primme), -1);
 
-         CHKERR(dist_dot_real(g, 1, w, 1, primme, &rho), -1);
+         REAL rho_real;
+         CHKERR(dist_dot_real(g, 1, w, 1, primme, &rho_real), -1);
+         rho = rho_real;
          beta = rho/rho_prev;
          Num_axpy_Sprimme(primme->nLocal, beta, d, 1, w, 1);
          /* Alternate between w and d buffers in successive iterations

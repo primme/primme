@@ -140,6 +140,10 @@ typedef struct primme_svds_params {
    FILE *outputFile;
    struct primme_svds_stats stats;
 
+   void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec,
+         double *rNorm, int *isconv, struct primme_svds_params *primme,
+         int *ierr);
+   void *convtest;
    void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -197,6 +201,8 @@ typedef enum {
    PRIMME_SVDS_stats_timePrecond = 402,
    PRIMME_SVDS_stats_timeOrtho = 403,
    PRIMME_SVDS_stats_timeGlobalSum = 404,
+   PRIMME_SVDS_convTestFun = 405,
+   PRIMME_SVDS_convtest = 406,
    PRIMME_SVDS_monitorFun = 41,
    PRIMME_SVDS_monitor = 42
 } primme_svds_params_label;

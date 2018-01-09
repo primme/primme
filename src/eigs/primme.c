@@ -137,10 +137,37 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* ----------------------- */
    machEps = MACHINE_EPSILON;
 
+   /* ----------------------------------------- */
+   /* Set some defaults for sequential programs */
+   /* ----------------------------------------- */
+   if (primme->numProcs <= 1 && evals != NULL && evecs != NULL
+         && resNorms != NULL) {
+      primme->nLocal = primme->n;
+      primme->procID = 0;
+   }
+
    /* ------------------ */
    /* Set some defaults  */
    /* ------------------ */
    primme_set_defaults(primme);
+
+   /* --------------------------------------------------------------------- */
+   /* Observed orthogonality issues finding the largest/smallest values in  */
+   /* single precision. Computing V'*B*V and solving the projected problem  */
+   /* V'AVx = V'BVxl mitigates the problem.                                 */
+   /* --------------------------------------------------------------------- */
+
+   if (primme->orth == primme_orth_default) {
+#ifdef USE_FLOAT
+      if (primme->projectionParams.projection == primme_proj_RR &&
+            (primme->target == primme_largest
+             || primme->target == primme_smallest)) {
+         primme->orth = primme_orth_explicit_I;
+      }
+      else
+#endif
+         primme->orth = primme_orth_implicit_I;
+   }
 
    /* -------------------------------------------------------------- */
    /* If needed, we are ready to estimate required memory and return */
@@ -258,12 +285,13 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    size_t rworkByteSize=0; /* Size of all real data in bytes            */
    int intWorkSize=0;/* Size of integer work space in bytes             */
 
-   int dataSize;     /* Number of SCALAR positions allocated, excluding */
-                     /* REAL (see doubleSize below) and work space.  */
+   size_t dataSize;  /* Number of SCALAR positions allocated, excluding */
+                     /* REAL (see doubleSize below) and work space.     */
    int doubleSize=0; /* Number of doubles allocated exclusively to the  */
                      /* double arrays: hVals, prevRitzVals, blockNorms  */
    int maxEvecsSize; /* Maximum number of vectors in evecs and evecsHat */
-   SCALAR *evecsHat=NULL;/* not NULL when evecsHat will be used        */
+   SCALAR *evecsHat=NULL;/* not NULL when evecsHat will be used         */
+   SCALAR *VtBV=NULL;/* not NULL when VtBV will be used                 */
    SCALAR t;        /* dummy variable */
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
@@ -281,6 +309,14 @@ static int allocate_workspace(primme_params *primme, int allocate) {
       + primme->restartingParams.maxPrevRetain*primme->maxBasisSize;
                                                    /* size of prevHVecs    */
 
+   /*----------------------------------------------------------------------*/
+   /* Add memory for explicit_I with Rayleigh-Ritz                         */
+   /*----------------------------------------------------------------------*/
+   if (primme->orth == primme_orth_explicit_I) {
+      dataSize += primme->maxBasisSize*primme->maxBasisSize;  /* Size of VtBV */
+      VtBV = &t;
+   }
+      
    /*----------------------------------------------------------------------*/
    /* Add memory for Harmonic or Refined projection                        */
    /*----------------------------------------------------------------------*/
@@ -336,8 +372,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
    /* Determine workspace required by solve_H and its children             */
    /*----------------------------------------------------------------------*/
 
-   CHKERR(solve_H_Sprimme(NULL, primme->maxBasisSize, 0, NULL, 0, NULL, 0,
-            NULL, 0, NULL, 0, NULL, NULL, 0, 0.0, &realWorkSize, NULL, 0,
+   CHKERR(solve_H_Sprimme(NULL, primme->maxBasisSize, 0, VtBV, 0, NULL, 0, NULL,
+            0, NULL, 0, NULL, 0, NULL, NULL, 0, 0.0, &realWorkSize, NULL, 0,
             &intWorkSize, primme), -1);
 
    /*----------------------------------------------------------------------*/
@@ -359,8 +395,8 @@ static int allocate_workspace(primme_params *primme, int allocate) {
             &primme->numEvals, &primme->numEvals, &primme->numEvals, NULL, NULL,
             &primme->restartingParams.maxPrevRetain, primme->maxBasisSize,
             primme->initSize, NULL, &primme->maxBasisSize, NULL,
-            primme->maxBasisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 0, NULL,
-            0, 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0.0, NULL,
+            primme->maxBasisSize, VtBV, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0,
+            0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0.0, NULL,
             &realWorkSize, &intWorkSize, 0, primme), -1);
 
    /*----------------------------------------------------------------------*/
@@ -487,7 +523,8 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
    else if (primme->applyPreconditioner == NULL && 
             primme->correctionParams.precondition > 0 ) 
       ret = -8;
-   /* ret = -9 is free */
+   else if (primme->massMatrixMatvec != NULL)
+      ret = -9; 
    else if (primme->numEvals > primme->n)
       ret = -10;
    else if (primme->numEvals < 0)
@@ -555,6 +592,9 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
          && (primme->target == primme_closest_leq
             || primme->target == primme_closest_geq))
       ret = -38;
+   else if (primme->orth == primme_orth_explicit_I
+         && primme->projectionParams.projection != primme_proj_RR)
+      ret = -39;
    /* Please keep this if instruction at the end */
    else if ( primme->target == primme_largest_abs ||
              primme->target == primme_closest_geq ||

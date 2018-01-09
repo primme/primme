@@ -138,6 +138,9 @@ primme_event_restart = _Primme.primme_event_restart
 primme_event_reset = _Primme.primme_event_reset
 primme_event_converged = _Primme.primme_event_converged
 primme_event_locked = _Primme.primme_event_locked
+primme_orth_default = _Primme.primme_orth_default
+primme_orth_implicit_I = _Primme.primme_orth_implicit_I
+primme_orth_explicit_I = _Primme.primme_orth_explicit_I
 class primme_stats(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, primme_stats, name, value)
@@ -446,6 +449,10 @@ class primme_params(_object):
     __swig_getmethods__["eps"] = _Primme.primme_params_eps_get
     if _newclass:
         eps = _swig_property(_Primme.primme_params_eps_get, _Primme.primme_params_eps_set)
+    __swig_setmethods__["orth"] = _Primme.primme_params_orth_set
+    __swig_getmethods__["orth"] = _Primme.primme_params_orth_get
+    if _newclass:
+        orth = _swig_property(_Primme.primme_params_orth_get, _Primme.primme_params_orth_set)
     __swig_setmethods__["printLevel"] = _Primme.primme_params_printLevel_set
     __swig_getmethods__["printLevel"] = _Primme.primme_params_printLevel_get
     if _newclass:
@@ -578,6 +585,7 @@ PRIMME_stats_maxConvTol = _Primme.PRIMME_stats_maxConvTol
 PRIMME_dynamicMethodSwitch = _Primme.PRIMME_dynamicMethodSwitch
 PRIMME_massMatrixMatvec = _Primme.PRIMME_massMatrixMatvec
 PRIMME_convTestFun = _Primme.PRIMME_convTestFun
+PRIMME_convtest = _Primme.PRIMME_convtest
 PRIMME_ldevecs = _Primme.PRIMME_ldevecs
 PRIMME_ldOPs = _Primme.PRIMME_ldOPs
 PRIMME_monitorFun = _Primme.PRIMME_monitorFun
@@ -797,6 +805,10 @@ class primme_svds_params(_object):
     __swig_getmethods__["stats"] = _Primme.primme_svds_params_stats_get
     if _newclass:
         stats = _swig_property(_Primme.primme_svds_params_stats_get, _Primme.primme_svds_params_stats_set)
+    __swig_setmethods__["convtest"] = _Primme.primme_svds_params_convtest_set
+    __swig_getmethods__["convtest"] = _Primme.primme_svds_params_convtest_get
+    if _newclass:
+        convtest = _swig_property(_Primme.primme_svds_params_convtest_get, _Primme.primme_svds_params_convtest_set)
 
     def __init__(self):
         this = _Primme.new_primme_svds_params()
@@ -857,6 +869,8 @@ PRIMME_SVDS_stats_timeMatvec = _Primme.PRIMME_SVDS_stats_timeMatvec
 PRIMME_SVDS_stats_timePrecond = _Primme.PRIMME_SVDS_stats_timePrecond
 PRIMME_SVDS_stats_timeOrtho = _Primme.PRIMME_SVDS_stats_timeOrtho
 PRIMME_SVDS_stats_timeGlobalSum = _Primme.PRIMME_SVDS_stats_timeGlobalSum
+PRIMME_SVDS_convTestFun = _Primme.PRIMME_SVDS_convTestFun
+PRIMME_SVDS_convtest = _Primme.PRIMME_SVDS_convtest
 PRIMME_SVDS_monitorFun = _Primme.PRIMME_SVDS_monitorFun
 PRIMME_SVDS_monitor = _Primme.PRIMME_SVDS_monitor
 

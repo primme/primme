@@ -10,6 +10,8 @@ singular/eigenvalues and can use preconditioning to accelerate convergence. It
 is especially optimized for large, difficult problems, and can be a useful tool
 for both non-experts and experts.
 
+The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
+
 Install
 -------
 
@@ -28,7 +30,7 @@ Optionally for building the development version do::
 Usage
 -----
 
-In the following examples it is computed few eigenvalues and eigenvectors from a real symmetric matrix::
+The following examples compute a few eigenvalues and eigenvectors from a real symmetric matrix::
 
     >>> import Primme, scipy.sparse
     >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
@@ -40,7 +42,7 @@ In the following examples it is computed few eigenvalues and eigenvectors from a
     >>> new_evals # the next three largest eigenvalues
     array([ 96.,  95.,  94.])
 
-In the following examples it is computed few singular values and vectors::
+The following examples compute a few singular values and vectors::
 
     >>> import Primme, scipy.sparse
     >>> A = scipy.sparse.spdiags(range(1, 11), [0], 100, 10) # sparse diag. rect. matrix
@@ -56,7 +58,9 @@ In the following examples it is computed few singular values and vectors::
     >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
     ['5.99871', '5.99057', '6.01065']
 
-Check further examples_ and the documentation of eigsh_ and svds_.
+Further examples_.
+
+Documentation of eigsh_ and svds_.
 
 Citing this code 
 ----------------

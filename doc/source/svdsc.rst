@@ -208,7 +208,8 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       | ``void *`` |ScommInfo|
       | ``void *`` |Smatrix|
       | ``void *`` |Spreconditioner|
-      | ``void *`` monitor
+      | ``void *`` |Sconvtest|
+      | ``void *`` |Smonitor|
       |
       | *Advanced options*
       | ``int`` |SnumTargetShifts|, for targeting interior singular values.
@@ -228,6 +229,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       | ``primme_svds_operator`` |SmethodStage2|
       | |primme_params| |Sprimme|
       | |primme_params| |SprimmeStage2|
+      | ``void (*`` |SconvTestFun| ``)(...)``, custom convergence criterion.
       | ``void (*`` |SmonitorFun| ``)(...)``, custom convergence history.
 
 .. only:: text
@@ -260,6 +262,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       void *commInfo;
       void *matrix;
       void *preconditioner;
+      void *convtest;
       void *monitor;
       
       /* Advanced options */
@@ -280,6 +283,7 @@ PRIMME SVDS stores the data on the structure :c:type:`primme_svds_params`, which
       primme_svds_operator methodStage2;
       primme_params primme;
       primme_params primmeStage2;
+      void (*convTestFun)(...); // custom convergence criterion
       void (*monitorFun)(...); // custom convergence history
 
 
