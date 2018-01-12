@@ -133,10 +133,12 @@ typedef float real;
 typedef double doublereal;
 typedef struct { real r, i; } complex;
 typedef struct { doublereal r, i; } doublecomplex;
-inline _Complex float Cf(complex *z) {return z->r + z->i*_Complex_I;}
-inline _Complex double Cd(doublecomplex *z) {return z->r + z->i*_Complex_I;}
-#define pCf(z) (*(_Complex float*)(z))
-#define pCd(z) (*(_Complex double*)(z))
+static inline _Complex float Cf(complex *z) {return z->r + z->i*_Complex_I;}
+static inline _Complex double Cd(doublecomplex *z) {return z->r + z->i*_Complex_I;}
+static inline _Complex float * _pCf(complex *z) {return (_Complex float*)z;}
+static inline _Complex double * _pCd(doublecomplex *z) {return (_Complex double*)z;}
+#define pCf(z) (*_pCf(z))
+#define pCd(z) (*_pCd(z))
 typedef int logical;
 typedef short int shortlogical;
 typedef char logical1;
@@ -275,7 +277,7 @@ typedef struct Namelist Namelist;
 #define c_abs(z) (cabsf(Cf(z)))
 #define c_cos(R,Z) { pCf(R)=ccos(Cf(Z)); }
 #define c_div(c, a, b) {pCf(c) = Cf(a)/Cf(b);}
-#define z_div(c, a, b) {pCd(c) = Cf(a)/Cd(b);}
+#define z_div(c, a, b) {pCd(c) = Cd(a)/Cd(b);}
 #define c_exp(R, Z) {pCf(R) = cexpf(Cf(Z));}
 #define c_log(R, Z) {pCf(R) = clogf(Cf(Z));}
 #define c_sin(R, Z) {pCf(R) = csinf(Cf(Z));}
@@ -309,8 +311,9 @@ typedef struct Namelist Namelist;
 #define i_len(s, n) (n)
 #define i_nint(x) ((integer)u_nint(*(x)))
 #define i_sign(a,b) ((integer)u_sign((integer)*(a),(integer)*(b)))
-#define pow_ci(p, a, b) { pCf(p) = pow_zi(Cf(a), *(b)); }
+#define pow_ci(p, a, b) { pCf(p) = cpow_ui(Cf(a), *(b)); }
 #define pow_dd(ap, bp) ( pow(*(ap), *(bp)))
+#define pow_si(B,E) spow_ui(*(B),*(E))
 #define pow_di(B,E) dpow_ui(*(B),*(E))
 #define pow_zi(p, a, b) {pCd(p) = zpow_ui(Cd(a), *(b));}
 #define pow_zz(R,A,B) {pCd(R) = cpow(Cd(A),*(B));}
@@ -335,8 +338,32 @@ typedef logical (*L_fp)(...);
 typedef logical (*L_fp)();
 #endif
 
+static float spow_ui(float x, integer n) {
+	float pow=1.0; unsigned long int u;
+	if(n != 0) {
+		if(n < 0) n = -n, x = 1/x;
+		for(u = n; ; ) {
+			if(u & 01) pow *= x;
+			if(u >>= 1) x *= x;
+			else break;
+		}
+	}
+	return pow;
+}
 static double dpow_ui(double x, integer n) {
 	double pow=1.0; unsigned long int u;
+	if(n != 0) {
+		if(n < 0) n = -n, x = 1/x;
+		for(u = n; ; ) {
+			if(u & 01) pow *= x;
+			if(u >>= 1) x *= x;
+			else break;
+		}
+	}
+	return pow;
+}
+static _Complex float cpow_ui(_Complex float x, integer n) {
+	_Complex float pow=1.0; unsigned long int u;
 	if(n != 0) {
 		if(n < 0) n = -n, x = 1/x;
 		for(u = n; ; ) {
@@ -389,6 +416,62 @@ static integer smaxloc_(float *w, integer s, integer e, integer *n)
 	for(m=w[s-1], mi=s, i=s+1; i<=e; i++)
 		if (w[i-1]>m) mi=i ,m=w[i-1];
 	return mi-s+1;
+}
+static inline void cdotc_(complex *z, integer *n_, complex *x, integer *incx_, complex *y, integer *incy_) {
+	integer n = *n_, incx = *incx_, incy = *incy_, i;
+	_Complex float zdotc = 0.0;
+	if (incx == 1 && incy == 1) {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += conjf(Cf(&x[i])) * Cf(&y[i]);
+		}
+	} else {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += conjf(Cf(&x[i*incx])) * Cf(&y[i*incy]);
+		}
+	}
+	pCf(z) = zdotc;
+}
+static inline void zdotc_(doublecomplex *z, integer *n_, doublecomplex *x, integer *incx_, doublecomplex *y, integer *incy_) {
+	integer n = *n_, incx = *incx_, incy = *incy_, i;
+	_Complex double zdotc = 0.0;
+	if (incx == 1 && incy == 1) {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += conj(Cd(&x[i])) * Cd(&y[i]);
+		}
+	} else {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += conj(Cd(&x[i*incx])) * Cd(&y[i*incy]);
+		}
+	}
+	pCd(z) = zdotc;
+}	
+static inline void cdotu_(complex *z, integer *n_, complex *x, integer *incx_, complex *y, integer *incy_) {
+	integer n = *n_, incx = *incx_, incy = *incy_, i;
+	_Complex float zdotc = 0.0;
+	if (incx == 1 && incy == 1) {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += Cf(&x[i]) * Cf(&y[i]);
+		}
+	} else {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += Cf(&x[i*incx]) * Cf(&y[i*incy]);
+		}
+	}
+	pCf(z) = zdotc;
+}
+static inline void zdotu_(doublecomplex *z, integer *n_, doublecomplex *x, integer *incx_, doublecomplex *y, integer *incy_) {
+	integer n = *n_, incx = *incx_, incy = *incy_, i;
+	_Complex double zdotc = 0.0;
+	if (incx == 1 && incy == 1) {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += Cd(&x[i]) * Cd(&y[i]);
+		}
+	} else {
+		for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+			zdotc += Cd(&x[i*incx]) * Cd(&y[i*incy]);
+		}
+	}
+	pCd(z) = zdotc;
 }
 #endif
 EOF
