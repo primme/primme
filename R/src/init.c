@@ -10,36 +10,36 @@
 */
 
 /* .Call calls */
-extern SEXP PRIMME_dprimme_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP PRIMME_dprimme_svds_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP PRIMME_primme_free_rcpp(SEXP);
-extern SEXP PRIMME_primme_get_member_rcpp(SEXP, SEXP);
-extern SEXP PRIMME_primme_initialize_rcpp();
-extern SEXP PRIMME_primme_set_member_rcpp(SEXP, SEXP, SEXP);
-extern SEXP PRIMME_primme_set_method_rcpp(SEXP, SEXP);
-extern SEXP PRIMME_primme_svds_free_rcpp(SEXP);
-extern SEXP PRIMME_primme_svds_get_member_rcpp(SEXP, SEXP);
-extern SEXP PRIMME_primme_svds_initialize_rcpp();
-extern SEXP PRIMME_primme_svds_set_member_rcpp(SEXP, SEXP, SEXP);
-extern SEXP PRIMME_primme_svds_set_method_rcpp(SEXP, SEXP, SEXP, SEXP);
-extern SEXP PRIMME_zprimme_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP PRIMME_zprimme_svds_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_dprimme_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_dprimme_svds_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_primme_free_rcpp(SEXP);
+extern SEXP _PRIMME_primme_get_member_rcpp(SEXP, SEXP);
+extern SEXP _PRIMME_primme_initialize_rcpp();
+extern SEXP _PRIMME_primme_set_member_rcpp(SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_primme_set_method_rcpp(SEXP, SEXP);
+extern SEXP _PRIMME_primme_svds_free_rcpp(SEXP);
+extern SEXP _PRIMME_primme_svds_get_member_rcpp(SEXP, SEXP);
+extern SEXP _PRIMME_primme_svds_initialize_rcpp();
+extern SEXP _PRIMME_primme_svds_set_member_rcpp(SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_primme_svds_set_method_rcpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_zprimme_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PRIMME_zprimme_svds_rcpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"PRIMME_dprimme_rcpp",                (DL_FUNC) &PRIMME_dprimme_rcpp,                7},
-    {"PRIMME_dprimme_svds_rcpp",           (DL_FUNC) &PRIMME_dprimme_svds_rcpp,           7},
-    {"PRIMME_primme_free_rcpp",            (DL_FUNC) &PRIMME_primme_free_rcpp,            1},
-    {"PRIMME_primme_get_member_rcpp",      (DL_FUNC) &PRIMME_primme_get_member_rcpp,      2},
-    {"PRIMME_primme_initialize_rcpp",      (DL_FUNC) &PRIMME_primme_initialize_rcpp,      0},
-    {"PRIMME_primme_set_member_rcpp",      (DL_FUNC) &PRIMME_primme_set_member_rcpp,      3},
-    {"PRIMME_primme_set_method_rcpp",      (DL_FUNC) &PRIMME_primme_set_method_rcpp,      2},
-    {"PRIMME_primme_svds_free_rcpp",       (DL_FUNC) &PRIMME_primme_svds_free_rcpp,       1},
-    {"PRIMME_primme_svds_get_member_rcpp", (DL_FUNC) &PRIMME_primme_svds_get_member_rcpp, 2},
-    {"PRIMME_primme_svds_initialize_rcpp", (DL_FUNC) &PRIMME_primme_svds_initialize_rcpp, 0},
-    {"PRIMME_primme_svds_set_member_rcpp", (DL_FUNC) &PRIMME_primme_svds_set_member_rcpp, 3},
-    {"PRIMME_primme_svds_set_method_rcpp", (DL_FUNC) &PRIMME_primme_svds_set_method_rcpp, 4},
-    {"PRIMME_zprimme_rcpp",                (DL_FUNC) &PRIMME_zprimme_rcpp,                7},
-    {"PRIMME_zprimme_svds_rcpp",           (DL_FUNC) &PRIMME_zprimme_svds_rcpp,           7},
+    {"_PRIMME_dprimme_rcpp",                (DL_FUNC) &_PRIMME_dprimme_rcpp,                7},
+    {"_PRIMME_dprimme_svds_rcpp",           (DL_FUNC) &_PRIMME_dprimme_svds_rcpp,           7},
+    {"_PRIMME_primme_free_rcpp",            (DL_FUNC) &_PRIMME_primme_free_rcpp,            1},
+    {"_PRIMME_primme_get_member_rcpp",      (DL_FUNC) &_PRIMME_primme_get_member_rcpp,      2},
+    {"_PRIMME_primme_initialize_rcpp",      (DL_FUNC) &_PRIMME_primme_initialize_rcpp,      0},
+    {"_PRIMME_primme_set_member_rcpp",      (DL_FUNC) &_PRIMME_primme_set_member_rcpp,      3},
+    {"_PRIMME_primme_set_method_rcpp",      (DL_FUNC) &_PRIMME_primme_set_method_rcpp,      2},
+    {"_PRIMME_primme_svds_free_rcpp",       (DL_FUNC) &_PRIMME_primme_svds_free_rcpp,       1},
+    {"_PRIMME_primme_svds_get_member_rcpp", (DL_FUNC) &_PRIMME_primme_svds_get_member_rcpp, 2},
+    {"_PRIMME_primme_svds_initialize_rcpp", (DL_FUNC) &_PRIMME_primme_svds_initialize_rcpp, 0},
+    {"_PRIMME_primme_svds_set_member_rcpp", (DL_FUNC) &_PRIMME_primme_svds_set_member_rcpp, 3},
+    {"_PRIMME_primme_svds_set_method_rcpp", (DL_FUNC) &_PRIMME_primme_svds_set_method_rcpp, 4},
+    {"_PRIMME_zprimme_rcpp",                (DL_FUNC) &_PRIMME_zprimme_rcpp,                7},
+    {"_PRIMME_zprimme_svds_rcpp",           (DL_FUNC) &_PRIMME_zprimme_svds_rcpp,           7},
     {NULL, NULL, 0}
 };
 

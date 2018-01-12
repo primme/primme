@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // primme_initialize_rcpp
 PrimmeParams primme_initialize_rcpp();
-RcppExport SEXP PRIMME_primme_initialize_rcpp() {
+RcppExport SEXP _PRIMME_primme_initialize_rcpp() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // primme_free_rcpp
 void primme_free_rcpp(PrimmeParams primme);
-RcppExport SEXP PRIMME_primme_free_rcpp(SEXP primmeSEXP) {
+RcppExport SEXP _PRIMME_primme_free_rcpp(SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
@@ -28,7 +28,7 @@ END_RCPP
 }
 // primme_set_method_rcpp
 void primme_set_method_rcpp(std::string methodstr, PrimmeParams primme);
-RcppExport SEXP PRIMME_primme_set_method_rcpp(SEXP methodstrSEXP, SEXP primmeSEXP) {
+RcppExport SEXP _PRIMME_primme_set_method_rcpp(SEXP methodstrSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type methodstr(methodstrSEXP);
@@ -39,7 +39,7 @@ END_RCPP
 }
 // primme_get_member_rcpp
 SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme);
-RcppExport SEXP PRIMME_primme_get_member_rcpp(SEXP labelstrSEXP, SEXP primmeSEXP) {
+RcppExport SEXP _PRIMME_primme_get_member_rcpp(SEXP labelstrSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,7 +51,7 @@ END_RCPP
 }
 // primme_set_member_rcpp
 void primme_set_member_rcpp(std::string labelstr, SEXP value, PrimmeParams primme);
-RcppExport SEXP PRIMME_primme_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primmeSEXP) {
+RcppExport SEXP _PRIMME_primme_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type labelstr(labelstrSEXP);
@@ -63,7 +63,7 @@ END_RCPP
 }
 // dprimme_rcpp
 List dprimme_rcpp(NumericMatrix ortho, NumericMatrix init, SEXP A, SEXP B, SEXP prec, SEXP convTest, PrimmeParams primme);
-RcppExport SEXP PRIMME_dprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
+RcppExport SEXP _PRIMME_dprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,7 +80,7 @@ END_RCPP
 }
 // zprimme_rcpp
 List zprimme_rcpp(ComplexMatrix ortho, ComplexMatrix init, SEXP A, SEXP B, SEXP prec, SEXP convTest, PrimmeParams primme);
-RcppExport SEXP PRIMME_zprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
+RcppExport SEXP _PRIMME_zprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -97,7 +97,7 @@ END_RCPP
 }
 // primme_svds_initialize_rcpp
 PrimmeSvdsParams primme_svds_initialize_rcpp();
-RcppExport SEXP PRIMME_primme_svds_initialize_rcpp() {
+RcppExport SEXP _PRIMME_primme_svds_initialize_rcpp() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -107,7 +107,7 @@ END_RCPP
 }
 // primme_svds_free_rcpp
 void primme_svds_free_rcpp(PrimmeSvdsParams primme_svds);
-RcppExport SEXP PRIMME_primme_svds_free_rcpp(SEXP primme_svdsSEXP) {
+RcppExport SEXP _PRIMME_primme_svds_free_rcpp(SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
@@ -117,7 +117,7 @@ END_RCPP
 }
 // primme_svds_set_method_rcpp
 void primme_svds_set_method_rcpp(std::string methodstr, std::string methodStage1str, std::string methodStage2str, PrimmeSvdsParams primme_svds);
-RcppExport SEXP PRIMME_primme_svds_set_method_rcpp(SEXP methodstrSEXP, SEXP methodStage1strSEXP, SEXP methodStage2strSEXP, SEXP primme_svdsSEXP) {
+RcppExport SEXP _PRIMME_primme_svds_set_method_rcpp(SEXP methodstrSEXP, SEXP methodStage1strSEXP, SEXP methodStage2strSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type methodstr(methodstrSEXP);
@@ -130,7 +130,7 @@ END_RCPP
 }
 // primme_svds_get_member_rcpp
 SEXP primme_svds_get_member_rcpp(std::string labelstr, PrimmeSvdsParams primme_svds);
-RcppExport SEXP PRIMME_primme_svds_get_member_rcpp(SEXP labelstrSEXP, SEXP primme_svdsSEXP) {
+RcppExport SEXP _PRIMME_primme_svds_get_member_rcpp(SEXP labelstrSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -142,7 +142,7 @@ END_RCPP
 }
 // primme_svds_set_member_rcpp
 void primme_svds_set_member_rcpp(std::string labelstr, SEXP value, PrimmeSvdsParams primme_svds);
-RcppExport SEXP PRIMME_primme_svds_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primme_svdsSEXP) {
+RcppExport SEXP _PRIMME_primme_svds_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type labelstr(labelstrSEXP);
@@ -154,7 +154,7 @@ END_RCPP
 }
 // dprimme_svds_rcpp
 List dprimme_svds_rcpp(NumericMatrix orthol, NumericMatrix orthor, NumericMatrix initl, NumericMatrix initr, SEXP A, SEXP prec, PrimmeSvdsParams primme_svds);
-RcppExport SEXP PRIMME_dprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
+RcppExport SEXP _PRIMME_dprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -171,7 +171,7 @@ END_RCPP
 }
 // zprimme_svds_rcpp
 List zprimme_svds_rcpp(ComplexMatrix orthol, ComplexMatrix orthor, ComplexMatrix initl, ComplexMatrix initr, SEXP A, SEXP prec, PrimmeSvdsParams primme_svds);
-RcppExport SEXP PRIMME_zprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
+RcppExport SEXP _PRIMME_zprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

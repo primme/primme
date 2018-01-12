@@ -2,58 +2,58 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 .primme_initialize <- function() {
-    .Call('PRIMME_primme_initialize_rcpp', PACKAGE = 'PRIMME')
+    .Call(`_PRIMME_primme_initialize_rcpp`)
 }
 
 .primme_free <- function(primme) {
-    invisible(.Call('PRIMME_primme_free_rcpp', PACKAGE = 'PRIMME', primme))
+    invisible(.Call(`_PRIMME_primme_free_rcpp`, primme))
 }
 
 .primme_set_method <- function(methodstr, primme) {
-    invisible(.Call('PRIMME_primme_set_method_rcpp', PACKAGE = 'PRIMME', methodstr, primme))
+    invisible(.Call(`_PRIMME_primme_set_method_rcpp`, methodstr, primme))
 }
 
 .primme_get_member <- function(labelstr, primme) {
-    .Call('PRIMME_primme_get_member_rcpp', PACKAGE = 'PRIMME', labelstr, primme)
+    .Call(`_PRIMME_primme_get_member_rcpp`, labelstr, primme)
 }
 
 .primme_set_member <- function(labelstr, value, primme) {
-    invisible(.Call('PRIMME_primme_set_member_rcpp', PACKAGE = 'PRIMME', labelstr, value, primme))
+    invisible(.Call(`_PRIMME_primme_set_member_rcpp`, labelstr, value, primme))
 }
 
 .dprimme <- function(ortho, init, A, B, prec, convTest, primme) {
-    .Call('PRIMME_dprimme_rcpp', PACKAGE = 'PRIMME', ortho, init, A, B, prec, convTest, primme)
+    .Call(`_PRIMME_dprimme_rcpp`, ortho, init, A, B, prec, convTest, primme)
 }
 
 .zprimme <- function(ortho, init, A, B, prec, convTest, primme) {
-    .Call('PRIMME_zprimme_rcpp', PACKAGE = 'PRIMME', ortho, init, A, B, prec, convTest, primme)
+    .Call(`_PRIMME_zprimme_rcpp`, ortho, init, A, B, prec, convTest, primme)
 }
 
 .primme_svds_initialize <- function() {
-    .Call('PRIMME_primme_svds_initialize_rcpp', PACKAGE = 'PRIMME')
+    .Call(`_PRIMME_primme_svds_initialize_rcpp`)
 }
 
 .primme_svds_free <- function(primme_svds) {
-    invisible(.Call('PRIMME_primme_svds_free_rcpp', PACKAGE = 'PRIMME', primme_svds))
+    invisible(.Call(`_PRIMME_primme_svds_free_rcpp`, primme_svds))
 }
 
 .primme_svds_set_method <- function(methodstr, methodStage1str, methodStage2str, primme_svds) {
-    invisible(.Call('PRIMME_primme_svds_set_method_rcpp', PACKAGE = 'PRIMME', methodstr, methodStage1str, methodStage2str, primme_svds))
+    invisible(.Call(`_PRIMME_primme_svds_set_method_rcpp`, methodstr, methodStage1str, methodStage2str, primme_svds))
 }
 
 .primme_svds_get_member <- function(labelstr, primme_svds) {
-    .Call('PRIMME_primme_svds_get_member_rcpp', PACKAGE = 'PRIMME', labelstr, primme_svds)
+    .Call(`_PRIMME_primme_svds_get_member_rcpp`, labelstr, primme_svds)
 }
 
 .primme_svds_set_member <- function(labelstr, value, primme_svds) {
-    invisible(.Call('PRIMME_primme_svds_set_member_rcpp', PACKAGE = 'PRIMME', labelstr, value, primme_svds))
+    invisible(.Call(`_PRIMME_primme_svds_set_member_rcpp`, labelstr, value, primme_svds))
 }
 
 .dprimme_svds <- function(orthol, orthor, initl, initr, A, prec, primme_svds) {
-    .Call('PRIMME_dprimme_svds_rcpp', PACKAGE = 'PRIMME', orthol, orthor, initl, initr, A, prec, primme_svds)
+    .Call(`_PRIMME_dprimme_svds_rcpp`, orthol, orthor, initl, initr, A, prec, primme_svds)
 }
 
 .zprimme_svds <- function(orthol, orthor, initl, initr, A, prec, primme_svds) {
-    .Call('PRIMME_zprimme_svds_rcpp', PACKAGE = 'PRIMME', orthol, orthor, initl, initr, A, prec, primme_svds)
+    .Call(`_PRIMME_zprimme_svds_rcpp`, orthol, orthor, initl, initr, A, prec, primme_svds)
 }
 
