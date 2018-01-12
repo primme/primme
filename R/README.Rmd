@@ -284,7 +284,7 @@ And for now it is the only package that supports computing the smallest singular
 ```{r }
 # Get LargeReFile from UF matrix collection
 tf <- tempfile();
-download.file('http://www.cise.ufl.edu/research/sparse/MM/Stevenson/LargeRegFile.tar.gz',tf);
+download.file('https://sparse.tamu.edu/MM/Stevenson/LargeRegFile.tar.gz',tf);
 td <- tempdir();
 untar(tf, exdir=td);
 As <- as(readMM(paste(td,'LargeRegFile/LargeRegFile.mtx',sep='/')), "dgCMatrix");
