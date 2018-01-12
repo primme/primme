@@ -1,9 +1,11 @@
 Package: PRIMME
 Type: Package
 Title: Eigenvalues and Singular Values and Vectors from Large Matrices
-Version: 1.0.0.9000
-Date: 2017-03-22
-Author: Eloy Romero [aut, cre], Andreas Stathopoulos [aut]
+Version: 2.2-0
+Date: 2017-04-11
+Authors@R: c(person("Eloy", "Romero", role=c("aut", "cre"), email="eloy@cs.wm.edu"),
+             person("Andreas", "Stathopoulos", role="aut", email="andreas@cs.wm.edu"),
+             person("College of William & Mary", role="cph"))
 Maintainer: Eloy Romero <eloy@cs.wm.edu>
 Description:
     R interface to PRIMME, a library devoted to the efficient computation of a
