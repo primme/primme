@@ -164,7 +164,7 @@ svds(A, 4, "S", tol=1e-3, orthov=r$v)$d
 \references{
 [1]  L. Wu, E. Romero and A. Stathopoulos, \emph{PRIMME_SVDS: A High-Performance
      Preconditioned SVD Solver for Accurate Large-Scale Computations},
-     arXiv:1607.01404
+     J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
 [2] \url{http://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide}
 }
