@@ -11,17 +11,20 @@
 #        install: install the local version of the package.
 
 
-update: clean
+update: clean src/primme/zhegv.c
 	rm -rf inst/include src/primme/include src/primme/linalg src/primme/eigs src/primme/svds
 	mkdir -p src/primme inst/include src/primme/include src/primme/linalg src/primme/eigs src/primme/svds
 	cd ..; find include -name '*.h' -exec cp {} R/inst/{} \;
 	cd ../src; find . -name '*.[ch]' -exec cp {} ../R/src/primme/{} \;
-	# R LAPACK may not have zhegv; R installations often use a complete LAPACK, but this is required to pass the r-cran package test
-	wget -q "http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=lapack%2Fcomplex16%2Fzhegv.f" -O - | ./f2clapack.sh > src/primme/zhegv.c
 	R -e "require(Rcpp); compileAttributes();"
 	R -e "require(devtools); document()"
 	#R -e 'require(rmarkdown); render("README.Rmd",output_format="all")'
-	./cleanup
+	make clean
+
+src/primme/zhegv.c:
+	mkdir -p src/primme
+	# R LAPACK may not have zhegv; R installations often use a complete LAPACK, but this is required to pass the r-cran package test
+	wget -q "http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=lapack%2Fcomplex16%2Fzhegv.f" -O - | ./f2clapack.sh > src/primme/zhegv.c
 
 doc:
 	find . -name '*.pdf' -exec rm {} \;
@@ -33,11 +36,15 @@ doc:
 install: update
 	R CMD INSTALL .
 
+check: update
+	R -e "require(devtools); check()"
+
 clean:
 	find . -name '*.pdf' -exec rm {} \;
 	find . -name '*.o' -exec rm {} \;
 	find . -name '*.a' -exec rm {} \;
 	find . -name '*.so' -exec rm {} \;
 	find . -name '*.orig' -exec rm {} \;
+	./cleanup
 
-.PHONY: update doc install clean
+.PHONY: update doc install clean check
