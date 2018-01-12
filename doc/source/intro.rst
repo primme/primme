@@ -205,7 +205,7 @@ Citing the code
 
 .. [r6] L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
   Preconditioned SVD Solver for Accurate Large-Scale Computations*,
-   J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
+  J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
 .. only:: latex
 
