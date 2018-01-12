@@ -68,7 +68,8 @@ FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
-#  Creating the library
+#  Creating the library and packages
 #---------------------------------------------------------------
 
-RANLIB = ranlib
+RANLIB ?= ranlib
+R ?= R

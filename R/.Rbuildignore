@@ -1,2 +1,4 @@
-Makefile
-README.Rmd
+^Makefile$
+^README\.Rmd$
+^cran-comments\.md$
+^f2clapack.sh$

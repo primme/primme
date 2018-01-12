@@ -303,7 +303,13 @@ SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 TEMPLATE_PLEASE
 void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       SCALAR *x) {
+#ifdef USE_COMPLEX
+   /* Lapack's R core library doesn't have zlarnv. The functionality is */
+   /* replaced by calling the REAL version doubling the length.         */
 
+   assert(idist < 4); /* complex distributions are not supported */
+   Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x);
+#else
    PRIMME_BLASINT lidist = idist;
    PRIMME_BLASINT llength;
    PRIMME_BLASINT temp[4];
@@ -328,6 +334,7 @@ void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
    if (sizeof(PRIMME_INT) != sizeof(PRIMME_BLASINT))
       for(i=0; i<4; i++)
          iseed[i] = (int)liseed[i];
+#endif
 }
 
 /*******************************************************************************
@@ -376,6 +383,7 @@ void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 TEMPLATE_PLEASE
 void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       int lda, REAL *w, SCALAR *work, int ldwork, int *info) {
+#ifndef USE_XHEEV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -383,9 +391,9 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT linfo = 0;
    SCALAR *z;
    REAL abstol=0.0;
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
    REAL *rwork;
-#endif
+#  endif
    PRIMME_BLASINT *iwork, *ifail;
    SCALAR dummys=0;
    REAL   dummyr=0;
@@ -403,9 +411,9 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    if (ldwork != -1) {
       if (
                WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
             || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
-#endif
+#  endif
             || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
             || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
          ) {
@@ -415,14 +423,14 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    }
    else {
       z = &dummys;
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
       rwork = &dummyr;
-#endif
+#  endif
       iwork = &dummyi;
       ifail = &dummyi;
    }
 
-#ifdef NUM_CRAY
+#  ifdef NUM_CRAY
    _fcd jobz_fcd, range_fcd, uplo_fcd;
 
    jobz_fcd = _cptofcd(jobz, strlen(jobz));
@@ -431,18 +439,18 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
    XHEEVX(jobz_fcd, range_fcd, uplo_fcd, &ln, a, &llda, &dummyr, &dummyr,
          &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
-#  ifdef USE_COMPLEX
+#     ifdef USE_COMPLEX
          rwork,
-#  endif
+#     endif
          iwork, ifail, &linfo);
-#else
+#  else
    XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
          &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
-#  ifdef USE_COMPLEX
+#     ifdef USE_COMPLEX
          rwork,
-#  endif
+#     endif
          iwork, ifail, &linfo);
-#endif
+#  endif
 
    /* Copy z to a or add the extra space for z, iwork and ifail */
    if (ldwork != -1) {
@@ -450,12 +458,75 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    }
    else {
       work[0] += (REAL)n*n + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
-#ifdef USE_COMPLEX
+#  ifdef USE_COMPLEX
       work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
-#endif
+#  endif
    }
    *info = (int)linfo;
+
+#else /* USE_XHEEV */
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT linfo = 0;
+#  ifdef USE_COMPLEX
+   REAL *rwork;
+#  endif
+   SCALAR dummys=0;
+   REAL   dummyr=0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return;
+
+   /* NULL matrices and zero leading dimension may cause problems */
+   if (a == NULL) a = &dummys;
+   if (llda < 1) llda = 1;
+   if (w == NULL) w = &dummyr;
+
+#  ifdef USE_COMPLEX
+   /* Borrow space from work for rwork or set dummy values */
+   if (ldwork != -1) {
+      if (WRKSP_MALLOC_PRIMME(3*n, &rwork, &work, &lldwork)) {
+         *info = -1;
+         return;
+      }
+   }
+   else {
+      rwork = &dummyr;
+   }
+#  endif
+
+#  ifdef NUM_CRAY
+   _fcd jobz_fcd, uplo_fcd;
+
+   jobz_fcd = _cptofcd(jobz, strlen(jobz));
+   uplo_fcd = _cptofcd(uplo, strlen(uplo));
+
+   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork,
+#     ifdef USE_COMPLEX
+         rwork,
+#     endif
+         &linfo); 
+#  else
+   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork,
+#     ifdef USE_COMPLEX
+         rwork,
+#     endif
+         &linfo); 
+#  endif
+
+#  ifdef USE_COMPLEX
+   /* Add the extra space for rwork */
+   if (ldwork == -1) {
+      work[0] += (REAL)sizeof(REAL)*2*n/sizeof(SCALAR) + 2.0;
+   }
+#  endif
+
+   *info = (int)linfo;
+#endif
 }
+
 
 /*******************************************************************************
  * Subroutines for dense generalize eigenvalue decomposition
@@ -697,6 +768,7 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
 TEMPLATE_PLEASE
 void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    SCALAR *work, int ldwork, int *info) {
+#ifndef USE_ZGESV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -724,14 +796,14 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    if (llda < 1) llda = 1;
    if (lipivot == NULL) lipivot = &dummyi;
 
-#ifdef NUM_CRAY
+#  ifdef NUM_CRAY
    _fcd uplo_fcd;
 
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
    XHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
-#else
+#  else
    XHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
-#endif
+#  endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       if (ipivot) for(i=0; i<n; i++)
@@ -740,10 +812,42 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    }
    *info = (int)linfo;
 
+#else /* USE_ZGESV */
+
+   /* Lapack's R core library doesn't have zhetrf. The functionality is       */
+   /* implemented by replacing the input matrix with a full general matrix.   */
+   /* And Num_zhetrs_Sprimme will solve the general linear system.            */
+
+   /* Return memory requirements */
+   if (ldwork == -1) {
+      work[0] = 0.0;
+      *info = 0;
+      return;
+   }
+
+   /* Copy the given upper/lower triangular part into the lower/upper part    */
+
+   int i, j;
+   if (*uplo == 'L' || *uplo == 'l') {
+      for (i=0; i<n; i++) {
+         for (j=i+1; j<n; j++) {
+            a[lda*j+i] = CONJ(a[lda*i+j]);
+         }
+      }
+   }
+   else {
+      for (i=1; i<n; i++) {
+         for (j=0; j<i; j++) {
+            a[lda*j+i] = CONJ(a[lda*i+j]);
+         }
+      }
+   }
+
+#endif
 }
 
 /*******************************************************************************
- * Subroutine Num_hetrs_Sprimme - b = A\b where A stores a LL^H factorization
+ * Subroutine Num_hetrs_Sprimme - b = A\b where A may store a LL^H factorization
  ******************************************************************************/
  
 TEMPLATE_PLEASE
@@ -770,13 +874,17 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
       lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
 
-#ifdef NUM_CRAY
+#ifndef USE_ZGESV
+#  ifdef NUM_CRAY
    _fcd uplo_fcd;
 
    uplo_fcd = _cptofcd(uplo, strlen(uplo));
    XHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
-#else
+#  else
    XHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+#  endif
+#else /* USE_ZGESV */
+   XGESV(&ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {

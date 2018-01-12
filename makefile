@@ -55,7 +55,7 @@ python_install: python
 	@make -C Python install
 
 R_install: clean clean_lib
-	@R CMD INSTALL R
+	@${R} CMD INSTALL R
 
 deps:
 	@make -C src deps
