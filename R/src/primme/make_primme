@@ -8,7 +8,6 @@ SOURCES = \
    eigs/globalsum.c \
    eigs/init.c \
    eigs/inner_solve.c \
-   eigs/locking.c \
    eigs/main_iter.c \
    eigs/ortho.c \
    eigs/primme.c \
@@ -25,14 +24,21 @@ SOURCES = \
    svds/primme_svds_f77.c \
    svds/primme_svds_interface.c
 
+LAPACK_SOURCES = zhegv.c
+
 ARCHS = double doublecomplex
 OBJS = $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
+
+LAPACK_OBJS = $(patsubst %.c,%.o,$(LAPACK_SOURCES))
 
 INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
 
 #
 # Compilation
 #
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) -c $< -o $@
 
 %double.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -DUSE_DOUBLE -c $< -o $@
@@ -48,8 +54,12 @@ libprimme.a: $(OBJS)
 	$(AR) rv $@ $(OBJS);\
 	$(RANLIB) $@
 
-clean:
-	-@rm -f $(OBJS)
+libprimmeext.a: $(LAPACK_OBJS)
+	$(AR) rv $@ $(LAPACK_OBJS);\
+	$(RANLIB) $@
 
-.DELETE_ON_ERROR: $(OBJS) 
+clean:
+	-@rm -f $(OBJS) $(LAPACK_OBJS)
+
+.DELETE_ON_ERROR: $(OBJS) $(LAPACK_OBJS)
 .PHONY: clean

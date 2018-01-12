@@ -1,4 +1,3 @@
 #!/bin/sh
 
-rm -f src/*.o src/primme/*/*.o src/primme/libprimme.a
-rm -f src/*.so
+rm -f src/*.o src/primme/*/*.o src/primme/*.o src/primme/*.a src/*.so

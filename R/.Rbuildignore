@@ -1,3 +1,4 @@
 ^Makefile$
 ^README\.Rmd$
 ^cran-comments\.md$
+^f2clapack.sh$
