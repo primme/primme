@@ -10,7 +10,7 @@ Use the following two references to cite this package:
 
 -   A. Stathopoulos and J. R. McCombs *PRIMME: PReconditioned Iterative MultiMethod Eigensolver: Methods and software description*, ACM Transaction on Mathematical Software Vol. 37, No. 2, (2010), 21:1-21:30.
 
--   L. Wu, E. Romero and A. Stathopoulos, *PRIMME\_SVDS: A High-Performance Preconditioned SVD Solver for Accurate Large-Scale Computations*, arXiv:1607.01404
+-   L. Wu, E. Romero and A. Stathopoulos, *PRIMME\_SVDS: A High-Performance Preconditioned SVD Solver for Accurate Large-Scale Computations*, J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
 Installation Instructions
 =========================

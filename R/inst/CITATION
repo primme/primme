@@ -16,9 +16,10 @@ bibentry(
    title="{PRIMME\\_SVDS}: A High-Performance Preconditioned {SVD} Solver for Accurate Large-Scale Computations",
    author=c(person("Lingfei", "Wu"), person("Eloy", "Romero"), person("Andreas", "Stathopoulos")),
    journal="SIAM J. Sci. Comput.",
-   volume = "abs/1607.01404",
-   year=2016,
-   note = "to appear",
-   url = "http://arxiv.org/abs/1607.01404"
+   volume    = {39},
+   number    = {5},
+   pages     = {S248--S271},
+   year      = {2017},
+   url       = {https://doi.org/10.1137/16M1082214}
 );
  
