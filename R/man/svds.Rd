@@ -84,7 +84,7 @@ accelerating the convergence consider to use preconditioning  and/or
 educated initial guesses.
 }
 \details{
-Optional arguments to pass to PRIMME eignesolver (see further details at
+Optional arguments to pass to PRIMME eigensolver (see further details at
 [2]):
 
 \describe{
