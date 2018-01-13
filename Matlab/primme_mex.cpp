@@ -53,15 +53,15 @@
 // Attempt to capture ctrl+c
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #include <signal.h>
-static volatile int keepRunning = 1;
 #if defined (__unix__)
-static sighandler_t prev_handler = NULL;
+# define SIGHANDLER_T sighandler_t
 #else
-static sig_t prev_handler = NULL;
+# define SIGHANDLER_T sig_t
 #endif
+
+static volatile int keepRunning = 1;
 void interrumptHandler(int sig) {
    keepRunning = 0;
-   if (prev_handler) prev_handler(sig);
 }
 #endif
 
@@ -823,6 +823,8 @@ static void matrixMatvecEigs(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    }
 #endif
 
+   if (*blockSize <= 0) {*ierr = 0; return;}
+
    // Create input vector x (avoid copy if possible)
 
    prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, primme->n,
@@ -1009,7 +1011,8 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Set ctrl+c handler
 
    keepRunning = 1;
-   prev_handler = signal(SIGINT, interrumptHandler);
+   SIGHANDLER_T prev_handler = signal(SIGINT, interrumptHandler);
+   if (prev_handler == interrumptHandler) prev_handler = NULL;
 #endif
 
    // Call xprimme
@@ -1460,10 +1463,13 @@ static void matrixMatvecSvds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    }
 #endif
 
+   if (*blockSize <= 0) {*ierr = 0; return;}
+
    // Get numbers of rows of x and y
    PRIMME_INT mx, my;
    const char *str;
    F::get(*mode, primme_svds, &mx, &my, &prhs[0], &str);
+   assert(mx > 0);
 
    // Create input vector x (avoid copy if possible)
 
@@ -1658,7 +1664,8 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
    // Set ctrl+c handler
 
    keepRunning = 1;
-   prev_handler = signal(SIGINT, interrumptHandler);
+   SIGHANDLER_T prev_handler = signal(SIGINT, interrumptHandler);
+   if (prev_handler == interrumptHandler) prev_handler = NULL;
 #endif
 
    // Call xprimme_svds
