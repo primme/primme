@@ -19,7 +19,7 @@ MEX ?= mex
 #
 # Mac OS X
 # MEX = /Applications/MATLAB_R2014a.app/bin/mex
-# MEX = /Applications/MATLAB_R2015a.app/bin/mex
+# MEX = /Applications/MATLAB_R2016a.app/bin/mex
 
 # Extra compiler flags 
 MEXFLAGS += -O -largeArrayDims

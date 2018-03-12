@@ -50,8 +50,8 @@ endif
 # Mac OS X
 #
 # LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
-# LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
-# LIBS = -lprimme -lm
+LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
+LIBS = -lprimme -lm
 #---------------------------------------------------------------
 # Using Intel compilers
 #

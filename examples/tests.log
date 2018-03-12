@@ -1,0 +1,794 @@
+=========== Executing ./ex_eigs_dseq
+// ---------------------------------------------------
+//                 primme configuration               
+// ---------------------------------------------------
+primme.n = 100
+primme.nLocal = -1
+primme.numProcs = 1
+primme.procID = 0
+
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 10
+primme.aNorm = 0.000000e+00
+primme.eps = 1.000000e-09
+primme.maxBasisSize = 15
+primme.minRestartSize = 6
+primme.maxBlockSize = 1
+primme.maxOuterIterations = 2147483647
+primme.maxMatvecs = 2147483647
+primme.target = primme_smallest
+primme.projection.projection = primme_proj_RR
+primme.initBasisMode = primme_init_krylov
+primme.numTargetShifts = 0
+primme.dynamicMethodSwitch = 1
+primme.locking = 1
+primme.initSize = 0
+primme.numOrthoConst = 0
+primme.ldevecs = -1
+primme.ldOPs = -1
+primme.iseed = -1 -1 -1 -1
+
+// Restarting
+primme.restarting.scheme = primme_thick
+primme.restarting.maxPrevRetain = 1
+
+// Correction parameters
+primme.correction.precondition = 1
+primme.correction.robustShifts = 0
+primme.correction.maxInnerIterations = -1
+primme.correction.relTolBase = 0
+primme.correction.convTest = primme_adaptive_ETolerance
+
+// projectors for JD cor.eq.
+primme.correction.projectors.LeftQ = 1
+primme.correction.projectors.LeftX = 1
+primme.correction.projectors.RightQ = 0
+primme.correction.projectors.SkewQ = 0
+primme.correction.projectors.RightX = 0
+primme.correction.projectors.SkewX = 1
+// ---------------------------------------------------
+Eval[1]: 9.674354160234889E-04  rnorm: 2.914784820553356E-09 
+Eval[2]: 3.868805732810936E-03  rnorm: 1.959934177187710E-09 
+Eval[3]: 8.701304061962565E-03  rnorm: 3.620881216738454E-09 
+Eval[4]: 1.546025527344689E-02  rnorm: 2.147861895128538E-09 
+Eval[5]: 2.413912051848697E-02  rnorm: 2.799627353651192E-09 
+Eval[6]: 3.472950355547274E-02  rnorm: 1.593373003345417E-09 
+Eval[7]: 4.722115887278632E-02  rnorm: 2.210417113013685E-09 
+Eval[8]: 6.160200160066801E-02  rnorm: 2.930655551847285E-09 
+Eval[9]: 7.785811920255097E-02  rnorm: 3.097057469372567E-09 
+Eval[10]: 9.597378493454028E-02  rnorm: 1.591844290864552E-09 
+ 10 eigenpairs converged
+Tolerance : 3.993202467957564E-09 
+Iterations: 165
+Restarts  : 21
+Matvecs   : 589
+Preconds  : 520
+Recommended method for next run: DEFAULT_MIN_TIME
+=========== Executing ./ex_eigs_zseq
+// ---------------------------------------------------
+//                 primme configuration               
+// ---------------------------------------------------
+primme.n = 100
+primme.nLocal = -1
+primme.numProcs = 1
+primme.procID = 0
+
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 10
+primme.aNorm = 0.000000e+00
+primme.eps = 1.000000e-09
+primme.maxBasisSize = 15
+primme.minRestartSize = 6
+primme.maxBlockSize = 1
+primme.maxOuterIterations = 2147483647
+primme.maxMatvecs = 2147483647
+primme.target = primme_smallest
+primme.projection.projection = primme_proj_RR
+primme.initBasisMode = primme_init_krylov
+primme.numTargetShifts = 0
+primme.dynamicMethodSwitch = 1
+primme.locking = 1
+primme.initSize = 0
+primme.numOrthoConst = 0
+primme.ldevecs = -1
+primme.ldOPs = -1
+primme.iseed = -1 -1 -1 -1
+
+// Restarting
+primme.restarting.scheme = primme_thick
+primme.restarting.maxPrevRetain = 1
+
+// Correction parameters
+primme.correction.precondition = 1
+primme.correction.robustShifts = 0
+primme.correction.maxInnerIterations = -1
+primme.correction.relTolBase = 0
+primme.correction.convTest = primme_adaptive_ETolerance
+
+// projectors for JD cor.eq.
+primme.correction.projectors.LeftQ = 1
+primme.correction.projectors.LeftX = 1
+primme.correction.projectors.RightQ = 0
+primme.correction.projectors.SkewQ = 0
+primme.correction.projectors.RightX = 0
+primme.correction.projectors.SkewX = 1
+// ---------------------------------------------------
+Eval[1]: 9.674354160238879E-04  rnorm: 1.914745928777555E-09 
+Eval[2]: 3.868805732811514E-03  rnorm: 3.358233633300056E-09 
+Eval[3]: 8.701304061962548E-03  rnorm: 2.723207154204211E-09 
+Eval[4]: 1.546025527344693E-02  rnorm: 3.521717879146739E-09 
+Eval[5]: 2.413912051848646E-02  rnorm: 2.091038147718493E-09 
+Eval[6]: 3.472950355547247E-02  rnorm: 3.438615751384880E-09 
+Eval[7]: 4.722115887278593E-02  rnorm: 3.182855629773424E-09 
+Eval[8]: 6.160200160066770E-02  rnorm: 2.844426109929038E-09 
+Eval[9]: 7.785811920255103E-02  rnorm: 3.719961762072425E-09 
+Eval[10]: 9.597378493454017E-02  rnorm: 1.683125138402111E-09 
+ 10 eigenpairs converged
+Tolerance : 3.995986623837793E-09 
+Iterations: 169
+Restarts  : 21
+Matvecs   : 580
+Preconds  : 515
+Recommended method for next run: DEFAULT_MIN_TIME
+Eval[1]: 4.903541216934858E-01  rnorm: 3.453274589978000E-09 
+Eval[2]: 5.318829424810787E-01  rnorm: 3.082217837525980E-09 
+Eval[3]: 4.502857857942205E-01  rnorm: 2.480270150018642E-09 
+Eval[4]: 5.748320717049845E-01  rnorm: 3.186689076055031E-09 
+Eval[5]: 4.117166983104937E-01  rnorm: 1.795964477950344E-09 
+ 5 eigenpairs converged
+Tolerance : 3.995986623837793E-09 
+Iterations: 297
+Restarts  : 40
+Matvecs   : 927
+Preconds  : 888
+Recommended method for next run: DEFAULT_MIN_TIME
+Eval[1]: 4.903541216934866E-01  rnorm: 3.649303765190340E-09 
+Eval[2]: 5.318829424810784E-01  rnorm: 3.822933042565809E-09 
+Eval[3]: 4.502857857942221E-01  rnorm: 3.441650406663918E-09 
+Eval[4]: 5.748320717049850E-01  rnorm: 1.809916641063477E-09 
+Eval[5]: 4.117166983104946E-01  rnorm: 2.581937065753881E-09 
+ 5 eigenpairs converged
+Tolerance : 3.995986623837793E-09 
+Iterations: 233
+Restarts  : 32
+Matvecs   : 550
+Preconds  : 534
+Recommended method for next run: DEFAULT_MIN_TIME
+Eval[1]: 6.191599588565069E-01  rnorm: 3.917310493927848E-09 
+Eval[2]: 3.746841723434989E-01  rnorm: 3.316657997070617E-09 
+Eval[3]: 3.392240344704047E-01  rnorm: 3.939145288800303E-09 
+Eval[4]: 6.648237195676940E-01  rnorm: 2.828353628288485E-09 
+Eval[5]: 3.053705900844444E-01  rnorm: 3.449385789046116E-09 
+ 5 eigenpairs converged
+Tolerance : 3.995986623837793E-09 
+Iterations: 188
+Restarts  : 27
+Matvecs   : 609
+Preconds  : 576
+Recommended method for next run: DEFAULT_MIN_TIME
+=========== Executing ./ex_svds_dseq
+// ---------------------------------------------------
+//            primme_svds configuration               
+// ---------------------------------------------------
+primme_svds.m = 500
+primme_svds.n = 100
+primme_svds.mLocal = -1
+primme_svds.nLocal = -1
+primme_svds.numProcs = 1
+primme_svds.procID = 0
+
+// Output and reporting
+primme_svds.printLevel = 3
+
+// Solver parameters
+primme_svds.numSvals = 4
+primme_svds.aNorm = 0.000000e+00
+primme_svds.eps = 1.000000e-06
+primme_svds.maxBasisSize = 0
+primme_svds.maxBlockSize = 0
+primme_svds.maxMatvecs = 2147483647
+primme_svds.target = primme_svds_smallest
+primme_svds.numTargetShifts = 0
+primme_svds.locking = -1
+primme_svds.initSize = 0
+primme_svds.numOrthoConst = 0
+primme_svds.iseed = -1 -1 -1 -1
+primme_svds.precondition = -1
+primme_svds.method = primme_svds_op_AtA
+primme_svds.methodStage2 = primme_svds_op_augmented
+
+// ---------------------------------------------------
+//            1st stage primme configuration          
+// ---------------------------------------------------
+primme.n = 100
+primme.nLocal = -1
+primme.numProcs = 1
+primme.procID = 0
+
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 4
+primme.aNorm = 0.000000e+00
+primme.eps = 1.000000e-06
+primme.maxBasisSize = 15
+primme.minRestartSize = 6
+primme.maxBlockSize = 1
+primme.maxOuterIterations = 2147483647
+primme.maxMatvecs = 2147483647
+primme.target = primme_smallest
+primme.projection.projection = primme_proj_RR
+primme.initBasisMode = primme_init_krylov
+primme.numTargetShifts = 0
+primme.dynamicMethodSwitch = 1
+primme.locking = 0
+primme.initSize = 0
+primme.numOrthoConst = 0
+primme.ldevecs = -1
+primme.ldOPs = -1
+primme.iseed = -1 -1 -1 -1
+
+// Restarting
+primme.restarting.scheme = primme_thick
+primme.restarting.maxPrevRetain = 1
+
+// Correction parameters
+primme.correction.precondition = 1
+primme.correction.robustShifts = 0
+primme.correction.maxInnerIterations = -1
+primme.correction.relTolBase = 0
+primme.correction.convTest = primme_adaptive_ETolerance
+
+// projectors for JD cor.eq.
+primme.correction.projectors.LeftQ = 1
+primme.correction.projectors.LeftX = 1
+primme.correction.projectors.RightQ = 0
+primme.correction.projectors.SkewQ = 0
+primme.correction.projectors.RightX = 0
+primme.correction.projectors.SkewX = 1
+// ---------------------------------------------------
+
+// ---------------------------------------------------
+//            2st stage primme configuration          
+// ---------------------------------------------------
+primmeStage2.n = 600
+primmeStage2.nLocal = -1
+primmeStage2.numProcs = 1
+primmeStage2.procID = 0
+
+// Output and reporting
+primmeStage2.printLevel = 1
+
+// Solver parameters
+primmeStage2.numEvals = 4
+primmeStage2.aNorm = 0.000000e+00
+primmeStage2.eps = 1.000000e-06
+primmeStage2.maxBasisSize = 35
+primmeStage2.minRestartSize = 21
+primmeStage2.maxBlockSize = 1
+primmeStage2.maxOuterIterations = 2147483647
+primmeStage2.maxMatvecs = 2147483647
+primmeStage2.target = primme_closest_geq
+primmeStage2.projection.projection = primme_proj_refined
+primmeStage2.initBasisMode = primme_init_user
+primmeStage2.numTargetShifts = 0
+primmeStage2.dynamicMethodSwitch = 0
+primmeStage2.locking = 1
+primmeStage2.initSize = 0
+primmeStage2.numOrthoConst = 0
+primmeStage2.ldevecs = -1
+primmeStage2.ldOPs = -1
+primmeStage2.iseed = -1 -1 -1 -1
+
+// Restarting
+primmeStage2.restarting.scheme = primme_thick
+primmeStage2.restarting.maxPrevRetain = 1
+
+// Correction parameters
+primmeStage2.correction.precondition = 1
+primmeStage2.correction.robustShifts = 0
+primmeStage2.correction.maxInnerIterations = -1
+primmeStage2.correction.relTolBase = 0
+primmeStage2.correction.convTest = primme_adaptive
+
+// projectors for JD cor.eq.
+primmeStage2.correction.projectors.LeftQ = 1
+primmeStage2.correction.projectors.LeftX = 1
+primmeStage2.correction.projectors.RightQ = 0
+primmeStage2.correction.projectors.SkewQ = 0
+primmeStage2.correction.projectors.RightX = 0
+primmeStage2.correction.projectors.SkewX = 1
+// ---------------------------------------------------
+OUT 1 conv 0 blk 0 MV 12 Sec 2.200603E-04 SV  1.367807E-01 |r| 3.248E-01 stage 1
+OUT 2 conv 0 blk 0 MV 14 Sec 2.689362E-04 SV  1.072972E-01 |r| 2.742E-01 stage 1
+OUT 3 conv 0 blk 0 MV 16 Sec 3.070831E-04 SV  8.883282E-02 |r| 2.458E-01 stage 1
+OUT 4 conv 0 blk 0 MV 18 Sec 3.449917E-04 SV  7.666241E-02 |r| 2.016E-01 stage 1
+OUT 5 conv 0 blk 0 MV 20 Sec 3.850460E-04 SV  6.885707E-02 |r| 1.810E-01 stage 1
+OUT 6 conv 0 blk 0 MV 22 Sec 4.301071E-04 SV  6.355485E-02 |r| 1.560E-01 stage 1
+OUT 7 conv 0 blk 0 MV 24 Sec 4.780293E-04 SV  5.957888E-02 |r| 1.533E-01 stage 1
+OUT 8 conv 0 blk 0 MV 26 Sec 5.300045E-04 SV  5.545912E-02 |r| 1.674E-01 stage 1
+OUT 9 conv 0 blk 0 MV 28 Sec 5.869865E-04 SV  5.071837E-02 |r| 1.847E-01 stage 1
+Ratio: N/A  GD+k switched to JDQMR (first time)
+OUT 10 conv 0 blk 0 MV 30 Sec 7.350445E-04 SV  4.619298E-02 |r| 1.695E-01 stage 1
+OUT 11 conv 0 blk 0 MV 48 Sec 8.521080E-04 SV  3.662243E-02 |r| 8.704E-02 stage 1
+Ratio: 1.356479e+00 Switching permanently to GD+k
+OUT 12 conv 0 blk 0 MV 50 Sec 8.909702E-04 SV  3.475110E-02 |r| 1.809E-01 stage 1
+OUT 13 conv 0 blk 0 MV 52 Sec 9.429455E-04 SV  3.434104E-02 |r| 1.439E+00 stage 1
+OUT 14 conv 0 blk 0 MV 54 Sec 9.849072E-04 SV  3.154981E-02 |r| 1.806E-01 stage 1
+OUT 15 conv 0 blk 0 MV 56 Sec 1.036882E-03 SV  2.973100E-02 |r| 1.349E-01 stage 1
+OUT 16 conv 0 blk 0 MV 58 Sec 1.076937E-03 SV  2.795144E-02 |r| 1.388E-01 stage 1
+OUT 17 conv 0 blk 0 MV 60 Sec 1.121044E-03 SV  2.646127E-02 |r| 1.248E-01 stage 1
+OUT 18 conv 0 blk 0 MV 62 Sec 1.220942E-03 SV  2.523308E-02 |r| 1.330E-01 stage 1
+OUT 19 conv 0 blk 0 MV 64 Sec 1.255989E-03 SV  2.418321E-02 |r| 1.319E-01 stage 1
+OUT 20 conv 0 blk 0 MV 66 Sec 1.291037E-03 SV  2.288375E-02 |r| 1.509E-01 stage 1
+OUT 21 conv 0 blk 0 MV 68 Sec 1.327038E-03 SV  2.287571E-02 |r| 2.256E-01 stage 1
+OUT 22 conv 0 blk 0 MV 70 Sec 1.367092E-03 SV  2.189101E-02 |r| 1.275E-01 stage 1
+OUT 23 conv 0 blk 0 MV 72 Sec 1.413107E-03 SV  2.095456E-02 |r| 1.305E-01 stage 1
+OUT 24 conv 0 blk 0 MV 74 Sec 1.461983E-03 SV  2.001513E-02 |r| 1.270E-01 stage 1
+OUT 25 conv 0 blk 0 MV 76 Sec 1.516104E-03 SV  1.909493E-02 |r| 1.090E-01 stage 1
+OUT 26 conv 0 blk 0 MV 78 Sec 1.605034E-03 SV  1.860540E-02 |r| 9.065E-02 stage 1
+OUT 27 conv 0 blk 0 MV 80 Sec 1.651049E-03 SV  1.821421E-02 |r| 7.568E-02 stage 1
+OUT 28 conv 0 blk 0 MV 82 Sec 1.682997E-03 SV  1.795724E-02 |r| 6.329E-02 stage 1
+OUT 29 conv 0 blk 0 MV 84 Sec 1.715899E-03 SV  1.788712E-02 |r| 6.720E-01 stage 1
+OUT 30 conv 0 blk 0 MV 86 Sec 1.750946E-03 SV  1.779180E-02 |r| 4.998E-02 stage 1
+OUT 31 conv 0 blk 0 MV 88 Sec 1.790047E-03 SV  1.769867E-02 |r| 3.842E-02 stage 1
+OUT 32 conv 0 blk 0 MV 90 Sec 1.832008E-03 SV  1.762756E-02 |r| 3.845E-02 stage 1
+OUT 33 conv 0 blk 0 MV 92 Sec 1.878977E-03 SV  1.754316E-02 |r| 4.182E-02 stage 1
+OUT 34 conv 0 blk 0 MV 94 Sec 1.944065E-03 SV  1.746499E-02 |r| 3.525E-02 stage 1
+OUT 35 conv 0 blk 0 MV 96 Sec 1.972914E-03 SV  1.740208E-02 |r| 3.849E-02 stage 1
+OUT 36 conv 0 blk 0 MV 98 Sec 2.002954E-03 SV  1.729516E-02 |r| 5.190E-02 stage 1
+OUT 37 conv 0 blk 0 MV 100 Sec 2.036095E-03 SV  1.718137E-02 |r| 1.891E-01 stage 1
+OUT 38 conv 0 blk 0 MV 102 Sec 2.070904E-03 SV  1.717800E-02 |r| 4.879E-02 stage 1
+OUT 39 conv 0 blk 0 MV 104 Sec 2.110004E-03 SV  1.703494E-02 |r| 5.900E-02 stage 1
+OUT 40 conv 0 blk 0 MV 106 Sec 2.152920E-03 SV  1.686125E-02 |r| 5.574E-02 stage 1
+OUT 41 conv 0 blk 0 MV 108 Sec 2.198935E-03 SV  1.671444E-02 |r| 5.561E-02 stage 1
+OUT 42 conv 0 blk 0 MV 110 Sec 2.263069E-03 SV  1.656664E-02 |r| 5.782E-02 stage 1
+OUT 43 conv 0 blk 0 MV 112 Sec 2.291918E-03 SV  1.641472E-02 |r| 5.552E-02 stage 1
+OUT 44 conv 0 blk 0 MV 114 Sec 2.321959E-03 SV  1.630069E-02 |r| 4.542E-02 stage 1
+OUT 45 conv 0 blk 0 MV 116 Sec 2.353907E-03 SV  1.621905E-02 |r| 1.724E-01 stage 1
+OUT 46 conv 0 blk 0 MV 118 Sec 2.388000E-03 SV  1.621649E-02 |r| 4.078E-02 stage 1
+OUT 47 conv 0 blk 0 MV 120 Sec 2.425909E-03 SV  1.614879E-02 |r| 3.467E-02 stage 1
+OUT 48 conv 0 blk 0 MV 122 Sec 2.466917E-03 SV  1.609629E-02 |r| 3.636E-02 stage 1
+OUT 49 conv 0 blk 0 MV 124 Sec 2.511978E-03 SV  1.601984E-02 |r| 4.171E-02 stage 1
+OUT 50 conv 0 blk 0 MV 126 Sec 2.574921E-03 SV  1.594766E-02 |r| 3.805E-02 stage 1
+OUT 51 conv 0 blk 0 MV 128 Sec 2.604008E-03 SV  1.588181E-02 |r| 3.460E-02 stage 1
+OUT 52 conv 0 blk 0 MV 130 Sec 2.634048E-03 SV  1.579737E-02 |r| 4.666E-02 stage 1
+OUT 53 conv 0 blk 0 MV 132 Sec 2.665043E-03 SV  1.570839E-02 |r| 4.196E-01 stage 1
+OUT 54 conv 0 blk 0 MV 134 Sec 2.698898E-03 SV  1.569191E-02 |r| 4.958E-02 stage 1
+OUT 55 conv 0 blk 0 MV 136 Sec 2.737045E-03 SV  1.560493E-02 |r| 3.866E-02 stage 1
+OUT 56 conv 0 blk 0 MV 138 Sec 2.778053E-03 SV  1.554207E-02 |r| 4.018E-02 stage 1
+OUT 57 conv 0 blk 0 MV 140 Sec 2.824068E-03 SV  1.548098E-02 |r| 3.869E-02 stage 1
+OUT 58 conv 0 blk 0 MV 142 Sec 2.887964E-03 SV  1.541043E-02 |r| 3.934E-02 stage 1
+OUT 59 conv 0 blk 0 MV 144 Sec 2.916098E-03 SV  1.534125E-02 |r| 3.828E-02 stage 1
+OUT 60 conv 0 blk 0 MV 146 Sec 2.945900E-03 SV  1.527397E-02 |r| 3.928E-02 stage 1
+OUT 61 conv 0 blk 0 MV 148 Sec 2.979040E-03 SV  1.521969E-02 |r| 3.171E-01 stage 1
+OUT 62 conv 0 blk 0 MV 150 Sec 3.014088E-03 SV  1.521073E-02 |r| 3.817E-02 stage 1
+OUT 63 conv 0 blk 0 MV 152 Sec 3.051996E-03 SV  1.515253E-02 |r| 3.298E-02 stage 1
+OUT 64 conv 0 blk 0 MV 154 Sec 3.093958E-03 SV  1.510961E-02 |r| 3.086E-02 stage 1
+OUT 65 conv 0 blk 0 MV 156 Sec 3.139019E-03 SV  1.506849E-02 |r| 3.236E-02 stage 1
+OUT 66 conv 0 blk 0 MV 158 Sec 3.201008E-03 SV  1.502280E-02 |r| 3.328E-02 stage 1
+OUT 67 conv 0 blk 0 MV 160 Sec 3.230095E-03 SV  1.497019E-02 |r| 3.862E-02 stage 1
+OUT 68 conv 0 blk 0 MV 162 Sec 3.259897E-03 SV  1.490921E-02 |r| 3.473E-02 stage 1
+OUT 69 conv 0 blk 0 MV 164 Sec 3.293037E-03 SV  1.486753E-02 |r| 6.024E-02 stage 1
+OUT 70 conv 0 blk 0 MV 166 Sec 3.326893E-03 SV  1.486717E-02 |r| 3.493E-02 stage 1
+OUT 71 conv 0 blk 0 MV 168 Sec 3.365040E-03 SV  1.482088E-02 |r| 3.497E-02 stage 1
+OUT 72 conv 0 blk 0 MV 170 Sec 3.406048E-03 SV  1.476346E-02 |r| 3.709E-02 stage 1
+OUT 73 conv 0 blk 0 MV 172 Sec 3.450871E-03 SV  1.469551E-02 |r| 4.296E-02 stage 1
+OUT 74 conv 0 blk 0 MV 174 Sec 3.513098E-03 SV  1.462910E-02 |r| 3.678E-02 stage 1
+OUT 75 conv 0 blk 0 MV 176 Sec 3.540993E-03 SV  1.458073E-02 |r| 3.208E-02 stage 1
+OUT 76 conv 0 blk 0 MV 178 Sec 3.580093E-03 SV  1.454129E-02 |r| 3.137E-02 stage 1
+OUT 77 conv 0 blk 0 MV 180 Sec 3.612995E-03 SV  1.449205E-02 |r| 1.119E-01 stage 1
+OUT 78 conv 0 blk 0 MV 182 Sec 3.648043E-03 SV  1.449105E-02 |r| 3.765E-02 stage 1
+OUT 79 conv 0 blk 0 MV 184 Sec 3.684044E-03 SV  1.443447E-02 |r| 3.430E-02 stage 1
+OUT 80 conv 0 blk 0 MV 186 Sec 3.725052E-03 SV  1.437779E-02 |r| 4.056E-02 stage 1
+OUT 81 conv 0 blk 0 MV 188 Sec 3.769875E-03 SV  1.430945E-02 |r| 4.130E-02 stage 1
+OUT 82 conv 0 blk 0 MV 190 Sec 3.833055E-03 SV  1.420928E-02 |r| 5.859E-02 stage 1
+OUT 83 conv 0 blk 0 MV 192 Sec 3.860950E-03 SV  1.399637E-02 |r| 9.145E-02 stage 1
+OUT 84 conv 0 blk 0 MV 194 Sec 3.890991E-03 SV  1.356705E-02 |r| 1.128E-01 stage 1
+OUT 85 conv 0 blk 0 MV 196 Sec 3.922939E-03 SV  1.308396E-02 |r| 3.808E-01 stage 1
+OUT 86 conv 0 blk 0 MV 198 Sec 3.957987E-03 SV  1.307361E-02 |r| 1.172E-01 stage 1
+OUT 87 conv 0 blk 0 MV 200 Sec 3.995895E-03 SV  1.257482E-02 |r| 1.248E-01 stage 1
+OUT 88 conv 0 blk 0 MV 202 Sec 4.036903E-03 SV  1.193088E-02 |r| 1.256E-01 stage 1
+OUT 89 conv 0 blk 0 MV 204 Sec 4.081964E-03 SV  1.144260E-02 |r| 1.215E-01 stage 1
+OUT 90 conv 0 blk 0 MV 206 Sec 4.143000E-03 SV  1.102588E-02 |r| 1.108E-01 stage 1
+OUT 91 conv 0 blk 0 MV 208 Sec 4.172087E-03 SV  1.063103E-02 |r| 1.205E-01 stage 1
+OUT 92 conv 0 blk 0 MV 210 Sec 4.199982E-03 SV  1.027393E-02 |r| 9.398E-02 stage 1
+OUT 93 conv 0 blk 0 MV 212 Sec 4.231930E-03 SV  1.019536E-02 |r| 9.557E-01 stage 1
+OUT 94 conv 0 blk 0 MV 214 Sec 4.266024E-03 SV  1.008060E-02 |r| 7.835E-02 stage 1
+OUT 95 conv 0 blk 0 MV 216 Sec 4.303932E-03 SV  9.864255E-03 |r| 8.482E-02 stage 1
+OUT 96 conv 0 blk 0 MV 218 Sec 4.343987E-03 SV  9.635471E-03 |r| 9.209E-02 stage 1
+OUT 97 conv 0 blk 0 MV 220 Sec 4.389048E-03 SV  9.459217E-03 |r| 8.117E-02 stage 1
+OUT 98 conv 0 blk 0 MV 222 Sec 4.450083E-03 SV  9.270385E-03 |r| 7.571E-02 stage 1
+OUT 99 conv 0 blk 0 MV 224 Sec 4.477978E-03 SV  9.108994E-03 |r| 8.232E-02 stage 1
+OUT 100 conv 0 blk 0 MV 226 Sec 4.507065E-03 SV  8.878122E-03 |r| 1.128E-01 stage 1
+OUT 101 conv 0 blk 0 MV 228 Sec 4.541874E-03 SV  8.661850E-03 |r| 1.071E+00 stage 1
+OUT 102 conv 0 blk 0 MV 230 Sec 4.585028E-03 SV  8.596965E-03 |r| 1.154E-01 stage 1
+OUT 103 conv 0 blk 0 MV 232 Sec 4.618883E-03 SV  8.216341E-03 |r| 1.296E-01 stage 1
+OUT 104 conv 0 blk 0 MV 234 Sec 4.654884E-03 SV  7.762177E-03 |r| 1.439E-01 stage 1
+OUT 105 conv 0 blk 0 MV 236 Sec 4.694939E-03 SV  7.351139E-03 |r| 1.341E-01 stage 1
+OUT 106 conv 0 blk 0 MV 238 Sec 4.751921E-03 SV  7.020383E-03 |r| 1.031E-01 stage 1
+OUT 107 conv 0 blk 0 MV 240 Sec 4.776955E-03 SV  6.811130E-03 |r| 8.882E-02 stage 1
+OUT 108 conv 0 blk 0 MV 242 Sec 4.805088E-03 SV  6.673710E-03 |r| 7.064E-02 stage 1
+OUT 109 conv 0 blk 0 MV 244 Sec 4.833937E-03 SV  6.610111E-03 |r| 4.270E-01 stage 1
+OUT 110 conv 0 blk 0 MV 246 Sec 4.864931E-03 SV  6.603427E-03 |r| 5.390E-02 stage 1
+OUT 111 conv 0 blk 0 MV 248 Sec 4.899025E-03 SV  6.568164E-03 |r| 3.675E-02 stage 1
+OUT 112 conv 0 blk 0 MV 250 Sec 4.935980E-03 SV  6.548214E-03 |r| 2.570E-02 stage 1
+OUT 113 conv 0 blk 0 MV 252 Sec 4.976988E-03 SV  6.541406E-03 |r| 1.390E-02 stage 1
+OUT 114 conv 0 blk 0 MV 254 Sec 5.033016E-03 SV  6.539158E-03 |r| 8.023E-03 stage 1
+OUT 115 conv 0 blk 0 MV 256 Sec 5.058050E-03 SV  6.538418E-03 |r| 5.055E-03 stage 1
+OUT 116 conv 0 blk 0 MV 258 Sec 5.084038E-03 SV  6.538124E-03 |r| 2.893E-03 stage 1
+OUT 117 conv 0 blk 0 MV 260 Sec 5.111933E-03 SV  6.538029E-03 |r| 6.209E-03 stage 1
+OUT 118 conv 0 blk 0 MV 262 Sec 5.141973E-03 SV  6.538028E-03 |r| 1.854E-03 stage 1
+OUT 119 conv 0 blk 0 MV 264 Sec 5.174875E-03 SV  6.537929E-03 |r| 2.704E-03 stage 1
+OUT 120 conv 0 blk 0 MV 266 Sec 5.213022E-03 SV  6.537733E-03 |r| 3.756E-03 stage 1
+OUT 121 conv 0 blk 0 MV 268 Sec 5.254030E-03 SV  6.537505E-03 |r| 2.839E-03 stage 1
+OUT 122 conv 0 blk 0 MV 270 Sec 5.310059E-03 SV  6.537430E-03 |r| 1.355E-03 stage 1
+OUT 123 conv 0 blk 0 MV 272 Sec 5.336046E-03 SV  6.537407E-03 |r| 7.317E-04 stage 1
+OUT 124 conv 0 blk 0 MV 274 Sec 5.362034E-03 SV  6.537402E-03 |r| 4.384E-04 stage 1
+OUT 125 conv 0 blk 0 MV 276 Sec 5.398035E-03 SV  6.537398E-03 |r| 4.007E-04 stage 1
+OUT 126 conv 0 blk 0 MV 278 Sec 5.430937E-03 SV  6.537398E-03 |r| 1.881E-03 stage 1
+OUT 127 conv 0 blk 0 MV 280 Sec 5.464077E-03 SV  6.537395E-03 |r| 4.182E-04 stage 1
+OUT 128 conv 0 blk 0 MV 282 Sec 5.501032E-03 SV  6.537392E-03 |r| 3.371E-04 stage 1
+OUT 129 conv 0 blk 0 MV 284 Sec 5.542040E-03 SV  6.537390E-03 |r| 3.648E-04 stage 1
+OUT 130 conv 0 blk 0 MV 286 Sec 5.599022E-03 SV  6.537388E-03 |r| 2.006E-04 stage 1
+OUT 131 conv 0 blk 0 MV 288 Sec 5.625010E-03 SV  6.537387E-03 |r| 2.101E-04 stage 1
+OUT 132 conv 0 blk 0 MV 290 Sec 5.650997E-03 SV  6.537387E-03 |r| 1.551E-04 stage 1
+OUT 133 conv 0 blk 0 MV 292 Sec 5.680084E-03 SV  6.537386E-03 |r| 2.803E-04 stage 1
+OUT 134 conv 0 blk 0 MV 294 Sec 5.709887E-03 SV  6.537386E-03 |r| 1.428E-04 stage 1
+OUT 135 conv 0 blk 0 MV 296 Sec 5.742073E-03 SV  6.537386E-03 |r| 8.429E-05 stage 1
+OUT 136 conv 0 blk 0 MV 298 Sec 5.779028E-03 SV  6.537386E-03 |r| 8.834E-05 stage 1
+OUT 137 conv 0 blk 0 MV 300 Sec 5.817890E-03 SV  6.537386E-03 |r| 5.774E-05 stage 1
+OUT 138 conv 0 blk 0 MV 302 Sec 5.872965E-03 SV  6.537386E-03 |r| 5.178E-05 stage 1
+OUT 139 conv 0 blk 0 MV 304 Sec 5.897999E-03 SV  6.537386E-03 |r| 4.020E-05 stage 1
+OUT 140 conv 0 blk 0 MV 306 Sec 5.923986E-03 SV  6.537386E-03 |r| 4.979E-05 stage 1
+OUT 141 conv 0 blk 0 MV 308 Sec 5.951881E-03 SV  6.537386E-03 |r| 3.975E-04 stage 1
+OUT 142 conv 0 blk 0 MV 310 Sec 5.981922E-03 SV  6.537386E-03 |r| 5.164E-05 stage 1
+OUT 143 conv 0 blk 0 MV 312 Sec 6.013870E-03 SV  6.537386E-03 |r| 4.473E-05 stage 1
+OUT 144 conv 0 blk 0 MV 314 Sec 6.049871E-03 SV  6.537386E-03 |r| 2.496E-05 stage 1
+OUT 145 conv 0 blk 0 MV 316 Sec 6.088018E-03 SV  6.537386E-03 |r| 2.705E-05 stage 1
+OUT 146 conv 0 blk 0 MV 318 Sec 6.141901E-03 SV  6.537386E-03 |r| 1.682E-05 stage 1
+OUT 147 conv 0 blk 0 MV 320 Sec 6.166935E-03 SV  6.537386E-03 |r| 1.309E-05 stage 1
+#Converged 1 sval[ 0 ]= 6.537386e-03 norm 8.797064e-06 Mvecs 322 Time 0.00616693 stage 1
+OUT 148 conv 1 blk 0 MV 322 Sec 6.201029E-03 SV  1.583652E-02 |r| 3.999E-03 stage 1
+OUT 149 conv 1 blk 0 MV 324 Sec 6.228924E-03 SV  1.583605E-02 |r| 3.378E-03 stage 1
+OUT 150 conv 1 blk 0 MV 326 Sec 6.258965E-03 SV  1.583604E-02 |r| 1.096E-02 stage 1
+OUT 151 conv 1 blk 0 MV 328 Sec 6.292105E-03 SV  1.583571E-02 |r| 2.429E-03 stage 1
+OUT 152 conv 1 blk 0 MV 330 Sec 6.328106E-03 SV  1.583551E-02 |r| 1.794E-03 stage 1
+OUT 153 conv 1 blk 0 MV 332 Sec 6.366968E-03 SV  1.583517E-02 |r| 2.920E-03 stage 1
+OUT 154 conv 1 blk 0 MV 334 Sec 6.421089E-03 SV  1.583495E-02 |r| 1.705E-03 stage 1
+OUT 155 conv 1 blk 0 MV 336 Sec 6.445885E-03 SV  1.583487E-02 |r| 9.765E-04 stage 1
+OUT 156 conv 1 blk 0 MV 338 Sec 6.470919E-03 SV  1.583483E-02 |r| 4.300E-03 stage 1
+OUT 157 conv 1 blk 0 MV 340 Sec 6.499052E-03 SV  1.583483E-02 |r| 9.549E-04 stage 1
+OUT 158 conv 1 blk 0 MV 342 Sec 6.529093E-03 SV  1.583480E-02 |r| 7.745E-04 stage 1
+OUT 159 conv 1 blk 0 MV 344 Sec 6.561995E-03 SV  1.583478E-02 |r| 6.470E-04 stage 1
+OUT 160 conv 1 blk 0 MV 346 Sec 6.597996E-03 SV  1.583476E-02 |r| 4.829E-04 stage 1
+OUT 161 conv 1 blk 0 MV 348 Sec 6.635904E-03 SV  1.583475E-02 |r| 4.118E-04 stage 1
+OUT 162 conv 1 blk 0 MV 350 Sec 6.697893E-03 SV  1.583475E-02 |r| 3.134E-04 stage 1
+OUT 163 conv 1 blk 0 MV 352 Sec 6.722927E-03 SV  1.583474E-02 |r| 3.035E-04 stage 1
+OUT 164 conv 1 blk 0 MV 354 Sec 6.747961E-03 SV  1.583474E-02 |r| 1.700E-04 stage 1
+OUT 165 conv 1 blk 0 MV 356 Sec 6.776094E-03 SV  1.583474E-02 |r| 1.413E-04 stage 1
+OUT 166 conv 1 blk 0 MV 358 Sec 6.805897E-03 SV  1.583474E-02 |r| 1.024E-03 stage 1
+OUT 167 conv 1 blk 0 MV 360 Sec 6.839037E-03 SV  1.583474E-02 |r| 1.288E-04 stage 1
+OUT 168 conv 1 blk 0 MV 362 Sec 6.874084E-03 SV  1.583474E-02 |r| 8.514E-05 stage 1
+OUT 169 conv 1 blk 0 MV 364 Sec 6.912947E-03 SV  1.583474E-02 |r| 8.319E-05 stage 1
+OUT 170 conv 1 blk 0 MV 366 Sec 6.967068E-03 SV  1.583474E-02 |r| 5.839E-05 stage 1
+OUT 171 conv 1 blk 0 MV 368 Sec 6.992102E-03 SV  1.583474E-02 |r| 4.384E-05 stage 1
+OUT 172 conv 1 blk 0 MV 370 Sec 7.019043E-03 SV  1.583474E-02 |r| 3.498E-05 stage 1
+OUT 173 conv 1 blk 0 MV 372 Sec 7.066011E-03 SV  1.583474E-02 |r| 3.367E-05 stage 1
+OUT 174 conv 1 blk 0 MV 374 Sec 7.096052E-03 SV  1.583474E-02 |r| 1.636E-04 stage 1
+OUT 175 conv 1 blk 0 MV 376 Sec 7.126093E-03 SV  1.583474E-02 |r| 2.456E-05 stage 1
+OUT 176 conv 1 blk 0 MV 378 Sec 7.158041E-03 SV  1.583474E-02 |r| 1.482E-05 stage 1
+#Converged 2 sval[ 1 ]= 1.583474e-02 norm 9.518291e-06 Mvecs 380 Time 0.00715804 stage 1
+OUT 177 conv 2 blk 0 MV 380 Sec 7.203102E-03 SV  2.571694E-02 |r| 6.022E-03 stage 1
+OUT 178 conv 2 blk 0 MV 382 Sec 7.255077E-03 SV  2.571513E-02 |r| 4.180E-03 stage 1
+OUT 179 conv 2 blk 0 MV 384 Sec 7.277966E-03 SV  2.571403E-02 |r| 3.724E-03 stage 1
+OUT 180 conv 2 blk 0 MV 386 Sec 7.302046E-03 SV  2.571337E-02 |r| 2.269E-03 stage 1
+OUT 181 conv 2 blk 0 MV 388 Sec 7.328033E-03 SV  2.571307E-02 |r| 3.234E-02 stage 1
+OUT 182 conv 2 blk 0 MV 390 Sec 7.354975E-03 SV  2.571283E-02 |r| 2.367E-03 stage 1
+OUT 183 conv 2 blk 0 MV 392 Sec 7.385969E-03 SV  2.571262E-02 |r| 1.316E-03 stage 1
+OUT 184 conv 2 blk 0 MV 394 Sec 7.418871E-03 SV  2.571251E-02 |r| 8.596E-04 stage 1
+OUT 185 conv 2 blk 0 MV 396 Sec 7.456064E-03 SV  2.571247E-02 |r| 7.485E-04 stage 1
+OUT 186 conv 2 blk 0 MV 398 Sec 7.507086E-03 SV  2.571243E-02 |r| 5.617E-04 stage 1
+OUT 187 conv 2 blk 0 MV 400 Sec 7.529974E-03 SV  2.571242E-02 |r| 4.743E-04 stage 1
+OUT 188 conv 2 blk 0 MV 402 Sec 7.553101E-03 SV  2.571240E-02 |r| 3.395E-04 stage 1
+OUT 189 conv 2 blk 0 MV 404 Sec 7.580042E-03 SV  2.571240E-02 |r| 2.324E-04 stage 1
+OUT 190 conv 2 blk 0 MV 406 Sec 7.608891E-03 SV  2.571239E-02 |r| 2.346E-03 stage 1
+OUT 191 conv 2 blk 0 MV 408 Sec 7.639885E-03 SV  2.571239E-02 |r| 1.772E-04 stage 1
+OUT 192 conv 2 blk 0 MV 410 Sec 7.673025E-03 SV  2.571239E-02 |r| 1.681E-04 stage 1
+OUT 193 conv 2 blk 0 MV 412 Sec 7.709980E-03 SV  2.571239E-02 |r| 1.049E-04 stage 1
+OUT 194 conv 2 blk 0 MV 414 Sec 7.760048E-03 SV  2.571239E-02 |r| 8.323E-05 stage 1
+OUT 195 conv 2 blk 0 MV 416 Sec 7.783890E-03 SV  2.571239E-02 |r| 6.648E-05 stage 1
+OUT 196 conv 2 blk 0 MV 418 Sec 7.807970E-03 SV  2.571239E-02 |r| 5.415E-05 stage 1
+OUT 197 conv 2 blk 0 MV 420 Sec 7.833004E-03 SV  2.571239E-02 |r| 5.652E-05 stage 1
+OUT 198 conv 2 blk 0 MV 422 Sec 7.860899E-03 SV  2.571239E-02 |r| 5.762E-05 stage 1
+OUT 199 conv 2 blk 0 MV 424 Sec 7.891893E-03 SV  2.571239E-02 |r| 4.245E-05 stage 1
+OUT 200 conv 2 blk 0 MV 426 Sec 7.925034E-03 SV  2.571239E-02 |r| 3.784E-05 stage 1
+OUT 201 conv 2 blk 0 MV 428 Sec 7.961035E-03 SV  2.571239E-02 |r| 3.105E-05 stage 1
+OUT 202 conv 2 blk 0 MV 430 Sec 8.012056E-03 SV  2.571239E-02 |r| 3.480E-05 stage 1
+OUT 203 conv 2 blk 0 MV 432 Sec 8.035898E-03 SV  2.571239E-02 |r| 3.447E-05 stage 1
+OUT 204 conv 2 blk 0 MV 434 Sec 8.059978E-03 SV  2.571239E-02 |r| 2.689E-05 stage 1
+OUT 205 conv 2 blk 0 MV 436 Sec 8.086920E-03 SV  2.571239E-02 |r| 2.909E-05 stage 1
+OUT 206 conv 2 blk 0 MV 438 Sec 8.114100E-03 SV  2.571239E-02 |r| 2.583E-05 stage 1
+OUT 207 conv 2 blk 0 MV 440 Sec 8.145094E-03 SV  2.571239E-02 |r| 1.912E-05 stage 1
+OUT 208 conv 2 blk 0 MV 442 Sec 8.177042E-03 SV  2.571239E-02 |r| 1.352E-05 stage 1
+OUT 209 conv 2 blk 0 MV 444 Sec 8.213997E-03 SV  2.571239E-02 |r| 1.041E-05 stage 1
+OUT 210 conv 2 blk 0 MV 446 Sec 8.265018E-03 SV  2.571239E-02 |r| 1.066E-05 stage 1
+#Converged 3 sval[ 2 ]= 2.571239e-02 norm 9.808493e-06 Mvecs 448 Time 0.00826502 stage 1
+OUT 211 conv 3 blk 0 MV 448 Sec 8.295059E-03 SV  3.574248E-02 |r| 1.272E-02 stage 1
+OUT 212 conv 3 blk 0 MV 450 Sec 8.317947E-03 SV  3.573206E-02 |r| 8.161E-03 stage 1
+OUT 213 conv 3 blk 0 MV 452 Sec 8.344889E-03 SV  3.572657E-02 |r| 1.190E-02 stage 1
+OUT 214 conv 3 blk 0 MV 454 Sec 8.373022E-03 SV  3.572654E-02 |r| 6.268E-03 stage 1
+OUT 215 conv 3 blk 0 MV 456 Sec 8.404016E-03 SV  3.572477E-02 |r| 2.999E-03 stage 1
+OUT 216 conv 3 blk 0 MV 458 Sec 8.439064E-03 SV  3.572393E-02 |r| 2.114E-03 stage 1
+OUT 217 conv 3 blk 0 MV 460 Sec 8.473873E-03 SV  3.572342E-02 |r| 2.071E-03 stage 1
+OUT 218 conv 3 blk 0 MV 462 Sec 8.524895E-03 SV  3.572304E-02 |r| 1.811E-03 stage 1
+OUT 219 conv 3 blk 0 MV 464 Sec 8.552074E-03 SV  3.572285E-02 |r| 1.037E-03 stage 1
+OUT 220 conv 3 blk 0 MV 466 Sec 8.584023E-03 SV  3.572276E-02 |r| 8.456E-04 stage 1
+OUT 221 conv 3 blk 0 MV 468 Sec 8.611917E-03 SV  3.572271E-02 |r| 7.191E-04 stage 1
+OUT 222 conv 3 blk 0 MV 470 Sec 8.640051E-03 SV  3.572270E-02 |r| 6.087E-03 stage 1
+OUT 223 conv 3 blk 0 MV 472 Sec 8.671045E-03 SV  3.572265E-02 |r| 6.513E-04 stage 1
+OUT 224 conv 3 blk 0 MV 474 Sec 8.706093E-03 SV  3.572262E-02 |r| 4.705E-04 stage 1
+OUT 225 conv 3 blk 0 MV 476 Sec 8.744001E-03 SV  3.572260E-02 |r| 3.852E-04 stage 1
+OUT 226 conv 3 blk 0 MV 478 Sec 8.796930E-03 SV  3.572259E-02 |r| 3.657E-04 stage 1
+OUT 227 conv 3 blk 0 MV 480 Sec 8.821011E-03 SV  3.572257E-02 |r| 3.628E-04 stage 1
+OUT 228 conv 3 blk 0 MV 482 Sec 8.845091E-03 SV  3.572256E-02 |r| 3.559E-04 stage 1
+OUT 229 conv 3 blk 0 MV 484 Sec 8.872032E-03 SV  3.572255E-02 |r| 3.088E-04 stage 1
+OUT 230 conv 3 blk 0 MV 486 Sec 8.908987E-03 SV  3.572254E-02 |r| 2.069E-03 stage 1
+OUT 231 conv 3 blk 0 MV 488 Sec 8.939981E-03 SV  3.572254E-02 |r| 2.191E-04 stage 1
+OUT 232 conv 3 blk 0 MV 490 Sec 9.002924E-03 SV  3.572254E-02 |r| 1.750E-04 stage 1
+OUT 233 conv 3 blk 0 MV 492 Sec 9.061098E-03 SV  3.572253E-02 |r| 1.712E-04 stage 1
+OUT 234 conv 3 blk 0 MV 494 Sec 9.202957E-03 SV  3.572253E-02 |r| 1.420E-04 stage 1
+OUT 235 conv 3 blk 0 MV 496 Sec 9.252071E-03 SV  3.572253E-02 |r| 1.061E-04 stage 1
+OUT 236 conv 3 blk 0 MV 498 Sec 9.299040E-03 SV  3.572253E-02 |r| 6.858E-05 stage 1
+OUT 237 conv 3 blk 0 MV 500 Sec 9.346008E-03 SV  3.572253E-02 |r| 4.401E-05 stage 1
+OUT 238 conv 3 blk 0 MV 502 Sec 9.399891E-03 SV  3.572253E-02 |r| 2.234E-04 stage 1
+OUT 239 conv 3 blk 0 MV 504 Sec 9.455919E-03 SV  3.572253E-02 |r| 5.456E-05 stage 1
+OUT 240 conv 3 blk 0 MV 506 Sec 9.517908E-03 SV  3.572253E-02 |r| 5.996E-05 stage 1
+OUT 241 conv 3 blk 0 MV 508 Sec 9.586096E-03 SV  3.572253E-02 |r| 4.226E-05 stage 1
+OUT 242 conv 3 blk 0 MV 510 Sec 9.695053E-03 SV  3.572253E-02 |r| 3.844E-05 stage 1
+OUT 243 conv 3 blk 0 MV 512 Sec 9.738922E-03 SV  3.572253E-02 |r| 2.562E-05 stage 1
+OUT 244 conv 3 blk 0 MV 514 Sec 9.783983E-03 SV  3.572253E-02 |r| 2.175E-05 stage 1
+OUT 245 conv 3 blk 0 MV 516 Sec 9.831905E-03 SV  3.572253E-02 |r| 2.407E-05 stage 1
+OUT 246 conv 3 blk 0 MV 518 Sec 9.883881E-03 SV  3.572253E-02 |r| 2.979E-05 stage 1
+OUT 247 conv 3 blk 0 MV 520 Sec 9.941101E-03 SV  3.572253E-02 |r| 1.608E-05 stage 1
+OUT 248 conv 3 blk 0 MV 522 Sec 1.000309E-02 SV  3.572253E-02 |r| 1.408E-05 stage 1
+OUT 249 conv 3 blk 0 MV 524 Sec 1.006889E-02 SV  3.572253E-02 |r| 1.290E-05 stage 1
+OUT 250 conv 3 blk 0 MV 526 Sec 1.016903E-02 SV  3.572253E-02 |r| 1.039E-05 stage 1
+#Converged 4 sval[ 3 ]= 3.572253e-02 norm 9.314111e-06 Mvecs 528 Time 0.010169 stage 1
+Lock striplet[ 0 ]= 6.537386e-03 norm 3.8995e-06 Mvecs 528 Time 1.0314e-02 Flag 2 stage 1
+Lock striplet[ 1 ]= 1.583474e-02 norm 5.4112e-06 Mvecs 528 Time 1.0324e-02 Flag 2 stage 1
+Lock striplet[ 2 ]= 2.571239e-02 norm 8.6737e-06 Mvecs 528 Time 1.0330e-02 Flag 2 stage 1
+Lock striplet[ 3 ]= 3.572253e-02 norm 9.3141e-06 Mvecs 528 Time 1.0337e-02 Flag 2 stage 1
+Sval[1]: 6.537385514550441E-03  rnorm: 5.514693005453518E-06 
+Sval[2]: 1.583473739300471E-02  rnorm: 7.652530558577412E-06 
+Sval[3]: 2.571238675687755E-02  rnorm: 1.226640180140040E-05 
+Sval[4]: 3.572252810437493E-02  rnorm: 1.317214180160689E-05 
+ 4 singular triplets converged
+Tolerance : 1.001678241101835E-05 
+Iterations: 251
+Restarts  : 32
+Matvecs   : 528
+Preconds  : 257
+=========== Executing ./ex_svds_zseq
+// ---------------------------------------------------
+//            primme_svds configuration               
+// ---------------------------------------------------
+primme_svds.m = 500
+primme_svds.n = 100
+primme_svds.mLocal = -1
+primme_svds.nLocal = -1
+primme_svds.numProcs = 1
+primme_svds.procID = 0
+
+// Output and reporting
+primme_svds.printLevel = 3
+
+// Solver parameters
+primme_svds.numSvals = 4
+primme_svds.aNorm = 0.000000e+00
+primme_svds.eps = 1.000000e-06
+primme_svds.maxBasisSize = 0
+primme_svds.maxBlockSize = 0
+primme_svds.maxMatvecs = 2147483647
+primme_svds.target = primme_svds_smallest
+primme_svds.numTargetShifts = 0
+primme_svds.locking = -1
+primme_svds.initSize = 0
+primme_svds.numOrthoConst = 0
+primme_svds.iseed = -1 -1 -1 -1
+primme_svds.precondition = -1
+primme_svds.method = primme_svds_op_AtA
+primme_svds.methodStage2 = primme_svds_op_augmented
+
+// ---------------------------------------------------
+//            1st stage primme configuration          
+// ---------------------------------------------------
+primme.n = 100
+primme.nLocal = -1
+primme.numProcs = 1
+primme.procID = 0
+
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 4
+primme.aNorm = 0.000000e+00
+primme.eps = 1.000000e-06
+primme.maxBasisSize = 15
+primme.minRestartSize = 6
+primme.maxBlockSize = 1
+primme.maxOuterIterations = 2147483647
+primme.maxMatvecs = 2147483647
+primme.target = primme_smallest
+primme.projection.projection = primme_proj_RR
+primme.initBasisMode = primme_init_krylov
+primme.numTargetShifts = 0
+primme.dynamicMethodSwitch = 1
+primme.locking = 1
+primme.initSize = 0
+primme.numOrthoConst = 0
+primme.ldevecs = -1
+primme.ldOPs = -1
+primme.iseed = -1 -1 -1 -1
+
+// Restarting
+primme.restarting.scheme = primme_thick
+primme.restarting.maxPrevRetain = 3
+
+// Correction parameters
+primme.correction.precondition = 1
+primme.correction.robustShifts = 0
+primme.correction.maxInnerIterations = -1
+primme.correction.relTolBase = 0
+primme.correction.convTest = primme_adaptive_ETolerance
+
+// projectors for JD cor.eq.
+primme.correction.projectors.LeftQ = 1
+primme.correction.projectors.LeftX = 1
+primme.correction.projectors.RightQ = 0
+primme.correction.projectors.SkewQ = 0
+primme.correction.projectors.RightX = 0
+primme.correction.projectors.SkewX = 1
+// ---------------------------------------------------
+
+// ---------------------------------------------------
+//            2st stage primme configuration          
+// ---------------------------------------------------
+primmeStage2.n = 600
+primmeStage2.nLocal = -1
+primmeStage2.numProcs = 1
+primmeStage2.procID = 0
+
+// Output and reporting
+primmeStage2.printLevel = 1
+
+// Solver parameters
+primmeStage2.numEvals = 4
+primmeStage2.aNorm = 0.000000e+00
+primmeStage2.eps = 1.000000e-06
+primmeStage2.maxBasisSize = 35
+primmeStage2.minRestartSize = 21
+primmeStage2.maxBlockSize = 1
+primmeStage2.maxOuterIterations = 2147483647
+primmeStage2.maxMatvecs = 2147483647
+primmeStage2.target = primme_closest_geq
+primmeStage2.projection.projection = primme_proj_refined
+primmeStage2.initBasisMode = primme_init_user
+primmeStage2.numTargetShifts = 0
+primmeStage2.dynamicMethodSwitch = 0
+primmeStage2.locking = 1
+primmeStage2.initSize = 0
+primmeStage2.numOrthoConst = 0
+primmeStage2.ldevecs = -1
+primmeStage2.ldOPs = -1
+primmeStage2.iseed = -1 -1 -1 -1
+
+// Restarting
+primmeStage2.restarting.scheme = primme_thick
+primmeStage2.restarting.maxPrevRetain = 1
+
+// Correction parameters
+primmeStage2.correction.precondition = 1
+primmeStage2.correction.robustShifts = 0
+primmeStage2.correction.maxInnerIterations = -1
+primmeStage2.correction.relTolBase = 0
+primmeStage2.correction.convTest = primme_adaptive
+
+// projectors for JD cor.eq.
+primmeStage2.correction.projectors.LeftQ = 1
+primmeStage2.correction.projectors.LeftX = 1
+primmeStage2.correction.projectors.RightQ = 0
+primmeStage2.correction.projectors.SkewQ = 0
+primmeStage2.correction.projectors.RightX = 0
+primmeStage2.correction.projectors.SkewX = 1
+// ---------------------------------------------------
+OUT 1 conv 0 blk 0 MV 12 Sec 4.858971E-04 SV  1.313831E-01 |r| 3.132E-01 stage 1
+OUT 2 conv 0 blk 0 MV 14 Sec 6.988049E-04 SV  1.038605E-01 |r| 2.589E-01 stage 1
+OUT 3 conv 0 blk 0 MV 16 Sec 8.687973E-04 SV  8.703544E-02 |r| 2.294E-01 stage 1
+OUT 4 conv 0 blk 0 MV 18 Sec 1.014948E-03 SV  7.605608E-02 |r| 2.209E-01 stage 1
+OUT 5 conv 0 blk 0 MV 20 Sec 1.165867E-03 SV  6.686922E-02 |r| 2.100E-01 stage 1
+OUT 6 conv 0 blk 0 MV 22 Sec 1.290798E-03 SV  5.867109E-02 |r| 2.124E-01 stage 1
+OUT 7 conv 0 blk 0 MV 24 Sec 1.402855E-03 SV  5.237435E-02 |r| 1.842E-01 stage 1
+OUT 8 conv 0 blk 0 MV 26 Sec 1.539946E-03 SV  4.800780E-02 |r| 1.714E-01 stage 1
+OUT 9 conv 0 blk 0 MV 28 Sec 1.688957E-03 SV  4.388577E-02 |r| 1.788E-01 stage 1
+Ratio: N/A  GD+k switched to JDQMR (first time)
+OUT 10 conv 0 blk 0 MV 30 Sec 2.033949E-03 SV  3.991273E-02 |r| 1.817E-01 stage 1
+OUT 11 conv 0 blk 0 MV 42 Sec 2.205849E-03 SV  3.365415E-02 |r| 1.147E-01 stage 1
+Ratio: 4.836828e-01 Continue with JDQMR
+OUT 12 conv 0 blk 0 MV 60 Sec 2.405882E-03 SV  2.681820E-02 |r| 7.299E-02 stage 1
+Ratio: 4.790705e-01 Continue with JDQMR
+OUT 13 conv 0 blk 0 MV 72 Sec 2.581835E-03 SV  2.283884E-02 |r| 8.932E-02 stage 1
+Ratio: 5.231664e-01 Continue with JDQMR
+OUT 14 conv 0 blk 0 MV 90 Sec 2.769947E-03 SV  1.846393E-02 |r| 7.260E-02 stage 1
+Ratio: 4.812014e-01 Continue with JDQMR
+OUT 15 conv 0 blk 0 MV 102 Sec 2.936840E-03 SV  1.618807E-02 |r| 9.171E-02 stage 1
+Ratio: 5.046847e-01 Continue with JDQMR
+OUT 16 conv 0 blk 0 MV 128 Sec 3.152847E-03 SV  1.254662E-02 |r| 4.995E-02 stage 1
+Ratio: 4.495804e-01 Continue with JDQMR
+OUT 17 conv 0 blk 0 MV 154 Sec 3.510952E-03 SV  1.051491E-02 |r| 3.997E-02 stage 1
+Ratio: 3.936876e-01 Continue with JDQMR
+OUT 18 conv 0 blk 0 MV 188 Sec 3.732920E-03 SV  9.336055E-03 |r| 1.918E-02 stage 1
+Ratio: 2.900659e-01 Continue with JDQMR
+OUT 19 conv 0 blk 0 MV 214 Sec 3.926992E-03 SV  8.856888E-03 |r| 2.841E-02 stage 1
+Ratio: 3.138168e-01 Continue with JDQMR
+OUT 20 conv 0 blk 0 MV 248 Sec 4.144907E-03 SV  7.908359E-03 |r| 2.511E-02 stage 1
+Ratio: 3.443994e-01 Continue with JDQMR
+OUT 21 conv 0 blk 0 MV 298 Sec 4.477978E-03 SV  6.785649E-03 |r| 1.233E-02 stage 1
+Ratio: 4.550060e-01 Continue with JDQMR
+OUT 22 conv 0 blk 0 MV 348 Sec 4.768848E-03 SV  6.612749E-03 |r| 5.895E-03 stage 1
+Ratio: 3.111402e-01 Continue with JDQMR
+OUT 23 conv 0 blk 0 MV 406 Sec 5.098820E-03 SV  6.538316E-03 |r| 2.251E-03 stage 1
+Ratio: 3.306514e-01 Continue with JDQMR
+OUT 24 conv 0 blk 0 MV 442 Sec 5.433798E-03 SV  6.537391E-03 |r| 1.717E-04 stage 1
+Ratio: 2.528787e-01 Continue with JDQMR
+OUT 25 conv 0 blk 0 MV 478 Sec 5.657911E-03 SV  6.537386E-03 |r| 1.240E-05 stage 1
+Ratio: 2.373894e-01 Continue with JDQMR
+OUT 26 conv 0 blk 0 MV 486 Sec 5.769968E-03 SV  6.537386E-03 |r| 1.616E-05 stage 1
+Ratio: 3.254180e-01 Continue with JDQMR
+OUT 27 conv 1 blk 0 MV 494 Sec 5.939007E-03 SV  1.583520E-02 |r| 2.420E-03 stage 1
+Ratio: 4.720177e-01 Continue with JDQMR
+OUT 28 conv 1 blk 0 MV 514 Sec 6.101847E-03 SV  1.583475E-02 |r| 2.101E-04 stage 1
+Ratio: 4.513779e-01 Continue with JDQMR
+OUT 29 conv 1 blk 0 MV 550 Sec 6.333828E-03 SV  1.583474E-02 |r| 1.777E-05 stage 1
+Ratio: 4.650312e-01 Continue with JDQMR
+OUT 30 conv 1 blk 0 MV 562 Sec 6.482840E-03 SV  1.583474E-02 |r| 1.337E-05 stage 1
+Ratio: 4.070558e-01 Continue with JDQMR
+#Converged 1 sval[ 0 ]= 6.537386e-03 norm 6.091970e-06 Mvecs 572 Time 0.00675392 stage 1
+#Converged 2 sval[ 1 ]= 1.583474e-02 norm 7.413271e-06 Mvecs 572 Time 0.00676298 stage 1
+OUT 31 conv 2 blk 0 MV 572 Sec 6.783009E-03 SV  2.571516E-02 |r| 2.198E-02 stage 1
+Ratio: 4.981877e-01 Continue with JDQMR
+OUT 32 conv 2 blk 0 MV 594 Sec 6.950855E-03 SV  2.571244E-02 |r| 1.756E-03 stage 1
+Ratio: 3.902304e-01 Continue with JDQMR
+OUT 33 conv 2 blk 0 MV 618 Sec 7.134914E-03 SV  2.571239E-02 |r| 1.660E-04 stage 1
+Ratio: 4.001240e-01 Continue with JDQMR
+OUT 34 conv 3 blk 0 MV 648 Sec 7.386923E-03 SV  3.572695E-02 |r| 1.457E-02 stage 1
+Ratio: 4.108676e-01 Continue with JDQMR
+OUT 35 conv 3 blk 0 MV 662 Sec 7.531881E-03 SV  3.572265E-02 |r| 1.449E-03 stage 1
+Ratio: 3.890632e-01 Continue with JDQMR
+OUT 36 conv 3 blk 0 MV 686 Sec 7.725000E-03 SV  3.572253E-02 |r| 1.504E-04 stage 1
+Ratio: 4.115215e-01 Continue with JDQMR
+Ratio: 4.143211e-01 Continue with JDQMR
+#Converged 3 sval[ 2 ]= 2.571239e-02 norm 3.670324e-06 Mvecs 712 Time 0.00801587 stage 1
+#Converged 4 sval[ 3 ]= 3.572253e-02 norm 8.771300e-06 Mvecs 712 Time 0.00802398 stage 1
+Lock striplet[ 0 ]= 6.537386e-03 norm 6.0920e-06 Mvecs 712 Time 8.0888e-03 Flag 2 stage 1
+Lock striplet[ 1 ]= 1.583474e-02 norm 7.4133e-06 Mvecs 712 Time 8.0948e-03 Flag 2 stage 1
+Lock striplet[ 2 ]= 2.571239e-02 norm 3.6703e-06 Mvecs 712 Time 8.0979e-03 Flag 2 stage 1
+Lock striplet[ 3 ]= 3.572253e-02 norm 8.7713e-06 Mvecs 712 Time 8.1019e-03 Flag 2 stage 1
+Sval[1]: 6.537385515488555E-03  rnorm: 8.615346868051995E-06 
+Sval[2]: 1.583473740132849E-02  rnorm: 1.048394823104817E-05 
+Sval[3]: 2.571238675215693E-02  rnorm: 5.190621654258827E-06 
+Sval[4]: 3.572252809712780E-02  rnorm: 1.240449088716477E-05 
+ 4 singular triplets converged
+Tolerance : 1.001678241101836E-05 
+Iterations: 37
+Restarts  : 5
+Matvecs   : 712
+Preconds  : 323

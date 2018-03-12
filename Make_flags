@@ -18,11 +18,11 @@ SOLIBRARY = libprimme.$(SLIB)
 #---------------------------------------------------------------
 # POSIX systems (e.g., Linux, MinGW, Cygwin)
 #---------------------------------------------------------------
-CC       ?= cc
-F77      ?= gfortran
-DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?= -O -fPIC -DNDEBUG
-FFLAGS   ?= -fno-second-underscore -O
+#CC       ?= cc
+#F77      ?= gfortran
+#DEFINES  ?= -DF77UNDERSCORE 
+#CFLAGS   ?= -O -fPIC -DNDEBUG
+#FFLAGS   ?= -fno-second-underscore -O
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc
@@ -32,11 +32,11 @@ FFLAGS   ?= -fno-second-underscore -O
 #FFLAGS   = -O2
 #---------------------------------------------------------------
 # Mac OS X
-#CC       = clang
-#F77      = gfortran
-#DEFINES  = -DF77UNDERSCORE 
-#CFLAGS   = -O2
-#FFLAGS   = -fno-second-underscore -O2
+CC       = clang
+F77      = gfortran
+DEFINES  = -DF77UNDERSCORE 
+CFLAGS   = -O2
+FFLAGS   = -fno-second-underscore -O2
 #---------------------------------------------------------------
 # Using Intel compilers
 #CC       = icc
@@ -64,7 +64,7 @@ FFLAGS   ?= -fno-second-underscore -O
 
 #---------------------------------------------------------------
 # Uncomment this when building MATLAB interface (but not for Octave)
-# CFLAGS += -DPRIMME_BLASINT_SIZE=64 -fPIC
+CFLAGS += -DPRIMME_BLASINT_SIZE=64 -fPIC
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
