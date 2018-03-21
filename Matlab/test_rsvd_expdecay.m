@@ -22,7 +22,7 @@ for i = 1:10
 
     % set params for variants of random svds
     k = 10;
-    p = 50;
+    p = 20;
     q = 2;
     s = 1;
 

@@ -1,0 +1,16 @@
+Four drivers, one for each model:
+
+    I. driverI.m 	the model in the RSVDpack
+   II. driverII.m	the model from genomics
+  III. driverIII.m 	the Laplacian model 
+   IV. driverIV.m 	the model from the FD paper
+
+    G. driverG.m 	we may need a general driver for sparse matrices
+  
+Each driver runs all methods (SVDS, PRIMME, RSVD, FD)
+for whatever sizes are approrpiate for the model.
+
+
+Issue: I am not sure PRIMME will win any of these comparisons in the "default" mode.
+We may need to increase maxBlockSize. The question is to what? Perhaps we can experiment with maxBockSize = [1, 10, numEvals].
+

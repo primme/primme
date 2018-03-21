@@ -4,9 +4,10 @@ clear,clc
 addpath('~/Documents/Work/GITHUB/randSVDPack/matlab_code')
 
 nodes = 15:15:150;
-for i = 1:10
+for i = 1:length(nodes)
     nd = nodes(i);
     A = delsq(numgrid('C',nd));
+%     [~,~,A]=laplacian([nd, nd, nd]); % 3D laplacian
     [m,n] = size(A);
     matrixSize(i) = m;
     K = 100;
