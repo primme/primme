@@ -402,7 +402,7 @@ function [varargout] = primme_svds(varargin)
    if isfield(opts, 'v0') || isfield(opts, 'u0')
       if ~isfield(opts, 'v0'), opts.v0 = []; end
       if ~isfield(opts, 'u0'), opts.u0 = []; end
-      init0 = {opts.v0, opts.u0};
+      init0 = {opts.u0, opts.v0};
       if isempty(init0{1})
          init0{1} = opts.matrixMatvec(init0{2}, 'notransp');
       elseif isempty(init{2})
