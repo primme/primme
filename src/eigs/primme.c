@@ -160,8 +160,9 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    if (primme->orth == primme_orth_default) {
 #ifdef USE_FLOAT
       if (primme->projectionParams.projection == primme_proj_RR &&
-            (primme->target == primme_largest
-             || primme->target == primme_smallest)) {
+            (primme->target == primme_largest ||
+                  primme->target == primme_smallest ||
+                  primme->target == primme_largest_abs)) {
          primme->orth = primme_orth_explicit_I;
       }
       else
