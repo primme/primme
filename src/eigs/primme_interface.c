@@ -644,6 +644,8 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
       fprintf(outputFile, " %" PRIMME_INT_P, primme.iseed[i]);
    }
    fprintf(outputFile, "\n");
+   PRINTIF(orth, primme_orth_implicit_I);
+   PRINTIF(orth, primme_orth_explicit_I);
 
    fprintf(outputFile, "\n// Restarting\n");
    PRINTParamsIF(restarting, scheme, primme_thick);
