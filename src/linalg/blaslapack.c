@@ -84,7 +84,15 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
    /* Quick exit */
    if (k == 0) {
-      Num_zero_matrix_Sprimme(c, m, n, ldc);
+      if (ABS(beta) == 0.0) {
+         Num_zero_matrix_Sprimme(c, m, n, ldc);
+      }
+      else {
+         int i;
+         for (i=0; i<n; i++) {
+            Num_scal_Sprimme(m, beta, &c[ldc*i], 1);
+         }
+      }
       return;
    }
 
@@ -102,7 +110,7 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 }
 
 /*******************************************************************************
- * Subroutine Num_gemm_Sprimme - C = A*B or B*A where A is Hermitian,
+ * Subroutine Num_hemm_Sprimme - C = A*B or B*A where A is Hermitian,
  *    where C size m x n.
  ******************************************************************************/
 
@@ -181,6 +189,20 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
+
+   /* Quick exit */
+   if (m == 0) {
+      if (ABS(beta) == 0.0) {
+         Num_zero_matrix_Sprimme(y, 1, n, incy);
+      }
+      else {
+         int i;
+         for (i=0; i<n; i++) {
+            Num_scal_Sprimme(n, beta, y, incy);
+         }
+      }
+      return;
+   }
 
    while(m > 0) {
       lm = (PRIMME_BLASINT)min(m, PRIMME_BLASINT_MAX-1);
@@ -400,7 +422,7 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
+   if (n == 0) {*info = 0; return;}
 
    /* NULL matrices and zero leading dimension may cause problems */
    if (a == NULL) a = &dummys;
@@ -695,7 +717,7 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) return;
+   if (m == 0 || n == 0) {*info=0; return;}
 
    /* NULL matrices and zero leading dimension may cause problems */
    if (a == NULL) a = &dummys;
@@ -735,7 +757,7 @@ void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) return;
+   if (m == 0 || n == 0) {*info = 0; return;}
 
    /* NULL matrices and zero leading dimension may cause problems */
    if (a == NULL) a = &dummys;
@@ -780,7 +802,7 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
+   if (n == 0) {*info = 0; return;}
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       if (MALLOC_PRIMME(n, &lipivot) != 0) {
@@ -863,7 +885,7 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
    int i;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0 || nrhs == 0) return;
+   if (n == 0 || nrhs == 0) {*info = 0; return;}
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
       if (MALLOC_PRIMME(n, &lipivot) != 0) {
