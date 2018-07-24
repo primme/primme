@@ -976,7 +976,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    }
 
    if (nlhs <= 2 || isComplex<T>() || primme->numOrthoConst > 0) {
-      evecs = new T[primme->numEvals*primme->n];
+      evecs = new T[(primme->numOrthoConst+primme->numEvals)*primme->n];
       mxEvecs = NULL;
    }
    else {
