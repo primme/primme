@@ -37,10 +37,13 @@
 #include "globalsum.h"
 #include "wtime.h"
 
+#ifdef USE_HOST
+
 TEMPLATE_PLEASE
 int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
-      primme_params *primme) {
+   primme_context ctx) {
 
+   primme_params *primme = ctx.primme;
    int ierr;
    double t0=0.0;
 
@@ -52,7 +55,7 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
       count *= 2;
 #endif
       CHKERRM((primme->globalSumReal(sendBuf, recvBuf, &count, primme, &ierr),
-               ierr), -1,
+               ierr), PRIMME_USER_FAILURE,
             "Error returned by 'globalSumReal' %d", ierr);
 
       primme->stats.numGlobalSum++;
@@ -60,8 +63,10 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
       primme->stats.volumeGlobalSum += count;
    }
    else {
-      Num_copy_Sprimme(count, sendBuf, 1, recvBuf, 1);
+      Num_copy_Sprimme(count, sendBuf, 1, recvBuf, 1, ctx);
    }
 
    return 0;
 }
+
+#endif /* USE_HOST */

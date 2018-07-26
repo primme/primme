@@ -226,6 +226,7 @@ typedef struct primme_params {
       int *inner_its, void *LSRes, primme_event *event,
       struct primme_params *primme, int *err);
    void *monitor;
+   void *queue;   	/* magma device queue (magma_queue_t*) */
 } primme_params;
 /*---------------------------------------------------------------------------*/
 
@@ -335,7 +336,14 @@ int dprimme(double *evals, double *evecs, double *resNorms,
       primme_params *primme);
 int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
       primme_params *primme);
-void primme_initialize(primme_params *primme);
+int magma_sprimme(float *evals, float *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_dprimme(double *evals, double *evecs, double *resNorms, 
+      primme_params *primme);
+int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
 void primme_free(primme_params *primme);

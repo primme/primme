@@ -33,42 +33,72 @@
 
 #ifndef correction_H
 #define correction_H
+int solve_correction_sprimme(float *V, PRIMME_INT ldV, float *W,
+      PRIMME_INT ldW, float *evecs, PRIMME_INT ldevecs, float *evecsHat,
+      PRIMME_INT ldevecsHat, float *UDU, int *ipivot, float *lockedEvals,
+      int numLocked, int numConvergedStored, float *ritzVals,
+      float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      float *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
+int solve_correction_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *W,
+      PRIMME_INT ldW, PRIMME_COMPLEX_FLOAT *evecs, PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *evecsHat,
+      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, float *lockedEvals,
+      int numLocked, int numConvergedStored, float *ritzVals,
+      float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      float *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Sprimme)
 #  define solve_correction_Sprimme CONCAT(solve_correction_,SCALAR_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Rprimme)
 #  define solve_correction_Rprimme CONCAT(solve_correction_,REAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SHprimme)
+#  define solve_correction_SHprimme CONCAT(solve_correction_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RHprimme)
+#  define solve_correction_RHprimme CONCAT(solve_correction_,HOST_REAL_SUF)
+#endif
 int solve_correction_dprimme(double *V, PRIMME_INT ldV, double *W,
       PRIMME_INT ldW, double *evecs, PRIMME_INT ldevecs, double *evecsHat,
       PRIMME_INT ldevecsHat, double *UDU, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, int *touch, double machEps,
-      double *rwork, size_t *rworkSize, int *iwork, int iworkSize,
-      primme_params *primme);
+      double *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
 int solve_correction_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *W,
       PRIMME_INT ldW, PRIMME_COMPLEX_DOUBLE *evecs, PRIMME_INT ldevecs, PRIMME_COMPLEX_DOUBLE *evecsHat,
       PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, int *touch, double machEps,
-      PRIMME_COMPLEX_DOUBLE *rwork, size_t *rworkSize, int *iwork, int iworkSize,
-      primme_params *primme);
-int solve_correction_sprimme(float *V, PRIMME_INT ldV, float *W,
-      PRIMME_INT ldW, float *evecs, PRIMME_INT ldevecs, float *evecsHat,
-      PRIMME_INT ldevecsHat, float *UDU, int *ipivot, float *lockedEvals,
-      int numLocked, int numConvergedStored, float *ritzVals,
-      float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, int *touch, double machEps,
-      float *rwork, size_t *rworkSize, int *iwork, int iworkSize,
-      primme_params *primme);
-int solve_correction_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *W,
-      PRIMME_INT ldW, PRIMME_COMPLEX_FLOAT *evecs, PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *evecsHat,
-      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, float *lockedEvals,
-      int numLocked, int numConvergedStored, float *ritzVals,
-      float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, int *touch, double machEps,
-      PRIMME_COMPLEX_FLOAT *rwork, size_t *rworkSize, int *iwork, int iworkSize,
-      primme_params *primme);
+      double *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
+int solve_correction_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float *W,
+      PRIMME_INT ldW, magma_float *evecs, PRIMME_INT ldevecs, magma_float *evecsHat,
+      PRIMME_INT ldevecsHat, magma_float *UDU, int *ipivot, magma_float *lockedEvals,
+      int numLocked, int numConvergedStored, magma_float *ritzVals,
+      magma_float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      magma_float *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
+int solve_correction_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magma_complex_float *W,
+      PRIMME_INT ldW, magma_complex_float *evecs, PRIMME_INT ldevecs, magma_complex_float *evecsHat,
+      PRIMME_INT ldevecsHat, magma_complex_float *UDU, int *ipivot, magma_float *lockedEvals,
+      int numLocked, int numConvergedStored, magma_float *ritzVals,
+      magma_float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      magma_float *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
+int solve_correction_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_double *W,
+      PRIMME_INT ldW, magma_double *evecs, PRIMME_INT ldevecs, magma_double *evecsHat,
+      PRIMME_INT ldevecsHat, magma_double *UDU, int *ipivot, magma_double *lockedEvals,
+      int numLocked, int numConvergedStored, magma_double *ritzVals,
+      magma_double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      magma_double *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
+int solve_correction_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, magma_complex_double *W,
+      PRIMME_INT ldW, magma_complex_double *evecs, PRIMME_INT ldevecs, magma_complex_double *evecsHat,
+      PRIMME_INT ldevecsHat, magma_complex_double *UDU, int *ipivot, magma_double *lockedEvals,
+      int numLocked, int numConvergedStored, magma_double *ritzVals,
+      magma_double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      magma_double *blockNorms, int *iev, int blockSize, int *touch,
+      primme_context ctx);
 #endif

@@ -7,6 +7,12 @@ DIRS := linalg eigs svds
 SOURCES := $(sort $(foreach dir,$(DIRS),$(wildcard $(dir)/*.c)))
 
 ARCHS := float floatcomplex double doublecomplex
+ifeq ($(PRIMME_WITH_MAGMA),yes)
+   ARCHS := $(foreach a,$(ARCH),$(a)magma)
+endif
+ALL_ARCHS := FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
+   FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA
+
 OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
 
 OTHER_HEADERS := \
@@ -23,6 +29,7 @@ INCLUDES := $(sort $(foreach dir,../include,$(wildcard $(dir)/*.h))) $(OTHER_HEA
 
 AUTOMATED_HEADERS_LINALG := \
    include/blaslapack.h \
+   include/magma_wrapper.h \
    include/auxiliary.h
 AUTOMATED_HEADERS_EIGS := \
    eigs/auxiliary_eigs.h \
@@ -45,7 +52,7 @@ $(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c tools/AUTO_HEADER
 	@cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" > $@.t; \
 	echo "#define $(*F)_H" >> $@.t; \
-	for arch in DOUBLE DOUBLECOMPLEX FLOAT FLOATCOMPLEX ; do \
+	for arch in $(ALL_ARCHS) ; do \
 	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | tools/ctemplate >> $@.t; \
 	done; \
 	cat $@.t >> $@; rm -f $@.t; \
@@ -55,7 +62,7 @@ $(AUTOMATED_HEADERS_EIGS): %.h : %.c tools/AUTO_HEADER
 	@cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" > $@.t; \
 	echo "#define $(*F)_H" >> $@.t; \
-	for arch in DOUBLE DOUBLECOMPLEX FLOAT FLOATCOMPLEX ; do \
+	for arch in $(ALL_ARCHS) ; do \
 	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | tools/ctemplate >> $@.t; \
 	done; \
 	cat $@.t >> $@; rm -f $@.t; \
@@ -78,6 +85,18 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 
 %floatcomplex.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX -c $< -o $@
+
+%doublemagma.o: %.c
+	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLE_MAGMA -c $< -o $@
+
+%doublecomplexmagma.o: %.c
+	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLECOMPLEX_MAGMA -c $< -o $@
+
+%floatmagma.o: %.c
+	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOAT_MAGMA -c $< -o $@
+
+%floatcomplexmagma.o: %.c
+	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX_MAGMA -c $< -o $@
 
 #
 # Archive object files in the full library

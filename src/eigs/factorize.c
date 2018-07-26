@@ -39,6 +39,8 @@
 #include "numerical.h"
 #include "factorize.h"
 
+#ifdef USE_HOST
+
 /******************************************************************************
  * Function UDUDecompose - This function computes an UDU decomposition of the
  *   matrix M.  See LAPACK routine dsytrf for more information on how the
@@ -71,14 +73,12 @@
 
 TEMPLATE_PLEASE
 int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
-      int *ipivot, int dimM, SCALAR *rwork, size_t *rworkSize,
-      primme_params *primme) {
+      int *ipivot, int dimM, primme_context ctx) {
 
    int info;
 
    /* TODO: this is not a proper PRIMME function, so it may belong to   */
    /* numerical.c or as a static function in init.c or restart.c.       */
-   (void)primme; /* unused paramter */
 
    /* Quick return for M with dimension 0 */
 
@@ -87,15 +87,6 @@ int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
    /* if ld is zero, change by the matrix size */
    if (ldUDU == 0) ldUDU = dimM;
 
-   /* Return memory requirement */
-
-   if (M == NULL) {
-      SCALAR w;
-      Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
-      *rworkSize = max(*rworkSize, (size_t)REAL_PART(w));
-      return 0;
-    }
-
    /* Quick return for M with dimension 1 */
 
    if (dimM <= 1) {
@@ -103,15 +94,25 @@ int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
       info = 0;
    }
    else {
+      /* Get memory requirement */
+
+      SCALAR w;
+      Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
+      int rworkSize = REAL_PART(w);
 
       /* Copy the upper triangular portion of M into UDU */
 
       Num_copy_trimatrix_Sprimme(M, dimM, dimM, ldM, 0 /* up */, 0, UDU,
             ldUDU, 0);
 
+      SCALAR *rwork;
+      CHKERR(Num_malloc_SHprimme(rworkSize, &rwork, ctx));
       /* Perform the decomposition */
-      CHKERR((Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, rwork,
-                  TO_INT(*rworkSize), &info), info), -1);
+      CHKERRM((Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, rwork,
+                                 TO_INT(rworkSize), &info),
+               info),
+              PRIMME_LAPACK_FAILURE, "hetrf failed with info %d", info);
+      CHKERR(Num_free_SHprimme(rwork, ctx));
    }
 
    return 0;
@@ -147,23 +148,24 @@ int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
 
 TEMPLATE_PLEASE
 int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, 
-   SCALAR *sol, primme_params *primme) {
-
-   int info;
+   SCALAR *sol, primme_context ctx) {
 
    /* TODO: this is not a proper PRIMME function, so it may belong to   */
    /* numerical.c or as a static function in init.c or restart.c.       */
 
    if (dim == 1) {
       *sol = *rhs/(*UDU); 
-      info = 0;
    }
    else {
-      Num_copy_Sprimme(dim, rhs, 1, sol, 1);
-      CHKERR((Num_hetrs_Sprimme("U", dim, 1, UDU, dim, ipivot, sol, dim,
-                  &info), info), -1);
+      int info;
+      Num_copy_SHprimme(dim, rhs, 1, sol, 1);
+      CHKERRM((Num_hetrs_Sprimme("U", dim, 1, UDU, dim, ipivot, sol, dim,
+                  &info), info),
+              PRIMME_LAPACK_FAILURE, "hetrs failed with info %d", info);
    }
 
    return 0;
 
 }
+
+#endif /* USE_HOST */

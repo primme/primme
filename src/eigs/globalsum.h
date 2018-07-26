@@ -33,18 +33,24 @@
 
 #ifndef globalsum_H
 #define globalsum_H
+int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
+   primme_context ctx);
+int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
+   primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_Sprimme)
 #  define globalSum_Sprimme CONCAT(globalSum_,SCALAR_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_Rprimme)
 #  define globalSum_Rprimme CONCAT(globalSum_,REAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SHprimme)
+#  define globalSum_SHprimme CONCAT(globalSum_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHprimme)
+#  define globalSum_RHprimme CONCAT(globalSum_,HOST_REAL_SUF)
+#endif
 int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
-      primme_params *primme);
+   primme_context ctx);
 int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *sendBuf, PRIMME_COMPLEX_DOUBLE *recvBuf, int count,
-      primme_params *primme);
-int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
-      primme_params *primme);
-int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
-      primme_params *primme);
+   primme_context ctx);
 #endif

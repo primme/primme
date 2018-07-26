@@ -49,6 +49,10 @@ enum conv_flags {
 };
 
 /* Used in kernels in auxiliary_eigs.c, ortho.c and restart.c */
+#ifdef USE_MAGMA
+#define PRIMME_BLOCK_SIZE INT_MAX
+#else
 #define PRIMME_BLOCK_SIZE 512
+#endif
 
 #endif /* CONST_H */

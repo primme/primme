@@ -120,18 +120,10 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 TEMPLATE_PLEASE
 int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
-      double targetShift, int basisSize, int blockSize, SCALAR *rwork,
-      size_t *rworkSize, double machEps, primme_params *primme) {
+      double targetShift, int basisSize, int blockSize,
+      size_t *rworkSize, double machEps, primme_context ctx) {
 
    int i, j;
-
-   /* Return memory requirement */
-   if (V == NULL) {
-      ortho_Sprimme(NULL, 0, NULL, 0, basisSize,
-         basisSize+blockSize-1, NULL, 0, 0, primme->nLocal, 
-         NULL, machEps, NULL, rworkSize, primme);
-      return 0;
-   }
 
    /* Quick exit */
 
@@ -142,12 +134,12 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    /* Q(:,c) = W(:,c) - V(:,c)*target for c = basisSize:basisSize+blockSize-1 */
    for (i=basisSize; i<basisSize+blockSize; i++) {
       Num_compute_residual_Sprimme(nLocal, targetShift, &V[ldV*i], &W[ldW*i],
-            &Q[ldQ*i]);
+            &Q[ldQ*i], ctx);
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
    CHKERR(ortho_Sprimme(Q, ldQ, R, ldR, basisSize, basisSize+blockSize-1, NULL,
-         0, 0, nLocal, primme->iseed, machEps, rwork, rworkSize, primme), -1);
+         0, 0, nLocal, ctx.primme->iseed, ctx));
 
    /* Zero the lower triangular part of R */
    for (i=basisSize; i<basisSize+blockSize; i++) {

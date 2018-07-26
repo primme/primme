@@ -33,38 +33,64 @@
 
 #ifndef inner_solve_H
 #define inner_solve_H
+int inner_solve_sprimme(float *x, float *r, float *rnorm, float *evecs,
+      PRIMME_INT ldevecs, float *UDU, int *ipivot, float *xKinvx,
+      float *Lprojector, PRIMME_INT ldLprojector, float *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, float *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, float *sol,
+      float eval, float shift, int *touch, primme_context ctx);
+int inner_solve_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_COMPLEX_FLOAT *r, float *rnorm, PRIMME_COMPLEX_FLOAT *evecs,
+      PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, PRIMME_COMPLEX_FLOAT *xKinvx,
+      PRIMME_COMPLEX_FLOAT *Lprojector, PRIMME_INT ldLprojector, PRIMME_COMPLEX_FLOAT *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, PRIMME_COMPLEX_FLOAT *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, PRIMME_COMPLEX_FLOAT *sol,
+      float eval, float shift, int *touch, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Sprimme)
 #  define inner_solve_Sprimme CONCAT(inner_solve_,SCALAR_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Rprimme)
 #  define inner_solve_Rprimme CONCAT(inner_solve_,REAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SHprimme)
+#  define inner_solve_SHprimme CONCAT(inner_solve_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RHprimme)
+#  define inner_solve_RHprimme CONCAT(inner_solve_,HOST_REAL_SUF)
+#endif
 int inner_solve_dprimme(double *x, double *r, double *rnorm, double *evecs,
       PRIMME_INT ldevecs, double *UDU, int *ipivot, double *xKinvx,
       double *Lprojector, PRIMME_INT ldLprojector, double *RprojectorQ,
       PRIMME_INT ldRprojectorQ, double *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, double *sol,
-      double eval, double shift, int *touch, double machEps, double *rwork,
-      size_t rworkSize, primme_params *primme);
+      double eval, double shift, int *touch, primme_context ctx);
 int inner_solve_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_COMPLEX_DOUBLE *r, double *rnorm, PRIMME_COMPLEX_DOUBLE *evecs,
       PRIMME_INT ldevecs, PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, PRIMME_COMPLEX_DOUBLE *xKinvx,
       PRIMME_COMPLEX_DOUBLE *Lprojector, PRIMME_INT ldLprojector, PRIMME_COMPLEX_DOUBLE *RprojectorQ,
       PRIMME_INT ldRprojectorQ, PRIMME_COMPLEX_DOUBLE *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, PRIMME_COMPLEX_DOUBLE *sol,
-      double eval, double shift, int *touch, double machEps, PRIMME_COMPLEX_DOUBLE *rwork,
-      size_t rworkSize, primme_params *primme);
-int inner_solve_sprimme(float *x, float *r, float *rnorm, float *evecs,
-      PRIMME_INT ldevecs, float *UDU, int *ipivot, float *xKinvx,
-      float *Lprojector, PRIMME_INT ldLprojector, float *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, float *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, float *sol,
-      float eval, float shift, int *touch, double machEps, float *rwork,
-      size_t rworkSize, primme_params *primme);
-int inner_solve_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_COMPLEX_FLOAT *r, float *rnorm, PRIMME_COMPLEX_FLOAT *evecs,
-      PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, PRIMME_COMPLEX_FLOAT *xKinvx,
-      PRIMME_COMPLEX_FLOAT *Lprojector, PRIMME_INT ldLprojector, PRIMME_COMPLEX_FLOAT *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, PRIMME_COMPLEX_FLOAT *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, PRIMME_COMPLEX_FLOAT *sol,
-      float eval, float shift, int *touch, double machEps, PRIMME_COMPLEX_FLOAT *rwork,
-      size_t rworkSize, primme_params *primme);
+      double eval, double shift, int *touch, primme_context ctx);
+int inner_solve_smagmaprimme(magma_float *x, magma_float *r, magma_float *rnorm, magma_float *evecs,
+      PRIMME_INT ldevecs, magma_float *UDU, int *ipivot, magma_float *xKinvx,
+      magma_float *Lprojector, PRIMME_INT ldLprojector, magma_float *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, magma_float *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, magma_float *sol,
+      magma_float eval, magma_float shift, int *touch, primme_context ctx);
+int inner_solve_cmagmaprimme(magma_complex_float *x, magma_complex_float *r, magma_float *rnorm, magma_complex_float *evecs,
+      PRIMME_INT ldevecs, magma_complex_float *UDU, int *ipivot, magma_complex_float *xKinvx,
+      magma_complex_float *Lprojector, PRIMME_INT ldLprojector, magma_complex_float *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, magma_complex_float *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, magma_complex_float *sol,
+      magma_float eval, magma_float shift, int *touch, primme_context ctx);
+int inner_solve_dmagmaprimme(magma_double *x, magma_double *r, magma_double *rnorm, magma_double *evecs,
+      PRIMME_INT ldevecs, magma_double *UDU, int *ipivot, magma_double *xKinvx,
+      magma_double *Lprojector, PRIMME_INT ldLprojector, magma_double *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, magma_double *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, magma_double *sol,
+      magma_double eval, magma_double shift, int *touch, primme_context ctx);
+int inner_solve_zmagmaprimme(magma_complex_double *x, magma_complex_double *r, magma_double *rnorm, magma_complex_double *evecs,
+      PRIMME_INT ldevecs, magma_complex_double *UDU, int *ipivot, magma_complex_double *xKinvx,
+      magma_complex_double *Lprojector, PRIMME_INT ldLprojector, magma_complex_double *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, magma_complex_double *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, magma_complex_double *sol,
+      magma_double eval, magma_double shift, int *touch, primme_context ctx);
 #endif

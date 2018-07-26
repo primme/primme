@@ -89,4 +89,12 @@
 #include "primme_eigs.h"
 #include "primme_svds.h"
 
+/* Error messages */
+
+#define PRIMME_UNEXPECTED_FAILURE         -1
+#define PRIMME_MALLOC_FAILURE             -2
+#define PRIMME_MAIN_ITER_FAILURE          -3
+#define PRIMME_LAPACK_FAILURE             -40
+#define PRIMME_USER_FAILURE               -41
+
 #endif /* PRIMME_H */

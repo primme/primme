@@ -36,6 +36,11 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
+/* Including MAGMA headers before C99 complex.h avoid compiler issues */
+#if !defined(CHECK_TEMPLATE) && (defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) || defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA))
+#  include <magma_v2.h>
+#endif
+
 #include <limits.h>    
 #include <float.h>
 #include <stdint.h>
@@ -44,6 +49,13 @@
 /*****************************************************************************/
 /* Arithmetic                                                                */
 /*****************************************************************************/
+
+/* Fake types for MAGMA */
+
+typedef double magma_double;
+typedef float magma_float;
+typedef PRIMME_COMPLEX_DOUBLE magma_complex_double;
+typedef PRIMME_COMPLEX_FLOAT magma_complex_float;
 
 /**********************************************************************
  * Macros USE_FLOAT, USE_FLOATCOMPLEX, USE_DOUBLE and USE_DOUBLECOMPLEX -
@@ -66,7 +78,16 @@
  * Macro REAL_SUF - suffix appended to call the REAL version of the
  *    function.
  *
+ * Macro HOST_SCALAR_SUF and HOST_REAL_SUF - suffix appended to call the
+ *    CPU version.
+ *
+ * Macro HSCALAR and HREAL - cpu versions of the types.
+ *
  * Macro USE_COMPLEX - only defined when SCALAR is a complex type.
+ *
+ * Macro USE_HOST - CPU version
+ *
+ * Macro USE_MAGMA - MAGMA version
  **********************************************************************/
 
 #if defined(USE_DOUBLE)
@@ -77,6 +98,7 @@
 #  define SCALAR double
 #  define REAL double
 #  define MACHINE_EPSILON DBL_EPSILON
+#  define USE_HOST
 #elif defined(USE_DOUBLECOMPLEX)
 #  define SCALAR_PRE z
 #  define REAL_PRE d
@@ -86,6 +108,7 @@
 #  define SCALAR PRIMME_COMPLEX_DOUBLE
 #  define REAL double
 #  define MACHINE_EPSILON DBL_EPSILON
+#  define USE_HOST
 #elif defined(USE_FLOAT)
 #  define SCALAR_PRE s
 #  define REAL_PRE s
@@ -94,6 +117,7 @@
 #  define SCALAR float
 #  define REAL float
 #  define MACHINE_EPSILON FLT_EPSILON
+#  define USE_HOST
 #elif defined(USE_FLOATCOMPLEX)
 #  define SCALAR_PRE c
 #  define REAL_PRE s
@@ -103,8 +127,87 @@
 #  define SCALAR PRIMME_COMPLEX_FLOAT
 #  define REAL float
 #  define MACHINE_EPSILON FLT_EPSILON
+#  define USE_HOST
+
+/* MAGMA types */
+
+#elif defined(USE_DOUBLE_MAGMA)
+#  define SCALAR_PRE magma_d
+#  define REAL_PRE magma_d
+#  define SCALAR_SUF dmagmaprimme
+#  define REAL_SUF dmagmaprimme
+#  define HOST_SCALAR_SUF dprimme
+#  define HOST_REAL_SUF dprimme
+#  define SCALAR magma_double
+#  define REAL magma_double
+#  define HSCALAR double
+#  define HREAL double
+#  define MAGMA_SCALAR double
+#  define MAGMA_REAL double
+#  define MACHINE_EPSILON DBL_EPSILON
+#  define USE_MAGMA
+#elif defined(USE_DOUBLECOMPLEX_MAGMA)
+#  define SCALAR_PRE magma_z
+#  define REAL_PRE magma_d
+#  define SCALAR_SUF zmagmaprimme
+#  define REAL_SUF dmagmaprimme
+#  define HOST_SCALAR_SUF zprimme
+#  define HOST_REAL_SUF dprimme
+#  define USE_COMPLEX
+#  define SCALAR magma_complex_double
+#  define REAL magma_double
+#  define HSCALAR PRIMME_COMPLEX_DOUBLE
+#  define HREAL double
+#  define MAGMA_SCALAR magmaDoubleComplex
+#  define MAGMA_REAL double
+#  define MACHINE_EPSILON DBL_EPSILON
+#  define USE_MAGMA
+#elif defined(USE_FLOAT_MAGMA)
+#  define SCALAR_PRE magma_s
+#  define REAL_PRE magma_s
+#  define SCALAR_SUF smagmaprimme
+#  define REAL_SUF smagmaprimme
+#  define HOST_SCALAR_SUF sprimme
+#  define HOST_REAL_SUF sprimme
+#  define SCALAR magma_float
+#  define REAL magma_float
+#  define HSCALAR float
+#  define HREAL float
+#  define MAGMA_SCALAR float
+#  define MAGMA_REAL float
+#  define MACHINE_EPSILON FLT_EPSILON
+#  define USE_MAGMA
+#elif defined(USE_FLOATCOMPLEX_MAGMA)
+#  define SCALAR_PRE magma_c
+#  define REAL_PRE magma_s
+#  define SCALAR_SUF cmagmaprimme
+#  define REAL_SUF smagmaprimme
+#  define HOST_SCALAR_SUF cprimme
+#  define HOST_REAL_SUF sprimme
+#  define USE_COMPLEX
+#  define SCALAR magma_complex_float
+#  define REAL magma_float
+#  define HSCALAR PRIMME_COMPLEX_FLOAT
+#  define HREAL float
+#  define MAGMA_SCALAR magmaFloatComplex
+#  define MAGMA_REAL float
+#  define MACHINE_EPSILON FLT_EPSILON
+#  define USE_MAGMA
 #else
 #  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
+#endif
+
+#ifndef HOST_SCALAR_SUF
+#  define HOST_SCALAR_SUF SCALAR_SUF
+#endif
+#ifndef HOST_REAL_SUF
+#  define HOST_REAL_SUF REAL_SUF
+#endif
+#ifndef HSCALAR
+#  define HSCALAR SCALAR
+#endif
+#ifndef HREAL
+#  define HREAL REAL
 #endif
 
 /* A C99 code with complex type is not a valid C++ code. However C++          */
@@ -157,7 +260,7 @@
 #ifdef CHECK_TEMPLATE
 #  ifdef USE_DOUBLE
 #     define TEMPLATE_PLEASE \
-        APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") USE(Rprimme,"REAL_SUF")
+        APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") USE(RHprimme,"HOST_REAL_SUF")
 #  else
 #     define TEMPLATE_PLEASE \
         APPEND_FUNC(Sprimme,SCALAR_SUF)
@@ -199,35 +302,12 @@
  *
  **********************************************************************/
 
-#define CHKERR(ERRN, RETURN) { \
+#define CHKERR(ERRN) { \
    int __err = (ERRN); assert(__err==0);\
    if (__err) {\
-      if (primme->printLevel > 0 && primme->outputFile) \
-         fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-      return (RETURN);\
-   }\
-}
-
-/**********************************************************************
- * Macro CHKERRNOABORT - If ERRN != 0, it is printed out in
- *    primme->outputFile the file and the line of the caller, and
- *    force the caller function to return RETURN.
- *
- *    ERRN is only evaluated once.
- *
- * INPUT PARAMETERS
- * ----------------
- * ERRN    Expression that returns an error code
- * RETURN  Value that the caller function will return in case of error
- *
- **********************************************************************/
-
-#define CHKERRNOABORT(ERRN, RETURN) { \
-   int __err = (ERRN);\
-   if (__err) {\
-      if (primme->printLevel > 0 && primme->outputFile) \
-         fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-      return (RETURN);\
+      if (ctx.printLevel > 0 && ctx.outputFile) \
+         fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
+      return __err;\
    }\
 }
 
@@ -254,178 +334,36 @@
 #define CHKERRM(ERRN, RETURN, ...) { \
    int __err = (ERRN); assert(__err==0);\
    if (__err) {\
-      if (primme->printLevel > 0 && primme->outputFile) {\
-         fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-         fprintf(primme->outputFile, "PRIMME: " __VA_ARGS__);\
-         fprintf(primme->outputFile, "\n");\
-      }\
-      return (RETURN);\
-   }\
-}
-
-/**********************************************************************
- * Macro CHKERRNOABORTM - If ERRN == 0, it is printed out in
- *    primme->outputFile the file and the line of the caller, in
- *    addition to an error message passed as arguments. As CHKERR
- *    the caller function is forced to return RETURN in case of error.
- *
- *    ERRN is only evaluated once.
- *
- * INPUT PARAMETERS
- * ----------------
- * ERRN    Expression that returns an error code
- * RETURN  Value that the caller function will return in case of error
- *
- * EXAMPLE
- * -------
- *   CHKERRNOABORTM((ptr = malloc(n*sizeof(double))) == NULL, -1,
- *        "malloc could not allocate %d doubles\n", n);
- *
- **********************************************************************/
-
-#define CHKERRNOABORTM(ERRN, RETURN, ...) { \
-   int __err = (ERRN);\
-   if (__err) {\
-      if (primme->printLevel > 0 && primme->outputFile) {\
-         fprintf(primme->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-         fprintf(primme->outputFile, "PRIMME: " __VA_ARGS__);\
-         fprintf(primme->outputFile, "\n");\
-      }\
-      return (RETURN);\
-   }\
-}
-
-/**********************************************************************
- * Macro CHKERRS - assert that ERRN == 0. If not it is printed out in
- *    primme_svds->outputFile the file and the line of the caller, and
- *    force the caller function to return RETURN.
- *
- *    ERRN is only evaluated once.
- *
- * INPUT PARAMETERS
- * ----------------
- * ERRN    Expression that returns an error code
- * RETURN  Value that the caller function will return in case of error
- *
- **********************************************************************/
-
-#define CHKERRS(ERRN, RETURN) { \
-   int __err = (ERRN); assert(__err==0);\
-   if (__err) {\
-      if (primme_svds->printLevel > 0 && primme_svds->outputFile) {\
-         fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-      }\
-      return (RETURN);\
-   }\
-}
-
-/**********************************************************************
- * Macro CHKERRMS - assert that ERRN == 0. If not it is printed out in
- *    primme->outputFile the file and the line of the caller, in
- *    addition to an error message passed as arguments. As CHKERRS
- *    the caller function is forced to return RETURN in case of error.
- *
- *    ERRN is only evaluated once.
- *
- * INPUT PARAMETERS
- * ----------------
- * ERRN    Expression that returns an error code
- * RETURN  Value that the caller function will return in case of error
- *
- * EXAMPLE
- * -------
- *   CHKERRMS((ptr = malloc(n*sizeof(double))) == NULL, -1,
- *        "malloc could not allocate %d doubles\n", n);
- *
- **********************************************************************/
-
-#define CHKERRMS(ERRN, RETURN, ...) { \
-   int __err = (ERRN); assert(__err==0);\
-   if (__err) {\
-      if (primme_svds->printLevel > 0 && primme_svds->outputFile) {\
-         fprintf(primme_svds->outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-         fprintf(primme_svds->outputFile, "PRIMME: " __VA_ARGS__);\
-         fprintf(primme_svds->outputFile, "\n");\
+      if (ctx.printLevel > 0 && ctx.outputFile) {\
+         fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
+         fprintf(ctx.outputFile, "PRIMME: " __VA_ARGS__);\
+         fprintf(ctx.outputFile, "\n");\
       }\
       return (RETURN);\
    }\
 }
 
 /*****************************************************************************/
-/* Memory management                                                         */
+/* Memory, error and params  management                                      */
 /*****************************************************************************/
 
-/**********************************************************************
- * Macro MALLOC_PRIMME - malloc NELEM of type **X and write down the
- *    pointer in *X.
- *
- * INPUT PARAMETERS
- * ----------------
- * NELEM   Number of sizeof(**X) to allocate
- * X       Where to store the pointer
- *
- * RETURN VALUE
- * ------------
- * error code
- *
- * EXAMPLE
- * -------
- *   double *values;
- *   CHKERRM(MALLOC_PRIMME(n, &values), -1,
- *        "malloc could not allocate %d doubles\n", n);
- *
- **********************************************************************/
+typedef struct {
+   /* For PRIMME */
+   primme_params *primme;
+   primme_svds_params *primme_svds;
 
-#if !(defined (__APPLE__) && defined (__MACH__))
-#  include <malloc.h> /* malloc */
-#endif
-#include <stdlib.h>   /* malloc, free */
+   /* For output */
+   int printLevel;
+   FILE *outputFile;
 
-#define MALLOC_PRIMME(NELEM, X) (*((void**)X) = malloc((NELEM)*sizeof(**(X))), *(X) == NULL)
+   /* for MPI */
+   int numProcs;     /* number of processes */
+   int procID;       /* process id */
+   void *mpicomm;    /* MPI communicator */
 
-
-/**********************************************************************
- * Macro WRKSP_MALLOC_PRIMME - borrow NELEM of type **X from workspace *rwork;
- *    on return *X is an aligned pointer to the borrowed space and workspace
- *    *rwork points to the first free address.
- *
- * INPUT/OUTPUT PARAMETERS
- * -----------------------
- * NELEM   Number of sizeof(**X) to allocate
- * X       Where to store the pointer of the borrowed space
- * RWORK   Reference to the workspace from take space; *RWORK is updated
- *         with the first free address
- * LRWORK  Reference to the number of elements in *RWORK; *LRWORK is updated
- *         with the left number of elements in *RWORK
- *
- * RETURN VALUE
- * ------------
- * error code
- *
- * EXAMPLE
- * -------
- *   double *values, *rwork; size_t *rworkSize;
- *   CHKERR(WRKSP_MALLOC_PRIMME(n, &values, &rwork, &rworkSize), -1);
- *
- **********************************************************************/
-
-#define WRKSP_MALLOC_PRIMME(NELEM, X, RWORK, LRWORK) (\
-      *(uintptr_t*)(X) = ALIGN_BY_SIZE(*(RWORK), sizeof(**(X))), \
-      *(uintptr_t*)(RWORK) = ALIGN_BY_SIZE(*(X)+(NELEM), sizeof(**(RWORK))), \
-      /* Check that there are enough elements in *RWORK */ \
-      /* NOTE: the check is pessimistic */ \
-      (sizeof(**(X))*((NELEM)+1) + sizeof(**(RWORK)) - 2 \
-        <= *(LRWORK)*sizeof(**(RWORK))) \
-        /* If there is, subtract the used number of elements */ \
-        ? (*(LRWORK) -= (sizeof(**(X))*((NELEM)+1) + sizeof(**(RWORK)) - 2) \
-                           / sizeof(**(RWORK)), 0 /* return success */)\
-        /* Else, return error */ \
-        : -1)
-
-#define ALIGN_BY_SIZE(ptr,size_of_T) (((uintptr_t)(ptr)+(size_of_T)-1) & -(size_of_T))
-
-#define ALIGN(ptr, T) (T*) ALIGN_BY_SIZE(ptr, sizeof(T))
-
+   /* For MAGMA */
+   void *queue;   	/* magma device queue (magma_queue_t*) */
+} primme_context;
 
 /*****************************************************************************/
 /* Miscellanea                                                               */

@@ -60,19 +60,9 @@
 #include "wtime.h"
 #include "numerical.h"
 #include "main_iter.h"
-#include "init.h"
-#include "ortho.h"
-#include "solve_projection.h"
-#include "restart.h"
-#include "correction.h"
-#include "update_projection.h"
+#include "auxiliary_eigs.h"
 #include "primme_interface.h"
 
-#define ALLOCATE_WORKSPACE_FAILURE -1
-#define MALLOC_FAILURE             -2
-#define MAIN_ITER_FAILURE          -3
-
-static int allocate_workspace(primme_params *primme, int allocate);
 static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
                        primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
@@ -127,35 +117,25 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    int *perm;
    double machEps;
 
-   /* ------------------ */
    /* zero out the timer */
-   /* ------------------ */
    primme_wTimer(1);
 
-   /* ----------------------- */
    /*  Find machine precision */
-   /* ----------------------- */
    machEps = MACHINE_EPSILON;
 
-   /* ----------------------------------------- */
    /* Set some defaults for sequential programs */
-   /* ----------------------------------------- */
    if (primme->numProcs <= 1 && evals != NULL && evecs != NULL
          && resNorms != NULL) {
       primme->nLocal = primme->n;
       primme->procID = 0;
    }
 
-   /* ------------------ */
    /* Set some defaults  */
-   /* ------------------ */
    primme_set_defaults(primme);
 
-   /* --------------------------------------------------------------------- */
    /* Observed orthogonality issues finding the largest/smallest values in  */
    /* single precision. Computing V'*B*V and solving the projected problem  */
    /* V'AVx = V'BVxl mitigates the problem.                                 */
-   /* --------------------------------------------------------------------- */
 
    if (primme->orth == primme_orth_default) {
 #ifdef USE_FLOAT
@@ -170,16 +150,12 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
          primme->orth = primme_orth_implicit_I;
    }
 
-   /* -------------------------------------------------------------- */
-   /* If needed, we are ready to estimate required memory and return */
-   /* -------------------------------------------------------------- */
+   /* Deprecated input:                                              */
    if (evals == NULL && evecs == NULL && resNorms == NULL)
-       return allocate_workspace(primme, FALSE);
+       return 0;
 
-   /* ----------------------------------------------------- */
    /* Reset random number seed if inappropriate for DLARENV */
    /* Yields unique quadruples per proc if procID < 4096^3  */
-   /* ----------------------------------------------------- */
 
    if (primme->iseed[0]<0 || primme->iseed[0]>4095) primme->iseed[0] = 
       primme->procID % 4096;
@@ -190,9 +166,7 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    if (primme->iseed[3]<0 || primme->iseed[3]>4095) primme->iseed[3] = 
       (2*(int)(((primme->procID/4096)/4096)/4096)+1) % 4096;
 
-   /* ----------------------- */
    /* Set default convTetFun  */
-   /* ----------------------- */
 
    if (!primme->convTestFun) {
       primme->convTestFun = convTestFunAbsolute;
@@ -201,38 +175,31 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
       }
    }
 
-   /* ----------------------- */
    /* Set default monitor     */
-   /* ----------------------- */
 
    if (!primme->monitorFun) {
       primme->monitorFun = default_monitor;
    }
 
-   /* ------------------------------------------------------- */
+   /* Generate context */
+
+   primme_context ctx = primme_get_context(primme);
+
    /* Check primme input data for bounds, correct values etc. */
-   /* ------------------------------------------------------- */
 
-   CHKERRNOABORT(ret = check_input(evals, evecs, resNorms, primme), ret);
-
-   /* ----------------------------------------------------------------------- */
-   /* Compute AND allocate memory requirements for main_iter and subordinates */
-   /* ----------------------------------------------------------------------- */
-
-   CHKERRNOABORT(allocate_workspace(primme, TRUE), ALLOCATE_WORKSPACE_FAILURE);
+   CHKERR(check_input(evals, evecs, resNorms, primme));
 
    /* --------------------------------------------------------- */
    /* Allocate workspace that will be needed locally by Sprimme */
    /* --------------------------------------------------------- */
-   CHKERRNOABORT(MALLOC_PRIMME(primme->numEvals, &perm), MALLOC_FAILURE);
+   CHKERR(Num_malloc_iprimme(primme->numEvals, &perm, ctx));
 
    /*----------------------------------------------------------------------*/
    /* Call the solver                                                      */
    /*----------------------------------------------------------------------*/
 
-   CHKERRNOABORT(main_iter_Sprimme(evals, perm, evecs, primme->ldevecs,
-            resNorms, machEps, primme->intWork, primme->realWork, primme),
-         MAIN_ITER_FAILURE);
+   CHKERR(main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms,
+                            machEps, ctx));
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
@@ -240,259 +207,16 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* correspond to the sorted Ritz values in evals.                       */
    /*----------------------------------------------------------------------*/
 
-   assert(primme->realWorkSize >= sizeof(SCALAR)*primme->nLocal
-         && primme->intWorkSize >= (int)sizeof(int)*primme->initSize);
-   permute_vecs_Sprimme(&evecs[primme->numOrthoConst*primme->ldevecs],
-         primme->nLocal, primme->initSize, primme->ldevecs, perm,
-         (SCALAR*)primme->realWork, (int*)primme->intWork);
+   CHKERR(permute_vecs_Sprimme(&evecs[primme->numOrthoConst * primme->ldevecs],
+                        primme->nLocal, primme->initSize, primme->ldevecs, perm,
+                        ctx));
 
-   free(perm);
+   CHKERR(Num_free_iprimme(perm, ctx));
 
    primme->stats.elapsedTime = primme_wTimer(0);
    return(0);
 }
 
-
-/******************************************************************************
- * Function allocate_workspace - This function computes the amount of integer 
- *    and real workspace needed by the solver and possibly allocates the space 
- *
- * Input: 
- *   allocate  If false, no allocation occurs, but the amounts of int and real 
- *                       workspaces in BYTES are returned in the primme fields 
- *                       primme.intWorkSize, and primme.realWorkSize 
- *             If  true, and if the user-provided space is not sufficient,
- *                       allocation is also performed.
- *
- * Output
- *  primme.intWorkSize   Size of integer space allocated in bytes
- *  primme.realWorkSize  Size of real space allocated in bytes (LONG INT)
- *  *(primme.intWork)    Pointer to the integer space allocated
- *  *(primme.realWork)   Pointer to the real space allocated
- *   
- * 
- * Return value
- * ------------
- * int -  0 if (allocate == true) and the given workspaces are large enough or
- *             have been allocated successfully
- *       -1 if (allocate == true) and memory allocation has failed
- *        1 if (allocate==false) 
- *
- ******************************************************************************/
-
-static int allocate_workspace(primme_params *primme, int allocate) {
-
-   size_t realWorkSize=0;  /* Size of real work space.                  */
-   size_t rworkByteSize=0; /* Size of all real data in bytes            */
-   int intWorkSize=0;/* Size of integer work space in bytes             */
-
-   size_t dataSize;  /* Number of SCALAR positions allocated, excluding */
-                     /* REAL (see doubleSize below) and work space.     */
-   int doubleSize=0; /* Number of doubles allocated exclusively to the  */
-                     /* double arrays: hVals, prevRitzVals, blockNorms  */
-   int maxEvecsSize; /* Maximum number of vectors in evecs and evecsHat */
-   SCALAR *evecsHat=NULL;/* not NULL when evecsHat will be used         */
-   SCALAR *VtBV=NULL;/* not NULL when VtBV will be used                 */
-   SCALAR t;        /* dummy variable */
-
-   maxEvecsSize = primme->numOrthoConst + primme->numEvals;
- 
-   /* first determine real workspace */
-
-   /*----------------------------------------------------------------------*/
-   /* Compute the memory required by the main iteration data structures    */
-   /*----------------------------------------------------------------------*/
-
-   dataSize = primme->ldOPs*primme->maxBasisSize   /* Size of V            */
-      + primme->ldOPs*primme->maxBasisSize         /* Size of W            */
-      + primme->maxBasisSize*primme->maxBasisSize  /* Size of H            */
-      + primme->maxBasisSize*primme->maxBasisSize  /* Size of hVecs        */
-      + primme->restartingParams.maxPrevRetain*primme->maxBasisSize;
-                                                   /* size of prevHVecs    */
-
-   /*----------------------------------------------------------------------*/
-   /* Add memory for explicit_I with Rayleigh-Ritz                         */
-   /*----------------------------------------------------------------------*/
-   if (primme->orth == primme_orth_explicit_I) {
-      dataSize += primme->maxBasisSize*primme->maxBasisSize;  /* Size of VtBV */
-      VtBV = &t;
-   }
-      
-   /*----------------------------------------------------------------------*/
-   /* Add memory for Harmonic or Refined projection                        */
-   /*----------------------------------------------------------------------*/
-   if (primme->projectionParams.projection == primme_proj_harmonic ||
-         primme->projectionParams.projection == primme_proj_refined) {
-
-      dataSize += primme->ldOPs*primme->maxBasisSize     /* Size of Q      */
-         + primme->maxBasisSize*primme->maxBasisSize     /* Size of R      */
-         + primme->maxBasisSize*primme->maxBasisSize     /* Size of hU     */
-         + primme->maxBasisSize*primme->maxBasisSize;    /* Size of hVecsRot */
-      doubleSize += primme->maxBasisSize;                /* Size of hSVals */
-   }
-   if (primme->projectionParams.projection == primme_proj_harmonic) {
-      /* Stored QtV = Q'*V */
-      dataSize +=
-            primme->maxBasisSize*primme->maxBasisSize;      /* Size of QtV */
-   }
-
-
-   /*----------------------------------------------------------------------*/
-   /* Add also memory needed for JD skew projectors                        */
-   /*----------------------------------------------------------------------*/
-   if ( (primme->correctionParams.precondition && 
-         primme->correctionParams.maxInnerIterations != 0 &&
-         primme->correctionParams.projectors.RightQ &&
-         primme->correctionParams.projectors.SkewQ          ) ) {
-
-      dataSize = dataSize + 
-         + primme->nLocal*maxEvecsSize             /* Size of evecsHat     */ 
-         + maxEvecsSize*maxEvecsSize               /* Size of M            */
-         + maxEvecsSize*maxEvecsSize;              /* Size of UDU          */
-      evecsHat = &t; /* set not NULL */
-   }
-
-   /*----------------------------------------------------------------------*/
-   /* Determine workspace required by init and its children                */
-   /*----------------------------------------------------------------------*/
-
-   CHKERR(init_basis_Sprimme(NULL, primme->nLocal, 0, NULL, 0, NULL, 0,
-            NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, &realWorkSize,
-            &primme->maxBasisSize, NULL, NULL, primme), -1);
-
-   /*----------------------------------------------------------------------*/
-   /* Determine orthogalization workspace with and without locking.        */
-   /*----------------------------------------------------------------------*/
-
-   CHKERR(ortho_Sprimme(NULL, 0, NULL, 0, primme->maxBasisSize,
-            primme->maxBasisSize+primme->maxBlockSize-1, NULL, primme->nLocal, 
-            primme->locking?maxEvecsSize:primme->numOrthoConst+1, primme->nLocal,
-            NULL, 0.0, NULL, &realWorkSize, primme), -1);
-
-   /*----------------------------------------------------------------------*/
-   /* Determine workspace required by solve_H and its children             */
-   /*----------------------------------------------------------------------*/
-
-   CHKERR(solve_H_Sprimme(NULL, primme->maxBasisSize, 0, VtBV, 0, NULL, 0, NULL,
-            0, NULL, 0, NULL, 0, NULL, NULL, 0, 0.0, &realWorkSize, NULL, 0,
-            &intWorkSize, primme), -1);
-
-   /*----------------------------------------------------------------------*/
-   /* Determine workspace required by solve_correction and its children    */
-   /*----------------------------------------------------------------------*/
-
-   CHKERR(solve_correction_Sprimme(NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 
-            NULL, NULL, maxEvecsSize, 0, NULL, NULL, NULL, NULL, 
-            primme->maxBasisSize, NULL, NULL, primme->maxBlockSize, NULL,
-            0.0, NULL, &realWorkSize, &intWorkSize, 0, primme), -1);
-
-   /*----------------------------------------------------------------------*/
-   /* Determine workspace required by restarting and its children          */
-   /*----------------------------------------------------------------------*/
-
-   CHKERR(restart_Sprimme(NULL, NULL, primme->nLocal, primme->maxBasisSize,
-            0, NULL, NULL, NULL, NULL, &primme->maxBlockSize, NULL, NULL, 0,
-            NULL, NULL, NULL, evecsHat, 0, NULL, 0, NULL, 0, NULL,
-            &primme->numEvals, &primme->numEvals, &primme->numEvals, NULL, NULL,
-            &primme->restartingParams.maxPrevRetain, primme->maxBasisSize,
-            primme->initSize, NULL, &primme->maxBasisSize, NULL,
-            primme->maxBasisSize, VtBV, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0,
-            0, NULL, 0, 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0.0, NULL,
-            &realWorkSize, &intWorkSize, 0, primme), -1);
-
-   /*----------------------------------------------------------------------*/
-   /* Determine workspace required by main_iter and its children           */
-   /*----------------------------------------------------------------------*/
-
-   CHKERR(update_projection_Sprimme(NULL, 0, NULL, 0, NULL, 0, 0, 0,
-            primme->maxBasisSize, NULL, &realWorkSize, 0, primme), -1);
-
-   CHKERR(prepare_candidates_Sprimme(NULL, 0, NULL, 0, primme->nLocal, NULL, 0,
-            primme->maxBasisSize, NULL, NULL, NULL, 0, NULL, NULL, NULL,
-            primme->numEvals, NULL, 0, primme->maxBlockSize,
-            NULL, primme->numEvals, 0, NULL, NULL, 0, 0.0, NULL,
-            &primme->maxBlockSize, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL,
-            NULL, &realWorkSize, &intWorkSize, 0, primme), -1);
-
-   CHKERR(retain_previous_coefficients_Sprimme(NULL, 0, NULL, 0, NULL, 0,
-            0, 0, NULL, primme->maxBlockSize, NULL,
-            &primme->restartingParams.maxPrevRetain, &intWorkSize, 0, primme),
-            -1);
- 
-   /*----------------------------------------------------------------------*/
-   /* Workspace needed by function verify_norms                            */
-   /*----------------------------------------------------------------------*/
-   realWorkSize = max(realWorkSize, (size_t)2*primme->numEvals);
-
-   /*----------------------------------------------------------------------*/
-   /* The following size is always allocated as REAL                       */
-   /*----------------------------------------------------------------------*/
-
-   doubleSize += 4     /* padding cause by TO_REAL aligning them to SCALAR */
-      + primme->maxBasisSize                       /* Size of hVals        */
-      + primme->numEvals+primme->maxBasisSize      /* Size of prevRitzVals */
-      + primme->maxBlockSize                       /* Size of blockNorms   */
-      + primme->maxBasisSize;                      /* Size of basisNorms   */
-
-   /*----------------------------------------------------------------------*/
-   /* Determine the integer workspace needed                               */
-   /*----------------------------------------------------------------------*/
-
-   intWorkSize += primme->maxBasisSize /* Size of flag               */
-      + 2*primme->maxBlockSize         /* Size of iev and ilev       */
-      + maxEvecsSize;                  /* Size of ipivot             */
-   if (primme->locking) {
-      intWorkSize += primme->numEvals; /* Size of lockedFlags        */
-   }
-
-   /*----------------------------------------------------------------------*/
-   /* byte sizes:                                                          */
-   /*----------------------------------------------------------------------*/
-   
-   rworkByteSize = (dataSize + realWorkSize)*sizeof(SCALAR)
-                                + doubleSize*sizeof(REAL); 
-
-   /*----------------------------------------------------------------------*/
-   /* If only the amount of required workspace is needed return it in bytes*/
-   /*----------------------------------------------------------------------*/
-
-   if (!allocate) {
-      primme->intWorkSize  = intWorkSize*sizeof(int);
-      primme->realWorkSize = rworkByteSize;
-      return 1;
-   }
-
-   /*----------------------------------------------------------------------*/
-   /* Allocate the required workspace, if the user did not provide enough  */
-   /*----------------------------------------------------------------------*/
-   if (primme->realWork != NULL && primme->realWorkSize < rworkByteSize) {
-      return -35;
-   }
-   else if (primme->realWork == NULL) {
-      primme->realWorkSize = rworkByteSize;
-      if (primme->printLevel >= 5) fprintf(primme->outputFile, 
-         "Allocating real workspace: %g bytes\n", (double)primme->realWorkSize);
-      CHKERRM(MALLOC_PRIMME(rworkByteSize, (char**)&primme->realWork), MALLOC_FAILURE,
-            "Failed to allocate %g bytes\n", (double)rworkByteSize);
-   }
-
-   if (primme->intWork != NULL
-         && primme->intWorkSize < intWorkSize*(int)sizeof(int)) {
-      return -36;
-   }
-   else if (primme->intWork == NULL) {
-      primme->intWorkSize = intWorkSize*sizeof(int);
-      if (primme->printLevel >= 5) fprintf(primme->outputFile, 
-         "Allocating integer workspace: %d bytes\n", primme->intWorkSize);
-      CHKERRM(MALLOC_PRIMME(intWorkSize, &primme->intWork), MALLOC_FAILURE,
-            "Failed to allocate %d bytes\n", primme->intWorkSize);
-   }
-
-   return 0;
-
-  /***************************************************************************/
-} /* end of allocate workspace
-  ****************************************************************************/
 
 /******************************************************************************
  *

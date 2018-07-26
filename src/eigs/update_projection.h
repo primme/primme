@@ -33,26 +33,40 @@
 
 #ifndef update_projection_H
 #define update_projection_H
+int update_projection_sprimme(float *X, PRIMME_INT ldX, float *Y,
+      PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, PRIMME_COMPLEX_FLOAT *Y,
+      PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, int isSymmetric, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sprimme)
 #  define update_projection_Sprimme CONCAT(update_projection_,SCALAR_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rprimme)
 #  define update_projection_Rprimme CONCAT(update_projection_,REAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHprimme)
+#  define update_projection_SHprimme CONCAT(update_projection_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHprimme)
+#  define update_projection_RHprimme CONCAT(update_projection_,HOST_REAL_SUF)
+#endif
 int update_projection_dprimme(double *X, PRIMME_INT ldX, double *Y,
       PRIMME_INT ldY, double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
-      int blockSize, double *rwork, size_t *lrwork, int isSymmetric,
-      primme_params *primme);
+      int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT ldX, PRIMME_COMPLEX_DOUBLE *Y,
       PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
-      int blockSize, PRIMME_COMPLEX_DOUBLE *rwork, size_t *lrwork, int isSymmetric,
-      primme_params *primme);
-int update_projection_sprimme(float *X, PRIMME_INT ldX, float *Y,
-      PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
-      int blockSize, float *rwork, size_t *lrwork, int isSymmetric,
-      primme_params *primme);
-int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, PRIMME_COMPLEX_FLOAT *Y,
-      PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
-      int blockSize, PRIMME_COMPLEX_FLOAT *rwork, size_t *lrwork, int isSymmetric,
-      primme_params *primme);
+      int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_smagmaprimme(magma_float *X, PRIMME_INT ldX, magma_float *Y,
+      PRIMME_INT ldY, magma_float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cmagmaprimme(magma_complex_float *X, PRIMME_INT ldX, magma_complex_float *Y,
+      PRIMME_INT ldY, magma_complex_float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_dmagmaprimme(magma_double *X, PRIMME_INT ldX, magma_double *Y,
+      PRIMME_INT ldY, magma_double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_zmagmaprimme(magma_complex_double *X, PRIMME_INT ldX, magma_complex_double *Y,
+      PRIMME_INT ldY, magma_complex_double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
+      int blockSize, int isSymmetric, primme_context ctx);
 #endif

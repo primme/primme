@@ -150,6 +150,7 @@ typedef struct primme_svds_params {
       int *inner_its, void *LSRes, primme_event *event, int *stage,
       struct primme_svds_params *primme_svds, int *err);
    void *monitor;
+   void *queue;   	/* magma device queue (magma_queue_t*) */
 } primme_svds_params;
 
 typedef enum {
@@ -214,6 +215,14 @@ int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
 int dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
+      primme_svds_params *primme_svds);
+int magma_sprimme_svds(float *svals, float *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int magma_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int magma_dprimme_svds(double *svals, double *svecs, double *resNorms,
+      primme_svds_params *primme_svds);
+int magma_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 void primme_svds_initialize(primme_svds_params *primme_svds);
 int primme_svds_set_method(primme_svds_preset_method method,

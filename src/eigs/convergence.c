@@ -46,7 +46,8 @@
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
       int left, int *iev, int numToProject, int *flags, REAL *blockNorms,
-      double tol, SCALAR *rwork, size_t *rworkSize, primme_params *primme);
+      double tol, primme_context ctx);
+
 
 /*******************************************************************************
  * Subroutine check_convergence - This procedure checks the block vectors for  
@@ -63,9 +64,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
  * left, right    Range of vectors to be checked for convergence
  * blockNorms     Residual norms of the Ritz vectors starting from left
  * hVals          The Ritz values
- * rwork          Real work array that must be of size 
- * rworkSize      The size of rwork
- * primme         Structure containing various solver parameters
+ * ctx            Structure containing various solver parameters
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
@@ -82,30 +81,18 @@ TEMPLATE_PLEASE
 int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       SCALAR *R, PRIMME_INT ldR, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, int left, int right, int *flags, REAL *blockNorms,
-      REAL *hVals, int *reset, double machEps, SCALAR *rwork,
-      size_t *rworkSize, int *iwork, int iworkSize, primme_params *primme) {
+      REAL *hVals, int *reset, primme_context ctx) {
 
+   primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
    int numToProject;       /* Number of vectors with potential accuracy problem  */
-   int *toProject = iwork; /* Indices from left with potential accuracy problem  */
+   int *toProject = NULL; /* Indices from left with potential accuracy problem  */
    double tol;             /* Residual tolerance                                 */
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    double targetShift;     /* target shift */
 
-   /* -------------------------- */
-   /* Return memory requirements */
-   /* -------------------------- */
-
-   if (flags == NULL) {
-      CHKERR(check_practical_convergence(NULL, 0, 0, NULL, numLocked, 0, left,
-            NULL, right-left, NULL, NULL, 0, NULL, rworkSize, primme), -1);
-      *iwork = max(*iwork, right-left); /* for toProject */
-      return 0;
-   }
- 
-   /* Check enough space for toProject */
-   assert(iworkSize >= right-left);
+   CHKERR(Num_malloc_iprimme(right-left, &toProject, ctx));
 
    targetShift = primme->numTargetShifts > 0 ?
       primme->targetShifts[min(primme->initSize, primme->numTargetShifts-1)] : 0.0;
@@ -152,7 +139,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       }
 
       CHKERR(convTestFun_Sprimme(hVals[i], X?&X[ldX*(i-left)]:NULL,
-               blockNorms[i-left], &isConv, primme), -1);
+               blockNorms[i-left], &isConv, ctx));
 
       if (isConv) {
          flags[i] = CONVERGED;
@@ -199,9 +186,10 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
    if (numToProject > 0) {
       CHKERR(check_practical_convergence(R, nLocal, ldR, evecs,
                primme->numOrthoConst+numLocked, ldevecs, left, toProject,
-               numToProject, flags, blockNorms, tol, rwork, rworkSize, primme),
-               -1);
+               numToProject, flags, blockNorms, tol, ctx));
    }
+
+   CHKERR(Num_free_iprimme(right-left, &toProject, ctx));
 
    return 0;
 
@@ -228,8 +216,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
  * numToProject    Size of iev
  * blockNorms      The norms of the residual vectors starting by index 'left'
  * tol             The required convergence tolerance
- * rwork           real work array of size: 2*maxEvecsSize*primme->maxBlockSize
- * rworkSize       The size of rwork
  * primme          Structure containing various solver parameters
  *
  *
@@ -239,29 +225,15 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
  * ldR             The leading dimension of R
  * flags           Indicates which Ritz pairs have converged
  ******************************************************************************/
+
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
       int left, int *iev, int numToProject, int *flags, REAL *blockNorms,
-      double tol, SCALAR *rwork, size_t *rworkSize, primme_params *primme) {
+      double tol, primme_context ctx) {
 
+   primme_params *primme = ctx.primme;
    int i;
    REAL *overlaps;
-   size_t rworkSize0;
-
-   /* -------------------------- */
-   /* Return memory requirements */
-   /* -------------------------- */
-
-   if (R == NULL) {
-      size_t lrw=0;
-      CHKERR(ortho_single_iteration_Sprimme(NULL, nLocal, evecsSize, 0,
-               NULL, NULL, numToProject, 0, NULL, NULL, NULL, &lrw, primme),
-               -1);
-      /* for overlaps */
-      lrw += numToProject;
-      *rworkSize = max(*rworkSize, lrw);
-      return 0;
-   }
 
    /* ------------------------------------------------------------------ */
    /* Compute norms of the projected res and the differences from res    */ 
@@ -272,13 +244,10 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
    /* overlaps(i) = || evecs'*R(i) || */
    /* newResiduals(i) = || (I-evecs*evecs')*R(i) || */
 
-   overlaps = (REAL*)rwork;
+   CHKERR(Num_malloc_SHprimme(numToProject, &overlaps, ctx));
 
-   assert(*rworkSize >= (size_t)numToProject);
-   rworkSize0 = *rworkSize - numToProject;
    CHKERR(ortho_single_iteration_Sprimme(evecs, nLocal, evecsSize, ldevecs,
-            R, iev, numToProject, ldR, overlaps, NULL, rwork+numToProject,
-            &rworkSize0, primme), -1);
+            R, iev, numToProject, ldR, overlaps, NULL, ctx));
 
    /* ------------------------------------------------------------------ */
    /* For each projected residual check whether there is an accuracy     */
@@ -319,6 +288,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       blockNorms[iev[i]] = normPr;
 
    }
+
+   CHKERR(Num_free_SHprimme(numToProject, &overlaps, ctx));
 
    return 0;
 }

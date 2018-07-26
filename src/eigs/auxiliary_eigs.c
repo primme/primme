@@ -42,6 +42,34 @@
 #include "wtime.h"
 
 /******************************************************************************
+ * Function primme_get_context - return a context from the primme_params
+ *
+ * PARAMETERS
+ * ---------------------------
+ * primme      primme_params struct
+ *
+ ******************************************************************************/
+
+#ifdef USE_DOUBLE
+TEMPLATE_PLEASE
+primme_context primme_get_context(primme_params *primme) {
+   primme_context ctx;
+   memset(&ctx, 0, sizeof(primme_context));
+   if (primme) {
+      ctx.primme = primme;
+      ctx.printLevel = primme->printLevel;
+      ctx.outputFile = primme->outputFile;
+      ctx.numProcs = primme->numProcs;
+      ctx.procID = primme->procID;
+      ctx.mpicomm = primme->commInfo;
+      ctx.queue = primme->queue;
+   }
+
+   return ctx;
+} 
+#endif /* USE_DOUBLE */
+
+/******************************************************************************
  * Function Num_compute_residual - This subroutine performs the next operation
  *    in a cache-friendly way:
  *
@@ -58,14 +86,14 @@
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_compute_residual_Sprimme(PRIMME_INT n, SCALAR eval, SCALAR *x, 
-   SCALAR *Ax, SCALAR *r) {
+void Num_compute_residual_Sprimme(PRIMME_INT n, SCALAR eval, SCALAR *x,
+   SCALAR *Ax, SCALAR *r, primme_context ctx) {
 
    int k, M=min(n,PRIMME_BLOCK_SIZE);
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      Num_copy_Sprimme(M, &Ax[k], 1, &r[k], 1);
-      Num_axpy_Sprimme(M, -eval, &x[k], 1, &r[k], 1);
+      Num_copy_Sprimme(M, &Ax[k], 1, &r[k], 1, ctx);
+      Num_axpy_Sprimme(M, -eval, &x[k], 1, &r[k], 1, ctx);
    }
 
 }
@@ -120,7 +148,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, REAL *Rnorms,
       REAL *rnorms, int nrb, int nre,
-      SCALAR *rwork, size_t lrwork, primme_params *primme) {
+      primme_context ctx) {
 
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
@@ -145,12 +173,9 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
    assert(nXe <= nh || nXb >= nXe); /* Check dimension */
    assert(nYe <= nh || nYb >= nYe); /* Check dimension */
-   assert((size_t)(max(0,nXe-nXb)+max(0,nYe-nYb))*m <= lrwork);
-                                               /* Check workspace for X and Y */
-   assert(2u*(nRe-nRb+nre-nrb) <= lrwork); /* Check workspace for tmp and tmp0 */
 
-   X = rwork;
-   Y = rwork + m*(nXe-nXb);
+   Num_malloc_Sprimme(m*(nXe-nXb), &X, ctx);
+   Num_malloc_Sprimme(m*(nYe-nYb), &Y, ctx);
    ldX = ldY = m;
 
    if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = 0.0;
@@ -158,67 +183,70 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
    for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
       /* X = V*h(nXb:nXe-1) */
-      Num_gemm_Sprimme("N", "N", m, nXe-nXb, nV, 1.0,
-         &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX);
+      Num_gemm_dhd_Sprimme("N", "N", m, nXe-nXb, nV, 1.0,
+         &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX, ctx);
 
       /* X0 = X(nX0b-nXb:nX0e-nXb-1) */
       if (X0) Num_copy_matrix_Sprimme(&X[ldX*(nX0b-nXb)], m, nX0e-nX0b,
-            ldX, &X0[i], ldX0);
+            ldX, &X0[i], ldX0, ctx);
 
       /* X1 = X(nX1b-nXb:nX1e-nXb-1) */
       if (X1) Num_copy_matrix_Sprimme(&X[ldX*(nX1b-nXb)], m, nX1e-nX1b,
-            ldX, &X1[i], ldX1);
+            ldX, &X1[i], ldX1, ctx);
 
       /* X2 = X(nX2b-nXb:nX2e-nXb-1) */
       if (X2) Num_copy_matrix_Sprimme(&X[ldX*(nX2b-nXb)], m, nX2e-nX2b,
-            ldX, &X2[i], ldX2);
+            ldX, &X2[i], ldX2, ctx);
 
       /* Y = W*h(nYb:nYe-1) */
-      if (nYb < nYe) Num_gemm_Sprimme("N", "N", m, nYe-nYb, nV,
-            1.0, &W[i], ldV, &h[nYb*ldh], ldh, 0.0, Y, ldY);
+      if (nYb < nYe) Num_gemm_dhd_Sprimme("N", "N", m, nYe-nYb, nV,
+            1.0, &W[i], ldV, &h[nYb*ldh], ldh, 0.0, Y, ldY, ctx);
 
       /* Wo = Y(nWob-nYb:nWoe-nYb-1) */
       if (Wo) Num_copy_matrix_Sprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
-            ldY, &Wo[i], ldWo);
+            ldY, &Wo[i], ldWo, ctx);
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
       if (R) for (j=nRb; j<nRe; j++) {
          Num_compute_residual_Sprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               &R[i+ldR*(j-nRb)]);
+               &R[i+ldR*(j-nRb)], ctx);
          if (Rnorms) {
             Rnorms[j-nRb] +=
                REAL_PART(Num_dot_Sprimme(m, &R[i+ldR*(j-nRb)], 1,
-                        &R[i+ldR*(j-nRb)], 1));
+                        &R[i+ldR*(j-nRb)], 1, ctx));
          }
       }
 
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
          Num_compute_residual_Sprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               &Y[ldY*(j-nYb)]);
+               &Y[ldY*(j-nYb)], ctx);
          rnorms[j-nrb] += 
             REAL_PART(Num_dot_Sprimme(m, &Y[ldY*(j-nYb)], 1,
-                     &Y[ldY*(j-nYb)], 1));
+                     &Y[ldY*(j-nYb)], 1, ctx));
       }
    }
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
-   if (primme->numProcs > 1) {
-      tmp = (REAL*)rwork;
+   if (ctx.numProcs > 1) {
+      Num_malloc_RHprimme(nRe+nre, &tmp, ctx);
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
-      tmp0 = tmp+j;
-      if (j) CHKERR(globalSum_Rprimme(tmp, tmp0, j, primme), -1);
+      if (j) CHKERR(globalSum_Rprimme(tmp, tmp, j, ctx));
       j = 0;
-      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp0[j++]);
-      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp0[j++]);
+      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
+      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
+      Num_free_RHprimme(tmp, ctx);
    }
    else {
       if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
    }
+
+   Num_free_Sprimme(X, ctx);
+   Num_free_Sprimme(Y, ctx);
 
    return 0; 
 }
@@ -241,8 +269,9 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
 TEMPLATE_PLEASE
 int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      SCALAR *W, PRIMME_INT ldW, int blockSize, primme_params *primme) {
+      SCALAR *W, PRIMME_INT ldW, int blockSize, primme_context ctx) {
 
+   primme_params *primme = ctx.primme;
    int i, ONE=1, ierr=0;
    double t0;
 
@@ -268,7 +297,7 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       primme->stats.numPreconds += blockSize;
    }
    else {
-      Num_copy_matrix_Sprimme(V, nLocal, blockSize, ldV, W, ldW);
+      Num_copy_matrix_Sprimme(V, nLocal, blockSize, ldV, W, ldW, ctx);
    }
 
    primme->stats.timePrecond += primme_wTimer(0) - t0;
@@ -296,6 +325,7 @@ TEMPLATE_PLEASE
 int convTestFun_Sprimme(REAL eval, SCALAR *evec, REAL rNorm, int *isconv, 
       struct primme_params *primme) {
 
+   primme_context ctx = primme_get_context(primme);
    int ierr=0;
    double evald = eval, rNormd = rNorm;
 

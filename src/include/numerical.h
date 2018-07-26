@@ -35,4 +35,5 @@
 
 #include "template.h"
 #include "blaslapack.h"
+#include "magma_wrapper.h"
 #include "auxiliary.h"

@@ -34,13 +34,99 @@
  ******************************************************************************/
 
 
-#include <stdlib.h>   /* free */
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
 #include "template.h"
 #include "auxiliary.h"
 #include "blaslapack.h"
+
+#ifdef USE_HOST
+
+#if !(defined (__APPLE__) && defined (__MACH__))
+#  include <malloc.h> /* malloc */
+#endif
+#include <stdlib.h>   /* malloc, free */
+
+/******************************************************************************
+ * Function Num_malloc - Allocate a vector of scalars
+ *
+ * PARAMETERS
+ * ---------------------------
+ * n           The number of elements
+ * v           returned pointer
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
+   (void)ctx;
+
+   if (n <= 0) {
+      *x = NULL;
+      return 0;
+   }
+   *x = (SCALAR*)malloc(sizeof(SCALAR)*n);
+   return *x == NULL ? PRIMME_MALLOC_FAILURE : 0;
+}
+
+/******************************************************************************
+ * Function Num_free - Free allocated a vector of scalars
+ *
+ * PARAMETERS
+ * ---------------------------
+ * v           allocated pointer
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
+   (void)ctx;
+
+   if (x) free(x);
+   return 0;
+}
+
+#ifdef USE_DOUBLE
+
+/******************************************************************************
+ * Function Num_malloc - Allocate a vector of integers
+ *
+ * PARAMETERS
+ * ---------------------------
+ * n           The number of elements
+ * v           returned pointer
+ * 
+ ******************************************************************************/
+
+int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
+   (void)ctx;
+
+   if (n <= 0) {
+      *x = NULL;
+      return 0;
+   }
+   *x = (int*)malloc(sizeof(int)*n);
+   return *x == NULL;
+}
+
+/******************************************************************************
+ * Function Num_free - Free allocated a vector of integers
+ *
+ * PARAMETERS
+ * ---------------------------
+ * v           allocated pointer
+ * 
+ ******************************************************************************/
+
+int Num_free_iprimme(int *x, primme_context ctx) {
+   (void)ctx;
+
+   if (x) free(x);
+   return 0;
+}
+
+#endif /* USE_DOUBLE */
 
 /******************************************************************************
  * Function Num_copy_matrix - Copy the matrix x into y
@@ -59,76 +145,46 @@
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n, PRIMME_INT
-      ldx, SCALAR *y, PRIMME_INT ldy) {
+void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
+      primme_context ctx) {
+   (void)ctx;
 
-   PRIMME_INT i,j;
+   PRIMME_INT i, j;
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
-   if (x == y && ldx == ldy) return;
+   if (x == y && ldx == ldy)
+      return;
 
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
-      memmove(y, x, sizeof(SCALAR)*m*n);
+      memmove(y, x, sizeof(SCALAR) * m * n);
    }
 
    /* Copy the matrix some rows back or forward */
-   else if (ldx == ldy && (y > x ? y-x : x-y) < ldx) {
-      for (i=0; i<n; i++)
-         memmove(&y[i*ldy], &x[i*ldx], sizeof(SCALAR)*m);
+   else if (ldx == ldy && (y > x ? y - x : x - y) < ldx) {
+      for (i = 0; i < n; i++)
+         memmove(&y[i * ldy], &x[i * ldx], sizeof(SCALAR) * m);
    }
 
    /* Copy the matrix some columns forward */
-   else if (ldx == ldy && y > x && y-x > ldx) {
-      for (i=n-1; i>=0; i--)
-         for (j=0; j<m; j++)
-            y[i*ldy+j] = x[i*ldx+j];
+   else if (ldx == ldy && y > x && y - x > ldx) {
+      for (i = n - 1; i >= 0; i--)
+         for (j = 0; j < m; j++)
+            y[i * ldy + j] = x[i * ldx + j];
    }
 
    /* Copy the matrix some columns backward, and other cases */
    else {
       /* TODO: assert x and y don't overlap */
-      for (i=0; i<n; i++)
-         for (j=0; j<m; j++)
-            y[i*ldy+j] = x[i*ldx+j];
+      for (i = 0; i < n; i++)
+         for (j = 0; j < m; j++)
+            y[i * ldy + j] = x[i * ldx + j];
    }
-
 }
 
-/******************************************************************************
- * Function Num_copy_matrix_columns - Copy the matrix x(xin) into y(yin)
- *
- * PARAMETERS
- * ---------------------------
- * x           The source matrix
- * m           The number of rows of x
- * xin         The column indices to copy
- * n           The number of columns of x
- * ldx         The leading dimension of x
- * y           On output y(yin) = x(xin)
- * yin         The column indices of y to be modified
- * ldy         The leading dimension of y
- *
- * NOTE: x(xin) and y(yin) *cannot* overlap
- * WARNING: compilers weren't able to optimize xin or yin being NULL;
- *    please use Num_copy_matrix as much as possible.
- *
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
-      PRIMME_INT ldx, SCALAR *y, int *yin, PRIMME_INT ldy) {
-
-   int i;
-   PRIMME_INT j;
-
-   /* TODO: assert x and y don't overlap */
-   for (i=0; i<n; i++)
-      for (j=0; j<m; j++)
-         y[(yin?yin[i]:i)*ldy+j] = x[(xin?xin[i]:i)*ldx+j];
-}
 
 /******************************************************************************
  * Function Num_zero_matrix - Zero the matrix
@@ -144,7 +200,8 @@ void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
 
 TEMPLATE_PLEASE
 void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx) {
+      PRIMME_INT ldx, primme_context ctx) {
+  (void)ctx;
 
    PRIMME_INT i,j;
 
@@ -290,6 +347,84 @@ void Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
          y[i*ldy+j] = x[k--];
 }
 
+/*******************************************************************************
+ * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
+ *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
+ *    
+ * Input parameters
+ * ----------------
+ * X        The coefficient vectors retained from the previous iteration
+ *
+ * nX       Number of columns of X
+ *
+ * H        Matrix
+ *
+ * nH       Dimension of H
+ *
+ * ldH      Leading dimension of H
+ *
+ * rwork    Work array.  Must be of size nH x nX
+ *
+ * lrwork   Length of the work array
+ *
+ * ldR      Leading dimension of R
+ *
+ * Output parameters
+ * -----------------
+ * R - nX x nX matrix computed 
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
+                              int ldH, SCALAR *R, int ldR, primme_context ctx) {
+
+  if (nH == 0 || nX == 0)
+    return 0;
+
+   CHKERR(Num_malloc_Sprimme((size_t)nH * (size_t)nX, &rwork, ctx));
+   Num_hemm_Sprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
+   Num_gemm_Sprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, ldR,
+                    ctx);
+   CHKERR(Num_free_Sprimme(rwork, ctx));
+
+  return 0;
+}
+
+#endif /* USE_HOST */
+
+/******************************************************************************
+ * Function Num_copy_matrix_columns - Copy the matrix x(xin) into y(yin)
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * xin         The column indices to copy
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y(yin) = x(xin)
+ * yin         The column indices of y to be modified
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x(xin) and y(yin) *cannot* overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, SCALAR *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx) {
+
+  int i;
+  PRIMME_INT j;
+
+  /* TODO: assert x and y don't overlap */
+  for (i = 0; i < n; i++) {
+    Num_copy_Sprimme(m, &x[(xin ? xin[i] : i) * ldx], 1,
+                     &y[(yin ? yin[i] : i) * ldy], 1, ctx);
+  }
+}
 
 /******************************************************************************
  * Subroutine permute_vecs - This routine permutes a set of vectors according
@@ -297,10 +432,10 @@ void Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * m, n, ld    The number of rows and columns and the leading dimension of vecs
- * perm        The permutation of the columns
- * rwork       Temporary space of size the number of rows
- * iwork       Temporary space of size the number of columns
+ * m, n, ld    The number of rows and columns and the leading dimension of
+ *vecs perm        The permutation of the columns rwork       Temporary space
+ *of size the number of rows iwork       Temporary space of size the number
+ *of columns
  *
  * INPUT/OUTPUT ARRAYS
  * -------------------
@@ -310,22 +445,22 @@ void Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
 
 TEMPLATE_PLEASE
 void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-      int *perm_, SCALAR *rwork, int *iwork) {
+                          int *perm_, primme_context ctx) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
-   int destinationIndex; /* Position of out-of-order vector in sorted order   */
+   int destinationIndex; /* Position of out-of-order vector in sorted order */
    int tempIndex;        /* Used to swap                                      */
-   int *perm=iwork;      /* A copy of perm_                                   */
+   int *perm;            /* A copy of perm_                                   */
+   SCALAR *rwork;        /* vector buffer */
 
-   /* Check that perm_ and iwork do not overlap */
-
-   assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
-
+   Num_malloc_iprimme(n, &perm, ctx);
+   Num_malloc_Sprimme(m, &rwork, ctx);
+ 
    /* Check perm_ is a permutation */
 
 #ifndef NDEBUG
-   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
+      for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
    for (tempIndex=0; tempIndex<n; tempIndex++) {
       assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
       perm[perm_[tempIndex]] = 1;
@@ -363,7 +498,7 @@ void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
 
          sourceIndex = perm[destinationIndex];
          Num_copy_Sprimme(m, &vecs[sourceIndex*ld], 1, 
-            &vecs[destinationIndex*ld], 1);
+               &vecs[destinationIndex*ld], 1);
          tempIndex = perm[destinationIndex];
          perm[destinationIndex] = destinationIndex;
          destinationIndex = tempIndex;
@@ -380,6 +515,8 @@ void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
    for (currentIndex=0; currentIndex < n; currentIndex++)
       assert(perm[currentIndex] == currentIndex);
 
+   Num_free_iprimme(n, &perm, ctx);
+   Num_free_Sprimme(m, &rwork, ctx);
 }
 
 #ifdef USE_DOUBLE
@@ -498,53 +635,4 @@ SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n,
    return work;
 }
 
-/*******************************************************************************
- * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
- *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
- *    
- * Input parameters
- * ----------------
- * X        The coefficient vectors retained from the previous iteration
- *
- * nX       Number of columns of X
- *
- * H        Matrix
- *
- * nH       Dimension of H
- *
- * ldH      Leading dimension of H
- *
- * rwork    Work array.  Must be of size nH x nX
- *
- * lrwork   Length of the work array
- *
- * ldR      Leading dimension of R
- *
- * Output parameters
- * -----------------
- * R - nX x nX matrix computed 
- *
- ******************************************************************************/
 
-TEMPLATE_PLEASE
-int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, 
-   SCALAR *H, int nH, int ldH, SCALAR *R, int ldR,
-   SCALAR *rwork, size_t *lrwork) {
-
-   /* Return memory requirement */
-   if (X == NULL) {
-      *lrwork = max(*lrwork, (size_t)nH*(size_t)nX);
-      return 0;
-   }
-
-   if (nH == 0 || nX == 0) return 0;
-
-   assert(*lrwork >= (size_t)nH*(size_t)nX);
-
-   Num_hemm_Sprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
-   
-   Num_gemm_Sprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, 
-      ldR);
-
-   return 0;
-}

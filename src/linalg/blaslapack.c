@@ -43,24 +43,27 @@
 #include "blaslapack.h"
 #include "auxiliary.h" // cyclic
 
+#ifdef USE_HOST
+
 /*******************************************************************************
  * Subroutine Num_copy_Sprimme - y(0:n*incy-1:incy) = x(0:n*incx-1:incx)
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
+void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
+                      primme_context ctx) {
 
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT lincx = incx;
-   PRIMME_BLASINT lincy = incy;
+  PRIMME_BLASINT ln = n;
+  PRIMME_BLASINT lincx = incx;
+  PRIMME_BLASINT lincy = incy;
 
-   while(n > 0) {
-      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
-      XCOPY(&ln, x, &lincx, y, &lincy);
-      n -= (PRIMME_INT)ln;
-      x += ln;
-      y += ln;
-   }
+  while (n > 0) {
+    ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX - 1);
+    XCOPY(&ln, x, &lincx, y, &lincy);
+    n -= (PRIMME_INT)ln;
+    x += ln;
+    y += ln;
+  }
 }
 
 /*******************************************************************************
@@ -70,7 +73,7 @@ void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 TEMPLATE_PLEASE
 void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
-      SCALAR *c, int ldc) {
+      SCALAR *c, int ldc, primme_context ctx) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -85,14 +88,22 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    /* Quick exit */
    if (k == 0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(c, m, n, ldc);
+         Num_zero_matrix_Sprimme(c, m, n, ldc, ctx);
       }
       else {
          int i;
          for (i=0; i<n; i++) {
-            Num_scal_Sprimme(m, beta, &c[ldc*i], 1);
+            Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx);
          }
       }
+      return;
+   }
+   if (n == 1) {
+      PRIMME_INT mA; int nA;
+      if (*transa == 'n' || *transa == 'N') mA = m, nA = k;
+      else mA = k, nA = m;
+      int incb = ((*transb == 'n' || *transb == 'N') ? 1 : ldb);
+      Num_gemv_Sprimme(transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
       return;
    }
 
@@ -107,6 +118,14 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif
 
+}
+
+TEMPLATE_PLEASE
+void Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
+      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
+      SCALAR *c, int ldc, primme_context ctx) {
+  Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc,
+                   ctx);
 }
 
 /*******************************************************************************
@@ -148,7 +167,7 @@ void Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
 TEMPLATE_PLEASE
 void Num_trmm_Sprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *b, int ldb) {
+      SCALAR *a, int lda, SCALAR *b, int ldb, primme_context ctx) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -179,7 +198,7 @@ void Num_trmm_Sprimme(const char *side, const char *uplo,
 TEMPLATE_PLEASE
 void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
       SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
-      int incy) {
+      int incy, primme_context ctx) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -193,12 +212,12 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
    /* Quick exit */
    if (m == 0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(y, 1, n, incy);
+         Num_zero_matrix_Sprimme(y, 1, n, incy, ctx);
       }
       else {
          int i;
          for (i=0; i<n; i++) {
-            Num_scal_Sprimme(n, beta, y, incy);
+            Num_scal_Sprimme(n, beta, y, incy, ctx);
          }
       }
       return;
@@ -224,6 +243,32 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
          beta = 1.0;
       }
    }
+}
+
+/*******************************************************************************
+ * Subroutine Num_gemv_ddh_Sprimme - y = alpha*A*x + beta*y, with A size m x n
+ * NOTE: A and x are in device and y is in host
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
+      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+      int incy, primme_context ctx) {
+
+   Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
+}
+
+/*******************************************************************************
+ * Subroutine Num_gemv_dhd_Sprimme - y = alpha*A*x + beta*y, with A size m x n
+ * NOTE: A and y are in device and x is in host
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
+      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+      int incy, primme_context ctx) {
+
+   Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
 }
 
 /*******************************************************************************
@@ -260,7 +305,7 @@ void Num_hemv_Sprimme(const char *uplo, int n, SCALAR alpha,
 
 TEMPLATE_PLEASE
 void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, 
-   SCALAR *y, int incy) {
+   SCALAR *y, int incy, primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -280,7 +325,8 @@ void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
+SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
+                       primme_context ctx) {
 
 /* NOTE: vecLib doesn't follow BLAS reference for sdot */
 #if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__)))
@@ -321,16 +367,16 @@ SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
 /*******************************************************************************
  * Subroutine Num_larnv_Sprimme - x(0:n*incy-1:incy) = rand(0:n-1)
  ******************************************************************************/
- 
+
 TEMPLATE_PLEASE
 void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
-      SCALAR *x) {
+      SCALAR *x, primme_context ctx) {
 #ifdef USE_COMPLEX
    /* Lapack's R core library doesn't have zlarnv. The functionality is */
    /* replaced by calling the REAL version doubling the length.         */
 
    assert(idist < 4); /* complex distributions are not supported */
-   Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x);
+   Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x, ctx);
 #else
    PRIMME_BLASINT lidist = idist;
    PRIMME_BLASINT llength;
@@ -364,7 +410,7 @@ void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_scal_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx) {
+void Num_scal_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -382,7 +428,7 @@ void Num_scal_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx) {
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
+void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy, primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -403,13 +449,13 @@ void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy) {
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
-      int lda, REAL *w, SCALAR *work, int ldwork, int *info) {
+int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
+      int lda, REAL *w, primme_context ctx) {
 #ifndef USE_XHEEV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
    SCALAR *z;
    REAL abstol=0.0;
@@ -422,75 +468,60 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) {*info = 0; return;}
+   if (n == 0) return 0;
 
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (w == NULL) w = &dummyr;
+   /* Allocate arrays */
 
-   /* Borrow space from work for z, rwork and iwork or set dummy values */
-   if (ldwork != -1) {
-      if (
-               WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
+   CHKERR(Num_malloc_Sprimme(n*n, &z, ctx)); 
 #  ifdef USE_COMPLEX
-            || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
+   CHKERR(Num_malloc_Rprimme(7*n, &rwork, ctx));
 #  endif
-            || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
-            || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
-         ) {
-         *info = -1;
-         return;
-      }
-   }
-   else {
-      z = &dummys;
+   CHKERR(Num_malloc_iprimme(5*n, &iwork, ctx));
+   CHKERR(Num_malloc_iprimme(n, &ifail, ctx));
+
+   /* Call to know the optimal workspace */
+
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, &lwork0, &lldwork,
 #  ifdef USE_COMPLEX
-      rwork = &dummyr;
+         &dummyr,
 #  endif
-      iwork = &dummyi;
-      ifail = &dummyi;
-   }
-
-#  ifdef NUM_CRAY
-   _fcd jobz_fcd, range_fcd, uplo_fcd;
-
-   jobz_fcd = _cptofcd(jobz, strlen(jobz));
-   range_fcd = _cptofcd("A", 1);
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-
-   XHEEVX(jobz_fcd, range_fcd, uplo_fcd, &ln, a, &llda, &dummyr, &dummyr,
-         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
-#     ifdef USE_COMPLEX
-         rwork,
-#     endif
          iwork, ifail, &linfo);
-#  else
+   lldwork = REAL_PART(lwork0);
+   if (linfo != 0) goto clean;
+
+   SCALAR *work = NULL;
+   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
    XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
          &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
-#     ifdef USE_COMPLEX
-         rwork,
-#     endif
-         iwork, ifail, &linfo);
-#  endif
-
-   /* Copy z to a or add the extra space for z, iwork and ifail */
-   if (ldwork != -1) {
-      Num_copy_matrix_Sprimme(z, n, n, n, a, lda);
-   }
-   else {
-      work[0] += (REAL)n*n + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
 #  ifdef USE_COMPLEX
-      work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
+         rwork,
 #  endif
-   }
-   *info = (int)linfo;
+         iwork, ifail, &linfo);
+   CHKERR(Num_free_Sprimme(work, ctx));
+
+clean:
+   /* Copy z to a */
+   Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
+
+   CHKERR(Num_free_Sprimme(z, ctx)); 
+#  ifdef USE_COMPLEX
+   CHKERR(Num_free_Rprimme(rwork, ctx));
+#  endif
+   CHKERR(Num_free_iprimme(iwork, ctx));
+   CHKERR(Num_free_iprimme(ifail, ctx));
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d\n",
+          (int)linfo);
+   return 0;
 
 #else /* USE_XHEEV */
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
 #  ifdef USE_COMPLEX
    REAL *rwork;
@@ -501,51 +532,40 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (w == NULL) w = &dummyr;
-
 #  ifdef USE_COMPLEX
-   /* Borrow space from work for rwork or set dummy values */
-   if (ldwork != -1) {
-      if (WRKSP_MALLOC_PRIMME(3*n, &rwork, &work, &lldwork)) {
-         *info = -1;
-         return;
-      }
-   }
-   else {
-      rwork = &dummyr;
-   }
+   CHKERR(Num_malloc_Sprimme(3*n, &rwork));
 #  endif
 
-#  ifdef NUM_CRAY
-   _fcd jobz_fcd, uplo_fcd;
+   /* Call to know the optimal workspace */
 
-   jobz_fcd = _cptofcd(jobz, strlen(jobz));
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-
-   XHEEV(jobz_fcd, uplo_fcd, &ln, a, &llda, w, work, &lldwork,
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XHEEV(jobz, uplo, &ln, a, &llda, w, &lwork0, &lldwork,
 #     ifdef USE_COMPLEX
          rwork,
 #     endif
          &linfo); 
-#  else
+   lldwork = REAL_PART(lwork0);
+   if (linfo != 0) goto clean;
+
+   SCALAR *work = NULL;
+   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
    XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork,
 #     ifdef USE_COMPLEX
          rwork,
 #     endif
          &linfo); 
-#  endif
+   CHKERR(Num_free_Sprimme(work, ctx));
 
+clean:
 #  ifdef USE_COMPLEX
-   /* Add the extra space for rwork */
-   if (ldwork == -1) {
-      work[0] += (REAL)sizeof(REAL)*2*n/sizeof(SCALAR) + 2.0;
-   }
+   CHKERR(Num_free_Sprimme(rwork));
 #  endif
+   
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d\n",
+          (int)linfo);
+   return 0;
 
-   *info = (int)linfo;
 #endif
 }
 
@@ -556,21 +576,19 @@ void Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
-      int lda, SCALAR *b0, int ldb0, REAL *w, SCALAR *work, int ldwork,
-      int *info) {
+int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
+      int lda, SCALAR *b0, int ldb0, REAL *w, primme_context ctx) {
 
    /* Call heev if b is null */
    if (b0 == NULL) {
-      Num_heev_Sprimme(jobz, uplo, n, a, lda, w, work, ldwork, info);
-      return;
+      return Num_heev_Sprimme(jobz, uplo, n, a, lda, w, ctx);
    }
 
 #ifndef USE_XHEGV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
    PRIMME_BLASINT ONE = 1;
    SCALAR *z, *b;
@@ -586,61 +604,64 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (w == NULL) w = &dummyr;
+   /* Allocate arrays */
 
-   /* Borrow space from work for z, rwork and iwork or set dummy values */
-   if (ldwork != -1) {
-      if (
-               WRKSP_MALLOC_PRIMME(n*n, &z, &work, &lldwork) 
-            || WRKSP_MALLOC_PRIMME(n*n, &b, &work, &lldwork) 
+   CHKERR(Num_malloc_Sprimme(n*n, &z, ctx)); 
+   CHKERR(Num_malloc_Sprimme(n*n, &b, ctx)); 
 #  ifdef USE_COMPLEX
-            || WRKSP_MALLOC_PRIMME(7*n, &rwork, &work, &lldwork)
+   CHKERR(Num_malloc_Rprimme(7*n, &rwork, ctx));
 #  endif
-            || WRKSP_MALLOC_PRIMME(5*n, &iwork, &work, &lldwork)
-            || WRKSP_MALLOC_PRIMME(n, &ifail, &work, &lldwork)
-         ) {
-         *info = -1;
-         return;
-      }
-      Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n);
-   }
-   else {
-      b = &dummys;
-      z = &dummys;
-#  ifdef USE_COMPLEX
-      rwork = &dummyr;
-#  endif
-      iwork = &dummyi;
-      ifail = &dummyi;
-   }
+   CHKERR(Num_malloc_iprimme(5*n, &iwork, ctx));
+   CHKERR(Num_malloc_iprimme(n, &ifail, ctx));
 
+   Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n, ctx);
+
+   /* Call to know the optimal workspace */
+
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, &lwork0, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         iwork, ifail, &linfo);
+   lldwork = REAL_PART(lwork0);
+   if (linfo != 0) goto clean;
+
+   SCALAR *work = NULL;
+   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
    XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
          &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
 #  ifdef USE_COMPLEX
          rwork,
 #  endif
          iwork, ifail, &linfo);
+   CHKERR(Num_free_Sprimme(work, ctx));
 
-   /* Copy z to a or add the extra space for z, iwork and ifail */
-   if (ldwork != -1) {
-      Num_copy_matrix_Sprimme(z, n, n, n, a, lda);
-   }
-   else {
-      work[0] += (REAL)n*n*2 + sizeof(PRIMME_BLASINT)*6*n/sizeof(SCALAR) + 6.0;
+clean:
+
+   /* Copy z to a */
+   Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
+
+   CHKERR(Num_free_Sprimme(z, ctx)); 
+   CHKERR(Num_free_Sprimme(b, ctx)); 
 #  ifdef USE_COMPLEX
-      work[0] += (REAL)sizeof(REAL)*7*n/sizeof(SCALAR) + 2.0;
+   CHKERR(Num_free_Rprimme(rwork, ctx));
 #  endif
-   }
-   *info = (int)linfo;
+   CHKERR(Num_free_iprimme(iwork, ctx));
+   CHKERR(Num_free_iprimme(ifail, ctx));
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhegvx with info %d\n",
+          (int)linfo);
+   return 0;
+
 
 #else /* USE_XHEGV */
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
    PRIMME_BLASINT ONE = 1;
    SCALAR *b;
@@ -653,46 +674,40 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    /* Zero dimension matrix may cause problems */
    if (n == 0) return;
 
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (w == NULL) w = &dummyr;
-
-   /* Borrow space from work for rwork or set dummy values */
-   if (ldwork != -1) {
-      if (
-               WRKSP_MALLOC_PRIMME(n*n, &b, &work, &lldwork) 
+   CHKERR(Num_malloc_Sprimme(n*n, &b, ctx)); 
 #  ifdef USE_COMPLEX
-            || WRKSP_MALLOC_PRIMME(3*n, &rwork, &work, &lldwork)
+   CHKERR(Num_malloc_Sprimme(3*n, &rwork, ctx));
 #  endif
-         ) {
-         *info = -1;
-         return;
-      }
-      Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n);
-   }
-   else {
-      b = &dummys;
-#  ifdef USE_COMPLEX
-      rwork = &dummyr;
-#  endif
-   }
 
+   Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n);
+
+   /* Call to know the optimal workspace */
+
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XHEGV(&ONE, jobz, uplo, &ln, a, &llda, b, &ln, w, &lwork0, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         &linfo);
+   lldwork = REAL_PART(lwork0);
+   if (linfo != 0) goto clean;
+
+   SCALAR *work = NULL;
+   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
    XHEGV(&ONE, jobz, uplo, &ln, a, &llda, b, &ln, w, work, &lldwork,
 #  ifdef USE_COMPLEX
          rwork,
 #  endif
          &linfo);
+   CHKERR(Num_free_Sprimme(work, ctx));
 
-   /* Add the extra space for b and rwork */
-   if (ldwork == -1) {
-      work[0] += (REAL)n*n;
+clean:
+   CHKERR(Num_free_Sprimme(b, ctx)); 
 #  ifdef USE_COMPLEX
-      work[0] += (REAL)sizeof(REAL)*3*n/sizeof(SCALAR) + 2.0;
+   CHKERR(Num_free_Sprimme(rwork, ctx));
 #  endif
-   }
-   *info = (int)linfo;
-
+ 
 #endif
 }
 
@@ -701,87 +716,58 @@ void Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-#ifndef USE_COMPLEX
-void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
+int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
       SCALAR *a, int lda, REAL *s, SCALAR *u, int ldu, SCALAR *vt, int ldvt,
-      SCALAR *work, int ldwork, int *info){
+      primme_context ctx){
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldu = ldu;
    PRIMME_BLASINT lldvt = ldvt;
-   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
    SCALAR dummys=0;
    REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) {*info=0; return;}
+   if (m == 0 || n == 0) return 0;
 
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (s == NULL) s = &dummyr;
-   if (u == NULL) u = &dummys;
-   if (lldu < 1) lldu = 1;
-   if (vt == NULL) vt = &dummys;
-   if (lldvt < 1) lldvt = 1;
+   /* Call to know the optimal workspace */
 
-#ifdef NUM_CRAY
-   _fcd jobu_fcd, jobvt_fcd;
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, &lwork0,
+          &lldwork,
+#ifdef USE_COMPLEX
+          &dummyr,
+#endif
+         &linfo);
+   lldwork = REAL_PART(lwork0);
+   if (linfo != 0) goto clean;
 
-   jobu_fcd = _cptofcd(jobu, strlen(jobu));
-   jobvt_fcd = _cptofcd(jobvt, strlen(jobvt));
-   XGESVD(jobu_fcd, jobvt_fcd, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
-#else
+   SCALAR *work = NULL;
+   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+#  ifdef USE_COMPLEX
+   REAL *rwork;
+   CHKERR(Num_malloc_Rprimme(5*n, &rwork, ctx));
+#  endif
    XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
-          &lldwork, &linfo);
+          &lldwork,
+#ifdef USE_COMPLEX
+         rwork,
 #endif
-   *info = (int)linfo;
+         &linfo);
+   CHKERR(Num_free_Sprimme(work, ctx));
+#  ifdef USE_COMPLEX
+   CHKERR(Num_free_Rprimme(rwork, ctx));
+#  endif
+
+clean:
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesvd with info %d\n",
+          (int)linfo);
+   return 0;
 }
-
-#else
-void Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
-   SCALAR *a, int lda, REAL *s, SCALAR *u, int ldu, SCALAR *vt, int ldvt,
-   SCALAR *work, int ldwork, REAL *rwork, int *info){
-
-   PRIMME_BLASINT lm = m;
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lldu = ldu;
-   PRIMME_BLASINT lldvt = ldvt;
-   PRIMME_BLASINT lldwork = ldwork;
-   PRIMME_BLASINT linfo = 0;
-   SCALAR dummys=0;
-   REAL   dummyr=0;
-
-   /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) {*info = 0; return;}
-
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (s == NULL) s = &dummyr;
-   if (u == NULL) u = &dummys;
-   if (lldu < 1) lldu = 1;
-   if (vt == NULL) vt = &dummys;
-   if (lldvt < 1) lldvt = 1;
-
-#ifdef NUM_CRAY
-   _fcd jobu_fcd, jobvt_fcd;
-
-   jobu_fcd = _cptofcd(jobu, strlen(jobu));
-   jobvt_fcd = _cptofcd(jobvt, strlen(jobvt));
-   XGESVD(jobu_fcd, jobvt_fcd, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
-          &lldwork, rwork, &linfo);
-#else
-   XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
-          &lldwork, rwork, &linfo);
-#endif
-   *info = (int)linfo;
-}
-#endif
 
 /*******************************************************************************
  * Subroutine Num_hetrf_Sprimme - LL^H factorization with pivoting
@@ -892,6 +878,9 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
          *info = -1;
          return;
       }
+      for(i=0; i<n; i++) {
+         lipivot[i] = (PRIMME_BLASINT)ipivot[i];
+      }
    } else {
       lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
@@ -910,8 +899,6 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      if (ipivot) for(i=0; i<n; i++)
-         ipivot[i] = (int)lipivot[i];
       free(lipivot);
    }
    *info = (int)linfo;
@@ -946,3 +933,5 @@ void Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
    XTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
 #endif
 }
+
+#endif /* USE_HOST */

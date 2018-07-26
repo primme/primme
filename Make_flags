@@ -23,6 +23,14 @@ F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
 CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O
+
+# GPUs compiler flags
+#---------------------------------------------------------------
+NVCC     ?= nvcc 
+MAGMADIR ?= $(HOME)/POST/src/magma-2.2.0
+CUDADIR  ?= /scratch/eloy.scratch/cuda
+PRIMME_WITH_MAGMA ?= yes
+MAGMA_CFLAGS ?= -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc

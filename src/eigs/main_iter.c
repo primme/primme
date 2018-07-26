@@ -54,9 +54,8 @@
 #include "auxiliary_eigs.h"
 
 static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      REAL *hVals, int basisSize, REAL *resNorms, int *flags, int *converged,
-      double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme);
+                        REAL *hVals, int basisSize, REAL *resNorms, int *flags,
+                        int *converged, primme_context ctx);
 
 /******************************************************************************
  * Subroutine main_iter - This routine implements a more general, parallel, 
@@ -84,10 +83,6 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  * 16. endwhile
  *    
  *
- * INPUT only parameters
- * ---------------------
- * machEps machine precision 
- *
  * OUTPUT arrays and parameters
  * ----------------------------
  * evals    The converged Ritz values.  It is maintained in sorted order.
@@ -99,10 +94,6 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *          their corresponding Ritz values in evals.  
  *
  * resNorms The residual norms corresponding to the converged Ritz vectors
- *
- * intWork  Integer work array
- *
- * realWork SCALAR work array
  *
  * INPUT/OUTPUT arrays and parameters
  * ----------------------------------
@@ -134,9 +125,10 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
 TEMPLATE_PLEASE
 int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
-   REAL *resNorms, double machEps, int *intWork, void *realWork, 
-   primme_params *primme) {
+   REAL *resNorms, primme_context ctx) {
          
+   primme_params *primme = ctx.primme;
+                            /* primme parameters */
    int i;                   /* Loop variable                                 */
    int blockSize;           /* Current block size                            */
    int availableBlockSize;  /* There is enough space in basis for this block */
@@ -159,13 +151,10 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    int numArbitraryVecs;    /* Columns in hVecs computed with RR instead of  */
                             /* the current extraction method.                */
    int maxEvecsSize;        /* Maximum capacity of evecs array               */
-   size_t rworkSize;        /* Size of rwork array                           */
-   int iworkSize;           /* Size of iwork array                           */
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
    int ret;                 /* Return value                                  */
    int touch=0;             /* param used in inner solver stopping criteria  */
 
-   int *iwork;              /* Integer workspace pointer                     */
    int *flags;              /* Indicates which Ritz values have converged    */
    int *lockedFlags=NULL;   /* Flags for the locked pairs                    */
    int *ipivot;             /* The pivot for the UDU factorization of M      */
@@ -183,7 +172,6 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    SCALAR *UDU = NULL;      /* The factorization of M=Q'KQ                   */
    SCALAR *evecsHat = NULL; /* K^{-1}evecs                                   */
    PRIMME_INT ldevecsHat=0; /* The leading dimension of evecsHat             */
-   SCALAR *rwork;           /* Real work space.                              */
    SCALAR *hVecs;           /* Eigenvectors of H                             */
    SCALAR *hU=NULL;         /* Left singular vectors of R                    */
    SCALAR *previousHVecs;   /* Coefficient vectors retained by               */
@@ -214,7 +202,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    double tstart=0.0;       /* Timing variable for accumulative time spent   */
 
    /* -------------------------------------------------------------- */
-   /* Subdivide the workspace                                        */
+   /* Allocate objects                                               */
    /* -------------------------------------------------------------- */
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
@@ -228,26 +216,33 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Use leading dimension ldOPs for the large dimension mats: V, W and Q */
 
    ldV = ldW = ldQ = primme->ldOPs;
-   rwork         = (SCALAR *) realWork;
-   V             = rwork; rwork += primme->ldOPs*primme->maxBasisSize;
-   W             = rwork; rwork += primme->ldOPs*primme->maxBasisSize;
+   CHKERR(Num_malloc_Sprimme(primme->ldOPs*primme->maxBasisSize, &V, ctx));
+   CHKERR(Num_malloc_Sprimme(primme->ldOPs*primme->maxBasisSize, &W, ctx));
    if (numQR > 0) {
-      Q          = rwork; rwork += primme->ldOPs*primme->maxBasisSize*numQR;
-      R          = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
-      hU         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+      CHKERR(Num_malloc_Sprimme(primme->ldOPs*primme->maxBasisSize*numQR, &Q, ctx));
+      CHKERR(Num_malloc_SHprimme(
+          primme->maxBasisSize * primme->maxBasisSize * numQR, &R, ctx));
+      CHKERR(Num_malloc_SHprimme(
+          primme->maxBasisSize * primme->maxBasisSize * numQR, &hU, ctx));
    }
    if (primme->projectionParams.projection == primme_proj_harmonic) {
-      QtV        = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+      CHKERR(Num_malloc_SHprimme(
+          primme->maxBasisSize * primme->maxBasisSize * numQR, &QtV, ctx));
    }
-   H             = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
-   hVecs         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
-   previousHVecs = rwork; rwork += primme->maxBasisSize*primme->restartingParams.maxPrevRetain;
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &H,
+                              ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize,
+                              &hVecs, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->restartingParams.maxPrevRetain,
+                              &hVecs, ctx));
    if (primme->orth == primme_orth_explicit_I) {
-      VtBV       = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
+     CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize,
+                                &VtBV, ctx));
    }
    if (primme->projectionParams.projection == primme_proj_refined
        || primme->projectionParams.projection == primme_proj_harmonic) {
-      hVecsRot   = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize*numQR;
+     CHKERR(Num_malloc_SHprimme(
+         primme->maxBasisSize * primme->maxBasisSize * numQR, &hVecsRot, ctx));
    }
 
    if (primme->correctionParams.precondition && 
@@ -255,37 +250,28 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          primme->correctionParams.projectors.RightQ &&
          primme->correctionParams.projectors.SkewQ           ) {
       ldevecsHat = primme->nLocal;
-      evecsHat   = rwork; rwork += ldevecsHat*maxEvecsSize;
-      M          = rwork; rwork += maxEvecsSize*maxEvecsSize;
-      UDU        = rwork; rwork += maxEvecsSize*maxEvecsSize;
+      CHKERR(Num_malloc_Sprimme(ldevecsHat * maxEvecsSize, &evecsHat, ctx));
+      CHKERR(Num_malloc_SHprimme(maxEvecsSize * maxEvecsSize, &M, ctx));
+      CHKERR(Num_malloc_SHprimme(maxEvecsSize * maxEvecsSize, &UDU, ctx));
    }
 
-   #ifndef USE_COMPLEX
-   #  define TO_REAL(X) X
-   #else
-   #  define TO_REAL(X) (X+1)/2
-   #endif
-   hVals         = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize);
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize, &hVals, ctx));
    if (numQR > 0) {
-      hSVals     = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize);
+      CHKERR(Num_malloc_SHprimme(primme->maxBasisSize, &hSVals, ctx));
    }
-   prevRitzVals  = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize+primme->numEvals);
-   blockNorms    = (REAL *)rwork; rwork += TO_REAL(primme->maxBlockSize);
-   basisNorms    = (REAL *)rwork; rwork += TO_REAL(primme->maxBasisSize);
-   #undef TO_REAL
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize + primme->numEvals,
+                              &prevRitzVals, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBlockSize, &blockNorms, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize, &basisNorms, ctx));
 
-   assert(primme->realWorkSize/sizeof(SCALAR) >= (size_t)(rwork - (SCALAR*)realWork));
-   rworkSize     = primme->realWorkSize/sizeof(SCALAR) - (rwork - (SCALAR*)realWork);
+   /* Integer objects */
 
-   /* Integer workspace */
-
-   iwork = intWork; iworkSize = (int)(primme->intWorkSize/sizeof(int));
    if (primme->locking) {
-      lockedFlags = iwork; iwork += primme->numEvals; iworkSize -= primme->numEvals;
+      CHKERR(Num_malloc_iprimme(primme->numEvals, &lockedFlags, ctx));
    }
-   flags = iwork; iwork += primme->maxBasisSize; iworkSize -= primme->maxBasisSize;
-   iev = iwork; iwork += primme->maxBlockSize; iworkSize -= primme->maxBlockSize;
-   ipivot = iwork; iwork += maxEvecsSize; iworkSize -= maxEvecsSize;
+   CHKERR(Num_malloc_iprimme(primme->maxBasisSize, &flags, ctx));
+   CHKERR(Num_malloc_iprimme(primme->maxBlockSize, &iev, ctx));
+   CHKERR(Num_malloc_iprimme(maxEvecsSize, &ipivot, ctx));
 
    /* -------------------------------------------------------------- */
    /* Initialize counters and flags                                  */
@@ -324,7 +310,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
    if (primme->numEvals == 0) {
       primme->initSize = 0;
-      return 0;
+      ret = 0;
+      goto clean;
    }
 
    /* -------------------------------------- */
@@ -334,14 +321,15 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    if (primme->n == 1) {
       evecs[0] = 1.0;
       CHKERR(matrixMatvec_Sprimme(&evecs[0], primme->nLocal, ldevecs,
-            W, ldW, 0, 1, primme), -1);
+            W, ldW, 0, 1, ctx));
       evals[0] = REAL_PART(W[0]);
       V[0] = 1.0;
 
       resNorms[0] = 0.0L;
       primme->stats.numMatvecs++;
       primme->initSize = 1;
-      return 0;
+      ret = 0;
+      goto clean;
    }
 
    /* ------------------------------------------------ */
@@ -358,9 +346,9 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------- */
 
    CHKERR(init_basis_Sprimme(V, primme->nLocal, ldV, W, ldW, evecs, ldevecs,
-            evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0, ipivot, machEps,
-            rwork, &rworkSize, &basisSize, &nextGuess, &numGuesses, primme),
-         -1);
+                             evecsHat, primme->nLocal, M, maxEvecsSize, UDU, 0,
+                             ipivot, &basisSize, &nextGuess,
+                             &numGuesses, ctx));
 
    /* Now initSize will store the number of converged pairs */
    primme->initSize = 0;
@@ -398,27 +386,31 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
       /* Compute the initial H and solve for its eigenpairs */
 
       targetShiftIndex = 0;
-      if (Q) CHKERR(update_Q_Sprimme(V, primme->nLocal, ldV, W, ldW, Q, ldQ, R,
-               primme->maxBasisSize, primme->targetShifts[targetShiftIndex], 0,
-               basisSize, rwork, &rworkSize, machEps, primme), -1);
+      if (Q)
+        CHKERR(update_Q_Sprimme(V, primme->nLocal, ldV, W, ldW, Q, ldQ, R,
+                                primme->maxBasisSize,
+                                primme->targetShifts[targetShiftIndex], 0,
+                                basisSize, ctx));
 
-      if (H) CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
-               primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
-               &rworkSize, 1/*symmetric*/, primme), -1);
+      if (H)
+        CHKERR(update_projection_Sprimme(
+            V, ldV, W, ldW, H, primme->maxBasisSize, primme->nLocal, 0,
+            basisSize, 1 /*symmetric*/, ctx));
 
-      if (QtV) CHKERR(update_projection_Sprimme(Q, ldQ, V, ldV, QtV,
-               primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
-               &rworkSize, 0/*unsymmetric*/, primme), -1);
+      if (QtV)
+        CHKERR(update_projection_Sprimme(
+            Q, ldQ, V, ldV, QtV, primme->maxBasisSize, primme->nLocal, 0,
+            basisSize, 0 /*unsymmetric*/, ctx));
 
-      if (VtBV) CHKERR(update_projection_Sprimme(V, ldV, V, ldV, VtBV,
-               primme->maxBasisSize, primme->nLocal, 0, basisSize, rwork,
-               &rworkSize, 1/*symmetric*/, primme), -1);
+      if (VtBV)
+        CHKERR(update_projection_Sprimme(
+            V, ldV, V, ldV, VtBV, primme->maxBasisSize, primme->nLocal, 0,
+            basisSize, 1 /*symmetric*/, ctx));
 
-      CHKERR(solve_H_Sprimme(H, basisSize, primme->maxBasisSize, VtBV,
-               primme->maxBasisSize, R,
-               primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize,
-               hVecs, basisSize, hVals, hSVals, numConverged, machEps,
-               &rworkSize, rwork, iworkSize, iwork, primme), -1);
+      CHKERR(solve_H_Sprimme(
+          H, basisSize, primme->maxBasisSize, VtBV, primme->maxBasisSize, R,
+          primme->maxBasisSize, QtV, primme->maxBasisSize, hU, basisSize, hVecs,
+          basisSize, hVals, hSVals, numConverged, ctx));
 
       numArbitraryVecs = 0;
       maxRecentlyConverged = availableBlockSize = blockSize = 0;
@@ -475,17 +467,16 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Set the block with the first unconverged pairs */
             if (availableBlockSize > 0) {
-               prepare_candidates_Sprimme(V, ldV, W, ldW, primme->nLocal, H,
-                  primme->maxBasisSize, basisSize,
-                  &V[basisSize*ldV], &W[basisSize*ldW],
-                  hVecs, basisSize, hVals, hSVals, flags,
-                  maxRecentlyConverged, blockNorms, blockSize,
-                  availableBlockSize, evecs, numLocked, ldevecs, evals,
-                  resNorms, targetShiftIndex, machEps, iev, &blockSize,
-                  &recentlyConverged, &numArbitraryVecs, &smallestResNorm,
-                  hVecsRot, primme->maxBasisSize, numConverged, basisNorms,
-                  &reset, rwork, &rworkSize, iwork, iworkSize, primme);
-               assert(recentlyConverged >= 0);
+              prepare_candidates_Sprimme(
+                  V, ldV, W, ldW, primme->nLocal, H, primme->maxBasisSize,
+                  basisSize, &V[basisSize * ldV], &W[basisSize * ldW], hVecs,
+                  basisSize, hVals, hSVals, flags, maxRecentlyConverged,
+                  blockNorms, blockSize, availableBlockSize, evecs, numLocked,
+                  ldevecs, evals, resNorms, targetShiftIndex, iev,
+                  &blockSize, &recentlyConverged, &numArbitraryVecs,
+                  &smallestResNorm, hVecsRot, primme->maxBasisSize,
+                  numConverged, basisNorms, &reset, ctx);
+              assert(recentlyConverged >= 0);
             }
             else {
                blockSize = recentlyConverged = 0;
@@ -531,17 +522,17 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                {
                   CostModel.MV =
                      primme->stats.timeMatvec/primme->stats.numMatvecs;
-                  ret = update_statistics(&CostModel, primme, tstart, 
+                  int ret0 = update_statistics(&CostModel, primme, tstart, 
                         recentlyConverged, 0, numConverged, blockNorms[0], 
                         primme->stats.estimateLargestSVal); 
 
-                  if (ret) switch (primme->dynamicMethodSwitch) {
+                  if (ret0) switch (primme->dynamicMethodSwitch) {
                      /* for few evals (dyn=1) evaluate GD+k only at restart*/
                      case 3:
-                        CHKERR(switch_from_GDpk(&CostModel,primme), -1);
+                        CHKERR(switch_from_GDpk(&CostModel,primme));
                         break;
                      case 2: case 4:
-                        CHKERR(switch_from_JDQMR(&CostModel,primme), -1);
+                        CHKERR(switch_from_JDQMR(&CostModel,primme));
                   }
                }
             }
@@ -589,12 +580,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
                }
 
-               CHKERR(solve_correction_Sprimme(V, ldV, W, ldW, evecs, ldevecs,
-                        evecsHat, ldevecsHat, UDU, ipivot, evals, numLocked,
-                        numConvergedStored, hVals, prevRitzVals,
-                        &numPrevRitzVals, flags, basisSize, blockNorms, iev,
-                        blockSize, &touch, machEps, rwork, &rworkSize, iwork, iworkSize,
-                        primme), -1);
+               CHKERR(solve_correction_Sprimme(
+                   V, ldV, W, ldW, evecs, ldevecs, evecsHat, ldevecsHat, UDU,
+                   ipivot, evals, numLocked, numConvergedStored, hVals,
+                   prevRitzVals, &numPrevRitzVals, flags, basisSize, blockNorms,
+                   iev, blockSize, &touch, ctx));
 
                /* ------------------------------------------------------ */
                /* If dynamic method switch, accumulate inner method time */
@@ -607,42 +597,43 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Orthogonalize the corrections with respect to each other */
             /* and the current basis.                                   */
-            CHKERR(ortho_Sprimme(V, ldV, NULL, 0, basisSize, 
-               basisSize+blockSize-1, evecs, ldevecs, 
-               primme->numOrthoConst+numLocked, primme->nLocal, primme->iseed, 
-               machEps, rwork, &rworkSize, primme), -1);
+            CHKERR(ortho_Sprimme(
+                V, ldV, NULL, 0, basisSize, basisSize + blockSize - 1, evecs,
+                ldevecs, primme->numOrthoConst + numLocked, primme->nLocal,
+                primme->iseed, ctx));
 
             /* Compute W = A*V for the orthogonalized corrections */
 
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW,
-                     basisSize, blockSize, primme), -1);
+                     basisSize, blockSize, ctx));
 
             if (Q) CHKERR(update_Q_Sprimme(V, primme->nLocal, ldV, W, ldW, Q,
                      ldQ, R, primme->maxBasisSize,
                      primme->targetShifts[targetShiftIndex], basisSize,
-                     blockSize, rwork, &rworkSize, machEps, primme), -1);
+                     blockSize, ctx));
 
             /* Extend H by blockSize columns and rows and solve the */
             /* eigenproblem for the new H.                          */
 
-            if (H) CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
-                     primme->maxBasisSize, primme->nLocal, basisSize, blockSize,
-                     rwork, &rworkSize, 1/*symmetric*/, primme), -1);
+            if (H)
+              CHKERR(update_projection_Sprimme(
+                  V, ldV, W, ldW, H, primme->maxBasisSize, primme->nLocal,
+                  basisSize, blockSize, 1 /*symmetric*/, ctx));
 
-            if (QtV) CHKERR(update_projection_Sprimme(Q, ldQ, V, ldV, QtV,
-                     primme->maxBasisSize, primme->nLocal, basisSize, blockSize,
-                     rwork, &rworkSize, 0/*unsymmetric*/, primme), -1);
+            if (QtV)
+              CHKERR(update_projection_Sprimme(
+                  Q, ldQ, V, ldV, QtV, primme->maxBasisSize, primme->nLocal,
+                  basisSize, blockSize, 0 /*unsymmetric*/, ctx));
 
             if (VtBV) CHKERR(update_projection_Sprimme(V, ldV, V, ldV, VtBV,
                      primme->maxBasisSize, primme->nLocal, basisSize, blockSize,
-                     rwork, &rworkSize, 1/*symmetric*/, primme), -1);
+                     1/*symmetric*/, ctx));
 
             if (basisSize+blockSize >= primme->maxBasisSize) {
                CHKERR(retain_previous_coefficients_Sprimme(hVecs,
                         basisSize, hU, basisSize, previousHVecs,
                         primme->maxBasisSize, primme->maxBasisSize, basisSize,
-                        iev, blockSize, flags, &numPrevRetained, iwork,
-                        iworkSize, primme), -1);
+                        iev, blockSize, flags, &numPrevRetained, ctx));
             }
 
 
@@ -653,7 +644,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                      primme->maxBasisSize, R,
                      primme->maxBasisSize, QtV, primme->maxBasisSize, hU,
                      basisSize, hVecs, basisSize, hVals, hSVals, numConverged,
-                     machEps, &rworkSize, rwork, iworkSize, iwork, primme), -1);
+                     ctx));
 
             numArbitraryVecs = 0;
 
@@ -674,7 +665,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   basisSize > 0 && restartsSinceReset > 0 &&
                   fabs(primme->targetShifts[targetShiftIndex]-hVals[0])
                     -max(primme->aNorm, primme->stats.estimateLargestSVal)
-                      *machEps > hSVals[0]) {
+                      *MACHINE_EPSILON > hSVals[0]) {
 
                availableBlockSize = 0;
                targetShiftIndex = -1;
@@ -769,10 +760,10 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   hVecs, basisSize, hVals, hSVals, flags,
                   maxRecentlyConverged, blockNorms, blockSize,
                   availableBlockSize, evecs, numLocked, ldevecs, evals,
-                  resNorms, targetShiftIndex, machEps, iev, &blockSize,
+                  resNorms, targetShiftIndex, iev, &blockSize,
                   &recentlyConverged, &numArbitraryVecs, dummySmallestResNorm,
                   hVecsRot, primme->maxBasisSize, numConverged, basisNorms,
-                  &reset, rwork, &rworkSize, iwork, iworkSize, primme);
+                  &reset,  ctx);
             assert(recentlyConverged >= 0);
 
             /* When QR is computed and there are more than one target shift   */
@@ -805,6 +796,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Move the converged pairs and the ones in iev at the beginning */
 
+            int *iwork; /* new permutation of pairs */
+            CHKERR(Num_malloc_iprimme(basisSize, &iwork, ctx));
             for (i=k=l=m=0; i<basisSize; i++) {
                int iIsInIev = 0;
                for (j=0; j<blockSize; j++)
@@ -817,19 +810,25 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   iwork[numConverged-numLocked+blockSize+l++] = i;
                }
             }
-            permute_vecs_Rprimme(hVals, 1, basisSize, 1, iwork, (REAL*)rwork, iwork+basisSize);
-            permute_vecs_Sprimme(hVecs, basisSize, basisSize, basisSize, iwork, rwork, iwork+basisSize);
-            permute_vecs_iprimme(flags, basisSize, iwork, iwork+basisSize);
+            CHKERR(permute_vecs_RHprimme(hVals, 1, basisSize, 1, iwork, ctx));
+            CHKERR(permute_vecs_SHprimme(hVecs, basisSize, basisSize, basisSize,
+                                         iwork, ctx));
+            CHKERR(permute_vecs_iprimme(flags, basisSize, iwork, ctx));
             if (hVecsRot) {
-               Num_zero_matrix_Sprimme(&hVecsRot[numArbitraryVecs*primme->maxBasisSize], primme->maxBasisSize,
-                     basisSize-numArbitraryVecs, primme->maxBasisSize);
-               for (i=numArbitraryVecs; i<basisSize; i++)
-                  hVecsRot[primme->maxBasisSize*i+i] = 1.0;
-               permute_vecs_Sprimme(hVecsRot, basisSize, basisSize, primme->maxBasisSize, iwork, rwork, iwork+basisSize);
-               for (i=j=0; i<basisSize; i++)
-                  if (iwork[i] != i) j=i+1;
-               numArbitraryVecs = max(numArbitraryVecs, j);
+              Num_zero_matrix_SHprimme(
+                  &hVecsRot[numArbitraryVecs * primme->maxBasisSize],
+                  primme->maxBasisSize, basisSize - numArbitraryVecs,
+                  primme->maxBasisSize, ctx);
+              for (i = numArbitraryVecs; i < basisSize; i++)
+                hVecsRot[primme->maxBasisSize * i + i] = 1.0;
+              CHKERR(permute_vecs_Sprimme(hVecsRot, basisSize, basisSize,
+                                   primme->maxBasisSize, iwork, ctx));
+              for (i = j = 0; i < basisSize; i++)
+                if (iwork[i] != i)
+                  j = i + 1;
+              numArbitraryVecs = max(numArbitraryVecs, j);
             }
+            CHKERR(Num_free_iprimme(iwork, ctx));
          }
 
          /* ------------------ */
@@ -838,7 +837,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
          int oldNumLocked = numLocked;
          assert(ldV == ldW); /* this function assumes ldV == ldW */
-         restart_Sprimme(V, W, primme->nLocal, basisSize, ldV, hVals, hSVals,
+         CHKERR(restart_Sprimme(V, W, primme->nLocal, basisSize, ldV, hVals, hSVals,
                flags, iev, &blockSize, blockNorms, evecs, ldevecs, perm,
                evals, resNorms, evecsHat, primme->nLocal, M, maxEvecsSize, UDU,
                0, ipivot, &numConverged, &numLocked, lockedFlags,
@@ -848,8 +847,8 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                primme->maxBasisSize,
                QtV, primme->maxBasisSize, hU, basisSize, 0, hVecs, basisSize, 0,
                &basisSize, &targetShiftIndex, &numArbitraryVecs, hVecsRot,
-               primme->maxBasisSize, &restartsSinceReset, &reset, machEps,
-               rwork, &rworkSize, iwork, iworkSize, primme);
+               primme->maxBasisSize, &restartsSinceReset, &reset, 
+                ctx));
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -881,37 +880,37 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             CHKERR(ortho_Sprimme(V, ldV, NULL, 0, basisSize, basisSize+numNew-1,
                      evecs, ldevecs, numLocked+primme->numOrthoConst,
-                     primme->nLocal, primme->iseed, machEps, rwork, &rworkSize,
-                     primme), -1);
+                     primme->nLocal, primme->iseed, 
+                     ctx));
 
             /* Compute W = A*V for the orthogonalized corrections */
 
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW,
-                     basisSize, numNew, primme), -1);
+                     basisSize, numNew, ctx));
 
             if (Q) CHKERR(update_Q_Sprimme(V, primme->nLocal, ldV, W, ldW, Q,
                      ldQ, R, primme->maxBasisSize,
                      primme->targetShifts[targetShiftIndex], basisSize, numNew,
-                     rwork, &rworkSize, machEps, primme), -1);
+                      ctx));
 
             /* Extend H by numNew columns and rows and solve the */
             /* eigenproblem for the new H.                       */
 
             if (H) CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
-                     rwork, &rworkSize, 1/*symmetric*/, primme), -1);
+                     1/*symmetric*/, ctx));
             if (QtV) CHKERR(update_projection_Sprimme(Q, ldQ, V, ldV, QtV,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
-                     rwork, &rworkSize, 0/*unsymmetric*/, primme), -1);
+                     0/*unsymmetric*/, ctx));
             if (VtBV) CHKERR(update_projection_Sprimme(V, ldV, V, ldV, VtBV,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
-                     rwork, &rworkSize, 1/*symmetric*/, primme), -1);
+                     1/*symmetric*/, ctx));
             basisSize += numNew;
             CHKERR(solve_H_Sprimme(H, basisSize, primme->maxBasisSize, VtBV,
                   primme->maxBasisSize, R,
                   primme->maxBasisSize, QtV, primme->maxBasisSize, hU,
                   basisSize, hVecs, basisSize, hVals, hSVals, numConverged,
-                  machEps, &rworkSize, rwork, iworkSize, iwork, primme), -1);
+                  ctx));
 
          }
  
@@ -927,9 +926,9 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          if (primme->dynamicMethodSwitch == 1 ) {
             tstart = primme_wTimer(0);
             CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
-            ret = update_statistics(&CostModel, primme, tstart, 0, 1,
+            update_statistics(&CostModel, primme, tstart, 0, 1,
                numConverged, blockNorms[0], primme->stats.estimateMaxEVal); 
-            CHKERR(switch_from_GDpk(&CostModel, primme), -1);
+            CHKERR(switch_from_GDpk(&CostModel, primme));
          } /* ---------------------------------------------------------- */
 
          /* ----------------------------------------------------------- */
@@ -980,10 +979,12 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
  
          if (numConverged == primme->numEvals || wholeSpace) {
             if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
-            return 0;
+            ret = 0;
+            goto clean;
          }
          else {
-            CHKERRNOABORTM(-1, -1, "Maximum iterations or matvecs reached");
+            ret = PRIMME_MAIN_ITER_FAILURE;
+            goto clean;
          }
 
       }
@@ -1003,8 +1004,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
          /* ---------------------------------------------------------- */
 
          CHKERR(verify_norms(V, ldV, W, ldW, hVals, numConverged, resNorms,
-                  flags, &converged, machEps, rwork, &rworkSize, iwork,
-                  iworkSize, primme), -1);
+                  flags, &converged, ctx));
 
          /* ---------------------------------------------------------- */
          /* If the convergence limit is reached or the target vectors  */
@@ -1040,10 +1040,12 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
             if (converged) {
                if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
-               return 0;
+               ret = 0;
+               goto clean;
             }
             else {
-	       CHKERRNOABORTM(-1, -1, "Maximum iterations or matvecs reached");
+               ret = PRIMME_MAIN_ITER_FAILURE;
+               goto clean;
             }
 
          }
@@ -1055,9 +1057,9 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0,
                      basisSize-1, evecs, ldevecs,
                      primme->numOrthoConst+numLocked, primme->nLocal,
-                     primme->iseed, machEps, rwork, &rworkSize, primme), -1);
+                     primme->iseed, ctx));
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0,
-                     basisSize, primme), -1);
+                     basisSize, ctx));
 
             if (primme->printLevel >= 2 && primme->procID == 0) {
                fprintf(primme->outputFile, 
@@ -1083,7 +1085,55 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
 
    if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
 
-   return 0;
+clean:
+  CHKERR(Num_free_Sprimme(V, ctx));
+  CHKERR(Num_free_Sprimme(W, ctx));
+  if (numQR > 0) {
+    CHKERR(Num_free_Sprimme(Q, ctx));
+    CHKERR(Num_free_SHprimme(R, ctx));
+    CHKERR(Num_free_SHprimme(hU, ctx));
+  }
+  if (primme->projectionParams.projection == primme_proj_harmonic) {
+    CHKERR(Num_free_SHprimme(QtV, ctx));
+  }
+  CHKERR(Num_free_SHprimme(H, ctx));
+  CHKERR(Num_free_SHprimme(hVecs, ctx));
+  CHKERR(Num_free_SHprimme(hVecs, ctx));
+  if (primme->orth == primme_orth_explicit_I) {
+    CHKERR(Num_free_SHprimme(VtBV, ctx));
+  }
+  if (primme->projectionParams.projection == primme_proj_refined ||
+      primme->projectionParams.projection == primme_proj_harmonic) {
+    CHKERR(Num_free_SHprimme(hVecsRot, ctx));
+  }
+
+  if (primme->correctionParams.precondition &&
+      primme->correctionParams.maxInnerIterations != 0 &&
+      primme->correctionParams.projectors.RightQ &&
+      primme->correctionParams.projectors.SkewQ) {
+    CHKERR(Num_free_Sprimme(evecsHat, ctx));
+    CHKERR(Num_free_SHprimme(M, ctx));
+    CHKERR(Num_free_SHprimme(UDU, ctx));
+  }
+
+  CHKERR(Num_free_SHprimme(hVals, ctx));
+  if (numQR > 0) {
+    CHKERR(Num_free_SHprimme(hSVals, ctx));
+  }
+  CHKERR(Num_free_SHprimme(prevRitzVals, ctx));
+  CHKERR(Num_free_SHprimme(blockNorms, ctx));
+  CHKERR(Num_free_SHprimme(basisNorms, ctx));
+
+  /* Integer objects */
+
+  if (primme->locking) {
+    CHKERR(Num_free_iprimme(lockedFlags, ctx));
+  }
+  CHKERR(Num_free_iprimme(flags, ctx));
+  CHKERR(Num_free_iprimme(iev, ctx));
+  CHKERR(Num_free_iprimme(ipivot, ctx));
+
+  return 0;
 
 }
 
@@ -1116,7 +1166,6 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
  * evecsSize      The size of evecs
  * numLocked      The number of vectors currently locked (if locking)
  * numConverged   Number of converged pairs (soft+hard locked)
- * rwork          Real work array, used by check_convergence and Num_update_VWXR
  * primme         Structure containing various solver parameters
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
@@ -1143,11 +1192,10 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       REAL *hSVals, int *flags, int remainedEvals, REAL *blockNorms,
       int blockNormsSize, int maxBlockSize, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, REAL *evals, REAL *resNorms, int targetShiftIndex,
-      double machEps, int *iev, int *blockSize, int *recentlyConverged,
+      int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, SCALAR *hVecsRot,
       int ldhVecsRot, int numConverged, REAL *basisNorms, int *reset,
-      SCALAR *rwork, size_t *rworkSize, int *iwork, int iworkSize,
-      primme_params *primme) {
+      primme_context ctx) {
 
    int i, blki;         /* loop variables */
    REAL *hValsBlock;    /* contiguous copy of the hVals to be tested */
@@ -1156,50 +1204,12 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    REAL *hValsBlock0;   /* workspace for hValsBlock */
    SCALAR *hVecsBlock0; /* workspace for hVecsBlock */
    double targetShift;  /* current target shift */
-   size_t rworkSize0;   /* current size of rwork */
    int lasti;           /* last tested pair */
 
-   /* -------------------------- */
-   /* Return memory requirements */
-   /* -------------------------- */
-
-   if (V == NULL) {
-      SCALAR t;
-      REAL d;
-      size_t lrw=0;
-      int liw=0;
-
-      CHKERR(check_convergence_Sprimme(NULL, nLocal, 0, NULL, 0, NULL,
-               numLocked, 0, 0, basisSize, NULL, NULL,
-               NULL, NULL, 0.0, NULL, &lrw, &liw, 0, primme), -1);
-      lrw = max(lrw,
-            (size_t)Num_update_VWXR_Sprimme(NULL, NULL, nLocal, basisSize,
-               0, NULL, 0, 0, NULL, &t, basisSize-maxBlockSize, basisSize, 0,
-               NULL, 0, 0, 0,
-               NULL, 0, 0, 0,
-               NULL, 0, 0, 0,
-               &t, basisSize-maxBlockSize, basisSize, 0, &d,
-               NULL, 0, 0,
-               NULL, 0, primme));
-      CHKERR(prepare_vecs_Sprimme(basisSize, 0, maxBlockSize, NULL, 0,
-               NULL, NULL, NULL, 0, 0, NULL, 0.0, NULL, 0, NULL, 0, 0.0, &lrw,
-               NULL, 0, &liw, primme), -1);
-      *rworkSize = max(*rworkSize,
-            (size_t)maxBlockSize+(size_t)maxBlockSize*(size_t)basisSize+lrw);
-      *iwork = max(*iwork, liw + basisSize);
-      return 0;
-   }
-
    *blockSize = 0;
-   hValsBlock0 = (REAL*)rwork;
-   hVecsBlock0 = &rwork[maxBlockSize];
-   rwork += maxBlockSize + ldhVecs*maxBlockSize;
-   assert(*rworkSize >= (size_t)(maxBlockSize + ldhVecs*maxBlockSize));
-   rworkSize0 = *rworkSize - maxBlockSize - ldhVecs*maxBlockSize;
-   flagsBlock = iwork;
-   iwork += maxBlockSize;
-   iworkSize -= maxBlockSize;
-   assert(iworkSize >= 0);
+   CHKERR(Num_malloc_RHprimme(maxBlockSize, &hValsBlock0, ctx));
+   CHKERR(Num_malloc_RHprimme(ldhVecs*maxBlockSize, &hVecsBlock0, ctx));
+   CHKERR(Num_malloc_iprimme(maxBlockSize, &flagsBlock, ctx));
    targetShift = primme->targetShifts ? primme->targetShifts[targetShiftIndex] : 0.0;
    lasti = -1;
 
@@ -1226,8 +1236,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(check_convergence_Sprimme(X?&X[(*blockSize)*ldV]:NULL, nLocal,
             ldV, R?&R[(*blockSize)*ldW]:NULL, ldW, evecs, numLocked,
             ldevecs, 0, blockNormsSize, flagsBlock,
-            &blockNorms[*blockSize], hValsBlock, reset, machEps, rwork,
-            &rworkSize0, iwork, iworkSize, primme), -1);
+            &blockNorms[*blockSize], hValsBlock, reset, ctx));
 
       /* Compact blockNorms, X and R for the unconverged pairs in    */
       /* iev(*blockSize:*blockSize+blockNormsize). Do the proper     */
@@ -1308,8 +1317,8 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       blki = *blockSize;
       prepare_vecs_Sprimme(basisSize, lasti+1, maxBlockSize-blki, H, ldH, hVals,
             hSVals, hVecs, ldhVecs, targetShiftIndex, numArbitraryVecs,
-            *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot, machEps,
-            &rworkSize0, rwork, iworkSize, iwork, primme);
+            *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot, 
+            ctx);
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
@@ -1342,7 +1351,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                NULL, 0, 0, 0,
                R?&R[(*blockSize)*ldV]:NULL, 0, blockNormsSize, ldV, &blockNorms[*blockSize],
                !R?&blockNorms[*blockSize]:NULL, 0, blockNormsSize,
-               rwork, rworkSize0, primme), -1);
+               ctx));
    }
 
    return 0;
@@ -1368,12 +1377,6 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  * basisSize    Size of the basis V
  *
- * rworkSize    Length of rwork
- *
- * INPUT/OUTPUT ARRAYS
- * -------------------
- * rwork   Must be at least 2*primme->numEvals in size
- *
  *
  * OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------
@@ -1387,29 +1390,26 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    
 static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       REAL *hVals, int basisSize, REAL *resNorms, int *flags, int *converged,
-      double machEps, SCALAR *rwork, size_t *rworkSize, int *iwork,
-      int iworkSize, primme_params *primme) {
+      primme_context ctx) {
 
    int i;         /* Loop variable                                     */
-   REAL *dwork = (REAL *) rwork; /* pointer to cast rwork to REAL*/
 
    /* Compute the residual vectors */
 
    for (i=0; i < basisSize; i++) {
       Num_axpy_Sprimme(primme->nLocal, -hVals[i], &V[ldV*i], 1, &W[ldW*i], 1);
-      dwork[i] = REAL_PART(Num_dot_Sprimme(primme->nLocal, &W[ldW*i],
-               1, &W[ldW*i], 1));
+      resNorms[i] = REAL_PART(Num_dot_Sprimme(primme->nLocal, &W[ldW*i],
+               1, &W[ldW*i], 1, ctx));
    }
       
-   CHKERR(globalSum_Rprimme(dwork, resNorms, basisSize, primme), -1);
+   CHKERR(globalSum_Rprimme(resNorms, resNorms, basisSize, ctx));
    for (i=0; i < basisSize; i++)
       resNorms[i] = sqrt(resNorms[i]);
 
    /* Check for convergence of the residual norms. */
 
    CHKERR(check_convergence_Sprimme(V, primme->nLocal, ldV, W, ldW, NULL, 0,
-            0, 0, basisSize, flags, resNorms, hVals, NULL, machEps, rwork,
-            rworkSize, iwork, iworkSize, primme), -1);
+            0, 0, basisSize, flags, resNorms, hVals, NULL, ctx));
 
    /* Set converged to 1 if the first basisSize pairs are converged */
 
@@ -1488,8 +1488,9 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
       /* If more many procs, make sure that all have the same ratio */
       if (primme->numProcs > 1) {
-         CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1, primme), -1); 
-         ratio = globalRatio/primme->numProcs;
+        CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1,
+                                 primme_get_context(primme)));
+        ratio = globalRatio / primme->numProcs;
       }
 
       if (ratio > 1.05) { 
@@ -1519,8 +1520,9 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_params *primme) {
 
    /* If more many procs, make sure that all have the same ratio */
    if (primme->numProcs > 1) {
-      CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1, primme), -1);
-      ratio = globalRatio/primme->numProcs;
+     CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1,
+                              primme_get_context(primme)));
+     ratio = globalRatio / primme->numProcs;
    }
    
    if (ratio > 1.05) {
@@ -1616,8 +1618,9 @@ static int switch_from_GDpk(primme_CostModel *model, primme_params *primme) {
 
    /* If more many procs, make sure that all have the same ratio */
    if (primme->numProcs > 1) {
-      CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1, primme), -1); 
-      ratio = globalRatio/primme->numProcs;
+     CHKERR(globalSum_Rprimme(&ratio, &globalRatio, 1,
+                              primme_get_context(primme)));
+     ratio = globalRatio / primme->numProcs;
    }
 
    if (ratio < 0.95) {
