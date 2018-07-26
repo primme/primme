@@ -184,7 +184,7 @@ ifdef(`USE_PETSC', ``   if (primme.procID == 0) { /* Reports process with ID 0 *
    sp()fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
    sp()fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
    sp()fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
-   sp()if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
+   sp()if (primme.stats.lockingIssue) {
    sp()   fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
    sp()   fprintf(primme.outputFile,
    sp()      "Some eigenpairs do not have a residual norm less than the tolerance.\n");

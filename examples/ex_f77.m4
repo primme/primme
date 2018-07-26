@@ -184,8 +184,6 @@ ifdef(`USE_POINTER', `        call primme_set_member_f77(primme,
      :                                                 printLevel, ierr)
         call primme_set_member_f77(primme, PRIMME_maxMatvecs,
      :                                                 maxMatvecs, ierr)
-        call primme_set_member_f77(primme, 
-     :         PRIMME_restartingParams_scheme, PRIMME_thick, ierr)
 !
 !       Set the method to be used (after n, numEvals, and precondition have
 !       been set. Also after basisSize is set, if desired.)
@@ -256,6 +254,7 @@ ifdef(`USE_PETSC', ``        if (procID.eq.0) then
         sp()enddo
  9000   sp()FORMAT (1x,'E(',i1,') = ',G24.16,4x,
      &  sp()       'residual norm =', E12.4)
+        call primme_free_f77(primme)
 ifdef(`USE_PETSC',`        endif
 
         call PetscFinalize(ierr)

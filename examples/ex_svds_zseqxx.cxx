@@ -144,7 +144,7 @@ int main (int argc, char *argv[]) {
    fprintf(primme_svds.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme_svds.stats.numRestarts);
    fprintf(primme_svds.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme_svds.stats.numMatvecs);
    fprintf(primme_svds.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme_svds.stats.numPreconds);
-   if (primme_svds.primme.locking && primme_svds.primme.intWork && primme_svds.primme.intWork[0] == 1) {
+   if (primme_svds.stats.lockingIssue) {
       fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n"
          "Some triplets do not have a residual norm less than the tolerance.\n"
          "However, the subspace of evecs is accurate to the required tolerance.\n");

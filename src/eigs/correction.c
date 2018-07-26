@@ -40,7 +40,6 @@
 #include "numerical.h"
 #include "correction.h"
 #include "inner_solve.h"
-#include "globalsum.h"
 #include "auxiliary_eigs.h"
 
 static REAL computeRobustShift(int blockIndex, double resNorm, 
@@ -197,10 +196,8 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    else {
       Kinvx = NULL;
    }
-   CHKERR(Num_malloc_RHprimme(numLocked+basisSize, &sortedRitzVals, ctx)); 
    CHKERR(Num_malloc_dprimme(blockSize, &blockOfShifts, ctx));
    CHKERR(Num_malloc_RHprimme(blockSize, &approxOlsenEps, ctx));
-   CHKERR(Num_malloc_iprimme(blockSize, &ilev, ctx));
 
    /*------------------------------------------------------------*/
    /*  Figuring out preconditioning shifts  (robust, Olsen, etc) */
@@ -217,6 +214,8 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* list of current Ritz values, ritzVals.  The merging of the two */
       /* lists lockedEvals and ritzVals is stored in sortedRitzVals.    */
 
+      CHKERR(Num_malloc_RHprimme(numLocked+basisSize, &sortedRitzVals, ctx)); 
+      CHKERR(Num_malloc_iprimme(blockSize, &ilev, ctx));
       mergeSort(lockedEvals, numLocked, ritzVals, flags, basisSize, 
                    sortedRitzVals, ilev, blockSize, primme);
    }
@@ -432,10 +431,11 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    } /* JDqmr variants */
 
    CHKERR(Num_free_Sprimme(Kinvx, ctx));
-   CHKERR(Num_free_RHprimme(sortedRitzVals, ctx)); 
+   if (sortedRitzVals != ritzVals)
+      CHKERR(Num_free_RHprimme(sortedRitzVals, ctx));
    CHKERR(Num_free_dprimme(blockOfShifts, ctx));
    CHKERR(Num_free_RHprimme(approxOlsenEps, ctx));
-   CHKERR(Num_free_iprimme(ilev, ctx));
+   if (ilev != iev) CHKERR(Num_free_iprimme(ilev, ctx));
 
    return 0;
 

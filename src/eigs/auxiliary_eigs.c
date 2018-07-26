@@ -35,9 +35,9 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h> /* memset */
 #include "const.h"
 #include "numerical.h"
-#include "globalsum.h"
 #include "auxiliary_eigs.h"
 #include "wtime.h"
 
@@ -334,3 +334,37 @@ int convTestFun_Sprimme(HREAL eval, SCALAR *evec, HREAL rNorm, int *isconv,
 
    return 0;
 }
+
+#ifdef USE_HOST
+
+TEMPLATE_PLEASE
+int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
+   primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+   int ierr;
+   double t0=0.0;
+
+   if (primme && primme->globalSumReal) {
+      t0 = primme_wTimer(0);
+
+      /* If it is a complex type, count real and imaginary part */
+#ifdef USE_COMPLEX
+      count *= 2;
+#endif
+      CHKERRM((primme->globalSumReal(sendBuf, recvBuf, &count, primme, &ierr),
+               ierr), PRIMME_USER_FAILURE,
+            "Error returned by 'globalSumReal' %d", ierr);
+
+      primme->stats.numGlobalSum++;
+      primme->stats.timeGlobalSum += primme_wTimer(0) - t0;
+      primme->stats.volumeGlobalSum += count;
+   }
+   else {
+      Num_copy_Sprimme(count, sendBuf, 1, recvBuf, 1, ctx);
+   }
+
+   return 0;
+}
+
+#endif /* USE_HOST */

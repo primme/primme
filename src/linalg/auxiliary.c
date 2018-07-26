@@ -385,6 +385,7 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
   if (nH == 0 || nX == 0)
     return 0;
 
+   SCALAR *rwork;
    CHKERR(Num_malloc_Sprimme((size_t)nH * (size_t)nX, &rwork, ctx));
    Num_hemm_Sprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
    Num_gemm_Sprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, ldR,
@@ -597,7 +598,7 @@ int permute_vecs_iprimme(int *vecs, int n, int *perm_, primme_context ctx) {
    for (currentIndex=0; currentIndex < n; currentIndex++)
       assert(perm[currentIndex] == currentIndex);
 
-   CHKERR(Num_free_iprimme(n, &perm, ctx));
+   CHKERR(Num_free_iprimme(perm, ctx));
 
    return 0;
 }

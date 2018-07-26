@@ -122,10 +122,6 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->iseed[1] = -1;   /* Thus we set all iseeds to -1                 */
    primme_svds->iseed[2] = -1;   /* Unless users provide their own iseeds,       */
    primme_svds->iseed[3] = -1;   /* PRIMME will set thse later uniquely per proc */
-   primme_svds->intWorkSize             = 0;
-   primme_svds->realWorkSize            = 0;
-   primme_svds->intWork                 = NULL;
-   primme_svds->realWork                = NULL;
    primme_svds->convTestFun             = NULL;
    primme_svds->convtest                = NULL;
    primme_svds->monitorFun              = NULL;
@@ -470,11 +466,7 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
  ******************************************************************************/
 
 void primme_svds_free(primme_svds_params *primme) {
-    
-   free(primme->intWork);
-   free(primme->realWork);
-   primme->intWorkSize  = 0;
-   primme->realWorkSize = 0;
+   /* No function */    
 }
 
 /*******************************************************************************
@@ -587,18 +579,6 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
          break;
       case PRIMME_SVDS_methodStage2 :
          v->operator_v = primme_svds->methodStage2;
-         break;
-      case PRIMME_SVDS_intWorkSize :
-         v->int_v = primme_svds->intWorkSize;
-         break;
-      case PRIMME_SVDS_realWorkSize :
-         v->int_v = (PRIMME_INT)primme_svds->realWorkSize;
-         break;
-      case PRIMME_SVDS_intWork :
-         v->ptr_v = primme_svds->intWork;
-         break;
-      case PRIMME_SVDS_realWork :
-         v->ptr_v = primme_svds->realWork;
          break;
       case PRIMME_SVDS_matrix :
          v->ptr_v = primme_svds->matrix;
@@ -799,19 +779,6 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_methodStage2 :
          primme_svds->methodStage2 = *v.operator_v;
          break;
-      case PRIMME_SVDS_intWorkSize :
-         if (*v.int_v > INT_MAX) return 1; else 
-         primme_svds->intWorkSize = (int)*v.int_v;
-         break;
-      case PRIMME_SVDS_realWorkSize :
-         primme_svds->realWorkSize = (size_t)*v.int_v;
-         break;
-      case PRIMME_SVDS_intWork :
-         primme_svds->intWork = (int*)v.int_v;
-         break;
-      case PRIMME_SVDS_realWork :
-         primme_svds->realWork = v.ptr_v;
-         break;
       case PRIMME_SVDS_matrix :
          primme_svds->matrix = v.ptr_v;
          break;
@@ -972,10 +939,6 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(targetShifts);
    IF_IS(method);
    IF_IS(methodStage2);
-   IF_IS(intWorkSize);
-   IF_IS(realWorkSize);
-   IF_IS(intWork);
-   IF_IS(realWork);
    IF_IS(matrix);
    IF_IS(preconditioner);
    IF_IS(locking);
@@ -1044,8 +1007,6 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_mLocal: 
       case PRIMME_SVDS_nLocal: 
       case PRIMME_SVDS_numTargetShifts:
-      case PRIMME_SVDS_intWorkSize:
-      case PRIMME_SVDS_realWorkSize:
       if (type) *type = primme_int;
       if (arity) *arity = 1;
       break;
@@ -1077,8 +1038,6 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_applyPreconditioner:
       case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
-      case PRIMME_SVDS_intWork:
-      case PRIMME_SVDS_realWork:
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:

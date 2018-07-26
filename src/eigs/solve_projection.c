@@ -39,7 +39,6 @@
 #include "numerical.h"
 #include "solve_projection.h"
 #include "ortho.h"
-#include "globalsum.h"
 #include "auxiliary_eigs.h"
 
 #ifdef USE_HOST
@@ -517,7 +516,6 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
       }
    }
    Num_copy_matrix_Sprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs, ctx);
-   CHKERR(Num_free_Sprimme(rwork, ctx));
 
    /* Rearrange V, hSVals and hU in ascending order of singular value   */
    /* if target is not largest abs.                                     */
@@ -542,6 +540,7 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
       hVals[i] = REAL_PART(Num_dot_Sprimme(basisSize, &hVecs[ldhVecs*i], 1,
                &rwork[basisSize*i], 1, ctx));
    }
+   CHKERR(Num_free_Sprimme(rwork, ctx));
 
    return 0;
 }
@@ -583,6 +582,10 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
    SCALAR *rwork;
    const size_t c = sizeof(SCALAR)/sizeof(REAL);
 
+   /* Quick exit */
+
+   if (basisSize <= 0) return 0;
+
    /* Allocate memory */
 
    int n=0;  /* number of SCALAR packed */
@@ -617,8 +620,8 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
 
    if (hVals) {
       if (ctx.primme->procID == 0) {
-         rwork0[basisSize/c] = 0.0; /* When complex, avoid to reduce with an   */
-         /* uninitialized value                     */
+         rwork0[(basisSize + c-1)/c-1] = 0.0; /* When complex, avoid to reduce with an   */
+                                              /* uninitialized value                     */
          Num_copy_matrix_Rprimme(hVals, basisSize, 1, basisSize, (REAL*)rwork0,
                basisSize, ctx);
       }
@@ -629,8 +632,8 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
 
    if (hSVals) {
       if (ctx.primme->procID == 0) {
-         rwork0[basisSize/c] = 0.0; /* When complex, avoid to reduce with an*/
-                                      /* uninitialized value                  */
+         rwork0[(basisSize + c-1)/c-1] = 0.0; /* When complex, avoid to reduce with an   */
+                                              /* uninitialized value                     */
          Num_copy_matrix_Rprimme(hSVals, basisSize, 1, basisSize, (REAL*)rwork0,
                basisSize, ctx);
       }
@@ -862,7 +865,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
       if (i-j > 1 && (someCandidate || RRForAll)) {
          SCALAR *aH, *ahVecs;
          int aBasisSize = i-j;
-         CHKERR(Num_malloc_Sprimme((size_t)aBasisSize*aBasisSize, &aH, ctx));
+         CHKERR(Num_malloc_Sprimme((size_t)basisSize*aBasisSize, &aH, ctx));
          ahVecs = &hVecsRot[ldhVecsRot*j+j];
 
          /* Zero hVecsRot(:,arbitraryVecs:i-1) */

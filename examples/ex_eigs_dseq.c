@@ -120,7 +120,7 @@ int main (int argc, char *argv[]) {
    fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
    fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
    fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
-   if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
+   if (primme.stats.lockingIssue) {
       fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
       fprintf(primme.outputFile,
          "Some eigenpairs do not have a residual norm less than the tolerance.\n");

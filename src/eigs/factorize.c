@@ -158,7 +158,7 @@ int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs,
    }
    else {
       int info;
-      Num_copy_SHprimme(dim, rhs, 1, sol, 1);
+      Num_copy_SHprimme(dim, rhs, 1, sol, 1, ctx);
       CHKERRM((Num_hetrs_Sprimme("U", dim, 1, UDU, dim, ipivot, sol, dim,
                   &info), info),
               PRIMME_LAPACK_FAILURE, "hetrs failed with info %d", info);

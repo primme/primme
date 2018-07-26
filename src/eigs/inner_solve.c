@@ -43,7 +43,6 @@
 #include "inner_solve.h"
 #include "factorize.h"
 #include "update_W.h"
-#include "globalsum.h"
 #include "auxiliary_eigs.h"
 
 static int
@@ -321,6 +320,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       gamma = c*c*Theta_prev*Theta_prev;
       eta = alpha_prev * c * c;
 #ifdef USE_HOST
+      int i;
       for (i = 0; i < primme->nLocal; i++) {
           delta[i] = delta[i]*(SCALAR)gamma + d[i]*(SCALAR)eta;
           sol[i] = delta[i]+sol[i];
@@ -516,6 +516,11 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
      /* --------------------------------------------------------*/
    } /* End of QMR main while loop                              */
      /* --------------------------------------------------------*/
+
+   CHKERR(Num_free_Sprimme(g, ctx));
+   CHKERR(Num_free_Sprimme(d, ctx));
+   CHKERR(Num_free_Sprimme(delta, ctx));
+   CHKERR(Num_free_Sprimme(w, ctx));
 
    *rnorm = eres_updated;
    return 0;

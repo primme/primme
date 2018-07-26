@@ -8,7 +8,7 @@ SOURCES := $(sort $(foreach dir,$(DIRS),$(wildcard $(dir)/*.c)))
 
 ARCHS := float floatcomplex double doublecomplex
 ifeq ($(PRIMME_WITH_MAGMA),yes)
-   ARCHS := $(foreach a,$(ARCHS),$(a)magma)
+   ARCHS += $(foreach a,$(ARCHS),$(a)magma)
 endif
 ALL_ARCHS := FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
    FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA
@@ -38,7 +38,6 @@ AUTOMATED_HEADERS_EIGS := \
    eigs/inner_solve.h \
    eigs/main_iter.h \
    eigs/ortho.h \
-   eigs/globalsum.h \
    eigs/factorize.h \
    eigs/restart.h \
    eigs/update_W.h \

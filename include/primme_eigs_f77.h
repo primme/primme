@@ -204,7 +204,7 @@ C-------------------------------------------------------
      : PRIMME_stats_estimateMaxEVal = 482,
      : PRIMME_stats_estimateLargestSVal = 483,
      : PRIMME_stats_maxConvTol = 484,
-     : PRIMME_stats_lockingIssues = 485,
+     : PRIMME_stats_lockingIssue = 485,
      : PRIMME_dynamicMethodSwitch = 49,
      : PRIMME_massMatrixMatvec = 50,
      : PRIMME_convTestFun = 51,

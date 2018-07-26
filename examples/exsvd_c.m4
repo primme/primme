@@ -233,7 +233,7 @@ ifdef(`USE_PETSC', ``   if (primme_svds.procID == 0) { /* Reports process with I
    sp()fprintf(primme_svds.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme_svds.stats.numRestarts);
    sp()fprintf(primme_svds.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme_svds.stats.numMatvecs);
    sp()fprintf(primme_svds.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme_svds.stats.numPreconds);
-   sp()if (primme_svds.primme.locking && primme_svds.primme.intWork && primme_svds.primme.intWork[0] == 1) {
+   sp()if (primme_svds.stats.lockingIssue) {
    sp()   fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n"
    sp()      "Some triplets do not have a residual norm less than the tolerance.\n"
    sp()      "However, the subspace of evecs is accurate to the required tolerance.\n");

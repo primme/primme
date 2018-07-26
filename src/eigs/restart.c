@@ -46,7 +46,6 @@
 #include "update_projection.h"
 #include "update_W.h"
 #include "convergence.h"
-#include "globalsum.h"
 #include "wtime.h"
 
 static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
@@ -1255,7 +1254,9 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    
    for (i=0; i<basisSize; i++) flags[i] = UNCONVERGED;
 
-   CHKERR(Num_free_RHprimme(lockedResNorms, ctx));
+   if (overbooking) {
+      CHKERR(Num_free_RHprimme(lockedResNorms, ctx));
+   }
    return 0;
 }
 
@@ -2149,7 +2150,7 @@ restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW, SCALAR *H,
 
    /* hU = hU * hVecsRot0 */
    HSCALAR *rwork;
-   CHKERR(Num_malloc_SHprimme((size_t)mhVecsRot0 * nRegular, &rwork, ctx));
+   CHKERR(Num_malloc_SHprimme((size_t)basisSize * nRegular, &rwork, ctx));
    Num_gemm_Sprimme("N", "N", basisSize, nRegular, mhVecsRot0, 1.0, hU,
          ldhU, hVecsRot0, mhVecsRot0, 0.0, rwork, basisSize, ctx);
    Num_copy_matrix_Sprimme(rwork, basisSize, nRegular, basisSize, hU,

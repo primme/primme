@@ -67,9 +67,9 @@
 #include <math.h>
 #include <assert.h>
 #include "numerical.h"
+#include "auxiliary_eigs.h"
 #include "ortho.h"
 #include "const.h"
-#include "globalsum.h"
 #include "wtime.h"
  
 
@@ -331,6 +331,9 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
    }
 
    if (primme) primme->stats.timeOrtho += primme_wTimer(0) - t0;
+
+   CHKERR(Num_free_SHprimme(overlaps, ctx));
+   if (B) CHKERR(Num_free_Sprimme(Bx, ctx));
 
    /* Check orthogonality */
    /*

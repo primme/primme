@@ -49,7 +49,6 @@
 #include "solve_projection.h"
 #include "update_projection.h"
 #include "update_W.h"
-#include "globalsum.h"
 #include "auxiliary_eigs.h"
 
 /*----------------------------------------------------------------------------*

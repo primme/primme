@@ -1451,8 +1451,6 @@ int primme_constant_info(const char* label_name, int *value) {
    IF_IS(primme_init_krylov);
    IF_IS(primme_init_random);
    IF_IS(primme_init_user);
-   IF_IS(primme_thick);
-   IF_IS(primme_dtr);
    IF_IS(primme_full_LTolerance);
    IF_IS(primme_decreasing_LTolerance);
    IF_IS(primme_adaptive_ETolerance);

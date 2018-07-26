@@ -37,8 +37,8 @@
 #include <assert.h>
 #include "const.h"
 #include "numerical.h"
+#include "auxiliary_eigs.h"
 #include "update_projection.h"
-#include "globalsum.h"
 
 /*******************************************************************************
  * Subroutine update_projection - Z = X'*Y. If Z is a Hermitian matrix 
