@@ -51,11 +51,11 @@ int compute_submatrix_sprimme(float *X, int nX, int ldX, float *H, int nH,
 void Num_copy_matrix_columns_sprimme(float *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, float *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_sprimme(float *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
+int permute_vecs_sprimme(float *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
 float* Num_compact_vecs_sprimme(float *vecs, PRIMME_INT m, int n,
       PRIMME_INT ld, int *perm, float *work, PRIMME_INT ldwork,
-      int avoidCopy);
+      int avoidCopy, primme_context ctx);
 int Num_malloc_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT **x, primme_context ctx);
 int Num_free_cprimme(PRIMME_COMPLEX_FLOAT *x, primme_context ctx);
 void Num_copy_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
@@ -74,11 +74,11 @@ int compute_submatrix_cprimme(PRIMME_COMPLEX_FLOAT *X, int nX, int ldX, PRIMME_C
 void Num_copy_matrix_columns_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_cprimme(PRIMME_COMPLEX_FLOAT *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
+int permute_vecs_cprimme(PRIMME_COMPLEX_FLOAT *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
 PRIMME_COMPLEX_FLOAT* Num_compact_vecs_cprimme(PRIMME_COMPLEX_FLOAT *vecs, PRIMME_INT m, int n,
       PRIMME_INT ld, int *perm, PRIMME_COMPLEX_FLOAT *work, PRIMME_INT ldwork,
-      int avoidCopy);
+      int avoidCopy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_Sprimme)
 #  define Num_malloc_Sprimme CONCAT(Num_malloc_,SCALAR_SUF)
 #endif
@@ -105,6 +105,32 @@ int Num_malloc_dprimme(PRIMME_INT n, double **x, primme_context ctx);
 #  define Num_free_RHprimme CONCAT(Num_free_,HOST_REAL_SUF)
 #endif
 int Num_free_dprimme(double *x, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_iprimmeSprimme)
+#  define Num_malloc_iprimmeSprimme CONCAT(Num_malloc_iprimme,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_iprimmeRprimme)
+#  define Num_malloc_iprimmeRprimme CONCAT(Num_malloc_iprimme,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_iprimmeSHprimme)
+#  define Num_malloc_iprimmeSHprimme CONCAT(Num_malloc_iprimme,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_iprimmeRHprimme)
+#  define Num_malloc_iprimmeRHprimme CONCAT(Num_malloc_iprimme,HOST_REAL_SUF)
+#endif
+int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_free_iprimmeSprimme)
+#  define Num_free_iprimmeSprimme CONCAT(Num_free_iprimme,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_free_iprimmeRprimme)
+#  define Num_free_iprimmeRprimme CONCAT(Num_free_iprimme,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_free_iprimmeSHprimme)
+#  define Num_free_iprimmeSHprimme CONCAT(Num_free_iprimme,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_free_iprimmeRHprimme)
+#  define Num_free_iprimmeRHprimme CONCAT(Num_free_iprimme,HOST_REAL_SUF)
+#endif
+int Num_free_iprimme(int *x, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_Sprimme)
 #  define Num_copy_matrix_Sprimme CONCAT(Num_copy_matrix_,SCALAR_SUF)
 #endif
@@ -217,8 +243,8 @@ void Num_copy_matrix_columns_dprimme(double *x, PRIMME_INT m, int *xin, int n,
 #if !defined(CHECK_TEMPLATE) && !defined(permute_vecs_RHprimme)
 #  define permute_vecs_RHprimme CONCAT(permute_vecs_,HOST_REAL_SUF)
 #endif
-void permute_vecs_dprimme(double *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
+int permute_vecs_dprimme(double *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(permute_vecs_iprimmeSprimme)
 #  define permute_vecs_iprimmeSprimme CONCAT(permute_vecs_iprimme,SCALAR_SUF)
 #endif
@@ -231,7 +257,7 @@ void permute_vecs_dprimme(double *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
 #if !defined(CHECK_TEMPLATE) && !defined(permute_vecs_iprimmeRHprimme)
 #  define permute_vecs_iprimmeRHprimme CONCAT(permute_vecs_iprimme,HOST_REAL_SUF)
 #endif
-void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
+int permute_vecs_iprimme(int *vecs, int n, int *perm_, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_compact_vecs_Sprimme)
 #  define Num_compact_vecs_Sprimme CONCAT(Num_compact_vecs_,SCALAR_SUF)
 #endif
@@ -246,7 +272,7 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork);
 #endif
 double* Num_compact_vecs_dprimme(double *vecs, PRIMME_INT m, int n,
       PRIMME_INT ld, int *perm, double *work, PRIMME_INT ldwork,
-      int avoidCopy);
+      int avoidCopy, primme_context ctx);
 int Num_malloc_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE **x, primme_context ctx);
 int Num_free_zprimme(PRIMME_COMPLEX_DOUBLE *x, primme_context ctx);
 void Num_copy_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
@@ -265,41 +291,41 @@ int compute_submatrix_zprimme(PRIMME_COMPLEX_DOUBLE *X, int nX, int ldX, PRIMME_
 void Num_copy_matrix_columns_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_zprimme(PRIMME_COMPLEX_DOUBLE *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
+int permute_vecs_zprimme(PRIMME_COMPLEX_DOUBLE *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
 PRIMME_COMPLEX_DOUBLE* Num_compact_vecs_zprimme(PRIMME_COMPLEX_DOUBLE *vecs, PRIMME_INT m, int n,
       PRIMME_INT ld, int *perm, PRIMME_COMPLEX_DOUBLE *work, PRIMME_INT ldwork,
-      int avoidCopy);
-void Num_copy_matrix_columns_smagmaprimme(float *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, float *y, int *yin,
+      int avoidCopy, primme_context ctx);
+void Num_copy_matrix_columns_smagmaprimme(magma_float *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, magma_float *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_smagmaprimme(float *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
-float* Num_compact_vecs_smagmaprimme(float *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, float *work, PRIMME_INT ldwork,
-      int avoidCopy);
-void Num_copy_matrix_columns_cmagmaprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y, int *yin,
+int permute_vecs_smagmaprimme(magma_float *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+magma_float* Num_compact_vecs_smagmaprimme(magma_float *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, magma_float *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+void Num_copy_matrix_columns_cmagmaprimme(magma_complex_float *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, magma_complex_float *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_cmagmaprimme(PRIMME_COMPLEX_FLOAT *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
-PRIMME_COMPLEX_FLOAT* Num_compact_vecs_cmagmaprimme(PRIMME_COMPLEX_FLOAT *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, PRIMME_COMPLEX_FLOAT *work, PRIMME_INT ldwork,
-      int avoidCopy);
-void Num_copy_matrix_columns_dmagmaprimme(double *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, double *y, int *yin,
+int permute_vecs_cmagmaprimme(magma_complex_float *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+magma_complex_float* Num_compact_vecs_cmagmaprimme(magma_complex_float *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, magma_complex_float *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+void Num_copy_matrix_columns_dmagmaprimme(magma_double *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, magma_double *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_dmagmaprimme(double *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
-double* Num_compact_vecs_dmagmaprimme(double *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, double *work, PRIMME_INT ldwork,
-      int avoidCopy);
-void Num_copy_matrix_columns_zmagmaprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y, int *yin,
+int permute_vecs_dmagmaprimme(magma_double *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+magma_double* Num_compact_vecs_dmagmaprimme(magma_double *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, magma_double *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+void Num_copy_matrix_columns_zmagmaprimme(magma_complex_double *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, magma_complex_double *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
-void permute_vecs_zmagmaprimme(PRIMME_COMPLEX_DOUBLE *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx);
-PRIMME_COMPLEX_DOUBLE* Num_compact_vecs_zmagmaprimme(PRIMME_COMPLEX_DOUBLE *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, PRIMME_COMPLEX_DOUBLE *work, PRIMME_INT ldwork,
-      int avoidCopy);
+int permute_vecs_zmagmaprimme(magma_complex_double *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+magma_complex_double* Num_compact_vecs_zmagmaprimme(magma_complex_double *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, magma_complex_double *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
 #endif

@@ -141,13 +141,13 @@ void Num_compute_residual_Sprimme(PRIMME_INT n, SCALAR eval, SCALAR *x,
 
 TEMPLATE_PLEASE
 int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, SCALAR *h, int nh, int ldh, REAL *hVals,
+      PRIMME_INT ldV, SCALAR *h, int nh, int ldh, HREAL *hVals,
       SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       SCALAR *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, REAL *Rnorms,
-      REAL *rnorms, int nrb, int nre,
+      HSCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
+      HREAL *rnorms, int nrb, int nre,
       primme_context ctx) {
 
    PRIMME_INT i;     /* Loop variables */
@@ -155,7 +155,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, ldX, ldY;
    SCALAR *X, *Y;
-   REAL *tmp, *tmp0;
+   REAL *tmp;
 
    /* Return memory requirements */
    if (V == NULL) {
@@ -234,7 +234,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
-      if (j) CHKERR(globalSum_Rprimme(tmp, tmp, j, ctx));
+      if (j) CHKERR(globalSum_RHprimme(tmp, tmp, j, ctx));
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
@@ -322,7 +322,7 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int convTestFun_Sprimme(REAL eval, SCALAR *evec, REAL rNorm, int *isconv, 
+int convTestFun_Sprimme(HREAL eval, SCALAR *evec, HREAL rNorm, int *isconv, 
       struct primme_params *primme) {
 
    primme_context ctx = primme_get_context(primme);

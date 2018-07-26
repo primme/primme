@@ -106,7 +106,7 @@ int prepare_candidates_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
       primme_context ctx);
 int main_iter_smagmaprimme(magma_float *evals, int *perm, magma_float *evecs, PRIMME_INT ldevecs,
-   magma_float *resNorms, primme_context ctx);
+   float *resNorms, primme_context ctx);
 int prepare_candidates_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float *W,
       PRIMME_INT ldW, PRIMME_INT nLocal, magma_float *H, int ldH, int basisSize,
       magma_float *X, magma_float *R, magma_float *hVecs, int ldhVecs, magma_float *hVals,
@@ -118,7 +118,7 @@ int prepare_candidates_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float 
       int ldhVecsRot, int numConverged, magma_float *basisNorms, int *reset,
       primme_context ctx);
 int main_iter_cmagmaprimme(magma_float *evals, int *perm, magma_complex_float *evecs, PRIMME_INT ldevecs,
-   magma_float *resNorms, primme_context ctx);
+   float *resNorms, primme_context ctx);
 int prepare_candidates_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magma_complex_float *W,
       PRIMME_INT ldW, PRIMME_INT nLocal, magma_complex_float *H, int ldH, int basisSize,
       magma_complex_float *X, magma_complex_float *R, magma_complex_float *hVecs, int ldhVecs, magma_float *hVals,
@@ -130,7 +130,7 @@ int prepare_candidates_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magm
       int ldhVecsRot, int numConverged, magma_float *basisNorms, int *reset,
       primme_context ctx);
 int main_iter_dmagmaprimme(magma_double *evals, int *perm, magma_double *evecs, PRIMME_INT ldevecs,
-   magma_double *resNorms, primme_context ctx);
+   double *resNorms, primme_context ctx);
 int prepare_candidates_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_double *W,
       PRIMME_INT ldW, PRIMME_INT nLocal, magma_double *H, int ldH, int basisSize,
       magma_double *X, magma_double *R, magma_double *hVecs, int ldhVecs, magma_double *hVals,
@@ -142,7 +142,7 @@ int prepare_candidates_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_doubl
       int ldhVecsRot, int numConverged, magma_double *basisNorms, int *reset,
       primme_context ctx);
 int main_iter_zmagmaprimme(magma_double *evals, int *perm, magma_complex_double *evecs, PRIMME_INT ldevecs,
-   magma_double *resNorms, primme_context ctx);
+   double *resNorms, primme_context ctx);
 int prepare_candidates_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, magma_complex_double *W,
       PRIMME_INT ldW, PRIMME_INT nLocal, magma_complex_double *H, int ldH, int basisSize,
       magma_complex_double *X, magma_complex_double *R, magma_complex_double *hVecs, int ldhVecs, magma_double *hVals,

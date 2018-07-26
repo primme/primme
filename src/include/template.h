@@ -347,6 +347,36 @@ typedef PRIMME_COMPLEX_FLOAT magma_complex_float;
 /* Memory, error and params  management                                      */
 /*****************************************************************************/
 
+
+/**********************************************************************
+ * Macro MALLOC_PRIMME - malloc NELEM of type **X and write down the
+ *    pointer in *X.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * NELEM   Number of sizeof(**X) to allocate
+ * X       Where to store the pointer
+ *
+ * RETURN VALUE
+ * ------------
+ * error code
+ *
+ * EXAMPLE
+ * -------
+ *   double *values;
+ *   CHKERRM(MALLOC_PRIMME(n, &values), -1,
+ *        "malloc could not allocate %d doubles\n", n);
+ *
+ **********************************************************************/
+
+#if !(defined (__APPLE__) && defined (__MACH__))
+#  include <malloc.h> /* malloc */
+#endif
+#include <stdlib.h>   /* malloc, free */
+
+#define MALLOC_PRIMME(NELEM, X) (*((void**)X) = malloc((NELEM)*sizeof(**(X))), *(X) == NULL)
+
+
 typedef struct {
    /* For PRIMME */
    primme_params *primme;

@@ -8,7 +8,7 @@ SOURCES := $(sort $(foreach dir,$(DIRS),$(wildcard $(dir)/*.c)))
 
 ARCHS := float floatcomplex double doublecomplex
 ifeq ($(PRIMME_WITH_MAGMA),yes)
-   ARCHS := $(foreach a,$(ARCH),$(a)magma)
+   ARCHS := $(foreach a,$(ARCHS),$(a)magma)
 endif
 ALL_ARCHS := FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
    FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA
@@ -128,7 +128,7 @@ endif
 ../tags: $(SOURCES) $(INCLUDES)
 	@etags -o $@.base $^;\
 	cp $@.base $@;\
-	for pre in R s c d z; do \
+	for pre in R SH RH s c d z; do \
 		sed "s/Sprimme/$${pre}primme/g" $@.base >> $@;\
 	done
 

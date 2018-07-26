@@ -102,7 +102,6 @@ void primme_initialize(primme_params *primme) {
    primme->maxBlockSize                        = 0;
    primme->maxMatvecs                          = INT_MAX;
    primme->maxOuterIterations                  = INT_MAX;
-   primme->restartingParams.scheme             = primme_thick;
    primme->restartingParams.maxPrevRetain      = -1;
    primme->orth                                = primme_orth_default;
 
@@ -139,6 +138,7 @@ void primme_initialize(primme_params *primme) {
    primme->stats.estimateLargestSVal           = -HUGE_VAL;
    primme->stats.maxConvTol                    = 0.0;
    primme->stats.estimateResidualError         = 0.0;
+   primme->stats.lockingIssue                  = 0;
 
    /* Optional user defined structures */
    primme->matrix                  = NULL;
@@ -149,10 +149,6 @@ void primme_initialize(primme_params *primme) {
    primme->iseed[1] = -1;   /* Thus we set all iseeds to -1                 */
    primme->iseed[2] = -1;   /* Unless users provide their own iseeds,       */
    primme->iseed[3] = -1;   /* PRIMME will set thse later uniquely per proc */
-   primme->intWorkSize             = 0;
-   primme->realWorkSize            = 0;
-   primme->intWork                 = NULL;
-   primme->realWork                = NULL;
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
    primme->convtest                = NULL;
@@ -160,6 +156,7 @@ void primme_initialize(primme_params *primme) {
    primme->ldOPs                   = -1;
    primme->monitorFun              = NULL;
    primme->monitor                 = NULL;
+   primme->queue                   = NULL;
 }
 
 /*******************************************************************************
@@ -172,12 +169,7 @@ void primme_initialize(primme_params *primme) {
  ******************************************************************************/
 
 void primme_free(primme_params *primme) {
-
-   free(primme->intWork);
-   free(primme->realWork);
-   primme->intWorkSize  = 0;
-   primme->realWorkSize = 0;
-
+   /* No function */
 }
 
 /******************************************************************************
@@ -407,7 +399,6 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->maxBasisSize                        = primme->numEvals*2;
       primme->minRestartSize                      = primme->numEvals;
       primme->maxBlockSize                        = primme->numEvals;
-      primme->restartingParams.scheme             = primme_thick;
       primme->restartingParams.maxPrevRetain      = 0;
       primme->correctionParams.robustShifts       = 0;
       primme->correctionParams.maxInnerIterations = 0;
@@ -419,7 +410,6 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->minRestartSize                      = primme->numEvals;
       primme->maxBlockSize                        = primme->numEvals;
       primme->restartingParams.maxPrevRetain      = primme->numEvals;
-      primme->restartingParams.scheme             = primme_thick;
       primme->correctionParams.robustShifts       = 0;
       primme->correctionParams.maxInnerIterations = 0;
       primme->correctionParams.projectors.RightX  = 1;
@@ -441,7 +431,6 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
          primme->minRestartSize                      = primme->maxBlockSize;
          primme->restartingParams.maxPrevRetain      = primme->maxBlockSize;
       }
-      primme->restartingParams.scheme             = primme_thick;
       primme->correctionParams.robustShifts       = 0;
       primme->correctionParams.maxInnerIterations = 0;
       primme->correctionParams.projectors.RightX  = 1;
@@ -647,10 +636,6 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTIF(orth, primme_orth_implicit_I);
    PRINTIF(orth, primme_orth_explicit_I);
 
-   fprintf(outputFile, "\n// Restarting\n");
-   PRINTParamsIF(restarting, scheme, primme_thick);
-   PRINTParamsIF(restarting, scheme, primme_dtr);
-
    PRINTParams(restarting, maxPrevRetain, %d);
 
    fprintf(outputFile, "\n// Correction parameters\n");
@@ -712,7 +697,6 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       FILE *file_v;
       primme_init init_v;
       primme_projection projection_v;
-      primme_restartscheme restartscheme_v;
       primme_convergencetest convergencetest_v;
       void (*monitorFun_v)(void *basisEvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
@@ -790,22 +774,10 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_maxOuterIterations:
               v->int_v = primme->maxOuterIterations;
       break;
-      case PRIMME_intWorkSize:
-              v->int_v = primme->intWorkSize;
-      break;
-      case PRIMME_realWorkSize:
-              v->int_v = primme->realWorkSize;
-      break;
       case PRIMME_iseed:
          for (i=0; i< 4; i++) {
             (&v->int_v)[i] = primme->iseed[i];
          }
-      break;
-      case PRIMME_intWork:
-              v->ptr_v = primme->intWork;
-      break;
-      case PRIMME_realWork:
-              v->ptr_v = primme->realWork;
       break;
       case PRIMME_aNorm:
               v->double_v = primme->aNorm;
@@ -824,9 +796,6 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_preconditioner:
               v->ptr_v = primme->preconditioner;
-      break;
-      case PRIMME_restartingParams_scheme:
-              v->restartscheme_v = primme->restartingParams.scheme;
       break;
       case PRIMME_restartingParams_maxPrevRetain:
               v->int_v = primme->restartingParams.maxPrevRetain;
@@ -909,6 +878,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_estimateLargestSVal:
               v->double_v = primme->stats.estimateLargestSVal;
       break;
+      case PRIMME_stats_lockingIssue:
+              v->int_v = primme->stats.lockingIssue;
+      break;
       case PRIMME_ldevecs:
               v->int_v = primme->ldevecs;
       break;
@@ -926,6 +898,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_monitor:
               v->ptr_v = primme->monitor;
+      break;
+      case PRIMME_queue:
+              v->ptr_v = primme->queue;
       break;
       default :
       return 1;
@@ -966,7 +941,6 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       FILE *file_v;
       primme_init *init_v;
       primme_projection *projection_v;
-      primme_restartscheme *restartscheme_v;
       primme_convergencetest *convergencetest_v;
       void (*monitorFun_v)(void *basisEvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
@@ -1053,23 +1027,10 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_maxOuterIterations:
               primme->maxOuterIterations = *v.int_v;
       break;
-      case PRIMME_intWorkSize:
-              if (*v.int_v > INT_MAX) return 1; else 
-              primme->intWorkSize = (int)*v.int_v;
-      break;
-      case PRIMME_realWorkSize:
-              primme->realWorkSize = (size_t)*v.int_v;
-      break;
       case PRIMME_iseed:
          for (i=0; i< 4; i++) {
             primme->iseed[i] = v.int_v[i];
          }
-      break;
-      case PRIMME_intWork:
-              primme->intWork = (int*)v.int_v;
-      break;
-      case PRIMME_realWork:
-              primme->realWork = v.ptr_v;
       break;
       case PRIMME_aNorm:
               primme->aNorm = *v.double_v;
@@ -1095,9 +1056,6 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_projectionParams_projection:
               primme->projectionParams.projection = *v.projection_v;
-      break;
-      case PRIMME_restartingParams_scheme:
-              primme->restartingParams.scheme = *v.restartscheme_v;
       break;
       case PRIMME_restartingParams_maxPrevRetain:
               if (*v.int_v > INT_MAX) return 1; else 
@@ -1190,6 +1148,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_maxConvTol:
               primme->stats.maxConvTol = *v.double_v;
       break;
+      case PRIMME_stats_lockingIssue:
+              primme->stats.lockingIssue = *v.int_v;
+      break;
       case PRIMME_convTestFun:
               primme->convTestFun = v.convTestFun_v;
       break;
@@ -1207,6 +1168,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_monitor:
               primme->monitor = v.ptr_v;
+      break;
+      case PRIMME_queue:
+              primme->queue = v.ptr_v;
       break;
       default : 
       return 1;
@@ -1276,11 +1240,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(maxBlockSize                 , maxBlockSize);
    IF_IS(maxMatvecs                   , maxMatvecs);
    IF_IS(maxOuterIterations           , maxOuterIterations);
-   IF_IS(intWorkSize                  , intWorkSize);
-   IF_IS(realWorkSize                 , realWorkSize);
    IF_IS(iseed                        , iseed);
-   IF_IS(intWork                      , intWork);
-   IF_IS(realWork                     , realWork);
    IF_IS(aNorm                        , aNorm);
    IF_IS(eps                          , eps);
    IF_IS(printLevel                   , printLevel);
@@ -1289,7 +1249,6 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(preconditioner               , preconditioner);
    IF_IS(initBasisMode                , initBasisMode);
    IF_IS(projection_projection        , projectionParams_projection);
-   IF_IS(restarting_scheme            , restartingParams_scheme);
    IF_IS(restarting_maxPrevRetain     , restartingParams_maxPrevRetain);
    IF_IS(correction_precondition      , correctionParams_precondition);
    IF_IS(correction_robustShifts      , correctionParams_robustShifts);
@@ -1318,12 +1277,14 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_estimateMaxEVal        , stats_estimateMaxEVal);
    IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
    IF_IS(stats_maxConvTol             , stats_maxConvTol);
+   IF_IS(stats_lockingIssue           , stats_lockingIssue);
    IF_IS(convTestFun                  , convTestFun);
    IF_IS(convtest                     , convtest);
    IF_IS(ldevecs                      , ldevecs);
    IF_IS(ldOPs                        , ldOPs);
    IF_IS(monitorFun                   , monitorFun);
    IF_IS(monitor                      , monitor);
+   IF_IS(queue                        , queue);
 #undef IF_IS
 
    /* Return label/label_name */
@@ -1350,7 +1311,6 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_maxOuterIterations:
       case PRIMME_initBasisMode:
       case PRIMME_projectionParams_projection:
-      case PRIMME_restartingParams_scheme:
       case PRIMME_restartingParams_maxPrevRetain:
       case PRIMME_correctionParams_precondition:
       case PRIMME_correctionParams_robustShifts:
@@ -1368,12 +1328,11 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_stats_numPreconds:
       case PRIMME_stats_numGlobalSum:
       case PRIMME_stats_volumeGlobalSum:
+      case PRIMME_stats_lockingIssue:
       case PRIMME_numProcs:
       case PRIMME_procID:
       case PRIMME_nLocal:
       case PRIMME_numTargetShifts:
-      case PRIMME_intWorkSize:
-      case PRIMME_realWorkSize:
       case PRIMME_printLevel:
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
@@ -1416,8 +1375,6 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_applyPreconditioner:
       case PRIMME_commInfo:
       case PRIMME_globalSumReal:
-      case PRIMME_intWork:
-      case PRIMME_realWork:
       case PRIMME_massMatrixMatvec:
       case PRIMME_outputFile:
       case PRIMME_matrix:
@@ -1426,6 +1383,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_convtest:
       case PRIMME_monitorFun:
       case PRIMME_monitor:
+      case PRIMME_queue:
       if (type) *type = primme_pointer;
       if (arity) *arity = 1;
       break;

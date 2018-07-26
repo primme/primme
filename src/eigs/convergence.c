@@ -101,8 +101,9 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
    /* Tolerance based on our dynamic norm estimate */
    /* -------------------------------------------- */
 
-   tol = max(machEps * max(primme->stats.estimateLargestSVal, primme->aNorm),
-               primme->stats.maxConvTol);
+   tol = max(MACHINE_EPSILON *
+                 max(primme->stats.estimateLargestSVal, primme->aNorm),
+             primme->stats.maxConvTol);
 
    /* ---------------------------------------------------------------------- */
    /* If locking, set tol beyond which we need to check for accuracy problem */
@@ -139,7 +140,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       }
 
       CHKERR(convTestFun_Sprimme(hVals[i], X?&X[ldX*(i-left)]:NULL,
-               blockNorms[i-left], &isConv, ctx));
+               blockNorms[i-left], &isConv, primme));
 
       if (isConv) {
          flags[i] = CONVERGED;
@@ -189,7 +190,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
                numToProject, flags, blockNorms, tol, ctx));
    }
 
-   CHKERR(Num_free_iprimme(right-left, &toProject, ctx));
+   CHKERR(Num_free_iprimme(toProject, ctx));
 
    return 0;
 
@@ -233,7 +234,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
 
    primme_params *primme = ctx.primme;
    int i;
-   REAL *overlaps;
+   HREAL *overlaps;
 
    /* ------------------------------------------------------------------ */
    /* Compute norms of the projected res and the differences from res    */ 
@@ -244,7 +245,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
    /* overlaps(i) = || evecs'*R(i) || */
    /* newResiduals(i) = || (I-evecs*evecs')*R(i) || */
 
-   CHKERR(Num_malloc_SHprimme(numToProject, &overlaps, ctx));
+   CHKERR(Num_malloc_RHprimme(numToProject, &overlaps, ctx));
 
    CHKERR(ortho_single_iteration_Sprimme(evecs, nLocal, evecsSize, ldevecs,
             R, iev, numToProject, ldR, overlaps, NULL, ctx));
@@ -289,7 +290,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
 
    }
 
-   CHKERR(Num_free_SHprimme(numToProject, &overlaps, ctx));
+   CHKERR(Num_free_RHprimme(overlaps, ctx));
 
    return 0;
 }

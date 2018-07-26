@@ -41,6 +41,9 @@ void Num_gemm_sprimme(const char *transa, const char *transb, int m, int n,
 void Num_gemm_dhd_sprimme(const char *transa, const char *transb, int m, int n,
       int k, float alpha, float *a, int lda, float *b, int ldb, float beta,
       float *c, int ldc, primme_context ctx);
+void Num_gemm_ddh_sprimme(const char *transa, const char *transb, int m, int n,
+      int k, float alpha, float *a, int lda, float *b, int ldb, float beta,
+      float *c, int ldc, primme_context ctx);
 void Num_hemm_sprimme(const char *side, const char *uplo, int m, int n,
       float alpha, float *a, int lda, float *b, int ldb, float beta,
       float *c, int ldc);
@@ -87,6 +90,9 @@ void Num_gemm_cprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
       PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
 void Num_gemm_dhd_cprimme(const char *transa, const char *transb, int m, int n,
+      int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
+      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
+void Num_gemm_ddh_cprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
       PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
 void Num_hemm_cprimme(const char *side, const char *uplo, int m, int n,
@@ -171,6 +177,21 @@ void Num_gemm_dprimme(const char *transa, const char *transb, int m, int n,
 #  define Num_gemm_dhd_RHprimme CONCAT(Num_gemm_dhd_,HOST_REAL_SUF)
 #endif
 void Num_gemm_dhd_dprimme(const char *transa, const char *transb, int m, int n,
+      int k, double alpha, double *a, int lda, double *b, int ldb, double beta,
+      double *c, int ldc, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_ddh_Sprimme)
+#  define Num_gemm_ddh_Sprimme CONCAT(Num_gemm_ddh_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_ddh_Rprimme)
+#  define Num_gemm_ddh_Rprimme CONCAT(Num_gemm_ddh_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_ddh_SHprimme)
+#  define Num_gemm_ddh_SHprimme CONCAT(Num_gemm_ddh_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_ddh_RHprimme)
+#  define Num_gemm_ddh_RHprimme CONCAT(Num_gemm_ddh_,HOST_REAL_SUF)
+#endif
+void Num_gemm_ddh_dprimme(const char *transa, const char *transb, int m, int n,
       int k, double alpha, double *a, int lda, double *b, int ldb, double beta,
       double *c, int ldc, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_hemm_Sprimme)
@@ -423,6 +444,9 @@ void Num_gemm_zprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
       PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
 void Num_gemm_dhd_zprimme(const char *transa, const char *transb, int m, int n,
+      int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
+      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
+void Num_gemm_ddh_zprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
       PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
 void Num_hemm_zprimme(const char *side, const char *uplo, int m, int n,

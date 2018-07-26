@@ -109,35 +109,30 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
  *             by check_input()
  *
  ******************************************************************************/
- 
-int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms, 
+
+int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
             primme_params *primme) {
-      
-   int ret;
-   int *perm;
-   double machEps;
 
-   /* zero out the timer */
-   primme_wTimer(1);
+  int *perm;
 
-   /*  Find machine precision */
-   machEps = MACHINE_EPSILON;
+  /* zero out the timer */
+  primme_wTimer(1);
 
-   /* Set some defaults for sequential programs */
-   if (primme->numProcs <= 1 && evals != NULL && evecs != NULL
-         && resNorms != NULL) {
-      primme->nLocal = primme->n;
-      primme->procID = 0;
-   }
+  /* Set some defaults for sequential programs */
+  if (primme->numProcs <= 1 && evals != NULL && evecs != NULL &&
+      resNorms != NULL) {
+    primme->nLocal = primme->n;
+    primme->procID = 0;
+  }
 
-   /* Set some defaults  */
-   primme_set_defaults(primme);
+  /* Set some defaults  */
+  primme_set_defaults(primme);
 
-   /* Observed orthogonality issues finding the largest/smallest values in  */
-   /* single precision. Computing V'*B*V and solving the projected problem  */
-   /* V'AVx = V'BVxl mitigates the problem.                                 */
+  /* Observed orthogonality issues finding the largest/smallest values in  */
+  /* single precision. Computing V'*B*V and solving the projected problem  */
+  /* V'AVx = V'BVxl mitigates the problem.                                 */
 
-   if (primme->orth == primme_orth_default) {
+  if (primme->orth == primme_orth_default) {
 #ifdef USE_FLOAT
       if (primme->projectionParams.projection == primme_proj_RR &&
             (primme->target == primme_largest ||
@@ -171,7 +166,7 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    if (!primme->convTestFun) {
       primme->convTestFun = convTestFunAbsolute;
       if (primme->eps == 0.0) {
-         primme->eps = machEps*1e4;
+         primme->eps = MACHINE_EPSILON*1e4;
       }
    }
 
@@ -198,8 +193,8 @@ int Sprimme(REAL *evals, SCALAR *evecs, REAL *resNorms,
    /* Call the solver                                                      */
    /*----------------------------------------------------------------------*/
 
-   CHKERR(main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms,
-                            machEps, ctx));
+   CHKERR(
+       main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms, ctx));
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
@@ -275,9 +270,6 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
       ret = -19;
    else if (primme->restartingParams.maxPrevRetain < 0)
       ret = -20;
-   else if (primme->restartingParams.scheme != primme_thick &&
-            primme->restartingParams.scheme != primme_dtr)
-      ret = -21;
    else if (primme->initSize < 0) 
       ret = -22;
    else if (primme->locking == 0 && primme->initSize > primme->maxBasisSize)
@@ -359,14 +351,13 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
       int *isConv, primme_params *primme, int *ierr) {
 
-   const double machEps = MACHINE_EPSILON;
    const double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
    (void)eval; /* unused parameter */
    (void)evec; /* unused parameter */
    *isConv = *rNorm < max(
                primme->eps * aNorm,
-               machEps * 3.16 * primme->stats.estimateLargestSVal);
+               MACHINE_EPSILON * 3.16 * primme->stats.estimateLargestSVal);
    *ierr = 0;
 }
 

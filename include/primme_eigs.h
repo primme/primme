@@ -68,13 +68,6 @@ typedef enum {         /* Initially fill up the search subspace with: */
    primme_init_user    /* c) provided vectors or a single random vector */
 } primme_init;
 
-
-typedef enum {
-   primme_thick,
-   primme_dtr
-} primme_restartscheme;
-
-
 typedef enum {
    primme_full_LTolerance,
    primme_decreasing_LTolerance,
@@ -118,6 +111,7 @@ typedef struct primme_stats {
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
    double maxConvTol;               /* largest norm residual of a locked eigenpair */
    double estimateResidualError;    /* accumulated error in V and W */
+   PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
 } primme_stats;
 
 typedef struct JD_projectors {
@@ -144,7 +138,6 @@ typedef struct correction_params {
 
 
 typedef struct restarting_params {
-   primme_restartscheme scheme;
    int maxPrevRetain;
 } restarting_params;
 
@@ -193,11 +186,7 @@ typedef struct primme_params {
    int maxBlockSize;
    PRIMME_INT maxMatvecs;
    PRIMME_INT maxOuterIterations;
-   int intWorkSize;
-   size_t realWorkSize;
    PRIMME_INT iseed[4];
-   int *intWork;
-   void *realWork;
    double aNorm;
    double eps;
    primme_orth orth;
@@ -276,11 +265,7 @@ typedef enum {
    PRIMME_maxBlockSize =  17,
    PRIMME_maxMatvecs =  18,
    PRIMME_maxOuterIterations =  19,
-   PRIMME_intWorkSize =  20,
-   PRIMME_realWorkSize =  21,
    PRIMME_iseed =  22,
-   PRIMME_intWork =  23,
-   PRIMME_realWork =  24,
    PRIMME_aNorm =  25,
    PRIMME_eps =  26,
    PRIMME_printLevel =  27,
@@ -289,7 +274,6 @@ typedef enum {
    PRIMME_preconditioner =  30,
    PRIMME_initBasisMode =   301,
    PRIMME_projectionParams_projection =  302,
-   PRIMME_restartingParams_scheme =  31,
    PRIMME_restartingParams_maxPrevRetain =  32,
    PRIMME_correctionParams_precondition =  33,
    PRIMME_correctionParams_robustShifts =  34,
@@ -318,6 +302,7 @@ typedef enum {
    PRIMME_stats_estimateMaxEVal =  482,
    PRIMME_stats_estimateLargestSVal =  483,
    PRIMME_stats_maxConvTol =  484,
+   PRIMME_stats_lockingIssue =  485,
    PRIMME_dynamicMethodSwitch = 49,
    PRIMME_massMatrixMatvec =  50,
    PRIMME_convTestFun =  51,
@@ -325,7 +310,8 @@ typedef enum {
    PRIMME_ldevecs =  52,
    PRIMME_ldOPs =  53,
    PRIMME_monitorFun = 54,
-   PRIMME_monitor = 55
+   PRIMME_monitor = 55,
+   PRIMME_queue = 56
 } primme_params_label;
 
 int sprimme(float *evals, float *evecs, float *resNorms, 

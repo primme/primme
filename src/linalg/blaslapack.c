@@ -34,16 +34,18 @@
  *
  ******************************************************************************/
 
+
 #include <stdlib.h>   /* free */
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
 #include "template.h"
-#include "blaslapack_private.h"
 #include "blaslapack.h"
 #include "auxiliary.h" // cyclic
 
 #ifdef USE_HOST
+
+#include "blaslapack_private.h"
 
 /*******************************************************************************
  * Subroutine Num_copy_Sprimme - y(0:n*incy-1:incy) = x(0:n*incx-1:incx)
@@ -122,7 +124,15 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
 TEMPLATE_PLEASE
 void Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
+      int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
+      SCALAR *c, int ldc, primme_context ctx) {
+  Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc,
+                   ctx);
+}
+
+TEMPLATE_PLEASE
+void Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
+      int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
       SCALAR *c, int ldc, primme_context ctx) {
   Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc,
                    ctx);
@@ -252,7 +262,7 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
 
 TEMPLATE_PLEASE
 void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, HSCALAR *y,
       int incy, primme_context ctx) {
 
    Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
@@ -265,7 +275,7 @@ void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
 
 TEMPLATE_PLEASE
 void Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+      SCALAR *a, int lda, HSCALAR *x, int incx, SCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
    Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);

@@ -157,61 +157,61 @@ int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, double rNorm, 
 void Num_compute_residual_smagmaprimme(PRIMME_INT n, magma_float eval, magma_float *x,
    magma_float *Ax, magma_float *r, primme_context ctx);
 int Num_update_VWXR_smagmaprimme(magma_float *V, magma_float *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, magma_float *h, int nh, int ldh, magma_float *hVals,
+      PRIMME_INT ldV, magma_float *h, int nh, int ldh, float *hVals,
       magma_float *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       magma_float *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       magma_float *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       magma_float *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      magma_float *R, int nRb, int nRe, PRIMME_INT ldR, magma_float *Rnorms,
-      magma_float *rnorms, int nrb, int nre,
+      float *R, int nRb, int nRe, PRIMME_INT ldR, float *Rnorms,
+      float *rnorms, int nrb, int nre,
       primme_context ctx);
 int applyPreconditioner_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_smagmaprimme(magma_float eval, magma_float *evec, magma_float rNorm, int *isconv,
+int convTestFun_smagmaprimme(float eval, magma_float *evec, float rNorm, int *isconv,
       struct primme_params *primme);
 void Num_compute_residual_cmagmaprimme(PRIMME_INT n, magma_complex_float eval, magma_complex_float *x,
    magma_complex_float *Ax, magma_complex_float *r, primme_context ctx);
 int Num_update_VWXR_cmagmaprimme(magma_complex_float *V, magma_complex_float *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, magma_complex_float *h, int nh, int ldh, magma_float *hVals,
+      PRIMME_INT ldV, magma_complex_float *h, int nh, int ldh, float *hVals,
       magma_complex_float *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       magma_complex_float *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       magma_complex_float *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       magma_complex_float *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      magma_complex_float *R, int nRb, int nRe, PRIMME_INT ldR, magma_float *Rnorms,
-      magma_float *rnorms, int nrb, int nre,
+      PRIMME_COMPLEX_FLOAT *R, int nRb, int nRe, PRIMME_INT ldR, float *Rnorms,
+      float *rnorms, int nrb, int nre,
       primme_context ctx);
 int applyPreconditioner_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_complex_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_cmagmaprimme(magma_float eval, magma_complex_float *evec, magma_float rNorm, int *isconv,
+int convTestFun_cmagmaprimme(float eval, magma_complex_float *evec, float rNorm, int *isconv,
       struct primme_params *primme);
 void Num_compute_residual_dmagmaprimme(PRIMME_INT n, magma_double eval, magma_double *x,
    magma_double *Ax, magma_double *r, primme_context ctx);
 int Num_update_VWXR_dmagmaprimme(magma_double *V, magma_double *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, magma_double *h, int nh, int ldh, magma_double *hVals,
+      PRIMME_INT ldV, magma_double *h, int nh, int ldh, double *hVals,
       magma_double *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       magma_double *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       magma_double *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       magma_double *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      magma_double *R, int nRb, int nRe, PRIMME_INT ldR, magma_double *Rnorms,
-      magma_double *rnorms, int nrb, int nre,
+      double *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
+      double *rnorms, int nrb, int nre,
       primme_context ctx);
 int applyPreconditioner_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_dmagmaprimme(magma_double eval, magma_double *evec, magma_double rNorm, int *isconv,
+int convTestFun_dmagmaprimme(double eval, magma_double *evec, double rNorm, int *isconv,
       struct primme_params *primme);
 void Num_compute_residual_zmagmaprimme(PRIMME_INT n, magma_complex_double eval, magma_complex_double *x,
    magma_complex_double *Ax, magma_complex_double *r, primme_context ctx);
 int Num_update_VWXR_zmagmaprimme(magma_complex_double *V, magma_complex_double *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, magma_complex_double *h, int nh, int ldh, magma_double *hVals,
+      PRIMME_INT ldV, magma_complex_double *h, int nh, int ldh, double *hVals,
       magma_complex_double *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       magma_complex_double *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       magma_complex_double *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       magma_complex_double *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      magma_complex_double *R, int nRb, int nRe, PRIMME_INT ldR, magma_double *Rnorms,
-      magma_double *rnorms, int nrb, int nre,
+      PRIMME_COMPLEX_DOUBLE *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
+      double *rnorms, int nrb, int nre,
       primme_context ctx);
 int applyPreconditioner_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_complex_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_zmagmaprimme(magma_double eval, magma_complex_double *evec, magma_double rNorm, int *isconv,
+int convTestFun_zmagmaprimme(double eval, magma_complex_double *evec, double rNorm, int *isconv,
       struct primme_params *primme);
 #endif

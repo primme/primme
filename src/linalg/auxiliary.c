@@ -40,6 +40,7 @@
 #include "template.h"
 #include "auxiliary.h"
 #include "blaslapack.h"
+#include "magma_wrapper.h"
 
 #ifdef USE_HOST
 
@@ -99,6 +100,7 @@ int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
  * 
  ******************************************************************************/
 
+TEMPLATE_PLEASE
 int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
    (void)ctx;
 
@@ -119,6 +121,7 @@ int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
  * 
  ******************************************************************************/
 
+TEMPLATE_PLEASE
 int Num_free_iprimme(int *x, primme_context ctx) {
    (void)ctx;
 
@@ -417,7 +420,6 @@ void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldy, primme_context ctx) {
 
   int i;
-  PRIMME_INT j;
 
   /* TODO: assert x and y don't overlap */
   for (i = 0; i < n; i++) {
@@ -444,8 +446,8 @@ void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                          int *perm_, primme_context ctx) {
+int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
@@ -454,23 +456,25 @@ void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
    int *perm;            /* A copy of perm_                                   */
    SCALAR *rwork;        /* vector buffer */
 
-   Num_malloc_iprimme(n, &perm, ctx);
-   Num_malloc_Sprimme(m, &rwork, ctx);
- 
+   CHKERR(Num_malloc_iprimme(n, &perm, ctx));
+   CHKERR(Num_malloc_Sprimme(m, &rwork, ctx));
+
    /* Check perm_ is a permutation */
 
 #ifndef NDEBUG
-      for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
-   for (tempIndex=0; tempIndex<n; tempIndex++) {
+   for (tempIndex = 0; tempIndex < n; tempIndex++)
+      perm[tempIndex] = 0;
+   for (tempIndex = 0; tempIndex < n; tempIndex++) {
       assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
       perm[perm_[tempIndex]] = 1;
    }
-   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+   for (tempIndex = 0; tempIndex < n; tempIndex++)
+      assert(perm[tempIndex] == 1);
 #endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
 
-   for (tempIndex=0; tempIndex<n; tempIndex++)
+   for (tempIndex = 0; tempIndex < n; tempIndex++)
       perm[tempIndex] = perm_[tempIndex];
 
    /* Continue until all vectors are in the sorted order */
@@ -485,11 +489,11 @@ void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
 
       /* Return if they are in the sorted order */
       if (currentIndex >= n) {
-         return;
+         break;
       }
 
       /* Copy the vector to a buffer for swapping */
-      Num_copy_Sprimme(m, &vecs[currentIndex*ld], 1, rwork, 1);
+      Num_copy_Sprimme(m, &vecs[currentIndex * ld], 1, rwork, 1, ctx);
 
       destinationIndex = currentIndex;
       /* Copy vector perm[destinationIndex] into position destinationIndex */
@@ -497,42 +501,44 @@ void permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
       while (perm[destinationIndex] != currentIndex) {
 
          sourceIndex = perm[destinationIndex];
-         Num_copy_Sprimme(m, &vecs[sourceIndex*ld], 1, 
-               &vecs[destinationIndex*ld], 1);
+         Num_copy_Sprimme(m, &vecs[sourceIndex * ld], 1,
+                          &vecs[destinationIndex * ld], 1, ctx);
          tempIndex = perm[destinationIndex];
          perm[destinationIndex] = destinationIndex;
          destinationIndex = tempIndex;
       }
 
       /* Copy the vector from the buffer to where it belongs */
-      Num_copy_Sprimme(m, rwork, 1, &vecs[destinationIndex*ld], 1);
+      Num_copy_Sprimme(m, rwork, 1, &vecs[destinationIndex * ld], 1, ctx);
       perm[destinationIndex] = destinationIndex;
 
       currentIndex++;
    }
 
    /* Check permutation */
-   for (currentIndex=0; currentIndex < n; currentIndex++)
+   for (currentIndex = 0; currentIndex < n; currentIndex++)
       assert(perm[currentIndex] == currentIndex);
 
-   Num_free_iprimme(n, &perm, ctx);
-   Num_free_Sprimme(m, &rwork, ctx);
+   CHKERR(Num_free_iprimme(perm, ctx));
+   CHKERR(Num_free_Sprimme(rwork, ctx));
+
+   return 0;
 }
 
 #ifdef USE_DOUBLE
 TEMPLATE_PLEASE
-void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
+int permute_vecs_iprimme(int *vecs, int n, int *perm_, primme_context ctx) {
 
    int currentIndex;     /* Index of vector in sorted order                   */
    int sourceIndex;      /* Position of out-of-order vector in original order */
    int destinationIndex; /* Position of out-of-order vector in sorted order   */
    int tempIndex;        /* Used to swap                                      */
-   int *perm=iwork;      /* A copy of perm_                                   */
+   int *perm;            /* A copy of perm_                                   */
    int aux;
 
    /* Check that perm_ and iwork do not overlap */
 
-   assert((perm_>iwork?perm_-iwork:iwork-perm_) >= n);
+   CHKERR(Num_malloc_iprimme(n, &perm, ctx));
 
    /* Check perm_ is a permutation */
 
@@ -562,7 +568,7 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
 
       /* Return if they are in the sorted order */
       if (currentIndex >= n) {
-         return;
+         break;
       }
 
       /* Copy the vector to a buffer for swapping */
@@ -591,6 +597,9 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
    for (currentIndex=0; currentIndex < n; currentIndex++)
       assert(perm[currentIndex] == currentIndex);
 
+   CHKERR(Num_free_iprimme(n, &perm, ctx));
+
+   return 0;
 }
 #endif
 
@@ -620,7 +629,7 @@ void permute_vecs_iprimme(int *vecs, int n, int *perm_, int *iwork) {
 TEMPLATE_PLEASE
 SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, 
       PRIMME_INT ld, int *perm, SCALAR *work, PRIMME_INT ldwork,
-      int avoidCopy) {
+      int avoidCopy, primme_context ctx) {
 
    int i;
 
@@ -630,9 +639,8 @@ SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n,
    }
 
    for (i=0; i < n; i++) {
-      Num_copy_matrix_Sprimme(&vecs[perm[i]*ld], m, 1, ld, &work[i*ldwork], ld);
+     Num_copy_matrix_Sprimme(&vecs[perm[i] * ld], m, 1, ld, &work[i * ldwork],
+                             ld, ctx);
    }
    return work;
 }
-
-

@@ -63,12 +63,14 @@
 TEMPLATE_PLEASE
 int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, int basisSize, int blockSize,
-      primme_params *primme) {
+      primme_context ctx) {
 
-   int i, ONE=1, ierr=0;
+   primme_params *primme = ctx.primme;
+   int i, ONE = 1, ierr = 0;
    double t0;
 
-   if (blockSize <= 0) return 0;
+   if (blockSize <= 0)
+      return 0;
 
    assert(ldV >= nLocal && ldW >= nLocal);
    assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
@@ -77,15 +79,17 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
    if (primme->ldOPs == 0 || (ldV == primme->ldOPs && ldW == primme->ldOPs)) {
-      CHKERRM((primme->matrixMatvec(&V[ldV*basisSize], &ldV, &W[ldW*basisSize],
-                  &ldW, &blockSize, primme, &ierr), ierr), -1,
-            "Error returned by 'matrixMatvec' %d", ierr);
+      CHKERRM(
+            (primme->matrixMatvec(&V[ldV * basisSize], &ldV, &W[ldW * basisSize],
+                                  &ldW, &blockSize, primme, &ierr),
+             ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
    }
    else {
       for (i=0; i<blockSize; i++) {
          CHKERRM((primme->matrixMatvec(&V[ldV*(basisSize+i)], &primme->ldOPs,
                      &W[ldW*(basisSize+i)], &primme->ldOPs, &ONE, primme,
-                     &ierr), ierr), -1,
+                     &ierr), ierr), PRIMME_USER_FAILURE,
                "Error returned by 'matrixMatvec' %d", ierr);
       }
    }
@@ -93,7 +97,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    primme->stats.timeMatvec += primme_wTimer(0) - t0;
    primme->stats.numMatvecs += blockSize;
 
-   return ierr;
+   return 0;
 
 }
 
@@ -121,7 +125,7 @@ TEMPLATE_PLEASE
 int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
       double targetShift, int basisSize, int blockSize,
-      size_t *rworkSize, double machEps, primme_context ctx) {
+      primme_context ctx) {
 
    int i, j;
 

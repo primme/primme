@@ -154,7 +154,6 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
       REAL eval, REAL shift, int *touch, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int i;             /* loop variable                                       */
    int numIts;        /* Number of inner iterations                          */
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
 
@@ -577,7 +576,7 @@ static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,
    /* Place K^{-1}v in result */
    primme_params *primme = ctx.primme;
    CHKERR(applyPreconditioner_Sprimme(v, primme->nLocal, primme->nLocal, result,
-            primme->nLocal, 1, primme));
+            primme->nLocal, 1, ctx));
 
    CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, UDU, ipivot,
             sizeRprojectorQ, result, ctx));
@@ -651,7 +650,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
                               0.0, overlaps, 1, ctx);
 
          /* Global sum: overlaps = Q'*v */
-         CHKERR(globalSum_Sprimme(overlaps, overlaps, numCols, ctx));
+         CHKERR(globalSum_SHprimme(overlaps, overlaps, numCols, ctx));
 
          /* --------------------------------------------*/
          /* Backsolve only if there is a skew projector */
@@ -713,7 +712,7 @@ static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q,
    primme_params *primme = ctx.primme;
 
    CHKERR(matrixMatvec_Sprimme(v, primme->nLocal, primme->nLocal, result,
-         primme->nLocal, 0, 1, primme));
+         primme->nLocal, 0, 1, ctx));
    Num_axpy_Sprimme(primme->nLocal, -shift, v, 1, result, 1, ctx); 
    if (dimQ > 0)
       CHKERR(apply_projector(Q, ldQ, dimQ, result, ctx));
@@ -788,7 +787,7 @@ static int dist_dot(SCALAR *x, int incx,
    SCALAR temp;
                                                                                 
    temp = Num_dot_Sprimme(ctx.primme->nLocal, x, incx, y, incy, ctx);
-   CHKERR(globalSum_Sprimme(&temp, result, 1, ctx));
+   CHKERR(globalSum_SHprimme(&temp, result, 1, ctx));
 
    return 0;
 }

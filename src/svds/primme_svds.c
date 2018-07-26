@@ -45,22 +45,21 @@
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
 
-#define ALLOCATE_WORKSPACE_FAILURE -1
-#define MALLOC_FAILURE             -3
-
 static int primme_svds_check_input(REAL *svals, SCALAR *svecs, 
         REAL *resNorms, primme_svds_params *primme_svds);
-static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-      REAL *svals, SCALAR *svecs, REAL *rnorms, int *allocatedTargetShifts);
-static int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-      REAL *svals, SCALAR *svecs, REAL *rnorms, int allocatedTargetShifts);
+static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
+                                     REAL *rnorms, int *allocatedTargetShifts,
+                                     SCALAR **out_svecs, primme_context ctx);
+static int copy_last_params_to_svds(int stage, REAL *svals, SCALAR *svecs,
+                             REAL *rnorms, int allocatedTargetShifts,
+                             primme_context ctx);
+static primme_context primme_svds_get_context(primme_svds_params *primme_svds);
 static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
-static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx, REAL *factors,
-                                       primme_svds_params *primme_svds);
-static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate);
+static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      REAL *factors, primme_context ctx);
 static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count, 
       primme_svds_params *primme_svds);
 static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
@@ -107,6 +106,7 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    (PRIMME_SVDS_STATS).timePrecond        OP  (PRIMME_STATS).timePrecond       ;\
    (PRIMME_SVDS_STATS).timeOrtho          OP  (PRIMME_STATS).timeOrtho         ;\
    (PRIMME_SVDS_STATS).timeGlobalSum      OP  (PRIMME_STATS).timeGlobalSum     ;\
+   (PRIMME_SVDS_STATS).lockingIssue       OP  (PRIMME_STATS).lockingIssue      ;\
 }
 
 
@@ -171,29 +171,19 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
       primme_svds->eps = MACHINE_EPSILON*1e4;
    }
 
-   /* -------------------------------------------------------------- */
-   /* If needed, we are ready to estimate required memory and return */
-   /* -------------------------------------------------------------- */
-    if (svals == NULL && svecs == NULL && resNorms == NULL)
-       return allocate_workspace_svds(primme_svds, 0 /* don't allocate */);
+   /* Deprecated input  */
+
+   if (svals == NULL && svecs == NULL && resNorms == NULL)
+       return 0;
+   
+   primme_context ctx = primme_svds_get_context(primme_svds);
 
    /* ----------------------------------------------------------- */
    /* Primme_svds_initialize must be called by users unless users */  
    /* specify all parameters in primme_svds structure. Check if   */
    /* primme_svds inputs are good for bounds, correct values etc. */
    /* ----------------------------------------------------------- */
-   ret = primme_svds_check_input(svals, svecs, resNorms, primme_svds); 
-   if (ret != 0) {
-      return(ret);
-   }
-
-   /* ----------------------------------------------------------------------- */
-   /* Compute AND allocate memory requirements for main_iter and subordinates */
-   /* ----------------------------------------------------------------------- */
-   ret = allocate_workspace_svds(primme_svds, 1 /* allocate */);
-   if (ret != 0) {
-      return ALLOCATE_WORKSPACE_FAILURE;
-   }
+   CHKERR(primme_svds_check_input(svals, svecs, resNorms, primme_svds)); 
 
    /* ----------------------------------------- */
    /* Set default monitor and convergence test  */
@@ -223,6 +213,7 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    primme_svds->stats.timePrecond                   = 0.0;
    primme_svds->stats.timeOrtho                     = 0.0;
    primme_svds->stats.timeGlobalSum                 = 0.0;
+   primme_svds->stats.lockingIssue                  = 0;
 
    /* --------------- */
    /* Execute stage 1 */
@@ -232,14 +223,13 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
       primme_svds->eps = MACHINE_EPSILON*1e4;
    }
 
-   CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 0, NULL, svecs,
-               NULL, &allocatedTargetShifts)) == NULL,
-         ALLOCATE_WORKSPACE_FAILURE);
+   CHKERR(copy_last_params_from_svds(0, NULL, svecs,
+               NULL, &allocatedTargetShifts, &svecs0, ctx));
 
-   ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primme); 
+   ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primme);
 
-   CHKERRS(copy_last_params_to_svds(primme_svds, 0, svals, svecs, resNorms,
-            allocatedTargetShifts), ALLOCATE_WORKSPACE_FAILURE);
+   CHKERR(copy_last_params_to_svds(
+         0, svals, svecs, resNorms, allocatedTargetShifts, ctx));
 
    if(ret != 0) {
       return ret - 100;
@@ -252,9 +242,8 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    /* Execute stage 2 */
    /* --------------- */
 
-   CHKERRS((svecs0 = copy_last_params_from_svds(primme_svds, 1, svals, svecs,
-            resNorms, &allocatedTargetShifts)) == NULL,
-         ALLOCATE_WORKSPACE_FAILURE);
+   CHKERR(copy_last_params_from_svds(
+         1, svals, svecs, resNorms, &allocatedTargetShifts, &svecs0, ctx));
 
    /* The value numSvals-primme->numEvals indicates how many svals */
    /* are already converged. So shift svals and resnorms that much */
@@ -262,8 +251,8 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
 
    ret = Sprimme(svals+nconv, svecs0, resNorms+nconv, &primme_svds->primmeStage2);
 
-   CHKERRS(copy_last_params_to_svds(primme_svds, 1, svals, svecs, resNorms,
-         allocatedTargetShifts), ALLOCATE_WORKSPACE_FAILURE);
+   CHKERR(copy_last_params_to_svds(
+         1, svals, svecs, resNorms, allocatedTargetShifts, ctx));
 
    if(ret != 0) {
       return ret - 200;
@@ -276,537 +265,447 @@ static int comp_double(const void *a, const void *b)
    return *(double*)a <= *(double*)b ? -1 : 1;
 }
 
-static SCALAR* copy_last_params_from_svds(primme_svds_params *primme_svds, int stage,
-      REAL *svals, SCALAR *svecs, REAL *rnorms, int *allocatedTargetShifts) {
+static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
+                                     REAL *rnorms, int *allocatedTargetShifts,
+                                     SCALAR **out_svecs, primme_context ctx) {
 
-   primme_params *primme;
-   primme_svds_operator method;
-   SCALAR *aux, *out_svecs = svecs;
-   int n, nMax, i, cut;
-   const double machEps = MACHINE_EPSILON;
+  primme_svds_params *primme_svds = ctx.primme_svds;
+  primme_params *primme;
+  primme_svds_operator method;
+  SCALAR *aux;
+  *out_svecs = svecs;
+  int n, nMax, i;
 
-   primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
-   method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
+  primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
+  method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
 
-   *allocatedTargetShifts = 0;
+  *allocatedTargetShifts = 0;
 
-   if (method == primme_svds_op_none) {
-      primme->maxMatvecs = 0;
-      return NULL;
-   }
+  if (method == primme_svds_op_none) {
+    primme->maxMatvecs = 0;
+    return 0;
+  }
 
-   if (!primme->matrixMatvec) {
-      primme->matrixMatvec = matrixMatvecSVDS;
-      primme->matrix = primme_svds;
-   }
-   if (!primme->applyPreconditioner) {
-      primme->applyPreconditioner = applyPreconditionerSVDS;
-      primme->preconditioner = primme_svds;
-   }
+  if (!primme->matrixMatvec) {
+    primme->matrixMatvec = matrixMatvecSVDS;
+    primme->matrix = primme_svds;
+  }
+  if (!primme->applyPreconditioner) {
+    primme->applyPreconditioner = applyPreconditionerSVDS;
+    primme->preconditioner = primme_svds;
+  }
 
-   if (primme_svds->aNorm > 0.0) {
-      switch(method) {
-      case primme_svds_op_AtA:
-      case primme_svds_op_AAt:
-         primme->aNorm = primme_svds->aNorm*primme_svds->aNorm;
-         break;
-      case primme_svds_op_augmented:
-         primme->aNorm = primme_svds->aNorm;
-         break;
-      case primme_svds_op_none:
-         break;
-      }
-   }
-
-   switch(method) {
-   case primme_svds_op_AtA:
-   case primme_svds_op_AAt:
-      primme->convTestFun = convTestFunATA;
+  if (primme_svds->aNorm > 0.0) {
+    switch (method) {
+    case primme_svds_op_AtA:
+    case primme_svds_op_AAt:
+      primme->aNorm = primme_svds->aNorm * primme_svds->aNorm;
       break;
-   case primme_svds_op_augmented:
-      primme->convTestFun = convTestFunAug;
+    case primme_svds_op_augmented:
+      primme->aNorm = primme_svds->aNorm;
       break;
-   case primme_svds_op_none:
+    case primme_svds_op_none:
       break;
-   }
+    }
+  }
 
-   /* Set properly initial vectors. Now svecs = [Uc U0 Vc V0], where          */
-   /* Uc, m x numOrthoConst, left constrain vectors;                          */
-   /* U0, m x initSize, left initial vectors;                                 */
-   /* Vc, n x numOrthoConst, right constrain vectors;                         */
-   /* V0, n x numOrthoConst, right initial vectors.                           */
+  switch (method) {
+  case primme_svds_op_AtA:
+  case primme_svds_op_AAt:
+    primme->convTestFun = convTestFunATA;
+    break;
+  case primme_svds_op_augmented:
+    primme->convTestFun = convTestFunAug;
+    break;
+  case primme_svds_op_none:
+    break;
+  }
 
-   primme->initSize = primme_svds->initSize;
-   primme->numOrthoConst = primme_svds->numOrthoConst;
-   n = primme_svds->initSize + primme_svds->numOrthoConst;
-   nMax = max(primme_svds->initSize, primme_svds->numSvals) + primme_svds->numOrthoConst;
-   switch(method) {
-   case primme_svds_op_AtA:
-   case primme_svds_op_AAt:
-      /* Move Vc V0 to the rightmost position in svecs (aux).
-         If using AA', only move Vc */
-      aux = &svecs[nMax*primme_svds->mLocal];
-      Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal*n], primme_svds->nLocal,
-         method == primme_svds_op_AtA ? n : primme_svds->numOrthoConst,
-         primme_svds->nLocal, aux, primme_svds->nLocal);
-      if (method == primme_svds_op_AtA) out_svecs = aux;
-      break;
-   case primme_svds_op_augmented:
-      /* Shuffle svecs so that svecs = [V; U] */
-      assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
-      CHKERRS(MALLOC_PRIMME(primme->nLocal*n, &aux), NULL);
-      Num_copy_Sprimme(primme->nLocal*n, svecs, 1, aux, 1);
-      Num_copy_matrix_Sprimme(&aux[primme_svds->mLocal*n], primme_svds->nLocal,
-         n, primme_svds->nLocal, svecs, primme->nLocal);
-      Num_copy_matrix_Sprimme(aux, primme_svds->mLocal, n, primme_svds->mLocal,
-         &svecs[primme_svds->nLocal], primme->nLocal);
-      free(aux);
+  /* Set properly initial vectors. Now svecs = [Uc U0 Vc V0], where          */
+  /* Uc, m x numOrthoConst, left constrain vectors;                          */
+  /* U0, m x initSize, left initial vectors;                                 */
+  /* Vc, n x numOrthoConst, right constrain vectors;                         */
+  /* V0, n x numOrthoConst, right initial vectors.                           */
 
-      /* Normalize the orthogonal constrains */
-      Num_scal_Sprimme(primme->nLocal*primme_svds->numOrthoConst, 1./sqrt(2.),
-            svecs, 1);
-      break;
-   case primme_svds_op_none:
-      break;
-   }
-   primme->iseed[0] = primme_svds->iseed[0];
-   primme->iseed[1] = primme_svds->iseed[1];
-   primme->iseed[2] = primme_svds->iseed[2];
-   primme->iseed[3] = primme_svds->iseed[3];
-   if (stage == 0) {
-      primme->maxMatvecs = primme_svds->maxMatvecs/2;
-   }
-   else {
-      primme->maxMatvecs = primme_svds->maxMatvecs/2 - primme_svds->primme.stats.numMatvecs;
-   }
+  primme->initSize = primme_svds->initSize;
+  primme->numOrthoConst = primme_svds->numOrthoConst;
+  n = primme_svds->initSize + primme_svds->numOrthoConst;
+  nMax = max(primme_svds->initSize, primme_svds->numSvals) +
+         primme_svds->numOrthoConst;
+  switch (method) {
+  case primme_svds_op_AtA:
+  case primme_svds_op_AAt:
+    /* Move Vc V0 to the rightmost position in svecs (aux).
+       If using AA', only move Vc */
+    aux = &svecs[nMax * primme_svds->mLocal];
+    Num_copy_matrix_Sprimme(
+        &svecs[primme_svds->mLocal * n], primme_svds->nLocal,
+        method == primme_svds_op_AtA ? n : primme_svds->numOrthoConst,
+        primme_svds->nLocal, aux, primme_svds->nLocal, ctx);
+    if (method == primme_svds_op_AtA)
+      *out_svecs = aux;
+    break;
+  case primme_svds_op_augmented:
+    /* Shuffle svecs so that svecs = [V; U] */
+    assert(primme->nLocal == primme_svds->mLocal + primme_svds->nLocal);
+    CHKERR(Num_malloc_Sprimme(primme->nLocal * n, &aux, ctx));
+    Num_copy_Sprimme(primme->nLocal * n, svecs, 1, aux, 1, ctx);
+    Num_copy_matrix_Sprimme(&aux[primme_svds->mLocal * n], primme_svds->nLocal,
+                            n, primme_svds->nLocal, svecs, primme->nLocal, ctx);
+    Num_copy_matrix_Sprimme(aux, primme_svds->mLocal, n, primme_svds->mLocal,
+                            &svecs[primme_svds->nLocal], primme->nLocal, ctx);
+    CHKERR(Num_free_Sprimme(aux, ctx));
 
-   primme->intWork = primme_svds->intWork;
-   primme->intWorkSize = primme_svds->intWorkSize;
-   /* If matrixMatvecSVDS is used, it needs extra space to compute A*A' or A'*A */
-   if ((primme->matrixMatvec == matrixMatvecSVDS) &&
-       (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
-      cut = primme->maxBlockSize * (method == primme_svds_op_AtA ?
-                     primme_svds->mLocal : primme_svds->nLocal);
-   }
-   else {
-      cut = 0;
-   }
-   primme->realWork = (SCALAR*)primme_svds->realWork + cut;
-   assert(primme_svds->realWorkSize >= cut*sizeof(SCALAR));
-   primme->realWorkSize = primme_svds->realWorkSize - cut*sizeof(SCALAR);
- 
-   if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
-       (stage == 1 && primme->targetShifts == NULL &&
-         primme_svds->target == primme_svds_closest_abs)) {
-      primme->numTargetShifts = primme_svds->numTargetShifts;
-      if (stage == 0 &&
-            (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
-         *allocatedTargetShifts = 1;
-         CHKERRS(MALLOC_PRIMME(primme_svds->numSvals, &primme->targetShifts),
-            NULL);
-         for (i=0; i<primme->numTargetShifts; i++) {
-            primme->targetShifts[i] = 
-               primme_svds->targetShifts[i]*primme_svds->targetShifts[i];
-         }
-      }
-      else {
-         primme->targetShifts = primme_svds->targetShifts;
-      } 
-   }
-   else if (stage == 1 && primme->targetShifts == NULL &&
-         primme_svds->target == primme_svds_smallest) {
+    /* Normalize the orthogonal constrains */
+    Num_scal_Sprimme(primme->nLocal * primme_svds->numOrthoConst, 1. / sqrt(2.),
+                     svecs, 1, ctx);
+    break;
+  case primme_svds_op_none:
+    break;
+  }
+  primme->iseed[0] = primme_svds->iseed[0];
+  primme->iseed[1] = primme_svds->iseed[1];
+  primme->iseed[2] = primme_svds->iseed[2];
+  primme->iseed[3] = primme_svds->iseed[3];
+  if (stage == 0) {
+    primme->maxMatvecs = primme_svds->maxMatvecs / 2;
+  } else {
+    primme->maxMatvecs =
+        primme_svds->maxMatvecs / 2 - primme_svds->primme.stats.numMatvecs;
+  }
 
-      assert(method == primme_svds_op_augmented);
+  if ((stage == 0 && primme_svds->numTargetShifts > 0) ||
+      (stage == 1 && primme->targetShifts == NULL &&
+       primme_svds->target == primme_svds_closest_abs)) {
+    primme->numTargetShifts = primme_svds->numTargetShifts;
+    if (stage == 0 &&
+        (method == primme_svds_op_AtA || method == primme_svds_op_AAt)) {
       *allocatedTargetShifts = 1;
-      CHKERRS(MALLOC_PRIMME(primme_svds->numSvals, &primme->targetShifts),
-            NULL);
-
-      /* primme was configured to find the closest but greater values than */
-      /* some shift. The eigensolver is not able to distinguish eigenvalues*/
-      /* separated by less than machEps*|A|. The augmented matrix has      */
-      /* |m-n| eigenpairs with value zero that don't correspond to         */
-      /* singular triplets of A. To avoid to return incorrect triplets set */
-      /* shifts not smaller than machEps*|A|.                              */
-      /* If d^2 and d'^2 are the exact and the approximate eigenvalues     */
-      /* from normal equations respectively, and assuming that d' >= d,    */
-      /* then d can be lower bounded as:                                   */
-      /*    d'^2 - d^2 <= |r_AtA| -> sqrt(d'^2-|r_AtA|) <= d               */
-      /*                             sqrt(d'^2-|r|*d')  <= d               */
-
-      double min_val = primme_svds->aNorm*machEps; 
-      for (i=0; i<primme_svds->initSize; i++) {
-         primme->targetShifts[i] = max(
-               sqrt(fabs(max(svals[i]-rnorms[i], 0.0)*svals[i])), min_val);
+      CHKERR(Num_malloc_dprimme(primme_svds->numSvals, &primme->targetShifts,
+                                ctx));
+      for (i = 0; i < primme->numTargetShifts; i++) {
+        primme->targetShifts[i] =
+            primme_svds->targetShifts[i] * primme_svds->targetShifts[i];
       }
-      for ( ; i<primme_svds->numSvals; i++) {
-         primme->targetShifts[i] = min_val;
-      }
+    } else {
+      primme->targetShifts = primme_svds->targetShifts;
+    }
+  } else if (stage == 1 && primme->targetShifts == NULL &&
+             primme_svds->target == primme_svds_smallest) {
 
-      /* Sort the shifts in ascending order */
+    assert(method == primme_svds_op_augmented);
+    *allocatedTargetShifts = 1;
+    CHKERR(Num_malloc_dprimme(
+          primme_svds->numSvals, &primme->targetShifts, ctx));
 
-      qsort(primme->targetShifts, primme_svds->numSvals, sizeof(double),
-            comp_double);
-      primme->numTargetShifts = primme_svds->numSvals;
+    /* primme was configured to find the closest but greater values than */
+    /* some shift. The eigensolver is not able to distinguish eigenvalues*/
+    /* separated by less than machEps*|A|. The augmented matrix has      */
+    /* |m-n| eigenpairs with value zero that don't correspond to         */
+    /* singular triplets of A. To avoid to return incorrect triplets set */
+    /* shifts not smaller than machEps*|A|.                              */
+    /* If d^2 and d'^2 are the exact and the approximate eigenvalues     */
+    /* from normal equations respectively, and assuming that d' >= d,    */
+    /* then d can be lower bounded as:                                   */
+    /*    d'^2 - d^2 <= |r_AtA| -> sqrt(d'^2-|r_AtA|) <= d               */
+    /*                             sqrt(d'^2-|r|*d')  <= d               */
 
-   }
-   else if (method == primme_svds_op_augmented &&
-         primme_svds->target == primme_svds_smallest &&
-         primme->targetShifts == NULL) {
+    double min_val = primme_svds->aNorm * MACHINE_EPSILON;
+    for (i = 0; i < primme_svds->initSize; i++) {
+      primme->targetShifts[i] =
+          max(sqrt(fabs(max(svals[i] - rnorms[i], 0.0) * svals[i])), min_val);
+    }
+    for (; i < primme_svds->numSvals; i++) {
+      primme->targetShifts[i] = min_val;
+    }
 
-      CHKERRS(MALLOC_PRIMME(1, &primme->targetShifts), NULL);
-      *allocatedTargetShifts = 1;
-      primme->targetShifts[0] = 0.0;
-      primme->numTargetShifts = 1;
+    /* Sort the shifts in ascending order */
 
-   }
+    qsort(primme->targetShifts, primme_svds->numSvals, sizeof(double),
+          comp_double);
+    primme->numTargetShifts = primme_svds->numSvals;
 
-   /* Set an initial guess [x; A'x] or [Ax; x] if there is no initial guess   */
-   /* and augmented matrix will be used                                       */
+  } else if (method == primme_svds_op_augmented &&
+             primme_svds->target == primme_svds_smallest &&
+             primme->targetShifts == NULL) {
 
-   if (method == primme_svds_op_augmented && primme->initSize <= 0) {
-      int ONE = 1, NOTRANS = 0, TRANS = 1, ierr=0;
-      REAL norms2_[2], norms2[2];
-      if (primme_svds->m >= primme_svds->n) {
-         Num_larnv_Sprimme(2, primme->iseed, primme_svds->mLocal,
-               &svecs[primme_svds->nLocal]);
-         CHKERRMS((primme_svds->matrixMatvec(&svecs[primme_svds->nLocal],
-                     &primme_svds->mLocal, svecs, &primme_svds->nLocal, &ONE,
-                     &TRANS, primme_svds, &ierr), ierr), NULL,
-               "Error returned by 'matrixMatvec' %d", ierr);
-      }
-      else {
-         Num_larnv_Sprimme(2, primme->iseed, primme_svds->nLocal, svecs);
-         CHKERRMS((primme_svds->matrixMatvec(svecs, &primme_svds->nLocal,
-                     &svecs[primme_svds->nLocal], &primme_svds->mLocal, &ONE,
-                     &NOTRANS, primme_svds, &ierr), ierr), NULL,
-               "Error returned by 'matrixMatvec' %d", ierr);
-      }
-      norms2_[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, svecs, 1,
-               svecs, 1));
-      norms2_[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal,
-               &svecs[primme_svds->nLocal], 1, &svecs[primme_svds->nLocal], 1));
-      globalSum_Rprimme_svds(norms2_, norms2, 2, primme_svds);
-      Num_scal_Sprimme(primme_svds->nLocal, 1.0/sqrt(norms2[0]), svecs, 1);
-      Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[1]),
-            &svecs[primme_svds->nLocal], 1);
-      primme->initSize = 1;
-      if (rnorms) rnorms[0] = HUGE_VAL;
-      primme->initBasisMode = primme_init_user;
-   }
+    CHKERR(Num_malloc_dprimme(1, &primme->targetShifts, ctx));
+    *allocatedTargetShifts = 1;
+    primme->targetShifts[0] = 0.0;
+    primme->numTargetShifts = 1;
+  }
 
-   /* If second stage, set as numOrthoConst the first ones that pass */
-   /* the convergence criterion.                                     */
+  /* Set an initial guess [x; A'x] or [Ax; x] if there is no initial guess   */
+  /* and augmented matrix will be used                                       */
 
-   if (stage == 1) {
-      int flags[primme->initSize];
-      for (i=0; primme->initSize > 0; i++) {
-         /* NOTE: convTestFun at this stage expects the residual norm for the */
-         /*       the augmented problem; this is why the residual norm is     */
-         /*       divided by sqrt(2).                                         */
-         double ev = (double)svals[i], resnorm = rnorms[i]/sqrt(2.0);
-         int isConv=0, ierr=0;
-         primme_svds->stats.elapsedTime = primme_wTimer(0);
-         CHKERRMS((primme->convTestFun(&ev, NULL, &resnorm, &isConv, primme,
-                     &ierr), ierr), NULL,
-               "Error code returned by 'convTestFun' %d", ierr);
-         if (!isConv) break;
+  if (method == primme_svds_op_augmented && primme->initSize <= 0) {
+    int ONE = 1, NOTRANS = 0, TRANS = 1, ierr = 0;
+    REAL norms2_[2], norms2[2];
+    if (primme_svds->m >= primme_svds->n) {
+      Num_larnv_Sprimme(2, primme->iseed, primme_svds->mLocal,
+                        &svecs[primme_svds->nLocal], ctx);
+      CHKERRM((primme_svds->matrixMatvec(
+                   &svecs[primme_svds->nLocal], &primme_svds->mLocal, svecs,
+                   &primme_svds->nLocal, &ONE, &TRANS, primme_svds, &ierr),
+               ierr),
+              PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
+    } else {
+      Num_larnv_Sprimme(2, primme->iseed, primme_svds->nLocal, svecs, ctx);
+      CHKERRM((primme_svds->matrixMatvec(
+                   svecs, &primme_svds->nLocal, &svecs[primme_svds->nLocal],
+                   &primme_svds->mLocal, &ONE, &NOTRANS, primme_svds, &ierr),
+               ierr),
+              PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
+    }
+    norms2_[0] = REAL_PART(
+        Num_dot_Sprimme(primme_svds->nLocal, svecs, 1, svecs, 1, ctx));
+    norms2_[1] = REAL_PART(
+        Num_dot_Sprimme(primme_svds->mLocal, &svecs[primme_svds->nLocal], 1,
+                        &svecs[primme_svds->nLocal], 1, ctx));
+    globalSum_Rprimme_svds(norms2_, norms2, 2, primme_svds);
+    Num_scal_Sprimme(primme_svds->nLocal, 1.0 / sqrt(norms2[0]), svecs, 1, ctx);
+    Num_scal_Sprimme(primme_svds->mLocal, 1.0 / sqrt(norms2[1]),
+                     &svecs[primme_svds->nLocal], 1, ctx);
+    primme->initSize = 1;
+    if (rnorms)
+      rnorms[0] = HUGE_VAL;
+    primme->initBasisMode = primme_init_user;
+  }
 
-         /* Report a triplet is locked */
-         int ip1 = i+1;
-         flags[i] = CONVERGED;
-         primme_event EVENT_LOCKED = primme_event_locked;
-         int ZERO = 0;
-         CHKERRMS((primme_svds->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
-                     NULL, svals, &ip1, flags, rnorms, NULL, NULL,
-                     &EVENT_LOCKED, &ZERO, primme_svds, &ierr), ierr), NULL,
-                  "Error code returned by 'monitorFun' %d", ierr);
+  /* If second stage, set as numOrthoConst the first ones that pass */
+  /* the convergence criterion.                                     */
 
-         primme->numOrthoConst++;
-         primme->initSize--;
-         primme->numEvals--;
-      }
-   }
+  if (stage == 1) {
+    int flags[primme->initSize];
+    for (i = 0; primme->initSize > 0; i++) {
+      /* NOTE: convTestFun at this stage expects the residual norm for the */
+      /*       the augmented problem; this is why the residual norm is     */
+      /*       divided by sqrt(2).                                         */
+      double ev = (double)svals[i], resnorm = rnorms[i] / sqrt(2.0);
+      int isConv = 0, ierr = 0;
+      primme_svds->stats.elapsedTime = primme_wTimer(0);
+      CHKERRM((primme->convTestFun(&ev, NULL, &resnorm, &isConv, primme, &ierr),
+              ierr),
+             PRIMME_USER_FAILURE, "Error code returned by 'convTestFun' %d",
+             ierr);
+      if (!isConv)
+        break;
 
-   /* Set locking */   
+      /* Report a triplet is locked */
+      int ip1 = i + 1;
+      flags[i] = CONVERGED;
+      primme_event EVENT_LOCKED = primme_event_locked;
+      int ZERO = 0;
+      CHKERRM(
+          (primme_svds->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                   svals, &ip1, flags, rnorms, NULL, NULL,
+                                   &EVENT_LOCKED, &ZERO, primme_svds, &ierr),
+           ierr),
+          PRIMME_USER_FAILURE, "Error code returned by 'monitorFun' %d", ierr);
 
-   if (primme_svds->locking >= 0) {
-      primme->locking = primme_svds->locking;
-   }
+      primme->numOrthoConst++;
+      primme->initSize--;
+      primme->numEvals--;
+    }
+  }
 
-   /* Set monitor */
+  /* Set locking */
 
-   if (primme->monitorFun == NULL) {
-      if (primme_svds->methodStage2 == primme_svds_op_none) {
-         primme->monitorFun = monitor_single_stage;
-      } else if (stage == 0) {
-         primme->monitorFun = monitor_stage1;
-      } else {
-         primme->monitorFun = monitor_stage2;
-      }
-   }
+  if (primme_svds->locking >= 0) {
+    primme->locking = primme_svds->locking;
+  }
 
-   return out_svecs;
+  /* Set monitor */
+
+  if (primme->monitorFun == NULL) {
+    if (primme_svds->methodStage2 == primme_svds_op_none) {
+      primme->monitorFun = monitor_single_stage;
+    } else if (stage == 0) {
+      primme->monitorFun = monitor_stage1;
+    } else {
+      primme->monitorFun = monitor_stage2;
+    }
+  }
+
+  return 0;
 }
 
-/******************************************************************************
- * Function allocate_workspace_svds - This function computes the amount of
- *    integer and real workspace needed by the solver and possibly allocates
- *    the space 
- *
- * Input: 
- *   allocate  If 0, no allocation occurs, but the amounts of int and real 
- *                       workspaces in BYTES are returned in the primme fields 
- *                       primme.intWorkSize, and primme.realWorkSize 
- *             If  !0, and if the user-provided space is not sufficient,
- *                       allocation is also performed.
- *
- * Output
- *  primme.intWorkSize   Size of integer space allocated in bytes
- *  primme.realWorkSize  Size of real space allocated in bytes (LONG INT)
- *  *(primme.intWork)    Pointer to the integer space allocated
- *  *(primme.realWork)   Pointer to the real space allocated
- *   
- * 
- * Return value
- * ------------
- * int -  0 if (allocate == true) and the given workspaces are large enough or
- *             have been allocated successfully
- *       -1 if (allocate == true) and memory allocation has failed
- *        1 if (allocate==false) 
- *
- ******************************************************************************/
+static int copy_last_params_to_svds(int stage, REAL *svals, SCALAR *svecs,
+                             REAL *rnorms, int allocatedTargetShifts,
+                             primme_context ctx) {
 
-static int allocate_workspace_svds(primme_svds_params *primme_svds, int allocate) {
-   primme_params primme;
-   int intWorkSize=0;         /* Size of int work space */
-   size_t realWorkSize=0;     /* Size of real work space */
+  primme_svds_params *primme_svds = ctx.primme_svds;
+  int trans = 1, notrans = 0;
+  primme_params *primme;
+  primme_svds_operator method;
+  int n, nMax, i, ierr;
 
-   /* Require workspace for 1st stage */
-   if (primme_svds->method != primme_svds_op_none) {
-      primme = primme_svds->primme;
-      Sprimme(NULL, NULL, NULL, &primme);
-      intWorkSize = primme.intWorkSize;
-      realWorkSize = primme.realWorkSize;
-      /* If matrixMatvecSVDS is used, it needs extra space to compute A*A' or A'*A */
-      if ((primme.matrixMatvec == NULL || primme.matrixMatvec == matrixMatvecSVDS) &&
-          (primme_svds->method == primme_svds_op_AtA || primme_svds->method == primme_svds_op_AAt))
-         realWorkSize += primme.maxBlockSize * sizeof(SCALAR) *
-                           (primme_svds->method == primme_svds_op_AtA ?
-                              primme_svds->mLocal : primme_svds->nLocal);
-   }
+  primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
+  method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
 
-   /* Require workspace for 2st stage */
-   if (primme_svds->methodStage2 != primme_svds_op_none) {
-      assert(primme_svds->methodStage2 != primme_svds_op_AtA &&
-             primme_svds->methodStage2 != primme_svds_op_AAt);
-      primme = primme_svds->primmeStage2;
-      /* Check the case where all pairs from first stage are converged. */
-      /* More numOrthoConst requires more memory */
-      primme.numOrthoConst += primme.numEvals;
-      Sprimme(NULL, NULL, NULL, &primme);
-      intWorkSize = max(intWorkSize, primme.intWorkSize);
-      realWorkSize = max(realWorkSize, primme.realWorkSize);
-   }
+  if (method == primme_svds_op_none) {
+    primme->maxMatvecs = 0;
+    return 0;
+  }
 
-   if (!allocate) {
-      primme_svds->intWorkSize  = intWorkSize;
-      primme_svds->realWorkSize = realWorkSize;
-      return 1;
-   }
+  /* Pass back the converged vectors in first stage to regular vectors */
 
-   /*----------------------------------------------------------------------*/
-   /* Allocate the required workspace, if the user did not provide enough  */
-   /*----------------------------------------------------------------------*/
-   if (primme_svds->realWork != NULL
-         && primme_svds->realWorkSize < realWorkSize) {
-      return -20;
-   }
-   else if (primme_svds->realWork == NULL) {
-      primme_svds->realWorkSize = realWorkSize;
-      if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
-         "Allocating real workspace: %g bytes\n", (double)primme_svds->realWorkSize);
-      CHKERRMS(MALLOC_PRIMME(realWorkSize, (char**)&primme_svds->realWork),
-            MALLOC_FAILURE, "Failed to allocate %g bytes\n", (double)realWorkSize);
-   }
+  if (stage == 1) {
+    int nconv = primme_svds->numSvals - primme->numEvals;
+    primme->initSize += nconv;
+    primme->numOrthoConst -= nconv;
+    primme->numEvals += nconv;
+  }
 
-   if (primme_svds->intWork != NULL && primme_svds->intWorkSize < intWorkSize) {
-      return -21;
-   }
-   else if (primme_svds->intWork == NULL) {
-      primme_svds->intWorkSize = intWorkSize;
-      if (primme_svds->printLevel >= 5) fprintf(primme_svds->outputFile, 
-         "Allocating integer workspace: %d bytes\n", primme_svds->intWorkSize);
-      CHKERRMS(MALLOC_PRIMME(intWorkSize/sizeof(int), &primme_svds->intWork),
-            MALLOC_FAILURE,
-            "Failed to allocate %d bytes\n", primme_svds->intWorkSize);
-   }
+  /* Record performance measurements */
+  UPDATE_STATS(primme_svds->stats, +=, primme->stats);
 
-   return 0;
-}
- 
-int copy_last_params_to_svds(primme_svds_params *primme_svds, int stage,
-      REAL *svals, SCALAR *svecs, REAL *rnorms, int allocatedTargetShifts) {
-
-   int trans = 1, notrans = 0;
-   primme_params *primme;
-   primme_svds_operator method;
-   SCALAR *aux;
-   REAL *norms2, *norms2_;
-   int n, nMax, i, ierr;
-
-   primme = stage == 0 ? &primme_svds->primme : &primme_svds->primmeStage2;
-   method = stage == 0 ? primme_svds->method : primme_svds->methodStage2;
-
-   if (method == primme_svds_op_none) {
-      primme->maxMatvecs = 0;
-      return 0;
-   }
-
-   /* Pass back the converged vectors in first stage to regular vectors */
-
-   if (stage == 1) {
-      int nconv = primme_svds->numSvals - primme->numEvals;
-      primme->initSize += nconv;
-      primme->numOrthoConst -= nconv;
-      primme->numEvals += nconv;
-   }
-
-   /* Record performance measurements */ 
-   UPDATE_STATS(primme_svds->stats, +=, primme->stats);
-
-   if (primme->aNorm > 0.0) {
-      switch(method) {
-      case primme_svds_op_AtA:
-      case primme_svds_op_AAt:
-         primme_svds->aNorm = sqrt(primme->aNorm);
-         break;
-      case primme_svds_op_augmented:
-         primme_svds->aNorm = primme->aNorm;
-         break;
-      case primme_svds_op_none:
-         break;
-      }
-   }
-
-   if (method == primme_svds_op_AtA || method == primme_svds_op_AAt) {
-      for (i=0; i<primme->initSize; i++) {
-         svals[i] = sqrt(max(0.0, svals[i]));
-      }
-   }
- 
-   /* Set svecs = [Uc U Vc V] */
-   nMax = max(primme_svds->initSize, primme_svds->numSvals) + primme_svds->numOrthoConst;
-   primme_svds->initSize = primme->initSize;
-   n = primme_svds->initSize + primme_svds->numOrthoConst;
-   switch(method) {
-   case primme_svds_op_AtA:
-      /* Transform svecs to [Uc A*V/Sigma Vc V] */
-      CHKERRMS((primme_svds->matrixMatvec(
-            &svecs[primme_svds->mLocal*nMax+primme->nLocal*primme_svds->numOrthoConst],
-            &primme_svds->nLocal, &svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
-            &primme_svds->mLocal, &primme_svds->initSize, &notrans, primme_svds,
-            &ierr), ierr), -1,
-         "Error returned by 'matrixMatvec' %d", ierr);
-      Num_scalInv_Smatrix(&svecs[primme_svds->mLocal*primme_svds->numOrthoConst],
-            primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals, primme_svds);
-      Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal, n,
-            primme_svds->nLocal, &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
+  if (primme->aNorm > 0.0) {
+    switch (method) {
+    case primme_svds_op_AtA:
+    case primme_svds_op_AAt:
+      primme_svds->aNorm = sqrt(primme->aNorm);
       break;
-   case primme_svds_op_AAt:
-      /* Transform svecs to [Uc U Vc A'*U/Sigma] */
-      Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal*nMax], primme_svds->nLocal,
-            primme_svds->numOrthoConst, primme_svds->nLocal,
-            &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
-      CHKERRMS((primme_svds->matrixMatvec(
-            &svecs[primme_svds->mLocal*primme_svds->numOrthoConst], &primme_svds->mLocal,
-            &svecs[primme_svds->mLocal*n+primme->nLocal*primme_svds->numOrthoConst],
-            &primme_svds->nLocal, &primme_svds->initSize, &trans, primme_svds,
-            &ierr), ierr), -1,
-         "Error returned by 'matrixMatvec' %d", ierr);
-      Num_scalInv_Smatrix(
-            &svecs[primme_svds->mLocal*n+primme->nLocal*primme_svds->numOrthoConst],
-            primme_svds->nLocal, primme_svds->initSize, primme_svds->nLocal, svals, primme_svds);
+    case primme_svds_op_augmented:
+      primme_svds->aNorm = primme->aNorm;
       break;
-   case primme_svds_op_augmented:
-      assert(primme->nLocal == primme_svds->mLocal+primme_svds->nLocal);
-
-      /* Normalize back the orthogonal constrains */
-      Num_scal_Sprimme(primme->nLocal*primme_svds->numOrthoConst, sqrt(2.),
-            svecs, 1);
-
-      /* Shuffle svecs from [Vc V; Uc U] to [Uc U Vc V] */
-      CHKERRS(MALLOC_PRIMME(primme->nLocal*n, &aux), -1);
-      Num_copy_Sprimme(primme->nLocal*n, svecs, 1, aux, 1);
-      Num_copy_matrix_Sprimme(aux, primme_svds->nLocal, n, primme->nLocal,
-         &svecs[primme_svds->mLocal*n], primme_svds->nLocal);
-      Num_copy_matrix_Sprimme(&aux[primme_svds->nLocal], primme_svds->mLocal, n,
-         primme->nLocal, svecs, primme_svds->mLocal);
-      free(aux);
-
-      /* Normalize every column in U and V */
-      CHKERRS(MALLOC_PRIMME(4*n, &norms2_), -1);
-      norms2 = norms2_ + 2*n;
-      for (i=0; i<n; i++) {
-         norms2_[i] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal,
-            &svecs[primme_svds->mLocal*i], 1, &svecs[primme_svds->mLocal*i],
-            1));
-      }
-      for (i=0; i<n; i++) {
-         norms2_[n+i] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal,
-               &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1,
-               &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1));
-      }
-      globalSum_Rprimme_svds(norms2_, norms2, 2*n, primme_svds);
-      for (i=0; i<n; i++) {
-         Num_scal_Sprimme(primme_svds->mLocal, 1.0/sqrt(norms2[i]),
-               &svecs[primme_svds->mLocal*i], 1);
-      }
-      for (i=0; i<n; i++) {
-         Num_scal_Sprimme(primme_svds->nLocal, 1.0/sqrt(norms2[n+i]),
-               &svecs[primme_svds->mLocal*n+primme_svds->nLocal*i], 1);
-      }
-      free(norms2_);
+    case primme_svds_op_none:
       break;
-   case primme_svds_op_none:
-      break;
-   }
+    }
+  }
 
-   primme_svds->iseed[0] = primme->iseed[0];
-   primme_svds->iseed[1] = primme->iseed[1];
-   primme_svds->iseed[2] = primme->iseed[2];
-   primme_svds->iseed[3] = primme->iseed[3];
+  if (method == primme_svds_op_AtA || method == primme_svds_op_AAt) {
+    for (i = 0; i < primme->initSize; i++) {
+      svals[i] = sqrt(max(0.0, svals[i]));
+    }
+  }
 
-   /* Zero references to primme workspaces to prevent to be release by primme_free */
-   primme->intWork = NULL;
-   primme->realWork = NULL;
+  /* Set svecs = [Uc U Vc V] */
+  nMax = max(primme_svds->initSize, primme_svds->numSvals) +
+         primme_svds->numOrthoConst;
+  primme_svds->initSize = primme->initSize;
+  n = primme_svds->initSize + primme_svds->numOrthoConst;
+  switch (method) {
+  case primme_svds_op_AtA:
+    /* Transform svecs to [Uc A*V/Sigma Vc V] */
+    CHKERRM((primme_svds->matrixMatvec(
+                  &svecs[primme_svds->mLocal * nMax +
+                         primme->nLocal * primme_svds->numOrthoConst],
+                  &primme_svds->nLocal,
+                  &svecs[primme_svds->mLocal * primme_svds->numOrthoConst],
+                  &primme_svds->mLocal, &primme_svds->initSize, &notrans,
+                  primme_svds, &ierr),
+              ierr),
+             PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
+    Num_scalInv_Smatrix(
+        &svecs[primme_svds->mLocal * primme_svds->numOrthoConst],
+        primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals,
+        ctx);
+    Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal * nMax],
+                            primme_svds->nLocal, n, primme_svds->nLocal,
+                            &svecs[primme_svds->mLocal * n],
+                            primme_svds->nLocal, ctx);
+    break;
+  case primme_svds_op_AAt:
+    /* Transform svecs to [Uc U Vc A'*U/Sigma] */
+    Num_copy_matrix_Sprimme(
+        &svecs[primme_svds->mLocal * nMax], primme_svds->nLocal,
+        primme_svds->numOrthoConst, primme_svds->nLocal,
+        &svecs[primme_svds->mLocal * n], primme_svds->nLocal, ctx);
+    CHKERRM((primme_svds->matrixMatvec(
+                  &svecs[primme_svds->mLocal * primme_svds->numOrthoConst],
+                  &primme_svds->mLocal,
+                  &svecs[primme_svds->mLocal * n +
+                         primme->nLocal * primme_svds->numOrthoConst],
+                  &primme_svds->nLocal, &primme_svds->initSize, &trans,
+                  primme_svds, &ierr),
+              ierr),
+             PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
+    Num_scalInv_Smatrix(&svecs[primme_svds->mLocal * n +
+                               primme->nLocal * primme_svds->numOrthoConst],
+                        primme_svds->nLocal, primme_svds->initSize,
+                        primme_svds->nLocal, svals, ctx);
+    break;
+  case primme_svds_op_augmented:
+    assert(primme->nLocal == primme_svds->mLocal + primme_svds->nLocal);
 
-   if (allocatedTargetShifts) {
-      free(primme->targetShifts);
-      primme->targetShifts = NULL;
-   }
+    /* Normalize back the orthogonal constrains */
+    Num_scal_Sprimme(primme->nLocal * primme_svds->numOrthoConst, sqrt(2.),
+                     svecs, 1, ctx);
 
-   /* Update residual norms. For normal equations we have to divide by the    */
-   /* the singular value. For the augmented, nothing is required because the  */
-   /* user defined stopping criterion computes the actual residual vector     */
-   /* norm and update the value.                                              */
-   
-   switch(method) {
-      case primme_svds_op_AtA:
-      case primme_svds_op_AAt:
-         for (i=0; i<primme_svds->initSize; i++) {
-            rnorms[i] = min(rnorms[i]/svals[i], primme_svds->aNorm);
-         }
-         break;
-      case primme_svds_op_augmented:
-         for (i=0; i<primme_svds->initSize; i++) {
-            rnorms[i] *= sqrt(2.0);
-         }
-	 break;
-      case primme_svds_op_none:
-	 break;
-   }
+    /* Shuffle svecs from [Vc V; Uc U] to [Uc U Vc V] */
+    SCALAR *aux;
+    CHKERR(Num_malloc_Sprimme(primme->nLocal * n, &aux, ctx));
+    Num_copy_Sprimme(primme->nLocal * n, svecs, 1, aux, 1, ctx);
+    Num_copy_matrix_Sprimme(aux, primme_svds->nLocal, n, primme->nLocal,
+                            &svecs[primme_svds->mLocal * n],
+                            primme_svds->nLocal, ctx);
+    Num_copy_matrix_Sprimme(&aux[primme_svds->nLocal], primme_svds->mLocal, n,
+                            primme->nLocal, svecs, primme_svds->mLocal, ctx);
+    CHKERR(Num_free_Sprimme(aux, ctx));
 
-   return 0;
+    /* Normalize every column in U and V */
+    HREAL *norms2;
+    CHKERR(Num_malloc_RHprimme(2 * n, &norms2, ctx));
+    for (i = 0; i < n; i++) {
+        norms2[i] = REAL_PART(Num_dot_Sprimme(
+            primme_svds->mLocal, &svecs[primme_svds->mLocal * i], 1,
+            &svecs[primme_svds->mLocal * i], 1, ctx));
+    }
+    for (i = 0; i < n; i++) {
+      norms2[n + i] = REAL_PART(Num_dot_Sprimme(
+          primme_svds->nLocal,
+          &svecs[primme_svds->mLocal * n + primme_svds->nLocal * i], 1,
+          &svecs[primme_svds->mLocal * n + primme_svds->nLocal * i], 1, ctx));
+    }
+    globalSum_Rprimme_svds(norms2, norms2, 2 * n, primme_svds);
+    for (i = 0; i < n; i++) {
+         Num_scal_Sprimme(primme_svds->mLocal, 1.0 / sqrt(norms2[i]),
+               &svecs[primme_svds->mLocal * i], 1, ctx);
+    }
+    for (i = 0; i < n; i++) {
+        Num_scal_Sprimme(
+            primme_svds->nLocal, 1.0 / sqrt(norms2[n + i]),
+            &svecs[primme_svds->mLocal * n + primme_svds->nLocal * i], 1, ctx);
+    }
+    CHKERR(Num_free_RHprimme(norms2, ctx));
+    break;
+  case primme_svds_op_none:
+    break;
+  }
+
+  primme_svds->iseed[0] = primme->iseed[0];
+  primme_svds->iseed[1] = primme->iseed[1];
+  primme_svds->iseed[2] = primme->iseed[2];
+  primme_svds->iseed[3] = primme->iseed[3];
+
+  if (allocatedTargetShifts) {
+    CHKERR(Num_free_dprimme(primme->targetShifts, ctx));
+    primme->targetShifts = NULL;
+  }
+
+  /* Update residual norms. For normal equations we have to divide by the    */
+  /* the singular value. For the augmented, nothing is required because the  */
+  /* user defined stopping criterion computes the actual residual vector     */
+  /* norm and update the value.                                              */
+
+  switch (method) {
+  case primme_svds_op_AtA:
+  case primme_svds_op_AAt:
+    for (i = 0; i < primme_svds->initSize; i++) {
+      rnorms[i] = min(rnorms[i] / svals[i], primme_svds->aNorm);
+    }
+    break;
+  case primme_svds_op_augmented:
+    for (i = 0; i < primme_svds->initSize; i++) {
+      rnorms[i] *= sqrt(2.0);
+    }
+    break;
+  case primme_svds_op_none:
+    break;
+  }
+
+  return 0;
 }
 
 /******************************************************************************
@@ -876,6 +775,31 @@ static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms,
 } /* end of check_input
    ***************************************************************************/
 
+/******************************************************************************
+ * Function primme_svds_get_context - return a context from the primme_svds_params
+ *
+ * PARAMETERS
+ * ---------------------------
+ * primme_svds      primme_svds_params struct
+ *
+ ******************************************************************************/
+
+static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
+   primme_context ctx;
+   memset(&ctx, 0, sizeof(primme_context));
+   if (primme_svds) {
+      ctx.primme_svds = primme_svds;
+      ctx.printLevel = primme_svds->printLevel;
+      ctx.outputFile = primme_svds->outputFile;
+      ctx.numProcs = primme_svds->numProcs;
+      ctx.procID = primme_svds->procID;
+      ctx.mpicomm = primme_svds->commInfo;
+      ctx.queue = primme_svds->queue;
+   }
+
+   return ctx;
+} 
+
 /**********************************************************************************
  * void MatrixATA_Matvec(void *x, void *y, int *blockSize, primme_params *primme) *
  **********************************************************************************/
@@ -883,36 +807,43 @@ static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
 
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+   primme_context ctx = primme_svds_get_context(primme_svds);
    int trans = 1, notrans = 0;
-   SCALAR *x = (SCALAR*)x_, *y = (SCALAR*)y_;
+   SCALAR *x = (SCALAR*)x_, *y = (SCALAR*)y_, *aux;
    primme_svds_operator method = &primme_svds->primme == primme ?
       primme_svds->method : primme_svds->methodStage2;
    int i, bs;
 
    switch(method) {
    case primme_svds_op_AtA:
+      *ierr = Num_malloc_Sprimme(primme_svds->mLocal, &aux, ctx);
+      if (*ierr != 0) return;
       for (i=0, bs=min((*blockSize-i), primme->maxBlockSize); bs>0;
                i+= bs, bs=min((*blockSize-i), primme->maxBlockSize))
       {
-         primme_svds->matrixMatvec(&x[*ldx*i], ldx, primme_svds->realWork,
+         primme_svds->matrixMatvec(&x[*ldx*i], ldx, aux,
                &primme_svds->mLocal, &bs, &notrans, primme_svds, ierr);
-         if (*ierr != 0) return;
-         primme_svds->matrixMatvec(primme_svds->realWork, &primme_svds->mLocal,
+         if (*ierr != 0) break;
+         primme_svds->matrixMatvec(aux, &primme_svds->mLocal,
             &y[*ldy*i], ldy, &bs, &trans, primme_svds, ierr);
-         if (*ierr != 0) return;
+         if (*ierr != 0) break;
       }
+      if (Num_free_Sprimme(aux, ctx) != 0) *ierr = -1;
       break;
    case primme_svds_op_AAt:
+      *ierr = Num_malloc_Sprimme(primme_svds->nLocal, &aux, ctx);
+      if (*ierr != 0) return;
       for (i=0, bs=min((*blockSize-i), primme->maxBlockSize); bs>0;
                i+= bs, bs=min((*blockSize-i), primme->maxBlockSize))
       {
-         primme_svds->matrixMatvec(&x[*ldx*i], ldx, primme_svds->realWork,
+         primme_svds->matrixMatvec(&x[*ldx*i], ldx, aux,
                &primme_svds->nLocal, &bs, &trans, primme_svds, ierr);
-         if (*ierr != 0) return;
-         primme_svds->matrixMatvec(primme_svds->realWork, &primme_svds->nLocal,
+         if (*ierr != 0) break;
+         primme_svds->matrixMatvec(aux, &primme_svds->nLocal,
             &y[*ldy*i], ldy, &bs, &notrans, primme_svds, ierr);
-         if (*ierr != 0) return;
+         if (*ierr != 0) break;
       }
+      if (Num_free_Sprimme(aux, ctx) != 0) *ierr = -1;
       break;
    case primme_svds_op_augmented:
       primme_svds->matrixMatvec(&x[primme_svds->nLocal], ldx, y, ldy, blockSize,
@@ -939,7 +870,7 @@ static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
 }
 
 static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      REAL *factors, primme_svds_params *primme_svds) {
+      REAL *factors, primme_context ctx) {
 
    int i;
    REAL norm, norm0, factor;
@@ -950,26 +881,27 @@ static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
          factor = factors[i];
       }
       else {
-         norm0 = REAL_PART(Num_dot_Sprimme(m, &x[i*ldx], 1, &x[i*ldx], 1));
-         globalSum_Rprimme_svds(&norm0, &norm, 1, primme_svds);
+         norm0 = REAL_PART(Num_dot_Sprimme(m, &x[i*ldx], 1, &x[i*ldx], 1, ctx));
+         globalSum_Rprimme_svds(&norm0, &norm, 1, ctx.primme_svds);
          factor = sqrt(norm);
       }
-      Num_scal_Sprimme(m, 1.0/factor, &x[i*ldx], 1);
+      Num_scal_Sprimme(m, 1.0/factor, &x[i*ldx], 1, ctx);
    }
 }
 
-static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count, 
+static int globalSum_Rprimme_svds(HREAL *sendBuf, HREAL *recvBuf, int count, 
       primme_svds_params *primme_svds) {
 
    int ierr;
+   primme_context ctx = primme_svds_get_context(primme_svds);
 
    if (primme_svds && primme_svds->globalSumReal) {
-      CHKERRMS((primme_svds->globalSumReal(sendBuf, recvBuf, &count,
-                  primme_svds, &ierr), ierr), -1,
+      CHKERRM((primme_svds->globalSumReal(sendBuf, recvBuf, &count,
+                  primme_svds, &ierr), ierr), PRIMME_USER_FAILURE,
             "Error returned by 'globalSumReal' %d", ierr);
    }
    else {
-      Num_copy_Rprimme(count, sendBuf, 1, recvBuf, 1);
+      Num_copy_RHprimme(count, sendBuf, 1, recvBuf, 1, ctx);
    }
 
    return 0;
@@ -1000,21 +932,23 @@ static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count,
 static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
       primme_svds_params *primme_svds, int *ierr) {
 
+   primme_context ctx = primme_svds_get_context(primme_svds);
    int one = 1, notrans = 0, trans = 1;
    PRIMME_INT nLocal = primme_svds->mLocal+primme_svds->nLocal;
-   SCALAR *Atu = (SCALAR*)malloc( sizeof(SCALAR)*nLocal);
-   if (Atu == NULL) {*ierr = 1; return;}
+   SCALAR *Atu;
+   *ierr = Num_malloc_Sprimme(nLocal, &Atu, ctx);
+   if (*ierr != 0) return;
    SCALAR *Av = &Atu[primme_svds->nLocal];
 
    /* Av = A * v; Atu = A'u */
 
    primme_svds->matrixMatvec(leftsvec, &primme_svds->mLocal, Atu,
          &primme_svds->mLocal, &one, &trans, primme_svds, ierr);
-   if (*ierr != 0) {free(Atu); return;}
+   if (*ierr != 0) {Num_free_Sprimme(Atu, ctx); return;}
    primme_svds->stats.numMatvecs++;
    primme_svds->matrixMatvec(rightsvec, &primme_svds->nLocal, Av,
          &primme_svds->nLocal, &one, &notrans, primme_svds, ierr);
-   if (*ierr != 0) {free(Atu); return;}
+   if (*ierr != 0) {Num_free_Sprimme(Atu, ctx); return;}
    primme_svds->stats.numMatvecs++;
 
    /* ip[0] = ||v|| */
@@ -1023,12 +957,13 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
 
    REAL ip0[3], ip[3];
    ip0[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, rightsvec, 1,
-            rightsvec, 1));
+            rightsvec, 1, ctx));
    ip0[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1,
-            leftsvec, 1));
-   ip0[2] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1, Av, 1));
+            leftsvec, 1, ctx));
+   ip0[2] = REAL_PART(
+         Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1, Av, 1, ctx));
    *ierr = globalSum_Rprimme_svds(ip0, ip, 3, primme_svds);
-   if (*ierr != 0) {free(Atu); return;}
+   if (*ierr != 0) {Num_free_Sprimme(Atu, ctx); return;}
 
    ip[0] = sqrt(ip[0]);
    ip[1] = sqrt(ip[1]);
@@ -1038,30 +973,31 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
 
    if (sval < -0.0) {
       *rNorm = HUGE_VAL;
-      free(Atu);
+      Num_free_Sprimme(Atu, ctx);
       *ierr = 0;
       return;
    }
 
    /* Atu = A'*u/||u|| - sval*v/||v|| */
 
-   Num_scal_Sprimme(primme_svds->nLocal, 1.0/ip[1], Atu, 1);
-   Num_axpy_Sprimme(primme_svds->nLocal, -sval/ip[0], rightsvec, 1, Atu, 1);
+   Num_scal_Sprimme(primme_svds->nLocal, 1.0/ip[1], Atu, 1, ctx);
+   Num_axpy_Sprimme(
+         primme_svds->nLocal, -sval / ip[0], rightsvec, 1, Atu, 1, ctx);
 
    /* Av = A*v/||v|| - sval*u/||u|| */
 
-   Num_scal_Sprimme(primme_svds->mLocal, 1.0/ip[0], Av, 1);
-   Num_axpy_Sprimme(primme_svds->mLocal, -sval/ip[1], leftsvec, 1, Av, 1);
+   Num_scal_Sprimme(primme_svds->mLocal, 1.0/ip[0], Av, 1, ctx);
+   Num_axpy_Sprimme(primme_svds->mLocal, -sval/ip[1], leftsvec, 1, Av, 1, ctx);
 
    /* resNorm = sqrt(||A*v - s*u||^2 + ||A'*u - s*v||^2) = norm([Atu; Av]) */
 
    REAL normr0;
-   normr0 = REAL_PART(Num_dot_Sprimme(nLocal, Atu, 1, Atu, 1));
+   normr0 = REAL_PART(Num_dot_Sprimme(nLocal, Atu, 1, Atu, 1, ctx));
    *ierr = globalSum_Rprimme_svds(&normr0, rNorm, 1, primme_svds);
-   if (*ierr != 0) {free(Atu); return;}
+   if (*ierr != 0) {Num_free_Sprimme(Atu, ctx); return;}
    *rNorm = sqrt(*rNorm);
 
-   free(Atu);
+   Num_free_Sprimme(Atu, ctx);
    *ierr = 0;
 }
 
@@ -1088,11 +1024,10 @@ static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
       double *rNorm, int *isConv, primme_svds_params *primme_svds, int *ierr) {
 
    (void)sval; /* unused parameter */
-   const double machEps = MACHINE_EPSILON;
    const double aNorm = primme_svds->aNorm;
    SCALAR *leftsvec = (SCALAR*)leftsvec_, *rightsvec = (SCALAR*)rightsvec_;
 
-   *isConv = *rNorm < max(primme_svds->eps, machEps * 3.16) * aNorm;
+   *isConv = *rNorm < max(primme_svds->eps, MACHINE_EPSILON * 3.16) * aNorm;
 
    /* If solving the augmented problem, the reported residual norm is an      */
    /* approximation. Recheck the convergence criterion with the actual        */
@@ -1108,7 +1043,7 @@ static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
       compute_resNorm(leftsvec, rightsvec, &rnorm, primme_svds, ierr);
       if (*ierr != 0) return;
 
-      *isConv = rnorm < max(primme_svds->eps, machEps * 3.16) * aNorm;
+      *isConv = rnorm < max(primme_svds->eps, MACHINE_EPSILON * 3.16) * aNorm;
    }
 
    *ierr = 0;

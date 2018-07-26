@@ -76,6 +76,7 @@ typedef struct primme_svds_stats {
    double timePrecond;              /* time expend by applyPreconditioner */
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
+   PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
 } primme_svds_stats;
 
 typedef struct primme_svds_params {
@@ -113,12 +114,6 @@ typedef struct primme_svds_params {
    double *targetShifts;   /* make sure  at least one shift must also be set */
    primme_svds_operator method; /* one of primme_svds_AtA, primme_svds_AAt or primme_svds_augmented */
    primme_svds_operator methodStage2; /* hybrid second stage method; accepts the same values as method */
-
-   /* These pointers are not for users but for d/zprimme_svds function */
-   int intWorkSize;
-   size_t realWorkSize;
-   int *intWork;
-   void *realWork;
 
    /* These pointers may be used for users to provide matrix/preconditioner */
    void *matrix;
@@ -172,10 +167,6 @@ typedef enum {
    PRIMME_SVDS_targetShifts = 15,
    PRIMME_SVDS_method = 16,
    PRIMME_SVDS_methodStage2 = 17,
-   PRIMME_SVDS_intWorkSize = 18,
-   PRIMME_SVDS_realWorkSize = 19,
-   PRIMME_SVDS_intWork = 20,
-   PRIMME_SVDS_realWork = 21,
    PRIMME_SVDS_matrix = 22,
    PRIMME_SVDS_preconditioner = 23,
    PRIMME_SVDS_locking = 24,
@@ -202,10 +193,12 @@ typedef enum {
    PRIMME_SVDS_stats_timePrecond = 402,
    PRIMME_SVDS_stats_timeOrtho = 403,
    PRIMME_SVDS_stats_timeGlobalSum = 404,
+   PRIMME_SVDS_stats_lockingIssue = 405,
    PRIMME_SVDS_convTestFun = 405,
    PRIMME_SVDS_convtest = 406,
    PRIMME_SVDS_monitorFun = 41,
-   PRIMME_SVDS_monitor = 42
+   PRIMME_SVDS_monitor = 42,
+   PRIMME_SVDS_queue = 43
 } primme_svds_params_label;
 
 int sprimme_svds(float *svals, float *svecs, float *resNorms,

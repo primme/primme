@@ -69,6 +69,7 @@
 #define XSETVECTOR MAGMA_FUNCTION(ssetvector, csetvector, dsetvector, zsetvector)
 #define XGETVECTOR MAGMA_FUNCTION(sgetvector, cgetvector, dgetvector, zgetvector)
 #define XSETMATRIX MAGMA_FUNCTION(ssetmatrix, csetmatrix, dsetmatrix, zsetmatrix)
+#define XGETMATRIX MAGMA_FUNCTION(sgetmatrix, cgetmatrix, dgetmatrix, zgetmatrix)
 #define XCOPYMATRIX MAGMA_FUNCTION(scopymatrix, ccopymatrix, dcopymatrix, zcopymatrix)
 
 #define XCOPY     MAGMA_FUNCTION(scopy , ccopy , dcopy , zcopy )   
@@ -116,7 +117,7 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
 
 TEMPLATE_PLEASE
 int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
-
+   (void)ctx;
    return magma_free(x) == MAGMA_SUCCESS ? 0 : PRIMME_MALLOC_FAILURE;
 }
 
@@ -184,7 +185,7 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
       return;
    }
 
-   XGEMM(magma_trans_cont(*transa), magma_trans_const(*transb), lm, ln, lk,
+   XGEMM(magma_trans_const(*transa), magma_trans_const(*transb), lm, ln, lk,
          *(MAGMA_SCALAR *)&alpha, (MAGMA_SCALAR *)a, llda, (MAGMA_SCALAR *)b,
          lldb, *(MAGMA_SCALAR *)&beta, (MAGMA_SCALAR *)c, lldc,
          *(magma_queue_t *)ctx.queue);
@@ -198,7 +199,7 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
 TEMPLATE_PLEASE
 void Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
+      int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
       SCALAR *c, int ldc, primme_context ctx) {
 
    int mb = *transb == 'N' ? k : n;
@@ -206,10 +207,33 @@ void Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
 
    SCALAR *b_dev; /* copy of b on device */
    Num_malloc_Sprimme(mb*nb, &b_dev, ctx);
-   XSETMATRIX(mb, nb, b, ldb, b_dev, nb, *(magma_queue_t *)ctx.queue);
-   Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b_dev, nb, beta, c,
+   XSETMATRIX(mb, nb, (MAGMA_SCALAR *)b, ldb, (MAGMA_SCALAR *)b_dev, mb,
+         *(magma_queue_t *)ctx.queue);
+   Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b_dev, mb, beta, c,
                     ldc, ctx);
    Num_free_Sprimme(b_dev, ctx);
+}
+
+/*******************************************************************************
+ * Subroutine Num_gemm_ddh_Sprimme - C = op(A)*op(B), with C size m x n
+ * NOTE: A and B are hosted on device and C is hosted on cpu
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
+      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
+      HSCALAR *c, int ldc, primme_context ctx) {
+
+   SCALAR *c_dev; /* copy of c on device */
+   Num_malloc_Sprimme(m*n, &c_dev, ctx);
+   if (ABS(beta) != 0)
+      XSETMATRIX(m, n, (MAGMA_SCALAR *)c, ldc, (MAGMA_SCALAR *)c_dev, m,
+            *(magma_queue_t *)ctx.queue);
+   Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c,
+                    m, ctx);
+   XGETMATRIX(m, n, (MAGMA_SCALAR *)c_dev, m, (MAGMA_SCALAR *)c, ldc,
+         *(magma_queue_t *)ctx.queue);
+   Num_free_Sprimme(c_dev, ctx);
 }
 
 /*******************************************************************************
@@ -270,7 +294,7 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
 
 TEMPLATE_PLEASE
 void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, HSCALAR *y,
       int incy, primme_context ctx) {
 
    int my = *transa == 'N' ? m : n;
@@ -278,9 +302,11 @@ void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
    SCALAR *y_dev; /* copy of y on device */
    Num_malloc_Sprimme(my, &y_dev, ctx);
    if (ABS(beta) != 0)
-     XSETVECTOR(my, y, incy, y_dev, 1, *(magma_queue_t *)ctx.queue);
+      XSETVECTOR(my, (MAGMA_SCALAR *)y, incy, (MAGMA_SCALAR *)y_dev, 1,
+            *(magma_queue_t *)ctx.queue);
    Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y_dev, 1, ctx);
-   XGETVECTOR(ny, y_dev, 1, y, incy, *(magma_queue_t *)ctx.queue);
+   XGETVECTOR(my, (MAGMA_SCALAR *)y_dev, 1, (MAGMA_SCALAR *)y, incy,
+         *(magma_queue_t *)ctx.queue);
 }
 
 /*******************************************************************************
@@ -290,14 +316,15 @@ void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
 
 TEMPLATE_PLEASE
 void Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+      SCALAR *a, int lda, HSCALAR *x, int incx, SCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
    int mx = *transa == 'N' ? n : m;
 
    SCALAR *x_dev; /* copy of x on device */
    Num_malloc_Sprimme(mx, &x_dev, ctx);
-   XSETVECTOR(mx, x, incx, x_dev, 1, *(magma_queue_t *)ctx.queue);
+   XSETVECTOR(mx, (MAGMA_SCALAR *)x, incx, (MAGMA_SCALAR *)x_dev, 1,
+         *(magma_queue_t *)ctx.queue);
    Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x_dev, 1, beta, y, incy, ctx);
 }
 
@@ -378,11 +405,13 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       SCALAR *x, primme_context ctx) {
 
    SCALAR *x_host;
-   CHKERR(Num_malloc_RHSprimme(length, &x_host));
+   CHKERR(Num_malloc_SHprimme(length, &x_host, ctx));
    CHKERR(Num_larnv_Sprimme(idist, iseed, length, x_host, ctx));
    magma_setvector(length, sizeof(SCALAR), x_host, 1, x, 1,
                    *(magma_queue_t *)ctx.queue);
-   CHKERR(Num_free_RHSprimme(x_host));
+   CHKERR(Num_free_SHprimme(x_host, ctx));
+
+   return 0;
 }
 
 /******************************************************************************
@@ -405,8 +434,6 @@ TEMPLATE_PLEASE
 void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
                              PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
                              primme_context ctx) {
-
-  PRIMME_INT i, j;
 
   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
@@ -434,7 +461,7 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
   (void)ctx;
 
-   PRIMME_INT i,j;
+   PRIMME_INT i;
 
    for (i=0; i<n; i++) {
       Num_scal_Sprimme(m, 0.0, &x[i*ldx], 1, ctx);

@@ -34,8 +34,8 @@
  ******************************************************************************/
 
 #include <stdlib.h>   /* free */
-#include "primme_svds_interface.h"
 #include "primme_svds_f77_private.h"
+#include "primme_svds_interface.h"
 
 
 void AS_FORTRAN(Sprimme_svds)(REAL *svals, SCALAR *svecs,

@@ -283,7 +283,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
             REAL temp =
                 REAL_PART(Num_dot_Sprimme(nLocal, &V[ldV * i], 1, Bx, 1, ctx));
             if (primme) primme->stats.numOrthoInnerProds += 1;
-            CHKERR(globalSum_Rprimme(&temp, &s12, 1, ctx));
+            CHKERR(globalSum_RHprimme(&temp, &s12, 1, ctx));
             s1 = sqrt(s12);
             s1_update = 1;
          }
@@ -309,7 +309,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
                   REAL temp = REAL_PART(Num_dot_Sprimme(nLocal,
                            &V[ldV*i], 1, Bx, 1, ctx));
                   if (primme) primme->stats.numOrthoInnerProds += 1;
-                  CHKERR(globalSum_Rprimme(&temp, &s1, 1, ctx));
+                  CHKERR(globalSum_RHprimme(&temp, &s1, 1, ctx));
                   s1 = sqrt(max((REAL)0, s1));
                }
                R[ldR*i + i] = s1;
@@ -377,18 +377,18 @@ int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR, int b1, int b2,
                             nLocal, NULL, NULL, iseed, ctx);
 }
 
+#ifdef USE_HOST
 struct local_matvec_ctx { SCALAR *B; int n, ldB; };
 
 static int local_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy ,int bs,
       void *ctx_)
 {
    struct local_matvec_ctx *ctx = (struct local_matvec_ctx*)ctx_;
-   Num_hemm_Sprimme("L", "U", ctx->n, bs, 1.0, ctx->B, ctx->ldB, x, ldx, 0.0, y,
-         ldy);
+   Num_hemm_SHprimme(
+         "L", "U", ctx->n, bs, 1.0, ctx->B, ctx->ldB, x, ldx, 0.0, y, ldy);
    return 0;
 }
 
-#ifdef USE_HOST
 TEMPLATE_PLEASE
 int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
       int ldR, int b1, int b2, SCALAR *locked, int ldLocked,
@@ -464,7 +464,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
    primme->stats.numOrthoInnerProds += nQ*nX;
 
    /* Store the reduction of y in y0 */
-   CHKERR(globalSum_Sprimme(y, y0, nQ*nX, ctx));
+   CHKERR(globalSum_SHprimme(y, y0, nQ*nX, ctx));
    
    /* overlaps(i) = norm(y0(:,i))^2 */
    for (i=0; i<nX; i++) {
@@ -492,7 +492,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
 
    if (norms) {
       /* Store the reduction of norms */
-      CHKERR(globalSum_Rprimme(norms, norms, nX, ctx));
+      CHKERR(globalSum_RHprimme(norms, norms, nX, ctx));
  
       for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
       primme->stats.numOrthoInnerProds += nX;

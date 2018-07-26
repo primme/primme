@@ -155,7 +155,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
 
        CHKERR(applyPreconditioner_Sprimme(evecs, primme->nLocal, ldevecs,
                                           evecsHat, ldevecsHat,
-                                          primme->numOrthoConst, primme));
+                                          primme->numOrthoConst, ctx));
 
        CHKERR(update_projection_Sprimme(evecs, ldevecs, evecsHat, ldevecsHat, M,
                                         ldM, nLocal, 0, primme->numOrthoConst,
@@ -204,7 +204,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
   CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, *basisSize - 1, evecs, ldevecs,
                        primme->numOrthoConst, nLocal, primme->iseed, ctx));
 
-  CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, primme));
+  CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, ctx));
 
   if (primme->initBasisMode == primme_init_krylov) {
     CHKERR(init_block_krylov(V, nLocal, ldV, W, ldW, *basisSize,
@@ -285,7 +285,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    for (i = dv1+blockSize; i <= dv2; i++) {
       CHKERR(matrixMatvec_Sprimme(&V[ldV*(i-blockSize)], nLocal, ldV,
-               &V[ldV*i], ldV, 0, 1, primme));
+               &V[ldV*i], ldV, 0, 1, ctx));
 
       Num_copy_Sprimme(nLocal, &V[ldV*i], 1,
          &W[ldW*(i-blockSize)], 1, ctx);
@@ -295,7 +295,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    }
 
    CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, dv2-blockSize+1,
-            blockSize, primme));
+            blockSize, ctx));
 
    return 0;
 }
