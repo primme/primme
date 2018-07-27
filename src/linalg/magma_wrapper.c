@@ -57,12 +57,16 @@
 
 #ifdef USE_DOUBLE_MAGMA
 #  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,D)
+#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,D)
 #elif defined(USE_DOUBLECOMPLEX_MAGMA)
 #  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,Z)
+#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,Z)
 #elif defined(USE_FLOAT_MAGMA)
 #  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,S)
+#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,S)
 #elif defined(USE_FLOATCOMPLEX_MAGMA)
 #  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,C)
+#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,C)
 #endif
 
 #define XMALLOC   MAGMA_FUNCTION(smalloc, cmalloc, dmalloc, zmalloc)
@@ -71,6 +75,7 @@
 #define XSETMATRIX MAGMA_FUNCTION(ssetmatrix, csetmatrix, dsetmatrix, zsetmatrix)
 #define XGETMATRIX MAGMA_FUNCTION(sgetmatrix, cgetmatrix, dgetmatrix, zgetmatrix)
 #define XCOPYMATRIX MAGMA_FUNCTION(scopymatrix, ccopymatrix, dcopymatrix, zcopymatrix)
+#define XLASET  MAGMABLAS_FUNCTION(slaset, claset, dlaset, zlaset)
 
 #define XCOPY     MAGMA_FUNCTION(scopy , ccopy , dcopy , zcopy )   
 #define XGEMM     MAGMA_FUNCTION(sgemm , cgemm , dgemm , zgemm )
@@ -79,7 +84,6 @@
 #define XDOT      MAGMA_FUNCTION(sdot  , cdotc , ddot  , zdotc )
 #define XSCAL     MAGMA_FUNCTION(sscal , cscal , dscal , zscal )
 
-// TEMP!!!!!
 #define PRIMME_BLASINT magma_int_t
 #define PRIMME_BLASINT_MAX MAGMA_INT_MAX
 
@@ -475,13 +479,10 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 TEMPLATE_PLEASE
 void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
-  (void)ctx;
 
-   PRIMME_INT i;
-
-   for (i=0; i<n; i++) {
-      Num_scal_Sprimme(m, 0.0, &x[i*ldx], 1, ctx);
-   }
+   SCALAR zero = 0.0;
+   XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&zero, *(MAGMA_SCALAR *)&zero,
+         (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
 } 
 
 #endif /* USE_MAGMA */
