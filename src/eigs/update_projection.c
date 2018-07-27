@@ -88,8 +88,8 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
    /* --------------------------------------------------------------------- */
 
    m = numCols+blockSize;
-   Num_gemm_ddh_Sprimme("C", "N", m, blockSize, nLocal, 1.0, 
-      X, ldX, &Y[ldY*numCols], ldY, 0.0, &Z[ldZ*numCols], ldZ, ctx);
+   CHKERR(Num_gemm_ddh_Sprimme("C", "N", m, blockSize, nLocal, 1.0, X, ldX,
+         &Y[ldY * numCols], ldY, 0.0, &Z[ldZ * numCols], ldZ, ctx));
 
    /* -------------------------------------------------------------- */
    /* Alternative to the previous call:                              */
@@ -106,8 +106,8 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
    */
 
    if (!isSymmetric) {
-      Num_gemm_ddh_Sprimme("C", "N", blockSize, numCols, nLocal, 1.0, 
-            &X[ldX*numCols], ldX, Y, ldY, 0.0, &Z[numCols], ldZ, ctx);
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", blockSize, numCols, nLocal, 1.0,
+            &X[ldX * numCols], ldX, Y, ldY, 0.0, &Z[numCols], ldZ, ctx));
    }
 
    if (primme->numProcs > 1 && isSymmetric) {

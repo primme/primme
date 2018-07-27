@@ -19,6 +19,10 @@ FLDR ?= $(F77)
 LDFLAGS ?=
 ifeq ($(origin LIBS), undefined)
     LIBS = -lprimme
+    ifeq ($(PRIMME_WITH_MAGMA),yes)
+         LIBS += -L$(MAGMADIR)/lib -lmagma -lmagma_sparse  \
+                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse
+    endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
         UNAME := $(shell uname)

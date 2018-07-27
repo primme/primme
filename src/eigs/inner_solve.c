@@ -651,8 +651,8 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
          /* More than one vectors. Use BLAS 2.                    */
          /* ------------------------------------------------------*/
          /* Compute workspace = Q'*v */
-         Num_gemv_ddh_Sprimme("C", primme->nLocal, numCols, 1.0, Q, ldQ, v, 1,
-                              0.0, overlaps, 1, ctx);
+         CHKERR(Num_gemv_ddh_Sprimme("C", primme->nLocal, numCols, 1.0, Q, ldQ,
+               v, 1, 0.0, overlaps, 1, ctx));
 
          /* Global sum: overlaps = Q'*v */
          CHKERR(globalSum_SHprimme(overlaps, overlaps, numCols, ctx));
@@ -668,13 +668,13 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
                                      ctx));
 
             /* Compute v=v-Qhat*overlaps */
-            Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0, Qhat,
-                                 ldQhat, overlaps, 1, 1.0, v, 1, ctx);
+            CHKERR(Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0,
+                  Qhat, ldQhat, overlaps, 1, 1.0, v, 1, ctx));
          }
          else  {
             /* Compute v=v-Qhat*overlaps  */
-            Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0, Qhat,
-                                 ldQhat, overlaps, 1, 1.0, v, 1, ctx);
+            CHKERR(Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0,
+                  Qhat, ldQhat, overlaps, 1, 1.0, v, 1, ctx));
          } /* UDU==null */
       } /* numCols != 1 */
 
@@ -755,11 +755,11 @@ static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int numCols, SCALAR *v,
 
    CHKERR(Num_malloc_SHprimme(numCols, &overlaps, ctx));
 
-   Num_gemv_ddh_Sprimme("C", primme->nLocal, numCols, 1.0, Q, ldQ, v, 1, 0.0,
-         overlaps, 1, ctx);
+   CHKERR(Num_gemv_ddh_Sprimme("C", primme->nLocal, numCols, 1.0, Q, ldQ, v, 1,
+         0.0, overlaps, 1, ctx));
    CHKERR(globalSum_SHprimme(overlaps, overlaps, numCols, ctx));
-   Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0, Q, ldQ, overlaps,
-         1, 1.0, v, 1, ctx);
+   CHKERR(Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0, Q, ldQ,
+         overlaps, 1, 1.0, v, 1, ctx));
 
    CHKERR(Num_free_SHprimme(overlaps, ctx));
 

@@ -37,22 +37,22 @@ int Num_malloc_smagmaprimme(PRIMME_INT n, magma_float **x, primme_context ctx);
 int Num_free_smagmaprimme(magma_float *x, primme_context ctx);
 void Num_copy_smagmaprimme(PRIMME_INT n, magma_float *x, int incx, magma_float *y, int incy,
                       primme_context ctx);
-void Num_gemm_smagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_smagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_float alpha, magma_float *a, int lda, magma_float *b, int ldb, magma_float beta,
       magma_float *c, int ldc, primme_context ctx);
-void Num_gemm_dhd_smagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_dhd_smagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_float alpha, magma_float *a, int lda, float *b, int ldb, magma_float beta,
       magma_float *c, int ldc, primme_context ctx);
-void Num_gemm_ddh_smagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_ddh_smagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_float alpha, magma_float *a, int lda, magma_float *b, int ldb, magma_float beta,
       float *c, int ldc, primme_context ctx);
-void Num_gemv_smagmaprimme(const char *transa, PRIMME_INT m, int n, magma_float alpha,
+int Num_gemv_smagmaprimme(const char *transa, PRIMME_INT m, int n, magma_float alpha,
       magma_float *a, int lda, magma_float *x, int incx, magma_float beta, magma_float *y,
       int incy, primme_context ctx);
-void Num_gemv_ddh_smagmaprimme(const char *transa, PRIMME_INT m, int n, magma_float alpha,
+int Num_gemv_ddh_smagmaprimme(const char *transa, PRIMME_INT m, int n, magma_float alpha,
       magma_float *a, int lda, magma_float *x, int incx, magma_float beta, float *y,
       int incy, primme_context ctx);
-void Num_gemv_dhd_smagmaprimme(const char *transa, PRIMME_INT m, int n, magma_float alpha,
+int Num_gemv_dhd_smagmaprimme(const char *transa, PRIMME_INT m, int n, magma_float alpha,
       magma_float *a, int lda, float *x, int incx, magma_float beta, magma_float *y,
       int incy, primme_context ctx);
 void Num_axpy_smagmaprimme(PRIMME_INT n, magma_float alpha, magma_float *x, int incx,
@@ -72,22 +72,22 @@ int Num_malloc_cmagmaprimme(PRIMME_INT n, magma_complex_float **x, primme_contex
 int Num_free_cmagmaprimme(magma_complex_float *x, primme_context ctx);
 void Num_copy_cmagmaprimme(PRIMME_INT n, magma_complex_float *x, int incx, magma_complex_float *y, int incy,
                       primme_context ctx);
-void Num_gemm_cmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_cmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_complex_float alpha, magma_complex_float *a, int lda, magma_complex_float *b, int ldb, magma_complex_float beta,
       magma_complex_float *c, int ldc, primme_context ctx);
-void Num_gemm_dhd_cmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_dhd_cmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_complex_float alpha, magma_complex_float *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, magma_complex_float beta,
       magma_complex_float *c, int ldc, primme_context ctx);
-void Num_gemm_ddh_cmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_ddh_cmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_complex_float alpha, magma_complex_float *a, int lda, magma_complex_float *b, int ldb, magma_complex_float beta,
       PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
-void Num_gemv_cmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_float alpha,
+int Num_gemv_cmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_float alpha,
       magma_complex_float *a, int lda, magma_complex_float *x, int incx, magma_complex_float beta, magma_complex_float *y,
       int incy, primme_context ctx);
-void Num_gemv_ddh_cmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_float alpha,
+int Num_gemv_ddh_cmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_float alpha,
       magma_complex_float *a, int lda, magma_complex_float *x, int incx, magma_complex_float beta, PRIMME_COMPLEX_FLOAT *y,
       int incy, primme_context ctx);
-void Num_gemv_dhd_cmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_float alpha,
+int Num_gemv_dhd_cmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_float alpha,
       magma_complex_float *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, magma_complex_float beta, magma_complex_float *y,
       int incy, primme_context ctx);
 void Num_axpy_cmagmaprimme(PRIMME_INT n, magma_complex_float alpha, magma_complex_float *x, int incx,
@@ -107,22 +107,22 @@ int Num_malloc_dmagmaprimme(PRIMME_INT n, magma_double **x, primme_context ctx);
 int Num_free_dmagmaprimme(magma_double *x, primme_context ctx);
 void Num_copy_dmagmaprimme(PRIMME_INT n, magma_double *x, int incx, magma_double *y, int incy,
                       primme_context ctx);
-void Num_gemm_dmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_dmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_double alpha, magma_double *a, int lda, magma_double *b, int ldb, magma_double beta,
       magma_double *c, int ldc, primme_context ctx);
-void Num_gemm_dhd_dmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_dhd_dmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_double alpha, magma_double *a, int lda, double *b, int ldb, magma_double beta,
       magma_double *c, int ldc, primme_context ctx);
-void Num_gemm_ddh_dmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_ddh_dmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_double alpha, magma_double *a, int lda, magma_double *b, int ldb, magma_double beta,
       double *c, int ldc, primme_context ctx);
-void Num_gemv_dmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_double alpha,
+int Num_gemv_dmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_double alpha,
       magma_double *a, int lda, magma_double *x, int incx, magma_double beta, magma_double *y,
       int incy, primme_context ctx);
-void Num_gemv_ddh_dmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_double alpha,
+int Num_gemv_ddh_dmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_double alpha,
       magma_double *a, int lda, magma_double *x, int incx, magma_double beta, double *y,
       int incy, primme_context ctx);
-void Num_gemv_dhd_dmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_double alpha,
+int Num_gemv_dhd_dmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_double alpha,
       magma_double *a, int lda, double *x, int incx, magma_double beta, magma_double *y,
       int incy, primme_context ctx);
 void Num_axpy_dmagmaprimme(PRIMME_INT n, magma_double alpha, magma_double *x, int incx,
@@ -142,22 +142,22 @@ int Num_malloc_zmagmaprimme(PRIMME_INT n, magma_complex_double **x, primme_conte
 int Num_free_zmagmaprimme(magma_complex_double *x, primme_context ctx);
 void Num_copy_zmagmaprimme(PRIMME_INT n, magma_complex_double *x, int incx, magma_complex_double *y, int incy,
                       primme_context ctx);
-void Num_gemm_zmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_zmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_complex_double alpha, magma_complex_double *a, int lda, magma_complex_double *b, int ldb, magma_complex_double beta,
       magma_complex_double *c, int ldc, primme_context ctx);
-void Num_gemm_dhd_zmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_dhd_zmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_complex_double alpha, magma_complex_double *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, magma_complex_double beta,
       magma_complex_double *c, int ldc, primme_context ctx);
-void Num_gemm_ddh_zmagmaprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_ddh_zmagmaprimme(const char *transa, const char *transb, int m, int n,
       int k, magma_complex_double alpha, magma_complex_double *a, int lda, magma_complex_double *b, int ldb, magma_complex_double beta,
       PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
-void Num_gemv_zmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_double alpha,
+int Num_gemv_zmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_double alpha,
       magma_complex_double *a, int lda, magma_complex_double *x, int incx, magma_complex_double beta, magma_complex_double *y,
       int incy, primme_context ctx);
-void Num_gemv_ddh_zmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_double alpha,
+int Num_gemv_ddh_zmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_double alpha,
       magma_complex_double *a, int lda, magma_complex_double *x, int incx, magma_complex_double beta, PRIMME_COMPLEX_DOUBLE *y,
       int incy, primme_context ctx);
-void Num_gemv_dhd_zmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_double alpha,
+int Num_gemv_dhd_zmagmaprimme(const char *transa, PRIMME_INT m, int n, magma_complex_double alpha,
       magma_complex_double *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, magma_complex_double beta, magma_complex_double *y,
       int incy, primme_context ctx);
 void Num_axpy_zmagmaprimme(PRIMME_INT n, magma_complex_double alpha, magma_complex_double *x, int incx,

@@ -86,16 +86,16 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX -c $< -o $@
 
 %doublemagma.o: %.c
-	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLE_MAGMA -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLE_MAGMA -c $< -o $@
 
 %doublecomplexmagma.o: %.c
-	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLECOMPLEX_MAGMA -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLECOMPLEX_MAGMA -c $< -o $@
 
 %floatmagma.o: %.c
-	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOAT_MAGMA -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOAT_MAGMA -c $< -o $@
 
 %floatcomplexmagma.o: %.c
-	$(NVCC) $(NVCC_CFLAGS) $(MAGMA_CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX_MAGMA -c $< -o $@
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX_MAGMA -c $< -o $@
 
 #
 # Archive object files in the full library

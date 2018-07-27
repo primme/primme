@@ -26,11 +26,10 @@ FFLAGS   ?= -fno-second-underscore -O
 
 # GPUs compiler flags
 #---------------------------------------------------------------
-NVCC     ?= nvcc 
+PRIMME_WITH_MAGMA ?= yes
 MAGMADIR ?= $(HOME)/POST/src/magma-2.2.0
 CUDADIR  ?= /scratch/eloy.scratch/cuda
-PRIMME_WITH_MAGMA ?= yes
-MAGMA_CFLAGS ?= -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
+override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc

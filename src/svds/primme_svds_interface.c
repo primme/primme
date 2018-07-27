@@ -466,6 +466,7 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
  ******************************************************************************/
 
 void primme_svds_free(primme_svds_params *primme) {
+   (void)primme;
    /* No function */    
 }
 

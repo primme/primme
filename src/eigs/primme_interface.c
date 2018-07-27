@@ -169,6 +169,7 @@ void primme_initialize(primme_params *primme) {
  ******************************************************************************/
 
 void primme_free(primme_params *primme) {
+   (void)primme;
    /* No function */
 }
 

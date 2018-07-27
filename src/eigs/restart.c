@@ -1356,19 +1356,21 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
    /* Reortho [evecs(evecSize:) X0] against evecs if asked */
 
    if (reset > 1) {
-     CHKERR(ortho_Sprimme(evecs, ldevecs, NULL, 0, evecsSize,
-                          evecsSize + nX2e - nX2b - 1, NULL, 0, 0, mV,
-                          primme->iseed, ctx));
-     CHKERR(ortho_Sprimme(X0, ldX0, NULL, 0, 0, nX2b - nX0b - 1, evecs, ldevecs,
-                          evecsSize + nX2e - nX2b, mV, primme->iseed, ctx));
-     Num_copy_matrix_Sprimme(&evecs[ldevecs * evecsSize], mV, nX2e - nX2b,
-                             ldevecs, &X0[ldX0 * (nX2b - nX0b)], ldX0, ctx);
-     CHKERR(ortho_Sprimme(X0, ldX0, NULL, 0, nX2e - nX0b, nX0e - nX0b - 1,
-                          evecs, ldevecs, evecsSize, mV, primme->iseed, ctx));
-     assert(!X1 || (nX0b <= nX1b && nX1e <= nX0e));
-     if (X1)
-       Num_copy_matrix_Sprimme(&X0[ldX0 * (nX1b - nX0b)], mV, nX1e - nX1b, ldX0,
-                               X1, ldX1, ctx);
+      if (evecs) {
+         CHKERR(ortho_Sprimme(evecs, ldevecs, NULL, 0, evecsSize,
+               evecsSize + nX2e - nX2b - 1, NULL, 0, 0, mV, primme->iseed,
+               ctx));
+      }
+      CHKERR(ortho_Sprimme(X0, ldX0, NULL, 0, 0, nX2b - nX0b - 1, evecs,
+            ldevecs, evecsSize + nX2e - nX2b, mV, primme->iseed, ctx));
+      Num_copy_matrix_Sprimme(&evecs[ldevecs * evecsSize], mV, nX2e - nX2b,
+            ldevecs, &X0[ldX0 * (nX2b - nX0b)], ldX0, ctx);
+      CHKERR(ortho_Sprimme(X0, ldX0, NULL, 0, nX2e - nX0b, nX0e - nX0b - 1,
+            evecs, ldevecs, evecsSize, mV, primme->iseed, ctx));
+      assert(!X1 || (nX0b <= nX1b && nX1e <= nX0e));
+      if (X1)
+         Num_copy_matrix_Sprimme(
+               &X0[ldX0 * (nX1b - nX0b)], mV, nX1e - nX1b, ldX0, X1, ldX1, ctx);
    }
 
    /* Compute W = A*V for the orthogonalized corrections */
@@ -1803,7 +1805,7 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
    }
 
    /* Apply permutation hVecsPerm to hVals */
-   permute_vecs_Rprimme(hVals, 1, restartSize, 1, hVecsPerm, ctx);
+   permute_vecs_RHprimme(hVals, 1, restartSize, 1, hVecsPerm, ctx);
 
    /* ---------------------------------------------------------------------- */
    /* Solve the overlap matrix corresponding for the retained vectors to     */ 
@@ -2463,9 +2465,9 @@ static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  ******************************************************************************/
 
-static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
-      int ldhVecs, int indexOfPreviousVecs, SCALAR *hU, int ldhU, SCALAR *R,
-      int ldR, SCALAR *VtBV, int ldVtBV, int *numPrevRetained, 
+static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
+      int ldhVecs, int indexOfPreviousVecs, HSCALAR *hU, int ldhU, HSCALAR *R,
+      int ldR, HSCALAR *VtBV, int ldVtBV, int *numPrevRetained, 
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -2511,10 +2513,10 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
    /* Broadcast hVecs(indexOfPreviousVecs:indexOfPreviousVecs+numPrevRetained) */
 
    HSCALAR *rwork;
-   CHKERR(Num_malloc_Sprimme(basisSize*(*numPrevRetained)+1, &rwork, ctx));
+   CHKERR(Num_malloc_SHprimme(basisSize*(*numPrevRetained)+1, &rwork, ctx));
    if (primme->procID == 0) {
       rwork[0] = (SCALAR)newNumPrevRetained;
-      Num_copy_matrix_Sprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,
+      Num_copy_matrix_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,
             *numPrevRetained, ldhVecs, rwork+1, basisSize, ctx);
    }
    else {
@@ -2526,9 +2528,9 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
    CHKERR(globalSum_SHprimme(rwork, rwork, basisSize * (*numPrevRetained) + 1,
                              ctx));
    *numPrevRetained = (int)REAL_PART(rwork[0]);
-   Num_copy_matrix_Sprimme(rwork+1, basisSize, *numPrevRetained, basisSize,
+   Num_copy_matrix_SHprimme(rwork+1, basisSize, *numPrevRetained, basisSize,
          &hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs, ctx);
-   CHKERR(Num_free_Sprimme(rwork, ctx));
+   CHKERR(Num_free_SHprimme(rwork, ctx));
 
   return 0;
 }

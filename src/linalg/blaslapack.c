@@ -55,6 +55,7 @@ TEMPLATE_PLEASE
 void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                       primme_context ctx) {
 
+  (void)ctx;
   PRIMME_BLASINT ln = n;
   PRIMME_BLASINT lincx = incx;
   PRIMME_BLASINT lincy = incy;
@@ -73,7 +74,7 @@ void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
+int  Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
       SCALAR *c, int ldc, primme_context ctx) {
 
@@ -85,7 +86,7 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    PRIMME_BLASINT lldc = ldc;
 
    /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) return;
+   if (m == 0 || n == 0) return 0;
 
    /* Quick exit */
    if (k == 0) {
@@ -98,15 +99,15 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
             Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx);
          }
       }
-      return;
+      return 0;
    }
    if (n == 1) {
       PRIMME_INT mA; int nA;
       if (*transa == 'n' || *transa == 'N') mA = m, nA = k;
       else mA = k, nA = m;
       int incb = ((*transb == 'n' || *transb == 'N') ? 1 : ldb);
-      Num_gemv_Sprimme(transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
-      return;
+      return Num_gemv_Sprimme(
+            transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
    }
 
 #ifdef NUM_CRAY
@@ -120,22 +121,24 @@ void Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
 #endif
 
+   return 0;
+
 }
 
 TEMPLATE_PLEASE
-void Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
       SCALAR *c, int ldc, primme_context ctx) {
-  Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc,
-                   ctx);
+   return Num_gemm_Sprimme(
+         transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc, ctx);
 }
 
 TEMPLATE_PLEASE
-void Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
+int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
       SCALAR *c, int ldc, primme_context ctx) {
-  Num_gemm_Sprimme(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc,
-                   ctx);
+   return Num_gemm_Sprimme(
+         transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc, ctx);
 }
 
 /*******************************************************************************
@@ -179,6 +182,7 @@ void Num_trmm_Sprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, SCALAR alpha,
       SCALAR *a, int lda, SCALAR *b, int ldb, primme_context ctx) {
 
+   (void)ctx;
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -206,7 +210,7 @@ void Num_trmm_Sprimme(const char *side, const char *uplo,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
+int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
       SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
@@ -217,7 +221,7 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
    PRIMME_BLASINT lincy = incy;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
+   if (n == 0) return 0;
 
    /* Quick exit */
    if (m == 0) {
@@ -230,7 +234,7 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
             Num_scal_Sprimme(n, beta, y, incy, ctx);
          }
       }
-      return;
+      return 0;
    }
 
    while(m > 0) {
@@ -253,6 +257,8 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
          beta = 1.0;
       }
    }
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -261,11 +267,12 @@ void Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
+int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
       SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, HSCALAR *y,
       int incy, primme_context ctx) {
 
-   Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
+   return Num_gemv_Sprimme(
+         transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
 }
 
 /*******************************************************************************
@@ -274,11 +281,12 @@ void Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
+int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
       SCALAR *a, int lda, HSCALAR *x, int incx, SCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
-   Num_gemv_Sprimme(transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
+   return Num_gemv_Sprimme(
+         transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
 }
 
 /*******************************************************************************
@@ -317,6 +325,7 @@ TEMPLATE_PLEASE
 void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, 
    SCALAR *y, int incy, primme_context ctx) {
 
+   (void)ctx;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
@@ -337,7 +346,7 @@ void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
 TEMPLATE_PLEASE
 SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                        primme_context ctx) {
-
+   (void)ctx;
 /* NOTE: vecLib doesn't follow BLAS reference for sdot */
 #if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__)))
 /* ---- Explicit implementation of the zdotc() --- */
@@ -379,14 +388,17 @@ SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
+int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       SCALAR *x, primme_context ctx) {
+
+   (void)ctx;
+
 #ifdef USE_COMPLEX
    /* Lapack's R core library doesn't have zlarnv. The functionality is */
    /* replaced by calling the REAL version doubling the length.         */
 
    assert(idist < 4); /* complex distributions are not supported */
-   Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x, ctx);
+   return Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x, ctx);
 #else
    PRIMME_BLASINT lidist = idist;
    PRIMME_BLASINT llength;
@@ -412,6 +424,8 @@ void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
    if (sizeof(PRIMME_INT) != sizeof(PRIMME_BLASINT))
       for(i=0; i<4; i++)
          iseed[i] = (int)liseed[i];
+
+   return 0;
 #endif
 }
 
@@ -420,8 +434,10 @@ void Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_scal_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, primme_context ctx) {
+void Num_scal_Sprimme(
+      PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, primme_context ctx) {
 
+   (void)ctx;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
@@ -438,8 +454,10 @@ void Num_scal_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, primme_co
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy, primme_context ctx) {
+void Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
+      primme_context ctx) {
 
+   (void)ctx;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
@@ -473,7 +491,6 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    REAL *rwork;
 #  endif
    PRIMME_BLASINT *iwork, *ifail;
-   SCALAR dummys=0;
    REAL   dummyr=0;
    PRIMME_BLASINT dummyi=0;
 
@@ -607,12 +624,11 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    REAL *rwork;
 #  endif
    PRIMME_BLASINT *iwork, *ifail;
-   SCALAR dummys=0;
    REAL   dummyr=0;
    PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
+   if (n == 0) return 0;
 
    /* Allocate arrays */
 
@@ -737,8 +753,9 @@ int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
    PRIMME_BLASINT lldvt = ldvt;
    PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
-   SCALAR dummys=0;
-   REAL   dummyr=0;
+#ifdef USE_COMPLEX
+   REAL dummyr = 0.0;
+#endif
 
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;

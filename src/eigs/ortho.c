@@ -135,8 +135,6 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
    messages = (primme && primme->procID == 0 && primme->printLevel >= 3
          && primme->outputFile);
 
-   /* Return memory requirement */
-
    /*----------------------------------*/
    /* input and workspace verification */
    /*----------------------------------*/
@@ -225,15 +223,14 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
          // Compute overlaps = [V[0:i-1]'*B*V[i] 
  
          if (i > 0) {
-           Num_gemv_ddh_Sprimme("C", nLocal, i, 1.0, V, ldV, Bx, 1, 0.0,
-                                overlaps, 1, ctx);
-           if (primme)
-             primme->stats.numOrthoInnerProds += i;
+            CHKERR(Num_gemv_ddh_Sprimme(
+                  "C", nLocal, i, 1.0, V, ldV, Bx, 1, 0.0, overlaps, 1, ctx));
+            if (primme) primme->stats.numOrthoInnerProds += i;
          }
 
          if (numLocked > 0) {
-            Num_gemv_ddh_Sprimme("C", nLocal, numLocked, 1.0, locked, ldLocked,
-               Bx, 1, 0.0, &overlaps[i], 1, ctx);
+            CHKERR(Num_gemv_ddh_Sprimme("C", nLocal, numLocked, 1.0, locked,
+                  ldLocked, Bx, 1, 0.0, &overlaps[i], 1, ctx));
             if (primme) primme->stats.numOrthoInnerProds += numLocked;
          }
 
@@ -247,14 +244,14 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
 
          if (numLocked > 0) { /* locked array most recently accessed */
             // Compute V[i] = V[i] - locked'*overlaps[i:i+numLocked-1]
-            Num_gemv_dhd_Sprimme("N", nLocal, numLocked, -1.0, locked, ldLocked, 
-               &overlaps[i], 1, 1.0, &V[ldV*i], 1, ctx); 
+            CHKERR(Num_gemv_dhd_Sprimme("N", nLocal, numLocked, -1.0, locked,
+                  ldLocked, &overlaps[i], 1, 1.0, &V[ldV * i], 1, ctx));
             if (primme) primme->stats.numOrthoInnerProds += numLocked;
          }
 
          if (i > 0) {
-            Num_gemv_dhd_Sprimme("N", nLocal, i, -1.0, V, ldV, 
-               overlaps, 1, 1.0, &V[ldV*i], 1, ctx);
+            CHKERR(Num_gemv_dhd_Sprimme("N", nLocal, i, -1.0, V, ldV, overlaps,
+                  1, 1.0, &V[ldV * i], 1, ctx));
             if (primme) primme->stats.numOrthoInnerProds += i;
          }
 
@@ -398,6 +395,7 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
       int numLocked, PRIMME_INT nLocal, SCALAR *B, int ldB, PRIMME_INT *iseed,
       primme_context ctx) {
 
+   (void)ctx; 
    struct local_matvec_ctx Bctx = {B, nLocal, ldB};
    return Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
                              numLocked, nLocal, B ? local_matvec : NULL, &Bctx,
@@ -452,16 +450,16 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
 
    /* y = Q'*X */
    if (!inX) {
-     Num_gemm_ddh_Sprimme("C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ,
-                          ctx);
+      CHKERR(Num_gemm_ddh_Sprimme(
+            "C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ, ctx));
    }
    else {
       Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx);
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
         Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m,
                                         ctx);
-        Num_gemm_ddh_Sprimme("C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, X0, m, 1.0,
-                             y, nQ, ctx);
+        CHKERR(Num_gemm_ddh_Sprimme(
+              "C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, X0, m, 1.0, y, nQ, ctx));
       }
    }
    primme->stats.numOrthoInnerProds += nQ*nX;
@@ -482,8 +480,8 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
         Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m,
                                         ctx);
       }
-      Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, y0, nQ, 1.0,
-            inX?X0:&X[i], inX?m:ldX, ctx);
+      CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, y0, nQ,
+            1.0, inX ? X0 : &X[i], inX ? m : ldX, ctx));
       if (inX) {
          Num_copy_matrix_columns_Sprimme(X0, m, NULL, nX, m, &X[i], inX, ldX, ctx);
       }

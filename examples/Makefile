@@ -27,6 +27,11 @@ ifeq ($(USE_PETSC), yes)
   MPIRUN ?= mpirun -np 4
 endif
 
+ifeq ($(PRIMME_WITH_MAGMA),yes)
+  EXAMPLES_C += ex_eigs_dmagma
+  override INCLUDE += $(MAGMA_CFLAGS)
+endif
+
 $(EXAMPLES_C): %: %.o
 	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
