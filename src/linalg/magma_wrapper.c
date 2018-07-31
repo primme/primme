@@ -458,7 +458,7 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
   /* Do nothing if x and y are the same matrix */
-  if (x == y && ldx == ldy)
+  if ((x == y && ldx == ldy) || m == 0 || n == 0)
     return;
 
    XCOPYMATRIX(m, n, (MAGMA_SCALAR*)x, ldx, (MAGMA_SCALAR*)y, ldy, *(magma_queue_t *)ctx.queue);

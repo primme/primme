@@ -527,6 +527,9 @@ static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
     }
   }
 
+  /* Copy queue */
+  primme->queue = primme_svds->queue;
+
   return 0;
 }
 
@@ -704,6 +707,7 @@ static int copy_last_params_to_svds(int stage, REAL *svals, SCALAR *svecs,
   case primme_svds_op_none:
     break;
   }
+
 
   return 0;
 }
