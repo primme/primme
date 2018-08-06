@@ -436,7 +436,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
 
    CHKERR(Num_malloc_SHprimme(nQ*nX, &y, ctx));
    CHKERR(Num_malloc_SHprimme(nQ*nX, &y0, ctx));
-   CHKERR(Num_malloc_Sprimme(M*nX, &X0, ctx));
+   CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
 
    /* Check if the indices of inX are contiguous */
 
