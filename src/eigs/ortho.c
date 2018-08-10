@@ -396,7 +396,7 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
       primme_context ctx) {
 
    (void)ctx; 
-   struct local_matvec_ctx Bctx = {B, nLocal, ldB};
+   struct local_matvec_ctx Bctx = {B, (int)nLocal, ldB};
    return Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
                              numLocked, nLocal, B ? local_matvec : NULL, &Bctx,
                              iseed, primme_get_context(NULL));

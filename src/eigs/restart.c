@@ -406,7 +406,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
       indexOfPreviousVecs = restartSize;
    indexOfPreviousVecsBeforeRestart = indexOfPreviousVecs;
 
-   Num_copy_matrix_Sprimme(previousHVecs, basisSize, *numPrevRetained,
+   Num_copy_matrix_SHprimme(previousHVecs, basisSize, *numPrevRetained,
          ldpreviousHVecs, &hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs, ctx);
 
    CHKERR(ortho_coefficient_vectors_Sprimme(hVecs, basisSize, ldhVecs,
@@ -2480,7 +2480,7 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
 
       CHKERR(ortho_SHprimme(hVecs?&hVecs[ldhVecs*indexOfPreviousVecs]:NULL,
                ldhVecs, NULL, 0, 0, *numPrevRetained-1,
-               &hU[ldhU*indexOfPreviousVecs], ldhU, indexOfPreviousVecs,
+               hU, ldhU, indexOfPreviousVecs,
                basisSize, primme->iseed, primme_get_context(NULL)));
       if (hVecs) Num_trsm_SHprimme("L", "U", "N", "N", basisSize,
             *numPrevRetained, 1.0, R, ldR, &hVecs[ldhVecs*indexOfPreviousVecs],

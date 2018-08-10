@@ -517,19 +517,19 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #  endif
          iwork, ifail, &linfo);
    lldwork = REAL_PART(lwork0);
-   if (linfo != 0) goto clean;
 
-   SCALAR *work = NULL;
-   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-   XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
-         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
+            &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
 #  ifdef USE_COMPLEX
-         rwork,
+            rwork,
 #  endif
-         iwork, ifail, &linfo);
-   CHKERR(Num_free_Sprimme(work, ctx));
+            iwork, ifail, &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
 
-clean:
    /* Copy z to a */
    Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
 
@@ -573,18 +573,18 @@ clean:
 #     endif
          &linfo); 
    lldwork = REAL_PART(lwork0);
-   if (linfo != 0) goto clean;
 
-   SCALAR *work = NULL;
-   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-   XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork,
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XHEEV(jobz, uplo, &ln, a, &llda, w, work, &lldwork,
 #     ifdef USE_COMPLEX
-         rwork,
+            rwork,
 #     endif
-         &linfo); 
-   CHKERR(Num_free_Sprimme(work, ctx));
+            &linfo); 
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
 
-clean:
 #  ifdef USE_COMPLEX
    CHKERR(Num_free_Sprimme(rwork));
 #  endif
@@ -653,19 +653,18 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #  endif
          iwork, ifail, &linfo);
    lldwork = REAL_PART(lwork0);
-   if (linfo != 0) goto clean;
 
-   SCALAR *work = NULL;
-   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-   XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
-         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
+            &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
 #  ifdef USE_COMPLEX
-         rwork,
+            rwork,
 #  endif
-         iwork, ifail, &linfo);
-   CHKERR(Num_free_Sprimme(work, ctx));
-
-clean:
+            iwork, ifail, &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
 
    /* Copy z to a */
    Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
@@ -717,18 +716,18 @@ clean:
 #  endif
          &linfo);
    lldwork = REAL_PART(lwork0);
-   if (linfo != 0) goto clean;
 
-   SCALAR *work = NULL;
-   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-   XHEGV(&ONE, jobz, uplo, &ln, a, &llda, b, &ln, w, work, &lldwork,
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XHEGV(&ONE, jobz, uplo, &ln, a, &llda, b, &ln, w, work, &lldwork,
 #  ifdef USE_COMPLEX
-         rwork,
+            rwork,
 #  endif
-         &linfo);
-   CHKERR(Num_free_Sprimme(work, ctx));
+            &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
 
-clean:
    CHKERR(Num_free_Sprimme(b, ctx)); 
 #  ifdef USE_COMPLEX
    CHKERR(Num_free_Sprimme(rwork, ctx));
@@ -771,26 +770,26 @@ int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
 #endif
          &linfo);
    lldwork = REAL_PART(lwork0);
-   if (linfo != 0) goto clean;
 
-   SCALAR *work = NULL;
-   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
 #  ifdef USE_COMPLEX
-   REAL *rwork;
-   CHKERR(Num_malloc_Rprimme(5*n, &rwork, ctx));
+      REAL *rwork;
+      CHKERR(Num_malloc_Rprimme(5*n, &rwork, ctx));
 #  endif
-   XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
-          &lldwork,
+      XGESVD(jobu, jobvt, &lm, &ln, a, &llda, s, u, &lldu, vt, &lldvt, work,
+            &lldwork,
 #ifdef USE_COMPLEX
-         rwork,
+            rwork,
 #endif
-         &linfo);
-   CHKERR(Num_free_Sprimme(work, ctx));
+            &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
 #  ifdef USE_COMPLEX
-   CHKERR(Num_free_Rprimme(rwork, ctx));
+      CHKERR(Num_free_Rprimme(rwork, ctx));
 #  endif
+   }
 
-clean:
    CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesvd with info %d\n",
           (int)linfo);
    return 0;
