@@ -30,6 +30,24 @@
  * File: template.h
  *
  * Purpose - Contains definitions of macros used along PRIMME.
+ *    In short source files, *.c, are compiled several times, every time for a
+ *    different type, referred as SCALAR. Examples of types are float, double,
+ *    complex float, complex double, and the corresponding GPU versions. All
+ *    types are described in section "Arithmetic". Other macros are defined to
+ *    refer derived types and functions. An example is REAL, which is
+ *    defined as the real (non-complex) version of SCALAR. For instance,
+ *    when SCALAR is complex double, REAL is double. Similarly, it is possible
+ *    to call the real version of a function. For instance,
+ *    permute_vecs_Sprimme permutes vectors with type SCALAR and
+ *    permute_vecs_Rprimme permutes vectors with type REAL.
+ *
+ *    When SCALAR is a GPU type, the pointers SCALAR* are supposed to point out
+ *    memory allocated on GPUs, also called devices. For instance,
+ *    Num_malloc_Sprimme allocates GPU memory when SCALAR is a GPU type. To
+ *    use the non-GPU version, also called the host version, use the suffices
+ *    _SHprimme and _RHprimme. For instance,
+ *    Num_malloc_SHprimme allocates memory on the host, and
+ *    permute_vecs_RHprimme permute REAL vectors on the host.
  *
  ******************************************************************************/
 
@@ -249,8 +267,8 @@ typedef PRIMME_COMPLEX_FLOAT magma_complex_float;
 
 /* TEMPLATE_PLEASE tags the functions whose prototypes depends on macros and  */
 /* are used in other files. The macro has value only when the tool ctemplate  */
-/* will inspect the source files, which happens when the macro CHECK_TEMPLATE */
-/* is defined. See Makefile and tools/ctemplate.                              */
+/* is inspecting the source files, which is indicated by the macro            */
+/* CHECK_TEMPLATE begin defined. See Makefile and tools/ctemplate.            */
 /*                                                                            */
 /* When SCALAR is not a complex type (e.g., float and double) the function it */
 /* will be referred as _Sprimme and _Rprimme. Otherwise it will be referred   */
@@ -265,8 +283,8 @@ typedef PRIMME_COMPLEX_FLOAT magma_complex_float;
 #     define TEMPLATE_PLEASE \
         APPEND_FUNC(Sprimme,SCALAR_SUF)
 #  endif
-   /* Avoid to use the final type for integers and complex in generated       */
-   /* headers file. Instead use PRIMME_COMPLEX_FLOAT and _DOUBLE.             */
+/* Avoid to use the final type for integers and complex in generated       */
+/* headers file. Instead use PRIMME_COMPLEX_FLOAT and _DOUBLE.             */
 #  undef PRIMME_COMPLEX_FLOAT
 #  undef PRIMME_COMPLEX_DOUBLE
 #  undef PRIMME_INT

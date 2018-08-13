@@ -67,11 +67,22 @@
 #include <math.h>
 #include <assert.h>
 #include "numerical.h"
+#include "factorize.h"
 #include "auxiliary_eigs.h"
 #include "ortho.h"
 #include "const.h"
 #include "wtime.h"
  
+static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
+      SCALAR *A, int ldA, REAL *D, SCALAR *Y, int ldY,
+      SCALAR *W, int nW, PRIMME_INT ldW, SCALAR *Z, int nZ, PRIMME_INT ldZ,
+      SCALAR *B, int ldB, primme_context ctx);
+
+static int eig(SCALAR *H, int n, int ldH, SCALAR *Y, int ldhVecs, REAL *svals,
+      primme_context ctx);
+static int rank_estimation(SCALAR *V, int n0, int n1, int n, int ldV);
+
 
 /**********************************************************************
  * Function ortho - This routine orthonormalizes
@@ -401,7 +412,274 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
                              numLocked, nLocal, B ? local_matvec : NULL, &Bctx,
                              iseed, primme_get_context(NULL));
 }
+
 #endif /* USE_HOST */
+
+/**********************************************************************
+ * Function ortho_block - This routine orthonormalizes
+ * a block of of vectors (from b1 to including b2 in basis)
+ * against other vectors in the same array (from 0 to b1-1 in basis),
+ * against a set of locked vectors (from 0 to numLocked-1 in locked),
+ * and themselves.
+ *
+ * The following conditions must always be met: 
+ * ldBasis > 0, nLocal > 0, b1 >= 0, b2 >= 0, b2 >= b1, numLocked >= 0, 
+ * rworkSize > 0
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * ldV        Leading dimension of the basis
+ * b1, b2     Range of indices of vectors to be orthonormalized
+ *            (b1 can be zero, but b1 must be <= b2)
+ * ldR        Leading dimension in R
+ * locked     Array that holds locked vectors if they are in-core
+ * ldLocked   Leading dimension of locked
+ * numLocked  Number of vectors in locked
+ * nLocal     Number of rows of each vector stored on this node
+ * maxRank    largest rank of the basis being orthogonalized
+ *
+ * ctx        primme context
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * V       Basis vectors stored in core memory
+ * R       Rotations done in the basis: input_basis = output_basis * R
+ * b2_out  The number of linear independent columns
+ *
+ * Return Value
+ * ------------
+ *  error code
+ * 
+ **********************************************************************/
+
+TEMPLATE_PLEASE
+int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *VLtVL, int ldVLtVL,
+      SCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
+      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+   int i, j;               /* loop indices */
+   SCALAR *A, *C, *Y;      /* auxiliary local matrices */
+   SCALAR *VLtVLdA;        /* auxiliary local matrices */
+   SCALAR *fVLtVL;         /* auxiliary local matrices */
+   REAL *D, *N;            /* singular values */
+   int ldA;                /* leading dimension of A */
+   b2++; /* NOTE: Let's use C range convention */
+
+   /* Quick exit */
+
+   if (b2 <= b1) {
+      *b2_out = b2;
+      return 0;
+   }
+
+   if (VLtVL == NULL) {
+      CHKERR(ortho_Sprimme(V, ldV, R, ldR, b1, b2 - 1, locked, ldLocked,
+            numLocked, nLocal, primme->iseed, ctx));
+      *b2_out = b2;
+      return 0;
+   }
+
+   /* input and workspace verification */
+
+   assert(nLocal >= 0 && numLocked >= 0 &&
+          ldV >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
+          (R == NULL || ldR >= b2) && (!R || numLocked == 0));
+
+   /* Zero the columns from b1 to b2 of R */
+
+   if (R) {
+      Num_zero_matrix_SHprimme(&R[ldR*b1], b2, b2-b1, ldR, ctx);
+      for (i=b1; i<b2; i++) {
+         R[ldR*i+i] = 1.0;
+      }
+   }
+
+   /* Allocate workspace */
+
+   CHKERR(Num_malloc_RHprimme(b2-b1, &D, ctx));
+   CHKERR(Num_malloc_RHprimme(b2-b1, &N, ctx));
+   A = &VLtVL[ldVLtVL*(b1+numLocked)];
+   ldA = ldVLtVL;
+   CHKERR(Num_malloc_SHprimme((numLocked+b2)*b2, &VLtVLdA, ctx));
+   CHKERR(Num_malloc_SHprimme((b2-b1)*(b2-b1), &Y, ctx));
+   int nVL = b1+numLocked;
+   CHKERR(Num_malloc_SHprimme(nVL*nVL, &fVLtVL, ctx));
+   int pVLtVL[nVL];
+   CHKERR(Num_malloc_SHprimme((b2-b1)*(b2-b1), &C, ctx));
+
+   /* Factor VLtVL */
+
+   CHKERR(UDUDecompose_SHprimme(VLtVL, ldVLtVL, fVLtVL, nVL, pVLtVL, nVL, ctx));
+
+   /* Main loop to orthogonalize new vectors one by one. Just kidding. Although
+    * seeming complicated it is just doing iterative CG-SVQB */
+
+   double t0 = primme_wTimer(0);
+
+   *b2_out = b2; 
+   int its;
+   int maxits = 5;
+   for (its=0; its<maxits; its++) {
+      /* Notation:                                          */
+      /* Vp = [locked V(0:b1-1)]; Xp = V(b1:b2-1) */
+      /* Xc = V(b1:b2-1)                                    */
+      /* Xn is Xp in the next iteration                     */
+
+      /* Do Xp <= (Xp - Vp*VLtVLdA)/N*Y/D if it isn't the first iteration     */
+      /* Do A <= [locked V(0:b2)]'*Xc always                                  */
+
+      CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1, ldV,
+            &V[b1 * ldV], b2 - b1, ldV, its == 0 ? NULL : VLtVLdA, nVL, D, Y,
+            b2 - b1, V, b2, ldV, &V[ldV * b1], b2 - b1, ldV, A, ldA, ctx));
+      if (primme) primme->stats.numOrthoInnerProds += (numLocked+b2)*(b2-b1);
+
+      /* Check convergence */
+
+      if (its == maxits - 1) break;
+      if (rank_estimation(VLtVL, numLocked + b1,
+                   numLocked + b2, maxRank, ldVLtVL) == numLocked + b2)
+         maxits = its+2;
+
+
+      if (ctx.procID == 0) {
+         printf("Rank estima: %d\n", rank_estimation(VLtVL, numLocked + b1,
+                                           numLocked + b2, maxRank, ldVLtVL));
+         /* C = Xn'*Xn = Xc'*(I-Vc/(Vc'*Vc)*Vc')*Xc = Xc'*Xc -
+            (Xc'*Vc)*((Vc'*Vc)\(Vc'*Xc))       */
+         /*   = A(b1:b2-1,:) -
+            (A(0:numLocked+b1-1,:)'*(VLtVL\A(0:numLocked+b1-1,:))   */
+
+         Num_copy_matrix_SHprimme(
+               &A[numLocked + b1], b2 - b1, b2 - b1, ldA, C, b2 - b1, ctx);
+         CHKERR(UDUSolve_SHprimme(
+               fVLtVL, pVLtVL, nVL, A, b2 - b1, ldA, VLtVLdA, nVL, ctx));
+         Num_gemm_SHprimme("C", "N", b2 - b1, b2 - b1, numLocked + b1, -1.0, A,
+               ldA, VLtVLdA, nVL, 1.0, C, b2 - b1, ctx);
+
+         /* N(i) = ||Xc(:,i)||; normXc = max ||N(i)|| */
+
+         for (i=0; i<b2-b1; i++) {
+            N[i] = sqrt(max(ABS(C[(b2-b1)*i+i]), MACHINE_EPSILON));
+         }
+         for (i=0; i<b2-b1; i++) {
+            for (j=0; j<=i; j++) {
+               C[(b2 - b1) * j + i] = C[(b2 - b1) * i + j] =
+                     (C[(b2 - b1) * i + j] + C[(b2 - b1) * j + i]) / 2 / N[i] /
+                     N[j];
+            }
+         }
+
+         /* [D, Y] = eig(C) */
+
+         CHKERR(eig(C, b2 - b1, b2 - b1, &Y[(b2 - b1) * (b1 - b1) + b1 - b1],
+               b2 - b1, D, ctx));
+
+         /* D = sqrt(D) */
+
+         for (i=0; i<b2-b1; i++) {
+            D[i] = sqrt(max(D[i], MACHINE_EPSILON * (b2 - b1)));
+         }
+      } else {
+         Num_zero_matrix_SHprimme(VLtVLdA, nVL, b2-b1, nVL, ctx);
+         for (i=0; i<b2-b1; i++) D[i] = 0.0;
+         for (i=0; i<b2-b1; i++) N[i] = 0.0;
+         Num_zero_matrix_SHprimme(&Y[(b2 - b1) * (b1 - b1) + b1 - b1], b2 - b1,
+               b2 - b1, b2 - b1, ctx);
+      }
+
+      CHKERR(globalSum_SHprimme(VLtVLdA, VLtVLdA, nVL*(b2-b1), ctx));
+      CHKERR(globalSum_RHprimme(N, N, b2-b1, ctx));
+      CHKERR(globalSum_RHprimme(D, D, b2-b1, ctx));
+      CHKERR(globalSum_SHprimme(&Y[(b2 - b1) * (b1 - b1) + b1 - b1],
+                   &Y[(b2 - b1) * (b1 - b1) + b1 - b1], (b2 - b1) * (b2 - b1),
+                   ctx));
+
+      if (R && numLocked == 0) {
+         /* R(0:b1-1,:) += Vc'*Xc*gi = A(0:b1-1,:)*R(b1:b2-1,:) */
+
+         Num_gemm_SHprimme("N", "N", b1, b2 - b1, b2 - b1, 1.0, A, b2,
+               &R[ldR * b1 + b1], ldR, 1.0, &R[ldR * b1], ldR, ctx);
+
+         /* R(b1:b2-1,b1:b2-1) = N * R(b1:b2-1,b1:b2-1) */
+
+         for (i=0; i<b2-b1; i++) {
+            for (j=0; j<b2-b1; j++) {
+               R[ldR*(b1+i)+b1+j] *= N[j];
+            }
+         }
+
+         /* C = Y' * R(b1:b2-1,b1:b2-1) */
+
+         Num_gemm_SHprimme("C", "N", b2 - b1, b2 - b1, b2 - b1, 1.0, Y, b2 - b1,
+               &R[ldR * b1 + b1], ldR, 0.0, C, b2 - b1, ctx);
+
+         /* R(b1:b2-1,b1:b2-1) = D * C */
+
+         for (i=0; i<b2-b1; i++) {
+            for (j=0; j<b2-b1; j++) {
+               R[ldR*(b1+i)+b1+j] = D[j]*C[(b2-b1)*i+j];
+            }
+         }
+      }
+
+      /* Y = N \ Y */
+
+      for (i=0; i<b2-b1; i++) {
+         for (j=0; j<b2-b1; j++) {
+            Y[(b2-b1)*i+j] /= N[j];
+         }
+      }
+   } /* end while, I hope you enjoyed the loop */
+
+   if (primme) primme->stats.timeOrtho += primme_wTimer(0) - t0;
+
+   *b2_out = rank_estimation(VLtVL, numLocked + b1, numLocked + b2,
+                        maxRank, ldVLtVL) - numLocked;
+   if (primme->procID == 0) printf("Ortho %d %d %f\n", its, *b2_out - b2, primme->stats.timeOrtho);
+
+   CHKERR(Num_free_RHprimme(D, ctx));
+   CHKERR(Num_free_RHprimme(N, ctx));
+   CHKERR(Num_free_SHprimme(VLtVLdA, ctx));
+   CHKERR(Num_free_SHprimme(Y, ctx));
+   CHKERR(Num_free_SHprimme(fVLtVL, ctx));
+   CHKERR(Num_free_SHprimme(C, ctx));
+
+
+   /* Check orthogonality */
+   /*if (numLocked) {
+      SCALAR *H = (SCALAR*)malloc(sizeof(SCALAR)*numLocked*numLocked);
+      Num_gemm_Sprimme("C", "N", numLocked, numLocked, nLocal, 1.0, locked,
+            ldLocked, locked, ldLocked, 0.0, H, numLocked);
+      for(i=0; i < numLocked; i++) {
+         for(j=0; j < i; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+         assert(fabs(1 - *(double*)&H[numLocked*i+i]) < 1e-13);
+      }
+      free(H);
+   }
+   if (b2) {
+      SCALAR *H = (SCALAR*)malloc(sizeof(SCALAR)*(b2)*(b2));
+      Num_gemm_Sprimme("C", "N", b2, b2, nLocal, 1.0, V,
+            ldV, V, ldV, 0.0, H, b2);
+      for(i=0; i < b2; i++) {
+         for(j=0; j < i; j++) assert(ABS(H[b2*i+j]) < 1e-13);
+         assert(ABS(H[b2*i+i]) == 0.0 || ABS(1.0 - H[b2*i+i]) < 1e-13);
+      }
+      free(H);
+   }
+   if (numLocked) {
+      SCALAR *H = (SCALAR*)malloc(sizeof(SCALAR)*b2*numLocked);
+      Num_gemm_Sprimme("C", "N", numLocked, b2, nLocal, 1.0, locked,
+            ldLocked, basis, ldBasis, 0.0, H, numLocked);
+      for(i=0; i < b2; i++) {
+         for(j=0; j < numLocked; j++) assert(fabs(*(double*)&H[numLocked*i+j]) < 1e-13);
+      }
+      free(H);
+   }*/
+
+   return 0;
+}
 
 /**********************************************************************
  * Function ortho_single_iteration -- This function orthogonalizes
@@ -506,4 +784,174 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
    primme->stats.timeOrtho += primme_wTimer(0) - t0;
 
    return 0;
+}
+
+/******************************************************************************
+ * Function Num_ortho_kernel - This subroutine performs the next operations:
+ *
+ *    X = (X - [Q V]*A)*Y/D if A, D and Y provided
+ *    B = [Q W]'*Z
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * Q           input matrix
+ * m           number of rows on Q, V, W, Z, X
+ * nQ          number of columns of Q
+ * ldQ         leading dimension of Q
+ * V           input matrix of size m x nV
+ * ldV         leading dimension of V
+ * A           input matrix of size nQ+nV x nX
+ * ldA         leading dimension of A
+ * D           diagonal of a diagonal matrix (optional)
+ * Y           input matrix of size nX x nX (optional)
+ * ldY         leading dimension of Y (optional)
+ * W           input matrix of size m x nW
+ * ldW         leading dimension of W
+ * Z           input matrix of size m x nZ
+ * ldZ         leading dimension of Z
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * X           input/output matrix (optional)
+ * nX          number of columns of X (optional)
+ * ldX         leading dimension of X (optional)
+ * B           output matrix of size nQ+nW x nZ
+ * ldB         leading dimension of B
+ * rwork       scalar workspace
+ * ldrwork     size of rwork
+ *
+ ******************************************************************************/
+
+static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
+      SCALAR *A, int ldA, REAL *D, SCALAR *Y, int ldY,
+      SCALAR *W, int nW, PRIMME_INT ldW, SCALAR *Z, int nZ, PRIMME_INT ldZ,
+      SCALAR *B, int ldB, primme_context ctx)
+{
+
+   PRIMME_INT i;     /* Loop variables */
+   // int m=min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
+   int m;
+   //int m=min(max((1024*1024 - 2*(nQ+nX)*(nQ+nX))/((nQ+nX)*3),1), M);   /* Number of rows in the cache */
+   // int m=M;   /* Number of rows in the cache */
+   SCALAR *Bo, *Xo;
+
+   if (A && D && Y) {
+      m = min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
+   }
+   else {
+      m = M;
+   }
+
+   CHKERR(Num_malloc_SHprimme((nQ+nW)*nZ, &Bo, ctx));
+   CHKERR(Num_malloc_Sprimme(m*nX, &Xo, ctx));
+
+   /* Bo = zeros() */
+   Num_zero_matrix_SHprimme(Bo, nQ + nW, nZ, nQ + nW, ctx);
+
+   /* D[i] = 1/D[i] */
+   for (i=0; i < nX; i++) D[i] = 1.0/D[i];
+
+   for (i=0; i < M; i+=m, m=min(m,M-i)) {
+      if (A && D && Y) {
+         /* X = X - Q*A(0:nQ,:) */
+         Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, A, ldA,
+               1.0, &X[i], ldX, ctx);
+
+         /* X = X - V*A(nQ:nQ+nV) */
+         Num_gemm_dhd_Sprimme("N", "N", m, nX, nV, -1.0, &V[i], ldV, A + nQ,
+               ldA, 1.0, &X[i], ldX, ctx);
+
+         /* Xo = X*Y */
+         Num_gemm_dhd_Sprimme(
+               "N", "N", m, nX, nX, 1.0, &X[i], ldX, Y, ldY, 0.0, Xo, m, ctx);
+
+         /* X = Xo*D */
+         Num_scale_matrix_Sprimme(Xo, m, nX, m, D, &X[i], ldX, ctx);
+      }
+
+      /* Bo(0:nQ-1,:) += Q'*Z */
+      Num_gemm_ddh_Sprimme("C", "N", nQ, nZ, m, 1.0, &Q[i], ldQ, &Z[i], ldZ,
+            1.0, Bo, nQ + nW, ctx);
+
+      /* Bo(nQ:nQ+nW-1) += W'*Z */
+      Num_gemm_ddh_Sprimme("C", "N", nW, nZ, m, 1.0, &W[i], ldW, &Z[i], ldZ,
+            1.0, Bo + nQ, nQ + nW, ctx);
+   }
+
+   /* B = globalSum(Bo) */
+   CHKERR(globalSum_SHprimme(Bo, Bo, (nQ + nW) * nZ, ctx));
+   Num_copy_matrix_SHprimme(Bo, nQ+nW, nZ, nQ+nW, B, ldB, ctx);
+
+   CHKERR(Num_free_SHprimme(Bo, ctx));
+   CHKERR(Num_free_Sprimme(Xo, ctx));
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine eig - This procedure compute the eigen-decomposition of H
+ *        
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * H             The input matrix of size n x n
+ * n             Size of H
+ * ldH           The leading dimension of H
+ * primme        Structure containing various solver parameters
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * Y             Right singular vectors of H
+ * ldY           The leading dimension of Y
+ * evals         The eigenvalues of H, non-increasing order
+ * rwork         Workspace
+ * lrwork        Length of the work array rwork
+ *
+ * Return Value
+ * ------------
+ * int -  0 upon successful return
+ *     - -1 was unsuccessful
+ ******************************************************************************/
+
+static int eig(SCALAR *H, int n, int ldH, SCALAR *Y, int ldY, REAL *evals,
+      primme_context ctx) {
+
+   int i, j; /* Loop variables    */
+
+   /* XHEEV returns the eigenvalues in ascending order. This function will    */
+   /* return them in descending order. An easy way is to compute the          */
+   /* eigenpairs of -H instead. Do Y = -H.                                    */
+
+   for (j=0; j < n; j++) {
+      for (i=0; i <= j; i++) { 
+         Y[ldY*j+i] = -(H[ldH*j+i] + CONJ(H[ldH*i+j]))/2.0;
+      }
+   }
+ 
+   CHKERR(Num_heev_SHprimme("V", "U", n, Y, ldY, evals, ctx));
+
+   /* evals = -evals */
+
+   for (i=0; i < n; i++) { 
+      evals[i] *= -1.0;
+   }
+
+   return 0;
+}
+
+static int rank_estimation(SCALAR *V, int n0, int n1, int n, int ldV) {
+
+   (void)n0;
+
+   int i, j;
+
+   for(i=0; i<n1; i++) {
+      REAL norm1 = 0.0;
+      for (j = 0; j < i; j++)
+         norm1 += ABS(V[i * ldV + j]) /
+                  sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j]));
+      if (norm1 > (i+1)*1.0/n*.8) break;
+   }
+
+   return i;
 }

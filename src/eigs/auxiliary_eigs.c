@@ -106,6 +106,8 @@ void Num_compute_residual_Sprimme(PRIMME_INT n, SCALAR eval, SCALAR *x,
  *    R = W*h(nRb+1:nRe) - W*h(nRb+1:nRe)*diag(hVals(nRb+1:nRe)),
  *    Rnorms = norms(R),
  *    rnorms = norms(W*h(nrb+1:nre) - W*h(nrb+1:nre)*diag(hVals(nrb+1:nre)))
+ *    G = (V*h(1:nG))'*V*h(1:nG)
+ *    H = (V*h(1:nH))'*W*h(1:nH)
  *
  * NOTE: if Rnorms and rnorms are requested, nRb-nRe+nrb-nre < mV
  *
@@ -148,38 +150,61 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       HSCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
       HREAL *rnorms, int nrb, int nre,
+      SCALAR *G, int nG, int ldG,
+      SCALAR *H, int nH, int ldH,
       primme_context ctx) {
 
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
-   int nXb, nXe, nYb, nYe, ldX, ldY;
-   SCALAR *X, *Y;
+   int nXb, nXe, nYb, nYe, ldX, ldY, ldG0=0, ldH0=0;
+   SCALAR *X, *Y, *G0=NULL, *H0=NULL;
    REAL *tmp;
-
-   /* Return memory requirements */
-   if (V == NULL) {
-      return 2*m*nV;
-   }
 
    /* R or Rnorms or rnorms imply W */
    assert(!(R || Rnorms || rnorms) || W);
 
-   nXb = min(min(min(min(X0?nX0b:INT_MAX, X1?nX1b:INT_MAX), X2?nX2b:INT_MAX),
-         R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
-   nXe = max(max(max(X0?nX0e:0, X1?nX1e:0), R?nRe:0), rnorms?nre:0);
-   nYb = min(min(Wo?nWob:INT_MAX, R?nRb:INT_MAX), rnorms?nrb:INT_MAX);
-   nYe = max(max(Wo?nWoe:0, R?nRe:0), rnorms?nre:0);
+   nXb = min(min(min(min(min(min(X0 ? nX0b : INT_MAX, X1 ? nX1b : INT_MAX),
+                               X2 ? nX2b : INT_MAX),
+                           R ? nRb : INT_MAX),
+                       rnorms ? nrb : INT_MAX),
+                   G ? 0 : INT_MAX),
+         H ? 0 : INT_MAX);
+   nXe = max(max(max(max(max(X0 ? nX0e : 0, X1 ? nX1e : 0), R ? nRe : 0),
+                       rnorms ? nre : 0),
+                   G ? nG : 0),
+         H ? nH : 0);
+   nYb = min(min(min(Wo ? nWob : INT_MAX, R ? nRb : INT_MAX),
+                   rnorms ? nrb : INT_MAX),
+         H ? 0 : INT_MAX);
+   nYe = max(
+         max(max(Wo ? nWoe : 0, R ? nRe : 0), rnorms ? nre : 0), H ? nH : 0);
 
    assert(nXe <= nh || nXb >= nXe); /* Check dimension */
    assert(nYe <= nh || nYb >= nYe); /* Check dimension */
 
-   Num_malloc_Sprimme(m*(nXe-nXb), &X, ctx);
-   Num_malloc_Sprimme(m*(nYe-nYb), &Y, ctx);
+   CHKERR(Num_malloc_Sprimme(m*(nXe-nXb), &X, ctx));
+   CHKERR(Num_malloc_Sprimme(m*(nYe-nYb), &Y, ctx));
    ldX = ldY = m;
+   if (ctx.numProcs > 1) {
+      if (G) {
+         CHKERR(Num_malloc_SHprimme(nG*nG, &G0, ctx));
+         ldG0 = nG;
+      }
+      if (H) {
+         CHKERR(Num_malloc_SHprimme(nH*nH, &H0, ctx));
+         ldH0 = nH;
+      }
+   }
+   else {
+      G0 = G; ldG0 = ldG;
+      H0 = H; ldH0 = ldH;
+   }
 
    if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = 0.0;
    if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = 0.0;
+   if (G) Num_zero_matrix_SHprimme(G0, nG, nG, ldG0, ctx);
+   if (H) Num_zero_matrix_SHprimme(H0, nH, nH, ldH0, ctx);
 
    for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
       /* X = V*h(nXb:nXe-1) */
@@ -225,7 +250,27 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
             REAL_PART(Num_dot_Sprimme(m, &Y[ldY*(j-nYb)], 1,
                      &Y[ldY*(j-nYb)], 1, ctx));
       }
+
+      /* G += X(:,0:nG-1)'*X(:,0:nG-1) */
+
+      if (G) {
+         CHKERR(Num_gemm_ddh_Sprimme(
+               "C", "N", nG, nG, m, 1.0, X, ldX, X, ldX, 1.0, G0, ldG0, ctx));
+      }
+
+      /* H = X(:,0:nH-1)'*Y(:,0:nH-1) */
+
+      if (H) {
+         CHKERR(Num_gemm_ddh_Sprimme(
+               "C", "N", nH, nH, m, 1.0, X, ldX, Y, ldY, 1.0, H0, ldH0, ctx));
+      }
    }
+
+
+   /* Copy back G0 and H0 */
+
+   if (G) Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx);
+   if (H) Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx);
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
@@ -245,8 +290,12 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
    }
 
-   Num_free_Sprimme(X, ctx);
-   Num_free_Sprimme(Y, ctx);
+   CHKERR(Num_free_Sprimme(X, ctx));
+   CHKERR(Num_free_Sprimme(Y, ctx));
+   if (ctx.numProcs > 1) {
+      if (G) CHKERR(Num_free_SHprimme(G0, ctx));
+      if (H) CHKERR(Num_free_SHprimme(H0, ctx));
+   }
 
    return 0; 
 }

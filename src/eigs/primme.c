@@ -128,12 +128,21 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
   /* Set some defaults  */
   primme_set_defaults(primme);
 
-  /* Observed orthogonality issues finding the largest/smallest values in  */
-  /* single precision. Computing V'*B*V and solving the projected problem  */
-  /* V'AVx = V'BVxl mitigates the problem.                                 */
+   if (primme->orth == primme_orth_default) {
+#ifdef USE_HOST
+      /* By default PRIMME tries to use block orthogonalization for the host. */
+      /* The current code for block orthogonalization does not produce */
+      /* a machine precision orthonormal basis. So the use of explicit */
+      /* orthogonalization is recommended */
 
-  if (primme->orth == primme_orth_default) {
-#ifdef USE_FLOAT
+      primme->orth = primme_orth_explicit_I;
+#else
+
+   /* Observed orthogonality issues finding the largest/smallest values in  */
+   /* single precision. Computing V'*B*V and solving the projected problem  */
+   /* V'AVx = V'BVxl mitigates the problem.                                 */
+
+#  ifdef USE_FLOAT
       if (primme->projectionParams.projection == primme_proj_RR &&
             (primme->target == primme_largest ||
                   primme->target == primme_smallest ||
@@ -141,8 +150,9 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
          primme->orth = primme_orth_explicit_I;
       }
       else
-#endif
+#  endif
          primme->orth = primme_orth_implicit_I;
+#endif
    }
 
    /* Deprecated input:                                              */
@@ -309,9 +319,6 @@ static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
          && (primme->target == primme_closest_leq
             || primme->target == primme_closest_geq))
       ret = -38;
-   else if (primme->orth == primme_orth_explicit_I
-         && primme->projectionParams.projection != primme_proj_RR)
-      ret = -39;
    /* Please keep this if instruction at the end */
    else if ( primme->target == primme_largest_abs ||
              primme->target == primme_closest_geq ||

@@ -398,7 +398,7 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
 #endif /* USE_HOST */
 
 /******************************************************************************
- * Function Num_copy_matrix_columns - Copy the matrix x(xin) into y(yin)
+ * Function Num_copy_matrix_columns - Copy the matrix x(:,xin) into y(:,yin)
  *
  * PARAMETERS
  * ---------------------------
@@ -407,11 +407,11 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
  * xin         The column indices to copy
  * n           The number of columns of x
  * ldx         The leading dimension of x
- * y           On output y(yin) = x(xin)
+ * y           On output y(:,yin) = x(:,xin)
  * yin         The column indices of y to be modified
  * ldy         The leading dimension of y
  *
- * NOTE: x(xin) and y(yin) *cannot* overlap
+ * NOTE: x(:,xin) and y(:,yin) *cannot* overlap
  *
  ******************************************************************************/
 
@@ -426,6 +426,38 @@ void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
   for (i = 0; i < n; i++) {
     Num_copy_Sprimme(m, &x[(xin ? xin[i] : i) * ldx], 1,
                      &y[(yin ? yin[i] : i) * ldy], 1, ctx);
+  }
+}
+
+/******************************************************************************
+ * Function Num_copy_matrix_rows - Copy the matrix x(xin,:) into y(yin,:)
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * xim         The row indices to copy
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y(yin,:) = x(xin,:)
+ * yim         The row indices of y to be modified
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x(xin,:) and y(yin,:) *cannot* overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, SCALAR *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx) {
+
+  int i;
+
+  /* TODO: assert x and y don't overlap */
+  for (i = 0; i < m; i++) {
+    Num_copy_Sprimme(n, &x[xim ? xim[i] : i], ldx,
+                     &y[yim ? yim[i] : i], ldy, ctx);
   }
 }
 
@@ -644,4 +676,37 @@ SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n,
                              ld, ctx);
    }
    return work;
+}
+
+/******************************************************************************
+ * Function Num_scale_matrix - Scale the column of the matrix x into y
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * s           The scales
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x and y *can* overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, REAL *s, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
+
+   PRIMME_INT i;
+
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
+
+   /* Copy the matrix some columns backward, and other cases */
+   /* TODO: assert x and y don't overlap */
+   for (i=0; i<n; i++) {
+      Num_copy_Sprimme(m, &x[ldx*i], 1, &y[ldy*i], 1, ctx);
+      Num_scal_Sprimme(m, s[i], &y[ldy*i], 1, ctx);
+   }
 }

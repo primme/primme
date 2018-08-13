@@ -6,7 +6,7 @@ eigs/factorize.h : include/numerical.h
 eigs/init.h : include/numerical.h eigs/update_projection.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h include/wtime.h
 eigs/inner_solve.h : include/wtime.h eigs/const.h include/numerical.h eigs/factorize.h eigs/update_W.h eigs/auxiliary_eigs.h
 eigs/main_iter.h : include/numerical.h eigs/const.h include/wtime.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/auxiliary_eigs.h
-eigs/ortho.h : include/numerical.h eigs/auxiliary_eigs.h eigs/const.h include/wtime.h
+eigs/ortho.h : include/numerical.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/const.h include/wtime.h
 eigs/primme.h : eigs/const.h include/wtime.h include/numerical.h eigs/main_iter.h eigs/auxiliary_eigs.h include/primme_interface.h
 eigs/primme_f77.h : eigs/primme_f77_private.h include/notemplate.h
 eigs/primme_interface.h : include/template.h eigs/const.h include/notemplate.h
@@ -28,7 +28,7 @@ eigs/factorize*.o : include/numerical.h eigs/factorize.h
 eigs/init*.o : include/numerical.h eigs/init.h eigs/update_projection.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h include/wtime.h
 eigs/inner_solve*.o : include/wtime.h eigs/const.h include/numerical.h eigs/inner_solve.h eigs/factorize.h eigs/update_W.h eigs/auxiliary_eigs.h
 eigs/main_iter*.o : include/numerical.h eigs/const.h include/wtime.h eigs/main_iter.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/auxiliary_eigs.h
-eigs/ortho*.o : include/numerical.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/const.h include/wtime.h
+eigs/ortho*.o : include/numerical.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/const.h include/wtime.h
 eigs/primme*.o : eigs/const.h include/wtime.h include/numerical.h eigs/main_iter.h eigs/auxiliary_eigs.h include/primme_interface.h
 eigs/primme_f77*.o : eigs/primme_f77_private.h include/notemplate.h
 eigs/primme_interface*.o : include/template.h include/primme_interface.h eigs/const.h include/notemplate.h

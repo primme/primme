@@ -147,19 +147,22 @@ int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, 
-   SCALAR *sol, primme_context ctx) {
+int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
+      int ldrhs, SCALAR *sol, int ldsol, primme_context ctx) {
 
    /* TODO: this is not a proper PRIMME function, so it may belong to   */
    /* numerical.c or as a static function in init.c or restart.c.       */
 
    if (dim == 1) {
-      *sol = *rhs/(*UDU); 
+      int i;
+      for (i=0; i<nrhs; i++) {
+         sol[ldsol*i] = rhs[ldrhs*i]/(*UDU); 
+      }
    }
    else {
       int info;
-      Num_copy_SHprimme(dim, rhs, 1, sol, 1, ctx);
-      CHKERRM((Num_hetrs_Sprimme("U", dim, 1, UDU, dim, ipivot, sol, dim,
+      Num_copy_matrix_SHprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx);
+      CHKERRM((Num_hetrs_Sprimme("U", dim, nrhs, UDU, dim, ipivot, sol, ldsol,
                   &info), info),
               PRIMME_LAPACK_FAILURE, "hetrs failed with info %d", info);
    }

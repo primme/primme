@@ -122,9 +122,9 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      SCALAR *W, PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
-      double targetShift, int basisSize, int blockSize,
+int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
+      PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
+      HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx) {
 
    int i, j;
@@ -133,7 +133,8 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    if (blockSize <= 0 || Q == NULL || R == NULL) return 0;
 
-   assert(ldV >= nLocal && ldW >= nLocal && ldQ >= nLocal && ldR >= basisSize+blockSize);   
+   assert(ldV >= nLocal && ldW >= nLocal && ldQ >= nLocal &&
+          ldR >= basisSize + blockSize);
 
    /* Q(:,c) = W(:,c) - V(:,c)*target for c = basisSize:basisSize+blockSize-1 */
    for (i=basisSize; i<basisSize+blockSize; i++) {
@@ -142,8 +143,14 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
-   CHKERR(ortho_Sprimme(Q, ldQ, R, ldR, basisSize, basisSize+blockSize-1, NULL,
-         0, 0, nLocal, ctx.primme->iseed, ctx));
+   int nQ;
+   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, R, ldR, basisSize,
+         basisSize + blockSize - 1, NULL, 0, 0, nLocal,
+         ctx.primme->maxBasisSize, &nQ, ctx));
+   Num_zero_matrix_Sprimme(
+         &Q[ldQ * nQ], nLocal, basisSize + blockSize - nQ, ldQ, ctx);
+   Num_zero_matrix_SHprimme(
+         &R[nQ], basisSize + blockSize - nQ, basisSize + blockSize, ldR, ctx);
 
    /* Zero the lower triangular part of R */
    for (i=basisSize; i<basisSize+blockSize; i++) {

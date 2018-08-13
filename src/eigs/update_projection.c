@@ -52,7 +52,7 @@
  * ldX         The leading dimension of X
  * Y           Matrix with size nLocal x numCols+blockSize
  * ldY         The leading dimension of Y
- * Z           Matrix with size nLocal x numCols+blockSize
+ * Z           Matrix with size numCols+blockSize x numCols+blockSize
  * numCols     The number of columns that haven't changed
  * blockSize   The number of columns that have changed
  * rwork       Workspace
@@ -146,6 +146,53 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       Num_copy_matrix_SHprimme(&rwork[m*blockSize], blockSize, numCols,
             blockSize, &Z[numCols], ldZ, ctx);
    }
+
+   return 0;
+}
+
+
+/*******************************************************************************
+ * Subroutine update_projection_gen -
+ *   Z(nX0:nX1,nY0:nY1) = X(:,nX0:nX1)'*Y(:,nY0:nY1). 
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * X           Matrix with size nLocal x nX1
+ * ldX         The leading dimension of X
+ * Y           Matrix with size nLocal x nY1
+ * ldY         The leading dimension of Y
+ * Z           Matrix with size nX1 x nY1
+ * nLocal      The number of rows of X and Y
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * Z           The output matrix
+ * ldZ         The leading dimension of Z
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int update_projection_gen_Sprimme(SCALAR *X, int nX0, int nX1, PRIMME_INT ldX,
+      SCALAR *Y, int nY0, int nY1, PRIMME_INT ldY, SCALAR *Z, PRIMME_INT ldZ,
+      PRIMME_INT nLocal, primme_context ctx) {
+
+   assert(ldX >= nLocal && ldY >= nLocal && ldZ >= nX1);
+
+   /* Quick return */
+
+   if (nX1 <= nX0 || nY1 <= nY0) return 0;
+
+   /* Update Z */
+
+   int nX = nX1-nX0;
+   int nY = nY1-nY0;
+   SCALAR *rwork;
+   CHKERR(Num_malloc_SHprimme(nX * nY, &rwork, ctx));
+   Num_gemm_ddh_Sprimme("C", "N", nX, nY, nLocal, 1.0, &X[nX0 * ldX], ldX,
+         &Y[ldY * nY0], ldY, 0.0, rwork, nX, ctx);
+   CHKERR(globalSum_SHprimme(rwork, rwork, nX*nY, ctx));
+   Num_copy_matrix_Sprimme(rwork, nX, nY, nX, &Z[nY0*ldY+nX0], ldZ, ctx);
+   CHKERR(Num_free_SHprimme(rwork, ctx));
 
    return 0;
 }

@@ -664,8 +664,8 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
             /* Solve (Q'Qhat)^{-1}*overlaps = overlaps = Q'*v for alpha by */
             /* backsolving  with the UDU decomposition.                 */
 
-            CHKERR(UDUSolve_SHprimme(UDU, ipivot, numCols, overlaps, overlaps,
-                                     ctx));
+            CHKERR(UDUSolve_SHprimme(UDU, ipivot, numCols, overlaps, 1, numCols,
+                  overlaps, numCols, ctx));
 
             /* Compute v=v-Qhat*overlaps */
             CHKERR(Num_gemv_dhd_Sprimme("N", primme->nLocal, numCols, -1.0,

@@ -173,12 +173,12 @@ void Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
 }
 
 /*******************************************************************************
- * Subroutine Num_trmm_Sprimme - C = A*B or B*A where A is triangular,
- *    with C size m x n.
+ * Subroutine Num_trmm_Sprimme - B = A*B or B*A where A is triangular,
+ *    with B size m x n.
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_trmm_Sprimme(const char *side, const char *uplo,
+int Num_trmm_Sprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, SCALAR alpha,
       SCALAR *a, int lda, SCALAR *b, int ldb, primme_context ctx) {
 
@@ -189,20 +189,11 @@ void Num_trmm_Sprimme(const char *side, const char *uplo,
    PRIMME_BLASINT lldb = ldb;
 
    /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) return;
+   if (m == 0 || n == 0) return 0;
 
-#ifdef NUM_CRAY
-   _fcd side_fcd, uplo_fcd, transa_fcd, diag_fcd;
-
-   side_fcd = _cptofcd(side, strlen(side));
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   transa_fcd = _cptofcd(transa, strlen(transa));
-   diag_fcd = _cptofcd(diag, strlen(diag));
-   XTRMM(side_fcd, uplo_fcd, transa_fcd, diag_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb);
-#else
    XTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
-#endif
 
+   return 0;
 }
 
 /*******************************************************************************
@@ -848,6 +839,8 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
 
 #else /* USE_ZGESV */
 
+   *info = 0;
+
    /* Lapack's R core library doesn't have zhetrf. The functionality is       */
    /* implemented by replacing the input matrix with a full general matrix.   */
    /* And Num_zhetrs_Sprimme will solve the general linear system.            */
@@ -855,7 +848,6 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    /* Return memory requirements */
    if (ldwork == -1) {
       work[0] = 0.0;
-      *info = 0;
       return;
    }
 
@@ -929,6 +921,30 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
    }
    *info = (int)linfo;
 }
+
+/*******************************************************************************
+ * Subroutine Num_potrf_Sprimme - Cholesky factorization
+ ******************************************************************************/
+ 
+TEMPLATE_PLEASE
+int Num_potrf_Sprimme(
+      const char *uplo, int n, SCALAR *a, int lda, primme_context ctx) {
+
+   (void)ctx;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT linfo = 0; 
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
+
+   CHKERRM((XPOTRF(uplo, &ln, a, &llda, &linfo), linfo), PRIMME_LAPACK_FAILURE,
+         "Error in xpotrf with info %d\n", (int)linfo);
+
+   return 0;
+}
+
 
 /*******************************************************************************
  * Subroutine Num_trsm_Sprimme - b = op(A)\b, where A is triangular

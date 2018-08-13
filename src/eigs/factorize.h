@@ -35,12 +35,12 @@
 #define factorize_H
 int UDUDecompose_sprimme(float *M, int ldM, float *UDU, int ldUDU,
       int *ipivot, int dimM, primme_context ctx);
-int UDUSolve_sprimme(float *UDU, int *ipivot, int dim, float *rhs,
-   float *sol, primme_context ctx);
+int UDUSolve_sprimme(float *UDU, int *ipivot, int dim, float *rhs, int nrhs,
+      int ldrhs, float *sol, int ldsol, primme_context ctx);
 int UDUDecompose_cprimme(PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *UDU, int ldUDU,
       int *ipivot, int dimM, primme_context ctx);
-int UDUSolve_cprimme(PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, int dim, PRIMME_COMPLEX_FLOAT *rhs,
-   PRIMME_COMPLEX_FLOAT *sol, primme_context ctx);
+int UDUSolve_cprimme(PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, int dim, PRIMME_COMPLEX_FLOAT *rhs, int nrhs,
+      int ldrhs, PRIMME_COMPLEX_FLOAT *sol, int ldsol, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(UDUDecompose_Sprimme)
 #  define UDUDecompose_Sprimme CONCAT(UDUDecompose_,SCALAR_SUF)
 #endif
@@ -67,10 +67,10 @@ int UDUDecompose_dprimme(double *M, int ldM, double *UDU, int ldUDU,
 #if !defined(CHECK_TEMPLATE) && !defined(UDUSolve_RHprimme)
 #  define UDUSolve_RHprimme CONCAT(UDUSolve_,HOST_REAL_SUF)
 #endif
-int UDUSolve_dprimme(double *UDU, int *ipivot, int dim, double *rhs,
-   double *sol, primme_context ctx);
+int UDUSolve_dprimme(double *UDU, int *ipivot, int dim, double *rhs, int nrhs,
+      int ldrhs, double *sol, int ldsol, primme_context ctx);
 int UDUDecompose_zprimme(PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *UDU, int ldUDU,
       int *ipivot, int dimM, primme_context ctx);
-int UDUSolve_zprimme(PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, int dim, PRIMME_COMPLEX_DOUBLE *rhs,
-   PRIMME_COMPLEX_DOUBLE *sol, primme_context ctx);
+int UDUSolve_zprimme(PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, int dim, PRIMME_COMPLEX_DOUBLE *rhs, int nrhs,
+      int ldrhs, PRIMME_COMPLEX_DOUBLE *sol, int ldsol, primme_context ctx);
 #endif

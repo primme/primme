@@ -96,5 +96,6 @@
 #define PRIMME_MAIN_ITER_FAILURE          -3
 #define PRIMME_LAPACK_FAILURE             -40
 #define PRIMME_USER_FAILURE               -41
+#define PRIMME_ORTHO_CONST_FAILURE        -42
 
 #endif /* PRIMME_H */

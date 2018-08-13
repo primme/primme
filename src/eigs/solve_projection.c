@@ -44,20 +44,18 @@
 #ifdef USE_HOST
 
 static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
-                              SCALAR *hVecs, int ldhVecs, REAL *hVals,
-                              int basisSize, int numConverged,
-                              primme_context ctx);
+      SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
+      primme_context ctx);
 
 static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
-                                SCALAR *R, int ldR, SCALAR *hVecs, int ldhVecs,
-                                SCALAR *hU, int ldhU, REAL *hVals,
-                                int basisSize, int numConverged,
-                                primme_context ctx);
+      SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
+      SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU, REAL *hVals,
+      int basisSize, int numConverged, primme_context ctx);
 
 static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
-                               SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R,
-                               int ldR, REAL *hVals, int basisSize,
-                               int targetShiftIndex, primme_context ctx);
+      SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R, int ldR, SCALAR *QtQ,
+      int ldQtQ, SCALAR *VtBV, int ldVtBV, REAL *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
 
 static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
                                   SCALAR *hVecs, int ldhVecs, REAL *hVals,
@@ -102,9 +100,9 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
 
 TEMPLATE_PLEASE
 int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
-   SCALAR *R, int ldR,
-   SCALAR *QtV, int ldQtV, SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs,
-   REAL *hVals, REAL *hSVals, int numConverged, primme_context ctx) {
+      SCALAR *R, int ldR, SCALAR *QtV, int ldQtV, SCALAR *QtQ, int ldQtQ,
+      SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs, REAL *hVals,
+      REAL *hSVals, int numConverged, primme_context ctx) {
 
    int i;
 
@@ -120,13 +118,15 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
             break;
 
          case primme_proj_harmonic:
-            CHKERR(solve_H_Harm_Sprimme(H, ldH, QtV, ldQtV, R, ldR, hVecs,
-                     ldhVecs, hU, ldhU, hVals, basisSize, numConverged, ctx));
+            CHKERR(solve_H_Harm_Sprimme(H, ldH, QtV, ldQtV, R, ldR, QtQ, ldQtQ,
+                  VtBV, ldVtBV, hVecs, ldhVecs, hU, ldhU, hVals, basisSize,
+                  numConverged, ctx));
             break;
 
          case primme_proj_refined:
-            CHKERR(solve_H_Ref_Sprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals, 
-                     R, ldR, hVals, basisSize, numConverged, ctx));
+            CHKERR(solve_H_Ref_Sprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals,
+                  R, ldR, QtQ, ldQtQ, VtBV, ldVtBV, hVals, basisSize,
+                  numConverged, ctx));
             break;
 
          default:
@@ -386,8 +386,9 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
  ******************************************************************************/
 
 static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
-   SCALAR *R, int ldR, SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU,
-   REAL *hVals, int basisSize, int numConverged, primme_context ctx) {
+      SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
+      SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU, REAL *hVals,
+      int basisSize, int numConverged, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, ret;
@@ -401,11 +402,12 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
 
    /* QAQ = QtV*inv(R) */
 
-   Num_copy_matrix_Sprimme(QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs, ctx);
-   Num_trsm_Sprimme("R", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
-         hVecs, ldhVecs);
+   Num_copy_matrix_Sprimme(
+         QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs, ctx);
+   Num_trsm_Sprimme(
+         "R", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR, hVecs, ldhVecs);
 
-   /* Compute eigenpairs of QAQ */
+   /* Compute eigenpairs of (Q'AQ, Q'Q) */
 
    oldTargetShifts = primme->targetShifts;
    oldTarget = primme->target;
@@ -423,8 +425,8 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
       default:
          assert(0);
    }
-   ret = solve_H_RR_Sprimme(hVecs, ldhVecs, NULL, 0, hVecs, ldhVecs, hVals,
-         basisSize, 0, ctx);
+   ret = solve_H_RR_Sprimme(
+         hVecs, ldhVecs, QtQ, ldQtQ, hVecs, ldhVecs, hVals, basisSize, 0, ctx);
    primme->targetShifts = oldTargetShifts;
    primme->target = oldTarget;
    CHKERRM(ret, ret, "Error calling solve_H_RR_Sprimme\n");
@@ -435,9 +437,9 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
 
    Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
          hVecs, ldhVecs);
-   CHKERR(ortho_Sprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize-1, NULL, 0, 0,
-         basisSize, primme->iseed, primme_get_context(NULL)));
- 
+   CHKERR(Bortho_local_SHprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize - 1, NULL,
+         0, 0, basisSize, VtBV, ldVtBV, primme->iseed, ctx));
+
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
    SCALAR *rwork;
@@ -485,9 +487,10 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
  *     - -1 was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
-   int ldhVecs, SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R, int ldR,
-   REAL *hVals, int basisSize, int targetShiftIndex, primme_context ctx) {
+static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
+      SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R, int ldR, SCALAR *QtQ,
+      int ldQtQ, SCALAR *VtBV, int ldVtBV, REAL *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j; /* Loop variables    */
@@ -500,8 +503,27 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    /* Copy R into hVecs */
    Num_copy_matrix_Sprimme(R, basisSize, basisSize, ldR, hVecs, ldhVecs, ctx);
 
-   /* Note gesvd returns transpose(V) rather than V and sorted in descending  */
-   /* order of the singular values                                            */
+   if (QtQ) {
+      /* Factorize QtQ */
+      Num_copy_matrix_Sprimme(
+            QtQ, basisSize, basisSize, ldQtQ, hU, basisSize, ctx);
+      CHKERR(Num_potrf_Sprimme("U", basisSize, hU, basisSize, ctx));
+      CHKERR(Num_trmm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, hU,
+            basisSize, hVecs, basisSize, ctx));
+   }
+
+   SCALAR *U_VtBV=NULL; /* Cholesky factor of VtBV */
+   if (VtBV) {
+      CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &U_VtBV, ctx));
+      Num_copy_matrix_Sprimme(
+            VtBV, basisSize, basisSize, ldVtBV, U_VtBV, basisSize, ctx);
+      CHKERR(Num_potrf_Sprimme("U", basisSize, U_VtBV, basisSize, ctx));
+      Num_trsm_Sprimme("R", "U", "N", "N", basisSize, basisSize, 1.0, U_VtBV,
+            basisSize, hVecs, basisSize);
+   }
+
+   /* Note gesvd returns transpose(V) rather than V and sorted in descending */
+   /* order of the singular values */
 
    CHKERR(Num_gesvd_Sprimme("S", "O", basisSize, basisSize, hVecs, ldhVecs,
          hSVals, hU, ldhU, hVecs, ldhVecs, ctx));
@@ -509,23 +531,30 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs,
    /* Transpose back V */
 
    SCALAR *rwork;
-   CHKERR(Num_malloc_Sprimme((size_t)basisSize*basisSize, &rwork, ctx));
-   for (j=0; j < basisSize; j++) {
-      for (i=0; i < basisSize; i++) { 
-         rwork[basisSize*j+i] = CONJ(hVecs[ldhVecs*i+j]);
+   CHKERR(Num_malloc_Sprimme((size_t)basisSize * basisSize, &rwork, ctx));
+   for (j = 0; j < basisSize; j++) {
+      for (i = 0; i < basisSize; i++) {
+         rwork[basisSize * j + i] = CONJ(hVecs[ldhVecs * i + j]);
       }
    }
-   Num_copy_matrix_Sprimme(rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs, ctx);
+   Num_copy_matrix_Sprimme(
+         rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs, ctx);
+
+   if (VtBV) {
+      Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, U_VtBV,
+            basisSize, hVecs, ldhVecs);
+      CHKERR(Num_free_Sprimme(U_VtBV, ctx));
+   }
 
    /* Rearrange V, hSVals and hU in ascending order of singular value   */
    /* if target is not largest abs.                                     */
 
-   if (primme->target == primme_closest_abs 
-         || primme->target == primme_closest_leq
-         || primme->target == primme_closest_geq) {
+   if (primme->target == primme_closest_abs ||
+         primme->target == primme_closest_leq ||
+         primme->target == primme_closest_geq) {
       int *perm;
       CHKERR(Num_malloc_iprimme(basisSize, &perm, ctx));
-      for (i=0; i<basisSize; i++) perm[i] = basisSize-1-i;
+      for (i = 0; i < basisSize; i++) perm[i] = basisSize - 1 - i;
       permute_vecs_Rprimme(hSVals, 1, basisSize, 1, perm, ctx);
       permute_vecs_Sprimme(hVecs, basisSize, basisSize, ldhVecs, perm, ctx);
       permute_vecs_Sprimme(hU, basisSize, basisSize, ldhU, perm, ctx);

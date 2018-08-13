@@ -43,6 +43,8 @@ int Num_update_VWXR_sprimme(float *V, float *W, PRIMME_INT mV, int nV,
       float *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       float *R, int nRb, int nRe, PRIMME_INT ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
+      float *G, int nG, int ldG,
+      float *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_sprimme(float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
@@ -60,6 +62,8 @@ int Num_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PR
       PRIMME_COMPLEX_FLOAT *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       PRIMME_COMPLEX_FLOAT *R, int nRb, int nRe, PRIMME_INT ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
+      PRIMME_COMPLEX_FLOAT *G, int nG, int ldG,
+      PRIMME_COMPLEX_FLOAT *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       PRIMME_COMPLEX_FLOAT *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
@@ -114,6 +118,8 @@ int Num_update_VWXR_dprimme(double *V, double *W, PRIMME_INT mV, int nV,
       double *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       double *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
+      double *G, int nG, int ldG,
+      double *H, int nH, int ldH,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Sprimme)
 #  define applyPreconditioner_Sprimme CONCAT(applyPreconditioner_,SCALAR_SUF)
@@ -167,6 +173,8 @@ int Num_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, 
       PRIMME_COMPLEX_DOUBLE *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       PRIMME_COMPLEX_DOUBLE *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
+      PRIMME_COMPLEX_DOUBLE *G, int nG, int ldG,
+      PRIMME_COMPLEX_DOUBLE *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       PRIMME_COMPLEX_DOUBLE *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
@@ -184,6 +192,8 @@ int Num_update_VWXR_smagmaprimme(magma_float *V, magma_float *W, PRIMME_INT mV, 
       magma_float *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       float *R, int nRb, int nRe, PRIMME_INT ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
+      magma_float *G, int nG, int ldG,
+      magma_float *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
@@ -199,6 +209,8 @@ int Num_update_VWXR_cmagmaprimme(magma_complex_float *V, magma_complex_float *W,
       magma_complex_float *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       PRIMME_COMPLEX_FLOAT *R, int nRb, int nRe, PRIMME_INT ldR, float *Rnorms,
       float *rnorms, int nrb, int nre,
+      magma_complex_float *G, int nG, int ldG,
+      magma_complex_float *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_complex_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
@@ -214,6 +226,8 @@ int Num_update_VWXR_dmagmaprimme(magma_double *V, magma_double *W, PRIMME_INT mV
       magma_double *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       double *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
+      magma_double *G, int nG, int ldG,
+      magma_double *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
@@ -229,6 +243,8 @@ int Num_update_VWXR_zmagmaprimme(magma_complex_double *V, magma_complex_double *
       magma_complex_double *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       PRIMME_COMPLEX_DOUBLE *R, int nRb, int nRe, PRIMME_INT ldR, double *Rnorms,
       double *rnorms, int nrb, int nre,
+      magma_complex_double *G, int nG, int ldG,
+      magma_complex_double *H, int nH, int ldH,
       primme_context ctx);
 int applyPreconditioner_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_complex_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx);

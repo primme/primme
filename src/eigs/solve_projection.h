@@ -34,18 +34,18 @@
 #ifndef solve_projection_H
 #define solve_projection_H
 int solve_H_sprimme(float *H, int basisSize, int ldH, float *VtBV, int ldVtBV,
-   float *R, int ldR,
-   float *QtV, int ldQtV, float *hU, int ldhU, float *hVecs, int ldhVecs,
-   float *hVals, float *hSVals, int numConverged, primme_context ctx);
+      float *R, int ldR, float *QtV, int ldQtV, float *QtQ, int ldQtQ,
+      float *hU, int ldhU, float *hVecs, int ldhVecs, float *hVals,
+      float *hSVals, int numConverged, primme_context ctx);
 int prepare_vecs_sprimme(int basisSize, int i0, int blockSize,
       float *H, int ldH, float *hVals, float *hSVals, float *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
       double smallestResNorm, int *flags, int RRForAll, float *hVecsRot,
       int ldhVecsRot, primme_context ctx);
 int solve_H_cprimme(PRIMME_COMPLEX_FLOAT *H, int basisSize, int ldH, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV,
-   PRIMME_COMPLEX_FLOAT *R, int ldR,
-   PRIMME_COMPLEX_FLOAT *QtV, int ldQtV, PRIMME_COMPLEX_FLOAT *hU, int ldhU, PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs,
-   float *hVals, float *hSVals, int numConverged, primme_context ctx);
+      PRIMME_COMPLEX_FLOAT *R, int ldR, PRIMME_COMPLEX_FLOAT *QtV, int ldQtV, PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ,
+      PRIMME_COMPLEX_FLOAT *hU, int ldhU, PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs, float *hVals,
+      float *hSVals, int numConverged, primme_context ctx);
 int prepare_vecs_cprimme(int basisSize, int i0, int blockSize,
       PRIMME_COMPLEX_FLOAT *H, int ldH, float *hVals, float *hSVals, PRIMME_COMPLEX_FLOAT *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
@@ -64,9 +64,9 @@ int prepare_vecs_cprimme(int basisSize, int i0, int blockSize,
 #  define solve_H_RHprimme CONCAT(solve_H_,HOST_REAL_SUF)
 #endif
 int solve_H_dprimme(double *H, int basisSize, int ldH, double *VtBV, int ldVtBV,
-   double *R, int ldR,
-   double *QtV, int ldQtV, double *hU, int ldhU, double *hVecs, int ldhVecs,
-   double *hVals, double *hSVals, int numConverged, primme_context ctx);
+      double *R, int ldR, double *QtV, int ldQtV, double *QtQ, int ldQtQ,
+      double *hU, int ldhU, double *hVecs, int ldhVecs, double *hVals,
+      double *hSVals, int numConverged, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Sprimme)
 #  define prepare_vecs_Sprimme CONCAT(prepare_vecs_,SCALAR_SUF)
 #endif
@@ -85,9 +85,9 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize,
       double smallestResNorm, int *flags, int RRForAll, double *hVecsRot,
       int ldhVecsRot, primme_context ctx);
 int solve_H_zprimme(PRIMME_COMPLEX_DOUBLE *H, int basisSize, int ldH, PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV,
-   PRIMME_COMPLEX_DOUBLE *R, int ldR,
-   PRIMME_COMPLEX_DOUBLE *QtV, int ldQtV, PRIMME_COMPLEX_DOUBLE *hU, int ldhU, PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs,
-   double *hVals, double *hSVals, int numConverged, primme_context ctx);
+      PRIMME_COMPLEX_DOUBLE *R, int ldR, PRIMME_COMPLEX_DOUBLE *QtV, int ldQtV, PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ,
+      PRIMME_COMPLEX_DOUBLE *hU, int ldhU, PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs, double *hVals,
+      double *hSVals, int numConverged, primme_context ctx);
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize,
       PRIMME_COMPLEX_DOUBLE *H, int ldH, double *hVals, double *hSVals, PRIMME_COMPLEX_DOUBLE *hVecs,
       int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
