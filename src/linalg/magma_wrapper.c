@@ -158,8 +158,8 @@ void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
 
 TEMPLATE_PLEASE
 int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
-      SCALAR *c, int ldc, primme_context ctx) {
+      int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
+      HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
 
    assert(magma_is_devptr(a) != 0);
    assert(magma_is_devptr(b) != 0);
@@ -213,8 +213,8 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
 TEMPLATE_PLEASE
 int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
-      SCALAR *c, int ldc, primme_context ctx) {
+      int k, HSCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb,
+      HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
 
    int mb = (*transb == 'N' || *transb == 'n') ? k : n;
    int nb = (*transb == 'N' || *transb == 'n') ? n : k;
@@ -237,8 +237,8 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
 
 TEMPLATE_PLEASE
 int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
-      HSCALAR *c, int ldc, primme_context ctx) {
+      int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
+      HSCALAR beta, HSCALAR *c, int ldc, primme_context ctx) {
 
    SCALAR *c_dev; /* copy of c on device */
    CHKERR(Num_malloc_Sprimme(m*n, &c_dev, ctx));
@@ -264,8 +264,8 @@ int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
+int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
+      SCALAR *a, int lda, SCALAR *x, int incx, HSCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
    assert(magma_is_devptr(a) != 0);
@@ -321,8 +321,8 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, HSCALAR *y,
+int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
+      SCALAR *a, int lda, SCALAR *x, int incx, HSCALAR beta, HSCALAR *y,
       int incy, primme_context ctx) {
 
    int my = (*transa == 'N' || *transa == 'n') ? m : n;
@@ -351,8 +351,8 @@ int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, HSCALAR *x, int incx, SCALAR beta, SCALAR *y,
+int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
+      SCALAR *a, int lda, HSCALAR *x, int incx, HSCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
    int mx = (*transa == 'N' || *transa == 'n') ? n : m;
@@ -373,7 +373,7 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, 
+void Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
    SCALAR *y, int incy, primme_context ctx) {
 
    assert(magma_is_devptr(x) != 0);
@@ -398,7 +398,7 @@ void Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
+HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       primme_context ctx) {
 
    assert(magma_is_devptr(x) != 0);
@@ -407,13 +407,13 @@ SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
-   SCALAR r = 0.0;
+   HSCALAR r = 0.0;
 
    while (n > 0) {
       ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX - 1);
       MAGMA_SCALAR r0 = XDOT(ln, (MAGMA_SCALAR *)x, lincx, (MAGMA_SCALAR *)y,
             lincy, *(magma_queue_t *)ctx.queue);
-      r += *(SCALAR *)&r0;
+      r += *(HSCALAR *)&r0;
       n -= (PRIMME_INT)ln;
       x += ln;
       y += ln;
@@ -427,7 +427,7 @@ SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_scal_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
+void Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       primme_context ctx) {
 
    assert(magma_is_devptr(x) != 0);
@@ -454,7 +454,7 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
 
    assert(magma_is_devptr(x) != 0);
 
-   SCALAR *x_host;
+   HSCALAR *x_host;
    CHKERR(Num_malloc_SHprimme(length, &x_host, ctx));
    CHKERR(Num_larnv_SHprimme(idist, iseed, length, x_host, ctx));
    magma_setvector(length, sizeof(SCALAR), x_host, 1, x, 1,
@@ -515,8 +515,31 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    assert(magma_is_devptr(x) != 0);
 
-   SCALAR zero = 0.0;
+   HSCALAR zero = 0.0;
    XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&zero, *(MAGMA_SCALAR *)&zero,
+         (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
+} 
+
+/******************************************************************************
+ * Function Num_set_matrix - Set all elements in a matrix with a given value
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * value       The value to set
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, HSCALAR value, primme_context ctx) {
+
+   assert(magma_is_devptr(x) != 0);
+
+   XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&value, *(MAGMA_SCALAR *)&value,
          (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
 } 
 

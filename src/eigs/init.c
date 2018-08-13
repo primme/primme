@@ -48,7 +48,7 @@
 
 static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, int dv1, int dv2, SCALAR *locked,
-      PRIMME_INT ldlocked, int numLocked, SCALAR *VtV, int ldVtV, int maxRank,
+      PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV, int ldVtV, int maxRank,
       primme_context ctx);
 
 /*******************************************************************************
@@ -126,8 +126,8 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 TEMPLATE_PLEASE
 int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *evecs, PRIMME_INT ldevecs, SCALAR *evecsHat,
-      PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
-      int *ipivot, SCALAR *VtBV, int ldVtBV, int maxRank, int *basisSize,
+      PRIMME_INT ldevecsHat, HSCALAR *M, int ldM, HSCALAR *UDU, int ldUDU,
+      int *ipivot, HSCALAR *VtBV, int ldVtBV, int maxRank, int *basisSize,
       int *nextGuess, int *numGuesses, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -257,7 +257,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
 
 static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, int dv1, int dv2, SCALAR *locked,
-      PRIMME_INT ldlocked, int numLocked, SCALAR *VtV, int ldVtV, int maxRank,
+      PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV, int ldVtV, int maxRank,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;

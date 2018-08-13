@@ -40,6 +40,8 @@ void Num_copy_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
       primme_context ctx);
 void Num_zero_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
+void Num_set_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, float value, primme_context ctx);
 void Num_copy_trimatrix_sprimme(float *x, int m, int n, int ldx, int ul,
       int i0, float *y, int ldy, int zero);
 void Num_copy_trimatrix_compact_sprimme(float *x, PRIMME_INT m, int n,
@@ -68,6 +70,8 @@ void Num_copy_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n
       primme_context ctx);
 void Num_zero_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
+void Num_set_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT value, primme_context ctx);
 void Num_copy_trimatrix_cprimme(PRIMME_COMPLEX_FLOAT *x, int m, int n, int ldx, int ul,
       int i0, PRIMME_COMPLEX_FLOAT *y, int ldy, int zero);
 void Num_copy_trimatrix_compact_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, int n,
@@ -170,6 +174,20 @@ void Num_copy_matrix_dprimme(double *x, PRIMME_INT m, PRIMME_INT n,
 #endif
 void Num_zero_matrix_dprimme(double *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Sprimme)
+#  define Num_set_matrix_Sprimme CONCAT(Num_set_matrix_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rprimme)
+#  define Num_set_matrix_Rprimme CONCAT(Num_set_matrix_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHprimme)
+#  define Num_set_matrix_SHprimme CONCAT(Num_set_matrix_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHprimme)
+#  define Num_set_matrix_RHprimme CONCAT(Num_set_matrix_,HOST_REAL_SUF)
+#endif
+void Num_set_matrix_dprimme(double *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, double value, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_trimatrix_Sprimme)
 #  define Num_copy_trimatrix_Sprimme CONCAT(Num_copy_trimatrix_,SCALAR_SUF)
 #endif
@@ -319,6 +337,8 @@ void Num_copy_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT 
       primme_context ctx);
 void Num_zero_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
+void Num_set_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE value, primme_context ctx);
 void Num_copy_trimatrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, int m, int n, int ldx, int ul,
       int i0, PRIMME_COMPLEX_DOUBLE *y, int ldy, int zero);
 void Num_copy_trimatrix_compact_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, int n,
@@ -352,7 +372,7 @@ magma_float* Num_compact_vecs_smagmaprimme(magma_float *vecs, PRIMME_INT m, int 
       PRIMME_INT ld, int *perm, magma_float *work, PRIMME_INT ldwork,
       int avoidCopy, primme_context ctx);
 void Num_scale_matrix_smagmaprimme(magma_float *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, magma_float *s, magma_float *y, PRIMME_INT ldy, primme_context ctx);
+      PRIMME_INT ldx, float *s, magma_float *y, PRIMME_INT ldy, primme_context ctx);
 void Num_copy_matrix_columns_cmagmaprimme(magma_complex_float *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, magma_complex_float *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -365,7 +385,7 @@ magma_complex_float* Num_compact_vecs_cmagmaprimme(magma_complex_float *vecs, PR
       PRIMME_INT ld, int *perm, magma_complex_float *work, PRIMME_INT ldwork,
       int avoidCopy, primme_context ctx);
 void Num_scale_matrix_cmagmaprimme(magma_complex_float *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, magma_float *s, magma_complex_float *y, PRIMME_INT ldy, primme_context ctx);
+      PRIMME_INT ldx, float *s, magma_complex_float *y, PRIMME_INT ldy, primme_context ctx);
 void Num_copy_matrix_columns_dmagmaprimme(magma_double *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, magma_double *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -378,7 +398,7 @@ magma_double* Num_compact_vecs_dmagmaprimme(magma_double *vecs, PRIMME_INT m, in
       PRIMME_INT ld, int *perm, magma_double *work, PRIMME_INT ldwork,
       int avoidCopy, primme_context ctx);
 void Num_scale_matrix_dmagmaprimme(magma_double *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, magma_double *s, magma_double *y, PRIMME_INT ldy, primme_context ctx);
+      PRIMME_INT ldx, double *s, magma_double *y, PRIMME_INT ldy, primme_context ctx);
 void Num_copy_matrix_columns_zmagmaprimme(magma_complex_double *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, magma_complex_double *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -391,5 +411,5 @@ magma_complex_double* Num_compact_vecs_zmagmaprimme(magma_complex_double *vecs, 
       PRIMME_INT ld, int *perm, magma_complex_double *work, PRIMME_INT ldwork,
       int avoidCopy, primme_context ctx);
 void Num_scale_matrix_zmagmaprimme(magma_complex_double *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, magma_double *s, magma_complex_double *y, PRIMME_INT ldy, primme_context ctx);
+      PRIMME_INT ldx, double *s, magma_complex_double *y, PRIMME_INT ldy, primme_context ctx);
 #endif

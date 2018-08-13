@@ -123,7 +123,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
 TEMPLATE_PLEASE
 int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR,
+      PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR,
       HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx) {
 

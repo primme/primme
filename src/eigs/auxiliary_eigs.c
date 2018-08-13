@@ -86,7 +86,7 @@ primme_context primme_get_context(primme_params *primme) {
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_compute_residual_Sprimme(PRIMME_INT n, SCALAR eval, SCALAR *x,
+void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *x,
    SCALAR *Ax, SCALAR *r, primme_context ctx) {
 
    int k, M=min(n,PRIMME_BLOCK_SIZE);
@@ -143,23 +143,24 @@ void Num_compute_residual_Sprimme(PRIMME_INT n, SCALAR eval, SCALAR *x,
 
 TEMPLATE_PLEASE
 int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, SCALAR *h, int nh, int ldh, HREAL *hVals,
+      PRIMME_INT ldV, HSCALAR *h, int nh, int ldh, HREAL *hVals,
       SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       SCALAR *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      HSCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
+      SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
       HREAL *rnorms, int nrb, int nre,
-      SCALAR *G, int nG, int ldG,
-      SCALAR *H, int nH, int ldH,
+      HSCALAR *G, int nG, int ldG,
+      HSCALAR *H, int nH, int ldH,
       primme_context ctx) {
 
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, ldX, ldY, ldG0=0, ldH0=0;
-   SCALAR *X, *Y, *G0=NULL, *H0=NULL;
-   REAL *tmp;
+   SCALAR *X, *Y;
+   HSCALAR *G0=NULL, *H0=NULL;
+   HREAL *tmp;
 
    /* R or Rnorms or rnorms imply W */
    assert(!(R || Rnorms || rnorms) || W);

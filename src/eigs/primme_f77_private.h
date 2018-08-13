@@ -48,8 +48,8 @@ extern "C" {
 #define AS_FORTRAN(X) AS_FORTRANX(X)
 #define AS_FORTRANX(X) FORTRAN_FUNCTION(X ## _f77)
 
-void AS_FORTRAN(Sprimme)(REAL *evals, SCALAR *evecs,
-      REAL *rnorms, primme_params **primme, int *ierr);
+void AS_FORTRAN(Sprimme)(HREAL *evals, HSCALAR *evecs,
+      HREAL *rnorms, primme_params **primme, int *ierr);
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE

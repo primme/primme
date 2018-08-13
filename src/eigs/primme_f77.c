@@ -45,8 +45,8 @@
  * The only difference from primme: the return value passed as parameter 
  *****************************************************************************/
 
-void AS_FORTRAN(Sprimme)(REAL *evals, SCALAR *evecs,
-      REAL *rnorms, primme_params **primme, int *ierr) {
+void AS_FORTRAN(Sprimme)(HREAL *evals, HSCALAR *evecs,
+      HREAL *rnorms, primme_params **primme, int *ierr) {
 
   *ierr = CONCAT(SCALAR_PRE,primme)(evals, evecs, rnorms, *primme);
 

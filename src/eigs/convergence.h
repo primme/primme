@@ -63,18 +63,18 @@ int check_convergence_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT nLocal, PRIMM
       double *hVals, int *reset, primme_context ctx);
 int check_convergence_smagmaprimme(magma_float *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       magma_float *R, PRIMME_INT ldR, magma_float *evecs, int numLocked,
-      PRIMME_INT ldevecs, int left, int right, int *flags, magma_float *blockNorms,
-      magma_float *hVals, int *reset, primme_context ctx);
+      PRIMME_INT ldevecs, int left, int right, int *flags, float *blockNorms,
+      float *hVals, int *reset, primme_context ctx);
 int check_convergence_cmagmaprimme(magma_complex_float *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       magma_complex_float *R, PRIMME_INT ldR, magma_complex_float *evecs, int numLocked,
-      PRIMME_INT ldevecs, int left, int right, int *flags, magma_float *blockNorms,
-      magma_float *hVals, int *reset, primme_context ctx);
+      PRIMME_INT ldevecs, int left, int right, int *flags, float *blockNorms,
+      float *hVals, int *reset, primme_context ctx);
 int check_convergence_dmagmaprimme(magma_double *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       magma_double *R, PRIMME_INT ldR, magma_double *evecs, int numLocked,
-      PRIMME_INT ldevecs, int left, int right, int *flags, magma_double *blockNorms,
-      magma_double *hVals, int *reset, primme_context ctx);
+      PRIMME_INT ldevecs, int left, int right, int *flags, double *blockNorms,
+      double *hVals, int *reset, primme_context ctx);
 int check_convergence_zmagmaprimme(magma_complex_double *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       magma_complex_double *R, PRIMME_INT ldR, magma_complex_double *evecs, int numLocked,
-      PRIMME_INT ldevecs, int left, int right, int *flags, magma_double *blockNorms,
-      magma_double *hVals, int *reset, primme_context ctx);
+      PRIMME_INT ldevecs, int left, int right, int *flags, double *blockNorms,
+      double *hVals, int *reset, primme_context ctx);
 #endif

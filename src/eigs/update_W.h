@@ -89,28 +89,28 @@ int matrixMatvec_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_float *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
 int update_Q_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_float *W,
-      PRIMME_INT ldW, magma_float *Q, PRIMME_INT ldQ, magma_float *R, int ldR,
+      PRIMME_INT ldW, magma_float *Q, PRIMME_INT ldQ, float *R, int ldR,
       float *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx);
 int matrixMatvec_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_complex_float *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
 int update_Q_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_complex_float *W,
-      PRIMME_INT ldW, magma_complex_float *Q, PRIMME_INT ldQ, magma_complex_float *R, int ldR,
+      PRIMME_INT ldW, magma_complex_float *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *R, int ldR,
       PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx);
 int matrixMatvec_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_double *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
 int update_Q_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_double *W,
-      PRIMME_INT ldW, magma_double *Q, PRIMME_INT ldQ, magma_double *R, int ldR,
+      PRIMME_INT ldW, magma_double *Q, PRIMME_INT ldQ, double *R, int ldR,
       double *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx);
 int matrixMatvec_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       magma_complex_double *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
 int update_Q_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_complex_double *W,
-      PRIMME_INT ldW, magma_complex_double *Q, PRIMME_INT ldQ, magma_complex_double *R, int ldR,
+      PRIMME_INT ldW, magma_complex_double *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *R, int ldR,
       PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx);
 #endif

@@ -50,72 +50,72 @@
 
 static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,
-      SCALAR *hVecs, int ldhVecs, int *restartPerm, REAL *hVals, int *flags,
-      int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs, REAL *evals,
-      REAL *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M,
+      HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
+      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs, HREAL *evals,
+      HREAL *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat, HSCALAR *M,
       int ldM, int *numConverged, int *numConvergedStored, int numPrevRetained,
-      int *indexOfPreviousVecs, int *hVecsPerm, SCALAR *H, int ldH,
-      SCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx);
+      int *indexOfPreviousVecs, int *hVecsPerm, HSCALAR *H, int ldH,
+      HSCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx);
 
 static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W, 
       PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,
-      SCALAR *hVecs, int ldhVecs, int *restartPerm, REAL *hVals, int *flags,
-      int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs,
-      PRIMME_INT ldevecs, REAL *evals, int *numConverged, int *numLocked,
-      REAL *resNorms, int *lockedFlags, int *evecsperm, int numPrevRetained,
-      int *indexOfPreviousVecs, int *hVecsPerm, SCALAR *H, int ldH,
-      SCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx);
+      HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
+      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
+      PRIMME_INT ldevecs, HREAL *evals, int *numConverged, int *numLocked,
+      HREAL *resNorms, int *lockedFlags, int *evecsperm, int numPrevRetained,
+      int *indexOfPreviousVecs, int *hVecsPerm, HSCALAR *H, int ldH,
+      HSCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx);
 
 static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV, SCALAR *Q,
-      PRIMME_INT ldQ, PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV,
-      int ldQtV, SCALAR *QtQ, int ldQtQ, SCALAR *hU, int ldhU, int newldhU,
-      int indexOfPreviousVecsBeforeRestart, SCALAR *hVecs, int ldhVecs,
-      int newldhVecs, REAL *hVals, REAL *hSVals, int *restartPerm,
+      PRIMME_INT ldW, HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV, SCALAR *Q,
+      PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtV,
+      int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *hU, int ldhU, int newldhU,
+      int indexOfPreviousVecsBeforeRestart, HSCALAR *hVecs, int ldhVecs,
+      int newldhVecs, HREAL *hVals, HREAL *hSVals, int *restartPerm,
       int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
       int indexOfPreviousVecs, SCALAR *evecs, int *evecsSize,
-      PRIMME_INT ldevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M,
-      int ldM, SCALAR *UDU, int ldUDU, int *ipivot, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+      PRIMME_INT ldevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat, HSCALAR *M,
+      int ldM, HSCALAR *UDU, int ldUDU, int *ipivot, int *targetShiftIndex,
+      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
       int reset, primme_context ctx);
 
-static int restart_RR(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, int restartSize,
+static int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
+      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, int restartSize,
       int basisSize, int numConverged, int numPrevRetained,
       int indexOfPreviousVecs, int *hVecsPerm, int *targetShiftIndex,
       primme_context ctx);
 
 static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
-      SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, REAL *hSVals,
+      HSCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
+      HSCALAR *R, int ldR, HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV, int ldVtBV,
+      HSCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
+      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, HREAL *hSVals,
       int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
       int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
       int reset, primme_context ctx);
 
 static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
-      PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV, int ldQtV,
-      SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV, SCALAR *hU, int ldhU,
-      int newldhU, SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals,
-      REAL *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
+      PRIMME_INT ldW, HSCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
+      PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV,
+      HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV, int ldVtBV, HSCALAR *hU, int ldhU,
+      int newldhU, HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals,
+      HREAL *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      SCALAR *hVecsRot, int ldhVecsRot, primme_context ctx);
+      HSCALAR *hVecsRot, int ldhVecsRot, primme_context ctx);
 
 static int
-ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize, int ldhVecs,
-                                  int indexOfPreviousVecs, SCALAR *hU, int ldhU,
-                                  SCALAR *R, int ldR, SCALAR *VtBV, int ldVtBV,
+ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize, int ldhVecs,
+                                  int indexOfPreviousVecs, HSCALAR *hU, int ldhU,
+                                  HSCALAR *R, int ldR, HSCALAR *VtBV, int ldVtBV,
                                   int *numPrevRetained, primme_context ctx);
 
-static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
-   REAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
+static void insertionSort(HREAL newVal, HREAL *evals, HREAL newNorm,
+   HREAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
    primme_params *primme);
 
-static int compute_residual_columns(PRIMME_INT m, REAL *evals, SCALAR *x,
+static int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
       int n, int *p, PRIMME_INT ldx, SCALAR *Ax, PRIMME_INT ldAx,
       SCALAR *xo, int no, PRIMME_INT ldxo, int io0, SCALAR *ro, PRIMME_INT ldro,
       SCALAR *xd, int nd, int *pd, PRIMME_INT ldxd, SCALAR *rd, PRIMME_INT ldrd,
@@ -257,18 +257,18 @@ static int compute_residual_columns(PRIMME_INT m, REAL *evals, SCALAR *x,
  
 TEMPLATE_PLEASE
 int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
-      PRIMME_INT ldV, REAL *hVals, REAL *hSVals, int *flags, int *iev,
-      int *ievSize, REAL *blockNorms, SCALAR *evecs, PRIMME_INT ldevecs,
-      int *evecsPerm, REAL *evals, REAL *resNorms, SCALAR *evecsHat,
-      PRIMME_INT ldevecsHat, SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
+      PRIMME_INT ldV, HREAL *hVals, HREAL *hSVals, int *flags, int *iev,
+      int *ievSize, HREAL *blockNorms, SCALAR *evecs, PRIMME_INT ldevecs,
+      int *evecsPerm, HREAL *evals, HREAL *resNorms, SCALAR *evecsHat,
+      PRIMME_INT ldevecsHat, HSCALAR *M, int ldM, HSCALAR *UDU, int ldUDU,
       int *ipivot, int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, SCALAR *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, REAL *prevRitzVals,
-      int *numPrevRitzVals, SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
-      SCALAR *Q, PRIMME_INT ldQ, SCALAR *R, int ldR, SCALAR *QtV, int ldQtV,
-      SCALAR *QtQ, int ldQtQ, SCALAR *hU, int ldhU, int newldhU, SCALAR *hVecs,
+      int *numConvergedStored, HSCALAR *previousHVecs, int *numPrevRetained,
+      int ldpreviousHVecs, int numGuesses, HREAL *prevRitzVals,
+      int *numPrevRitzVals, HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
+      SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV,
+      HSCALAR *QtQ, int ldQtQ, HSCALAR *hU, int ldhU, int newldhU, HSCALAR *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
-      int *targetShiftIndex, int *numArbitraryVecs, SCALAR *hVecsRot,
+      int *targetShiftIndex, int *numArbitraryVecs, HSCALAR *hVecsRot,
       int ldhVecsRot, int *restartsSinceReset, int *reset, int maxRank,
       primme_context ctx) {
 
@@ -479,11 +479,11 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    /* and to bound the minimum residual error norm the solver can converge    */
 
    if (VtBV) {
-      REAL n = 0.0;
+      HREAL n = 0.0;
       int i,j;
       for (i=0; i<restartSize; i++) {
          for (j=0; j<i; j++) n += 2*REAL_PART(CONJ(VtBV[i*ldVtBV+j])*VtBV[i*ldVtBV+j]);
-         n += REAL_PART(CONJ(VtBV[i*ldVtBV+i] - (SCALAR)1.0)*(VtBV[i*ldVtBV+i] - (SCALAR)1.0));
+         n += REAL_PART(CONJ(VtBV[i*ldVtBV+i] - (HSCALAR)1.0)*(VtBV[i*ldVtBV+i] - (HSCALAR)1.0));
       }
       if (*restartsSinceReset <= 1) {
          primme->stats.maxConvTol = max(primme->stats.maxConvTol,
@@ -607,12 +607,12 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
 
 static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,
-      SCALAR *hVecs, int ldhVecs, int *restartPerm, REAL *hVals, int *flags,
-      int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs, REAL *evals,
-      REAL *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M,
+      HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
+      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs, HREAL *evals,
+      HREAL *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat, HSCALAR *M,
       int ldM, int *numConverged, int *numConvergedStored, int numPrevRetained,
-      int *indexOfPreviousVecs, int *hVecsPerm, SCALAR *H, int ldH,
-      SCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx) {
+      int *indexOfPreviousVecs, int *hVecsPerm, HSCALAR *H, int ldH,
+      HSCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j, k;               /* loop indices */
@@ -935,12 +935,12 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
 static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,
-      SCALAR *hVecs, int ldhVecs, int *restartPerm, REAL *hVals, int *flags,
-      int *iev, int *ievSize, REAL *blockNorms, SCALAR *evecs,
-      PRIMME_INT ldevecs, REAL *evals, int *numConverged, int *numLocked,
-      REAL *resNorms, int *lockedFlags, int *evecsperm, int numPrevRetained,
-      int *indexOfPreviousVecs, int *hVecsPerm, SCALAR *H, int ldH,
-      SCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx) {
+      HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
+      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
+      PRIMME_INT ldevecs, HREAL *evals, int *numConverged, int *numLocked,
+      HREAL *resNorms, int *lockedFlags, int *evecsperm, int numPrevRetained,
+      int *indexOfPreviousVecs, int *hVecsPerm, HSCALAR *H, int ldH,
+      HSCALAR *VtBV, int ldVtBV, int reset, int maxRank, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j, k;             /* Loop variables                                 */
@@ -951,7 +951,7 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    int failed;              /* Number of vectors to be locked that didn't pass the conv. test */
    int left;                /* Index of the first column with a vector to be locked */
    int overbooking;         /* If basis has more converged pairs than numEvals */
-   REAL *lockedResNorms;  /* residual norms for locked vectors              */
+   HREAL *lockedResNorms;  /* residual norms for locked vectors              */
    int numLocked0 = *numLocked; /* aux variables                         */
 
    overbooking = (*numConverged > primme->numEvals);
@@ -1217,7 +1217,7 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
             VtBV[i*ldVtBV+j] = CONJ(VtBV[j*ldVtBV+i]);
          }
       }
-      SCALAR *rwork;
+      HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme(nVtBV * (left + numPacked), &rwork, ctx));
       Num_copy_matrix_columns_SHprimme(&VtBV[nLocked * ldVtBV], nVtBV,
             iV, left+numPacked, ldVtBV, rwork, NULL, nVtBV, ctx);
@@ -1239,7 +1239,7 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
             H[i*ldH+j] = CONJ(H[j*ldH+i]);
          }
       }
-      SCALAR *rwork;
+      HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme(failed * (left + numPacked), &rwork, ctx));
       Num_copy_matrix_columns_SHprimme(&H[left * ldH], left+numPacked,
             ifailed, failed, ldH, rwork, NULL, left+numPacked, ctx);
@@ -1261,8 +1261,8 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
    for (i=left; i < left+numPacked; i++) {
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
-         REAL resNorm = resNorms[*numLocked] = lockedResNorms[i-left];
-         REAL eval = evals[*numLocked];
+         HREAL resNorm = resNorms[*numLocked] = lockedResNorms[i-left];
+         HREAL eval = evals[*numLocked];
          if (!overbooking) {
             Num_copy_matrix_Sprimme(
                   &evecs[(numLocked0 + i - left + primme->numOrthoConst) *
@@ -1365,20 +1365,20 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 TEMPLATE_PLEASE
 int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
    int nV, PRIMME_INT ldV,
-   SCALAR *h, int nh, int ldh, REAL *hVals,
+   HSCALAR *h, int nh, int ldh, HREAL *hVals,
    SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
    SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
    SCALAR *evecs, int evecsSize, int nX2b, int nX2e, PRIMME_INT ldevecs,
    SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-   SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, REAL *Rnorms,
-   REAL *rnorms, int nrb, int nre,
-   SCALAR *VtBV, int nVtBV, int ldVtBV,
-   SCALAR *H, int nH, int ldH, 
+   SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
+   HREAL *rnorms, int nrb, int nre,
+   HSCALAR *VtBV, int nVtBV, int ldVtBV,
+   HSCALAR *H, int nH, int ldH, 
    int reset, int maxRank, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j;         /* Loop variables */
-   REAL *tmp;
+   HREAL *tmp;
 
    /* Quick exit */
    if (reset == 0) {
@@ -1397,13 +1397,13 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
       /* Update VtBV */
 
       if (VtBV) {
-         SCALAR *work;
+         HSCALAR *work;
          assert(nVtBV == nX0e - nX0b);
          CHKERR(Num_malloc_SHprimme((nX0e-nX0b)*evecsSize, &work, ctx));
-         Num_gemm_Sprimme("N", "N", evecsSize, nX0e - nX0b, nV, 1.0,
+         Num_gemm_SHprimme("N", "N", evecsSize, nX0e - nX0b, nV, 1.0,
                &VtBV[evecsSize * ldVtBV], ldVtBV, h, ldh, 0.0, work,
                evecsSize, ctx);
-         Num_copy_matrix_Sprimme(work, evecsSize, nX0e - nX0b, evecsSize,
+         Num_copy_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize,
                &VtBV[evecsSize * ldVtBV], ldVtBV, ctx);
          CHKERR(Num_free_SHprimme(work, ctx));
       }
@@ -1642,16 +1642,16 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
  ******************************************************************************/
 
 static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV, SCALAR *Q,
-      PRIMME_INT ldQ, PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV,
-      int ldQtV, SCALAR *QtQ, int ldQtQ, SCALAR *hU, int ldhU, int newldhU,
-      int indexOfPreviousVecsBeforeRestart, SCALAR *hVecs, int ldhVecs,
-      int newldhVecs, REAL *hVals, REAL *hSVals, int *restartPerm,
+      PRIMME_INT ldW, HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV, SCALAR *Q,
+      PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtV,
+      int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *hU, int ldhU, int newldhU,
+      int indexOfPreviousVecsBeforeRestart, HSCALAR *hVecs, int ldhVecs,
+      int newldhVecs, HREAL *hVals, HREAL *hSVals, int *restartPerm,
       int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
       int indexOfPreviousVecs, SCALAR *evecs, int *evecsSize,
-      PRIMME_INT ldevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat, SCALAR *M,
-      int ldM, SCALAR *UDU, int ldUDU, int *ipivot, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+      PRIMME_INT ldevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat, HSCALAR *M,
+      int ldM, HSCALAR *UDU, int ldUDU, int *ipivot, int *targetShiftIndex,
+      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
       int reset, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -1798,8 +1798,8 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  ******************************************************************************/
 
-static int restart_RR(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, int restartSize,
+static int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
+      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, int restartSize,
       int basisSize, int numConverged, int numPrevRetained,
       int indexOfPreviousVecs, int *hVecsPerm, int *targetShiftIndex,
       primme_context ctx) {
@@ -2016,13 +2016,13 @@ static int restart_RR(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
  ******************************************************************************/
 
 static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
-      SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals, REAL *hSVals,
+      HSCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
+      HSCALAR *R, int ldR, HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV, int ldVtBV,
+      HSCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
+      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, HREAL *hSVals,
       int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
       int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
+      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
       int reset, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -2030,8 +2030,8 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    int mhVecsRot0;    /* Number of rows of hVecsRot0                          */
    int newNumArbitraryVecs; /* arbitrary vectors after restarting             */
    int nRegular;      /* restarted vectors that weren't retained              */
-   SCALAR *hVecsRot0; /* Part of hVecsRot                                   */
-   SCALAR *RPrevhVecs;
+   HSCALAR *hVecsRot0; /* Part of hVecsRot                                   */
+   HSCALAR *RPrevhVecs;
    double aNorm = primme?max(primme->aNorm, primme->stats.estimateLargestSVal):0.0;
 
     /* ------------------------------- */
@@ -2139,7 +2139,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
    /* 1) hVecsRot0 = hVecsRot(hVecsPerm(restartPerm(0:newNumArbitraryVecs-1))) */
    Num_zero_matrix_SHprimme(hVecsRot0, mhVecsRot0, nRegular, mhVecsRot0, ctx);
-   Num_copy_matrix_columns_Sprimme(hVecsRot, *numArbitraryVecs,
+   Num_copy_matrix_columns_SHprimme(hVecsRot, *numArbitraryVecs,
          restartPerm0, newNumArbitraryVecs, ldhVecsRot, hVecsRot0, NULL,
          mhVecsRot0, ctx);
 
@@ -2161,22 +2161,22 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
          ldR, ctx);
    
    /* [hVecsRot0, R] = ortho(hVecsRot0) */
-   CHKERR(ortho_Sprimme(hVecsRot0, mhVecsRot0, R, ldR, 0, nRegular-1, NULL,
-         0, 0, mhVecsRot0, primme->iseed, primme_get_context(NULL)));
+   CHKERR(Bortho_local_SHprimme(hVecsRot0, mhVecsRot0, R, ldR, 0, nRegular - 1,
+         NULL, 0, 0, mhVecsRot0, NULL, 0, primme->iseed, ctx));
 
    /* hU = hU * hVecsRot0 */
    HSCALAR *rwork;
    CHKERR(Num_malloc_SHprimme((size_t)basisSize * nRegular, &rwork, ctx));
-   Num_gemm_Sprimme("N", "N", basisSize, nRegular, mhVecsRot0, 1.0, hU,
+   Num_gemm_SHprimme("N", "N", basisSize, nRegular, mhVecsRot0, 1.0, hU,
          ldhU, hVecsRot0, mhVecsRot0, 0.0, rwork, basisSize, ctx);
-   Num_copy_matrix_Sprimme(rwork, basisSize, nRegular, basisSize, hU,
+   Num_copy_matrix_SHprimme(rwork, basisSize, nRegular, basisSize, hU,
          basisSize, ctx);
    CHKERR(Num_free_SHprimme(rwork, ctx));
    CHKERR(Num_free_SHprimme(hVecsRot0, ctx));
 
    if (QtQ) {
       /* Factorize QtQ */
-      SCALAR *U_QtQ;
+      HSCALAR *U_QtQ;
       CHKERR(Num_malloc_SHprimme(basisSize*basisSize, &U_QtQ, ctx));
       Num_copy_matrix_SHprimme(
             QtQ, basisSize, basisSize, ldQtQ, U_QtQ, basisSize, ctx);
@@ -2187,7 +2187,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    }
 
    /* hU = [hU RPrevhVecs] */
-   Num_copy_matrix_Sprimme(RPrevhVecs, basisSize, numPrevRetained,
+   Num_copy_matrix_SHprimme(RPrevhVecs, basisSize, numPrevRetained,
          basisSize, &hU[basisSize*nRegular], basisSize, ctx);
    CHKERR(Num_free_SHprimme(RPrevhVecs, ctx));
 
@@ -2215,7 +2215,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
     if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
       /* Zero R(0:nRegular-1,nRegular:restartSize) */
-      Num_zero_matrix_Sprimme(&R[ldR*nRegular], nRegular, numPrevRetained,
+      Num_zero_matrix_SHprimme(&R[ldR*nRegular], nRegular, numPrevRetained,
             ldR, ctx);
    }
 
@@ -2273,7 +2273,8 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    }
 
    /* R = R(:, invhVecsPerm) */
-   permute_vecs_Sprimme(R, restartSize, restartSize, ldR, invhVecsPerm, ctx);
+   CHKERR(permute_vecs_SHprimme(
+         R, restartSize, restartSize, ldR, invhVecsPerm, ctx));
    CHKERR(Num_free_iprimme(invhVecsPerm, ctx));
 
    /* ----------------------------------------------------------------- */
@@ -2414,14 +2415,14 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  ******************************************************************************/
 
 static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
-      PRIMME_INT nLocal, SCALAR *R, int ldR, SCALAR *QtV, int ldQtV,
-      SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV, SCALAR *hU, int ldhU,
-      int newldhU, SCALAR *hVecs, int ldhVecs, int newldhVecs, REAL *hVals,
-      REAL *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
+      PRIMME_INT ldW, HSCALAR *H, int ldH, SCALAR *Q, PRIMME_INT ldQ,
+      PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV,
+      HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV, int ldVtBV, HSCALAR *hU, int ldhU,
+      int newldhU, HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals,
+      HREAL *hSVals, int *restartPerm, int *hVecsPerm, int restartSize,
       int basisSize, int numPrevRetained, int indexOfPreviousVecs,
       int *targetShiftIndex, int numConverged, int *numArbitraryVecs,
-      SCALAR *hVecsRot, int ldhVecsRot, primme_context ctx) {
+      HSCALAR *hVecsRot, int ldhVecsRot, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
@@ -2526,7 +2527,7 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
       /* The random vectors make the restarting W with large singular value.  */
       /* This change has shown benefit finding the smallest singular values.  */
 
-      SCALAR *dummyR;
+      HSCALAR *dummyR;
       CHKERR(Num_malloc_SHprimme((*numPrevRetained) * (*numPrevRetained),
                                  &dummyR, ctx));
       CHKERR(Bortho_local_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs,
@@ -2548,7 +2549,7 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
    HSCALAR *rwork;
    CHKERR(Num_malloc_SHprimme(basisSize*(*numPrevRetained)+1, &rwork, ctx));
    if (primme->procID == 0) {
-      rwork[0] = (SCALAR)newNumPrevRetained;
+      rwork[0] = (HSCALAR)newNumPrevRetained;
       Num_copy_matrix_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,
             *numPrevRetained, ldhVecs, rwork+1, basisSize, ctx);
    }
@@ -2621,8 +2622,8 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
 
 #ifdef USE_HOST
 TEMPLATE_PLEASE
-int retain_previous_coefficients_Sprimme(SCALAR *hVecs, int ldhVecs,
-   SCALAR *hU, int ldhU, SCALAR *previousHVecs, int ldpreviousHVecs,
+int retain_previous_coefficients_Sprimme(HSCALAR *hVecs, int ldhVecs,
+   HSCALAR *hU, int ldhU, HSCALAR *previousHVecs, int ldpreviousHVecs,
    int mprevious, int basisSize, int *iev, int blockSize, int *flags,
    int *numPrevRetained, primme_context ctx) {
 
@@ -2725,12 +2726,12 @@ int retain_previous_coefficients_Sprimme(SCALAR *hVecs, int ldhVecs,
  *
  ******************************************************************************/
 
-static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
-   REAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
+static void insertionSort(HREAL newVal, HREAL *evals, HREAL newNorm,
+   HREAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
    primme_params *primme) {
 
    int i, current; /* Indices used for sorting */
-   REAL ithShift, currentShift;
+   HREAL ithShift, currentShift;
 
    /* ------------------------------------------------------------------ */
    /* Find smallest index to insert the Ritz value. The eigenvalue order */
@@ -2862,7 +2863,7 @@ static void insertionSort(REAL newVal, REAL *evals, REAL newNorm,
  *
  ******************************************************************************/
 
-static int compute_residual_columns(PRIMME_INT m, REAL *evals, SCALAR *x,
+static int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
       int n, int *p, PRIMME_INT ldx, SCALAR *Ax, PRIMME_INT ldAx,
       SCALAR *xo, int no, PRIMME_INT ldxo, int io0, SCALAR *ro, PRIMME_INT ldro,
       SCALAR *xd, int nd, int *pd, PRIMME_INT ldxd, SCALAR *rd, PRIMME_INT ldrd,

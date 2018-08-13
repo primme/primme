@@ -115,7 +115,7 @@ static void displayModel(primme_CostModel *model);
 #endif
 
 static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-                        REAL *hVals, int basisSize, REAL *resNorms, int *flags,
+                        HREAL *hVals, int basisSize, HREAL *resNorms, int *flags,
                         int *converged, primme_context ctx);
 
 /******************************************************************************
@@ -185,7 +185,7 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
+int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    HREAL *resNorms, primme_context ctx) {
  
    primme_params *primme = ctx.primme;
@@ -393,11 +393,11 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------------------------- */
 
    if (primme->n == 1) {
-      evecs[0] = 1.0;
+      Num_set_matrix_Sprimme(evecs, 1, 1, 1, 1.0, ctx);
       CHKERR(matrixMatvec_Sprimme(&evecs[0], primme->nLocal, ldevecs,
             W, ldW, 0, 1, ctx));
-      evals[0] = REAL_PART(W[0]);
-      V[0] = 1.0;
+      evals[0] = REAL_PART(Num_dot_Sprimme(1, evecs, 1, W, 1, ctx));
+      CHKERR(globalSum_RHprimme(evals, evals, 1, ctx));
 
       resNorms[0] = 0.0L;
       primme->stats.numMatvecs++;
@@ -912,7 +912,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                   primme->maxBasisSize, ctx);
               for (i = numArbitraryVecs; i < basisSize; i++)
                 hVecsRot[primme->maxBasisSize * i + i] = 1.0;
-              CHKERR(permute_vecs_Sprimme(hVecsRot, basisSize, basisSize,
+              CHKERR(permute_vecs_SHprimme(hVecsRot, basisSize, basisSize,
                                    primme->maxBasisSize, iwork, ctx));
               for (i = j = 0; i < basisSize; i++)
                 if (iwork[i] != i)
@@ -1278,23 +1278,23 @@ clean:
 
 TEMPLATE_PLEASE
 int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, PRIMME_INT nLocal, SCALAR *H, int ldH, int basisSize,
-      SCALAR *X, SCALAR *R, SCALAR *hVecs, int ldhVecs, REAL *hVals,
-      REAL *hSVals, int *flags, int remainedEvals, REAL *blockNorms,
+      PRIMME_INT ldW, PRIMME_INT nLocal, HSCALAR *H, int ldH, int basisSize,
+      SCALAR *X, SCALAR *R, HSCALAR *hVecs, int ldhVecs, HREAL *hVals,
+      HREAL *hSVals, int *flags, int remainedEvals, HREAL *blockNorms,
       int blockNormsSize, int maxBlockSize, SCALAR *evecs, int numLocked,
-      PRIMME_INT ldevecs, REAL *evals, REAL *resNorms, int targetShiftIndex,
+      PRIMME_INT ldevecs, HREAL *evals, HREAL *resNorms, int targetShiftIndex,
       int *iev, int *blockSize, int *recentlyConverged,
-      int *numArbitraryVecs, double *smallestResNorm, SCALAR *hVecsRot,
-      int ldhVecsRot, int numConverged, REAL *basisNorms, int *reset,
+      int *numArbitraryVecs, double *smallestResNorm, HSCALAR *hVecsRot,
+      int ldhVecsRot, int numConverged, HREAL *basisNorms, int *reset,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, blki;         /* loop variables */
-   REAL *hValsBlock;    /* contiguous copy of the hVals to be tested */
-   SCALAR *hVecsBlock;  /* contiguous copy of the hVecs columns to be tested */     
+   HREAL *hValsBlock;    /* contiguous copy of the hVals to be tested */
+   HSCALAR *hVecsBlock;  /* contiguous copy of the hVecs columns to be tested */     
    int *flagsBlock;     /* contiguous copy of the flags to be tested */
-   REAL *hValsBlock0;   /* workspace for hValsBlock */
-   SCALAR *hVecsBlock0; /* workspace for hVecsBlock */
+   HREAL *hValsBlock0;   /* workspace for hValsBlock */
+   HSCALAR *hVecsBlock0; /* workspace for hVecsBlock */
    double targetShift;  /* current target shift */
    int lasti;           /* last tested pair */
 
@@ -1430,10 +1430,10 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
       /* Pack hVals & hVecs */
 
-      hValsBlock = Num_compact_vecs_Rprimme(hVals, 1, blockNormsSize, 1,
+      hValsBlock = Num_compact_vecs_RHprimme(hVals, 1, blockNormsSize, 1,
                                             &iev[*blockSize], hValsBlock0, 1,
                                             1 /* avoid copy */, ctx);
-      hVecsBlock = Num_compact_vecs_Sprimme(
+      hVecsBlock = Num_compact_vecs_SHprimme(
           hVecs, basisSize, blockNormsSize, ldhVecs, &iev[*blockSize],
           hVecsBlock0, ldhVecs, 1 /* avoid copy */, ctx);
 
@@ -1495,7 +1495,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  ******************************************************************************/
    
 static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      REAL *hVals, int basisSize, REAL *resNorms, int *flags, int *converged,
+      HREAL *hVals, int basisSize, HREAL *resNorms, int *flags, int *converged,
       primme_context ctx) {
 
    int i;         /* Loop variable                                     */
@@ -1581,7 +1581,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int switchto=0;
-   REAL est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
+   HREAL est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
 
    /* ----------------------------------------------------------------- */
    /* Asymptotic evaluation of the JDQMR versus GD+k for small numEvals */
@@ -1694,7 +1694,7 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int switchto=0;
-   REAL ratio, globalRatio;
+   HREAL ratio, globalRatio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */
    /* do not include restart costs. Remain with GD+k until a restart occurs */

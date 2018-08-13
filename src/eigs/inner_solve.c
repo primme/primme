@@ -50,14 +50,14 @@ apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,
                                SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ,
                                SCALAR *x, SCALAR *RprojectorX,
                                PRIMME_INT ldRprojectorX, int sizeRprojectorQ,
-                               int sizeRprojectorX, SCALAR *xKinvx, SCALAR *UDU,
+                               int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *UDU,
                                int *ipivot, SCALAR *result, primme_context ctx);
 
 static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
-                                PRIMME_INT ldQhat, SCALAR *UDU, int *ipivot,
+                                PRIMME_INT ldQhat, HSCALAR *UDU, int *ipivot,
                                 int numCols, SCALAR *v, primme_context ctx);
 
-static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q,
+static int apply_projected_matrix(SCALAR *v, HREAL shift, SCALAR *Q,
                                   PRIMME_INT ldQ, int dimQ, SCALAR *result,
                                   primme_context ctx);
 
@@ -65,10 +65,10 @@ static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int numCols, SCALAR *v,
                            primme_context ctx);
 
 static int dist_dot(SCALAR *x, int incx, SCALAR *y, int incy,
-                    primme_context ctx, SCALAR *result);
+                    primme_context ctx, HSCALAR *result);
 
 static int dist_dot_real(SCALAR *x, int incx, SCALAR *y, int incy,
-                         primme_context ctx, REAL *result);
+                         primme_context ctx, HREAL *result);
 
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
@@ -145,12 +145,12 @@ static int dist_dot_real(SCALAR *x, int incx, SCALAR *y, int incy,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
-      PRIMME_INT ldevecs, SCALAR *UDU, int *ipivot, SCALAR *xKinvx,
+int inner_solve_Sprimme(SCALAR *x, SCALAR *r, HREAL *rnorm, SCALAR *evecs,
+      PRIMME_INT ldevecs, HSCALAR *UDU, int *ipivot, HSCALAR *xKinvx,
       SCALAR *Lprojector, PRIMME_INT ldLprojector, SCALAR *RprojectorQ,
       PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojector, int sizeRprojectorQ, int sizeRprojectorX, SCALAR *sol,
-      REAL eval, REAL shift, int *touch, primme_context ctx) {
+      HREAL eval, HREAL shift, int *touch, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int numIts;        /* Number of inner iterations                          */
@@ -159,12 +159,12 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
    /* QMR parameters */
 
    SCALAR *g, *d, *delta, *w, *ptmp;
-   REAL sigma_prev;
+   HREAL sigma_prev;
    double alpha_prev, beta, rho_prev, rho;
    double Theta_prev, Theta, c, tau_init, tau_prev, tau; 
 
    /* Parameters used to dynamically update eigenpair */
-   REAL dot_sol;
+   HREAL dot_sol;
    double Beta=0.0, Delta=0.0, Psi=0.0, Beta_prev, Delta_prev, Psi_prev, eta;
    double eval_updated, eval_prev, eres2_updated, eres_updated=0.0;
    double eres_prev=0.0;
@@ -259,7 +259,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
    Theta_prev = 0.0L;
    eval_prev = eval;
-   REAL rho_prev_real;
+   HREAL rho_prev_real;
    CHKERR(dist_dot_real(g, 1, d, 1, ctx, &rho_prev_real));
    rho_prev = rho_prev_real;
 
@@ -310,7 +310,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 
       Num_axpy_Sprimme(primme->nLocal, -alpha_prev, w, 1, g, 1, ctx);
 
-      REAL Theta2;
+      HREAL Theta2;
       CHKERR(dist_dot_real(g, 1, g, 1, ctx, &Theta2));
       Theta = sqrt(Theta2);
       Theta = Theta/tau_prev;
@@ -322,12 +322,12 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 #ifdef USE_HOST
       int i;
       for (i = 0; i < primme->nLocal; i++) {
-          delta[i] = delta[i]*(SCALAR)gamma + d[i]*(SCALAR)eta;
+          delta[i] = delta[i]*(HSCALAR)gamma + d[i]*(HSCALAR)eta;
           sol[i] = delta[i]+sol[i];
       }
 #else
-      Num_scal_Sprimme(primme->nLocal, (SCALAR)gamma, delta, 1, ctx);
-      Num_axpy_Sprimme(primme->nLocal, (SCALAR)eta, d, 1, delta, 1, ctx); 
+      Num_scal_Sprimme(primme->nLocal, (HSCALAR)gamma, delta, 1, ctx);
+      Num_axpy_Sprimme(primme->nLocal, (HSCALAR)eta, d, 1, delta, 1, ctx); 
       Num_axpy_Sprimme(primme->nLocal, 1.0, delta, 1, sol, 1, ctx); 
 #endif
       numIts++;
@@ -447,7 +447,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
             int err;
             primme->stats.elapsedTime = primme_wTimer(0);
-            REAL evalr = eval_updated, resr = eres_updated, taur = tau;
+            HREAL evalr = eval_updated, resr = eres_updated, taur = tau;
             
             CHKERRM((primme->monitorFun(&evalr, &ONE, NULL, &ZERO,
                         &ONE, &resr, NULL, NULL, NULL, NULL,
@@ -479,7 +479,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
             int err;
             primme->stats.elapsedTime = primme_wTimer(0);
-            REAL evalr = eval, resr = *rnorm, taur = tau;
+            HREAL evalr = eval, resr = *rnorm, taur = tau;
             CHKERRM((primme->monitorFun(&evalr, &ONE, &UNCO, &ZERO, &ONE, &resr,
                         NULL, NULL, NULL, NULL, NULL, &numIts, &taur,
                         &EVENT_INNER_ITERATION, primme, &err),
@@ -493,7 +493,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
             ldRprojectorQ, x, RprojectorX, ldRprojectorX, sizeRprojectorQ,
             sizeRprojectorX, xKinvx, UDU, ipivot, w, ctx));
 
-         REAL rho_real;
+         HREAL rho_real;
          CHKERR(dist_dot_real(g, 1, w, 1, ctx, &rho_real));
          rho = rho_real;
          beta = rho/rho_prev;
@@ -575,7 +575,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, REAL *rnorm, SCALAR *evecs,
 static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,
       SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
       SCALAR *RprojectorX,  PRIMME_INT ldRprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, SCALAR *xKinvx, SCALAR *UDU, int *ipivot,
+      int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *UDU, int *ipivot,
       SCALAR *result, primme_context ctx) {  
 
    /* Place K^{-1}v in result */
@@ -621,14 +621,14 @@ static int apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,
  ******************************************************************************/
 
 static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
-      PRIMME_INT ldQhat, SCALAR *UDU, int *ipivot, int numCols, SCALAR *v,
+      PRIMME_INT ldQhat, HSCALAR *UDU, int *ipivot, int numCols, SCALAR *v,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
    if (numCols > 0) {    /* there is a projector to be applied */
 
-      SCALAR *overlaps;  /* overlaps of v with columns of Q   */
+      HSCALAR *overlaps;  /* overlaps of v with columns of Q   */
       CHKERR(Num_malloc_SHprimme(numCols, &overlaps, ctx));
 
       /* --------------------------------------------------------*/
@@ -711,7 +711,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
  *
  ******************************************************************************/
 
-static int apply_projected_matrix(SCALAR *v, REAL shift, SCALAR *Q, 
+static int apply_projected_matrix(SCALAR *v, HREAL shift, SCALAR *Q, 
       PRIMME_INT ldQ, int dimQ, SCALAR *result, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -751,7 +751,7 @@ static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int numCols, SCALAR *v,
    primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   SCALAR *overlaps;  /* overlaps of v with columns of Q   */
+   HSCALAR *overlaps;  /* overlaps of v with columns of Q   */
 
    CHKERR(Num_malloc_SHprimme(numCols, &overlaps, ctx));
 
@@ -787,12 +787,10 @@ static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int numCols, SCALAR *v,
  ******************************************************************************/
 
 static int dist_dot(SCALAR *x, int incx,
-   SCALAR *y, int incy, primme_context ctx, SCALAR *result) {
+   SCALAR *y, int incy, primme_context ctx, HSCALAR *result) {
                                                                                 
-   SCALAR temp;
-                                                                                
-   temp = Num_dot_Sprimme(ctx.primme->nLocal, x, incx, y, incy, ctx);
-   CHKERR(globalSum_SHprimme(&temp, result, 1, ctx));
+   *result = Num_dot_Sprimme(ctx.primme->nLocal, x, incx, y, incy, ctx);
+   CHKERR(globalSum_SHprimme(result, result, 1, ctx));
 
    return 0;
 }
@@ -820,9 +818,9 @@ static int dist_dot(SCALAR *x, int incx,
  ******************************************************************************/
 
 static int dist_dot_real(SCALAR *x, int incx,
-   SCALAR *y, int incy, primme_context ctx, REAL *result) {
+   SCALAR *y, int incy, primme_context ctx, HREAL *result) {
                                                                                 
-   SCALAR temp, product;
+   HSCALAR temp, product;
                                                                                 
    temp = Num_dot_Sprimme(ctx.primme->nLocal, x, incx, y, incy, ctx);
    CHKERR(globalSum_SHprimme(&temp, &product, 1, ctx));

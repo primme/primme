@@ -75,13 +75,13 @@
  
 static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
-      SCALAR *A, int ldA, REAL *D, SCALAR *Y, int ldY,
+      HSCALAR *A, int ldA, HREAL *D, HSCALAR *Y, int ldY,
       SCALAR *W, int nW, PRIMME_INT ldW, SCALAR *Z, int nZ, PRIMME_INT ldZ,
-      SCALAR *B, int ldB, primme_context ctx);
+      HSCALAR *B, int ldB, primme_context ctx);
 
-static int eig(SCALAR *H, int n, int ldH, SCALAR *Y, int ldhVecs, REAL *svals,
+static int eig(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldhVecs, HREAL *svals,
       primme_context ctx);
-static int rank_estimation(SCALAR *V, int n0, int n1, int n, int ldV);
+static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
 
 
 /**********************************************************************
@@ -125,7 +125,7 @@ static int rank_estimation(SCALAR *V, int n0, int n1, int n, int ldV);
  * 
  **********************************************************************/
 
-static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
+static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
       int b1, int b2, SCALAR *locked, PRIMME_INT ldLocked,
       int numLocked, PRIMME_INT nLocal, int (*B)(SCALAR*,PRIMME_INT,SCALAR*,
          PRIMME_INT,int,void*), void *Bctx,
@@ -169,7 +169,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
 
    // Allocate overlaps and Bx
 
-   SCALAR *overlaps;
+   HSCALAR *overlaps;
    CHKERR(Num_malloc_SHprimme(b2+1 + numLocked, &overlaps, ctx));
    SCALAR *Bx = NULL;
    CHKERR(Num_malloc_Sprimme(B?nLocal:0, &Bx, ctx));
@@ -183,10 +183,10 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
       int updateR = (R ? 1 : 0); // flag to keep updating R, after the first
       int Bx_update = 0;   // flag indicating if Bx = B*V[i]
                                  // randomization it is set to zero
-      REAL s0=0.0;   // B-norm of the current vector before deflating V and locked
-      REAL s02=0.0;  // s0 squared
-      REAL s1=0.0;   // B-norm of the current vector after deflating V and locked
-      REAL s12=0.0;  // s1 squared
+      HREAL s0=0.0;   // B-norm of the current vector before deflating V and locked
+      HREAL s02=0.0;  // s0 squared
+      HREAL s1=0.0;   // B-norm of the current vector after deflating V and locked
+      HREAL s12=0.0;  // s1 squared
 
       for (nOrth=0, randomizations=0; reorth; ) {
 
@@ -275,7 +275,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
          /* Compute the norm of the resulting vector implicitly */
          
          {
-            REAL temp = REAL_PART(Num_dot_SHprimme(i+numLocked,overlaps,1,overlaps,1,ctx));
+            HREAL temp = REAL_PART(Num_dot_SHprimme(i+numLocked,overlaps,1,overlaps,1,ctx));
             s1 = sqrt(s12 = max(0.0L, s02-temp));
          }
          
@@ -288,7 +288,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
                CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
                Bx_update = 1;
             }
-            REAL temp =
+            HREAL temp =
                 REAL_PART(Num_dot_Sprimme(nLocal, &V[ldV * i], 1, Bx, 1, ctx));
             if (primme) primme->stats.numOrthoInnerProds += 1;
             CHKERR(globalSum_RHprimme(&temp, &s12, 1, ctx));
@@ -314,16 +314,16 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
                   if (B && !Bx_update) {
                      CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
                   }
-                  REAL temp = REAL_PART(Num_dot_Sprimme(nLocal,
+                  HREAL temp = REAL_PART(Num_dot_Sprimme(nLocal,
                            &V[ldV*i], 1, Bx, 1, ctx));
                   if (primme) primme->stats.numOrthoInnerProds += 1;
                   CHKERR(globalSum_RHprimme(&temp, &s1, 1, ctx));
-                  s1 = sqrt(max((REAL)0, s1));
+                  s1 = sqrt(max((HREAL)0, s1));
                }
                R[ldR*i + i] = s1;
             }
 
-            if (ISFINITE((REAL)(1.0/s1))) {
+            if (ISFINITE((HREAL)(1.0/s1))) {
                Num_scal_Sprimme(nLocal, 1.0/s1, &V[ldV*i], 1, ctx);
                break;
             }
@@ -380,7 +380,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR,
 }
 
 TEMPLATE_PLEASE
-int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *R, int ldR, int b1, int b2,
+int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,
                   SCALAR *locked, PRIMME_INT ldLocked, int numLocked,
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx) {
 
@@ -453,17 +453,17 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
  **********************************************************************/
 
 TEMPLATE_PLEASE
-int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *VLtVL, int ldVLtVL,
-      SCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
+int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
+      HSCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
       PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j;               /* loop indices */
-   SCALAR *A, *C, *Y;      /* auxiliary local matrices */
-   SCALAR *VLtVLdA;        /* auxiliary local matrices */
-   SCALAR *fVLtVL;         /* auxiliary local matrices */
-   REAL *D, *N;            /* singular values */
+   HSCALAR *A, *C, *Y;      /* auxiliary local matrices */
+   HSCALAR *VLtVLdA;        /* auxiliary local matrices */
+   HSCALAR *fVLtVL;         /* auxiliary local matrices */
+   HREAL *D, *N;            /* singular values */
    int ldA;                /* leading dimension of A */
    b2++; /* NOTE: Let's use C range convention */
 
@@ -566,8 +566,8 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *VLtVL, int ldVLtVL,
          for (i=0; i<b2-b1; i++) {
             for (j=0; j<=i; j++) {
                C[(b2 - b1) * j + i] = C[(b2 - b1) * i + j] =
-                     (C[(b2 - b1) * i + j] + C[(b2 - b1) * j + i]) / 2 / N[i] /
-                     N[j];
+                     (C[(b2 - b1) * i + j] + C[(b2 - b1) * j + i]) /
+                     (HSCALAR)2.0 / N[i] / N[j];
             }
          }
 
@@ -704,11 +704,12 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *VLtVL, int ldVLtVL,
 TEMPLATE_PLEASE
 int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, SCALAR *X, int *inX, int nX, PRIMME_INT ldX,
-      REAL *overlaps, REAL *norms, primme_context ctx) {
+      HREAL *overlaps, HREAL *norms, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j, M=PRIMME_BLOCK_SIZE, m=min(M, mQ);
-   SCALAR *y, *y0, *X0;
+   HSCALAR *y, *y0;
+   SCALAR *X0;
 
    double t0 = primme_wTimer(0);
 
@@ -824,9 +825,9 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, PRIMME_INT mQ, PRIMME_INT nQ,
 
 static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
-      SCALAR *A, int ldA, REAL *D, SCALAR *Y, int ldY,
+      HSCALAR *A, int ldA, HREAL *D, HSCALAR *Y, int ldY,
       SCALAR *W, int nW, PRIMME_INT ldW, SCALAR *Z, int nZ, PRIMME_INT ldZ,
-      SCALAR *B, int ldB, primme_context ctx)
+      HSCALAR *B, int ldB, primme_context ctx)
 {
 
    PRIMME_INT i;     /* Loop variables */
@@ -834,7 +835,8 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
    int m;
    //int m=min(max((1024*1024 - 2*(nQ+nX)*(nQ+nX))/((nQ+nX)*3),1), M);   /* Number of rows in the cache */
    // int m=M;   /* Number of rows in the cache */
-   SCALAR *Bo, *Xo;
+   SCALAR *Xo;
+   HSCALAR *Bo;
 
    if (A && D && Y) {
       m = min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
@@ -913,7 +915,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
  *     - -1 was unsuccessful
  ******************************************************************************/
 
-static int eig(SCALAR *H, int n, int ldH, SCALAR *Y, int ldY, REAL *evals,
+static int eig(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY, HREAL *evals,
       primme_context ctx) {
 
    int i, j; /* Loop variables    */
@@ -923,8 +925,9 @@ static int eig(SCALAR *H, int n, int ldH, SCALAR *Y, int ldY, REAL *evals,
    /* eigenpairs of -H instead. Do Y = -H.                                    */
 
    for (j=0; j < n; j++) {
-      for (i=0; i <= j; i++) { 
-         Y[ldY*j+i] = -(H[ldH*j+i] + CONJ(H[ldH*i+j]))/2.0;
+      for (i=0; i <= j; i++) {
+         Y[ldY * j + i] =
+               -(H[ldH * j + i] + CONJ(H[ldH * i + j])) / (HSCALAR)2.0;
       }
    }
  
@@ -939,14 +942,14 @@ static int eig(SCALAR *H, int n, int ldH, SCALAR *Y, int ldY, REAL *evals,
    return 0;
 }
 
-static int rank_estimation(SCALAR *V, int n0, int n1, int n, int ldV) {
+static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
 
    (void)n0;
 
    int i, j;
 
    for(i=0; i<n1; i++) {
-      REAL norm1 = 0.0;
+      HREAL norm1 = 0.0;
       for (j = 0; j < i; j++)
          norm1 += ABS(V[i * ldV + j]) /
                   sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j]));

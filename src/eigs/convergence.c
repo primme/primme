@@ -45,7 +45,7 @@
 
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
-      int left, int *iev, int numToProject, int *flags, REAL *blockNorms,
+      int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
       double tol, primme_context ctx);
 
 
@@ -80,8 +80,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
 TEMPLATE_PLEASE
 int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       SCALAR *R, PRIMME_INT ldR, SCALAR *evecs, int numLocked,
-      PRIMME_INT ldevecs, int left, int right, int *flags, REAL *blockNorms,
-      REAL *hVals, int *reset, primme_context ctx) {
+      PRIMME_INT ldevecs, int left, int right, int *flags, HREAL *blockNorms,
+      HREAL *hVals, int *reset, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -229,7 +229,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
 
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
-      int left, int *iev, int numToProject, int *flags, REAL *blockNorms,
+      int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
       double tol, primme_context ctx) {
 
    primme_params *primme = ctx.primme;

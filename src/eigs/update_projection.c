@@ -69,8 +69,8 @@
 
 TEMPLATE_PLEASE
 int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
-      PRIMME_INT ldY, SCALAR *Z, PRIMME_INT ldZ, PRIMME_INT nLocal, int numCols,
-      int blockSize, int isSymmetric, primme_context ctx) {
+      PRIMME_INT ldY, HSCALAR *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int count, m;
@@ -115,7 +115,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       /* Reduce the upper triangular part of the new columns in Z.             */
       /* --------------------------------------------------------------------- */
 
-      SCALAR *rwork;
+      HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme((numCols+blockSize)*numCols, &rwork, ctx));
       Num_copy_trimatrix_compact_SHprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
             numCols, rwork, &count);
@@ -131,7 +131,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       /* Reduce Z(:,numCols:end) and Z(numCols:end,:).                         */
       /* --------------------------------------------------------------------- */
 
-      SCALAR *rwork;
+      HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme(count, &rwork, ctx));
       Num_copy_matrix_SHprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
             rwork, m, ctx);
@@ -173,7 +173,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
 
 TEMPLATE_PLEASE
 int update_projection_gen_Sprimme(SCALAR *X, int nX0, int nX1, PRIMME_INT ldX,
-      SCALAR *Y, int nY0, int nY1, PRIMME_INT ldY, SCALAR *Z, PRIMME_INT ldZ,
+      SCALAR *Y, int nY0, int nY1, PRIMME_INT ldY, HSCALAR *Z, PRIMME_INT ldZ,
       PRIMME_INT nLocal, primme_context ctx) {
 
    assert(ldX >= nLocal && ldY >= nLocal && ldZ >= nX1);
@@ -186,12 +186,12 @@ int update_projection_gen_Sprimme(SCALAR *X, int nX0, int nX1, PRIMME_INT ldX,
 
    int nX = nX1-nX0;
    int nY = nY1-nY0;
-   SCALAR *rwork;
+   HSCALAR *rwork;
    CHKERR(Num_malloc_SHprimme(nX * nY, &rwork, ctx));
    Num_gemm_ddh_Sprimme("C", "N", nX, nY, nLocal, 1.0, &X[nX0 * ldX], ldX,
          &Y[ldY * nY0], ldY, 0.0, rwork, nX, ctx);
    CHKERR(globalSum_SHprimme(rwork, rwork, nX*nY, ctx));
-   Num_copy_matrix_Sprimme(rwork, nX, nY, nX, &Z[nY0*ldY+nX0], ldZ, ctx);
+   Num_copy_matrix_SHprimme(rwork, nX, nY, nX, &Z[nY0*ldY+nX0], ldZ, ctx);
    CHKERR(Num_free_SHprimme(rwork, ctx));
 
    return 0;

@@ -213,6 +213,31 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
          x[i*ldx+j] = 0.0;
 } 
 
+/******************************************************************************
+ * Function Num_set_matrix - Set all elements in a matrix with a given value
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * value       The value to set
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, SCALAR value, primme_context ctx) {
+
+  (void)ctx;
+   PRIMME_INT i,j;
+
+   for (i=0; i<n; i++)
+      for (j=0; j<m; j++)
+         x[i*ldx+j] = value;
+
+} 
 
 /******************************************************************************
  * Function Num_copy_trimatrix - Copy the upper/lower triangular part of the
@@ -697,7 +722,7 @@ SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n,
 
 TEMPLATE_PLEASE
 void Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, REAL *s, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
+      PRIMME_INT ldx, HREAL *s, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
 
    PRIMME_INT i;
 

@@ -43,9 +43,10 @@
  *
  *    When SCALAR is a GPU type, the pointers SCALAR* are supposed to point out
  *    memory allocated on GPUs, also called devices. For instance,
- *    Num_malloc_Sprimme allocates GPU memory when SCALAR is a GPU type. To
- *    use the non-GPU version, also called the host version, use the suffices
- *    _SHprimme and _RHprimme. For instance,
+ *    Num_malloc_Sprimme allocates GPU memory when SCALAR is a GPU type. Use
+ *    HSCALAR and HREAL as the non-GPU, also called host, versions of SCALAR and
+ *    REAL. Also to use the non-GPU version use the suffices _SHprimme and
+ *    _RHprimme. For instance,
  *    Num_malloc_SHprimme allocates memory on the host, and
  *    permute_vecs_RHprimme permute REAL vectors on the host.
  *
@@ -68,12 +69,14 @@
 /* Arithmetic                                                                */
 /*****************************************************************************/
 
-/* Fake types for MAGMA */
+/* Fake types for MAGMA. Compiler will complain when assigning a value and  */
+/* add, subtract, multiply and divide with a GPU type. Also when a GPU type */
+/* argument is passed when a non-GPU is expected.                           */
 
-typedef double magma_double;
-typedef float magma_float;
-typedef PRIMME_COMPLEX_DOUBLE magma_complex_double;
-typedef PRIMME_COMPLEX_FLOAT magma_complex_float;
+typedef struct {double a;}  magma_double;
+typedef struct {float a;}  magma_float;
+typedef struct {PRIMME_COMPLEX_DOUBLE a;} magma_complex_double;
+typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 
 /**********************************************************************
  * Macros USE_FLOAT, USE_FLOATCOMPLEX, USE_DOUBLE and USE_DOUBLECOMPLEX -

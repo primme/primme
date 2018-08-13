@@ -137,44 +137,44 @@ int ortho_block_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX
 int ortho_single_iteration_zprimme(PRIMME_COMPLEX_DOUBLE *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *X, int *inX, int nX, PRIMME_INT ldX,
       double *overlaps, double *norms, primme_context ctx);
-int ortho_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float *R, int ldR, int b1, int b2,
+int ortho_smagmaprimme(magma_float *V, PRIMME_INT ldV, float *R, int ldR, int b1, int b2,
                   magma_float *locked, PRIMME_INT ldLocked, int numLocked,
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
-int ortho_block_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float *VLtVL, int ldVLtVL,
-      magma_float *R, PRIMME_INT ldR, int b1, int b2, magma_float *locked,
+int ortho_block_smagmaprimme(magma_float *V, PRIMME_INT ldV, float *VLtVL, int ldVLtVL,
+      float *R, PRIMME_INT ldR, int b1, int b2, magma_float *locked,
       PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
 int ortho_single_iteration_smagmaprimme(magma_float *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_float *X, int *inX, int nX, PRIMME_INT ldX,
-      magma_float *overlaps, magma_float *norms, primme_context ctx);
-int ortho_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magma_complex_float *R, int ldR, int b1, int b2,
+      float *overlaps, float *norms, primme_context ctx);
+int ortho_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *R, int ldR, int b1, int b2,
                   magma_complex_float *locked, PRIMME_INT ldLocked, int numLocked,
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
-int ortho_block_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magma_complex_float *VLtVL, int ldVLtVL,
-      magma_complex_float *R, PRIMME_INT ldR, int b1, int b2, magma_complex_float *locked,
+int ortho_block_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *VLtVL, int ldVLtVL,
+      PRIMME_COMPLEX_FLOAT *R, PRIMME_INT ldR, int b1, int b2, magma_complex_float *locked,
       PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
 int ortho_single_iteration_cmagmaprimme(magma_complex_float *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_complex_float *X, int *inX, int nX, PRIMME_INT ldX,
-      magma_float *overlaps, magma_float *norms, primme_context ctx);
-int ortho_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_double *R, int ldR, int b1, int b2,
+      float *overlaps, float *norms, primme_context ctx);
+int ortho_dmagmaprimme(magma_double *V, PRIMME_INT ldV, double *R, int ldR, int b1, int b2,
                   magma_double *locked, PRIMME_INT ldLocked, int numLocked,
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
-int ortho_block_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_double *VLtVL, int ldVLtVL,
-      magma_double *R, PRIMME_INT ldR, int b1, int b2, magma_double *locked,
+int ortho_block_dmagmaprimme(magma_double *V, PRIMME_INT ldV, double *VLtVL, int ldVLtVL,
+      double *R, PRIMME_INT ldR, int b1, int b2, magma_double *locked,
       PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
 int ortho_single_iteration_dmagmaprimme(magma_double *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_double *X, int *inX, int nX, PRIMME_INT ldX,
-      magma_double *overlaps, magma_double *norms, primme_context ctx);
-int ortho_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, magma_complex_double *R, int ldR, int b1, int b2,
+      double *overlaps, double *norms, primme_context ctx);
+int ortho_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *R, int ldR, int b1, int b2,
                   magma_complex_double *locked, PRIMME_INT ldLocked, int numLocked,
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
-int ortho_block_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, magma_complex_double *VLtVL, int ldVLtVL,
-      magma_complex_double *R, PRIMME_INT ldR, int b1, int b2, magma_complex_double *locked,
+int ortho_block_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *VLtVL, int ldVLtVL,
+      PRIMME_COMPLEX_DOUBLE *R, PRIMME_INT ldR, int b1, int b2, magma_complex_double *locked,
       PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
 int ortho_single_iteration_zmagmaprimme(magma_complex_double *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_complex_double *X, int *inX, int nX, PRIMME_INT ldX,
-      magma_double *overlaps, magma_double *norms, primme_context ctx);
+      double *overlaps, double *norms, primme_context ctx);
 #endif

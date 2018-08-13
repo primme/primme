@@ -63,7 +63,7 @@
 #include "auxiliary_eigs.h"
 #include "primme_interface.h"
 
-static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms,
+static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
                        primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
@@ -110,23 +110,24 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
+int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
             primme_params *primme) {
 
-  int *perm;
+   int *perm;
+   SCALAR *evecs = (SCALAR *)evecs_; /* Change type of evecs */
 
-  /* zero out the timer */
-  primme_wTimer(1);
+   /* zero out the timer */
+   primme_wTimer(1);
 
-  /* Set some defaults for sequential programs */
-  if (primme->numProcs <= 1 && evals != NULL && evecs != NULL &&
-      resNorms != NULL) {
-    primme->nLocal = primme->n;
-    primme->procID = 0;
-  }
+   /* Set some defaults for sequential programs */
+   if (primme->numProcs <= 1 && evals != NULL && evecs != NULL &&
+         resNorms != NULL) {
+      primme->nLocal = primme->n;
+      primme->procID = 0;
+   }
 
-  /* Set some defaults  */
-  primme_set_defaults(primme);
+   /* Set some defaults  */
+   primme_set_defaults(primme);
 
    if (primme->orth == primme_orth_default) {
 #ifdef USE_HOST
@@ -138,15 +139,15 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
       primme->orth = primme_orth_explicit_I;
 #else
 
-   /* Observed orthogonality issues finding the largest/smallest values in  */
-   /* single precision. Computing V'*B*V and solving the projected problem  */
-   /* V'AVx = V'BVxl mitigates the problem.                                 */
+      /* Observed orthogonality issues finding the largest/smallest values in  */
+      /* single precision. Computing V'*B*V and solving the projected problem  */
+      /* V'AVx = V'BVxl mitigates the problem.                                 */
 
 #  ifdef USE_FLOAT
       if (primme->projectionParams.projection == primme_proj_RR &&
             (primme->target == primme_largest ||
-                  primme->target == primme_smallest ||
-                  primme->target == primme_largest_abs)) {
+             primme->target == primme_smallest ||
+             primme->target == primme_largest_abs)) {
          primme->orth = primme_orth_explicit_I;
       }
       else
@@ -157,7 +158,7 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
 
    /* Deprecated input:                                              */
    if (evals == NULL && evecs == NULL && resNorms == NULL)
-       return 0;
+      return 0;
 
    /* Reset random number seed if inappropriate for DLARENV */
    /* Yields unique quadruples per proc if procID < 4096^3  */
@@ -204,7 +205,7 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
    /*----------------------------------------------------------------------*/
 
    CHKERR(
-       main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms, ctx));
+         main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms, ctx));
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
@@ -213,8 +214,8 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
    /*----------------------------------------------------------------------*/
 
    CHKERR(permute_vecs_Sprimme(&evecs[primme->numOrthoConst * primme->ldevecs],
-                        primme->nLocal, primme->initSize, primme->ldevecs, perm,
-                        ctx));
+            primme->nLocal, primme->initSize, primme->ldevecs, perm,
+            ctx));
 
    CHKERR(Num_free_iprimme(perm, ctx));
 
@@ -237,7 +238,7 @@ int Sprimme(REAL *evals, SCALAR *evecs, HREAL *resNorms,
  *              -4..-32  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(REAL *evals, SCALAR *evecs, REAL *resNorms, 
+static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms, 
                        primme_params *primme) {
    int ret;
    ret = 0;
@@ -404,9 +405,9 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
       int *err)
 {
-   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
-        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
-        *LSRes = (REAL*)LSRes_;
+   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
+        *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
+        *LSRes = (HREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
 
    /* Only print report if this is proc zero */

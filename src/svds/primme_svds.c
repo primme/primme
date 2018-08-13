@@ -45,13 +45,13 @@
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
 
-static int primme_svds_check_input(REAL *svals, SCALAR *svecs, 
-        REAL *resNorms, primme_svds_params *primme_svds);
-static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
-                                     REAL *rnorms, int *allocatedTargetShifts,
+static int primme_svds_check_input(HREAL *svals, SCALAR *svecs, 
+        HREAL *resNorms, primme_svds_params *primme_svds);
+static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
+                                     HREAL *rnorms, int *allocatedTargetShifts,
                                      SCALAR **out_svecs, primme_context ctx);
-static int copy_last_params_to_svds(int stage, REAL *svals, SCALAR *svecs,
-                             REAL *rnorms, int allocatedTargetShifts,
+static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
+                             HREAL *rnorms, int allocatedTargetShifts,
                              primme_context ctx);
 static primme_context primme_svds_get_context(primme_svds_params *primme_svds);
 static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
@@ -59,10 +59,10 @@ static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
 static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      REAL *factors, primme_context ctx);
-static int globalSum_Rprimme_svds(REAL *sendBuf, REAL *recvBuf, int count, 
+      HREAL *factors, primme_context ctx);
+static int globalSum_Rprimme_svds(HREAL *sendBuf, HREAL *recvBuf, int count, 
       primme_svds_params *primme_svds);
-static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
+static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
       primme_svds_params *primme_svds, int *ierr);
 static void default_convTestFun(double *sval, void *leftsvec, void *rightsvec,
       double *rNorm, int *isConv, primme_svds_params *primme_svds, int *ierr);
@@ -147,10 +147,11 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms, 
+int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms, 
       primme_svds_params *primme_svds) {
 
    int ret, allocatedTargetShifts;
+   SCALAR *svecs = (SCALAR*)svecs_; /* Change type of svecs */
    SCALAR *svecs0;
 
    /* ------------------------------------ */
@@ -226,7 +227,7 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    CHKERR(copy_last_params_from_svds(0, NULL, svecs,
                NULL, &allocatedTargetShifts, &svecs0, ctx));
 
-   ret = Sprimme(svals, svecs0, resNorms, &primme_svds->primme);
+   ret = Sprimme(svals, (HSCALAR*)svecs0, resNorms, &primme_svds->primme);
 
    CHKERR(copy_last_params_to_svds(
          0, svals, svecs, resNorms, allocatedTargetShifts, ctx));
@@ -249,7 +250,8 @@ int Sprimme_svds(REAL *svals, SCALAR *svecs, REAL *resNorms,
    /* are already converged. So shift svals and resnorms that much */
    int nconv = primme_svds->numSvals - primme_svds->primmeStage2.numEvals;
 
-   ret = Sprimme(svals+nconv, svecs0, resNorms+nconv, &primme_svds->primmeStage2);
+   ret = Sprimme(svals + nconv, (HSCALAR *)svecs0, resNorms + nconv,
+         &primme_svds->primmeStage2);
 
    CHKERR(copy_last_params_to_svds(
          1, svals, svecs, resNorms, allocatedTargetShifts, ctx));
@@ -265,8 +267,8 @@ static int comp_double(const void *a, const void *b)
    return *(double*)a <= *(double*)b ? -1 : 1;
 }
 
-static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
-                                     REAL *rnorms, int *allocatedTargetShifts,
+static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
+                                     HREAL *rnorms, int *allocatedTargetShifts,
                                      SCALAR **out_svecs, primme_context ctx) {
 
   primme_svds_params *primme_svds = ctx.primme_svds;
@@ -440,7 +442,7 @@ static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
 
   if (method == primme_svds_op_augmented && primme->initSize <= 0) {
     int ONE = 1, NOTRANS = 0, TRANS = 1, ierr = 0;
-    REAL norms2_[2], norms2[2];
+    HREAL norms2_[2], norms2[2];
     if (primme_svds->m >= primme_svds->n) {
       Num_larnv_Sprimme(2, primme->iseed, primme_svds->mLocal,
                         &svecs[primme_svds->nLocal], ctx);
@@ -533,8 +535,8 @@ static int copy_last_params_from_svds(int stage, REAL *svals, SCALAR *svecs,
   return 0;
 }
 
-static int copy_last_params_to_svds(int stage, REAL *svals, SCALAR *svecs,
-                             REAL *rnorms, int allocatedTargetShifts,
+static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
+                             HREAL *rnorms, int allocatedTargetShifts,
                              primme_context ctx) {
 
   primme_svds_params *primme_svds = ctx.primme_svds;
@@ -726,7 +728,7 @@ static int copy_last_params_to_svds(int stage, REAL *svals, SCALAR *svecs,
  *              -4..-19  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int primme_svds_check_input(REAL *svals, SCALAR *svecs, REAL *resNorms, 
+static int primme_svds_check_input(HREAL *svals, SCALAR *svecs, HREAL *resNorms, 
       primme_svds_params *primme_svds) {
    int ret;
    ret = 0;
@@ -874,10 +876,10 @@ static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
 }
 
 static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      REAL *factors, primme_context ctx) {
+      HREAL *factors, primme_context ctx) {
 
    int i;
-   REAL norm, norm0, factor;
+   HREAL norm, norm0, factor;
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
@@ -933,7 +935,7 @@ static int globalSum_Rprimme_svds(HREAL *sendBuf, HREAL *recvBuf, int count,
  * ierr         Error code
  ******************************************************************************/
 
-static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
+static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
       primme_svds_params *primme_svds, int *ierr) {
 
    primme_context ctx = primme_svds_get_context(primme_svds);
@@ -959,7 +961,7 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
    /* ip[1] = ||u|| */
    /* ip[2] = u'*A*v = u'*Av */
 
-   REAL ip0[3], ip[3];
+   HREAL ip0[3], ip[3];
    ip0[0] = REAL_PART(Num_dot_Sprimme(primme_svds->nLocal, rightsvec, 1,
             rightsvec, 1, ctx));
    ip0[1] = REAL_PART(Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1,
@@ -971,7 +973,7 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
 
    ip[0] = sqrt(ip[0]);
    ip[1] = sqrt(ip[1]);
-   REAL sval = ip[2]/ip[0]/ip[1];
+   HREAL sval = ip[2]/ip[0]/ip[1];
 
    /* If u'*A*v is negative, set rNorm as a large number */
 
@@ -995,7 +997,7 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, REAL *rNorm,
 
    /* resNorm = sqrt(||A*v - s*u||^2 + ||A'*u - s*v||^2) = norm([Atu; Av]) */
 
-   REAL normr0;
+   HREAL normr0;
    normr0 = REAL_PART(Num_dot_Sprimme(nLocal, Atu, 1, Atu, 1, ctx));
    *ierr = globalSum_Rprimme_svds(&normr0, rNorm, 1, primme_svds);
    if (*ierr != 0) {Num_free_Sprimme(Atu, ctx); return;}
@@ -1043,7 +1045,7 @@ static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
             primme_svds->method == primme_svds_op_augmented
             || primme_svds->methodStage2 == primme_svds_op_augmented)) {
 
-      REAL rnorm;
+      HREAL rnorm;
       compute_resNorm(leftsvec, rightsvec, &rnorm, primme_svds, ierr);
       if (*ierr != 0) return;
 
@@ -1199,9 +1201,9 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, primme_event *event, int *stage,
       primme_svds_params *primme_svds, int *err)
 {
-   REAL *basisSvals = (REAL*)basisSvals_, *basisNorms = (REAL*)basisNorms_,
-        *lockedSvals = (REAL*)lockedSvals_, *lockedNorms = (REAL*)lockedNorms_,
-        *LSRes = (REAL*)LSRes_;
+   HREAL *basisSvals = (HREAL*)basisSvals_, *basisNorms = (HREAL*)basisNorms_,
+        *lockedSvals = (HREAL*)lockedSvals_, *lockedNorms = (HREAL*)lockedNorms_,
+        *LSRes = (HREAL*)LSRes_;
    assert(event != NULL && primme_svds != NULL && stage != NULL);
 
    /* Only print report if this is proc zero */
@@ -1300,12 +1302,12 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFl
       int *err)
 {
    int i;
-   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
-        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
-        *LSRes = (REAL*)LSRes_;
+   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
+        *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
+        *LSRes = (HREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
 
-   REAL basisSvals[basisEvals&&basisSize?*basisSize:0],
+   HREAL basisSvals[basisEvals&&basisSize?*basisSize:0],
         basisSVNorms[basisEvals&&basisSize?*basisSize:0],
         lockedSvals[lockedEvals&&numLocked?*numLocked:0],
         lockedSVNorms[lockedEvals&&numLocked?*numLocked:0];
@@ -1397,9 +1399,9 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
       int *err)
 {
-   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
-        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
-        *LSRes = (REAL*)LSRes_;
+   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
+        *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
+        *LSRes = (HREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
 
    /* Ignore the converged events if locking is active and printLevel <= 4 */
@@ -1414,7 +1416,7 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 
    int numLocked0 = lockedEvals&&numLocked?*numLocked:0;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0) + numLocked0;
-   REAL basisSvals[basisSize0], basisSVNorms[basisSize0];
+   HREAL basisSvals[basisSize0], basisSVNorms[basisSize0];
    int basisSVFlags[basisSize0], iblockSV[blockSize&&*blockSize>0?*blockSize:1];
    int numConvergedSV = (numConverged?*numConverged:numLocked0);
 
@@ -1498,9 +1500,9 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
       int *err)
 {
-   REAL *basisEvals = (REAL*)basisEvals_, *basisNorms = (REAL*)basisNorms_,
-        *lockedEvals = (REAL*)lockedEvals_, *lockedNorms = (REAL*)lockedNorms_,
-        *LSRes = (REAL*)LSRes_;
+   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
+        *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
+        *LSRes = (HREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
 
@@ -1510,7 +1512,7 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       primme_svds->numSvals - primme->numEvals : 0;
    int numLockedSV = (lockedEvals&&numLocked?*numLocked:0) + numLockedExtra;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0);
-   REAL basisSVNorms[basisSize0],
+   HREAL basisSVNorms[basisSize0],
         lockedSVNorms[numLockedSV];
    int lockedSVFlags[numLockedSV];
 
