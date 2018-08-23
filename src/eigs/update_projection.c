@@ -73,7 +73,6 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       int numCols, int blockSize, int isSymmetric, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int count, m;
 
    assert(ldX >= nLocal && ldY >= nLocal && ldZ >= numCols+blockSize);
 
@@ -87,7 +86,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
    /* Grow Z by blockSize number of rows and columns all at once            */
    /* --------------------------------------------------------------------- */
 
-   m = numCols+blockSize;
+   int m = numCols+blockSize;
    CHKERR(Num_gemm_ddh_Sprimme("C", "N", m, blockSize, nLocal, 1.0, X, ldX,
          &Y[ldY * numCols], ldY, 0.0, &Z[ldZ * numCols], ldZ, ctx));
 
@@ -116,10 +115,11 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       /* --------------------------------------------------------------------- */
 
       HSCALAR *rwork;
-      CHKERR(Num_malloc_SHprimme((numCols+blockSize)*numCols, &rwork, ctx));
+      CHKERR(Num_malloc_SHprimme((numCols+blockSize)*blockSize, &rwork, ctx));
+      int count;
       Num_copy_trimatrix_compact_SHprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
             numCols, rwork, &count);
-      assert(count <= (numCols+blockSize)*numCols);
+      assert(count <= (numCols+blockSize)*blockSize);
 
       CHKERR(globalSum_SHprimme(rwork, rwork, count, ctx));
 
@@ -132,12 +132,12 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       /* --------------------------------------------------------------------- */
 
       HSCALAR *rwork;
+      int count = m * blockSize + blockSize * numCols;
       CHKERR(Num_malloc_SHprimme(count, &rwork, ctx));
       Num_copy_matrix_SHprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
             rwork, m, ctx);
       Num_copy_matrix_SHprimme(&Z[numCols], blockSize, numCols, ldZ,
             &rwork[m*blockSize], blockSize, ctx);
-      count = m*blockSize+blockSize*numCols;
 
       CHKERR(globalSum_SHprimme(rwork, rwork, count, ctx));
 

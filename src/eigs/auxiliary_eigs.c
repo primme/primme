@@ -159,8 +159,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, ldX, ldY, ldG0=0, ldH0=0;
    SCALAR *X, *Y;
-   HSCALAR *G0=NULL, *H0=NULL;
-   HREAL *tmp;
+   HSCALAR *G0=NULL, *H0=NULL, *workGH = NULL;
 
    /* R or Rnorms or rnorms imply W */
    assert(!(R || Rnorms || rnorms) || W);
@@ -187,13 +186,15 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    CHKERR(Num_malloc_Sprimme(m*(nXe-nXb), &X, ctx));
    CHKERR(Num_malloc_Sprimme(m*(nYe-nYb), &Y, ctx));
    ldX = ldY = m;
+   int nGH = (G ? nG * nG : 0) + (H ? nH * nH : 0);
    if (ctx.numProcs > 1) {
+      CHKERR(Num_malloc_SHprimme(nGH, &workGH, ctx));
       if (G) {
-         CHKERR(Num_malloc_SHprimme(nG*nG, &G0, ctx));
+         G0 = workGH;
          ldG0 = nG;
       }
       if (H) {
-         CHKERR(Num_malloc_SHprimme(nH*nH, &H0, ctx));
+         H0 = workGH + (G ? nG * nG : 0);
          ldH0 = nH;
       }
    }
@@ -267,16 +268,19 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       }
    }
 
+   /* Reduce and copy back G0 and H0 */
 
-   /* Copy back G0 and H0 */
-
+   if (ctx.numProcs > 1) {
+      CHKERR(globalSum_SHprimme(workGH, workGH, nGH, ctx));
+   }
    if (G) Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx);
    if (H) Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx);
 
    /* Reduce Rnorms and rnorms and sqrt the results */
 
    if (ctx.numProcs > 1) {
-      Num_malloc_RHprimme(nRe+nre, &tmp, ctx);
+      HREAL *tmp;
+      Num_malloc_RHprimme(max(nRe-nRb,0)+max(nre-nrb,0), &tmp, ctx);
       j = 0;
       if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
@@ -293,10 +297,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
    CHKERR(Num_free_Sprimme(X, ctx));
    CHKERR(Num_free_Sprimme(Y, ctx));
-   if (ctx.numProcs > 1) {
-      if (G) CHKERR(Num_free_SHprimme(G0, ctx));
-      if (H) CHKERR(Num_free_SHprimme(H0, ctx));
-   }
+   CHKERR(Num_free_SHprimme(workGH, ctx));
 
    return 0; 
 }

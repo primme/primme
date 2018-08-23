@@ -485,12 +485,16 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
          for (j=0; j<i; j++) n += 2*REAL_PART(CONJ(VtBV[i*ldVtBV+j])*VtBV[i*ldVtBV+j]);
          n += REAL_PART(CONJ(VtBV[i*ldVtBV+i] - (HSCALAR)1.0)*(VtBV[i*ldVtBV+i] - (HSCALAR)1.0));
       }
+      n = sqrt(n);
+      if (ctx.procID != 0) n = 0;
+      CHKERR(globalSum_RHprimme(&n, &n, 1, ctx));
+      
       if (*restartsSinceReset <= 1) {
          primme->stats.maxConvTol = max(primme->stats.maxConvTol,
-               sqrt(n)*primme->stats.estimateLargestSVal);
+               n*primme->stats.estimateLargestSVal);
       }
       primme->stats.estimateResidualError =
-         sqrt((double)*restartsSinceReset) * sqrt(n) * aNorm;
+         sqrt((double)*restartsSinceReset) * n * aNorm;
    }
    else {
       primme->stats.estimateResidualError =
@@ -1400,9 +1404,15 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
          HSCALAR *work;
          assert(nVtBV == nX0e - nX0b);
          CHKERR(Num_malloc_SHprimme((nX0e-nX0b)*evecsSize, &work, ctx));
-         Num_gemm_SHprimme("N", "N", evecsSize, nX0e - nX0b, nV, 1.0,
-               &VtBV[evecsSize * ldVtBV], ldVtBV, h, ldh, 0.0, work,
-               evecsSize, ctx);
+         if (ctx.procID == 0) {
+            Num_gemm_SHprimme("N", "N", evecsSize, nX0e - nX0b, nV, 1.0,
+                  &VtBV[evecsSize * ldVtBV], ldVtBV, h, ldh, 0.0, work,
+                  evecsSize, ctx);
+         } else {
+           Num_zero_matrix_SHprimme(work, evecsSize, nX0e - nX0b,
+                                           evecsSize, ctx);
+         }
+         CHKERR(globalSum_SHprimme(work, work, evecsSize * (nX0e - nX0b), ctx));
          Num_copy_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize,
                &VtBV[evecsSize * ldVtBV], ldVtBV, ctx);
          CHKERR(Num_free_SHprimme(work, ctx));
