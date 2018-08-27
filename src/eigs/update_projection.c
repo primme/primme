@@ -37,8 +37,11 @@
 #include <assert.h>
 #include "const.h"
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "auxiliary_eigs.h"
 #include "update_projection.h"
+#endif
 
 /*******************************************************************************
  * Subroutine update_projection - Z = X'*Y. If Z is a Hermitian matrix 

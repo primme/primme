@@ -58,7 +58,6 @@ R_install:
 	@make -C R install
 
 deps:
-	@make -C src deps
 	@make -C src auto_headers
 
 check_style:

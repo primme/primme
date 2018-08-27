@@ -38,8 +38,11 @@
 #include <string.h> /* memset */
 #include "const.h"
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "auxiliary_eigs.h"
 #include "wtime.h"
+#endif
 
 /******************************************************************************
  * Function primme_get_context - return a context from the primme_params

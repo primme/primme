@@ -38,6 +38,8 @@
 #include <math.h>
 #include <assert.h>
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "init.h"
 #include "update_projection.h"
 #include "update_W.h"
@@ -45,6 +47,7 @@
 #include "factorize.h"
 #include "auxiliary_eigs.h"
 #include "wtime.h"                       /* Needed for CostModel */
+#endif
 
 static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, int dv1, int dv2, SCALAR *locked,

@@ -67,11 +67,14 @@
 #include <math.h>
 #include <assert.h>
 #include "numerical.h"
+#include "const.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "factorize.h"
 #include "auxiliary_eigs.h"
 #include "ortho.h"
-#include "const.h"
 #include "wtime.h"
+#endif
  
 static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,

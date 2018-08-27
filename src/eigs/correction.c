@@ -38,9 +38,12 @@
 #include <assert.h>
 #include "const.h"
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "correction.h"
 #include "inner_solve.h"
 #include "auxiliary_eigs.h"
+#endif
 
 static HREAL computeRobustShift(int blockIndex, double resNorm, 
    HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 

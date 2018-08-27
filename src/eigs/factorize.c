@@ -37,7 +37,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "factorize.h"
+#endif
 
 #ifdef USE_HOST
 

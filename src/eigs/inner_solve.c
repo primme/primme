@@ -37,13 +37,16 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "wtime.h"
-#include "const.h"
 #include "numerical.h"
+#include "const.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
+#include "wtime.h"
 #include "inner_solve.h"
 #include "factorize.h"
 #include "update_W.h"
 #include "auxiliary_eigs.h"
+#endif
 
 static int
 apply_projected_preconditioner(SCALAR *v, SCALAR *Q, PRIMME_INT ldQ,

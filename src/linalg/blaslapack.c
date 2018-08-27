@@ -40,8 +40,11 @@
 #include <assert.h>
 #include <math.h>
 #include "template.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "blaslapack.h"
 #include "auxiliary.h" // cyclic
+#endif
 
 #ifdef USE_HOST
 

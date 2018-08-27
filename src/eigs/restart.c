@@ -38,6 +38,8 @@
 #include <assert.h>
 #include "const.h"
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "auxiliary_eigs.h"
 #include "restart.h"
 #include "ortho.h"
@@ -47,6 +49,7 @@
 #include "update_W.h"
 #include "convergence.h"
 #include "wtime.h"
+#endif
 
 static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV, SCALAR **X, SCALAR **R,

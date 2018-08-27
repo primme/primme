@@ -39,6 +39,8 @@
 #include <assert.h>
 #include "numerical.h"
 #include "const.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "wtime.h"
 #include "main_iter.h"
 #include "convergence.h"
@@ -50,6 +52,7 @@
 #include "update_projection.h"
 #include "update_W.h"
 #include "auxiliary_eigs.h"
+#endif
 
 /*----------------------------------------------------------------------------*
  * The following are needed for the Dynamic Method Switching

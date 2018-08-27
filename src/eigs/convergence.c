@@ -38,10 +38,12 @@
 #include <assert.h>
 #include "const.h"
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "convergence.h"
 #include "ortho.h"
 #include "auxiliary_eigs.h"
-
+#endif
 
 static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,

@@ -56,12 +56,15 @@
 
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
-#include "const.h"
-#include "wtime.h"
 #include "numerical.h"
+#include "const.h"
+#include "primme_interface.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
+#include "wtime.h"
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
-#include "primme_interface.h"
+#endif
 
 static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
                        primme_params *primme);

@@ -37,9 +37,12 @@
 #include <assert.h>
 #include "const.h"
 #include "numerical.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "solve_projection.h"
 #include "ortho.h"
 #include "auxiliary_eigs.h"
+#endif
 
 #ifdef USE_HOST
 

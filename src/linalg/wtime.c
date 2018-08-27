@@ -38,7 +38,10 @@
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "wtime.h"
+#endif
 
 #ifdef RUSAGE_SELF
 #else

@@ -39,11 +39,14 @@
 #include <math.h>  
 #include <assert.h>  
 #include "numerical.h"
-#include "../eigs/ortho.h"
-#include "../eigs/const.h"
-#include "wtime.h"
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
+#include "../eigs/const.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
+#include "../eigs/ortho.h"
+#include "wtime.h"
+#endif
 
 static int primme_svds_check_input(HREAL *svals, SCALAR *svecs, 
         HREAL *resNorms, primme_svds_params *primme_svds);

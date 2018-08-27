@@ -38,9 +38,12 @@
 #include <assert.h>
 #include <math.h>
 #include "template.h"
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
 #include "auxiliary.h"
 #include "blaslapack.h"
 #include "magma_wrapper.h"
+#endif
 
 #ifdef USE_HOST
 

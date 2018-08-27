@@ -3,8 +3,38 @@ include ../Make_flags
 
 UNAME ?= $(shell uname)
 
-DIRS := linalg eigs svds
-SOURCES := $(sort $(foreach dir,$(DIRS),$(wildcard $(dir)/*.c)))
+HEADERS := \
+   include/template.h \
+   include/numerical.h \
+   include/primme_interface.h \
+   eigs/const.h \
+   eigs/primme_f77_private.h \
+   svds/primme_svds_f77_private.h \
+   svds/primme_svds_interface.h
+
+SOURCES := \
+   eigs/auxiliary_eigs.c \
+   eigs/convergence.c \
+   eigs/correction.c \
+   eigs/factorize.c \
+   eigs/init.c \
+   eigs/inner_solve.c \
+   eigs/main_iter.c \
+   eigs/ortho.c \
+   eigs/primme.c \
+   eigs/primme_f77.c \
+   eigs/primme_interface.c \
+   eigs/restart.c \
+   eigs/solve_projection.c \
+   eigs/update_projection.c \
+   eigs/update_W.c \
+   linalg/auxiliary.c \
+   linalg/blaslapack.c \
+   linalg/magma_wrapper.c \
+   linalg/wtime.c \
+   svds/primme_svds.c \
+   svds/primme_svds_f77.c \
+   svds/primme_svds_interface.c
 
 ARCHS := float floatcomplex double doublecomplex
 ifeq ($(PRIMME_WITH_MAGMA),yes)
@@ -15,13 +45,8 @@ ALL_ARCHS := FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
 
 OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
 
-OTHER_HEADERS := \
-   include/template.h \
-   include/numerical.h \
-   include/primme_interface.h
-
 INCLUDE += -I../include -Iinclude
-INCLUDES := $(sort $(foreach dir,../include,$(wildcard $(dir)/*.h))) $(OTHER_HEADERS)
+INCLUDES := $(sort $(foreach dir,../include,$(wildcard $(dir)/*.h))) $(HEADERS)
 
 #
 # Generation of automatic headers
@@ -124,7 +149,7 @@ endif
 # Generate CTAGS
 #
 
-../tags: $(SOURCES) $(INCLUDES)
+../tags: $(SOURCES) $(HEADERS)
 	@etags -o $@.base $^;\
 	cp $@.base $@;\
 	for pre in R SH RH s c d z; do \
@@ -148,10 +173,6 @@ clean:
 # NOTE: make may update deps and reload it automatically
 deps: $(INCLUDES) $(SOURCES)
 	@echo "# This file is generated automatically. Please don't modify" > deps
-	@
-	@# Add dependencies for automatic generated headers. We ignore headers named after the
-	@# source file to avoid cyclic dependencies.
-	@tools/dependencies $(INCLUDE) $(SOURCES) --ignore-self-headers -i'include[^\n]+cyclic' -e.h >> deps
 	@
 	@# Added dependencies on headers for building the objects
 	@tools/dependencies $(INCLUDE) $(SOURCES) -e*.o >> deps

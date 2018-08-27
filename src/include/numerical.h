@@ -34,6 +34,8 @@
  ******************************************************************************/
 
 #include "template.h"
+#ifndef CHECK_TEMPLATE
 #include "blaslapack.h"
 #include "magma_wrapper.h"
 #include "auxiliary.h"
+#endif
