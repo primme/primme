@@ -100,8 +100,9 @@
 #define XGESVD    LAPACK_FUNCTION(sgesvd, cgesvd, dgesvd, zgesvd)
 #define XHETRF    LAPACK_FUNCTION(ssytrf, chetrf, dsytrf, zhetrf)
 #define XHETRS    LAPACK_FUNCTION(ssytrs, chetrs, dsytrs, zhetrs)
-#define XGESV     LAPACK_FUNCTION(sgesv , cgesv , dgesv , zgesv )
 #define XPOTRF    LAPACK_FUNCTION(spotrf, cpotrf, dpotrf, zpotrf)
+#define XGETRF    LAPACK_FUNCTION(sgetrf, cgetrf, dgetrf, zgetrf)
+#define XGETRS    LAPACK_FUNCTION(sgetrs, cgetrs, dgetrs, zgetrs)
 
 #else /* NUM_CRAY */
 
@@ -174,6 +175,8 @@ void XHETRF(STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIM
 void XHETRS(STRING uplo, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
 void XGESV(PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
 void XPOTRF(STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *info);
+void XGETRF(PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, PRIMME_BLASINT *info);
+void XGETRS(STRING trans, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
 
 #ifdef __cplusplus
 }

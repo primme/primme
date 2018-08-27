@@ -213,7 +213,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                             /* the current extraction method.                */
    int maxEvecsSize;        /* Maximum capacity of evecs array               */
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
-   int ret;                 /* Return value                                  */
+   int ret=0;               /* Return value                                  */
    int touch=0;             /* param used in inner solver stopping criteria  */
 
    int *flags;              /* Indicates which Ritz values have converged    */
@@ -627,21 +627,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
 
             }
 
-            /* If the block size is zero, the whole basis spans an exact     */
-            /* (converged) eigenspace. Then, since not all needed evecs have */
-            /* been found, we must generate a new set of vectors to proceed. */
-            /* This set should be of size AvailableBlockSize, and random     */
-            /* as there is currently no locking to bring in new guesses.     */
-            /* We zero out the V(AvailableBlockSize), avoid any correction   */
-            /* and let ortho create the random vectors.                      */
-
-            if (blockSize == 0) {
-               blockSize = availableBlockSize;
-               Num_scal_Sprimme(blockSize * primme->nLocal, 0.0,
-                                &V[ldV * basisSize], 1, ctx);
-            }
-            else {
-
+            if (blockSize > 0) {
                /* Solve the correction equations with the new blockSize Ritz */
                /* vectors and residuals.                                     */
 
@@ -673,21 +659,20 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             for (i=0; i < maxNumRandoms; i++) {
                int basisSizeOut;
                CHKERR(ortho_block_Sprimme(V, ldV, VtBV, ldVtBV, NULL, 0,
-                            basisSize, basisSize + blockSize - 1, evecs,
-                            ldevecs, primme->numOrthoConst + numLocked,
-                            primme->nLocal, maxRank, &basisSizeOut, ctx));
+                     basisSize, basisSize + blockSize - 1, evecs, ldevecs,
+                     primme->numOrthoConst + numLocked, NULL, 0,
+                     primme->nLocal, maxRank, &basisSizeOut, ctx));
                blockSize = basisSizeOut - basisSize;
-               if (blockSize <= 0) {
+               if (blockSize > 0) break;
+               if (availableBlockSize > 0) {
                   CHKERR(Num_larnv_Sprimme(2, primme->iseed, primme->nLocal, 
                         &V[ldV*basisSize], ctx));
                   blockSize = 1;
                } 
-               else {
-                  break;
-               }
             }
 
             if (i >= maxNumRandoms) {
+               basisSize = 0;
                wholeSpace = 1;
                reset = 2;
                break;
@@ -971,8 +956,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             int basisSizeOut;
             CHKERR(ortho_block_Sprimme(V, ldV, VtBV, ldVtBV, NULL, 0, basisSize,
                   basisSize + numNew - 1, evecs, ldevecs,
-                  numLocked + primme->numOrthoConst, primme->nLocal, maxRank,
-                  &basisSizeOut, ctx));
+                  numLocked + primme->numOrthoConst, NULL, 0, primme->nLocal,
+                  maxRank, &basisSizeOut, ctx));
             numNew = basisSizeOut - basisSize;
 
             /* Compute W = A*V for the orthogonalized corrections */
@@ -1145,9 +1130,9 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             /* outer while loop, resolving the epairs. Slow, but robust!    */
             /* ------------------------------------------------------------ */
             CHKERR(ortho_block_Sprimme(V, ldV, VtBV, ldVtBV, NULL, 0, 0,
-                         basisSize - 1, evecs, ldevecs,
-                         primme->numOrthoConst + numLocked, primme->nLocal,
-                         maxRank, &basisSize, ctx));
+                  basisSize - 1, evecs, ldevecs,
+                  primme->numOrthoConst + numLocked, NULL, 0, primme->nLocal,
+                  maxRank, &basisSize, ctx));
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0,
                      basisSize, ctx));
 
@@ -1329,7 +1314,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(check_convergence_Sprimme(X?&X[(*blockSize)*ldV]:NULL, nLocal,
             ldV, R?&R[(*blockSize)*ldW]:NULL, ldW, evecs, numLocked,
             ldevecs, 0, blockNormsSize, flagsBlock,
-            &blockNorms[*blockSize], hValsBlock, reset, ctx));
+            &blockNorms[*blockSize], hValsBlock, reset, 0, ctx));
 
       /* Compact blockNorms, X and R for the unconverged pairs in    */
       /* iev(*blockSize:*blockSize+blockNormsize). Do the proper     */
@@ -1517,7 +1502,7 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
    CHKERR(check_convergence_Sprimme(V, ctx.primme->nLocal, ldV, W, ldW, NULL, 0,
                                     0, 0, basisSize, flags, resNorms, hVals,
-                                    NULL, ctx));
+                                    NULL, 0, ctx));
 
    /* Set converged to 1 if the first basisSize pairs are converged */
 

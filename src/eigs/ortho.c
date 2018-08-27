@@ -100,8 +100,9 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
  * locked     Array that holds locked vectors if they are in-core
  * ldLocked   Leading dimension of locked
  * numLocked  Number of vectors in locked
+ * RLocked    R for locked vectors
+ * ldRLocked  The leading dimension of RLocked
  * nLocal     Number of rows of each vector stored on this node
- * machEps    Double machine precision
  *
  * rworkSize  Length of rwork array
  * primme     Primme struct. Contains globalSumDouble and Parallelism info
@@ -126,13 +127,13 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
  **********************************************************************/
 
 static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
-      int b1, int b2, SCALAR *locked, PRIMME_INT ldLocked,
-      int numLocked, PRIMME_INT nLocal, int (*B)(SCALAR*,PRIMME_INT,SCALAR*,
-         PRIMME_INT,int,void*), void *Bctx,
-      PRIMME_INT *iseed, primme_context ctx) {
-              
+      int b1, int b2, SCALAR *locked, PRIMME_INT ldLocked, int numLocked,
+      HSCALAR *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(SCALAR *, PRIMME_INT, SCALAR *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, primme_context ctx) {
+
    primme_params *primme = ctx.primme;
-   int i, j;                /* Loop indices */
+   int i;                   /* Loop indices */
    int messages = 1;        /* messages = 1 prints the intermediate results */
    /* TODO: replace by a dynamic criterion when to stop orthogonalizing local */
    /* vectors. Observed performance improvement when maxNumOrthos increases.  */
@@ -156,10 +157,10 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
    tol = sqrt(2.0L)/2.0L;
 
    /* Zero the columns from b1 to b2 of R */
-   if (R)
-      for(i=b1; i <= b2; i++)
-         for (j=0; j <= i; j++)
-            R[ldR*i+j] = 0.0;
+   if (R) Num_zero_matrix_SHprimme(&R[b1 * ldR], b2 + 1, b2 - b1 + 1, ldR, ctx);
+   if (RLocked) {
+      Num_zero_matrix_SHprimme(RLocked, numLocked, b2 - b1 + 1, ldRLocked, ctx);
+   }
 
    /*---------------------------------------------------*/
    /* main loop to orthogonalize new vectors one by one */
@@ -180,7 +181,8 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
       int randomizations;  // times the current vector has been replaced by a
                            // random vector
       int reorth = 1;   // flag to keep iterating
-      int updateR = (R ? 1 : 0); // flag to keep updating R, after the first
+      int updateR =
+            (R || RLocked ? 1 : 0); // flag to keep updating R, after the first
       int Bx_update = 0;   // flag indicating if Bx = B*V[i]
                                  // randomization it is set to zero
       HREAL s0=0.0;   // B-norm of the current vector before deflating V and locked
@@ -250,7 +252,11 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
                   ctx));
 
          if (updateR) {
-             Num_axpy_SHprimme(i, 1.0, overlaps, 1, &R[ldR*i], 1, ctx);
+             if (R) Num_axpy_SHprimme(i, 1.0, overlaps, 1, &R[ldR*i], 1, ctx);
+             if (RLocked) {
+                Num_axpy_SHprimme(numLocked, 1.0, overlaps + i, 1,
+                      &RLocked[ldRLocked * (i - b1)], 1, ctx);
+             }
          }
 
          if (numLocked > 0) { /* locked array most recently accessed */
@@ -309,7 +315,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             s02 = s12;
          }
          else {
-            if (updateR) {
+            if (updateR && R) {
                if (!s1_update) {
                   if (B && !Bx_update) {
                      CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
@@ -385,7 +391,7 @@ int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx) {
 
   return Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked, numLocked,
-                            nLocal, NULL, NULL, iseed, ctx);
+                            NULL, 0, nLocal, NULL, NULL, iseed, ctx);
 }
 
 #ifdef USE_HOST
@@ -409,8 +415,8 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
    (void)ctx; 
    struct local_matvec_ctx Bctx = {B, (int)nLocal, ldB};
    return Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
-                             numLocked, nLocal, B ? local_matvec : NULL, &Bctx,
-                             iseed, primme_get_context(NULL));
+         numLocked, NULL, 0, nLocal, B ? local_matvec : NULL, &Bctx, iseed,
+         primme_get_context(NULL));
 }
 
 #endif /* USE_HOST */
@@ -455,8 +461,8 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
 TEMPLATE_PLEASE
 int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
       HSCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx) {
+      PRIMME_INT ldLocked, int numLocked, HSCALAR *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j;               /* loop indices */
@@ -475,12 +481,25 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
    }
 
    if (VLtVL == NULL) {
-      CHKERR(ortho_Sprimme(V, ldV, R, ldR, b1, b2 - 1, locked, ldLocked,
-            numLocked, nLocal, primme->iseed, ctx));
+      CHKERR(Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2 - 1, locked, ldLocked,
+            numLocked, RLocked, ldRLocked, nLocal, NULL, NULL, primme->iseed,
+            ctx));
       *b2_out = b2;
       return 0;
    }
 
+   // TEMP!!!
+   // CHKERR(Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2 - 1, locked, ldLocked,
+   //          numLocked, RLocked, ldRLocked, nLocal, NULL, NULL, primme->iseed,
+   //          ctx));
+   // Num_zero_matrix_SHprimme(&VLtVL[ldVLtVL*(numLocked+b1)], numLocked+b2, b2-b1, ldVLtVL, ctx);
+   // for (i=numLocked+b1; i<numLocked+b2; i++) {
+   //    VLtVL[ldVLtVL*i+i] = 1.0;
+   // }
+   // *b2_out = b2;
+   // return 0;
+   
+ 
    /* input and workspace verification */
 
    assert(nLocal >= 0 && numLocked >= 0 &&
@@ -489,10 +508,26 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
 
    /* Zero the columns from b1 to b2 of R */
 
+   HSCALAR *r = NULL; /* The diagonal block of R(b1:b2) */
+   int ldr = 0;
+
    if (R) {
-      Num_zero_matrix_SHprimme(&R[ldR*b1], b2, b2-b1, ldR, ctx);
-      for (i=b1; i<b2; i++) {
-         R[ldR*i+i] = 1.0;
+      Num_zero_matrix_SHprimme(&R[ldR * b1], b1, b2 - b1, ldR, ctx);
+      r = &R[ldR * b1 + b1];
+      ldr = ldR;
+   }
+
+   if (RLocked) {
+      Num_zero_matrix_SHprimme(RLocked, numLocked, b2 - b1, ldRLocked, ctx);
+      if (!r) {
+         CHKERR(Num_malloc_SHprimme((b2 - b1) * (b2 - b1), &r, ctx));
+         ldr = b2 - b1;
+      }
+   }
+   if (r) {
+      Num_zero_matrix_SHprimme(r, b2 - b1, b2 - b1, ldr, ctx);
+      for (i=0; i<b2 - b1; i++) {
+         r[ldr*i+i] = 1.0;
       }
    }
 
@@ -506,7 +541,8 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
    CHKERR(Num_malloc_SHprimme((b2-b1)*(b2-b1), &Y, ctx));
    int nVL = b1+numLocked;
    CHKERR(Num_malloc_SHprimme(nVL*nVL, &fVLtVL, ctx));
-   int pVLtVL[nVL];
+   int *pVLtVL;
+   CHKERR(Num_malloc_iprimme(nVL, &pVLtVL, ctx));
    CHKERR(Num_malloc_SHprimme((b2-b1)*(b2-b1), &C, ctx));
 
    /* Factor VLtVL */
@@ -520,7 +556,7 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
 
    *b2_out = b2; 
    int its;
-   int maxits = 5;
+   int maxits = 5, plus2 = 5;
    for (its=0; its<maxits; its++) {
       /* Notation:                                          */
       /* Vp = [locked V(0:b1-1)]; Xp = V(b1:b2-1) */
@@ -537,15 +573,13 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
 
       /* Check convergence */
 
-      if (its == maxits - 1) break;
       if (rank_estimation(VLtVL, numLocked + b1,
-                   numLocked + b2, maxRank, ldVLtVL) == numLocked + b2)
-         maxits = its+2;
-
+                   numLocked + b2, maxRank, ldVLtVL) == numLocked + b2) {
+         if (its >= plus2 - 1) break;
+         else plus2 = min(its + 2, plus2);
+      }
 
       if (ctx.procID == 0) {
-         printf("Rank estima: %d\n", rank_estimation(VLtVL, numLocked + b1,
-                                           numLocked + b2, maxRank, ldVLtVL));
          /* C = Xn'*Xn = Xc'*(I-Vc/(Vc'*Vc)*Vc')*Xc = Xc'*Xc -
             (Xc'*Vc)*((Vc'*Vc)\(Vc'*Xc))       */
          /*   = A(b1:b2-1,:) -
@@ -565,8 +599,8 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
          }
          for (i=0; i<b2-b1; i++) {
             for (j=0; j<=i; j++) {
-               C[(b2 - b1) * j + i] = C[(b2 - b1) * i + j] =
-                     (C[(b2 - b1) * i + j] + C[(b2 - b1) * j + i]) /
+               C[(b2 - b1) * i + j] =
+                     (C[(b2 - b1) * i + j] + CONJ(C[(b2 - b1) * j + i])) /
                      (HSCALAR)2.0 / N[i] / N[j];
             }
          }
@@ -592,34 +626,38 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
       CHKERR(globalSum_SHprimme(VLtVLdA, VLtVLdA, nVL*(b2-b1), ctx));
       CHKERR(globalSum_RHprimme(N, N, b2-b1, ctx));
       CHKERR(globalSum_RHprimme(D, D, b2-b1, ctx));
-      CHKERR(globalSum_SHprimme(&Y[(b2 - b1) * (b1 - b1) + b1 - b1],
-                   &Y[(b2 - b1) * (b1 - b1) + b1 - b1], (b2 - b1) * (b2 - b1),
-                   ctx));
+      CHKERR(globalSum_SHprimme(Y, Y, (b2 - b1) * (b2 - b1), ctx));
 
-      if (R && numLocked == 0) {
-         /* R(0:b1-1,:) += Vc'*Xc*gi = A(0:b1-1,:)*R(b1:b2-1,:) */
+      if (RLocked) {
+         /* R(0:b1-1,:) += VtBV\Vc'*Xc*gi = VtBV\A(0:b1-1,:)*R(b1:b2-1,:) */
 
-         Num_gemm_SHprimme("N", "N", b1, b2 - b1, b2 - b1, 1.0, A, b2,
-               &R[ldR * b1 + b1], ldR, 1.0, &R[ldR * b1], ldR, ctx);
+         Num_gemm_SHprimme("N", "N", numLocked, b2 - b1, b2 - b1, 1.0, VLtVLdA,
+               nVL, r, ldr, 1.0, RLocked, ldRLocked, ctx);
+      }
+      if (R) {
+         /* R(0:b1-1,:) += VtBV\Vc'*Xc*gi = VtBV\A(0:b1-1,:)*R(b1:b2-1,:) */
 
+         Num_gemm_SHprimme("N", "N", b1, b2 - b1, b2 - b1, 1.0,
+               &VLtVLdA[numLocked], nVL, &R[ldR * b1 + b1], ldR, 1.0,
+               &R[ldR * b1], ldR, ctx);
+      }
+      if (r) {
          /* R(b1:b2-1,b1:b2-1) = N * R(b1:b2-1,b1:b2-1) */
 
-         for (i=0; i<b2-b1; i++) {
-            for (j=0; j<b2-b1; j++) {
-               R[ldR*(b1+i)+b1+j] *= N[j];
-            }
+         for (i = 0; i < b2 - b1; i++) {
+            for (j = 0; j < b2 - b1; j++) { r[ldr * i + j] *= N[j]; }
          }
 
          /* C = Y' * R(b1:b2-1,b1:b2-1) */
 
          Num_gemm_SHprimme("C", "N", b2 - b1, b2 - b1, b2 - b1, 1.0, Y, b2 - b1,
-               &R[ldR * b1 + b1], ldR, 0.0, C, b2 - b1, ctx);
+               r, ldr, 0.0, C, b2 - b1, ctx);
 
          /* R(b1:b2-1,b1:b2-1) = D * C */
 
-         for (i=0; i<b2-b1; i++) {
-            for (j=0; j<b2-b1; j++) {
-               R[ldR*(b1+i)+b1+j] = D[j]*C[(b2-b1)*i+j];
+         for (i = 0; i < b2 - b1; i++) {
+            for (j = 0; j < b2 - b1; j++) {
+               r[ldr * i + j] = D[j] * C[(b2 - b1) * i + j];
             }
          }
       }
@@ -637,15 +675,15 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtVL, int ldVLtVL,
 
    *b2_out = rank_estimation(VLtVL, numLocked + b1, numLocked + b2,
                         maxRank, ldVLtVL) - numLocked;
-   if (primme->procID == 0) printf("Ortho %d %d %f\n", its, *b2_out - b2, primme->stats.timeOrtho);
-
+   
+   if (!R && RLocked) CHKERR(Num_free_SHprimme(r, ctx));
    CHKERR(Num_free_RHprimme(D, ctx));
    CHKERR(Num_free_RHprimme(N, ctx));
    CHKERR(Num_free_SHprimme(VLtVLdA, ctx));
    CHKERR(Num_free_SHprimme(Y, ctx));
+   CHKERR(Num_free_iprimme(pVLtVL, ctx));
    CHKERR(Num_free_SHprimme(fVLtVL, ctx));
    CHKERR(Num_free_SHprimme(C, ctx));
-
 
    /* Check orthogonality */
    /*if (numLocked) {
@@ -924,11 +962,8 @@ static int eig(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY, HREAL *evals,
    /* return them in descending order. An easy way is to compute the          */
    /* eigenpairs of -H instead. Do Y = -H.                                    */
 
-   for (j=0; j < n; j++) {
-      for (i=0; i <= j; i++) {
-         Y[ldY * j + i] =
-               -(H[ldH * j + i] + CONJ(H[ldH * i + j])) / (HSCALAR)2.0;
-      }
+   for (i=0; i < n; i++) {
+      for (j = 0; j <= i; j++) { Y[ldY * i + j] = -H[ldH * i + j]; }
    }
  
    CHKERR(Num_heev_SHprimme("V", "U", n, Y, ldY, evals, ctx));
@@ -954,6 +989,10 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
          norm1 += ABS(V[i * ldV + j]) /
                   sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j]));
       if (norm1 > (i+1)*1.0/n*.8) break;
+      // TEMP!!!
+      for (j = 0; j < i; j++)
+      if (ABS(V[i * ldV + j]) /
+                  sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j])) > .8/n) break;
    }
 
    return i;

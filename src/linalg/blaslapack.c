@@ -976,4 +976,84 @@ void Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
 #endif
 }
 
+/*******************************************************************************
+ * Subroutine Num_getrf_Sprimme - Factorize A=LU
+ ******************************************************************************/
+ 
+TEMPLATE_PLEASE
+int Num_getrf_Sprimme(
+      int m, int n, SCALAR *a, int lda, int *ipivot, primme_context ctx) {
+   (void)ctx;
+
+   PRIMME_BLASINT lm = m;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT *lipivot = NULL;
+   PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return 0;
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      CHKERR(MALLOC_PRIMME(n, &lipivot));
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
+   }
+
+   XGETRF(&lm, &ln, a, &llda, lipivot, &linfo);
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      int i;
+      if (ipivot) for(i=0; i<n; i++)
+         ipivot[i] = (int)lipivot[i];
+      free(lipivot);
+   }
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d\n",
+         (int)linfo);
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine Num_getrs_Sprimme - Computes A\X where A=LU computed with getrf
+ ******************************************************************************/
+ 
+TEMPLATE_PLEASE
+int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
+      int *ipivot, SCALAR *b, int ldb, primme_context ctx) {
+   (void)ctx;
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lnrhs = nrhs;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT *lipivot = NULL;
+   PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0 || nrhs == 0) return 0;
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      CHKERR(MALLOC_PRIMME(n, &lipivot));
+      int i;
+      for(i=0; i<n; i++) {
+         lipivot[i] = (PRIMME_BLASINT)ipivot[i];
+      }
+   } else {
+      lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
+   }
+
+   XGETRS(trans, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+
+   if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
+      free(lipivot);
+   }
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgetrs with info %d\n",
+         (int)linfo);
+
+   return 0;
+}
+
 #endif /* USE_HOST */

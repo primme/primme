@@ -183,9 +183,45 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    else {
       /* TODO: assert x and y don't overlap */
       for (i = 0; i < n; i++)
-         for (j = 0; j < m; j++)
+         for (j = 0; j < m; j++) {
+            // TEMP!!!
+            if(REAL_PART(x[i*ldx+j]) > 0)
             y[i * ldy + j] = x[i * ldx + j];
+            else
+            y[i * ldy + j] = x[i * ldx + j];
+         }
    }
+}
+
+/******************************************************************************
+ * Function Num_copy_matrix_conj - Copy the matrix x' into y
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x and y *can't* overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
+   (void)ctx;
+
+   PRIMME_INT i, j;
+
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= n));
+
+   /* TODO: assert x and y don't overlap */
+   for (i = 0; i < n; i++)
+      for (j = 0; j < m; j++)
+            y[j * ldy + i] = CONJ(x[i * ldx + j]);
 }
 
 

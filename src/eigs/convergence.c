@@ -64,6 +64,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
  * left, right    Range of vectors to be checked for convergence
  * blockNorms     Residual norms of the Ritz vectors starting from left
  * hVals          The Ritz values
+ * caller         caller function: 0: prepare_candidates, 1: restart_locking,
+ *                                 2: main_iteration checking practical. conv.
  * ctx            Structure containing various solver parameters
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
@@ -81,7 +83,7 @@ TEMPLATE_PLEASE
 int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       SCALAR *R, PRIMME_INT ldR, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, int left, int right, int *flags, HREAL *blockNorms,
-      HREAL *hVals, int *reset, primme_context ctx) {
+      HREAL *hVals, int *reset, int caller, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -91,6 +93,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    double targetShift;     /* target shift */
+   (void)caller;
 
    CHKERR(Num_malloc_iprimme(right-left, &toProject, ctx));
 
@@ -164,7 +167,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       /* consider converged still.                                         */
       /* ----------------------------------------------------------------- */
 
-      else if (primme->locking && numLocked > 0 && blockNorms[i-left] < attainableTol ) {
+      else if (primme->locking && numLocked > 0 &&
+               blockNorms[i - left] < attainableTol) {
          if (R) {
             toProject[numToProject++] = i-left;
          }

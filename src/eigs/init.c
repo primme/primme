@@ -144,8 +144,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
    if (primme->numOrthoConst > 0) {
       int nV;
       CHKERR(ortho_block_Sprimme(evecs, ldevecs, VtBV, ldVtBV, NULL, 0, 0,
-                   primme->numOrthoConst - 1, NULL, 0, 0, nLocal, maxRank, &nV,
-                   ctx));
+            primme->numOrthoConst - 1, NULL, 0, 0, NULL, 0, nLocal, maxRank,
+            &nV, ctx));
       CHKERRM(nV != primme->numOrthoConst, PRIMME_ORTHO_CONST_FAILURE,
             "The given orthogonal constrains are not full rank");
 
@@ -206,7 +206,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
 
   /* Orthonormalize the guesses provided by the user */
    CHKERR(ortho_block_Sprimme(V, ldV, VtBV, ldVtBV, NULL, 0, 0, *basisSize - 1,
-                evecs, ldevecs, primme->numOrthoConst, nLocal, maxRank,
+                evecs, ldevecs, primme->numOrthoConst, NULL, 0, nLocal, maxRank,
                 basisSize, ctx));
 
   CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, ctx));
@@ -288,8 +288,8 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    }
    int nV=0;
    CHKERR(ortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, dv1,
-                dv1 + blockSize - 1, locked, ldlocked, numLocked, nLocal,
-                maxRank, &nV, ctx));
+         dv1 + blockSize - 1, locked, ldlocked, numLocked, NULL, 0, nLocal,
+         maxRank, &nV, ctx));
    CHKERRM(nV != dv1+blockSize, -1, "Random basis is not full rank\n");
 
    /* Generate the remaining vectors in the sequence */
@@ -304,14 +304,14 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
             &V[ldV * i], nLocal, m, ldV, &W[ldW * (i - blockSize)], ldW, ctx);
 
       CHKERR(ortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, i, i + m - 1,
-                   locked, ldlocked, numLocked, nLocal,
+                   locked, ldlocked, numLocked, NULL, 0, nLocal,
                    primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
       int j;
       for (j = nV; j < i + m; j++) {
          Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV * j], ctx);
       }
       CHKERR(ortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, nV, i + m - 1,
-            locked, ldlocked, numLocked, nLocal,
+            locked, ldlocked, numLocked, NULL, 0, nLocal,
             primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
       CHKERRM(nV != i+m, -1, "Random basis in not full rank\n");
    }

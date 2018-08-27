@@ -127,7 +127,7 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
       HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
       primme_context ctx) {
 
-   int i, j;
+   int i;
 
    /* Quick exit */
 
@@ -145,19 +145,22 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
    int nQ;
    CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, R, ldR, basisSize,
-         basisSize + blockSize - 1, NULL, 0, 0, nLocal,
+         basisSize + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
          ctx.primme->maxBasisSize, &nQ, ctx));
    Num_zero_matrix_Sprimme(
          &Q[ldQ * nQ], nLocal, basisSize + blockSize - nQ, ldQ, ctx);
    Num_zero_matrix_SHprimme(
          &R[nQ], basisSize + blockSize - nQ, basisSize + blockSize, ldR, ctx);
-
-   /* Zero the lower triangular part of R */
-   for (i=basisSize; i<basisSize+blockSize; i++) {
-      for (j=i+1; j<ldR; j++) {
-         R[ldR*i+j] = 0.0;
-      }
+   if (QtQ) {
+      Num_zero_matrix_SHprimme(&QtQ[nQ * ldQtQ], basisSize + blockSize,
+            basisSize + blockSize - nQ, ldQtQ, ctx);
+      for (i = nQ; i < basisSize + blockSize; i++)
+         QtQ[ldQtQ * i + i] = (HSCALAR)1.0;
    }
+   if (nQ != blockSize + basisSize) printf("Dude %d\n", nQ);
+
+   /* Zero the lower-left part of R */
+   Num_zero_matrix_SHprimme(&R[basisSize], blockSize, basisSize, ldR, ctx);
 
    return 0;
 }

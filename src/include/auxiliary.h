@@ -38,6 +38,8 @@ int Num_free_sprimme(float *x, primme_context ctx);
 void Num_copy_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, float *y, PRIMME_INT ldy,
       primme_context ctx);
+void Num_copy_matrix_conj_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, float *y, PRIMME_INT ldy, primme_context ctx);
 void Num_zero_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 void Num_set_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
@@ -68,6 +70,8 @@ int Num_free_cprimme(PRIMME_COMPLEX_FLOAT *x, primme_context ctx);
 void Num_copy_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y, PRIMME_INT ldy,
       primme_context ctx);
+void Num_copy_matrix_conj_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y, PRIMME_INT ldy, primme_context ctx);
 void Num_zero_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 void Num_set_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
@@ -160,6 +164,20 @@ int Num_free_iprimme(int *x, primme_context ctx);
 void Num_copy_matrix_dprimme(double *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, double *y, PRIMME_INT ldy,
       primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_conj_Sprimme)
+#  define Num_copy_matrix_conj_Sprimme CONCAT(Num_copy_matrix_conj_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_conj_Rprimme)
+#  define Num_copy_matrix_conj_Rprimme CONCAT(Num_copy_matrix_conj_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_conj_SHprimme)
+#  define Num_copy_matrix_conj_SHprimme CONCAT(Num_copy_matrix_conj_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_conj_RHprimme)
+#  define Num_copy_matrix_conj_RHprimme CONCAT(Num_copy_matrix_conj_,HOST_REAL_SUF)
+#endif
+void Num_copy_matrix_conj_dprimme(double *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, double *y, PRIMME_INT ldy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_zero_matrix_Sprimme)
 #  define Num_zero_matrix_Sprimme CONCAT(Num_zero_matrix_,SCALAR_SUF)
 #endif
@@ -335,6 +353,8 @@ int Num_free_zprimme(PRIMME_COMPLEX_DOUBLE *x, primme_context ctx);
 void Num_copy_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y, PRIMME_INT ldy,
       primme_context ctx);
+void Num_copy_matrix_conj_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y, PRIMME_INT ldy, primme_context ctx);
 void Num_zero_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 void Num_set_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,

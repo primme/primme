@@ -42,8 +42,8 @@ int Bortho_local_sprimme(float *V, int ldV, float *R,
       primme_context ctx);
 int ortho_block_sprimme(float *V, PRIMME_INT ldV, float *VLtVL, int ldVLtVL,
       float *R, PRIMME_INT ldR, int b1, int b2, float *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, float *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_sprimme(float *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, float *X, int *inX, int nX, PRIMME_INT ldX,
       float *overlaps, float *norms, primme_context ctx);
@@ -56,8 +56,8 @@ int Bortho_local_cprimme(PRIMME_COMPLEX_FLOAT *V, int ldV, PRIMME_COMPLEX_FLOAT 
       primme_context ctx);
 int ortho_block_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *VLtVL, int ldVLtVL,
       PRIMME_COMPLEX_FLOAT *R, PRIMME_INT ldR, int b1, int b2, PRIMME_COMPLEX_FLOAT *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, PRIMME_COMPLEX_FLOAT *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_cprimme(PRIMME_COMPLEX_FLOAT *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *X, int *inX, int nX, PRIMME_INT ldX,
       float *overlaps, float *norms, primme_context ctx);
@@ -106,8 +106,8 @@ int Bortho_local_dprimme(double *V, int ldV, double *R,
 #endif
 int ortho_block_dprimme(double *V, PRIMME_INT ldV, double *VLtVL, int ldVLtVL,
       double *R, PRIMME_INT ldR, int b1, int b2, double *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, double *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(ortho_single_iteration_Sprimme)
 #  define ortho_single_iteration_Sprimme CONCAT(ortho_single_iteration_,SCALAR_SUF)
 #endif
@@ -132,8 +132,8 @@ int Bortho_local_zprimme(PRIMME_COMPLEX_DOUBLE *V, int ldV, PRIMME_COMPLEX_DOUBL
       primme_context ctx);
 int ortho_block_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *VLtVL, int ldVLtVL,
       PRIMME_COMPLEX_DOUBLE *R, PRIMME_INT ldR, int b1, int b2, PRIMME_COMPLEX_DOUBLE *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, PRIMME_COMPLEX_DOUBLE *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_zprimme(PRIMME_COMPLEX_DOUBLE *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *X, int *inX, int nX, PRIMME_INT ldX,
       double *overlaps, double *norms, primme_context ctx);
@@ -142,8 +142,8 @@ int ortho_smagmaprimme(magma_float *V, PRIMME_INT ldV, float *R, int ldR, int b1
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
 int ortho_block_smagmaprimme(magma_float *V, PRIMME_INT ldV, float *VLtVL, int ldVLtVL,
       float *R, PRIMME_INT ldR, int b1, int b2, magma_float *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, float *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_smagmaprimme(magma_float *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_float *X, int *inX, int nX, PRIMME_INT ldX,
       float *overlaps, float *norms, primme_context ctx);
@@ -152,8 +152,8 @@ int ortho_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, PRIMME_COMPLEX_FL
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
 int ortho_block_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *VLtVL, int ldVLtVL,
       PRIMME_COMPLEX_FLOAT *R, PRIMME_INT ldR, int b1, int b2, magma_complex_float *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, PRIMME_COMPLEX_FLOAT *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_cmagmaprimme(magma_complex_float *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_complex_float *X, int *inX, int nX, PRIMME_INT ldX,
       float *overlaps, float *norms, primme_context ctx);
@@ -162,8 +162,8 @@ int ortho_dmagmaprimme(magma_double *V, PRIMME_INT ldV, double *R, int ldR, int 
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
 int ortho_block_dmagmaprimme(magma_double *V, PRIMME_INT ldV, double *VLtVL, int ldVLtVL,
       double *R, PRIMME_INT ldR, int b1, int b2, magma_double *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, double *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_dmagmaprimme(magma_double *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_double *X, int *inX, int nX, PRIMME_INT ldX,
       double *overlaps, double *norms, primme_context ctx);
@@ -172,8 +172,8 @@ int ortho_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, PRIMME_COMPLEX_D
                   PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
 int ortho_block_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *VLtVL, int ldVLtVL,
       PRIMME_COMPLEX_DOUBLE *R, PRIMME_INT ldR, int b1, int b2, magma_complex_double *locked,
-      PRIMME_INT ldLocked, int numLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      PRIMME_INT ldLocked, int numLocked, PRIMME_COMPLEX_DOUBLE *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int ortho_single_iteration_zmagmaprimme(magma_complex_double *Q, PRIMME_INT mQ, PRIMME_INT nQ,
       PRIMME_INT ldQ, magma_complex_double *X, int *inX, int nX, PRIMME_INT ldX,
       double *overlaps, double *norms, primme_context ctx);

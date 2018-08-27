@@ -400,12 +400,23 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
 
-   /* QAQ = QtV*inv(R) */
+   SCALAR *rwork;
+   CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &rwork, ctx));
 
-   Num_copy_matrix_Sprimme(
+   /* Factorize R */
+
+   SCALAR *fR = rwork;
+   int *pivots;
+   CHKERR(Num_malloc_iprimme(basisSize, &pivots, ctx));
+   Num_copy_matrix_Sprimme(R, basisSize, basisSize, ldR, fR, basisSize, ctx);
+   CHKERR(Num_getrf_Sprimme(basisSize, basisSize, fR, basisSize, pivots, ctx));
+
+   /* QAQ = QtV*inv(R) = R'\QtV' */
+
+   Num_copy_matrix_conj_Sprimme(
          QtV, basisSize, basisSize, ldQtV, hVecs, ldhVecs, ctx);
-   Num_trsm_Sprimme(
-         "R", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR, hVecs, ldhVecs);
+   CHKERR(Num_getrs_Sprimme("C", basisSize, basisSize, fR, basisSize, pivots,
+         hVecs, ldhVecs, ctx));
 
    /* Compute eigenpairs of (Q'AQ, Q'Q) */
 
@@ -435,15 +446,14 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
 
    /* Transfer back the eigenvectors to V, hVecs = R\hVecs */
 
-   Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, R, ldR,
-         hVecs, ldhVecs);
+   CHKERR(Num_getrs_Sprimme("N", basisSize, basisSize, fR, basisSize, pivots,
+         hVecs, ldhVecs, ctx));
+   CHKERR(Num_free_iprimme(pivots, ctx));
    CHKERR(Bortho_local_SHprimme(hVecs, ldhVecs, NULL, 0, 0, basisSize - 1, NULL,
          0, 0, basisSize, VtBV, ldVtBV, primme->iseed, ctx));
 
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   SCALAR *rwork;
-   CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &rwork, ctx));
    Num_hemm_Sprimme("L", "U", basisSize, basisSize, 1.0, H,
       ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 

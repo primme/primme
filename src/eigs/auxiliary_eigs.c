@@ -161,6 +161,8 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    SCALAR *X, *Y;
    HSCALAR *G0=NULL, *H0=NULL, *workGH = NULL;
 
+   assert(mV <= ldV && nh <= ldh && (!G || nG <= ldG) && (!H || nH <= ldH));
+
    /* R or Rnorms or rnorms imply W */
    assert(!(R || Rnorms || rnorms) || W);
 
