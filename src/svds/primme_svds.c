@@ -67,8 +67,9 @@ static int globalSum_Rprimme_svds(HREAL *sendBuf, HREAL *recvBuf, int count,
       primme_svds_params *primme_svds);
 static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
       primme_svds_params *primme_svds, int *ierr);
-static void default_convTestFun(double *sval, void *leftsvec, void *rightsvec,
-      double *rNorm, int *isConv, primme_svds_params *primme_svds, int *ierr);
+static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
 static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
 static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
@@ -489,10 +490,11 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       double ev = (double)svals[i], resnorm = rnorms[i] / sqrt(2.0);
       int isConv = 0, ierr = 0;
       primme_svds->stats.elapsedTime = primme_wTimer(0);
-      CHKERRM((primme->convTestFun(&ev, NULL, &resnorm, &isConv, primme, &ierr),
-              ierr),
-             PRIMME_USER_FAILURE, "Error code returned by 'convTestFun' %d",
-             ierr);
+      CHKERRM((convTestFunATA(
+                     &ev, NULL, &resnorm, &isConv, &primme_svds->primme, &ierr),
+                    ierr),
+            PRIMME_USER_FAILURE, "Error code returned by 'convTestFun' %d",
+            ierr);
       if (!isConv)
         break;
 
@@ -1030,7 +1032,8 @@ static void compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
  ******************************************************************************/
 
 static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
-      double *rNorm, int *isConv, primme_svds_params *primme_svds, int *ierr) {
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr) {
 
    (void)sval; /* unused parameter */
    const double aNorm = primme_svds->aNorm;
@@ -1041,12 +1044,10 @@ static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
    /* If solving the augmented problem, the reported residual norm is an      */
    /* approximation. Recheck the convergence criterion with the actual        */
    /* residual norm when the convergence criterion is passed and the residual */
-   /* vector norm is from the augmented problem. When solving the augmented   */
-   /* problem the right and the left singular vectors are contiguous.         */
+   /* vector norm is from the augmented problem.                              */
 
-   if (*isConv && leftsvec == rightsvec + primme_svds->nLocal && (
-            primme_svds->method == primme_svds_op_augmented
-            || primme_svds->methodStage2 == primme_svds_op_augmented)) {
+   if (*isConv && *method == primme_svds_op_augmented && leftsvec &&
+         rightsvec) {
 
       HREAL rnorm;
       compute_resNorm(leftsvec, rightsvec, &rnorm, primme_svds, ierr);
@@ -1104,10 +1105,11 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    
    double sval = eval ? sqrt(fabs(*eval)) : 0.0;
    double srNorm = (rNorm&&eval) ? *rNorm/sval : 0.0;
+   int method_int = (int)method;
    primme_svds->convTestFun(eval?&sval:NULL,
       (method==primme_svds_op_AAt && evec) ? evec : NULL,
       (method==primme_svds_op_AtA && evec) ? evec : NULL,
-      (rNorm&&eval)?&srNorm:NULL, isConv, primme_svds, ierr);
+      (rNorm&&eval)?&srNorm:NULL, &method_int, isConv, primme_svds, ierr);
 
    /* Restore aNorm */
 
@@ -1136,8 +1138,9 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr) {
 
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
-   assert(primme_svds_op_augmented == (&primme_svds->primme == primme ?
-            primme_svds->method : primme_svds->methodStage2));
+   primme_svds_operator method = &primme_svds->primme == primme ?
+      primme_svds->method : primme_svds->methodStage2;
+   assert(method == primme_svds_op_augmented);
    double aNorm = (primme->aNorm > 0.0) ?
             primme->aNorm : primme->stats.estimateLargestSVal;
 
@@ -1156,10 +1159,11 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
 
    double sval = eval ? fabs(*eval) : 0.0;
    double srNorm = rNorm ? *rNorm/sqrt(2.0) : 0.0;
+   int method_int = (int)method;
    primme_svds->convTestFun(eval?&sval:NULL,
       evec?&((SCALAR*)evec)[primme_svds->nLocal]:NULL,
       evec,
-      rNorm?&srNorm:NULL, isConv, primme_svds, ierr);
+      rNorm?&srNorm:NULL, &method_int, isConv, primme_svds, ierr);
 
    /* Restore aNorm */
 

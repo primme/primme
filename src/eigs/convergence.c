@@ -59,7 +59,9 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
  * ---------------------------
  * X              The Ritz vectors in the block
  * nLocal, ldX    The number of rows and the leading dimension of X
+ * givenX         Whether X is provided
  * ldR            The leading dimension of R
+ * givenR        Whether R is provided
  * evecs          The locked vectors
  * numLocked      The number of columns in evecs besides numOrthoConst
  * ldevecs        The leading dimension of evecs
@@ -83,9 +85,10 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
 
 TEMPLATE_PLEASE
 int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
-      SCALAR *R, PRIMME_INT ldR, SCALAR *evecs, int numLocked,
-      PRIMME_INT ldevecs, int left, int right, int *flags, HREAL *blockNorms,
-      HREAL *hVals, int *reset, int caller, primme_context ctx) {
+      int givenX, SCALAR *R, PRIMME_INT ldR, int givenR, SCALAR *evecs,
+      int numLocked, PRIMME_INT ldevecs, int left, int right, int *flags,
+      HREAL *blockNorms, HREAL *hVals, int *reset, int caller,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -144,8 +147,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
          continue;
       }
 
-      CHKERR(convTestFun_Sprimme(hVals[i], X?&X[ldX*(i-left)]:NULL,
-               blockNorms[i-left], &isConv, primme));
+      CHKERR(convTestFun_Sprimme(hVals[i], &X[ldX * (i - left)], givenX,
+            blockNorms[i - left], &isConv, primme));
 
       if (isConv) {
          flags[i] = CONVERGED;
@@ -171,7 +174,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
 
       else if (primme->locking && numLocked > 0 &&
                blockNorms[i - left] < attainableTol) {
-         if (R) {
+         if (givenR) {
             toProject[numToProject++] = i-left;
          }
          else if (flags[i] != PRACTICALLY_CONVERGED) {

@@ -515,8 +515,8 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       double double_v;
       FILE *file_v;
       void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
-            double *rNorm, int *isconv, struct primme_svds_params *primme,
-            int *ierr);
+            double *rNorm, int *method, int *isconv,
+            struct primme_svds_params *primme, int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
             void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -711,8 +711,8 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       double *double_v;
       FILE *file_v;
       void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
-            double *rNorm, int *isconv, struct primme_svds_params *primme,
-            int *ierr);
+            double *rNorm, int *method, int *isconv,
+            struct primme_svds_params *primme, int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
             void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,

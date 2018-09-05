@@ -136,8 +136,8 @@ typedef struct primme_svds_params {
    struct primme_svds_stats stats;
 
    void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec,
-         double *rNorm, int *isconv, struct primme_svds_params *primme,
-         int *ierr);
+         double *rNorm, int *method, int *isconv,
+         struct primme_svds_params *primme, int *ierr);
    void *convtest;
    void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,

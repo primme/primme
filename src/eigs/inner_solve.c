@@ -431,7 +431,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, HREAL *rnorm, SCALAR *evecs,
          /* max(tau/LTolerance_factor, eres_updated/ETolerance_factor).       */
 
          double tol = min(tau/LTolerance_factor, eres_updated/ETolerance_factor);
-         CHKERR(convTestFun_Sprimme(eval_updated, NULL, tol, &isConv, primme));
+         CHKERR(convTestFun_Sprimme(eval_updated, NULL, 0 /* evec not given */,
+               tol, &isConv, primme));
 
          if (numIts > 1 && isConv) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -465,8 +466,8 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, HREAL *rnorm, SCALAR *evecs,
          /* Check if the linear system residual norm (tau) is less            */
          /* than eps*aNorm*LTolerance_factor                                  */
 
-         CHKERR(convTestFun_Sprimme(eval, NULL, tau/LTolerance_factor, &isConv,
-                  primme));
+         CHKERR(convTestFun_Sprimme(eval, NULL, 0 /* evec not given */,
+               tau / LTolerance_factor, &isConv, primme));
 
          if (numIts > 1 && isConv) {
             if (primme->printLevel >= 5 && primme->procID == 0) {

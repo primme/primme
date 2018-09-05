@@ -205,8 +205,8 @@ int Num_trmm_Sprimme(const char *side, const char *uplo,
 
 TEMPLATE_PLEASE
 int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y,
-      int incy, primme_context ctx) {
+      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y, int incy,
+      primme_context ctx) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -215,35 +215,27 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
    PRIMME_BLASINT lincy = incy;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
+   int tA = (*transa != 'n' && *transa != 'N' ? 1 : 0);
+   PRIMME_INT mA = tA ? n : m, nA = tA ? m : n;
+   if (mA == 0) return 0;
 
    /* Quick exit */
-   if (m == 0) {
+   if (nA == 0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(y, 1, n, incy, ctx);
+         Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx);
       }
       else {
-         int i;
-         for (i=0; i<n; i++) {
-            Num_scal_Sprimme(n, beta, y, incy, ctx);
-         }
+         Num_scal_Sprimme(mA, beta, y, incy, ctx);
       }
       return 0;
    }
 
    while(m > 0) {
       lm = (PRIMME_BLASINT)min(m, PRIMME_BLASINT_MAX-1);
-#ifdef NUM_CRAY
-      _fcd transa_fcd;
-
-      transa_fcd = _cptofcd(transa, strlen(transa));
-      XGEMV(transa_fcd, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
-#else
       XGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
-#endif
       m -= (PRIMME_INT)lm;
       a += lm;
-      if (transa[0] == 'n' || transa[0] == 'N') {
+      if (!tA) {
          y += lm;
       }
       else {

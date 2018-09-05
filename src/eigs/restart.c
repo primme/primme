@@ -739,8 +739,9 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       for (i=0; i<*restartSize; i++)
          fakeResNorms[i] = aNorm*MACHINE_EPSILON;
       primme->stats.estimateResidualError = 0;
-      CHKERR(check_convergence_Sprimme(V, nLocal, ldV, NULL, 0, NULL, 0, 0,
-               0, *restartSize, flags, fakeResNorms, hVals, NULL, 1, ctx));
+      CHKERR(check_convergence_Sprimme(V, nLocal, ldV, 1 /* given X */, NULL, 0,
+            0 /* R not given */, NULL, 0, 0, 0, *restartSize, flags,
+            fakeResNorms, hVals, NULL, 1, ctx));
       CHKERR(Num_free_RHprimme(fakeResNorms, ctx));
 
       *numConverged = 0;
@@ -1064,9 +1065,9 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* -------------------------------------------------------------- */
 
    permute_vecs_iprimme(flags, basisSize, restartPerm, ctx);
-   CHKERR(check_convergence_Sprimme(&V[ldV * left], nLocal, ldV, NULL, 0, NULL,
-         *numLocked, 0, left, left + numPacked, flags, lockedResNorms, hVals,
-         NULL, 1, ctx));
+   CHKERR(check_convergence_Sprimme(&V[ldV * left], nLocal, ldV,
+         1 /* X given */, NULL, 0, 0 /* R not given */, NULL, *numLocked, 0,
+         left, left + numPacked, flags, lockedResNorms, hVals, NULL, 1, ctx));
 
    /* -------------------------------------------------------------- */
    /* Copy the values for the converged values into evals, and in    */

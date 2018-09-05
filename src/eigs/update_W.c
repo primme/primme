@@ -69,7 +69,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int i, ONE = 1, ierr = 0;
+   int ierr = 0;
    double t0;
 
    if (blockSize <= 0)
@@ -81,21 +81,11 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    t0 = primme_wTimer(0);
 
    /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
-   if (primme->ldOPs == 0 || (ldV == primme->ldOPs && ldW == primme->ldOPs)) {
-      CHKERRM(
-            (primme->matrixMatvec(&V[ldV * basisSize], &ldV, &W[ldW * basisSize],
-                                  &ldW, &blockSize, primme, &ierr),
-             ierr),
-            PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
-   }
-   else {
-      for (i=0; i<blockSize; i++) {
-         CHKERRM((primme->matrixMatvec(&V[ldV*(basisSize+i)], &primme->ldOPs,
-                     &W[ldW*(basisSize+i)], &primme->ldOPs, &ONE, primme,
-                     &ierr), ierr), PRIMME_USER_FAILURE,
-               "Error returned by 'matrixMatvec' %d", ierr);
-      }
-   }
+
+   CHKERRM((primme->matrixMatvec(&V[ldV * basisSize], &ldV, &W[ldW * basisSize],
+                  &ldW, &blockSize, primme, &ierr),
+                 ierr),
+         PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
 
    primme->stats.timeMatvec += primme_wTimer(0) - t0;
    primme->stats.numMatvecs += blockSize;
@@ -134,7 +124,7 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
 
    /* Quick exit */
 
-   if (blockSize <= 0 || Q == NULL || R == NULL) return 0;
+   if (blockSize <= 0 || R == NULL) return 0;
 
    assert(ldV >= nLocal && ldW >= nLocal && ldQ >= nLocal &&
           ldR >= basisSize + blockSize);

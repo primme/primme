@@ -166,9 +166,6 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
    assert(mV <= ldV && nh <= ldh && (!G || nG <= ldG) && (!H || nH <= ldH));
 
-   /* R or Rnorms or rnorms imply W */
-   assert(!(R || Rnorms || rnorms) || W);
-
    nXb = min(min(min(min(min(min(X0 ? nX0b : INT_MAX, X1 ? nX1b : INT_MAX),
                                X2 ? nX2b : INT_MAX),
                            R ? nRb : INT_MAX),
@@ -287,16 +284,16 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       HREAL *tmp;
       Num_malloc_RHprimme(max(nRe-nRb,0)+max(nre-nrb,0), &tmp, ctx);
       j = 0;
-      if (R && Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
+      if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       if (j) CHKERR(globalSum_RHprimme(tmp, tmp, j, ctx));
       j = 0;
-      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
+      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
       Num_free_RHprimme(tmp, ctx);
    }
    else {
-      if (R && Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
+      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
    }
 
@@ -368,9 +365,10 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  *
  * INPUT PARAMETERS
  * ----------------
- * eval     the eigenvalue
- * evec     the eigenvector
- * rNorm    the residual vector norm
+ * eval       the eigenvalue
+ * evec       the eigenvector
+ * givenEvec  whether eigenvector is provided
+ * rNorm      the residual vector norm
  * 
  * OUTPUT
  * ------
@@ -378,15 +376,22 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int convTestFun_Sprimme(HREAL eval, SCALAR *evec, HREAL rNorm, int *isconv, 
-      struct primme_params *primme) {
+int convTestFun_Sprimme(HREAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,
+      int *isconv, struct primme_params *primme) {
 
    primme_context ctx = primme_get_context(primme);
    int ierr=0;
    double evald = eval, rNormd = rNorm;
+   /* If an evec is going to be passed to convTestFun, but nLocal is 0,       */
+   /* then fake the evec with a nonzero pointer in order to not be mistaken   */
+   /* by not passing a vector.                                                */
 
-   CHKERRM((primme->convTestFun(&evald, evec, &rNormd, isconv, primme, &ierr),
-            ierr), -1, "Error returned by 'convTestFun' %d", ierr);
+   if (primme->nLocal == 0 && givenEvec) evec = (SCALAR *)0 + 1;
+
+   CHKERRM((primme->convTestFun(&evald, givenEvec ? evec : NULL, &rNormd,
+                  isconv, primme, &ierr),
+                 ierr),
+         -1, "Error returned by 'convTestFun' %d", ierr);
 
    return 0;
 }
