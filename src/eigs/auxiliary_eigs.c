@@ -282,7 +282,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
 
    if (ctx.numProcs > 1) {
       HREAL *tmp;
-      Num_malloc_RHprimme(max(nRe-nRb,0)+max(nre-nrb,0), &tmp, ctx);
+      CHKERR(Num_malloc_RHprimme(max(nRe-nRb,0)+max(nre-nrb,0), &tmp, ctx));
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
@@ -290,7 +290,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
-      Num_free_RHprimme(tmp, ctx);
+      CHKERR(Num_free_RHprimme(tmp, ctx));
    }
    else {
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);

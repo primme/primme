@@ -1504,7 +1504,7 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
    /* Reduce Rnorms and rnorms and sqrt the results */
 
    if (primme->globalSumReal) {
-      Num_malloc_RHprimme(nRe+nre, &tmp, ctx);
+      CHKERR(Num_malloc_RHprimme(nRe+nre, &tmp, ctx));
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
@@ -1512,7 +1512,7 @@ int Num_reset_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV,
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
-      Num_free_RHprimme(tmp, ctx);
+      CHKERR(Num_free_RHprimme(tmp, ctx));
    }
    else {
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
