@@ -624,10 +624,6 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_nLocal:
       case PRIMME_globalSumReal:
       case PRIMME_numTargetShifts:
-      case PRIMME_intWorkSize:
-      case PRIMME_realWorkSize:
-      case PRIMME_intWork:
-      case PRIMME_realWork:
       case PRIMME_outputFile:
       case PRIMME_matrix:
       case PRIMME_preconditioner:
@@ -738,10 +734,6 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_nLocal:
       case PRIMME_globalSumReal:
       case PRIMME_numTargetShifts:
-      case PRIMME_intWorkSize:
-      case PRIMME_realWorkSize:
-      case PRIMME_intWork:
-      case PRIMME_realWork:
       case PRIMME_outputFile:
       case PRIMME_matrix:
       case PRIMME_preconditioner:
@@ -1213,10 +1205,6 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
       case PRIMME_SVDS_numTargetShifts:
-      case PRIMME_SVDS_intWorkSize:
-      case PRIMME_SVDS_realWorkSize:
-      case PRIMME_SVDS_intWork:
-      case PRIMME_SVDS_realWork:
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
@@ -1337,10 +1325,6 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
       case PRIMME_SVDS_numTargetShifts:
-      case PRIMME_SVDS_intWorkSize:
-      case PRIMME_SVDS_realWorkSize:
-      case PRIMME_SVDS_intWork:
-      case PRIMME_SVDS_realWork:
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
@@ -1497,9 +1481,10 @@ static void matrixMatvecSvds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 
 template <typename T>
 static void convTestFunSvds(double *sval, void *leftsvec, void *rightsvec,
-         double *rNorm, int *isConv, struct primme_svds_params *primme_svds,
-         int *ierr)
-{  
+      double *rNorm, int *method, int *isConv,
+      struct primme_svds_params *primme_svds, int *ierr) {
+   (void)method;
+ 
    mxArray *prhs[5], *plhs[1];
 
    // Create input vectors (avoid copy if possible)
