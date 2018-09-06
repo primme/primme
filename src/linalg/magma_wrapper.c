@@ -282,18 +282,17 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    PRIMME_BLASINT lincy = incy;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
+   int tA = (*transa != 'n' && *transa != 'N' ? 1 : 0);
+   PRIMME_INT mA = tA ? n : m, nA = tA ? m : n;
+   if (mA == 0) return 0;
 
    /* Quick exit */
-   if (m == 0) {
+   if (nA == 0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(y, 1, n, incy, ctx);
+         Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx);
       }
       else {
-         int i;
-         for (i=0; i<n; i++) {
-            Num_scal_Sprimme(n, beta, y, incy, ctx);
-         }
+         Num_scal_Sprimme(mA, beta, y, incy, ctx);
       }
       return 0;
    }
@@ -306,7 +305,7 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
             *(magma_queue_t *)ctx.queue);
       m -= (PRIMME_INT)lm;
       a += lm;
-      if (transa[0] == 'n' || transa[0] == 'N') {
+      if (!tA) {
          y += lm;
       }
       else {
