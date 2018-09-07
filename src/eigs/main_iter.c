@@ -1173,6 +1173,7 @@ clean:
   CHKERR(Num_free_SHprimme(previousHVecs, ctx));
   if (primme->orth == primme_orth_explicit_I) {
     CHKERR(Num_free_SHprimme(VtBV, ctx));
+    CHKERR(Num_free_SHprimme(QtQ, ctx));
   }
   if (primme->projectionParams.projection == primme_proj_refined ||
       primme->projectionParams.projection == primme_proj_harmonic) {

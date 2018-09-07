@@ -57,7 +57,7 @@ static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
       HREAL *rnorms, int allocatedTargetShifts,
       primme_context ctx);
 static primme_context primme_svds_get_context(primme_svds_params *primme_svds);
-void primme_svds_free_context(primme_context ctx);
+static void primme_svds_free_context(primme_context ctx);
 static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
@@ -394,6 +394,10 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          *allocatedTargetShifts = 1;
          CHKERR(Num_malloc_dprimme(primme_svds->numSvals, &primme->targetShifts,
                   ctx));
+         /* Previous allocation is going to be freed at                       */
+         /* copy_last_params_from_svds. To avoid complaining by the memory    */
+         /* manager, ask to keep the frame.                                   */
+         Mem_keep_frame(ctx);
          for (i = 0; i < primme->numTargetShifts; i++) {
             primme->targetShifts[i] =
                primme_svds->targetShifts[i] * primme_svds->targetShifts[i];
@@ -408,6 +412,11 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       *allocatedTargetShifts = 1;
       CHKERR(Num_malloc_dprimme(
                primme_svds->numSvals, &primme->targetShifts, ctx));
+
+      /* Previous allocation is going to be freed at                       */
+      /* copy_last_params_from_svds. To avoid complaining by the memory    */
+      /* manager, ask to keep the frame.                                   */
+      Mem_keep_frame(ctx);
 
       /* primme was configured to find the closest but greater values than */
       /* some shift. The eigensolver is not able to distinguish eigenvalues*/
@@ -441,6 +450,12 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          primme->targetShifts == NULL) {
 
       CHKERR(Num_malloc_dprimme(1, &primme->targetShifts, ctx));
+
+      /* Previous allocation is going to be freed at                       */
+      /* copy_last_params_from_svds. To avoid complaining by the memory    */
+      /* manager, ask to keep the frame.                                   */
+      Mem_keep_frame(ctx);
+
       *allocatedTargetShifts = 1;
       primme->targetShifts[0] = 0.0;
       primme->numTargetShifts = 1;
@@ -829,7 +844,7 @@ static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void primme_svds_free_context(primme_context ctx) {
+static void primme_svds_free_context(primme_context ctx) {
 
    /* Deregister the allocation of the current frame */
 

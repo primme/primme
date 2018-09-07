@@ -72,12 +72,12 @@ int Mem_pop_frame(primme_context *ctx) {
 
    /* Quick exit */
 
-   if (!ctx) return 0;
+   if (!ctx || !ctx->mm) return 0;
 
    /* Create a new frame and set it as next if there is no previous frame     */
    /* and they want to keep the frame. Register the allocation of the frame.  */
 
-   if (ctx->mm && ctx->mm->keep_frame && !ctx->mm->prev) {
+   if (ctx->mm->keep_frame && !ctx->mm->prev) {
       primme_frame *f = NULL;
       primme_alloc *a = NULL;
       if (MALLOC_PRIMME(1, &f) == 0 && MALLOC_PRIMME(1, &a) == 0) {
@@ -97,7 +97,7 @@ int Mem_pop_frame(primme_context *ctx) {
    /* If it is asked to keep the frame, transfer all registers to the   */
    /* previous frame.                                                   */
 
-   if (ctx->mm && ctx->mm->keep_frame && ctx->mm->prev) {
+   if (ctx->mm->keep_frame && ctx->mm->prev) {
       primme_alloc *a = ctx->mm->prev_alloc;
       while (a) {
          primme_alloc *a_prev = a->prev;

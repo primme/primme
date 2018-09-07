@@ -304,13 +304,16 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 /* to take care of providing enough working space for all functions in       */
 /* PRIMME. The small drawback of dynamic memory is to mingle with error      */
 /* management. C++ shines in this situation. But we are restricted to C,     */
-/* probably, not for good reasons. The goal to avoid to write specific code  */
+/* probably, not for good reasons. The goal is to avoid writing specific code*/
 /* to free allocated memory in case of an error happening in the body of a   */
 /* function. The next macros together with the functions in memman.c         */
 /* provides an interface to track memory allocations and free them in case   */
 /* of error. These macros and functions are going to be used mostly by       */
 /* error management macros, eg CHKERR, and memory allocation functions, eg   */
-/* Num_malloc_Sprimme.                                                       */
+/* Num_malloc_Sprimme. The error manager is going to assume that all         */
+/* allocated function is going to be freed at the end of the function. If    */
+/* that is not the case, call Mem_keep_frame(ctx). Examples of this are the  */
+/* functions Num_malloc_Sprimme.                                             */
 
 #include "memman.h"
 

@@ -571,6 +571,7 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       permute_vecs_Rprimme(hSVals, 1, basisSize, 1, perm, ctx);
       permute_vecs_Sprimme(hVecs, basisSize, basisSize, ldhVecs, perm, ctx);
       permute_vecs_Sprimme(hU, basisSize, basisSize, ldhU, perm, ctx);
+      CHKERR(Num_free_iprimme(perm, ctx));
    }
 
    /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
@@ -919,8 +920,8 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
             hVecsRot[ldhVecsRot*k+k] = 1.0;
  
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
-         compute_submatrix_Sprimme(&hVecs[ldhVecs*j], aBasisSize,
-               ldhVecs, H, basisSize, ldH, aH, aBasisSize, ctx);
+         CHKERR(compute_submatrix_Sprimme(&hVecs[ldhVecs*j], aBasisSize,
+               ldhVecs, H, basisSize, ldH, aH, aBasisSize, ctx));
 
          /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
          CHKERR(solve_H_RR_Sprimme(aH, aBasisSize, NULL, 0, ahVecs, ldhVecsRot,

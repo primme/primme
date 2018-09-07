@@ -102,7 +102,6 @@
 
 TEMPLATE_PLEASE
 int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
-   (void)ctx;
 
    /* Quick exit */
 
@@ -135,7 +134,6 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
 
 TEMPLATE_PLEASE
 int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
-   assert(x == NULL || magma_is_devptr(x) != 0);
 
    /* Quick exit */
 
@@ -157,9 +155,6 @@ int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
 TEMPLATE_PLEASE
 void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       primme_context ctx) {
-
-   assert(magma_is_devptr(x) != 0);
-   assert(magma_is_devptr(y) != 0);
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -184,10 +179,6 @@ TEMPLATE_PLEASE
 int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
       HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
-
-   assert(magma_is_devptr(a) != 0);
-   assert(magma_is_devptr(b) != 0);
-   assert(magma_is_devptr(c) != 0);
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -292,10 +283,6 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
       SCALAR *a, int lda, SCALAR *x, int incx, HSCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
-   assert(magma_is_devptr(a) != 0);
-   assert(magma_is_devptr(x) != 0);
-   assert(magma_is_devptr(y) != 0);
-
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -399,9 +386,6 @@ TEMPLATE_PLEASE
 void Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
    SCALAR *y, int incy, primme_context ctx) {
 
-   assert(magma_is_devptr(x) != 0);
-   assert(magma_is_devptr(y) != 0);
-
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
@@ -423,9 +407,6 @@ void Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
 TEMPLATE_PLEASE
 HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       primme_context ctx) {
-
-   assert(magma_is_devptr(x) != 0);
-   assert(magma_is_devptr(y) != 0);
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -453,8 +434,6 @@ TEMPLATE_PLEASE
 void Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       primme_context ctx) {
 
-   assert(magma_is_devptr(x) != 0);
-
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
@@ -474,8 +453,6 @@ void Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
 TEMPLATE_PLEASE
 int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       SCALAR *x, primme_context ctx) {
-
-   assert(magma_is_devptr(x) != 0);
 
    HSCALAR *x_host;
    CHKERR(Num_malloc_SHprimme(length, &x_host, ctx));
@@ -508,8 +485,6 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
       primme_context ctx) {
 
-   assert(magma_is_devptr(x) != 0);
-   assert(magma_is_devptr(y) != 0);
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
@@ -536,8 +511,6 @@ TEMPLATE_PLEASE
 void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
 
-   assert(magma_is_devptr(x) != 0);
-
    HSCALAR zero = 0.0;
    XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&zero, *(MAGMA_SCALAR *)&zero,
          (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
@@ -559,8 +532,6 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 TEMPLATE_PLEASE
 void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, HSCALAR value, primme_context ctx) {
-
-   assert(magma_is_devptr(x) != 0);
 
    XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&value, *(MAGMA_SCALAR *)&value,
          (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
