@@ -432,7 +432,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, HREAL *rnorm, SCALAR *evecs,
 
          double tol = min(tau/LTolerance_factor, eres_updated/ETolerance_factor);
          CHKERR(convTestFun_Sprimme(eval_updated, NULL, 0 /* evec not given */,
-               tol, &isConv, primme));
+               tol, &isConv, ctx));
 
          if (numIts > 1 && isConv) {
             if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -467,7 +467,7 @@ int inner_solve_Sprimme(SCALAR *x, SCALAR *r, HREAL *rnorm, SCALAR *evecs,
          /* than eps*aNorm*LTolerance_factor                                  */
 
          CHKERR(convTestFun_Sprimme(eval, NULL, 0 /* evec not given */,
-               tau / LTolerance_factor, &isConv, primme));
+               tau / LTolerance_factor, &isConv, ctx));
 
          if (numIts > 1 && isConv) {
             if (primme->printLevel >= 5 && primme->procID == 0) {

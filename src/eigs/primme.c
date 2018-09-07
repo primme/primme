@@ -196,7 +196,8 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    /* Check primme input data for bounds, correct values etc. */
 
-   CHKERR(check_input(evals, evecs, resNorms, primme));
+   int ret = check_input(evals, evecs, resNorms, primme);
+   if (ret != 0) return ret;
 
    /* --------------------------------------------------------- */
    /* Allocate workspace that will be needed locally by Sprimme */
@@ -207,8 +208,8 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
    /* Call the solver                                                      */
    /*----------------------------------------------------------------------*/
 
-   CHKERR(
-         main_iter_Sprimme(evals, perm, evecs, primme->ldevecs, resNorms, ctx));
+   CHKERR(main_iter_Sprimme(
+         evals, perm, evecs, primme->ldevecs, resNorms, &ret, ctx));
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
@@ -222,8 +223,12 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    CHKERR(Num_free_iprimme(perm, ctx));
 
+   /* Free context */
+
+   primme_free_context(ctx);
+
    primme->stats.elapsedTime = primme_wTimer(0);
-   return(0);
+   return ret;
 }
 
 

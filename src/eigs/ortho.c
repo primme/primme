@@ -415,11 +415,19 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
       int numLocked, PRIMME_INT nLocal, SCALAR *B, int ldB, PRIMME_INT *iseed,
       primme_context ctx) {
 
-   (void)ctx; 
+   /* Remove MPI communications from the context */
+
+   ctx.numProcs = 1;
+   ctx.procID = 0;
+   ctx.mpicomm = NULL;
+   ctx.primme = NULL;
+
+   /* Call orthogonalization */
+
    struct local_matvec_ctx Bctx = {B, (int)nLocal, ldB};
    return Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
          numLocked, NULL, 0, nLocal, B ? local_matvec : NULL, &Bctx, iseed,
-         primme_get_context(NULL));
+         ctx);
 }
 
 #endif /* USE_HOST */

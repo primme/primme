@@ -44,6 +44,8 @@
 #include "wtime.h"
 #endif
 
+#ifdef USE_DOUBLE
+
 /******************************************************************************
  * Function primme_get_context - return a context from the primme_params
  *
@@ -53,7 +55,6 @@
  *
  ******************************************************************************/
 
-#ifdef USE_DOUBLE
 TEMPLATE_PLEASE
 primme_context primme_get_context(primme_params *primme) {
    primme_context ctx;
@@ -70,6 +71,33 @@ primme_context primme_get_context(primme_params *primme) {
 
    return ctx;
 } 
+
+/******************************************************************************
+ * Function primme_free_context - free memory associated to the context
+ *
+ * PARAMETERS
+ * ---------------------------
+ * ctx         context
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+void primme_free_context(primme_context ctx) {
+
+   /* Deregister the allocation of the current frame */
+
+   primme_frame *curr = ctx.mm;
+   Mem_deregister_alloc(curr, ctx);
+
+   /* Pop the current frame */
+
+   Mem_pop_frame(&ctx);
+
+   /* Free the current frame */
+
+   if (curr) free(curr);
+}
+
 #endif /* USE_DOUBLE */
 
 /******************************************************************************
@@ -377,9 +405,9 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
 TEMPLATE_PLEASE
 int convTestFun_Sprimme(HREAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,
-      int *isconv, struct primme_params *primme) {
+      int *isconv, primme_context ctx) {
 
-   primme_context ctx = primme_get_context(primme);
+   primme_params *primme = ctx.primme;
    int ierr=0;
    double evald = eval, rNormd = rNorm;
    /* If an evec is going to be passed to convTestFun, but nLocal is 0,       */

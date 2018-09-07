@@ -176,20 +176,13 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *
  * Return Value
  * ------------
- * int -  0 the requested number of Ritz values converged
- *       -1 if solver did not converge within required number of iterations
- *       -2 if initialization failed
- *       -3 if orthogonalization failed
- *       -4 if solve_H failed
- *       -5 if solve_correction failed
- *       -6 if restart failed
- *       -7 if lock_vectors failed
- *       
+ * ret      successful state
+ * error code      
  ******************************************************************************/
 
 TEMPLATE_PLEASE
 int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
-   HREAL *resNorms, primme_context ctx) {
+   HREAL *resNorms, int *ret, primme_context ctx) {
  
    primme_params *primme = ctx.primme;
                             /* primme parameters */
@@ -216,7 +209,6 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                             /* the current extraction method.                */
    int maxEvecsSize;        /* Maximum capacity of evecs array               */
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
-   int ret=0;               /* Return value                                  */
    int touch=0;             /* param used in inner solver stopping criteria  */
 
    int *flags;              /* Indicates which Ritz values have converged    */
@@ -387,7 +379,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
 
    if (primme->numEvals == 0) {
       primme->initSize = 0;
-      ret = 0;
+      *ret = 0;
       goto clean;
    }
 
@@ -405,7 +397,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
       resNorms[0] = 0.0L;
       primme->stats.numMatvecs++;
       primme->initSize = 1;
-      ret = 0;
+      *ret = 0;
       goto clean;
    }
 
@@ -1058,11 +1050,11 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
  
          if (numConverged == primme->numEvals || wholeSpace) {
             if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
-            ret = 0;
+            *ret = 0;
             goto clean;
          }
          else {
-            ret = PRIMME_MAIN_ITER_FAILURE;
+            *ret = PRIMME_MAIN_ITER_FAILURE;
             goto clean;
          }
 
@@ -1119,11 +1111,11 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
 
             if (converged) {
                if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
-               ret = 0;
+               *ret = 0;
                goto clean;
             }
             else {
-               ret = PRIMME_MAIN_ITER_FAILURE;
+               *ret = PRIMME_MAIN_ITER_FAILURE;
                goto clean;
             }
 
@@ -1213,7 +1205,7 @@ clean:
   CHKERR(Num_free_iprimme(iev, ctx));
   CHKERR(Num_free_iprimme(ipivot, ctx));
 
-  return ret;
+  return 0;
 
 }
 

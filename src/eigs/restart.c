@@ -2551,7 +2551,7 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
       CHKERR(Bortho_local_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], ldhVecs,
                dummyR, *numPrevRetained, 0, *numPrevRetained-1,
                hVecs, ldhVecs, indexOfPreviousVecs, basisSize, VtBV, ldVtBV,
-               primme->iseed, primme_get_context(NULL)));
+               primme->iseed, ctx));
 
       for (i=0; i<*numPrevRetained; i++) {
          if (REAL_PART(dummyR[(*numPrevRetained)*i+i]) == 0.0) {

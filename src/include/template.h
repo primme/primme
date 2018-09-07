@@ -296,6 +296,53 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #endif
 
 /*****************************************************************************/
+/* Memory management                                                         */
+/*****************************************************************************/
+
+/* Recent versions of PRIMME are using dynamic memory to manage the memory.  */
+/* In general the use of dynamic memory simplifies the code by not needing   */
+/* to take care of providing enough working space for all functions in       */
+/* PRIMME. The small drawback of dynamic memory is to mingle with error      */
+/* management. C++ shines in this situation. But we are restricted to C,     */
+/* probably, not for good reasons. The goal to avoid to write specific code  */
+/* to free allocated memory in case of an error happening in the body of a   */
+/* function. The next macros together with the functions in memman.c         */
+/* provides an interface to track memory allocations and free them in case   */
+/* of error. These macros and functions are going to be used mostly by       */
+/* error management macros, eg CHKERR, and memory allocation functions, eg   */
+/* Num_malloc_Sprimme.                                                       */
+
+#include "memman.h"
+
+/**********************************************************************
+ * Macro MEM_PUSH_FRAME - Set a new frame in which new allocations are going
+ *    to be registered.
+ *
+ * NOTE: only one call is allowed in the same block of code (anything between
+ *       curly brackets).
+ **********************************************************************/
+
+#define MEM_PUSH_FRAME \
+   primme_frame __frame = {NULL, 0, ctx.mm}; \
+   ctx.mm = &__frame;
+
+/**********************************************************************
+ * Macro MEM_POP_FRAME(ERRN) - If ERRN is 0, it just removes all registered
+ *    allocations. Otherwise it also frees all allocations.
+ *
+ * NOTE: only one call is allowed in the same block of code (anything between
+ *       curly brackets).
+ **********************************************************************/
+
+#define MEM_POP_FRAME(ERRN) { \
+   if (ERRN) {\
+      Mem_pop_clean_frame(ctx);\
+   } else {\
+      Mem_pop_frame(&ctx); \
+   }\
+}
+
+/*****************************************************************************/
 /* Error management                                                          */
 /*****************************************************************************/
 
@@ -310,21 +357,22 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #include <assert.h>
 
 /**********************************************************************
- * Macro CHKERR - assert that ERRN == 0. If not it is printed out in
- *    primme->outputFile the file and the line of the caller, and
- *    force the caller function to return RETURN.
+ * Macro CHKERR - assert that ERRN == 0. Otherwise it is printed out in
+ *    ctx.outputFile the file and the line of the caller, and
+ *    forced the caller function to return ERRN.
  *
  *    ERRN is only evaluated once.
  *
  * INPUT PARAMETERS
  * ----------------
  * ERRN    Expression that returns an error code
- * RETURN  Value that the caller function will return in case of error
  *
  **********************************************************************/
 
 #define CHKERR(ERRN) { \
+   MEM_PUSH_FRAME; \
    int __err = (ERRN); assert(__err==0);\
+   MEM_POP_FRAME(__err); \
    if (__err) {\
       if (ctx.printLevel > 0 && ctx.outputFile) \
          fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
@@ -333,8 +381,8 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 }
 
 /**********************************************************************
- * Macro CHKERRM - assert that ERRN == 0. If not it is printed out in
- *    primme->outputFile the file and the line of the caller, in
+ * Macro CHKERRM - assert that ERRN == 0. Otherwise it is printed out in
+ *    ctx.outputFile the file and the line of the caller, in
  *    addition to an error message passed as arguments. As CHKERR
  *    the caller function is forced to return RETURN in case of error.
  *
@@ -353,7 +401,9 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  **********************************************************************/
 
 #define CHKERRM(ERRN, RETURN, ...) { \
+   MEM_PUSH_FRAME; \
    int __err = (ERRN); assert(__err==0);\
+   MEM_POP_FRAME(__err); \
    if (__err) {\
       if (ctx.printLevel > 0 && ctx.outputFile) {\
          fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
@@ -362,6 +412,33 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
       }\
       return (RETURN);\
    }\
+}
+
+
+/**********************************************************************
+ * Macro CHKERRA - assert that ERRN == 0. Otherwise it is printed out in
+ *    ctx.outputFile the file and the line of the caller, and
+ *    forced the caller function to execute ACTION.
+ *
+ *    ERRN is only evaluated once.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * ERRN    Expression that returns an error code
+ * ACTION  Expression that the caller function will execute in case of error
+ *
+ **********************************************************************/
+
+#define CHKERRA(ERRN, ACTION) { \
+   MEM_PUSH_FRAME; \
+   int __err = (ERRN); assert(__err==0);\
+   MEM_POP_FRAME(__err); \
+   if (__err) {\
+      if (ctx.printLevel > 0 && ctx.outputFile) \
+         fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
+      ACTION;\
+      return;\
+   } \
 }
 
 /*****************************************************************************/
@@ -395,10 +472,11 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #endif
 #include <stdlib.h>   /* malloc, free */
 
-#define MALLOC_PRIMME(NELEM, X) (*((void**)X) = malloc((NELEM)*sizeof(**(X))), *(X) == NULL)
+#define MALLOC_PRIMME(NELEM, X)                                                \
+   (*((void **)X) = malloc((NELEM) * sizeof(**(X))),                           \
+         *(X) == NULL ? PRIMME_MALLOC_FAILURE : 0)
 
-
-typedef struct {
+typedef struct primme_context_str {
    /* For PRIMME */
    primme_params *primme;
    primme_svds_params *primme_svds;
@@ -407,13 +485,16 @@ typedef struct {
    int printLevel;
    FILE *outputFile;
 
+   /* For memory management */
+   primme_frame *mm;
+
    /* for MPI */
    int numProcs;     /* number of processes */
    int procID;       /* process id */
    void *mpicomm;    /* MPI communicator */
 
    /* For MAGMA */
-   void *queue;   	/* magma device queue (magma_queue_t*) */
+   void *queue;      /* magma device queue (magma_queue_t*) */
 } primme_context;
 
 /*****************************************************************************/

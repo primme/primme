@@ -148,7 +148,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       }
 
       CHKERR(convTestFun_Sprimme(hVals[i], &X[ldX * (i - left)], givenX,
-            blockNorms[i - left], &isConv, primme));
+            blockNorms[i - left], &isConv, ctx));
 
       if (isConv) {
          flags[i] = CONVERGED;

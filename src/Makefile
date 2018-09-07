@@ -7,6 +7,7 @@ HEADERS := \
    include/template.h \
    include/numerical.h \
    include/primme_interface.h \
+   include/memman.h \
    eigs/const.h \
    eigs/primme_f77_private.h \
    svds/primme_svds_f77_private.h \
@@ -31,6 +32,7 @@ SOURCES := \
    linalg/auxiliary.c \
    linalg/blaslapack.c \
    linalg/magma_wrapper.c \
+   linalg/memman.c \
    linalg/wtime.c \
    svds/primme_svds.c \
    svds/primme_svds_f77.c \
@@ -171,7 +173,7 @@ clean:
 #
 
 # NOTE: make may update deps and reload it automatically
-deps: $(INCLUDES) $(SOURCES)
+deps: $(INCLUDES) $(SOURCES) $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 	@echo "# This file is generated automatically. Please don't modify" > deps
 	@
 	@# Added dependencies on headers for building the objects

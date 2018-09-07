@@ -104,13 +104,24 @@ TEMPLATE_PLEASE
 int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
    (void)ctx;
 
+   /* Quick exit */
+
    if (n <= 0) {
       *x = NULL;
       return 0;
    }
-   return XMALLOC((MAGMA_SCALAR **)x, n) == MAGMA_SUCCESS
-              ? 0
-              : PRIMME_MALLOC_FAILURE;
+
+   /* Allocate memory */
+
+   if (XMALLOC((MAGMA_SCALAR **)x, n) != MAGMA_SUCCESS)
+      return PRIMME_MALLOC_FAILURE;
+
+   /* Register the allocation */
+
+   Mem_keep_frame(ctx);
+   Mem_register_alloc(*x, (free_fn_type)Num_free_Sprimme, ctx);
+
+   return 0;
 }
 
 /******************************************************************************
@@ -124,8 +135,18 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
 
 TEMPLATE_PLEASE
 int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
-   (void)ctx;
    assert(x == NULL || magma_is_devptr(x) != 0);
+
+   /* Quick exit */
+
+   if (!x) return 0;
+
+   /* Deregister the allocation */
+
+   Mem_deregister_alloc(x, ctx);
+
+   /* Free pointer */
+
    return magma_free(x) == MAGMA_SUCCESS ? 0 : PRIMME_MALLOC_FAILURE;
 }
 

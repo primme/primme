@@ -53,7 +53,7 @@
 #include <stdlib.h>   /* malloc, free */
 
 /******************************************************************************
- * Function Num_malloc - Allocate a vector of scalars
+ * Function Num_malloc_Sprimme - Allocate a vector of scalars
  *
  * PARAMETERS
  * ---------------------------
@@ -66,16 +66,28 @@ TEMPLATE_PLEASE
 int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
    (void)ctx;
 
+   /* Quick exit */
+
    if (n <= 0) {
       *x = NULL;
       return 0;
    }
-   *x = (SCALAR*)malloc(sizeof(SCALAR)*n);
-   return *x == NULL ? PRIMME_MALLOC_FAILURE : 0;
+
+   /* Allocate memory */
+
+   *x = (SCALAR *)malloc(sizeof(SCALAR) * n);
+   if (*x == NULL) return PRIMME_MALLOC_FAILURE;
+
+   /* Register the allocation */
+
+   Mem_keep_frame(ctx);
+   Mem_register_alloc(*x, (free_fn_type)Num_free_Sprimme, ctx);
+
+   return 0;
 }
 
 /******************************************************************************
- * Function Num_free - Free allocated a vector of scalars
+ * Function Num_free_Sprimme - Free allocated a vector of scalars
  *
  * PARAMETERS
  * ---------------------------
@@ -85,16 +97,26 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
 
 TEMPLATE_PLEASE
 int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
-   (void)ctx;
 
-   if (x) free(x);
+   /* Quick exit */
+
+   if (!x) return 0;
+
+   /* Deregister the allocation */
+
+   Mem_deregister_alloc(x, ctx);
+
+   /* Free pointer */
+
+   free(x);
+
    return 0;
 }
 
 #ifdef USE_DOUBLE
 
 /******************************************************************************
- * Function Num_malloc - Allocate a vector of integers
+ * Function Num_malloc_iprimme - Allocate a vector of integers
  *
  * PARAMETERS
  * ---------------------------
@@ -107,16 +129,28 @@ TEMPLATE_PLEASE
 int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
    (void)ctx;
 
+   /* Quick exit */
+
    if (n <= 0) {
       *x = NULL;
       return 0;
    }
-   *x = (int*)malloc(sizeof(int)*n);
-   return *x == NULL;
+
+   /* Allocate memory */
+
+   *x = (int *)malloc(sizeof(int) * n);
+   if (*x == NULL) return PRIMME_MALLOC_FAILURE;
+
+   /* Register the allocation */
+
+   Mem_keep_frame(ctx);
+   Mem_register_alloc(*x, (free_fn_type)Num_free_iprimme, ctx);
+
+   return 0;
 }
 
 /******************************************************************************
- * Function Num_free - Free allocated a vector of integers
+ * Function Num_free_iprimme - Free allocated a vector of integers
  *
  * PARAMETERS
  * ---------------------------
@@ -126,9 +160,18 @@ int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
 
 TEMPLATE_PLEASE
 int Num_free_iprimme(int *x, primme_context ctx) {
-   (void)ctx;
+   /* Quick exit */
 
-   if (x) free(x);
+   if (!x) return 0;
+
+   /* Deregister the allocation */
+
+   Mem_deregister_alloc(x, ctx);
+
+   /* Free pointer */
+
+   free(x);
+
    return 0;
 }
 
