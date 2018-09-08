@@ -141,10 +141,11 @@ int Mem_pop_clean_frame(primme_context ctx) {
    primme_alloc *a = ctx.mm ? ctx.mm->prev_alloc : NULL;
    while (a) {
       primme_alloc *a_prev = a->prev;
-      a->free_fn(a->p, ctx);
-      if (a) free(a);
+      if (a->p) a->free_fn(a->p, ctx);
+      free(a);
       a = a_prev;
    }
+   if (ctx.mm) ctx.mm->prev_alloc = NULL;
 
    return 0;
 }

@@ -52,6 +52,12 @@
 #endif
 #include <stdlib.h>   /* malloc, free */
 
+static int free_fn_dummy (void *p, primme_context ctx) {
+   (void)ctx;
+   free(p);
+   return 0;
+}
+
 /******************************************************************************
  * Function Num_malloc_Sprimme - Allocate a vector of scalars
  *
@@ -81,7 +87,7 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
    /* Register the allocation */
 
    Mem_keep_frame(ctx);
-   Mem_register_alloc(*x, (free_fn_type)Num_free_Sprimme, ctx);
+   Mem_register_alloc(*x, free_fn_dummy, ctx);
 
    return 0;
 }
@@ -144,7 +150,7 @@ int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
    /* Register the allocation */
 
    Mem_keep_frame(ctx);
-   Mem_register_alloc(*x, (free_fn_type)Num_free_iprimme, ctx);
+   Mem_register_alloc(*x, free_fn_dummy, ctx);
 
    return 0;
 }

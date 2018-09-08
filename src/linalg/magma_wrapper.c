@@ -90,6 +90,11 @@
 #define PRIMME_BLASINT magma_int_t
 #define PRIMME_BLASINT_MAX MAGMA_INT_MAX
 
+static int free_fn_dummy (void *p, primme_context ctx) {
+   (void)ctx;
+   return magma_free(p) == MAGMA_SUCCESS ? 0 : PRIMME_MALLOC_FAILURE;
+}
+
 /******************************************************************************
  * Function Num_malloc - Allocate a vector of scalars
  *
@@ -118,7 +123,7 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
    /* Register the allocation */
 
    Mem_keep_frame(ctx);
-   Mem_register_alloc(*x, (free_fn_type)Num_free_Sprimme, ctx);
+   Mem_register_alloc(*x, free_fn_dummy, ctx);
 
    return 0;
 }
