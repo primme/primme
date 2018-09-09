@@ -457,3 +457,69 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
 }
 
 #endif /* USE_HOST */
+
+/*******************************************************************************
+ * Function dist_dots - Computes several dot products in parallel
+ *
+ * Input Parameters
+ * ----------------
+ * x, y     Operands of the dot product operations
+ *
+ * ldx, ldy Leading dimension of x and y
+ *
+ * m        Length of the vectors x and y
+ *
+ * n        Number of columns in x and y
+ *
+ * ctx      Structure containing various solver parameters
+ *
+ * result   The inner products
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, HSCALAR *result, primme_context ctx) {
+
+   int i;
+   for (i=0; i<n; i++) {
+      result[i] = Num_dot_Sprimme(m, &x[ldx * i], 1, &y[ldy * i], 1, ctx);
+   }
+   CHKERR(globalSum_SHprimme(result, result, n, ctx));
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Function dist_dots_real - Computes several dot products in parallel.
+ *    Returns only the real part.
+ *
+ * Input Parameters
+ * ----------------
+ * x, y     Operands of the dot product operations
+ *
+ * ldx, ldy Leading dimension of x and y
+ *
+ * m        Length of the vectors x and y
+ *
+ * n        Number of columns in x and y
+ *
+ * ctx      Structure containing various solver parameters
+ *
+ * result   The inner products
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, HREAL *result, primme_context ctx) {
+
+   int i;
+   for (i=0; i<n; i++) {
+      result[i] =
+            REAL_PART(Num_dot_Sprimme(m, &x[ldx * i], 1, &y[ldy * i], 1, ctx));
+   }
+   CHKERR(globalSum_RHprimme(result, result, n, ctx));
+
+   return 0;
+}

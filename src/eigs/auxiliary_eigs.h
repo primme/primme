@@ -52,6 +52,10 @@ int convTestFun_sprimme(float eval, float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx);
 int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
    primme_context ctx);
+int Num_dist_dots_sprimme(float *x, PRIMME_INT ldx, float *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, float *result, primme_context ctx);
+int Num_dist_dots_real_sprimme(float *x, PRIMME_INT ldx, float *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, float *result, primme_context ctx);
 void Num_compute_residual_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT eval, PRIMME_COMPLEX_FLOAT *x,
    PRIMME_COMPLEX_FLOAT *Ax, PRIMME_COMPLEX_FLOAT *r, primme_context ctx);
 int Num_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PRIMME_INT mV, int nV,
@@ -71,6 +75,10 @@ int convTestFun_cprimme(float eval, PRIMME_COMPLEX_FLOAT *evec, int givenEvec, f
       int *isconv, primme_context ctx);
 int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
    primme_context ctx);
+int Num_dist_dots_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, PRIMME_COMPLEX_FLOAT *result, primme_context ctx);
+int Num_dist_dots_real_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, float *result, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSprimme)
 #  define primme_get_contextSprimme CONCAT(primme_get_context,SCALAR_SUF)
 #endif
@@ -176,6 +184,34 @@ int convTestFun_dprimme(double eval, double *evec, int givenEvec, double rNorm,
 #endif
 int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
    primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Sprimme)
+#  define Num_dist_dots_Sprimme CONCAT(Num_dist_dots_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Rprimme)
+#  define Num_dist_dots_Rprimme CONCAT(Num_dist_dots_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SHprimme)
+#  define Num_dist_dots_SHprimme CONCAT(Num_dist_dots_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RHprimme)
+#  define Num_dist_dots_RHprimme CONCAT(Num_dist_dots_,HOST_REAL_SUF)
+#endif
+int Num_dist_dots_dprimme(double *x, PRIMME_INT ldx, double *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, double *result, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Sprimme)
+#  define Num_dist_dots_real_Sprimme CONCAT(Num_dist_dots_real_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Rprimme)
+#  define Num_dist_dots_real_Rprimme CONCAT(Num_dist_dots_real_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SHprimme)
+#  define Num_dist_dots_real_SHprimme CONCAT(Num_dist_dots_real_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RHprimme)
+#  define Num_dist_dots_real_RHprimme CONCAT(Num_dist_dots_real_,HOST_REAL_SUF)
+#endif
+int Num_dist_dots_real_dprimme(double *x, PRIMME_INT ldx, double *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, double *result, primme_context ctx);
 void Num_compute_residual_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE eval, PRIMME_COMPLEX_DOUBLE *x,
    PRIMME_COMPLEX_DOUBLE *Ax, PRIMME_COMPLEX_DOUBLE *r, primme_context ctx);
 int Num_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, PRIMME_INT mV, int nV,
@@ -195,6 +231,10 @@ int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, int givenEvec,
       int *isconv, primme_context ctx);
 int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *sendBuf, PRIMME_COMPLEX_DOUBLE *recvBuf, int count,
    primme_context ctx);
+int Num_dist_dots_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, PRIMME_COMPLEX_DOUBLE *result, primme_context ctx);
+int Num_dist_dots_real_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, double *result, primme_context ctx);
 void Num_compute_residual_smagmaprimme(PRIMME_INT n, float eval, magma_float *x,
    magma_float *Ax, magma_float *r, primme_context ctx);
 int Num_update_VWXR_smagmaprimme(magma_float *V, magma_float *W, PRIMME_INT mV, int nV,
@@ -212,6 +252,10 @@ int applyPreconditioner_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_I
       magma_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_smagmaprimme(float eval, magma_float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx);
+int Num_dist_dots_smagmaprimme(magma_float *x, PRIMME_INT ldx, magma_float *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, float *result, primme_context ctx);
+int Num_dist_dots_real_smagmaprimme(magma_float *x, PRIMME_INT ldx, magma_float *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, float *result, primme_context ctx);
 void Num_compute_residual_cmagmaprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT eval, magma_complex_float *x,
    magma_complex_float *Ax, magma_complex_float *r, primme_context ctx);
 int Num_update_VWXR_cmagmaprimme(magma_complex_float *V, magma_complex_float *W, PRIMME_INT mV, int nV,
@@ -229,6 +273,10 @@ int applyPreconditioner_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, 
       magma_complex_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_cmagmaprimme(float eval, magma_complex_float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx);
+int Num_dist_dots_cmagmaprimme(magma_complex_float *x, PRIMME_INT ldx, magma_complex_float *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, PRIMME_COMPLEX_FLOAT *result, primme_context ctx);
+int Num_dist_dots_real_cmagmaprimme(magma_complex_float *x, PRIMME_INT ldx, magma_complex_float *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, float *result, primme_context ctx);
 void Num_compute_residual_dmagmaprimme(PRIMME_INT n, double eval, magma_double *x,
    magma_double *Ax, magma_double *r, primme_context ctx);
 int Num_update_VWXR_dmagmaprimme(magma_double *V, magma_double *W, PRIMME_INT mV, int nV,
@@ -246,6 +294,10 @@ int applyPreconditioner_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_
       magma_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_dmagmaprimme(double eval, magma_double *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx);
+int Num_dist_dots_dmagmaprimme(magma_double *x, PRIMME_INT ldx, magma_double *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, double *result, primme_context ctx);
+int Num_dist_dots_real_dmagmaprimme(magma_double *x, PRIMME_INT ldx, magma_double *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, double *result, primme_context ctx);
 void Num_compute_residual_zmagmaprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE eval, magma_complex_double *x,
    magma_complex_double *Ax, magma_complex_double *r, primme_context ctx);
 int Num_update_VWXR_zmagmaprimme(magma_complex_double *V, magma_complex_double *W, PRIMME_INT mV, int nV,
@@ -263,4 +315,8 @@ int applyPreconditioner_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal,
       magma_complex_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_zmagmaprimme(double eval, magma_complex_double *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx);
+int Num_dist_dots_zmagmaprimme(magma_complex_double *x, PRIMME_INT ldx, magma_complex_double *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, PRIMME_COMPLEX_DOUBLE *result, primme_context ctx);
+int Num_dist_dots_real_zmagmaprimme(magma_complex_double *x, PRIMME_INT ldx, magma_complex_double *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, double *result, primme_context ctx);
 #endif

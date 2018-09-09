@@ -234,14 +234,11 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    /* Copy the matrix some columns backward, and other cases */
    else {
       /* TODO: assert x and y don't overlap */
-      for (i = 0; i < n; i++)
+      for (i = 0; i < n; i++) {
          for (j = 0; j < m; j++) {
-            // TEMP!!!
-            if(REAL_PART(x[i*ldx+j]) > 0)
-            y[i * ldy + j] = x[i * ldx + j];
-            else
             y[i * ldy + j] = x[i * ldx + j];
          }
+      }
    }
 }
 
