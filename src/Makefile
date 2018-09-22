@@ -152,11 +152,12 @@ endif
 #
 
 ../tags: $(SOURCES) $(HEADERS)
-	@etags -o $@.base $^;\
-	cp $@.base $@;\
+	@ctags --tag-relative=yes  -o $@.base $^;\
+	cp $@.base $@.all;\
 	for pre in R SH RH s c d z; do \
-		sed "s/Sprimme/$${pre}primme/g" $@.base >> $@;\
-	done
+		sed "s/Sprimme/$${pre}primme/g" $@.base >> $@.all;\
+	done;\
+	LC_COLLATE=C sort -d -u $@.all > $@
 
 #
 # Cleaning
