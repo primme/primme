@@ -109,6 +109,8 @@ typedef struct primme_stats {
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
+   double estimateBNorm;            /* estimation of norm of B */
+   double estimateInvBNorm;         /* estimation of norm of inv(B) */
    double maxConvTol;               /* largest norm residual of a locked eigenpair */
    double estimateResidualError;    /* accumulated error in V and W */
    PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
@@ -188,6 +190,8 @@ typedef struct primme_params {
    PRIMME_INT maxOuterIterations;
    PRIMME_INT iseed[4];
    double aNorm;
+   double BNorm;                 /* Approximate 2-norm of B */
+   double invBNorm;              /* Approximate 2-norm of inv(B) */
    double eps;
    primme_orth orth;
 
@@ -196,6 +200,7 @@ typedef struct primme_params {
 
    void *matrix;
    void *preconditioner;
+   void *massMatrix;
    double *ShiftsForPreconditioner;
    primme_init initBasisMode;
    PRIMME_INT ldevecs;
@@ -267,10 +272,13 @@ typedef enum {
    PRIMME_maxOuterIterations =  19,
    PRIMME_iseed =  22,
    PRIMME_aNorm =  25,
+   PRIMME_BNorm =  250,
+   PRIMME_invBNorm =  251,
    PRIMME_eps =  26,
    PRIMME_printLevel =  27,
    PRIMME_outputFile =  28,
    PRIMME_matrix =  29,
+   PRIMME_massMatrix = 290,
    PRIMME_preconditioner =  30,
    PRIMME_initBasisMode =   301,
    PRIMME_projectionParams_projection =  302,
@@ -301,6 +309,8 @@ typedef enum {
    PRIMME_stats_estimateMinEVal =  481,
    PRIMME_stats_estimateMaxEVal =  482,
    PRIMME_stats_estimateLargestSVal =  483,
+   PRIMME_stats_estimateBNorm =  4830,
+   PRIMME_stats_estimateInvBNorm =  4831,
    PRIMME_stats_maxConvTol =  484,
    PRIMME_stats_lockingIssue =  485,
    PRIMME_dynamicMethodSwitch = 49,

@@ -78,7 +78,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    assert(ldV >= nLocal && ldW >= nLocal);
    assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
 
-   t0 = primme_wTimer(0);
+   t0 = primme_wTimer();
 
    /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
 
@@ -87,7 +87,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
                  ierr),
          PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
 
-   primme->stats.timeMatvec += primme_wTimer(0) - t0;
+   primme->stats.timeMatvec += primme_wTimer() - t0;
    primme->stats.numMatvecs += blockSize;
 
    return 0;
@@ -95,7 +95,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 }
 
 /*******************************************************************************
- * Subroutine update_QR - Computes the QR factorization (A-targetShift*I)*V
+ * Subroutine update_QR - Computes the QR factorization (A-targetShift*B)*V
  *    updating only the columns nv:nv+blockSize-1 of Q and R.
  *
  * INPUT ARRAYS AND PARAMETERS
@@ -103,6 +103,54 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  * V          The orthonormal basis
  * nLocal     Number of rows of each vector stored on this node
  * ldV        The leading dimension of V
+ * ldW        The leading dimension of W
+ * basisSize  Number of vectors in V
+ * blockSize  The current block size
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * BV          B*V
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+   int ierr = 0;
+   double t0;
+
+   if (blockSize <= 0)
+      return 0;
+
+   assert(ldV >= nLocal && ldBV >= nLocal);
+   assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
+
+   t0 = primme_wTimer();
+
+   /* BV(:,c) = B*V(:,c) for c = basisSize:basisSize+blockSize-1 */
+
+   CHKERRM((primme->massMatrixMatvec(&V[ldV * basisSize], &ldV,
+                  &BV[ldBV * basisSize], &ldBV, &blockSize, primme, &ierr),
+                 ierr),
+         PRIMME_USER_FAILURE, "Error returned by 'massMatrixMatvec' %d", ierr);
+
+   primme->stats.timeMatvec += primme_wTimer() - t0;
+   primme->stats.numMatvecs += blockSize;
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine update_QR - Computes the QR factorization (A-targetShift*B)*V
+ *    updating only the columns nv:nv+blockSize-1 of Q and R.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * BV         B*V
+ * nLocal     Number of rows of each vector stored on this node
+ * ldBV       The leading dimension of BV
  * W          A*V
  * ldW        The leading dimension of W
  * basisSize  Number of vectors in V
@@ -112,13 +160,14 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  * -------------------
  * Q          The Q factor
  * R          The R factor
+ * QtQ        Q'Q
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
+int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR,
-      HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize, int blockSize,
-      primme_context ctx) {
+      HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize,
+      int blockSize, primme_context ctx) {
 
    int i;
 
@@ -126,13 +175,13 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
 
    if (blockSize <= 0 || R == NULL) return 0;
 
-   assert(ldV >= nLocal && ldW >= nLocal && ldQ >= nLocal &&
+   assert(ldBV >= nLocal && ldW >= nLocal && ldQ >= nLocal &&
           ldR >= basisSize + blockSize);
 
-   /* Q(:,c) = W(:,c) - V(:,c)*target for c = basisSize:basisSize+blockSize-1 */
+   /* Q(:,c) = W(:,c) - BV(:,c)*target for c = basisSize:basisSize+blockSize-1 */
    for (i=basisSize; i<basisSize+blockSize; i++) {
-      Num_compute_residual_Sprimme(nLocal, targetShift, &V[ldV*i], &W[ldW*i],
-            &Q[ldQ*i], ctx);
+      Num_compute_residual_Sprimme(
+            nLocal, targetShift, &BV[ldBV * i], &W[ldW * i], &Q[ldQ * i], ctx);
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
@@ -150,7 +199,6 @@ int update_Q_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
       for (i = nQ; i < basisSize + blockSize; i++)
          QtQ[ldQtQ * i + i] = (HSCALAR)1.0;
    }
-   if (nQ != blockSize + basisSize) printf("Dude %d\n", nQ);
 
    /* Zero the lower-left part of R */
    Num_zero_matrix_SHprimme(&R[basisSize], blockSize, basisSize, ldR, ctx);

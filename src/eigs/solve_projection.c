@@ -928,6 +928,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
                &hVals[j], aBasisSize, targetShiftIndex, ctx));
 
          /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
+         Num_zero_matrix_Sprimme(aH, basisSize, aBasisSize, basisSize, ctx);
          Num_gemm_Sprimme("N", "N", basisSize, aBasisSize, aBasisSize,
                1.0, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, 0.0,
                aH, basisSize, ctx);

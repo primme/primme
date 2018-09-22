@@ -497,7 +497,9 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
 
    SCALAR *rwork;
    CHKERR(Num_malloc_Sprimme((size_t)nH * (size_t)nX, &rwork, ctx));
+   Num_zero_matrix_Sprimme(rwork, nH, nX, nH, ctx);
    Num_hemm_Sprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
+   Num_zero_matrix_Sprimme(R, nX, nX, ldR, ctx);
    Num_gemm_Sprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, ldR,
                     ctx);
    CHKERR(Num_free_Sprimme(rwork, ctx));

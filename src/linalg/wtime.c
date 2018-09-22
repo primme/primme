@@ -43,29 +43,15 @@
 #include "wtime.h"
 #endif
 
-#ifdef RUSAGE_SELF
-#else
-#define   RUSAGE_SELF     0      /*needed in osx*/
-#endif
-
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-double primme_wTimer(int zeroTimer) {
-   static struct timeval tv;
-   static double StartingTime;
-   
-   if (zeroTimer) {
-      gettimeofday(&tv, NULL); 
-      StartingTime = ((double) tv.tv_sec) + ((double) tv.tv_usec )/(double) 1E6;
-      return StartingTime;
-   }
-   else {
-      gettimeofday(&tv, NULL); 
-      return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6
-           - StartingTime;
-   }
+
+double primme_wTimer() {
+   struct timeval tv;
+   gettimeofday(&tv, NULL);
+   return ((double)tv.tv_sec) + ((double)tv.tv_usec) / (double)1E6;
 }
 
 /* In the unlikely event that gettimeofday() is not available, but POSIX is, 
@@ -91,44 +77,11 @@ double primme_wTimer(int zeroTimer) {
 }
 */
 
-/* 
- * Other timers that may be of use -------------------------------------------
- */
-
-/* Simply return the microseconds time of day */
-double primme_get_wtime(void) {
-   static struct timeval tv;
-
-   gettimeofday(&tv, NULL); 
-   return ((double) tv.tv_sec) + ((double) tv.tv_usec ) / (double) 1E6;
-}
-
-/* Return user/system times */
-double primme_get_time(double *utime, double *stime) {
-   struct rusage usage;
-   static struct timeval utv,stv;
-
-   getrusage(RUSAGE_SELF, &usage);
-   utv = usage.ru_utime;
-   stv = usage.ru_stime;
-
-   *utime = ((double) utv.tv_sec) + ((double) utv.tv_usec ) / (double) 1E6;
-   *stime = ((double) stv.tv_sec) + ((double) stv.tv_usec ) / (double) 1E6;
-
-   return *utime + *stime;
-}
 #else
-#include <Windows.h>
-double primme_wTimer(int zeroTimer) {
-   static DWORD StartingTime;
 
-   if (zeroTimer) {
-      StartingTime = GetTickCount();
-      return StartingTime;
-   }
-   else {
-      return GetTickCount() - StartingTime;
-   }
+#include <Windows.h>
+double primme_wTimer() {
+   return GetTickCount();
 }
 
 #endif

@@ -34,19 +34,21 @@
 #ifndef correction_H
 #define correction_H
 int solve_correction_sprimme(float *V, PRIMME_INT ldV, float *W,
-      PRIMME_INT ldW, float *evecs, PRIMME_INT ldevecs, float *evecsHat,
-      PRIMME_INT ldevecsHat, float *UDU, int *ipivot, float *lockedEvals,
+      PRIMME_INT ldW, float *BV, PRIMME_INT ldBV, float *evecs,
+      PRIMME_INT ldevecs, float *Bevecs, PRIMME_INT ldBevecs, float *evecsHat,
+      PRIMME_INT ldevecsHat, float *Mfact, int *ipivot, float *lockedEvals,
       int numLocked, int numConvergedStored, float *ritzVals,
       float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      float *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 int solve_correction_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *W,
-      PRIMME_INT ldW, PRIMME_COMPLEX_FLOAT *evecs, PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *evecsHat,
-      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, float *lockedEvals,
+      PRIMME_INT ldW, PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT ldBV, PRIMME_COMPLEX_FLOAT *evecs,
+      PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_FLOAT *evecsHat,
+      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *Mfact, int *ipivot, float *lockedEvals,
       int numLocked, int numConvergedStored, float *ritzVals,
       float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      float *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Sprimme)
 #  define solve_correction_Sprimme CONCAT(solve_correction_,SCALAR_SUF)
 #endif
@@ -60,45 +62,51 @@ int solve_correction_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COM
 #  define solve_correction_RHprimme CONCAT(solve_correction_,HOST_REAL_SUF)
 #endif
 int solve_correction_dprimme(double *V, PRIMME_INT ldV, double *W,
-      PRIMME_INT ldW, double *evecs, PRIMME_INT ldevecs, double *evecsHat,
-      PRIMME_INT ldevecsHat, double *UDU, int *ipivot, double *lockedEvals,
+      PRIMME_INT ldW, double *BV, PRIMME_INT ldBV, double *evecs,
+      PRIMME_INT ldevecs, double *Bevecs, PRIMME_INT ldBevecs, double *evecsHat,
+      PRIMME_INT ldevecsHat, double *Mfact, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      double *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 int solve_correction_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *W,
-      PRIMME_INT ldW, PRIMME_COMPLEX_DOUBLE *evecs, PRIMME_INT ldevecs, PRIMME_COMPLEX_DOUBLE *evecsHat,
-      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, double *lockedEvals,
+      PRIMME_INT ldW, PRIMME_COMPLEX_DOUBLE *BV, PRIMME_INT ldBV, PRIMME_COMPLEX_DOUBLE *evecs,
+      PRIMME_INT ldevecs, PRIMME_COMPLEX_DOUBLE *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_DOUBLE *evecsHat,
+      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *Mfact, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      double *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 int solve_correction_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float *W,
-      PRIMME_INT ldW, magma_float *evecs, PRIMME_INT ldevecs, magma_float *evecsHat,
-      PRIMME_INT ldevecsHat, float *UDU, int *ipivot, float *lockedEvals,
+      PRIMME_INT ldW, magma_float *BV, PRIMME_INT ldBV, magma_float *evecs,
+      PRIMME_INT ldevecs, magma_float *Bevecs, PRIMME_INT ldBevecs, magma_float *evecsHat,
+      PRIMME_INT ldevecsHat, float *Mfact, int *ipivot, float *lockedEvals,
       int numLocked, int numConvergedStored, float *ritzVals,
       float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      float *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 int solve_correction_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magma_complex_float *W,
-      PRIMME_INT ldW, magma_complex_float *evecs, PRIMME_INT ldevecs, magma_complex_float *evecsHat,
-      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, float *lockedEvals,
+      PRIMME_INT ldW, magma_complex_float *BV, PRIMME_INT ldBV, magma_complex_float *evecs,
+      PRIMME_INT ldevecs, magma_complex_float *Bevecs, PRIMME_INT ldBevecs, magma_complex_float *evecsHat,
+      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *Mfact, int *ipivot, float *lockedEvals,
       int numLocked, int numConvergedStored, float *ritzVals,
       float *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      float *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      float *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 int solve_correction_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_double *W,
-      PRIMME_INT ldW, magma_double *evecs, PRIMME_INT ldevecs, magma_double *evecsHat,
-      PRIMME_INT ldevecsHat, double *UDU, int *ipivot, double *lockedEvals,
+      PRIMME_INT ldW, magma_double *BV, PRIMME_INT ldBV, magma_double *evecs,
+      PRIMME_INT ldevecs, magma_double *Bevecs, PRIMME_INT ldBevecs, magma_double *evecsHat,
+      PRIMME_INT ldevecsHat, double *Mfact, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      double *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 int solve_correction_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, magma_complex_double *W,
-      PRIMME_INT ldW, magma_complex_double *evecs, PRIMME_INT ldevecs, magma_complex_double *evecsHat,
-      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, double *lockedEvals,
+      PRIMME_INT ldW, magma_complex_double *BV, PRIMME_INT ldBV, magma_complex_double *evecs,
+      PRIMME_INT ldevecs, magma_complex_double *Bevecs, PRIMME_INT ldBevecs, magma_complex_double *evecsHat,
+      PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *Mfact, int *ipivot, double *lockedEvals,
       int numLocked, int numConvergedStored, double *ritzVals,
       double *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
-      double *blockNorms, int *iev, int blockSize, int *touch,
-      primme_context ctx);
+      double *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx) ;
 #endif

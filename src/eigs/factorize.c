@@ -30,6 +30,7 @@
  * File: factorize.c
  *
  * Purpose - Functions to factorize and back-solve a hermitian matrix M.
+ *           and A'Kinv*B*X
  *  
  ******************************************************************************/
 
@@ -39,6 +40,7 @@
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
+#include "update_projection.h"
 #include "factorize.h"
 #endif
 
@@ -78,44 +80,20 @@ TEMPLATE_PLEASE
 int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
       int *ipivot, int dimM, primme_context ctx) {
 
-   int info;
-
-   /* TODO: this is not a proper PRIMME function, so it may belong to   */
-   /* numerical.c or as a static function in init.c or restart.c.       */
-
-   /* Quick return for M with dimension 0 */
-
-   if (dimM == 0) return 0;
-
-   /* if ld is zero, change by the matrix size */
-   if (ldUDU == 0) ldUDU = dimM;
-
    /* Quick return for M with dimension 1 */
 
-   if (dimM <= 1) {
+   if (dimM == 1) {
       *UDU = *M;
-      info = 0;
    }
    else {
-      /* Get memory requirement */
-
-      SCALAR w;
-      Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, &w, -1, &info);
-      int rworkSize = REAL_PART(w);
-
       /* Copy the upper triangular portion of M into UDU */
 
       Num_copy_trimatrix_Sprimme(M, dimM, dimM, ldM, 0 /* up */, 0, UDU,
             ldUDU, 0);
 
-      SCALAR *rwork;
-      CHKERR(Num_malloc_SHprimme(rworkSize, &rwork, ctx));
       /* Perform the decomposition */
-      CHKERRM((Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, rwork,
-                                 TO_INT(rworkSize), &info),
-               info),
-              PRIMME_LAPACK_FAILURE, "hetrf failed with info %d", info);
-      CHKERR(Num_free_SHprimme(rwork, ctx));
+
+      CHKERR(Num_hetrf_Sprimme("U", dimM, UDU, ldUDU, ipivot, ctx));
    }
 
    return 0;
@@ -153,9 +131,6 @@ TEMPLATE_PLEASE
 int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
       int ldrhs, SCALAR *sol, int ldsol, primme_context ctx) {
 
-   /* TODO: this is not a proper PRIMME function, so it may belong to   */
-   /* numerical.c or as a static function in init.c or restart.c.       */
-
    if (dim == 1) {
       int i;
       for (i=0; i<nrhs; i++) {
@@ -163,15 +138,159 @@ int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
       }
    }
    else {
-      int info;
       Num_copy_matrix_SHprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx);
-      CHKERRM((Num_hetrs_Sprimme("U", dim, nrhs, UDU, dim, ipivot, sol, ldsol,
-                  &info), info),
-              PRIMME_LAPACK_FAILURE, "hetrs failed with info %d", info);
+      CHKERR(Num_hetrs_Sprimme("U", dim, nrhs, UDU, dim, ipivot, sol, ldsol,
+                  ctx));
    }
 
    return 0;
 
+}
+
+
+/*******************************************************************************
+ * Subroutine update_XKinvBX - Updates the matrix M=X'*Kinv*B*X and returns
+ *    its factorization.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * X           Matrix with size nLocal x numCols+blockSize
+ * ldX         The leading dimension of X
+ * KinvBX      Matrix with size nLocal x numCols+blockSize
+ * ldKinvBX    The leading dimension of KinvBX
+ * numCols     The number of columns that haven't changed
+ * blockSize   The number of columns that have changed
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * M           Matrix with size numCols+blockSize with value X'*Y, if it's symmetric
+ *             only Z(1:numCols+blockSize,numCols:numCols+blockSize) will be updated
+ * ldM         The leading dimension of M,
+ * Mfact       Factorization of M
+ * ldMfact     The leading dimension of Mfact; if it is zero, it is used numCols+blockSize
+ * ipivot      Integer array of length numCols+blockSize containing pivot mapping
+ *
+ * Return Value
+ * ------------
+ * int error code
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,
+      PRIMME_INT ldKinvBX, SCALAR *M, PRIMME_INT ldM, int numCols,
+      int blockSize, SCALAR *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   /* Update M. Note that if B=I, then M is Hermitian */
+
+   CHKERR(update_projection_Sprimme(X, ldX, KinvBX, ldKinvBX, M, ldM,
+         primme->nLocal, numCols, blockSize,
+         primme->massMatrixMatvec ? 0 /* no Hermitian */ : 1 /* Hermitian */,
+         ctx));
+
+   int nM = numCols + blockSize; /* dimension of M after updating */
+
+   /* Quick return for M with dimension 0 */
+
+   if (nM == 0) return 0;
+
+   /* Quick return for M with dimension 1 */
+
+   if (nM == 1) {
+      *Mfact = *M;
+      return 0;
+   }
+
+   /* If B == I, M is Hermitian, so M is factorize as LDL^T. Otherwise M is   */
+   /* factorize as LU                                                         */
+
+   if (primme->massMatrixMatvec == NULL) {
+
+      /* Copy the upper triangular portion of M into Mfact */
+
+      Num_copy_trimatrix_Sprimme(
+            M, nM, nM, ldM, 0 /* up */, 0, Mfact, ldMfact, 0);
+
+      /* Perform the LDL^T decomposition */
+
+      CHKERR(Num_hetrf_Sprimme("U", nM, Mfact, ldMfact, ipivot, ctx));
+   }
+   else {
+      /* Copy M into Mfact */
+
+      Num_copy_matrix_Sprimme(M, nM, nM, ldM, Mfact, ldMfact, ctx);
+
+      /* Perform the LU decomposition */
+
+      CHKERR(Num_getrf_Sprimme(nM, nM, Mfact, ldMfact, ipivot, ctx));
+   }
+
+   return 0;
+}
+
+/******************************************************************************
+ * Function MSolve - This function solves a dense hermitian linear system
+ *   given a right hand side (rhs) and a UDU factorization.
+ *
+ *
+ * Input Parameters
+ * ----------------
+ * UDU     Two-dimensional of dimension dim and leading dimension dim.
+ *         Contains block diagonal and multipliers necessary to construct
+ *         the upper triangular matrix U.  See LAPACK routine dsytrf for more
+ *         details.
+ *
+ * ipivot  Permutation array that determines how rows and columns of the
+ *         factorization were permuted for stability.
+ *
+ * dim     The dimension of the linear system
+ *
+ * rhs     The right hand side of the linear system
+ *
+ * primme  Structure containing various solver parameters
+ *
+ *
+ * Output Parameters
+ * -----------------
+ * sol     The solution of the linear system
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,
+      int ldrhs, SCALAR *sol, int ldsol, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   /* Quick return for M with dimension 0 and 1 */
+
+   if (dim == 0) {
+      return 0;
+   }
+   else if (dim == 1) {
+      int i;
+      for (i = 0; i < nrhs; i++) sol[i * ldsol] = rhs[i * ldrhs] / *Mfact;
+      return 0;
+   }
+
+   /* Copy rhs into sol */
+
+   Num_copy_matrix_Sprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx);
+
+   /* Solve with the proper decomposition */
+
+   if (primme->massMatrixMatvec == NULL) {
+      CHKERR(Num_hetrs_Sprimme(
+            "U", dim, nrhs, Mfact, dim, ipivot, sol, ldsol, ctx));
+   }
+   else {
+      CHKERR(Num_getrs_Sprimme(
+            "N", dim, nrhs, Mfact, dim, ipivot, sol, ldsol, ctx));
+   }
+
+   return 0;
 }
 
 #endif /* USE_HOST */

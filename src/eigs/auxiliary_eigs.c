@@ -104,27 +104,27 @@ void primme_free_context(primme_context ctx) {
  * Function Num_compute_residual - This subroutine performs the next operation
  *    in a cache-friendly way:
  *
- *    r = Ax - eval*x
+ *    r = Ax - eval*Bx
  *
  * PARAMETERS
  * ---------------------------
  * n           The number of rows of x, Ax and r
  * eval        The value to compute the residual vector r
- * x           The vector x
+ * Bx          The vector Bx
  * Ax          The vector Ax
- * r           On output r = Ax - eval*x
+ * r           On output r = Ax - eval*Bx
  *
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *x,
+void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *Bx,
    SCALAR *Ax, SCALAR *r, primme_context ctx) {
 
    int k, M=min(n,PRIMME_BLOCK_SIZE);
 
    for (k=0; k<n; k+=M, M=min(M,n-k)) {
       Num_copy_Sprimme(M, &Ax[k], 1, &r[k], 1, ctx);
-      Num_axpy_Sprimme(M, -eval, &x[k], 1, &r[k], 1, ctx);
+      Num_axpy_Sprimme(M, -eval, &Bx[k], 1, &r[k], 1, ctx);
    }
 
 }
@@ -134,18 +134,20 @@ void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *x,
  *
  *    X0 = V*h(nX0b+1:nX0e), X1 = V*h(nX1b+1:nX1e), X2 = V*h(nX2b+1:nX2e)
  *    Wo = W*h(nWob+1:nWoe),
- *    R = W*h(nRb+1:nRe) - W*h(nRb+1:nRe)*diag(hVals(nRb+1:nRe)),
+ *    BX0 = BV*h(nBX0b+1:nBX0e), BX1 = BV*h(nBX1b+1:nBX1e)
+ *    R = W*h(nRb+1:nRe) - BV*h(nRb+1:nRe)*diag(hVals(nRb+1:nRe)),
  *    Rnorms = norms(R),
- *    rnorms = norms(W*h(nrb+1:nre) - W*h(nrb+1:nre)*diag(hVals(nrb+1:nre)))
- *    G = (V*h(1:nG))'*V*h(1:nG)
+ *    rnorms = norms(W*h(nrb+1:nre) - BV*h(nrb+1:nre)*diag(hVals(nrb+1:nre)))
+ *    xnorms = norms(V*h(nxb+1:nxe))
+ *    G = (V*h(1:nG))'*BV*h(1:nG)
  *    H = (V*h(1:nH))'*W*h(1:nH)
  *
  * NOTE: if Rnorms and rnorms are requested, nRb-nRe+nrb-nre < mV
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * V, W        input basis
- * mV,nV,ldV   number of rows and columns and leading dimension of V and W
+ * V, W, BV    input basis
+ * mV,nV,ldV   number of rows and columns and leading dimension of V, W and BV
  * h           input rotation matrix
  * nh          Number of columns of h
  * ldh         The leading dimension of h
@@ -153,19 +155,27 @@ void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *x,
  *
  * OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------
- * X0          Output matrix V*h(nX0b:nX0e-1) (optional)
- * nX0b, nX0e  Range of columns of h
- * X1          Output matrix V*h(nX1b:nX1e-1) (optional)
- * nX1b, nX1e  Range of columns of h
- * X2          Output matrix V*h(nX2b:nX2e-1) (optional)
- * nX2b, nX2e  Range of columns of h
- * Wo          Output matrix W*h(nWob:nWoe-1) (optional)
- * nWob, nWoe  Range of columns of h
- * R           Output matrix (optional)
- * nRb, nRe    Range of columns of h and hVals
- * Rnorms      Output array with the norms of R (optional)
- * rnorms      Output array with the extra residual vector norms (optional)
- * nrb, nre    Columns of residual vector to compute the norm
+ * X0             Output matrix V*h(nX0b:nX0e-1) (optional)
+ * nX0b, nX0e     Range of columns of h
+ * X1             Output matrix V*h(nX1b:nX1e-1) (optional)
+ * nX1b, nX1e     Range of columns of h
+ * X2             Output matrix V*h(nX2b:nX2e-1) (optional)
+ * nX2b, nX2e     Range of columns of h
+ * Wo             Output matrix W*h(nWob:nWoe-1) (optional)
+ * nWob, nWoe     Range of columns of h
+ * BX0            Output matrix BV*h(nBX0b:nBX0e-1) (optional)
+ * nBX0b, nBX0e   Range of columns of h
+ * BX1            Output matrix BV*h(nBX1b:nBX1e-1) (optional)
+ * nBX1b, nBX1e   Range of columns of h
+ * BX2            Output matrix BV*h(nBX2b:nBX2e-1) (optional)
+ * nBX2b, nBX2e   Range of columns of h
+ * R              Output matrix (optional)
+ * nRb, nRe       Range of columns of h and hVals
+ * Rnorms         Output array with the norms of R (optional)
+ * rnorms         Output array with the extra residual vector norms (optional)
+ * nrb, nre       Columns of residual vector to compute the norm
+ * xnorms         Output array with V*h(nxb:nxe-1) vector norms (optional)
+ * nxb, nxe       Columns of V*h to compute the norm
  * 
  * NOTE: n*e, n*b are zero-base indices of ranges where the first value is
  *       included and the last isn't.
@@ -173,49 +183,77 @@ void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *x,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
-      PRIMME_INT ldV, HSCALAR *h, int nh, int ldh, HREAL *hVals,
+int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, HSCALAR *h, int nh, int ldh, HREAL *hVals,
       SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
       SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
       SCALAR *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
       SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
       SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
+      SCALAR *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      SCALAR *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      SCALAR *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
       HREAL *rnorms, int nrb, int nre,
       HSCALAR *G, int nG, int ldG,
       HSCALAR *H, int nH, int ldH,
+      HREAL *xnorms, int nxb, int nxe,
       primme_context ctx) {
 
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
-   int nXb, nXe, nYb, nYe, ldX, ldY, ldG0=0, ldH0=0;
-   SCALAR *X, *Y;
+   int nXb, nXe, nYb, nYe, nBXb, nBXe, ldG0=0, ldH0=0;
+   PRIMME_INT ldX, ldY, ldBX;
+   SCALAR *X, *Y, *BX;
    HSCALAR *G0=NULL, *H0=NULL, *workGH = NULL;
 
    assert(mV <= ldV && nh <= ldh && (!G || nG <= ldG) && (!H || nH <= ldH));
 
-   nXb = min(min(min(min(min(min(X0 ? nX0b : INT_MAX, X1 ? nX1b : INT_MAX),
-                               X2 ? nX2b : INT_MAX),
-                           R ? nRb : INT_MAX),
-                       rnorms ? nrb : INT_MAX),
-                   G ? 0 : INT_MAX),
-         H ? 0 : INT_MAX);
-   nXe = max(max(max(max(max(X0 ? nX0e : 0, X1 ? nX1e : 0), R ? nRe : 0),
-                       rnorms ? nre : 0),
+   nXe = max(
+         max(max(max(max(max(X0 ? nX0e : 0, X1 ? nX1e : 0), !BV && R ? nRe : 0),
+                       !BV && rnorms ? nre : 0),
                    G ? nG : 0),
-         H ? nH : 0);
-   nYb = min(min(min(Wo ? nWob : INT_MAX, R ? nRb : INT_MAX),
-                   rnorms ? nrb : INT_MAX),
-         H ? 0 : INT_MAX);
+               H ? nH : 0),
+         xnorms ? nxe : 0);
+   nXb = min(
+         min(min(min(min(min(min(min(X0 ? nX0b : INT_MAX, X1 ? nX1b : INT_MAX),
+                                   X2 ? nX2b : INT_MAX),
+                               !BV && R ? nRb : INT_MAX),
+                           !BV && rnorms ? nrb : INT_MAX),
+                       G ? 0 : INT_MAX),
+                   H ? 0 : INT_MAX),
+               xnorms ? nxb : INT_MAX),
+         nXe);
+
    nYe = max(
          max(max(Wo ? nWoe : 0, R ? nRe : 0), rnorms ? nre : 0), H ? nH : 0);
+   nYb = min(min(min(min(Wo ? nWob : INT_MAX, R ? nRb : INT_MAX),
+                       rnorms ? nrb : INT_MAX),
+                   H ? 0 : INT_MAX),
+         nYe);
+
+   nBXe = max(max(max(max(BX0 ? nBX0e : 0, BX1 ? nBX1e : 0), BV && R ? nRe : 0),
+                    BV && rnorms ? nre : 0),
+         G ? nG : 0);
+   nBXb = min(min(min(min(min(min(BX0 ? nBX0b : INT_MAX, BX1 ? nBX1b : INT_MAX),
+                                BX2 ? nBX2b : INT_MAX),
+                            BV && R ? nRb : INT_MAX),
+                        BV && rnorms ? nrb : INT_MAX),
+                    BV && G ? 0 : INT_MAX),
+         nBXe);
 
    assert(nXe <= nh || nXb >= nXe); /* Check dimension */
    assert(nYe <= nh || nYb >= nYe); /* Check dimension */
+   assert(nBXe <= nh || nBXb >= nXe); /* Check dimension */
 
-   CHKERR(Num_malloc_Sprimme(m*(nXe-nXb), &X, ctx));
-   CHKERR(Num_malloc_Sprimme(m*(nYe-nYb), &Y, ctx));
-   ldX = ldY = m;
+   CHKERR(Num_malloc_Sprimme(m * max(0, nXe - nXb), &X, ctx));
+   CHKERR(Num_malloc_Sprimme(m * max(0, nYe - nYb), &Y, ctx));
+   CHKERR(Num_malloc_Sprimme(m * max(0, nBXe - nBXb), &BX, ctx));
+   ldX = ldY = ldBX = m;
+   Num_zero_matrix_Sprimme(X, m, max(0, nXe - nXb), ldX, ctx);
+   Num_zero_matrix_Sprimme(Y, m, max(0, nYe - nYb), ldY, ctx);
+   Num_zero_matrix_Sprimme(BX, m, max(0, nBXe - nBXb), ldBX, ctx);
+
    int nGH = (G ? nG * nG : 0) + (H ? nH * nH : 0);
    if (ctx.numProcs > 1) {
       CHKERR(Num_malloc_SHprimme(nGH, &workGH, ctx));
@@ -237,6 +275,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = 0.0;
    if (G) Num_zero_matrix_SHprimme(G0, nG, nG, ldG0, ctx);
    if (H) Num_zero_matrix_SHprimme(H0, nH, nH, ldH0, ctx);
+   if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = 0.0;
 
    for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
       /* X = V*h(nXb:nXe-1) */
@@ -263,31 +302,48 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       if (Wo) Num_copy_matrix_Sprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
             ldY, &Wo[i], ldWo, ctx);
 
-      /* R = Y(nRb-nYb:nRe-nYb-1) - X(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
+      /* BX = BV*h(nBXb:nBXe-1) */
+
+      CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nBXe-nBXb, nV, 1.0,
+         &BV[i], ldV, &h[nBXb*ldh], ldh, 0.0, BX, ldBX, ctx));
+
+      /* BX0 = BX(nX0b-nXb:nX0e-nXb-1) */
+      if (BX0) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX0b-nBXb)], m, nBX0e-nBX0b,
+            ldBX, &BX0[i], ldBX0, ctx);
+
+      /* BX1 = BX(nBX1b-nBXb:nBX1e-nBXb-1) */
+      if (BX1) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX1b-nBXb)], m, nBX1e-nBX1b,
+            ldBX, &BX1[i], ldBX1, ctx);
+
+      /* BX2 = BX(nBX2b-nBXb:nBX2e-nBXb-1) */
+      if (BX2) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX2b-nBXb)], m, nBX2e-nBX2b,
+            ldBX, &BX2[i], ldBX2, ctx);
+      /* R = Y(nRb-nYb:nRe-nYb-1) - BX(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
       if (R) for (j=nRb; j<nRe; j++) {
-         Num_compute_residual_Sprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               &R[i+ldR*(j-nRb)], ctx);
-         if (Rnorms) {
-            Rnorms[j-nRb] +=
-               REAL_PART(Num_dot_Sprimme(m, &R[i+ldR*(j-nRb)], 1,
-                        &R[i+ldR*(j-nRb)], 1, ctx));
+            Num_compute_residual_Sprimme(m, hVals[j],
+                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
+                  &Y[ldY * (j - nYb)], &R[i + ldR * (j - nRb)], ctx);
+            if (Rnorms) {
+               Rnorms[j - nRb] +=
+                     REAL_PART(Num_dot_Sprimme(m, &R[i + ldR * (j - nRb)], 1,
+                           &R[i + ldR * (j - nRb)], 1, ctx));
          }
       }
 
-      /* rnorms = Y(nrb-nYb:nre-nYb-1) - X(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
+      /* rnorms = Y(nrb-nYb:nre-nYb-1) - BX(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
       if (rnorms) for (j=nrb; j<nre; j++) {
-         Num_compute_residual_Sprimme(m, hVals[j], &X[ldX*(j-nXb)], &Y[ldY*(j-nYb)],
-               &Y[ldY*(j-nYb)], ctx);
-         rnorms[j-nrb] += 
-            REAL_PART(Num_dot_Sprimme(m, &Y[ldY*(j-nYb)], 1,
-                     &Y[ldY*(j-nYb)], 1, ctx));
+            Num_compute_residual_Sprimme(m, hVals[j],
+                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
+                  &Y[ldY * (j - nYb)], &Y[ldY * (j - nYb)], ctx);
+            rnorms[j - nrb] += REAL_PART(Num_dot_Sprimme(
+                  m, &Y[ldY * (j - nYb)], 1, &Y[ldY * (j - nYb)], 1, ctx));
       }
 
       /* G += X(:,0:nG-1)'*X(:,0:nG-1) */
 
       if (G) {
-         CHKERR(Num_gemm_ddh_Sprimme(
-               "C", "N", nG, nG, m, 1.0, X, ldX, X, ldX, 1.0, G0, ldG0, ctx));
+         CHKERR(Num_gemm_ddh_Sprimme("C", "N", nG, nG, m, 1.0, X, ldX,
+               BV ? BX : X, ldX, 1.0, G0, ldG0, ctx));
       }
 
       /* H = X(:,0:nH-1)'*Y(:,0:nH-1) */
@@ -295,6 +351,12 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
       if (H) {
          CHKERR(Num_gemm_ddh_Sprimme(
                "C", "N", nH, nH, m, 1.0, X, ldX, Y, ldY, 1.0, H0, ldH0, ctx));
+      }
+
+      /* xnorms = norm(X(nxb-nXb:nxe-nXb-1)) */
+      if (xnorms) for (j=nxb; j<nxe; j++) {
+            xnorms[j - nxb] += REAL_PART(Num_dot_Sprimme(
+                  m, &X[ldX * (j - nXb)], 1, &X[ldX * (j - nXb)], 1, ctx));
       }
    }
 
@@ -306,27 +368,33 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT mV, int nV,
    if (G) Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx);
    if (H) Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx);
 
-   /* Reduce Rnorms and rnorms and sqrt the results */
+   /* Reduce Rnorms, rnorms and xnorms and sqrt the results */
 
    if (ctx.numProcs > 1) {
       HREAL *tmp;
-      CHKERR(Num_malloc_RHprimme(max(nRe-nRb,0)+max(nre-nrb,0), &tmp, ctx));
+      CHKERR(Num_malloc_RHprimme(
+            max(nRe - nRb, 0) + max(nre - nrb, 0) + max(nxe - nxb, 0), &tmp,
+            ctx));
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
+      if (xnorms) for (i=nxb; i<nxe; i++) tmp[j++] = xnorms[i-nxb];
       if (j) CHKERR(globalSum_RHprimme(tmp, tmp, j, ctx));
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
+      if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = sqrt(tmp[j++]);
       CHKERR(Num_free_RHprimme(tmp, ctx));
    }
    else {
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
+      if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = sqrt(xnorms[i-nxb]);
    }
 
    CHKERR(Num_free_Sprimme(X, ctx));
    CHKERR(Num_free_Sprimme(Y, ctx));
+   CHKERR(Num_free_Sprimme(BX, ctx));
    CHKERR(Num_free_SHprimme(workGH, ctx));
 
    return 0; 
@@ -359,7 +427,7 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    if (blockSize <= 0) return 0;
    assert(primme->nLocal == nLocal);
 
-   t0 = primme_wTimer(0);
+   t0 = primme_wTimer();
 
    if (primme->correctionParams.precondition) {
       if (primme->ldOPs == 0
@@ -381,7 +449,7 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       Num_copy_matrix_Sprimme(V, nLocal, blockSize, ldV, W, ldW, ctx);
    }
 
-   primme->stats.timePrecond += primme_wTimer(0) - t0;
+   primme->stats.timePrecond += primme_wTimer() - t0;
 
    return 0;
 }
@@ -435,7 +503,7 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
    double t0=0.0;
 
    if (primme && primme->globalSumReal) {
-      t0 = primme_wTimer(0);
+      t0 = primme_wTimer();
 
       /* If it is a complex type, count real and imaginary part */
 #ifdef USE_COMPLEX
@@ -446,7 +514,7 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
             "Error returned by 'globalSumReal' %d", ierr);
 
       primme->stats.numGlobalSum++;
-      primme->stats.timeGlobalSum += primme_wTimer(0) - t0;
+      primme->stats.timeGlobalSum += primme_wTimer() - t0;
       primme->stats.volumeGlobalSum += count;
    }
    else {
@@ -457,6 +525,106 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
 }
 
 #endif /* USE_HOST */
+
+/*******************************************************************************
+ * Subroutine problemNorm - return an estimation of |Ax|+max(|\lambda|)*|Bx|,
+ * for |x|_B = 1.
+ *
+ * The lower bounds for |A| and |B| are estimated as follows. For standard
+ * problems, |A| is estimated as the largest eigenvalue in magnitude seen. For
+ * generalized problems, |Ax| is bound as |A|*|x|. |A|, |x| and |Bx| are
+ * estimated from these expressions:
+ *
+ *    max(|\lambda|) <= |B\A| -> |A| >= max(|\lambda|)/|inv(B)|
+ *
+ *    |x| <= sqrt(|inv(B)|
+ *
+ *    |Bx| <= sqrt(|B|)
+ * 
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * overrideUserEstimations    if nonzero, use estimations of |A| and |B| if
+ *                            they are larger than primme.aNorm and primme.BNorm 
+ * 
+ * OUTPUT
+ * ------
+ * return                     estimation of |A|+max(|\lambda|)*|B|
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+REAL problemNorm_Sprimme(
+      int overrideUserEstimations, struct primme_params *primme)
+{
+   REAL maxLambda = primme->stats.estimateLargestSVal;
+                     /* approximation of the largest eigenvalue of (A,B) */
+   REAL ANorm;       /* approximation of |A| */
+   REAL BNorm;       /* approximation of |B| */
+   REAL invBNorm;    /* approximation of |inv(B)| */ 
+
+   if (overrideUserEstimations) {
+      invBNorm = max(primme->invBNorm, primme->stats.estimateInvBNorm);
+      ANorm = max(primme->aNorm, primme->stats.estimateLargestSVal / invBNorm);
+      BNorm = max(primme->BNorm, primme->stats.estimateBNorm);
+   }
+   else {
+      invBNorm = (primme->invBNorm > 0.0 ? primme->invBNorm
+                                         : primme->stats.estimateInvBNorm);
+      ANorm = (primme->aNorm > 0.0
+                     ? primme->aNorm
+                     : primme->stats.estimateLargestSVal / invBNorm);
+      BNorm =
+            (primme->BNorm > 0.0 ? primme->BNorm : primme->stats.estimateBNorm);
+   }
+
+   return ANorm / sqrt(BNorm) + maxLambda * sqrt(invBNorm);
+}
+
+/*******************************************************************************
+ * Subroutine deltaEig - return an estimation of the minimum distance that
+ * that two distinct eigenvalues can have. We estimate that as the smallest
+ * e so that the eigenpair (\lambda+e,x) has residual vector norm smaller than 
+ * (|Ax| + max(|\lambda|)|Bx|)*\epsilon := |(A,B)|*\epsilon.
+ *
+ * If (\lambda,x) is an exact eigenpair, then |e| is constrain as
+ *
+ *    |Ax - (\lambda+e)Bx| = |e|*|Bx| <= |(A,B)|*\epsilon
+ *
+ * If x is B-normal, then x'*B*x = x'*chol(B)*chol(B)'*x = 1 and
+ * |chol(B)'*x| = 1. Therefore
+ *
+ *    |Bx| = |chol(B)*chol(B)'x| >= minsval(chol(B)) * |chol(B)'*x|
+ *                               >= sqrt(minsval(B))
+ *
+ * Therefore, |e| <= sqrt(|inv(B)|) * |(A,B)| * \epsilon
+ * 
+ * INPUT PARAMETERS
+ * ----------------
+ * overrideUserEstimations    if nonzero, use estimations of |A| and |B| if
+ *                            they are larger than primme.aNorm and primme.BNorm 
+ * 
+ * OUTPUT
+ * ------
+ * return                     estimation of the minimum distance
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+REAL deltaEig_Sprimme(
+      int overrideUserEstimations, struct primme_params *primme)
+{
+   REAL BNorm;
+
+   if (overrideUserEstimations) {
+      BNorm = max(primme->BNorm, primme->stats.estimateBNorm);
+   }
+   else {
+      BNorm =
+            (primme->BNorm > 0.0 ? primme->BNorm : primme->stats.estimateBNorm);
+   }
+
+   return problemNorm_Sprimme(overrideUserEstimations, primme) /
+          sqrt(BNorm) * MACHINE_EPSILON;
+}
 
 /*******************************************************************************
  * Function dist_dots - Computes several dot products in parallel

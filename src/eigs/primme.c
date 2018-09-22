@@ -120,7 +120,7 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
    SCALAR *evecs = (SCALAR *)evecs_; /* Change type of evecs */
 
    /* zero out the timer */
-   primme_wTimer(1);
+   double t0 = primme_wTimer();
 
    /* Set some defaults for sequential programs */
    if (primme->numProcs <= 1 && evals != NULL && evecs != NULL &&
@@ -209,7 +209,7 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
    /*----------------------------------------------------------------------*/
 
    CHKERR(main_iter_Sprimme(
-         evals, perm, evecs, primme->ldevecs, resNorms, &ret, ctx));
+         evals, perm, evecs, primme->ldevecs, resNorms, t0, &ret, ctx));
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
@@ -227,7 +227,7 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    primme_free_context(ctx);
 
-   primme->stats.elapsedTime = primme_wTimer(0);
+   primme->stats.elapsedTime = primme_wTimer() - t0;
    return ret;
 }
 
@@ -262,8 +262,6 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
    else if (primme->applyPreconditioner == NULL && 
             primme->correctionParams.precondition > 0 ) 
       ret = -8;
-   else if (primme->massMatrixMatvec != NULL)
-      ret = -9; 
    else if (primme->numEvals > primme->n)
       ret = -10;
    else if (primme->numEvals < 0)
@@ -328,6 +326,9 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
          && (primme->target == primme_closest_leq
             || primme->target == primme_closest_geq))
       ret = -38;
+   else if (primme->massMatrixMatvec &&
+            primme->projectionParams.projection != primme_proj_RR)
+      ret = -39;
    /* Please keep this if instruction at the end */
    else if ( primme->target == primme_largest_abs ||
              primme->target == primme_closest_geq ||
@@ -349,8 +350,8 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
 /*******************************************************************************
  * Subroutine convTestFunAbsolute - This routine implements primme_params.
  *    convTestFun and return an approximate eigenpair converged when           
- *    resNorm < eps*(aNorm != 0 ? aNorm : aNormEstimate) or
- *    resNorm is close to machineEpsilon * aNorm.          
+ *    resNorm < eps*|A| for standard problems, and
+ *    resNorm < (|A| + max(|\lambda|)*|B|)*eps for generalized problems
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -367,13 +368,17 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
       int *isConv, primme_params *primme, int *ierr) {
 
-   const double aNorm = (primme->aNorm > 0.0) ?
-      primme->aNorm : primme->stats.estimateLargestSVal;
    (void)eval; /* unused parameter */
    (void)evec; /* unused parameter */
-   *isConv = *rNorm < max(
-               primme->eps * aNorm,
-               MACHINE_EPSILON * 3.16 * primme->stats.estimateLargestSVal);
+
+   if (primme->massMatrixMatvec == NULL) {
+      *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON * 2) *
+                               problemNorm_Sprimme(0, primme);
+   }
+   else {
+      *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON) *
+                               problemNorm_Sprimme(0, primme);
+   }
    *ierr = 0;
 }
 
@@ -439,7 +444,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                fprintf(primme->outputFile, 
                      "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
                      primme->stats.numOuterIterations, found, i,
-                     primme->stats.numMatvecs, primme_wTimer(0),
+                     primme->stats.numMatvecs, primme->stats.elapsedTime,
                      basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
             }
          }
@@ -450,7 +455,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          if (primme->printLevel >= 4) {
             fprintf(primme->outputFile,
                   "INN MV %" PRIMME_INT_P " Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n",
-                  primme->stats.numMatvecs, primme_wTimer(0),
+                  primme->stats.numMatvecs, primme->stats.elapsedTime,
                   (double)basisEvals[iblock[0]], (double)*LSRes,
                   (double)basisNorms[iblock[0]]);
          }
@@ -463,7 +468,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                   "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
                   *numConverged, iblock[0], basisEvals[iblock[0]],
                   basisNorms[iblock[0]], primme->stats.numMatvecs,
-                  primme_wTimer(0));
+                  primme->stats.elapsedTime);
          break;
       case primme_event_locked:
          assert(numLocked && lockedEvals && lockedNorms && lockedFlags);
@@ -471,7 +476,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
             fprintf(primme->outputFile, 
                   "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
                   *numLocked-1, lockedEvals[*numLocked-1], lockedNorms[*numLocked-1], 
-                  primme->stats.numMatvecs, primme_wTimer(0), lockedFlags[*numLocked-1]);
+                  primme->stats.numMatvecs, primme->stats.elapsedTime, lockedFlags[*numLocked-1]);
          }
          break;
       default:

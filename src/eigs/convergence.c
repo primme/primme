@@ -45,11 +45,10 @@
 #include "auxiliary_eigs.h"
 #endif
 
-static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
-      PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
+static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
+      int evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
-      double tol, primme_context ctx);
-
+      double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx);
 
 /*******************************************************************************
  * Subroutine check_convergence - This procedure checks the block vectors for  
@@ -70,6 +69,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
  * hVals          The Ritz values
  * caller         caller function: 0: prepare_candidates, 1: restart_locking,
  *                                 2: main_iteration checking practical. conv.
+ * VtBV           evecs'*B*evecs
  * ctx            Structure containing various solver parameters
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
@@ -84,11 +84,11 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
-      int givenX, SCALAR *R, PRIMME_INT ldR, int givenR, SCALAR *evecs,
-      int numLocked, PRIMME_INT ldevecs, int left, int right, int *flags,
-      HREAL *blockNorms, HREAL *hVals, int *reset, int caller,
-      primme_context ctx) {
+int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
+      PRIMME_INT ldR, int givenR, SCALAR *evecs, int numLocked,
+      PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HSCALAR *VtBV,
+      int ldVtBV, int left, int right, int *flags, HREAL *blockNorms,
+      HREAL *hVals, int *reset, int caller, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -102,16 +102,17 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
 
    CHKERR(Num_malloc_iprimme(right-left, &toProject, ctx));
 
-   targetShift = primme->numTargetShifts > 0 ?
-      primme->targetShifts[min(primme->initSize, primme->numTargetShifts-1)] : 0.0;
- 
+   targetShift = primme->numTargetShifts > 0
+                       ? primme->targetShifts[min(
+                               primme->initSize, primme->numTargetShifts - 1)]
+                       : 0.0;
+
    /* -------------------------------------------- */
    /* Tolerance based on our dynamic norm estimate */
    /* -------------------------------------------- */
 
-   tol = max(MACHINE_EPSILON *
-                 max(primme->stats.estimateLargestSVal, primme->aNorm),
-             primme->stats.maxConvTol);
+   tol = max(MACHINE_EPSILON * problemNorm_Sprimme(1, primme),
+         primme->stats.maxConvTol);
 
    /* ---------------------------------------------------------------------- */
    /* If locking, set tol beyond which we need to check for accuracy problem */
@@ -128,7 +129,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
    for (i=left; i < right; i++) {
        
       /* Don't trust any residual norm below estimateResidualError */
-      blockNorms[i-left] = max(blockNorms[i-left], primme->stats.estimateResidualError);
+      blockNorms[i - left] =
+            max(blockNorms[i - left], primme->stats.estimateResidualError);
 
       /* Refine doesn't order the pairs considering closest_leq/gep. */
       /* Then ignore values so that value +-residual is completely   */
@@ -185,7 +187,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
       else {
          flags[i] = UNCONVERGED;
       }
-
    }
 
    /* --------------------------------------------------------------- */
@@ -194,9 +195,10 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
    /* --------------------------------------------------------------- */
 
    if (numToProject > 0) {
-      CHKERR(check_practical_convergence(R, nLocal, ldR, evecs,
-               primme->numOrthoConst+numLocked, ldevecs, left, toProject,
-               numToProject, flags, blockNorms, tol, ctx));
+      CHKERR(check_practical_convergence(R, ldR, evecs,
+            primme->numOrthoConst + numLocked, ldevecs, Bevecs, ldBevecs, left,
+            toProject, numToProject, flags, blockNorms, tol, VtBV, ldVtBV,
+            ctx));
    }
 
    CHKERR(Num_free_iprimme(toProject, ctx));
@@ -208,8 +210,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
 /*******************************************************************************
  * Subroutine check_practical_convergence(): for pairs whose residual norm is
  *    less than tol*sqrt(numConverged) but greater than tol, they will be
- *    flagged as converged if || R(i) - (I-QQ')R(i) || = || Q'R(i) || > tol and
- *    || (I-QQ')R(i) || < tol*tol/||R(i)||/2, where Q are the locked vectors.
+ *    flagged as converged if || (I-BQQ')R(i) || < tol, where Q are the locked
+ *    vectors.
  *
  *    NOTE: the routine removes evecs directions from the residual vectors,
  *          but blockNorms isn't changed.
@@ -226,7 +228,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
  * numToProject    Size of iev
  * blockNorms      The norms of the residual vectors starting by index 'left'
  * tol             The required convergence tolerance
- * primme          Structure containing various solver parameters
+ * VtBV            evecs'*B*evecs
+ * ctx             Structure containing various solver parameters
  *
  *
  * OUTPUT ARRAYS AND PARAMETERS
@@ -236,43 +239,25 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT nLocal, PRIMME_INT ldX,
  * flags           Indicates which Ritz pairs have converged
  ******************************************************************************/
 
-static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
-      PRIMME_INT ldR, SCALAR *evecs, int evecsSize, PRIMME_INT ldevecs,
+static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
+      int evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
-      double tol, primme_context ctx) {
+      double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;
-   HREAL *overlaps;
+   HREAL *norms;
 
-   /* ------------------------------------------------------------------ */
-   /* Compute norms of the projected res and the differences from res    */ 
-   /* note: ||residual - (I-QQ')residual||=||Q'*r||=||overlaps||         */
-   /* ------------------------------------------------------------------ */
+   /* R = (I-Bevecs*evecs')*R */
+   /* newResiduals(i) = || (I-Bevecs*evecs')*R(i) || */
 
-   /* R = (I-evecs*evecs)*R */
-   /* overlaps(i) = || evecs'*R(i) || */
-   /* newResiduals(i) = || (I-evecs*evecs')*R(i) || */
+   CHKERR(Num_malloc_RHprimme(numToProject, &norms, ctx));
 
-   CHKERR(Num_malloc_RHprimme(numToProject, &overlaps, ctx));
-
-   CHKERR(ortho_single_iteration_Sprimme(evecs, nLocal, evecsSize, ldevecs,
-            R, iev, numToProject, ldR, overlaps, NULL, ctx));
-
-   /* ------------------------------------------------------------------ */
-   /* For each projected residual check whether there is an accuracy     */
-   /* problem and, if so, declare it CONVERGED to lock later.            */
-   /* normDiff is a lower bound to the attainable accuracy for this pair */
-   /* so problems exist only if normDiff > tol. Then, we stop if Tol is  */
-   /* the geometric mean of normPr and r.                                */
-   /* ------------------------------------------------------------------ */
+   CHKERR(ortho_single_iteration_Sprimme(evecs, evecsSize, ldevecs,
+         Bevecs ? Bevecs : evecs, Bevecs ? ldBevecs : ldevecs, VtBV, ldVtBV, R,
+         iev, numToProject, ldR, norms, ctx));
 
    for (i=0; i < numToProject; i++) {
-
-      double normPr   = sqrt(max(0.0, blockNorms[iev[i]]*blockNorms[iev[i]]
-                               - overlaps[i]*overlaps[i]));  /* || (I-QQ')res || */
-      double normDiff = overlaps[i];                         /* || res - (I-QQ')res || */
-      double blockNorm = blockNorms[iev[i]];
 
       /* ------------------------------------------------------------------ */
       /* NOTE: previous versions than 2.0 used the next criterion instead:  */
@@ -282,24 +267,24 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT nLocal,
       /* Due to rounding-off errors in computing normDiff, the test         */
       /* normDiff >= tol may fail even it is satisfied in exact arithmetic. */
       /* ------------------------------------------------------------------ */
-      
-      if (normPr < normDiff*normDiff/blockNorm/2) {
+
+      blockNorms[iev[i]] = norms[i];
+     
+      if (norms[i] <= tol) {
          if (primme->printLevel >= 5 && primme->procID == 0) {
             fprintf(primme->outputFile,
-               " PRACTICALLY_CONVERGED %d norm(I-QQt)r %e bound %e\n",
-                left+iev[i],normPr,tol*tol/normDiff);
-                  fflush(primme->outputFile);
+                  " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e\n", left + iev[i],
+                  (double)blockNorms[i]);
+            fflush(primme->outputFile);
          }
          flags[left+iev[i]] = PRACTICALLY_CONVERGED;
       }
       else {
          flags[left+iev[i]] = UNCONVERGED;
       }
-      blockNorms[iev[i]] = normPr;
-
    }
 
-   CHKERR(Num_free_RHprimme(overlaps, ctx));
+   CHKERR(Num_free_RHprimme(norms, ctx));
 
    return 0;
 }

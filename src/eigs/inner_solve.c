@@ -51,29 +51,27 @@
 static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
       PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
       PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *UDU,
+      int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *Mfact,
       int *ipivot, SCALAR *result, PRIMME_INT ldresult, int blockSize,
       primme_context ctx);
 
 static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
-      PRIMME_INT ldQhat, HSCALAR *UDU, int *ipivot, int numCols, SCALAR *v,
+      PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
       PRIMME_INT ldv, int blockSize, primme_context ctx);
 
 static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
-      SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *X, PRIMME_INT ldX, int nX,
-      int blockSize, SCALAR *result, PRIMME_INT ldresult, primme_context ctx);
-
-static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
+      PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      SCALAR *result, PRIMME_INT ldresult, primme_context ctx);
 
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
  *    
- *           (I-QQ')(I-xx')(A-shift*I)(I-xx')(I-QQ')sol = -r 
+ *           (I-BQQ)(I-Bxx)(A-shift*B)(I-xx'B)(I-QQ'B)sol = -r 
  *
  *    with Q = evecs, using hermitian simplified QMR.
  *    A preconditioner may be applied to this system to accelerate convergence.
- *    The preconditioner is assumed to approximate (A-shift*I)^{-1}.  The
+ *    The preconditioner is assumed to approximate (A-shift*B)^{-1}.  The
  *    classical JD method as described in Templates for the Solution of 
  *    Eigenvalue Problems by Bai, et. al. requires that the preconditioner is 
  *    computed orthogonally to x and evecs. This code implements all 
@@ -84,41 +82,43 @@ static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *v,
  *
  * Input parameters
  * ----------------
- * x           The current Ritz vector for which the correction is being solved.
+ * x              The current Ritz vector for which the correction is being solved.
  *
- * r           The residual with respect to the Ritz vector.
+ * r              The residual with respect to the Ritz vector.
  *
- * evecs       The converged Ritz vectors
+ * evecs          The converged Ritz vectors
  *
- * evecsHat    K^{-1}*evecs where K is a hermitian preconditioner.
+ * evecsHat       K^{-1}*B*evecs where K is a hermitian preconditioner.
  *
- * UDU         The factors of the hermitian projection (evecs'*evecsHat). 
+ * Mfact          The factors of the hermitian projection (evecs'*evecsHat). 
  *
- * ipivot      The pivoting for the UDU factorization
+ * ipivot         The pivoting for the Mfact factorization
  *
- * xKinvx      The value x'*Kinv*x needed if skew-X projection
+ * xKinvBx        The value x'*Kinv*B*x needed if skew-X projection
  *
- * Lprojector  Points to an array that includes all the left projector.
- *             Can be any combination of [evecs x], [evecs], [x], NULL.
+ * LprojectorQ,   Points to an array that includes all the left projector.
+ * LprojectorX    Can be any combination of [evecs x], [evecs], [x], NULL.
  *
- * RprojectorQ Points to an array that includes the right skew projector for Q:
- *             It can be [evecsHat] or Null
+ * RprojectorQ    Points to an array that includes the right skew projector for Q:
+ *                It can be [evecsHat] or Null
  *
- * RprojectorX Points to an array that includes the right skew projector for x:
- *             It can be [Kinvx] or Null
+ * RprojectorX    Points to an array that includes the right skew projector for x:
+ *                It can be [Kinvx] or Null
  *
- * sizeLprojector   Number of colums of Lprojector
+ * sizeLprojectorQ   Number of colums of Lprojector
  *
- * sizeRprojectorQ  Number of colums of RprojectorQ
+ * sizeLprojectorX   Number of colums of Lprojector
  *
- * sizeRprojectorX  Number of colums of LprojectorX
+ * sizeRprojectorQ   Number of colums of RprojectorQ
  *
- * eval        The current Ritz value 
+ * sizeRprojectorX   Number of colums of LprojectorX
  *
- * shift       Correction eq. shift. The closer the shift is to the target 
- *             eigenvalue, the more accurate the correction will be.
+ * eval           The current Ritz value 
  *
- * primme      Structure containing various solver parameters
+ * shift          Correction eq. shift. The closer the shift is to the target 
+ *                eigenvalue, the more accurate the correction will be.
+ *
+ * ctx         Structure containing various solver parameters
  *
  *
  * Input/Output parameters
@@ -135,26 +135,28 @@ static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *v,
  *
  * Return Value
  * ------------
- * Error code: 0 upon success
- *            -1 apply_projected_preconditioner failed
+ * Error code
  *
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
-      PRIMME_INT ldr, HREAL *rnorm, SCALAR *evecs, PRIMME_INT ldevecs,
-      HSCALAR *UDU, int *ipivot, HSCALAR *xKinvx, SCALAR *LprojectorQ,
-      PRIMME_INT ldLprojectorQ, SCALAR *LprojectorX, PRIMME_INT ldLprojectorX,
-      SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX,
-      PRIMME_INT ldRprojectorX, int sizeLprojectorQ, int sizeLprojectorX,
-      int sizeRprojectorQ, int sizeRprojectorX, SCALAR *sol, PRIMME_INT ldsol,
-      HREAL *eval, double *shift, int *touch, primme_context ctx) {
+int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
+      PRIMME_INT ldBx, SCALAR *r, PRIMME_INT ldr, HREAL *rnorm, SCALAR *evecs,
+      PRIMME_INT ldevecs, HSCALAR *Mfact, int *ipivot, HSCALAR *xKinvBx,
+      SCALAR *LprojectorQ, PRIMME_INT ldLprojectorQ, SCALAR *LprojectorX,
+      PRIMME_INT ldLprojectorX, SCALAR *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      SCALAR *LprojectorBX, PRIMME_INT ldLprojectorBX, SCALAR *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, SCALAR *sol, PRIMME_INT ldsol, HREAL *eval,
+      double *shift, int *touch, double startTime, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
 
    /* QMR parameters */
 
+   PRIMME_INT nLocal = primme->nLocal;
    SCALAR *g, *d, *delta, *w;
    CHKERR(Num_malloc_Sprimme(nLocal * blockSize, &g, ctx));
    CHKERR(Num_malloc_Sprimme(nLocal * blockSize, &d, ctx));
@@ -178,6 +180,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
    double *eval_prev, *eres_updated;
    double *Gamma_prev, *Phi_prev;
    double *gamma;
+   HREAL *normBx;
    CHKERR(Num_malloc_dprimme(blockSize, &Beta_prev, ctx));
    CHKERR(Num_malloc_dprimme(blockSize, &Delta_prev, ctx));
    CHKERR(Num_malloc_dprimme(blockSize, &Psi_prev, ctx));
@@ -187,39 +190,44 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
    CHKERR(Num_malloc_dprimme(blockSize, &Gamma_prev, ctx));
    CHKERR(Num_malloc_dprimme(blockSize, &Phi_prev, ctx));
    CHKERR(Num_malloc_dprimme(blockSize, &gamma, ctx));
+   CHKERR(Num_malloc_RHprimme(blockSize, &normBx, ctx));
 
    /* Auxiliary arrays */
-   HREAL *dot_sol;
-   CHKERR(Num_malloc_RHprimme(blockSize, &dot_sol, ctx));
+   HREAL *dot_sol = NULL, *Bnormsol = NULL;
+   if (primme->correctionParams.convTest == primme_adaptive ||
+         primme->correctionParams.convTest == primme_adaptive_ETolerance) {
+      if (primme->massMatrixMatvec) {
+         CHKERR(Num_malloc_RHprimme(blockSize, &Bnormsol, ctx));
+      } else {
+         CHKERR(Num_malloc_RHprimme(blockSize, &dot_sol, ctx));
+      }
+   }
    int *p, *p0; /* permutation of the right-hand-sides and auxiliary permutation */
    CHKERR(Num_malloc_iprimme(blockSize, &p, ctx));
    CHKERR(Num_malloc_iprimme(blockSize, &p0, ctx));
     
    double LTolerance, ETolerance, LTolerance_factor, ETolerance_factor;
    int isConv;
-   double aNorm;
    int i;
-   PRIMME_INT nLocal = primme->nLocal;
 
    /* -----------------------------------------*/
    /* Set up convergence criteria by Tolerance */
    /* -----------------------------------------*/
 
-   aNorm = max(primme->stats.estimateLargestSVal, primme->aNorm);
    for (i=0; i<blockSize; i++) {
       tau_prev[i] = tau_init[i] = rnorm[i];       /* Assumes zero initial guess */
    }
 
    /* NOTE: In any case stop when linear system residual is less than         */
    /*       max(machEps,eps)*aNorm.                                           */
-   LTolerance = MACHINE_EPSILON*aNorm;
+   LTolerance = MACHINE_EPSILON * problemNorm_Sprimme(1, primme);
    LTolerance_factor = 1.0;
    ETolerance = 0.0;
    ETolerance_factor = 0.0;
 
    switch(primme->correctionParams.convTest) {
    case primme_full_LTolerance:
-      /* stop when linear system residual norm is less than aNorm*eps.        */
+      /* stop when linear system residual norm is less than problemNorm*eps.  */
       /* NOTE: the criterion is covered by the default values set before.     */
        break;
    case primme_decreasing_LTolerance:
@@ -230,11 +238,11 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
       (*touch)++;
       break;
    case primme_adaptive:
-      /* stop when estimate eigenvalue residual norm is less than aNorm*eps.  */
-      /* Eigenresidual tol may not be achievable, because it iterates on      */
-      /* P(A-s)P not on (A-s). But tau reflects the residual norm on P(A-s)P. */
-      /* So stop when linear system residual norm or the estimate eigenvalue  */
-      /* residual norm is less than aNorm*eps/1.8.                            */
+      /* stop when estimate eigenvalue residual norm is less than             */  
+      /* problemNorm*eps. Eigenresidual tol may not be achievable, because it */
+      /* iterates on  P(A-s)P not on (A-s). But tau reflects the residual norm*/
+      /* on P(A-s)P. So stop when linear system residual norm or the estimate */
+      /* eigenvalue residual norm is less than problemNorm*eps/1.8.           */
       LTolerance_factor = pow(1.8, -(double)*touch);
       ETolerance_factor = pow(1.8, -(double)*touch);
       break; 
@@ -275,7 +283,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
 
    CHKERR(apply_projected_preconditioner(g, nLocal, evecs, ldevecs, RprojectorQ,
          ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX, sizeRprojectorQ,
-         sizeRprojectorX, xKinvx, UDU, ipivot, d, nLocal, blockSize, ctx));
+         sizeRprojectorX, xKinvBx, Mfact, ipivot, d, nLocal, blockSize, ctx));
 
    for (i=0; i<blockSize; i++) Theta_prev[i] = 0.0L;
    for (i=0; i<blockSize; i++) eval_prev[i] = eval[i];
@@ -292,6 +300,15 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
    Num_zero_matrix_Sprimme(delta, nLocal, blockSize, nLocal, ctx);
    Num_zero_matrix_Sprimme(sol, nLocal, blockSize, ldsol, ctx);
 
+   if ((primme->correctionParams.convTest == primme_adaptive ||
+             primme->correctionParams.convTest == primme_adaptive_ETolerance) &&
+         primme->massMatrixMatvec) {
+      CHKERR(Num_dist_dots_real_Sprimme(
+            Bx, ldBx, Bx, ldBx, nLocal, blockSize, normBx, ctx));
+   } else {
+      for (i = 0; i < blockSize; i++) normBx[i] = 1.0;
+   }
+
    /*----------------------------------------------------------------------*/
    /*------------------------ Begin Inner Loop ----------------------------*/
    /*----------------------------------------------------------------------*/
@@ -301,8 +318,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
    for (numIts = 0; numIts < maxIterations && blockSize > 0; numIts++) {
 
       CHKERR(apply_projected_matrix(d, nLocal, shift, LprojectorQ,
-            ldLprojectorQ, sizeLprojectorQ, LprojectorX, ldLprojectorX,
-            sizeLprojectorX, blockSize, w, nLocal, ctx));
+            ldLprojectorQ, sizeLprojectorQ, LprojectorBQ, ldLprojectorBQ,
+            LprojectorX, ldLprojectorX, LprojectorBX,
+            ldLprojectorBX, sizeLprojectorX, blockSize, w, nLocal, ctx));
       CHKERR(Num_dist_dots_real_Sprimme(
             d, nLocal, w, nLocal, nLocal, blockSize, sigma_prev, ctx));
 
@@ -343,11 +361,10 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
       /* Apply permutation p0 and shrink blockSize */
       CHKERR(permute_vecs_iprimme(p, blockSize, p0, ctx));
       CHKERR(permute_vecs_dprimme(shift, 1, blockSize, 1, p0, ctx));
-      CHKERR(permute_vecs_SHprimme(xKinvx, 1, blockSize, 1, p0, ctx));
+      CHKERR(permute_vecs_SHprimme(xKinvBx, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(delta, nLocal, blockSize, nLocal, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(w, nLocal, blockSize, nLocal, p0, ctx));
       if (sizeLprojectorX) CHKERR(permute_vecs_Sprimme(LprojectorX, nLocal, blockSize, nLocal, p0, ctx));
       if (sizeRprojectorX) CHKERR(permute_vecs_Sprimme(RprojectorX, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(r, nLocal, blockSize, ldr, p0, ctx));
@@ -369,13 +386,14 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
 
 #ifdef USE_HOST
          int j;
-         dot_sol[i] = 0.0;
+         if (dot_sol) dot_sol[i] = 0.0;
          for (j = 0; j < nLocal; j++) {
             delta[i * nLocal + j] = delta[i * nLocal + j] * (HSCALAR)gamma[p[i]] +
                                     d[nLocal * i + j] * (HSCALAR)eta[p[i]];
             sol[ldsol * i + j] = delta[nLocal * i + j] + sol[ldsol * i + j];
-            dot_sol[i] +=
-                  REAL_PART(CONJ(sol[ldsol * i + j]) * sol[ldsol * i + j]);
+            if (dot_sol)
+               dot_sol[i] +=
+                     REAL_PART(CONJ(sol[ldsol * i + j]) * sol[ldsol * i + j]);
          }
 #else
          Num_scal_Sprimme(
@@ -384,12 +402,24 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
                &delta[i * nLocal], 1, ctx);
          Num_axpy_Sprimme(
                nLocal, 1.0, &delta[i * nLocal], 1, &sol[i * ldsol], 1, ctx);
-         dot_sol[i] = REAL_PART(Num_dot_Sprimme(
-               nLocal, &sol[i * ldsol], 1, &sol[i * ldsol], 1, ctx));
+         if (dot_sol)
+            dot_sol[i] = REAL_PART(Num_dot_Sprimme(
+                  nLocal, &sol[i * ldsol], 1, &sol[i * ldsol], 1, ctx));
 #endif
       }
 
-      CHKERR(globalSum_RHprimme(dot_sol, dot_sol, blockSize, ctx));
+      if (dot_sol) CHKERR(globalSum_RHprimme(dot_sol, dot_sol, blockSize, ctx));
+
+      /* Compute B-norm of sol if adapting stopping and a generalized problem is
+       * being solved */
+
+      if (Bnormsol) {
+         CHKERR(massMatrixMatvec_Sprimme(
+               sol, ldsol, nLocal, w, nLocal, 0, blockSize, ctx));
+
+         CHKERR(Num_dist_dots_real_Sprimme(
+               sol, ldsol, w, nLocal, nLocal, blockSize, Bnormsol, ctx));
+      }
 
       for (i=0; i<blockSize; i++) p0[i] = i;
       for (i = conv = 0; i < blockSize; i++) {
@@ -424,23 +454,25 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
             double Gamma = Gamma_prev[p[i]] + 2.0L * Psi + Phi;
 
             /* Perform the update: update the eigenvalue and the square of the
-             */
-            /* residual norm. */
+             * residual norm */
 
+            double Bnorm_x_plus_sol =
+                  1.0 + (primme->massMatrixMatvec ? Bnormsol[i] : dot_sol[i]);
             double eval_updated =
                   shift[i] +
-                  (eval[p[i]] - shift[i] + 2 * Beta + Gamma) / (1.0 + dot_sol[i]);
+                  (eval[p[i]] - shift[i] + 2 * Beta + Gamma) / Bnorm_x_plus_sol;
             double eres2_updated =
-                  ((double)tau[p[i]] * tau[p[i]]) / (1.0 + dot_sol[i]) +
-                  (((double)eval[p[i]] - shift[i] + Beta) *
+                  ((double)tau[p[i]] * tau[p[i]]) / Bnorm_x_plus_sol +
+                  (normBx[p[i]]*((double)eval[p[i]] - shift[i] + Beta) *
                         ((double)eval[p[i]] - shift[i] + Beta)) /
-                        (1.0 + dot_sol[i]) -
+                        Bnorm_x_plus_sol -
                   (eval_updated - shift[i]) * (eval_updated - shift[i]);
 
             /* If numerical problems, let eres about the same as tau */
             double eres_prev = eres_updated[p[i]];
             if (eres2_updated < 0) {
-               eres_updated[p[i]] = sqrt(((double)tau[p[i]] * tau[p[i]]) / (1.0 + dot_sol[i]));
+               eres_updated[p[i]] =
+                     sqrt(((double)tau[p[i]] * tau[p[i]]) / Bnorm_x_plus_sol);
             }
             else 
                eres_updated[p[i]] = sqrt(eres2_updated);
@@ -533,7 +565,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
                int ZERO = 0, ONE = 1;
                primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
                int err;
-               primme->stats.elapsedTime = primme_wTimer(0);
+               primme->stats.elapsedTime = primme_wTimer() - startTime;
                HREAL evalr = eval_updated, resr = eres_updated[p[i]], taur = tau[p[i]];
 
                CHKERRM((primme->monitorFun(&evalr, &ONE, NULL, &ZERO, &ONE,
@@ -570,7 +602,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
                primme_event EVENT_INNER_ITERATION =
                      primme_event_inner_iteration;
                int err;
-               primme->stats.elapsedTime = primme_wTimer(0);
+               primme->stats.elapsedTime = primme_wTimer() - startTime;
                HREAL evalr = eval[p[i]], resr = rnorm[p[i]], taur = tau[p[i]];
                CHKERRM((primme->monitorFun(&evalr, &ONE, &UNCO, &ZERO, &ONE,
                               &resr, NULL, NULL, NULL, NULL, NULL, &numIts,
@@ -585,11 +617,10 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
       /* Apply permutation p0 and shrink blockSize */
       CHKERR(permute_vecs_iprimme(p, blockSize, p0, ctx));
       CHKERR(permute_vecs_dprimme(shift, 1, blockSize, 1, p0, ctx));
-      CHKERR(permute_vecs_SHprimme(xKinvx, 1, blockSize, 1, p0, ctx));
+      CHKERR(permute_vecs_SHprimme(xKinvBx, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(delta, nLocal, blockSize, nLocal, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(w, nLocal, blockSize, nLocal, p0, ctx));
       if (sizeLprojectorX) CHKERR(permute_vecs_Sprimme(LprojectorX, nLocal, blockSize, nLocal, p0, ctx));
       if (sizeRprojectorX) CHKERR(permute_vecs_Sprimme(RprojectorX, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(r, nLocal, blockSize, ldr, p0, ctx));
@@ -602,7 +633,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
 
          CHKERR(apply_projected_preconditioner(g, nLocal, evecs, ldevecs,
                RprojectorQ, ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX,
-               sizeRprojectorQ, sizeRprojectorX, xKinvx, UDU, ipivot, w, nLocal,
+               sizeRprojectorQ, sizeRprojectorX, xKinvBx, Mfact, ipivot, w, nLocal,
                blockSize, ctx));
 
          CHKERR(Num_dist_dots_real_Sprimme(
@@ -651,6 +682,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
    CHKERR(Num_free_dprimme(Gamma_prev, ctx));
    CHKERR(Num_free_dprimme(Phi_prev, ctx));
    CHKERR(Num_free_dprimme(gamma, ctx));
+   CHKERR(Num_free_RHprimme(normBx, ctx));
+   CHKERR(Num_free_RHprimme(Bnormsol, ctx));
    CHKERR(Num_free_RHprimme(dot_sol, ctx));
    CHKERR(Num_free_iprimme(p, ctx));
    CHKERR(Num_free_iprimme(p0, ctx));
@@ -664,7 +697,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
  * Function apply_projected_preconditioner - This routine applies the
  *    projected preconditioner to a vector v by computing:
  *
- *         result = (I-Kinvx/xKinvx*x') (I - Qhat (Q'*Qhat)^{-1}Q') Kinv*v
+ *         result = (I-KinvBx/xKinvBx*x') (I - Qhat (Q'*Qhat)^{-1}Q') Kinv*v
  *
  *    First we apply the preconditioner Kinv*v, and then the two projectors 
  *    are computed one after the other.
@@ -675,26 +708,23 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
  *
  * Q      The matrix evecs where evecs are the locked/converged eigenvectors
  *
- * RprojectorQ     The matrix K^{-1}Q (often called Qhat), Q, or nothing,
+ * RprojectorQ     The matrix K^{-1}BQ (often called Qhat), Q, or nothing,
  *                 as determined by setup_JD_projectors.
  *
  * x               The current Ritz vector.
  *
- * RprojectorX     The matrix K^{-1}x (if needed)
+ * RprojectorX     The matrix K^{-1}Bx (if needed)
  *
  * sizeRprojectorQ The number of columns in RprojectorQ
  *
  * sizeRprojectorX The number of columns in RprojectorX
  *
- * xKinvx The value x^T (Kinv*x). It is computed in the setup_JD_projectors
+ * xKinvBx The value x^T (Kinv*B*x). It is computed in the setup_JD_projectors
  *
- * UDU    The UDU decomposition of (Q'*K^{-1}*Q).  See LAPACK routine dsytrf
- *        for more details
+ * Mfact  The factorization of (Q'*K^{-1}*B*Q).
  *
- * ipivot Permutation array indicating how the rows of the UDU decomposition
+ * ipivot Permutation array indicating how the rows of the Mfact decomposition
  *        have been pivoted.
- *
- * rwork  Real work array of size 2*sizeRprojectorQ=(2*orthoConst+2*numEvals)
  *
  * primme   Structure containing various solver parameters.
  *
@@ -708,9 +738,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *r,
 static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
       PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
       PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *UDU,
-      int *ipivot, SCALAR *result, PRIMME_INT ldresult, int blockSize,
-      primme_context ctx) {
+      int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvBx,
+      HSCALAR *Mfact, int *ipivot, SCALAR *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx) {
 
    assert(sizeRprojectorX == 0 || sizeRprojectorX == blockSize);
 
@@ -719,7 +749,7 @@ static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
    CHKERR(applyPreconditioner_Sprimme(v, primme->nLocal, ldv, result,
             ldresult, blockSize, ctx));
 
-   CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, UDU, ipivot,
+   CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, Mfact, ipivot,
             sizeRprojectorQ, result, ldresult, blockSize, ctx));
 
    if (sizeRprojectorX <= 0) return 0;
@@ -727,7 +757,7 @@ static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
    int i;
    for (i=0; i<blockSize; i++) {
       CHKERR(apply_skew_projector(&x[ldx * i], ldx,
-            &RprojectorX[ldRprojectorX * i], ldRprojectorX, &xKinvx[i], NULL,
+            &RprojectorX[ldRprojectorX * i], ldRprojectorX, &xKinvBx[i], NULL,
             1, &result[ldresult * i], ldresult, 1, ctx));
    }
 
@@ -746,15 +776,13 @@ static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
  * ----------------
  * Q       The matrix of converged Ritz vectors and the current Ritz vector
  *
- * Qhat    The matrix of K^{-1}Q
+ * Qhat    The matrix of K^{-1}BQ
  *
- * UDU     The factorization of the (Q'*Qhat) matrix
+ * Mfact   The factorization of the (Q'*Qhat) matrix
  *
- * ipivot  The pivot array for the UDU factorization
+ * ipivot  The pivot array for the Mfact factorization
  *
  * numCols Number of columns of Q and Qhat
- *
- * rwork   Work array of size 2*numCols
  *
  * Input/Output Parameters
  * -----------------------
@@ -763,7 +791,7 @@ static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
  ******************************************************************************/
 
 static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
-      PRIMME_INT ldQhat, HSCALAR *UDU, int *ipivot, int numCols, SCALAR *v,
+      PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
       PRIMME_INT ldv, int blockSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -781,11 +809,11 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
    CHKERR(globalSum_SHprimme(overlaps, overlaps, numCols * blockSize, ctx));
 
    /* Backsolve only if there is a skew projector */
-   if (UDU != NULL) {
+   if (Mfact != NULL) {
       /* Solve (Q'Qhat)^{-1}*overlaps = overlaps = Q'*v for alpha by */
-      /* backsolving  with the UDU decomposition.                 */
+      /* backsolving  with Mfact.                 */
 
-      CHKERR(UDUSolve_SHprimme(UDU, ipivot, numCols, overlaps, blockSize,
+      CHKERR(MSolve_SHprimme(Mfact, ipivot, numCols, overlaps, blockSize,
             numCols, overlaps, numCols, ctx));
    }
 
@@ -801,8 +829,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 
 /*******************************************************************************
  * Subroutine apply_projected_matrix - This subroutine applies the 
- *    projected matrix (I-Q*Q')*(A-shift*I) to a vector v by computing 
- *    (A-shift*I)v then orthogonalizing the result with Q.
+ *    projected matrix (I-BX*X)*(I-BQ*Q)*(A-shift*B) to a vector v
  *
  * Input Parameters
  * ----------------
@@ -811,6 +838,8 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
  * shift  The amount the matrix is shifted by.
  *
  * Q      The converged Ritz vectors and the current Ritz vector
+ *
+ * BQ     B*Q
  *
  * dimQ   The number of columns of Q
  * 
@@ -826,66 +855,56 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
  ******************************************************************************/
 
 static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
-      SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *X, PRIMME_INT ldX, int nX,
-      int blockSize, SCALAR *result, PRIMME_INT ldresult, primme_context ctx) {
+      SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
+      PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      SCALAR *result, PRIMME_INT ldresult, primme_context ctx) {
 
    assert(nX == 0 || nX == blockSize);
    primme_params *primme = ctx.primme;
 
+   /* result = A * v */
+
    CHKERR(matrixMatvec_Sprimme(
          v, primme->nLocal, ldv, result, ldresult, 0, blockSize, ctx));
+
+   /* Bv = B * v */
+
+   SCALAR *Bv;
+   PRIMME_INT ldBv;
+   if (primme->massMatrixMatvec) {
+      ldBv = primme->ldOPs;
+      CHKERR(Num_malloc_Sprimme(ldBv * blockSize, &Bv, ctx));
+      CHKERR(massMatrixMatvec_Sprimme(
+            v, primme->nLocal, ldv, Bv, ldBv, 0, blockSize, ctx));
+   } else {
+      ldBv = ldv;
+      Bv = v;
+   }
+
+   /* result -= shift * Bv */
+
    int i;
    for (i = 0; i < blockSize; i++) {
-      Num_axpy_Sprimme(primme->nLocal, -shift[i], &v[ldv * i], 1,
+      Num_axpy_Sprimme(primme->nLocal, -shift[i], &Bv[ldBv * i], 1,
             &result[ldresult * i], 1, ctx);
    }
-   CHKERR(apply_projector(Q, ldQ, nQ, result, ldresult, blockSize, ctx));
-   if (nX <= 0) return 0;
-   for (i = 0; i < blockSize; i++) {
-      CHKERR(apply_projector(&X[ldX * i], ldX, 1, &result[ldresult * i],
-            ldresult, 1, ctx));
+
+   if (primme->massMatrixMatvec) {
+      CHKERR(Num_free_Sprimme(Bv, ctx));
    }
 
-   return 0;
-}
-   
+   /* result = (I-BQ*Q')*result */
 
-/*******************************************************************************
- * Subroutine apply_projector - Apply the projector (I-Q*Q') to a vector v and
- *   place the result in v.  Q is the matrix of converged Ritz vectors and the
- *   current Ritz vector.
- *
- * Input Parameters
- * ----------------
- * Q       The matrix of converged Ritz vectors and the current Ritz vector
- *
- * nLocal  The number of rows of Q and v the process has
- * 
- * numCols Number of columns of Q
- *
- * rwork   Work array of size 2*numCols
- *
- * Input/Output Parameters
- * -----------------------
- * v       The vector to be orthogonalized against Q
- * 
- ******************************************************************************/
+   CHKERR(apply_skew_projector(
+         Q, ldQ, BQ, ldBQ, NULL, NULL, nQ, result, ldresult, blockSize, ctx));
 
-static int apply_projector(SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx) {
+   /* result = (I-BX*X)*result for each vector */
 
-   primme_params *primme = ctx.primme;
-   HSCALAR *overlaps;  /* overlaps of v with columns of Q   */
-
-   CHKERR(Num_malloc_SHprimme(nQ * blockSize, &overlaps, ctx));
-
-   CHKERR(Num_gemm_ddh_Sprimme("C", "N", nQ, blockSize, primme->nLocal, 1.0, Q,
-         ldQ, v, ldv, 0.0, overlaps, nQ, ctx));
-   CHKERR(globalSum_SHprimme(overlaps, overlaps, nQ * blockSize, ctx));
-   CHKERR(Num_gemm_dhd_Sprimme("N", "N", primme->nLocal, blockSize, nQ, -1.0, Q,
-         ldQ, overlaps, nQ, 1.0, v, ldv, ctx));
-
-   CHKERR(Num_free_SHprimme(overlaps, ctx));
+   if (nX <= 0) return 0;
+   for (i = 0; i < blockSize; i++) {
+      CHKERR(apply_skew_projector(&X[ldX * i], ldX, &BX[ldBX * i], ldBX, NULL,
+            NULL, 1, &result[ldresult * i], ldresult, 1, ctx));
+   }
 
    return 0;
 }

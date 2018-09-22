@@ -68,6 +68,8 @@ void primme_initialize(primme_params *primme) {
    primme->numEvals                = 1;
    primme->target                  = primme_smallest;
    primme->aNorm                   = 0.0L;
+   primme->BNorm                   = 0.0L;
+   primme->invBNorm                = 0.0L;
    primme->eps                     = 0.0;
 
    /* Matvec and preconditioner */
@@ -136,6 +138,8 @@ void primme_initialize(primme_params *primme) {
    primme->stats.estimateMinEVal               = -HUGE_VAL;
    primme->stats.estimateMaxEVal               = HUGE_VAL;
    primme->stats.estimateLargestSVal           = -HUGE_VAL;
+   primme->stats.estimateBNorm                 = -HUGE_VAL;
+   primme->stats.estimateInvBNorm              = -HUGE_VAL;
    primme->stats.maxConvTol                    = 0.0;
    primme->stats.estimateResidualError         = 0.0;
    primme->stats.lockingIssue                  = 0;
@@ -143,6 +147,7 @@ void primme_initialize(primme_params *primme) {
    /* Optional user defined structures */
    primme->matrix                  = NULL;
    primme->preconditioner          = NULL;
+   primme->massMatrix              = NULL;
 
    /* Internally used variables */
    primme->iseed[0] = -1;   /* To set iseed, we first need procID           */
@@ -590,6 +595,8 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    fprintf(outputFile, "\n// Solver parameters\n");
    PRINT(numEvals, %d);
    PRINT(aNorm, %e);
+   PRINT(BNorm, %e);
+   PRINT(invBNorm, %e);
    PRINT(eps, %e);
    PRINT(maxBasisSize, %d);
    PRINT(minRestartSize, %d);
@@ -783,6 +790,12 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_aNorm:
               v->double_v = primme->aNorm;
       break;
+      case PRIMME_BNorm:
+              v->double_v = primme->BNorm;
+      break;
+      case PRIMME_invBNorm:
+              v->double_v = primme->invBNorm;
+      break;
       case PRIMME_eps:
               v->double_v = primme->eps;
       break;
@@ -794,6 +807,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_matrix:
               v->ptr_v = primme->matrix;
+      break;
+      case PRIMME_massMatrix:
+              v->ptr_v = primme->massMatrix;
       break;
       case PRIMME_preconditioner:
               v->ptr_v = primme->preconditioner;
@@ -878,6 +894,12 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_estimateLargestSVal:
               v->double_v = primme->stats.estimateLargestSVal;
+      break;
+      case PRIMME_stats_estimateBNorm:
+              v->double_v = primme->stats.estimateBNorm;
+      break;
+      case PRIMME_stats_estimateInvBNorm:
+              v->double_v = primme->stats.estimateInvBNorm;
       break;
       case PRIMME_stats_lockingIssue:
               v->int_v = primme->stats.lockingIssue;
@@ -1036,6 +1058,12 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_aNorm:
               primme->aNorm = *v.double_v;
       break;
+      case PRIMME_BNorm:
+              primme->BNorm = *v.double_v;
+      break;
+      case PRIMME_invBNorm:
+              primme->invBNorm = *v.double_v;
+      break;
       case PRIMME_eps:
               primme->eps = *v.double_v;
       break;
@@ -1048,6 +1076,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_matrix:
               primme->matrix = v.ptr_v;
+      break;
+      case PRIMME_massMatrix:
+              primme->massMatrix = v.ptr_v;
       break;
       case PRIMME_preconditioner:
               primme->preconditioner = v.ptr_v;
@@ -1146,6 +1177,12 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_estimateLargestSVal:
               primme->stats.estimateLargestSVal = *v.double_v;
       break;
+      case PRIMME_stats_estimateBNorm:
+              primme->stats.estimateBNorm = *v.double_v;
+      break;
+      case PRIMME_stats_estimateInvBNorm:
+              primme->stats.estimateInvBNorm = *v.double_v;
+      break;
       case PRIMME_stats_maxConvTol:
               primme->stats.maxConvTol = *v.double_v;
       break;
@@ -1243,10 +1280,13 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(maxOuterIterations           , maxOuterIterations);
    IF_IS(iseed                        , iseed);
    IF_IS(aNorm                        , aNorm);
+   IF_IS(BNorm                        , BNorm);
+   IF_IS(invBNorm                     , invBNorm);
    IF_IS(eps                          , eps);
    IF_IS(printLevel                   , printLevel);
    IF_IS(outputFile                   , outputFile);
    IF_IS(matrix                       , matrix);
+   IF_IS(massMatrix                   , massMatrix);
    IF_IS(preconditioner               , preconditioner);
    IF_IS(initBasisMode                , initBasisMode);
    IF_IS(projection_projection        , projectionParams_projection);
@@ -1277,6 +1317,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_estimateMinEVal        , stats_estimateMinEVal);
    IF_IS(stats_estimateMaxEVal        , stats_estimateMaxEVal);
    IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
+   IF_IS(stats_estimateBNorm          , stats_estimateBNorm);
+   IF_IS(stats_estimateInvBNorm       , stats_estimateInvBNorm);
    IF_IS(stats_maxConvTol             , stats_maxConvTol);
    IF_IS(stats_lockingIssue           , stats_lockingIssue);
    IF_IS(convTestFun                  , convTestFun);
@@ -1360,6 +1402,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_stats_estimateMinEVal:
       case PRIMME_stats_estimateMaxEVal:
       case PRIMME_stats_estimateLargestSVal:
+      case PRIMME_stats_estimateBNorm:
+      case PRIMME_stats_estimateInvBNorm:
       case PRIMME_stats_maxConvTol:
       if (type) *type = primme_double;
       if (arity) *arity = 1;
@@ -1379,6 +1423,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_massMatrixMatvec:
       case PRIMME_outputFile:
       case PRIMME_matrix:
+      case PRIMME_massMatrix:
       case PRIMME_preconditioner:
       case PRIMME_convTestFun:
       case PRIMME_convtest:

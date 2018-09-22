@@ -96,7 +96,7 @@ int  Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
       if (ABS(beta) == 0.0) {
          Num_zero_matrix_Sprimme(c, m, n, ldc, ctx);
       }
-      else {
+      else if (beta != (HSCALAR)1.0) {
          int i;
          for (i=0; i<n; i++) {
             Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx);
@@ -626,7 +626,9 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_malloc_iprimme(5*n, &iwork, ctx));
    CHKERR(Num_malloc_iprimme(n, &ifail, ctx));
 
-   Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n, ctx);
+   Num_copy_trimatrix_Sprimme(b0, n, n, ldb0,
+         *uplo == 'U' || *uplo == 'u' ? 0 : 1, 0, b, n,
+         0 /*not to zero rest of the matrix */);
 
    /* Call to know the optimal workspace */
 
@@ -786,65 +788,56 @@ int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
-   SCALAR *work, int ldwork, int *info) {
+int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
+   primme_context ctx) {
 #ifndef USE_ZGESV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT *lipivot;
-   PRIMME_BLASINT lldwork = ldwork;
+   PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0; 
-   int i;
-   SCALAR dummys=0;
-   PRIMME_BLASINT dummyi=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) {*info = 0; return;}
+
+   if (n == 0) return 0;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      if (MALLOC_PRIMME(n, &lipivot) != 0) {
-         *info = -1;
-         return;
-      }
+      CHKERR(Num_malloc_iprimme(n, &lipivot, ctx));
    } else {
       lipivot = (PRIMME_BLASINT *)ipivot; /* cast avoid compiler warning */
    }
 
-   /* NULL matrices and zero leading dimension may cause problems */
-   if (a == NULL) a = &dummys;
-   if (llda < 1) llda = 1;
-   if (lipivot == NULL) lipivot = &dummyi;
+   /* Call to know the optimal workspace */
+   
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XHETRF(uplo, &ln, a, &llda, lipivot, &lwork0, &lldwork, &linfo);
+   lldwork = REAL_PART(lwork0);
 
-#  ifdef NUM_CRAY
-   _fcd uplo_fcd;
-
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   XHETRF(uplo_fcd, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
-#  else
-   XHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
-#  endif
+   if (linfo == 0) {
+      SCALAR *work;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XHETRF(uplo, &ln, a, &llda, lipivot, work, &lldwork, &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      if (ipivot) for(i=0; i<n; i++)
+      int i;
+      for(i=0; i<n; i++)
          ipivot[i] = (int)lipivot[i];
-      free(lipivot);
+      CHKERR(Num_free_iprimme(lipivot, ctx));
    }
-   *info = (int)linfo;
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrf with info %d\n",
+          (int)linfo);
+   return 0;
 
 #else /* USE_ZGESV */
-
-   *info = 0;
 
    /* Lapack's R core library doesn't have zhetrf. The functionality is       */
    /* implemented by replacing the input matrix with a full general matrix.   */
    /* And Num_zhetrs_Sprimme will solve the general linear system.            */
-
-   /* Return memory requirements */
-   if (ldwork == -1) {
-      work[0] = 0.0;
-      return;
-   }
 
    /* Copy the given upper/lower triangular part into the lower/upper part    */
 
@@ -864,6 +857,8 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
       }
    }
 
+   return 0;
+
 #endif
 }
 
@@ -872,8 +867,8 @@ void Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
-      int lda, int *ipivot, SCALAR *b, int ldb, int *info) {
+int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,
+      int *ipivot, SCALAR *b, int ldb, primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lnrhs = nrhs;
@@ -881,16 +876,14 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
    PRIMME_BLASINT *lipivot;
    PRIMME_BLASINT lldb = ldb;
    PRIMME_BLASINT linfo = 0; 
-   int i;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0 || nrhs == 0) {*info = 0; return;}
+
+   if (n == 0 || nrhs == 0) return 0;
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      if (MALLOC_PRIMME(n, &lipivot) != 0) {
-         *info = -1;
-         return;
-      }
+      CHKERR(Num_malloc_iprimme(n, &lipivot, ctx));
+      int i;
       for(i=0; i<n; i++) {
          lipivot[i] = (PRIMME_BLASINT)ipivot[i];
       }
@@ -899,22 +892,20 @@ void Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a,
    }
 
 #ifndef USE_ZGESV
-#  ifdef NUM_CRAY
-   _fcd uplo_fcd;
-
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   XHETRS(uplo_fcd, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
-#  else
    XHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
-#  endif
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrs with info %d\n",
+          (int)linfo);
 #else /* USE_ZGESV */
    XGESV(&ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d\n",
+          (int)linfo);
 #endif
 
    if (sizeof(int) != sizeof(PRIMME_BLASINT)) {
-      free(lipivot);
+      CHKERR(Num_free_iprimme(lipivot, ctx));
    }
-   *info = (int)linfo;
+
+   return 0;
 }
 
 /*******************************************************************************

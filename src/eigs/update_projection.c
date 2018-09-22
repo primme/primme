@@ -90,6 +90,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
    /* --------------------------------------------------------------------- */
 
    int m = numCols+blockSize;
+   Num_zero_matrix_SHprimme(&Z[ldZ * numCols], m, blockSize, ldZ, ctx);
    CHKERR(Num_gemm_ddh_Sprimme("C", "N", m, blockSize, nLocal, 1.0, X, ldX,
          &Y[ldY * numCols], ldY, 0.0, &Z[ldZ * numCols], ldZ, ctx));
 
@@ -108,6 +109,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
    */
 
    if (!isSymmetric) {
+      Num_zero_matrix_SHprimme(&Z[numCols], blockSize, numCols, ldZ, ctx);
       CHKERR(Num_gemm_ddh_Sprimme("C", "N", blockSize, numCols, nLocal, 1.0,
             &X[ldX * numCols], ldX, Y, ldY, 0.0, &Z[numCols], ldZ, ctx));
    }
@@ -191,6 +193,7 @@ int update_projection_gen_Sprimme(SCALAR *X, int nX0, int nX1, PRIMME_INT ldX,
    int nY = nY1-nY0;
    HSCALAR *rwork;
    CHKERR(Num_malloc_SHprimme(nX * nY, &rwork, ctx));
+   Num_zero_matrix_SHprimme(rwork, nX, nY, nX, ctx);
    Num_gemm_ddh_Sprimme("C", "N", nX, nY, nLocal, 1.0, &X[nX0 * ldX], ldX,
          &Y[ldY * nY0], ldY, 0.0, rwork, nX, ctx);
    CHKERR(globalSum_SHprimme(rwork, rwork, nX*nY, ctx));
