@@ -208,51 +208,50 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    HSCALAR *G0=NULL, *H0=NULL, *workGH = NULL;
 
    assert(mV <= ldV && nh <= ldh && (!G || nG <= ldG) && (!H || nH <= ldH));
+   assert(Rnorms == NULL || nRb >= nRe || nrb >= nre || Rnorms != rnorms);
 
-   nXe = max(
-         max(max(max(max(max(X0 ? nX0e : 0, X1 ? nX1e : 0), !BV && R ? nRe : 0),
-                       !BV && rnorms ? nre : 0),
-                   G ? nG : 0),
-               H ? nH : 0),
-         xnorms ? nxe : 0);
-   nXb = min(
-         min(min(min(min(min(min(min(X0 ? nX0b : INT_MAX, X1 ? nX1b : INT_MAX),
-                                   X2 ? nX2b : INT_MAX),
-                               !BV && R ? nRb : INT_MAX),
-                           !BV && rnorms ? nrb : INT_MAX),
-                       G ? 0 : INT_MAX),
-                   H ? 0 : INT_MAX),
-               xnorms ? nxb : INT_MAX),
-         nXe);
+   /* Figure out which columns of V*h, W*h and BV*h to compute */
 
-   nYe = max(
-         max(max(Wo ? nWoe : 0, R ? nRe : 0), rnorms ? nre : 0), H ? nH : 0);
-   nYb = min(min(min(min(Wo ? nWob : INT_MAX, R ? nRb : INT_MAX),
-                       rnorms ? nrb : INT_MAX),
-                   H ? 0 : INT_MAX),
-         nYe);
+   nXb = nYb = nBXb = INT_MAX;
+   nXe = nYe = nBXe = 0;
 
-   nBXe = max(max(max(max(BX0 ? nBX0e : 0, BX1 ? nBX1e : 0), BV && R ? nRe : 0),
-                    BV && rnorms ? nre : 0),
-         G ? nG : 0);
-   nBXb = min(min(min(min(min(min(BX0 ? nBX0b : INT_MAX, BX1 ? nBX1b : INT_MAX),
-                                BX2 ? nBX2b : INT_MAX),
-                            BV && R ? nRb : INT_MAX),
-                        BV && rnorms ? nrb : INT_MAX),
-                    BV && G ? 0 : INT_MAX),
-         nBXe);
+   if (X0 && nX0b < nX0e) nXb = min(nXb, nX0b), nXe = max(nXe, nX0e);
+   if (X1 && nX1b < nX1e) nXb = min(nXb, nX1b), nXe = max(nXe, nX1e);
+   if (X2 && nX2b < nX2e) nXb = min(nXb, nX2b), nXe = max(nXe, nX2e);
+   if (R && nRb < nRe && !BV) nXb = min(nXb, nRb), nXe = max(nXe, nRe);
+   if (G && nG > 0) nXb = min(nXb, 0), nXe = max(nXe, nG);
+   if (H && nH > 0) nXb = min(nXb, 0), nXe = max(nXe, nH);
+   if (rnorms && nrb < nre && !BV) nXb = min(nXb, nrb), nXe = max(nXe, nre);
+   if (xnorms && nxb < nxe) nXb = min(nXb, nxb), nXe = max(nXe, nxe);
+   nXe = max(nXe, nXb);
+
+   if (Wo && nWob < nWoe) nYb = min(nYb, nWob), nYe = max(nYe, nWoe);
+   if (R && nRb < nRe) nYb = min(nYb, nRb), nYe = max(nYe, nRe);
+   if (rnorms && nrb < nre) nYb = min(nYb, nrb), nYe = max(nYe, nre);
+   if (H && nH > 0) nYb = min(nYb, 0), nYe = max(nYe, nH);
+   nYe = max(nYe, nYb);
+
+   if (BV) {
+      if (BX0 && nBX0b < nBX0e) nBXb = min(nBXb, nBX0b), nBXe = max(nBXe, nBX0e);
+      if (BX1 && nBX1b < nBX1e) nBXb = min(nBXb, nBX1b), nBXe = max(nBXe, nBX1e);
+      if (BX2 && nBX2b < nBX2e) nBXb = min(nBXb, nBX2b), nBXe = max(nBXe, nBX2e);
+      if (R && nRb < nRe) nBXb = min(nBXb, nRb), nBXe = max(nBXe, nRe);
+      if (G && nG > 0) nBXb = min(nBXb, 0), nBXe = max(nBXe, nG);
+      if (rnorms && nrb < nre) nBXb = min(nBXb, nrb), nBXe = max(nBXe, nre);
+   }
+   nBXe = max(nBXe, nBXb);
 
    assert(nXe <= nh || nXb >= nXe); /* Check dimension */
    assert(nYe <= nh || nYb >= nYe); /* Check dimension */
    assert(nBXe <= nh || nBXb >= nXe); /* Check dimension */
 
-   CHKERR(Num_malloc_Sprimme(m * max(0, nXe - nXb), &X, ctx));
-   CHKERR(Num_malloc_Sprimme(m * max(0, nYe - nYb), &Y, ctx));
-   CHKERR(Num_malloc_Sprimme(m * max(0, nBXe - nBXb), &BX, ctx));
+   CHKERR(Num_malloc_Sprimme(m * (nXe - nXb), &X, ctx));
+   CHKERR(Num_malloc_Sprimme(m * (nYe - nYb), &Y, ctx));
+   CHKERR(Num_malloc_Sprimme(m * (nBXe - nBXb), &BX, ctx));
    ldX = ldY = ldBX = m;
-   Num_zero_matrix_Sprimme(X, m, max(0, nXe - nXb), ldX, ctx);
-   Num_zero_matrix_Sprimme(Y, m, max(0, nYe - nYb), ldY, ctx);
-   Num_zero_matrix_Sprimme(BX, m, max(0, nBXe - nBXb), ldBX, ctx);
+   Num_zero_matrix_Sprimme(X, m, nXe - nXb, ldX, ctx);
+   Num_zero_matrix_Sprimme(Y, m, nYe - nYb, ldY, ctx);
+   Num_zero_matrix_Sprimme(BX, m, nBXe - nBXb, ldBX, ctx);
 
    int nGH = (G ? nG * nG : 0) + (H ? nH * nH : 0);
    if (ctx.numProcs > 1) {
@@ -372,9 +371,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
 
    if (ctx.numProcs > 1) {
       HREAL *tmp;
-      CHKERR(Num_malloc_RHprimme(
-            max(nRe - nRb, 0) + max(nre - nrb, 0) + max(nxe - nxb, 0), &tmp,
-            ctx));
+      CHKERR(Num_malloc_RHprimme(nRe - nRb + nre - nrb + nxe - nxb, &tmp, ctx));
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];

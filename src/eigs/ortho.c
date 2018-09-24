@@ -648,15 +648,15 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
                D, Y, b2 - b1, NULL, 0, 0, NULL, 0, 0, A, ldA, ctx));
 
          /* Update BX */
-         CHKERR(B(&V[ldV * b1], ldV, BX, ldBV, b2 - b1, Bctx));
+         CHKERR(B(&V[ldV * b1], ldV, BX, ldBX, b2 - b1, Bctx));
 
          CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, NULL, 0,
                0, NULL, 0, 0, NULL, 0, NULL, NULL, 0, V, b2, ldV, BX, b2 - b1,
-               ldBV, A, ldA, ctx));
+               ldBX, A, ldA, ctx));
       } else {
          CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1,
                ldV, &V[ldV * b1], b2 - b1, ldV, its == 0 ? NULL : VLtBVLdA, nVL,
-               D, Y, b2 - b1, V, b2, ldV, BX, b2 - b1, ldBV, A, ldA, ctx));
+               D, Y, b2 - b1, V, b2, ldV, BX, b2 - b1, ldBX, A, ldA, ctx));
       }
       if (primme) primme->stats.numOrthoInnerProds += (numLocked+b2)*(b2-b1);
 

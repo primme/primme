@@ -259,13 +259,6 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       }
    }
    if (method == PRIMME_DYNAMIC) {
-      /* JDQMR works better than JDQMR_ETol in interior problems. */
-      if (primme->target == primme_smallest || primme->target == primme_largest) {
-         method = PRIMME_JDQMR_ETol;
-      }
-      else {
-         method = PRIMME_JDQMR;
-      }
       primme->dynamicMethodSwitch = 1;
    }
    else {
@@ -293,7 +286,8 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
    }
    else if (method == PRIMME_GD_plusK) {
       if (primme->restartingParams.maxPrevRetain <= 0) {
-         if (primme->maxBlockSize == 1 && primme->numEvals > 1) {
+         if ((primme->maxBlockSize == 1 && primme->numEvals > 1) ||
+               primme->massMatrixMatvec) {
             primme->restartingParams.maxPrevRetain = 2;
          }
          else {
@@ -306,7 +300,8 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
    }
    else if (method == PRIMME_GD_Olsen_plusK) {
       if (primme->restartingParams.maxPrevRetain <= 0) {
-         if (primme->maxBlockSize == 1 && primme->numEvals > 1) {
+         if ((primme->maxBlockSize == 1 && primme->numEvals > 1) ||
+               primme->massMatrixMatvec) {
             primme->restartingParams.maxPrevRetain = 2;
          }
          else {
@@ -319,7 +314,8 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
    }
    else if (method == PRIMME_JD_Olsen_plusK) {
       if (primme->restartingParams.maxPrevRetain <= 0) {
-         if (primme->maxBlockSize == 1 && primme->numEvals > 1) {
+         if ((primme->maxBlockSize == 1 && primme->numEvals > 1) ||
+               primme->massMatrixMatvec) {
             primme->restartingParams.maxPrevRetain = 2;
          }
          else {
@@ -442,7 +438,35 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.projectors.RightX  = 1;
       primme->correctionParams.projectors.SkewX   = 0;
    }
-   else {
+   else if (method == PRIMME_DYNAMIC) {
+      if (primme->restartingParams.maxPrevRetain <= 0) {
+         if ((primme->maxBlockSize == 1 && primme->numEvals > 1) ||
+               primme->massMatrixMatvec) {
+            primme->restartingParams.maxPrevRetain = 2;
+         }
+         else {
+            primme->restartingParams.maxPrevRetain = primme->maxBlockSize;
+         }
+      }
+      primme->correctionParams.maxInnerIterations = -1;
+      if (primme->correctionParams.precondition) {
+         primme->correctionParams.projectors.LeftQ   = 1;
+      }
+      else {
+         primme->correctionParams.projectors.LeftQ   = 0;
+      }
+      primme->correctionParams.projectors.LeftX   = 1;
+      primme->correctionParams.projectors.RightQ  = 0;
+      primme->correctionParams.projectors.RightX  = 0;
+      primme->correctionParams.projectors.SkewQ   = 0;
+      primme->correctionParams.projectors.SkewX   = 1;
+      if (primme->target == primme_smallest ||
+            primme->target == primme_largest) {
+         primme->correctionParams.convTest = primme_adaptive_ETolerance;
+      } else {
+         primme->correctionParams.convTest = primme_adaptive;
+      }
+   } else {
       return -1;
    }
 
@@ -799,6 +823,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_eps:
               v->double_v = primme->eps;
       break;
+      case PRIMME_orth:
+              v->int_v = primme->orth;
+      break;
       case PRIMME_printLevel:
               v->int_v = primme->printLevel;
       break;
@@ -1067,6 +1094,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_eps:
               primme->eps = *v.double_v;
       break;
+      case PRIMME_orth:
+              primme->orth = *v.int_v;
+      break;
       case PRIMME_printLevel:
               if (*v.int_v > INT_MAX) return 1; else 
               primme->printLevel = (int)*v.int_v;
@@ -1283,6 +1313,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(BNorm                        , BNorm);
    IF_IS(invBNorm                     , invBNorm);
    IF_IS(eps                          , eps);
+   IF_IS(orth                         , orth);
    IF_IS(printLevel                   , printLevel);
    IF_IS(outputFile                   , outputFile);
    IF_IS(matrix                       , matrix);
@@ -1353,6 +1384,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_maxMatvecs:
       case PRIMME_maxOuterIterations:
       case PRIMME_initBasisMode:
+      case PRIMME_orth:
       case PRIMME_projectionParams_projection:
       case PRIMME_restartingParams_maxPrevRetain:
       case PRIMME_correctionParams_precondition:
@@ -1510,6 +1542,12 @@ int primme_constant_info(const char* label_name, int *value) {
    IF_IS(primme_event_reset);
    IF_IS(primme_event_converged);
    IF_IS(primme_event_locked);
+
+   /* enum member from orth */
+
+   IF_IS(primme_orth_default);
+   IF_IS(primme_orth_explicit_I);
+   IF_IS(primme_orth_implicit_I);
 #undef IF_IS
 
    /* return error if label not found */

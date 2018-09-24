@@ -275,6 +275,7 @@ typedef enum {
    PRIMME_BNorm =  250,
    PRIMME_invBNorm =  251,
    PRIMME_eps =  26,
+   PRIMME_orth =  260,
    PRIMME_printLevel =  27,
    PRIMME_outputFile =  28,
    PRIMME_matrix =  29,

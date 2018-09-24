@@ -1474,17 +1474,17 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* blockNorms(basisSize:) = norms(R(basisSize:))                                             */
 
       assert(ldV == ldW); /* This functions only works in this way */
-      CHKERR(Num_update_VWXR_Sprimme(V, W, BV?BV:V, nLocal, basisSize, ldV,
+      CHKERR(Num_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
                hVecsBlock, basisSize, ldhVecs, hValsBlock,
                &X[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               &R[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV, &blockNorms[*blockSize],
+               &R[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV, computeXR?&blockNorms[*blockSize]:NULL,
                &BX[(*blockSize)*ldV], 0, BX?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               &blockNorms[*blockSize], 0, blockNormsSize,
+               &blockNorms[*blockSize], 0, !computeXR?blockNormsSize:0,
                NULL, 0, 0,
                NULL, 0, 0,
                &XNorms[*blockSize], 0, primme->massMatrixMatvec?blockNormsSize:0,
@@ -1652,6 +1652,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
          /* Always use GD+k. No further model updates */
          primme->dynamicMethodSwitch = -1;
          primme->correctionParams.maxInnerIterations = 0;
+         primme->correctionParams.projectors.RightX  = 1;
          if (primme->printLevel >= 3 && primme->procID == 0) 
             fprintf(primme->outputFile, 
             "Ratio: %e Switching permanently to GD+k\n", ratio);
@@ -1682,6 +1683,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
    if (ratio > 1.05) {
       primme->dynamicMethodSwitch = switchto; 
       primme->correctionParams.maxInnerIterations = 0;
+      primme->correctionParams.projectors.RightX  = 1;
    }
 
    model->accum_jdq += model->gdk_plus_MV_PR*ratio;
@@ -1757,6 +1759,7 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
    if (model->qmr_only == 0.0) {
       primme->dynamicMethodSwitch = switchto;
       primme->correctionParams.maxInnerIterations = -1;
+      primme->correctionParams.projectors.RightX  = 0;
       if (primme->printLevel >= 3 && primme->procID == 0) 
          fprintf(primme->outputFile, 
          "Ratio: N/A  GD+k switched to JDQMR (first time)\n");
@@ -1780,6 +1783,7 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
    if (ratio < 0.95) {
       primme->dynamicMethodSwitch = switchto;
       primme->correctionParams.maxInnerIterations = -1;
+      primme->correctionParams.projectors.RightX  = 0;
    } 
 
    model->accum_jdq += model->gdk_plus_MV_PR*ratio;
