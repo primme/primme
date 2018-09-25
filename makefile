@@ -42,10 +42,11 @@ all_tests:
 	@make -C tests veryclean all_tests
 
 matlab: clean clean_lib
-	@make lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64"
+	@make lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64" PRIMME_WITH_MAGMA=no
 	@make -C Matlab matlab
 
-octave: clean clean_lib lib
+octave: clean clean_lib
+	@make lib PRIMME_WITH_MAGMA=no
 	@make -C Matlab octave
 
 python: clean clean_lib lib
