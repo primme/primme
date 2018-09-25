@@ -596,6 +596,15 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
          primme->preconditioner = (void*)a;
          break;
       }
+      case PRIMME_massMatrixMatvec:
+      {
+         ASSERT_FUNCTION(2);
+         if (primme->massMatrix) mxDestroyArray((mxArray*)primme->massMatrix);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme->massMatrix = (void*)a;
+         break;
+      }
       case PRIMME_convTestFun:
       {
          ASSERT_FUNCTION(2);
@@ -629,7 +638,6 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_preconditioner:
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
-      case PRIMME_massMatrixMatvec:
       case PRIMME_monitor:
       case PRIMME_convtest:
          mexErrMsgTxt("Unsupported to set this option");
@@ -715,6 +723,11 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          plhs[0] = (mxArray*)primme->preconditioner;
          break;
       }
+      case PRIMME_massMatrixMatvec:
+      {
+         plhs[0] = (mxArray*)primme->massMatrix;
+         break;
+      }
       case PRIMME_convTestFun:
       {
          plhs[0] = (mxArray*)primme->convtest;
@@ -740,7 +753,6 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_convtest:
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
-      case PRIMME_massMatrixMatvec:
       case PRIMME_monitor:
          mexErrMsgTxt("Unsupported to set this option");
          break;
@@ -793,6 +805,12 @@ struct getMatrixField {
 struct getPreconditinerField {
    static void* get(primme_params *primme) {
       return primme->preconditioner;
+   }
+};
+
+struct getMassMatrixField {
+   static void *get(primme_params *primme) {
+      return primme->massMatrix;
    }
 };
 
@@ -988,6 +1006,9 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Set matvec and preconditioner and monitorFun and convTestFun
 
    primme->matrixMatvec = matrixMatvecEigs<T, getMatrixField>;
+   if (primme->massMatrix) {
+      primme->massMatrixMatvec = matrixMatvecEigs<T, getMassMatrixField>;
+   }
    if (primme->correctionParams.precondition) {
       primme->applyPreconditioner = matrixMatvecEigs<T, getPreconditinerField>;
    }

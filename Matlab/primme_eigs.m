@@ -3,14 +3,18 @@ function [varargout] = primme_eigs(varargin)
 %
 %   D = PRIMME_EIGS(A) returns a vector of A's 6 largest magnitude eigenvalues.
 %
-%   D = PRIMME_EIGS(AFUN,DIM) accepts a function AFUN instead of a matrix. AFUN
-%   is a function handle and y = AFUN(x) returns the matrix-vector product A*x.
-%   In all the following syntaxes, A can be replaced by AFUN,DIM.
+%   D = PRIMME_EIGS(A,B) returns a vector of the 6 largest magnitude eigenvalues
+%   of the generalized eigenproblem (A,B).
 %
-%   D = PRIMME_EIGS(A,K) finds the K largest magnitude eigenvalues. K must be
+%   D = PRIMME_EIGS(AFUN,DIM)
+%   D = PRIMME_EIGS(AFUN,BFUN,DIM) accepts the functions AFUN and BFUN instead
+%   of matrices. AFUN and BFUN are function handles. AFUN(x) and BFUN(x) return
+%   the matrix-vector product A*x and B*x.
+%
+%   D = PRIMME_EIGS(...,K) finds the K largest magnitude eigenvalues. K must be
 %   less than the dimension of the matrix A.
 %
-%   D = PRIMME_EIGS(A,K,TARGET) returns K eigenvalues such that: 
+%   D = PRIMME_EIGS(...,K,TARGET) returns K eigenvalues such that: 
 %     If TARGET is a real number, it finds the closest eigenvalues to TARGET.
 %     If TARGET is
 %       'LA' or 'SA', eigenvalues with the largest or smallest algebraic value
@@ -29,7 +33,7 @@ function [varargout] = primme_eigs(varargin)
 %       'CLT' or 'CGT', find eigenvalues closest to but less or greater than
 %                 the given values in OPTS.targetShifts.
 %
-%   D = PRIMME_EIGS(A,K,TARGET,OPTS) specifies extra solver parameters. Some
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS) specifies extra solver parameters. Some
 %     default values are indicated in brackets {}:
 %
 %     OPTS.aNorm: the estimated 2-norm of A {0.0 (estimate the norm internally)}
@@ -67,7 +71,7 @@ function [varargout] = primme_eigs(varargin)
 %   For detailed descriptions of the above options, visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide
 %
-%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD) specifies the eigensolver method:
 %     'DYNAMIC', (default)        switches dynamically to the best method
 %     'DEFAULT_MIN_TIME',         best method for low-cost matrix-vector product
 %     'DEFAULT_MIN_MATVECS',      best method for heavy matvec/preconditioner
@@ -88,8 +92,8 @@ function [varargout] = primme_eigs(varargin)
 %   For further description of the method visit:
 %   http://www.cs.wm.edu/~andreas/software/doc/appendix.html#preset-methods
 %
-%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P) 
-%   D = PRIMME_EIGS(A,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P) 
+%   D = PRIMME_EIGS(...,K,TARGET,OPTS,METHOD,P1,P2) uses preconditioner P or
 %   P = P1*P2 to accelerate convergence of the method. Applying P\x should
 %   approximate (A-sigma*eye(N))\x, for sigma near the wanted eigenvalue(s).
 %   If P is [] then a preconditioner is not applied. P may be a function 
@@ -134,6 +138,8 @@ function [varargout] = primme_eigs(varargin)
 %      opts.targetShifts = [2 20];
 %      d = primme_eigs(A,10,'SM',opts) % 1 eigenvalue closest to 2 and 
 %                                      % 9 eigenvalues closest to 20
+%      B = diag(100:-1:1);
+%      d = primme_eigs(A,B,10,'SM') % the 10 smallest magnitude eigenvalues
 %
 %      opts = struct();
 %      opts.tol = 1e-4; % set tolerance
@@ -166,7 +172,7 @@ function [varargout] = primme_eigs(varargin)
 
    % Check arity of input and output arguments
    minInputs = 1;
-   maxInputs = 8;
+   maxInputs = 9;
    narginchk(minInputs,maxInputs);
 
    minOutputs = 0;
@@ -177,6 +183,7 @@ function [varargout] = primme_eigs(varargin)
    opts = struct();
    A = varargin{1};
    nextArg = 2;
+   isgeneralized = 0;
    if isnumeric(A)
       % Check matrix is Hermitian and get matrix dimension
       [m, n] = size(A);
@@ -189,11 +196,40 @@ function [varargout] = primme_eigs(varargin)
       % Get type and complexity
       Acomplex = ~isreal(A);
       Adouble = strcmp(class(A), 'double');
+      ABfun = 0;
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
+      ABfun = 1;
+   end
+
+   if nargin >= nextArg && (~isnumeric(varargin{nextArg}) || ~isscalar(varargin{nextArg}))
+      B = varargin{nextArg};
+      if isnumeric(B)
+         % Check matrix is Hermitian and get matrix dimension
+         [m, n] = size(B);
+         if m ~= n || m < 1e4 && ~ishermitian(B)
+            error('Input matrix must be real symmetric or complex Hermitian');
+         elseif ~ABfun && m ~= opts.n
+            error('Input matrices A and B should have the same dimensions');
+         end
+         opts.massMatrixMatvec = @(x)B*x;
+
+         % Get type and complexity
+         Acomplex = Acomplex || ~isreal(B);
+         Adouble = Adouble || strcmp(class(B), 'double');
+         isgeneralized = 1;
+      elseif ~isempty(B)
+         opts.massMatrixMatvec = fcnchk_gen(B); % get the function handle of user's function
+         ABfun = 1;
+         isgeneralized = 1;
+      end
+      nextArg = nextArg + 1;
+   end
+
+   if ABfun
       n = round(varargin{nextArg});
       if ~isscalar(n) || ~isreal(n) || (n<0) || ~isfinite(n)
-         error(message('The size of input matrix A must be an positive integer'));
+         error(message('The size of input matrices must be an positive integer'));
       end
       opts.n = n;
       nextArg = nextArg + 1;
@@ -458,10 +494,11 @@ function [varargout] = primme_eigs(varargin)
    if (nargout >= 4)
       stats = struct();
       stats.numMatvecs = primme_mex('primme_get_member', primme, 'stats_numMatvecs');
+      stats.numPreconds = primme_mex('primme_get_member', primme, 'stats_numPreconds');
       stats.elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
       stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
       stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
-      stats.estimateAnorm = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
+      stats.estimateLargestSVal = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
       varargout{4} = stats;
    end
    if (nargout >= 5)

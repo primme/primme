@@ -44,8 +44,8 @@ assert(norm(evals - (50:-1:50-k+1)') < 1e-6*norm(A))
                                             'DEFAULT_MIN_TIME');
 
 [a,p] = sort(abs((1:50) - 25.2)); p = sort(p(1:k), 'descend');
-assert(all(abs(diag(evals) - p(1:k)') < 1e-6*stats.estimateAnorm))
-assert(all(rnorms < 1e-6*stats.estimateAnorm));
+assert(all(abs(diag(evals) - p(1:k)') < 1e-6*stats.estimateLargestSVal));
+assert(all(rnorms < 5e-6*stats.estimateLargestSVal));
 
 % Compute the 6 smallest eigenvalues and vectors of a matrix defined by
 % the matrix-vector product
@@ -178,5 +178,70 @@ assert(length(evals) > 0 && norm(evals - (1:length(evals))') < 1e-3)
 
 svals = primme_svds(diag(1:1000),100,'S',struct('maxit',5000,'primme',struct('method', 'DEFAULT_MIN_MATVECS')));
 assert(length(svals) > 0 && norm(svals - (length(svals):-1:1)') < 1e-3)
+
+% Compute the 6 largest eigenvalues of generalized problem with tolerance 1e-6
+
+A = diag(1:50);
+B = diag(50:-1:1);
+exact_eigs = diag(A)./diag(B);
+ops = struct();
+ops.tol = 1e-6; % residual norm tolerance 
+k = 6;          % number of eigenvalues
+evals = primme_eigs(A, B, k, 'LA', ops);
+
+assert(norm(evals - exact_eigs(end:-1:end-k+1,:)) < 1e-6*norm(B\A))
+
+% Compute in single arithmetic the 6 eigenvalues closest to 25.2
+% using DEFAULT_MIN_TIME
+
+[evecs, evals, rnorms, stats] = primme_eigs(single(A), single(B), k, 25.2, ops, ...
+                                            'DEFAULT_MIN_TIME');
+
+[a,p] = sort(abs(exact_eigs - 25.2)); p = sort(exact_eigs(p(1:k)), 'descend');
+assert(all(abs(diag(evals) - p) < 1e-5*stats.estimateLargestSVal))
+assert(all(rnorms < 5e-6*stats.estimateLargestSVal));
+
+% Compute the 6 smallest eigenvalues and vectors of a matrix defined by
+% the matrix-vector product
+
+funA = @(x)A*x;
+funB = @(x)B*x;
+matrix_dim = 50;
+[evecs, evals] = primme_eigs(funA, funB, matrix_dim, k, 'SA', ops);
+
+assert(norm(diag(evals) - exact_eigs(1:k)) < 1e-6*norm(B\A))
+for i=1:k
+  assert(norm(A*evecs(:,i) - B*evecs(:,i)*evals(i,i)) < 1e-5*norm(B\A))
+end
+
+% Compute the 6 eigenvalues closest to 30.1 using the Jacobi preconditioner
+% (too much convenient for a diagonal matrix)
+
+Adiag = diag(A);
+Bdiag = diag(B);
+
+Pfun = @(x)((Adiag - Bdiag*30.1).\x); % Pass a function handler
+evals = primme_eigs(A, k, 30.1, [], [], Pfun);
+
+P = spdiags(Adiag - 30.1, 0, 50, 50); % Pass a matrix
+evals = primme_eigs(A, k, 30.1, [], [], P);
+
+% Compute the 6 eigenvalues closest to 30.1 using ILU(0) as a preconditioner
+
+A = sparse(diag(1:50) + diag(ones(49,1), 1) + diag(ones(49,1), -1));
+[L,U] = ilu(A - sparse(B)*30.1, struct('type', 'nofill'));
+evals = primme_eigs(A, B, k, 30.1, [], [], L, U);
+
+% Test different methods and return history record
+
+eigs_meths = {'DEFAULT_METHOD', 'DYNAMIC', 'DEFAULT_MIN_TIME', ...
+              'DEFAULT_MIN_MATVECS', 'Arnoldi', 'GD_plusK', 'GD_Olsen_plusK', ...
+              'JD_Olsen_plusK', 'JDQR', 'JDQMR', 'JDQMR_ETol', ...
+              'STEEPEST_DESCENT', 'LOBPCG_OrthoBasis', ...
+              'LOBPCG_OrthoBasis_Window'}; 
+for i = 1:numel(eigs_meths)
+   [x,d,r,s,h] = primme_eigs(diag(1:100), diag(100:-1:1), 2, 'SA', struct('disp', 3), ...
+                             eigs_meths{i});
+end
 
 disp('Success');
