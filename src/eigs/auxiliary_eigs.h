@@ -57,8 +57,7 @@ int convTestFun_sprimme(float eval, float *evec, int givenEvec, float rNorm,
 int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
    primme_context ctx) ;
 float problemNorm_sprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 float deltaEig_sprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
@@ -90,8 +89,7 @@ int convTestFun_cprimme(float eval, PRIMME_COMPLEX_FLOAT *evec, int givenEvec, f
 int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
    primme_context ctx) ;
 float problemNorm_cprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 float deltaEig_cprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
@@ -221,8 +219,7 @@ int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
 #  define problemNorm_RHprimme CONCAT(problemNorm_,HOST_REAL_SUF)
 #endif
 double problemNorm_dprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 #if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Sprimme)
 #  define deltaEig_Sprimme CONCAT(deltaEig_,SCALAR_SUF)
 #endif
@@ -290,8 +287,7 @@ int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, int givenEvec,
 int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *sendBuf, PRIMME_COMPLEX_DOUBLE *recvBuf, int count,
    primme_context ctx) ;
 double problemNorm_zprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 double deltaEig_zprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
@@ -321,8 +317,7 @@ int applyPreconditioner_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_I
 int convTestFun_smagmaprimme(float eval, magma_float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx) ;
 magma_float problemNorm_smagmaprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 magma_float deltaEig_smagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
@@ -352,8 +347,7 @@ int applyPreconditioner_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, 
 int convTestFun_cmagmaprimme(float eval, magma_complex_float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx) ;
 magma_float problemNorm_cmagmaprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 magma_float deltaEig_cmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
@@ -383,8 +377,7 @@ int applyPreconditioner_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_
 int convTestFun_dmagmaprimme(double eval, magma_double *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx) ;
 magma_double problemNorm_dmagmaprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 magma_double deltaEig_dmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
@@ -414,8 +407,7 @@ int applyPreconditioner_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal,
 int convTestFun_zmagmaprimme(double eval, magma_complex_double *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx) ;
 magma_double problemNorm_zmagmaprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-;
+      int overrideUserEstimations, struct primme_params *primme) ;
 magma_double deltaEig_zmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;

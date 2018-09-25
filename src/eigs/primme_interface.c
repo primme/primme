@@ -393,7 +393,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.projectors.RightQ  = 0;
       primme->correctionParams.projectors.RightX  = 0;
       primme->correctionParams.projectors.SkewQ   = 0;
-      primme->correctionParams.projectors.SkewX   = 1;
+      primme->correctionParams.projectors.SkewX   = 0;
       primme->correctionParams.convTest           = primme_adaptive_ETolerance;
    }
    else if (method == PRIMME_STEEPEST_DESCENT) {
@@ -459,7 +459,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.projectors.RightQ  = 0;
       primme->correctionParams.projectors.RightX  = 0;
       primme->correctionParams.projectors.SkewQ   = 0;
-      primme->correctionParams.projectors.SkewX   = 1;
+      primme->correctionParams.projectors.SkewX   = 0;
       if (primme->target == primme_smallest ||
             primme->target == primme_largest) {
          primme->correctionParams.convTest = primme_adaptive_ETolerance;

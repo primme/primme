@@ -524,57 +524,43 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
 #endif /* USE_HOST */
 
 /*******************************************************************************
- * Subroutine problemNorm - return an estimation of |Ax|+max(|\lambda|)*|Bx|,
- * for |x|_B = 1.
- *
- * The lower bounds for |A| and |B| are estimated as follows. For standard
- * problems, |A| is estimated as the largest eigenvalue in magnitude seen. For
- * generalized problems, |Ax| is bound as |A|*|x|. |A|, |x| and |Bx| are
- * estimated from these expressions:
- *
- *    max(|\lambda|) <= |B\A| -> |A| >= max(|\lambda|)/|inv(B)|
- *
- *    |x| <= sqrt(|inv(B)|
- *
- *    |Bx| <= sqrt(|B|)
- * 
+ * Subroutine problemNorm - return an estimation of |B\A|
  * 
  * INPUT PARAMETERS
  * ----------------
- * overrideUserEstimations    if nonzero, use estimations of |A| and |B| if
- *                            they are larger than primme.aNorm and primme.BNorm 
+ * overrideUserEstimations    if nonzero, use estimations of |A| and |inv(B)| if
+ *                            they are larger than primme.aNorm and primme.invBNorm 
  * 
  * OUTPUT
  * ------
- * return                     estimation of |A|+max(|\lambda|)*|B|
+ * return                     estimation of |B\A|
  ******************************************************************************/
 
 TEMPLATE_PLEASE
 REAL problemNorm_Sprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-{
-   REAL maxLambda = primme->stats.estimateLargestSVal;
-                     /* approximation of the largest eigenvalue of (A,B) */
-   REAL ANorm;       /* approximation of |A| */
-   REAL BNorm;       /* approximation of |B| */
-   REAL invBNorm;    /* approximation of |inv(B)| */ 
+      int overrideUserEstimations, struct primme_params *primme) {
 
-   if (overrideUserEstimations) {
-      invBNorm = max(primme->invBNorm, primme->stats.estimateInvBNorm);
-      ANorm = max(primme->aNorm, primme->stats.estimateLargestSVal / invBNorm);
-      BNorm = max(primme->BNorm, primme->stats.estimateBNorm);
+   if (!overrideUserEstimations) {
+      if (!primme->massMatrixMatvec) {
+         return primme->aNorm > 0.0 ? primme->aNorm
+                                    : primme->stats.estimateLargestSVal;
+      } else {
+         return primme->aNorm > 0.0 && primme->invBNorm > 0.0
+                      ? primme->aNorm * primme->invBNorm
+                      : primme->stats.estimateLargestSVal;
+      }
    }
    else {
-      invBNorm = (primme->invBNorm > 0.0 ? primme->invBNorm
-                                         : primme->stats.estimateInvBNorm);
-      ANorm = (primme->aNorm > 0.0
-                     ? primme->aNorm
-                     : primme->stats.estimateLargestSVal / invBNorm);
-      BNorm =
-            (primme->BNorm > 0.0 ? primme->BNorm : primme->stats.estimateBNorm);
+      if (!primme->massMatrixMatvec) {
+         return max(primme->aNorm > 0.0 ? primme->aNorm : 0.0,
+               primme->stats.estimateLargestSVal);
+      } else {
+         return max(primme->aNorm > 0.0 && primme->invBNorm > 0.0
+                          ? primme->aNorm * primme->invBNorm
+                          : 0.0,
+               primme->stats.estimateLargestSVal);
+      }
    }
-
-   return ANorm / sqrt(BNorm) + maxLambda * sqrt(invBNorm);
 }
 
 /*******************************************************************************

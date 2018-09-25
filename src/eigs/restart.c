@@ -360,6 +360,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
                "Resetting V, W and QR.\n");
          fflush(primme->outputFile);
       }
+      primme->stats.estimateResidualError = 0;
    }
 
    /* ----------------------------------------------------------------------- */
@@ -494,12 +495,16 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
 
    if (VtBV) {
       HREAL n = 0.0;
-      int i,j, nVtBV = primme->numOrthoConst + *numLocked + restartSize;
-      for (i = 0; i < nVtBV; i++) {
-         for (j=0; j<i; j++) n += 2*REAL_PART(CONJ(VtBV[i*ldVtBV+j])*VtBV[i*ldVtBV+j])/ABS(VtBV[i*ldVtBV+i])/ABS(VtBV[j*ldVtBV+j]);
+      if (ctx.procID == 0) {
+         int i,j, nVtBV = primme->numOrthoConst + *numLocked + restartSize;
+         for (i = 0; i < nVtBV; i++) {
+            for (j = 0; j < i; j++)
+               n += 2 * REAL_PART(CONJ(VtBV[i * ldVtBV + j]) *
+                                  VtBV[i * ldVtBV + j]) /
+                    ABS(VtBV[i * ldVtBV + i]) / ABS(VtBV[j * ldVtBV + j]);
+         }
+         n = sqrt(n);
       }
-      n = sqrt(n);
-      if (ctx.procID != 0) n = 0;
       CHKERR(globalSum_RHprimme(&n, &n, 1, ctx));
       
       if (*restartsSinceReset <= 1) {

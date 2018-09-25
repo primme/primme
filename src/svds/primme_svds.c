@@ -877,7 +877,10 @@ static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
 
    switch(method) {
       case primme_svds_op_AtA:
-         CHKERRA(Num_malloc_Sprimme(primme_svds->mLocal, &aux, ctx), *ierr = 1);
+         CHKERRA(Num_malloc_Sprimme(primme_svds->mLocal *
+                                          min(primme->maxBlockSize, *blockSize),
+                       &aux, ctx),
+               *ierr = 1);
          for (i=0, bs=min((*blockSize-i), primme->maxBlockSize); bs>0;
                i+= bs, bs=min((*blockSize-i), primme->maxBlockSize))
          {
@@ -891,7 +894,10 @@ static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
          CHKERRA(Num_free_Sprimme(aux, ctx), *ierr = 1);
          break;
       case primme_svds_op_AAt:
-         CHKERRA(Num_malloc_Sprimme(primme_svds->nLocal, &aux, ctx), *ierr = 1);
+         CHKERRA(Num_malloc_Sprimme(primme_svds->nLocal *
+                                          min(primme->maxBlockSize, *blockSize),
+                       &aux, ctx),
+               *ierr = 1);
          for (i=0, bs=min((*blockSize-i), primme->maxBlockSize); bs>0;
                i+= bs, bs=min((*blockSize-i), primme->maxBlockSize))
          {

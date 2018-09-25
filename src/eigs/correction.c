@@ -721,7 +721,7 @@ static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
          Bx, primme->nLocal, ldBx, KinvBx, ldKinvBxr, blockSize, ctx));
 
    CHKERR(applyPreconditioner_Sprimme(
-         r, primme->nLocal, ldr, KinvBx, ldKinvBxr, blockSize, ctx));
+         r, primme->nLocal, ldr, Kinvr, ldKinvBxr, blockSize, ctx));
 
    /*---------------------------------------------------------------------- */
    /* Compute local x'K^{-1}Bx and x'K^{-1}r for each vector                */
@@ -962,8 +962,8 @@ static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                blockSize, xKinvBx, ctx));
       }      
       else {
-         *RprojectorX = x;
-         *ldRprojectorX  = ldx;
+         *RprojectorX = Bx;
+         *ldRprojectorX  = ldBx;
          int i;
          for (i=0; i<blockSize; i++) xKinvBx[i] = 1.0;
       }

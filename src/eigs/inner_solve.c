@@ -337,6 +337,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                      &sol[ldsol * i], ldsol, ctx);
             }
             p0[blockSize - ++conv] = i;
+            p0[i] = blockSize - conv;
             continue;
          }
 
@@ -351,6 +352,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                      &sol[ldsol * i], ldsol, ctx);
             }
             p0[blockSize - ++conv] = i;
+            p0[i] = blockSize - conv;
             continue;
          }
 
@@ -371,6 +373,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       CHKERR(permute_vecs_Sprimme(x, nLocal, blockSize, ldx, p0, ctx));
       CHKERR(permute_vecs_Sprimme(sol, nLocal, blockSize, ldsol, p0, ctx));
       blockSize -= conv;
+      if (sizeLprojectorX) sizeLprojectorX -= conv;
+      if (sizeRprojectorX) sizeRprojectorX -= conv;
       if (blockSize <= 0) break;
 
       CHKERR(Num_dist_dots_real_Sprimme(
@@ -429,6 +433,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                      fabs(rho_prev[p[i]]), p[i]);
             }
             p0[blockSize - ++conv] = i;
+            p0[i] = blockSize - conv;
             continue;
          }
       
@@ -437,6 +442,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                fprintf(primme->outputFile, " tau < LTol %e %e in block vector %d\n",tau[p[i]], LTolerance, p[i]);
             }
             p0[blockSize - ++conv] = i;
+            p0[i] = blockSize - conv;
             continue;
          }
          if (ETolerance > 0.0 || ETolerance_factor > 0.0) {
@@ -498,6 +504,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   fprintf(primme->outputFile, " tau < R eres for block vector %d\n", p[i]);
                }
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             }
 
@@ -507,6 +514,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   fprintf(primme->outputFile, "eval_updated > eval_prev in block vector %d\n", p[i]);
                }
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             }
             else if (primme->target == primme_largest && eval_updated < eval_prev[p[i]]){
@@ -514,6 +522,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   fprintf(primme->outputFile, "eval_updated < eval_prev in block vector %d\n", p[i]);
                }
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             } else if (primme->target == primme_closest_abs &&
                        fabs(eval[p[i]] - eval_updated) >
@@ -523,6 +532,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                         "|eval-eval_updated| > tau0+eres in block vector %d\n", p[i]);
                }
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             }
           
@@ -531,6 +541,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   fprintf(primme->outputFile, "eres < eresTol %e in block vector %d\n",eres_updated[p[i]], p[i]);
                }
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             }
 
@@ -555,6 +566,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                }
                (*touch)++;
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             }
 
@@ -593,6 +605,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                         "passed convergence criterion in block vector %d\n", p[i]);
                }
                p0[blockSize - ++conv] = i;
+               p0[i] = blockSize - conv;
                continue;
             }
 
@@ -627,6 +640,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       CHKERR(permute_vecs_Sprimme(x, nLocal, blockSize, ldx, p0, ctx));
       CHKERR(permute_vecs_Sprimme(sol, nLocal, blockSize, ldsol, p0, ctx));
       blockSize -= conv;
+      if (sizeLprojectorX) sizeLprojectorX -= conv;
+      if (sizeRprojectorX) sizeRprojectorX -= conv;
       if (blockSize <= 0) break;
 
       if (numIts + 1 < maxIterations) {
