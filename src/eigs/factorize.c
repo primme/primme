@@ -147,6 +147,7 @@ int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
 
 }
 
+#endif /* USE_HOST */
 
 /*******************************************************************************
  * Subroutine update_XKinvBX - Updates the matrix M=X'*Kinv*B*X and returns
@@ -177,8 +178,8 @@ int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
 
 TEMPLATE_PLEASE
 int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,
-      PRIMME_INT ldKinvBX, SCALAR *M, PRIMME_INT ldM, int numCols,
-      int blockSize, SCALAR *Mfact, int ldMfact, int *ipivot,
+      PRIMME_INT ldKinvBX, HSCALAR *M, int ldM, int numCols,
+      int blockSize, HSCALAR *Mfact, int ldMfact, int *ipivot,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -210,25 +211,27 @@ int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,
 
       /* Copy the upper triangular portion of M into Mfact */
 
-      Num_copy_trimatrix_Sprimme(
+      Num_copy_trimatrix_SHprimme(
             M, nM, nM, ldM, 0 /* up */, 0, Mfact, ldMfact, 0);
 
       /* Perform the LDL^T decomposition */
 
-      CHKERR(Num_hetrf_Sprimme("U", nM, Mfact, ldMfact, ipivot, ctx));
+      CHKERR(Num_hetrf_SHprimme("U", nM, Mfact, ldMfact, ipivot, ctx));
    }
    else {
       /* Copy M into Mfact */
 
-      Num_copy_matrix_Sprimme(M, nM, nM, ldM, Mfact, ldMfact, ctx);
+      Num_copy_matrix_SHprimme(M, nM, nM, ldM, Mfact, ldMfact, ctx);
 
       /* Perform the LU decomposition */
 
-      CHKERR(Num_getrf_Sprimme(nM, nM, Mfact, ldMfact, ipivot, ctx));
+      CHKERR(Num_getrf_SHprimme(nM, nM, Mfact, ldMfact, ipivot, ctx));
    }
 
    return 0;
 }
+
+#ifdef USE_HOST
 
 /******************************************************************************
  * Function MSolve - This function solves a dense hermitian linear system

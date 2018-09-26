@@ -404,21 +404,18 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
       Num_set_matrix_Sprimme(evecs, 1, 1, 1, 1.0, ctx);
       CHKERR(matrixMatvec_Sprimme(evecs, primme->nLocal, ldevecs,
             W, ldW, 0, 1, ctx));
-      if (primme->massMatrixMatvec) {
-         CHKERR(massMatrixMatvec_Sprimme(evecs, primme->nLocal, ldevecs,
-                  BV, ldBV, 0, 1, ctx));
-         if (primme->nLocal == 1) {
+      if (primme->nLocal == 1) {
+         if (primme->massMatrixMatvec) {
+            CHKERR(massMatrixMatvec_Sprimme(
+                  evecs, primme->nLocal, ldevecs, BV, ldBV, 0, 1, ctx));
             evals[0] = REAL_PART(Num_dot_Sprimme(1, evecs, 1, W, 1, ctx)) /
-               REAL_PART(Num_dot_Sprimme(primme->nLocal, evecs, 1, BV, 1, ctx));
-            evecs[0] = 1.0/sqrt(REAL_PART(BV[0]));
+                       REAL_PART(Num_dot_Sprimme(
+                             primme->nLocal, evecs, 1, BV, 1, ctx));
+         } else {
+            evals[0] = REAL_PART(Num_dot_Sprimme(1, evecs, 1, W, 1, ctx));
          }
-         else {
-            evals[0] = 0.0;
-         }
-      }
-      else {
-         evals[0] = (primme->nLocal == 1 ? REAL_PART(W[0]) : 0.0);
-         if (primme->nLocal == 1) evecs[0] = 1.0;
+      } else {
+         evals[0] = 0.0;
       }
       CHKERR(globalSum_RHprimme(evals, evals, 1, ctx));
 

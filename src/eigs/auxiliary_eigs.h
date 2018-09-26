@@ -316,9 +316,9 @@ int applyPreconditioner_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_I
       magma_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx) ;
 int convTestFun_smagmaprimme(float eval, magma_float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx) ;
-magma_float problemNorm_smagmaprimme(
+float problemNorm_smagmaprimme(
       int overrideUserEstimations, struct primme_params *primme) ;
-magma_float deltaEig_smagmaprimme(
+float deltaEig_smagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
 int Num_dist_dots_smagmaprimme(magma_float *x, PRIMME_INT ldx, magma_float *y, PRIMME_INT ldy,
@@ -346,9 +346,9 @@ int applyPreconditioner_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, 
       magma_complex_float *W, PRIMME_INT ldW, int blockSize, primme_context ctx) ;
 int convTestFun_cmagmaprimme(float eval, magma_complex_float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx) ;
-magma_float problemNorm_cmagmaprimme(
+float problemNorm_cmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme) ;
-magma_float deltaEig_cmagmaprimme(
+float deltaEig_cmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
 int Num_dist_dots_cmagmaprimme(magma_complex_float *x, PRIMME_INT ldx, magma_complex_float *y, PRIMME_INT ldy,
@@ -376,9 +376,9 @@ int applyPreconditioner_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_
       magma_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx) ;
 int convTestFun_dmagmaprimme(double eval, magma_double *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx) ;
-magma_double problemNorm_dmagmaprimme(
+double problemNorm_dmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme) ;
-magma_double deltaEig_dmagmaprimme(
+double deltaEig_dmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
 int Num_dist_dots_dmagmaprimme(magma_double *x, PRIMME_INT ldx, magma_double *y, PRIMME_INT ldy,
@@ -406,9 +406,9 @@ int applyPreconditioner_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal,
       magma_complex_double *W, PRIMME_INT ldW, int blockSize, primme_context ctx) ;
 int convTestFun_zmagmaprimme(double eval, magma_complex_double *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx) ;
-magma_double problemNorm_zmagmaprimme(
+double problemNorm_zmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme) ;
-magma_double deltaEig_zmagmaprimme(
+double deltaEig_zmagmaprimme(
       int overrideUserEstimations, struct primme_params *primme)
 ;
 int Num_dist_dots_zmagmaprimme(magma_complex_double *x, PRIMME_INT ldx, magma_complex_double *y, PRIMME_INT ldy,

@@ -38,7 +38,7 @@ int UDUDecompose_sprimme(float *M, int ldM, float *UDU, int ldUDU,
 int UDUSolve_sprimme(float *UDU, int *ipivot, int dim, float *rhs, int nrhs,
       int ldrhs, float *sol, int ldsol, primme_context ctx) ;
 int update_XKinvBX_sprimme(float *X, PRIMME_INT ldX, float *KinvBX,
-      PRIMME_INT ldKinvBX, float *M, PRIMME_INT ldM, int numCols,
+      PRIMME_INT ldKinvBX, float *M, int ldM, int numCols,
       int blockSize, float *Mfact, int ldMfact, int *ipivot,
       primme_context ctx) ;
 int MSolve_sprimme(float *Mfact, int *ipivot, int dim, float *rhs, int nrhs,
@@ -48,7 +48,7 @@ int UDUDecompose_cprimme(PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT 
 int UDUSolve_cprimme(PRIMME_COMPLEX_FLOAT *UDU, int *ipivot, int dim, PRIMME_COMPLEX_FLOAT *rhs, int nrhs,
       int ldrhs, PRIMME_COMPLEX_FLOAT *sol, int ldsol, primme_context ctx) ;
 int update_XKinvBX_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, PRIMME_COMPLEX_FLOAT *KinvBX,
-      PRIMME_INT ldKinvBX, PRIMME_COMPLEX_FLOAT *M, PRIMME_INT ldM, int numCols,
+      PRIMME_INT ldKinvBX, PRIMME_COMPLEX_FLOAT *M, int ldM, int numCols,
       int blockSize, PRIMME_COMPLEX_FLOAT *Mfact, int ldMfact, int *ipivot,
       primme_context ctx) ;
 int MSolve_cprimme(PRIMME_COMPLEX_FLOAT *Mfact, int *ipivot, int dim, PRIMME_COMPLEX_FLOAT *rhs, int nrhs,
@@ -94,7 +94,7 @@ int UDUSolve_dprimme(double *UDU, int *ipivot, int dim, double *rhs, int nrhs,
 #  define update_XKinvBX_RHprimme CONCAT(update_XKinvBX_,HOST_REAL_SUF)
 #endif
 int update_XKinvBX_dprimme(double *X, PRIMME_INT ldX, double *KinvBX,
-      PRIMME_INT ldKinvBX, double *M, PRIMME_INT ldM, int numCols,
+      PRIMME_INT ldKinvBX, double *M, int ldM, int numCols,
       int blockSize, double *Mfact, int ldMfact, int *ipivot,
       primme_context ctx) ;
 #if !defined(CHECK_TEMPLATE) && !defined(MSolve_Sprimme)
@@ -116,9 +116,25 @@ int UDUDecompose_zprimme(PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBL
 int UDUSolve_zprimme(PRIMME_COMPLEX_DOUBLE *UDU, int *ipivot, int dim, PRIMME_COMPLEX_DOUBLE *rhs, int nrhs,
       int ldrhs, PRIMME_COMPLEX_DOUBLE *sol, int ldsol, primme_context ctx) ;
 int update_XKinvBX_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT ldX, PRIMME_COMPLEX_DOUBLE *KinvBX,
-      PRIMME_INT ldKinvBX, PRIMME_COMPLEX_DOUBLE *M, PRIMME_INT ldM, int numCols,
+      PRIMME_INT ldKinvBX, PRIMME_COMPLEX_DOUBLE *M, int ldM, int numCols,
       int blockSize, PRIMME_COMPLEX_DOUBLE *Mfact, int ldMfact, int *ipivot,
       primme_context ctx) ;
 int MSolve_zprimme(PRIMME_COMPLEX_DOUBLE *Mfact, int *ipivot, int dim, PRIMME_COMPLEX_DOUBLE *rhs, int nrhs,
       int ldrhs, PRIMME_COMPLEX_DOUBLE *sol, int ldsol, primme_context ctx) ;
+int update_XKinvBX_smagmaprimme(magma_float *X, PRIMME_INT ldX, magma_float *KinvBX,
+      PRIMME_INT ldKinvBX, float *M, int ldM, int numCols,
+      int blockSize, float *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx) ;
+int update_XKinvBX_cmagmaprimme(magma_complex_float *X, PRIMME_INT ldX, magma_complex_float *KinvBX,
+      PRIMME_INT ldKinvBX, PRIMME_COMPLEX_FLOAT *M, int ldM, int numCols,
+      int blockSize, PRIMME_COMPLEX_FLOAT *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx) ;
+int update_XKinvBX_dmagmaprimme(magma_double *X, PRIMME_INT ldX, magma_double *KinvBX,
+      PRIMME_INT ldKinvBX, double *M, int ldM, int numCols,
+      int blockSize, double *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx) ;
+int update_XKinvBX_zmagmaprimme(magma_complex_double *X, PRIMME_INT ldX, magma_complex_double *KinvBX,
+      PRIMME_INT ldKinvBX, PRIMME_COMPLEX_DOUBLE *M, int ldM, int numCols,
+      int blockSize, PRIMME_COMPLEX_DOUBLE *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx) ;
 #endif

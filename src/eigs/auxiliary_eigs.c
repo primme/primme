@@ -537,7 +537,7 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-REAL problemNorm_Sprimme(
+HREAL problemNorm_Sprimme(
       int overrideUserEstimations, struct primme_params *primme) {
 
    if (!overrideUserEstimations) {
@@ -592,10 +592,10 @@ REAL problemNorm_Sprimme(
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-REAL deltaEig_Sprimme(
+HREAL deltaEig_Sprimme(
       int overrideUserEstimations, struct primme_params *primme)
 {
-   REAL BNorm;
+   HREAL BNorm;
 
    if (overrideUserEstimations) {
       BNorm = max(primme->BNorm, primme->stats.estimateBNorm);

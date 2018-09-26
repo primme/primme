@@ -970,7 +970,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
 
    /* Zero Bo and Xo */
    Num_zero_matrix_SHprimme(Bo, nQ + nW, nZ, nQ + nW, ctx);
-   Num_zero_matrix_SHprimme(Xo, m, nX, m, ctx);
+   Num_zero_matrix_Sprimme(Xo, m, nX, m, ctx);
 
    /* D[i] = 1/D[i] */
    for (i=0; i < nX; i++) D[i] = 1.0/D[i];
