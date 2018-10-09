@@ -36,7 +36,7 @@
  *
  ******************************************************************************/
 
-#if !(defined (__APPLE__) && defined (__MACH__))
+#if !((defined (__APPLE__) && defined (__MACH__)) || (defined (__FreeBSD__)))
 #  include <malloc.h>
 #endif
 #include <stdlib.h>   /* mallocs, free */
