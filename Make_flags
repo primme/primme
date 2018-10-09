@@ -73,3 +73,10 @@ FFLAGS   ?= -fno-second-underscore -O
 
 RANLIB ?= ranlib
 R ?= R
+
+#---------------------------------------------------------------
+#  Installation
+#---------------------------------------------------------------
+
+includedir ?= $(DESTDIR)$(PREFIX)/include
+libdir ?= $(DESTDIR)$(PREFIX)/lib
