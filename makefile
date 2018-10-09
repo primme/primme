@@ -20,13 +20,13 @@ include Make_flags
 # Making the PRIMME library
 # Includes float, double and complex counterparts
 lib:
-	@make -C src ../lib/$(LIBRARY)
+	@$(MAKE) -C src ../lib/$(LIBRARY)
 
 solib:
-	@make -C src ../lib/$(SOLIBRARY)
+	@$(MAKE) -C src ../lib/$(SOLIBRARY)
 
 clean: 
-	@make -C src clean
+	@$(MAKE) -C src clean
 
 clean_lib:
 	@rm -f lib/*
@@ -35,27 +35,27 @@ test:
 	@echo "------------------------------------------------";
 	@echo " Test C examples                                ";
 	@echo "------------------------------------------------";
-	@make -C examples veryclean test_examples_C USE_PETSC=no
+	@$(MAKE) -C examples veryclean test_examples_C USE_PETSC=no
 
 all_tests:
-	@make -C examples veryclean test_examples;
-	@make -C tests veryclean all_tests
+	@$(MAKE) -C examples veryclean test_examples;
+	@$(MAKE) -C tests veryclean all_tests
 
 matlab: clean clean_lib
-	@make lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64"
-	@make -C Matlab matlab
+	@$(MAKE) lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64"
+	@$(MAKE) -C Matlab matlab
 
 octave: clean clean_lib lib
-	@make -C Matlab octave
+	@$(MAKE) -C Matlab octave
 
 python: clean clean_lib lib
-	@make -C Python clean all
+	@$(MAKE) -C Python clean all
 
 python_install: python
-	@make -C Python install
+	@$(MAKE) -C Python install
 
 R_install:
-	@make -C R install
+	@$(MAKE) -C R install
 
 install: solib
 	install -d $(includedir)
@@ -73,13 +73,13 @@ uninstall:
 		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
 
 deps:
-	@make -C src deps
-	@make -C src auto_headers
+	@$(MAKE) -C src deps
+	@$(MAKE) -C src auto_headers
 
 check_style:
 	@( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 tags:
-	@make -C src ../tags
+	@$(MAKE) -C src ../tags
 
 .NOTPARALLEL:
