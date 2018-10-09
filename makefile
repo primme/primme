@@ -57,17 +57,17 @@ python_install: python
 R_install:
 	@make -C R install
 
-install: lib
+install: solib
 	install -d $(includedir)
 	install -m 644 include/primme.h include/primme_eigs.h \
 		include/primme_eigs_f77.h include/primme_f77.h \
 		include/primme_svds.h include/primme_svds_f77.h \
 		$(includedir)
 	install -d $(libdir)
-	install -m 644 lib/$(LIBRARY) $(libdir)
+	install -m 644 lib/$(SOLIBRARY) $(libdir)
 
 uninstall:
-	rm -f $(libdir)/$(LIBRARY)
+	rm -f $(libdir)/$(SOLIBRARY)
 	rm -f $(includedir)/primme.h $(includedir)/primme_eigs.h \
 		$(includedir)/primme_eigs_f77.h $(includedir)/primme_f77.h \
 		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
