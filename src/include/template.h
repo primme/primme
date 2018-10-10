@@ -376,7 +376,7 @@
  *
  **********************************************************************/
 
-#if !(defined (__APPLE__) && defined (__MACH__))
+#if !((defined (__APPLE__) && defined (__MACH__)) || (defined (__FreeBSD__)))
 #  include <malloc.h> /* malloc */
 #endif
 #include <stdlib.h>   /* malloc, free */
