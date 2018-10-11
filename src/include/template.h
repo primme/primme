@@ -138,6 +138,19 @@
 #include <tgmath.h>   /* select proper function abs from fabs, cabs... */
 #endif
 
+/* exp and log macros cause warnings on some systems. PRIMME only uses  */
+/* the double version of these functions.                               */
+
+#ifdef pow
+#  undef pow
+#endif
+#ifdef exp
+#  undef exp
+#endif
+#ifdef log
+#  undef log
+#endif
+
 #ifndef __cplusplus
 #  define ISFINITE isfinite
 #else
@@ -376,9 +389,6 @@
  *
  **********************************************************************/
 
-#if !((defined (__APPLE__) && defined (__MACH__)) || (defined (__FreeBSD__)))
-#  include <malloc.h> /* malloc */
-#endif
 #include <stdlib.h>   /* malloc, free */
 
 #define MALLOC_PRIMME(NELEM, X) (*((void**)X) = malloc((NELEM)*sizeof(**(X))), *(X) == NULL)
