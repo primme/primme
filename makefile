@@ -27,6 +27,10 @@ solib:
 ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
 	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
 endif
+ifneq ($(MAJORVERSION),)
+	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+endif
+
 
 clean: 
 	@$(MAKE) -C src clean
@@ -71,7 +75,9 @@ install: solib
 ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
 	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
 endif
-
+ifneq ($(MAJORVERSION),)
+	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+endif
 
 uninstall:
 	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY)
