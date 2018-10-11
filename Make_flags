@@ -4,6 +4,7 @@
 #---------------------------------------------------------------
 
 # Define the path to the created PRIMME library
+VERSION := 2.1
 UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
     SLIB = dylib
@@ -12,6 +13,7 @@ else
 endif
 LIBRARY = libprimme.a
 SOLIBRARY = libprimme.$(SLIB)
+SONAMELIBRARY = libprimme.$(SLIB).$(VERSION)
 
 
 # Define compilers and flags
@@ -73,6 +75,7 @@ FFLAGS   ?= -fno-second-underscore -O
 
 RANLIB ?= ranlib
 R ?= R
+PYTHON ?= python2
 
 #---------------------------------------------------------------
 #  Installation

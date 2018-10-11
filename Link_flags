@@ -16,12 +16,13 @@ FLDR ?= $(F77)
 #---------------------------------------------------------------
 # Debian, Ubuntu, SuSE Linux (>= 13.2), Darwin
 #
-LDFLAGS ?=
+UNAME := $(shell uname)
+# Defaults for FreeBSD for LAPACK installed from package
+LDFLAGS ?= $(if $(findstring FreeBSD,$(UNAME)),-L/usr/local/lib -L/usr/local/lib/gcc7,)
 ifeq ($(origin LIBS), undefined)
     LIBS = -lprimme
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
-        UNAME := $(shell uname)
         ifneq ($(UNAME), Darwin)
             LIBS += -lgfortran
         endif

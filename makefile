@@ -23,7 +23,10 @@ lib:
 	@$(MAKE) -C src ../lib/$(LIBRARY)
 
 solib:
-	@$(MAKE) -C src ../lib/$(SOLIBRARY)
+	@$(MAKE) -C src ../lib/$(SONAMELIBRARY)
+ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
+	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
+endif
 
 clean: 
 	@$(MAKE) -C src clean
@@ -64,10 +67,14 @@ install: solib
 		include/primme_svds.h include/primme_svds_f77.h \
 		$(includedir)
 	install -d $(libdir)
-	install -m 644 lib/$(SOLIBRARY) $(libdir)
+	install -m 644 lib/$(SONAMELIBRARY) $(libdir)
+ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
+	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
+endif
+
 
 uninstall:
-	rm -f $(libdir)/$(SOLIBRARY)
+	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY)
 	rm -f $(includedir)/primme.h $(includedir)/primme_eigs.h \
 		$(includedir)/primme_eigs_f77.h $(includedir)/primme_f77.h \
 		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
