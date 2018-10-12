@@ -8,7 +8,7 @@ include ../Link_flags
 
 override INCLUDE += -I../include
 override FINCLUDE += -I../include
-LIBDIRS += -L../lib
+LIBS := ../lib/libprimme.a $(LIBS)
 
 EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_svds_dseq ex_svds_zseq
 EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx

@@ -20,7 +20,6 @@ UNAME := $(shell uname)
 # Defaults for FreeBSD for LAPACK installed from package
 LDFLAGS ?= $(if $(findstring FreeBSD,$(UNAME)),-L/usr/local/lib -L/usr/local/lib/gcc7,)
 ifeq ($(origin LIBS), undefined)
-    LIBS = -lprimme
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
         ifneq ($(UNAME), Darwin)
@@ -39,40 +38,40 @@ endif
 # SuSE Linux (<= 13.1), Centos
 #
 # LDFLAGS =
-# LIBS = -lprimme -lm -llapack -lblas -lgfortran -lg2c
+# LIBS = -lm -llapack -lblas -lgfortran -lg2c
 #---------------------------------------------------------------
 # IBM architectures
 #
 # LDFLAGS =
-# LIBS = -lprimme -lessl -lm           # using ESSL
+# LIBS = -lessl -lm           # using ESSL
 #                                      # using BLAS/LAPACK
-# LIBS = -lprimme -llapack -lblas -lxlf90 -lxl -lxlfmath -lm
+# LIBS = -llapack -lblas -lxlf90 -lxl -lxlfmath -lm
 #---------------------------------------------------------------
 # Mac OS X
 #
 # LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
 # LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
-# LIBS = -lprimme -lm
+# LIBS = -lm
 #---------------------------------------------------------------
 # Using Intel compilers
 #
-# LIBS = -lprimme -mkl
+# LIBS = -mkl
 #---------------------------------------------------------------
 # Sun Solaris, SunOS 5.9  using sunperf math library
 #
 # LDFLAGS = 
-# LIBS = -lprimme -lm -lrt -xlic_lib=sunperf
+# LIBS = -lm -lrt -xlic_lib=sunperf
 #---------------------------------------------------------------
 # Cray
 #
 # LDFLAGS = -framework Accelerate
-# LIBS = -lprimme -lm -llapack -lblas
+# LIBS = -lm -llapack -lblas
 #---------------------------------------------------------------
 # Using ACML for lapack/blas
 #
 # LDFLAGS =
-# LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv
-# LIBS = -lprimme -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv -lg2c
+# LIBS = -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv
+# LIBS = -lm -L/usr/local/acml-3.5.0/gnu64/lib/ -lacml -lacml_mv -lg2c
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
