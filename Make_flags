@@ -76,7 +76,9 @@ FFLAGS   ?= -fno-second-underscore -O
 
 RANLIB ?= ranlib
 R ?= R
-PYTHON ?= python2
+PYTHON ?= $(if $(findstring 1984, $(shell python -c 'print(1984)')), \
+  python, \
+  $(if $(findstring 1984, $(shell python2 -c 'print(1984)')),python2,python3))
 
 #---------------------------------------------------------------
 #  Installation
