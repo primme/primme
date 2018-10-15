@@ -923,11 +923,8 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       else if (k < left) {
          restartPerm[k++] = i;
       }
-      else if (!overbooking) {
-         restartPerm[min(*numConverged, primme->numEvals)-*numLocked + k++] = i;
-      }
       else {
-         restartPerm[*numConverged-*numLocked + k++] = i;
+         restartPerm[min(*numConverged, primme->numEvals)-*numLocked + k++] = i;
       }
    }
 
