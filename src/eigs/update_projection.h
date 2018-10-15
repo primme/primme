@@ -35,16 +35,16 @@
 #define update_projection_H
 int update_projection_sprimme(float *X, PRIMME_INT ldX, float *Y,
       PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_sprimme(float *X, int nX0, int nX1, PRIMME_INT ldX,
       float *Y, int nY0, int nY1, PRIMME_INT ldY, float *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, PRIMME_COMPLEX_FLOAT *Y,
       PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_cprimme(PRIMME_COMPLEX_FLOAT *X, int nX0, int nX1, PRIMME_INT ldX,
       PRIMME_COMPLEX_FLOAT *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sprimme)
 #  define update_projection_Sprimme CONCAT(update_projection_,SCALAR_SUF)
 #endif
@@ -59,7 +59,7 @@ int update_projection_gen_cprimme(PRIMME_COMPLEX_FLOAT *X, int nX0, int nX1, PRI
 #endif
 int update_projection_dprimme(double *X, PRIMME_INT ldX, double *Y,
       PRIMME_INT ldY, double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_gen_Sprimme)
 #  define update_projection_gen_Sprimme CONCAT(update_projection_gen_,SCALAR_SUF)
 #endif
@@ -74,35 +74,35 @@ int update_projection_dprimme(double *X, PRIMME_INT ldX, double *Y,
 #endif
 int update_projection_gen_dprimme(double *X, int nX0, int nX1, PRIMME_INT ldX,
       double *Y, int nY0, int nY1, PRIMME_INT ldY, double *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 int update_projection_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT ldX, PRIMME_COMPLEX_DOUBLE *Y,
       PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_zprimme(PRIMME_COMPLEX_DOUBLE *X, int nX0, int nX1, PRIMME_INT ldX,
       PRIMME_COMPLEX_DOUBLE *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 int update_projection_smagmaprimme(magma_float *X, PRIMME_INT ldX, magma_float *Y,
       PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_smagmaprimme(magma_float *X, int nX0, int nX1, PRIMME_INT ldX,
       magma_float *Y, int nY0, int nY1, PRIMME_INT ldY, float *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 int update_projection_cmagmaprimme(magma_complex_float *X, PRIMME_INT ldX, magma_complex_float *Y,
       PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_cmagmaprimme(magma_complex_float *X, int nX0, int nX1, PRIMME_INT ldX,
       magma_complex_float *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 int update_projection_dmagmaprimme(magma_double *X, PRIMME_INT ldX, magma_double *Y,
       PRIMME_INT ldY, double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_dmagmaprimme(magma_double *X, int nX0, int nX1, PRIMME_INT ldX,
       magma_double *Y, int nY0, int nY1, PRIMME_INT ldY, double *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 int update_projection_zmagmaprimme(magma_complex_double *X, PRIMME_INT ldX, magma_complex_double *Y,
       PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx) ;
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 int update_projection_gen_zmagmaprimme(magma_complex_double *X, int nX0, int nX1, PRIMME_INT ldX,
       magma_complex_double *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx) ;
+      PRIMME_INT nLocal, primme_context ctx);
 #endif

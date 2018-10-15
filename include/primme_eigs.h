@@ -340,7 +340,10 @@ int magma_cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms,
 int magma_dprimme(double *evals, double *evecs, double *resNorms, 
       primme_params *primme);
 int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
-      primme_params *primme);void primme_initialize(primme_params *primme);
+      primme_params *primme);
+primme_params* primme_params_create(void);
+int primme_params_destroy(primme_params *primme);
+void primme_initialize(primme_params *primme);
 int  primme_set_method(primme_preset_method method, primme_params *params);
 void primme_display_params(primme_params primme);
 void primme_free(primme_params *primme);

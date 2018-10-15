@@ -34,123 +34,123 @@
 #ifndef blaslapack_H
 #define blaslapack_H
 void Num_copy_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy,
-                      primme_context ctx) ;
+                      primme_context ctx);
 int Num_gemm_sprimme(const char *transa, const char *transb, int m, int n,
       int k, float alpha, float *a, int lda, float *b, int ldb, float beta,
-      float *c, int ldc, primme_context ctx) ;
+      float *c, int ldc, primme_context ctx);
 int Num_gemm_dhd_sprimme(const char *transa, const char *transb, int m, int n,
       int k, float alpha, float *a, int lda, float *b, int ldb, float beta,
-      float *c, int ldc, primme_context ctx) ;
+      float *c, int ldc, primme_context ctx);
 int Num_gemm_ddh_sprimme(const char *transa, const char *transb, int m, int n,
       int k, float alpha, float *a, int lda, float *b, int ldb, float beta,
-      float *c, int ldc, primme_context ctx) ;
+      float *c, int ldc, primme_context ctx);
 void Num_hemm_sprimme(const char *side, const char *uplo, int m, int n,
       float alpha, float *a, int lda, float *b, int ldb, float beta,
-      float *c, int ldc) ;
+      float *c, int ldc);
 int Num_trmm_sprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, float alpha,
-      float *a, int lda, float *b, int ldb, primme_context ctx) ;
+      float *a, int lda, float *b, int ldb, primme_context ctx);
 int Num_gemv_sprimme(const char *transa, PRIMME_INT m, int n, float alpha,
       float *a, int lda, float *x, int incx, float beta, float *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 int Num_gemv_ddh_sprimme(const char *transa, PRIMME_INT m, int n, float alpha,
       float *a, int lda, float *x, int incx, float beta, float *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 int Num_gemv_dhd_sprimme(const char *transa, PRIMME_INT m, int n, float alpha,
       float *a, int lda, float *x, int incx, float beta, float *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 void Num_hemv_sprimme(const char *uplo, int n, float alpha,
    float *a, int lda, float *x, int incx, float beta,
-   float *y, int incy) ;
+   float *y, int incy);
 void Num_axpy_sprimme(PRIMME_INT n, float alpha, float *x, int incx,
-   float *y, int incy, primme_context ctx) ;
+   float *y, int incy, primme_context ctx);
 float Num_dot_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy,
-                       primme_context ctx) ;
+                       primme_context ctx);
 int Num_larnv_sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
-      float *x, primme_context ctx) ;
+      float *x, primme_context ctx);
 void Num_scal_sprimme(
-      PRIMME_INT n, float alpha, float *x, int incx, primme_context ctx) ;
+      PRIMME_INT n, float alpha, float *x, int incx, primme_context ctx);
 void Num_swap_sprimme(PRIMME_INT n, float *x, int incx, float *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 int Num_heev_sprimme(const char *jobz, const char *uplo, int n, float *a,
-      int lda, float *w, primme_context ctx) ;
+      int lda, float *w, primme_context ctx);
 int Num_hegv_sprimme(const char *jobz, const char *uplo, int n, float *a,
-      int lda, float *b0, int ldb0, float *w, primme_context ctx) ;
+      int lda, float *b0, int ldb0, float *w, primme_context ctx);
 int Num_gesvd_sprimme(const char *jobu, const char *jobvt, int m, int n,
       float *a, int lda, float *s, float *u, int ldu, float *vt, int ldvt,
       primme_context ctx);
 int Num_hetrf_sprimme(const char *uplo, int n, float *a, int lda, int *ipivot,
-   primme_context ctx) ;
+   primme_context ctx);
 int Num_hetrs_sprimme(const char *uplo, int n, int nrhs, float *a, int lda,
-      int *ipivot, float *b, int ldb, primme_context ctx) ;
+      int *ipivot, float *b, int ldb, primme_context ctx);
 int Num_potrf_sprimme(
-      const char *uplo, int n, float *a, int lda, primme_context ctx) ;
+      const char *uplo, int n, float *a, int lda, primme_context ctx);
 void Num_trsm_sprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, float alpha, float *a, int lda,
-      float *b, int ldb) ;
+      float *b, int ldb);
 int Num_getrf_sprimme(
-      int m, int n, float *a, int lda, int *ipivot, primme_context ctx) ;
+      int m, int n, float *a, int lda, int *ipivot, primme_context ctx);
 int Num_getrs_sprimme(const char *trans, int n, int nrhs, float *a, int lda,
-      int *ipivot, float *b, int ldb, primme_context ctx) ;
+      int *ipivot, float *b, int ldb, primme_context ctx);
 void Num_copy_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy,
-                      primme_context ctx) ;
+                      primme_context ctx);
 int Num_gemm_cprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
-      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx) ;
+      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
 int Num_gemm_dhd_cprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
-      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx) ;
+      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
 int Num_gemm_ddh_cprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
-      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx) ;
+      PRIMME_COMPLEX_FLOAT *c, int ldc, primme_context ctx);
 void Num_hemm_cprimme(const char *side, const char *uplo, int m, int n,
       PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, PRIMME_COMPLEX_FLOAT beta,
-      PRIMME_COMPLEX_FLOAT *c, int ldc) ;
+      PRIMME_COMPLEX_FLOAT *c, int ldc);
 int Num_trmm_cprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, PRIMME_COMPLEX_FLOAT alpha,
-      PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx) ;
+      PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx);
 int Num_gemv_cprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_FLOAT alpha,
       PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT beta, PRIMME_COMPLEX_FLOAT *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 int Num_gemv_ddh_cprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_FLOAT alpha,
       PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT beta, PRIMME_COMPLEX_FLOAT *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 int Num_gemv_dhd_cprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_FLOAT alpha,
       PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT beta, PRIMME_COMPLEX_FLOAT *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 void Num_hemv_cprimme(const char *uplo, int n, PRIMME_COMPLEX_FLOAT alpha,
    PRIMME_COMPLEX_FLOAT *a, int lda, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT beta,
-   PRIMME_COMPLEX_FLOAT *y, int incy) ;
+   PRIMME_COMPLEX_FLOAT *y, int incy);
 void Num_axpy_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx,
-   PRIMME_COMPLEX_FLOAT *y, int incy, primme_context ctx) ;
+   PRIMME_COMPLEX_FLOAT *y, int incy, primme_context ctx);
 PRIMME_COMPLEX_FLOAT Num_dot_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy,
-                       primme_context ctx) ;
+                       primme_context ctx);
 int Num_larnv_cprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
-      PRIMME_COMPLEX_FLOAT *x, primme_context ctx) ;
+      PRIMME_COMPLEX_FLOAT *x, primme_context ctx);
 void Num_scal_cprimme(
-      PRIMME_INT n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx, primme_context ctx) ;
+      PRIMME_INT n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *x, int incx, primme_context ctx);
 void Num_swap_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT *x, int incx, PRIMME_COMPLEX_FLOAT *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 int Num_heev_cprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a,
-      int lda, float *w, primme_context ctx) ;
+      int lda, float *w, primme_context ctx);
 int Num_hegv_cprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a,
-      int lda, PRIMME_COMPLEX_FLOAT *b0, int ldb0, float *w, primme_context ctx) ;
+      int lda, PRIMME_COMPLEX_FLOAT *b0, int ldb0, float *w, primme_context ctx);
 int Num_gesvd_cprimme(const char *jobu, const char *jobvt, int m, int n,
       PRIMME_COMPLEX_FLOAT *a, int lda, float *s, PRIMME_COMPLEX_FLOAT *u, int ldu, PRIMME_COMPLEX_FLOAT *vt, int ldvt,
       primme_context ctx);
 int Num_hetrf_cprimme(const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a, int lda, int *ipivot,
-   primme_context ctx) ;
+   primme_context ctx);
 int Num_hetrs_cprimme(const char *uplo, int n, int nrhs, PRIMME_COMPLEX_FLOAT *a, int lda,
-      int *ipivot, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx) ;
+      int *ipivot, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx);
 int Num_potrf_cprimme(
-      const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a, int lda, primme_context ctx) ;
+      const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a, int lda, primme_context ctx);
 void Num_trsm_cprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda,
-      PRIMME_COMPLEX_FLOAT *b, int ldb) ;
+      PRIMME_COMPLEX_FLOAT *b, int ldb);
 int Num_getrf_cprimme(
-      int m, int n, PRIMME_COMPLEX_FLOAT *a, int lda, int *ipivot, primme_context ctx) ;
+      int m, int n, PRIMME_COMPLEX_FLOAT *a, int lda, int *ipivot, primme_context ctx);
 int Num_getrs_cprimme(const char *trans, int n, int nrhs, PRIMME_COMPLEX_FLOAT *a, int lda,
-      int *ipivot, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx) ;
+      int *ipivot, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_Sprimme)
 #  define Num_copy_Sprimme CONCAT(Num_copy_,SCALAR_SUF)
 #endif
@@ -164,7 +164,7 @@ int Num_getrs_cprimme(const char *trans, int n, int nrhs, PRIMME_COMPLEX_FLOAT *
 #  define Num_copy_RHprimme CONCAT(Num_copy_,HOST_REAL_SUF)
 #endif
 void Num_copy_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy,
-                      primme_context ctx) ;
+                      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_Sprimme)
 #  define Num_gemm_Sprimme CONCAT(Num_gemm_,SCALAR_SUF)
 #endif
@@ -179,7 +179,7 @@ void Num_copy_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy,
 #endif
 int Num_gemm_dprimme(const char *transa, const char *transb, int m, int n,
       int k, double alpha, double *a, int lda, double *b, int ldb, double beta,
-      double *c, int ldc, primme_context ctx) ;
+      double *c, int ldc, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_dhd_Sprimme)
 #  define Num_gemm_dhd_Sprimme CONCAT(Num_gemm_dhd_,SCALAR_SUF)
 #endif
@@ -194,7 +194,7 @@ int Num_gemm_dprimme(const char *transa, const char *transb, int m, int n,
 #endif
 int Num_gemm_dhd_dprimme(const char *transa, const char *transb, int m, int n,
       int k, double alpha, double *a, int lda, double *b, int ldb, double beta,
-      double *c, int ldc, primme_context ctx) ;
+      double *c, int ldc, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_ddh_Sprimme)
 #  define Num_gemm_ddh_Sprimme CONCAT(Num_gemm_ddh_,SCALAR_SUF)
 #endif
@@ -209,7 +209,7 @@ int Num_gemm_dhd_dprimme(const char *transa, const char *transb, int m, int n,
 #endif
 int Num_gemm_ddh_dprimme(const char *transa, const char *transb, int m, int n,
       int k, double alpha, double *a, int lda, double *b, int ldb, double beta,
-      double *c, int ldc, primme_context ctx) ;
+      double *c, int ldc, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_hemm_Sprimme)
 #  define Num_hemm_Sprimme CONCAT(Num_hemm_,SCALAR_SUF)
 #endif
@@ -224,7 +224,7 @@ int Num_gemm_ddh_dprimme(const char *transa, const char *transb, int m, int n,
 #endif
 void Num_hemm_dprimme(const char *side, const char *uplo, int m, int n,
       double alpha, double *a, int lda, double *b, int ldb, double beta,
-      double *c, int ldc) ;
+      double *c, int ldc);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_trmm_Sprimme)
 #  define Num_trmm_Sprimme CONCAT(Num_trmm_,SCALAR_SUF)
 #endif
@@ -239,7 +239,7 @@ void Num_hemm_dprimme(const char *side, const char *uplo, int m, int n,
 #endif
 int Num_trmm_dprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, double alpha,
-      double *a, int lda, double *b, int ldb, primme_context ctx) ;
+      double *a, int lda, double *b, int ldb, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemv_Sprimme)
 #  define Num_gemv_Sprimme CONCAT(Num_gemv_,SCALAR_SUF)
 #endif
@@ -254,7 +254,7 @@ int Num_trmm_dprimme(const char *side, const char *uplo,
 #endif
 int Num_gemv_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
       double *a, int lda, double *x, int incx, double beta, double *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemv_ddh_Sprimme)
 #  define Num_gemv_ddh_Sprimme CONCAT(Num_gemv_ddh_,SCALAR_SUF)
 #endif
@@ -269,7 +269,7 @@ int Num_gemv_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
 #endif
 int Num_gemv_ddh_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
       double *a, int lda, double *x, int incx, double beta, double *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemv_dhd_Sprimme)
 #  define Num_gemv_dhd_Sprimme CONCAT(Num_gemv_dhd_,SCALAR_SUF)
 #endif
@@ -284,7 +284,7 @@ int Num_gemv_ddh_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
 #endif
 int Num_gemv_dhd_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
       double *a, int lda, double *x, int incx, double beta, double *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_hemv_Sprimme)
 #  define Num_hemv_Sprimme CONCAT(Num_hemv_,SCALAR_SUF)
 #endif
@@ -299,7 +299,7 @@ int Num_gemv_dhd_dprimme(const char *transa, PRIMME_INT m, int n, double alpha,
 #endif
 void Num_hemv_dprimme(const char *uplo, int n, double alpha,
    double *a, int lda, double *x, int incx, double beta,
-   double *y, int incy) ;
+   double *y, int incy);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_axpy_Sprimme)
 #  define Num_axpy_Sprimme CONCAT(Num_axpy_,SCALAR_SUF)
 #endif
@@ -313,7 +313,7 @@ void Num_hemv_dprimme(const char *uplo, int n, double alpha,
 #  define Num_axpy_RHprimme CONCAT(Num_axpy_,HOST_REAL_SUF)
 #endif
 void Num_axpy_dprimme(PRIMME_INT n, double alpha, double *x, int incx,
-   double *y, int incy, primme_context ctx) ;
+   double *y, int incy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dot_Sprimme)
 #  define Num_dot_Sprimme CONCAT(Num_dot_,SCALAR_SUF)
 #endif
@@ -327,7 +327,7 @@ void Num_axpy_dprimme(PRIMME_INT n, double alpha, double *x, int incx,
 #  define Num_dot_RHprimme CONCAT(Num_dot_,HOST_REAL_SUF)
 #endif
 double Num_dot_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy,
-                       primme_context ctx) ;
+                       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_larnv_Sprimme)
 #  define Num_larnv_Sprimme CONCAT(Num_larnv_,SCALAR_SUF)
 #endif
@@ -341,7 +341,7 @@ double Num_dot_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy,
 #  define Num_larnv_RHprimme CONCAT(Num_larnv_,HOST_REAL_SUF)
 #endif
 int Num_larnv_dprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
-      double *x, primme_context ctx) ;
+      double *x, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_scal_Sprimme)
 #  define Num_scal_Sprimme CONCAT(Num_scal_,SCALAR_SUF)
 #endif
@@ -355,7 +355,7 @@ int Num_larnv_dprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
 #  define Num_scal_RHprimme CONCAT(Num_scal_,HOST_REAL_SUF)
 #endif
 void Num_scal_dprimme(
-      PRIMME_INT n, double alpha, double *x, int incx, primme_context ctx) ;
+      PRIMME_INT n, double alpha, double *x, int incx, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_swap_Sprimme)
 #  define Num_swap_Sprimme CONCAT(Num_swap_,SCALAR_SUF)
 #endif
@@ -369,7 +369,7 @@ void Num_scal_dprimme(
 #  define Num_swap_RHprimme CONCAT(Num_swap_,HOST_REAL_SUF)
 #endif
 void Num_swap_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Sprimme)
 #  define Num_heev_Sprimme CONCAT(Num_heev_,SCALAR_SUF)
 #endif
@@ -383,7 +383,7 @@ void Num_swap_dprimme(PRIMME_INT n, double *x, int incx, double *y, int incy,
 #  define Num_heev_RHprimme CONCAT(Num_heev_,HOST_REAL_SUF)
 #endif
 int Num_heev_dprimme(const char *jobz, const char *uplo, int n, double *a,
-      int lda, double *w, primme_context ctx) ;
+      int lda, double *w, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Sprimme)
 #  define Num_hegv_Sprimme CONCAT(Num_hegv_,SCALAR_SUF)
 #endif
@@ -397,7 +397,7 @@ int Num_heev_dprimme(const char *jobz, const char *uplo, int n, double *a,
 #  define Num_hegv_RHprimme CONCAT(Num_hegv_,HOST_REAL_SUF)
 #endif
 int Num_hegv_dprimme(const char *jobz, const char *uplo, int n, double *a,
-      int lda, double *b0, int ldb0, double *w, primme_context ctx) ;
+      int lda, double *b0, int ldb0, double *w, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gesvd_Sprimme)
 #  define Num_gesvd_Sprimme CONCAT(Num_gesvd_,SCALAR_SUF)
 #endif
@@ -426,7 +426,7 @@ int Num_gesvd_dprimme(const char *jobu, const char *jobvt, int m, int n,
 #  define Num_hetrf_RHprimme CONCAT(Num_hetrf_,HOST_REAL_SUF)
 #endif
 int Num_hetrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot,
-   primme_context ctx) ;
+   primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_hetrs_Sprimme)
 #  define Num_hetrs_Sprimme CONCAT(Num_hetrs_,SCALAR_SUF)
 #endif
@@ -440,7 +440,7 @@ int Num_hetrf_dprimme(const char *uplo, int n, double *a, int lda, int *ipivot,
 #  define Num_hetrs_RHprimme CONCAT(Num_hetrs_,HOST_REAL_SUF)
 #endif
 int Num_hetrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
-      int *ipivot, double *b, int ldb, primme_context ctx) ;
+      int *ipivot, double *b, int ldb, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_potrf_Sprimme)
 #  define Num_potrf_Sprimme CONCAT(Num_potrf_,SCALAR_SUF)
 #endif
@@ -454,7 +454,7 @@ int Num_hetrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
 #  define Num_potrf_RHprimme CONCAT(Num_potrf_,HOST_REAL_SUF)
 #endif
 int Num_potrf_dprimme(
-      const char *uplo, int n, double *a, int lda, primme_context ctx) ;
+      const char *uplo, int n, double *a, int lda, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_trsm_Sprimme)
 #  define Num_trsm_Sprimme CONCAT(Num_trsm_,SCALAR_SUF)
 #endif
@@ -469,7 +469,7 @@ int Num_potrf_dprimme(
 #endif
 void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, double alpha, double *a, int lda,
-      double *b, int ldb) ;
+      double *b, int ldb);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_getrf_Sprimme)
 #  define Num_getrf_Sprimme CONCAT(Num_getrf_,SCALAR_SUF)
 #endif
@@ -483,7 +483,7 @@ void Num_trsm_dprimme(const char *side, const char *uplo, const char *transa,
 #  define Num_getrf_RHprimme CONCAT(Num_getrf_,HOST_REAL_SUF)
 #endif
 int Num_getrf_dprimme(
-      int m, int n, double *a, int lda, int *ipivot, primme_context ctx) ;
+      int m, int n, double *a, int lda, int *ipivot, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_getrs_Sprimme)
 #  define Num_getrs_Sprimme CONCAT(Num_getrs_,SCALAR_SUF)
 #endif
@@ -497,64 +497,64 @@ int Num_getrf_dprimme(
 #  define Num_getrs_RHprimme CONCAT(Num_getrs_,HOST_REAL_SUF)
 #endif
 int Num_getrs_dprimme(const char *trans, int n, int nrhs, double *a, int lda,
-      int *ipivot, double *b, int ldb, primme_context ctx) ;
+      int *ipivot, double *b, int ldb, primme_context ctx);
 void Num_copy_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy,
-                      primme_context ctx) ;
+                      primme_context ctx);
 int Num_gemm_zprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
-      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx) ;
+      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
 int Num_gemm_dhd_zprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
-      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx) ;
+      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
 int Num_gemm_ddh_zprimme(const char *transa, const char *transb, int m, int n,
       int k, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
-      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx) ;
+      PRIMME_COMPLEX_DOUBLE *c, int ldc, primme_context ctx);
 void Num_hemm_zprimme(const char *side, const char *uplo, int m, int n,
       PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, PRIMME_COMPLEX_DOUBLE beta,
-      PRIMME_COMPLEX_DOUBLE *c, int ldc) ;
+      PRIMME_COMPLEX_DOUBLE *c, int ldc);
 int Num_trmm_zprimme(const char *side, const char *uplo,
       const char *transa, const char *diag, int m, int n, PRIMME_COMPLEX_DOUBLE alpha,
-      PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx) ;
+      PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx);
 int Num_gemv_zprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_DOUBLE alpha,
       PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE beta, PRIMME_COMPLEX_DOUBLE *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 int Num_gemv_ddh_zprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_DOUBLE alpha,
       PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE beta, PRIMME_COMPLEX_DOUBLE *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 int Num_gemv_dhd_zprimme(const char *transa, PRIMME_INT m, int n, PRIMME_COMPLEX_DOUBLE alpha,
       PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE beta, PRIMME_COMPLEX_DOUBLE *y,
-      int incy, primme_context ctx) ;
+      int incy, primme_context ctx);
 void Num_hemv_zprimme(const char *uplo, int n, PRIMME_COMPLEX_DOUBLE alpha,
    PRIMME_COMPLEX_DOUBLE *a, int lda, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE beta,
-   PRIMME_COMPLEX_DOUBLE *y, int incy) ;
+   PRIMME_COMPLEX_DOUBLE *y, int incy);
 void Num_axpy_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx,
-   PRIMME_COMPLEX_DOUBLE *y, int incy, primme_context ctx) ;
+   PRIMME_COMPLEX_DOUBLE *y, int incy, primme_context ctx);
 PRIMME_COMPLEX_DOUBLE Num_dot_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy,
-                       primme_context ctx) ;
+                       primme_context ctx);
 int Num_larnv_zprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
-      PRIMME_COMPLEX_DOUBLE *x, primme_context ctx) ;
+      PRIMME_COMPLEX_DOUBLE *x, primme_context ctx);
 void Num_scal_zprimme(
-      PRIMME_INT n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx, primme_context ctx) ;
+      PRIMME_INT n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *x, int incx, primme_context ctx);
 void Num_swap_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE *x, int incx, PRIMME_COMPLEX_DOUBLE *y, int incy,
-      primme_context ctx) ;
+      primme_context ctx);
 int Num_heev_zprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a,
-      int lda, double *w, primme_context ctx) ;
+      int lda, double *w, primme_context ctx);
 int Num_hegv_zprimme(const char *jobz, const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a,
-      int lda, PRIMME_COMPLEX_DOUBLE *b0, int ldb0, double *w, primme_context ctx) ;
+      int lda, PRIMME_COMPLEX_DOUBLE *b0, int ldb0, double *w, primme_context ctx);
 int Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n,
       PRIMME_COMPLEX_DOUBLE *a, int lda, double *s, PRIMME_COMPLEX_DOUBLE *u, int ldu, PRIMME_COMPLEX_DOUBLE *vt, int ldvt,
       primme_context ctx);
 int Num_hetrf_zprimme(const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, int *ipivot,
-   primme_context ctx) ;
+   primme_context ctx);
 int Num_hetrs_zprimme(const char *uplo, int n, int nrhs, PRIMME_COMPLEX_DOUBLE *a, int lda,
-      int *ipivot, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx) ;
+      int *ipivot, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx);
 int Num_potrf_zprimme(
-      const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, primme_context ctx) ;
+      const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, primme_context ctx);
 void Num_trsm_zprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda,
-      PRIMME_COMPLEX_DOUBLE *b, int ldb) ;
+      PRIMME_COMPLEX_DOUBLE *b, int ldb);
 int Num_getrf_zprimme(
-      int m, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, int *ipivot, primme_context ctx) ;
+      int m, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, int *ipivot, primme_context ctx);
 int Num_getrs_zprimme(const char *trans, int n, int nrhs, PRIMME_COMPLEX_DOUBLE *a, int lda,
-      int *ipivot, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx) ;
+      int *ipivot, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx);
 #endif

@@ -277,7 +277,7 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
       ret = -13;
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst > primme->n)
       ret = -16;
-   else if (primme->maxBasisSize < 2 && primme->maxBasisSize != primme->n) 
+   else if (primme->maxBasisSize <= 2 && primme->maxBasisSize+primme->numOrthoConst != primme->n) 
       ret = -17;
    else if (primme->minRestartSize < 0 || (primme->minRestartSize == 0
                                     && primme->n > 2 && primme->numEvals > 0))

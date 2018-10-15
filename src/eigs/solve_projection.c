@@ -519,10 +519,10 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
    if (QtQ) {
       /* Factorize QtQ */
       Num_copy_matrix_Sprimme(
-            QtQ, basisSize, basisSize, ldQtQ, hU, basisSize, ctx);
-      CHKERR(Num_potrf_Sprimme("U", basisSize, hU, basisSize, ctx));
+            QtQ, basisSize, basisSize, ldQtQ, hU, ldhU, ctx);
+      CHKERR(Num_potrf_Sprimme("U", basisSize, hU, ldhU, ctx));
       CHKERR(Num_trmm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, hU,
-            basisSize, hVecs, basisSize, ctx));
+            ldhU, hVecs, ldhVecs, ctx));
    }
 
    SCALAR *U_VtBV=NULL; /* Cholesky factor of VtBV */

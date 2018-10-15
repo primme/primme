@@ -50,8 +50,27 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
 static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme, int *ierr);
 
+/*****************************************************************************
+ * Initialize handles also the allocation of primme_svds structure 
+ *****************************************************************************/
+primme_svds_params * primme_svds_params_create(void) {
+
+   primme_svds_params *primme_svds = NULL;
+   if (MALLOC_PRIMME(1, &primme_svds) == 0)
+      primme_svds_initialize(primme_svds);
+    return primme_svds;
+}
+
+/*****************************************************************************
+ *  * Free the internally allocated work arrays of the primme_svds structure 
+ *   *****************************************************************************/
+int primme_svds_params_destroy(primme_svds_params *primme_svds) {
+    free(primme_svds);
+    return 0;
+}
+
 /*******************************************************************************
- * Subroutine primme__svdsinitialize - Set primme_svds_params members to default
+ * Subroutine primme_svds_initialize - Set primme_svds_params members to default
  *    values.
  * 
  * INPUT/OUTPUT PARAMETERS
@@ -126,6 +145,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->convtest                = NULL;
    primme_svds->monitorFun              = NULL;
    primme_svds->monitor                 = NULL;
+   primme_svds->queue                   = NULL;
 
    primme_initialize(&primme_svds->primme);
    primme_initialize(&primme_svds->primmeStage2);
@@ -331,15 +351,6 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
          primme->projectionParams.projection == primme_proj_default) {
       /* NOTE: refined extraction seems to work better than RR */
       primme->projectionParams.projection = primme_proj_refined;
-   }
-
-   /* Disable explicit computation of V'*V for finding the smallest singular  */
-   /* values. It doesn't help.                                                */
- 
-   if (stage == 0 && primme_svds->target == primme_svds_smallest &&
-         (method == primme_svds_op_AtA || method == primme_svds_op_AAt) &&
-         primme->orth == primme_orth_default) {
-      primme->orth = primme_orth_implicit_I;
    }
 
    if (primme_svds->locking >= 0) {

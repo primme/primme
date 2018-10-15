@@ -217,6 +217,8 @@ int magma_dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 int magma_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
       primme_svds_params *primme_svds);
+primme_svds_params * primme_svds_params_create(void);
+int primme_svds_params_destroy(primme_svds_params *primme_svds);
 void primme_svds_initialize(primme_svds_params *primme_svds);
 int primme_svds_set_method(primme_svds_preset_method method,
       primme_preset_method methodStage1, primme_preset_method methodStage2,

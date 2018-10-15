@@ -128,10 +128,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
    numToProject = 0;
    for (i=left; i < right; i++) {
        
-      /* Don't trust any residual norm below estimateResidualError */
-      blockNorms[i - left] =
-            max(blockNorms[i - left], primme->stats.estimateResidualError);
-
       /* Refine doesn't order the pairs considering closest_leq/gep. */
       /* Then ignore values so that value +-residual is completely   */
       /* outside of the desired region.                              */

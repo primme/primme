@@ -38,13 +38,13 @@ int init_basis_sprimme(float *V, PRIMME_INT nLocal, PRIMME_INT ldV, float *W,
       PRIMME_INT ldevecs, float *Bevecs, PRIMME_INT ldBevecs, float *evecsHat,
       PRIMME_INT ldevecsHat, float *M, int ldM, float *Mfact, int ldMfact,
       int *ipivot, float *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 int init_basis_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT nLocal, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *W,
       PRIMME_INT ldW, PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT ldBV, PRIMME_COMPLEX_FLOAT *evecs,
       PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_FLOAT *evecsHat,
       PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *Mfact, int ldMfact,
       int *ipivot, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(init_basis_Sprimme)
 #  define init_basis_Sprimme CONCAT(init_basis_,SCALAR_SUF)
 #endif
@@ -62,35 +62,35 @@ int init_basis_dprimme(double *V, PRIMME_INT nLocal, PRIMME_INT ldV, double *W,
       PRIMME_INT ldevecs, double *Bevecs, PRIMME_INT ldBevecs, double *evecsHat,
       PRIMME_INT ldevecsHat, double *M, int ldM, double *Mfact, int ldMfact,
       int *ipivot, double *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 int init_basis_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT nLocal, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *W,
       PRIMME_INT ldW, PRIMME_COMPLEX_DOUBLE *BV, PRIMME_INT ldBV, PRIMME_COMPLEX_DOUBLE *evecs,
       PRIMME_INT ldevecs, PRIMME_COMPLEX_DOUBLE *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_DOUBLE *evecsHat,
       PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *Mfact, int ldMfact,
       int *ipivot, PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 int init_basis_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_float *W,
       PRIMME_INT ldW, magma_float *BV, PRIMME_INT ldBV, magma_float *evecs,
       PRIMME_INT ldevecs, magma_float *Bevecs, PRIMME_INT ldBevecs, magma_float *evecsHat,
       PRIMME_INT ldevecsHat, float *M, int ldM, float *Mfact, int ldMfact,
       int *ipivot, float *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 int init_basis_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_complex_float *W,
       PRIMME_INT ldW, magma_complex_float *BV, PRIMME_INT ldBV, magma_complex_float *evecs,
       PRIMME_INT ldevecs, magma_complex_float *Bevecs, PRIMME_INT ldBevecs, magma_complex_float *evecsHat,
       PRIMME_INT ldevecsHat, PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *Mfact, int ldMfact,
       int *ipivot, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 int init_basis_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_double *W,
       PRIMME_INT ldW, magma_double *BV, PRIMME_INT ldBV, magma_double *evecs,
       PRIMME_INT ldevecs, magma_double *Bevecs, PRIMME_INT ldBevecs, magma_double *evecsHat,
       PRIMME_INT ldevecsHat, double *M, int ldM, double *Mfact, int ldMfact,
       int *ipivot, double *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 int init_basis_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV, magma_complex_double *W,
       PRIMME_INT ldW, magma_complex_double *BV, PRIMME_INT ldBV, magma_complex_double *evecs,
       PRIMME_INT ldevecs, magma_complex_double *Bevecs, PRIMME_INT ldBevecs, magma_complex_double *evecsHat,
       PRIMME_INT ldevecsHat, PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *Mfact, int ldMfact,
       int *ipivot, PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) ;
+      int *nextGuess, int *numGuesses, primme_context ctx);
 #endif

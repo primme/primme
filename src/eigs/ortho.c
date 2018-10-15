@@ -696,8 +696,7 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
 
          /* [D, Y] = eig(C) */
 
-         CHKERR(eig(C, b2 - b1, b2 - b1, &Y[(b2 - b1) * (b1 - b1) + b1 - b1],
-               b2 - b1, D, ctx));
+         CHKERR(eig(C, b2 - b1, b2 - b1, Y, b2 - b1, D, ctx));
 
          /* D = sqrt(D) */
 
@@ -708,8 +707,7 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          Num_zero_matrix_SHprimme(VLtBVLdA, nVL, b2-b1, nVL, ctx);
          for (i=0; i<b2-b1; i++) D[i] = 0.0;
          for (i=0; i<b2-b1; i++) N[i] = 0.0;
-         Num_zero_matrix_SHprimme(&Y[(b2 - b1) * (b1 - b1) + b1 - b1], b2 - b1,
-               b2 - b1, b2 - b1, ctx);
+         Num_zero_matrix_SHprimme(Y, b2 - b1, b2 - b1, b2 - b1, ctx);
       }
 
       CHKERR(globalSum_SHprimme(VLtBVLdA, VLtBVLdA, nVL*(b2-b1), ctx));
@@ -727,7 +725,7 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          /* R(0:b1-1,:) += VtBV\Vc'*Xc*gi = VtBV\A(0:b1-1,:)*R(b1:b2-1,:) */
 
          Num_gemm_SHprimme("N", "N", b1, b2 - b1, b2 - b1, 1.0,
-               &VLtBVLdA[numLocked], nVL, &R[ldR * b1 + b1], ldR, 1.0,
+               &VLtBVLdA[numLocked], nVL, r, ldr, 1.0,
                &R[ldR * b1], ldR, ctx);
       }
       if (r) {
@@ -753,9 +751,9 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
 
       /* Y = N \ Y */
 
-      for (i=0; i<b2-b1; i++) {
-         for (j=0; j<b2-b1; j++) {
-            Y[(b2-b1)*i+j] /= N[j];
+      for (i = 0; i < b2 - b1; i++) {
+         for (j = 0; j < b2 - b1; j++) {
+            Y[(b2 - b1) * i + j] /= N[j];
          }
       }
    } /* end while, I hope you enjoyed the loop */
@@ -1067,9 +1065,13 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
    int i, j;
 
    for(i=0; i<n1; i++) {
-      for (j = 0; j < i; j++)
-      if (ABS(V[i * ldV + j]) /
-                  sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j])) > .8/n) break;
+      if (ABS(V[i * ldV + i]) == (HREAL)0.0) break;
+      for (j = 0; j < i; j++) {
+         if (ABS(V[i * ldV + j]) >
+               .8 / n * sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j])))
+            break;
+      }
+      if (j < i) break;
    }
 
    return i;

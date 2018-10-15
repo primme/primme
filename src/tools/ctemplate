@@ -140,7 +140,7 @@ def generate_definitions(s):
 #  define {alias} CONCAT({stem},{macro})
 #endif\
 """.format(alias=Fstem+useNEW, stem=Fstem, macro=useMACRO))
-		r.append(D + ";")
+		r.append(D.strip() + ";")
 	r.append("")
 	return "\n".join(r)
 

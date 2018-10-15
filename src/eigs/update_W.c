@@ -95,8 +95,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 }
 
 /*******************************************************************************
- * Subroutine update_QR - Computes the QR factorization (A-targetShift*B)*V
- *    updating only the columns nv:nv+blockSize-1 of Q and R.
+ * Subroutine matrixMatvec_ - Computes B*V(:,nv+1:nv+blksze)
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -167,7 +166,7 @@ TEMPLATE_PLEASE
 int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR,
       HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, primme_context ctx) {
+      int blockSize, int *nQ, primme_context ctx) {
 
    int i;
 
@@ -185,22 +184,13 @@ int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
    }
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
-   int nQ;
-   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, R, ldR, basisSize,
-         basisSize + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
-         ctx.primme->maxBasisSize, &nQ, ctx));
-   Num_zero_matrix_Sprimme(
-         &Q[ldQ * nQ], nLocal, basisSize + blockSize - nQ, ldQ, ctx);
-   Num_zero_matrix_SHprimme(
-         &R[nQ], basisSize + blockSize - nQ, basisSize + blockSize, ldR, ctx);
-   if (QtQ) {
-      Num_zero_matrix_SHprimme(&QtQ[nQ * ldQtQ], basisSize + blockSize,
-            basisSize + blockSize - nQ, ldQtQ, ctx);
-      for (i = nQ; i < basisSize + blockSize; i++)
-         QtQ[ldQtQ * i + i] = (HSCALAR)1.0;
-   }
+
+   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, R,
+         ldR, *nQ, *nQ + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
+         ctx.primme->maxBasisSize, nQ, ctx));
 
    /* Zero the lower-left part of R */
+
    Num_zero_matrix_SHprimme(&R[basisSize], blockSize, basisSize, ldR, ctx);
 
    return 0;

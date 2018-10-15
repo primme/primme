@@ -37,12 +37,12 @@ int check_convergence_sprimme(float *X, PRIMME_INT ldX, int givenX, float *R,
       PRIMME_INT ldR, int givenR, float *evecs, int numLocked,
       PRIMME_INT ldevecs, float *Bevecs, PRIMME_INT ldBevecs, float *VtBV,
       int ldVtBV, int left, int right, int *flags, float *blockNorms,
-      float *hVals, int *reset, int caller, primme_context ctx) ;
+      float *hVals, int *reset, int caller, primme_context ctx);
 int check_convergence_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, int givenX, PRIMME_COMPLEX_FLOAT *R,
       PRIMME_INT ldR, int givenR, PRIMME_COMPLEX_FLOAT *evecs, int numLocked,
       PRIMME_INT ldevecs, PRIMME_COMPLEX_FLOAT *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_FLOAT *VtBV,
       int ldVtBV, int left, int right, int *flags, float *blockNorms,
-      float *hVals, int *reset, int caller, primme_context ctx) ;
+      float *hVals, int *reset, int caller, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Sprimme)
 #  define check_convergence_Sprimme CONCAT(check_convergence_,SCALAR_SUF)
 #endif
@@ -59,30 +59,30 @@ int check_convergence_dprimme(double *X, PRIMME_INT ldX, int givenX, double *R,
       PRIMME_INT ldR, int givenR, double *evecs, int numLocked,
       PRIMME_INT ldevecs, double *Bevecs, PRIMME_INT ldBevecs, double *VtBV,
       int ldVtBV, int left, int right, int *flags, double *blockNorms,
-      double *hVals, int *reset, int caller, primme_context ctx) ;
+      double *hVals, int *reset, int caller, primme_context ctx);
 int check_convergence_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT ldX, int givenX, PRIMME_COMPLEX_DOUBLE *R,
       PRIMME_INT ldR, int givenR, PRIMME_COMPLEX_DOUBLE *evecs, int numLocked,
       PRIMME_INT ldevecs, PRIMME_COMPLEX_DOUBLE *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_DOUBLE *VtBV,
       int ldVtBV, int left, int right, int *flags, double *blockNorms,
-      double *hVals, int *reset, int caller, primme_context ctx) ;
+      double *hVals, int *reset, int caller, primme_context ctx);
 int check_convergence_smagmaprimme(magma_float *X, PRIMME_INT ldX, int givenX, magma_float *R,
       PRIMME_INT ldR, int givenR, magma_float *evecs, int numLocked,
       PRIMME_INT ldevecs, magma_float *Bevecs, PRIMME_INT ldBevecs, float *VtBV,
       int ldVtBV, int left, int right, int *flags, float *blockNorms,
-      float *hVals, int *reset, int caller, primme_context ctx) ;
+      float *hVals, int *reset, int caller, primme_context ctx);
 int check_convergence_cmagmaprimme(magma_complex_float *X, PRIMME_INT ldX, int givenX, magma_complex_float *R,
       PRIMME_INT ldR, int givenR, magma_complex_float *evecs, int numLocked,
       PRIMME_INT ldevecs, magma_complex_float *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_FLOAT *VtBV,
       int ldVtBV, int left, int right, int *flags, float *blockNorms,
-      float *hVals, int *reset, int caller, primme_context ctx) ;
+      float *hVals, int *reset, int caller, primme_context ctx);
 int check_convergence_dmagmaprimme(magma_double *X, PRIMME_INT ldX, int givenX, magma_double *R,
       PRIMME_INT ldR, int givenR, magma_double *evecs, int numLocked,
       PRIMME_INT ldevecs, magma_double *Bevecs, PRIMME_INT ldBevecs, double *VtBV,
       int ldVtBV, int left, int right, int *flags, double *blockNorms,
-      double *hVals, int *reset, int caller, primme_context ctx) ;
+      double *hVals, int *reset, int caller, primme_context ctx);
 int check_convergence_zmagmaprimme(magma_complex_double *X, PRIMME_INT ldX, int givenX, magma_complex_double *R,
       PRIMME_INT ldR, int givenR, magma_complex_double *evecs, int numLocked,
       PRIMME_INT ldevecs, magma_complex_double *Bevecs, PRIMME_INT ldBevecs, PRIMME_COMPLEX_DOUBLE *VtBV,
       int ldVtBV, int left, int right, int *flags, double *blockNorms,
-      double *hVals, int *reset, int caller, primme_context ctx) ;
+      double *hVals, int *reset, int caller, primme_context ctx);
 #endif

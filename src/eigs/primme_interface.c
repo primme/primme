@@ -52,6 +52,26 @@
 #ifdef USE_DOUBLE
 #include "notemplate.h"
 
+/*****************************************************************************
+ * Initialize handles also the allocation of primme structure 
+ *****************************************************************************/
+primme_params * primme_params_create(void) {
+
+   primme_params *primme = NULL;
+   if (MALLOC_PRIMME(1, &primme) == 0)
+      primme_initialize(primme);
+    return primme;
+}
+
+/*****************************************************************************
+ *  * Free the internally allocated work arrays of the primme structure 
+ *   *****************************************************************************/
+int primme_params_destroy(primme_params *primme) {
+    free(primme);
+    return 0;
+}
+
+
 /*******************************************************************************
  * Subroutine primme_initialize - Set primme_params members to default values.
  * 
@@ -514,17 +534,26 @@ void primme_set_defaults(primme_params *primme) {
    /* and consider also minRestartSize and maxPrevRetain           */
    if (primme->maxBasisSize == 0) {
       if (primme->target==primme_smallest || primme->target==primme_largest)
-         primme->maxBasisSize   = min(primme->n, max(
-            max(15, 4*primme->maxBlockSize+primme->restartingParams.maxPrevRetain), 
-            (int) 2.5*primme->minRestartSize+primme->restartingParams.maxPrevRetain));
+         primme->maxBasisSize =
+               min(primme->n - primme->numOrthoConst,
+                     max(max(15, 4 * primme->maxBlockSize +
+                                       primme->restartingParams.maxPrevRetain),
+                           (int)2.5 * primme->minRestartSize +
+                                 primme->restartingParams.maxPrevRetain));
       else
-         primme->maxBasisSize   = min(primme->n, max(
-            max(35, 5*primme->maxBlockSize+primme->restartingParams.maxPrevRetain),
-            (int) 1.7*primme->minRestartSize+primme->restartingParams.maxPrevRetain));
+         primme->maxBasisSize =
+               min(primme->n - primme->numOrthoConst,
+                     max(max(35, 5 * primme->maxBlockSize +
+                                       primme->restartingParams.maxPrevRetain),
+                           (int)1.7 * primme->minRestartSize +
+                                 primme->restartingParams.maxPrevRetain));
    }
 
    if (primme->minRestartSize == 0) {
-      if (primme->target==primme_smallest || primme->target==primme_largest)
+      if (primme->n <= 3)
+         primme->minRestartSize = primme->n - primme->numOrthoConst;
+      else if (primme->target == primme_smallest ||
+               primme->target == primme_largest)
          primme->minRestartSize = (int) (0.5 + 0.4*primme->maxBasisSize);
       else
          primme->minRestartSize = (int) (0.5 + 0.6*primme->maxBasisSize);
