@@ -95,6 +95,14 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 
 %ignore tprimme;
 %ignore tprimme_svds;
+%ignore magma_cprimme;
+%ignore magma_sprimme;
+%ignore magma_dprimme;
+%ignore magma_zprimme;
+%ignore magma_cprimme_svds;
+%ignore magma_sprimme_svds;
+%ignore magma_dprimme_svds;
+%ignore magma_zprimme_svds;
 
 %ignore PrimmeParams::matrixMatvec;
 %ignore PrimmeParams::massMatrixMatvec;

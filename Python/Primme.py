@@ -112,6 +112,12 @@ except __builtin__.Exception:
 
 __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'PRIMME_Arnoldi', 'PRIMME_DEFAULT_METHOD', 'PRIMME_DEFAULT_MIN_MATVECS', 'PRIMME_DEFAULT_MIN_TIME', 'PRIMME_DYNAMIC', 'PRIMME_GD', 'PRIMME_GD_Olsen_plusK', 'PRIMME_GD_plusK', 'PRIMME_JDQMR', 'PRIMME_JDQMR_ETol', 'PRIMME_JDQR', 'PRIMME_JD_Olsen_plusK', 'PRIMME_LOBPCG_OrthoBasis', 'PRIMME_LOBPCG_OrthoBasis_Window', 'PRIMME_RQI', 'PRIMME_STEEPEST_DESCENT', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'sprimme_svds', 'cprimme_svds', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 
+PRIMME_UNEXPECTED_FAILURE = _Primme.PRIMME_UNEXPECTED_FAILURE
+PRIMME_MALLOC_FAILURE = _Primme.PRIMME_MALLOC_FAILURE
+PRIMME_MAIN_ITER_FAILURE = _Primme.PRIMME_MAIN_ITER_FAILURE
+PRIMME_LAPACK_FAILURE = _Primme.PRIMME_LAPACK_FAILURE
+PRIMME_USER_FAILURE = _Primme.PRIMME_USER_FAILURE
+PRIMME_ORTHO_CONST_FAILURE = _Primme.PRIMME_ORTHO_CONST_FAILURE
 primme_smallest = _Primme.primme_smallest
 primme_largest = _Primme.primme_largest
 primme_closest_geq = _Primme.primme_closest_geq
@@ -126,8 +132,6 @@ primme_init_default = _Primme.primme_init_default
 primme_init_krylov = _Primme.primme_init_krylov
 primme_init_random = _Primme.primme_init_random
 primme_init_user = _Primme.primme_init_user
-primme_thick = _Primme.primme_thick
-primme_dtr = _Primme.primme_dtr
 primme_full_LTolerance = _Primme.primme_full_LTolerance
 primme_decreasing_LTolerance = _Primme.primme_decreasing_LTolerance
 primme_adaptive_ETolerance = _Primme.primme_adaptive_ETolerance
@@ -207,6 +211,14 @@ class primme_stats(_object):
     __swig_getmethods__["estimateLargestSVal"] = _Primme.primme_stats_estimateLargestSVal_get
     if _newclass:
         estimateLargestSVal = _swig_property(_Primme.primme_stats_estimateLargestSVal_get, _Primme.primme_stats_estimateLargestSVal_set)
+    __swig_setmethods__["estimateBNorm"] = _Primme.primme_stats_estimateBNorm_set
+    __swig_getmethods__["estimateBNorm"] = _Primme.primme_stats_estimateBNorm_get
+    if _newclass:
+        estimateBNorm = _swig_property(_Primme.primme_stats_estimateBNorm_get, _Primme.primme_stats_estimateBNorm_set)
+    __swig_setmethods__["estimateInvBNorm"] = _Primme.primme_stats_estimateInvBNorm_set
+    __swig_getmethods__["estimateInvBNorm"] = _Primme.primme_stats_estimateInvBNorm_get
+    if _newclass:
+        estimateInvBNorm = _swig_property(_Primme.primme_stats_estimateInvBNorm_get, _Primme.primme_stats_estimateInvBNorm_set)
     __swig_setmethods__["maxConvTol"] = _Primme.primme_stats_maxConvTol_set
     __swig_getmethods__["maxConvTol"] = _Primme.primme_stats_maxConvTol_get
     if _newclass:
@@ -215,6 +227,10 @@ class primme_stats(_object):
     __swig_getmethods__["estimateResidualError"] = _Primme.primme_stats_estimateResidualError_get
     if _newclass:
         estimateResidualError = _swig_property(_Primme.primme_stats_estimateResidualError_get, _Primme.primme_stats_estimateResidualError_set)
+    __swig_setmethods__["lockingIssue"] = _Primme.primme_stats_lockingIssue_set
+    __swig_getmethods__["lockingIssue"] = _Primme.primme_stats_lockingIssue_get
+    if _newclass:
+        lockingIssue = _swig_property(_Primme.primme_stats_lockingIssue_get, _Primme.primme_stats_lockingIssue_set)
 
     def __init__(self):
         this = _Primme.new_primme_stats()
@@ -339,10 +355,6 @@ class restarting_params(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, restarting_params, name)
     __repr__ = _swig_repr
-    __swig_setmethods__["scheme"] = _Primme.restarting_params_scheme_set
-    __swig_getmethods__["scheme"] = _Primme.restarting_params_scheme_get
-    if _newclass:
-        scheme = _swig_property(_Primme.restarting_params_scheme_get, _Primme.restarting_params_scheme_set)
     __swig_setmethods__["maxPrevRetain"] = _Primme.restarting_params_maxPrevRetain_set
     __swig_getmethods__["maxPrevRetain"] = _Primme.restarting_params_maxPrevRetain_get
     if _newclass:
@@ -429,14 +441,6 @@ class primme_params(_object):
     __swig_getmethods__["maxOuterIterations"] = _Primme.primme_params_maxOuterIterations_get
     if _newclass:
         maxOuterIterations = _swig_property(_Primme.primme_params_maxOuterIterations_get, _Primme.primme_params_maxOuterIterations_set)
-    __swig_setmethods__["intWorkSize"] = _Primme.primme_params_intWorkSize_set
-    __swig_getmethods__["intWorkSize"] = _Primme.primme_params_intWorkSize_get
-    if _newclass:
-        intWorkSize = _swig_property(_Primme.primme_params_intWorkSize_get, _Primme.primme_params_intWorkSize_set)
-    __swig_setmethods__["realWorkSize"] = _Primme.primme_params_realWorkSize_set
-    __swig_getmethods__["realWorkSize"] = _Primme.primme_params_realWorkSize_get
-    if _newclass:
-        realWorkSize = _swig_property(_Primme.primme_params_realWorkSize_get, _Primme.primme_params_realWorkSize_set)
     __swig_setmethods__["iseed"] = _Primme.primme_params_iseed_set
     __swig_getmethods__["iseed"] = _Primme.primme_params_iseed_get
     if _newclass:
@@ -445,6 +449,14 @@ class primme_params(_object):
     __swig_getmethods__["aNorm"] = _Primme.primme_params_aNorm_get
     if _newclass:
         aNorm = _swig_property(_Primme.primme_params_aNorm_get, _Primme.primme_params_aNorm_set)
+    __swig_setmethods__["BNorm"] = _Primme.primme_params_BNorm_set
+    __swig_getmethods__["BNorm"] = _Primme.primme_params_BNorm_get
+    if _newclass:
+        BNorm = _swig_property(_Primme.primme_params_BNorm_get, _Primme.primme_params_BNorm_set)
+    __swig_setmethods__["invBNorm"] = _Primme.primme_params_invBNorm_set
+    __swig_getmethods__["invBNorm"] = _Primme.primme_params_invBNorm_get
+    if _newclass:
+        invBNorm = _swig_property(_Primme.primme_params_invBNorm_get, _Primme.primme_params_invBNorm_set)
     __swig_setmethods__["eps"] = _Primme.primme_params_eps_set
     __swig_getmethods__["eps"] = _Primme.primme_params_eps_get
     if _newclass:
@@ -457,6 +469,10 @@ class primme_params(_object):
     __swig_getmethods__["printLevel"] = _Primme.primme_params_printLevel_get
     if _newclass:
         printLevel = _swig_property(_Primme.primme_params_printLevel_get, _Primme.primme_params_printLevel_set)
+    __swig_setmethods__["massMatrix"] = _Primme.primme_params_massMatrix_set
+    __swig_getmethods__["massMatrix"] = _Primme.primme_params_massMatrix_get
+    if _newclass:
+        massMatrix = _swig_property(_Primme.primme_params_massMatrix_get, _Primme.primme_params_massMatrix_set)
     __swig_setmethods__["initBasisMode"] = _Primme.primme_params_initBasisMode_set
     __swig_getmethods__["initBasisMode"] = _Primme.primme_params_initBasisMode_get
     if _newclass:
@@ -489,6 +505,10 @@ class primme_params(_object):
     __swig_getmethods__["convtest"] = _Primme.primme_params_convtest_get
     if _newclass:
         convtest = _swig_property(_Primme.primme_params_convtest_get, _Primme.primme_params_convtest_set)
+    __swig_setmethods__["queue"] = _Primme.primme_params_queue_set
+    __swig_getmethods__["queue"] = _Primme.primme_params_queue_get
+    if _newclass:
+        queue = _swig_property(_Primme.primme_params_queue_get, _Primme.primme_params_queue_set)
 
     def __init__(self):
         this = _Primme.new_primme_params()
@@ -540,20 +560,19 @@ PRIMME_minRestartSize = _Primme.PRIMME_minRestartSize
 PRIMME_maxBlockSize = _Primme.PRIMME_maxBlockSize
 PRIMME_maxMatvecs = _Primme.PRIMME_maxMatvecs
 PRIMME_maxOuterIterations = _Primme.PRIMME_maxOuterIterations
-PRIMME_intWorkSize = _Primme.PRIMME_intWorkSize
-PRIMME_realWorkSize = _Primme.PRIMME_realWorkSize
 PRIMME_iseed = _Primme.PRIMME_iseed
-PRIMME_intWork = _Primme.PRIMME_intWork
-PRIMME_realWork = _Primme.PRIMME_realWork
 PRIMME_aNorm = _Primme.PRIMME_aNorm
+PRIMME_BNorm = _Primme.PRIMME_BNorm
+PRIMME_invBNorm = _Primme.PRIMME_invBNorm
 PRIMME_eps = _Primme.PRIMME_eps
+PRIMME_orth = _Primme.PRIMME_orth
 PRIMME_printLevel = _Primme.PRIMME_printLevel
 PRIMME_outputFile = _Primme.PRIMME_outputFile
 PRIMME_matrix = _Primme.PRIMME_matrix
+PRIMME_massMatrix = _Primme.PRIMME_massMatrix
 PRIMME_preconditioner = _Primme.PRIMME_preconditioner
 PRIMME_initBasisMode = _Primme.PRIMME_initBasisMode
 PRIMME_projectionParams_projection = _Primme.PRIMME_projectionParams_projection
-PRIMME_restartingParams_scheme = _Primme.PRIMME_restartingParams_scheme
 PRIMME_restartingParams_maxPrevRetain = _Primme.PRIMME_restartingParams_maxPrevRetain
 PRIMME_correctionParams_precondition = _Primme.PRIMME_correctionParams_precondition
 PRIMME_correctionParams_robustShifts = _Primme.PRIMME_correctionParams_robustShifts
@@ -581,7 +600,10 @@ PRIMME_stats_timeGlobalSum = _Primme.PRIMME_stats_timeGlobalSum
 PRIMME_stats_estimateMinEVal = _Primme.PRIMME_stats_estimateMinEVal
 PRIMME_stats_estimateMaxEVal = _Primme.PRIMME_stats_estimateMaxEVal
 PRIMME_stats_estimateLargestSVal = _Primme.PRIMME_stats_estimateLargestSVal
+PRIMME_stats_estimateBNorm = _Primme.PRIMME_stats_estimateBNorm
+PRIMME_stats_estimateInvBNorm = _Primme.PRIMME_stats_estimateInvBNorm
 PRIMME_stats_maxConvTol = _Primme.PRIMME_stats_maxConvTol
+PRIMME_stats_lockingIssue = _Primme.PRIMME_stats_lockingIssue
 PRIMME_dynamicMethodSwitch = _Primme.PRIMME_dynamicMethodSwitch
 PRIMME_massMatrixMatvec = _Primme.PRIMME_massMatrixMatvec
 PRIMME_convTestFun = _Primme.PRIMME_convTestFun
@@ -590,6 +612,7 @@ PRIMME_ldevecs = _Primme.PRIMME_ldevecs
 PRIMME_ldOPs = _Primme.PRIMME_ldOPs
 PRIMME_monitorFun = _Primme.PRIMME_monitorFun
 PRIMME_monitor = _Primme.PRIMME_monitor
+PRIMME_queue = _Primme.PRIMME_queue
 
 def sprimme(*args):
     return _Primme.sprimme(*args)
@@ -606,6 +629,14 @@ dprimme = _Primme.dprimme
 def zprimme(*args):
     return _Primme.zprimme(*args)
 zprimme = _Primme.zprimme
+
+def primme_params_create():
+    return _Primme.primme_params_create()
+primme_params_create = _Primme.primme_params_create
+
+def primme_params_destroy(primme):
+    return _Primme.primme_params_destroy(primme)
+primme_params_destroy = _Primme.primme_params_destroy
 
 def primme_get_member(primme, label, value):
     return _Primme.primme_get_member(primme, label, value)
@@ -687,6 +718,10 @@ class primme_svds_stats(_object):
     __swig_getmethods__["timeGlobalSum"] = _Primme.primme_svds_stats_timeGlobalSum_get
     if _newclass:
         timeGlobalSum = _swig_property(_Primme.primme_svds_stats_timeGlobalSum_get, _Primme.primme_svds_stats_timeGlobalSum_set)
+    __swig_setmethods__["lockingIssue"] = _Primme.primme_svds_stats_lockingIssue_set
+    __swig_getmethods__["lockingIssue"] = _Primme.primme_svds_stats_lockingIssue_get
+    if _newclass:
+        lockingIssue = _swig_property(_Primme.primme_svds_stats_lockingIssue_get, _Primme.primme_svds_stats_lockingIssue_set)
 
     def __init__(self):
         this = _Primme.new_primme_svds_stats()
@@ -749,14 +784,6 @@ class primme_svds_params(_object):
     __swig_getmethods__["methodStage2"] = _Primme.primme_svds_params_methodStage2_get
     if _newclass:
         methodStage2 = _swig_property(_Primme.primme_svds_params_methodStage2_get, _Primme.primme_svds_params_methodStage2_set)
-    __swig_setmethods__["intWorkSize"] = _Primme.primme_svds_params_intWorkSize_set
-    __swig_getmethods__["intWorkSize"] = _Primme.primme_svds_params_intWorkSize_get
-    if _newclass:
-        intWorkSize = _swig_property(_Primme.primme_svds_params_intWorkSize_get, _Primme.primme_svds_params_intWorkSize_set)
-    __swig_setmethods__["realWorkSize"] = _Primme.primme_svds_params_realWorkSize_set
-    __swig_getmethods__["realWorkSize"] = _Primme.primme_svds_params_realWorkSize_get
-    if _newclass:
-        realWorkSize = _swig_property(_Primme.primme_svds_params_realWorkSize_get, _Primme.primme_svds_params_realWorkSize_set)
     __swig_setmethods__["locking"] = _Primme.primme_svds_params_locking_set
     __swig_getmethods__["locking"] = _Primme.primme_svds_params_locking_get
     if _newclass:
@@ -809,6 +836,10 @@ class primme_svds_params(_object):
     __swig_getmethods__["convtest"] = _Primme.primme_svds_params_convtest_get
     if _newclass:
         convtest = _swig_property(_Primme.primme_svds_params_convtest_get, _Primme.primme_svds_params_convtest_set)
+    __swig_setmethods__["queue"] = _Primme.primme_svds_params_queue_set
+    __swig_getmethods__["queue"] = _Primme.primme_svds_params_queue_get
+    if _newclass:
+        queue = _swig_property(_Primme.primme_svds_params_queue_get, _Primme.primme_svds_params_queue_set)
 
     def __init__(self):
         this = _Primme.new_primme_svds_params()
@@ -839,10 +870,6 @@ PRIMME_SVDS_numTargetShifts = _Primme.PRIMME_SVDS_numTargetShifts
 PRIMME_SVDS_targetShifts = _Primme.PRIMME_SVDS_targetShifts
 PRIMME_SVDS_method = _Primme.PRIMME_SVDS_method
 PRIMME_SVDS_methodStage2 = _Primme.PRIMME_SVDS_methodStage2
-PRIMME_SVDS_intWorkSize = _Primme.PRIMME_SVDS_intWorkSize
-PRIMME_SVDS_realWorkSize = _Primme.PRIMME_SVDS_realWorkSize
-PRIMME_SVDS_intWork = _Primme.PRIMME_SVDS_intWork
-PRIMME_SVDS_realWork = _Primme.PRIMME_SVDS_realWork
 PRIMME_SVDS_matrix = _Primme.PRIMME_SVDS_matrix
 PRIMME_SVDS_preconditioner = _Primme.PRIMME_SVDS_preconditioner
 PRIMME_SVDS_locking = _Primme.PRIMME_SVDS_locking
@@ -869,10 +896,12 @@ PRIMME_SVDS_stats_timeMatvec = _Primme.PRIMME_SVDS_stats_timeMatvec
 PRIMME_SVDS_stats_timePrecond = _Primme.PRIMME_SVDS_stats_timePrecond
 PRIMME_SVDS_stats_timeOrtho = _Primme.PRIMME_SVDS_stats_timeOrtho
 PRIMME_SVDS_stats_timeGlobalSum = _Primme.PRIMME_SVDS_stats_timeGlobalSum
+PRIMME_SVDS_stats_lockingIssue = _Primme.PRIMME_SVDS_stats_lockingIssue
 PRIMME_SVDS_convTestFun = _Primme.PRIMME_SVDS_convTestFun
 PRIMME_SVDS_convtest = _Primme.PRIMME_SVDS_convtest
 PRIMME_SVDS_monitorFun = _Primme.PRIMME_SVDS_monitorFun
 PRIMME_SVDS_monitor = _Primme.PRIMME_SVDS_monitor
+PRIMME_SVDS_queue = _Primme.PRIMME_SVDS_queue
 
 def sprimme_svds(*args):
     return _Primme.sprimme_svds(*args)
@@ -889,6 +918,14 @@ dprimme_svds = _Primme.dprimme_svds
 def zprimme_svds(*args):
     return _Primme.zprimme_svds(*args)
 zprimme_svds = _Primme.zprimme_svds
+
+def primme_svds_params_create():
+    return _Primme.primme_svds_params_create()
+primme_svds_params_create = _Primme.primme_svds_params_create
+
+def primme_svds_params_destroy(primme_svds):
+    return _Primme.primme_svds_params_destroy(primme_svds)
+primme_svds_params_destroy = _Primme.primme_svds_params_destroy
 
 def primme_svds_get_member(primme_svds, label, value):
     return _Primme.primme_svds_get_member(primme_svds, label, value)

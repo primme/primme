@@ -231,7 +231,7 @@ def test_primme_svds():
    Generate all test cases for Primme.svds.
    """
 
-   for n in (2, 3, 5, 10, 100):
+   for n in (2, 3, 5, 10, 50, 100):
       for dtype in (np.float32, np.complex64, np.float64, np.complex128):
          tol = np.finfo(dtype).eps**.5 * 0.1
          c = np.finfo(dtype).eps**.333
@@ -243,6 +243,12 @@ def test_primme_svds():
             sigma0 = sva[0]*.51 + sva[-1]*.49
             for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
                for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
+                  # If the condition number is too large, the first stage may end
+                  # with approximations of larger values than the actual smallest
+                  if (gen_name == "MikotaPair" and n > 50
+                           and (dtype is np.float32 or dtype is np.complex64)
+                           and which != 'LM'):
+                     continue
                   for k in (1, 2, 3, 5, 10, 15):
                      if k > n: continue
                      case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
