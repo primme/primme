@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Test Functions for Primme eigsh and svds.
+Test Functions for primme eigsh and svds.
 Based on test_lobpcg.py and test_arpack.py in scipy,
 see https://github.com/scipy/scipy
 """
@@ -11,8 +11,8 @@ from numpy.testing import run_module_suite, assert_allclose
 from scipy import ones, r_, diag
 from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse import csr_matrix
-import Primme
-from Primme import eigsh, svds
+import primme
+from primme import eigsh, svds
 
 #
 # Collection of problems
@@ -147,7 +147,7 @@ def eigsh_check(eigsh_solver, A, k, M, which, sigma, tol, exact_evals, case_desc
 
 def test_primme_eigsh():
    """
-   Test cases for Primme.eighs.
+   Test cases for primme.eighs.
    """
 
    for n in (2, 3, 5, 10, 100):
@@ -171,7 +171,7 @@ def test_primme_eigsh():
 
 def test_primme_eigsh_matrix_types():
    """
-   Test cases for Primme.eighs with csr and LinearOperator matrix types.
+   Test cases for primme.eighs with csr and LinearOperator matrix types.
    """
    n = 10
    for dtype in (np.float64, np.complex64):
@@ -211,7 +211,7 @@ def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc):
 
    try:
       svl, sva, svr = svds_solver(A, k, None, which=which, tol=tol,
-            maxMatvecs=18000, **M)
+            maxMatvecs=30000, **M)
    except Exception as e:
       raise Exception("Ups! Case %s\n%s" % (case_desc, e))
    sol_svals = select_pairs_svds(k, which, exact_svals)
@@ -228,10 +228,10 @@ def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc):
 
 def test_primme_svds():
    """
-   Generate all test cases for Primme.svds.
+   Generate all test cases for primme.svds.
    """
 
-   for n in (2, 3, 5, 10, 100):
+   for n in (2, 3, 5, 10, 50, 100):
       for dtype in (np.float32, np.complex64, np.float64, np.complex128):
          tol = np.finfo(dtype).eps**.5 * 0.1
          c = np.finfo(dtype).eps**.333
@@ -243,6 +243,12 @@ def test_primme_svds():
             sigma0 = sva[0]*.51 + sva[-1]*.49
             for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
                for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
+                  # If the condition number is too large, the first stage may end
+                  # with approximations of larger values than the actual smallest
+                  if (gen_name == "MikotaPair" and n > 50
+                           and (dtype is np.float32 or dtype is np.complex64)
+                           and which != 'LM'):
+                     continue
                   for k in (1, 2, 3, 5, 10, 15):
                      if k > n: continue
                      case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
@@ -251,7 +257,7 @@ def test_primme_svds():
 
 def test_primme_svds_matrix_types():
    """
-   Generate all test cases for Primme.svds with csr and LinearOperator matrix types..
+   Generate all test cases for primme.svds with csr and LinearOperator matrix types.
    """
 
    n = 10
@@ -269,18 +275,18 @@ def test_primme_svds_matrix_types():
 
 def test_examples_from_doc():
    import doctest
-   doctest.testmod(Primme, raise_on_error=True)
+   doctest.testmod(primme, raise_on_error=True, optionflags=doctest.NORMALIZE_WHITESPACE)
 
 def test_examples():
     exec(compile(open("examples.py").read(), "examples.py", "exec"))
 
 def test_return_stats():
     A, _ = diagonal(100)
-    evals, evecs, stats = Primme.eigsh(A, 3, tol=1e-6, which='LA',
+    evals, evecs, stats = primme.eigsh(A, 3, tol=1e-6, which='LA',
             return_stats=True, return_history=True)
     assert(stats["hist"]["numMatvecs"])
 
-    svecs_left, svals, svecs_right, stats = Primme.svds(A, 3, tol=1e-6,
+    svecs_left, svals, svecs_right, stats = primme.svds(A, 3, tol=1e-6,
             which='SM', return_stats=True, return_history=True)
     assert(stats["hist"]["numMatvecs"])
 

@@ -50,7 +50,9 @@ def get_numpy_options():
 
 def setup_package():
    import sys
-   from distutils.core import setup, Extension
+   from distutils.core import setup
+   from distutils.extension import Extension
+   from Cython.Build import cythonize
    
    try:
       import numpy
@@ -66,8 +68,8 @@ def setup_package():
    
    
    # Array extension module
-   _Primme = Extension("_Primme",
-                      ["primme_wrap.cxx"],
+   _Primme = Extension("primme",
+                      ["primme.pyx"],
                       **extra_options
                       #extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"]
                       )
@@ -117,8 +119,7 @@ def setup_package():
          keywords = "eigenvalues singular values Davidson-type high-performance large-scale matrix",
          setup_requires = ['numpy', 'scipy'],
          install_requires = ['numpy', 'scipy'],
-         py_modules  = ["Primme"],
-         ext_modules = [_Primme]
+         ext_modules = cythonize([_Primme])
          )
 
 if __name__ == '__main__':
