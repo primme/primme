@@ -13,6 +13,7 @@ from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse import csr_matrix
 import primme
 from primme import eigsh, svds
+from compare import stats as st
 
 #
 # Collection of problems
@@ -124,30 +125,38 @@ def select_pairs_eigsh(k, sigma, which, evals):
    n = max(evals.shape)
    return np.array(sorted(evals, key=f)[0:k])
  
-def eigsh_check(eigsh_solver, A, k, M, which, sigma, tol, exact_evals, case_desc):
+def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
+                exact_evals, case_desc, add_stats=True):
    """
    Test eigsh
    """
 
    try:
-      evals, evecs = eigsh_solver(A, k, None, sigma, which, tol=tol, OPinv=M,
-            maxMatvecs=9000)
+      evals, evecs, stats = eigsh_solver(A, k, B, sigma, which, tol=tol, OPinv=M,
+            maxMatvecs=70000, return_stats=True)
    except Exception as e:
       raise Exception("Ups! Case %s\n%s" % (case_desc, e))
    sol_evals = select_pairs_eigsh(k, sigma, which, exact_evals)
 
    # Check eigenvalues are close enough to the exact ones
    ANorm = np.amax(np.fabs(exact_evals))
-   assert_allclose(evals, sol_evals, atol=ANorm*tol, rtol=1, err_msg=case_desc)
+   assert_allclose(evals, sol_evals, atol=ANorm*tol*normInvB, rtol=1, err_msg=case_desc)
 
    # Check the residual norm associated to the returned pairs
-   R = A.dot(evecs) - evecs.dot(np.diag(evals))
+   if B is None: 
+      R = A.dot(evecs) - evecs.dot(np.diag(evals))
+   else:
+      R = A.dot(evecs) - B.dot(evecs.dot(np.diag(evals)))
    Rnorms = np.linalg.norm(R, axis=0)
    assert_allclose(Rnorms, np.zeros(k), atol=ANorm*tol*(k**.5), rtol=1, err_msg=case_desc)
 
+   # Add stats
+   if add_stats:
+      st.add("eigsh: " + case_desc, ("eigsh",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
+
 def test_primme_eigsh():
    """
-   Test cases for primme.eighs.
+   Test cases for primme.eighs for standard problems.
    """
 
    for n in (2, 3, 5, 10, 100):
@@ -167,7 +176,33 @@ def test_primme_eigsh():
                      if k > n: continue
                      case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
                            (gen.__name__, n, dtype, k, prec is not None, which, sigma))
-                     yield (eigsh_check, eigsh, A, k, prec, which, sigma, tol, evals, case_desc)
+                     yield (eigsh_check, eigsh, A, None, 1, k, prec, which, sigma, tol, evals, case_desc)
+
+def test_primme_eigsh_gen():
+   """
+   Test cases for primme.eighs for generalized problems.
+   """
+
+   for n in (2, 3, 5, 10, 100):
+      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
+         tol = np.finfo(dtype).eps**.5 * 0.1
+         for gen in (ElasticRod, MikotaPair):
+            A, B = gen(n, dtype=dtype)
+            stdP = toStandardProblem((A,B))
+            evals, evecs = np.linalg.eigh(stdP)
+            normInvB = 1./min(np.linalg.eigvalsh(B))
+            sigma0 = evals[0]*.51 + evals[-1]*.49
+            for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
+               if gen.__name__ != "ElasticRod" and sigma is not None:
+                  precs = (None, jacobi_prec(stdP, sigma))
+               else:
+                  precs = (None,)
+               for prec in precs:
+                  for k in (1, 2, 3, 5, 10, 50):
+                     if k > n: continue
+                     case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
+                           (gen.__name__, n, dtype, k, prec is not None, which, sigma))
+                     yield (eigsh_check, eigsh, A, B, normInvB, k, prec, which, sigma, tol, evals, case_desc)
 
 def test_primme_eigsh_matrix_types():
    """
@@ -185,7 +220,7 @@ def test_primme_eigsh_matrix_types():
          M = op(prec) if prec is not None else None
          case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
                       (MikotaPair.__name__, n, dtype, k, prec is None, which, sigma))
-         yield (eigsh_check, eigsh, op(A), k, M, which, sigma, 1e-6, evals, case_desc)
+         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, evals, case_desc, False)
 
 
 def select_pairs_svds(k, which, svals):
@@ -204,14 +239,14 @@ def select_pairs_svds(k, which, svals):
    n = max(svals.shape)
    return np.array(sorted(svals, key=f)[0:k])
  
-def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc):
+def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc, add_stats=True):
    """
    Test svds
    """
 
    try:
-      svl, sva, svr = svds_solver(A, k, None, which=which, tol=tol,
-            maxMatvecs=30000, **M)
+      svl, sva, svr, stats = svds_solver(A, k, None, which=which, tol=tol,
+            maxMatvecs=30000, return_stats=True, **M)
    except Exception as e:
       raise Exception("Ups! Case %s\n%s" % (case_desc, e))
    sol_svals = select_pairs_svds(k, which, exact_svals)
@@ -225,6 +260,10 @@ def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc):
    R = A.dot(svr) - svl.dot(np.diag(sva))
    Rnorms = np.linalg.norm(R, axis=0)
    assert_allclose(Rnorms, np.zeros(k), atol=ANorm*tol*(k**.5), rtol=1, err_msg=case_desc)
+
+   # Add stats
+   if add_stats:
+      st.add("svds: " + case_desc, ("svds",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
 
 def test_primme_svds():
    """
@@ -271,7 +310,7 @@ def test_primme_svds_matrix_types():
          k = 2
          case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
                       ("Lauchli_like_vert", n, dtype, k, bool(prec), which))
-         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, case_desc)
+         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, case_desc, False)
 
 def test_examples_from_doc():
    import doctest
@@ -293,3 +332,4 @@ def test_return_stats():
 
 if __name__ == "__main__":
     run_module_suite()
+    st.dump('tests.json')
