@@ -2756,6 +2756,7 @@ static int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
 
    CHKERR(Num_free_Sprimme(X0, ctx));
    CHKERR(Num_free_Sprimme(R0, ctx));
+   if (Bxo) CHKERR(Num_free_Sprimme(BX0, ctx));
 
    return 0;
 }
