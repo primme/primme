@@ -32,7 +32,7 @@ include/template.h : ../include/primme.h include/memman.h
 include/numerical.h : include/template.h include/blaslapack.h include/magma_wrapper.h include/auxiliary.h
 include/primme_interface.h : 
 include/memman.h : 
-eigs/const.h : 
+eigs/const.h : include/numerical.h
 eigs/primme_f77_private.h : include/template.h include/primme_interface.h
 svds/primme_svds_f77_private.h : include/template.h svds/primme_svds_interface.h
 svds/primme_svds_interface.h : ../include/primme.h

@@ -28,7 +28,7 @@ ifeq ($(USE_PETSC), yes)
 endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
-  EXAMPLES_C += ex_eigs_dmagma
+  EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
   override INCLUDE += $(MAGMA_CFLAGS)
 endif
 

@@ -36,6 +36,8 @@
 #ifndef CONST_H
 #define CONST_H
 
+#include "numerical.h"
+
 #define TRUE  1
 #define FALSE 0
 
