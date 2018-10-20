@@ -164,6 +164,16 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       }
 
       /* ----------------------------------------------------------------- */
+      /* If locking with GD and no preconditioning is running, the         */
+      /* practically convergence is done in main iteration.                */
+      /* ----------------------------------------------------------------- */
+
+      else if (primme->locking && primme->correctionParams.precondition &&
+                  primme->correctionParams.maxInnerIterations == 0) {
+         flags[i] = UNCONVERGED;
+      }
+ 
+      /* ----------------------------------------------------------------- */
       /* If locking there may be an accuracy problem close to convergence. */
       /* Check if there is danger if R is provided. If the Ritz vector was */
       /* flagged practically converged before and R is not provided then   */

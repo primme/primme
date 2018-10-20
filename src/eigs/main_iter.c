@@ -120,6 +120,8 @@ static void displayModel(primme_CostModel *model);
 static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *BV, PRIMME_INT ldBV, HREAL *hVals, int basisSize, HREAL *resNorms,
       int *flags, int *converged, primme_context ctx);
+static int map_vecs(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
+      int n, int ldW, int *p, primme_context ctx);
 
 /******************************************************************************
  * Subroutine main_iter - This routine implements a more general, parallel, 
@@ -205,6 +207,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    int restartLimitReached; /* True when maximum restarts performed          */
    int numPrevRetained;     /* Number of vectors retained using recurrence-  */
                             /* based restarting.                             */
+   int nprevhVecs;          /* Number of vectors stored in prevhVecs         */
    int numArbitraryVecs;    /* Columns in hVecs computed with RR instead of  */
                             /* the current extraction method.                */
    int maxEvecsSize;        /* Maximum capacity of evecs array               */
@@ -238,6 +241,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    HSCALAR *hU = NULL;      /* Left singular vectors of R                    */
    HSCALAR *previousHVecs;  /* Coefficient vectors retained by               */
                             /* recurrence-based restarting                   */
+   HSCALAR *prevhVecs=NULL; /* hVecs from previous iteration                 */
 
    int numQR;               /* Maximum number of QR factorizations           */
    SCALAR *Q = NULL;        /* QR decompositions for harmonic or refined     */
@@ -335,6 +339,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    if (primme->massMatrixMatvec && primme->locking) {
       CHKERR(Num_malloc_Sprimme(ldBevecs * maxEvecsSize, &Bevecs, ctx));
    }
+   CHKERR(Num_malloc_SHprimme(
+         primme->maxBasisSize * primme->maxBasisSize, &prevhVecs, ctx));
 
    CHKERR(Num_malloc_RHprimme(primme->maxBasisSize, &hVals, ctx));
    if (numQR > 0) {
@@ -489,6 +495,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
  
             numPrevRetained = 0;
+            nprevhVecs = 0;
+
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
          /* Keep adding vectors to the basis V until the basis has reached    */
@@ -541,7 +549,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                      targetShiftIndex, iev, &blockSize, &recentlyConverged,
                      &numArbitraryVecs, &smallestResNorm, hVecsRot,
                      primme->maxBasisSize, numConverged, basisNorms, &reset,
-                     VtBV, ldVtBV, ctx);
+                     VtBV, ldVtBV, prevhVecs, nprevhVecs, primme->maxBasisSize,
+                     ctx);
                assert(recentlyConverged >= 0);
             }
             else {
@@ -648,6 +657,19 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
               
             } /* end of else blocksize=0 */
 
+            /* If locking with GD and no preconditioning is running, check    */
+            /* practically convergence here. The heuristic needs Vlocked'     */
+            /* times r, which is going to be store in Rlocked.                */
+
+            HSCALAR *Rlocked = NULL;
+            int ldRlocked = numLocked;
+            int blockSize0 = blockSize;
+            if (primme->locking && primme->correctionParams.precondition &&
+                  primme->correctionParams.maxInnerIterations == 0) {
+               CHKERR(
+                     Num_malloc_SHprimme(ldRlocked * blockSize, &Rlocked, ctx));
+            }
+
             /* Orthogonalize the corrections with respect to each other and   */
             /* the current basis. If basis hasn't expanded with any new       */
             /* vector, try a random vector                                    */
@@ -656,8 +678,9 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                int basisSizeOut;
                CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, NULL, 0,
                      basisSize, basisSize + blockSize - 1, evecs, ldevecs,
-                     primme->numOrthoConst + numLocked, BV, ldBV, NULL, 0,
-                     primme->nLocal, maxRank, &basisSizeOut, ctx));
+                     primme->numOrthoConst + numLocked, BV, ldBV,
+                     i == 0 ? Rlocked : NULL, ldRlocked, primme->nLocal,
+                     maxRank, &basisSizeOut, ctx));
                blockSize = basisSizeOut - basisSize;
                if (blockSize > 0) break;
                if (primme->printLevel >= 5 && primme->procID == 0) {
@@ -675,6 +698,28 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                blockSize = 0;
                reset = 2;
                break;
+            }
+
+            /* If locking with GD and no preconditioning is running, check    */
+            /* practically convergence here. A pair in the block is marked as */
+            /* practically converged if this is sqrt(|r|^2 - |Rlocked|^2)     */
+            /* small enough to pass the convergence criterion.                */
+
+            if (primme->locking && primme->correctionParams.precondition &&
+                  primme->correctionParams.maxInnerIterations == 0) {
+               for (i=0; i<blockSize0; i++) {
+                  HREAL normRlockedi =
+                        ABS(Num_dot_SHprimme(numLocked, &Rlocked[ldRlocked * i],
+                              1, &Rlocked[ldRlocked * i], 1, ctx));
+                  HREAL newBlockNorm = sqrt(
+                        max(blockNorms[i] * blockNorms[i] - normRlockedi, 0.0));
+                  CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
+                        ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
+                        evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
+                        ldVtBV, 0, 1, flags, &newBlockNorm, &hVals[iev[i]],
+                        &reset, 2 /* caller */, ctx));
+               }
+               CHKERR(Num_free_SHprimme(Rlocked, ctx));
             }
 
             /* Compute W = A*V for the orthogonalized corrections */
@@ -717,6 +762,12 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                         iev, blockSize, flags, &numPrevRetained, ctx));
             }
 
+            Num_copy_matrix_SHprimme(hVecs, basisSize, basisSize, basisSize,
+                  prevhVecs, primme->maxBasisSize, ctx);
+            Num_zero_matrix_SHprimme(&prevhVecs[basisSize],
+                  primme->maxBasisSize - basisSize, basisSize,
+                  primme->maxBasisSize, ctx);
+            nprevhVecs = basisSize;
 
             basisSize += blockSize;
             blockSize = 0;
@@ -855,7 +906,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                   ldevecs, Bevecs, ldBevecs, evals, resNorms, targetShiftIndex,
                   iev, &blockSize, &recentlyConverged, &numArbitraryVecs,
                   dummySmallestResNorm, hVecsRot, primme->maxBasisSize,
-                  numConverged, basisNorms, &reset, VtBV, ldVtBV, ctx);
+                  numConverged, basisNorms, &reset, VtBV, ldVtBV, prevhVecs,
+                  nprevhVecs, primme->maxBasisSize, ctx);
             assert(recentlyConverged >= 0);
 
             /* When QR is computed and there are more than one target shift   */
@@ -1229,6 +1281,7 @@ clean:
    if (primme->massMatrixMatvec && primme->locking) {
       CHKERR(Num_free_Sprimme(Bevecs, ctx));
    }
+   CHKERR(Num_free_SHprimme(prevhVecs, ctx));
 
    CHKERR(Num_free_RHprimme(hVals, ctx));
    if (numQR > 0) { CHKERR(Num_free_RHprimme(hSVals, ctx)); }
@@ -1277,6 +1330,9 @@ clean:
  * evecsSize      The size of evecs
  * numLocked      The number of vectors currently locked (if locking)
  * numConverged   Number of converged pairs (soft+hard locked)
+ * prevhVecs      hVecs from previous iteration
+ * nprevhVecs     number of columns in prevhVecs
+ * ldprevhVecs    The leading dimension in prevhVecs
  * primme         Structure containing various solver parameters
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
@@ -1307,23 +1363,30 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, HSCALAR *hVecsRot,
       int ldhVecsRot, int numConverged, HREAL *basisNorms, int *reset,
-      HSCALAR *VtBV, int ldVtBV, primme_context ctx) {
+      HSCALAR *VtBV, int ldVtBV, HSCALAR *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, blki;         /* loop variables */
    HREAL *hValsBlock;    /* contiguous copy of the hVals to be tested */
    HSCALAR *hVecsBlock;  /* contiguous copy of the hVecs columns to be tested */     
    int *flagsBlock;     /* contiguous copy of the flags to be tested */
+   int *prevFlags;       /* copy of the flags from previous iteration */
    HREAL *hValsBlock0;   /* workspace for hValsBlock */
    HSCALAR *hVecsBlock0; /* workspace for hVecsBlock */
    HREAL *XNorms=NULL;   /* 2-norm of V*hVecs */
    double targetShift;  /* current target shift */
    int lasti;           /* last tested pair */
+   int *map=NULL;       /* map[i] is the index of closest pair in the previous */
+                        /* iteration */
 
    *blockSize = 0;
    CHKERR(Num_malloc_RHprimme(maxBlockSize, &hValsBlock0, ctx));
    CHKERR(Num_malloc_SHprimme(ldhVecs*maxBlockSize, &hVecsBlock0, ctx));
    CHKERR(Num_malloc_iprimme(maxBlockSize, &flagsBlock, ctx));
+   CHKERR(Num_malloc_iprimme(basisSize, &map, ctx));
+   CHKERR(Num_malloc_iprimme(basisSize, &prevFlags, ctx));
+   for (i = 0; i < basisSize; i++) prevFlags[i] = flags[i];
    if (primme->massMatrixMatvec) {
       CHKERR(Num_malloc_RHprimme(maxBlockSize, &XNorms, ctx));
    }
@@ -1346,11 +1409,18 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       }
    }
 
+   /* Update map */
+
+   if (blockNormsSize > 0) {
+      CHKERR(map_vecs(prevhVecs, basisSize, nprevhVecs, ldprevhVecs, hVecs, 0,
+            iev[blockNormsSize - 1] + 1, ldhVecs, map, ctx));
+   }
+
    *recentlyConverged = 0;
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i=*blockSize; i<blockNormsSize; i++)
-         flagsBlock[i-*blockSize] = flags[iev[i]];
+         flagsBlock[i-*blockSize] = prevFlags[map[iev[i]]];
       CHKERR(check_convergence_Sprimme(&X[(*blockSize) * ldV], ldV, computeXR,
             &R[(*blockSize) * ldW], ldW, computeXR, evecs, numLocked, ldevecs,
             Bevecs, ldBevecs, VtBV, ldVtBV, 0, blockNormsSize, flagsBlock,
@@ -1453,8 +1523,11 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
-      for (i=lasti+1; i<basisSize && blki < maxBlockSize; i++)
-         if (flags[i] == UNCONVERGED) iev[blki++] = i;
+      for (i=lasti+1; i<basisSize && blki < maxBlockSize; i++) {
+         CHKERR(map_vecs(prevhVecs, basisSize, nprevhVecs, ldprevhVecs, hVecs,
+               i, i + 1, ldhVecs, map, ctx));
+         if (prevFlags[map[i]] == UNCONVERGED) iev[blki++] = i;
+      }
 
       /* If no new candidates or all required solutions converged yet, go out */
 
@@ -1515,6 +1588,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    CHKERR(Num_free_RHprimme(hValsBlock0, ctx));
    CHKERR(Num_free_SHprimme(hVecsBlock0, ctx));
    CHKERR(Num_free_iprimme(flagsBlock, ctx));
+   CHKERR(Num_free_iprimme(map, ctx));
    CHKERR(Num_free_RHprimme(XNorms, ctx));
 
    return 0;
@@ -1584,6 +1658,81 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
          *converged = 0;
       }
    }
+    
+   return 0;
+}
+
+/*******************************************************************************
+ * Function map_vecs: given two basis V and W the function returns the
+ *    the permutation p such as p[i] is the column in V closest in angle to
+ *    column ith on W.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V,W          The orthonormal bases
+ *
+ * m,n          Dimensions on V and W            
+ *
+ * n0           Update p[n0:n-1]
+ *
+ *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * perm         The returned permutation
+ *
+ ******************************************************************************/
+
+static int map_vecs(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
+      int n, int ldW, int *p, primme_context ctx) {
+
+   int i;         /* Loop variable                                     */
+
+   /* Compute the norm of the columns V(n0:n-1) */
+
+   HREAL *Vnorms;
+   CHKERR(Num_malloc_RHprimme(nV, &Vnorms, ctx));
+   for (i = 0; i < nV; i++) {
+      Vnorms[i] = sqrt(REAL_PART(
+            Num_dot_SHprimme(m, &V[ldV * i], 1, &V[ldV * i], 1, ctx)));
+   }
+      
+   HSCALAR *ip;
+   CHKERR(Num_malloc_SHprimme(n, &ip, ctx));
+   for (i=n0; i<n; i++) {
+      /* Compute V'*W[i] */
+
+      CHKERR(Num_gemv_SHprimme(
+            "C", m, n, 1.0, V, ldV, &W[ldW * i], 1, 0.0, ip, 1, ctx));
+
+      /* Find the j that maximizes ABS(V[j]'*W[i]/Vnorms[j]) and is not */
+      /* in p(0:i-1)                                                    */
+
+      int j, jmax=-1;
+      HREAL ipmax = -1;
+      for (j = 0; j < nV; j++) {
+         if (ABS(ip[j]) > ipmax * ABS(Vnorms[j])) {
+            /* Check that j is not in p(0:i-1) */
+            int k;
+            for (k = 0; k < i && p[k] != j; k++)
+               ;
+            if (k < j) continue;
+
+            /* Update ipmax and jmax */
+            ipmax = ABS(ip[j] / Vnorms[j]);
+            jmax = j;
+         }
+      }
+      if (jmax < 0) {
+         jmax = i;
+      }
+
+      /* Assign the map */
+
+      p[i] = jmax;
+   }
+   
+   CHKERR(Num_free_RHprimme(Vnorms, ctx));
+   CHKERR(Num_free_SHprimme(ip, ctx));
     
    return 0;
 }

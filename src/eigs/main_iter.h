@@ -45,7 +45,8 @@ int prepare_candidates_sprimme(float *V, PRIMME_INT ldV, float *W,
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, float *hVecsRot,
       int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
-      float *VtBV, int ldVtBV, primme_context ctx);
+      float *VtBV, int ldVtBV, float *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 int main_iter_cprimme(float *evals, int *perm, PRIMME_COMPLEX_FLOAT *evecs, PRIMME_INT ldevecs,
    float *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_COMPLEX_FLOAT *W,
@@ -58,7 +59,8 @@ int prepare_candidates_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT ldV, PRIMME_C
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_FLOAT *hVecsRot,
       int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
-      PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV, primme_context ctx);
+      PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV, PRIMME_COMPLEX_FLOAT *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Sprimme)
 #  define main_iter_Sprimme CONCAT(main_iter_,SCALAR_SUF)
 #endif
@@ -95,7 +97,8 @@ int prepare_candidates_dprimme(double *V, PRIMME_INT ldV, double *W,
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, double *hVecsRot,
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
-      double *VtBV, int ldVtBV, primme_context ctx);
+      double *VtBV, int ldVtBV, double *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 int main_iter_zprimme(double *evals, int *perm, PRIMME_COMPLEX_DOUBLE *evecs, PRIMME_INT ldevecs,
    double *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_COMPLEX_DOUBLE *W,
@@ -108,7 +111,8 @@ int prepare_candidates_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT ldV, PRIMME_
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_DOUBLE *hVecsRot,
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
-      PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV, primme_context ctx);
+      PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV, PRIMME_COMPLEX_DOUBLE *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 int main_iter_smagmaprimme(float *evals, int *perm, magma_float *evecs, PRIMME_INT ldevecs,
    float *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float *W,
@@ -121,7 +125,8 @@ int prepare_candidates_smagmaprimme(magma_float *V, PRIMME_INT ldV, magma_float 
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, float *hVecsRot,
       int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
-      float *VtBV, int ldVtBV, primme_context ctx);
+      float *VtBV, int ldVtBV, float *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 int main_iter_cmagmaprimme(float *evals, int *perm, magma_complex_float *evecs, PRIMME_INT ldevecs,
    float *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magma_complex_float *W,
@@ -134,7 +139,8 @@ int prepare_candidates_cmagmaprimme(magma_complex_float *V, PRIMME_INT ldV, magm
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_FLOAT *hVecsRot,
       int ldhVecsRot, int numConverged, float *basisNorms, int *reset,
-      PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV, primme_context ctx);
+      PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV, PRIMME_COMPLEX_FLOAT *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 int main_iter_dmagmaprimme(double *evals, int *perm, magma_double *evecs, PRIMME_INT ldevecs,
    double *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_double *W,
@@ -147,7 +153,8 @@ int prepare_candidates_dmagmaprimme(magma_double *V, PRIMME_INT ldV, magma_doubl
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, double *hVecsRot,
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
-      double *VtBV, int ldVtBV, primme_context ctx);
+      double *VtBV, int ldVtBV, double *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 int main_iter_zmagmaprimme(double *evals, int *perm, magma_complex_double *evecs, PRIMME_INT ldevecs,
    double *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, magma_complex_double *W,
@@ -160,5 +167,6 @@ int prepare_candidates_zmagmaprimme(magma_complex_double *V, PRIMME_INT ldV, mag
       int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
       int *numArbitraryVecs, double *smallestResNorm, PRIMME_COMPLEX_DOUBLE *hVecsRot,
       int ldhVecsRot, int numConverged, double *basisNorms, int *reset,
-      PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV, primme_context ctx);
+      PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV, PRIMME_COMPLEX_DOUBLE *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, primme_context ctx);
 #endif
