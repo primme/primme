@@ -518,15 +518,6 @@ void primme_set_defaults(primme_params *primme) {
    if (primme->initBasisMode == primme_init_default)
       primme->initBasisMode = primme_init_krylov;
 
-   /* If we are free to choose the leading dimension of V and W, use    */
-   /* a multiple of PRIMME_BLOCK_SIZE. This may improve the performance */
-   /* of Num_update_VWXR_Sprimme.                                       */
-
-   if (primme->ldOPs == -1 && primme->nLocal != -1) {
-      primme->ldOPs = min(((primme->nLocal + PRIMME_BLOCK_SIZE - 1)
-               /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, primme->nLocal);
-   }
-      
    /* Now that most of the parameters have been set, set defaults  */
    /* for basisSize, restartSize (for those methods that need it)  */
    /* For interior, larger basisSize and restartSize are advisable */
