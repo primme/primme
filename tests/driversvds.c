@@ -234,19 +234,6 @@ static int real_main (int argc, char *argv[]) {
    }
 #endif
 
-   /* --------------------------------------- */
-   /* Optional: report memory requirements    */
-   /* --------------------------------------- */
-
-   ret = Sprimme_svds(NULL,NULL,NULL,&primme_svds);
-   if (master) {
-      fprintf(primme_svds.outputFile,"PRIMME SVDS will allocate the following memory:\n");
-      fprintf(primme_svds.outputFile," processor %d, real workspace, %ld bytes\n",
-                                      procID, primme_svds.realWorkSize);
-      fprintf(primme_svds.outputFile," processor %d, int  workspace, %d bytes\n",
-                                      procID, primme_svds.intWorkSize);
-   }
-
    /* ---------------------------------------- */
    /* Display given parameter configuration    */
    /* Place this after the dprimme() to see    */
@@ -277,13 +264,14 @@ static int real_main (int argc, char *argv[]) {
    /* ------------------------ */
 
    /* Read initial guess from a file */
+   primme_context ctx = get_dummy_context();
    if (driver.initialGuessesFileName[0] && primme_svds.initSize+primme_svds.numOrthoConst > 0) {
       int cols, i=0, n;
       ASSERT_MSG(readBinaryEvecsAndPrimmeSvdsParams(
          driver.initialGuessesFileName, svecs, NULL, primme_svds.m, primme_svds.n,
          min(primme_svds.initSize+primme_svds.numOrthoConst,
              primme_svds.numSvals), &cols, primme_svds.mLocal, primme_svds.nLocal,
-         permutation, &primme_svds) != 0, 1, "");
+         permutation) != 0, 1, "");
       primme_svds.numOrthoConst = min(primme_svds.numOrthoConst, cols);
       primme_svds.initSize = min(primme_svds.initSize, cols - primme_svds.numOrthoConst);
       n = primme_svds.initSize+primme_svds.numOrthoConst;
@@ -295,28 +283,28 @@ static int real_main (int argc, char *argv[]) {
          int j;
          assert(primme_svds.numProcs <= 1);
          for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
-            Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.mLocal, r);
-            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme_svds.mLocal, r, 1, r, 1)));
+            Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.mLocal, r, ctx);
+            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme_svds.mLocal, r, 1, r, 1, ctx)));
             for (j=0; j<primme_svds.mLocal; j++)
                svecs[primme_svds.mLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          for (i=primme_svds.numOrthoConst; i<min(cols, primme_svds.initSize+primme_svds.numOrthoConst); i++) {
-            Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.nLocal, r);
-            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme_svds.nLocal, r, 1, r, 1)));
+            Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.nLocal, r, ctx);
+            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme_svds.nLocal, r, 1, r, 1, ctx)));
             for (j=0; j<primme_svds.nLocal; j++)
                svecs[primme_svds.mLocal*n+primme_svds.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          free(r);
       }
       Num_larnv_Sprimme(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
-                     &svecs[primme_svds.mLocal*i]);
+                     &svecs[primme_svds.mLocal*i], ctx);
       Num_larnv_Sprimme(2, primme_svds.iseed, (primme_svds.initSize+primme_svds.numOrthoConst-i)*primme_svds.mLocal,
-                     &svecs[primme_svds.mLocal*n+primme_svds.nLocal*i]);
+                     &svecs[primme_svds.mLocal*n+primme_svds.nLocal*i], ctx);
    } else if (primme_svds.numOrthoConst > 0) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
    } else if (primme_svds.initSize > 0) {
       Num_larnv_Sprimme(2, primme_svds.iseed, primme_svds.initSize*(primme_svds.mLocal+primme_svds.nLocal),
-                     svecs);
+                     svecs, ctx);
    }
 
 
@@ -324,17 +312,7 @@ static int real_main (int argc, char *argv[]) {
    /*  Call svds_primme  */
    /* ------------------ */
 
-   wt1 = primme_get_wtime(); 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   primme_get_time(&ut1,&st1);
-#endif
-
    ret = Sprimme_svds(svals, svecs, rnorms, &primme_svds);
-
-   wt2 = primme_get_wtime();
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   primme_get_time(&ut2,&st2);
-#endif
 
    if (driver.checkXFileName[0]) {
       retX = check_solution_svds(driver.checkXFileName, &primme_svds, svals, svecs, rnorms, permutation);
@@ -354,10 +332,6 @@ static int real_main (int argc, char *argv[]) {
 
    if (master) {
       fprintf(primme_svds.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-      fprintf(primme_svds.outputFile, "User Time           : %f seconds\n", ut2-ut1);
-      fprintf(primme_svds.outputFile, "Syst Time           : %f seconds\n", st2-st1);
-#endif
 
       for (i=0; i < primme_svds.numSvals; i++) {
          fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
@@ -378,8 +352,9 @@ static int real_main (int argc, char *argv[]) {
          PRINT_STATS(primme_svds.primme.stats, "1st ");
          PRINT_STATS(primme_svds.primmeStage2.stats, "2sd ");
       }
+      fprintf(primme_svds.outputFile, "Wallclock Runtime   : %-f\n", primme_svds.stats.elapsedTime);
       PRINT_STATS(primme_svds.stats, "");
-      if (primme_svds.locking && primme_svds.intWork && primme_svds.intWork[0] == 1) {
+      if (primme_svds.stats.lockingIssue) {
          fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme_svds.outputFile,
             "Some eigenpairs do not have a residual norm less than the tolerance.\n");
