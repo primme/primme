@@ -1744,7 +1744,7 @@ static int map_vecs(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
       int j, jmax=-1;
       HREAL ipmax = -1;
       for (j = 0; j < nV; j++) {
-         REAL ipij = ABS(ip[nV * (i - n0) + j]);
+         HREAL ipij = ABS(ip[nV * (i - n0) + j]);
          if (ipij > ipmax * ABS(Vnorms[j])) {
             /* Check that j is not in p(0:i-1) */
             int k;
