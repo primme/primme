@@ -810,7 +810,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
       int *inX, int nX, PRIMME_INT ldX, HREAL *norms, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int i, j, M=PRIMME_BLOCK_SIZE, m=min(M, primme->nLocal);
+   int i, j, M=PRIMME_BLOCK_SIZE;
    PRIMME_INT mQ = primme->nLocal;
 
    double t0 = primme_wTimer();
@@ -835,6 +835,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
             "C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ, ctx));
    }
    else {
+      int m=min(M, mQ);
       SCALAR *X0;
       CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
       Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx);
@@ -874,11 +875,12 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
    /* X = X - BQ*(QtBQ\y); norms(i) = norm(X(i)) */
 
    SCALAR *X0 = NULL;
+   int m=min(M, mQ);
    if (inX) {
       CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
    }
    if (norms) for (i=0; i<nX; i++) norms[i] = 0.0;
-   for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
+   for (i=0; i < mQ; i+=m, m=min(m,mQ-i)) {
       if (inX) {
         Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m,
                                         ctx);

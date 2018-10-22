@@ -528,7 +528,6 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          /*       divided by sqrt(2).                                         */
          double sval = (double)svals[i], resnorm = rnorms[i];
          int isConv = 0, ierr = 0;
-         primme_svds->stats.elapsedTime = primme_wTimer(0);
          CHKERRM((primme_svds->convTestFun(&sval,
                         &svecs[primme->nLocal * (primme->numOrthoConst + i) +
                                primme_svds->nLocal],

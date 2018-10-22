@@ -159,6 +159,19 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 #endif
    }
 
+   /* If we are free to choose the leading dimension of V and W, use    */
+   /* a multiple of PRIMME_BLOCK_SIZE. This may improve the performance */
+   /* of Num_update_VWXR_Sprimme and Bortho_block_Sprimme.              */
+
+   if (primme->ldOPs == -1) {
+      if (PRIMME_BLOCK_SIZE < INT_MAX) {
+         primme->ldOPs = min(((primme->nLocal + PRIMME_BLOCK_SIZE - 1)
+                  /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, primme->nLocal);
+      } else {
+         primme->ldOPs = primme->nLocal;
+      }
+   }
+
    /* Deprecated input:                                              */
    if (evals == NULL && evecs == NULL && resNorms == NULL)
       return 0;
@@ -277,7 +290,7 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
       ret = -13;
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst > primme->n)
       ret = -16;
-   else if (primme->maxBasisSize <= 2 && primme->maxBasisSize+primme->numOrthoConst != primme->n) 
+   else if (primme->maxBasisSize < 2 && primme->n > 2) 
       ret = -17;
    else if (primme->minRestartSize < 0 || (primme->minRestartSize == 0
                                     && primme->n > 2 && primme->numEvals > 0))
