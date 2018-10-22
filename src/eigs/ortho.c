@@ -163,7 +163,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
    /*----------------------------------*/
    assert(nLocal >= 0 && numLocked >= 0 &&
           ldV >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
-          (R == NULL || ldR > b2));
+          (R == NULL || ldR > b2) && (!RLocked || ldRLocked >= numLocked));
 
    tol = sqrt(2.0L)/2.0L;
 
@@ -301,7 +301,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
          /* problem. Compute s1 explicitly in that cases                      */
          
          int s1_update = 0;      // flag if s1 has been computed explicitly
-         if ( s1 < s0*sqrt(MACHINE_EPSILON) || nOrth > 1 || !primme) {  
+         if ( s1 < s0*sqrt(MACHINE_EPSILON) || nOrth > 1 || !primme || B) {  
             if (B) {
                CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
                Bx_update = 1;
@@ -561,9 +561,9 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
  
    /* input and workspace verification */
 
-   assert(nLocal >= 0 && numLocked >= 0 &&
-          ldV >= nLocal && (numLocked == 0 || ldLocked >= nLocal) &&
-          (R == NULL || ldR >= b2) && (!R || numLocked == 0));
+   assert(nLocal >= 0 && numLocked >= 0 && ldV >= nLocal &&
+          (numLocked == 0 || ldLocked >= nLocal) && (R == NULL || ldR >= b2) &&
+          (!R || numLocked == 0) && (!RLocked || ldRLocked >= numLocked));
 
    /* Zero the columns from b1 to b2 of R */
 
@@ -664,7 +664,15 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
 
       if (rank_estimation(VLtBVL, numLocked + b1,
                    numLocked + b2, maxRank, ldVLtVL) == numLocked + b2) {
-         if (its >= plus2 - 1) break;
+         if (its >= plus2 - 1) {
+            /* Pass the check when the norm of V(b1:b2-1) are close to one */
+            for (i = b1; i < b2 &&
+                         ABS(VLtBVL[ldVLtVL * (numLocked + i) + numLocked + i] -
+                               1.0) < .8;
+                  i++)
+               ;
+            if (i >= b2) break;
+         }
          else plus2 = min(its + 2, plus2);
       }
 

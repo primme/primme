@@ -67,8 +67,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
  * left, right    Range of vectors to be checked for convergence
  * blockNorms     Residual norms of the Ritz vectors starting from left
  * hVals          The Ritz values
- * caller         caller function: 0: prepare_candidates, 1: restart_locking,
- *                                 2: main_iteration checking practical. conv.
+ * practConvCheck Disable (-1) or enforce (1) the practically convergence checking
  * VtBV           evecs'*B*evecs
  * ctx            Structure containing various solver parameters
  *
@@ -88,7 +87,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       PRIMME_INT ldR, int givenR, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HSCALAR *VtBV,
       int ldVtBV, int left, int right, int *flags, HREAL *blockNorms,
-      HREAL *hVals, int *reset, int caller, primme_context ctx) {
+      HREAL *hVals, int *reset, int practConvCheck, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -98,7 +97,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    double targetShift;     /* target shift */
-   (void)caller;
 
    CHKERR(Num_malloc_iprimme(right-left, &toProject, ctx));
 
@@ -164,23 +162,13 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       }
 
       /* ----------------------------------------------------------------- */
-      /* If locking with GD and no preconditioning is running, the         */
-      /* practically convergence is done in main iteration.                */
-      /* ----------------------------------------------------------------- */
-
-      else if (primme->locking && primme->correctionParams.precondition &&
-                  primme->correctionParams.maxInnerIterations == 0) {
-         flags[i] = UNCONVERGED;
-      }
- 
-      /* ----------------------------------------------------------------- */
       /* If locking there may be an accuracy problem close to convergence. */
       /* Check if there is danger if R is provided. If the Ritz vector was */
       /* flagged practically converged before and R is not provided then   */
       /* consider converged still.                                         */
       /* ----------------------------------------------------------------- */
 
-      else if (primme->locking && numLocked > 0 &&
+      else if (primme->locking && numLocked > 0 && practConvCheck >= 0 &&
                blockNorms[i - left] < attainableTol) {
          if (givenR) {
             toProject[numToProject++] = i-left;

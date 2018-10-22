@@ -43,8 +43,11 @@ typedef struct primme_alloc_str {
    void *p;                         /* Allocated pointer */
    int (*free_fn)(void *, struct primme_context_str);
                                     /* Function to free pointer */
-   struct primme_alloc_str *prev;
-                                    /* Previous allocation */
+   struct primme_alloc_str *prev;   /* Previous allocation */
+#ifndef NDEBUG
+   const char* debug;               /* String identifying the code that */
+                                    /* generated the allocation         */
+#endif
 } primme_alloc;
 
 typedef struct primme_frame_str {
@@ -58,6 +61,7 @@ typedef struct primme_frame_str {
 int Mem_pop_frame(struct primme_context_str *ctx);
 int Mem_pop_clean_frame(struct primme_context_str ctx);
 int Mem_keep_frame(struct primme_context_str ctx);
+int Mem_debug_frame(const char *debug, struct primme_context_str ctx);
 typedef int (*free_fn_type)(void *, struct primme_context_str);
 int Mem_register_alloc(void *p, free_fn_type free_fn, struct primme_context_str ctx);
 int Mem_deregister_alloc(void *p, struct primme_context_str ctx);

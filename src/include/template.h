@@ -337,6 +337,16 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  *       curly brackets).
  **********************************************************************/
 
+#ifndef NDEBUG
+#define MEM_POP_FRAME(ERRN) { \
+   if (ERRN) {\
+      Mem_pop_clean_frame(ctx);\
+   } else {\
+      Mem_debug_frame(__FILE__ ": " STR(__LINE__), ctx);\
+      Mem_pop_frame(&ctx); \
+   }\
+}
+#else
 #define MEM_POP_FRAME(ERRN) { \
    if (ERRN) {\
       Mem_pop_clean_frame(ctx);\
@@ -344,6 +354,7 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
       Mem_pop_frame(&ctx); \
    }\
 }
+#endif
 
 /*****************************************************************************/
 /* Error management                                                          */
@@ -507,6 +518,8 @@ typedef struct primme_context_str {
 /* Used by macros emitted by ctemplate */
 #define CONCAT(a, b) CONCATX(a, b)
 #define CONCATX(a, b) a ## b
+#define STR(X) STR0(X)
+#define STR0(X) #X
 
 #define TO_INT(X) ((X) < INT_MAX ? (X) : INT_MAX)
 
