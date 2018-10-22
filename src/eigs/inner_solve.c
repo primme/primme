@@ -703,7 +703,6 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    CHKERR(Num_free_iprimme(p, ctx));
    CHKERR(Num_free_iprimme(p0, ctx));
  
-   for (i=0; i<blockSize; i++) rnorm[i] = eres_updated[i];
    return 0;
 }
    

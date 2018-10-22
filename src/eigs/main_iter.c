@@ -225,7 +225,6 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    HSCALAR *H;              /* Upper triangular portion of V'*A*V            */
    HSCALAR *VtBV = NULL;    /* Upper triangular portion of V'*B*V            */
    HSCALAR *QtQ = NULL;     /* Upper triangular portion of Q'*Q              */
-   int nQ = 0;              /* Number of columns of Q and size of QtQ        */
    HSCALAR *M = NULL;       /* The projection Q'*K*B*Q, where Q = [evecs, x]   */
                             /* x is the current Ritz vector and K is a       */
                             /* hermitian preconditioner.                     */
@@ -433,6 +432,11 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
           ( primme->maxOuterIterations == 0 ||
             primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
+      if (primme->printLevel >= 5 && primme->procID == 0 && reset > 0) {
+         fprintf(primme->outputFile, "Resetting V, W and QR\n");
+         fflush(primme->outputFile);
+      }
+
       /* Reset convergence flags. This may only reoccur without locking */
 
       primme->initSize = numConverged = numConvergedStored = numLocked;
@@ -443,15 +447,12 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
       /* Compute the initial H and solve for its eigenpairs */
 
       targetShiftIndex = 0;
-      nQ = 0;
       if (numQR) {
+         int nQ = 0;
          CHKERR(update_Q_Sprimme(BV ? BV : V, primme->nLocal, ldBV, W, ldW, Q,
                ldQ, R, primme->maxBasisSize, QtQ, ldQtQ,
                primme->targetShifts[targetShiftIndex], 0, basisSize, &nQ, ctx));
-         CHKERRM(/* primme->projectionParams.projection == primme_proj_harmonic
-                    && */
-               numQR && basisSize != nQ,
-               -1, "Not supported deficient QR");
+         CHKERRM(numQR && basisSize != nQ, -1, "Not supported deficient QR");
       }
 
       if (H)
@@ -459,9 +460,11 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             V, ldV, W, ldW, H, primme->maxBasisSize, primme->nLocal, 0,
             basisSize, 1 /*symmetric*/, ctx));
 
-      if (QtV)
-         CHKERR(update_projection_gen_Sprimme(Q, 0, nQ, ldQ, V, 0, basisSize,
-               ldV, QtV, primme->maxBasisSize, primme->nLocal, ctx));
+      if (QtV) {
+        CHKERR(update_projection_Sprimme(
+            Q, ldQ, V, ldV, QtV, primme->maxBasisSize, primme->nLocal, 0,
+            basisSize, 0 /*unsymmetric*/, ctx));
+      }
 
       CHKERR(solve_H_SHprimme(H, basisSize, primme->maxBasisSize,
             VtBV
@@ -478,6 +481,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
       primme->stats.estimateResidualError = 0.0;
       if (!primme->locking) primme->stats.maxConvTol = 0.0;
       blockSize = 0;
+      restartsSinceReset = 0;
 
       /* -------------------------------------------------------------- */
       /* Begin the iterative process.  Keep restarting until all of the */
@@ -682,9 +686,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW,
                      basisSize, blockSize, ctx));
 
-            int nQ0 = nQ;
-            assert(numQR <= 0 || nQ == basisSize);
             if (numQR) {
+               int nQ = basisSize;
                CHKERR(update_Q_Sprimme(BV ? BV : V, primme->nLocal, ldBV, W,
                      ldW, Q, ldQ, R, primme->maxBasisSize, QtQ, ldQtQ,
                      primme->targetShifts[targetShiftIndex], basisSize,
@@ -706,9 +709,9 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                   basisSize, blockSize, 1 /*symmetric*/, ctx));
 
             if (QtV)
-               CHKERR(update_projection_gen_Sprimme(Q, nQ0, nQ, ldQ, V,
-                     basisSize, basisSize + blockSize, ldV, QtV,
-                     primme->maxBasisSize, primme->nLocal, ctx));
+              CHKERR(update_projection_Sprimme(
+                  Q, ldQ, V, ldV, QtV, primme->maxBasisSize, primme->nLocal,
+                  basisSize, blockSize, 0 /*unsymmetric*/, ctx));
 
             if (basisSize+blockSize >= primme->maxBasisSize) {
                CHKERR(retain_previous_coefficients_SHprimme(hVecs,
@@ -943,7 +946,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                &targetShiftIndex, &numArbitraryVecs, hVecsRot,
                primme->maxBasisSize, &restartsSinceReset, maxRank,
                startTime, ctx));
-         nQ = basisSize;
+         restartsSinceReset++;
 
          /* If there are any initial guesses remaining, then copy it */
          /* into the basis.                                          */
@@ -985,16 +988,13 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW,
                      basisSize, numNew, ctx));
 
-            int nQ0 = nQ;
             if (numQR) {
+               int nQ = basisSize;
                CHKERR(update_Q_Sprimme(V, primme->nLocal, ldV, W, ldW, Q, ldQ,
                      R, primme->maxBasisSize, QtQ, ldQtQ,
                      primme->targetShifts[targetShiftIndex], basisSize, numNew,
                      &nQ, ctx));
-               CHKERRM(
-                     /* primme->projectionParams.projection ==
-                        primme_proj_harmonic && */
-                     basisSize + numNew != nQ, -1,
+               CHKERRM(basisSize + numNew != nQ, -1,
                      "Not supported deficient QR");
             }
 
@@ -1004,10 +1004,9 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             if (H) CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
                      1/*symmetric*/, ctx));
-            if (QtV)
-               CHKERR(update_projection_gen_Sprimme(Q, nQ0, nQ, ldQ, V,
-                     basisSize, basisSize + numNew, ldV, QtV,
-                     primme->maxBasisSize, primme->nLocal, ctx));
+            if (QtV) CHKERR(update_projection_Sprimme(Q, ldQ, V, ldV, QtV,
+                     primme->maxBasisSize, primme->nLocal, basisSize, numNew,
+                     0/*unsymmetric*/, ctx));
             basisSize += numNew;
             CHKERR(solve_H_SHprimme(H, basisSize, primme->maxBasisSize,
                   VtBV
