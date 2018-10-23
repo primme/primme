@@ -485,8 +485,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
          fn = max(fn, sqrt(n));
       }
 
-      CHKERR(globalSum_RHprimme(&fn, &fn, 1, ctx));
    }
+   CHKERR(globalSum_RHprimme(&fn, &fn, 1, ctx));
       
    if (fn > 0.0) {
       if (*restartsSinceReset <= 1) {

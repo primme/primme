@@ -829,25 +829,24 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             /* than s_0 after resetting. The condition restartsSinceReset > 0 */
             /* avoids infinite loop in those cases.                           */
 
-            /* if (primme->projectionParams.projection == primme_proj_refined &&
-                  basisSize > 0 && restartsSinceReset > 0 &&
+            if (primme->projectionParams.projection == primme_proj_refined &&
+                  basisSize > 0 && restartsSinceReset > 1 &&
+                  targetShiftIndex >= 0 &&
                   fabs(primme->targetShifts[targetShiftIndex] - hVals[0]) -
                               max(primme->aNorm,
                                     primme->stats.estimateLargestSVal) *
                                     MACHINE_EPSILON >
                         hSVals[0]) {
 
-               availableBlockSize = 0;
-               targetShiftIndex = -1;
                reset = 2;
                if (primme->printLevel >= 5 && primme->procID == 0) {
                   fprintf(primme->outputFile,
-                        "Resetting V, W and QR: Some errors in QR detected.\n");
+                        "Detected some errors in QR.\n");
                   fflush(primme->outputFile);
                }
 
                break;
-            } */
+            }
 
            /* --------------------------------------------------------------- */
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst-numLocked)

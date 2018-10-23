@@ -130,6 +130,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
 
       Num_copy_compact_trimatrix_SHprimme(rwork, m, blockSize, numCols,
             &Z[ldZ*numCols], ldZ);
+      CHKERR(Num_free_SHprimme(rwork, ctx));
    }
    else if (primme->numProcs > 1 && !isSymmetric) {
       /* --------------------------------------------------------------------- */
@@ -150,6 +151,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
             ldZ, ctx);
       Num_copy_matrix_SHprimme(&rwork[m*blockSize], blockSize, numCols,
             blockSize, &Z[numCols], ldZ, ctx);
+      CHKERR(Num_free_SHprimme(rwork, ctx));
    }
 
    return 0;
