@@ -529,9 +529,9 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          double sval = (double)svals[i], resnorm = rnorms[i];
          int isConv = 0, ierr = 0;
          CHKERRM((primme_svds->convTestFun(&sval,
-                        &svecs[primme->nLocal * (primme->numOrthoConst + i) +
+                        &svecs[primme->nLocal * primme->numOrthoConst +
                                primme_svds->nLocal],
-                        &svecs[primme->nLocal * (primme->numOrthoConst + i)],
+                        &svecs[primme->nLocal * primme->numOrthoConst],
                         &resnorm, (int *)&method, &isConv, primme_svds, &ierr),
                        ierr),
                PRIMME_USER_FAILURE, "Error code returned by 'convTestFun' %d",
@@ -539,12 +539,12 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          if (!isConv) break;
 
          /* Report a triplet is locked */
-         int ip1 = i + 1;
+         int numLocked = i + 1;
          flags[i] = CONVERGED;
          primme_event EVENT_LOCKED = primme_event_locked;
          int ZERO = 0;
          CHKERRM((primme_svds->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
-                     NULL, svals, &ip1, flags, rnorms, NULL, NULL,
+                     NULL, svals, &numLocked, flags, rnorms, NULL, NULL,
                      &EVENT_LOCKED, &ZERO, primme_svds, &ierr),
                   ierr),
                PRIMME_USER_FAILURE, "Error code returned by 'monitorFun' %d",
