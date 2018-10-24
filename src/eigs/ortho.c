@@ -403,7 +403,7 @@ static int local_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy ,in
 TEMPLATE_PLEASE
 int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
       int ldR, int b1, int b2, SCALAR *locked, int ldLocked,
-      int numLocked, PRIMME_INT nLocal, SCALAR *B, int ldB, PRIMME_INT *iseed,
+      int numLocked, int nLocal, SCALAR *B, int ldB, PRIMME_INT *iseed,
       double machEps, SCALAR *rwork, size_t *rworkSize, primme_params *primme) {
 
    (void)primme;
