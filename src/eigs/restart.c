@@ -507,8 +507,13 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, PRIMME_INT nLocal, int basisSize,
    /* Rearrange prevRitzVals according to restartPerm */
 
    if (primme->target != primme_smallest && primme->target != primme_largest) {
-      permute_vecs_Rprimme(prevRitzVals, 1, basisSize, 1, restartPerm,
-            (REAL*)rwork, iwork0);
+      if (*numPrevRitzVals > 0) {
+         for (i = *numPrevRitzVals; i < basisSize; i++)
+            prevRitzVals[i] = prevRitzVals[*numPrevRitzVals - 1];
+
+         permute_vecs_Rprimme(
+               prevRitzVals, 1, basisSize, 1, restartPerm, (REAL*)rwork, iwork0);
+      }
       for (i=0; i<restartSize; i++) {
          if (restartPerm[i] >= *numPrevRitzVals) {
             prevRitzVals[i] = hVals[i];
@@ -804,7 +809,7 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V,
             hVecs, *restartSize, ldhVecs, hVals,
             V, 0, *restartSize, ldV,
             *X, *numConverged, *numConverged+*ievSize, ldV,
-            NULL, 0, 0, 0, 0,
+            evecs, primme->numOrthoConst, 0, 0, primme->nLocal,
             W, 0, *restartSize, ldV,
             *R, *numConverged, *numConverged+*ievSize, ldV, blockNorms,
             NULL, 0, 0,

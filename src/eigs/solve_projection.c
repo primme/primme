@@ -686,8 +686,8 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
    /* Pack hVals */
 
    if (primme->procID == 0) {
-      rwork0[basisSize/c] = 0.0; /* When complex, avoid to reduce with an   */
-                                   /* uninitialized value                     */
+      rwork0[(basisSize + c-1)/c-1] = 0.0; /* When complex, avoid to reduce with an   */
+                                           /* uninitialized value                     */
       Num_copy_matrix_Rprimme(hVals, basisSize, 1, basisSize, (REAL*)rwork0,
             basisSize);
    }
@@ -698,8 +698,8 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
 
    if (hSVals) {
       if (primme->procID == 0) {
-         rwork0[basisSize/c] = 0.0; /* When complex, avoid to reduce with an*/
-                                      /* uninitialized value                  */
+         rwork0[(basisSize + c-1)/c-1] = 0.0; /* When complex, avoid to reduce with an   */
+                                              /* uninitialized value                     */
          Num_copy_matrix_Rprimme(hSVals, basisSize, 1, basisSize, (REAL*)rwork0,
                basisSize);
       }
