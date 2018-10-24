@@ -95,7 +95,7 @@ endif
 ifeq ($(UNAME), Darwin)
 ../lib/$(SONAMELIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -Wl,-soname,libprimme.so.2 -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SONAMELIBRARY) $(LDFLAGS)
+	@$(CC) -shared -Wl,-install_name,libprimme.so.2 -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SONAMELIBRARY) $(LDFLAGS)
 else
 ../lib/$(SONAMELIBRARY): $(OBJS)
 	@mkdir -p ../lib
