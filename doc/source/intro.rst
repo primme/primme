@@ -176,7 +176,7 @@ Python and MATLAB interfaces have BSD-compatible licenses.
 Source code under :file:`tests` is compatible with LGPLv3.
 Details can be taken from :file:`COPYING.txt`::
 
-   Copyright (c) 2017, College of William & Mary
+   Copyright (c) 2018, College of William & Mary
    All rights reserved.
 
 

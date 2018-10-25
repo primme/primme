@@ -256,7 +256,7 @@ PRIMME is licensed under the 3-clause license BSD. Python and MATLAB
 interfaces have BSD-compatible licenses. Source code under "tests" is
 compatible with LGPLv3. Details can be taken from "COPYING.txt":
 
-   Copyright (c) 2017, College of William & Mary
+   Copyright (c) 2018, College of William & Mary
    All rights reserved.
 
 
@@ -2882,7 +2882,7 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **ncv** (*int**, **optional*) -- The maximum size of the
         basis
 
-      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA'**]***) --
+      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA'**]*) --
 
         Which *k* eigenvectors and eigenvalues to find:
 
@@ -2910,8 +2910,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         (stopping criterion). The default value is sqrt of machine
         precision.
 
-      * **Minv** (***(**not supported yet**)***) -- The inverse of M
-        in the generalized eigenproblem.
+      * **Minv** (*(**not supported yet**)*) -- The inverse of M in
+        the generalized eigenproblem.
 
       * **OPinv** (*N x N matrix**, **array**, **sparse matrix**, or
         **LinearOperator**, **optional*) -- Preconditioner to
@@ -2921,8 +2921,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **return_eigenvectors** (*bool**, **optional*) -- Return
         eigenvectors (True) in addition to eigenvalues
 
-      * **mode** (*string** [**'normal' | 'buckling' |
-        'cayley'**]***) -- Only 'normal' mode is supported.
+      * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*)
+        -- Only 'normal' mode is supported.
 
       * **ortho** (*N x i**, **ndarray**, **optional*) -- Seek the
         eigenvectors orthogonal to these ones. The provided vectors
@@ -3003,10 +3003,9 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
           * "resNorm": residual norm of the first unconverged pair
 
    Raises:
-      "PrimmeError" -- When the requested convergence is not obtained.
-
-      The PRIMME error code can be found as "err" attribute of the
-      exception object.
+      **PrimmeError** -- When the requested convergence is not
+      obtained.          The PRIMME error code can be found as "err"
+      attribute of the exception     object.
 
    See also:
 
