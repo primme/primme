@@ -109,6 +109,29 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 2.2 (released on October 25, 2018):
+
+* Improve stability for single precision.
+
+* Improve support for the shared library.
+
+* Updated PETSc examples in Fortran; added new examples in single
+  precision.
+
+* Improve support for FreeBSD and MacOS.
+
+* New install and uninstall actions.
+
+* MATLAB interface support for user-defined stopping criterion (see
+  "convTestFun" and "convTestFun") and stopping with ctr+c.
+
+* Optional suffix on BLAS/LAPACK function names (for OpenBLAS, see
+  PRIMME_BLAS_SUFFIX).
+
+* Replace XHEGV by XHEGVX (to support ESSL).
+
+* Fixed bugs in the library and in the Matlab interface.
+
 Changes in PRIMME 2.1 (released on April 4, 2017):
 
 * Improve robustness by broadcasting the result of critical LAPACK
@@ -432,6 +455,12 @@ Full description of actions that *make* can take:
 
 * *make solib*, builds the shared library "libprimme.so".
 
+* *make install*, installs header files and the static and dynamic
+  libraries.
+
+* *make uninstall*, uninstalls header files and the static and
+  dynamic libraries.
+
 * *make matlab*, builds *libprimme.a* compatible with MATLAB and the
   MATLAB module.
 
@@ -480,7 +509,7 @@ platforms/compilers:
 
 * CentOS 6.6
 
-* Ubuntu 14.04
+* Ubuntu 18.04
 
 * MacOS X 10.9 & 10.10
 
@@ -488,11 +517,7 @@ platforms/compilers:
 
 * Cray XC30
 
-* SunOS 5.9, quad processor Sun-Fire-280R, and several other
-  UltraSparcs
-
-* AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at
-  nersc.gov)
+* FreeBSD 11.2
 
 
 Main Contributors
