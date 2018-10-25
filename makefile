@@ -14,7 +14,9 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib clean test all_tests check_style matlab octave python python_install R_install tags deps
+.PHONY: lib clean test all_tests check_style matlab octave \
+        python python_install R_install tags deps install \
+        uninstall 
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
