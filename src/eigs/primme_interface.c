@@ -101,7 +101,6 @@ void primme_initialize(primme_params *primme) {
    primme->maxOuterIterations                  = INT_MAX;
    primme->restartingParams.scheme             = primme_thick;
    primme->restartingParams.maxPrevRetain      = -1;
-   primme->orth                                = primme_orth_default;
 
    /* correction parameters (inner) */
    primme->correctionParams.precondition       = -1;
@@ -641,8 +640,6 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
       fprintf(outputFile, " %" PRIMME_INT_P, primme.iseed[i]);
    }
    fprintf(outputFile, "\n");
-   PRINTIF(orth, primme_orth_implicit_I);
-   PRINTIF(orth, primme_orth_explicit_I);
 
    fprintf(outputFile, "\n// Restarting\n");
    PRINTParamsIF(restarting, scheme, primme_thick);

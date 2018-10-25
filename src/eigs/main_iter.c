@@ -213,6 +213,26 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
                             /* the parameters of the model.Only visible here */
    double tstart=0.0;       /* Timing variable for accumulative time spent   */
 
+   /* --------------------------------------------------------------------- */
+   /* Observed orthogonality issues finding the largest/smallest values in  */
+   /* single precision. Computing V'*B*V and solving the projected problem  */
+   /* V'AVx = V'BVxl mitigates the problem.                                 */
+   /* --------------------------------------------------------------------- */
+
+   enum {
+      primme_orth_implicit_I,          /* assume for search subspace V, V'*B*V = I */
+      primme_orth_explicit_I           /* explicitly compute V'*B*V */
+   } orth;
+
+#ifdef USE_FLOAT
+   if (primme->projectionParams.projection == primme_proj_RR &&
+       (primme->target == primme_largest || primme->target == primme_smallest ||
+        primme->target == primme_largest_abs)) {
+     orth = primme_orth_explicit_I;
+   } else
+#endif
+     orth = primme_orth_implicit_I;
+
    /* -------------------------------------------------------------- */
    /* Subdivide the workspace                                        */
    /* -------------------------------------------------------------- */
@@ -242,7 +262,7 @@ int main_iter_Sprimme(REAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
    H             = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    hVecs         = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    previousHVecs = rwork; rwork += primme->maxBasisSize*primme->restartingParams.maxPrevRetain;
-   if (primme->orth == primme_orth_explicit_I) {
+   if (orth == primme_orth_explicit_I) {
       VtBV       = rwork; rwork += primme->maxBasisSize*primme->maxBasisSize;
    }
    if (primme->projectionParams.projection == primme_proj_refined
