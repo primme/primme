@@ -1,0 +1,533 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>FORTRAN Library Interface &#8212; PRIMME 2.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python Interface" href="pysvds.html" />
+    <link rel="prev" title="C Library Interface" href="svdsc.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="readme.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="readme.html">PRIMME</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=primme&repo=primme&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apisvds.html">Singular Value Problems</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="svdsc.html">C Library Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FORTRAN Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysvds.html">Python Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="matsvds.html">MATLAB Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendixsvds.html">Parameter Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendixsvds.html#preset-methods">Preset Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendixsvds.html#error-codes">Error Codes</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="readme.html">Documentation overview</a><ul>
+  <li><a href="apisvds.html">Singular Value Problems</a><ul>
+      <li>Previous: <a href="svdsc.html" title="previous chapter">C Library Interface</a></li>
+      <li>Next: <a href="pysvds.html" title="next chapter">Python Interface</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="fortran-library-interface">
+<h1>FORTRAN Library Interface<a class="headerlink" href="#fortran-library-interface" title="Permalink to this headline">¶</a></h1>
+<p>The next enumerations and functions are declared in <code class="docutils literal notranslate"><span class="pre">primme_svds_f77.h</span></code>.</p>
+<div class="section" id="sprimme-svds-f77">
+<h2>sprimme_svds_f77<a class="headerlink" href="#sprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.sprimme_svds_f77">
+<code class="descname">sprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.sprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a real singular value problem using single precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svals(*)</strong> (<em>real</em>) -- (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+computed singular values; all processes in a parallel run return this local array with the same values.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) -- array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+residual norms of the computed triplets; all processes in parallel run return this local array with
+the same values.</li>
+<li><strong>svecs(*)</strong> (<em>real</em>) -- array at least of size (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">mLocal</span></code></a> + <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a>) times <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a>
+to store columnwise the (local part of the) computed left singular vectors
+and the right singular vectors.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- parameters structure.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><span class="std std-ref">Error Codes</span></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="cprimme-svds-f77">
+<h2>cprimme_svds_f77<a class="headerlink" href="#cprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.cprimme_svds_f77">
+<code class="descname">cprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a complex singular value problem using single precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svals(*)</strong> (<em>real</em>) -- (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+computed singular values; all processes in a parallel run return this local array with the same values.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) -- array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+residual norms of the computed triplets; all processes in parallel run return this local array with
+the same values.</li>
+<li><strong>svecs(*)</strong> (<em>complex</em>) -- array at least of size (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">mLocal</span></code></a> + <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a>) times <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a>
+to store columnwise the (local part of the) computed left singular vectors
+and the right singular vectors.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- parameters structure.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><span class="std std-ref">Error Codes</span></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="dprimme-svds-f77">
+<h2>dprimme_svds_f77<a class="headerlink" href="#dprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.dprimme_svds_f77">
+<code class="descname">dprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.dprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a real singular value problem using double precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svals(*)</strong> (<em>double precision</em>) -- (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+computed singular values; all processes in a parallel run return this local array with the same values.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) -- array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+residual norms of the computed triplets; all processes in parallel run return this local array with
+the same values.</li>
+<li><strong>svecs(*)</strong> (<em>double precision</em>) -- array at least of size (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">mLocal</span></code></a> + <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a>) times <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a>
+to store columnwise the (local part of the) computed left singular vectors
+and the right singular vectors.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- parameters structure.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><span class="std std-ref">Error Codes</span></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="zprimme-svds-f77">
+<h2>zprimme_svds_f77<a class="headerlink" href="#zprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.zprimme_svds_f77">
+<code class="descname">zprimme_svds_f77</code><span class="sig-paren">(</span>svals, svecs, resNorms, primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a complex singular value problem using double precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svals(*)</strong> (<em>double precision</em>) -- (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+computed singular values; all processes in a parallel run return this local array with the same values.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) -- array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
+residual norms of the computed triplets; all processes in parallel run return this local array with
+the same values.</li>
+<li><strong>svecs(*)</strong> (<em>complex*16</em>) -- array at least of size (<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">mLocal</span></code></a> + <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a>) times <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a>
+to store columnwise the (local part of the) computed left singular vectors
+and the right singular vectors.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- parameters structure.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">error indicator; see <a class="reference internal" href="appendixsvds.html#error-codes-svds"><span class="std std-ref">Error Codes</span></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svds-initialize-f77">
+<h2>primme_svds_initialize_f77<a class="headerlink" href="#primme-svds-initialize-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svds_initialize_f77">
+<code class="descname">primme_svds_initialize_f77</code><span class="sig-paren">(</span>primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_initialize_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set PRIMME SVDS parameters structure to the default values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (output) parameters structure.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svds-set-method-f77">
+<h2>primme_svds_set_method_f77<a class="headerlink" href="#primme-svds-set-method-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svds_set_method_f77">
+<code class="descname">primme_svds_set_method_f77</code><span class="sig-paren">(</span>method, methodStage1, methodStage2, primme_svds, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_set_method_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set PRIMME SVDS parameters to one of the preset configurations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method</strong> (<em>integer</em>) -- <p>(input) preset configuration to compute the singular triplets; one of</p>
+<ul>
+<li><a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_default" title="primme_svds_preset_method.primme_svds_default"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_default</span></code></a>, currently set as <a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_hybrid" title="primme_svds_preset_method.primme_svds_hybrid"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_hybrid</span></code></a>.</li>
+<li><a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_normalequations" title="primme_svds_preset_method.primme_svds_normalequations"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_normalequations</span></code></a>, compute the eigenvectors of <span class="math notranslate nohighlight">\(A^*A\)</span> or <span class="math notranslate nohighlight">\(A A^*\)</span>.</li>
+<li><a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_augmented" title="primme_svds_preset_method.primme_svds_augmented"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_augmented</span></code></a>, compute the eigenvectors of the augmented matrix, <span class="math notranslate nohighlight">\(\left(\begin{array}{cc} 0 &amp; A^* \\ A &amp; 0 \end{array}\right)\)</span>.</li>
+<li><a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_hybrid" title="primme_svds_preset_method.primme_svds_hybrid"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_hybrid</span></code></a>, start with <a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_normalequations" title="primme_svds_preset_method.primme_svds_normalequations"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_normalequations</span></code></a>; use the
+resulting approximate singular vectors as initial vectors for
+<a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_augmented" title="primme_svds_preset_method.primme_svds_augmented"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_augmented</span></code></a> if the required accuracy was not achieved.</li>
+</ul>
+</li>
+<li><strong>methodStage1</strong> (<a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method"><em>primme_preset_method</em></a>) -- (input) preset method to compute the eigenpairs at the first stage; see available values at <a class="reference internal" href="primmef77.html#c.primme_set_method_f77" title="primme_set_method_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_set_method_f77()</span></code></a>.</li>
+<li><strong>methodStage2</strong> (<a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method"><em>primme_preset_method</em></a>) -- (input) preset method to compute the eigenpairs with
+the second stage of <a class="reference internal" href="appendixsvds.html#c.primme_svds_preset_method.primme_svds_hybrid" title="primme_svds_preset_method.primme_svds_hybrid"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_hybrid</span></code></a>; see available values at <a class="reference internal" href="primmef77.html#c.primme_set_method_f77" title="primme_set_method_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_set_method_f77()</span></code></a>.</li>
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (input/output) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) -- (output) if 0, successful; if negative, something went wrong.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svds-display-params-f77">
+<h2>primme_svds_display_params_f77<a class="headerlink" href="#primme-svds-display-params-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svds_display_params_f77">
+<code class="descname">primme_svds_display_params_f77</code><span class="sig-paren">(</span>primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_display_params_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display all printable settings of <code class="docutils literal notranslate"><span class="pre">primme_svds</span></code> into the file descriptor <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.outputFile" title="primme_svds_params.outputFile"><code class="xref c c-member docutils literal notranslate"><span class="pre">outputFile</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (input) parameters structure.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svds-free-f77">
+<h2>primme_svds_free_f77<a class="headerlink" href="#primme-svds-free-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svds_free_f77">
+<code class="descname">primme_svds_free_f77</code><span class="sig-paren">(</span>primme_svds<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_free_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Free memory allocated by PRIMME SVDS and delete all values set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (input/output) parameters structure.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svds-set-member-f77">
+<h2>primme_svds_set_member_f77<a class="headerlink" href="#primme-svds-set-member-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svds_set_member_f77">
+<code class="descname">primme_svds_set_member_f77</code><span class="sig-paren">(</span>primme_svds, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_set_member_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a value in some field of the parameter structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (input) parameters structure.</li>
+<li><strong>label</strong> (<em>integer</em>) -- <p>field where to set value. One of:</p>
+<div class="line-block">
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.primme" title="primme_svds_params.primme"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_primme</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.primmeStage2" title="primme_svds_params.primmeStage2"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_primmeStage2</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.m" title="primme_svds_params.m"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_m</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.n" title="primme_svds_params.n"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_n</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_matrixMatvec</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_applyPreconditioner</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numProcs" title="primme_svds_params.numProcs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_numProcs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.procID" title="primme_svds_params.procID"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_procID</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.mLocal" title="primme_svds_params.mLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_mLocal</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.nLocal" title="primme_svds_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_nLocal</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.commInfo" title="primme_svds_params.commInfo"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_commInfo</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_globalSumReal</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_numSvals</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.target" title="primme_svds_params.target"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_target</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numTargetShifts" title="primme_svds_params.numTargetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_numTargetShifts</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.targetShifts" title="primme_svds_params.targetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_targetShifts</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.method" title="primme_svds_params.method"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_method</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.methodStage2" title="primme_svds_params.methodStage2"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_methodStage2</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.intWorkSize" title="primme_svds_params.intWorkSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_intWorkSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.realWorkSize" title="primme_svds_params.realWorkSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_realWorkSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.intWork" title="primme_svds_params.intWork"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_intWork</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.realWork" title="primme_svds_params.realWork"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_realWork</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrix" title="primme_svds_params.matrix"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_matrix</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.preconditioner" title="primme_svds_params.preconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_preconditioner</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.locking" title="primme_svds_params.locking"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_locking</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numOrthoConst" title="primme_svds_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_numOrthoConst</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.aNorm" title="primme_svds_params.aNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_aNorm</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.eps" title="primme_svds_params.eps"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_eps</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.precondition" title="primme_svds_params.precondition"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_precondition</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.initSize" title="primme_svds_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_initSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.maxBasisSize" title="primme_svds_params.maxBasisSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_maxBasisSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.maxBlockSize" title="primme_svds_params.maxBlockSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_maxBlockSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.maxMatvecs" title="primme_svds_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_maxMatvecs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.iseed" title="primme_svds_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_iseed</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.printLevel" title="primme_svds_params.printLevel"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_printLevel</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendixsvds.html#c.primme_svds_params.outputFile" title="primme_svds_params.outputFile"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_outputFile</span></code></a></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_stats_numOuterIterations</span></code></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_stats_numRestarts</span></code></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_stats_numMatvecs</span></code></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_stats_numPreconds</span></code></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_SVDS_stats_elapsedTime</span></code></div>
+</div>
+</li>
+<li><strong>value</strong> -- (input) value to set.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Don't use</strong> this function inside PRIMME SVDS's callback functions, e.g., <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a> or
+<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svdstop-get-member-f77">
+<h2>primme_svdstop_get_member_f77<a class="headerlink" href="#primme-svdstop-get-member-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svdstop_get_member_f77">
+<code class="descname">primme_svdstop_get_member_f77</code><span class="sig-paren">(</span>primme_svds, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svdstop_get_member_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value in some field of the parameter structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (input) parameters structure.</li>
+<li><strong>label</strong> (<em>integer</em>) -- (input) field where to get value. One of
+the detailed in function <code class="xref c c-func docutils literal notranslate"><span class="pre">primmesvds_top_set_member_f77()</span></code>.</li>
+<li><strong>value</strong> -- (output) value of the field.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Don't use</strong> this function inside PRIMME SVDS's callback functions, e.g., <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a> or
+<a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions. In those cases use
+<a class="reference internal" href="#c.primme_svds_get_member_f77" title="primme_svds_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_svds_get_member_f77()</span></code></a>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">label</span></code> is one of <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_matrixMatvec</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_applyPreconditioner</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_commInfo</span></code>,
+<code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_intWork</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_realWork</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_matrix</span></code> and <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_preconditioner</span></code>,
+the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
+For instance:</p>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
+<span class="n">MPI_Comm</span> <span class="n">comm</span>
+
+<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
+<span class="k">call </span><span class="n">primme_svds_set_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="p">...</span>
+<span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme_svds</span><span class="p">)</span>
+<span class="k">use </span><span class="nb">iso_c_binding</span>
+<span class="k">implicit none</span>
+<span class="p">...</span>
+<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
+
+<span class="k">call </span><span class="n">primme_svds_get_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="last">Most users would not need to retrieve these pointers in their programs.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-svds-get-member-f77">
+<h2>primme_svds_get_member_f77<a class="headerlink" href="#primme-svds-get-member-f77" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.primme_svds_get_member_f77">
+<code class="descname">primme_svds_get_member_f77</code><span class="sig-paren">(</span>primme_svds, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_svds_get_member_f77" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value in some field of the parameter structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme_svds</strong> (<a class="reference internal" href="primmef77.html#c.ptr" title="ptr"><em>ptr</em></a>) -- (input) parameters structure.</li>
+<li><strong>label</strong> (<em>integer</em>) -- (input) field where to get value. One of
+the detailed in function <code class="xref c c-func docutils literal notranslate"><span class="pre">primme_svdstop_set_member_f77()</span></code>.</li>
+<li><strong>value</strong> -- (output) value of the field.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Use this function exclusively inside PRIMME SVDS's callback functions, e.g., <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>
+or <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions. Otherwise, e.g.,
+from the main program, use the function <a class="reference internal" href="#c.primme_svdstop_get_member_f77" title="primme_svdstop_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_svdstop_get_member_f77()</span></code></a>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">label</span></code> is one of <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_matrixMatvec</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_applyPreconditioner</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_commInfo</span></code>,
+<code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_intWork</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_realWork</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_matrix</span></code> and <code class="docutils literal notranslate"><span class="pre">PRIMME_SVDS_preconditioner</span></code>,
+the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
+For instance:</p>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
+<span class="n">MPI_Comm</span> <span class="n">comm</span>
+
+<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
+<span class="k">call </span><span class="n">primme_svds_set_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="p">...</span>
+<span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme_svds</span><span class="p">)</span>
+<span class="k">use </span><span class="nb">iso_c_binding</span>
+<span class="k">implicit none</span>
+<span class="p">...</span>
+<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
+
+<span class="k">call </span><span class="n">primme_svds_get_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="last">Most users would not need to retrieve these pointers in their programs.</p>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2018, College of William & Mary.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/svdsf77.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

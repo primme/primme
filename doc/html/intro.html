@@ -1,0 +1,513 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>PRIMME: PReconditioned Iterative MultiMethod Eigensolver &#8212; PRIMME 2.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Eigenvalue Problems" href="apieigs.html" />
+    <link rel="prev" title="PRIMME Documentation" href="readme.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="readme.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="readme.html">PRIMME</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=primme&repo=primme&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#incompatibilities">Incompatibilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changelog">Changelog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license-information">License Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#citing-the-code">Citing the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contact-information">Contact Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-and-linking">Making and Linking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tested-systems">Tested Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main-contributors">Main Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="readme.html">Documentation overview</a><ul>
+      <li>Previous: <a href="readme.html" title="previous chapter">PRIMME Documentation</a></li>
+      <li>Next: <a href="apieigs.html" title="next chapter">Eigenvalue Problems</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="primme-preconditioned-iterative-multimethod-eigensolver">
+<h1>PRIMME: PReconditioned Iterative MultiMethod Eigensolver<a class="headerlink" href="#primme-preconditioned-iterative-multimethod-eigensolver" title="Permalink to this headline">¶</a></h1>
+<p>PRIMME, pronounced as <em>prime</em>, computes
+a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix.
+It can also compute singular values and vectors of a square or rectangular matrix.
+It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence.
+It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.</p>
+<div class="section" id="incompatibilities">
+<h2>Incompatibilities<a class="headerlink" href="#incompatibilities" title="Permalink to this headline">¶</a></h2>
+<p>From PRIMME 2.0 to 2.1:</p>
+<ul class="simple">
+<li>Added members <a class="reference internal" href="appendix.html#c.primme_params.monitorFun" title="primme_params.monitorFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">monitorFun</span></code></a> and <code class="docutils literal notranslate"><span class="pre">monitor</span></code> to <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_params</span></code></a>.</li>
+<li>Added members <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.monitorFun" title="primme_svds_params.monitorFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">monitorFun</span></code></a> and <code class="docutils literal notranslate"><span class="pre">monitor</span></code> to <a class="reference internal" href="appendixsvds.html#c.primme_svds_params" title="primme_svds_params"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_svds_params</span></code></a>.</li>
+<li>Renamed <code class="docutils literal notranslate"><span class="pre">PRIMME_SUBSPACE_ITERATION</span></code> as <a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="primme_preset_method.PRIMME_STEEPEST_DESCENT"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></a>.</li>
+</ul>
+<p>From PRIMME 1.x to 2.0:</p>
+<ul class="simple">
+<li>Prototype of callbacks has changed: <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a> and <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>.</li>
+<li>The next parameters are <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>: <a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal notranslate"><span class="pre">n</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxMatvecs</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">iseed</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numOuterIterations" title="primme_params.stats.numOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOuterIterations</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numRestarts" title="primme_params.stats.numRestarts"><code class="xref c c-member docutils literal notranslate"><span class="pre">numRestarts</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numMatvecs" title="primme_params.stats.numMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">numMatvecs</span></code></a> and <a class="reference internal" href="appendix.html#c.primme_params.stats.numMatvecs" title="primme_params.stats.numMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">numMatvecs</span></code></a>; use the macro <code class="docutils literal notranslate"><span class="pre">PRIMME_INT_P</span></code> to print the values.</li>
+<li>Rename the values of the enum <a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_preset_method</span></code></a>.</li>
+<li>Rename <code class="docutils literal notranslate"><span class="pre">primme_Free</span></code> to <a class="reference internal" href="primmec.html#c.primme_free" title="primme_free"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_free()</span></code></a>.</li>
+<li>Integer parameters in Fortran functions are of the same size as <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, which is <code class="docutils literal notranslate"><span class="pre">integer*8</span></code> by default.</li>
+<li>Extra parameter in many Fortran functions to return the error code.</li>
+<li>Removed <code class="docutils literal notranslate"><span class="pre">primme_display_stats_f77</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="changelog">
+<h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h2>
+<p>Changes in PRIMME 2.2 (released on October 26, 2018):</p>
+<ul class="simple">
+<li>Improved stability for single precision.</li>
+<li>Improved support for the shared library.</li>
+<li>Updated PETSc examples in Fortran; added new examples in single precision.</li>
+<li>Improved support for FreeBSD and MacOS.</li>
+<li>New install and uninstall actions.</li>
+<li>MATLAB interface support for user-defined stopping criterion (see <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a> and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>) and stopping with ctr+c.</li>
+<li>Optional suffix on <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a>/<a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> function names (for OpenBLAS, see <a class="reference internal" href="#making"><span class="std std-ref">PRIMME_BLAS_SUFFIX</span></a>).</li>
+<li>Replaced XHEGV by XHEGVX (to support ESSL).</li>
+<li>Fixed bugs in the library and in the Matlab interface.</li>
+</ul>
+<p>Changes in PRIMME 2.1 (released on April 4, 2017):</p>
+<ul class="simple">
+<li>Improved robustness by broadcasting the result of critical <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a>
+operations instead of replicating them on every process; this is
+useful when using a threaded <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a>/<a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> or when some parallel
+processes may run on different architectures or libraries.</li>
+<li>New stopping criteria in QMR that improve performance for interior
+problems.</li>
+<li>MATLAB interface reimplementation with support for singular value
+problems, <code class="xref mat mat-func docutils literal notranslate"><span class="pre">primme_svds()</span></code>, with double and single precision, and
+compatible with Octave.</li>
+<li>R interface</li>
+<li>Proper reporting of convergence history for singular value solvers.</li>
+</ul>
+<p>Changes in PRIMME 2.0 (released on September 19, 2016):</p>
+<ul class="simple">
+<li>Changed license to BSD 3-clause.</li>
+<li>New support for singular value problems; see <a class="reference internal" href="svdsc.html#c.dprimme_svds" title="dprimme_svds"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme_svds()</span></code></a>.</li>
+<li>New support for <code class="docutils literal notranslate"><span class="pre">float</span></code> and <code class="docutils literal notranslate"><span class="pre">complex</span> <span class="pre">float</span></code> arithmetic.</li>
+<li>Support for problem dimensions larger than 2^31, without requiring
+<a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> compiled with 64-bits integers.</li>
+<li>Improve robustness and performance for interior problems; implemented advanced refined
+and harmonic-Ritz extractions.</li>
+<li>Python interface compatible with <a class="reference external" href="http://www.numpy.org/">NumPy</a> and <a class="reference external" href="https://www.scipy.org/scipylib/index.html">SciPy Library</a>.</li>
+<li>Added parameter to indicate the leading dimension of the input/output matrices and to
+return an error code in callbacks <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>,
+<a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a> and <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>.</li>
+<li>Changed to type <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a> the options <a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal notranslate"><span class="pre">n</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxMatvecs</span></code></a>
+and <a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">iseed</span></code></a>, and the stats counters <a class="reference internal" href="appendix.html#c.primme_params.stats.numOuterIterations" title="primme_params.stats.numOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOuterIterations</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numRestarts" title="primme_params.stats.numRestarts"><code class="xref c c-member docutils literal notranslate"><span class="pre">numRestarts</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.stats.numMatvecs" title="primme_params.stats.numMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">numMatvecs</span></code></a>,
+<a class="reference internal" href="appendix.html#c.primme_params.stats.numPreconds" title="primme_params.stats.numPreconds"><code class="xref c c-member docutils literal notranslate"><span class="pre">numPreconds</span></code></a>. Also changed <a class="reference internal" href="appendix.html#c.primme_params.realWorkSize" title="primme_params.realWorkSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">realWorkSize</span></code></a> to <code class="docutils literal notranslate"><span class="pre">size_t</span></code>. Fortran interface functions
+will expect an <code class="docutils literal notranslate"><span class="pre">interger</span></code> of size compatible with <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a> for
+all parameters with integer type: <code class="docutils literal notranslate"><span class="pre">int</span></code>, <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a> and <code class="docutils literal notranslate"><span class="pre">size_t</span></code>;
+see also parameter <code class="docutils literal notranslate"><span class="pre">value</span></code> in functions
+<code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_set_member_f77()</span></code>,
+<a class="reference internal" href="primmef77.html#c.primmetop_get_member_f77" title="primmetop_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_get_member_f77()</span></code></a>,
+<a class="reference internal" href="primmef77.html#c.primme_set_member_f77" title="primme_set_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_set_member_f77()</span></code></a> and
+<a class="reference internal" href="primmef77.html#c.primme_get_member_f77" title="primme_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_get_member_f77()</span></code></a>.</li>
+<li>Added parameter to return an error code in Fortran interface functions:
+<code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_set_member_f77()</span></code>,
+<a class="reference internal" href="primmef77.html#c.primmetop_get_member_f77" title="primmetop_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_get_member_f77()</span></code></a>,
+<a class="reference internal" href="primmef77.html#c.primme_set_member_f77" title="primme_set_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_set_member_f77()</span></code></a> and
+<a class="reference internal" href="primmef77.html#c.primme_get_member_f77" title="primme_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_get_member_f77()</span></code></a>.</li>
+<li>Added leading dimension for <code class="docutils literal notranslate"><span class="pre">evecs</span></code> <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> and preferred leading dimension
+for the operators <a class="reference internal" href="appendix.html#c.primme_params.ldOPs" title="primme_params.ldOPs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldOPs</span></code></a>, such as <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>.</li>
+<li>Optional user-defined convergence function, <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</li>
+<li>Prefixed methods with <code class="docutils literal notranslate"><span class="pre">PRIMME_</span></code>. Rename Fortran constants from <code class="docutils literal notranslate"><span class="pre">PRIMMEF77_</span></code>
+to <code class="docutils literal notranslate"><span class="pre">PRIMME_</span></code>.</li>
+<li>Removed <code class="docutils literal notranslate"><span class="pre">primme_display_stats_f77</span></code>.</li>
+</ul>
+<p>Changes in PRIMME 1.2.2 (released on October 13, 2015):</p>
+<ul class="simple">
+<li>Fixed wrong symbols in <code class="file docutils literal notranslate"><span class="pre">libdprimme.a</span></code> and <code class="file docutils literal notranslate"><span class="pre">libzprimme.a</span></code>.</li>
+<li><a class="reference internal" href="primmec.html#c.primme_set_method" title="primme_set_method"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_set_method()</span></code></a> sets <a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR" title="primme_preset_method.PRIMME_JDQMR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR</span></code></a> instead of <a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR_ETol" title="primme_preset_method.PRIMME_JDQMR_ETol"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR_ETol</span></code></a> for preset methods
+<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_TIME" title="primme_preset_method.PRIMME_DEFAULT_MIN_TIME"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_TIME</span></code></a> and <a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DYNAMIC" title="primme_preset_method.PRIMME_DYNAMIC"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></a> when seeking interior values.</li>
+<li>Fixed compilation of driver with a <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a> installation without HYPRE.</li>
+<li>Included the content of the environment variable <code class="docutils literal notranslate"><span class="pre">INCLUDE</span></code> for compiling the driver.</li>
+</ul>
+<p>Changes in PRIMME 1.2.1 (released on September 7, 2015):</p>
+<ul class="simple">
+<li>Added MATLAB interface to full PRIMME functionality.</li>
+<li>Support for <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a>/<a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> with 64bits integers (<code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLASINT_SIZE=64</span></code>).</li>
+<li>Simplified configuration of Make_flags and Make_links (removed <code class="docutils literal notranslate"><span class="pre">TOP</span></code> variable
+and replaced defines <code class="docutils literal notranslate"><span class="pre">NUM_SUM</span></code> and <code class="docutils literal notranslate"><span class="pre">NUM_IBM</span></code> by <code class="docutils literal notranslate"><span class="pre">F77UNDERSCORE</span></code>).</li>
+<li>Replaced directories <code class="file docutils literal notranslate"><span class="pre">DTEST</span></code> and <code class="file docutils literal notranslate"><span class="pre">ZTEST</span></code> by <code class="file docutils literal notranslate"><span class="pre">TEST</span></code>, that has:<ul>
+<li><code class="file docutils literal notranslate"><span class="pre">driver.c</span></code>: read matrices in MatrixMarket format and <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a> binary and
+call PRIMME with the parameters specified in a file; support
+complex arithmetic and MPI and can use <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a> preconditioners.</li>
+<li><code class="file docutils literal notranslate"><span class="pre">ex*.c</span></code> and <code class="file docutils literal notranslate"><span class="pre">ex*.f</span></code>: small, didactic examples of usage in C and Fortran
+and in parallel (with <a class="reference external" href="http://www.mcs.anl.gov/petsc/">PETSc</a>).</li>
+</ul>
+</li>
+<li>Fixed a few minor bugs and improved documentation (especially the F77 interface).</li>
+<li>Using <a class="reference external" href="http://sphinx-doc.org/">Sphinx</a> to manage documentation.</li>
+</ul>
+<p>Changes in PRIMME 1.2 (released on December 21, 2014):</p>
+<ul>
+<li><p class="first">A Fortran compiler is no longer required for building the PRIMME library.
+Fortran programs can still be linked to PRIMME's F77 interface.</p>
+</li>
+<li><p class="first">Fixed some uncommon issues with the F77 interface.</p>
+</li>
+<li><p class="first">PRIMME can be called now multiple times from the same program.</p>
+</li>
+<li><p class="first">Performance improvements in the QMR inner solver, especially for
+complex arithmetic.</p>
+</li>
+<li><p class="first">Fixed a couple of bugs with the locking functionality.</p>
+<ul class="simple">
+<li>In certain extreme cases where all eigenvalues of a matrix were needed.</li>
+<li>The order of selecting interior eigenvalues.</li>
+</ul>
+<p>The above fixes have improved robustness and performance.</p>
+</li>
+<li><p class="first">PRIMME now assigns unique random seeds per parallel process
+for up to 4096^3  (140 trillion) processes.</p>
+</li>
+<li><p class="first">For the <a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DYNAMIC" title="primme_preset_method.PRIMME_DYNAMIC"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></a> method, fixed issues with initialization and
+synchronization decisions across multiple processes.</p>
+</li>
+<li><p class="first">Fixed uncommon library interface bugs, coordinated better
+setting the method and the user setting of parameters, and improved
+the interface in the sample programs and makefiles.</p>
+</li>
+<li><p class="first">Other performance and documentation improvements.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="license-information">
+<h2>License Information<a class="headerlink" href="#license-information" title="Permalink to this headline">¶</a></h2>
+<p>PRIMME is licensed under the 3-clause license BSD.
+Python and MATLAB interfaces have BSD-compatible licenses.
+Source code under <code class="file docutils literal notranslate"><span class="pre">tests</span></code> is compatible with LGPLv3.
+Details can be taken from <code class="file docutils literal notranslate"><span class="pre">COPYING.txt</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Copyright <span class="o">(</span>c<span class="o">)</span> <span class="m">2018</span>, College of William <span class="p">&amp;</span> Mary
+All rights reserved.
+</pre></div>
+</div>
+</div>
+<div class="section" id="citing-the-code">
+<h2>Citing the code<a class="headerlink" href="#citing-the-code" title="Permalink to this headline">¶</a></h2>
+<p>Please cite (<a class="reference external" href="https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib">BibTeX</a>):</p>
+<table class="docutils citation" frame="void" id="r1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[r1]</a></td><td>A. Stathopoulos and J. R. McCombs PRIMME: <em>PReconditioned Iterative
+MultiMethod Eigensolver: Methods and software description</em>, ACM
+Transaction on Mathematical Software Vol. 37, No. 2, (2010),
+21:1-21:30.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="r6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[r6]</a></td><td>L. Wu, E. Romero and A. Stathopoulos, <em>PRIMME_SVDS: A High-Performance
+Preconditioned SVD Solver for Accurate Large-Scale Computations</em>,
+J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.</td></tr>
+</tbody>
+</table>
+<p>More information on the algorithms and research that led to this
+software can be found in the rest of the papers. The work has been
+supported by a number of grants from the National Science Foundation.</p>
+<table class="docutils citation" frame="void" id="r2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[r2]</a></td><td>A. Stathopoulos, <em>Nearly optimal preconditioned methods for Hermitian
+eigenproblems under limited memory. Part I: Seeking one eigenvalue</em>, SIAM
+J. Sci. Comput., Vol. 29, No. 2, (2007), 481--514.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="r3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[r3]</a></td><td>A. Stathopoulos and J. R. McCombs, <em>Nearly optimal preconditioned
+methods for Hermitian eigenproblems under limited memory. Part II:
+Seeking many eigenvalues</em>, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
+2162-2188.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="r4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[r4]</a></td><td>J. R. McCombs and A. Stathopoulos, <em>Iterative Validation of
+Eigensolvers: A Scheme for Improving the Reliability of Hermitian
+Eigenvalue Solvers</em>, SIAM J. Sci. Comput., Vol. 28, No. 6, (2006),
+2337-2358.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="r5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[r5]</a></td><td>A. Stathopoulos, <em>Locking issues for finding a large number of eigenvectors
+of Hermitian matrices</em>, Tech Report: WM-CS-2005-03, July, 2005.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="r7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[r7]</a></td><td>L. Wu and A. Stathopoulos, <em>A Preconditioned Hybrid SVD Method for Computing
+Accurately Singular Triplets of Large Matrices</em>, SIAM J. Sci. Comput. 37-5(2015),
+pp. S365-S388.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="contact-information">
+<h2>Contact Information<a class="headerlink" href="#contact-information" title="Permalink to this headline">¶</a></h2>
+<p>For reporting bugs or questions about functionality contact <a class="reference external" href="http://www.cs.wm.edu/~andreas/">Andreas Stathopoulos</a> by
+email, <cite>andreas</cite> at <cite>cs.wm.edu</cite>. See further information in
+the webpage <a class="reference external" href="http://www.cs.wm.edu/~andreas/software">http://www.cs.wm.edu/~andreas/software</a> and on <a class="reference external" href="https://github.com/primme/primme">github</a>.</p>
+</div>
+<div class="section" id="directory-structure">
+<h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
+<p>The next directories and files should be available:</p>
+<ul>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">COPYING.txt</span></code>, license;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">Make_flags</span></code>,  flags to be used by makefiles to compile library and tests;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">Link_flags</span></code>,  flags needed in making and linking the test programs;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">include/</span></code>,    directory with headers files;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">src/</span></code>,        directory with the source code for <code class="file docutils literal notranslate"><span class="pre">libprimme</span></code>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="file docutils literal notranslate"><span class="pre">include/</span></code>,   common headers;</li>
+<li><code class="file docutils literal notranslate"><span class="pre">eigs/</span></code>,      eigenvalue interface and implementation;</li>
+<li><code class="file docutils literal notranslate"><span class="pre">svds/</span></code>,      singular value interface and implementation;</li>
+<li><code class="file docutils literal notranslate"><span class="pre">tools/</span></code>,     tools used to generated some headers;</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">Matlab/</span></code>,       MATLAB interface;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">Python/</span></code>,       Python interface;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">examples/</span></code>,     sample programs in C, C++ and F77, both sequential and parallel;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">tests/</span></code>,        drivers for testing purpose and test cases;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">lib/libprimme.a</span></code>,   the PRIMME library (to be made);</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">makefile</span></code>       main make file;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">readme.txt</span></code>     text version of the documentation;</p>
+</li>
+<li><p class="first"><code class="file docutils literal notranslate"><span class="pre">doc/</span></code>           directory with the HTML and PDF versions of the documentation.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="making-and-linking">
+<span id="making"></span><h2>Making and Linking<a class="headerlink" href="#making-and-linking" title="Permalink to this headline">¶</a></h2>
+<p><code class="file docutils literal notranslate"><span class="pre">Make_flags</span></code> has the flags and compilers used to make <code class="file docutils literal notranslate"><span class="pre">libprimme.a</span></code>:</p>
+<ul class="simple">
+<li><cite>CC</cite>, compiler program such as <code class="docutils literal notranslate"><span class="pre">gcc</span></code>, <code class="docutils literal notranslate"><span class="pre">clang</span></code> or <code class="docutils literal notranslate"><span class="pre">icc</span></code>.</li>
+<li><dl class="first docutils">
+<dt><cite>CFLAGS</cite>, compiler options such as <code class="docutils literal notranslate"><span class="pre">-g</span></code> or <code class="docutils literal notranslate"><span class="pre">-O3</span></code> and macro definitions</dt>
+<dd>like the ones described next.</dd>
+</dl>
+</li>
+</ul>
+<p>Compiler flags for the <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> libraries:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">-DF77UNDERSCORE</span></code>, if Fortran appends an underscore to function names
+(usually it does).</li>
+<li><code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLASINT_SIZE=64</span></code>, if the library integers are 64-bit integer (<code class="docutils literal notranslate"><span class="pre">kind=8</span></code>) type,
+aka ILP64 interface; usually integers are 32-bits even in 64-bit architectures (aka LP64 interface).</li>
+<li><code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLAS_SUFFIX=&lt;suffix&gt;</span></code>, set a suffix to BLAS/LAPACK function names; for instance,
+OpenBlas compiled with ILP64 may append <code class="docutils literal notranslate"><span class="pre">_64</span></code> to the function names.</li>
+</ul>
+<p>By default PRIMME sets the integer type for matrix dimensions and counters (<a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>)
+to 64 bits integer <code class="docutils literal notranslate"><span class="pre">int64_t</span></code>. This can be changed by setting the macro <code class="docutils literal notranslate"><span class="pre">PRIMME_INT_SIZE</span></code>
+to one of the following values:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">0</span></code>: use the regular <code class="docutils literal notranslate"><span class="pre">int</span></code> of your compiler.</li>
+<li><code class="docutils literal notranslate"><span class="pre">32</span></code>: use C99 <code class="docutils literal notranslate"><span class="pre">int32_t</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">64</span></code>: use C99 <code class="docutils literal notranslate"><span class="pre">int64_t</span></code>.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When <code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLASINT_SIZE=64</span></code> is set the code uses the type <code class="docutils literal notranslate"><span class="pre">int64_t</span></code>
+supported by the C99 standard. In case the compiler doesn't honor the
+standard, you can set the corresponding type name supported, for instance
+<code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLASINT_SIZE=__int64</span></code>.</p>
+</div>
+<p>After customizing <code class="file docutils literal notranslate"><span class="pre">Make_flags</span></code>, type this to generate <code class="file docutils literal notranslate"><span class="pre">libprimme.a</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make lib
+</pre></div>
+</div>
+<p>Making can be also done at the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make lib <span class="nv">CC</span><span class="o">=</span>clang <span class="nv">CFLAGS</span><span class="o">=</span><span class="s1">&#39;-O3&#39;</span>
+</pre></div>
+</div>
+<p><code class="file docutils literal notranslate"><span class="pre">Link_flags</span></code> has the flags for linking with external libraries and making the executables
+located in <code class="file docutils literal notranslate"><span class="pre">examples</span></code> and <code class="file docutils literal notranslate"><span class="pre">tests</span></code>:</p>
+<ul class="simple">
+<li><cite>LDFLAGS</cite>, linker flags such as <code class="docutils literal notranslate"><span class="pre">-framework</span> <span class="pre">Accelerate</span></code>.</li>
+<li><cite>LIBS</cite>, flags to link with libraries (<a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> are required), such as <code class="docutils literal notranslate"><span class="pre">-lprimme</span> <span class="pre">-llapack</span> <span class="pre">-lblas</span> <span class="pre">-lgfortran</span> <span class="pre">-lm</span></code>.</li>
+</ul>
+<p>After that, type this to compile and execute a simple test:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
+...
+Test passed!
+...
+Test passed!
+</pre></div>
+</div>
+<p>In case of linking problems check flags in <cite>LDFLAGS</cite> and <cite>LIBS</cite> and consider
+to add/remove <code class="docutils literal notranslate"><span class="pre">-DF77UNDERSCORE</span></code> from <cite>CFLAGS</cite>. If the execution fails consider
+to add/remove <code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLASINT_SIZE=64</span></code> from <cite>CFLAGS</cite>.</p>
+<p>Full description of actions that <cite>make</cite> can take:</p>
+<ul class="simple">
+<li><cite>make lib</cite>, builds the static library <code class="file docutils literal notranslate"><span class="pre">libprimme.a</span></code>.</li>
+<li><cite>make solib</cite>, builds the shared library <code class="file docutils literal notranslate"><span class="pre">libprimme.so</span></code>.</li>
+<li><cite>make install</cite>, installs header files and the static and dynamic libraries.</li>
+<li><cite>make uninstall</cite>, uninstalls header files and the static and dynamic libraries.</li>
+<li><cite>make matlab</cite>, builds <cite>libprimme.a</cite> compatible with MATLAB and the MATLAB module.</li>
+<li><cite>make octave</cite>, builds <cite>libprimme.a</cite> and the Octave module.</li>
+<li><cite>make python</cite>, builds <cite>libprimme.a</cite> and the Python module.</li>
+<li><cite>make python_install</cite>, install the Python module.</li>
+<li><cite>make R_install</cite>, builds and installs the R package.</li>
+<li><cite>make test</cite>, build and execute simple examples.</li>
+<li><cite>make clean</cite>, removes all <code class="file docutils literal notranslate"><span class="pre">*.o</span></code>, <code class="file docutils literal notranslate"><span class="pre">a.out</span></code>, and core files from <code class="file docutils literal notranslate"><span class="pre">src</span></code>.</li>
+</ul>
+<div class="section" id="considerations-using-an-ide">
+<h3>Considerations using an IDE<a class="headerlink" href="#considerations-using-an-ide" title="Permalink to this headline">¶</a></h3>
+<p>PRIMME can be built in other environments such as Anjuta, Eclipse, KDevelop, Qt Creator,
+Visual Studio and XCode. To build the PRIMME library do the following:</p>
+<ol class="arabic simple">
+<li>Create a new project and include the source files under the directory <code class="file docutils literal notranslate"><span class="pre">src</span></code>.</li>
+<li>Add the directories <code class="file docutils literal notranslate"><span class="pre">include</span></code> and <code class="file docutils literal notranslate"><span class="pre">src/include</span></code> as include directories.</li>
+</ol>
+<p>To build an example code using PRIMME make sure:</p>
+<ul class="simple">
+<li>to add a reference for PRIMME, <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> libraries;</li>
+<li>to add the directory <code class="file docutils literal notranslate"><span class="pre">include</span></code> as an include directory.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="tested-systems">
+<h2>Tested Systems<a class="headerlink" href="#tested-systems" title="Permalink to this headline">¶</a></h2>
+<p>PRIMME is primary developed with GNU gcc, g++ and gfortran (versions 4.8 and later).
+Many users have reported builds on several other platforms/compilers:</p>
+<ul class="simple">
+<li>SUSE 13.1 &amp; 13.2</li>
+<li>CentOS 6.6</li>
+<li>Ubuntu 18.04</li>
+<li>MacOS X 10.9 &amp; 10.10</li>
+<li>Cygwin &amp; MinGW</li>
+<li>Cray XC30</li>
+<li>FreeBSD 11.2</li>
+</ul>
+</div>
+<div class="section" id="main-contributors">
+<h2>Main Contributors<a class="headerlink" href="#main-contributors" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>James R. McCombs</li>
+<li>Eloy Romero Alcalde</li>
+<li>Andreas Stathopoulos</li>
+<li>Lingfei Wu</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2018, College of William & Mary.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/intro.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

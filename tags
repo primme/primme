@@ -1,0 +1,4728 @@
+
+src/eigs/auxiliary_eigs.c,158
+void Num_compute_residual_Sprimme(61,2768
+int Num_update_VWXR_Sprimme(115,4819
+int applyPreconditioner_Sprimme(243,9638
+int convTestFun_Sprimme(296,11355
+
+src/eigs/convergence.c,89
+int check_convergence_Sprimme(82,3940
+static int check_practical_convergence(242,10810
+
+src/eigs/correction.c,205
+int solve_correction_Sprimme(149,6775
+static REAL computeRobustShift(506,23673
+static void mergeSort(619,27931
+static int Olsen_preconditioner_block(700,31121
+static int setup_JD_projectors(839,37494
+
+src/eigs/factorize.c,65
+int UDUDecompose_Sprimme(73,3248
+int UDUSolve_Sprimme(149,5455
+
+src/eigs/globalsum.c,31
+int globalSum_Sprimme(41,2119
+
+src/eigs/init.c,73
+int init_basis_Sprimme(127,5319
+static int init_block_krylov(273,10559
+
+src/eigs/inner_solve.c,280
+int inner_solve_Sprimme(155,6440
+static int apply_projected_preconditioner(580,23323
+static int apply_skew_projector(627,25009
+static int apply_projected_matrix(717,28385
+static int apply_projector(752,29562
+static int dist_dot(790,30769
+static int dist_dot_real(823,31899
+
+src/eigs/main_iter.c,565
+int main_iter_Sprimme(136,6105
+      primme_orth_implicit_I,223,12303
+      primme_orth_explicit_I 224,12389
+   #  define TO_REAL(284,14978
+   #  define TO_REAL(286,15013
+   #undef TO_REAL295,15467
+int prepare_candidates_Sprimme(1160,56723
+static int verify_norms(1408,67651
+static int switch_from_JDQMR(1492,71319
+static int switch_from_GDpk(1604,76224
+static int update_statistics(1747,82430
+static double ratio_JDQMR_GDpk(1907,89982
+static void update_slowdown(1926,90882
+static void initializeModel(1959,92239
+static void displayModel(2000,93552
+
+src/eigs/ortho.c,383
+static int Bortho_gen_Sprimme(117,5589
+int ortho_Sprimme(381,15185
+struct local_matvec_ctx 392,15617
+struct local_matvec_ctx { SCALAR *B;B392,15617
+struct local_matvec_ctx { SCALAR *B; int n,392,15617
+struct local_matvec_ctx { SCALAR *B; int n, ldB;392,15617
+static int local_matvec(394,15670
+int Bortho_local_Sprimme(404,15970
+int ortho_single_iteration_Sprimme(438,17421
+
+src/eigs/primme.c,290
+#define ALLOCATE_WORKSPACE_FAILURE 71,3429
+#define MALLOC_FAILURE 72,3467
+#define MAIN_ITER_FAILURE 73,3505
+int Sprimme(123,5738
+static int allocate_workspace(264,11381
+static int check_input(484,22829
+static void convTestFunAbsolute(605,27720
+static void default_monitor(649,29640
+
+src/eigs/primme_f77.c,255
+void AS_FORTRAN(48,2653
+void AS_FORTRAN(63,3199
+void AS_FORTRAN(73,3591
+void AS_FORTRAN(83,3920
+void AS_FORTRAN(94,4430
+void AS_FORTRAN(118,5489
+void AS_FORTRAN(150,6957
+void AS_FORTRAN(161,7527
+void AS_FORTRAN(186,8605
+void AS_FORTRAN(191,8785
+
+src/eigs/primme_interface.c,2020
+void primme_initialize(61,2957
+void primme_free(170,7616
+int primme_set_method(239,10785
+void primme_set_defaults(466,20538
+void primme_display_params(552,24507
+void primme_display_params_prefix(575,25384
+#define PRINT(580,25515
+#define PRINTIF(581,25598
+#define PRINTParams(582,25692
+#define PRINTParamsIF(584,25841
+#define PRINT_PRIMME_INT(586,25998
+#undef PRINT670,29025
+#undef PRINTIF671,29038
+#undef PRINTParams672,29053
+#undef PRINTParamsIF673,29072
+int primme_get_member(694,29625
+   union value_t 698,29729
+      PRIMME_INT int_v;699,29748
+      void (*matFunc_v)matFunc_v700,29772
+      void *ptr_v;ptr_v701,29871
+      void (*globalSumRealFunc_v)globalSumRealFunc_v702,29890
+      void (*convTestFun_v)convTestFun_v703,29975
+      primme_target target_v;704,30060
+      double double_v;705,30090
+      FILE *file_v;file_v706,30113
+      primme_init init_v;707,30133
+      primme_projection projection_v;708,30159
+      primme_restartscheme restartscheme_v;709,30197
+      primme_convergencetest convergencetest_v;710,30241
+      void (*monitorFun_v)monitorFun_v711,30289
+int primme_set_member(948,38207
+   union value_t 952,38311
+      PRIMME_INT *int_v;int_v953,38330
+      void (*matFunc_v)matFunc_v954,38355
+      void *ptr_v;ptr_v955,38454
+      void (*globalSumRealFunc_v)globalSumRealFunc_v956,38473
+      void (*convTestFun_v)convTestFun_v957,38558
+      primme_target *target_v;target_v958,38643
+      double *double_v;double_v959,38674
+      FILE *file_v;file_v960,38698
+      primme_init *init_v;init_v961,38718
+      primme_projection *projection_v;projection_v962,38745
+      primme_restartscheme *restartscheme_v;restartscheme_v963,38784
+      primme_convergencetest *convergencetest_v;convergencetest_v964,38829
+      void (*monitorFun_v)monitorFun_v965,38878
+int primme_member_info(1231,48423
+#define IF_IS(1244,48854
+#undef IF_IS1321,53195
+int primme_constant_info(1451,56939
+#define IF_IS(1453,57003
+#undef IF_IS1505,58505
+
+src/eigs/restart.c,618
+int restart_Sprimme(277,12127
+static int restart_soft_locking_Sprimme(680,30283
+static int restart_locking_Sprimme(1038,45052
+int Num_reset_update_VWXR_Sprimme(1441,63448
+static int restart_projection_Sprimme(1692,72292
+static int restart_RR(1867,80096
+static int restart_RR_explicit(2062,88354
+static int restart_refined(2182,93052
+static int restart_harmonic(2588,110726
+static int dtr_Sprimme(2701,115073
+static int ortho_coefficient_vectors_Sprimme(2837,120258
+int retain_previous_coefficients_Sprimme(2974,125654
+static void insertionSort(3080,129636
+static int compute_residual_columns(3217,134769
+
+src/eigs/solve_projection.c,236
+int solve_H_Sprimme(103,4825
+static int solve_H_RR_Sprimme(197,8356
+static int solve_H_Harm_Sprimme(406,16272
+static int solve_H_Ref_Sprimme(511,19916
+static int solve_H_brcast_Sprimme(632,24630
+int prepare_vecs_Sprimme(815,31154
+
+src/eigs/update_W.c,65
+int matrixMatvec_Sprimme(64,2967
+int update_Q_Sprimme(121,4878
+
+src/eigs/update_projection.c,39
+int update_projection_Sprimme(71,3422
+
+src/linalg/auxiliary.c,425
+void Num_copy_matrix_Sprimme(62,2785
+void Num_copy_matrix_columns_Sprimme(121,4612
+void Num_zero_matrix_Sprimme(146,5361
+void Num_copy_trimatrix_Sprimme(179,6410
+void Num_copy_trimatrix_compact_Sprimme(250,8722
+void Num_copy_compact_trimatrix_Sprimme(281,9657
+void permute_vecs_Sprimme(312,10666
+void permute_vecs_iprimme(387,13180
+SCALAR* Num_compact_vecs_Sprimme(484,16419
+int compute_submatrix_Sprimme(530,17647
+
+src/linalg/blaslapack.c,590
+void Num_copy_Sprimme(51,2591
+void Num_gemm_Sprimme(71,3190
+void Num_hemm_Sprimme(118,4534
+void Num_trmm_Sprimme(149,5524
+void Num_gemv_Sprimme(180,6584
+void Num_hemv_Sprimme(234,8026
+void Num_axpy_Sprimme(262,8829
+SCALAR Num_dot_Sprimme(283,9423
+void Num_larnv_Sprimme(326,10710
+void Num_scal_Sprimme(367,12028
+void Num_swap_Sprimme(385,12583
+void Num_heev_Sprimme(406,13235
+void Num_hegv_Sprimme(559,17185
+void Num_gesvd_Sprimme(705,20969
+void Num_gesvd_Sprimme(745,22156
+void Num_hetrf_Sprimme(791,23642
+void Num_hetrs_Sprimme(876,25944
+void Num_trsm_Sprimme(925,27362
+
+src/linalg/wtime.c,158
+#define   RUSAGE_SELF 45,2212
+double primme_wTimer(52,2399
+double primme_get_wtime(96,3609
+double primme_get_time(104,3806
+double primme_wTimer(119,4215
+
+src/svds/primme_svds.c,852
+#define ALLOCATE_WORKSPACE_FAILURE 48,2324
+#define MALLOC_FAILURE 49,2362
+#define UPDATE_STATS(95,5365
+int Sprimme_svds(150,8208
+static int comp_double(274,12721
+static SCALAR* copy_last_params_from_svds(279,12826
+static int allocate_workspace_svds(579,24956
+int copy_last_params_to_svds(647,27992
+static int primme_svds_check_input(826,34974
+static void matrixMatvecSVDS(882,37317
+static void applyPreconditionerSVDS(930,39270
+static void Num_scalInv_Smatrix(941,39735
+static int globalSum_Rprimme_svds(961,40308
+static void compute_resNorm(1000,41561
+static void default_convTestFun(1087,44639
+static void convTestFunATA(1134,46618
+static void convTestFunAug(1191,48646
+static void default_monitor(1257,51399
+static void monitor_single_stage(1357,56039
+static void monitor_stage1(1455,60115
+static void monitor_stage2(1556,64171
+
+src/svds/primme_svds_f77.c,200
+void AS_FORTRAN(41,2174
+void AS_FORTRAN(50,2449
+void AS_FORTRAN(56,2639
+void AS_FORTRAN(63,2945
+void AS_FORTRAN(67,3074
+void AS_FORTRAN(73,3229
+void AS_FORTRAN(79,3441
+void AS_FORTRAN(85,3657
+
+src/svds/primme_svds_interface.c,1665
+void primme_svds_initialize(63,3001
+int primme_svds_set_method(166,7458
+void primme_svds_set_defaults(215,9303
+static void copy_params_from_svds(243,10398
+void primme_svds_display_params(363,14671
+#define PRINT(368,14795
+#define PRINTIF(369,14884
+#define PRINTParams(370,14984
+#define PRINTParamsIF(372,15139
+#define PRINT_PRIMME_INT(374,15302
+void primme_svds_free(463,18527
+static void globalSumRealSvds(477,19006
+int primme_svds_get_member(502,19844
+   union value_t 506,19968
+      PRIMME_INT int_v;507,19987
+      void (*matFunc_v)matFunc_v508,20011
+      void *ptr_v;ptr_v509,20116
+      void (*globalSumRealFunc_v)globalSumRealFunc_v510,20135
+      primme_svds_target target_v;511,20224
+      primme_svds_operator operator_v;512,20259
+      double double_v;513,20298
+      FILE *file_v;file_v514,20321
+      void (*convTestFun_v)convTestFun_v515,20341
+      void (*monitorFun_v)monitorFun_v518,20515
+int primme_svds_set_member(711,26936
+   union value_t 714,27059
+      PRIMME_INT *int_v;int_v715,27078
+      void (*matFunc_v)matFunc_v716,27103
+      void *ptr_v;ptr_v717,27208
+      void (*globalSumRealFunc_v)globalSumRealFunc_v718,27227
+      primme_svds_target *target_v;target_v719,27316
+      primme_svds_operator *operator_v;operator_v720,27352
+      double *double_v;double_v721,27392
+      FILE *file_v;file_v722,27416
+      void (*convTestFun_v)convTestFun_v723,27436
+      void (*monitorFun_v)monitorFun_v726,27610
+int primme_svds_member_info(928,34534
+#define IF_IS(941,34985
+#undef IF_IS1000,36403
+int primme_svds_constant_info(1109,39446
+#define IF_IS(1111,39515
+#undef IF_IS1129,40056
+
+include/primme.h,744
+#define PRIMME_H37,2076
+#define PRIMME_VERSION_MAJOR 41,2116
+#define PRIMME_VERSION_MINOR 42,2152
+#  define PRIMME_COMPLEX_FLOAT 52,2635
+#  define PRIMME_COMPLEX_DOUBLE 53,2686
+#  define PRIMME_COMPLEX_FLOAT 56,2768
+#  define PRIMME_COMPLEX_DOUBLE 57,2813
+#  define __STDC_FORMAT_MACROS62,2990
+#  define PRIMME_INT 68,3130
+#  define PRIMME_INT_P 69,3159
+#  define PRIMME_INT_MAX 70,3189
+#     define PRId64 72,3241
+#  define PRIMME_INT 76,3324
+#  define PRIMME_INT_P 77,3349
+#  define PRIMME_INT_MAX 78,3376
+#  define PRIMME_INT 82,3483
+#  define PRIMME_INT_P 83,3512
+#  define PRIMME_INT_MAX 84,3542
+#     define PRId64 86,3594
+#  define PRIMME_INT 89,3633
+#  define PRIMME_INT_P 90,3670
+#  define PRIMME_INT_MAX 91,3697
+
+include/primme_eigs.h,7508
+#define PRIMME_EIGS_H37,2091
+   primme_smallest,48,2220
+   primme_largest,49,2274
+   primme_closest_geq,50,2329
+   primme_closest_leq,51,2405
+   primme_closest_abs,52,2479
+   primme_largest_abs 53,2544
+} primme_target;54,2610
+   primme_proj_default,58,2683
+   primme_proj_RR,59,2707
+   primme_proj_harmonic,60,2755
+   primme_proj_refined 61,2812
+} primme_projection;62,2872
+   primme_init_default,65,2967
+   primme_init_krylov,66,2991
+   primme_init_random,67,3082
+   primme_init_user 68,3134
+} primme_init;69,3209
+   primme_thick,73,3241
+   primme_dtr74,3258
+} primme_restartscheme;75,3272
+   primme_full_LTolerance,79,3313
+   primme_decreasing_LTolerance,80,3340
+   primme_adaptive_ETolerance,81,3373
+   primme_adaptive82,3404
+} primme_convergencetest;83,3423
+   primme_event_outer_iteration,88,3535
+   primme_event_inner_iteration,89,3616
+   primme_event_restart,90,3697
+   primme_event_reset,91,3778
+   primme_event_converged,92,3859
+   primme_event_locked 93,3940
+} primme_event;94,4021
+typedef struct primme_stats 96,4038
+   PRIMME_INT numOuterIterations;97,4068
+   PRIMME_INT numRestarts;98,4102
+   PRIMME_INT numMatvecs;99,4129
+   PRIMME_INT numPreconds;100,4155
+   PRIMME_INT numGlobalSum;101,4182
+   PRIMME_INT volumeGlobalSum;102,4251
+   double numOrthoInnerProds;103,4336
+   double elapsedTime;104,4414
+   double timeMatvec;105,4438
+   double timePrecond;106,4508
+   double timeOrtho;107,4585
+   double timeGlobalSum;108,4649
+   double estimateMinEVal;109,4721
+   double estimateMaxEVal;110,4792
+   double estimateLargestSVal;111,4864
+   double maxConvTol;112,4961
+   double estimateResidualError;113,5047
+} primme_stats;114,5118
+typedef struct JD_projectors 116,5135
+   int LeftQ;117,5166
+   int LeftX;118,5180
+   int RightQ;119,5194
+   int RightX;120,5209
+   int SkewQ;121,5224
+   int SkewX;122,5238
+} JD_projectors;123,5252
+typedef struct projection_params 125,5270
+   primme_projection projection;126,5305
+} projection_params;127,5338
+typedef struct correction_params 129,5360
+   int precondition;130,5395
+   int robustShifts;131,5416
+   int maxInnerIterations;132,5437
+   struct JD_projectors projectors;133,5464
+   primme_convergencetest convTest;134,5500
+   double relTolBase;135,5536
+} correction_params;136,5558
+typedef struct restarting_params 139,5581
+   primme_restartscheme scheme;140,5616
+   int maxPrevRetain;141,5648
+} restarting_params;142,5670
+typedef struct primme_params 146,5772
+   PRIMME_INT n;149,5870
+   void (*matrixMatvec)matrixMatvec150,5887
+   void (*applyPreconditioner)applyPreconditioner155,6105
+   void (*massMatrixMatvec)massMatrixMatvec160,6343
+   int numProcs;165,6570
+   int procID;166,6587
+   PRIMME_INT nLocal;167,6602
+   void *commInfo;commInfo168,6624
+   void (*globalSumReal)globalSumReal169,6643
+   int numEvals;174,6849
+   primme_target target;175,6876
+   int numTargetShifts;176,6902
+   double *targetShifts;targetShifts177,6981
+   int dynamicMethodSwitch;180,7137
+   int locking;181,7165
+   int initSize;182,7181
+   int numOrthoConst;183,7198
+   int maxBasisSize;184,7220
+   int minRestartSize;185,7241
+   int maxBlockSize;186,7264
+   PRIMME_INT maxMatvecs;187,7285
+   PRIMME_INT maxOuterIterations;188,7311
+   int intWorkSize;189,7345
+   size_t realWorkSize;190,7365
+   PRIMME_INT iseed[iseed191,7389
+   int *intWork;intWork192,7413
+   void *realWork;realWork193,7430
+   double aNorm;194,7449
+   double eps;195,7466
+   int printLevel;197,7482
+   FILE *outputFile;outputFile198,7501
+   void *matrix;matrix200,7523
+   void *preconditioner;preconditioner201,7540
+   double *ShiftsForPreconditioner;ShiftsForPreconditioner202,7565
+   primme_init initBasisMode;203,7601
+   PRIMME_INT ldevecs;204,7631
+   PRIMME_INT ldOPs;205,7654
+   struct projection_params projectionParams;207,7676
+   struct restarting_params restartingParams;208,7723
+   struct correction_params correctionParams;209,7769
+   struct primme_stats stats;210,7815
+   void (*convTestFun)convTestFun212,7846
+   void *convtest;convtest214,7975
+   void (*monitorFun)monitorFun215,7994
+   void *monitor;monitor220,8320
+} primme_params;221,8338
+   PRIMME_DEFAULT_METHOD,225,8451
+   PRIMME_DYNAMIC,226,8477
+   PRIMME_DEFAULT_MIN_TIME,227,8496
+   PRIMME_DEFAULT_MIN_MATVECS,228,8524
+   PRIMME_Arnoldi,229,8555
+   PRIMME_GD,230,8574
+   PRIMME_GD_plusK,231,8588
+   PRIMME_GD_Olsen_plusK,232,8608
+   PRIMME_JD_Olsen_plusK,233,8634
+   PRIMME_RQI,234,8660
+   PRIMME_JDQR,235,8675
+   PRIMME_JDQMR,236,8691
+   PRIMME_JDQMR_ETol,237,8708
+   PRIMME_STEEPEST_DESCENT,238,8730
+   PRIMME_LOBPCG_OrthoBasis,239,8758
+   PRIMME_LOBPCG_OrthoBasis_Window240,8787
+} primme_preset_method;241,8822
+   primme_int,244,8862
+   primme_double,245,8877
+   primme_pointer246,8895
+} primme_type;247,8913
+   PRIMME_n 250,8944
+   PRIMME_matrixMatvec 251,8962
+   PRIMME_applyPreconditioner 252,8991
+   PRIMME_numProcs 253,9027
+   PRIMME_procID 254,9052
+   PRIMME_commInfo 255,9075
+   PRIMME_nLocal 256,9100
+   PRIMME_globalSumReal 257,9123
+   PRIMME_numEvals 258,9153
+   PRIMME_target 259,9178
+   PRIMME_numTargetShifts 260,9201
+   PRIMME_targetShifts 261,9234
+   PRIMME_locking 262,9264
+   PRIMME_initSize 263,9289
+   PRIMME_numOrthoConst 264,9315
+   PRIMME_maxBasisSize 265,9346
+   PRIMME_minRestartSize 266,9376
+   PRIMME_maxBlockSize 267,9408
+   PRIMME_maxMatvecs 268,9438
+   PRIMME_maxOuterIterations 269,9466
+   PRIMME_intWorkSize 270,9502
+   PRIMME_realWorkSize 271,9531
+   PRIMME_iseed 272,9561
+   PRIMME_intWork 273,9584
+   PRIMME_realWork 274,9609
+   PRIMME_aNorm 275,9635
+   PRIMME_eps 276,9658
+   PRIMME_printLevel 277,9679
+   PRIMME_outputFile 278,9707
+   PRIMME_matrix 279,9735
+   PRIMME_preconditioner 280,9759
+   PRIMME_initBasisMode 281,9791
+   PRIMME_projectionParams_projection 282,9824
+   PRIMME_restartingParams_scheme 283,9870
+   PRIMME_restartingParams_maxPrevRetain 284,9911
+   PRIMME_correctionParams_precondition 285,9959
+   PRIMME_correctionParams_robustShifts 286,10006
+   PRIMME_correctionParams_maxInnerIterations 287,10053
+   PRIMME_correctionParams_projectors_LeftQ 288,10106
+   PRIMME_correctionParams_projectors_LeftX 289,10157
+   PRIMME_correctionParams_projectors_RightQ 290,10208
+   PRIMME_correctionParams_projectors_RightX 291,10260
+   PRIMME_correctionParams_projectors_SkewQ 292,10312
+   PRIMME_correctionParams_projectors_SkewX 293,10363
+   PRIMME_correctionParams_convTest 294,10414
+   PRIMME_correctionParams_relTolBase 295,10457
+   PRIMME_stats_numOuterIterations 296,10502
+   PRIMME_stats_numRestarts 297,10544
+   PRIMME_stats_numMatvecs 298,10579
+   PRIMME_stats_numPreconds 299,10613
+   PRIMME_stats_numGlobalSum 300,10648
+   PRIMME_stats_volumeGlobalSum 301,10685
+   PRIMME_stats_numOrthoInnerProds 302,10725
+   PRIMME_stats_elapsedTime 303,10768
+   PRIMME_stats_timeMatvec 304,10803
+   PRIMME_stats_timePrecond 305,10839
+   PRIMME_stats_timeOrtho 306,10876
+   PRIMME_stats_timeGlobalSum 307,10911
+   PRIMME_stats_estimateMinEVal 308,10950
+   PRIMME_stats_estimateMaxEVal 309,10990
+   PRIMME_stats_estimateLargestSVal 310,11030
+   PRIMME_stats_maxConvTol 311,11074
+   PRIMME_dynamicMethodSwitch 312,11109
+   PRIMME_massMatrixMatvec 313,11145
+   PRIMME_convTestFun 314,11179
+   PRIMME_convtest 315,11208
+   PRIMME_ldevecs 316,11235
+   PRIMME_ldOPs 317,11260
+   PRIMME_monitorFun 318,11283
+   PRIMME_monitor 319,11310
+} primme_params_label;320,11333
+
+include/primme_eigs_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+include/primme_f77.h,737
+C  Redistribution and use in source and binary forms,5,156
+C  modification,6,226
+C        notice,8,377
+C        notice,10,523
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,987
+C  DIRECT,20,1223
+C  DIRECT, INDIRECT,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1223
+C  LOSS OF USE, DATA, OR PROFITS;22,1381
+C  ON ANY THEORY OF LIABILITY,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1460
+C 24,1538
+
+include/primme_svds.h,4456
+#define PRIMME_SVDS_H38,2078
+   primme_svds_largest,47,2182
+   primme_svds_smallest,48,2206
+   primme_svds_closest_abs49,2231
+} primme_svds_target;50,2258
+   primme_svds_default,53,2296
+   primme_svds_hybrid,54,2320
+   primme_svds_normalequations,55,2343
+   primme_svds_augmented56,2394
+} primme_svds_preset_method;57,2419
+   primme_svds_op_none,60,2464
+   primme_svds_op_AtA,61,2488
+   primme_svds_op_AAt,62,2511
+   primme_svds_op_augmented63,2534
+} primme_svds_operator;64,2562
+typedef struct primme_svds_stats 66,2587
+   PRIMME_INT numOuterIterations;67,2622
+   PRIMME_INT numRestarts;68,2656
+   PRIMME_INT numMatvecs;69,2683
+   PRIMME_INT numPreconds;70,2709
+   PRIMME_INT numGlobalSum;71,2736
+   PRIMME_INT volumeGlobalSum;72,2805
+   double numOrthoInnerProds;73,2890
+   double elapsedTime;74,2968
+   double timeMatvec;75,2992
+   double timePrecond;76,3062
+   double timeOrtho;77,3139
+   double timeGlobalSum;78,3203
+} primme_svds_stats;79,3275
+typedef struct primme_svds_params 81,3297
+   primme_params primme;83,3394
+   primme_params primmeStage2;85,3526
+   PRIMME_INT m;88,3654
+   PRIMME_INT n;89,3693
+   void (*matrixMatvec)matrixMatvec92,3829
+   void (*applyPreconditioner)applyPreconditioner95,4004
+   int numProcs;100,4258
+   int procID;101,4275
+   PRIMME_INT mLocal;102,4290
+   PRIMME_INT nLocal;103,4312
+   void *commInfo;commInfo104,4334
+   void (*globalSumReal)globalSumReal105,4353
+   int numSvals;110,4574
+   primme_svds_target target;111,4591
+   int numTargetShifts;112,4621
+   double *targetShifts;targetShifts113,4701
+   primme_svds_operator method;114,4781
+   primme_svds_operator methodStage2;115,4884
+   int intWorkSize;118,5065
+   size_t realWorkSize;119,5085
+   int *intWork;intWork120,5109
+   void *realWork;realWork121,5126
+   void *matrix;matrix124,5225
+   void *preconditioner;preconditioner125,5242
+   int locking;128,5344
+   int numOrthoConst;129,5360
+   double aNorm;130,5382
+   double eps;131,5399
+   int precondition;133,5415
+   int initSize;134,5436
+   int maxBasisSize;135,5453
+   int maxBlockSize;136,5474
+   PRIMME_INT maxMatvecs;137,5495
+   PRIMME_INT iseed[iseed138,5521
+   int printLevel;139,5545
+   FILE *outputFile;outputFile140,5564
+   struct primme_svds_stats stats;141,5585
+   void (*convTestFun)convTestFun143,5621
+   void *convtest;convtest146,5784
+   void (*monitorFun)monitorFun147,5803
+   void *monitor;monitor152,6151
+} primme_svds_params;153,6169
+   PRIMME_SVDS_primme 156,6207
+   PRIMME_SVDS_primmeStage2 157,6234
+   PRIMME_SVDS_m 158,6267
+   PRIMME_SVDS_n 159,6289
+   PRIMME_SVDS_matrixMatvec 160,6311
+   PRIMME_SVDS_applyPreconditioner 161,6344
+   PRIMME_SVDS_numProcs 162,6384
+   PRIMME_SVDS_procID 163,6413
+   PRIMME_SVDS_mLocal 164,6440
+   PRIMME_SVDS_nLocal 165,6467
+   PRIMME_SVDS_commInfo 166,6494
+   PRIMME_SVDS_globalSumReal 167,6524
+   PRIMME_SVDS_numSvals 168,6559
+   PRIMME_SVDS_target 169,6589
+   PRIMME_SVDS_numTargetShifts 170,6617
+   PRIMME_SVDS_targetShifts 171,6654
+   PRIMME_SVDS_method 172,6688
+   PRIMME_SVDS_methodStage2 173,6716
+   PRIMME_SVDS_intWorkSize 174,6750
+   PRIMME_SVDS_realWorkSize 175,6783
+   PRIMME_SVDS_intWork 176,6817
+   PRIMME_SVDS_realWork 177,6846
+   PRIMME_SVDS_matrix 178,6876
+   PRIMME_SVDS_preconditioner 179,6904
+   PRIMME_SVDS_locking 180,6940
+   PRIMME_SVDS_numOrthoConst 181,6969
+   PRIMME_SVDS_aNorm 182,7004
+   PRIMME_SVDS_eps 183,7031
+   PRIMME_SVDS_precondition 184,7056
+   PRIMME_SVDS_initSize 185,7090
+   PRIMME_SVDS_maxBasisSize 186,7120
+   PRIMME_SVDS_maxBlockSize 187,7154
+   PRIMME_SVDS_maxMatvecs 188,7188
+   PRIMME_SVDS_iseed 189,7220
+   PRIMME_SVDS_printLevel 190,7247
+   PRIMME_SVDS_outputFile 191,7279
+   PRIMME_SVDS_stats_numOuterIterations 192,7311
+   PRIMME_SVDS_stats_numRestarts 193,7357
+   PRIMME_SVDS_stats_numMatvecs 194,7396
+   PRIMME_SVDS_stats_numPreconds 195,7434
+   PRIMME_SVDS_stats_numGlobalSum 196,7473
+   PRIMME_SVDS_stats_volumeGlobalSum 197,7514
+   PRIMME_SVDS_stats_numOrthoInnerProds 198,7558
+   PRIMME_SVDS_stats_elapsedTime 199,7605
+   PRIMME_SVDS_stats_timeMatvec 200,7644
+   PRIMME_SVDS_stats_timePrecond 201,7683
+   PRIMME_SVDS_stats_timeOrtho 202,7723
+   PRIMME_SVDS_stats_timeGlobalSum 203,7761
+   PRIMME_SVDS_convTestFun 204,7803
+   PRIMME_SVDS_convtest 205,7837
+   PRIMME_SVDS_monitorFun 206,7868
+   PRIMME_SVDS_monitor 207,7900
+} primme_svds_params_label;208,7928
+
+include/primme_svds_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+src/include/template.h,2022
+#define TEMPLATE_H37,2074
+#  define SCALAR_PRE 73,3459
+#  define REAL_PRE 74,3482
+#  define SCALAR_SUF 75,3503
+#  define REAL_SUF 76,3532
+#  define SCALAR 77,3559
+#  define REAL 78,3583
+#  define MACHINE_EPSILON 79,3605
+#  define SCALAR_PRE 81,3676
+#  define REAL_PRE 82,3699
+#  define SCALAR_SUF 83,3720
+#  define REAL_SUF 84,3749
+#  define USE_COMPLEX85,3776
+#  define SCALAR 86,3798
+#  define REAL 87,3837
+#  define MACHINE_EPSILON 88,3859
+#  define SCALAR_PRE 90,3922
+#  define REAL_PRE 91,3945
+#  define SCALAR_SUF 92,3966
+#  define REAL_SUF 93,3995
+#  define SCALAR 94,4022
+#  define REAL 95,4045
+#  define MACHINE_EPSILON 96,4066
+#  define SCALAR_PRE 98,4136
+#  define REAL_PRE 99,4159
+#  define SCALAR_SUF 100,4180
+#  define REAL_SUF 101,4209
+#  define USE_COMPLEX102,4236
+#  define SCALAR 103,4258
+#  define REAL 104,4296
+#  define MACHINE_EPSILON 105,4317
+#     define REAL_PART(118,4944
+#     define ABS(119,4981
+#     define CONJ(120,5011
+#     define REAL_PART(122,5050
+#     define ABS(123,5091
+#     define CONJ(124,5125
+#  define REAL_PART(127,5176
+#  define ABS(128,5203
+#  define CONJ(129,5230
+#   undef I134,5335
+#  undef pow145,5619
+#  undef exp148,5650
+#  undef log151,5681
+#  define ISFINITE 155,5722
+#  define ISFINITE 157,5756
+#     define TEMPLATE_PLEASE 172,6569
+#     define TEMPLATE_PLEASE 175,6698
+#  undef PRIMME_COMPLEX_FLOAT180,6940
+#  undef PRIMME_COMPLEX_DOUBLE181,6970
+#  undef PRIMME_INT182,7001
+#  define TEMPLATE_PLEASE184,7027
+#define CHKERR(215,8419
+#define CHKERRNOABORT(238,9239
+#define CHKERRM(267,10284
+#define CHKERRNOABORTM(299,11462
+#define CHKERRS(325,12410
+#define CHKERRMS(355,13495
+#define MALLOC_PRIMME(394,14782
+#define WRKSP_MALLOC_PRIMME(422,15826
+#define ALIGN_BY_SIZE(435,16502
+#define ALIGN(437,16590
+#define CONCAT(445,16932
+#define CONCATX(446,16967
+#define TO_INT(448,16997
+#define FORTRAN_FUNCTION(451,17069
+#define FORTRAN_FUNCTION(453,17115
+#  define max(457,17165
+#  define min(460,17228
+
+src/include/primme_interface.h,60
+#define PRIMME_INTERFACE_H37,2110
+#define Sprimme 41,2264
+
+src/include/numerical.h,0
+
+src/eigs/auxiliary_eigs.c,158
+void Num_compute_residual_Rprimme(61,2768
+int Num_update_VWXR_Rprimme(115,4819
+int applyPreconditioner_Rprimme(243,9638
+int convTestFun_Rprimme(296,11355
+
+src/eigs/convergence.c,89
+int check_convergence_Rprimme(82,3940
+static int check_practical_convergence(242,10810
+
+src/eigs/correction.c,205
+int solve_correction_Rprimme(149,6775
+static REAL computeRobustShift(506,23673
+static void mergeSort(619,27931
+static int Olsen_preconditioner_block(700,31121
+static int setup_JD_projectors(839,37494
+
+src/eigs/factorize.c,65
+int UDUDecompose_Rprimme(73,3248
+int UDUSolve_Rprimme(149,5455
+
+src/eigs/globalsum.c,31
+int globalSum_Rprimme(41,2119
+
+src/eigs/init.c,73
+int init_basis_Rprimme(127,5319
+static int init_block_krylov(273,10559
+
+src/eigs/inner_solve.c,280
+int inner_solve_Rprimme(155,6440
+static int apply_projected_preconditioner(580,23323
+static int apply_skew_projector(627,25009
+static int apply_projected_matrix(717,28385
+static int apply_projector(752,29562
+static int dist_dot(790,30769
+static int dist_dot_real(823,31899
+
+src/eigs/main_iter.c,565
+int main_iter_Rprimme(136,6105
+      primme_orth_implicit_I,223,12303
+      primme_orth_explicit_I 224,12389
+   #  define TO_REAL(284,14978
+   #  define TO_REAL(286,15013
+   #undef TO_REAL295,15467
+int prepare_candidates_Rprimme(1160,56723
+static int verify_norms(1408,67651
+static int switch_from_JDQMR(1492,71319
+static int switch_from_GDpk(1604,76224
+static int update_statistics(1747,82430
+static double ratio_JDQMR_GDpk(1907,89982
+static void update_slowdown(1926,90882
+static void initializeModel(1959,92239
+static void displayModel(2000,93552
+
+src/eigs/ortho.c,383
+static int Bortho_gen_Rprimme(117,5589
+int ortho_Rprimme(381,15185
+struct local_matvec_ctx 392,15617
+struct local_matvec_ctx { SCALAR *B;B392,15617
+struct local_matvec_ctx { SCALAR *B; int n,392,15617
+struct local_matvec_ctx { SCALAR *B; int n, ldB;392,15617
+static int local_matvec(394,15670
+int Bortho_local_Rprimme(404,15970
+int ortho_single_iteration_Rprimme(438,17421
+
+src/eigs/primme.c,290
+#define ALLOCATE_WORKSPACE_FAILURE 71,3429
+#define MALLOC_FAILURE 72,3467
+#define MAIN_ITER_FAILURE 73,3505
+int Rprimme(123,5738
+static int allocate_workspace(264,11381
+static int check_input(484,22829
+static void convTestFunAbsolute(605,27720
+static void default_monitor(649,29640
+
+src/eigs/primme_f77.c,255
+void AS_FORTRAN(48,2653
+void AS_FORTRAN(63,3199
+void AS_FORTRAN(73,3591
+void AS_FORTRAN(83,3920
+void AS_FORTRAN(94,4430
+void AS_FORTRAN(118,5489
+void AS_FORTRAN(150,6957
+void AS_FORTRAN(161,7527
+void AS_FORTRAN(186,8605
+void AS_FORTRAN(191,8785
+
+src/eigs/primme_interface.c,2020
+void primme_initialize(61,2957
+void primme_free(170,7616
+int primme_set_method(239,10785
+void primme_set_defaults(466,20538
+void primme_display_params(552,24507
+void primme_display_params_prefix(575,25384
+#define PRINT(580,25515
+#define PRINTIF(581,25598
+#define PRINTParams(582,25692
+#define PRINTParamsIF(584,25841
+#define PRINT_PRIMME_INT(586,25998
+#undef PRINT670,29025
+#undef PRINTIF671,29038
+#undef PRINTParams672,29053
+#undef PRINTParamsIF673,29072
+int primme_get_member(694,29625
+   union value_t 698,29729
+      PRIMME_INT int_v;699,29748
+      void (*matFunc_v)matFunc_v700,29772
+      void *ptr_v;ptr_v701,29871
+      void (*globalSumRealFunc_v)globalSumRealFunc_v702,29890
+      void (*convTestFun_v)convTestFun_v703,29975
+      primme_target target_v;704,30060
+      double double_v;705,30090
+      FILE *file_v;file_v706,30113
+      primme_init init_v;707,30133
+      primme_projection projection_v;708,30159
+      primme_restartscheme restartscheme_v;709,30197
+      primme_convergencetest convergencetest_v;710,30241
+      void (*monitorFun_v)monitorFun_v711,30289
+int primme_set_member(948,38207
+   union value_t 952,38311
+      PRIMME_INT *int_v;int_v953,38330
+      void (*matFunc_v)matFunc_v954,38355
+      void *ptr_v;ptr_v955,38454
+      void (*globalSumRealFunc_v)globalSumRealFunc_v956,38473
+      void (*convTestFun_v)convTestFun_v957,38558
+      primme_target *target_v;target_v958,38643
+      double *double_v;double_v959,38674
+      FILE *file_v;file_v960,38698
+      primme_init *init_v;init_v961,38718
+      primme_projection *projection_v;projection_v962,38745
+      primme_restartscheme *restartscheme_v;restartscheme_v963,38784
+      primme_convergencetest *convergencetest_v;convergencetest_v964,38829
+      void (*monitorFun_v)monitorFun_v965,38878
+int primme_member_info(1231,48423
+#define IF_IS(1244,48854
+#undef IF_IS1321,53195
+int primme_constant_info(1451,56939
+#define IF_IS(1453,57003
+#undef IF_IS1505,58505
+
+src/eigs/restart.c,618
+int restart_Rprimme(277,12127
+static int restart_soft_locking_Rprimme(680,30283
+static int restart_locking_Rprimme(1038,45052
+int Num_reset_update_VWXR_Rprimme(1441,63448
+static int restart_projection_Rprimme(1692,72292
+static int restart_RR(1867,80096
+static int restart_RR_explicit(2062,88354
+static int restart_refined(2182,93052
+static int restart_harmonic(2588,110726
+static int dtr_Rprimme(2701,115073
+static int ortho_coefficient_vectors_Rprimme(2837,120258
+int retain_previous_coefficients_Rprimme(2974,125654
+static void insertionSort(3080,129636
+static int compute_residual_columns(3217,134769
+
+src/eigs/solve_projection.c,236
+int solve_H_Rprimme(103,4825
+static int solve_H_RR_Rprimme(197,8356
+static int solve_H_Harm_Rprimme(406,16272
+static int solve_H_Ref_Rprimme(511,19916
+static int solve_H_brcast_Rprimme(632,24630
+int prepare_vecs_Rprimme(815,31154
+
+src/eigs/update_W.c,65
+int matrixMatvec_Rprimme(64,2967
+int update_Q_Rprimme(121,4878
+
+src/eigs/update_projection.c,39
+int update_projection_Rprimme(71,3422
+
+src/linalg/auxiliary.c,425
+void Num_copy_matrix_Rprimme(62,2785
+void Num_copy_matrix_columns_Rprimme(121,4612
+void Num_zero_matrix_Rprimme(146,5361
+void Num_copy_trimatrix_Rprimme(179,6410
+void Num_copy_trimatrix_compact_Rprimme(250,8722
+void Num_copy_compact_trimatrix_Rprimme(281,9657
+void permute_vecs_Rprimme(312,10666
+void permute_vecs_iprimme(387,13180
+SCALAR* Num_compact_vecs_Rprimme(484,16419
+int compute_submatrix_Rprimme(530,17647
+
+src/linalg/blaslapack.c,590
+void Num_copy_Rprimme(51,2591
+void Num_gemm_Rprimme(71,3190
+void Num_hemm_Rprimme(118,4534
+void Num_trmm_Rprimme(149,5524
+void Num_gemv_Rprimme(180,6584
+void Num_hemv_Rprimme(234,8026
+void Num_axpy_Rprimme(262,8829
+SCALAR Num_dot_Rprimme(283,9423
+void Num_larnv_Rprimme(326,10710
+void Num_scal_Rprimme(367,12028
+void Num_swap_Rprimme(385,12583
+void Num_heev_Rprimme(406,13235
+void Num_hegv_Rprimme(559,17185
+void Num_gesvd_Rprimme(705,20969
+void Num_gesvd_Rprimme(745,22156
+void Num_hetrf_Rprimme(791,23642
+void Num_hetrs_Rprimme(876,25944
+void Num_trsm_Rprimme(925,27362
+
+src/linalg/wtime.c,158
+#define   RUSAGE_SELF 45,2212
+double primme_wTimer(52,2399
+double primme_get_wtime(96,3609
+double primme_get_time(104,3806
+double primme_wTimer(119,4215
+
+src/svds/primme_svds.c,852
+#define ALLOCATE_WORKSPACE_FAILURE 48,2324
+#define MALLOC_FAILURE 49,2362
+#define UPDATE_STATS(95,5365
+int Rprimme_svds(150,8208
+static int comp_double(274,12721
+static SCALAR* copy_last_params_from_svds(279,12826
+static int allocate_workspace_svds(579,24956
+int copy_last_params_to_svds(647,27992
+static int primme_svds_check_input(826,34974
+static void matrixMatvecSVDS(882,37317
+static void applyPreconditionerSVDS(930,39270
+static void Num_scalInv_Smatrix(941,39735
+static int globalSum_Rprimme_svds(961,40308
+static void compute_resNorm(1000,41561
+static void default_convTestFun(1087,44639
+static void convTestFunATA(1134,46618
+static void convTestFunAug(1191,48646
+static void default_monitor(1257,51399
+static void monitor_single_stage(1357,56039
+static void monitor_stage1(1455,60115
+static void monitor_stage2(1556,64171
+
+src/svds/primme_svds_f77.c,200
+void AS_FORTRAN(41,2174
+void AS_FORTRAN(50,2449
+void AS_FORTRAN(56,2639
+void AS_FORTRAN(63,2945
+void AS_FORTRAN(67,3074
+void AS_FORTRAN(73,3229
+void AS_FORTRAN(79,3441
+void AS_FORTRAN(85,3657
+
+src/svds/primme_svds_interface.c,1665
+void primme_svds_initialize(63,3001
+int primme_svds_set_method(166,7458
+void primme_svds_set_defaults(215,9303
+static void copy_params_from_svds(243,10398
+void primme_svds_display_params(363,14671
+#define PRINT(368,14795
+#define PRINTIF(369,14884
+#define PRINTParams(370,14984
+#define PRINTParamsIF(372,15139
+#define PRINT_PRIMME_INT(374,15302
+void primme_svds_free(463,18527
+static void globalSumRealSvds(477,19006
+int primme_svds_get_member(502,19844
+   union value_t 506,19968
+      PRIMME_INT int_v;507,19987
+      void (*matFunc_v)matFunc_v508,20011
+      void *ptr_v;ptr_v509,20116
+      void (*globalSumRealFunc_v)globalSumRealFunc_v510,20135
+      primme_svds_target target_v;511,20224
+      primme_svds_operator operator_v;512,20259
+      double double_v;513,20298
+      FILE *file_v;file_v514,20321
+      void (*convTestFun_v)convTestFun_v515,20341
+      void (*monitorFun_v)monitorFun_v518,20515
+int primme_svds_set_member(711,26936
+   union value_t 714,27059
+      PRIMME_INT *int_v;int_v715,27078
+      void (*matFunc_v)matFunc_v716,27103
+      void *ptr_v;ptr_v717,27208
+      void (*globalSumRealFunc_v)globalSumRealFunc_v718,27227
+      primme_svds_target *target_v;target_v719,27316
+      primme_svds_operator *operator_v;operator_v720,27352
+      double *double_v;double_v721,27392
+      FILE *file_v;file_v722,27416
+      void (*convTestFun_v)convTestFun_v723,27436
+      void (*monitorFun_v)monitorFun_v726,27610
+int primme_svds_member_info(928,34534
+#define IF_IS(941,34985
+#undef IF_IS1000,36403
+int primme_svds_constant_info(1109,39446
+#define IF_IS(1111,39515
+#undef IF_IS1129,40056
+
+include/primme.h,744
+#define PRIMME_H37,2076
+#define PRIMME_VERSION_MAJOR 41,2116
+#define PRIMME_VERSION_MINOR 42,2152
+#  define PRIMME_COMPLEX_FLOAT 52,2635
+#  define PRIMME_COMPLEX_DOUBLE 53,2686
+#  define PRIMME_COMPLEX_FLOAT 56,2768
+#  define PRIMME_COMPLEX_DOUBLE 57,2813
+#  define __STDC_FORMAT_MACROS62,2990
+#  define PRIMME_INT 68,3130
+#  define PRIMME_INT_P 69,3159
+#  define PRIMME_INT_MAX 70,3189
+#     define PRId64 72,3241
+#  define PRIMME_INT 76,3324
+#  define PRIMME_INT_P 77,3349
+#  define PRIMME_INT_MAX 78,3376
+#  define PRIMME_INT 82,3483
+#  define PRIMME_INT_P 83,3512
+#  define PRIMME_INT_MAX 84,3542
+#     define PRId64 86,3594
+#  define PRIMME_INT 89,3633
+#  define PRIMME_INT_P 90,3670
+#  define PRIMME_INT_MAX 91,3697
+
+include/primme_eigs.h,7508
+#define PRIMME_EIGS_H37,2091
+   primme_smallest,48,2220
+   primme_largest,49,2274
+   primme_closest_geq,50,2329
+   primme_closest_leq,51,2405
+   primme_closest_abs,52,2479
+   primme_largest_abs 53,2544
+} primme_target;54,2610
+   primme_proj_default,58,2683
+   primme_proj_RR,59,2707
+   primme_proj_harmonic,60,2755
+   primme_proj_refined 61,2812
+} primme_projection;62,2872
+   primme_init_default,65,2967
+   primme_init_krylov,66,2991
+   primme_init_random,67,3082
+   primme_init_user 68,3134
+} primme_init;69,3209
+   primme_thick,73,3241
+   primme_dtr74,3258
+} primme_restartscheme;75,3272
+   primme_full_LTolerance,79,3313
+   primme_decreasing_LTolerance,80,3340
+   primme_adaptive_ETolerance,81,3373
+   primme_adaptive82,3404
+} primme_convergencetest;83,3423
+   primme_event_outer_iteration,88,3535
+   primme_event_inner_iteration,89,3616
+   primme_event_restart,90,3697
+   primme_event_reset,91,3778
+   primme_event_converged,92,3859
+   primme_event_locked 93,3940
+} primme_event;94,4021
+typedef struct primme_stats 96,4038
+   PRIMME_INT numOuterIterations;97,4068
+   PRIMME_INT numRestarts;98,4102
+   PRIMME_INT numMatvecs;99,4129
+   PRIMME_INT numPreconds;100,4155
+   PRIMME_INT numGlobalSum;101,4182
+   PRIMME_INT volumeGlobalSum;102,4251
+   double numOrthoInnerProds;103,4336
+   double elapsedTime;104,4414
+   double timeMatvec;105,4438
+   double timePrecond;106,4508
+   double timeOrtho;107,4585
+   double timeGlobalSum;108,4649
+   double estimateMinEVal;109,4721
+   double estimateMaxEVal;110,4792
+   double estimateLargestSVal;111,4864
+   double maxConvTol;112,4961
+   double estimateResidualError;113,5047
+} primme_stats;114,5118
+typedef struct JD_projectors 116,5135
+   int LeftQ;117,5166
+   int LeftX;118,5180
+   int RightQ;119,5194
+   int RightX;120,5209
+   int SkewQ;121,5224
+   int SkewX;122,5238
+} JD_projectors;123,5252
+typedef struct projection_params 125,5270
+   primme_projection projection;126,5305
+} projection_params;127,5338
+typedef struct correction_params 129,5360
+   int precondition;130,5395
+   int robustShifts;131,5416
+   int maxInnerIterations;132,5437
+   struct JD_projectors projectors;133,5464
+   primme_convergencetest convTest;134,5500
+   double relTolBase;135,5536
+} correction_params;136,5558
+typedef struct restarting_params 139,5581
+   primme_restartscheme scheme;140,5616
+   int maxPrevRetain;141,5648
+} restarting_params;142,5670
+typedef struct primme_params 146,5772
+   PRIMME_INT n;149,5870
+   void (*matrixMatvec)matrixMatvec150,5887
+   void (*applyPreconditioner)applyPreconditioner155,6105
+   void (*massMatrixMatvec)massMatrixMatvec160,6343
+   int numProcs;165,6570
+   int procID;166,6587
+   PRIMME_INT nLocal;167,6602
+   void *commInfo;commInfo168,6624
+   void (*globalSumReal)globalSumReal169,6643
+   int numEvals;174,6849
+   primme_target target;175,6876
+   int numTargetShifts;176,6902
+   double *targetShifts;targetShifts177,6981
+   int dynamicMethodSwitch;180,7137
+   int locking;181,7165
+   int initSize;182,7181
+   int numOrthoConst;183,7198
+   int maxBasisSize;184,7220
+   int minRestartSize;185,7241
+   int maxBlockSize;186,7264
+   PRIMME_INT maxMatvecs;187,7285
+   PRIMME_INT maxOuterIterations;188,7311
+   int intWorkSize;189,7345
+   size_t realWorkSize;190,7365
+   PRIMME_INT iseed[iseed191,7389
+   int *intWork;intWork192,7413
+   void *realWork;realWork193,7430
+   double aNorm;194,7449
+   double eps;195,7466
+   int printLevel;197,7482
+   FILE *outputFile;outputFile198,7501
+   void *matrix;matrix200,7523
+   void *preconditioner;preconditioner201,7540
+   double *ShiftsForPreconditioner;ShiftsForPreconditioner202,7565
+   primme_init initBasisMode;203,7601
+   PRIMME_INT ldevecs;204,7631
+   PRIMME_INT ldOPs;205,7654
+   struct projection_params projectionParams;207,7676
+   struct restarting_params restartingParams;208,7723
+   struct correction_params correctionParams;209,7769
+   struct primme_stats stats;210,7815
+   void (*convTestFun)convTestFun212,7846
+   void *convtest;convtest214,7975
+   void (*monitorFun)monitorFun215,7994
+   void *monitor;monitor220,8320
+} primme_params;221,8338
+   PRIMME_DEFAULT_METHOD,225,8451
+   PRIMME_DYNAMIC,226,8477
+   PRIMME_DEFAULT_MIN_TIME,227,8496
+   PRIMME_DEFAULT_MIN_MATVECS,228,8524
+   PRIMME_Arnoldi,229,8555
+   PRIMME_GD,230,8574
+   PRIMME_GD_plusK,231,8588
+   PRIMME_GD_Olsen_plusK,232,8608
+   PRIMME_JD_Olsen_plusK,233,8634
+   PRIMME_RQI,234,8660
+   PRIMME_JDQR,235,8675
+   PRIMME_JDQMR,236,8691
+   PRIMME_JDQMR_ETol,237,8708
+   PRIMME_STEEPEST_DESCENT,238,8730
+   PRIMME_LOBPCG_OrthoBasis,239,8758
+   PRIMME_LOBPCG_OrthoBasis_Window240,8787
+} primme_preset_method;241,8822
+   primme_int,244,8862
+   primme_double,245,8877
+   primme_pointer246,8895
+} primme_type;247,8913
+   PRIMME_n 250,8944
+   PRIMME_matrixMatvec 251,8962
+   PRIMME_applyPreconditioner 252,8991
+   PRIMME_numProcs 253,9027
+   PRIMME_procID 254,9052
+   PRIMME_commInfo 255,9075
+   PRIMME_nLocal 256,9100
+   PRIMME_globalSumReal 257,9123
+   PRIMME_numEvals 258,9153
+   PRIMME_target 259,9178
+   PRIMME_numTargetShifts 260,9201
+   PRIMME_targetShifts 261,9234
+   PRIMME_locking 262,9264
+   PRIMME_initSize 263,9289
+   PRIMME_numOrthoConst 264,9315
+   PRIMME_maxBasisSize 265,9346
+   PRIMME_minRestartSize 266,9376
+   PRIMME_maxBlockSize 267,9408
+   PRIMME_maxMatvecs 268,9438
+   PRIMME_maxOuterIterations 269,9466
+   PRIMME_intWorkSize 270,9502
+   PRIMME_realWorkSize 271,9531
+   PRIMME_iseed 272,9561
+   PRIMME_intWork 273,9584
+   PRIMME_realWork 274,9609
+   PRIMME_aNorm 275,9635
+   PRIMME_eps 276,9658
+   PRIMME_printLevel 277,9679
+   PRIMME_outputFile 278,9707
+   PRIMME_matrix 279,9735
+   PRIMME_preconditioner 280,9759
+   PRIMME_initBasisMode 281,9791
+   PRIMME_projectionParams_projection 282,9824
+   PRIMME_restartingParams_scheme 283,9870
+   PRIMME_restartingParams_maxPrevRetain 284,9911
+   PRIMME_correctionParams_precondition 285,9959
+   PRIMME_correctionParams_robustShifts 286,10006
+   PRIMME_correctionParams_maxInnerIterations 287,10053
+   PRIMME_correctionParams_projectors_LeftQ 288,10106
+   PRIMME_correctionParams_projectors_LeftX 289,10157
+   PRIMME_correctionParams_projectors_RightQ 290,10208
+   PRIMME_correctionParams_projectors_RightX 291,10260
+   PRIMME_correctionParams_projectors_SkewQ 292,10312
+   PRIMME_correctionParams_projectors_SkewX 293,10363
+   PRIMME_correctionParams_convTest 294,10414
+   PRIMME_correctionParams_relTolBase 295,10457
+   PRIMME_stats_numOuterIterations 296,10502
+   PRIMME_stats_numRestarts 297,10544
+   PRIMME_stats_numMatvecs 298,10579
+   PRIMME_stats_numPreconds 299,10613
+   PRIMME_stats_numGlobalSum 300,10648
+   PRIMME_stats_volumeGlobalSum 301,10685
+   PRIMME_stats_numOrthoInnerProds 302,10725
+   PRIMME_stats_elapsedTime 303,10768
+   PRIMME_stats_timeMatvec 304,10803
+   PRIMME_stats_timePrecond 305,10839
+   PRIMME_stats_timeOrtho 306,10876
+   PRIMME_stats_timeGlobalSum 307,10911
+   PRIMME_stats_estimateMinEVal 308,10950
+   PRIMME_stats_estimateMaxEVal 309,10990
+   PRIMME_stats_estimateLargestSVal 310,11030
+   PRIMME_stats_maxConvTol 311,11074
+   PRIMME_dynamicMethodSwitch 312,11109
+   PRIMME_massMatrixMatvec 313,11145
+   PRIMME_convTestFun 314,11179
+   PRIMME_convtest 315,11208
+   PRIMME_ldevecs 316,11235
+   PRIMME_ldOPs 317,11260
+   PRIMME_monitorFun 318,11283
+   PRIMME_monitor 319,11310
+} primme_params_label;320,11333
+
+include/primme_eigs_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+include/primme_f77.h,737
+C  Redistribution and use in source and binary forms,5,156
+C  modification,6,226
+C        notice,8,377
+C        notice,10,523
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,987
+C  DIRECT,20,1223
+C  DIRECT, INDIRECT,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1223
+C  LOSS OF USE, DATA, OR PROFITS;22,1381
+C  ON ANY THEORY OF LIABILITY,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1460
+C 24,1538
+
+include/primme_svds.h,4456
+#define PRIMME_SVDS_H38,2078
+   primme_svds_largest,47,2182
+   primme_svds_smallest,48,2206
+   primme_svds_closest_abs49,2231
+} primme_svds_target;50,2258
+   primme_svds_default,53,2296
+   primme_svds_hybrid,54,2320
+   primme_svds_normalequations,55,2343
+   primme_svds_augmented56,2394
+} primme_svds_preset_method;57,2419
+   primme_svds_op_none,60,2464
+   primme_svds_op_AtA,61,2488
+   primme_svds_op_AAt,62,2511
+   primme_svds_op_augmented63,2534
+} primme_svds_operator;64,2562
+typedef struct primme_svds_stats 66,2587
+   PRIMME_INT numOuterIterations;67,2622
+   PRIMME_INT numRestarts;68,2656
+   PRIMME_INT numMatvecs;69,2683
+   PRIMME_INT numPreconds;70,2709
+   PRIMME_INT numGlobalSum;71,2736
+   PRIMME_INT volumeGlobalSum;72,2805
+   double numOrthoInnerProds;73,2890
+   double elapsedTime;74,2968
+   double timeMatvec;75,2992
+   double timePrecond;76,3062
+   double timeOrtho;77,3139
+   double timeGlobalSum;78,3203
+} primme_svds_stats;79,3275
+typedef struct primme_svds_params 81,3297
+   primme_params primme;83,3394
+   primme_params primmeStage2;85,3526
+   PRIMME_INT m;88,3654
+   PRIMME_INT n;89,3693
+   void (*matrixMatvec)matrixMatvec92,3829
+   void (*applyPreconditioner)applyPreconditioner95,4004
+   int numProcs;100,4258
+   int procID;101,4275
+   PRIMME_INT mLocal;102,4290
+   PRIMME_INT nLocal;103,4312
+   void *commInfo;commInfo104,4334
+   void (*globalSumReal)globalSumReal105,4353
+   int numSvals;110,4574
+   primme_svds_target target;111,4591
+   int numTargetShifts;112,4621
+   double *targetShifts;targetShifts113,4701
+   primme_svds_operator method;114,4781
+   primme_svds_operator methodStage2;115,4884
+   int intWorkSize;118,5065
+   size_t realWorkSize;119,5085
+   int *intWork;intWork120,5109
+   void *realWork;realWork121,5126
+   void *matrix;matrix124,5225
+   void *preconditioner;preconditioner125,5242
+   int locking;128,5344
+   int numOrthoConst;129,5360
+   double aNorm;130,5382
+   double eps;131,5399
+   int precondition;133,5415
+   int initSize;134,5436
+   int maxBasisSize;135,5453
+   int maxBlockSize;136,5474
+   PRIMME_INT maxMatvecs;137,5495
+   PRIMME_INT iseed[iseed138,5521
+   int printLevel;139,5545
+   FILE *outputFile;outputFile140,5564
+   struct primme_svds_stats stats;141,5585
+   void (*convTestFun)convTestFun143,5621
+   void *convtest;convtest146,5784
+   void (*monitorFun)monitorFun147,5803
+   void *monitor;monitor152,6151
+} primme_svds_params;153,6169
+   PRIMME_SVDS_primme 156,6207
+   PRIMME_SVDS_primmeStage2 157,6234
+   PRIMME_SVDS_m 158,6267
+   PRIMME_SVDS_n 159,6289
+   PRIMME_SVDS_matrixMatvec 160,6311
+   PRIMME_SVDS_applyPreconditioner 161,6344
+   PRIMME_SVDS_numProcs 162,6384
+   PRIMME_SVDS_procID 163,6413
+   PRIMME_SVDS_mLocal 164,6440
+   PRIMME_SVDS_nLocal 165,6467
+   PRIMME_SVDS_commInfo 166,6494
+   PRIMME_SVDS_globalSumReal 167,6524
+   PRIMME_SVDS_numSvals 168,6559
+   PRIMME_SVDS_target 169,6589
+   PRIMME_SVDS_numTargetShifts 170,6617
+   PRIMME_SVDS_targetShifts 171,6654
+   PRIMME_SVDS_method 172,6688
+   PRIMME_SVDS_methodStage2 173,6716
+   PRIMME_SVDS_intWorkSize 174,6750
+   PRIMME_SVDS_realWorkSize 175,6783
+   PRIMME_SVDS_intWork 176,6817
+   PRIMME_SVDS_realWork 177,6846
+   PRIMME_SVDS_matrix 178,6876
+   PRIMME_SVDS_preconditioner 179,6904
+   PRIMME_SVDS_locking 180,6940
+   PRIMME_SVDS_numOrthoConst 181,6969
+   PRIMME_SVDS_aNorm 182,7004
+   PRIMME_SVDS_eps 183,7031
+   PRIMME_SVDS_precondition 184,7056
+   PRIMME_SVDS_initSize 185,7090
+   PRIMME_SVDS_maxBasisSize 186,7120
+   PRIMME_SVDS_maxBlockSize 187,7154
+   PRIMME_SVDS_maxMatvecs 188,7188
+   PRIMME_SVDS_iseed 189,7220
+   PRIMME_SVDS_printLevel 190,7247
+   PRIMME_SVDS_outputFile 191,7279
+   PRIMME_SVDS_stats_numOuterIterations 192,7311
+   PRIMME_SVDS_stats_numRestarts 193,7357
+   PRIMME_SVDS_stats_numMatvecs 194,7396
+   PRIMME_SVDS_stats_numPreconds 195,7434
+   PRIMME_SVDS_stats_numGlobalSum 196,7473
+   PRIMME_SVDS_stats_volumeGlobalSum 197,7514
+   PRIMME_SVDS_stats_numOrthoInnerProds 198,7558
+   PRIMME_SVDS_stats_elapsedTime 199,7605
+   PRIMME_SVDS_stats_timeMatvec 200,7644
+   PRIMME_SVDS_stats_timePrecond 201,7683
+   PRIMME_SVDS_stats_timeOrtho 202,7723
+   PRIMME_SVDS_stats_timeGlobalSum 203,7761
+   PRIMME_SVDS_convTestFun 204,7803
+   PRIMME_SVDS_convtest 205,7837
+   PRIMME_SVDS_monitorFun 206,7868
+   PRIMME_SVDS_monitor 207,7900
+} primme_svds_params_label;208,7928
+
+include/primme_svds_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+src/include/template.h,2022
+#define TEMPLATE_H37,2074
+#  define SCALAR_PRE 73,3459
+#  define REAL_PRE 74,3482
+#  define SCALAR_SUF 75,3503
+#  define REAL_SUF 76,3532
+#  define SCALAR 77,3559
+#  define REAL 78,3583
+#  define MACHINE_EPSILON 79,3605
+#  define SCALAR_PRE 81,3676
+#  define REAL_PRE 82,3699
+#  define SCALAR_SUF 83,3720
+#  define REAL_SUF 84,3749
+#  define USE_COMPLEX85,3776
+#  define SCALAR 86,3798
+#  define REAL 87,3837
+#  define MACHINE_EPSILON 88,3859
+#  define SCALAR_PRE 90,3922
+#  define REAL_PRE 91,3945
+#  define SCALAR_SUF 92,3966
+#  define REAL_SUF 93,3995
+#  define SCALAR 94,4022
+#  define REAL 95,4045
+#  define MACHINE_EPSILON 96,4066
+#  define SCALAR_PRE 98,4136
+#  define REAL_PRE 99,4159
+#  define SCALAR_SUF 100,4180
+#  define REAL_SUF 101,4209
+#  define USE_COMPLEX102,4236
+#  define SCALAR 103,4258
+#  define REAL 104,4296
+#  define MACHINE_EPSILON 105,4317
+#     define REAL_PART(118,4944
+#     define ABS(119,4981
+#     define CONJ(120,5011
+#     define REAL_PART(122,5050
+#     define ABS(123,5091
+#     define CONJ(124,5125
+#  define REAL_PART(127,5176
+#  define ABS(128,5203
+#  define CONJ(129,5230
+#   undef I134,5335
+#  undef pow145,5619
+#  undef exp148,5650
+#  undef log151,5681
+#  define ISFINITE 155,5722
+#  define ISFINITE 157,5756
+#     define TEMPLATE_PLEASE 172,6569
+#     define TEMPLATE_PLEASE 175,6698
+#  undef PRIMME_COMPLEX_FLOAT180,6940
+#  undef PRIMME_COMPLEX_DOUBLE181,6970
+#  undef PRIMME_INT182,7001
+#  define TEMPLATE_PLEASE184,7027
+#define CHKERR(215,8419
+#define CHKERRNOABORT(238,9239
+#define CHKERRM(267,10284
+#define CHKERRNOABORTM(299,11462
+#define CHKERRS(325,12410
+#define CHKERRMS(355,13495
+#define MALLOC_PRIMME(394,14782
+#define WRKSP_MALLOC_PRIMME(422,15826
+#define ALIGN_BY_SIZE(435,16502
+#define ALIGN(437,16590
+#define CONCAT(445,16932
+#define CONCATX(446,16967
+#define TO_INT(448,16997
+#define FORTRAN_FUNCTION(451,17069
+#define FORTRAN_FUNCTION(453,17115
+#  define max(457,17165
+#  define min(460,17228
+
+src/include/primme_interface.h,60
+#define PRIMME_INTERFACE_H37,2110
+#define Rprimme 41,2264
+
+src/include/numerical.h,0
+
+src/eigs/auxiliary_eigs.c,158
+void Num_compute_residual_sprimme(61,2768
+int Num_update_VWXR_sprimme(115,4819
+int applyPreconditioner_sprimme(243,9638
+int convTestFun_sprimme(296,11355
+
+src/eigs/convergence.c,89
+int check_convergence_sprimme(82,3940
+static int check_practical_convergence(242,10810
+
+src/eigs/correction.c,205
+int solve_correction_sprimme(149,6775
+static REAL computeRobustShift(506,23673
+static void mergeSort(619,27931
+static int Olsen_preconditioner_block(700,31121
+static int setup_JD_projectors(839,37494
+
+src/eigs/factorize.c,65
+int UDUDecompose_sprimme(73,3248
+int UDUSolve_sprimme(149,5455
+
+src/eigs/globalsum.c,31
+int globalSum_sprimme(41,2119
+
+src/eigs/init.c,73
+int init_basis_sprimme(127,5319
+static int init_block_krylov(273,10559
+
+src/eigs/inner_solve.c,280
+int inner_solve_sprimme(155,6440
+static int apply_projected_preconditioner(580,23323
+static int apply_skew_projector(627,25009
+static int apply_projected_matrix(717,28385
+static int apply_projector(752,29562
+static int dist_dot(790,30769
+static int dist_dot_real(823,31899
+
+src/eigs/main_iter.c,565
+int main_iter_sprimme(136,6105
+      primme_orth_implicit_I,223,12303
+      primme_orth_explicit_I 224,12389
+   #  define TO_REAL(284,14978
+   #  define TO_REAL(286,15013
+   #undef TO_REAL295,15467
+int prepare_candidates_sprimme(1160,56723
+static int verify_norms(1408,67651
+static int switch_from_JDQMR(1492,71319
+static int switch_from_GDpk(1604,76224
+static int update_statistics(1747,82430
+static double ratio_JDQMR_GDpk(1907,89982
+static void update_slowdown(1926,90882
+static void initializeModel(1959,92239
+static void displayModel(2000,93552
+
+src/eigs/ortho.c,383
+static int Bortho_gen_sprimme(117,5589
+int ortho_sprimme(381,15185
+struct local_matvec_ctx 392,15617
+struct local_matvec_ctx { SCALAR *B;B392,15617
+struct local_matvec_ctx { SCALAR *B; int n,392,15617
+struct local_matvec_ctx { SCALAR *B; int n, ldB;392,15617
+static int local_matvec(394,15670
+int Bortho_local_sprimme(404,15970
+int ortho_single_iteration_sprimme(438,17421
+
+src/eigs/primme.c,290
+#define ALLOCATE_WORKSPACE_FAILURE 71,3429
+#define MALLOC_FAILURE 72,3467
+#define MAIN_ITER_FAILURE 73,3505
+int sprimme(123,5738
+static int allocate_workspace(264,11381
+static int check_input(484,22829
+static void convTestFunAbsolute(605,27720
+static void default_monitor(649,29640
+
+src/eigs/primme_f77.c,255
+void AS_FORTRAN(48,2653
+void AS_FORTRAN(63,3199
+void AS_FORTRAN(73,3591
+void AS_FORTRAN(83,3920
+void AS_FORTRAN(94,4430
+void AS_FORTRAN(118,5489
+void AS_FORTRAN(150,6957
+void AS_FORTRAN(161,7527
+void AS_FORTRAN(186,8605
+void AS_FORTRAN(191,8785
+
+src/eigs/primme_interface.c,2020
+void primme_initialize(61,2957
+void primme_free(170,7616
+int primme_set_method(239,10785
+void primme_set_defaults(466,20538
+void primme_display_params(552,24507
+void primme_display_params_prefix(575,25384
+#define PRINT(580,25515
+#define PRINTIF(581,25598
+#define PRINTParams(582,25692
+#define PRINTParamsIF(584,25841
+#define PRINT_PRIMME_INT(586,25998
+#undef PRINT670,29025
+#undef PRINTIF671,29038
+#undef PRINTParams672,29053
+#undef PRINTParamsIF673,29072
+int primme_get_member(694,29625
+   union value_t 698,29729
+      PRIMME_INT int_v;699,29748
+      void (*matFunc_v)matFunc_v700,29772
+      void *ptr_v;ptr_v701,29871
+      void (*globalSumRealFunc_v)globalSumRealFunc_v702,29890
+      void (*convTestFun_v)convTestFun_v703,29975
+      primme_target target_v;704,30060
+      double double_v;705,30090
+      FILE *file_v;file_v706,30113
+      primme_init init_v;707,30133
+      primme_projection projection_v;708,30159
+      primme_restartscheme restartscheme_v;709,30197
+      primme_convergencetest convergencetest_v;710,30241
+      void (*monitorFun_v)monitorFun_v711,30289
+int primme_set_member(948,38207
+   union value_t 952,38311
+      PRIMME_INT *int_v;int_v953,38330
+      void (*matFunc_v)matFunc_v954,38355
+      void *ptr_v;ptr_v955,38454
+      void (*globalSumRealFunc_v)globalSumRealFunc_v956,38473
+      void (*convTestFun_v)convTestFun_v957,38558
+      primme_target *target_v;target_v958,38643
+      double *double_v;double_v959,38674
+      FILE *file_v;file_v960,38698
+      primme_init *init_v;init_v961,38718
+      primme_projection *projection_v;projection_v962,38745
+      primme_restartscheme *restartscheme_v;restartscheme_v963,38784
+      primme_convergencetest *convergencetest_v;convergencetest_v964,38829
+      void (*monitorFun_v)monitorFun_v965,38878
+int primme_member_info(1231,48423
+#define IF_IS(1244,48854
+#undef IF_IS1321,53195
+int primme_constant_info(1451,56939
+#define IF_IS(1453,57003
+#undef IF_IS1505,58505
+
+src/eigs/restart.c,618
+int restart_sprimme(277,12127
+static int restart_soft_locking_sprimme(680,30283
+static int restart_locking_sprimme(1038,45052
+int Num_reset_update_VWXR_sprimme(1441,63448
+static int restart_projection_sprimme(1692,72292
+static int restart_RR(1867,80096
+static int restart_RR_explicit(2062,88354
+static int restart_refined(2182,93052
+static int restart_harmonic(2588,110726
+static int dtr_sprimme(2701,115073
+static int ortho_coefficient_vectors_sprimme(2837,120258
+int retain_previous_coefficients_sprimme(2974,125654
+static void insertionSort(3080,129636
+static int compute_residual_columns(3217,134769
+
+src/eigs/solve_projection.c,236
+int solve_H_sprimme(103,4825
+static int solve_H_RR_sprimme(197,8356
+static int solve_H_Harm_sprimme(406,16272
+static int solve_H_Ref_sprimme(511,19916
+static int solve_H_brcast_sprimme(632,24630
+int prepare_vecs_sprimme(815,31154
+
+src/eigs/update_W.c,65
+int matrixMatvec_sprimme(64,2967
+int update_Q_sprimme(121,4878
+
+src/eigs/update_projection.c,39
+int update_projection_sprimme(71,3422
+
+src/linalg/auxiliary.c,425
+void Num_copy_matrix_sprimme(62,2785
+void Num_copy_matrix_columns_sprimme(121,4612
+void Num_zero_matrix_sprimme(146,5361
+void Num_copy_trimatrix_sprimme(179,6410
+void Num_copy_trimatrix_compact_sprimme(250,8722
+void Num_copy_compact_trimatrix_sprimme(281,9657
+void permute_vecs_sprimme(312,10666
+void permute_vecs_iprimme(387,13180
+SCALAR* Num_compact_vecs_sprimme(484,16419
+int compute_submatrix_sprimme(530,17647
+
+src/linalg/blaslapack.c,590
+void Num_copy_sprimme(51,2591
+void Num_gemm_sprimme(71,3190
+void Num_hemm_sprimme(118,4534
+void Num_trmm_sprimme(149,5524
+void Num_gemv_sprimme(180,6584
+void Num_hemv_sprimme(234,8026
+void Num_axpy_sprimme(262,8829
+SCALAR Num_dot_sprimme(283,9423
+void Num_larnv_sprimme(326,10710
+void Num_scal_sprimme(367,12028
+void Num_swap_sprimme(385,12583
+void Num_heev_sprimme(406,13235
+void Num_hegv_sprimme(559,17185
+void Num_gesvd_sprimme(705,20969
+void Num_gesvd_sprimme(745,22156
+void Num_hetrf_sprimme(791,23642
+void Num_hetrs_sprimme(876,25944
+void Num_trsm_sprimme(925,27362
+
+src/linalg/wtime.c,158
+#define   RUSAGE_SELF 45,2212
+double primme_wTimer(52,2399
+double primme_get_wtime(96,3609
+double primme_get_time(104,3806
+double primme_wTimer(119,4215
+
+src/svds/primme_svds.c,852
+#define ALLOCATE_WORKSPACE_FAILURE 48,2324
+#define MALLOC_FAILURE 49,2362
+#define UPDATE_STATS(95,5365
+int sprimme_svds(150,8208
+static int comp_double(274,12721
+static SCALAR* copy_last_params_from_svds(279,12826
+static int allocate_workspace_svds(579,24956
+int copy_last_params_to_svds(647,27992
+static int primme_svds_check_input(826,34974
+static void matrixMatvecSVDS(882,37317
+static void applyPreconditionerSVDS(930,39270
+static void Num_scalInv_Smatrix(941,39735
+static int globalSum_Rprimme_svds(961,40308
+static void compute_resNorm(1000,41561
+static void default_convTestFun(1087,44639
+static void convTestFunATA(1134,46618
+static void convTestFunAug(1191,48646
+static void default_monitor(1257,51399
+static void monitor_single_stage(1357,56039
+static void monitor_stage1(1455,60115
+static void monitor_stage2(1556,64171
+
+src/svds/primme_svds_f77.c,200
+void AS_FORTRAN(41,2174
+void AS_FORTRAN(50,2449
+void AS_FORTRAN(56,2639
+void AS_FORTRAN(63,2945
+void AS_FORTRAN(67,3074
+void AS_FORTRAN(73,3229
+void AS_FORTRAN(79,3441
+void AS_FORTRAN(85,3657
+
+src/svds/primme_svds_interface.c,1665
+void primme_svds_initialize(63,3001
+int primme_svds_set_method(166,7458
+void primme_svds_set_defaults(215,9303
+static void copy_params_from_svds(243,10398
+void primme_svds_display_params(363,14671
+#define PRINT(368,14795
+#define PRINTIF(369,14884
+#define PRINTParams(370,14984
+#define PRINTParamsIF(372,15139
+#define PRINT_PRIMME_INT(374,15302
+void primme_svds_free(463,18527
+static void globalSumRealSvds(477,19006
+int primme_svds_get_member(502,19844
+   union value_t 506,19968
+      PRIMME_INT int_v;507,19987
+      void (*matFunc_v)matFunc_v508,20011
+      void *ptr_v;ptr_v509,20116
+      void (*globalSumRealFunc_v)globalSumRealFunc_v510,20135
+      primme_svds_target target_v;511,20224
+      primme_svds_operator operator_v;512,20259
+      double double_v;513,20298
+      FILE *file_v;file_v514,20321
+      void (*convTestFun_v)convTestFun_v515,20341
+      void (*monitorFun_v)monitorFun_v518,20515
+int primme_svds_set_member(711,26936
+   union value_t 714,27059
+      PRIMME_INT *int_v;int_v715,27078
+      void (*matFunc_v)matFunc_v716,27103
+      void *ptr_v;ptr_v717,27208
+      void (*globalSumRealFunc_v)globalSumRealFunc_v718,27227
+      primme_svds_target *target_v;target_v719,27316
+      primme_svds_operator *operator_v;operator_v720,27352
+      double *double_v;double_v721,27392
+      FILE *file_v;file_v722,27416
+      void (*convTestFun_v)convTestFun_v723,27436
+      void (*monitorFun_v)monitorFun_v726,27610
+int primme_svds_member_info(928,34534
+#define IF_IS(941,34985
+#undef IF_IS1000,36403
+int primme_svds_constant_info(1109,39446
+#define IF_IS(1111,39515
+#undef IF_IS1129,40056
+
+include/primme.h,744
+#define PRIMME_H37,2076
+#define PRIMME_VERSION_MAJOR 41,2116
+#define PRIMME_VERSION_MINOR 42,2152
+#  define PRIMME_COMPLEX_FLOAT 52,2635
+#  define PRIMME_COMPLEX_DOUBLE 53,2686
+#  define PRIMME_COMPLEX_FLOAT 56,2768
+#  define PRIMME_COMPLEX_DOUBLE 57,2813
+#  define __STDC_FORMAT_MACROS62,2990
+#  define PRIMME_INT 68,3130
+#  define PRIMME_INT_P 69,3159
+#  define PRIMME_INT_MAX 70,3189
+#     define PRId64 72,3241
+#  define PRIMME_INT 76,3324
+#  define PRIMME_INT_P 77,3349
+#  define PRIMME_INT_MAX 78,3376
+#  define PRIMME_INT 82,3483
+#  define PRIMME_INT_P 83,3512
+#  define PRIMME_INT_MAX 84,3542
+#     define PRId64 86,3594
+#  define PRIMME_INT 89,3633
+#  define PRIMME_INT_P 90,3670
+#  define PRIMME_INT_MAX 91,3697
+
+include/primme_eigs.h,7508
+#define PRIMME_EIGS_H37,2091
+   primme_smallest,48,2220
+   primme_largest,49,2274
+   primme_closest_geq,50,2329
+   primme_closest_leq,51,2405
+   primme_closest_abs,52,2479
+   primme_largest_abs 53,2544
+} primme_target;54,2610
+   primme_proj_default,58,2683
+   primme_proj_RR,59,2707
+   primme_proj_harmonic,60,2755
+   primme_proj_refined 61,2812
+} primme_projection;62,2872
+   primme_init_default,65,2967
+   primme_init_krylov,66,2991
+   primme_init_random,67,3082
+   primme_init_user 68,3134
+} primme_init;69,3209
+   primme_thick,73,3241
+   primme_dtr74,3258
+} primme_restartscheme;75,3272
+   primme_full_LTolerance,79,3313
+   primme_decreasing_LTolerance,80,3340
+   primme_adaptive_ETolerance,81,3373
+   primme_adaptive82,3404
+} primme_convergencetest;83,3423
+   primme_event_outer_iteration,88,3535
+   primme_event_inner_iteration,89,3616
+   primme_event_restart,90,3697
+   primme_event_reset,91,3778
+   primme_event_converged,92,3859
+   primme_event_locked 93,3940
+} primme_event;94,4021
+typedef struct primme_stats 96,4038
+   PRIMME_INT numOuterIterations;97,4068
+   PRIMME_INT numRestarts;98,4102
+   PRIMME_INT numMatvecs;99,4129
+   PRIMME_INT numPreconds;100,4155
+   PRIMME_INT numGlobalSum;101,4182
+   PRIMME_INT volumeGlobalSum;102,4251
+   double numOrthoInnerProds;103,4336
+   double elapsedTime;104,4414
+   double timeMatvec;105,4438
+   double timePrecond;106,4508
+   double timeOrtho;107,4585
+   double timeGlobalSum;108,4649
+   double estimateMinEVal;109,4721
+   double estimateMaxEVal;110,4792
+   double estimateLargestSVal;111,4864
+   double maxConvTol;112,4961
+   double estimateResidualError;113,5047
+} primme_stats;114,5118
+typedef struct JD_projectors 116,5135
+   int LeftQ;117,5166
+   int LeftX;118,5180
+   int RightQ;119,5194
+   int RightX;120,5209
+   int SkewQ;121,5224
+   int SkewX;122,5238
+} JD_projectors;123,5252
+typedef struct projection_params 125,5270
+   primme_projection projection;126,5305
+} projection_params;127,5338
+typedef struct correction_params 129,5360
+   int precondition;130,5395
+   int robustShifts;131,5416
+   int maxInnerIterations;132,5437
+   struct JD_projectors projectors;133,5464
+   primme_convergencetest convTest;134,5500
+   double relTolBase;135,5536
+} correction_params;136,5558
+typedef struct restarting_params 139,5581
+   primme_restartscheme scheme;140,5616
+   int maxPrevRetain;141,5648
+} restarting_params;142,5670
+typedef struct primme_params 146,5772
+   PRIMME_INT n;149,5870
+   void (*matrixMatvec)matrixMatvec150,5887
+   void (*applyPreconditioner)applyPreconditioner155,6105
+   void (*massMatrixMatvec)massMatrixMatvec160,6343
+   int numProcs;165,6570
+   int procID;166,6587
+   PRIMME_INT nLocal;167,6602
+   void *commInfo;commInfo168,6624
+   void (*globalSumReal)globalSumReal169,6643
+   int numEvals;174,6849
+   primme_target target;175,6876
+   int numTargetShifts;176,6902
+   double *targetShifts;targetShifts177,6981
+   int dynamicMethodSwitch;180,7137
+   int locking;181,7165
+   int initSize;182,7181
+   int numOrthoConst;183,7198
+   int maxBasisSize;184,7220
+   int minRestartSize;185,7241
+   int maxBlockSize;186,7264
+   PRIMME_INT maxMatvecs;187,7285
+   PRIMME_INT maxOuterIterations;188,7311
+   int intWorkSize;189,7345
+   size_t realWorkSize;190,7365
+   PRIMME_INT iseed[iseed191,7389
+   int *intWork;intWork192,7413
+   void *realWork;realWork193,7430
+   double aNorm;194,7449
+   double eps;195,7466
+   int printLevel;197,7482
+   FILE *outputFile;outputFile198,7501
+   void *matrix;matrix200,7523
+   void *preconditioner;preconditioner201,7540
+   double *ShiftsForPreconditioner;ShiftsForPreconditioner202,7565
+   primme_init initBasisMode;203,7601
+   PRIMME_INT ldevecs;204,7631
+   PRIMME_INT ldOPs;205,7654
+   struct projection_params projectionParams;207,7676
+   struct restarting_params restartingParams;208,7723
+   struct correction_params correctionParams;209,7769
+   struct primme_stats stats;210,7815
+   void (*convTestFun)convTestFun212,7846
+   void *convtest;convtest214,7975
+   void (*monitorFun)monitorFun215,7994
+   void *monitor;monitor220,8320
+} primme_params;221,8338
+   PRIMME_DEFAULT_METHOD,225,8451
+   PRIMME_DYNAMIC,226,8477
+   PRIMME_DEFAULT_MIN_TIME,227,8496
+   PRIMME_DEFAULT_MIN_MATVECS,228,8524
+   PRIMME_Arnoldi,229,8555
+   PRIMME_GD,230,8574
+   PRIMME_GD_plusK,231,8588
+   PRIMME_GD_Olsen_plusK,232,8608
+   PRIMME_JD_Olsen_plusK,233,8634
+   PRIMME_RQI,234,8660
+   PRIMME_JDQR,235,8675
+   PRIMME_JDQMR,236,8691
+   PRIMME_JDQMR_ETol,237,8708
+   PRIMME_STEEPEST_DESCENT,238,8730
+   PRIMME_LOBPCG_OrthoBasis,239,8758
+   PRIMME_LOBPCG_OrthoBasis_Window240,8787
+} primme_preset_method;241,8822
+   primme_int,244,8862
+   primme_double,245,8877
+   primme_pointer246,8895
+} primme_type;247,8913
+   PRIMME_n 250,8944
+   PRIMME_matrixMatvec 251,8962
+   PRIMME_applyPreconditioner 252,8991
+   PRIMME_numProcs 253,9027
+   PRIMME_procID 254,9052
+   PRIMME_commInfo 255,9075
+   PRIMME_nLocal 256,9100
+   PRIMME_globalSumReal 257,9123
+   PRIMME_numEvals 258,9153
+   PRIMME_target 259,9178
+   PRIMME_numTargetShifts 260,9201
+   PRIMME_targetShifts 261,9234
+   PRIMME_locking 262,9264
+   PRIMME_initSize 263,9289
+   PRIMME_numOrthoConst 264,9315
+   PRIMME_maxBasisSize 265,9346
+   PRIMME_minRestartSize 266,9376
+   PRIMME_maxBlockSize 267,9408
+   PRIMME_maxMatvecs 268,9438
+   PRIMME_maxOuterIterations 269,9466
+   PRIMME_intWorkSize 270,9502
+   PRIMME_realWorkSize 271,9531
+   PRIMME_iseed 272,9561
+   PRIMME_intWork 273,9584
+   PRIMME_realWork 274,9609
+   PRIMME_aNorm 275,9635
+   PRIMME_eps 276,9658
+   PRIMME_printLevel 277,9679
+   PRIMME_outputFile 278,9707
+   PRIMME_matrix 279,9735
+   PRIMME_preconditioner 280,9759
+   PRIMME_initBasisMode 281,9791
+   PRIMME_projectionParams_projection 282,9824
+   PRIMME_restartingParams_scheme 283,9870
+   PRIMME_restartingParams_maxPrevRetain 284,9911
+   PRIMME_correctionParams_precondition 285,9959
+   PRIMME_correctionParams_robustShifts 286,10006
+   PRIMME_correctionParams_maxInnerIterations 287,10053
+   PRIMME_correctionParams_projectors_LeftQ 288,10106
+   PRIMME_correctionParams_projectors_LeftX 289,10157
+   PRIMME_correctionParams_projectors_RightQ 290,10208
+   PRIMME_correctionParams_projectors_RightX 291,10260
+   PRIMME_correctionParams_projectors_SkewQ 292,10312
+   PRIMME_correctionParams_projectors_SkewX 293,10363
+   PRIMME_correctionParams_convTest 294,10414
+   PRIMME_correctionParams_relTolBase 295,10457
+   PRIMME_stats_numOuterIterations 296,10502
+   PRIMME_stats_numRestarts 297,10544
+   PRIMME_stats_numMatvecs 298,10579
+   PRIMME_stats_numPreconds 299,10613
+   PRIMME_stats_numGlobalSum 300,10648
+   PRIMME_stats_volumeGlobalSum 301,10685
+   PRIMME_stats_numOrthoInnerProds 302,10725
+   PRIMME_stats_elapsedTime 303,10768
+   PRIMME_stats_timeMatvec 304,10803
+   PRIMME_stats_timePrecond 305,10839
+   PRIMME_stats_timeOrtho 306,10876
+   PRIMME_stats_timeGlobalSum 307,10911
+   PRIMME_stats_estimateMinEVal 308,10950
+   PRIMME_stats_estimateMaxEVal 309,10990
+   PRIMME_stats_estimateLargestSVal 310,11030
+   PRIMME_stats_maxConvTol 311,11074
+   PRIMME_dynamicMethodSwitch 312,11109
+   PRIMME_massMatrixMatvec 313,11145
+   PRIMME_convTestFun 314,11179
+   PRIMME_convtest 315,11208
+   PRIMME_ldevecs 316,11235
+   PRIMME_ldOPs 317,11260
+   PRIMME_monitorFun 318,11283
+   PRIMME_monitor 319,11310
+} primme_params_label;320,11333
+
+include/primme_eigs_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+include/primme_f77.h,737
+C  Redistribution and use in source and binary forms,5,156
+C  modification,6,226
+C        notice,8,377
+C        notice,10,523
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,987
+C  DIRECT,20,1223
+C  DIRECT, INDIRECT,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1223
+C  LOSS OF USE, DATA, OR PROFITS;22,1381
+C  ON ANY THEORY OF LIABILITY,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1460
+C 24,1538
+
+include/primme_svds.h,4456
+#define PRIMME_SVDS_H38,2078
+   primme_svds_largest,47,2182
+   primme_svds_smallest,48,2206
+   primme_svds_closest_abs49,2231
+} primme_svds_target;50,2258
+   primme_svds_default,53,2296
+   primme_svds_hybrid,54,2320
+   primme_svds_normalequations,55,2343
+   primme_svds_augmented56,2394
+} primme_svds_preset_method;57,2419
+   primme_svds_op_none,60,2464
+   primme_svds_op_AtA,61,2488
+   primme_svds_op_AAt,62,2511
+   primme_svds_op_augmented63,2534
+} primme_svds_operator;64,2562
+typedef struct primme_svds_stats 66,2587
+   PRIMME_INT numOuterIterations;67,2622
+   PRIMME_INT numRestarts;68,2656
+   PRIMME_INT numMatvecs;69,2683
+   PRIMME_INT numPreconds;70,2709
+   PRIMME_INT numGlobalSum;71,2736
+   PRIMME_INT volumeGlobalSum;72,2805
+   double numOrthoInnerProds;73,2890
+   double elapsedTime;74,2968
+   double timeMatvec;75,2992
+   double timePrecond;76,3062
+   double timeOrtho;77,3139
+   double timeGlobalSum;78,3203
+} primme_svds_stats;79,3275
+typedef struct primme_svds_params 81,3297
+   primme_params primme;83,3394
+   primme_params primmeStage2;85,3526
+   PRIMME_INT m;88,3654
+   PRIMME_INT n;89,3693
+   void (*matrixMatvec)matrixMatvec92,3829
+   void (*applyPreconditioner)applyPreconditioner95,4004
+   int numProcs;100,4258
+   int procID;101,4275
+   PRIMME_INT mLocal;102,4290
+   PRIMME_INT nLocal;103,4312
+   void *commInfo;commInfo104,4334
+   void (*globalSumReal)globalSumReal105,4353
+   int numSvals;110,4574
+   primme_svds_target target;111,4591
+   int numTargetShifts;112,4621
+   double *targetShifts;targetShifts113,4701
+   primme_svds_operator method;114,4781
+   primme_svds_operator methodStage2;115,4884
+   int intWorkSize;118,5065
+   size_t realWorkSize;119,5085
+   int *intWork;intWork120,5109
+   void *realWork;realWork121,5126
+   void *matrix;matrix124,5225
+   void *preconditioner;preconditioner125,5242
+   int locking;128,5344
+   int numOrthoConst;129,5360
+   double aNorm;130,5382
+   double eps;131,5399
+   int precondition;133,5415
+   int initSize;134,5436
+   int maxBasisSize;135,5453
+   int maxBlockSize;136,5474
+   PRIMME_INT maxMatvecs;137,5495
+   PRIMME_INT iseed[iseed138,5521
+   int printLevel;139,5545
+   FILE *outputFile;outputFile140,5564
+   struct primme_svds_stats stats;141,5585
+   void (*convTestFun)convTestFun143,5621
+   void *convtest;convtest146,5784
+   void (*monitorFun)monitorFun147,5803
+   void *monitor;monitor152,6151
+} primme_svds_params;153,6169
+   PRIMME_SVDS_primme 156,6207
+   PRIMME_SVDS_primmeStage2 157,6234
+   PRIMME_SVDS_m 158,6267
+   PRIMME_SVDS_n 159,6289
+   PRIMME_SVDS_matrixMatvec 160,6311
+   PRIMME_SVDS_applyPreconditioner 161,6344
+   PRIMME_SVDS_numProcs 162,6384
+   PRIMME_SVDS_procID 163,6413
+   PRIMME_SVDS_mLocal 164,6440
+   PRIMME_SVDS_nLocal 165,6467
+   PRIMME_SVDS_commInfo 166,6494
+   PRIMME_SVDS_globalSumReal 167,6524
+   PRIMME_SVDS_numSvals 168,6559
+   PRIMME_SVDS_target 169,6589
+   PRIMME_SVDS_numTargetShifts 170,6617
+   PRIMME_SVDS_targetShifts 171,6654
+   PRIMME_SVDS_method 172,6688
+   PRIMME_SVDS_methodStage2 173,6716
+   PRIMME_SVDS_intWorkSize 174,6750
+   PRIMME_SVDS_realWorkSize 175,6783
+   PRIMME_SVDS_intWork 176,6817
+   PRIMME_SVDS_realWork 177,6846
+   PRIMME_SVDS_matrix 178,6876
+   PRIMME_SVDS_preconditioner 179,6904
+   PRIMME_SVDS_locking 180,6940
+   PRIMME_SVDS_numOrthoConst 181,6969
+   PRIMME_SVDS_aNorm 182,7004
+   PRIMME_SVDS_eps 183,7031
+   PRIMME_SVDS_precondition 184,7056
+   PRIMME_SVDS_initSize 185,7090
+   PRIMME_SVDS_maxBasisSize 186,7120
+   PRIMME_SVDS_maxBlockSize 187,7154
+   PRIMME_SVDS_maxMatvecs 188,7188
+   PRIMME_SVDS_iseed 189,7220
+   PRIMME_SVDS_printLevel 190,7247
+   PRIMME_SVDS_outputFile 191,7279
+   PRIMME_SVDS_stats_numOuterIterations 192,7311
+   PRIMME_SVDS_stats_numRestarts 193,7357
+   PRIMME_SVDS_stats_numMatvecs 194,7396
+   PRIMME_SVDS_stats_numPreconds 195,7434
+   PRIMME_SVDS_stats_numGlobalSum 196,7473
+   PRIMME_SVDS_stats_volumeGlobalSum 197,7514
+   PRIMME_SVDS_stats_numOrthoInnerProds 198,7558
+   PRIMME_SVDS_stats_elapsedTime 199,7605
+   PRIMME_SVDS_stats_timeMatvec 200,7644
+   PRIMME_SVDS_stats_timePrecond 201,7683
+   PRIMME_SVDS_stats_timeOrtho 202,7723
+   PRIMME_SVDS_stats_timeGlobalSum 203,7761
+   PRIMME_SVDS_convTestFun 204,7803
+   PRIMME_SVDS_convtest 205,7837
+   PRIMME_SVDS_monitorFun 206,7868
+   PRIMME_SVDS_monitor 207,7900
+} primme_svds_params_label;208,7928
+
+include/primme_svds_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+src/include/template.h,2022
+#define TEMPLATE_H37,2074
+#  define SCALAR_PRE 73,3459
+#  define REAL_PRE 74,3482
+#  define SCALAR_SUF 75,3503
+#  define REAL_SUF 76,3532
+#  define SCALAR 77,3559
+#  define REAL 78,3583
+#  define MACHINE_EPSILON 79,3605
+#  define SCALAR_PRE 81,3676
+#  define REAL_PRE 82,3699
+#  define SCALAR_SUF 83,3720
+#  define REAL_SUF 84,3749
+#  define USE_COMPLEX85,3776
+#  define SCALAR 86,3798
+#  define REAL 87,3837
+#  define MACHINE_EPSILON 88,3859
+#  define SCALAR_PRE 90,3922
+#  define REAL_PRE 91,3945
+#  define SCALAR_SUF 92,3966
+#  define REAL_SUF 93,3995
+#  define SCALAR 94,4022
+#  define REAL 95,4045
+#  define MACHINE_EPSILON 96,4066
+#  define SCALAR_PRE 98,4136
+#  define REAL_PRE 99,4159
+#  define SCALAR_SUF 100,4180
+#  define REAL_SUF 101,4209
+#  define USE_COMPLEX102,4236
+#  define SCALAR 103,4258
+#  define REAL 104,4296
+#  define MACHINE_EPSILON 105,4317
+#     define REAL_PART(118,4944
+#     define ABS(119,4981
+#     define CONJ(120,5011
+#     define REAL_PART(122,5050
+#     define ABS(123,5091
+#     define CONJ(124,5125
+#  define REAL_PART(127,5176
+#  define ABS(128,5203
+#  define CONJ(129,5230
+#   undef I134,5335
+#  undef pow145,5619
+#  undef exp148,5650
+#  undef log151,5681
+#  define ISFINITE 155,5722
+#  define ISFINITE 157,5756
+#     define TEMPLATE_PLEASE 172,6569
+#     define TEMPLATE_PLEASE 175,6698
+#  undef PRIMME_COMPLEX_FLOAT180,6940
+#  undef PRIMME_COMPLEX_DOUBLE181,6970
+#  undef PRIMME_INT182,7001
+#  define TEMPLATE_PLEASE184,7027
+#define CHKERR(215,8419
+#define CHKERRNOABORT(238,9239
+#define CHKERRM(267,10284
+#define CHKERRNOABORTM(299,11462
+#define CHKERRS(325,12410
+#define CHKERRMS(355,13495
+#define MALLOC_PRIMME(394,14782
+#define WRKSP_MALLOC_PRIMME(422,15826
+#define ALIGN_BY_SIZE(435,16502
+#define ALIGN(437,16590
+#define CONCAT(445,16932
+#define CONCATX(446,16967
+#define TO_INT(448,16997
+#define FORTRAN_FUNCTION(451,17069
+#define FORTRAN_FUNCTION(453,17115
+#  define max(457,17165
+#  define min(460,17228
+
+src/include/primme_interface.h,60
+#define PRIMME_INTERFACE_H37,2110
+#define sprimme 41,2264
+
+src/include/numerical.h,0
+
+src/eigs/auxiliary_eigs.c,158
+void Num_compute_residual_cprimme(61,2768
+int Num_update_VWXR_cprimme(115,4819
+int applyPreconditioner_cprimme(243,9638
+int convTestFun_cprimme(296,11355
+
+src/eigs/convergence.c,89
+int check_convergence_cprimme(82,3940
+static int check_practical_convergence(242,10810
+
+src/eigs/correction.c,205
+int solve_correction_cprimme(149,6775
+static REAL computeRobustShift(506,23673
+static void mergeSort(619,27931
+static int Olsen_preconditioner_block(700,31121
+static int setup_JD_projectors(839,37494
+
+src/eigs/factorize.c,65
+int UDUDecompose_cprimme(73,3248
+int UDUSolve_cprimme(149,5455
+
+src/eigs/globalsum.c,31
+int globalSum_cprimme(41,2119
+
+src/eigs/init.c,73
+int init_basis_cprimme(127,5319
+static int init_block_krylov(273,10559
+
+src/eigs/inner_solve.c,280
+int inner_solve_cprimme(155,6440
+static int apply_projected_preconditioner(580,23323
+static int apply_skew_projector(627,25009
+static int apply_projected_matrix(717,28385
+static int apply_projector(752,29562
+static int dist_dot(790,30769
+static int dist_dot_real(823,31899
+
+src/eigs/main_iter.c,565
+int main_iter_cprimme(136,6105
+      primme_orth_implicit_I,223,12303
+      primme_orth_explicit_I 224,12389
+   #  define TO_REAL(284,14978
+   #  define TO_REAL(286,15013
+   #undef TO_REAL295,15467
+int prepare_candidates_cprimme(1160,56723
+static int verify_norms(1408,67651
+static int switch_from_JDQMR(1492,71319
+static int switch_from_GDpk(1604,76224
+static int update_statistics(1747,82430
+static double ratio_JDQMR_GDpk(1907,89982
+static void update_slowdown(1926,90882
+static void initializeModel(1959,92239
+static void displayModel(2000,93552
+
+src/eigs/ortho.c,383
+static int Bortho_gen_cprimme(117,5589
+int ortho_cprimme(381,15185
+struct local_matvec_ctx 392,15617
+struct local_matvec_ctx { SCALAR *B;B392,15617
+struct local_matvec_ctx { SCALAR *B; int n,392,15617
+struct local_matvec_ctx { SCALAR *B; int n, ldB;392,15617
+static int local_matvec(394,15670
+int Bortho_local_cprimme(404,15970
+int ortho_single_iteration_cprimme(438,17421
+
+src/eigs/primme.c,290
+#define ALLOCATE_WORKSPACE_FAILURE 71,3429
+#define MALLOC_FAILURE 72,3467
+#define MAIN_ITER_FAILURE 73,3505
+int cprimme(123,5738
+static int allocate_workspace(264,11381
+static int check_input(484,22829
+static void convTestFunAbsolute(605,27720
+static void default_monitor(649,29640
+
+src/eigs/primme_f77.c,255
+void AS_FORTRAN(48,2653
+void AS_FORTRAN(63,3199
+void AS_FORTRAN(73,3591
+void AS_FORTRAN(83,3920
+void AS_FORTRAN(94,4430
+void AS_FORTRAN(118,5489
+void AS_FORTRAN(150,6957
+void AS_FORTRAN(161,7527
+void AS_FORTRAN(186,8605
+void AS_FORTRAN(191,8785
+
+src/eigs/primme_interface.c,2020
+void primme_initialize(61,2957
+void primme_free(170,7616
+int primme_set_method(239,10785
+void primme_set_defaults(466,20538
+void primme_display_params(552,24507
+void primme_display_params_prefix(575,25384
+#define PRINT(580,25515
+#define PRINTIF(581,25598
+#define PRINTParams(582,25692
+#define PRINTParamsIF(584,25841
+#define PRINT_PRIMME_INT(586,25998
+#undef PRINT670,29025
+#undef PRINTIF671,29038
+#undef PRINTParams672,29053
+#undef PRINTParamsIF673,29072
+int primme_get_member(694,29625
+   union value_t 698,29729
+      PRIMME_INT int_v;699,29748
+      void (*matFunc_v)matFunc_v700,29772
+      void *ptr_v;ptr_v701,29871
+      void (*globalSumRealFunc_v)globalSumRealFunc_v702,29890
+      void (*convTestFun_v)convTestFun_v703,29975
+      primme_target target_v;704,30060
+      double double_v;705,30090
+      FILE *file_v;file_v706,30113
+      primme_init init_v;707,30133
+      primme_projection projection_v;708,30159
+      primme_restartscheme restartscheme_v;709,30197
+      primme_convergencetest convergencetest_v;710,30241
+      void (*monitorFun_v)monitorFun_v711,30289
+int primme_set_member(948,38207
+   union value_t 952,38311
+      PRIMME_INT *int_v;int_v953,38330
+      void (*matFunc_v)matFunc_v954,38355
+      void *ptr_v;ptr_v955,38454
+      void (*globalSumRealFunc_v)globalSumRealFunc_v956,38473
+      void (*convTestFun_v)convTestFun_v957,38558
+      primme_target *target_v;target_v958,38643
+      double *double_v;double_v959,38674
+      FILE *file_v;file_v960,38698
+      primme_init *init_v;init_v961,38718
+      primme_projection *projection_v;projection_v962,38745
+      primme_restartscheme *restartscheme_v;restartscheme_v963,38784
+      primme_convergencetest *convergencetest_v;convergencetest_v964,38829
+      void (*monitorFun_v)monitorFun_v965,38878
+int primme_member_info(1231,48423
+#define IF_IS(1244,48854
+#undef IF_IS1321,53195
+int primme_constant_info(1451,56939
+#define IF_IS(1453,57003
+#undef IF_IS1505,58505
+
+src/eigs/restart.c,618
+int restart_cprimme(277,12127
+static int restart_soft_locking_cprimme(680,30283
+static int restart_locking_cprimme(1038,45052
+int Num_reset_update_VWXR_cprimme(1441,63448
+static int restart_projection_cprimme(1692,72292
+static int restart_RR(1867,80096
+static int restart_RR_explicit(2062,88354
+static int restart_refined(2182,93052
+static int restart_harmonic(2588,110726
+static int dtr_cprimme(2701,115073
+static int ortho_coefficient_vectors_cprimme(2837,120258
+int retain_previous_coefficients_cprimme(2974,125654
+static void insertionSort(3080,129636
+static int compute_residual_columns(3217,134769
+
+src/eigs/solve_projection.c,236
+int solve_H_cprimme(103,4825
+static int solve_H_RR_cprimme(197,8356
+static int solve_H_Harm_cprimme(406,16272
+static int solve_H_Ref_cprimme(511,19916
+static int solve_H_brcast_cprimme(632,24630
+int prepare_vecs_cprimme(815,31154
+
+src/eigs/update_W.c,65
+int matrixMatvec_cprimme(64,2967
+int update_Q_cprimme(121,4878
+
+src/eigs/update_projection.c,39
+int update_projection_cprimme(71,3422
+
+src/linalg/auxiliary.c,425
+void Num_copy_matrix_cprimme(62,2785
+void Num_copy_matrix_columns_cprimme(121,4612
+void Num_zero_matrix_cprimme(146,5361
+void Num_copy_trimatrix_cprimme(179,6410
+void Num_copy_trimatrix_compact_cprimme(250,8722
+void Num_copy_compact_trimatrix_cprimme(281,9657
+void permute_vecs_cprimme(312,10666
+void permute_vecs_iprimme(387,13180
+SCALAR* Num_compact_vecs_cprimme(484,16419
+int compute_submatrix_cprimme(530,17647
+
+src/linalg/blaslapack.c,590
+void Num_copy_cprimme(51,2591
+void Num_gemm_cprimme(71,3190
+void Num_hemm_cprimme(118,4534
+void Num_trmm_cprimme(149,5524
+void Num_gemv_cprimme(180,6584
+void Num_hemv_cprimme(234,8026
+void Num_axpy_cprimme(262,8829
+SCALAR Num_dot_cprimme(283,9423
+void Num_larnv_cprimme(326,10710
+void Num_scal_cprimme(367,12028
+void Num_swap_cprimme(385,12583
+void Num_heev_cprimme(406,13235
+void Num_hegv_cprimme(559,17185
+void Num_gesvd_cprimme(705,20969
+void Num_gesvd_cprimme(745,22156
+void Num_hetrf_cprimme(791,23642
+void Num_hetrs_cprimme(876,25944
+void Num_trsm_cprimme(925,27362
+
+src/linalg/wtime.c,158
+#define   RUSAGE_SELF 45,2212
+double primme_wTimer(52,2399
+double primme_get_wtime(96,3609
+double primme_get_time(104,3806
+double primme_wTimer(119,4215
+
+src/svds/primme_svds.c,852
+#define ALLOCATE_WORKSPACE_FAILURE 48,2324
+#define MALLOC_FAILURE 49,2362
+#define UPDATE_STATS(95,5365
+int cprimme_svds(150,8208
+static int comp_double(274,12721
+static SCALAR* copy_last_params_from_svds(279,12826
+static int allocate_workspace_svds(579,24956
+int copy_last_params_to_svds(647,27992
+static int primme_svds_check_input(826,34974
+static void matrixMatvecSVDS(882,37317
+static void applyPreconditionerSVDS(930,39270
+static void Num_scalInv_Smatrix(941,39735
+static int globalSum_Rprimme_svds(961,40308
+static void compute_resNorm(1000,41561
+static void default_convTestFun(1087,44639
+static void convTestFunATA(1134,46618
+static void convTestFunAug(1191,48646
+static void default_monitor(1257,51399
+static void monitor_single_stage(1357,56039
+static void monitor_stage1(1455,60115
+static void monitor_stage2(1556,64171
+
+src/svds/primme_svds_f77.c,200
+void AS_FORTRAN(41,2174
+void AS_FORTRAN(50,2449
+void AS_FORTRAN(56,2639
+void AS_FORTRAN(63,2945
+void AS_FORTRAN(67,3074
+void AS_FORTRAN(73,3229
+void AS_FORTRAN(79,3441
+void AS_FORTRAN(85,3657
+
+src/svds/primme_svds_interface.c,1665
+void primme_svds_initialize(63,3001
+int primme_svds_set_method(166,7458
+void primme_svds_set_defaults(215,9303
+static void copy_params_from_svds(243,10398
+void primme_svds_display_params(363,14671
+#define PRINT(368,14795
+#define PRINTIF(369,14884
+#define PRINTParams(370,14984
+#define PRINTParamsIF(372,15139
+#define PRINT_PRIMME_INT(374,15302
+void primme_svds_free(463,18527
+static void globalSumRealSvds(477,19006
+int primme_svds_get_member(502,19844
+   union value_t 506,19968
+      PRIMME_INT int_v;507,19987
+      void (*matFunc_v)matFunc_v508,20011
+      void *ptr_v;ptr_v509,20116
+      void (*globalSumRealFunc_v)globalSumRealFunc_v510,20135
+      primme_svds_target target_v;511,20224
+      primme_svds_operator operator_v;512,20259
+      double double_v;513,20298
+      FILE *file_v;file_v514,20321
+      void (*convTestFun_v)convTestFun_v515,20341
+      void (*monitorFun_v)monitorFun_v518,20515
+int primme_svds_set_member(711,26936
+   union value_t 714,27059
+      PRIMME_INT *int_v;int_v715,27078
+      void (*matFunc_v)matFunc_v716,27103
+      void *ptr_v;ptr_v717,27208
+      void (*globalSumRealFunc_v)globalSumRealFunc_v718,27227
+      primme_svds_target *target_v;target_v719,27316
+      primme_svds_operator *operator_v;operator_v720,27352
+      double *double_v;double_v721,27392
+      FILE *file_v;file_v722,27416
+      void (*convTestFun_v)convTestFun_v723,27436
+      void (*monitorFun_v)monitorFun_v726,27610
+int primme_svds_member_info(928,34534
+#define IF_IS(941,34985
+#undef IF_IS1000,36403
+int primme_svds_constant_info(1109,39446
+#define IF_IS(1111,39515
+#undef IF_IS1129,40056
+
+include/primme.h,744
+#define PRIMME_H37,2076
+#define PRIMME_VERSION_MAJOR 41,2116
+#define PRIMME_VERSION_MINOR 42,2152
+#  define PRIMME_COMPLEX_FLOAT 52,2635
+#  define PRIMME_COMPLEX_DOUBLE 53,2686
+#  define PRIMME_COMPLEX_FLOAT 56,2768
+#  define PRIMME_COMPLEX_DOUBLE 57,2813
+#  define __STDC_FORMAT_MACROS62,2990
+#  define PRIMME_INT 68,3130
+#  define PRIMME_INT_P 69,3159
+#  define PRIMME_INT_MAX 70,3189
+#     define PRId64 72,3241
+#  define PRIMME_INT 76,3324
+#  define PRIMME_INT_P 77,3349
+#  define PRIMME_INT_MAX 78,3376
+#  define PRIMME_INT 82,3483
+#  define PRIMME_INT_P 83,3512
+#  define PRIMME_INT_MAX 84,3542
+#     define PRId64 86,3594
+#  define PRIMME_INT 89,3633
+#  define PRIMME_INT_P 90,3670
+#  define PRIMME_INT_MAX 91,3697
+
+include/primme_eigs.h,7508
+#define PRIMME_EIGS_H37,2091
+   primme_smallest,48,2220
+   primme_largest,49,2274
+   primme_closest_geq,50,2329
+   primme_closest_leq,51,2405
+   primme_closest_abs,52,2479
+   primme_largest_abs 53,2544
+} primme_target;54,2610
+   primme_proj_default,58,2683
+   primme_proj_RR,59,2707
+   primme_proj_harmonic,60,2755
+   primme_proj_refined 61,2812
+} primme_projection;62,2872
+   primme_init_default,65,2967
+   primme_init_krylov,66,2991
+   primme_init_random,67,3082
+   primme_init_user 68,3134
+} primme_init;69,3209
+   primme_thick,73,3241
+   primme_dtr74,3258
+} primme_restartscheme;75,3272
+   primme_full_LTolerance,79,3313
+   primme_decreasing_LTolerance,80,3340
+   primme_adaptive_ETolerance,81,3373
+   primme_adaptive82,3404
+} primme_convergencetest;83,3423
+   primme_event_outer_iteration,88,3535
+   primme_event_inner_iteration,89,3616
+   primme_event_restart,90,3697
+   primme_event_reset,91,3778
+   primme_event_converged,92,3859
+   primme_event_locked 93,3940
+} primme_event;94,4021
+typedef struct primme_stats 96,4038
+   PRIMME_INT numOuterIterations;97,4068
+   PRIMME_INT numRestarts;98,4102
+   PRIMME_INT numMatvecs;99,4129
+   PRIMME_INT numPreconds;100,4155
+   PRIMME_INT numGlobalSum;101,4182
+   PRIMME_INT volumeGlobalSum;102,4251
+   double numOrthoInnerProds;103,4336
+   double elapsedTime;104,4414
+   double timeMatvec;105,4438
+   double timePrecond;106,4508
+   double timeOrtho;107,4585
+   double timeGlobalSum;108,4649
+   double estimateMinEVal;109,4721
+   double estimateMaxEVal;110,4792
+   double estimateLargestSVal;111,4864
+   double maxConvTol;112,4961
+   double estimateResidualError;113,5047
+} primme_stats;114,5118
+typedef struct JD_projectors 116,5135
+   int LeftQ;117,5166
+   int LeftX;118,5180
+   int RightQ;119,5194
+   int RightX;120,5209
+   int SkewQ;121,5224
+   int SkewX;122,5238
+} JD_projectors;123,5252
+typedef struct projection_params 125,5270
+   primme_projection projection;126,5305
+} projection_params;127,5338
+typedef struct correction_params 129,5360
+   int precondition;130,5395
+   int robustShifts;131,5416
+   int maxInnerIterations;132,5437
+   struct JD_projectors projectors;133,5464
+   primme_convergencetest convTest;134,5500
+   double relTolBase;135,5536
+} correction_params;136,5558
+typedef struct restarting_params 139,5581
+   primme_restartscheme scheme;140,5616
+   int maxPrevRetain;141,5648
+} restarting_params;142,5670
+typedef struct primme_params 146,5772
+   PRIMME_INT n;149,5870
+   void (*matrixMatvec)matrixMatvec150,5887
+   void (*applyPreconditioner)applyPreconditioner155,6105
+   void (*massMatrixMatvec)massMatrixMatvec160,6343
+   int numProcs;165,6570
+   int procID;166,6587
+   PRIMME_INT nLocal;167,6602
+   void *commInfo;commInfo168,6624
+   void (*globalSumReal)globalSumReal169,6643
+   int numEvals;174,6849
+   primme_target target;175,6876
+   int numTargetShifts;176,6902
+   double *targetShifts;targetShifts177,6981
+   int dynamicMethodSwitch;180,7137
+   int locking;181,7165
+   int initSize;182,7181
+   int numOrthoConst;183,7198
+   int maxBasisSize;184,7220
+   int minRestartSize;185,7241
+   int maxBlockSize;186,7264
+   PRIMME_INT maxMatvecs;187,7285
+   PRIMME_INT maxOuterIterations;188,7311
+   int intWorkSize;189,7345
+   size_t realWorkSize;190,7365
+   PRIMME_INT iseed[iseed191,7389
+   int *intWork;intWork192,7413
+   void *realWork;realWork193,7430
+   double aNorm;194,7449
+   double eps;195,7466
+   int printLevel;197,7482
+   FILE *outputFile;outputFile198,7501
+   void *matrix;matrix200,7523
+   void *preconditioner;preconditioner201,7540
+   double *ShiftsForPreconditioner;ShiftsForPreconditioner202,7565
+   primme_init initBasisMode;203,7601
+   PRIMME_INT ldevecs;204,7631
+   PRIMME_INT ldOPs;205,7654
+   struct projection_params projectionParams;207,7676
+   struct restarting_params restartingParams;208,7723
+   struct correction_params correctionParams;209,7769
+   struct primme_stats stats;210,7815
+   void (*convTestFun)convTestFun212,7846
+   void *convtest;convtest214,7975
+   void (*monitorFun)monitorFun215,7994
+   void *monitor;monitor220,8320
+} primme_params;221,8338
+   PRIMME_DEFAULT_METHOD,225,8451
+   PRIMME_DYNAMIC,226,8477
+   PRIMME_DEFAULT_MIN_TIME,227,8496
+   PRIMME_DEFAULT_MIN_MATVECS,228,8524
+   PRIMME_Arnoldi,229,8555
+   PRIMME_GD,230,8574
+   PRIMME_GD_plusK,231,8588
+   PRIMME_GD_Olsen_plusK,232,8608
+   PRIMME_JD_Olsen_plusK,233,8634
+   PRIMME_RQI,234,8660
+   PRIMME_JDQR,235,8675
+   PRIMME_JDQMR,236,8691
+   PRIMME_JDQMR_ETol,237,8708
+   PRIMME_STEEPEST_DESCENT,238,8730
+   PRIMME_LOBPCG_OrthoBasis,239,8758
+   PRIMME_LOBPCG_OrthoBasis_Window240,8787
+} primme_preset_method;241,8822
+   primme_int,244,8862
+   primme_double,245,8877
+   primme_pointer246,8895
+} primme_type;247,8913
+   PRIMME_n 250,8944
+   PRIMME_matrixMatvec 251,8962
+   PRIMME_applyPreconditioner 252,8991
+   PRIMME_numProcs 253,9027
+   PRIMME_procID 254,9052
+   PRIMME_commInfo 255,9075
+   PRIMME_nLocal 256,9100
+   PRIMME_globalSumReal 257,9123
+   PRIMME_numEvals 258,9153
+   PRIMME_target 259,9178
+   PRIMME_numTargetShifts 260,9201
+   PRIMME_targetShifts 261,9234
+   PRIMME_locking 262,9264
+   PRIMME_initSize 263,9289
+   PRIMME_numOrthoConst 264,9315
+   PRIMME_maxBasisSize 265,9346
+   PRIMME_minRestartSize 266,9376
+   PRIMME_maxBlockSize 267,9408
+   PRIMME_maxMatvecs 268,9438
+   PRIMME_maxOuterIterations 269,9466
+   PRIMME_intWorkSize 270,9502
+   PRIMME_realWorkSize 271,9531
+   PRIMME_iseed 272,9561
+   PRIMME_intWork 273,9584
+   PRIMME_realWork 274,9609
+   PRIMME_aNorm 275,9635
+   PRIMME_eps 276,9658
+   PRIMME_printLevel 277,9679
+   PRIMME_outputFile 278,9707
+   PRIMME_matrix 279,9735
+   PRIMME_preconditioner 280,9759
+   PRIMME_initBasisMode 281,9791
+   PRIMME_projectionParams_projection 282,9824
+   PRIMME_restartingParams_scheme 283,9870
+   PRIMME_restartingParams_maxPrevRetain 284,9911
+   PRIMME_correctionParams_precondition 285,9959
+   PRIMME_correctionParams_robustShifts 286,10006
+   PRIMME_correctionParams_maxInnerIterations 287,10053
+   PRIMME_correctionParams_projectors_LeftQ 288,10106
+   PRIMME_correctionParams_projectors_LeftX 289,10157
+   PRIMME_correctionParams_projectors_RightQ 290,10208
+   PRIMME_correctionParams_projectors_RightX 291,10260
+   PRIMME_correctionParams_projectors_SkewQ 292,10312
+   PRIMME_correctionParams_projectors_SkewX 293,10363
+   PRIMME_correctionParams_convTest 294,10414
+   PRIMME_correctionParams_relTolBase 295,10457
+   PRIMME_stats_numOuterIterations 296,10502
+   PRIMME_stats_numRestarts 297,10544
+   PRIMME_stats_numMatvecs 298,10579
+   PRIMME_stats_numPreconds 299,10613
+   PRIMME_stats_numGlobalSum 300,10648
+   PRIMME_stats_volumeGlobalSum 301,10685
+   PRIMME_stats_numOrthoInnerProds 302,10725
+   PRIMME_stats_elapsedTime 303,10768
+   PRIMME_stats_timeMatvec 304,10803
+   PRIMME_stats_timePrecond 305,10839
+   PRIMME_stats_timeOrtho 306,10876
+   PRIMME_stats_timeGlobalSum 307,10911
+   PRIMME_stats_estimateMinEVal 308,10950
+   PRIMME_stats_estimateMaxEVal 309,10990
+   PRIMME_stats_estimateLargestSVal 310,11030
+   PRIMME_stats_maxConvTol 311,11074
+   PRIMME_dynamicMethodSwitch 312,11109
+   PRIMME_massMatrixMatvec 313,11145
+   PRIMME_convTestFun 314,11179
+   PRIMME_convtest 315,11208
+   PRIMME_ldevecs 316,11235
+   PRIMME_ldOPs 317,11260
+   PRIMME_monitorFun 318,11283
+   PRIMME_monitor 319,11310
+} primme_params_label;320,11333
+
+include/primme_eigs_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+include/primme_f77.h,737
+C  Redistribution and use in source and binary forms,5,156
+C  modification,6,226
+C        notice,8,377
+C        notice,10,523
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,987
+C  DIRECT,20,1223
+C  DIRECT, INDIRECT,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1223
+C  LOSS OF USE, DATA, OR PROFITS;22,1381
+C  ON ANY THEORY OF LIABILITY,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1460
+C 24,1538
+
+include/primme_svds.h,4456
+#define PRIMME_SVDS_H38,2078
+   primme_svds_largest,47,2182
+   primme_svds_smallest,48,2206
+   primme_svds_closest_abs49,2231
+} primme_svds_target;50,2258
+   primme_svds_default,53,2296
+   primme_svds_hybrid,54,2320
+   primme_svds_normalequations,55,2343
+   primme_svds_augmented56,2394
+} primme_svds_preset_method;57,2419
+   primme_svds_op_none,60,2464
+   primme_svds_op_AtA,61,2488
+   primme_svds_op_AAt,62,2511
+   primme_svds_op_augmented63,2534
+} primme_svds_operator;64,2562
+typedef struct primme_svds_stats 66,2587
+   PRIMME_INT numOuterIterations;67,2622
+   PRIMME_INT numRestarts;68,2656
+   PRIMME_INT numMatvecs;69,2683
+   PRIMME_INT numPreconds;70,2709
+   PRIMME_INT numGlobalSum;71,2736
+   PRIMME_INT volumeGlobalSum;72,2805
+   double numOrthoInnerProds;73,2890
+   double elapsedTime;74,2968
+   double timeMatvec;75,2992
+   double timePrecond;76,3062
+   double timeOrtho;77,3139
+   double timeGlobalSum;78,3203
+} primme_svds_stats;79,3275
+typedef struct primme_svds_params 81,3297
+   primme_params primme;83,3394
+   primme_params primmeStage2;85,3526
+   PRIMME_INT m;88,3654
+   PRIMME_INT n;89,3693
+   void (*matrixMatvec)matrixMatvec92,3829
+   void (*applyPreconditioner)applyPreconditioner95,4004
+   int numProcs;100,4258
+   int procID;101,4275
+   PRIMME_INT mLocal;102,4290
+   PRIMME_INT nLocal;103,4312
+   void *commInfo;commInfo104,4334
+   void (*globalSumReal)globalSumReal105,4353
+   int numSvals;110,4574
+   primme_svds_target target;111,4591
+   int numTargetShifts;112,4621
+   double *targetShifts;targetShifts113,4701
+   primme_svds_operator method;114,4781
+   primme_svds_operator methodStage2;115,4884
+   int intWorkSize;118,5065
+   size_t realWorkSize;119,5085
+   int *intWork;intWork120,5109
+   void *realWork;realWork121,5126
+   void *matrix;matrix124,5225
+   void *preconditioner;preconditioner125,5242
+   int locking;128,5344
+   int numOrthoConst;129,5360
+   double aNorm;130,5382
+   double eps;131,5399
+   int precondition;133,5415
+   int initSize;134,5436
+   int maxBasisSize;135,5453
+   int maxBlockSize;136,5474
+   PRIMME_INT maxMatvecs;137,5495
+   PRIMME_INT iseed[iseed138,5521
+   int printLevel;139,5545
+   FILE *outputFile;outputFile140,5564
+   struct primme_svds_stats stats;141,5585
+   void (*convTestFun)convTestFun143,5621
+   void *convtest;convtest146,5784
+   void (*monitorFun)monitorFun147,5803
+   void *monitor;monitor152,6151
+} primme_svds_params;153,6169
+   PRIMME_SVDS_primme 156,6207
+   PRIMME_SVDS_primmeStage2 157,6234
+   PRIMME_SVDS_m 158,6267
+   PRIMME_SVDS_n 159,6289
+   PRIMME_SVDS_matrixMatvec 160,6311
+   PRIMME_SVDS_applyPreconditioner 161,6344
+   PRIMME_SVDS_numProcs 162,6384
+   PRIMME_SVDS_procID 163,6413
+   PRIMME_SVDS_mLocal 164,6440
+   PRIMME_SVDS_nLocal 165,6467
+   PRIMME_SVDS_commInfo 166,6494
+   PRIMME_SVDS_globalSumReal 167,6524
+   PRIMME_SVDS_numSvals 168,6559
+   PRIMME_SVDS_target 169,6589
+   PRIMME_SVDS_numTargetShifts 170,6617
+   PRIMME_SVDS_targetShifts 171,6654
+   PRIMME_SVDS_method 172,6688
+   PRIMME_SVDS_methodStage2 173,6716
+   PRIMME_SVDS_intWorkSize 174,6750
+   PRIMME_SVDS_realWorkSize 175,6783
+   PRIMME_SVDS_intWork 176,6817
+   PRIMME_SVDS_realWork 177,6846
+   PRIMME_SVDS_matrix 178,6876
+   PRIMME_SVDS_preconditioner 179,6904
+   PRIMME_SVDS_locking 180,6940
+   PRIMME_SVDS_numOrthoConst 181,6969
+   PRIMME_SVDS_aNorm 182,7004
+   PRIMME_SVDS_eps 183,7031
+   PRIMME_SVDS_precondition 184,7056
+   PRIMME_SVDS_initSize 185,7090
+   PRIMME_SVDS_maxBasisSize 186,7120
+   PRIMME_SVDS_maxBlockSize 187,7154
+   PRIMME_SVDS_maxMatvecs 188,7188
+   PRIMME_SVDS_iseed 189,7220
+   PRIMME_SVDS_printLevel 190,7247
+   PRIMME_SVDS_outputFile 191,7279
+   PRIMME_SVDS_stats_numOuterIterations 192,7311
+   PRIMME_SVDS_stats_numRestarts 193,7357
+   PRIMME_SVDS_stats_numMatvecs 194,7396
+   PRIMME_SVDS_stats_numPreconds 195,7434
+   PRIMME_SVDS_stats_numGlobalSum 196,7473
+   PRIMME_SVDS_stats_volumeGlobalSum 197,7514
+   PRIMME_SVDS_stats_numOrthoInnerProds 198,7558
+   PRIMME_SVDS_stats_elapsedTime 199,7605
+   PRIMME_SVDS_stats_timeMatvec 200,7644
+   PRIMME_SVDS_stats_timePrecond 201,7683
+   PRIMME_SVDS_stats_timeOrtho 202,7723
+   PRIMME_SVDS_stats_timeGlobalSum 203,7761
+   PRIMME_SVDS_convTestFun 204,7803
+   PRIMME_SVDS_convtest 205,7837
+   PRIMME_SVDS_monitorFun 206,7868
+   PRIMME_SVDS_monitor 207,7900
+} primme_svds_params_label;208,7928
+
+include/primme_svds_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+src/include/template.h,2022
+#define TEMPLATE_H37,2074
+#  define SCALAR_PRE 73,3459
+#  define REAL_PRE 74,3482
+#  define SCALAR_SUF 75,3503
+#  define REAL_SUF 76,3532
+#  define SCALAR 77,3559
+#  define REAL 78,3583
+#  define MACHINE_EPSILON 79,3605
+#  define SCALAR_PRE 81,3676
+#  define REAL_PRE 82,3699
+#  define SCALAR_SUF 83,3720
+#  define REAL_SUF 84,3749
+#  define USE_COMPLEX85,3776
+#  define SCALAR 86,3798
+#  define REAL 87,3837
+#  define MACHINE_EPSILON 88,3859
+#  define SCALAR_PRE 90,3922
+#  define REAL_PRE 91,3945
+#  define SCALAR_SUF 92,3966
+#  define REAL_SUF 93,3995
+#  define SCALAR 94,4022
+#  define REAL 95,4045
+#  define MACHINE_EPSILON 96,4066
+#  define SCALAR_PRE 98,4136
+#  define REAL_PRE 99,4159
+#  define SCALAR_SUF 100,4180
+#  define REAL_SUF 101,4209
+#  define USE_COMPLEX102,4236
+#  define SCALAR 103,4258
+#  define REAL 104,4296
+#  define MACHINE_EPSILON 105,4317
+#     define REAL_PART(118,4944
+#     define ABS(119,4981
+#     define CONJ(120,5011
+#     define REAL_PART(122,5050
+#     define ABS(123,5091
+#     define CONJ(124,5125
+#  define REAL_PART(127,5176
+#  define ABS(128,5203
+#  define CONJ(129,5230
+#   undef I134,5335
+#  undef pow145,5619
+#  undef exp148,5650
+#  undef log151,5681
+#  define ISFINITE 155,5722
+#  define ISFINITE 157,5756
+#     define TEMPLATE_PLEASE 172,6569
+#     define TEMPLATE_PLEASE 175,6698
+#  undef PRIMME_COMPLEX_FLOAT180,6940
+#  undef PRIMME_COMPLEX_DOUBLE181,6970
+#  undef PRIMME_INT182,7001
+#  define TEMPLATE_PLEASE184,7027
+#define CHKERR(215,8419
+#define CHKERRNOABORT(238,9239
+#define CHKERRM(267,10284
+#define CHKERRNOABORTM(299,11462
+#define CHKERRS(325,12410
+#define CHKERRMS(355,13495
+#define MALLOC_PRIMME(394,14782
+#define WRKSP_MALLOC_PRIMME(422,15826
+#define ALIGN_BY_SIZE(435,16502
+#define ALIGN(437,16590
+#define CONCAT(445,16932
+#define CONCATX(446,16967
+#define TO_INT(448,16997
+#define FORTRAN_FUNCTION(451,17069
+#define FORTRAN_FUNCTION(453,17115
+#  define max(457,17165
+#  define min(460,17228
+
+src/include/primme_interface.h,60
+#define PRIMME_INTERFACE_H37,2110
+#define cprimme 41,2264
+
+src/include/numerical.h,0
+
+src/eigs/auxiliary_eigs.c,158
+void Num_compute_residual_dprimme(61,2768
+int Num_update_VWXR_dprimme(115,4819
+int applyPreconditioner_dprimme(243,9638
+int convTestFun_dprimme(296,11355
+
+src/eigs/convergence.c,89
+int check_convergence_dprimme(82,3940
+static int check_practical_convergence(242,10810
+
+src/eigs/correction.c,205
+int solve_correction_dprimme(149,6775
+static REAL computeRobustShift(506,23673
+static void mergeSort(619,27931
+static int Olsen_preconditioner_block(700,31121
+static int setup_JD_projectors(839,37494
+
+src/eigs/factorize.c,65
+int UDUDecompose_dprimme(73,3248
+int UDUSolve_dprimme(149,5455
+
+src/eigs/globalsum.c,31
+int globalSum_dprimme(41,2119
+
+src/eigs/init.c,73
+int init_basis_dprimme(127,5319
+static int init_block_krylov(273,10559
+
+src/eigs/inner_solve.c,280
+int inner_solve_dprimme(155,6440
+static int apply_projected_preconditioner(580,23323
+static int apply_skew_projector(627,25009
+static int apply_projected_matrix(717,28385
+static int apply_projector(752,29562
+static int dist_dot(790,30769
+static int dist_dot_real(823,31899
+
+src/eigs/main_iter.c,565
+int main_iter_dprimme(136,6105
+      primme_orth_implicit_I,223,12303
+      primme_orth_explicit_I 224,12389
+   #  define TO_REAL(284,14978
+   #  define TO_REAL(286,15013
+   #undef TO_REAL295,15467
+int prepare_candidates_dprimme(1160,56723
+static int verify_norms(1408,67651
+static int switch_from_JDQMR(1492,71319
+static int switch_from_GDpk(1604,76224
+static int update_statistics(1747,82430
+static double ratio_JDQMR_GDpk(1907,89982
+static void update_slowdown(1926,90882
+static void initializeModel(1959,92239
+static void displayModel(2000,93552
+
+src/eigs/ortho.c,383
+static int Bortho_gen_dprimme(117,5589
+int ortho_dprimme(381,15185
+struct local_matvec_ctx 392,15617
+struct local_matvec_ctx { SCALAR *B;B392,15617
+struct local_matvec_ctx { SCALAR *B; int n,392,15617
+struct local_matvec_ctx { SCALAR *B; int n, ldB;392,15617
+static int local_matvec(394,15670
+int Bortho_local_dprimme(404,15970
+int ortho_single_iteration_dprimme(438,17421
+
+src/eigs/primme.c,290
+#define ALLOCATE_WORKSPACE_FAILURE 71,3429
+#define MALLOC_FAILURE 72,3467
+#define MAIN_ITER_FAILURE 73,3505
+int dprimme(123,5738
+static int allocate_workspace(264,11381
+static int check_input(484,22829
+static void convTestFunAbsolute(605,27720
+static void default_monitor(649,29640
+
+src/eigs/primme_f77.c,255
+void AS_FORTRAN(48,2653
+void AS_FORTRAN(63,3199
+void AS_FORTRAN(73,3591
+void AS_FORTRAN(83,3920
+void AS_FORTRAN(94,4430
+void AS_FORTRAN(118,5489
+void AS_FORTRAN(150,6957
+void AS_FORTRAN(161,7527
+void AS_FORTRAN(186,8605
+void AS_FORTRAN(191,8785
+
+src/eigs/primme_interface.c,2020
+void primme_initialize(61,2957
+void primme_free(170,7616
+int primme_set_method(239,10785
+void primme_set_defaults(466,20538
+void primme_display_params(552,24507
+void primme_display_params_prefix(575,25384
+#define PRINT(580,25515
+#define PRINTIF(581,25598
+#define PRINTParams(582,25692
+#define PRINTParamsIF(584,25841
+#define PRINT_PRIMME_INT(586,25998
+#undef PRINT670,29025
+#undef PRINTIF671,29038
+#undef PRINTParams672,29053
+#undef PRINTParamsIF673,29072
+int primme_get_member(694,29625
+   union value_t 698,29729
+      PRIMME_INT int_v;699,29748
+      void (*matFunc_v)matFunc_v700,29772
+      void *ptr_v;ptr_v701,29871
+      void (*globalSumRealFunc_v)globalSumRealFunc_v702,29890
+      void (*convTestFun_v)convTestFun_v703,29975
+      primme_target target_v;704,30060
+      double double_v;705,30090
+      FILE *file_v;file_v706,30113
+      primme_init init_v;707,30133
+      primme_projection projection_v;708,30159
+      primme_restartscheme restartscheme_v;709,30197
+      primme_convergencetest convergencetest_v;710,30241
+      void (*monitorFun_v)monitorFun_v711,30289
+int primme_set_member(948,38207
+   union value_t 952,38311
+      PRIMME_INT *int_v;int_v953,38330
+      void (*matFunc_v)matFunc_v954,38355
+      void *ptr_v;ptr_v955,38454
+      void (*globalSumRealFunc_v)globalSumRealFunc_v956,38473
+      void (*convTestFun_v)convTestFun_v957,38558
+      primme_target *target_v;target_v958,38643
+      double *double_v;double_v959,38674
+      FILE *file_v;file_v960,38698
+      primme_init *init_v;init_v961,38718
+      primme_projection *projection_v;projection_v962,38745
+      primme_restartscheme *restartscheme_v;restartscheme_v963,38784
+      primme_convergencetest *convergencetest_v;convergencetest_v964,38829
+      void (*monitorFun_v)monitorFun_v965,38878
+int primme_member_info(1231,48423
+#define IF_IS(1244,48854
+#undef IF_IS1321,53195
+int primme_constant_info(1451,56939
+#define IF_IS(1453,57003
+#undef IF_IS1505,58505
+
+src/eigs/restart.c,618
+int restart_dprimme(277,12127
+static int restart_soft_locking_dprimme(680,30283
+static int restart_locking_dprimme(1038,45052
+int Num_reset_update_VWXR_dprimme(1441,63448
+static int restart_projection_dprimme(1692,72292
+static int restart_RR(1867,80096
+static int restart_RR_explicit(2062,88354
+static int restart_refined(2182,93052
+static int restart_harmonic(2588,110726
+static int dtr_dprimme(2701,115073
+static int ortho_coefficient_vectors_dprimme(2837,120258
+int retain_previous_coefficients_dprimme(2974,125654
+static void insertionSort(3080,129636
+static int compute_residual_columns(3217,134769
+
+src/eigs/solve_projection.c,236
+int solve_H_dprimme(103,4825
+static int solve_H_RR_dprimme(197,8356
+static int solve_H_Harm_dprimme(406,16272
+static int solve_H_Ref_dprimme(511,19916
+static int solve_H_brcast_dprimme(632,24630
+int prepare_vecs_dprimme(815,31154
+
+src/eigs/update_W.c,65
+int matrixMatvec_dprimme(64,2967
+int update_Q_dprimme(121,4878
+
+src/eigs/update_projection.c,39
+int update_projection_dprimme(71,3422
+
+src/linalg/auxiliary.c,425
+void Num_copy_matrix_dprimme(62,2785
+void Num_copy_matrix_columns_dprimme(121,4612
+void Num_zero_matrix_dprimme(146,5361
+void Num_copy_trimatrix_dprimme(179,6410
+void Num_copy_trimatrix_compact_dprimme(250,8722
+void Num_copy_compact_trimatrix_dprimme(281,9657
+void permute_vecs_dprimme(312,10666
+void permute_vecs_iprimme(387,13180
+SCALAR* Num_compact_vecs_dprimme(484,16419
+int compute_submatrix_dprimme(530,17647
+
+src/linalg/blaslapack.c,590
+void Num_copy_dprimme(51,2591
+void Num_gemm_dprimme(71,3190
+void Num_hemm_dprimme(118,4534
+void Num_trmm_dprimme(149,5524
+void Num_gemv_dprimme(180,6584
+void Num_hemv_dprimme(234,8026
+void Num_axpy_dprimme(262,8829
+SCALAR Num_dot_dprimme(283,9423
+void Num_larnv_dprimme(326,10710
+void Num_scal_dprimme(367,12028
+void Num_swap_dprimme(385,12583
+void Num_heev_dprimme(406,13235
+void Num_hegv_dprimme(559,17185
+void Num_gesvd_dprimme(705,20969
+void Num_gesvd_dprimme(745,22156
+void Num_hetrf_dprimme(791,23642
+void Num_hetrs_dprimme(876,25944
+void Num_trsm_dprimme(925,27362
+
+src/linalg/wtime.c,158
+#define   RUSAGE_SELF 45,2212
+double primme_wTimer(52,2399
+double primme_get_wtime(96,3609
+double primme_get_time(104,3806
+double primme_wTimer(119,4215
+
+src/svds/primme_svds.c,852
+#define ALLOCATE_WORKSPACE_FAILURE 48,2324
+#define MALLOC_FAILURE 49,2362
+#define UPDATE_STATS(95,5365
+int dprimme_svds(150,8208
+static int comp_double(274,12721
+static SCALAR* copy_last_params_from_svds(279,12826
+static int allocate_workspace_svds(579,24956
+int copy_last_params_to_svds(647,27992
+static int primme_svds_check_input(826,34974
+static void matrixMatvecSVDS(882,37317
+static void applyPreconditionerSVDS(930,39270
+static void Num_scalInv_Smatrix(941,39735
+static int globalSum_Rprimme_svds(961,40308
+static void compute_resNorm(1000,41561
+static void default_convTestFun(1087,44639
+static void convTestFunATA(1134,46618
+static void convTestFunAug(1191,48646
+static void default_monitor(1257,51399
+static void monitor_single_stage(1357,56039
+static void monitor_stage1(1455,60115
+static void monitor_stage2(1556,64171
+
+src/svds/primme_svds_f77.c,200
+void AS_FORTRAN(41,2174
+void AS_FORTRAN(50,2449
+void AS_FORTRAN(56,2639
+void AS_FORTRAN(63,2945
+void AS_FORTRAN(67,3074
+void AS_FORTRAN(73,3229
+void AS_FORTRAN(79,3441
+void AS_FORTRAN(85,3657
+
+src/svds/primme_svds_interface.c,1665
+void primme_svds_initialize(63,3001
+int primme_svds_set_method(166,7458
+void primme_svds_set_defaults(215,9303
+static void copy_params_from_svds(243,10398
+void primme_svds_display_params(363,14671
+#define PRINT(368,14795
+#define PRINTIF(369,14884
+#define PRINTParams(370,14984
+#define PRINTParamsIF(372,15139
+#define PRINT_PRIMME_INT(374,15302
+void primme_svds_free(463,18527
+static void globalSumRealSvds(477,19006
+int primme_svds_get_member(502,19844
+   union value_t 506,19968
+      PRIMME_INT int_v;507,19987
+      void (*matFunc_v)matFunc_v508,20011
+      void *ptr_v;ptr_v509,20116
+      void (*globalSumRealFunc_v)globalSumRealFunc_v510,20135
+      primme_svds_target target_v;511,20224
+      primme_svds_operator operator_v;512,20259
+      double double_v;513,20298
+      FILE *file_v;file_v514,20321
+      void (*convTestFun_v)convTestFun_v515,20341
+      void (*monitorFun_v)monitorFun_v518,20515
+int primme_svds_set_member(711,26936
+   union value_t 714,27059
+      PRIMME_INT *int_v;int_v715,27078
+      void (*matFunc_v)matFunc_v716,27103
+      void *ptr_v;ptr_v717,27208
+      void (*globalSumRealFunc_v)globalSumRealFunc_v718,27227
+      primme_svds_target *target_v;target_v719,27316
+      primme_svds_operator *operator_v;operator_v720,27352
+      double *double_v;double_v721,27392
+      FILE *file_v;file_v722,27416
+      void (*convTestFun_v)convTestFun_v723,27436
+      void (*monitorFun_v)monitorFun_v726,27610
+int primme_svds_member_info(928,34534
+#define IF_IS(941,34985
+#undef IF_IS1000,36403
+int primme_svds_constant_info(1109,39446
+#define IF_IS(1111,39515
+#undef IF_IS1129,40056
+
+include/primme.h,744
+#define PRIMME_H37,2076
+#define PRIMME_VERSION_MAJOR 41,2116
+#define PRIMME_VERSION_MINOR 42,2152
+#  define PRIMME_COMPLEX_FLOAT 52,2635
+#  define PRIMME_COMPLEX_DOUBLE 53,2686
+#  define PRIMME_COMPLEX_FLOAT 56,2768
+#  define PRIMME_COMPLEX_DOUBLE 57,2813
+#  define __STDC_FORMAT_MACROS62,2990
+#  define PRIMME_INT 68,3130
+#  define PRIMME_INT_P 69,3159
+#  define PRIMME_INT_MAX 70,3189
+#     define PRId64 72,3241
+#  define PRIMME_INT 76,3324
+#  define PRIMME_INT_P 77,3349
+#  define PRIMME_INT_MAX 78,3376
+#  define PRIMME_INT 82,3483
+#  define PRIMME_INT_P 83,3512
+#  define PRIMME_INT_MAX 84,3542
+#     define PRId64 86,3594
+#  define PRIMME_INT 89,3633
+#  define PRIMME_INT_P 90,3670
+#  define PRIMME_INT_MAX 91,3697
+
+include/primme_eigs.h,7508
+#define PRIMME_EIGS_H37,2091
+   primme_smallest,48,2220
+   primme_largest,49,2274
+   primme_closest_geq,50,2329
+   primme_closest_leq,51,2405
+   primme_closest_abs,52,2479
+   primme_largest_abs 53,2544
+} primme_target;54,2610
+   primme_proj_default,58,2683
+   primme_proj_RR,59,2707
+   primme_proj_harmonic,60,2755
+   primme_proj_refined 61,2812
+} primme_projection;62,2872
+   primme_init_default,65,2967
+   primme_init_krylov,66,2991
+   primme_init_random,67,3082
+   primme_init_user 68,3134
+} primme_init;69,3209
+   primme_thick,73,3241
+   primme_dtr74,3258
+} primme_restartscheme;75,3272
+   primme_full_LTolerance,79,3313
+   primme_decreasing_LTolerance,80,3340
+   primme_adaptive_ETolerance,81,3373
+   primme_adaptive82,3404
+} primme_convergencetest;83,3423
+   primme_event_outer_iteration,88,3535
+   primme_event_inner_iteration,89,3616
+   primme_event_restart,90,3697
+   primme_event_reset,91,3778
+   primme_event_converged,92,3859
+   primme_event_locked 93,3940
+} primme_event;94,4021
+typedef struct primme_stats 96,4038
+   PRIMME_INT numOuterIterations;97,4068
+   PRIMME_INT numRestarts;98,4102
+   PRIMME_INT numMatvecs;99,4129
+   PRIMME_INT numPreconds;100,4155
+   PRIMME_INT numGlobalSum;101,4182
+   PRIMME_INT volumeGlobalSum;102,4251
+   double numOrthoInnerProds;103,4336
+   double elapsedTime;104,4414
+   double timeMatvec;105,4438
+   double timePrecond;106,4508
+   double timeOrtho;107,4585
+   double timeGlobalSum;108,4649
+   double estimateMinEVal;109,4721
+   double estimateMaxEVal;110,4792
+   double estimateLargestSVal;111,4864
+   double maxConvTol;112,4961
+   double estimateResidualError;113,5047
+} primme_stats;114,5118
+typedef struct JD_projectors 116,5135
+   int LeftQ;117,5166
+   int LeftX;118,5180
+   int RightQ;119,5194
+   int RightX;120,5209
+   int SkewQ;121,5224
+   int SkewX;122,5238
+} JD_projectors;123,5252
+typedef struct projection_params 125,5270
+   primme_projection projection;126,5305
+} projection_params;127,5338
+typedef struct correction_params 129,5360
+   int precondition;130,5395
+   int robustShifts;131,5416
+   int maxInnerIterations;132,5437
+   struct JD_projectors projectors;133,5464
+   primme_convergencetest convTest;134,5500
+   double relTolBase;135,5536
+} correction_params;136,5558
+typedef struct restarting_params 139,5581
+   primme_restartscheme scheme;140,5616
+   int maxPrevRetain;141,5648
+} restarting_params;142,5670
+typedef struct primme_params 146,5772
+   PRIMME_INT n;149,5870
+   void (*matrixMatvec)matrixMatvec150,5887
+   void (*applyPreconditioner)applyPreconditioner155,6105
+   void (*massMatrixMatvec)massMatrixMatvec160,6343
+   int numProcs;165,6570
+   int procID;166,6587
+   PRIMME_INT nLocal;167,6602
+   void *commInfo;commInfo168,6624
+   void (*globalSumReal)globalSumReal169,6643
+   int numEvals;174,6849
+   primme_target target;175,6876
+   int numTargetShifts;176,6902
+   double *targetShifts;targetShifts177,6981
+   int dynamicMethodSwitch;180,7137
+   int locking;181,7165
+   int initSize;182,7181
+   int numOrthoConst;183,7198
+   int maxBasisSize;184,7220
+   int minRestartSize;185,7241
+   int maxBlockSize;186,7264
+   PRIMME_INT maxMatvecs;187,7285
+   PRIMME_INT maxOuterIterations;188,7311
+   int intWorkSize;189,7345
+   size_t realWorkSize;190,7365
+   PRIMME_INT iseed[iseed191,7389
+   int *intWork;intWork192,7413
+   void *realWork;realWork193,7430
+   double aNorm;194,7449
+   double eps;195,7466
+   int printLevel;197,7482
+   FILE *outputFile;outputFile198,7501
+   void *matrix;matrix200,7523
+   void *preconditioner;preconditioner201,7540
+   double *ShiftsForPreconditioner;ShiftsForPreconditioner202,7565
+   primme_init initBasisMode;203,7601
+   PRIMME_INT ldevecs;204,7631
+   PRIMME_INT ldOPs;205,7654
+   struct projection_params projectionParams;207,7676
+   struct restarting_params restartingParams;208,7723
+   struct correction_params correctionParams;209,7769
+   struct primme_stats stats;210,7815
+   void (*convTestFun)convTestFun212,7846
+   void *convtest;convtest214,7975
+   void (*monitorFun)monitorFun215,7994
+   void *monitor;monitor220,8320
+} primme_params;221,8338
+   PRIMME_DEFAULT_METHOD,225,8451
+   PRIMME_DYNAMIC,226,8477
+   PRIMME_DEFAULT_MIN_TIME,227,8496
+   PRIMME_DEFAULT_MIN_MATVECS,228,8524
+   PRIMME_Arnoldi,229,8555
+   PRIMME_GD,230,8574
+   PRIMME_GD_plusK,231,8588
+   PRIMME_GD_Olsen_plusK,232,8608
+   PRIMME_JD_Olsen_plusK,233,8634
+   PRIMME_RQI,234,8660
+   PRIMME_JDQR,235,8675
+   PRIMME_JDQMR,236,8691
+   PRIMME_JDQMR_ETol,237,8708
+   PRIMME_STEEPEST_DESCENT,238,8730
+   PRIMME_LOBPCG_OrthoBasis,239,8758
+   PRIMME_LOBPCG_OrthoBasis_Window240,8787
+} primme_preset_method;241,8822
+   primme_int,244,8862
+   primme_double,245,8877
+   primme_pointer246,8895
+} primme_type;247,8913
+   PRIMME_n 250,8944
+   PRIMME_matrixMatvec 251,8962
+   PRIMME_applyPreconditioner 252,8991
+   PRIMME_numProcs 253,9027
+   PRIMME_procID 254,9052
+   PRIMME_commInfo 255,9075
+   PRIMME_nLocal 256,9100
+   PRIMME_globalSumReal 257,9123
+   PRIMME_numEvals 258,9153
+   PRIMME_target 259,9178
+   PRIMME_numTargetShifts 260,9201
+   PRIMME_targetShifts 261,9234
+   PRIMME_locking 262,9264
+   PRIMME_initSize 263,9289
+   PRIMME_numOrthoConst 264,9315
+   PRIMME_maxBasisSize 265,9346
+   PRIMME_minRestartSize 266,9376
+   PRIMME_maxBlockSize 267,9408
+   PRIMME_maxMatvecs 268,9438
+   PRIMME_maxOuterIterations 269,9466
+   PRIMME_intWorkSize 270,9502
+   PRIMME_realWorkSize 271,9531
+   PRIMME_iseed 272,9561
+   PRIMME_intWork 273,9584
+   PRIMME_realWork 274,9609
+   PRIMME_aNorm 275,9635
+   PRIMME_eps 276,9658
+   PRIMME_printLevel 277,9679
+   PRIMME_outputFile 278,9707
+   PRIMME_matrix 279,9735
+   PRIMME_preconditioner 280,9759
+   PRIMME_initBasisMode 281,9791
+   PRIMME_projectionParams_projection 282,9824
+   PRIMME_restartingParams_scheme 283,9870
+   PRIMME_restartingParams_maxPrevRetain 284,9911
+   PRIMME_correctionParams_precondition 285,9959
+   PRIMME_correctionParams_robustShifts 286,10006
+   PRIMME_correctionParams_maxInnerIterations 287,10053
+   PRIMME_correctionParams_projectors_LeftQ 288,10106
+   PRIMME_correctionParams_projectors_LeftX 289,10157
+   PRIMME_correctionParams_projectors_RightQ 290,10208
+   PRIMME_correctionParams_projectors_RightX 291,10260
+   PRIMME_correctionParams_projectors_SkewQ 292,10312
+   PRIMME_correctionParams_projectors_SkewX 293,10363
+   PRIMME_correctionParams_convTest 294,10414
+   PRIMME_correctionParams_relTolBase 295,10457
+   PRIMME_stats_numOuterIterations 296,10502
+   PRIMME_stats_numRestarts 297,10544
+   PRIMME_stats_numMatvecs 298,10579
+   PRIMME_stats_numPreconds 299,10613
+   PRIMME_stats_numGlobalSum 300,10648
+   PRIMME_stats_volumeGlobalSum 301,10685
+   PRIMME_stats_numOrthoInnerProds 302,10725
+   PRIMME_stats_elapsedTime 303,10768
+   PRIMME_stats_timeMatvec 304,10803
+   PRIMME_stats_timePrecond 305,10839
+   PRIMME_stats_timeOrtho 306,10876
+   PRIMME_stats_timeGlobalSum 307,10911
+   PRIMME_stats_estimateMinEVal 308,10950
+   PRIMME_stats_estimateMaxEVal 309,10990
+   PRIMME_stats_estimateLargestSVal 310,11030
+   PRIMME_stats_maxConvTol 311,11074
+   PRIMME_dynamicMethodSwitch 312,11109
+   PRIMME_massMatrixMatvec 313,11145
+   PRIMME_convTestFun 314,11179
+   PRIMME_convtest 315,11208
+   PRIMME_ldevecs 316,11235
+   PRIMME_ldOPs 317,11260
+   PRIMME_monitorFun 318,11283
+   PRIMME_monitor 319,11310
+} primme_params_label;320,11333
+
+include/primme_eigs_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+include/primme_f77.h,737
+C  Redistribution and use in source and binary forms,5,156
+C  modification,6,226
+C        notice,8,377
+C        notice,10,523
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,987
+C  DIRECT,20,1223
+C  DIRECT, INDIRECT,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1223
+C  LOSS OF USE, DATA, OR PROFITS;22,1381
+C  ON ANY THEORY OF LIABILITY,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1460
+C 24,1538
+
+include/primme_svds.h,4456
+#define PRIMME_SVDS_H38,2078
+   primme_svds_largest,47,2182
+   primme_svds_smallest,48,2206
+   primme_svds_closest_abs49,2231
+} primme_svds_target;50,2258
+   primme_svds_default,53,2296
+   primme_svds_hybrid,54,2320
+   primme_svds_normalequations,55,2343
+   primme_svds_augmented56,2394
+} primme_svds_preset_method;57,2419
+   primme_svds_op_none,60,2464
+   primme_svds_op_AtA,61,2488
+   primme_svds_op_AAt,62,2511
+   primme_svds_op_augmented63,2534
+} primme_svds_operator;64,2562
+typedef struct primme_svds_stats 66,2587
+   PRIMME_INT numOuterIterations;67,2622
+   PRIMME_INT numRestarts;68,2656
+   PRIMME_INT numMatvecs;69,2683
+   PRIMME_INT numPreconds;70,2709
+   PRIMME_INT numGlobalSum;71,2736
+   PRIMME_INT volumeGlobalSum;72,2805
+   double numOrthoInnerProds;73,2890
+   double elapsedTime;74,2968
+   double timeMatvec;75,2992
+   double timePrecond;76,3062
+   double timeOrtho;77,3139
+   double timeGlobalSum;78,3203
+} primme_svds_stats;79,3275
+typedef struct primme_svds_params 81,3297
+   primme_params primme;83,3394
+   primme_params primmeStage2;85,3526
+   PRIMME_INT m;88,3654
+   PRIMME_INT n;89,3693
+   void (*matrixMatvec)matrixMatvec92,3829
+   void (*applyPreconditioner)applyPreconditioner95,4004
+   int numProcs;100,4258
+   int procID;101,4275
+   PRIMME_INT mLocal;102,4290
+   PRIMME_INT nLocal;103,4312
+   void *commInfo;commInfo104,4334
+   void (*globalSumReal)globalSumReal105,4353
+   int numSvals;110,4574
+   primme_svds_target target;111,4591
+   int numTargetShifts;112,4621
+   double *targetShifts;targetShifts113,4701
+   primme_svds_operator method;114,4781
+   primme_svds_operator methodStage2;115,4884
+   int intWorkSize;118,5065
+   size_t realWorkSize;119,5085
+   int *intWork;intWork120,5109
+   void *realWork;realWork121,5126
+   void *matrix;matrix124,5225
+   void *preconditioner;preconditioner125,5242
+   int locking;128,5344
+   int numOrthoConst;129,5360
+   double aNorm;130,5382
+   double eps;131,5399
+   int precondition;133,5415
+   int initSize;134,5436
+   int maxBasisSize;135,5453
+   int maxBlockSize;136,5474
+   PRIMME_INT maxMatvecs;137,5495
+   PRIMME_INT iseed[iseed138,5521
+   int printLevel;139,5545
+   FILE *outputFile;outputFile140,5564
+   struct primme_svds_stats stats;141,5585
+   void (*convTestFun)convTestFun143,5621
+   void *convtest;convtest146,5784
+   void (*monitorFun)monitorFun147,5803
+   void *monitor;monitor152,6151
+} primme_svds_params;153,6169
+   PRIMME_SVDS_primme 156,6207
+   PRIMME_SVDS_primmeStage2 157,6234
+   PRIMME_SVDS_m 158,6267
+   PRIMME_SVDS_n 159,6289
+   PRIMME_SVDS_matrixMatvec 160,6311
+   PRIMME_SVDS_applyPreconditioner 161,6344
+   PRIMME_SVDS_numProcs 162,6384
+   PRIMME_SVDS_procID 163,6413
+   PRIMME_SVDS_mLocal 164,6440
+   PRIMME_SVDS_nLocal 165,6467
+   PRIMME_SVDS_commInfo 166,6494
+   PRIMME_SVDS_globalSumReal 167,6524
+   PRIMME_SVDS_numSvals 168,6559
+   PRIMME_SVDS_target 169,6589
+   PRIMME_SVDS_numTargetShifts 170,6617
+   PRIMME_SVDS_targetShifts 171,6654
+   PRIMME_SVDS_method 172,6688
+   PRIMME_SVDS_methodStage2 173,6716
+   PRIMME_SVDS_intWorkSize 174,6750
+   PRIMME_SVDS_realWorkSize 175,6783
+   PRIMME_SVDS_intWork 176,6817
+   PRIMME_SVDS_realWork 177,6846
+   PRIMME_SVDS_matrix 178,6876
+   PRIMME_SVDS_preconditioner 179,6904
+   PRIMME_SVDS_locking 180,6940
+   PRIMME_SVDS_numOrthoConst 181,6969
+   PRIMME_SVDS_aNorm 182,7004
+   PRIMME_SVDS_eps 183,7031
+   PRIMME_SVDS_precondition 184,7056
+   PRIMME_SVDS_initSize 185,7090
+   PRIMME_SVDS_maxBasisSize 186,7120
+   PRIMME_SVDS_maxBlockSize 187,7154
+   PRIMME_SVDS_maxMatvecs 188,7188
+   PRIMME_SVDS_iseed 189,7220
+   PRIMME_SVDS_printLevel 190,7247
+   PRIMME_SVDS_outputFile 191,7279
+   PRIMME_SVDS_stats_numOuterIterations 192,7311
+   PRIMME_SVDS_stats_numRestarts 193,7357
+   PRIMME_SVDS_stats_numMatvecs 194,7396
+   PRIMME_SVDS_stats_numPreconds 195,7434
+   PRIMME_SVDS_stats_numGlobalSum 196,7473
+   PRIMME_SVDS_stats_volumeGlobalSum 197,7514
+   PRIMME_SVDS_stats_numOrthoInnerProds 198,7558
+   PRIMME_SVDS_stats_elapsedTime 199,7605
+   PRIMME_SVDS_stats_timeMatvec 200,7644
+   PRIMME_SVDS_stats_timePrecond 201,7683
+   PRIMME_SVDS_stats_timeOrtho 202,7723
+   PRIMME_SVDS_stats_timeGlobalSum 203,7761
+   PRIMME_SVDS_convTestFun 204,7803
+   PRIMME_SVDS_convtest 205,7837
+   PRIMME_SVDS_monitorFun 206,7868
+   PRIMME_SVDS_monitor 207,7900
+} primme_svds_params_label;208,7928
+
+include/primme_svds_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+src/include/template.h,2022
+#define TEMPLATE_H37,2074
+#  define SCALAR_PRE 73,3459
+#  define REAL_PRE 74,3482
+#  define SCALAR_SUF 75,3503
+#  define REAL_SUF 76,3532
+#  define SCALAR 77,3559
+#  define REAL 78,3583
+#  define MACHINE_EPSILON 79,3605
+#  define SCALAR_PRE 81,3676
+#  define REAL_PRE 82,3699
+#  define SCALAR_SUF 83,3720
+#  define REAL_SUF 84,3749
+#  define USE_COMPLEX85,3776
+#  define SCALAR 86,3798
+#  define REAL 87,3837
+#  define MACHINE_EPSILON 88,3859
+#  define SCALAR_PRE 90,3922
+#  define REAL_PRE 91,3945
+#  define SCALAR_SUF 92,3966
+#  define REAL_SUF 93,3995
+#  define SCALAR 94,4022
+#  define REAL 95,4045
+#  define MACHINE_EPSILON 96,4066
+#  define SCALAR_PRE 98,4136
+#  define REAL_PRE 99,4159
+#  define SCALAR_SUF 100,4180
+#  define REAL_SUF 101,4209
+#  define USE_COMPLEX102,4236
+#  define SCALAR 103,4258
+#  define REAL 104,4296
+#  define MACHINE_EPSILON 105,4317
+#     define REAL_PART(118,4944
+#     define ABS(119,4981
+#     define CONJ(120,5011
+#     define REAL_PART(122,5050
+#     define ABS(123,5091
+#     define CONJ(124,5125
+#  define REAL_PART(127,5176
+#  define ABS(128,5203
+#  define CONJ(129,5230
+#   undef I134,5335
+#  undef pow145,5619
+#  undef exp148,5650
+#  undef log151,5681
+#  define ISFINITE 155,5722
+#  define ISFINITE 157,5756
+#     define TEMPLATE_PLEASE 172,6569
+#     define TEMPLATE_PLEASE 175,6698
+#  undef PRIMME_COMPLEX_FLOAT180,6940
+#  undef PRIMME_COMPLEX_DOUBLE181,6970
+#  undef PRIMME_INT182,7001
+#  define TEMPLATE_PLEASE184,7027
+#define CHKERR(215,8419
+#define CHKERRNOABORT(238,9239
+#define CHKERRM(267,10284
+#define CHKERRNOABORTM(299,11462
+#define CHKERRS(325,12410
+#define CHKERRMS(355,13495
+#define MALLOC_PRIMME(394,14782
+#define WRKSP_MALLOC_PRIMME(422,15826
+#define ALIGN_BY_SIZE(435,16502
+#define ALIGN(437,16590
+#define CONCAT(445,16932
+#define CONCATX(446,16967
+#define TO_INT(448,16997
+#define FORTRAN_FUNCTION(451,17069
+#define FORTRAN_FUNCTION(453,17115
+#  define max(457,17165
+#  define min(460,17228
+
+src/include/primme_interface.h,60
+#define PRIMME_INTERFACE_H37,2110
+#define dprimme 41,2264
+
+src/include/numerical.h,0
+
+src/eigs/auxiliary_eigs.c,158
+void Num_compute_residual_zprimme(61,2768
+int Num_update_VWXR_zprimme(115,4819
+int applyPreconditioner_zprimme(243,9638
+int convTestFun_zprimme(296,11355
+
+src/eigs/convergence.c,89
+int check_convergence_zprimme(82,3940
+static int check_practical_convergence(242,10810
+
+src/eigs/correction.c,205
+int solve_correction_zprimme(149,6775
+static REAL computeRobustShift(506,23673
+static void mergeSort(619,27931
+static int Olsen_preconditioner_block(700,31121
+static int setup_JD_projectors(839,37494
+
+src/eigs/factorize.c,65
+int UDUDecompose_zprimme(73,3248
+int UDUSolve_zprimme(149,5455
+
+src/eigs/globalsum.c,31
+int globalSum_zprimme(41,2119
+
+src/eigs/init.c,73
+int init_basis_zprimme(127,5319
+static int init_block_krylov(273,10559
+
+src/eigs/inner_solve.c,280
+int inner_solve_zprimme(155,6440
+static int apply_projected_preconditioner(580,23323
+static int apply_skew_projector(627,25009
+static int apply_projected_matrix(717,28385
+static int apply_projector(752,29562
+static int dist_dot(790,30769
+static int dist_dot_real(823,31899
+
+src/eigs/main_iter.c,565
+int main_iter_zprimme(136,6105
+      primme_orth_implicit_I,223,12303
+      primme_orth_explicit_I 224,12389
+   #  define TO_REAL(284,14978
+   #  define TO_REAL(286,15013
+   #undef TO_REAL295,15467
+int prepare_candidates_zprimme(1160,56723
+static int verify_norms(1408,67651
+static int switch_from_JDQMR(1492,71319
+static int switch_from_GDpk(1604,76224
+static int update_statistics(1747,82430
+static double ratio_JDQMR_GDpk(1907,89982
+static void update_slowdown(1926,90882
+static void initializeModel(1959,92239
+static void displayModel(2000,93552
+
+src/eigs/ortho.c,383
+static int Bortho_gen_zprimme(117,5589
+int ortho_zprimme(381,15185
+struct local_matvec_ctx 392,15617
+struct local_matvec_ctx { SCALAR *B;B392,15617
+struct local_matvec_ctx { SCALAR *B; int n,392,15617
+struct local_matvec_ctx { SCALAR *B; int n, ldB;392,15617
+static int local_matvec(394,15670
+int Bortho_local_zprimme(404,15970
+int ortho_single_iteration_zprimme(438,17421
+
+src/eigs/primme.c,290
+#define ALLOCATE_WORKSPACE_FAILURE 71,3429
+#define MALLOC_FAILURE 72,3467
+#define MAIN_ITER_FAILURE 73,3505
+int zprimme(123,5738
+static int allocate_workspace(264,11381
+static int check_input(484,22829
+static void convTestFunAbsolute(605,27720
+static void default_monitor(649,29640
+
+src/eigs/primme_f77.c,255
+void AS_FORTRAN(48,2653
+void AS_FORTRAN(63,3199
+void AS_FORTRAN(73,3591
+void AS_FORTRAN(83,3920
+void AS_FORTRAN(94,4430
+void AS_FORTRAN(118,5489
+void AS_FORTRAN(150,6957
+void AS_FORTRAN(161,7527
+void AS_FORTRAN(186,8605
+void AS_FORTRAN(191,8785
+
+src/eigs/primme_interface.c,2020
+void primme_initialize(61,2957
+void primme_free(170,7616
+int primme_set_method(239,10785
+void primme_set_defaults(466,20538
+void primme_display_params(552,24507
+void primme_display_params_prefix(575,25384
+#define PRINT(580,25515
+#define PRINTIF(581,25598
+#define PRINTParams(582,25692
+#define PRINTParamsIF(584,25841
+#define PRINT_PRIMME_INT(586,25998
+#undef PRINT670,29025
+#undef PRINTIF671,29038
+#undef PRINTParams672,29053
+#undef PRINTParamsIF673,29072
+int primme_get_member(694,29625
+   union value_t 698,29729
+      PRIMME_INT int_v;699,29748
+      void (*matFunc_v)matFunc_v700,29772
+      void *ptr_v;ptr_v701,29871
+      void (*globalSumRealFunc_v)globalSumRealFunc_v702,29890
+      void (*convTestFun_v)convTestFun_v703,29975
+      primme_target target_v;704,30060
+      double double_v;705,30090
+      FILE *file_v;file_v706,30113
+      primme_init init_v;707,30133
+      primme_projection projection_v;708,30159
+      primme_restartscheme restartscheme_v;709,30197
+      primme_convergencetest convergencetest_v;710,30241
+      void (*monitorFun_v)monitorFun_v711,30289
+int primme_set_member(948,38207
+   union value_t 952,38311
+      PRIMME_INT *int_v;int_v953,38330
+      void (*matFunc_v)matFunc_v954,38355
+      void *ptr_v;ptr_v955,38454
+      void (*globalSumRealFunc_v)globalSumRealFunc_v956,38473
+      void (*convTestFun_v)convTestFun_v957,38558
+      primme_target *target_v;target_v958,38643
+      double *double_v;double_v959,38674
+      FILE *file_v;file_v960,38698
+      primme_init *init_v;init_v961,38718
+      primme_projection *projection_v;projection_v962,38745
+      primme_restartscheme *restartscheme_v;restartscheme_v963,38784
+      primme_convergencetest *convergencetest_v;convergencetest_v964,38829
+      void (*monitorFun_v)monitorFun_v965,38878
+int primme_member_info(1231,48423
+#define IF_IS(1244,48854
+#undef IF_IS1321,53195
+int primme_constant_info(1451,56939
+#define IF_IS(1453,57003
+#undef IF_IS1505,58505
+
+src/eigs/restart.c,618
+int restart_zprimme(277,12127
+static int restart_soft_locking_zprimme(680,30283
+static int restart_locking_zprimme(1038,45052
+int Num_reset_update_VWXR_zprimme(1441,63448
+static int restart_projection_zprimme(1692,72292
+static int restart_RR(1867,80096
+static int restart_RR_explicit(2062,88354
+static int restart_refined(2182,93052
+static int restart_harmonic(2588,110726
+static int dtr_zprimme(2701,115073
+static int ortho_coefficient_vectors_zprimme(2837,120258
+int retain_previous_coefficients_zprimme(2974,125654
+static void insertionSort(3080,129636
+static int compute_residual_columns(3217,134769
+
+src/eigs/solve_projection.c,236
+int solve_H_zprimme(103,4825
+static int solve_H_RR_zprimme(197,8356
+static int solve_H_Harm_zprimme(406,16272
+static int solve_H_Ref_zprimme(511,19916
+static int solve_H_brcast_zprimme(632,24630
+int prepare_vecs_zprimme(815,31154
+
+src/eigs/update_W.c,65
+int matrixMatvec_zprimme(64,2967
+int update_Q_zprimme(121,4878
+
+src/eigs/update_projection.c,39
+int update_projection_zprimme(71,3422
+
+src/linalg/auxiliary.c,425
+void Num_copy_matrix_zprimme(62,2785
+void Num_copy_matrix_columns_zprimme(121,4612
+void Num_zero_matrix_zprimme(146,5361
+void Num_copy_trimatrix_zprimme(179,6410
+void Num_copy_trimatrix_compact_zprimme(250,8722
+void Num_copy_compact_trimatrix_zprimme(281,9657
+void permute_vecs_zprimme(312,10666
+void permute_vecs_iprimme(387,13180
+SCALAR* Num_compact_vecs_zprimme(484,16419
+int compute_submatrix_zprimme(530,17647
+
+src/linalg/blaslapack.c,590
+void Num_copy_zprimme(51,2591
+void Num_gemm_zprimme(71,3190
+void Num_hemm_zprimme(118,4534
+void Num_trmm_zprimme(149,5524
+void Num_gemv_zprimme(180,6584
+void Num_hemv_zprimme(234,8026
+void Num_axpy_zprimme(262,8829
+SCALAR Num_dot_zprimme(283,9423
+void Num_larnv_zprimme(326,10710
+void Num_scal_zprimme(367,12028
+void Num_swap_zprimme(385,12583
+void Num_heev_zprimme(406,13235
+void Num_hegv_zprimme(559,17185
+void Num_gesvd_zprimme(705,20969
+void Num_gesvd_zprimme(745,22156
+void Num_hetrf_zprimme(791,23642
+void Num_hetrs_zprimme(876,25944
+void Num_trsm_zprimme(925,27362
+
+src/linalg/wtime.c,158
+#define   RUSAGE_SELF 45,2212
+double primme_wTimer(52,2399
+double primme_get_wtime(96,3609
+double primme_get_time(104,3806
+double primme_wTimer(119,4215
+
+src/svds/primme_svds.c,852
+#define ALLOCATE_WORKSPACE_FAILURE 48,2324
+#define MALLOC_FAILURE 49,2362
+#define UPDATE_STATS(95,5365
+int zprimme_svds(150,8208
+static int comp_double(274,12721
+static SCALAR* copy_last_params_from_svds(279,12826
+static int allocate_workspace_svds(579,24956
+int copy_last_params_to_svds(647,27992
+static int primme_svds_check_input(826,34974
+static void matrixMatvecSVDS(882,37317
+static void applyPreconditionerSVDS(930,39270
+static void Num_scalInv_Smatrix(941,39735
+static int globalSum_Rprimme_svds(961,40308
+static void compute_resNorm(1000,41561
+static void default_convTestFun(1087,44639
+static void convTestFunATA(1134,46618
+static void convTestFunAug(1191,48646
+static void default_monitor(1257,51399
+static void monitor_single_stage(1357,56039
+static void monitor_stage1(1455,60115
+static void monitor_stage2(1556,64171
+
+src/svds/primme_svds_f77.c,200
+void AS_FORTRAN(41,2174
+void AS_FORTRAN(50,2449
+void AS_FORTRAN(56,2639
+void AS_FORTRAN(63,2945
+void AS_FORTRAN(67,3074
+void AS_FORTRAN(73,3229
+void AS_FORTRAN(79,3441
+void AS_FORTRAN(85,3657
+
+src/svds/primme_svds_interface.c,1665
+void primme_svds_initialize(63,3001
+int primme_svds_set_method(166,7458
+void primme_svds_set_defaults(215,9303
+static void copy_params_from_svds(243,10398
+void primme_svds_display_params(363,14671
+#define PRINT(368,14795
+#define PRINTIF(369,14884
+#define PRINTParams(370,14984
+#define PRINTParamsIF(372,15139
+#define PRINT_PRIMME_INT(374,15302
+void primme_svds_free(463,18527
+static void globalSumRealSvds(477,19006
+int primme_svds_get_member(502,19844
+   union value_t 506,19968
+      PRIMME_INT int_v;507,19987
+      void (*matFunc_v)matFunc_v508,20011
+      void *ptr_v;ptr_v509,20116
+      void (*globalSumRealFunc_v)globalSumRealFunc_v510,20135
+      primme_svds_target target_v;511,20224
+      primme_svds_operator operator_v;512,20259
+      double double_v;513,20298
+      FILE *file_v;file_v514,20321
+      void (*convTestFun_v)convTestFun_v515,20341
+      void (*monitorFun_v)monitorFun_v518,20515
+int primme_svds_set_member(711,26936
+   union value_t 714,27059
+      PRIMME_INT *int_v;int_v715,27078
+      void (*matFunc_v)matFunc_v716,27103
+      void *ptr_v;ptr_v717,27208
+      void (*globalSumRealFunc_v)globalSumRealFunc_v718,27227
+      primme_svds_target *target_v;target_v719,27316
+      primme_svds_operator *operator_v;operator_v720,27352
+      double *double_v;double_v721,27392
+      FILE *file_v;file_v722,27416
+      void (*convTestFun_v)convTestFun_v723,27436
+      void (*monitorFun_v)monitorFun_v726,27610
+int primme_svds_member_info(928,34534
+#define IF_IS(941,34985
+#undef IF_IS1000,36403
+int primme_svds_constant_info(1109,39446
+#define IF_IS(1111,39515
+#undef IF_IS1129,40056
+
+include/primme.h,744
+#define PRIMME_H37,2076
+#define PRIMME_VERSION_MAJOR 41,2116
+#define PRIMME_VERSION_MINOR 42,2152
+#  define PRIMME_COMPLEX_FLOAT 52,2635
+#  define PRIMME_COMPLEX_DOUBLE 53,2686
+#  define PRIMME_COMPLEX_FLOAT 56,2768
+#  define PRIMME_COMPLEX_DOUBLE 57,2813
+#  define __STDC_FORMAT_MACROS62,2990
+#  define PRIMME_INT 68,3130
+#  define PRIMME_INT_P 69,3159
+#  define PRIMME_INT_MAX 70,3189
+#     define PRId64 72,3241
+#  define PRIMME_INT 76,3324
+#  define PRIMME_INT_P 77,3349
+#  define PRIMME_INT_MAX 78,3376
+#  define PRIMME_INT 82,3483
+#  define PRIMME_INT_P 83,3512
+#  define PRIMME_INT_MAX 84,3542
+#     define PRId64 86,3594
+#  define PRIMME_INT 89,3633
+#  define PRIMME_INT_P 90,3670
+#  define PRIMME_INT_MAX 91,3697
+
+include/primme_eigs.h,7508
+#define PRIMME_EIGS_H37,2091
+   primme_smallest,48,2220
+   primme_largest,49,2274
+   primme_closest_geq,50,2329
+   primme_closest_leq,51,2405
+   primme_closest_abs,52,2479
+   primme_largest_abs 53,2544
+} primme_target;54,2610
+   primme_proj_default,58,2683
+   primme_proj_RR,59,2707
+   primme_proj_harmonic,60,2755
+   primme_proj_refined 61,2812
+} primme_projection;62,2872
+   primme_init_default,65,2967
+   primme_init_krylov,66,2991
+   primme_init_random,67,3082
+   primme_init_user 68,3134
+} primme_init;69,3209
+   primme_thick,73,3241
+   primme_dtr74,3258
+} primme_restartscheme;75,3272
+   primme_full_LTolerance,79,3313
+   primme_decreasing_LTolerance,80,3340
+   primme_adaptive_ETolerance,81,3373
+   primme_adaptive82,3404
+} primme_convergencetest;83,3423
+   primme_event_outer_iteration,88,3535
+   primme_event_inner_iteration,89,3616
+   primme_event_restart,90,3697
+   primme_event_reset,91,3778
+   primme_event_converged,92,3859
+   primme_event_locked 93,3940
+} primme_event;94,4021
+typedef struct primme_stats 96,4038
+   PRIMME_INT numOuterIterations;97,4068
+   PRIMME_INT numRestarts;98,4102
+   PRIMME_INT numMatvecs;99,4129
+   PRIMME_INT numPreconds;100,4155
+   PRIMME_INT numGlobalSum;101,4182
+   PRIMME_INT volumeGlobalSum;102,4251
+   double numOrthoInnerProds;103,4336
+   double elapsedTime;104,4414
+   double timeMatvec;105,4438
+   double timePrecond;106,4508
+   double timeOrtho;107,4585
+   double timeGlobalSum;108,4649
+   double estimateMinEVal;109,4721
+   double estimateMaxEVal;110,4792
+   double estimateLargestSVal;111,4864
+   double maxConvTol;112,4961
+   double estimateResidualError;113,5047
+} primme_stats;114,5118
+typedef struct JD_projectors 116,5135
+   int LeftQ;117,5166
+   int LeftX;118,5180
+   int RightQ;119,5194
+   int RightX;120,5209
+   int SkewQ;121,5224
+   int SkewX;122,5238
+} JD_projectors;123,5252
+typedef struct projection_params 125,5270
+   primme_projection projection;126,5305
+} projection_params;127,5338
+typedef struct correction_params 129,5360
+   int precondition;130,5395
+   int robustShifts;131,5416
+   int maxInnerIterations;132,5437
+   struct JD_projectors projectors;133,5464
+   primme_convergencetest convTest;134,5500
+   double relTolBase;135,5536
+} correction_params;136,5558
+typedef struct restarting_params 139,5581
+   primme_restartscheme scheme;140,5616
+   int maxPrevRetain;141,5648
+} restarting_params;142,5670
+typedef struct primme_params 146,5772
+   PRIMME_INT n;149,5870
+   void (*matrixMatvec)matrixMatvec150,5887
+   void (*applyPreconditioner)applyPreconditioner155,6105
+   void (*massMatrixMatvec)massMatrixMatvec160,6343
+   int numProcs;165,6570
+   int procID;166,6587
+   PRIMME_INT nLocal;167,6602
+   void *commInfo;commInfo168,6624
+   void (*globalSumReal)globalSumReal169,6643
+   int numEvals;174,6849
+   primme_target target;175,6876
+   int numTargetShifts;176,6902
+   double *targetShifts;targetShifts177,6981
+   int dynamicMethodSwitch;180,7137
+   int locking;181,7165
+   int initSize;182,7181
+   int numOrthoConst;183,7198
+   int maxBasisSize;184,7220
+   int minRestartSize;185,7241
+   int maxBlockSize;186,7264
+   PRIMME_INT maxMatvecs;187,7285
+   PRIMME_INT maxOuterIterations;188,7311
+   int intWorkSize;189,7345
+   size_t realWorkSize;190,7365
+   PRIMME_INT iseed[iseed191,7389
+   int *intWork;intWork192,7413
+   void *realWork;realWork193,7430
+   double aNorm;194,7449
+   double eps;195,7466
+   int printLevel;197,7482
+   FILE *outputFile;outputFile198,7501
+   void *matrix;matrix200,7523
+   void *preconditioner;preconditioner201,7540
+   double *ShiftsForPreconditioner;ShiftsForPreconditioner202,7565
+   primme_init initBasisMode;203,7601
+   PRIMME_INT ldevecs;204,7631
+   PRIMME_INT ldOPs;205,7654
+   struct projection_params projectionParams;207,7676
+   struct restarting_params restartingParams;208,7723
+   struct correction_params correctionParams;209,7769
+   struct primme_stats stats;210,7815
+   void (*convTestFun)convTestFun212,7846
+   void *convtest;convtest214,7975
+   void (*monitorFun)monitorFun215,7994
+   void *monitor;monitor220,8320
+} primme_params;221,8338
+   PRIMME_DEFAULT_METHOD,225,8451
+   PRIMME_DYNAMIC,226,8477
+   PRIMME_DEFAULT_MIN_TIME,227,8496
+   PRIMME_DEFAULT_MIN_MATVECS,228,8524
+   PRIMME_Arnoldi,229,8555
+   PRIMME_GD,230,8574
+   PRIMME_GD_plusK,231,8588
+   PRIMME_GD_Olsen_plusK,232,8608
+   PRIMME_JD_Olsen_plusK,233,8634
+   PRIMME_RQI,234,8660
+   PRIMME_JDQR,235,8675
+   PRIMME_JDQMR,236,8691
+   PRIMME_JDQMR_ETol,237,8708
+   PRIMME_STEEPEST_DESCENT,238,8730
+   PRIMME_LOBPCG_OrthoBasis,239,8758
+   PRIMME_LOBPCG_OrthoBasis_Window240,8787
+} primme_preset_method;241,8822
+   primme_int,244,8862
+   primme_double,245,8877
+   primme_pointer246,8895
+} primme_type;247,8913
+   PRIMME_n 250,8944
+   PRIMME_matrixMatvec 251,8962
+   PRIMME_applyPreconditioner 252,8991
+   PRIMME_numProcs 253,9027
+   PRIMME_procID 254,9052
+   PRIMME_commInfo 255,9075
+   PRIMME_nLocal 256,9100
+   PRIMME_globalSumReal 257,9123
+   PRIMME_numEvals 258,9153
+   PRIMME_target 259,9178
+   PRIMME_numTargetShifts 260,9201
+   PRIMME_targetShifts 261,9234
+   PRIMME_locking 262,9264
+   PRIMME_initSize 263,9289
+   PRIMME_numOrthoConst 264,9315
+   PRIMME_maxBasisSize 265,9346
+   PRIMME_minRestartSize 266,9376
+   PRIMME_maxBlockSize 267,9408
+   PRIMME_maxMatvecs 268,9438
+   PRIMME_maxOuterIterations 269,9466
+   PRIMME_intWorkSize 270,9502
+   PRIMME_realWorkSize 271,9531
+   PRIMME_iseed 272,9561
+   PRIMME_intWork 273,9584
+   PRIMME_realWork 274,9609
+   PRIMME_aNorm 275,9635
+   PRIMME_eps 276,9658
+   PRIMME_printLevel 277,9679
+   PRIMME_outputFile 278,9707
+   PRIMME_matrix 279,9735
+   PRIMME_preconditioner 280,9759
+   PRIMME_initBasisMode 281,9791
+   PRIMME_projectionParams_projection 282,9824
+   PRIMME_restartingParams_scheme 283,9870
+   PRIMME_restartingParams_maxPrevRetain 284,9911
+   PRIMME_correctionParams_precondition 285,9959
+   PRIMME_correctionParams_robustShifts 286,10006
+   PRIMME_correctionParams_maxInnerIterations 287,10053
+   PRIMME_correctionParams_projectors_LeftQ 288,10106
+   PRIMME_correctionParams_projectors_LeftX 289,10157
+   PRIMME_correctionParams_projectors_RightQ 290,10208
+   PRIMME_correctionParams_projectors_RightX 291,10260
+   PRIMME_correctionParams_projectors_SkewQ 292,10312
+   PRIMME_correctionParams_projectors_SkewX 293,10363
+   PRIMME_correctionParams_convTest 294,10414
+   PRIMME_correctionParams_relTolBase 295,10457
+   PRIMME_stats_numOuterIterations 296,10502
+   PRIMME_stats_numRestarts 297,10544
+   PRIMME_stats_numMatvecs 298,10579
+   PRIMME_stats_numPreconds 299,10613
+   PRIMME_stats_numGlobalSum 300,10648
+   PRIMME_stats_volumeGlobalSum 301,10685
+   PRIMME_stats_numOrthoInnerProds 302,10725
+   PRIMME_stats_elapsedTime 303,10768
+   PRIMME_stats_timeMatvec 304,10803
+   PRIMME_stats_timePrecond 305,10839
+   PRIMME_stats_timeOrtho 306,10876
+   PRIMME_stats_timeGlobalSum 307,10911
+   PRIMME_stats_estimateMinEVal 308,10950
+   PRIMME_stats_estimateMaxEVal 309,10990
+   PRIMME_stats_estimateLargestSVal 310,11030
+   PRIMME_stats_maxConvTol 311,11074
+   PRIMME_dynamicMethodSwitch 312,11109
+   PRIMME_massMatrixMatvec 313,11145
+   PRIMME_convTestFun 314,11179
+   PRIMME_convtest 315,11208
+   PRIMME_ldevecs 316,11235
+   PRIMME_ldOPs 317,11260
+   PRIMME_monitorFun 318,11283
+   PRIMME_monitor 319,11310
+} primme_params_label;320,11333
+
+include/primme_eigs_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+include/primme_f77.h,737
+C  Redistribution and use in source and binary forms,5,156
+C  modification,6,226
+C        notice,8,377
+C        notice,10,523
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,987
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,987
+C  DIRECT,20,1223
+C  DIRECT, INDIRECT,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1223
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1223
+C  LOSS OF USE, DATA, OR PROFITS;22,1381
+C  ON ANY THEORY OF LIABILITY,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1460
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1460
+C 24,1538
+
+include/primme_svds.h,4456
+#define PRIMME_SVDS_H38,2078
+   primme_svds_largest,47,2182
+   primme_svds_smallest,48,2206
+   primme_svds_closest_abs49,2231
+} primme_svds_target;50,2258
+   primme_svds_default,53,2296
+   primme_svds_hybrid,54,2320
+   primme_svds_normalequations,55,2343
+   primme_svds_augmented56,2394
+} primme_svds_preset_method;57,2419
+   primme_svds_op_none,60,2464
+   primme_svds_op_AtA,61,2488
+   primme_svds_op_AAt,62,2511
+   primme_svds_op_augmented63,2534
+} primme_svds_operator;64,2562
+typedef struct primme_svds_stats 66,2587
+   PRIMME_INT numOuterIterations;67,2622
+   PRIMME_INT numRestarts;68,2656
+   PRIMME_INT numMatvecs;69,2683
+   PRIMME_INT numPreconds;70,2709
+   PRIMME_INT numGlobalSum;71,2736
+   PRIMME_INT volumeGlobalSum;72,2805
+   double numOrthoInnerProds;73,2890
+   double elapsedTime;74,2968
+   double timeMatvec;75,2992
+   double timePrecond;76,3062
+   double timeOrtho;77,3139
+   double timeGlobalSum;78,3203
+} primme_svds_stats;79,3275
+typedef struct primme_svds_params 81,3297
+   primme_params primme;83,3394
+   primme_params primmeStage2;85,3526
+   PRIMME_INT m;88,3654
+   PRIMME_INT n;89,3693
+   void (*matrixMatvec)matrixMatvec92,3829
+   void (*applyPreconditioner)applyPreconditioner95,4004
+   int numProcs;100,4258
+   int procID;101,4275
+   PRIMME_INT mLocal;102,4290
+   PRIMME_INT nLocal;103,4312
+   void *commInfo;commInfo104,4334
+   void (*globalSumReal)globalSumReal105,4353
+   int numSvals;110,4574
+   primme_svds_target target;111,4591
+   int numTargetShifts;112,4621
+   double *targetShifts;targetShifts113,4701
+   primme_svds_operator method;114,4781
+   primme_svds_operator methodStage2;115,4884
+   int intWorkSize;118,5065
+   size_t realWorkSize;119,5085
+   int *intWork;intWork120,5109
+   void *realWork;realWork121,5126
+   void *matrix;matrix124,5225
+   void *preconditioner;preconditioner125,5242
+   int locking;128,5344
+   int numOrthoConst;129,5360
+   double aNorm;130,5382
+   double eps;131,5399
+   int precondition;133,5415
+   int initSize;134,5436
+   int maxBasisSize;135,5453
+   int maxBlockSize;136,5474
+   PRIMME_INT maxMatvecs;137,5495
+   PRIMME_INT iseed[iseed138,5521
+   int printLevel;139,5545
+   FILE *outputFile;outputFile140,5564
+   struct primme_svds_stats stats;141,5585
+   void (*convTestFun)convTestFun143,5621
+   void *convtest;convtest146,5784
+   void (*monitorFun)monitorFun147,5803
+   void *monitor;monitor152,6151
+} primme_svds_params;153,6169
+   PRIMME_SVDS_primme 156,6207
+   PRIMME_SVDS_primmeStage2 157,6234
+   PRIMME_SVDS_m 158,6267
+   PRIMME_SVDS_n 159,6289
+   PRIMME_SVDS_matrixMatvec 160,6311
+   PRIMME_SVDS_applyPreconditioner 161,6344
+   PRIMME_SVDS_numProcs 162,6384
+   PRIMME_SVDS_procID 163,6413
+   PRIMME_SVDS_mLocal 164,6440
+   PRIMME_SVDS_nLocal 165,6467
+   PRIMME_SVDS_commInfo 166,6494
+   PRIMME_SVDS_globalSumReal 167,6524
+   PRIMME_SVDS_numSvals 168,6559
+   PRIMME_SVDS_target 169,6589
+   PRIMME_SVDS_numTargetShifts 170,6617
+   PRIMME_SVDS_targetShifts 171,6654
+   PRIMME_SVDS_method 172,6688
+   PRIMME_SVDS_methodStage2 173,6716
+   PRIMME_SVDS_intWorkSize 174,6750
+   PRIMME_SVDS_realWorkSize 175,6783
+   PRIMME_SVDS_intWork 176,6817
+   PRIMME_SVDS_realWork 177,6846
+   PRIMME_SVDS_matrix 178,6876
+   PRIMME_SVDS_preconditioner 179,6904
+   PRIMME_SVDS_locking 180,6940
+   PRIMME_SVDS_numOrthoConst 181,6969
+   PRIMME_SVDS_aNorm 182,7004
+   PRIMME_SVDS_eps 183,7031
+   PRIMME_SVDS_precondition 184,7056
+   PRIMME_SVDS_initSize 185,7090
+   PRIMME_SVDS_maxBasisSize 186,7120
+   PRIMME_SVDS_maxBlockSize 187,7154
+   PRIMME_SVDS_maxMatvecs 188,7188
+   PRIMME_SVDS_iseed 189,7220
+   PRIMME_SVDS_printLevel 190,7247
+   PRIMME_SVDS_outputFile 191,7279
+   PRIMME_SVDS_stats_numOuterIterations 192,7311
+   PRIMME_SVDS_stats_numRestarts 193,7357
+   PRIMME_SVDS_stats_numMatvecs 194,7396
+   PRIMME_SVDS_stats_numPreconds 195,7434
+   PRIMME_SVDS_stats_numGlobalSum 196,7473
+   PRIMME_SVDS_stats_volumeGlobalSum 197,7514
+   PRIMME_SVDS_stats_numOrthoInnerProds 198,7558
+   PRIMME_SVDS_stats_elapsedTime 199,7605
+   PRIMME_SVDS_stats_timeMatvec 200,7644
+   PRIMME_SVDS_stats_timePrecond 201,7683
+   PRIMME_SVDS_stats_timeOrtho 202,7723
+   PRIMME_SVDS_stats_timeGlobalSum 203,7761
+   PRIMME_SVDS_convTestFun 204,7803
+   PRIMME_SVDS_convtest 205,7837
+   PRIMME_SVDS_monitorFun 206,7868
+   PRIMME_SVDS_monitor 207,7900
+} primme_svds_params_label;208,7928
+
+include/primme_svds_f77.h,740
+C  Redistribution and use in source and binary forms,5,333
+C  modification,6,403
+C        notice,8,559
+C        notice,10,727
+C  ANY EXPRESS OR IMPLIED WARRANTIES,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,17,1298
+C  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,17,1298
+C  DIRECT,20,1551
+C  DIRECT, INDIRECT,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL,20,1551
+C  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,20,1551
+C  LOSS OF USE, DATA, OR PROFITS;22,1715
+C  ON ANY THEORY OF LIABILITY,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,23,1794
+C  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,23,1794
+C 24,1872
+
+src/include/template.h,2022
+#define TEMPLATE_H37,2074
+#  define SCALAR_PRE 73,3459
+#  define REAL_PRE 74,3482
+#  define SCALAR_SUF 75,3503
+#  define REAL_SUF 76,3532
+#  define SCALAR 77,3559
+#  define REAL 78,3583
+#  define MACHINE_EPSILON 79,3605
+#  define SCALAR_PRE 81,3676
+#  define REAL_PRE 82,3699
+#  define SCALAR_SUF 83,3720
+#  define REAL_SUF 84,3749
+#  define USE_COMPLEX85,3776
+#  define SCALAR 86,3798
+#  define REAL 87,3837
+#  define MACHINE_EPSILON 88,3859
+#  define SCALAR_PRE 90,3922
+#  define REAL_PRE 91,3945
+#  define SCALAR_SUF 92,3966
+#  define REAL_SUF 93,3995
+#  define SCALAR 94,4022
+#  define REAL 95,4045
+#  define MACHINE_EPSILON 96,4066
+#  define SCALAR_PRE 98,4136
+#  define REAL_PRE 99,4159
+#  define SCALAR_SUF 100,4180
+#  define REAL_SUF 101,4209
+#  define USE_COMPLEX102,4236
+#  define SCALAR 103,4258
+#  define REAL 104,4296
+#  define MACHINE_EPSILON 105,4317
+#     define REAL_PART(118,4944
+#     define ABS(119,4981
+#     define CONJ(120,5011
+#     define REAL_PART(122,5050
+#     define ABS(123,5091
+#     define CONJ(124,5125
+#  define REAL_PART(127,5176
+#  define ABS(128,5203
+#  define CONJ(129,5230
+#   undef I134,5335
+#  undef pow145,5619
+#  undef exp148,5650
+#  undef log151,5681
+#  define ISFINITE 155,5722
+#  define ISFINITE 157,5756
+#     define TEMPLATE_PLEASE 172,6569
+#     define TEMPLATE_PLEASE 175,6698
+#  undef PRIMME_COMPLEX_FLOAT180,6940
+#  undef PRIMME_COMPLEX_DOUBLE181,6970
+#  undef PRIMME_INT182,7001
+#  define TEMPLATE_PLEASE184,7027
+#define CHKERR(215,8419
+#define CHKERRNOABORT(238,9239
+#define CHKERRM(267,10284
+#define CHKERRNOABORTM(299,11462
+#define CHKERRS(325,12410
+#define CHKERRMS(355,13495
+#define MALLOC_PRIMME(394,14782
+#define WRKSP_MALLOC_PRIMME(422,15826
+#define ALIGN_BY_SIZE(435,16502
+#define ALIGN(437,16590
+#define CONCAT(445,16932
+#define CONCATX(446,16967
+#define TO_INT(448,16997
+#define FORTRAN_FUNCTION(451,17069
+#define FORTRAN_FUNCTION(453,17115
+#  define max(457,17165
+#  define min(460,17228
+
+src/include/primme_interface.h,60
+#define PRIMME_INTERFACE_H37,2110
+#define zprimme 41,2264
+
+src/include/numerical.h,0
