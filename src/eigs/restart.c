@@ -2865,7 +2865,7 @@ static int ortho_coefficient_vectors_Sprimme(SCALAR *hVecs, int basisSize,
 
       CHKERR(ortho_Sprimme(hVecs?&hVecs[ldhVecs*indexOfPreviousVecs]:NULL,
                ldhVecs, NULL, 0, 0, *numPrevRetained-1,
-               &hU[ldhU*indexOfPreviousVecs], ldhU, indexOfPreviousVecs,
+               hU, ldhU, indexOfPreviousVecs,
                basisSize, primme->iseed, machEps, rwork, rworkSize, NULL), -1);
       if (hVecs) Num_trsm_Sprimme("L", "U", "N", "N", basisSize,
             *numPrevRetained, 1.0, R, ldR, &hVecs[ldhVecs*indexOfPreviousVecs],
