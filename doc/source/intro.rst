@@ -39,15 +39,15 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 ^^^^^^^^^
-Changes in PRIMME 2.2 (released on October 25, 2018):
+Changes in PRIMME 2.2 (released on October 26, 2018):
 
-* Improve stability for single precision.
+* Improved stability for single precision.
 
-* Improve support for the shared library.
+* Improved support for the shared library.
 
 * Updated PETSc examples in Fortran; added new examples in single precision.
 
-* Improve support for FreeBSD and MacOS.
+* Improved support for FreeBSD and MacOS.
 
 * New install and uninstall actions.
 
@@ -55,13 +55,13 @@ Changes in PRIMME 2.2 (released on October 25, 2018):
 
 * Optional suffix on BLAS_/LAPACK_ function names (for OpenBLAS, see :ref:`PRIMME_BLAS_SUFFIX <making>`).
 
-* Replace XHEGV by XHEGVX (to support ESSL).
+* Replaced XHEGV by XHEGVX (to support ESSL).
 
 * Fixed bugs in the library and in the Matlab interface.
 
 Changes in PRIMME 2.1 (released on April 4, 2017):
 
-* Improve robustness by broadcasting the result of critical LAPACK_
+* Improved robustness by broadcasting the result of critical LAPACK_
   operations instead of replicating them on every process; this is
   useful when using a threaded BLAS_/LAPACK_ or when some parallel
   processes may run on different architectures or libraries.
