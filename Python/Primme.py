@@ -112,6 +112,8 @@ except __builtin__.Exception:
 
 __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 'PrimmeError', 'PRIMME_Arnoldi', 'PRIMME_DEFAULT_METHOD', 'PRIMME_DEFAULT_MIN_MATVECS', 'PRIMME_DEFAULT_MIN_TIME', 'PRIMME_DYNAMIC', 'PRIMME_GD', 'PRIMME_GD_Olsen_plusK', 'PRIMME_GD_plusK', 'PRIMME_JDQMR', 'PRIMME_JDQMR_ETol', 'PRIMME_JDQR', 'PRIMME_JD_Olsen_plusK', 'PRIMME_LOBPCG_OrthoBasis', 'PRIMME_LOBPCG_OrthoBasis_Window', 'PRIMME_RQI', 'PRIMME_STEEPEST_DESCENT', 'primme_adaptive', 'primme_adaptive_ETolerance', 'primme_closest_abs', 'primme_closest_geq', 'primme_closest_leq', 'primme_decreasing_LTolerance', 'primme_dtr', 'primme_full_LTolerance', 'primme_init_default', 'primme_init_krylov', 'primme_init_random', 'primme_init_user', 'primme_largest', 'primme_largest_abs', 'primme_proj_RR', 'primme_proj_default', 'primme_proj_harmonic', 'primme_proj_refined', 'primme_smallest', 'primme_thick', 'PrimmeSvdsParams', 'svds', 'primme_svds_augmented', 'primme_svds_closest_abs', 'primme_svds_default', 'primme_svds_hybrid', 'primme_svds_largest', 'primme_svds_normalequations', 'primme_svds_op_AAt', 'primme_svds_op_AtA', 'primme_svds_op_augmented', 'primme_svds_op_none', 'primme_svds_smallest', 'sprimme_svds', 'cprimme_svds', 'dprimme_svds', 'zprimme_svds', 'PrimmeSvdsError']
 
+PRIMME_VERSION_MAJOR = _Primme.PRIMME_VERSION_MAJOR
+PRIMME_VERSION_MINOR = _Primme.PRIMME_VERSION_MINOR
 PRIMME_UNEXPECTED_FAILURE = _Primme.PRIMME_UNEXPECTED_FAILURE
 PRIMME_MALLOC_FAILURE = _Primme.PRIMME_MALLOC_FAILURE
 PRIMME_MAIN_ITER_FAILURE = _Primme.PRIMME_MAIN_ITER_FAILURE

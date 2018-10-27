@@ -1,5 +1,5 @@
 C*******************************************************************************
-C  Copyright (c) 2017, College of William & Mary                                   
+C  Copyright (c) 2018, College of William & Mary                                   
 C  All rights reserved.                                                            
 C                                                                                  
 C  Redistribution and use in source and binary forms, with or without
@@ -522,14 +522,14 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
         PRIMME_SCALAR x(ldx,*), y(ldy,*)
         integer*8 primme_svds
         integer k,mode,i,j,ierr
-        real*8 c, ei, shift
+        real*8 c, ei, [shift]
         common c
         call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_m,
      :                                                          m, ierr)
         call primme_svds_get_member_f77(primme_svds, PRIMME_SVDS_n,
      :                                                          n, ierr)
         call primme_svds_get_member_f77(primme_svds,
-     :                         PRIMME_SVDS_targetShifts, shift, ierr)
+     :                         PRIMME_SVDS_targetShifts, [shift], ierr)
         if (mode.eq.PRIMME_SVDS_op_AtA) then
            do j=1,k
               do i=1,n
@@ -538,7 +538,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
                  else
                     ei = 0
                  endif
-                 y(i,j) = x(i,j)/(1.0 + ei*ei - shift*shift)
+                 y(i,j) = x(i,j)/(1.0 + ei*ei - [shift]*[shift])
               enddo
            enddo
         else if (mode.eq.PRIMME_SVDS_op_AAt) then
@@ -550,7 +550,7 @@ ifdef([USE_POINTER], [        MPI_Comm, pointer :: comm
                  else
                     ei = 0.0
                  endif
-                 y(i,j) = x(i,j)/(ei*ei - shift*shift)
+                 y(i,j) = x(i,j)/(ei*ei - [shift]*[shift])
               enddo
            enddo
         else if (mode.eq.PRIMME_SVDS_op_augmented) then

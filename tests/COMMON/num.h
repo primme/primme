@@ -1,6 +1,6 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2017 College of William & Mary,
+ *   Copyright (C) 2018 College of William & Mary,
  *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
@@ -42,9 +42,6 @@
 #endif
 #define Sprimme CONCAT(SCALAR_PRE,primme)
 #define Sprimme_svds CONCAT(SCALAR_PRE,primme_svds)
-#if !(defined (__APPLE__) && defined (__MACH__))
-#  include <malloc.h> /* malloc */
-#endif
 #include <stdlib.h>   /* malloc, free */
 #define primme_calloc(N,S,D) (malloc((N)*(S)))
 #define ASSERT_MSG(COND, RETURN, ...) { if (!(COND)) {fprintf(stderr, "Error in " __FUNCT__ ": " __VA_ARGS__); return (RETURN);} }

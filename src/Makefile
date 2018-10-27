@@ -1,8 +1,6 @@
 
 include ../Make_flags
 
-UNAME ?= $(shell uname)
-
 HEADERS := \
    include/template.h \
    include/numerical.h \
@@ -79,7 +77,7 @@ $(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c tools/AUTO_HEADER
 	echo "#ifndef $(*F)_H" > $@.t; \
 	echo "#define $(*F)_H" >> $@.t; \
 	for arch in $(ALL_ARCHS) ; do \
-	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | tools/ctemplate >> $@.t; \
+	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | $(PYTHON) tools/ctemplate >> $@.t; \
 	done; \
 	cat $@.t >> $@; rm -f $@.t; \
 	echo "#endif" >> $@
@@ -89,7 +87,7 @@ $(AUTOMATED_HEADERS_EIGS): %.h : %.c tools/AUTO_HEADER
 	echo "#ifndef $(*F)_H" > $@.t; \
 	echo "#define $(*F)_H" >> $@.t; \
 	for arch in $(ALL_ARCHS) ; do \
-	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | tools/ctemplate >> $@.t; \
+	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | $(PYTHON) tools/ctemplate >> $@.t; \
 	done; \
 	cat $@.t >> $@; rm -f $@.t; \
 	echo "#endif" >> $@
@@ -128,6 +126,8 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 # Archive object files in the full library
 #
 
+UNAME ?= $(shell uname)
+
 ../lib/$(LIBRARY): $(OBJS)
 	@mkdir -p ../lib
 ifeq ($(UNAME), Darwin)
@@ -138,13 +138,13 @@ else
 endif
 
 ifeq ($(UNAME), Darwin)
-../lib/$(SOLIBRARY): $(OBJS)
+../lib/$(SONAMELIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SOLIBRARY) $(LDFLAGS)
+	@$(CC) -shared -Wl,-install_name,libprimme.so.$(MAJORVERSION) -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SONAMELIBRARY) $(LDFLAGS)
 else
-../lib/$(SOLIBRARY): $(OBJS)
+../lib/$(SONAMELIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -o ../lib/$(SOLIBRARY) -Wl,--whole-archive $(OBJS) -Wl,--no-whole-archive $(LDFLAGS)
+	@$(CC) -shared -Wl,-soname,libprimme.so.$(MAJORVERSION) -o ../lib/$(SONAMELIBRARY) -Wl,--whole-archive $(OBJS) -Wl,--no-whole-archive $(LDFLAGS)
 endif
 
 #
@@ -157,7 +157,8 @@ endif
 	for pre in R SH RH s c d z; do \
 		sed "s/Sprimme/$${pre}primme/g" $@.base >> $@.all;\
 	done;\
-	LC_COLLATE=C sort -d -u $@.all > $@
+	LC_COLLATE=C sort -d -u $@.all > $@;\
+	rm -f $@.base $@.all
 
 #
 # Cleaning
@@ -178,10 +179,10 @@ deps: $(INCLUDES) $(SOURCES) $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIG
 	@echo "# This file is generated automatically. Please don't modify" > deps
 	@
 	@# Added dependencies on headers for building the objects
-	@tools/dependencies $(INCLUDE) $(SOURCES) -e*.o >> deps
+	@$(PYTHON) tools/dependencies $(INCLUDE) $(SOURCES) -e*.o >> deps
 	@
 	@# Added dependencies on headers from headers not generated automatically
-	@tools/dependencies $(INCLUDE) $(INCLUDES) -i'include[^\n]+cyclic' >> deps
+	@$(PYTHON) tools/dependencies $(INCLUDE) $(INCLUDES) -i'include[^\n]+cyclic' >> deps
 
 include deps
 

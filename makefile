@@ -14,19 +14,28 @@
 #-----------------------------------------------------------------
 include Make_flags
 
-.PHONY: lib clean test all_tests check_style matlab octave python python_install R_install tags deps
+.PHONY: lib clean test all_tests check_style matlab octave \
+        python python_install R_install tags deps install \
+        uninstall 
 
 #------------------------ Libraries ------------------------------
 # Making the PRIMME library
 # Includes float, double and complex counterparts
 lib:
-	@make -C src ../lib/$(LIBRARY)
+	@$(MAKE) -C src ../lib/$(LIBRARY)
 
 solib:
-	@make -C src ../lib/$(SOLIBRARY)
+	@$(MAKE) -C src ../lib/$(SONAMELIBRARY)
+ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
+	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
+endif
+ifneq ($(MAJORVERSION),)
+	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+endif
+
 
 clean: 
-	@make -C src clean
+	@$(MAKE) -C src clean
 
 clean_lib:
 	@rm -f lib/*
@@ -35,36 +44,57 @@ test:
 	@echo "------------------------------------------------";
 	@echo " Test C examples                                ";
 	@echo "------------------------------------------------";
-	@make -C examples veryclean test_examples_C USE_PETSC=no
+	@$(MAKE) -C examples veryclean test_examples_C USE_PETSC=no
 
 all_tests:
-	@make -C examples veryclean test_examples;
-	@make -C tests veryclean all_tests
+	@$(MAKE) -C examples veryclean test_examples;
+	@$(MAKE) -C tests veryclean all_tests
 
 matlab: clean clean_lib
-	@make lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64" PRIMME_WITH_MAGMA=no
-	@make -C Matlab matlab
+	@$(MAKE) lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64" PRIMME_WITH_MAGMA=no
+	@$(MAKE) -C Matlab matlab
 
 octave: clean clean_lib
-	@make lib PRIMME_WITH_MAGMA=no
-	@make -C Matlab octave
+	@$(MAKE) lib PRIMME_WITH_MAGMA=no
+	@$(MAKE) -C Matlab octave
 
 python: clean clean_lib lib
-	@make -C Python clean all
+	@$(MAKE) -C Python clean all
 
 python_install: python
-	@make -C Python install
+	@$(MAKE) -C Python install
 
 R_install:
-	@make -C R install
+	@$(MAKE) -C R install
+
+install: solib
+	install -d $(includedir)
+	install -m 644 include/primme.h include/primme_eigs.h \
+		include/primme_eigs_f77.h include/primme_f77.h \
+		include/primme_svds.h include/primme_svds_f77.h \
+		$(includedir)
+	install -d $(libdir)
+	install -m 644 lib/$(SONAMELIBRARY) $(libdir)
+ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
+	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
+endif
+ifneq ($(MAJORVERSION),)
+	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+endif
+
+uninstall:
+	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY)
+	rm -f $(includedir)/primme.h $(includedir)/primme_eigs.h \
+		$(includedir)/primme_eigs_f77.h $(includedir)/primme_f77.h \
+		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
 
 deps:
-	@make -C src auto_headers
+	@$(MAKE) -C src auto_headers
 
 check_style:
 	@( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 tags:
-	@make -C src ../tags
+	@$(MAKE) -C src ../tags
 
 .NOTPARALLEL:

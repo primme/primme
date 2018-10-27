@@ -9,7 +9,7 @@ include ../Link_flags
 SOBJS= COMMON/shared_utils.o COMMON/ioandtest.o
 COMMON_INCLUDE = -I./COMMON -I../include
 override INCLUDE += $(COMMON_INCLUDE)
-LIBDIRS += -L../lib
+LIBS := ../lib/libprimme.a $(LIBS)
 
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)

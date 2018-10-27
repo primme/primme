@@ -4,6 +4,8 @@
 #---------------------------------------------------------------
 
 # Define the path to the created PRIMME library
+MAJORVERSION := 3
+VERSION := 3.0
 UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
     SLIB = dylib
@@ -12,6 +14,7 @@ else
 endif
 LIBRARY = libprimme.a
 SOLIBRARY = libprimme.$(SLIB)
+SONAMELIBRARY = libprimme.$(SLIB).$(VERSION)
 
 
 # Define compilers and flags
@@ -80,3 +83,13 @@ override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADI
 
 RANLIB ?= ranlib
 R ?= R
+PYTHON ?= $(if $(findstring 1984, $(shell python -c 'print(1984)')), \
+  python, \
+  $(if $(findstring 1984, $(shell python2 -c 'print(1984)')),python2,python3))
+
+#---------------------------------------------------------------
+#  Installation
+#---------------------------------------------------------------
+
+includedir ?= $(DESTDIR)$(PREFIX)/include
+libdir ?= $(DESTDIR)$(PREFIX)/lib

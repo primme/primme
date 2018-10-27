@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,11 @@
 
 #ifndef PRIMME_H
 #define PRIMME_H
+
+/* Define version */
+
+#define PRIMME_VERSION_MAJOR      3
+#define PRIMME_VERSION_MINOR      0
 
 /* A C99 code with complex type is not a valid C++ code. However C++          */
 /* compilers usually can take it. Nevertheless in order to avoid the warnings */

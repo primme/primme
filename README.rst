@@ -80,7 +80,7 @@ Please cite (bibtex_):
 
 * L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
   Preconditioned SVD Solver for Accurate Large-Scale Computations*,
-  J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
+  SIAM J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
 More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been

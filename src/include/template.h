@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -262,6 +262,19 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #include <tgmath.h>   /* select proper function abs from fabs, cabs... */
 #endif
 
+/* exp and log macros cause warnings on some systems. PRIMME only uses  */
+/* the double version of these functions.                               */
+
+#ifdef pow
+#  undef pow
+#endif
+#ifdef exp
+#  undef exp
+#endif
+#ifdef log
+#  undef log
+#endif
+
 #ifndef __cplusplus
 #  define ISFINITE isfinite
 #else
@@ -481,9 +494,6 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  *
  **********************************************************************/
 
-#if !(defined (__APPLE__) && defined (__MACH__))
-#  include <malloc.h> /* malloc */
-#endif
 #include <stdlib.h>   /* malloc, free */
 
 #define MALLOC_PRIMME(NELEM, X)                                                \

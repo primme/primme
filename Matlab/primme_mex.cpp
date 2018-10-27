@@ -51,12 +51,12 @@
 #include "primme.h"
 
 // Attempt to capture ctrl+c
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
 #include <signal.h>
-#if defined (__unix__)
-# define SIGHANDLER_T sighandler_t
-#else
+#if (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
 # define SIGHANDLER_T sig_t
+#else
+# define SIGHANDLER_T sighandler_t
 #endif
 
 static volatile int keepRunning = 1;
@@ -1020,7 +1020,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    }
 
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
    // Set ctrl+c handler
 
    keepRunning = 1;
@@ -1032,7 +1032,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    int ret = tprimme(evals, evecs, rnorms, primme);
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
    // Unset ctrl+c handler
 
    signal(SIGINT, prev_handler);
@@ -1666,7 +1666,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
       primme_svds->convTestFun = convTestFunSvds<T>;
    }
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
    // Set ctrl+c handler
 
    keepRunning = 1;
@@ -1678,7 +1678,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
 
    int ret = tprimme_svds(svals, svecs, rnorms, primme_svds);
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
    // Unset ctrl+c handler
 
    signal(SIGINT, prev_handler);

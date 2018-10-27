@@ -21090,6 +21090,8 @@ SWIG_init(void) {
   
   import_array();
   
+  SWIG_Python_SetConstant(d, "PRIMME_VERSION_MAJOR",SWIG_From_int(static_cast< int >(3)));
+  SWIG_Python_SetConstant(d, "PRIMME_VERSION_MINOR",SWIG_From_int(static_cast< int >(0)));
   SWIG_Python_SetConstant(d, "PRIMME_UNEXPECTED_FAILURE",SWIG_From_int(static_cast< int >(-1)));
   SWIG_Python_SetConstant(d, "PRIMME_MALLOC_FAILURE",SWIG_From_int(static_cast< int >(-2)));
   SWIG_Python_SetConstant(d, "PRIMME_MAIN_ITER_FAILURE",SWIG_From_int(static_cast< int >(-3)));

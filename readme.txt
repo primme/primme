@@ -109,9 +109,32 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 2.2 (released on October 26, 2018):
+
+* Improved stability for single precision.
+
+* Improved support for the shared library.
+
+* Updated PETSc examples in Fortran; added new examples in single
+  precision.
+
+* Improved support for FreeBSD and MacOS.
+
+* New install and uninstall actions.
+
+* MATLAB interface support for user-defined stopping criterion (see
+  "convTestFun" and "convTestFun") and stopping with ctr+c.
+
+* Optional suffix on BLAS/LAPACK function names (for OpenBLAS, see
+  PRIMME_BLAS_SUFFIX).
+
+* Replaced XHEGV by XHEGVX (to support ESSL).
+
+* Fixed bugs in the library and in the Matlab interface.
+
 Changes in PRIMME 2.1 (released on April 4, 2017):
 
-* Improve robustness by broadcasting the result of critical LAPACK
+* Improved robustness by broadcasting the result of critical LAPACK
   operations instead of replicating them on every process; this is
   useful when using a threaded BLAS/LAPACK or when some parallel
   processes may run on different architectures or libraries.
@@ -256,7 +279,7 @@ PRIMME is licensed under the 3-clause license BSD. Python and MATLAB
 interfaces have BSD-compatible licenses. Source code under "tests" is
 compatible with LGPLv3. Details can be taken from "COPYING.txt":
 
-   Copyright (c) 2017, College of William & Mary
+   Copyright (c) 2018, College of William & Mary
    All rights reserved.
 
 
@@ -432,6 +455,12 @@ Full description of actions that *make* can take:
 
 * *make solib*, builds the shared library "libprimme.so".
 
+* *make install*, installs header files and the static and dynamic
+  libraries.
+
+* *make uninstall*, uninstalls header files and the static and
+  dynamic libraries.
+
 * *make matlab*, builds *libprimme.a* compatible with MATLAB and the
   MATLAB module.
 
@@ -480,7 +509,7 @@ platforms/compilers:
 
 * CentOS 6.6
 
-* Ubuntu 14.04
+* Ubuntu 18.04
 
 * MacOS X 10.9 & 10.10
 
@@ -488,11 +517,7 @@ platforms/compilers:
 
 * Cray XC30
 
-* SunOS 5.9, quad processor Sun-Fire-280R, and several other
-  UltraSparcs
-
-* AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at
-  nersc.gov)
+* FreeBSD 11.2
 
 
 Main Contributors
@@ -2882,7 +2907,7 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **ncv** (*int**, **optional*) -- The maximum size of the
         basis
 
-      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA'**]***) --
+      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA'**]*) --
 
         Which *k* eigenvectors and eigenvalues to find:
 
@@ -2910,8 +2935,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         (stopping criterion). The default value is sqrt of machine
         precision.
 
-      * **Minv** (***(**not supported yet**)***) -- The inverse of M
-        in the generalized eigenproblem.
+      * **Minv** (*(**not supported yet**)*) -- The inverse of M in
+        the generalized eigenproblem.
 
       * **OPinv** (*N x N matrix**, **array**, **sparse matrix**, or
         **LinearOperator**, **optional*) -- Preconditioner to
@@ -2921,8 +2946,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **return_eigenvectors** (*bool**, **optional*) -- Return
         eigenvectors (True) in addition to eigenvalues
 
-      * **mode** (*string** [**'normal' | 'buckling' |
-        'cayley'**]***) -- Only 'normal' mode is supported.
+      * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*)
+        -- Only 'normal' mode is supported.
 
       * **ortho** (*N x i**, **ndarray**, **optional*) -- Seek the
         eigenvectors orthogonal to these ones. The provided vectors
@@ -3003,10 +3028,9 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
           * "resNorm": residual norm of the first unconverged pair
 
    Raises:
-      "PrimmeError" -- When the requested convergence is not obtained.
-
-      The PRIMME error code can be found as "err" attribute of the
-      exception object.
+      **PrimmeError** -- When the requested convergence is not
+      obtained.          The PRIMME error code can be found as "err"
+      attribute of the exception     object.
 
    See also:
 

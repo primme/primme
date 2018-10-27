@@ -39,9 +39,29 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 ^^^^^^^^^
+Changes in PRIMME 2.2 (released on October 26, 2018):
+
+* Improved stability for single precision.
+
+* Improved support for the shared library.
+
+* Updated PETSc examples in Fortran; added new examples in single precision.
+
+* Improved support for FreeBSD and MacOS.
+
+* New install and uninstall actions.
+
+* MATLAB interface support for user-defined stopping criterion (see |convTestFun| and |SconvTestFun|) and stopping with ctr+c.
+
+* Optional suffix on BLAS_/LAPACK_ function names (for OpenBLAS, see :ref:`PRIMME_BLAS_SUFFIX <making>`).
+
+* Replaced XHEGV by XHEGVX (to support ESSL).
+
+* Fixed bugs in the library and in the Matlab interface.
+
 Changes in PRIMME 2.1 (released on April 4, 2017):
 
-* Improve robustness by broadcasting the result of critical LAPACK_
+* Improved robustness by broadcasting the result of critical LAPACK_
   operations instead of replicating them on every process; this is
   useful when using a threaded BLAS_/LAPACK_ or when some parallel
   processes may run on different architectures or libraries.
@@ -176,7 +196,7 @@ Python and MATLAB interfaces have BSD-compatible licenses.
 Source code under :file:`tests` is compatible with LGPLv3.
 Details can be taken from :file:`COPYING.txt`::
 
-   Copyright (c) 2017, College of William & Mary
+   Copyright (c) 2018, College of William & Mary
    All rights reserved.
 
 
@@ -340,6 +360,8 @@ Full description of actions that `make` can take:
 
 * `make lib`, builds the static library :file:`libprimme.a`.
 * `make solib`, builds the shared library :file:`libprimme.so`.
+* `make install`, installs header files and the static and dynamic libraries.
+* `make uninstall`, uninstalls header files and the static and dynamic libraries.
 * `make matlab`, builds `libprimme.a` compatible with MATLAB and the MATLAB module.
 * `make octave`, builds `libprimme.a` and the Octave module.
 * `make python`, builds `libprimme.a` and the Python module.
@@ -370,12 +392,11 @@ Many users have reported builds on several other platforms/compilers:
 
 * SUSE 13.1 & 13.2
 * CentOS 6.6
-* Ubuntu 14.04
+* Ubuntu 18.04
 * MacOS X 10.9 & 10.10 
 * Cygwin & MinGW
 * Cray XC30
-* SunOS 5.9, quad processor Sun-Fire-280R, and several other UltraSparcs
-* AIX 5.2 IBM SP POWER 3+, 16-way SMP, 375 MHz nodes (seaborg at nersc.gov)
+* FreeBSD 11.2
 
 Main Contributors
 ^^^^^^^^^^^^^^^^^

@@ -2,6 +2,7 @@
 
 from codecs import open
 from os import path
+import sys
 
 def get_numpy_options():
    # Third-party modules - we depend on numpy for everything
@@ -41,12 +42,20 @@ def get_numpy_options():
    if not blaslapack_libraries and not blaslapack_extra_link_args:
        blaslapack_libraries = ['lapack', 'blas']
 
-   return dict(
+   r = dict(
                    include_dirs = [numpy_include, "primme/include", "primme/src/include"],
-                   library_dirs = ["../lib"] + blaslapack_library_dirs,
-                   libraries = ["primme"] + blaslapack_libraries,
+                   library_dirs = blaslapack_library_dirs,
+                   libraries = blaslapack_libraries,
                    extra_link_args = blaslapack_extra_link_args
    )
+
+   # Link dynamically on Windows and statically otherwise
+   if sys.platform == 'win32':
+      r['libraries'] = ['primme'] + r['libraries']
+   else:
+      r['extra_objects'] = ['../lib/libprimme.a']
+
+   return r
 
 def setup_package():
    import sys
