@@ -259,6 +259,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    double smallestResNorm;  /* the smallest residual norm in the block       */
    int reset=0;             /* Flag to reset V and W                         */
    int restartsSinceReset=0;/* Restart since last reset of V and W           */
+   int wholeSpace=0;        /* search subspace reach max size                */
 
    /* Runtime measurement variables for dynamic method switching             */
    primme_CostModel CostModel; /* Structure holding the runtime estimates of */
@@ -493,12 +494,14 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
       /* required eigenpairs have been found (no verification)          */
       /* -------------------------------------------------------------- */
       while (numConverged < primme->numEvals &&
-             primme->stats.numMatvecs < primme->maxMatvecs  &&
-             ( primme->maxOuterIterations == 0 ||
-               primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
- 
-            numPrevRetained = 0;
-            nprevhVecs = 0;
+             primme->stats.numMatvecs < primme->maxMatvecs &&
+             (primme->maxOuterIterations == 0 ||
+                   primme->stats.numOuterIterations <
+                         primme->maxOuterIterations) &&
+             !wholeSpace) {
+
+         numPrevRetained = 0;
+         nprevhVecs = 0;
 
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
@@ -701,9 +704,20 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                blockSize = 1;
             }
 
+            /* The method failing in expanding the search subspace may be an  */
+            /* indication that a) the orthogonalization error is to large for */
+            /* distinguishing the new components on the computed correction,  */
+            /* or b) there is no more pairs that satisfy the convergence      */
+            /* criterion. If prepare_candidates gave a candidate, we guess    */
+            /* we are in case a), and otherwise we are in case b).            */
+
             if (i >= maxNumRandoms) {
+               if (availableBlockSize > 0 && blockSize0 <= 0) {
+                  wholeSpace = 1;
+               } else {
+                  reset = 2;
+               }
                blockSize = 0;
-               reset = 2;
                if (primme->locking && !primme->massMatrixMatvec &&
                      !primme->correctionParams.precondition &&
                      primme->correctionParams.maxInnerIterations == 0) {
@@ -787,10 +801,9 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                   basisSize, blockSize, 0 /*unsymmetric*/, ctx));
 
             if (basisSize+blockSize >= primme->maxBasisSize) {
-               CHKERR(retain_previous_coefficients_SHprimme(hVecs,
-                        basisSize, hU, basisSize, previousHVecs,
-                        primme->maxBasisSize, primme->maxBasisSize, basisSize,
-                        iev, blockSize, flags, &numPrevRetained, ctx));
+               CHKERR(retain_previous_coefficients_SHprimme(hVecs, basisSize,
+                     previousHVecs, primme->maxBasisSize, primme->maxBasisSize,
+                     basisSize, iev, blockSize, flags, &numPrevRetained, ctx));
             }
 
             /* Copy hVecs into prevhVecs */
@@ -1015,7 +1028,6 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
          /* Restart the basis  */
          /* ------------------ */
 
-         int oldNumLocked = numLocked;
          assert(ldV == ldW); /* this function assumes ldV == ldW */
          CHKERR(restart_Sprimme(V, W, BV, primme->nLocal, basisSize, ldV, hVals,
                hSVals, flags, iev, &blockSize, blockNorms, evecs, ldevecs,
@@ -1027,8 +1039,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                R, primme->maxBasisSize, QtV, primme->maxBasisSize, QtQ, ldQtQ,
                hU, basisSize, 0, hVecs, basisSize, 0, &basisSize,
                &targetShiftIndex, &numArbitraryVecs, hVecsRot,
-               primme->maxBasisSize, &restartsSinceReset, maxRank,
-               startTime, ctx));
+               primme->maxBasisSize, &restartsSinceReset, startTime, ctx));
          restartsSinceReset++;
 
          /* If there are any initial guesses remaining, then copy it */
@@ -1149,7 +1160,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
          /* If all of the target eigenvalues have been computed, */
          /* then return success, else return with a failure.     */
  
-         if (numConverged == primme->numEvals) {
+         if (numConverged == primme->numEvals || wholeSpace) {
             if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
             *ret = 0;
             goto clean;
@@ -1185,7 +1196,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
          /* iterating.                                                 */
          /* ---------------------------------------------------------- */
 
-         if (restartLimitReached || converged) {
+         if (restartLimitReached || converged || wholeSpace) {
             for (i=0; i < primme->numEvals; i++) {
                evals[i] = hVals[i];
                perm[i] = i;

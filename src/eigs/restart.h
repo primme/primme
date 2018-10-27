@@ -47,8 +47,8 @@ int restart_sprimme(float *V, float *W, float *BV, PRIMME_INT nLocal,
       float *QtQ, int ldQtQ, float *hU, int ldhU, int newldhU,
       float *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, float *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_sprimme(float *V, float *W, float *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    float *h, int nh, int ldh, float *hVals,
@@ -63,11 +63,11 @@ int Num_aux_update_VWXR_sprimme(float *V, float *W, float *BV,
    float *rnorms, int nrb, int nre,
    float *VtBV, int nVtBV, int ldVtBV,
    float *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 int retain_previous_coefficients_sprimme(float *hVecs, int ldhVecs,
-   float *hU, int ldhU, float *previousHVecs, int ldpreviousHVecs,
-   int mprevious, int basisSize, int *iev, int blockSize, int *flags,
-   int *numPrevRetained, primme_context ctx);
+      float *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
+      int *iev, int blockSize, int *flags, int *numPrevRetained,
+      primme_context ctx);
 int restart_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, float *hVals, float *hSVals, int *flags,
       int *iev, int *ievSize, float *blockNorms, PRIMME_COMPLEX_FLOAT *evecs,
@@ -82,8 +82,8 @@ int restart_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PRIMME_COM
       PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, PRIMME_COMPLEX_FLOAT *hU, int ldhU, int newldhU,
       PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, PRIMME_COMPLEX_FLOAT *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PRIMME_COMPLEX_FLOAT *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    PRIMME_COMPLEX_FLOAT *h, int nh, int ldh, float *hVals,
@@ -98,11 +98,11 @@ int Num_aux_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W
    float *rnorms, int nrb, int nre,
    PRIMME_COMPLEX_FLOAT *VtBV, int nVtBV, int ldVtBV,
    PRIMME_COMPLEX_FLOAT *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 int retain_previous_coefficients_cprimme(PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs,
-   PRIMME_COMPLEX_FLOAT *hU, int ldhU, PRIMME_COMPLEX_FLOAT *previousHVecs, int ldpreviousHVecs,
-   int mprevious, int basisSize, int *iev, int blockSize, int *flags,
-   int *numPrevRetained, primme_context ctx);
+      PRIMME_COMPLEX_FLOAT *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
+      int *iev, int blockSize, int *flags, int *numPrevRetained,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(restart_Sprimme)
 #  define restart_Sprimme CONCAT(restart_,SCALAR_SUF)
 #endif
@@ -129,8 +129,8 @@ int restart_dprimme(double *V, double *W, double *BV, PRIMME_INT nLocal,
       double *QtQ, int ldQtQ, double *hU, int ldhU, int newldhU,
       double *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, double *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_aux_update_VWXR_Sprimme)
 #  define Num_aux_update_VWXR_Sprimme CONCAT(Num_aux_update_VWXR_,SCALAR_SUF)
 #endif
@@ -157,7 +157,7 @@ int Num_aux_update_VWXR_dprimme(double *V, double *W, double *BV,
    double *rnorms, int nrb, int nre,
    double *VtBV, int nVtBV, int ldVtBV,
    double *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(retain_previous_coefficients_Sprimme)
 #  define retain_previous_coefficients_Sprimme CONCAT(retain_previous_coefficients_,SCALAR_SUF)
 #endif
@@ -171,9 +171,9 @@ int Num_aux_update_VWXR_dprimme(double *V, double *W, double *BV,
 #  define retain_previous_coefficients_RHprimme CONCAT(retain_previous_coefficients_,HOST_REAL_SUF)
 #endif
 int retain_previous_coefficients_dprimme(double *hVecs, int ldhVecs,
-   double *hU, int ldhU, double *previousHVecs, int ldpreviousHVecs,
-   int mprevious, int basisSize, int *iev, int blockSize, int *flags,
-   int *numPrevRetained, primme_context ctx);
+      double *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
+      int *iev, int blockSize, int *flags, int *numPrevRetained,
+      primme_context ctx);
 int restart_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, PRIMME_COMPLEX_DOUBLE *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, double *hVals, double *hSVals, int *flags,
       int *iev, int *ievSize, double *blockNorms, PRIMME_COMPLEX_DOUBLE *evecs,
@@ -188,8 +188,8 @@ int restart_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, PRIMME_C
       PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, PRIMME_COMPLEX_DOUBLE *hU, int ldhU, int newldhU,
       PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, PRIMME_COMPLEX_DOUBLE *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, PRIMME_COMPLEX_DOUBLE *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    PRIMME_COMPLEX_DOUBLE *h, int nh, int ldh, double *hVals,
@@ -204,11 +204,11 @@ int Num_aux_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE 
    double *rnorms, int nrb, int nre,
    PRIMME_COMPLEX_DOUBLE *VtBV, int nVtBV, int ldVtBV,
    PRIMME_COMPLEX_DOUBLE *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 int retain_previous_coefficients_zprimme(PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs,
-   PRIMME_COMPLEX_DOUBLE *hU, int ldhU, PRIMME_COMPLEX_DOUBLE *previousHVecs, int ldpreviousHVecs,
-   int mprevious, int basisSize, int *iev, int blockSize, int *flags,
-   int *numPrevRetained, primme_context ctx);
+      PRIMME_COMPLEX_DOUBLE *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
+      int *iev, int blockSize, int *flags, int *numPrevRetained,
+      primme_context ctx);
 int restart_smagmaprimme(magma_float *V, magma_float *W, magma_float *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, float *hVals, float *hSVals, int *flags,
       int *iev, int *ievSize, float *blockNorms, magma_float *evecs,
@@ -223,8 +223,8 @@ int restart_smagmaprimme(magma_float *V, magma_float *W, magma_float *BV, PRIMME
       float *QtQ, int ldQtQ, float *hU, int ldhU, int newldhU,
       float *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, float *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_smagmaprimme(magma_float *V, magma_float *W, magma_float *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    float *h, int nh, int ldh, float *hVals,
@@ -239,7 +239,7 @@ int Num_aux_update_VWXR_smagmaprimme(magma_float *V, magma_float *W, magma_float
    float *rnorms, int nrb, int nre,
    float *VtBV, int nVtBV, int ldVtBV,
    float *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 int restart_cmagmaprimme(magma_complex_float *V, magma_complex_float *W, magma_complex_float *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, float *hVals, float *hSVals, int *flags,
       int *iev, int *ievSize, float *blockNorms, magma_complex_float *evecs,
@@ -254,8 +254,8 @@ int restart_cmagmaprimme(magma_complex_float *V, magma_complex_float *W, magma_c
       PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, PRIMME_COMPLEX_FLOAT *hU, int ldhU, int newldhU,
       PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, PRIMME_COMPLEX_FLOAT *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_cmagmaprimme(magma_complex_float *V, magma_complex_float *W, magma_complex_float *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    PRIMME_COMPLEX_FLOAT *h, int nh, int ldh, float *hVals,
@@ -270,7 +270,7 @@ int Num_aux_update_VWXR_cmagmaprimme(magma_complex_float *V, magma_complex_float
    float *rnorms, int nrb, int nre,
    PRIMME_COMPLEX_FLOAT *VtBV, int nVtBV, int ldVtBV,
    PRIMME_COMPLEX_FLOAT *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 int restart_dmagmaprimme(magma_double *V, magma_double *W, magma_double *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, double *hVals, double *hSVals, int *flags,
       int *iev, int *ievSize, double *blockNorms, magma_double *evecs,
@@ -285,8 +285,8 @@ int restart_dmagmaprimme(magma_double *V, magma_double *W, magma_double *BV, PRI
       double *QtQ, int ldQtQ, double *hU, int ldhU, int newldhU,
       double *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, double *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_dmagmaprimme(magma_double *V, magma_double *W, magma_double *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    double *h, int nh, int ldh, double *hVals,
@@ -301,7 +301,7 @@ int Num_aux_update_VWXR_dmagmaprimme(magma_double *V, magma_double *W, magma_dou
    double *rnorms, int nrb, int nre,
    double *VtBV, int nVtBV, int ldVtBV,
    double *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 int restart_zmagmaprimme(magma_complex_double *V, magma_complex_double *W, magma_complex_double *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, double *hVals, double *hSVals, int *flags,
       int *iev, int *ievSize, double *blockNorms, magma_complex_double *evecs,
@@ -316,8 +316,8 @@ int restart_zmagmaprimme(magma_complex_double *V, magma_complex_double *W, magma
       PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, PRIMME_COMPLEX_DOUBLE *hU, int ldhU, int newldhU,
       PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, PRIMME_COMPLEX_DOUBLE *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, int maxRank,
-      double startTime, primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, double startTime,
+      primme_context ctx);
 int Num_aux_update_VWXR_zmagmaprimme(magma_complex_double *V, magma_complex_double *W, magma_complex_double *BV,
    PRIMME_INT mV, int nV, PRIMME_INT ldV,
    PRIMME_COMPLEX_DOUBLE *h, int nh, int ldh, double *hVals,
@@ -332,5 +332,5 @@ int Num_aux_update_VWXR_zmagmaprimme(magma_complex_double *V, magma_complex_doub
    double *rnorms, int nrb, int nre,
    PRIMME_COMPLEX_DOUBLE *VtBV, int nVtBV, int ldVtBV,
    PRIMME_COMPLEX_DOUBLE *H, int nH, int ldH,
-   int maxRank, primme_context ctx);
+   primme_context ctx);
 #endif
