@@ -179,6 +179,7 @@ void primme_initialize(primme_params *primme) {
    primme->monitorFun              = NULL;
    primme->monitor                 = NULL;
    primme->queue                   = NULL;
+   primme->profile                 = NULL;
 }
 
 /*******************************************************************************
@@ -749,9 +750,11 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       primme_convergencetest convergencetest_v;
       void (*monitorFun_v)(void *basisEvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-            void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-            int *inner_its, void *LSRes, primme_event *event,
-            struct primme_params *primme, int *err);
+            void *lockedEvals, int *numLocked, int *lockedFlags,
+            void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
+            double *time, primme_event *event, struct primme_params *primme,
+            int *err);
+      const char *str_v;
    } *v = (union value_t*)value;
 
    switch (label) {
@@ -969,6 +972,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_queue:
               v->ptr_v = primme->queue;
       break;
+      case PRIMME_profile:
+              v->str_v = primme->profile;
+      break;
       default :
       return 1;
    }
@@ -1011,9 +1017,11 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       primme_convergencetest *convergencetest_v;
       void (*monitorFun_v)(void *basisEvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-            void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-            int *inner_its, void *LSRes, primme_event *event,
-            struct primme_params *primme, int *err);
+            void *lockedEvals, int *numLocked, int *lockedFlags,
+            void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
+            double *time, primme_event *event, struct primme_params *primme,
+            int *err);
+      const char *str_v;
    } v = *(union value_t*)&value;
 
    switch (label) {
@@ -1257,6 +1265,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_queue:
               primme->queue = v.ptr_v;
       break;
+      case PRIMME_profile:
+              primme->profile = v.str_v;
+      break;
       default : 
       return 1;
    }
@@ -1376,6 +1387,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(monitorFun                   , monitorFun);
    IF_IS(monitor                      , monitor);
    IF_IS(queue                        , queue);
+   IF_IS(profile                      , profile);
 #undef IF_IS
 
    /* Return label/label_name */
@@ -1483,6 +1495,11 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       if (arity) *arity = 1;
       break;
 
+      case PRIMME_profile:
+      if (type) *type = primme_string;
+      if (arity) *arity = 1;
+      break;
+
       default: 
       return 1;
    }
@@ -1559,6 +1576,8 @@ int primme_constant_info(const char* label_name, int *value) {
    IF_IS(primme_event_reset);
    IF_IS(primme_event_converged);
    IF_IS(primme_event_locked);
+   IF_IS(primme_event_message);
+   IF_IS(primme_event_profile);
 
    /* enum member from orth */
 

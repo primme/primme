@@ -580,10 +580,11 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                primme->stats.elapsedTime = primme_wTimer() - startTime;
                HREAL evalr = eval_updated, resr = eres_updated[p[i]], taur = tau[p[i]];
 
-               CHKERRM((primme->monitorFun(&evalr, &ONE, NULL, &ZERO, &ONE,
-                              &resr, NULL, NULL, NULL, NULL, NULL, &numIts,
-                              &taur, &EVENT_INNER_ITERATION, primme, &err),
-                             err),
+               CHKERRM(
+                     (primme->monitorFun(&evalr, &ONE, NULL, &ZERO, &ONE, &resr,
+                            NULL, NULL, NULL, NULL, NULL, &numIts, &taur, NULL,
+                            NULL, &EVENT_INNER_ITERATION, primme, &err),
+                           err),
                      PRIMME_USER_FAILURE, "Error returned by monitorFun: %d",
                      err);
             }
@@ -617,10 +618,11 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                int err;
                primme->stats.elapsedTime = primme_wTimer() - startTime;
                HREAL evalr = eval[p[i]], resr = rnorm[p[i]], taur = tau[p[i]];
-               CHKERRM((primme->monitorFun(&evalr, &ONE, &UNCO, &ZERO, &ONE,
-                              &resr, NULL, NULL, NULL, NULL, NULL, &numIts,
-                              &taur, &EVENT_INNER_ITERATION, primme, &err),
-                             err),
+               CHKERRM(
+                     (primme->monitorFun(&evalr, &ONE, &UNCO, &ZERO, &ONE,
+                            &resr, NULL, NULL, NULL, NULL, NULL, &numIts, &taur,
+                            NULL, NULL, &EVENT_INNER_ITERATION, primme, &err),
+                           err),
                      PRIMME_USER_FAILURE, "Error returned by monitorFun: %d",
                      err);
             }

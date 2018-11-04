@@ -77,23 +77,24 @@ static void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
 static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, int *stage,
-      primme_svds_params *primme_svds, int *err);
-static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
-      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
       int *err);
+static void monitor_single_stage(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
 static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err);
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
 static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err);
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
 
 #define UPDATE_STATS(PRIMME_SVDS_STATS, OP, PRIMME_STATS) {\
    (PRIMME_SVDS_STATS).numOuterIterations OP  (PRIMME_STATS).numOuterIterations;\
@@ -544,9 +545,9 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          primme_event EVENT_LOCKED = primme_event_locked;
          int ZERO = 0;
          CHKERRM((primme_svds->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
-                     NULL, svals, &numLocked, flags, rnorms, NULL, NULL,
-                     &EVENT_LOCKED, &ZERO, primme_svds, &ierr),
-                  ierr),
+                        NULL, svals, &numLocked, flags, rnorms, NULL, NULL,
+                        NULL, NULL, &EVENT_LOCKED, &ZERO, primme_svds, &ierr),
+                       ierr),
                PRIMME_USER_FAILURE, "Error code returned by 'monitorFun' %d",
                ierr);
 
@@ -578,6 +579,9 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
 
    /* Copy queue */
    primme->queue = primme_svds->queue;
+
+   /* Copy profile */
+   primme->profile = primme_svds->profile;
 
    return 0;
 }
@@ -829,6 +833,37 @@ static int primme_svds_check_input(HREAL *svals, SCALAR *svecs, HREAL *resNorms,
    ***************************************************************************/
 
 /******************************************************************************
+ * Function monitor_report - pass to the monitor the reports
+ *
+ * PARAMETERS
+ * ---------------------------
+ * fun      function name or message to report
+ * time     time spent on the call
+ * ctx      primme context
+ *
+ ******************************************************************************/
+
+static int monitor_report(const char *fun, double time, primme_context ctx) {
+   if (ctx.primme_svds && ctx.primme_svds->monitorFun) {
+      int err;
+      primme_event event =
+            (time < HUGE_VAL ? primme_event_profile : primme_event_message);
+
+#ifdef PRIMME_PROFILE
+      /* Avoid profiling this function. It will turn out in a recursive call */
+      ctx.path = NULL;
+#endif
+
+      CHKERRM((ctx.primme_svds->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
+                     NULL, NULL, NULL, NULL, NULL, NULL, NULL, fun, &time,
+                     &event, NULL, ctx.primme_svds, &err),
+                    err),
+            PRIMME_USER_FAILURE, "Error code returned by 'monitorFun' %d", err);
+   }
+   return 0;
+}
+
+/******************************************************************************
  * Function primme_svds_get_context - return a context from the primme_svds_params
  *
  * PARAMETERS
@@ -848,6 +883,27 @@ static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
       ctx.procID = primme_svds->procID;
       ctx.mpicomm = primme_svds->commInfo;
       ctx.queue = primme_svds->queue;
+      ctx.report = monitor_report;
+#ifdef PRIMME_PROFILE
+      if (primme_svds->profile) {
+         /* Compile regex. If there is no errors, set path to a nonzero       */
+         /* value. Set ctx.report to the function that will channel the       */
+         /* reports to the monitor. Report errors if they are.                */
+
+         int ierr = regcomp(&ctx.profile, primme_svds->profile, REG_NOSUB);
+         if (ierr) {
+            char errmsg[100];
+            regerror(ierr, &ctx.profile, errmsg, 100);
+            if (ctx.report) ctx.report(errmsg, -1, ctx);
+            regfree(&ctx.profile);
+            ctx.path = NULL;
+         } else {
+            ctx.path = "";
+         }
+      } else {
+         ctx.path = NULL;
+      }
+#endif
    }
 
    return ctx;
@@ -877,6 +933,11 @@ static void primme_svds_free_context(primme_context ctx) {
    /* Free the current frame */
 
    if (curr) free(curr);
+
+   /* Free profiler */
+#ifdef PRIMME_PROFILE
+   if (ctx.path) regfree(&ctx.profile);
+#endif
 }
 
 /**********************************************************************************
@@ -1277,9 +1338,10 @@ static void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
 static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, int *stage,
-      primme_svds_params *primme_svds, int *err)
-{
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err) {
+
    HREAL *basisSvals = (HREAL*)basisSvals_, *basisNorms = (HREAL*)basisNorms_,
          *lockedSvals = (HREAL*)lockedSvals_, *lockedNorms = (HREAL*)lockedNorms_,
          *LSRes = (HREAL*)LSRes_;
@@ -1337,6 +1399,20 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
                      *stage+1);
             }
             break;
+         case primme_event_message:
+            assert(msg != NULL);
+            if (primme_svds->printLevel >= 2) { 
+               fprintf(primme_svds->outputFile, 
+                     "PRIMME information: %s\n", msg);
+            }
+            break;
+         case primme_event_profile:
+            assert(msg != NULL && time != NULL);
+            if (primme_svds->printLevel >= 2) { 
+               fprintf(primme_svds->outputFile, 
+                     "time for %s : %g\n", msg, *time);
+            }
+            break;
       }
       fflush(primme_svds->outputFile);
    }
@@ -1374,12 +1450,12 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
  * 
  ******************************************************************************/
 
-static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
-      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err)
-{
+static void monitor_single_stage(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err) {
+
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_context ctx = primme_svds_get_context(primme_svds);
 
@@ -1433,9 +1509,20 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFl
    /* When two stages, set primme_event_locked as primme_event_converged */
 
    primme_event event_svds = *event;
-   if (primme_svds->methodStage2 != primme_svds_op_none
-         && event_svds == primme_event_locked) {
+   if (primme_svds->methodStage2 != primme_svds_op_none &&
+         event_svds == primme_event_locked) {
       event_svds = primme_event_converged;
+   }
+
+   /* Prefix msg with Sprimme0 if the event is a profile */
+
+   char *new_msg = NULL;
+   if (event_svds == primme_event_profile && msg) {
+      int len = 12 + strlen(msg);
+      if (MALLOC_PRIMME(len, &new_msg) == 0) {
+         snprintf(new_msg, len, "~Sprimme0%s", msg);
+         msg = new_msg;
+      }
    }
 
    /* Record performance measurements */ 
@@ -1448,13 +1535,15 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFl
    int ZERO = 0;
    primme_svds->monitorFun(basisSvals, basisSize, basisFlags, iblock, blockSize,
          basisSVNorms, numConverged, lockedSvals, numLocked, lockedFlags,
-         lockedSVNorms, inner_its, LSRes, &event_svds, &ZERO, primme_svds, err);
+         lockedSVNorms, inner_its, LSRes, msg, time, &event_svds, &ZERO,
+         primme_svds, err);
    primme_svds->stats = stats; /* restore original values */
 
    CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
    CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_RHprimme(lockedSvals, ctx), *err = 1);
    CHKERRA(Num_free_RHprimme(lockedSVNorms, ctx), *err = 1);
+   if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);
 }
 
@@ -1493,9 +1582,9 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize, int *basisFl
 static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err)
-{
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err) {
+
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_context ctx = primme_svds_get_context(primme_svds);
 
@@ -1554,6 +1643,17 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
       iblockSV[0] = *numLocked-1;
    }
 
+   /* Prefix msg with Sprimme0 if the event is a profile */
+
+   char *new_msg = NULL;
+   if (*event == primme_event_profile && msg) {
+      int len = 12 + strlen(msg);
+      if (MALLOC_PRIMME(len, &new_msg) == 0) {
+         snprintf(new_msg, len, "~Sprimme0%s", msg);
+         msg = new_msg;
+      }
+   }
+
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
@@ -1564,13 +1664,14 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    int ZERO = 0;
    primme_svds->monitorFun(basisSvals, &basisSize0, basisSVFlags, iblockSV,
          blockSize, basisSVNorms, &numConvergedSV, NULL, NULL, NULL, NULL,
-         inner_its, LSRes, &eventSV, &ZERO, primme_svds, err);
+         inner_its, LSRes, msg, time, &eventSV, &ZERO, primme_svds, err);
    primme_svds->stats = stats; /* restore original values */
 
    CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
    CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(basisSVFlags, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(iblockSV, ctx), *err = 1);
+   if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);
 }
 
@@ -1607,9 +1708,9 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err)
-{
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err) {
+
    HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
          *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
          *LSRes = (HREAL*)LSRes_;
@@ -1649,6 +1750,17 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       lockedSVFlags[i] = lockedFlags[i-numLockedExtra];
    }
 
+   /* Prefix msg with Sprimme1 if the event is a profile */
+
+   char *new_msg = NULL;
+   if (*event == primme_event_profile && msg) {
+      int len = 12 + strlen(msg);
+      if (MALLOC_PRIMME(len, &new_msg) == 0) {
+         snprintf(new_msg, len, "~Sprimme1%s", msg);
+         msg = new_msg;
+      }
+   }
+
    /* Record performance measurements */ 
 
    primme_svds_stats stats = primme_svds->stats;
@@ -1659,11 +1771,13 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    int ONE = 1;
    primme_svds->monitorFun(basisEvals, basisSize, basisFlags, iblock, blockSize,
          basisSVNorms, numConverged, lockedEvals, &numLockedSV, lockedSVFlags,
-         lockedSVNorms, inner_its, LSRes, event, &ONE, primme_svds, err);
+         lockedSVNorms, inner_its, LSRes, msg, time, event, &ONE, primme_svds,
+         err);
    primme_svds->stats = stats; /* restore original values */
 
    CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_RHprimme(lockedSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(lockedSVFlags, ctx), *err = 1);
+   if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);
 }

@@ -1190,9 +1190,10 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
             lockedFlags[*numLocked-1] = flags[i];
             primme->stats.elapsedTime = primme_wTimer() - startTime;
             CHKERRM((primme->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
-                        NULL, evals, numLocked, lockedFlags, resNorms, NULL, NULL,
-                        &EVENT_LOCKED, primme, &err), err), -1,
-                  "Error returned by monitorFun: %d", err);
+                           NULL, evals, numLocked, lockedFlags, resNorms, NULL,
+                           NULL, NULL, NULL, &EVENT_LOCKED, primme, &err),
+                          err),
+                  -1, "Error returned by monitorFun: %d", err);
          }
 
          insertionSort(eval, evals, resNorm, resNorms, flags[i], lockedFlags,

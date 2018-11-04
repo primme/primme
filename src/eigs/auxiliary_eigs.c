@@ -47,6 +47,37 @@
 #ifdef USE_DOUBLE
 
 /******************************************************************************
+ * Function monitor_report - pass to the monitor the reports
+ *
+ * PARAMETERS
+ * ---------------------------
+ * fun      function name or message to report
+ * time     time spent on the call
+ * ctx      primme context
+ *
+ ******************************************************************************/
+
+static int monitor_report(const char *fun, double time, primme_context ctx) {
+   if (ctx.primme && ctx.primme->monitorFun) {
+      int err;
+      primme_event event =
+            (time < HUGE_VAL ? primme_event_profile : primme_event_message);
+
+#ifdef PRIMME_PROFILE
+      /* Avoid profiling this function. It will turn out in a recursive call */
+      ctx.path = NULL;
+#endif
+
+      CHKERRM((ctx.primme->monitorFun(NULL, NULL, NULL, NULL, NULL,
+                     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                     NULL, fun, &time, &event, ctx.primme, &err),
+                    err),
+            -1, "Error returned by monitorFun: %d", err);
+   }
+   return 0;
+}
+
+/******************************************************************************
  * Function primme_get_context - return a context from the primme_params
  *
  * PARAMETERS
@@ -67,6 +98,27 @@ primme_context primme_get_context(primme_params *primme) {
       ctx.procID = primme->procID;
       ctx.mpicomm = primme->commInfo;
       ctx.queue = primme->queue;
+      ctx.report = monitor_report;
+#ifdef PRIMME_PROFILE
+      if (primme->profile) {
+         /* Compile regex. If there is no errors, set path to a nonzero       */
+         /* value. Set ctx.report to the function that will channel the       */
+         /* reports to the monitor. Report errors if they are.                */
+
+         int ierr = regcomp(&ctx.profile, primme->profile, REG_NOSUB);
+         if (ierr) {
+            char errmsg[100];
+            regerror(ierr, &ctx.profile, errmsg, 100);
+            if (ctx.report) ctx.report(errmsg, -1, ctx);
+            regfree(&ctx.profile);
+            ctx.path = NULL;
+         } else {
+            ctx.path = "";
+         }
+      } else {
+         ctx.path = NULL;
+      }
+#endif
    }
 
    return ctx;
@@ -96,6 +148,11 @@ void primme_free_context(primme_context ctx) {
    /* Free the current frame */
 
    if (curr) free(curr);
+
+   /* Free profiler */
+#ifdef PRIMME_PROFILE
+   if (ctx.path) regfree(&ctx.profile);
+#endif
 }
 
 #endif /* USE_DOUBLE */

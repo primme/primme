@@ -588,10 +588,11 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                primme->stats.elapsedTime = primme_wTimer() - startTime;
                int err;
                CHKERRM((primme->monitorFun(hVals, &basisSize, flags, iev,
-                           &blockSize, basisNorms, &numConverged, evals,
-                           &numLocked, lockedFlags, resNorms, NULL, NULL,
-                           &EVENT_OUTER_ITERATION, primme, &err),
-                        err), -1, "Error returned by monitorFun: %d", err);
+                              &blockSize, basisNorms, &numConverged, evals,
+                              &numLocked, lockedFlags, resNorms, NULL, NULL,
+                              NULL, NULL, &EVENT_OUTER_ITERATION, primme, &err),
+                             err),
+                     -1, "Error returned by monitorFun: %d", err);
             }
 
             /* Reset touch every time an eigenpair converges */
@@ -758,8 +759,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                         CHKERRM((primme->monitorFun(hVals, &basisSize, flags,
                                        &iev[i], &ONE, &newBlockNorm,
                                        &numConverged, NULL, NULL, NULL, NULL,
-                                       NULL, NULL, &EVENT_CONVERGED, primme,
-                                       &err),
+                                       NULL, NULL, NULL, NULL, &EVENT_CONVERGED,
+                                       primme, &err),
                                       err),
                               -1, "Error returned by monitorFun: %d", err);
                      }
@@ -1508,9 +1509,11 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                primme_event EVENT_CONVERGED = primme_event_converged;
                int err;
                CHKERRM((primme->monitorFun(hVals, &basisSize, flags, &iev[blki],
-                           &ONE, basisNorms, &numConverged0, NULL, NULL, NULL,
-                           NULL, NULL, NULL, &EVENT_CONVERGED, primme, &err),
-                        err), -1, "Error returned by monitorFun: %d", err);
+                              &ONE, basisNorms, &numConverged0, NULL, NULL,
+                              NULL, NULL, NULL, NULL, NULL, NULL,
+                              &EVENT_CONVERGED, primme, &err),
+                             err),
+                     -1, "Error returned by monitorFun: %d", err);
             }
          }
          else if (flagsBlock[i] == UNCONVERGED) {

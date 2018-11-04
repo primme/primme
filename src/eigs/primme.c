@@ -73,9 +73,8 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *is
 static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, primme_params *primme,
-      int *err);
-
+      int *inner_its, void *LSRes, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
 
 /*******************************************************************************
  * Subroutine Sprimme - This routine is a front end used to perform 
@@ -428,12 +427,13 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
 static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err)
-{
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err) {
+
    HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
         *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
         *LSRes = (HREAL*)LSRes_;
+
    assert(event != NULL && primme != NULL);
 
    /* Only print report if this is proc zero */
@@ -490,6 +490,20 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                   "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
                   *numLocked-1, lockedEvals[*numLocked-1], lockedNorms[*numLocked-1], 
                   primme->stats.numMatvecs, primme->stats.elapsedTime, lockedFlags[*numLocked-1]);
+         }
+         break;
+      case primme_event_message:
+         assert(msg != NULL);
+         if (primme->printLevel >= 2) { 
+            fprintf(primme->outputFile, 
+                  "PRIMME information: %s\n", msg);
+         }
+         break;
+      case primme_event_profile:
+         assert(msg != NULL && time != NULL);
+         if (primme->printLevel >= 2) { 
+            fprintf(primme->outputFile, 
+                  "time for %s : %g\n", msg, *time);
          }
          break;
       default:

@@ -48,6 +48,16 @@ function [varargout] = primme_svds(varargin)
 %   value, the triplet (SVAL,LSVEC,RSVEC) with residual norm RNORM
 %   is considered converged.
 %
+%   OPTIONS.profiler returns times from selected PRIMME's internal
+%   functions. If 1, STATS returns times for the main functions.
+%   If it is a cell, STATS returns times for those functions only.
+%   For instance, {'Bortho'} returns times for all function calls
+%   containing 'Bortho' on main_iteration. {'??/Bortho'} returns
+%   all calls regardless the caller. {'**/Borth'} returns all calls
+%   containing 'Bortho' grouped by callers. And {'++/Borth'} grouped
+%   by invocations. {'Bortho/*'} returns times taken by functions
+%   called at Bortho.
+%
 %   The available options for OPTIONS.primme and primmeStage2 are
 %   the same as PRIMME_EIGS, plus the option 'method'. For detailed
 %   descriptions of the above options, visit:
@@ -83,7 +93,7 @@ function [varargout] = primme_svds(varargin)
 %
 %   [U,S,V,R,STATS] = PRIMME_SVDS(...) returns how many times A and P were
 %   used and elapsed time. The application of A is counted independently from
-%   the application of A'.
+%   the application of A', and functions selected OPTIONS.profile.
 %
 %   [U,S,V,R,STATS,HIST] = PRIMME_SVDS(...) returns the convergence history,
 %   instead of printing it. Every row is a record, and the columns report:
@@ -305,6 +315,17 @@ function [varargout] = primme_svds(varargin)
       dispLevel = 0;
    end
 
+   % Process profile
+   profile0 = {};
+   if isfield(opts, 'profile')
+      if isnumeric(opts.profile) && numel(opts.profile) == 1 && opts.profile == 1
+         opts.profile = {'init','update_Q','update_projection','solve_H','check_convergence','prepare_candidates','Bortho','restart'};
+      end
+      profile0 = opts.profile;
+      keyboard
+      opts.profile = get_regex_from_cell(opts.profile);
+   end
+
    % Rename tol, maxit and p as eps, maxMatvecs and maxBasisSize
    changes = {{'tol', 'eps'}, {'maxit', 'maxMatvecs'}, {'p', 'maxBasisSize'}};
    for i=1:numel(changes)
@@ -430,15 +451,19 @@ function [varargout] = primme_svds(varargin)
 
    % Set monitor and shared variables with the monitor
    hist = [];
-   %locking = primme_mex('primme_get_member', primme, 'locking');
+   prof = struct();
    nconv = 0;
    return_hist = 0;
-   if dispLevel > 0
+   return_prof = 0;
+   if nargout >= 5
+      return_prof = 1;
+   end
+   if dispLevel > 0 || return_prof
       % NOTE: Octave doesn't support function handler for nested functions
       primme_mex('primme_svds_set_member', primme_svds, 'monitorFun', ...
-            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11));
+            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13));
    end
-   if nargout >= 5
+   if nargout >= 6
       return_hist = 1;
    elseif dispLevel == 1
       fprintf('#MV\tTime\t\tNConv\tStage\n');
@@ -496,7 +521,11 @@ function [varargout] = primme_svds(varargin)
       varargout{4} = norms;
    end
    if (nargout >= 5)
-      stats = struct();
+      if return_prof
+         stats = make_nice_profile(prof, profile0);
+      else
+         stats = struct();
+      end
       stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
       stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
       stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
@@ -508,7 +537,20 @@ function [varargout] = primme_svds(varargin)
 
    function record_history(basisSvals, basisFlags, iblock, basisNorms, ...
          numConverged, lockedSvals, lockedFlags, lockedNorms, inner_its, ...
-         LSRes, event, stage)
+         LSRes, msg, time, event, stage)
+
+      if event == 6 % primme_event_message
+         warning(['PRIMME: ' msg]);
+         return;
+      elseif event == 7 % primme_event_profiler
+         if return_prof
+            if ~isfield(prof, msg)
+               prof.(msg) = [];
+            end
+            prof.(msg) = [prof.(msg) time];
+         end
+         return;
+      end
 
       numMatvecs = double(primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs'));
       methodStage2 = double(primme_mex('primme_svds_get_member', primme_svds, 'methodStage2'));
@@ -771,5 +813,77 @@ function s = primme_svds_error_msg(errorCode)
       s = ['Error from first stage: ' primme_error_msg(errorCode+100)];
    else
       s = ['Error from second stage: ' primme_error_msg(errorCode+200)];
+   end
+end
+
+function x = replace_globs(x)
+   x = strrep(strrep(strrep(x, '??', '%'), '++', '%'), '**', '%');
+   x = strrep(strrep(strrep(x, '*', '[^~]*'), '+', '[^~]*'), '?', '[^~]*');
+   x = strrep(x, '%', '.*');
+end
+
+function r = get_regex(c)
+   if ~ischar(c)
+      error('Not valid regex');
+      return;
+   end
+  
+   r = ['^~[^~]*' strjoin(cellfun(@(x)sprintf('~%s[^~]*', replace_globs(x)), strsplit(c, '/'), 'UniformOutput',false), '') '$'];
+end
+
+function r = get_regex_from_cell(c)
+   if ischar(c)
+      r = c;
+   elseif iscell(c)
+      r = strjoin(cellfun(@(x)['\(' get_regex(x) '\)'],c,'UniformOutput',false),'\\|');
+   else
+      error('Not valid profile');
+   end
+end
+
+function r = get_group_name(f, s)
+   s = strsplit(['?/' s], '/');
+   r = {};
+   for si = 1:numel(s)
+      p = sprintf('^~%s[^~]*', replace_globs(s{si}));
+      [~,l] = regexp(f, p);
+      d = f(2:l);
+      if strfind(s{si}, '?')
+         r{end+1} = s{si};
+      elseif strfind(s{si}, '**')
+         r{end+1} = strjoin(cellfun(@(x)regexp(x,'[^(]+','match','once'), strsplit(d,'~'), 'UniformOutput',false), '/');
+      elseif strfind(s{si}, '+')
+         r{end+1} = d;
+      elseif strfind(s{si}, '*')
+         r{end+1} = regexp(d,'[^(]+','match','once');
+      else
+         r{end+1} = s{si};
+      end
+      f = f(l+1:end);
+   end
+   r = strjoin(r(2:end), '/');
+end
+
+function r = make_nice_profile(prof, groups)
+   if ~iscell(groups)
+      r = prof;
+      return;
+   end
+
+   r = struct();
+   func_names = fieldnames(prof);
+   for fi = 1:numel(func_names);
+      f = func_names{fi};
+      for s = groups
+         s = s{1};
+         if ~isempty(regexp(f, get_regex(s)))
+            g = get_group_name(f, s);
+            if ~isfield(r, g)
+               r.(g) = [];
+            end
+            r.(g) = [r.(g) prof.(f)];
+            continue
+         end
+      end
    end
 end

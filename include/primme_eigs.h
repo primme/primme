@@ -83,7 +83,9 @@ typedef enum {
    primme_event_restart,            /* report at every basis restart          */
    primme_event_reset,              /* event launch if basis reset            */
    primme_event_converged,          /* report new pair marked as converged    */
-   primme_event_locked              /* report new pair marked as locked       */
+   primme_event_locked,             /* report new pair marked as locked       */
+   primme_event_message,            /* report warning                         */
+   primme_event_profile             /* report time from consumed by a function*/          
 } primme_event;
 
 /* Orthogonalization variant */
@@ -215,12 +217,13 @@ typedef struct primme_params {
          struct primme_params *primme, int *ierr);
    void *convtest;
    void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-      void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event,
-      struct primme_params *primme, int *err);
+         int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+         void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+         int *inner_its, void *LSRes, const char *msg, double *time,
+         primme_event *event, struct primme_params *primme, int *err);
    void *monitor;
-   void *queue;   	/* magma device queue (magma_queue_t*) */
+   void *queue;      /* magma device queue (magma_queue_t*) */
+   const char *profile; /* regex expression with functions to monitor times */
 } primme_params;
 /*---------------------------------------------------------------------------*/
 
@@ -246,7 +249,8 @@ typedef enum {
 typedef enum {
    primme_int,
    primme_double,
-   primme_pointer
+   primme_pointer,
+   primme_string
 } primme_type;
 
 typedef enum {
@@ -322,7 +326,8 @@ typedef enum {
    PRIMME_ldOPs =  53,
    PRIMME_monitorFun = 54,
    PRIMME_monitor = 55,
-   PRIMME_queue = 56
+   PRIMME_queue = 56,
+   PRIMME_profile = 57
 } primme_params_label;
 
 int sprimme(float *evals, float *evecs, float *resNorms, 

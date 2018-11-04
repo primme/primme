@@ -140,12 +140,14 @@ typedef struct primme_svds_params {
          struct primme_svds_params *primme, int *ierr);
    void *convtest;
    void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-      void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, int *stage,
-      struct primme_svds_params *primme_svds, int *err);
+         int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+         void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+         int *inner_its, void *LSRes, const char *msg, double *time,
+         primme_event *event, int *stage,
+         struct primme_svds_params *primme_svds, int *err);
    void *monitor;
    void *queue;   	/* magma device queue (magma_queue_t*) */
+   const char *profile; /* regex expression with functions to monitor times */
 } primme_svds_params;
 
 typedef enum {
@@ -198,7 +200,8 @@ typedef enum {
    PRIMME_SVDS_convtest = 406,
    PRIMME_SVDS_monitorFun = 41,
    PRIMME_SVDS_monitor = 42,
-   PRIMME_SVDS_queue = 43
+   PRIMME_SVDS_queue = 43,
+   PRIMME_SVDS_profile = 44
 } primme_svds_params_label;
 
 int sprimme_svds(float *svals, float *svecs, float *resNorms,

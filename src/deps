@@ -28,7 +28,7 @@ svds/primme_svds_interface*.o : include/numerical.h svds/primme_svds_interface.h
 ../include/primme_f77.h : 
 ../include/primme_svds.h : ../include/primme_eigs.h
 ../include/primme_svds_f77.h : 
-include/template.h : ../include/primme.h include/memman.h
+include/template.h : ../include/primme.h include/memman.h include/wtime.h
 include/numerical.h : include/template.h include/blaslapack.h include/magma_wrapper.h include/auxiliary.h
 include/primme_interface.h : 
 include/memman.h : 

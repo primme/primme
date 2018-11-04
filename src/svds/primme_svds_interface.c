@@ -146,6 +146,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->monitorFun              = NULL;
    primme_svds->monitor                 = NULL;
    primme_svds->queue                   = NULL;
+   primme_svds->profile                 = NULL;
 
    primme_initialize(&primme_svds->primme);
    primme_initialize(&primme_svds->primmeStage2);
@@ -530,9 +531,11 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
             struct primme_svds_params *primme, int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-            void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-            int *inner_its, void *LSRes, primme_event *event, int *stage,
+            void *lockedSvals, int *numLocked, int *lockedFlags,
+            void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
+            double *time, primme_event *event, int *stage,
             struct primme_svds_params *primme_svds, int *err);
+      const char *str_v;
    } *v = (union value_t*)value;
 
    switch(label) {
@@ -684,6 +687,12 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_monitor:
          v->ptr_v = primme_svds->monitor;
          break;
+      case PRIMME_SVDS_queue:
+         v->ptr_v = primme_svds->queue;
+         break;
+      case PRIMME_SVDS_profile:
+         v->str_v = primme_svds->profile;
+         break;
       default:
          return 1;
    }
@@ -726,10 +735,11 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
             struct primme_svds_params *primme, int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-            void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-            int *inner_its, void *LSRes, primme_event *event, int *stage,
+            void *lockedSvals, int *numLocked, int *lockedFlags,
+            void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
+            double *time, primme_event *event, int *stage,
             struct primme_svds_params *primme_svds, int *err);
-
+      const char *str_v;
    } v = *(union value_t*)&value;
 
    switch(label) {
@@ -887,6 +897,12 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_monitor:
          primme_svds->monitor = v.ptr_v;
          break;
+      case PRIMME_SVDS_queue:
+         primme_svds->queue = v.ptr_v;
+         break;
+      case PRIMME_SVDS_profile:
+         primme_svds->profile = v.str_v;
+         break;
       default:
          return 1;
    }
@@ -981,6 +997,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(convtest);
    IF_IS(monitorFun);
    IF_IS(monitor);
+   IF_IS(queue);
+   IF_IS(profile);
 #undef IF_IS
 
    /* Return label/label_name */
@@ -1057,7 +1075,13 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_convtest:
       case PRIMME_SVDS_monitorFun:
       case PRIMME_SVDS_monitor:
+      case PRIMME_SVDS_queue:
       if (type) *type = primme_pointer;
+      if (arity) *arity = 1;
+      break;
+
+      case PRIMME_SVDS_profile:
+      if (type) *type = primme_string;
       if (arity) *arity = 1;
       break;
 

@@ -63,6 +63,8 @@
 #include <limits.h>    
 #include <float.h>
 #include <stdint.h>
+#include <stdlib.h>   /* malloc, free */
+#include <string.h>   /* strlen */
 #include "primme.h"
 
 /*****************************************************************************/
@@ -370,6 +372,49 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #endif
 
 /*****************************************************************************/
+/* Profiling                                                                 */
+/*****************************************************************************/
+
+#ifdef PRIMME_PROFILE
+
+#include <regex.h>
+#include "wtime.h"
+
+static inline const char *__compose_function_name(const char *path,
+      const char *call, const char *filename, const char *line) {
+
+   int len = strlen(path) + 1 + 45 + strlen(filename) + 1 + strlen(line) + 10;
+   char *s = (char*)malloc(len);
+   snprintf(s, len-1, "%s~%.40s@%s:%s", path, call, filename, line);
+   s[len-1] = 0;
+   return s;
+}
+
+#define PROFILE_BEGIN(CALL) \
+   double ___t0 = 0; \
+   const char *old_path = ctx.path; \
+   if (ctx.path) { \
+      ctx.path = __compose_function_name(ctx.path, CALL, __FILE__, STR(__LINE__)); \
+      if (regexec(&ctx.profile, ctx.path, 0, NULL, 0) == 0) \
+         ___t0 = primme_wTimer(); \
+   }
+
+#define PROFILE_END \
+   if (ctx.path) { \
+      if (___t0 > 0) { \
+         ___t0 = primme_wTimer() - ___t0; \
+         if (___t0 > 0 && ctx.report) ctx.report(ctx.path, ___t0, ctx); \
+      } \
+      free((void*)ctx.path); \
+      ctx.path = old_path; \
+   }
+ 
+#else
+#define PROFILE_BEGIN(CALL)
+#define PROFILE_END
+#endif
+
+/*****************************************************************************/
 /* Error management                                                          */
 /*****************************************************************************/
 
@@ -398,7 +443,9 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 
 #define CHKERR(ERRN) { \
    MEM_PUSH_FRAME; \
+   PROFILE_BEGIN(STR(ERRN)); \
    int __err = (ERRN); assert(__err==0);\
+   PROFILE_END; \
    MEM_POP_FRAME(__err); \
    if (__err) {\
       if (ctx.printLevel > 0 && ctx.outputFile) \
@@ -429,7 +476,9 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 
 #define CHKERRM(ERRN, RETURN, ...) { \
    MEM_PUSH_FRAME; \
+   PROFILE_BEGIN(STR(ERRN)); \
    int __err = (ERRN); assert(__err==0);\
+   PROFILE_END; \
    MEM_POP_FRAME(__err); \
    if (__err) {\
       if (ctx.printLevel > 0 && ctx.outputFile) {\
@@ -458,7 +507,9 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 
 #define CHKERRA(ERRN, ACTION) { \
    MEM_PUSH_FRAME; \
+   PROFILE_BEGIN(STR(ERRN)); \
    int __err = (ERRN); assert(__err==0);\
+   PROFILE_END; \
    MEM_POP_FRAME(__err); \
    if (__err) {\
       if (ctx.printLevel > 0 && ctx.outputFile) \
@@ -494,8 +545,6 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  *
  **********************************************************************/
 
-#include <stdlib.h>   /* malloc, free */
-
 #define MALLOC_PRIMME(NELEM, X)                                                \
    (*((void **)X) = malloc((NELEM) * sizeof(**(X))),                           \
          *(X) == NULL ? PRIMME_MALLOC_FAILURE : 0)
@@ -508,6 +557,7 @@ typedef struct primme_context_str {
    /* For output */
    int printLevel;
    FILE *outputFile;
+   int (*report)(const char *fun, double time, struct primme_context_str ctx);
 
    /* For memory management */
    primme_frame *mm;
@@ -519,6 +569,12 @@ typedef struct primme_context_str {
 
    /* For MAGMA */
    void *queue;      /* magma device queue (magma_queue_t*) */
+
+   #ifdef PRIMME_PROFILE
+   /* For profiling */
+   regex_t profile;    /* Pattern of the functions to profile */
+   const char *path; /* Path of the current function */
+   #endif
 } primme_context;
 
 /*****************************************************************************/

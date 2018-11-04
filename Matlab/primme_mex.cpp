@@ -300,6 +300,13 @@ static mxArray* create_mxArray(std::complex<T> *y, I m, I n, I ldy,
    return x;
 }
 
+static mxArray *create_mxArray(
+      const char *y, bool avoidCopy) {
+
+   (void)avoidCopy;
+   return mxCreateString(y ? y : "");
+}
+
 // Template version of sprimme, cprimme, dprimme and zprimme
 
 static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme) {
@@ -671,6 +678,13 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
             CHKERR(primme_set_member(primme, label, &v));
          }
 
+         // Set members with type string
+
+         else if (ptype == primme_string) {
+            const char *str = mxArrayToString(prhs[2]);
+            CHKERR(primme_set_member(primme, label, (void*)str));
+         }
+
          else {
             /* This shouldn't happen */
             CHKERR(1);
@@ -777,12 +791,20 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
             plhs[0] = create_mxArray(&v, 1, 1, 1);
          }
 
-         // Set members with type double
+         // Get members with type double
 
          else if (ptype == primme_double) {
             double v;
             CHKERR(primme_get_member(primme, label, &v));
             plhs[0] = create_mxArray(&v, 1, 1, 1);
+         }
+
+         // Get members with type string
+
+         else if (ptype == primme_string) {
+            const char *v;
+            CHKERR(primme_get_member(primme, label, &v));
+            plhs[0] = mxCreateString(v);
          }
 
          else {
@@ -893,10 +915,10 @@ template <typename T>
 static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event,
-      struct primme_params *primme, int *ierr)
-{  
-   mxArray *prhs[12];
+      int *inner_its, void *LSRes, const char *msg, double *time,
+      primme_event *event, struct primme_params *primme, int *ierr) {
+
+   mxArray *prhs[14];
 
    // Create input vectors (avoid copy if possible)
 
@@ -920,13 +942,16 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
          1, 1, true);
    prhs[10] = create_mxArray<typename Real<T>::type,int>((T*)LSRes, LSRes?1:0,
          1, 1, true);
-   prhs[11] = create_mxArray<int,int>((int*)event, event?1:0,
+   prhs[11] = create_mxArray(msg, true);
+   prhs[12] = create_mxArray<double,int>(time, time?1:0,
+         1, 1, true);
+   prhs[13] = create_mxArray<int,int>((int*)event, event?1:0,
          1, 1, true);
 
    // Call the callback
 
    prhs[0] = (mxArray*)primme->monitor;
-   *ierr = mexCallMATLAB(0, NULL, 12, prhs, "feval");
+   *ierr = mexCallMATLAB(0, NULL, 14, prhs, "feval");
 
    // Destroy prhs[1..11]
 
@@ -940,8 +965,10 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
    if (mxGetData(prhs[8]) == lockedNorms)  mxSetData(prhs[8], NULL);
    if (mxGetData(prhs[9]) == inner_its)    mxSetData(prhs[9], NULL);
    if (mxGetData(prhs[10]) == LSRes)       mxSetData(prhs[10], NULL);
-   if (mxGetData(prhs[11]) == event)       mxSetData(prhs[11], NULL);
-   for (int i=1; i<12; i++) mxDestroyArray(prhs[i]); 
+   if (mxGetData(prhs[11]) == msg)         mxSetData(prhs[11], NULL);
+   if (mxGetData(prhs[12]) == time)        mxSetData(prhs[12], NULL);
+   if (mxGetData(prhs[13]) == event)       mxSetData(prhs[13], NULL);
+   for (int i=1; i<14; i++) mxDestroyArray(prhs[i]); 
 }
 
 
@@ -1262,6 +1289,13 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
             CHKERR(primme_svds_set_member(primme_svds, label, &v));
          }
 
+         // Set members with type string
+
+         else if (ptype == primme_string) {
+            const char *str = mxArrayToString(prhs[2]);
+            CHKERR(primme_svds_set_member(primme_svds, label, (void*)str));
+         }
+
          else {
             /* This shouldn't happen */
             CHKERR(1);
@@ -1380,6 +1414,14 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
             double v;
             CHKERR(primme_svds_get_member(primme_svds, label, &v));
             plhs[0] = create_mxArray(&v, 1, 1, 1);
+         }
+
+         // Get members with type string
+
+         else if (ptype == primme_string) {
+            const char *v;
+            CHKERR(primme_svds_get_member(primme_svds, label, &v));
+            plhs[0] = mxCreateString(v);
          }
 
          else {
@@ -1542,10 +1584,11 @@ template <typename T>
 static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, int *stage,
-      struct primme_svds_params *primme_svds, int *ierr)
-{  
-   mxArray *prhs[13];
+      int *inner_its, void *LSRes, const char *msg, double *time,
+      primme_event *event, int *stage, struct primme_svds_params *primme_svds,
+      int *ierr) {
+
+   mxArray *prhs[15];
 
    // Create input vectors (avoid copy if possible)
 
@@ -1569,14 +1612,17 @@ static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
          1, 1, true);
    prhs[10] = create_mxArray<typename Real<T>::type,int>((T*)LSRes, LSRes?1:0,
          1, 1, true);
-   prhs[11] = create_mxArray<int,int>((int*)event, event?1:0,
+   prhs[11] = create_mxArray(msg, true);
+   prhs[12] = create_mxArray<double,int>(time, time?1:0,
          1, 1, true);
-   prhs[12] = create_mxArray<int,int>(stage, 1, 1, 1, true);
+   prhs[13] = create_mxArray<int,int>((int*)event, event?1:0,
+         1, 1, true);
+   prhs[14] = create_mxArray<int,int>(stage, stage?1:0, 1, 1, true);
 
    // Call the callback
 
    prhs[0] = (mxArray*)primme_svds->monitor;
-   *ierr = mexCallMATLAB(0, NULL, 13, prhs, "feval");
+   *ierr = mexCallMATLAB(0, NULL, 15, prhs, "feval");
 
    // Destroy prhs[1..12]
 
@@ -1590,9 +1636,11 @@ static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
    if (mxGetData(prhs[8]) == lockedNorms)  mxSetData(prhs[8], NULL);
    if (mxGetData(prhs[9]) == inner_its)    mxSetData(prhs[9], NULL);
    if (mxGetData(prhs[10]) == LSRes)       mxSetData(prhs[10], NULL);
-   if (mxGetData(prhs[11]) == event)       mxSetData(prhs[11], NULL);
-   if (mxGetData(prhs[12]) == stage)       mxSetData(prhs[12], NULL);
-   for (int i=1; i<13; i++) mxDestroyArray(prhs[i]); 
+   if (mxGetData(prhs[11]) == msg)         mxSetData(prhs[11], NULL);
+   if (mxGetData(prhs[12]) == time)        mxSetData(prhs[12], NULL);
+   if (mxGetData(prhs[13]) == event)       mxSetData(prhs[13], NULL);
+   if (mxGetData(prhs[14]) == stage)       mxSetData(prhs[14], NULL);
+   for (int i=1; i<15; i++) mxDestroyArray(prhs[i]); 
 }
 
 
@@ -1730,7 +1778,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-   if (nrhs == 0 || !mxIsChar(prhs[0])) {
+    if (nrhs == 0 || !mxIsChar(prhs[0])) {
       mexErrMsgTxt("The first argument should be char");
    }
 
