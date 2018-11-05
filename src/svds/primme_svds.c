@@ -891,13 +891,14 @@ static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
          /* reports to the monitor. Report errors if they are.                */
 
          int ierr = regcomp(&ctx.profile, primme_svds->profile, REG_NOSUB);
-         if (ierr) {
+         if (ierr || MALLOC_PRIMME(1, &ctx.timeoff)) {
             char errmsg[100];
             regerror(ierr, &ctx.profile, errmsg, 100);
-            if (ctx.report) ctx.report(errmsg, -1, ctx);
+            if (ctx.report && ierr != 0) ctx.report(errmsg, -1, ctx);
             regfree(&ctx.profile);
             ctx.path = NULL;
          } else {
+            *ctx.timeoff = 0.0;
             ctx.path = "";
          }
       } else {
@@ -937,6 +938,7 @@ static void primme_svds_free_context(primme_context ctx) {
    /* Free profiler */
 #ifdef PRIMME_PROFILE
    if (ctx.path) regfree(&ctx.profile);
+   if (ctx.timeoff) free(ctx.timeoff);
 #endif
 }
 

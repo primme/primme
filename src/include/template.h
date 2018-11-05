@@ -396,14 +396,18 @@ static inline const char *__compose_function_name(const char *path,
    if (ctx.path) { \
       ctx.path = __compose_function_name(ctx.path, CALL, __FILE__, STR(__LINE__)); \
       if (regexec(&ctx.profile, ctx.path, 0, NULL, 0) == 0) \
-         ___t0 = primme_wTimer(); \
+         ___t0 = primme_wTimer() - *ctx.timeoff; \
    }
 
 #define PROFILE_END \
    if (ctx.path) { \
       if (___t0 > 0) { \
-         ___t0 = primme_wTimer() - ___t0; \
-         if (___t0 > 0 && ctx.report) ctx.report(ctx.path, ___t0, ctx); \
+         double ___t1 = primme_wTimer(); \
+         ___t0 = ___t1 - ___t0 - *ctx.timeoff; \
+         if (___t0 > 0 && ctx.report) { \
+            ctx.report(ctx.path, ___t0, ctx); \
+            *ctx.timeoff += primme_wTimer() - ___t1; \
+         } \
       } \
       free((void*)ctx.path); \
       ctx.path = old_path; \
@@ -572,8 +576,9 @@ typedef struct primme_context_str {
 
    #ifdef PRIMME_PROFILE
    /* For profiling */
-   regex_t profile;    /* Pattern of the functions to profile */
+   regex_t profile;  /* Pattern of the functions to profile */
    const char *path; /* Path of the current function */
+   double *timeoff;  /* Accumulated overhead of profiling and reporting */
    #endif
 } primme_context;
 
