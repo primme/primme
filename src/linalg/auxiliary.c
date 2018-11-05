@@ -835,10 +835,9 @@ int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    /* Copy the matrix some columns backward, and other cases */
    /* TODO: assert x and y don't overlap */
-      for (i=0; i<n; i++) {
+   for (i=0; i<n; i++) {
       Num_copy_Sprimme(m, &x[ldx*i], 1, &y[ldy*i], 1, ctx);
-         Num_scal_Sprimme(m, s[i], &y[ldy*i], 1, ctx);
-      }
+      Num_scal_Sprimme(m, s[i], &y[ldy*i], 1, ctx);
    }
 
    return 0;
