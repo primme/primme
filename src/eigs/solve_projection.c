@@ -795,11 +795,11 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
-      SCALAR *H, int ldH, REAL *hVals, REAL *hSVals, SCALAR *hVecs,
-      int ldhVecs, int targetShiftIndex, int *arbitraryVecs,
-      double smallestResNorm, int *flags, int RRForAll, SCALAR *hVecsRot,
-      int ldhVecsRot, primme_context ctx) {
+int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
+      int ldH, REAL *hVals, REAL *hSVals, SCALAR *hVecs, int ldhVecs,
+      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
+      int *flags, int *map, int RRForAll, SCALAR *hVecsRot, int ldhVecsRot,
+      SCALAR *prevhVecs, int nprevhVecs, int ldprevhVecs, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j, k;         /* Loop indices */
@@ -809,8 +809,18 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
 
    /* Quick exit */
 
-   if (primme->projectionParams.projection != primme_proj_refined
-         || basisSize == 0) {
+   if (primme->projectionParams.projection != primme_proj_refined ||
+         basisSize == 0) {
+      /* Find next candidates, starting from iev(*blockSize)+1 */
+
+      if (flags) {
+         for (i = i0, j = 0; i < basisSize && j < blockSize; i++) {
+            CHKERR(map_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs,
+                  ldprevhVecs, hVecs, i, i + 1, ldhVecs, map, ctx));
+            if (flags[map[i]] == UNCONVERGED) j++;
+         }
+      }
+
       return 0;
    }
 
@@ -857,9 +867,12 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
       /* Count all eligible values (candidates) from j up to i.               */
       /* -------------------------------------------------------------------- */
 
-      for ( ; j < i; j++)
-         if (!flags || flags[j] == UNCONVERGED)
+      for ( ; j < i; j++) {
+         CHKERR(map_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs, ldprevhVecs,
+               hVecs, j, j + 1, ldhVecs, map, ctx));
+         if (!flags || flags[map[j]] == UNCONVERGED)
             candidates++;
+      }
      
       if (candidates >= blockSize) break;
  
@@ -889,7 +902,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
          double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 
-         if (!flags || flags[i-1] == UNCONVERGED) someCandidate = 1;
+         someCandidate = 1;
 
          if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff
                && (smallestResNorm >= HUGE_VAL
@@ -929,21 +942,96 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize,
 
          /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
          Num_zero_matrix_Sprimme(aH, basisSize, aBasisSize, basisSize, ctx);
-         Num_gemm_Sprimme("N", "N", basisSize, aBasisSize, aBasisSize,
+         CHKERR(Num_gemm_Sprimme("N", "N", basisSize, aBasisSize, aBasisSize,
                1.0, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, 0.0,
-               aH, basisSize, ctx);
+               aH, basisSize, ctx));
          Num_copy_matrix_Sprimme(aH, basisSize, aBasisSize, basisSize,
                &hVecs[ldhVecs*j], ldhVecs, ctx);
          CHKERR(Num_free_Sprimme(aH, ctx));
 
          /* Indicate that before i may not be singular vectors */
          *arbitraryVecs = i;
-
-         /* Remove converged flags from j upto i */
-         if (flags && !RRForAll) for (k=j; k<i; k++) flags[k] = UNCONVERGED;
       }
    }
 
+   return 0;
+}
+
+/*******************************************************************************
+ * Function map_vecs: given two basis V and W the function returns the
+ *    permutation p such as p[i] is the column in V closest in angle to
+ *    column ith on W.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V,W          The orthonormal bases
+ *
+ * m,n          Dimensions on V and W            
+ *
+ * n0           Update p[n0:n-1]
+ *
+ *
+ * OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------
+ * perm         The returned permutation
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
+      int n, int ldW, int *p, primme_context ctx) {
+
+   int i;         /* Loop variable                                     */
+
+   /* Compute the norm of the columns V(n0:n-1) */
+
+   HREAL *Vnorms = NULL;
+   CHKERR(Num_malloc_RHprimme(nV, &Vnorms, ctx));
+   for (i = 0; i < nV; i++) {
+      Vnorms[i] = sqrt(REAL_PART(
+            Num_dot_SHprimme(m, &V[ldV * i], 1, &V[ldV * i], 1, ctx)));
+   }
+      
+   /* Compute V'*W[n0:n-1] */
+
+   HSCALAR *ip = NULL;
+   CHKERR(Num_malloc_SHprimme(nV * (n - n0), &ip, ctx));
+   Num_zero_matrix_SHprimme(ip, nV, n - n0, nV, ctx);
+   CHKERR(Num_gemm_SHprimme("C", "N", nV, n - n0, m, 1.0, V, ldV, &W[ldW * n0],
+         ldW, 0.0, ip, nV, ctx));
+
+   for (i = n0; i < n; i++) {
+      /* Find the j that maximizes ABS(V[j]'*W[i]/Vnorms[j]) and is not */
+      /* in p(0:i-1)                                                    */
+
+      int j, jmax=-1;
+      HREAL ipmax = -1;
+      for (j = 0; j < nV; j++) {
+         HREAL ipij = ABS(ip[nV * (i - n0) + j]);
+         if (ipij > ipmax * Vnorms[j]) {
+            /* Check that j is not in p(0:i-1) */
+            int k;
+            for (k = 0; k < i && p[k] != j; k++)
+               ;
+            if (k < i) continue;
+
+            /* Update ipmax and jmax */
+            ipmax = ABS(ipij / Vnorms[j]);
+            jmax = j;
+         }
+      }
+      if (jmax < 0) {
+         jmax = i;
+      }
+
+      /* Assign the map */
+
+      p[i] = jmax;
+   }
+   
+   CHKERR(Num_free_RHprimme(Vnorms, ctx));
+   CHKERR(Num_free_SHprimme(ip, ctx));
+    
    return 0;
 }
 

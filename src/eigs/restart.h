@@ -40,8 +40,8 @@ int restart_sprimme(float *V, float *W, float *BV, PRIMME_INT nLocal,
       float *evals, float *resNorms, float *evecsHat, PRIMME_INT ldevecsHat,
       float *M, int ldM, float *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, float *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, float *prevRitzVals,
+      int *numConvergedStored, float *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, float *prevRitzVals,
       int *numPrevRitzVals, float *H, int ldH, float *VtBV, int ldVtBV,
       float *Q, PRIMME_INT ldQ, float *R, int ldR, float *QtV, int ldQtV,
       float *QtQ, int ldQtQ, float *hU, int ldhU, int newldhU,
@@ -64,10 +64,6 @@ int Num_aux_update_VWXR_sprimme(float *V, float *W, float *BV,
    float *VtBV, int nVtBV, int ldVtBV,
    float *H, int nH, int ldH,
    primme_context ctx);
-int retain_previous_coefficients_sprimme(float *hVecs, int ldhVecs,
-      float *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
-      int *iev, int blockSize, int *flags, int *numPrevRetained,
-      primme_context ctx);
 int restart_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, float *hVals, float *hSVals, int *flags,
       int *iev, int *ievSize, float *blockNorms, PRIMME_COMPLEX_FLOAT *evecs,
@@ -75,8 +71,8 @@ int restart_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W, PRIMME_COM
       float *evals, float *resNorms, PRIMME_COMPLEX_FLOAT *evecsHat, PRIMME_INT ldevecsHat,
       PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, PRIMME_COMPLEX_FLOAT *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, float *prevRitzVals,
+      int *numConvergedStored, PRIMME_COMPLEX_FLOAT *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, float *prevRitzVals,
       int *numPrevRitzVals, PRIMME_COMPLEX_FLOAT *H, int ldH, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV,
       PRIMME_COMPLEX_FLOAT *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *R, int ldR, PRIMME_COMPLEX_FLOAT *QtV, int ldQtV,
       PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, PRIMME_COMPLEX_FLOAT *hU, int ldhU, int newldhU,
@@ -99,10 +95,6 @@ int Num_aux_update_VWXR_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_COMPLEX_FLOAT *W
    PRIMME_COMPLEX_FLOAT *VtBV, int nVtBV, int ldVtBV,
    PRIMME_COMPLEX_FLOAT *H, int nH, int ldH,
    primme_context ctx);
-int retain_previous_coefficients_cprimme(PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs,
-      PRIMME_COMPLEX_FLOAT *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
-      int *iev, int blockSize, int *flags, int *numPrevRetained,
-      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(restart_Sprimme)
 #  define restart_Sprimme CONCAT(restart_,SCALAR_SUF)
 #endif
@@ -122,8 +114,8 @@ int restart_dprimme(double *V, double *W, double *BV, PRIMME_INT nLocal,
       double *evals, double *resNorms, double *evecsHat, PRIMME_INT ldevecsHat,
       double *M, int ldM, double *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, double *prevRitzVals,
+      int *numConvergedStored, double *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, double *prevRitzVals,
       int *numPrevRitzVals, double *H, int ldH, double *VtBV, int ldVtBV,
       double *Q, PRIMME_INT ldQ, double *R, int ldR, double *QtV, int ldQtV,
       double *QtQ, int ldQtQ, double *hU, int ldhU, int newldhU,
@@ -158,22 +150,6 @@ int Num_aux_update_VWXR_dprimme(double *V, double *W, double *BV,
    double *VtBV, int nVtBV, int ldVtBV,
    double *H, int nH, int ldH,
    primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(retain_previous_coefficients_Sprimme)
-#  define retain_previous_coefficients_Sprimme CONCAT(retain_previous_coefficients_,SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(retain_previous_coefficients_Rprimme)
-#  define retain_previous_coefficients_Rprimme CONCAT(retain_previous_coefficients_,REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(retain_previous_coefficients_SHprimme)
-#  define retain_previous_coefficients_SHprimme CONCAT(retain_previous_coefficients_,HOST_SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(retain_previous_coefficients_RHprimme)
-#  define retain_previous_coefficients_RHprimme CONCAT(retain_previous_coefficients_,HOST_REAL_SUF)
-#endif
-int retain_previous_coefficients_dprimme(double *hVecs, int ldhVecs,
-      double *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
-      int *iev, int blockSize, int *flags, int *numPrevRetained,
-      primme_context ctx);
 int restart_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, PRIMME_COMPLEX_DOUBLE *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, double *hVals, double *hSVals, int *flags,
       int *iev, int *ievSize, double *blockNorms, PRIMME_COMPLEX_DOUBLE *evecs,
@@ -181,8 +157,8 @@ int restart_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE *W, PRIMME_C
       double *evals, double *resNorms, PRIMME_COMPLEX_DOUBLE *evecsHat, PRIMME_INT ldevecsHat,
       PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, PRIMME_COMPLEX_DOUBLE *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, double *prevRitzVals,
+      int *numConvergedStored, PRIMME_COMPLEX_DOUBLE *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, double *prevRitzVals,
       int *numPrevRitzVals, PRIMME_COMPLEX_DOUBLE *H, int ldH, PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV,
       PRIMME_COMPLEX_DOUBLE *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *R, int ldR, PRIMME_COMPLEX_DOUBLE *QtV, int ldQtV,
       PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, PRIMME_COMPLEX_DOUBLE *hU, int ldhU, int newldhU,
@@ -205,10 +181,6 @@ int Num_aux_update_VWXR_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_COMPLEX_DOUBLE 
    PRIMME_COMPLEX_DOUBLE *VtBV, int nVtBV, int ldVtBV,
    PRIMME_COMPLEX_DOUBLE *H, int nH, int ldH,
    primme_context ctx);
-int retain_previous_coefficients_zprimme(PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs,
-      PRIMME_COMPLEX_DOUBLE *previousHVecs, int ldpreviousHVecs, int mprevious, int basisSize,
-      int *iev, int blockSize, int *flags, int *numPrevRetained,
-      primme_context ctx);
 int restart_smagmaprimme(magma_float *V, magma_float *W, magma_float *BV, PRIMME_INT nLocal,
       int basisSize, PRIMME_INT ldV, float *hVals, float *hSVals, int *flags,
       int *iev, int *ievSize, float *blockNorms, magma_float *evecs,
@@ -216,8 +188,8 @@ int restart_smagmaprimme(magma_float *V, magma_float *W, magma_float *BV, PRIMME
       float *evals, float *resNorms, magma_float *evecsHat, PRIMME_INT ldevecsHat,
       float *M, int ldM, float *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, float *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, float *prevRitzVals,
+      int *numConvergedStored, float *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, float *prevRitzVals,
       int *numPrevRitzVals, float *H, int ldH, float *VtBV, int ldVtBV,
       magma_float *Q, PRIMME_INT ldQ, float *R, int ldR, float *QtV, int ldQtV,
       float *QtQ, int ldQtQ, float *hU, int ldhU, int newldhU,
@@ -247,8 +219,8 @@ int restart_cmagmaprimme(magma_complex_float *V, magma_complex_float *W, magma_c
       float *evals, float *resNorms, magma_complex_float *evecsHat, PRIMME_INT ldevecsHat,
       PRIMME_COMPLEX_FLOAT *M, int ldM, PRIMME_COMPLEX_FLOAT *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, PRIMME_COMPLEX_FLOAT *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, float *prevRitzVals,
+      int *numConvergedStored, PRIMME_COMPLEX_FLOAT *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, float *prevRitzVals,
       int *numPrevRitzVals, PRIMME_COMPLEX_FLOAT *H, int ldH, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV,
       magma_complex_float *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *R, int ldR, PRIMME_COMPLEX_FLOAT *QtV, int ldQtV,
       PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, PRIMME_COMPLEX_FLOAT *hU, int ldhU, int newldhU,
@@ -278,8 +250,8 @@ int restart_dmagmaprimme(magma_double *V, magma_double *W, magma_double *BV, PRI
       double *evals, double *resNorms, magma_double *evecsHat, PRIMME_INT ldevecsHat,
       double *M, int ldM, double *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, double *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, double *prevRitzVals,
+      int *numConvergedStored, double *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, double *prevRitzVals,
       int *numPrevRitzVals, double *H, int ldH, double *VtBV, int ldVtBV,
       magma_double *Q, PRIMME_INT ldQ, double *R, int ldR, double *QtV, int ldQtV,
       double *QtQ, int ldQtQ, double *hU, int ldhU, int newldhU,
@@ -309,8 +281,8 @@ int restart_zmagmaprimme(magma_complex_double *V, magma_complex_double *W, magma
       double *evals, double *resNorms, magma_complex_double *evecsHat, PRIMME_INT ldevecsHat,
       PRIMME_COMPLEX_DOUBLE *M, int ldM, PRIMME_COMPLEX_DOUBLE *Mfact, int ldMfact, int *ipivot,
       int *numConverged, int *numLocked, int *lockedFlags,
-      int *numConvergedStored, PRIMME_COMPLEX_DOUBLE *previousHVecs, int *numPrevRetained,
-      int ldpreviousHVecs, int numGuesses, double *prevRitzVals,
+      int *numConvergedStored, PRIMME_COMPLEX_DOUBLE *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int numGuesses, double *prevRitzVals,
       int *numPrevRitzVals, PRIMME_COMPLEX_DOUBLE *H, int ldH, PRIMME_COMPLEX_DOUBLE *VtBV, int ldVtBV,
       magma_complex_double *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *R, int ldR, PRIMME_COMPLEX_DOUBLE *QtV, int ldQtV,
       PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, PRIMME_COMPLEX_DOUBLE *hU, int ldhU, int newldhU,
