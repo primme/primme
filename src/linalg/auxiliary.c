@@ -200,7 +200,7 @@ int Num_free_iprimme(int *x, primme_context ctx) {
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
       primme_context ctx) {
    (void)ctx;
@@ -211,7 +211,7 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    /* Do nothing if x and y are the same matrix */
    if (x == y && ldx == ldy)
-      return;
+      return 0;
 
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
@@ -240,6 +240,8 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
          }
       }
    }
+
+   return 0;
 }
 
 /******************************************************************************
@@ -259,7 +261,7 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
    (void)ctx;
 
@@ -271,6 +273,8 @@ void Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    for (i = 0; i < n; i++)
       for (j = 0; j < m; j++)
             y[j * ldy + i] = CONJ(x[i * ldx + j]);
+
+   return 0;
 }
 
 
@@ -287,7 +291,7 @@ void Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
   (void)ctx;
 
@@ -296,6 +300,8 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
          x[i*ldx+j] = 0.0;
+
+   return 0;
 } 
 
 /******************************************************************************
@@ -312,7 +318,7 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR value, primme_context ctx) {
 
   (void)ctx;
@@ -322,6 +328,7 @@ void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       for (j=0; j<m; j++)
          x[i*ldx+j] = value;
 
+   return 0;
 } 
 
 /******************************************************************************
@@ -346,13 +353,13 @@ void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
+int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
       int i0, SCALAR *y, int ldy, int zero) {
 
    int i, j, jm;
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
-   if (x == y) return;
+   if (x == y) return 0;
    if (ul == 0) {
       /* Copy upper part */
 
@@ -395,6 +402,8 @@ void Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
          }
       }
    }
+
+   return 0;
 }
 
 
@@ -417,7 +426,7 @@ void Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,
+int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,
       PRIMME_INT ldx, int i0, SCALAR *y, int *ly) {
 
    int i, j, k;
@@ -428,6 +437,8 @@ void Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,
       for (j=0; j<=i+i0; j++)
          y[k++] = x[i*ldx+j];
    if (ly) *ly = k;
+
+   return 0;
 }
 
 /******************************************************************************
@@ -448,7 +459,7 @@ void Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
+int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
       SCALAR *y, int ldy) {
 
    int i, j, k;
@@ -458,6 +469,8 @@ void Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
    for (i=n-1, k=(n+1)*n/2+i0*n-1; i>=0; i--)
       for (j=i+i0; j>=0; j--)
          y[i*ldy+j] = x[k--];
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -498,10 +511,11 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
    SCALAR *rwork;
    CHKERR(Num_malloc_Sprimme((size_t)nH * (size_t)nX, &rwork, ctx));
    Num_zero_matrix_Sprimme(rwork, nH, nX, nH, ctx);
-   Num_hemm_Sprimme("L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH);
+   CHKERR(Num_hemm_Sprimme(
+         "L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH));
    Num_zero_matrix_Sprimme(R, nX, nX, ldR, ctx);
-   Num_gemm_Sprimme("C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, ldR,
-                    ctx);
+   CHKERR(Num_gemm_Sprimme(
+         "C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, ldR, ctx));
    CHKERR(Num_free_Sprimme(rwork, ctx));
 
   return 0;
@@ -528,17 +542,19 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
+int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, SCALAR *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx) {
 
-  int i;
+   int i;
 
-  /* TODO: assert x and y don't overlap */
-  for (i = 0; i < n; i++) {
-    Num_copy_Sprimme(m, &x[(xin ? xin[i] : i) * ldx], 1,
-                     &y[(yin ? yin[i] : i) * ldy], 1, ctx);
-  }
+   /* TODO: assert x and y don't overlap */
+   for (i = 0; i < n; i++) {
+      Num_copy_Sprimme(m, &x[(xin ? xin[i] : i) * ldx], 1,
+            &y[(yin ? yin[i] : i) * ldy], 1, ctx);
+   }
+
+   return 0;
 }
 
 /******************************************************************************
@@ -560,17 +576,19 @@ void Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,
+int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,
                                      PRIMME_INT ldx, SCALAR *y, int *yim,
                                      PRIMME_INT ldy, primme_context ctx) {
 
-  int i;
+   int i;
 
-  /* TODO: assert x and y don't overlap */
-  for (i = 0; i < m; i++) {
-    Num_copy_Sprimme(n, &x[xim ? xim[i] : i], ldx,
-                     &y[yim ? yim[i] : i], ldy, ctx);
-  }
+   /* TODO: assert x and y don't overlap */
+   for (i = 0; i < m; i++) {
+      Num_copy_Sprimme(
+            n, &x[xim ? xim[i] : i], ldx, &y[yim ? yim[i] : i], ldy, ctx);
+   }
+
+   return 0;
 }
 
 /******************************************************************************
@@ -808,7 +826,7 @@ SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, HREAL *s, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
 
    PRIMME_INT i;
@@ -817,8 +835,11 @@ void Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    /* Copy the matrix some columns backward, and other cases */
    /* TODO: assert x and y don't overlap */
-   for (i=0; i<n; i++) {
+      for (i=0; i<n; i++) {
       Num_copy_Sprimme(m, &x[ldx*i], 1, &y[ldy*i], 1, ctx);
-      Num_scal_Sprimme(m, s[i], &y[ldy*i], 1, ctx);
+         Num_scal_Sprimme(m, s[i], &y[ldy*i], 1, ctx);
+      }
    }
+
+   return 0;
 }

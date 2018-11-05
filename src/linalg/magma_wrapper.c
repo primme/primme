@@ -158,7 +158,7 @@ int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
+int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
@@ -173,6 +173,8 @@ void Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       x += ln;
       y += ln;
    }
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -388,7 +390,7 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
+int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
    SCALAR *y, int incy, primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
@@ -403,6 +405,8 @@ void Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       x += ln;
       y += ln;
    }
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -436,7 +440,7 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-void Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
+int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       primme_context ctx) {
 
    PRIMME_BLASINT ln = n;
@@ -449,6 +453,8 @@ void Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       n -= (PRIMME_INT)ln;
       x += ln;
    }
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -486,7 +492,7 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
       primme_context ctx) {
 
@@ -498,6 +504,8 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    XCOPYMATRIX(m, n, (MAGMA_SCALAR *)x, ldx, (MAGMA_SCALAR *)y, ldy,
          *(magma_queue_t *)ctx.queue);
+
+   return 0;
 }
 
 /******************************************************************************
@@ -513,12 +521,14 @@ void Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
 
    HSCALAR zero = 0.0;
    XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&zero, *(MAGMA_SCALAR *)&zero,
          (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
+
+   return 0;
 } 
 
 /******************************************************************************
@@ -535,11 +545,13 @@ void Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+int Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, HSCALAR value, primme_context ctx) {
 
    XLASET(MagmaFull, m, n, *(MAGMA_SCALAR *)&value, *(MAGMA_SCALAR *)&value,
          (MAGMA_SCALAR *)x, ldx, *(magma_queue_t *)ctx.queue);
+
+   return 0;
 } 
 
 #endif /* USE_MAGMA */
