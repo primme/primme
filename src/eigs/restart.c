@@ -352,8 +352,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
 
    numPrevRetained = max(0, min(min(
          numPrevRetained,
-         restartSize - (*numConverged-*numLocked)), 
-         basisSize - (restartSize+*numConverged-*numLocked)));
+         primme->maxBasisSize - restartSize - 1),
+         primme->n - restartSize - *numConverged - primme->numOrthoConst));
 
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
@@ -502,6 +502,51 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
             problemNorm_Sprimme(1, primme);
    }
 
+   /* Check VtBV */
+
+   if (0) {
+      HSCALAR *VtBV0 = NULL;
+      int n = primme->numOrthoConst + *numLocked + restartSize;
+      CHKERR(Num_malloc_SHprimme(n * n, &VtBV0, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", primme->numOrthoConst + *numLocked,
+            primme->numOrthoConst + *numLocked, primme->nLocal, 1.0, evecs,
+            ldevecs, evecs, ldevecs, 0.0, VtBV0, n, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", primme->numOrthoConst + *numLocked,
+            restartSize, primme->nLocal, 1.0, evecs, ldevecs, V, ldV, 0.0,
+            &VtBV0[n * (primme->numOrthoConst + *numLocked)], n, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", restartSize, restartSize,
+            primme->nLocal, 1.0, V, ldV, V, ldV, 0.0,
+            &VtBV0[n * (primme->numOrthoConst + *numLocked) +
+                   primme->numOrthoConst + *numLocked],
+            n, ctx));
+      CHKERR(globalSum_SHprimme(VtBV0, VtBV0, n*n, ctx));
+      int i,j;
+      for (i = 0; i < n; i++) {
+         for (j = 0; j <= i; j++) {
+            assert(ABS(VtBV[ldVtBV * i + j] - VtBV0[n * i + j]) <
+                   MACHINE_EPSILON * 10);
+         }
+      }
+      CHKERR(Num_free_SHprimme(VtBV0, ctx));
+   }
+
+   /* Check H */
+
+   if (0) {
+      HSCALAR *H0 = NULL;
+      CHKERR(Num_malloc_SHprimme(restartSize * restartSize, &H0, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", restartSize, restartSize,
+            primme->nLocal, 1.0, W, ldV, V, ldV, 0.0, H0, restartSize, ctx));
+      CHKERR(globalSum_SHprimme(H0, H0, restartSize * restartSize, ctx));
+      int i, j;
+      for (i = 0; i < restartSize; i++) {
+         for (j = 0; j <= i; j++) {
+            assert(ABS(H[ldH * i + j] - H0[restartSize * i + j]) <
+                   problemNorm_Sprimme(1, primme) * MACHINE_EPSILON * 10);
+         }
+      }
+      CHKERR(Num_free_SHprimme(H0, ctx));
+   }
    return 0;
 }
 
@@ -902,8 +947,6 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
    left = *restartSize + numPrevRetained;
 
-   *restartSize += numPrevRetained + *numConverged - *numLocked;
-
    for (i=k=numPacked=0; i<basisSize; i++) {
       if (flags[i] != UNCONVERGED
             /* Otherwise don't check more than numEvals-numLocked             */
@@ -924,6 +967,9 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       }
    }
 
+   *restartSize = left + numPacked;
+
+
    permute_vecs_RHprimme(hVals, 1, basisSize, 1, restartPerm, ctx);
    permute_vecs_SHprimme(hVecs, basisSize, basisSize, ldhVecs, restartPerm,
                          ctx);
@@ -937,6 +983,7 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    SCALAR *X = &V[*restartSize*ldV];
    SCALAR *R = &W[*restartSize*ldV];
    SCALAR *BX = BV ? &BV[*restartSize*ldV] : NULL;
+   assert(*restartSize <= primme->maxBasisSize);
    CHKERR(Num_aux_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
             hVecs, *restartSize, ldhVecs, hVals,
             V, 0, *restartSize, ldV,
@@ -951,7 +998,7 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
                 left+numPacked, ldBevecs,
             lockedResNorms, left, *restartSize,
             VtBV, *restartSize, ldVtBV,
-            H, left, ldH,
+            H, *restartSize, ldH,
             ctx));
  
    /* -------------------------------------------------------------- */
@@ -1110,12 +1157,6 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
          iV[i + left + numPacked - failed] = ifailed[i] + left;
       int nLocked = primme->numOrthoConst + *numLocked;
       int nVtBV = nLocked + left + numPacked;
-      for (i=nLocked; i<nVtBV; i++) {
-         int j;
-         for (j=i; j<nVtBV; j++) {
-            VtBV[i*ldVtBV+j] = CONJ(VtBV[j*ldVtBV+i]);
-         }
-      }
       HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme(nVtBV * (left + numPacked), &rwork, ctx));
       Num_copy_matrix_columns_SHprimme(&VtBV[nLocked * ldVtBV], nVtBV,
@@ -1132,17 +1173,11 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* Update H */
 
    if (primme->orth == primme_orth_explicit_I) {
-      for (i=left; i<left+failed; i++) {
-         int j;
-         for (j=i; j<left+failed; j++) {
-            H[i*ldH+j] = CONJ(H[j*ldH+i]);
-         }
-      }
       HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme(failed * (left + numPacked), &rwork, ctx));
       Num_copy_matrix_columns_SHprimme(&H[left * ldH], left+numPacked,
             ifailed, failed, ldH, rwork, NULL, left+numPacked, ctx);
-      Num_copy_matrix_SHprimme(rwork, left + numPacked, failed,
+      Num_copy_matrix_SHprimme(rwork, left, failed,
             left + numPacked, &H[left * ldH], ldH, ctx);
       Num_copy_matrix_rows_SHprimme(rwork + left, ifailed, failed, failed,
             left + numPacked, &H[ldH * left + left], NULL, ldH, ctx);
@@ -2364,10 +2399,12 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
 
       int retained = 0; 
       int i;
-      for (i=0; i < nprevhVecs && retained < *numPrevRetained; i++) {
-         /* Skip converged pairs */
+      for (i = 0; i < nprevhVecs && retained < *numPrevRetained &&
+                  indexOfPreviousVecs + retained < basisSize;
+            i++) {
+         /* Skip converged pairs in soft locking */
 
-         if (flags[i] != UNCONVERGED) continue;
+         if (ctx.primme->locking == 0 && flags[i] != UNCONVERGED) continue;
 
          /* Avoid that ortho replaces linear dependent vectors by random
           * vectors. The random vectors make the restarting W with large

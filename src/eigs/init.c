@@ -41,7 +41,6 @@
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "init.h"
-#include "update_projection.h"
 #include "update_W.h"
 #include "ortho.h"
 #include "factorize.h"

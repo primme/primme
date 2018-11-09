@@ -498,6 +498,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
 
          numPrevRetained = 0;
          nprevhVecs = 0;
+         int candidates_prepared = 0;  /* Has prepare_candidates been called? */
 
          /* ----------------------------------------------------------------- */
          /* Main block Davidson loop.                                         */
@@ -559,6 +560,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                      VtBV, ldVtBV, prevhVecs, nprevhVecs, primme->maxBasisSize,
                      practConvCheck, map, ctx);
                assert(recentlyConverged >= 0);
+               candidates_prepared = 1;
             }
             else {
                blockSize = recentlyConverged = 0;
@@ -621,19 +623,24 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             }
 
             if (numConverged >= primme->numEvals ||
-                (primme->locking && numConverged > numLocked
-                  && primme->target != primme_smallest
-                  && primme->target != primme_largest
-                  && primme->projectionParams.projection == primme_proj_RR) ||
-                targetShiftIndex < 0 ||
+                  (primme->locking && numConverged > numLocked &&
+                        primme->target != primme_smallest &&
+                        primme->target != primme_largest &&
+                        (primme->projectionParams.projection ==
+                                    primme_proj_RR ||
+                              primme->target == primme_closest_geq ||
+                              primme->target == primme_closest_leq)) ||
+                  targetShiftIndex < 0 ||
                   (blockSize == 0 && recentlyConverged > 0) ||
-                /* NOTE: use the same condition as in restart_refined */
-                (numQR && fabs(primme->targetShifts[targetShiftIndex] -
-                  primme->targetShifts[
-                     min(primme->numTargetShifts-1, numConverged)]) >= 
-                        max(primme->aNorm, primme->stats.estimateLargestSVal))
-               || (numConverged >= nextGuess-primme->numOrthoConst
-                  && numGuesses > 0)) {
+                  /* NOTE: use the same condition as in restart_refined */
+                  (numQR && fabs(primme->targetShifts[targetShiftIndex] -
+                                  primme->targetShifts[min(
+                                        primme->numTargetShifts - 1,
+                                        numConverged)]) >=
+                                  max(primme->aNorm,
+                                        primme->stats.estimateLargestSVal)) ||
+                  (numConverged >= nextGuess - primme->numOrthoConst &&
+                        numGuesses > 0)) {
 
                break;
 
@@ -763,6 +770,16 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                   }
                }
                CHKERR(Num_free_SHprimme(Rlocked, ctx));
+
+               if (numConverged > numLocked &&
+                     primme->target != primme_smallest &&
+                     primme->target != primme_largest &&
+                     (primme->projectionParams.projection == primme_proj_RR ||
+                           primme->target == primme_closest_geq ||
+                           primme->target == primme_closest_leq)) {
+
+                  break;
+               }
             }
 
             /* Compute W = A*V for the orthogonalized corrections */
@@ -819,6 +836,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                   numConverged, ctx));
 
             numArbitraryVecs = 0;
+            candidates_prepared = 0;
 
             /* If QR decomposition accumulates so much error, force it to     */
             /* reset by setting targetShiftIndex to -1. We use the next       */
@@ -873,7 +891,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
          /* has proper coefficient vectors.                                   */
          /* ----------------------------------------------------------------- */
 
-         if (targetShiftIndex >= 0) {
+         if (!candidates_prepared) {
             /* -------------------------------------------------------------- */
             /* TODO: merge all this logic in the regular main loop. After all */
             /* restarting is a regular step that also shrinks the basis.      */

@@ -3,7 +3,7 @@ eigs/auxiliary_eigs*.o : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h 
 eigs/convergence*.o : eigs/const.h include/numerical.h eigs/convergence.h eigs/ortho.h eigs/auxiliary_eigs.h
 eigs/correction*.o : eigs/const.h include/numerical.h eigs/correction.h eigs/inner_solve.h eigs/auxiliary_eigs.h
 eigs/factorize*.o : include/numerical.h eigs/update_projection.h eigs/factorize.h
-eigs/init*.o : include/numerical.h eigs/init.h eigs/update_projection.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h
+eigs/init*.o : include/numerical.h eigs/init.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h
 eigs/inner_solve*.o : include/numerical.h eigs/const.h include/wtime.h eigs/inner_solve.h eigs/factorize.h eigs/update_W.h eigs/auxiliary_eigs.h
 eigs/main_iter*.o : include/numerical.h eigs/const.h include/wtime.h eigs/main_iter.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/auxiliary_eigs.h
 eigs/ortho*.o : include/numerical.h eigs/const.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/update_W.h include/wtime.h

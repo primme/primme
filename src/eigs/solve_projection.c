@@ -830,22 +830,6 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       return 0;
    }
 
-   /* Special case: If (basisSize+numLocked) is the entire space, */
-   /* then everything should be converged. Just do RR with the    */
-   /* entire space.                                               */
- 
-   if (basisSize + (primme->locking?primme->initSize:0) 
-         + primme->numOrthoConst >= primme->n) {
-
-      /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-      CHKERR(solve_H_RR_Sprimme(H, ldH, NULL, 0, hVecs, ldhVecs, hVals,
-                                basisSize, targetShiftIndex, ctx));
-
-      *arbitraryVecs = 0;
-
-      return 0;
-   }
-
    aNorm = (primme->aNorm <= 0.0) ?
       primme->stats.estimateLargestSVal : primme->aNorm;
 

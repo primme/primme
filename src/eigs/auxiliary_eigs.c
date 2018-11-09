@@ -376,26 +376,6 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
       /* BX2 = BX(nBX2b-nBXb:nBX2e-nBXb-1) */
       if (BX2) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX2b-nBXb)], m, nBX2e-nBX2b,
             ldBX, &BX2[i], ldBX2, ctx);
-      /* R = Y(nRb-nYb:nRe-nYb-1) - BX(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
-      if (R) for (j=nRb; j<nRe; j++) {
-            Num_compute_residual_Sprimme(m, hVals[j],
-                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
-                  &Y[ldY * (j - nYb)], &R[i + ldR * (j - nRb)], ctx);
-            if (Rnorms) {
-               Rnorms[j - nRb] +=
-                     REAL_PART(Num_dot_Sprimme(m, &R[i + ldR * (j - nRb)], 1,
-                           &R[i + ldR * (j - nRb)], 1, ctx));
-         }
-      }
-
-      /* rnorms = Y(nrb-nYb:nre-nYb-1) - BX(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
-      if (rnorms) for (j=nrb; j<nre; j++) {
-            Num_compute_residual_Sprimme(m, hVals[j],
-                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
-                  &Y[ldY * (j - nYb)], &Y[ldY * (j - nYb)], ctx);
-            rnorms[j - nrb] += REAL_PART(Num_dot_Sprimme(
-                  m, &Y[ldY * (j - nYb)], 1, &Y[ldY * (j - nYb)], 1, ctx));
-      }
 
       /* G += X(:,0:nG-1)'*X(:,0:nG-1) */
 
@@ -415,6 +395,27 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
       if (xnorms) for (j=nxb; j<nxe; j++) {
             xnorms[j - nxb] += REAL_PART(Num_dot_Sprimme(
                   m, &X[ldX * (j - nXb)], 1, &X[ldX * (j - nXb)], 1, ctx));
+      }
+
+      /* R = Y(nRb-nYb:nRe-nYb-1) - BX(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
+      if (R) for (j=nRb; j<nRe; j++) {
+            Num_compute_residual_Sprimme(m, hVals[j],
+                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
+                  &Y[ldY * (j - nYb)], &R[i + ldR * (j - nRb)], ctx);
+            if (Rnorms) {
+               Rnorms[j - nRb] +=
+                     REAL_PART(Num_dot_Sprimme(m, &R[i + ldR * (j - nRb)], 1,
+                           &R[i + ldR * (j - nRb)], 1, ctx));
+         }
+      }
+
+      /* rnorms = Y(nrb-nYb:nre-nYb-1) - BX(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
+      if (rnorms) for (j=nrb; j<nre; j++) {
+            Num_compute_residual_Sprimme(m, hVals[j],
+                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
+                  &Y[ldY * (j - nYb)], &Y[ldY * (j - nYb)], ctx);
+            rnorms[j - nrb] += REAL_PART(Num_dot_Sprimme(
+                  m, &Y[ldY * (j - nYb)], 1, &Y[ldY * (j - nYb)], 1, ctx));
       }
    }
 

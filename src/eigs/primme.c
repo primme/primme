@@ -133,12 +133,15 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    if (primme->orth == primme_orth_default) {
 #ifdef USE_HOST
-      /* By default PRIMME tries to use block orthogonalization for the host. */
-      /* The current code for block orthogonalization does not produce */
-      /* a machine precision orthonormal basis. So the use of explicit */
-      /* orthogonalization is recommended */
+      /* The current code for block orthogonalization does not produce     */
+      /* a machine precision orthonormal basis. So block orthogonalization */
+      /* is used only when V'BV is computed explicitly.                    */
 
-      primme->orth = primme_orth_explicit_I;
+      if (primme->maxBlockSize > 1) {
+         primme->orth = primme_orth_explicit_I;
+      } else {
+         primme->orth = primme_orth_implicit_I;
+      }
 #else
 
       /* Observed orthogonality issues finding the largest/smallest values in  */
@@ -147,9 +150,10 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
 #  ifdef USE_FLOAT
       if (primme->projectionParams.projection == primme_proj_RR &&
-            (primme->target == primme_largest ||
-             primme->target == primme_smallest ||
-             primme->target == primme_largest_abs)) {
+                  (primme->target == primme_largest ||
+                        primme->target == primme_smallest ||
+                        primme->target == primme_largest_abs) ||
+            primme->maxBlockSize > 1) {
          primme->orth = primme_orth_explicit_I;
       }
       else
