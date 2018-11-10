@@ -650,8 +650,9 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
 
       if (B) {
          CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1,
-               ldV, &V[ldV * b1], b2 - b1, ldV, its == 0 ? NULL : VLtBVLdA, nVL,
-               D, Y, b2 - b1, Yortho, NULL, 0, 0, A, ldA, ctx));
+               ldV, &V[ldV * b1], b2 - b1, ldV, VLtBVLdA, nVL,
+               its == 0 ? NULL : D, Y, b2 - b1, Yortho, NULL, 0, 0, A, ldA,
+               ctx));
 
          /* Update BX */
          CHKERR(B(&V[ldV * b1], ldV, BX, ldBX, b2 - b1, Bctx));
@@ -661,8 +662,9 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
                ldA, ctx));
       } else {
          CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1,
-               ldV, &V[ldV * b1], b2 - b1, ldV, its == 0 ? NULL : VLtBVLdA, nVL,
-               D, Y, b2 - b1, Yortho, V, b2, ldV, A, ldA, ctx));
+               ldV, &V[ldV * b1], b2 - b1, ldV, VLtBVLdA, nVL,
+               its == 0 ? NULL : D, Y, b2 - b1, Yortho, V, b2, ldV, A, ldA,
+               ctx));
       }
       if (primme) primme->stats.numOrthoInnerProds += (numLocked+b2)*(b2-b1);
 
@@ -983,7 +985,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
    PRIMME_INT m;
    SCALAR *Xo = NULL;
 
-   if (A && D && Y) {
+   if (D && Y) {
       if (nX == 1) {
          m = min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
          if (!Yortho) {
@@ -1016,7 +1018,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
    CHKERR(Num_zero_matrix_SHprimme(Bo, nQ + nW, nX, ldBo, ctx));
 
    /* Y(:,i) = Y(:,i)/D[i] */
-   if (A && D && Y) {
+   if (D && Y) {
       if (Yortho) {
          for (i=0; i < nX; i++) D[i] = 1.0/D[i];
          Num_scale_matrix_SHprimme(Y, nX, nX, ldY, D, Y, ldY, ctx);
@@ -1025,7 +1027,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
 
    for (i=0; i < M; i+=m, m=min(m,M-i)) {
       PRIMME_INT ldXo;
-      if (A && D && Y) {
+      if (D && Y) {
          /* X = X - Q*A(0:nQ,:) */
          CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, A,
                ldA, 1.0, &X[i], ldX, ctx));
@@ -1069,7 +1071,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
    }
 
    if (ctx.numProcs > 1) CHKERR(Num_free_SHprimme(Bo, ctx));
-   if (A && D && Y && Yortho) CHKERR(Num_free_Sprimme(Xo, ctx));
+   if (D && Y && Yortho) CHKERR(Num_free_Sprimme(Xo, ctx));
 
    return 0;
 }
