@@ -55,21 +55,6 @@ override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADI
 #CFLAGS   = -O2
 #FFLAGS   = -O2
 #---------------------------------------------------------------
-# Sun various architectures
-# whirlwind
-#CFLAGS +=  -xtarget=ultra2e -xarch=v8plusa -xcache=16/32/1:512/64/4
-# twister
-#CFLAGS +=  -xtarget=ultra3cu -xarch=v8plusa -xcache=64/32/4:8192/512/2
-# typhoon
-#CFLAGS +=  -xtarget=ultra2i -xarch=v8plusa -xcache=16/32/1:2048/64/1
-# tornado
-#CFLAGS +=  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
-# hurricane
-#CFLAGS +=  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
-#CFLAGS +=  -xtarget=generic -xarch=v8plusa
-#---------------------------------------------------------------
-# Cray architectures
-# CFLAGS += -O3 -march=native -mtune=native -funroll-loops  -ffast-math -fstrict-aliasing  -std=gnu99 -msse2 -msse3
 
 
 #---------------------------------------------------------------
