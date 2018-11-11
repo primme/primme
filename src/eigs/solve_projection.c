@@ -443,7 +443,7 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
          hVecs, ldhVecs, QtQ, ldQtQ, hVecs, ldhVecs, hVals, basisSize, 0, ctx);
    primme->targetShifts = oldTargetShifts;
    primme->target = oldTarget;
-   CHKERRM(ret, ret, "Error calling solve_H_RR_Sprimme\n");
+   CHKERRM(ret, ret, "Error calling solve_H_RR_Sprimme");
 
    Num_copy_matrix_Sprimme(hVecs, basisSize, basisSize, ldhVecs, hU, ldhU, ctx);
 

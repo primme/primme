@@ -65,6 +65,7 @@
 #include <stdint.h>
 #include <stdlib.h>   /* malloc, free */
 #include <string.h>   /* strlen */
+#include <stdio.h>    /* snprintf */
 #include "primme.h"
 
 /*****************************************************************************/
@@ -322,11 +323,11 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 /* probably, not for good reasons. The goal is to avoid writing specific code*/
 /* to free allocated memory in case of an error happening in the body of a   */
 /* function. The next macros together with the functions in memman.c         */
-/* provides an interface to track memory allocations and free them in case   */
+/* provide an interface to track memory allocations and free them in case    */
 /* of error. These macros and functions are going to be used mostly by       */
 /* error management macros, eg CHKERR, and memory allocation functions, eg   */
-/* Num_malloc_Sprimme. The error manager is going to assume that all         */
-/* allocated function is going to be freed at the end of the function. If    */
+/* Num_malloc_Sprimme. The error manager is going to assume that every       */
+/* allocation is going to be freed at the end of the function. If            */
 /* that is not the case, call Mem_keep_frame(ctx). Examples of this are the  */
 /* functions Num_malloc_Sprimme.                                             */
 
@@ -372,13 +373,77 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #endif
 
 /*****************************************************************************/
+/* Reporting                                                                 */
+/*****************************************************************************/
+
+/**********************************************************************
+ * Macro PRINTFALLCTX - report some information. It invokes ctx.report if the
+ *    level >= CTX.printLevel regardless of the processor's id.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * L     print level
+ * ...   printf arguments
+ *
+ * EXAMPLE
+ * -------
+ *   PRINTFALLCTX(ctx, 2, "Alpha=%f is to close to zero", alpha);
+ *
+ **********************************************************************/
+
+#define PRINTFALLCTX(CTX, L, ...) { \
+   if ((CTX).report && (L) <= (CTX).printLevel) { \
+      int len = snprintf(NULL, 0, __VA_ARGS__)+1; \
+      char *str = malloc(len); \
+      snprintf(str, len, __VA_ARGS__); \
+      (CTX).report(str, -1, (CTX)); \
+      free(str); \
+   }\
+}
+
+/**********************************************************************
+ * Macro PRINTFALL - report some information. It invokes ctx.report if the
+ *    level >= ctx.printLevel regardless of the processor's id.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * L     print level
+ * ...   printf arguments
+ *
+ * EXAMPLE
+ * -------
+ *   PRINTFALL(2, "Alpha=%f is to close to zero", alpha);
+ *
+ **********************************************************************/
+
+#define PRINTFALL(L, ...) PRINTFALLCTX(ctx, (L), __VA_ARGS__)
+
+/**********************************************************************
+ * Macro PRINTF - report some information. It invokes ctx.report if the
+ *    level >= ctx.printLevel and it is processor 0.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * L     print level
+ * ...   printf arguments
+ *
+ * EXAMPLE
+ * -------
+ *   PRINTF(2, "Alpha=%f is to close to zero", alpha);
+ *
+ **********************************************************************/
+
+#define PRINTF(L, ...) {if (ctx.procID == 0) PRINTFALL((L), __VA_ARGS__);}
+
+/*****************************************************************************/
 /* Profiling                                                                 */
 /*****************************************************************************/
+
+#include "wtime.h"
 
 #ifdef PRIMME_PROFILE
 
 #include <regex.h>
-#include "wtime.h"
 
 static inline const char *__compose_function_name(const char *path,
       const char *call, const char *filename, const char *line) {
@@ -452,8 +517,7 @@ static inline const char *__compose_function_name(const char *path,
    PROFILE_END; \
    MEM_POP_FRAME(__err); \
    if (__err) {\
-      if (ctx.printLevel > 0 && ctx.outputFile) \
-         fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
+      PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s", __err, __LINE__, #ERRN );\
       return __err;\
    }\
 }
@@ -485,11 +549,8 @@ static inline const char *__compose_function_name(const char *path,
    PROFILE_END; \
    MEM_POP_FRAME(__err); \
    if (__err) {\
-      if (ctx.printLevel > 0 && ctx.outputFile) {\
-         fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
-         fprintf(ctx.outputFile, "PRIMME: " __VA_ARGS__);\
-         fprintf(ctx.outputFile, "\n");\
-      }\
+      PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s", __err, __LINE__, #ERRN );\
+      PRINTFALL(1, "PRIMME: " __VA_ARGS__);\
       return (RETURN);\
    }\
 }
@@ -516,8 +577,7 @@ static inline const char *__compose_function_name(const char *path,
    PROFILE_END; \
    MEM_POP_FRAME(__err); \
    if (__err) {\
-      if (ctx.printLevel > 0 && ctx.outputFile) \
-         fprintf(ctx.outputFile, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
+      PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
       ACTION;\
       return;\
    } \

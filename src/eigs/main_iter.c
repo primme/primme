@@ -33,15 +33,10 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
 #include "numerical.h"
 #include "const.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
-#include "wtime.h"
 #include "main_iter.h"
 #include "convergence.h"
 #include "correction.h"
@@ -434,10 +429,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
           ( primme->maxOuterIterations == 0 ||
             primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
-      if (primme->printLevel >= 5 && primme->procID == 0 && reset > 0) {
-         fprintf(primme->outputFile, "Resetting V, W and QR\n");
-         fflush(primme->outputFile);
-      }
+      if (reset > 0) PRINTF(5, "Resetting V, W and QR");
 
       /* Reset convergence flags. This may only reoccur without locking */
 
@@ -699,10 +691,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                      maxRank, &basisSizeOut, ctx));
                blockSize = basisSizeOut - basisSize;
                if (blockSize > 0 || availableBlockSize <= 0) break;
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile, "Warning: adding random vector "
-                                              "to the search subspace\n");
-               }
+               PRINTF(5, "Warning: adding random vector "
+                         "to the search subspace");
                CHKERR(Num_larnv_Sprimme(2, primme->iseed, primme->nLocal,
                      &V[ldV * basisSize], ctx));
                blockSize = 1;
@@ -861,11 +851,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                         hSVals[0]) {
 
                reset = 2;
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile,
-                        "Detected some errors in QR.\n");
-                  fflush(primme->outputFile);
-               }
+               PRINTF(5, "Detected some errors in QR");
 
                break;
             }
@@ -1261,11 +1247,8 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0,
                      basisSize, ctx));
 
-            if (primme->printLevel >= 2 && primme->procID == 0) {
-               fprintf(primme->outputFile, 
-                 "Verifying before return: Some vectors are unconverged.\n");
-               fflush(primme->outputFile);
-            }
+            PRINTF(2,
+                  "Verifying before return: Some vectors are unconverged");
 
             restartsSinceReset = 0;
             reset = 0;
@@ -1788,9 +1771,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
          primme->dynamicMethodSwitch = -1;
          primme->correctionParams.maxInnerIterations = 0;
          primme->correctionParams.projectors.RightX  = 1;
-         if (primme->printLevel >= 3 && primme->procID == 0) 
-            fprintf(primme->outputFile, 
-            "Ratio: %e Switching permanently to GD+k\n", ratio);
+         PRINTF(3, "Ratio: %e Switching permanently to GD+k", ratio);
          return 0;
       }
    }
@@ -1825,13 +1806,10 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
    model->accum_gdk += model->gdk_plus_MV_PR;
    model->accum_jdq_gdk = model->accum_jdq/model->accum_gdk;
 
-   if (primme->printLevel >= 3 && primme->procID == 0) 
-      switch (primme->correctionParams.maxInnerIterations) {
-         case 0: fprintf(primme->outputFile, 
-            "Ratio: %e JDQMR switched to GD+k\n", ratio); break;
-         case -1: fprintf(primme->outputFile, 
-            "Ratio: %e Continue with JDQMR\n", ratio);
-      }
+   switch (primme->correctionParams.maxInnerIterations) {
+   case 0: PRINTF(3, "Ratio: %e JDQMR switched to GD+k", ratio); break;
+   case -1: PRINTF(3, "Ratio: %e Continue with JDQMR", ratio);
+   }
 
    return 0;
 
@@ -1895,9 +1873,7 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
       primme->dynamicMethodSwitch = switchto;
       primme->correctionParams.maxInnerIterations = -1;
       primme->correctionParams.projectors.RightX  = 0;
-      if (primme->printLevel >= 3 && primme->procID == 0) 
-         fprintf(primme->outputFile, 
-         "Ratio: N/A  GD+k switched to JDQMR (first time)\n");
+      PRINTF(3, "Ratio: N/A  GD+k switched to JDQMR (first time)");
       return 0;
    }
 
@@ -1925,13 +1901,10 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
    model->accum_gdk += model->gdk_plus_MV_PR;
    model->accum_jdq_gdk = model->accum_jdq/model->accum_gdk;
 
-   if (primme->printLevel >= 3 && primme->procID == 0) 
-      switch (primme->correctionParams.maxInnerIterations) {
-         case 0: fprintf(primme->outputFile, 
-            "Ratio: %e Continue with GD+k\n", ratio); break;
-         case -1: fprintf(primme->outputFile, 
-            "Ratio: %e GD+k switched to JDQMR\n", ratio);
-      }
+   switch (primme->correctionParams.maxInnerIterations) {
+   case 0: PRINTF(3, "Ratio: %e Continue with GD+k", ratio); break;
+   case -1: PRINTF(3, "Ratio: %e GD+k switched to JDQMR", ratio);
+   }
 
    return 0;
 }

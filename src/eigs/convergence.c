@@ -33,9 +33,6 @@
  *
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -264,12 +261,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       blockNorms[iev[i]] = norms[i];
      
       if (norms[i] <= tol) {
-         if (primme->printLevel >= 5 && primme->procID == 0) {
-            fprintf(primme->outputFile,
-                  " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e\n", left + iev[i],
-                  (double)blockNorms[i]);
-            fflush(primme->outputFile);
-         }
+         PRINTF(5, " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e",
+               left + iev[i], (double)blockNorms[i]);
          flags[left+iev[i]] = PRACTICALLY_CONVERGED;
       }
       else {

@@ -33,9 +33,6 @@
  *
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -48,7 +45,6 @@
 #include "update_projection.h"
 #include "update_W.h"
 #include "convergence.h"
-#include "wtime.h"
 #endif
 
 static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
@@ -486,10 +482,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       
    if (fn > 0.0) {
       if (*restartsSinceReset <= 1) {
-         if (primme->printLevel >= 5 && primme->procID == 0) {
-            fprintf(primme->outputFile, "Orthogonalization level: %g\n",
-                  (double)fn);
-         }
+         PRINTF(5, "Orthogonalization level: %g", (double)fn);
          primme->stats.maxConvTol = max(primme->stats.maxConvTol,
                fn * primme->stats.estimateLargestSVal);
       }
@@ -2424,10 +2417,7 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
          retained++;
       }
 
-      if (ctx.printLevel >= 5 && ctx.procID == 0) {
-         fprintf(ctx.outputFile,
-               "retain_previous: numPrevRetained: %d\n", retained);
-      }
+      PRINTF(5, "retain_previous: numPrevRetained: %d", retained);
 
       rwork[0] = (HSCALAR)retained;
       Num_copy_matrix_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,

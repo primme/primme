@@ -34,14 +34,12 @@
  *
  ******************************************************************************/
 
-#include <assert.h>
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "update_W.h"
 #include "auxiliary_eigs.h"
 #include "ortho.h"
-#include "wtime.h"
 #endif
 
 

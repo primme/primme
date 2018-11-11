@@ -293,7 +293,7 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
          Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx);
       }
       else {
-         Num_scal_Sprimme(mA, beta, y, incy, ctx);
+      Num_scal_Sprimme(mA, beta, y, incy, ctx);
       }
       return 0;
    }
@@ -613,7 +613,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_free_iblasprimme(iwork, ctx));
    CHKERR(Num_free_iblasprimme(ifail, ctx));
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d",
           (int)linfo);
    return 0;
 
@@ -662,7 +662,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_free_Sprimme(rwork));
 #  endif
    
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d",
           (int)linfo);
    return 0;
 
@@ -752,7 +752,7 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_free_iblasprimme(iwork, ctx));
    CHKERR(Num_free_iblasprimme(ifail, ctx));
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhegvx with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhegvx with info %d",
           (int)linfo);
    return 0;
 
@@ -865,7 +865,7 @@ int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
 #  endif
    }
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesvd with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesvd with info %d",
           (int)linfo);
    return 0;
 }
@@ -916,7 +916,7 @@ int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
       CHKERR(Num_free_iblasprimme(lipivot, ctx));
    }
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrf with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrf with info %d",
           (int)linfo);
    return 0;
 
@@ -980,11 +980,11 @@ int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,
 
 #ifndef USE_ZGESV
    XHETRS(uplo, &ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrs with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrs with info %d",
           (int)linfo);
 #else /* USE_ZGESV */
    XGESV(&ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d",
           (int)linfo);
 #endif
 
@@ -1084,7 +1084,7 @@ int Num_getrf_Sprimme(
       free(lipivot);
    }
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d",
          (int)linfo);
 
    return 0;
@@ -1125,7 +1125,7 @@ int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
       free(lipivot);
    }
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgetrs with info %d\n",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgetrs with info %d",
          (int)linfo);
 
    return 0;

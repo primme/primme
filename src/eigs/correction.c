@@ -33,9 +33,6 @@
  *
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */

@@ -62,9 +62,6 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 #include <assert.h>
 #include "numerical.h"
 #include "const.h"
@@ -74,7 +71,6 @@
 #include "auxiliary_eigs.h"
 #include "ortho.h"
 #include "update_W.h"
-#include "wtime.h"
 #endif
  
 static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
@@ -144,7 +140,6 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
 
    primme_params *primme = ctx.primme;
    int i;                   /* Loop indices */
-   int messages = 1;        /* messages = 1 prints the intermediate results */
    /* TODO: replace by a dynamic criterion when to stop orthogonalizing local */
    /* vectors. Observed performance improvement when maxNumOrthos increases.  */
    int maxNumOrthos = primme?3:7; /* We let 2 reorthogonalizations before randomize */
@@ -153,9 +148,6 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
    double tol = sqrt(2.0L)/2.0L; /* We set Daniel et al. test to .707 */
    double t0;
-
-   messages = (primme && primme->procID == 0 && primme->printLevel >= 3
-         && primme->outputFile);
 
    /*----------------------------------*/
    /* input and workspace verification */
@@ -216,9 +208,8 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             if (randomizations >= maxNumRandoms) {
                goto clean;
             }
-            if (messages){
-               fprintf(primme->outputFile, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P "\n", i, nLocal);
-            }
+            PRINTF(5, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P,
+                  i, nLocal);
 
             Num_larnv_Sprimme(2, iseed, nLocal, &V[ldV*i], ctx); 
             randomizations++;
@@ -315,10 +306,8 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
          }
 
          if (s1 <= MACHINE_EPSILON*s0) {
-            if (messages) {
-               fprintf(primme->outputFile, 
-                 "Vector %d lost all significant digits in ortho\n", i-b1);
-            }
+            PRINTF(5, "Vector %d lost all significant digits in ortho",
+                  i - b1);
             nOrth = maxNumOrthos;
          }
          else if (s1 <= tol*s0 || (!primme && nOrth < maxNumOrthos)) {
@@ -346,10 +335,8 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
                break;
             }
             else {
-               if (messages) {
-                  fprintf(primme->outputFile, 
-                        "Vector %d lost all significant digits in ortho\n", i-b1);
-               }
+               PRINTF(5, "Vector %d lost all significant digits in ortho",
+                     i - b1);
                nOrth = maxNumOrthos;
             }
          } 

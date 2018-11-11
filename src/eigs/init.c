@@ -290,7 +290,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, dv1,
          dv1 + blockSize - 1, locked, ldlocked, numLocked, BV, ldBV, NULL, 0,
          nLocal, maxRank, &nV, ctx));
-   CHKERRM(nV != dv1+blockSize, -1, "Random basis is not full rank\n");
+   CHKERRM(nV != dv1+blockSize, -1, "Random basis is not full rank");
 
    /* Generate the remaining vectors in the sequence */
 
@@ -313,7 +313,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, nV, i + m - 1,
             locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal,
             primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
-      CHKERRM(nV != i+m, -1, "Random basis in not full rank\n");
+      CHKERRM(nV != i+m, -1, "Random basis in not full rank");
    }
 
    CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, dv2-blockSize+1,

@@ -54,14 +54,11 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>   /* mallocs, free */
-#include <stdio.h>    
 #include "numerical.h"
 #include "const.h"
 #include "primme_interface.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
-#include "wtime.h"
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
 #endif
@@ -500,7 +497,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          assert(msg != NULL);
          if (primme->printLevel >= 2) { 
             fprintf(primme->outputFile, 
-                  "PRIMME information: %s\n", msg);
+                  "%s\n", msg);
          }
          break;
       case primme_event_profile:
