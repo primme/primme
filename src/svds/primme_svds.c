@@ -1341,8 +1341,9 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
          *LSRes = (HREAL*)LSRes_;
    assert(event != NULL && primme_svds != NULL && stage != NULL);
 
-   /* Only print report if this is proc zero */
-   if (primme_svds->procID == 0) {
+   /* Only print report if this is proc zero or it is profiling */
+   if (primme_svds->outputFile &&
+         (primme_svds->procID == 0 || *event == primme_event_profile)) {
       switch(*event) {
          case primme_event_outer_iteration:
             assert(basisSvals && basisSize && basisFlags && iblock && blockSize

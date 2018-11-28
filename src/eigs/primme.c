@@ -437,8 +437,9 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
 
    assert(event != NULL && primme != NULL);
 
-   /* Only print report if this is proc zero */
-   if (primme->procID == 0 && primme->outputFile) {
+   /* Only print report if this is proc zero or it is profiling */
+   if (primme->outputFile &&
+         (primme->procID == 0 || *event == primme_event_profile)) {
       switch(*event) {
       case primme_event_outer_iteration:
          assert(basisEvals && basisSize && basisFlags && iblock && blockSize
