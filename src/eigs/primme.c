@@ -502,9 +502,11 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          break;
       case primme_event_profile:
          assert(msg != NULL && time != NULL);
-         if (primme->printLevel >= 2) { 
-            fprintf(primme->outputFile, 
-                  "time for %s : %g\n", msg, *time);
+         if (primme->printLevel >= 3 && *time < 0.0) { 
+            fprintf(primme->outputFile, "entering in %s proc %d\n", msg, primme->procID);
+         }
+         if (primme->printLevel >= 2 && *time >= 0.0) { 
+            fprintf(primme->outputFile, "time for %s : %g proc %d\n", msg, *time, primme->procID);
          }
          break;
       default:

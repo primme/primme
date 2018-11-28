@@ -58,7 +58,7 @@ static int monitor_report(const char *fun, double time, primme_context ctx) {
    if (ctx.primme && ctx.primme->monitorFun) {
       int err;
       primme_event event =
-            (time >= 0.0 ? primme_event_profile : primme_event_message);
+            (time >= -.5 ? primme_event_profile : primme_event_message);
 
 #ifdef PRIMME_PROFILE
       /* Avoid profiling this function. It will turn out in a recursive call */

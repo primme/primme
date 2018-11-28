@@ -396,7 +396,7 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
       int len = snprintf(NULL, 0, __VA_ARGS__)+1; \
       char *str = malloc(len); \
       snprintf(str, len, __VA_ARGS__); \
-      (CTX).report(str, -1, (CTX)); \
+      (CTX).report(str, -1.0, (CTX)); \
       free(str); \
    }\
 }
@@ -458,10 +458,12 @@ static inline const char *__compose_function_name(const char *path,
 #define PROFILE_BEGIN(CALL) \
    double ___t0 = 0; \
    const char *old_path = ctx.path; \
-   if (ctx.path) { \
+   if (ctx.path && ctx.report) { \
       ctx.path = __compose_function_name(ctx.path, CALL, __FILE__, STR(__LINE__)); \
-      if (regexec(&ctx.profile, ctx.path, 0, NULL, 0) == 0) \
+      if (regexec(&ctx.profile, ctx.path, 0, NULL, 0) == 0) { \
+            ctx.report(ctx.path, -.5, ctx); \
          ___t0 = primme_wTimer() - *ctx.timeoff; \
+      } \
    }
 
 #define PROFILE_END \

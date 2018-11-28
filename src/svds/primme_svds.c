@@ -839,7 +839,7 @@ static int monitor_report(const char *fun, double time, primme_context ctx) {
    if (ctx.primme_svds && ctx.primme_svds->monitorFun) {
       int err;
       primme_event event =
-            (time >= 0.0 ? primme_event_profile : primme_event_message);
+            (time >= -.5 ? primme_event_profile : primme_event_message);
 
 #ifdef PRIMME_PROFILE
       /* Avoid profiling this function. It will turn out in a recursive call */
@@ -1402,9 +1402,11 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
             break;
          case primme_event_profile:
             assert(msg != NULL && time != NULL);
-            if (primme_svds->printLevel >= 2) { 
-               fprintf(primme_svds->outputFile, 
-                     "time for %s : %g\n", msg, *time);
+            if (primme_svds->printLevel >= 3 && *time < 0.0) { 
+               fprintf(primme_svds->outputFile, "entering in %s proc %d\n", msg, primme_svds->procID);
+            }
+            if (primme_svds->printLevel >= 2 && *time >= 0.0) { 
+               fprintf(primme_svds->outputFile, "time for %s : %g proc %d\n", msg, *time, primme_svds->procID);
             }
             break;
       }
