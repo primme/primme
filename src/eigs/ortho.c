@@ -1094,7 +1094,9 @@ static int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
    /* Try Cholesky factorization */
 
    CHKERR(Num_copy_matrix_SHprimme(H, n, n, ldH, Y, ldY, ctx));
-   if (Num_potrf_SHprimme("U", n, Y, ldY, ctx) == 0) {
+   int info;
+   CHKERR(Num_potrf_SHprimme("U", n, Y, ldY, &info, ctx));
+   if (info == 0) {
       *Yortho = 0;
 
       /* evals = 1 */

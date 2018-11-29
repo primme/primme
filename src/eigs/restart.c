@@ -2048,7 +2048,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       CHKERR(Num_malloc_SHprimme(basisSize*basisSize, &U_QtBQ, ctx));
       Num_copy_matrix_SHprimme(
             QtQ, basisSize, basisSize, ldQtQ, U_QtBQ, basisSize, ctx);
-      CHKERR(Num_potrf_SHprimme("U", basisSize, U_QtBQ, basisSize, ctx));
+      CHKERR(Num_potrf_SHprimme("U", basisSize, U_QtBQ, basisSize, NULL, ctx));
 
       /* hU = C'\hU */
 

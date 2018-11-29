@@ -83,8 +83,8 @@ int Num_hetrf_sprimme(const char *uplo, int n, float *a, int lda, int *ipivot,
    primme_context ctx);
 int Num_hetrs_sprimme(const char *uplo, int n, int nrhs, float *a, int lda,
       int *ipivot, float *b, int ldb, primme_context ctx);
-int Num_potrf_sprimme(
-      const char *uplo, int n, float *a, int lda, primme_context ctx);
+int Num_potrf_sprimme(const char *uplo, int n, float *a, int lda, int *info,
+      primme_context ctx);
 int Num_trsm_sprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, float alpha, float *a, int lda,
       float *b, int ldb);
@@ -142,8 +142,8 @@ int Num_hetrf_cprimme(const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a, int lda,
    primme_context ctx);
 int Num_hetrs_cprimme(const char *uplo, int n, int nrhs, PRIMME_COMPLEX_FLOAT *a, int lda,
       int *ipivot, PRIMME_COMPLEX_FLOAT *b, int ldb, primme_context ctx);
-int Num_potrf_cprimme(
-      const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a, int lda, primme_context ctx);
+int Num_potrf_cprimme(const char *uplo, int n, PRIMME_COMPLEX_FLOAT *a, int lda, int *info,
+      primme_context ctx);
 int Num_trsm_cprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, PRIMME_COMPLEX_FLOAT alpha, PRIMME_COMPLEX_FLOAT *a, int lda,
       PRIMME_COMPLEX_FLOAT *b, int ldb);
@@ -453,8 +453,8 @@ int Num_hetrs_dprimme(const char *uplo, int n, int nrhs, double *a, int lda,
 #if !defined(CHECK_TEMPLATE) && !defined(Num_potrf_RHprimme)
 #  define Num_potrf_RHprimme CONCAT(Num_potrf_,HOST_REAL_SUF)
 #endif
-int Num_potrf_dprimme(
-      const char *uplo, int n, double *a, int lda, primme_context ctx);
+int Num_potrf_dprimme(const char *uplo, int n, double *a, int lda, int *info,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_trsm_Sprimme)
 #  define Num_trsm_Sprimme CONCAT(Num_trsm_,SCALAR_SUF)
 #endif
@@ -548,8 +548,8 @@ int Num_hetrf_zprimme(const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a, int lda
    primme_context ctx);
 int Num_hetrs_zprimme(const char *uplo, int n, int nrhs, PRIMME_COMPLEX_DOUBLE *a, int lda,
       int *ipivot, PRIMME_COMPLEX_DOUBLE *b, int ldb, primme_context ctx);
-int Num_potrf_zprimme(
-      const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, primme_context ctx);
+int Num_potrf_zprimme(const char *uplo, int n, PRIMME_COMPLEX_DOUBLE *a, int lda, int *info,
+      primme_context ctx);
 int Num_trsm_zprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, PRIMME_COMPLEX_DOUBLE alpha, PRIMME_COMPLEX_DOUBLE *a, int lda,
       PRIMME_COMPLEX_DOUBLE *b, int ldb);

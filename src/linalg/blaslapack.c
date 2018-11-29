@@ -1000,8 +1000,8 @@ int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,
  ******************************************************************************/
  
 TEMPLATE_PLEASE
-int Num_potrf_Sprimme(
-      const char *uplo, int n, SCALAR *a, int lda, primme_context ctx) {
+int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,
+      primme_context ctx) {
 
    (void)ctx;
 
@@ -1010,10 +1010,15 @@ int Num_potrf_Sprimme(
    PRIMME_BLASINT linfo = 0; 
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
+   if (n == 0) {
+      if (info) *info = 0;
+      return 0;
+   }
 
-   CHKERRM((XPOTRF(uplo, &ln, a, &llda, &linfo), linfo), PRIMME_LAPACK_FAILURE,
+   XPOTRF(uplo, &ln, a, &llda, &linfo);
+   CHKERRM(info == NULL && linfo != 0, PRIMME_LAPACK_FAILURE,
          "Error in xpotrf with info %d\n", (int)linfo);
+   if (info) *info = (int)linfo;
 
    return 0;
 }
