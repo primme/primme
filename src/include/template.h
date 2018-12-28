@@ -347,9 +347,6 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 #if defined(USE_HALFCOMPLEX) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
 #  define SET_ZERO(A) {(A).r = 0; (A).i = 0;}
 #  define SET_COMPLEX(A,B) {(A).r = REAL_PART(B); (A).i = IMAGINARY_PART(B);}
-#  if defined(__cplusplus)
-#     error "Either half precision is not supported or PRIMME_WITH_NATIVE_COMPLEX_HALF should be defined"
-#  endif
 #  define TO_COMPLEX(A) ((A).r + (A).i * _Complex_I)
 #  define PLUS_EQUAL(A,B) {(A).r += REAL_PART(B); (A).i += IMAGINARY_PART(B);}
 #  define MULT_EQUAL(A, B)                                                     \
@@ -361,9 +358,15 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 #else
 #  define SET_ZERO(A) {(A) = 0.0;}
 #  define SET_COMPLEX(A,B) (A) = (B)
-#  define TO_COMPLEX(A) (A)
-#  define PLUS_EQUAL(A, B) (A) += (B)
-#  define MULT_EQUAL(A, B) (A) *= (B)
+#  if defined(USE_HALFCOMPLEX) && defined(__cplusplus)
+#     define TO_COMPLEX(A) (HSCALAR(REAL_PART(A), IMAGINARY_PART(A)))
+#     define PLUS_EQUAL(A, B) (A) = TO_COMPLEX(A) + (B)
+#     define MULT_EQUAL(A, B) (A) = TO_COMPLEX(A) * (B)
+#  else
+#     define TO_COMPLEX(A) (A)
+#     define PLUS_EQUAL(A, B) (A) += (B)
+#     define MULT_EQUAL(A, B) (A) *= (B)
+#  endif
 #endif
 
 

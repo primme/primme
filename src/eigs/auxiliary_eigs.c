@@ -511,8 +511,8 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
             primme->applyPreconditioner_type, (void **)&W, &ldW,
             PRIMME_OP_SCALAR, 0 /* not alloc */, 1 /* copy */, ctx));
 
-      if (V != V0) CHKERR(Num_free_Sprimme(V0, ctx));
-      if (W != W0) CHKERR(Num_free_Sprimme(W0, ctx));
+      if (V != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+      if (W != W0) CHKERR(Num_free_Sprimme((SCALAR*)W0, ctx));
    }
    else {
       Num_copy_matrix_Sprimme(V, nLocal, blockSize, ldV, W, ldW, ctx);
@@ -606,9 +606,10 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
             primme->globalSumReal_type, (void **)&recvBuf, NULL,
             PRIMME_OP_SCALAR, 0 /* no alloc */, 1 /* copy */, ctx));
 
-      if (sendBuf != sendBuf0) CHKERR(Num_free_Sprimme(sendBuf0, ctx));
+      if (sendBuf != sendBuf0)
+         CHKERR(Num_free_Sprimme((SCALAR *)sendBuf0, ctx));
       if (sendBuf != recvBuf && recvBuf != recvBuf0)
-         CHKERR(Num_free_Sprimme(recvBuf0, ctx));
+         CHKERR(Num_free_Sprimme((SCALAR *)recvBuf0, ctx));
 
       primme->stats.numGlobalSum++;
       primme->stats.timeGlobalSum += primme_wTimer() - t0;

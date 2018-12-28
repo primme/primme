@@ -103,8 +103,8 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
          primme->matrixMatvec_type, (void **)&Wb, &ldW,
          PRIMME_OP_SCALAR, 0 /* not alloc */, 1 /* copy */, ctx));
 
-   if (Vb != V0) CHKERR(Num_free_Sprimme(V0, ctx));
-   if (Wb != W0) CHKERR(Num_free_Sprimme(W0, ctx));
+   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+   if (Wb != W0) CHKERR(Num_free_Sprimme((SCALAR*)W0, ctx));
 
    primme->stats.timeMatvec += primme_wTimer() - t0;
    primme->stats.numMatvecs += blockSize;
@@ -170,8 +170,8 @@ int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
          primme->matrixMatvec_type, (void **)&BVb, &ldBV, PRIMME_OP_SCALAR,
          0 /* not alloc */, 1 /* copy */, ctx));
 
-   if (Vb != V0) CHKERR(Num_free_Sprimme(V0, ctx));
-   if (BVb != BV0) CHKERR(Num_free_Sprimme(BV0, ctx));
+   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+   if (BVb != BV0) CHKERR(Num_free_Sprimme((SCALAR*)BV0, ctx));
 
    primme->stats.timeMatvec += primme_wTimer() - t0;
    primme->stats.numMatvecs += blockSize;

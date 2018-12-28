@@ -1094,9 +1094,10 @@ static int globalSum_Rprimme_svds(
             primme_svds->globalSumReal_type, (void **)&recvBuf, NULL,
             primme_op_default, 0 /* no alloc */, 1 /* copy */, ctx));
 
-      if (sendBuf != sendBuf0) CHKERR(Num_free_Sprimme(sendBuf0, ctx));
+      if (sendBuf != sendBuf0)
+         CHKERR(Num_free_Sprimme((SCALAR *)sendBuf0, ctx));
       if (sendBuf != recvBuf && recvBuf != recvBuf0)
-         CHKERR(Num_free_Sprimme(recvBuf0, ctx));
+         CHKERR(Num_free_Sprimme((SCALAR *)recvBuf0, ctx));
 
       primme_svds->stats.numGlobalSum++;
       primme_svds->stats.timeGlobalSum += primme_wTimer() - t0;

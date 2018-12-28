@@ -68,6 +68,8 @@ int Num_free_kprimme(dummy_type_kprimme *x, primme_context ctx);
 int Num_copy_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_kprimme *y, PRIMME_INT ldy,
       primme_context ctx);
+int Num_copy_matrix_conj_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_kprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 int Num_set_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
