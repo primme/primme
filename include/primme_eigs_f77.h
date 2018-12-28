@@ -268,7 +268,7 @@ C-------------------------------------------------------
      : primme_event_restart,
      : primme_event_reset,
      : primme_event_converged,
-     : primme_event_locked
+     : primme_event_locked,
      : primme_op_default, 
      : primme_op_quad,
      : primme_op_double,
@@ -299,7 +299,7 @@ C-------------------------------------------------------
      : primme_event_restart = 2,
      : primme_event_reset = 3,
      : primme_event_converged = 4,
-     : primme_event_locked = 5
+     : primme_event_locked = 5,
      : primme_op_default = 0, 
      : primme_op_quad = 1,
      : primme_op_double = 2,
