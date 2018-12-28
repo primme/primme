@@ -61,6 +61,8 @@
 #  define PRIMME_BLASINT_MAX ((PRIMME_BLASINT_SIZE)INT_MAX)*INT_MAX
 #endif
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
+
 #ifndef PRIMME_BLAS_SUFFIX
 #  define PRIMME_BLAS_SUFFIX
 #endif
@@ -68,37 +70,41 @@
 #define SET_LAPACK_SUFFIX(X) FORTRAN_FUNCTION(CONCAT(X,PRIMME_BLAS_SUFFIX))
 
 #ifdef USE_DOUBLE
-#  define LAPACK_FUNCTION(S,C,D,Z) SET_LAPACK_SUFFIX(D)
+#  define LAPACK_FUNCTION(H,K,S,C,D,Z) SET_LAPACK_SUFFIX(D)
 #elif defined(USE_DOUBLECOMPLEX)
-#  define LAPACK_FUNCTION(S,C,D,Z) SET_LAPACK_SUFFIX(Z)
+#  define LAPACK_FUNCTION(H,K,S,C,D,Z) SET_LAPACK_SUFFIX(Z)
 #elif defined(USE_FLOAT)
-#  define LAPACK_FUNCTION(S,C,D,Z) SET_LAPACK_SUFFIX(S)
+#  define LAPACK_FUNCTION(H,K,S,C,D,Z) SET_LAPACK_SUFFIX(S)
 #elif defined(USE_FLOATCOMPLEX)
-#  define LAPACK_FUNCTION(S,C,D,Z) SET_LAPACK_SUFFIX(C)
+#  define LAPACK_FUNCTION(H,K,S,C,D,Z) SET_LAPACK_SUFFIX(C)
+#elif defined(USE_HALF)
+#  define LAPACK_FUNCTION(H,K,S,C,D,Z) SET_LAPACK_SUFFIX(H)
+#elif defined(USE_HALFCOMPLEX)
+#  define LAPACK_FUNCTION(H,K,S,C,D,Z) SET_LAPACK_SUFFIX(K)
 #endif
 
-#define XCOPY     LAPACK_FUNCTION(scopy , ccopy , dcopy , zcopy )   
-#define XSWAP     LAPACK_FUNCTION(sswap , cswap , dswap , zswap )
-#define XGEMM     LAPACK_FUNCTION(sgemm , cgemm , dgemm , zgemm )
-#define XTRMM     LAPACK_FUNCTION(strmm , ctrmm , dtrmm , ztrmm )
-#define XTRSM     LAPACK_FUNCTION(strsm , ctrsm , dtrsm , ztrsm )
-#define XHEMM     LAPACK_FUNCTION(ssymm , chemm , dsymm , zhemm )
-#define XHEMV     LAPACK_FUNCTION(ssymv , chemv , dsymv , zhemv )
-#define XAXPY     LAPACK_FUNCTION(saxpy , caxpy , daxpy , zaxpy )
-#define XGEMV     LAPACK_FUNCTION(sgemv , cgemv , dgemv , zgemv )
-#define XDOT      LAPACK_FUNCTION(sdot  ,       , ddot  ,       )
-#define XSCAL     LAPACK_FUNCTION(sscal , cscal , dscal , zscal )
-#define XLARNV    LAPACK_FUNCTION(slarnv, clarnv, dlarnv, zlarnv)
-#define XHEEV     LAPACK_FUNCTION(ssyev , cheev , dsyev , zheev )
-#define XHEEVX    LAPACK_FUNCTION(ssyevx, cheevx, dsyevx, zheevx)
-#define XHEGV     LAPACK_FUNCTION(ssygv , chegv , dsygv , zhegv )
-#define XHEGVX    LAPACK_FUNCTION(ssygvx, chegvx, dsygvx, zhegvx)
-#define XGESVD    LAPACK_FUNCTION(sgesvd, cgesvd, dgesvd, zgesvd)
-#define XHETRF    LAPACK_FUNCTION(ssytrf, chetrf, dsytrf, zhetrf)
-#define XHETRS    LAPACK_FUNCTION(ssytrs, chetrs, dsytrs, zhetrs)
-#define XPOTRF    LAPACK_FUNCTION(spotrf, cpotrf, dpotrf, zpotrf)
-#define XGETRF    LAPACK_FUNCTION(sgetrf, cgetrf, dgetrf, zgetrf)
-#define XGETRS    LAPACK_FUNCTION(sgetrs, cgetrs, dgetrs, zgetrs)
+#define XCOPY     LAPACK_FUNCTION(hcopy , kcopy , scopy , ccopy , dcopy , zcopy )   
+#define XSWAP     LAPACK_FUNCTION(hswap , kswap , sswap , cswap , dswap , zswap )
+#define XGEMM     LAPACK_FUNCTION(hgemm , kgemm , sgemm , cgemm , dgemm , zgemm )
+#define XTRMM     LAPACK_FUNCTION(htrmm , ktrmm , strmm , ctrmm , dtrmm , ztrmm )
+#define XTRSM     LAPACK_FUNCTION(htrsm , ktrsm , strsm , ctrsm , dtrsm , ztrsm )
+#define XHEMM     LAPACK_FUNCTION(hsymm , khemm , ssymm , chemm , dsymm , zhemm )
+#define XHEMV     LAPACK_FUNCTION(hsymv , khemv , ssymv , chemv , dsymv , zhemv )
+#define XAXPY     LAPACK_FUNCTION(haxpy , kaxpy , saxpy , caxpy , daxpy , zaxpy )
+#define XGEMV     LAPACK_FUNCTION(hgemv , kgemv , sgemv , cgemv , dgemv , zgemv )
+#define XDOT      LAPACK_FUNCTION(hdot  ,       , sdot  ,       , ddot  ,       )
+#define XSCAL     LAPACK_FUNCTION(hscal , kscal , sscal , cscal , dscal , zscal )
+#define XLARNV    LAPACK_FUNCTION(hlarnv, klarnv, slarnv, clarnv, dlarnv, zlarnv)
+#define XHEEV     LAPACK_FUNCTION(hsyev , kheev , ssyev , cheev , dsyev , zheev )
+#define XHEEVX    LAPACK_FUNCTION(hsyevx, kheevx, ssyevx, cheevx, dsyevx, zheevx)
+#define XHEGV     LAPACK_FUNCTION(hsygv , khegv , ssygv , chegv , dsygv , zhegv )
+#define XHEGVX    LAPACK_FUNCTION(hsygvx, khegvx, ssygvx, chegvx, dsygvx, zhegvx)
+#define XGESVD    LAPACK_FUNCTION(hgesvd, kgesvd, sgesvd, cgesvd, dgesvd, zgesvd)
+#define XHETRF    LAPACK_FUNCTION(hsytrf, khetrf, ssytrf, chetrf, dsytrf, zhetrf)
+#define XHETRS    LAPACK_FUNCTION(hsytrs, khetrs, ssytrs, chetrs, dsytrs, zhetrs)
+#define XPOTRF    LAPACK_FUNCTION(hpotrf, kpotrf, spotrf, cpotrf, dpotrf, zpotrf)
+#define XGETRF    LAPACK_FUNCTION(hgetrf, kgetrf, sgetrf, cgetrf, dgetrf, zgetrf)
+#define XGETRS    LAPACK_FUNCTION(hgetrs, kgetrs, sgetrs, cgetrs, dgetrs, zgetrs)
 
 #ifdef __cplusplus
 extern "C" {
@@ -141,5 +147,7 @@ void XGETRS(STRING trans, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PR
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 #endif /* NUMERICAL_PRIVATE_H */

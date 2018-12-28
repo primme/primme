@@ -63,8 +63,12 @@
 #include "auxiliary_eigs.h"
 #endif
 
-static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
-                       primme_params *primme);
+#ifdef SUPPORTED_TYPE
+
+static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
+            primme_params *primme, primme_context ctx);
+static int check_input(
+      REAL *evals, SCALAR *evecs, REAL *resNorms, primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
 static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
@@ -72,6 +76,8 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
       void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
       int *inner_its, void *LSRes, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
+
+#endif /* SUPPORTED_TYPE */
 
 /*******************************************************************************
  * Subroutine Sprimme - This routine is a front end used to perform 
@@ -109,8 +115,33 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
+int Sprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
+
+#ifdef SUPPORTED_TYPE
+   /* Generate context */
+
+   primme_context ctx = primme_get_context(primme);
+
+   /* Main call */
+
+   int ret = Sprimme_for_real(evals, evecs, resNorms, primme, ctx);
+
+   /* Free context */
+
+   primme_free_context(ctx);
+#else
+   int ret = PRIMME_FUNCTION_UNAVAILABLE;
+#endif
+
+   return ret;
+}
+
+
+#ifdef SUPPORTED_TYPE
+
+static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
+            primme_params *primme, primme_context ctx) {
 
    int *perm;
    SCALAR *evecs = (SCALAR *)evecs_; /* Change type of evecs */
@@ -203,14 +234,20 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
       primme->monitorFun = default_monitor;
    }
 
-   /* Generate context */
-
-   primme_context ctx = primme_get_context(primme);
-
    /* Check primme input data for bounds, correct values etc. */
 
    int ret = check_input(evals, evecs, resNorms, primme);
    if (ret != 0) return ret;
+
+   /* Cast evals and resNorms to HREAL */
+
+   HREAL *evals0, *resNorms0;
+   CHKERR(Num_matrix_astype_RHprimme(evals, 1, primme->numEvals, 1,
+         PRIMME_OP_REAL, (void **)&evals0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
+         0 /* not copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals, 1,
+         PRIMME_OP_REAL, (void **)&resNorms0, NULL, PRIMME_OP_HREAL,
+         1 /* alloc */, 0 /* not copy */, ctx));
 
    /* --------------------------------------------------------- */
    /* Allocate workspace that will be needed locally by Sprimme */
@@ -222,7 +259,7 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
    /*----------------------------------------------------------------------*/
 
    CHKERR(main_iter_Sprimme(
-         evals, perm, evecs, primme->ldevecs, resNorms, t0, &ret, ctx));
+         evals0, perm, evecs, primme->ldevecs, resNorms0, t0, &ret, ctx));
 
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
@@ -236,9 +273,18 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    CHKERR(Num_free_iprimme(perm, ctx));
 
-   /* Free context */
+   /* Copy back evals and resNorms */
 
-   primme_free_context(ctx);
+   CHKERR(Num_matrix_astype_RHprimme(evals0, 1, primme->numEvals, 1,
+         PRIMME_OP_HREAL, (void **)&evals, NULL, PRIMME_OP_REAL,
+         0 /* no alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
+         PRIMME_OP_HREAL, (void **)&resNorms, NULL, PRIMME_OP_REAL,
+         0 /* no alloc */, 1 /* copy */, ctx));
+
+   if (evals != (XREAL *)evals0) CHKERR(Num_free_RHprimme(evals0, ctx));
+   if (resNorms != (XREAL *)resNorms0)
+      CHKERR(Num_free_RHprimme(resNorms0, ctx));
 
    primme->stats.elapsedTime = primme_wTimer() - t0;
    return ret;
@@ -259,8 +305,8 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
  *              -4..-32  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms, 
-                       primme_params *primme) {
+static int check_input(
+      REAL *evals, SCALAR *evecs, REAL *resNorms, primme_params *primme) {
    int ret;
    ret = 0;
 
@@ -431,9 +477,9 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err) {
 
-   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
-        *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
-        *LSRes = (HREAL*)LSRes_;
+   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
+        *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
+        *LSRes = (XREAL*)LSRes_;
 
    assert(event != NULL && primme != NULL);
 
@@ -441,10 +487,12 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
    if (primme->procID == 0 && primme->outputFile) {
       switch(*event) {
       case primme_event_outer_iteration:
-         assert(basisEvals && basisSize && basisFlags && iblock && blockSize
-                && basisNorms && numConverged);
-         assert(!primme->locking || (lockedEvals && numLocked && lockedFlags
-                 && lockedNorms));
+         assert(basisSize && (!*basisSize || (basisEvals && basisFlags)) &&
+                blockSize && (!*blockSize || (iblock && basisNorms)) &&
+                numConverged);
+         assert(!primme->locking ||
+                (numLocked && (!*numLocked || (lockedEvals && lockedFlags &&
+                                                    lockedNorms))));
          if (primme->printLevel >= 3) {
             int i;  /* Loop variable */
             int found;  /* Reported eigenpairs found */
@@ -459,7 +507,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                      "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
                      primme->stats.numOuterIterations, found, i,
                      primme->stats.numMatvecs, primme->stats.elapsedTime,
-                     basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
+                     (double)basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
             }
          }
          break;
@@ -480,8 +528,8 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                || (primme->locking && primme->printLevel >= 5))
             fprintf(primme->outputFile, 
                   "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
-                  *numConverged, iblock[0], basisEvals[iblock[0]],
-                  basisNorms[iblock[0]], primme->stats.numMatvecs,
+                  *numConverged, iblock[0], (double)basisEvals[iblock[0]],
+                  (double)basisNorms[iblock[0]], primme->stats.numMatvecs,
                   primme->stats.elapsedTime);
          break;
       case primme_event_locked:
@@ -489,7 +537,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          if (primme->printLevel >= 2) { 
             fprintf(primme->outputFile, 
                   "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
-                  *numLocked-1, lockedEvals[*numLocked-1], lockedNorms[*numLocked-1], 
+                  *numLocked-1, (double)lockedEvals[*numLocked-1], (double)lockedNorms[*numLocked-1], 
                   primme->stats.numMatvecs, primme->stats.elapsedTime, lockedFlags[*numLocked-1]);
          }
          break;
@@ -514,3 +562,5 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
    }
    *err = 0;
 }
+
+#endif /* SUPPORTED_TYPE */

@@ -47,6 +47,8 @@
 #include "convergence.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       SCALAR *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
@@ -2052,8 +2054,8 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
       /* hU = C'\hU */
 
-      Num_trsm_SHprimme("R", "U", "N", "N", basisSize, nRegular, 1.0, U_QtBQ,
-            basisSize, hU, ldhU);
+      CHKERR(Num_trsm_SHprimme("R", "U", "N", "N", basisSize, nRegular, 1.0,
+            U_QtBQ, basisSize, hU, ldhU, ctx));
       CHKERR(Num_free_SHprimme(U_QtBQ, ctx));
    }
 
@@ -2690,3 +2692,5 @@ static int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */

@@ -42,6 +42,8 @@
 #include "auxiliary_eigs.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       int evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
@@ -234,7 +236,6 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
       double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx) {
 
-   primme_params *primme = ctx.primme;
    int i;
    HREAL *norms;
 
@@ -274,3 +275,5 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */

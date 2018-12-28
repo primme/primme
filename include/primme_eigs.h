@@ -95,6 +95,16 @@ typedef enum {
    primme_orth_explicit_I           /* explicitly compute V'*B*V */
 } primme_orth;
 
+/* Datatype of vectors passed on matrixMatvec, applyPreconditioner,           */
+/* massMatrixMatvec and globalSumReal                                         */
+typedef enum {
+   primme_op_default,   /* The same type as the primme call */
+   primme_op_quad,
+   primme_op_double,
+   primme_op_float,
+   primme_op_half
+} primme_op_datatype;
+
 typedef struct primme_stats {
    PRIMME_INT numOuterIterations;
    PRIMME_INT numRestarts;
@@ -154,16 +164,19 @@ typedef struct primme_params {
    void (*matrixMatvec)
       ( void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
         struct primme_params *primme, int *ierr);
+   primme_op_datatype matrixMatvec_type;
 
    /* Preconditioner applied on block of vectors (if available) */
    void (*applyPreconditioner)
       ( void *x, PRIMME_INT *ldx,  void *y, PRIMME_INT *ldy, int *blockSize,
         struct primme_params *primme, int *ierr);
+   primme_op_datatype applyPreconditioner_type;
 
    /* Matrix times a multivector for mass matrix B for generalized Ax = xBl */
    void (*massMatrixMatvec)
       ( void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
         struct primme_params *primme, int *ierr);
+   primme_op_datatype massMatrixMatvec_type;
 
    /* input for the following is only required for parallel programs */
    int numProcs;
@@ -173,6 +186,7 @@ typedef struct primme_params {
    void (*globalSumReal)
       (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme,
        int *ierr );
+   primme_op_datatype globalSumReal_type;
 
    /*Though primme_initialize will assign defaults, most users will set these */
    int numEvals;          
@@ -254,82 +268,90 @@ typedef enum {
 } primme_type;
 
 typedef enum {
-   PRIMME_n =  0,
-   PRIMME_matrixMatvec =  1,
-   PRIMME_applyPreconditioner =  2,
-   PRIMME_numProcs =  3,
-   PRIMME_procID =  4,
-   PRIMME_commInfo =  5,
-   PRIMME_nLocal =  6,
-   PRIMME_globalSumReal =  7,
-   PRIMME_numEvals =  8,
-   PRIMME_target =  9,
-   PRIMME_numTargetShifts =  10,
-   PRIMME_targetShifts =  11,
-   PRIMME_locking =  12,
-   PRIMME_initSize =  13,
-   PRIMME_numOrthoConst =  14,
-   PRIMME_maxBasisSize =  15,
-   PRIMME_minRestartSize =  16,
-   PRIMME_maxBlockSize =  17,
-   PRIMME_maxMatvecs =  18,
-   PRIMME_maxOuterIterations =  19,
-   PRIMME_iseed =  22,
-   PRIMME_aNorm =  25,
-   PRIMME_BNorm =  250,
-   PRIMME_invBNorm =  251,
-   PRIMME_eps =  26,
-   PRIMME_orth =  260,
-   PRIMME_printLevel =  27,
-   PRIMME_outputFile =  28,
-   PRIMME_matrix =  29,
-   PRIMME_massMatrix = 290,
-   PRIMME_preconditioner =  30,
-   PRIMME_initBasisMode =   301,
-   PRIMME_projectionParams_projection =  302,
-   PRIMME_restartingParams_maxPrevRetain =  32,
-   PRIMME_correctionParams_precondition =  33,
-   PRIMME_correctionParams_robustShifts =  34,
-   PRIMME_correctionParams_maxInnerIterations =  35,
-   PRIMME_correctionParams_projectors_LeftQ =  36,
-   PRIMME_correctionParams_projectors_LeftX =  37,
-   PRIMME_correctionParams_projectors_RightQ =  38,
-   PRIMME_correctionParams_projectors_RightX =  39,
-   PRIMME_correctionParams_projectors_SkewQ =  40,
-   PRIMME_correctionParams_projectors_SkewX =  41,
-   PRIMME_correctionParams_convTest =  42,
-   PRIMME_correctionParams_relTolBase =  43,
-   PRIMME_stats_numOuterIterations =  44,
-   PRIMME_stats_numRestarts =  45,
-   PRIMME_stats_numMatvecs =  46,
-   PRIMME_stats_numPreconds =  47,
-   PRIMME_stats_numGlobalSum =  471,
-   PRIMME_stats_volumeGlobalSum =  472,
-   PRIMME_stats_numOrthoInnerProds =  473,
-   PRIMME_stats_elapsedTime =  48,
-   PRIMME_stats_timeMatvec =  4801,
-   PRIMME_stats_timePrecond =  4802,
-   PRIMME_stats_timeOrtho =  4803,
-   PRIMME_stats_timeGlobalSum =  4804,
-   PRIMME_stats_estimateMinEVal =  481,
-   PRIMME_stats_estimateMaxEVal =  482,
-   PRIMME_stats_estimateLargestSVal =  483,
-   PRIMME_stats_estimateBNorm =  4830,
-   PRIMME_stats_estimateInvBNorm =  4831,
-   PRIMME_stats_maxConvTol =  484,
-   PRIMME_stats_lockingIssue =  485,
-   PRIMME_dynamicMethodSwitch = 49,
-   PRIMME_massMatrixMatvec =  50,
-   PRIMME_convTestFun =  51,
-   PRIMME_convtest =  510,
-   PRIMME_ldevecs =  52,
-   PRIMME_ldOPs =  53,
-   PRIMME_monitorFun = 54,
-   PRIMME_monitor = 55,
-   PRIMME_queue = 56,
-   PRIMME_profile = 57
+   PRIMME_n                                      = 1   ,
+   PRIMME_matrixMatvec                           = 2   ,
+   PRIMME_matrixMatvec_type                      = 3   ,
+   PRIMME_applyPreconditioner                    = 4   ,
+   PRIMME_applyPreconditioner_type               = 5   ,
+   PRIMME_massMatrixMatvec                       = 6   ,
+   PRIMME_massMatrixMatvec_type                  = 7   ,
+   PRIMME_numProcs                               = 8   ,
+   PRIMME_procID                                 = 9   ,
+   PRIMME_commInfo                               = 10  ,
+   PRIMME_nLocal                                 = 11  ,
+   PRIMME_globalSumReal                          = 12  ,
+   PRIMME_globalSumReal_type                     = 13  ,
+   PRIMME_numEvals                               = 14  ,
+   PRIMME_target                                 = 15  ,
+   PRIMME_numTargetShifts                        = 16  ,
+   PRIMME_targetShifts                           = 17  ,
+   PRIMME_locking                                = 18  ,
+   PRIMME_initSize                               = 19  ,
+   PRIMME_numOrthoConst                          = 20  ,
+   PRIMME_maxBasisSize                           = 21  ,
+   PRIMME_minRestartSize                         = 22  ,
+   PRIMME_maxBlockSize                           = 23  ,
+   PRIMME_maxMatvecs                             = 24  ,
+   PRIMME_maxOuterIterations                     = 25  ,
+   PRIMME_iseed                                  = 26  ,
+   PRIMME_aNorm                                  = 27  ,
+   PRIMME_BNorm                                  = 28  ,
+   PRIMME_invBNorm                               = 29  ,
+   PRIMME_eps                                    = 30  ,
+   PRIMME_orth                                   = 31  ,
+   PRIMME_printLevel                             = 32  ,
+   PRIMME_outputFile                             = 33  ,
+   PRIMME_matrix                                 = 34  ,
+   PRIMME_massMatrix                             = 35  ,
+   PRIMME_preconditioner                         = 36  ,
+   PRIMME_initBasisMode                          = 37  ,
+   PRIMME_projectionParams_projection            = 38  ,
+   PRIMME_restartingParams_maxPrevRetain         = 39  ,
+   PRIMME_correctionParams_precondition          = 40  ,
+   PRIMME_correctionParams_robustShifts          = 41  ,
+   PRIMME_correctionParams_maxInnerIterations    = 42  ,
+   PRIMME_correctionParams_projectors_LeftQ      = 43  ,
+   PRIMME_correctionParams_projectors_LeftX      = 44  ,
+   PRIMME_correctionParams_projectors_RightQ     = 45  ,
+   PRIMME_correctionParams_projectors_RightX     = 46  ,
+   PRIMME_correctionParams_projectors_SkewQ      = 47  ,
+   PRIMME_correctionParams_projectors_SkewX      = 48  ,
+   PRIMME_correctionParams_convTest              = 49  ,
+   PRIMME_correctionParams_relTolBase            = 50  ,
+   PRIMME_stats_numOuterIterations               = 51  ,
+   PRIMME_stats_numRestarts                      = 52  ,
+   PRIMME_stats_numMatvecs                       = 53  ,
+   PRIMME_stats_numPreconds                      = 54  ,
+   PRIMME_stats_numGlobalSum                     = 55  ,
+   PRIMME_stats_volumeGlobalSum                  = 56  ,
+   PRIMME_stats_numOrthoInnerProds               = 57  ,
+   PRIMME_stats_elapsedTime                      = 58  ,
+   PRIMME_stats_timeMatvec                       = 59  ,
+   PRIMME_stats_timePrecond                      = 60  ,
+   PRIMME_stats_timeOrtho                        = 61  ,
+   PRIMME_stats_timeGlobalSum                    = 62  ,
+   PRIMME_stats_estimateMinEVal                  = 63  ,
+   PRIMME_stats_estimateMaxEVal                  = 64  ,
+   PRIMME_stats_estimateLargestSVal              = 65  ,
+   PRIMME_stats_estimateBNorm                    = 66  ,
+   PRIMME_stats_estimateInvBNorm                 = 67  ,
+   PRIMME_stats_maxConvTol                       = 68  ,
+   PRIMME_stats_lockingIssue                     = 69  ,
+   PRIMME_dynamicMethodSwitch                    = 70  ,
+   PRIMME_convTestFun                            = 71  ,
+   PRIMME_convtest                               = 72  ,
+   PRIMME_ldevecs                                = 73  ,
+   PRIMME_ldOPs                                  = 74  ,
+   PRIMME_monitorFun                             = 75  ,
+   PRIMME_monitor                                = 76  ,
+   PRIMME_queue                                  = 77  ,
+   PRIMME_profile                                = 78  
 } primme_params_label;
 
+int hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
+int kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
 int sprimme(float *evals, float *evecs, float *resNorms, 
       primme_params *primme);
 int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 

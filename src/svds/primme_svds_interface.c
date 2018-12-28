@@ -100,6 +100,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->nLocal                  = -1;
    primme_svds->commInfo                = NULL;
    primme_svds->globalSumReal           = NULL;
+   primme_svds->globalSumReal_type      = primme_op_default;
 
    /* Use these pointers to provide matrix/preconditioner */
    primme_svds->matrix                  = NULL;
@@ -107,7 +108,9 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
 
    /* Matvec and preconditioner */
    primme_svds->matrixMatvec            = NULL;
+   primme_svds->matrixMatvec_type       = primme_op_default;
    primme_svds->applyPreconditioner     = NULL;
+   primme_svds->applyPreconditioner_type= primme_op_default;
 
    /* Other important parameters users may set */
    primme_svds->aNorm                   = 0.0L;
@@ -522,8 +525,6 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
       void *ptr_v;
       void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
-      primme_svds_target target_v;
-      primme_svds_operator operator_v;
       double double_v;
       FILE *file_v;
       void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
@@ -554,8 +555,14 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_matrixMatvec :
          v->matFunc_v = primme_svds->matrixMatvec;
          break;
+      case PRIMME_SVDS_matrixMatvec_type:
+         v->int_v = primme_svds->matrixMatvec_type;
+         break;
       case PRIMME_SVDS_applyPreconditioner :
          v->matFunc_v = primme_svds->applyPreconditioner;
+         break;
+      case PRIMME_SVDS_applyPreconditioner_type:
+         v->int_v = primme_svds->applyPreconditioner_type;
          break;
       case PRIMME_SVDS_numProcs :
          v->int_v = primme_svds->numProcs;
@@ -575,11 +582,14 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_globalSumReal :
          v->globalSumRealFunc_v = primme_svds->globalSumReal;
          break;
+      case PRIMME_SVDS_globalSumReal_type:
+         v->int_v = primme_svds->globalSumReal_type;
+         break;
       case PRIMME_SVDS_numSvals :
          v->int_v = primme_svds->numSvals;
          break;
       case PRIMME_SVDS_target :
-         v->target_v = primme_svds->target;
+         v->int_v = primme_svds->target;
          break;
       case PRIMME_SVDS_numTargetShifts :
          v->int_v = primme_svds->numTargetShifts;
@@ -590,10 +600,10 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
          }
          break;
       case PRIMME_SVDS_method :
-         v->operator_v = primme_svds->method;
+         v->int_v = primme_svds->method;
          break;
       case PRIMME_SVDS_methodStage2 :
-         v->operator_v = primme_svds->methodStage2;
+         v->int_v = primme_svds->methodStage2;
          break;
       case PRIMME_SVDS_matrix :
          v->ptr_v = primme_svds->matrix;
@@ -726,8 +736,6 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
       void *ptr_v;
       void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
-      primme_svds_target *target_v;
-      primme_svds_operator *operator_v;
       double *double_v;
       FILE *file_v;
       void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
@@ -758,8 +766,14 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_matrixMatvec :
          primme_svds->matrixMatvec = v.matFunc_v;
          break;
+      case PRIMME_SVDS_matrixMatvec_type:
+         primme_svds->matrixMatvec_type = (primme_op_datatype)*v.int_v;
+         break;
       case PRIMME_SVDS_applyPreconditioner :
          primme_svds->applyPreconditioner = v.matFunc_v;
+         break;
+      case PRIMME_SVDS_applyPreconditioner_type:
+         primme_svds->applyPreconditioner_type = (primme_op_datatype)*v.int_v;
          break;
       case PRIMME_SVDS_numProcs :
          if (*v.int_v > INT_MAX) return 1; else
@@ -781,12 +795,15 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_globalSumReal :
          primme_svds->globalSumReal = v.globalSumRealFunc_v;
          break;
+      case PRIMME_SVDS_globalSumReal_type:
+         primme_svds->globalSumReal_type = (primme_op_datatype)*v.int_v;
+         break;
       case PRIMME_SVDS_numSvals :
          if (*v.int_v > INT_MAX) return 1; else 
          primme_svds->numSvals = (int)*v.int_v;
          break;
       case PRIMME_SVDS_target :
-         primme_svds->target = *v.target_v;
+         primme_svds->target = (primme_svds_target)*v.int_v;
          break;
       case PRIMME_SVDS_numTargetShifts :
          if (*v.int_v > INT_MAX) return 1; else 
@@ -796,10 +813,10 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
          primme_svds->targetShifts = v.double_v;
          break;
       case PRIMME_SVDS_method :
-         primme_svds->method = *v.operator_v;
+         primme_svds->method = (primme_svds_operator)*v.int_v;
          break;
       case PRIMME_SVDS_methodStage2 :
-         primme_svds->methodStage2 = *v.operator_v;
+         primme_svds->methodStage2 = (primme_svds_operator)*v.int_v;
          break;
       case PRIMME_SVDS_matrix :
          primme_svds->matrix = v.ptr_v;
@@ -954,13 +971,16 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(m);
    IF_IS(n);
    IF_IS(matrixMatvec);
+   IF_IS(matrixMatvec_type);
    IF_IS(applyPreconditioner);
+   IF_IS(applyPreconditioner_type);
    IF_IS(numProcs);
    IF_IS(procID);
    IF_IS(mLocal);
    IF_IS(nLocal);
    IF_IS(commInfo);
    IF_IS(globalSumReal);
+   IF_IS(globalSumReal_type);
    IF_IS(numSvals);
    IF_IS(target);
    IF_IS(numTargetShifts);
@@ -1011,6 +1031,9 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    switch(label) {
       /* members with type int */
 
+      case PRIMME_SVDS_matrixMatvec_type: 
+      case PRIMME_SVDS_applyPreconditioner_type:
+      case PRIMME_SVDS_globalSumReal_type:
       case PRIMME_SVDS_m: 
       case PRIMME_SVDS_n:
       case PRIMME_SVDS_numSvals:

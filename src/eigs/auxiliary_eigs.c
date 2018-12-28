@@ -41,6 +41,8 @@
 #include "auxiliary_eigs.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 #ifdef USE_DOUBLE
 
 /******************************************************************************
@@ -359,7 +361,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
 
       /* BX = BV*h(nBXb:nBXe-1) */
 
-      CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nBXe-nBXb, nV, 1.0,
+      if (BV) CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nBXe-nBXb, nV, 1.0,
          &BV[i], ldV, &h[nBXb*ldh], ldh, 0.0, BX, ldBX, ctx));
 
       /* BX0 = BX(nX0b-nXb:nX0e-nXb-1) */
@@ -475,29 +477,42 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, int blockSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int i, ONE=1, ierr=0;
-   double t0;
 
    if (blockSize <= 0) return 0;
    assert(primme->nLocal == nLocal);
 
-   t0 = primme_wTimer();
+   double t0 = primme_wTimer();
 
    if (primme->correctionParams.precondition) {
-      if (primme->ldOPs == 0
-            || (ldV == primme->ldOPs && ldW == primme->ldOPs)) {
-         CHKERRM((primme->applyPreconditioner(V, &ldV, W, &ldW, &blockSize,
-                     primme, &ierr), ierr), -1,
-               "Error returned by 'applyPreconditioner' %d", ierr);
-      }
-      else {
-         for (i=0; i<blockSize; i++) {
-            CHKERRM((primme->applyPreconditioner(&V[ldV*i], &primme->ldOPs,
-                        &W[ldW*i], &primme->ldOPs, &ONE, primme, &ierr), ierr),
-                  -1, "Error returned by 'applyPreconditioner' %d", ierr);
-         }
-      }
+
+      /* Cast V and W */
+
+      void *V0, *W0;
+      PRIMME_INT ldV0, ldW0;
+      CHKERR(Num_matrix_astype_Sprimme(V, nLocal, blockSize, ldV,
+            PRIMME_OP_SCALAR, &V0, &ldV0, primme->applyPreconditioner_type,
+            1 /* alloc */, 1 /* copy */, ctx));
+      CHKERR(Num_matrix_astype_Sprimme(W, nLocal, blockSize, ldW,
+            PRIMME_OP_SCALAR, &W0, &ldW0, primme->applyPreconditioner_type,
+            1 /* alloc */, 0 /* no copy */, ctx));
+
+      /* Call user function */
+
+      int ierr=0;
+      CHKERRM((primme->applyPreconditioner(
+                     V0, &ldV0, W0, &ldW0, &blockSize, primme, &ierr),
+                    ierr),
+            -1, "Error returned by 'applyPreconditioner' %d", ierr);
       primme->stats.numPreconds += blockSize;
+
+      /* Copy back W */
+
+      CHKERR(Num_matrix_astype_Sprimme(W0, nLocal, blockSize, ldW0,
+            primme->applyPreconditioner_type, (void **)&W, &ldW,
+            PRIMME_OP_SCALAR, 0 /* not alloc */, 1 /* copy */, ctx));
+
+      if (V != V0) CHKERR(Num_free_Sprimme(V0, ctx));
+      if (W != W0) CHKERR(Num_free_Sprimme(W0, ctx));
    }
    else {
       Num_copy_matrix_Sprimme(V, nLocal, blockSize, ldV, W, ldW, ctx);
@@ -532,11 +547,13 @@ int convTestFun_Sprimme(HREAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,
    primme_params *primme = ctx.primme;
    int ierr=0;
    double evald = eval, rNormd = rNorm;
+   SCALAR dummy;
+
    /* If an evec is going to be passed to convTestFun, but nLocal is 0,       */
    /* then fake the evec with a nonzero pointer in order to not be mistaken   */
    /* by not passing a vector.                                                */
 
-   if (primme->nLocal == 0 && givenEvec) evec = (SCALAR *)0 + 1;
+   if (primme->nLocal == 0 && givenEvec) evec = &dummy;
 
    CHKERRM((primme->convTestFun(&evald, givenEvec ? evec : NULL, &rNormd,
                   isconv, primme, &ierr),
@@ -553,19 +570,45 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
    primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int ierr;
-   double t0=0.0;
 
    if (primme && primme->globalSumReal) {
-      t0 = primme_wTimer();
+      double t0 = primme_wTimer();
+
+      /* Cast sendBuf and recvBuf */
+
+      void *sendBuf0, *recvBuf0;
+      CHKERR(Num_matrix_astype_Sprimme(sendBuf, 1, count, 1,
+            PRIMME_OP_SCALAR, &sendBuf0, NULL, primme->globalSumReal_type,
+            1 /* alloc */, 1 /* copy */, ctx));
+      if (sendBuf == recvBuf) {
+         recvBuf0 = sendBuf0;
+      } else {
+         CHKERR(Num_matrix_astype_Sprimme(recvBuf, 1, count, 1,
+            PRIMME_OP_SCALAR, &recvBuf0, NULL, primme->globalSumReal_type,
+            1 /* alloc */, 0 /* no copy */, ctx));
+      }
 
       /* If it is a complex type, count real and imaginary part */
+      int count0 = count;
 #ifdef USE_COMPLEX
-      count *= 2;
+      count0 *= 2;
 #endif
-      CHKERRM((primme->globalSumReal(sendBuf, recvBuf, &count, primme, &ierr),
-               ierr), PRIMME_USER_FAILURE,
-            "Error returned by 'globalSumReal' %d", ierr);
+
+      int ierr;
+      CHKERRM(
+            (primme->globalSumReal(sendBuf0, recvBuf0, &count0, primme, &ierr),
+                  ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+
+      /* Copy back recvBuf0 */
+
+      CHKERR(Num_matrix_astype_Sprimme(recvBuf0, 1, count, 1,
+            primme->globalSumReal_type, (void **)&recvBuf, NULL,
+            PRIMME_OP_SCALAR, 0 /* no alloc */, 1 /* copy */, ctx));
+
+      if (sendBuf != sendBuf0) CHKERR(Num_free_Sprimme(sendBuf0, ctx));
+      if (sendBuf != recvBuf && recvBuf != recvBuf0)
+         CHKERR(Num_free_Sprimme(recvBuf0, ctx));
 
       primme->stats.numGlobalSum++;
       primme->stats.timeGlobalSum += primme_wTimer() - t0;
@@ -731,3 +774,57 @@ int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,
 
    return 0;
 }
+
+TEMPLATE_PLEASE
+int monitorFun_Sprimme(HREAL *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, HREAL *basisNorms, int numConverged,
+      HREAL *lockedEvals, int numLocked, int *lockedFlags, HREAL *lockedNorms,
+      int inner_its, HREAL LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx) {
+
+   /* Quick exit */
+
+   primme_params *primme = ctx.primme;
+   if (!primme->monitorFun) return 0;
+
+   /* Cast basisEvals, basisNorms, lockedEvals and lockedNorms to REAL */
+
+   XREAL *basisEvals0, *basisNorms0, *lockedEvals0, *lockedNorms0;
+   CHKERR(Num_matrix_astype_Rprimme(basisEvals, 1, basisSize, 1,
+         PRIMME_OP_HREAL, (void **)&basisEvals0, NULL, PRIMME_OP_REAL,
+         1 /* alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Rprimme(basisNorms, 1, basisSize, 1,
+         PRIMME_OP_HREAL, (void **)&basisNorms0, NULL, PRIMME_OP_REAL,
+         1 /* alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Rprimme(lockedEvals, 1, numLocked, 1,
+         PRIMME_OP_HREAL, (void **)&lockedEvals0, NULL, PRIMME_OP_REAL,
+         1 /* alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Rprimme(lockedNorms, 1, numLocked, 1,
+         PRIMME_OP_HREAL, (void **)&lockedNorms0, NULL, PRIMME_OP_REAL,
+         1 /* alloc */, 1 /* copy */, ctx));
+
+   /* Call the user-defined functions */
+
+   primme->stats.elapsedTime = primme_wTimer() - startTime;
+   int err;
+   XREAL LSRes0 = LSRes;
+   CHKERRM(
+         (primme->monitorFun(basisEvals0, &basisSize, basisFlags, iblock,
+                &blockSize, basisNorms0, &numConverged, lockedEvals0, &numLocked,
+                lockedFlags, lockedNorms0, inner_its >= 0 ? &inner_its : NULL,
+                LSRes >= 0 ? &LSRes0 : NULL, msg, &time, &event, primme, &err),
+               err),
+         -1, "Error returned by monitorFun: %d", err);
+
+   if (basisEvals != (HREAL *)basisEvals0)
+      CHKERR(Num_free_Rprimme(basisEvals0, ctx));
+   if (basisNorms != (HREAL *)basisNorms0)
+      CHKERR(Num_free_Rprimme(basisNorms0, ctx));
+   if (lockedEvals != (HREAL *)lockedEvals0)
+      CHKERR(Num_free_Rprimme(lockedEvals0, ctx));
+   if (lockedNorms != (HREAL *)lockedNorms0)
+      CHKERR(Num_free_Rprimme(lockedNorms0, ctx));
+
+   return 0;
+} 
+#endif /* SUPPORTED_TYPE */

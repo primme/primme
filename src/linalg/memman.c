@@ -116,7 +116,7 @@ int Mem_pop_frame(primme_context *ctx) {
 #ifndef NDEBUG
       primme_alloc *a = ctx->mm->prev_alloc;
       while (a) {
-         PRINTFALLCTX(*ctx, 1, "Warning: the allocation at %s has not freed",
+         PRINTFALLCTX(*ctx, 1, "Warning: the allocation at %s has not been freed",
                a->debug ? a->debug : "unknown");
          a = a->prev;
       }

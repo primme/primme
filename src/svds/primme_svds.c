@@ -39,13 +39,18 @@
 #include "primme_svds_interface.h"
 #include "../eigs/const.h"
 
-static int primme_svds_check_input(HREAL *svals, SCALAR *svecs, 
-      HREAL *resNorms, primme_svds_params *primme_svds);
-static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
-      HREAL *rnorms, int *allocatedTargetShifts,
+
+#ifdef SUPPORTED_TYPE
+
+static int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms, 
+      primme_context ctx);
+static int primme_svds_check_input(XREAL *svals, SCALAR *svecs, 
+      XREAL *resNorms, primme_svds_params *primme_svds);
+static int copy_last_params_from_svds(int stage, XREAL *svals, SCALAR *svecs,
+      XREAL *rnorms, int *allocatedTargetShifts,
       SCALAR **out_svecs, primme_context ctx);
-static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
-      HREAL *rnorms, int allocatedTargetShifts,
+static int copy_last_params_to_svds(int stage, XREAL *svals, SCALAR *svecs,
+      XREAL *rnorms, int allocatedTargetShifts,
       primme_context ctx);
 static primme_context primme_svds_get_context(primme_svds_params *primme_svds);
 static void primme_svds_free_context(primme_context ctx);
@@ -53,10 +58,10 @@ static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
-static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      HREAL *factors, primme_context ctx);
-static int globalSum_Rprimme_svds(HREAL *sendBuf, HREAL *recvBuf, int count, 
-      primme_svds_params *primme_svds);
+static int Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      XREAL *factors, primme_context ctx);
+static int globalSum_Rprimme_svds(
+      HREAL *sendBuf, HREAL *recvBuf, int count, primme_context ctx);
 static int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
       primme_context ctx);
 static void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,
@@ -106,6 +111,7 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    (PRIMME_SVDS_STATS).lockingIssue       OP  (PRIMME_STATS).lockingIssue      ;\
 }
 
+#endif /* SUPPORTED_TYPE */
 
 /*******************************************************************************
  * Subroutine Sprimme_svds - This routine is a front end used to perform 
@@ -144,8 +150,35 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms, 
+int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, 
       primme_svds_params *primme_svds) {
+
+#ifdef SUPPORTED_TYPE
+   /* Generate context */
+
+   primme_context ctx = primme_svds_get_context(primme_svds);
+
+   /* Main call */
+
+   int ret = Sprimme_svds_for_real(svals, svecs, resNorms, ctx);
+
+   /* Free context */
+
+   primme_svds_free_context(ctx);
+#else
+   int ret = PRIMME_FUNCTION_UNAVAILABLE;
+#endif
+
+   return ret;
+}
+
+
+#ifdef SUPPORTED_TYPE
+
+static int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms, 
+      primme_context ctx) {
+
+   primme_svds_params *primme_svds = ctx.primme_svds;
 
    int ret, allocatedTargetShifts;
    SCALAR *svecs = (SCALAR*)svecs_; /* Change type of svecs */
@@ -174,8 +207,6 @@ int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms,
 
    if (svals == NULL && svecs == NULL && resNorms == NULL)
       return 0;
-
-   primme_context ctx = primme_svds_get_context(primme_svds);
 
    /* ----------------------------------------------------------- */
    /* Primme_svds_initialize must be called by users unless users */  
@@ -225,17 +256,15 @@ int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms,
    CHKERR(copy_last_params_from_svds(0, NULL, svecs,
             NULL, &allocatedTargetShifts, &svecs0, ctx));
 
-   ret = Sprimme(svals, (HSCALAR*)svecs0, resNorms, &primme_svds->primme);
+   ret = Sprimme(svals, (XSCALAR*)svecs0, resNorms, &primme_svds->primme);
 
    CHKERR(copy_last_params_to_svds(
             0, svals, svecs, resNorms, allocatedTargetShifts, ctx));
 
    if(ret != 0) {
-      primme_svds_free_context(ctx);
       return ret - 100;
    }
    if (primme_svds->methodStage2 == primme_svds_op_none) {
-      primme_svds_free_context(ctx);
       return 0;
    }
 
@@ -251,6 +280,7 @@ int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms,
    int nconv = primme_svds->numSvals - primme_svds->primmeStage2.numEvals;
 
    /* From PRIMME 3.0, the orthogonal may be modified, so we back them up */
+   /* TODO: remove this */
 
    SCALAR *backupSvecs=NULL;
    PRIMME_INT ldbackupSvecs = primme_svds->mLocal + primme_svds->nLocal;
@@ -258,7 +288,7 @@ int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms,
    Num_copy_matrix_Sprimme(&svecs0[ldbackupSvecs * primme_svds->numOrthoConst],
          ldbackupSvecs, nconv, ldbackupSvecs, backupSvecs, ldbackupSvecs, ctx);
 
-   ret = Sprimme(svals + nconv, (HSCALAR *)svecs0, resNorms + nconv,
+   ret = Sprimme(svals + nconv, (XSCALAR *)svecs0, resNorms + nconv,
          &primme_svds->primmeStage2);
 
    /* Copy back the backup svecs */
@@ -271,8 +301,6 @@ int Sprimme_svds(HREAL *svals, HSCALAR *svecs_, HREAL *resNorms,
    CHKERR(copy_last_params_to_svds(
             1, svals, svecs, resNorms, allocatedTargetShifts, ctx));
 
-   primme_svds_free_context(ctx);
-
    if(ret != 0) {
       return ret - 200;
    }
@@ -284,8 +312,8 @@ static int comp_double(const void *a, const void *b)
    return *(double*)a <= *(double*)b ? -1 : 1;
 }
 
-static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
-      HREAL *rnorms, int *allocatedTargetShifts,
+static int copy_last_params_from_svds(int stage, XREAL *svals, SCALAR *svecs,
+      XREAL *rnorms, int *allocatedTargetShifts,
       SCALAR **out_svecs, primme_context ctx) {
 
    primme_svds_params *primme_svds = ctx.primme_svds;
@@ -497,7 +525,7 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       norms2_[1] = REAL_PART(
             Num_dot_Sprimme(primme_svds->mLocal, &svecs0[primme_svds->nLocal], 1,
                &svecs0[primme_svds->nLocal], 1, ctx));
-      globalSum_Rprimme_svds(norms2_, norms2, 2, primme_svds);
+      CHKERR(globalSum_Rprimme_svds(norms2_, norms2, 2, ctx));
       Num_scal_Sprimme(primme_svds->nLocal, 1.0 / sqrt(norms2[0]), svecs0, 1, ctx);
       Num_scal_Sprimme(primme_svds->mLocal, 1.0 / sqrt(norms2[1]),
             &svecs0[primme_svds->nLocal], 1, ctx);
@@ -578,8 +606,8 @@ static int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
    return 0;
 }
 
-static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
-      HREAL *rnorms, int allocatedTargetShifts,
+static int copy_last_params_to_svds(int stage, XREAL *svals, SCALAR *svecs,
+      XREAL *rnorms, int allocatedTargetShifts,
       primme_context ctx) {
 
    primme_svds_params *primme_svds = ctx.primme_svds;
@@ -645,10 +673,10 @@ static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
                      primme_svds, &ierr),
                   ierr),
                PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
-         Num_scalInv_Smatrix(
+         CHKERR(Num_scalInv_Smatrix(
                &svecs[primme_svds->mLocal * primme_svds->numOrthoConst],
-               primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal, svals,
-               ctx);
+               primme_svds->mLocal, primme_svds->initSize, primme_svds->mLocal,
+               svals, ctx));
          Num_copy_matrix_Sprimme(&svecs[primme_svds->mLocal * nMax],
                primme_svds->nLocal, n, primme_svds->nLocal,
                &svecs[primme_svds->mLocal * n],
@@ -669,10 +697,11 @@ static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
                      primme_svds, &ierr),
                   ierr),
                PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
-         Num_scalInv_Smatrix(&svecs[primme_svds->mLocal * n +
-               primme->nLocal * primme_svds->numOrthoConst],
-               primme_svds->nLocal, primme_svds->initSize,
-               primme_svds->nLocal, svals, ctx);
+         CHKERR(Num_scalInv_Smatrix(
+               &svecs[primme_svds->mLocal * n +
+                      primme->nLocal * primme_svds->numOrthoConst],
+               primme_svds->nLocal, primme_svds->initSize, primme_svds->nLocal,
+               svals, ctx));
          break;
       case primme_svds_op_augmented:
          assert(primme->nLocal == primme_svds->mLocal + primme_svds->nLocal);
@@ -706,7 +735,7 @@ static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
                      &svecs[primme_svds->mLocal * n + primme_svds->nLocal * i], 1,
                      &svecs[primme_svds->mLocal * n + primme_svds->nLocal * i], 1, ctx));
          }
-         globalSum_Rprimme_svds(norms2, norms2, 2 * n, primme_svds);
+         CHKERR(globalSum_Rprimme_svds(norms2, norms2, 2 * n, ctx));
          for (i = 0; i < n; i++) {
             Num_scal_Sprimme(primme_svds->mLocal, 1.0 / sqrt(norms2[i]),
                   &svecs[primme_svds->mLocal * i], 1, ctx);
@@ -771,7 +800,7 @@ static int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
  *              -4..-19  Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int primme_svds_check_input(HREAL *svals, SCALAR *svecs, HREAL *resNorms, 
+static int primme_svds_check_input(XREAL *svals, SCALAR *svecs, XREAL *resNorms, 
       primme_svds_params *primme_svds) {
    int ret;
    ret = 0;
@@ -1009,8 +1038,8 @@ static void applyPreconditionerSVDS(void *x, PRIMME_INT *ldx, void *y,
          primme_svds, ierr);
 }
 
-static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      HREAL *factors, primme_context ctx) {
+static int Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      XREAL *factors, primme_context ctx) {
 
    int i;
    HREAL norm, norm0, factor;
@@ -1022,29 +1051,61 @@ static void Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
       }
       else {
          norm0 = REAL_PART(Num_dot_Sprimme(m, &x[i*ldx], 1, &x[i*ldx], 1, ctx));
-         globalSum_Rprimme_svds(&norm0, &norm, 1, ctx.primme_svds);
+         CHKERR(globalSum_Rprimme_svds(&norm0, &norm, 1, ctx));
          factor = sqrt(norm);
       }
       Num_scal_Sprimme(m, 1.0/factor, &x[i*ldx], 1, ctx);
    }
+
+   return 0;
 }
 
-static int globalSum_Rprimme_svds(HREAL *sendBuf, HREAL *recvBuf, int count, 
-      primme_svds_params *primme_svds) {
+static int globalSum_Rprimme_svds(
+      HREAL *sendBuf, HREAL *recvBuf, int count, primme_context ctx) {
 
-   int ierr;
-   primme_context ctx = primme_svds_get_context(primme_svds);
+   primme_svds_params *primme_svds = ctx.primme_svds;
 
    if (primme_svds && primme_svds->globalSumReal) {
-      CHKERRM((primme_svds->globalSumReal(sendBuf, recvBuf, &count,
-                  primme_svds, &ierr), ierr), PRIMME_USER_FAILURE,
-            "Error returned by 'globalSumReal' %d", ierr);
+      double t0 = primme_wTimer();
+
+      /* Cast sendBuf and recvBuf */
+
+      void *sendBuf0, *recvBuf0;
+      CHKERR(Num_matrix_astype_Rprimme(sendBuf, 1, count, 1,
+            primme_op_default, &sendBuf0, NULL, primme_svds->globalSumReal_type,
+            1 /* alloc */, 1 /* copy */, ctx));
+      if (sendBuf == recvBuf) {
+         recvBuf0 = sendBuf0;
+      } else {
+         CHKERR(Num_matrix_astype_Rprimme(recvBuf, 1, count, 1,
+            primme_op_default, &recvBuf0, NULL, primme_svds->globalSumReal_type,
+            1 /* alloc */, 0 /* no copy */, ctx));
+      }
+
+      int ierr;
+      CHKERRM((primme_svds->globalSumReal(
+                     sendBuf0, recvBuf0, &count, primme_svds, &ierr),
+                    ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+
+      /* Copy back recvBuf0 */
+
+      CHKERR(Num_matrix_astype_Rprimme(recvBuf0, 1, count, 1,
+            primme_svds->globalSumReal_type, (void **)&recvBuf, NULL,
+            primme_op_default, 0 /* no alloc */, 1 /* copy */, ctx));
+
+      if (sendBuf != sendBuf0) CHKERR(Num_free_Sprimme(sendBuf0, ctx));
+      if (sendBuf != recvBuf && recvBuf != recvBuf0)
+         CHKERR(Num_free_Sprimme(recvBuf0, ctx));
+
+      primme_svds->stats.numGlobalSum++;
+      primme_svds->stats.timeGlobalSum += primme_wTimer() - t0;
+      primme_svds->stats.volumeGlobalSum += count;
    }
    else {
       Num_copy_RHprimme(count, sendBuf, 1, recvBuf, 1, ctx);
    }
 
-   primme_svds_free_context(ctx);
    return 0;
 }
 
@@ -1102,7 +1163,7 @@ static int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
             leftsvec, 1, ctx));
    ip[2] = REAL_PART(
          Num_dot_Sprimme(primme_svds->mLocal, leftsvec, 1, Av, 1, ctx));
-   CHKERR(globalSum_Rprimme_svds(ip, ip, 3, primme_svds));
+   CHKERR(globalSum_Rprimme_svds(ip, ip, 3, ctx));
 
    ip[0] = sqrt(ip[0]);
    ip[1] = sqrt(ip[1]);
@@ -1131,7 +1192,7 @@ static int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
 
    HREAL normr0;
    normr0 = REAL_PART(Num_dot_Sprimme(nLocal, Atu, 1, Atu, 1, ctx));
-   CHKERR(globalSum_Rprimme_svds(&normr0, rNorm, 1, primme_svds));
+   CHKERR(globalSum_Rprimme_svds(&normr0, rNorm, 1, ctx));
    *rNorm = sqrt(*rNorm);
 
    CHKERR(Num_free_Sprimme(Atu, ctx));
@@ -1336,9 +1397,9 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
       primme_event *event, int *stage, primme_svds_params *primme_svds,
       int *err) {
 
-   HREAL *basisSvals = (HREAL*)basisSvals_, *basisNorms = (HREAL*)basisNorms_,
-         *lockedSvals = (HREAL*)lockedSvals_, *lockedNorms = (HREAL*)lockedNorms_,
-         *LSRes = (HREAL*)LSRes_;
+   XREAL *basisSvals = (XREAL*)basisSvals_, *basisNorms = (XREAL*)basisNorms_,
+         *lockedSvals = (XREAL*)lockedSvals_, *lockedNorms = (XREAL*)lockedNorms_,
+         *LSRes = (XREAL*)LSRes_;
    assert(event != NULL && primme_svds != NULL && stage != NULL);
 
    /* Only print report if this is proc zero */
@@ -1354,7 +1415,7 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
                         "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E SV %13E |r| %.3E stage %d\n",
                         primme_svds->stats.numOuterIterations, *numConverged, i,
                         primme_svds->stats.numMatvecs,
-                        primme_svds->stats.elapsedTime, basisSvals[iblock[i]],
+                        primme_svds->stats.elapsedTime, (double)basisSvals[iblock[i]],
                         (double)basisNorms[iblock[i]], *stage+1);
                }
             }
@@ -1379,16 +1440,16 @@ static void default_monitor(void *basisSvals_, int *basisSize, int *basisFlags,
                   || (primme_svds->printLevel >= 5))
                fprintf(primme_svds->outputFile, 
                      "#Converged %d sval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g stage %d\n",
-                     *numConverged, iblock[0], basisSvals[iblock[0]],
-                     basisNorms[iblock[0]], primme_svds->stats.numMatvecs,
+                     *numConverged, iblock[0], (double)basisSvals[iblock[0]],
+                     (double)basisNorms[iblock[0]], primme_svds->stats.numMatvecs,
                      primme_svds->stats.elapsedTime, *stage+1);
             break;
          case primme_event_locked:
             if (primme_svds->printLevel >= 2) { 
                fprintf(primme_svds->outputFile, 
                      "Lock striplet[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d stage %d\n",
-                     *numLocked-1, lockedSvals[*numLocked-1],
-                     lockedNorms[*numLocked-1], primme_svds->stats.numMatvecs,
+                     *numLocked-1, (double)lockedSvals[*numLocked-1],
+                     (double)lockedNorms[*numLocked-1], primme_svds->stats.numMatvecs,
                      primme_svds->stats.elapsedTime, lockedFlags[*numLocked-1],
                      *stage+1);
             }
@@ -1454,23 +1515,23 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
    primme_context ctx = primme_svds_get_context(primme_svds);
 
    int i;
-   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
-         *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
-         *LSRes = (HREAL*)LSRes_;
+   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
+         *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
+         *LSRes = (XREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
 
-   HREAL *basisSvals, *basisSVNorms, *lockedSvals, *lockedSVNorms;
+   XREAL *basisSvals, *basisSVNorms, *lockedSvals, *lockedSVNorms;
 
-   CHKERRA(Num_malloc_RHprimme(
+   CHKERRA(Num_malloc_Rprimme(
                  basisEvals && basisSize ? *basisSize : 0, &basisSvals, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RHprimme(
+   CHKERRA(Num_malloc_Rprimme(
                  basisEvals && basisSize ? *basisSize : 0, &basisSVNorms, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RHprimme(
+   CHKERRA(Num_malloc_Rprimme(
                  lockedEvals && numLocked ? *numLocked : 0, &lockedSvals, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RHprimme(lockedEvals && numLocked ? *numLocked : 0,
+   CHKERRA(Num_malloc_Rprimme(lockedEvals && numLocked ? *numLocked : 0,
                  &lockedSVNorms, ctx),
          *err = 1);
 
@@ -1479,12 +1540,12 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
       /* sval = sqrt(abs(eval)) and SVrnorm = rnorm/sval */
 
       if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
-         basisSvals[i] = sqrt(fabs(basisEvals[i]));
+         basisSvals[i] = (XREAL)sqrt(fabs((HREAL)basisEvals[i]));
          basisSVNorms[i] = basisNorms[i]/basisSvals[i];
       }
 
       if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++) {
-         lockedSvals[i] = sqrt(fabs(lockedEvals[i]));
+         lockedSvals[i] = (XREAL)sqrt(fabs((HREAL)lockedEvals[i]));
          lockedSVNorms[i] = lockedNorms[i]/lockedSvals[i];
       }
    }
@@ -1533,10 +1594,10 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
          primme_svds, err);
    primme_svds->stats = stats; /* restore original values */
 
-   CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
-   CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
-   CHKERRA(Num_free_RHprimme(lockedSvals, ctx), *err = 1);
-   CHKERRA(Num_free_RHprimme(lockedSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(basisSvals, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(lockedSvals, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(lockedSVNorms, ctx), *err = 1);
    if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);
 }
@@ -1582,9 +1643,9 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_context ctx = primme_svds_get_context(primme_svds);
 
-   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
-         *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
-         *LSRes = (HREAL*)LSRes_;
+   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
+         *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
+         *LSRes = (XREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
 
    /* Ignore the converged events if locking is active and printLevel <= 4 */
@@ -1599,10 +1660,10 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 
    int numLocked0 = lockedEvals&&numLocked?*numLocked:0;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0) + numLocked0;
-   HREAL *basisSvals = NULL, *basisSVNorms = NULL;
+   XREAL *basisSvals = NULL, *basisSVNorms = NULL;
    int *basisSVFlags = NULL, *iblockSV = NULL;
-   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSvals, ctx), *err = 1);
-   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_malloc_Rprimme(basisSize0, &basisSvals, ctx), *err = 1);
+   CHKERRA(Num_malloc_Rprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_malloc_iprimme(basisSize0, &basisSVFlags, ctx), *err = 1);
    CHKERRA(Num_malloc_iprimme(
                  blockSize && *blockSize > 0 ? *blockSize : 1, &iblockSV, ctx),
@@ -1616,13 +1677,13 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 
    int i, j=0;
    if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++, j++) {
-      basisSvals[j] = sqrt(fabs(lockedEvals[i]));
+      basisSvals[j] = (XREAL)sqrt(fabs((HREAL)lockedEvals[i]));
       basisSVNorms[j] = lockedNorms[i]/basisSvals[i];
       basisSVFlags[j] = lockedFlags[i];
    }
 
    if (basisEvals && basisSize) for (i=0; i<*basisSize; i++, j++) {
-      basisSvals[j] = sqrt(fabs(basisEvals[i]));
+      basisSvals[j] = (XREAL)sqrt(fabs((HREAL)basisEvals[i]));
       basisSVNorms[j] = basisNorms[i]/basisSvals[i];
       basisSVFlags[j] = basisFlags ? basisFlags[i] : UNCONVERGED;
    }
@@ -1661,8 +1722,8 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
          inner_its, LSRes, msg, time, &eventSV, &ZERO, primme_svds, err);
    primme_svds->stats = stats; /* restore original values */
 
-   CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
-   CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(basisSvals, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(basisSVFlags, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(iblockSV, ctx), *err = 1);
    if (new_msg) free(new_msg);
@@ -1705,9 +1766,9 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err) {
 
-   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
-         *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
-         *LSRes = (HREAL*)LSRes_;
+   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
+         *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
+         *LSRes = (XREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_context ctx = primme_svds_get_context(primme_svds);
@@ -1718,10 +1779,10 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       primme_svds->numSvals - primme->numEvals : 0;
    int numLockedSV = (lockedEvals&&numLocked?*numLocked:0) + numLockedExtra;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0);
-   HREAL *basisSVNorms, *lockedSVNorms;
+   XREAL *basisSVNorms, *lockedSVNorms;
    int *lockedSVFlags;
-   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
-   CHKERRA(Num_malloc_RHprimme(numLockedSV, &lockedSVNorms, ctx), *err = 1);
+   CHKERRA(Num_malloc_Rprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_malloc_Rprimme(numLockedSV, &lockedSVNorms, ctx), *err = 1);
    CHKERRA(Num_malloc_iprimme(numLockedSV, &lockedSVFlags, ctx), *err = 1);
 
    /* SVrnorm = rnorm/sqrt(2) */
@@ -1769,9 +1830,11 @@ static void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
          err);
    primme_svds->stats = stats; /* restore original values */
 
-   CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
-   CHKERRA(Num_free_RHprimme(lockedSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_Rprimme(lockedSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(lockedSVFlags, ctx), *err = 1);
    if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);
 }
+
+#endif /* SUPPORTED_TYPE */

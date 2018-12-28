@@ -45,6 +45,8 @@
 #include "magma_wrapper.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 #ifdef USE_HOST
 
 #if !(defined (__APPLE__) && defined (__MACH__))
@@ -260,6 +262,7 @@ int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  *
  ******************************************************************************/
 
+#if !defined(USE_HALFCOMPLEX) || defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
 TEMPLATE_PLEASE
 int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
@@ -272,11 +275,11 @@ int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    /* TODO: assert x and y don't overlap */
    for (i = 0; i < n; i++)
       for (j = 0; j < m; j++)
-            y[j * ldy + i] = CONJ(x[i * ldx + j]);
+         y[j * ldy + i] = CONJ(x[i * ldx + j]);
 
    return 0;
 }
-
+#endif
 
 /******************************************************************************
  * Function Num_zero_matrix - Zero the matrix
@@ -299,7 +302,7 @@ int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
-         x[i*ldx+j] = 0.0;
+         SET_ZERO(x[i*ldx+j]);
 
    return 0;
 } 
@@ -368,7 +371,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
          for (i=0; i<n; i++) {
             memmove(&y[i*ldy], &x[i*ldx], sizeof(SCALAR)*min(i0+i+1, m));
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
       else {
@@ -377,7 +380,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
             for (j=0, jm=min(i0+i+1, m); j<jm; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
    }
@@ -389,7 +392,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
          for (i=0; i<n; i++) {
             memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(SCALAR)*(m-min(i0+i, m)));
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
       else {
@@ -398,7 +401,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
             for (j=i+i0; j<m; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
    }
@@ -501,6 +504,7 @@ int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
  *
  ******************************************************************************/
 
+#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 TEMPLATE_PLEASE
 int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
                               int ldH, SCALAR *R, int ldR, primme_context ctx) {
@@ -520,6 +524,7 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
 
   return 0;
 }
+#endif /* !defined(USE_HALF) && !defined(USE_HALFCOMPLEX) */
 
 #endif /* USE_HOST */
 
@@ -842,3 +847,5 @@ int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */
