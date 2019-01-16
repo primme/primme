@@ -29,10 +29,12 @@ FFLAGS   ?= -fno-second-underscore -O
 
 # GPUs compiler flags
 #---------------------------------------------------------------
-PRIMME_WITH_MAGMA ?= yes
-MAGMADIR ?= $(HOME)/POST/src/magma-2.2.0
-CUDADIR  ?= /scratch/eloy.scratch/cuda
-override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
+PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
+CUDADIR  ?= /usr/local/cuda
+ifeq ($(PRIMME_WITH_MAGMA), yes)
+    override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
+endif
+
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc
