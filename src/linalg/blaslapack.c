@@ -180,16 +180,7 @@ int  Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
             transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
    }
 
-#ifdef NUM_CRAY
-   _fcd transa_fcd, transb_fcd;
-
-   transa_fcd = _cptofcd(transa, strlen(transa));
-   transb_fcd = _cptofcd(transb, strlen(transb));
-   XGEMM(transa_fcd, transb_fcd, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, 
-         c, &lldc);
-#else
    XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
-#endif
 
    return 0;
 
@@ -230,15 +221,7 @@ int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-#ifdef NUM_CRAY
-   _fcd side_fcd, uplo_fcd;
-
-   side_fcd = _cptofcd(side, strlen(side));
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   XHEMM(side_fcd, uplo_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
-#else
    XHEMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
-#endif 
 
    return 0;
 }
@@ -372,14 +355,7 @@ int Num_hemv_Sprimme(const char *uplo, int n, SCALAR alpha,
    /* Zero dimension matrix may cause problems */
    if (n == 0) return 0;
 
-#ifdef NUM_CRAY
-   _fcd uplo_fcd;
-
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   XHEMV(uplo_fcd, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
-#else
    XHEMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
-#endif
 
    return 0;
 }
@@ -1041,17 +1017,7 @@ int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-#ifdef NUM_CRAY
-   _fcd side_fcd, uplo_fcd, transa_fcd, diag_fcd;
-
-   side_fcd = _cptofcd(side, strlen(side));
-   uplo_fcd = _cptofcd(uplo, strlen(uplo));
-   transa_fcd = _cptofcd(transa, strlen(transa));
-   diag_fcd = _cptofcd(diag, strlen(diag));
-   XTRSM(side_fcd, uplo_fcd, transa_fcd, diag_fcd, &lm, &ln, &alpha, a, &llda, b, &lldb);
-#else
    XTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
-#endif
 
    return 0;
 }

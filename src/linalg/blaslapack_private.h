@@ -29,9 +29,7 @@
  *******************************************************************************
  * File: numerical_private.h
  *
- * Purpose - Contains definitions and prototypes for exclusive use with 
- *           numerical.c.  There are various definitions for use with Sun,
- *           IBM, and Cray.
+ * Purpose - Contains definitions and prototypes of BLAS and LAPACK functions.
  *
  ******************************************************************************/
 
@@ -66,8 +64,6 @@
 #ifndef PRIMME_BLAS_SUFFIX
 #  define PRIMME_BLAS_SUFFIX
 #endif
-
-#ifndef NUM_CRAY
 
 #define SET_LAPACK_SUFFIX(X) FORTRAN_FUNCTION(CONCAT(X,PRIMME_BLAS_SUFFIX))
 
@@ -104,47 +100,11 @@
 #define XGETRF    LAPACK_FUNCTION(sgetrf, cgetrf, dgetrf, zgetrf)
 #define XGETRS    LAPACK_FUNCTION(sgetrs, cgetrs, dgetrs, zgetrs)
 
-#else /* NUM_CRAY */
-
-#include <fortran.h>
-#include <string.h>
-
-#ifdef USE_DOUBLE
-#  define LAPACK_FUNCTION(D,Z) D
-#elif defined(USE_DOUBLECOMPLEX)
-#  define LAPACK_FUNCTION(D,Z) Z
-#endif
-
-#define XCOPY  LAPACK_FUNCTION(SCOPY  , zcopy )
-#define XSWAP  LAPACK_FUNCTION(SSWAP  , zswap )
-#define XGEMM  LAPACK_FUNCTION(SGEMM  , zgemm )
-#define XTRMM  LAPACK_FUNCTION(STRMM  , ztrmm )
-#define XTRSM  LAPACK_FUNCTION(STRSM  , ztrsm )
-#define XSYMM  LAPACK_FUNCTION(DSYMM  , zhemm )
-#define XSYMV  LAPACK_FUNCTION(DSYMV  , zhemv )
-#define XAXPY  LAPACK_FUNCTION(SAXPY  , zaxpy )
-#define XGEMV  LAPACK_FUNCTION(SGEMV  , zgemv )
-#define XDOT   LAPACK_FUNCTION(SDOT   ,       )
-#define XSCAL  LAPACK_FUNCTION(SSCAL  , zscal )
-#define XLARNV LAPACK_FUNCTION(SLARNV ,       )
-#define XHEEV  LAPACK_FUNCTION(SSYEV  , zheev )
-#define XHEEVX LAPACK_FUNCTION(SSYEVX , zheevx)
-#define XGESVD LAPACK_FUNCTION(SGESVD , zhetrf)
-#define XSYTRF LAPACK_FUNCTION(SSYTRF , zgesvd)
-#define XSYTRS LAPACK_FUNCTION(SSYTRS , zhetrs)
-#define XGESV  LAPACK_FUNCTION(SGESV  , zgesv )
-
-#endif /* NUM_CRAY */
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifndef NUM_CRAY
-#  define STRING const char * 
-#else
-#  define STRING _fcd
-#endif
+#define STRING const char * 
 
 void XCOPY(PRIMME_BLASINT *n, SCALAR *x, PRIMME_BLASINT *incx, SCALAR *y, PRIMME_BLASINT *incy);
 void XSWAP(PRIMME_BLASINT *n, SCALAR *x, PRIMME_BLASINT *incx, SCALAR *y, PRIMME_BLASINT *incy);

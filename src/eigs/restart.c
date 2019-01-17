@@ -2421,7 +2421,9 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
 
       rwork[0] = (HSCALAR)retained;
       Num_copy_matrix_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,
-            *numPrevRetained, ldhVecs, rwork+1, basisSize, ctx);
+            retained, ldhVecs, rwork+1, basisSize, ctx);
+      Num_zero_matrix_SHprimme(&rwork[1 + basisSize * retained], basisSize,
+            *numPrevRetained - retained, basisSize, ctx);
    }
    else {
       rwork[0] = 0.0;
