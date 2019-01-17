@@ -442,98 +442,105 @@ function [varargout] = primme_svds(varargin)
    % Create primme_params
    primme_svds = primme_mex('primme_svds_initialize');
 
-   % Set other options in primme_svds_params
-   primme_svds_set_members(opts, primme_svds);
+   % This long try-catch make sure that primme_svds_free is called
+   try 
+      % Set other options in primme_svds_params
+      primme_svds_set_members(opts, primme_svds);
 
-   % Set method in primme_svds_params
-   primme_mex('primme_svds_set_method', method, primmeStage0method, ...
-                                        primmeStage1method, primme_svds);
+      % Set method in primme_svds_params
+      primme_mex('primme_svds_set_method', method, primmeStage0method, ...
+                                           primmeStage1method, primme_svds);
 
-   % Set monitor and shared variables with the monitor
-   hist = [];
-   prof = struct();
-   nconv = 0;
-   return_hist = 0;
-   return_prof = 0;
-   if nargout >= 5
-      return_prof = 1;
-   end
-   if dispLevel > 0 || return_prof
-      % NOTE: Octave doesn't support function handler for nested functions
-      primme_mex('primme_svds_set_member', primme_svds, 'monitorFun', ...
-            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13));
-   end
-   if nargout >= 6
-      return_hist = 1;
-   elseif dispLevel == 1
-      fprintf('#MV\tTime\t\tNConv\tStage\n');
-   elseif dispLevel == 2
-      fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\n');
-   elseif dispLevel == 3
-      fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\tQMR_Res\n');
-   end
-
-   % Select solver
-   if Adouble
-      if Acomplex
-         type = 'z';
-      else
-         type = 'd';
+      % Set monitor and shared variables with the monitor
+      hist = [];
+      prof = struct();
+      nconv = 0;
+      return_hist = 0;
+      return_prof = 0;
+      if nargout >= 5
+         return_prof = 1;
       end
-   else
-      if Acomplex
-         type = 'c';
-      else
-         type = 's';
+      if dispLevel > 0 || return_prof
+         % NOTE: Octave doesn't support function handler for nested functions
+         primme_mex('primme_svds_set_member', primme_svds, 'monitorFun', ...
+               @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13));
       end
-   end
-   xprimme_svds = [type 'primme_svds'];
-
-   % Call xprimme_svds
-   [ierr, svals, norms, svecsl, svecsr] = primme_mex(xprimme_svds, init{1}, ...
-               init{2}, primme_svds); 
-
-   % Process error code and return the required arguments
-   if mod(ierr, -100) == -3 % if it is -3, -103 or -203
-      warning([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
-   elseif ierr ~= 0
-      error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
-   end
-   
-   % Return smallest or interior singular triplets in descending order
-   if strcmp(opts.target,'primme_svds_smallest') || strcmp(opts.target,'primme_svds_closest_abs')
-      [svals,ind] = sort(svals,'descend');
-      svecsl = svecsl(:,ind);
-      svecsr = svecsr(:,ind);
-   end
-
-   if nargout <= 1
-      varargout{1} = svals;
-   elseif nargout == 2
-      varargout{1} = svals;
-      varargout{2} = norms;
-   elseif nargout >= 3
-      varargout{1} = svecsl;
-      varargout{2} = diag(svals);
-      varargout{3} = svecsr;
-   end
-   if (nargout >= 4)
-      varargout{4} = norms;
-   end
-   if (nargout >= 5)
-      if return_prof
-         stats = make_nice_profile(prof, profile0);
-      else
-         stats = struct();
+      if nargout >= 6
+         return_hist = 1;
+      elseif dispLevel == 1
+         fprintf('#MV\tTime\t\tNConv\tStage\n');
+      elseif dispLevel == 2
+         fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\n');
+      elseif dispLevel == 3
+         fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\tQMR_Res\n');
       end
-      stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
-      stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
-      stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
-      varargout{5} = stats;
+
+      % Select solver
+      if Adouble
+         if Acomplex
+            type = 'z';
+         else
+            type = 'd';
+         end
+      else
+         if Acomplex
+            type = 'c';
+         else
+            type = 's';
+         end
+      end
+      xprimme_svds = [type 'primme_svds'];
+
+      % Call xprimme_svds
+      [ierr, svals, norms, svecsl, svecsr] = primme_mex(xprimme_svds, init{1}, ...
+                  init{2}, primme_svds); 
+
+      % Process error code and return the required arguments
+      if mod(ierr, -100) == -3 % if it is -3, -103 or -203
+         warning([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+      elseif ierr ~= 0
+         error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+      end
+      
+      % Return smallest or interior singular triplets in descending order
+      if strcmp(opts.target,'primme_svds_smallest') || strcmp(opts.target,'primme_svds_closest_abs')
+         [svals,ind] = sort(svals,'descend');
+         svecsl = svecsl(:,ind);
+         svecsr = svecsr(:,ind);
+      end
+
+      if nargout <= 1
+         varargout{1} = svals;
+      elseif nargout == 2
+         varargout{1} = svals;
+         varargout{2} = norms;
+      elseif nargout >= 3
+         varargout{1} = svecsl;
+         varargout{2} = diag(svals);
+         varargout{3} = svecsr;
+      end
+      if (nargout >= 4)
+         varargout{4} = norms;
+      end
+      if (nargout >= 5)
+         if return_prof
+            stats = make_nice_profile(prof, profile0);
+         else
+            stats = struct();
+         end
+         stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
+         stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
+         stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
+         varargout{5} = stats;
+      end
+      if (nargout >= 6)
+         varargout{6} = hist;
+      end
+   catch ME
+      primme_mex('primme_svds_free');
+      rethrow(ME)
    end
-   if (nargout >= 6)
-      varargout{6} = hist;
-   end
+   primme_mex('primme_svds_free', primme_svds);
 
    function record_history(basisSvals, basisFlags, iblock, basisNorms, ...
          numConverged, lockedSvals, lockedFlags, lockedNorms, inner_its, ...

@@ -539,6 +539,7 @@ static void mexFunction_primme_free(int nlhs, mxArray *plhs[], int nrhs,
    primme_params *primme = (primme_params*)mxArrayToPointer(prhs[0]);
    if (primme->targetShifts) delete [] primme->targetShifts;
    if (primme->matrix) mxDestroyArray((mxArray*)primme->matrix);
+   if (primme->massMatrix) mxDestroyArray((mxArray*)primme->massMatrix);
    if (primme->preconditioner) mxDestroyArray((mxArray*)primme->preconditioner);
    if (primme->convtest) mxDestroyArray((mxArray*)primme->convtest);
    if (primme->monitor) mxDestroyArray((mxArray*)primme->monitor);

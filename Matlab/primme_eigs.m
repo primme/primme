@@ -440,99 +440,106 @@ function [varargout] = primme_eigs(varargin)
    % Create primme_params
    primme = primme_mex('primme_initialize');
 
-   % Set other options in primme_params
-   primme_set_members(opts, primme);
+   % This long try-catch make sure that primme_free is called
+   try
+      % Set other options in primme_params
+      primme_set_members(opts, primme);
 
-   % Set method
-   primme_mex('primme_set_method', method, primme);
+      % Set method
+      primme_mex('primme_set_method', method, primme);
 
-   % Set monitor and shared variables with the monitor
-   hist = [];
-   prof = struct();
-   locking = primme_mex('primme_get_member', primme, 'locking');
-   nconv = [];
-   return_hist = 0;
-   return_prof = 0;
-   if nargout >= 4
-      return_prof = 1;
-   end
-
-   if dispLevel > 0 || return_prof
-      % NOTE: Octave doesn't support function handler for nested functions
-      primme_mex('primme_set_member', primme, 'monitorFun', ...
-            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12));
-   end
-   if nargout >= 5
-      return_hist = 1;
-   elseif dispLevel == 1
-      fprintf('#MV\tTime\t\tNConv\n');
-   elseif dispLevel == 2
-      fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\n');
-   elseif dispLevel == 3
-      fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\tQMR_Res\n');
-   end
-
-   % Select solver
-   if Adouble
-      if Acomplex
-         type = 'z';
-      else
-         type = 'd';
+      % Set monitor and shared variables with the monitor
+      hist = [];
+      prof = struct();
+      locking = primme_mex('primme_get_member', primme, 'locking');
+      nconv = [];
+      return_hist = 0;
+      return_prof = 0;
+      if nargout >= 4
+         return_prof = 1;
       end
-   else
-      if Acomplex
-         type = 'c';
-      else
-         type = 's';
+
+      if dispLevel > 0 || return_prof
+         % NOTE: Octave doesn't support function handler for nested functions
+         primme_mex('primme_set_member', primme, 'monitorFun', ...
+               @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12));
       end
-   end
-   xprimme = [type 'primme'];
-
-   % Call xprimme
-   [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
-
-   % Process error code and return the required arguments
-   if ierr == -3
-      warning([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
-   elseif ierr ~= 0
-      error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
-   end
-   
-   % Return interior eigenvalues in descending order
-   if ~strcmp(opts.target,'primme_largest') ...
-         && ~strcmp(opts.target,'primme_smallest') ...
-         && ~strcmp(opts.target,'primme_largest_abs')
-      [evals,ind] = sort(evals,'descend');
-      evecs = evecs(:,ind);
-   end
-
-   if (nargout <= 1)
-      varargout{1} = evals;
-   end
-   if (nargout >= 2)
-      varargout{1} = evecs;
-      varargout{2} = diag(evals);
-   end
-   if (nargout >= 3)
-      varargout{3} = norms;
-   end
-   if (nargout >= 4)
-      if return_prof
-         stats = make_nice_profile(prof, profile0);
-      else
-         stats = struct();
+      if nargout >= 5
+         return_hist = 1;
+      elseif dispLevel == 1
+         fprintf('#MV\tTime\t\tNConv\n');
+      elseif dispLevel == 2
+         fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\n');
+      elseif dispLevel == 3
+         fprintf('#MV\tTime\t\tNConv\tIdx\tValue\tRes\tQMR_Res\n');
       end
-      stats.numMatvecs = primme_mex('primme_get_member', primme, 'stats_numMatvecs');
-      stats.numPreconds = primme_mex('primme_get_member', primme, 'stats_numPreconds');
-      stats.elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
-      stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
-      stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
-      stats.estimateLargestSVal = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
-      varargout{4} = stats;
+
+      % Select solver
+      if Adouble
+         if Acomplex
+            type = 'z';
+         else
+            type = 'd';
+         end
+      else
+         if Acomplex
+            type = 'c';
+         else
+            type = 's';
+         end
+      end
+      xprimme = [type 'primme'];
+
+      % Call xprimme
+      [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
+
+      % Process error code and return the required arguments
+      if ierr == -3
+         warning([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
+      elseif ierr ~= 0
+         error([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
+      end
+      
+      % Return interior eigenvalues in descending order
+      if ~strcmp(opts.target,'primme_largest') ...
+            && ~strcmp(opts.target,'primme_smallest') ...
+            && ~strcmp(opts.target,'primme_largest_abs')
+         [evals,ind] = sort(evals,'descend');
+         evecs = evecs(:,ind);
+      end
+
+      if (nargout <= 1)
+         varargout{1} = evals;
+      end
+      if (nargout >= 2)
+         varargout{1} = evecs;
+         varargout{2} = diag(evals);
+      end
+      if (nargout >= 3)
+         varargout{3} = norms;
+      end
+      if (nargout >= 4)
+         if return_prof
+            stats = make_nice_profile(prof, profile0);
+         else
+            stats = struct();
+         end
+         stats.numMatvecs = primme_mex('primme_get_member', primme, 'stats_numMatvecs');
+         stats.numPreconds = primme_mex('primme_get_member', primme, 'stats_numPreconds');
+         stats.elapsedTime = primme_mex('primme_get_member', primme, 'stats_elapsedTime');
+         stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
+         stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
+         stats.estimateLargestSVal = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
+         varargout{4} = stats;
+      end
+      if (nargout >= 5)
+         varargout{5} = hist;
+      end
+   catch ME
+      primme_mex('primme_free', primme);
+      rethrow(ME);
    end
-   if (nargout >= 5)
-      varargout{5} = hist;
-   end
+   primme_mex('primme_free', primme);
 
    function record_history(basisEvals, basisFlags, iblock, basisNorms, ...
          numConverged, lockedEvals, lockedFlags, lockedNorms, inner_its, ...
