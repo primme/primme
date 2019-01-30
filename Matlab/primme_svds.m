@@ -598,7 +598,9 @@ function [varargout] = primme_svds(varargin)
          % Do nothing
       elseif dispLevel == 1
          if event == 4 && ~locking
-            histline = [histline; numMatvecs elapsedTime nconv stage basisSvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+            for i=1:numel(iblock)
+               histline = [histline; numMatvecs elapsedTime nconv stage basisSvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+            end
          elseif event == 5
             histline = [histline; numMatvecs elapsedTime nconv stage lockedSvals(end) lockedNorms(end)];
          end
