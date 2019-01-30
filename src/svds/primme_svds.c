@@ -1468,7 +1468,7 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
                  basisEvals && basisSize ? *basisSize : 0, &basisSvals, ctx),
          *err = 1);
    CHKERRA(Num_malloc_RHprimme(
-                 basisEvals && basisSize ? *basisSize : 0, &basisSVNorms, ctx),
+                 basisNorms && basisSize ? *basisSize : 0, &basisSVNorms, ctx),
          *err = 1);
    CHKERRA(Num_malloc_RHprimme(
                  lockedEvals && numLocked ? *numLocked : 0, &lockedSvals, ctx),

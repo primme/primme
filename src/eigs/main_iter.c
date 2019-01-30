@@ -741,6 +741,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                         ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
                         &hVals[iev[i]], &reset,
                         -1 /* don't check practically convergence */, ctx));
+                  basisNorms[iev[i]] = newBlockNorm;
                   if (flags[iev[i]] == CONVERGED) {
                      flags[iev[i]] = PRACTICALLY_CONVERGED;
                      numConverged++;
@@ -750,10 +751,9 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
                         primme_event EVENT_CONVERGED = primme_event_converged;
                         int err;
                         CHKERRM((primme->monitorFun(hVals, &basisSize, flags,
-                                       &iev[i], &ONE, &newBlockNorm,
-                                       &numConverged, NULL, NULL, NULL, NULL,
-                                       NULL, NULL, NULL, NULL, &EVENT_CONVERGED,
-                                       primme, &err),
+                                       &iev[i], &ONE, basisNorms, &numConverged,
+                                       NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                       NULL, &EVENT_CONVERGED, primme, &err),
                                       err),
                               -1, "Error returned by monitorFun: %d", err);
                      }
