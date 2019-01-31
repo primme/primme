@@ -242,6 +242,10 @@ static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
 template <typename T, typename I>
 static mxArray* create_mxArray(T *y, I m, I n, I ldy, bool avoidCopy=false) {
 
+   // If pointer is null, set zero columns
+
+   if (!y) n = 0;
+
    // We avoid to copy when the T isn't complex and the leading dimension of
    // y is the number of row. This trick only works in Octave, MATLAB requires
    // the data in mxArray being created with mxMalloc, etc.
@@ -923,31 +927,28 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
 
    // Create input vectors (avoid copy if possible)
 
-   prhs[1] = create_mxArray<typename Real<T>::type,int>((T*)basisEvals,
-         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
-   prhs[2] = create_mxArray<int,int>(basisFlags,
-         basisFlags?*basisSize:0, 1, basisFlags?*basisSize:0, true);
-   prhs[3] = create_mxArray<int,int>(iblock,
-         blockSize?*blockSize:0, 1, blockSize?*blockSize:0, true);
-   prhs[4] = create_mxArray<typename Real<T>::type,int>((T*)basisNorms,
-         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
-   prhs[5] = create_mxArray<int,int>(numConverged, numConverged?1:0,
-         1, 1, true);
-   prhs[6] = create_mxArray<typename Real<T>::type,int>((T*)lockedEvals,
-         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
-   prhs[7] = create_mxArray<int,int>(lockedFlags,
-         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
-   prhs[8] = create_mxArray<typename Real<T>::type,int>((T*)lockedNorms,
-         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
-   prhs[9] = create_mxArray<int,int>(inner_its, inner_its?1:0,
-         1, 1, true);
-   prhs[10] = create_mxArray<typename Real<T>::type,int>((T*)LSRes, LSRes?1:0,
-         1, 1, true);
+   typedef typename Real<T>::type R;
+   prhs[1] = create_mxArray<R, int>((R *)basisEvals, basisSize ? *basisSize : 0,
+         1, basisSize ? *basisSize : 0, true);
+   prhs[2] = create_mxArray<int, int>(basisFlags, basisFlags ? *basisSize : 0,
+         1, basisFlags ? *basisSize : 0, true);
+   prhs[3] = create_mxArray<int, int>(iblock, blockSize ? *blockSize : 0, 1,
+         blockSize ? *blockSize : 0, true);
+   prhs[4] = create_mxArray<R, int>((R *)basisNorms, basisSize ? *basisSize : 0,
+         1, basisSize ? *basisSize : 0, true);
+   prhs[5] = create_mxArray<int, int>(
+         numConverged, numConverged ? 1 : 0, 1, 1, true);
+   prhs[6] = create_mxArray<R, int>((R *)lockedEvals,
+         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
+   prhs[7] = create_mxArray<int, int>(lockedFlags, numLocked ? *numLocked : 0,
+         1, numLocked ? *numLocked : 0, true);
+   prhs[8] = create_mxArray<R, int>((R *)lockedNorms,
+         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
+   prhs[9] = create_mxArray<int, int>(inner_its, inner_its ? 1 : 0, 1, 1, true);
+   prhs[10] = create_mxArray<R, int>((R *)LSRes, LSRes ? 1 : 0, 1, 1, true);
    prhs[11] = create_mxArray(msg, true);
-   prhs[12] = create_mxArray<double,int>(time, time?1:0,
-         1, 1, true);
-   prhs[13] = create_mxArray<int,int>((int*)event, event?1:0,
-         1, 1, true);
+   prhs[12] = create_mxArray<double, int>(time, time ? 1 : 0, 1, 1, true);
+   prhs[13] = create_mxArray<int, int>((int *)event, event ? 1 : 0, 1, 1, true);
 
    // Call the callback
 
@@ -1593,32 +1594,29 @@ static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
 
    // Create input vectors (avoid copy if possible)
 
-   prhs[1] = create_mxArray<typename Real<T>::type,int>((T*)basisSvals,
-         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
-   prhs[2] = create_mxArray<int,int>(basisFlags,
-         basisFlags?*basisSize:0, 1, basisFlags?*basisSize:0, true);
-   prhs[3] = create_mxArray<int,int>(iblock,
-         blockSize?*blockSize:0, 1, blockSize?*blockSize:0, true);
-   prhs[4] = create_mxArray<typename Real<T>::type,int>((T*)basisNorms,
-         basisSize?*basisSize:0, 1, basisSize?*basisSize:0, true);
-   prhs[5] = create_mxArray<int,int>(numConverged, numConverged?1:0,
-         1, 1, true);
-   prhs[6] = create_mxArray<typename Real<T>::type,int>((T*)lockedSvals,
-         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
-   prhs[7] = create_mxArray<int,int>(lockedFlags,
-         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
-   prhs[8] = create_mxArray<typename Real<T>::type,int>((T*)lockedNorms,
-         numLocked?*numLocked:0, 1, numLocked?*numLocked:0, true);
-   prhs[9] = create_mxArray<int,int>(inner_its, inner_its?1:0,
-         1, 1, true);
-   prhs[10] = create_mxArray<typename Real<T>::type,int>((T*)LSRes, LSRes?1:0,
-         1, 1, true);
+   typedef typename Real<T>::type R;
+   prhs[1] = create_mxArray<R, int>((R *)basisSvals, basisSize ? *basisSize : 0,
+         1, basisSize ? *basisSize : 0, true);
+   prhs[2] = create_mxArray<int, int>(basisFlags, basisFlags ? *basisSize : 0,
+         1, basisFlags ? *basisSize : 0, true);
+   prhs[3] = create_mxArray<int, int>(iblock, blockSize ? *blockSize : 0, 1,
+         blockSize ? *blockSize : 0, true);
+   prhs[4] = create_mxArray<R, int>((R *)basisNorms, basisSize ? *basisSize : 0,
+         1, basisSize ? *basisSize : 0, true);
+   prhs[5] = create_mxArray<int, int>(
+         numConverged, numConverged ? 1 : 0, 1, 1, true);
+   prhs[6] = create_mxArray<R, int>((R *)lockedSvals,
+         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
+   prhs[7] = create_mxArray<int, int>(lockedFlags, numLocked ? *numLocked : 0,
+         1, numLocked ? *numLocked : 0, true);
+   prhs[8] = create_mxArray<R, int>((R *)lockedNorms,
+         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
+   prhs[9] = create_mxArray<int, int>(inner_its, inner_its ? 1 : 0, 1, 1, true);
+   prhs[10] = create_mxArray<R, int>((R *)LSRes, LSRes ? 1 : 0, 1, 1, true);
    prhs[11] = create_mxArray(msg, true);
-   prhs[12] = create_mxArray<double,int>(time, time?1:0,
-         1, 1, true);
-   prhs[13] = create_mxArray<int,int>((int*)event, event?1:0,
-         1, 1, true);
-   prhs[14] = create_mxArray<int,int>(stage, stage?1:0, 1, 1, true);
+   prhs[12] = create_mxArray<double, int>(time, time ? 1 : 0, 1, 1, true);
+   prhs[13] = create_mxArray<int, int>((int *)event, event ? 1 : 0, 1, 1, true);
+   prhs[14] = create_mxArray<int, int>(stage, stage ? 1 : 0, 1, 1, true);
 
    // Call the callback
 

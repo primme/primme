@@ -1468,12 +1468,14 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
                  basisEvals && basisSize ? *basisSize : 0, &basisSvals, ctx),
          *err = 1);
    CHKERRA(Num_malloc_RHprimme(
-                 basisNorms && basisSize ? *basisSize : 0, &basisSVNorms, ctx),
+                 basisEvals && basisNorms && basisSize ? *basisSize : 0,
+                 &basisSVNorms, ctx),
          *err = 1);
    CHKERRA(Num_malloc_RHprimme(
                  lockedEvals && numLocked ? *numLocked : 0, &lockedSvals, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RHprimme(lockedEvals && numLocked ? *numLocked : 0,
+   CHKERRA(Num_malloc_RHprimme(
+                 lockedEvals && lockedNorms && numLocked ? *numLocked : 0,
                  &lockedSVNorms, ctx),
          *err = 1);
 
@@ -1481,40 +1483,44 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
          || primme_svds->method == primme_svds_op_AAt) {
       /* sval = sqrt(abs(eval)) and SVrnorm = rnorm/sval */
 
-      if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
-         basisSvals[i] = sqrt(fabs(basisEvals[i]));
-         basisSVNorms[i] = basisNorms[i]/basisSvals[i];
+      if (basisEvals && basisSize) {
+         for (i = 0; i < *basisSize; i++) {
+            basisSvals[i] = sqrt(fabs(basisEvals[i]));
+            basisSVNorms[i] =
+                  (basisSvals[i] > 0.0 ? basisNorms[i] / basisSvals[i]
+                                       : basisNorms[i]);
+         }
       }
 
-      if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++) {
-         lockedSvals[i] = sqrt(fabs(lockedEvals[i]));
-         lockedSVNorms[i] = lockedNorms[i]/lockedSvals[i];
+      if (lockedEvals && numLocked) {
+         for (i = 0; i < *numLocked; i++) {
+            lockedSvals[i] = sqrt(fabs(lockedEvals[i]));
+            lockedSVNorms[i] =
+                  (lockedSvals[i] > 0.0 ? lockedNorms[i] / lockedSvals[i]
+                                        : lockedNorms[i]);
+         }
       }
    }
    else if (primme_svds->method == primme_svds_op_augmented) {
       /* SVrnorm = rnorm/sqrt(2) */
 
-      if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
-         basisSVNorms[i] = basisNorms[i]/sqrt(2.0);
+      if (basisEvals && basisNorms && basisSize) {
+         for (i = 0; i < *basisSize; i++) {
+            basisSVNorms[i] = basisNorms[i] / sqrt(2.0);
+         }
       }
 
-      if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++) {
-         lockedSVNorms[i] = lockedNorms[i]/sqrt(2.0);
+      if (lockedEvals && numLocked) {
+         for (i = 0; i < *numLocked; i++) {
+            lockedSVNorms[i] = lockedNorms[i] / sqrt(2.0);
+         }
       }
-   }
-
-   /* When two stages, set primme_event_locked as primme_event_converged */
-
-   primme_event event_svds = *event;
-   if (primme_svds->methodStage2 != primme_svds_op_none &&
-         event_svds == primme_event_locked) {
-      event_svds = primme_event_converged;
    }
 
    /* Prefix msg with Sprimme0 if the event is a profile */
 
    char *new_msg = NULL;
-   if (event_svds == primme_event_profile && msg) {
+   if (*event == primme_event_profile && msg) {
       int len = 12 + strlen(msg);
       if (MALLOC_PRIMME(len, &new_msg) == 0) {
          snprintf(new_msg, len, "~Sprimme0%s", msg);
@@ -1532,8 +1538,8 @@ static void monitor_single_stage(void *basisEvals_, int *basisSize,
    int ZERO = 0;
    primme_svds->monitorFun(basisSvals, basisSize, basisFlags, iblock, blockSize,
          basisSVNorms, numConverged, lockedSvals, numLocked, lockedFlags,
-         lockedSVNorms, inner_its, LSRes, msg, time, &event_svds, &ZERO,
-         primme_svds, err);
+         lockedSVNorms, inner_its, LSRes, msg, time, event, &ZERO, primme_svds,
+         err);
    primme_svds->stats = stats; /* restore original values */
 
    CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
@@ -1617,17 +1623,23 @@ static void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 
    /* sval = sqrt(abs(eval)) and SVrnorm = rnorm/sval */
 
-   int i, j=0;
-   if (lockedEvals && numLocked) for (i=0; i<*numLocked; i++, j++) {
-      basisSvals[j] = sqrt(fabs(lockedEvals[i]));
-      basisSVNorms[j] = lockedNorms[i]/basisSvals[i];
-      basisSVFlags[j] = lockedFlags[i];
+   int i, j = 0;
+   if (lockedEvals && numLocked) {
+      for (i = 0; i < *numLocked; i++, j++) {
+         basisSvals[j] = sqrt(fabs(lockedEvals[i]));
+         basisSVNorms[j] = (basisSvals[i] > 0.0 ? lockedNorms[i] / basisSvals[i]
+                                                : lockedNorms[i]);
+         basisSVFlags[j] = lockedFlags[i];
+      }
    }
 
-   if (basisEvals && basisSize) for (i=0; i<*basisSize; i++, j++) {
-      basisSvals[j] = sqrt(fabs(basisEvals[i]));
-      basisSVNorms[j] = basisNorms[i]/basisSvals[i];
-      basisSVFlags[j] = basisFlags ? basisFlags[i] : UNCONVERGED;
+   if (basisEvals && basisSize) {
+      for (i = 0; i < *basisSize; i++, j++) {
+         basisSvals[j] = sqrt(fabs(basisEvals[i]));
+         basisSVNorms[j] = (basisSvals[i] > 0.0 ? basisNorms[i] / basisSvals[i]
+                                                : basisNorms[i]);
+         basisSVFlags[j] = (basisFlags ? basisFlags[i] : UNCONVERGED);
+      }
    }
 
    if (iblock && blockSize) for (i=0; i<*blockSize; i++) {
