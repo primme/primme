@@ -41,7 +41,7 @@ function [varargout] = primme_eigs(varargin)
 %                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
 %     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
 %     OPTS.disp: different level reporting (0-3) (see HIST) {no output 0}
-%     OPTS.display: toggle information display
+%     OPTS.display: toggle information display (see HIST)
 %     OPTS.isreal: whether A represented by AFUN is real or complex {false}
 %     OPTS.targetShifts: shifts for interior eigenvalues (see TARGET) {[]}
 %     OPTS.v0: any number of initial guesses to the eigenvectors {[]}
@@ -133,8 +133,12 @@ function [varargout] = primme_eigs(varargin)
 %   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
 %   has one row per converged eigenpair and only the first three columns
 %   together with the fifth and the sixth are reported. If OPTS.disp == 2, HIST
-%   has one row per outer iteration and only the first six columns are reported.
-%   Otherwise HIST has one row per QMR iteration and all columns are reported.
+%   has one row per outer iteration and converged value, and only the first six
+%   columns are reported. Otherwise HIST has one row per QMR iteration, outer
+%   iteration and converged value, and all columns are reported.
+%
+%   The convergence history is displayed if OPTS.disp > 0 and either HIST is
+%   not returned or OPTS.display == 1.
 %  
 %   Examples:
 %      A = diag(1:100);
@@ -364,7 +368,7 @@ function [varargout] = primme_eigs(varargin)
    end
 
    % Process 'display' in opts
-   showHist = false;
+   showHist = [];
    dispLevel = 0;
    if isfield(opts, 'display')
       showHist = opts.display;
@@ -375,6 +379,9 @@ function [varargout] = primme_eigs(varargin)
       if showHist
          dispLevel = 1;
       end
+   elseif nargout >= 5
+      showHist = false;
+      dispLevel = 1;
    end
 
    % Process 'disp' in opts
@@ -386,6 +393,9 @@ function [varargout] = primme_eigs(varargin)
       opts = rmfield(opts, 'disp');
    elseif nargout >= 5 || showHist
       dispLevel = 1;
+   end
+   if isempty(showHist)
+      showHist = dispLevel > 0;
    end
 
    % Process profile

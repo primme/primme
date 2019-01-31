@@ -27,7 +27,7 @@ function [varargout] = primme_svds(varargin)
 %   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
 %   OPTIONS.disp     level of reporting 0-3 (see HIST)             0
-%   OPTIONS.display  toggle information display                    0
+%   OPTIONS.display  toggle information display (see HIST)         0
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   0
 %   OPTIONS.isdouble if 0, the matrix is single; else it's double  1
 %   OPTIONS.method   which equivalent eigenproblem to solve
@@ -108,11 +108,15 @@ function [varargout] = primme_svds(varargin)
 %   HIST(:,7): residual norm
 %   HIST(:,8): QMR residual norm
 %
-%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
-%   has one row per converged triplet and only the first four columns together
-%   with the sixth and the seventh are reported. If OPTS.disp == 2, HIST has
-%   one row per outer iteration and only the first seven columns are reported.
-%   Otherwise HIST has one row per QMR iteration and all columns are reported.
+%   OPTIONS.disp controls the granularity of the record. If OPTIONS.disp == 1,
+%   HIST has one row per converged triplet and only the first four columns
+%   together with the sixth and the seventh are reported. If OPTIONS.disp == 2,
+%   HIST has one row per outer iteration and converged value and only the first
+%   seven columns are reported. Otherwise HIST has one row per QMR iteration,
+%   outer iteration and converged value, and all columns are reported.
+%
+%   The convergence history is displayed if OPTIONS.disp > 0 and either HIST is
+%   not returned or OPTIONS.display == 1.
 %
 %   Examples:
 %      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -304,7 +308,7 @@ function [varargout] = primme_svds(varargin)
    end
 
    % Process 'display' in opts
-   showHist = false;
+   showHist = [];
    dispLevel = 0;
    if isfield(opts, 'display')
       showHist = opts.display;
@@ -315,6 +319,9 @@ function [varargout] = primme_svds(varargin)
       if showHist
          dispLevel = 1;
       end
+   elseif nargout >= 5
+      showHist = false;
+      dispLevel = 1;
    end
 
    % Process 'disp' in opts
@@ -326,6 +333,9 @@ function [varargout] = primme_svds(varargin)
       opts = rmfield(opts, 'disp');
    elseif nargout >= 5 || showHist
       dispLevel = 1;
+   end
+   if isempty(showHist)
+      showHist = dispLevel > 0;
    end
 
    % Process profile
