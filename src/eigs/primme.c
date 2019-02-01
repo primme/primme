@@ -65,6 +65,8 @@
 
 static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
                        primme_params *primme);
+static int check_params_coherence(primme_context ctx);
+static int coordinated_exit(int ret, primme_context ctx);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
 static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
@@ -203,38 +205,23 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
       primme->monitorFun = default_monitor;
    }
 
-   /* Generate context */
-
-   primme_context ctx = primme_get_context(primme);
-
    /* Check primme input data for bounds, correct values etc. */
 
    int ret = check_input(evals, evecs, resNorms, primme);
    if (ret != 0) return ret;
+       
+   /* Generate context */
 
-   /* --------------------------------------------------------- */
-   /* Allocate workspace that will be needed locally by Sprimme */
-   /* --------------------------------------------------------- */
-   CHKERR(Num_malloc_iprimme(primme->numEvals, &perm, ctx));
+   primme_context ctx = primme_get_context(primme);
 
-   /*----------------------------------------------------------------------*/
-   /* Call the solver                                                      */
-   /*----------------------------------------------------------------------*/
+   /* Check parameters in other processes */
 
-   CHKERR(main_iter_Sprimme(
-         evals, perm, evecs, primme->ldevecs, resNorms, t0, &ret, ctx));
+   CHKERR(coordinated_exit(check_params_coherence(ctx), ctx));
 
-   /*----------------------------------------------------------------------*/
-   /* If locking is engaged, the converged Ritz vectors are stored in the  */
-   /* order they converged.  They must then be permuted so that they       */
-   /* correspond to the sorted Ritz values in evals.                       */
-   /*----------------------------------------------------------------------*/
+   /* Call the solver */
 
-   CHKERR(permute_vecs_Sprimme(&evecs[primme->numOrthoConst * primme->ldevecs],
-            primme->nLocal, primme->initSize, primme->ldevecs, perm,
-            ctx));
-
-   CHKERR(Num_free_iprimme(perm, ctx));
+   CHKERR(coordinated_exit(main_iter_Sprimme(
+         evals, evecs, primme->ldevecs, resNorms, t0, &ret, ctx), ctx));
 
    /* Free context */
 
@@ -516,4 +503,110 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       fflush(primme->outputFile);
    }
    *err = 0;
+}
+
+/******************************************************************************
+ * check_params_coherence - check that all processes has the same values in
+ *    critical parameters.
+ *
+ * INPUT
+ * -----
+ *  primme         the main structure of parameters 
+ *
+ * RETURN:
+ *    error code
+ ******************************************************************************/
+
+static int check_params_coherence(primme_context ctx) {
+   primme_params *primme = ctx.primme;
+
+   /* Quick exit */
+
+   if (primme->globalSumReal == NULL) {
+      return 0;
+   }
+
+   /* Check number of procs and procs with id zero */
+
+   HREAL aux[2] = {(HREAL)1.0, (HREAL)(primme->procID == 0 ? 1.0 : 0.0)};
+   CHKERR(globalSum_RHprimme(aux, aux, 2, ctx));
+   CHKERRM((aux[0] > 1) != (primme->numProcs > 1),
+         -1, "numProcs does not match the actual number of processes");
+   CHKERRM(aux[1] != (HREAL)1.0, -1,
+         "There is not a single process with ID zero");
+
+   /* Check that all processes has the same value for the next params */
+
+#define PARALLEL_CHECK(p)                                                      \
+   {                                                                           \
+      HREAL preal0 = primme->p;                                                \
+      HREAL preal = primme->p;                                                 \
+      CHKERR(broadcast_RHprimme(&preal0, 1, ctx));                             \
+      CHKERRM(ISFINITE(preal0) && fabs(preal - preal0) >                       \
+                                        MACHINE_EPSILON * 10 * fabs(preal0),   \
+            -1, "The value of '" STR(p) "' does not match in all processes.")  \
+   }
+
+   PARALLEL_CHECK(n);
+   PARALLEL_CHECK(numEvals);
+   PARALLEL_CHECK(target);
+   PARALLEL_CHECK(numTargetShifts);
+   PARALLEL_CHECK(dynamicMethodSwitch);
+   PARALLEL_CHECK(locking);
+   PARALLEL_CHECK(initSize);
+   PARALLEL_CHECK(numOrthoConst);
+   PARALLEL_CHECK(maxBasisSize);
+   PARALLEL_CHECK(minRestartSize);
+   PARALLEL_CHECK(maxBlockSize);
+   PARALLEL_CHECK(maxMatvecs);
+   PARALLEL_CHECK(maxOuterIterations);
+   PARALLEL_CHECK(aNorm);
+   PARALLEL_CHECK(BNorm);
+   PARALLEL_CHECK(invBNorm);
+   PARALLEL_CHECK(eps);
+   PARALLEL_CHECK(orth);
+   PARALLEL_CHECK(initBasisMode);
+   PARALLEL_CHECK(projectionParams.projection);
+   PARALLEL_CHECK(restartingParams.maxPrevRetain);
+   PARALLEL_CHECK(correctionParams.precondition);
+   PARALLEL_CHECK(correctionParams.robustShifts);
+   PARALLEL_CHECK(correctionParams.maxInnerIterations);
+   PARALLEL_CHECK(correctionParams.projectors.LeftQ);
+   PARALLEL_CHECK(correctionParams.projectors.LeftX);
+   PARALLEL_CHECK(correctionParams.projectors.RightQ);
+   PARALLEL_CHECK(correctionParams.projectors.RightX);
+   PARALLEL_CHECK(correctionParams.projectors.SkewQ);
+   PARALLEL_CHECK(correctionParams.projectors.SkewX);
+   PARALLEL_CHECK(correctionParams.convTest);
+   PARALLEL_CHECK(correctionParams.relTolBase);
+#undef PARALLEL_CHECK
+
+   return 0;
+}
+
+/******************************************************************************
+ * coordinated_exit - make sure that if main_iter returns error in some process,
+ *    then all processes return an error.
+ *
+ * INPUT
+ * -----
+ *  primme         the main structure of parameters 
+ *
+ * RETURN:
+ *    error code
+ ******************************************************************************/
+static int coordinated_exit(int ret, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   if (ret != PRIMME_PARALLEL_FAILURE && primme->globalSumReal) {
+      HREAL pret = (HREAL)(ret != 0 ? 1 : 0);
+      int count = 1, ierr = 0;
+      CHKERRM((primme->globalSumReal(&pret, &pret, &count, primme, &ierr),
+               ierr), PRIMME_USER_FAILURE,
+            "Error returned by 'globalSumReal' %d", ierr);
+      if (pret > 0.0) return ret ? ret : PRIMME_PARALLEL_FAILURE;
+   }
+
+   return 0;
 }

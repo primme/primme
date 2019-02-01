@@ -56,6 +56,7 @@ int convTestFun_sprimme(float eval, float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx);
 int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
    primme_context ctx);
+int broadcast_sprimme(float *buffer, int count, primme_context ctx);
 float problemNorm_sprimme(
       int overrideUserEstimations, struct primme_params *primme);
 float deltaEig_sprimme(
@@ -87,6 +88,7 @@ int convTestFun_cprimme(float eval, PRIMME_COMPLEX_FLOAT *evec, int givenEvec, f
       int *isconv, primme_context ctx);
 int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
    primme_context ctx);
+int broadcast_cprimme(PRIMME_COMPLEX_FLOAT *buffer, int count, primme_context ctx);
 float problemNorm_cprimme(
       int overrideUserEstimations, struct primme_params *primme);
 float deltaEig_cprimme(
@@ -204,6 +206,32 @@ int convTestFun_dprimme(double eval, double *evec, int givenEvec, double rNorm,
 #endif
 int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
    primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Sprimme)
+#  define broadcast_Sprimme CONCAT(broadcast_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Rprimme)
+#  define broadcast_Rprimme CONCAT(broadcast_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SHprimme)
+#  define broadcast_SHprimme CONCAT(broadcast_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RHprimme)
+#  define broadcast_RHprimme CONCAT(broadcast_,HOST_REAL_SUF)
+#endif
+int broadcast_dprimme(double *buffer, int count, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSprimme)
+#  define broadcast_iprimmeSprimme CONCAT(broadcast_iprimme,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRprimme)
+#  define broadcast_iprimmeRprimme CONCAT(broadcast_iprimme,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSHprimme)
+#  define broadcast_iprimmeSHprimme CONCAT(broadcast_iprimme,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRHprimme)
+#  define broadcast_iprimmeRHprimme CONCAT(broadcast_iprimme,HOST_REAL_SUF)
+#endif
+int broadcast_iprimme(int *buffer, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Sprimme)
 #  define problemNorm_Sprimme CONCAT(problemNorm_,SCALAR_SUF)
 #endif
@@ -283,6 +311,7 @@ int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, int givenEvec,
       int *isconv, primme_context ctx);
 int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *sendBuf, PRIMME_COMPLEX_DOUBLE *recvBuf, int count,
    primme_context ctx);
+int broadcast_zprimme(PRIMME_COMPLEX_DOUBLE *buffer, int count, primme_context ctx);
 double problemNorm_zprimme(
       int overrideUserEstimations, struct primme_params *primme);
 double deltaEig_zprimme(

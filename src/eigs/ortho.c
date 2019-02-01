@@ -706,21 +706,13 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          for (i=0; i<b2-b1; i++) {
             D[i] = sqrt(max(D[i], MACHINE_EPSILON * (b2 - b1)));
          }
-      } else {
-         Num_zero_matrix_SHprimme(VLtBVLdA, nVL, b2-b1, nVL, ctx);
-         for (i=0; i<b2-b1; i++) D[i] = 0.0;
-         for (i=0; i<b2-b1; i++) N[i] = 0.0;
-         Num_zero_matrix_SHprimme(Y, b2 - b1, b2 - b1, b2 - b1, ctx);
-         Yortho = 0;
       }
 
-      CHKERR(globalSum_SHprimme(VLtBVLdA, VLtBVLdA, nVL*(b2-b1), ctx));
-      CHKERR(globalSum_RHprimme(N, N, b2-b1, ctx));
-      CHKERR(globalSum_RHprimme(D, D, b2-b1, ctx));
-      CHKERR(globalSum_SHprimme(Y, Y, (b2 - b1) * (b2 - b1), ctx));
-      HREAL Yortho0 = Yortho;
-      CHKERR(globalSum_RHprimme(&Yortho0, &Yortho0, 1, ctx));
-      Yortho = (int)Yortho0;
+      CHKERR(broadcast_SHprimme(VLtBVLdA, nVL*(b2-b1), ctx));
+      CHKERR(broadcast_RHprimme(N, b2-b1, ctx));
+      CHKERR(broadcast_RHprimme(D, b2-b1, ctx));
+      CHKERR(broadcast_SHprimme(Y, (b2 - b1) * (b2 - b1), ctx));
+      CHKERR(broadcast_iprimme(&Yortho, 1, ctx));
 
       if (RLocked) {
          /* R(0:b1-1,:) += VtBV\Vc'*Xc*gi = VtBV\A(0:b1-1,:)*R(b1:b2-1,:) */

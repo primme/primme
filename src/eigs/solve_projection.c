@@ -683,15 +683,9 @@ static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
       rwork0 += (basisSize + c-1)/c;
    }
 
-   /* If this is not proc 0, zero the input rwork */
+   /* Perform the broadcast */
 
-   if (ctx.primme->procID != 0) {
-      Num_zero_matrix_Sprimme(rwork, n, 1, n, ctx);
-   }
- 
-   /* Perform the broadcast by using a reduction */
-
-   CHKERR(globalSum_Sprimme(rwork, rwork, n, ctx));
+   CHKERR(broadcast_Sprimme(rwork, n, ctx));
    rwork0 = rwork;
 
    /* Unpack hVecs */

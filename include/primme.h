@@ -102,5 +102,6 @@
 #define PRIMME_LAPACK_FAILURE             -40
 #define PRIMME_USER_FAILURE               -41
 #define PRIMME_ORTHO_CONST_FAILURE        -42
+#define PRIMME_PARALLEL_FAILURE           -43
 
 #endif /* PRIMME_H */

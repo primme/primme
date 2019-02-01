@@ -578,6 +578,81 @@ int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count,
    return 0;
 }
 
+TEMPLATE_PLEASE
+int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+   int ierr;
+
+   /* Quick exit */
+
+   if (!primme || primme->numProcs == 1) {
+      return 0;
+   }
+
+   double t0 = primme_wTimer();
+   if (primme->broadcastReal) {
+
+      /* If it is a complex type, count real and imaginary part */
+#ifdef USE_COMPLEX
+      count *= 2;
+#endif
+      CHKERRM((primme->broadcastReal(buffer, &count, primme, &ierr), ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'broadcastReal' %d", ierr);
+
+   } else {
+      if (primme->procID != 0) {
+         CHKERR(Num_zero_matrix_SHprimme(buffer, 1, count, 1, ctx));
+      }
+      CHKERR(globalSum_SHprimme(buffer, buffer, count, ctx));
+   }
+
+   primme->stats.numBroadcast++;
+   primme->stats.timeBroadcast += primme_wTimer() - t0;
+   primme->stats.volumeBroadcast += count;
+
+   return 0;
+}
+
+#ifdef USE_DOUBLE
+TEMPLATE_PLEASE
+int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   /* Quick exit */
+
+   if (!primme || primme->numProcs == 1) {
+      return 0;
+   }
+
+   /* Copy buffer to a REAL array */
+
+   HREAL *rbuffer;
+   CHKERR(Num_malloc_RHprimme(count, &rbuffer, ctx));
+   int i;
+   for (i=0; i<count; i++) {
+      rbuffer[i] = buffer[i];
+   }
+
+   /* Broadcast the real array */
+
+   CHKERR(broadcast_RHprimme(rbuffer, count, ctx));
+
+   /* Copy back the real array */
+   
+   for (i=0; i<count; i++) {
+      buffer[i] = (int)rbuffer[i];
+   }
+
+   /* Free the real array */
+
+   CHKERR(Num_free_RHprimme(rbuffer, ctx));
+
+   return 0;
+}
+#endif /* USE_DOUBLE */
+
 #endif /* USE_HOST */
 
 /*******************************************************************************

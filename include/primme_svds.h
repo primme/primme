@@ -69,13 +69,16 @@ typedef struct primme_svds_stats {
    PRIMME_INT numMatvecs;
    PRIMME_INT numPreconds;
    PRIMME_INT numGlobalSum;         /* times called globalSumReal */
+   PRIMME_INT numBroadcast;         /* times called broadcastReal */
    PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
+   PRIMME_INT volumeBroadcast;      /* number of SCALARs broadcast by broadcastReal */
    double numOrthoInnerProds;       /* number of inner prods done by Ortho */
    double elapsedTime; 
    double timeMatvec;               /* time expend by matrixMatvec */
    double timePrecond;              /* time expend by applyPreconditioner */
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
+   double timeBroadcast;            /* time expend by broadcastReal  */
    PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
 } primme_svds_stats;
 
@@ -106,6 +109,8 @@ typedef struct primme_svds_params {
    void (*globalSumReal)
       (void *sendBuf, void *recvBuf, int *count,
        struct primme_svds_params *primme_svds, int *ierr);
+   void (*broadcastReal)(void *buffer, int *count,
+         struct primme_svds_params *primme_svds, int *ierr);
 
    /* Though primme_svds_initialize will assign defaults, most users will set these */
    int numSvals;
@@ -163,6 +168,7 @@ typedef enum {
    PRIMME_SVDS_nLocal = 9,
    PRIMME_SVDS_commInfo = 10,
    PRIMME_SVDS_globalSumReal = 11,
+   PRIMME_SVDS_broadcastReal = 110,
    PRIMME_SVDS_numSvals = 12,
    PRIMME_SVDS_target = 13,
    PRIMME_SVDS_numTargetShifts = 14,
@@ -189,12 +195,15 @@ typedef enum {
    PRIMME_SVDS_stats_numPreconds = 39,
    PRIMME_SVDS_stats_numGlobalSum = 391,
    PRIMME_SVDS_stats_volumeGlobalSum = 392,
+   PRIMME_SVDS_stats_numBroadcast = 3920,
+   PRIMME_SVDS_stats_volumeBroadcast = 3921,
    PRIMME_SVDS_stats_numOrthoInnerProds = 393,
    PRIMME_SVDS_stats_elapsedTime = 40,
    PRIMME_SVDS_stats_timeMatvec = 401,
    PRIMME_SVDS_stats_timePrecond = 402,
    PRIMME_SVDS_stats_timeOrtho = 403,
    PRIMME_SVDS_stats_timeGlobalSum = 404,
+   PRIMME_SVDS_stats_timeBroadcast = 4040,
    PRIMME_SVDS_stats_lockingIssue = 405,
    PRIMME_SVDS_convTestFun = 405,
    PRIMME_SVDS_convtest = 406,

@@ -104,6 +104,7 @@ void primme_initialize(primme_params *primme) {
    primme->nLocal                  = -1;
    primme->commInfo                = NULL;
    primme->globalSumReal           = NULL;
+   primme->broadcastReal           = NULL;
 
    /* Initial guesses/constraints */
    primme->initSize                = 0;
@@ -146,12 +147,15 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numPreconds                   = 0;
    primme->stats.numGlobalSum                  = 0;
    primme->stats.volumeGlobalSum               = 0;
+   primme->stats.numBroadcast                  = 0;
+   primme->stats.volumeBroadcast               = 0;
    primme->stats.numOrthoInnerProds            = 0.0;
    primme->stats.elapsedTime                   = 0.0;
    primme->stats.timeMatvec                    = 0.0;
    primme->stats.timePrecond                   = 0.0;
    primme->stats.timeOrtho                     = 0.0;
    primme->stats.timeGlobalSum                 = 0.0;
+   primme->stats.timeBroadcast                 = 0.0;
    primme->stats.estimateMinEVal               = -HUGE_VAL;
    primme->stats.estimateMaxEVal               = HUGE_VAL;
    primme->stats.estimateLargestSVal           = -HUGE_VAL;
@@ -741,6 +745,7 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
       void *ptr_v;
       void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_params *,int*);
+      void (*broadcastRealFunc_v) (void *,int *,struct primme_params *,int*);
       void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*,int*);
       primme_target target_v;
       double double_v;
@@ -784,6 +789,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_globalSumReal:
               v->globalSumRealFunc_v = primme->globalSumReal;
+      break;
+      case PRIMME_broadcastReal:
+              v->broadcastRealFunc_v = primme->broadcastReal;
       break;
       case PRIMME_numEvals:
               v->int_v = primme->numEvals;
@@ -912,8 +920,14 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_numGlobalSum:
               v->int_v = primme->stats.numGlobalSum;
       break;
+      case PRIMME_stats_numBroadcast:
+              v->int_v = primme->stats.numBroadcast;
+      break;
       case PRIMME_stats_volumeGlobalSum:
               v->int_v = primme->stats.volumeGlobalSum;
+      break;
+      case PRIMME_stats_volumeBroadcast:
+              v->int_v = primme->stats.volumeBroadcast;
       break;
       case PRIMME_stats_numOrthoInnerProds:
               v->double_v = primme->stats.numOrthoInnerProds;
@@ -932,6 +946,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_timeGlobalSum:
               v->double_v = primme->stats.timeGlobalSum;
+      break;
+      case PRIMME_stats_timeBroadcast:
+              v->double_v = primme->stats.timeBroadcast;
       break;
       case PRIMME_stats_estimateMinEVal:
               v->double_v = primme->stats.estimateMinEVal;
@@ -1008,6 +1025,7 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       void (*matFunc_v) (void *,PRIMME_INT*,void *,PRIMME_INT*,int *,struct primme_params *,int*);
       void *ptr_v;
       void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_params *,int*);
+      void (*broadcastRealFunc_v) (void *,int *,struct primme_params *,int*);
       void (*convTestFun_v)(double *,void*,double*,int*,struct primme_params*,int*);
       primme_target *target_v;
       double *double_v;
@@ -1053,6 +1071,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_globalSumReal:
               primme->globalSumReal = v.globalSumRealFunc_v;
+      break;
+      case PRIMME_broadcastReal:
+              primme->broadcastReal = v.broadcastRealFunc_v;
       break;
       case PRIMME_numEvals:
               if (*v.int_v > INT_MAX) return 1; else 
@@ -1205,6 +1226,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_volumeGlobalSum:
               primme->stats.volumeGlobalSum = *v.int_v;
       break;
+      case PRIMME_stats_volumeBroadcast:
+              primme->stats.volumeBroadcast = *v.int_v;
+      break;
       case PRIMME_stats_numOrthoInnerProds:
               primme->stats.numOrthoInnerProds = *v.double_v;
       break;
@@ -1222,6 +1246,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_timeGlobalSum:
               primme->stats.timeGlobalSum = *v.double_v;
+      break;
+      case PRIMME_stats_timeBroadcast:
+              primme->stats.timeBroadcast = *v.double_v;
       break;
       case PRIMME_stats_estimateMinEVal:
               primme->stats.estimateMinEVal = *v.double_v;
@@ -1323,6 +1350,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(commInfo                     , commInfo);
    IF_IS(nLocal                       , nLocal);
    IF_IS(globalSumReal                , globalSumReal);
+   IF_IS(broadcastReal                , broadcastReal);
    IF_IS(numEvals                     , numEvals);
    IF_IS(target                       , target);
    IF_IS(numTargetShifts              , numTargetShifts);
@@ -1367,12 +1395,15 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_numPreconds            , stats_numPreconds);
    IF_IS(stats_numGlobalSum           , stats_numGlobalSum);
    IF_IS(stats_volumeGlobalSum        , stats_volumeGlobalSum);
+   IF_IS(stats_numBroadcast           , stats_numBroadcast);
+   IF_IS(stats_volumeBroadcast        , stats_volumeBroadcast);
    IF_IS(stats_numOrthoInnerProds     , stats_numOrthoInnerProds);
    IF_IS(stats_elapsedTime            , stats_elapsedTime);
    IF_IS(stats_timeMatvec             , stats_timeMatvec);
    IF_IS(stats_timePrecond            , stats_timePrecond);
    IF_IS(stats_timeOrtho              , stats_timeOrtho);
    IF_IS(stats_timeGlobalSum          , stats_timeGlobalSum);
+   IF_IS(stats_timeBroadcast          , stats_timeBroadcast);
    IF_IS(stats_estimateMinEVal        , stats_estimateMinEVal);
    IF_IS(stats_estimateMaxEVal        , stats_estimateMaxEVal);
    IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
@@ -1481,6 +1512,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_applyPreconditioner:
       case PRIMME_commInfo:
       case PRIMME_globalSumReal:
+      case PRIMME_broadcastReal:
       case PRIMME_massMatrixMatvec:
       case PRIMME_outputFile:
       case PRIMME_matrix:

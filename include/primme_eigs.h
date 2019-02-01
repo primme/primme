@@ -101,13 +101,16 @@ typedef struct primme_stats {
    PRIMME_INT numMatvecs;
    PRIMME_INT numPreconds;
    PRIMME_INT numGlobalSum;         /* times called globalSumReal */
+   PRIMME_INT numBroadcast;         /* times called broadcastReal */
    PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
+   PRIMME_INT volumeBroadcast;      /* number of SCALARs broadcast by broadcastReal */
    double numOrthoInnerProds;       /* number of inner prods done by Ortho */
    double elapsedTime; 
    double timeMatvec;               /* time expend by matrixMatvec */
    double timePrecond;              /* time expend by applyPreconditioner */
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
+   double timeBroadcast;            /* time expend by broadcastReal  */
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
@@ -173,6 +176,8 @@ typedef struct primme_params {
    void (*globalSumReal)
       (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme,
        int *ierr );
+   void (*broadcastReal)(
+         void *buffer, int *count, struct primme_params *primme, int *ierr);
 
    /*Though primme_initialize will assign defaults, most users will set these */
    int numEvals;          
@@ -262,6 +267,7 @@ typedef enum {
    PRIMME_commInfo =  5,
    PRIMME_nLocal =  6,
    PRIMME_globalSumReal =  7,
+   PRIMME_broadcastReal =  70,
    PRIMME_numEvals =  8,
    PRIMME_target =  9,
    PRIMME_numTargetShifts =  10,
@@ -305,12 +311,15 @@ typedef enum {
    PRIMME_stats_numPreconds =  47,
    PRIMME_stats_numGlobalSum =  471,
    PRIMME_stats_volumeGlobalSum =  472,
+   PRIMME_stats_numBroadcast =  4720,
+   PRIMME_stats_volumeBroadcast =  4721,
    PRIMME_stats_numOrthoInnerProds =  473,
    PRIMME_stats_elapsedTime =  48,
    PRIMME_stats_timeMatvec =  4801,
    PRIMME_stats_timePrecond =  4802,
    PRIMME_stats_timeOrtho =  4803,
    PRIMME_stats_timeGlobalSum =  4804,
+   PRIMME_stats_timeBroadcast =  4805,
    PRIMME_stats_estimateMinEVal =  481,
    PRIMME_stats_estimateMaxEVal =  482,
    PRIMME_stats_estimateLargestSVal =  483,

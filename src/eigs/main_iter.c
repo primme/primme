@@ -149,9 +149,6 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *          upon return.  If locking is engaged, then values are copied to this 
  *          array as they converge.
  *
- * perm     A permutation array that maps the converged Ritz vectors to
- *          their corresponding Ritz values in evals.  
- *
  * resNorms The residual norms corresponding to the converged Ritz vectors
  *
  * INPUT/OUTPUT arrays and parameters
@@ -176,9 +173,9 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs,
-   HREAL *resNorms, double startTime, int *ret, primme_context ctx) {
- 
+int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
+      HREAL *resNorms, double startTime, int *ret, primme_context ctx) {
+
    primme_params *primme = ctx.primme;
                             /* primme parameters */
    int i;                   /* Loop variable                                 */
@@ -207,6 +204,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    int numPrevRitzVals = 0; /* Size of the prevRitzVals updated in correction*/
    int touch=0;             /* param used in inner solver stopping criteria  */
 
+   int *perm=NULL;          /* Permutation on the locked pairs */
    int *flags;              /* Indicates which Ritz values have converged    */
    int *map;                /* Indices of the closest vector from prevhVecs  */
    int *lockedFlags=NULL;   /* Flags for the locked pairs                    */
@@ -342,6 +340,7 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
 
    /* Integer objects */
 
+   CHKERR(Num_malloc_iprimme(primme->numEvals, &perm, ctx));
    if (primme->locking) {
       CHKERR(Num_malloc_iprimme(primme->numEvals, &lockedFlags, ctx));
    }
@@ -1270,6 +1269,16 @@ int main_iter_Sprimme(HREAL *evals, int *perm, SCALAR *evecs, PRIMME_INT ldevecs
    if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
 
 clean:
+   /*----------------------------------------------------------------------*/
+   /* If locking is engaged, the converged Ritz vectors are stored in the  */
+   /* order they converged.  They must then be permuted so that they       */
+   /* correspond to the sorted Ritz values in evals.                       */
+   /*----------------------------------------------------------------------*/
+
+   CHKERR(permute_vecs_Sprimme(&evecs[primme->numOrthoConst * primme->ldevecs],
+            primme->nLocal, primme->initSize, primme->ldevecs, perm,
+            ctx));
+
    if (primme->massMatrixMatvec) {
       CHKERR(Num_free_Sprimme(BV, ctx));
    }
@@ -1315,6 +1324,7 @@ clean:
 
    /* Integer objects */
 
+   CHKERR(Num_free_iprimme(perm, ctx));
    if (primme->locking) { CHKERR(Num_free_iprimme(lockedFlags, ctx)); }
    CHKERR(Num_free_iprimme(flags, ctx));
    CHKERR(Num_free_iprimme(map, ctx));

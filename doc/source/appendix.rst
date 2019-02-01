@@ -127,8 +127,8 @@ primme_params
       For example, with MPI, it could be a pointer to the MPI communicator.
       PRIMME does not use this. It is available for possible use in 
       user functions defined in |matrixMatvec|,
-      |applyPreconditioner|, |massMatrixMatvec| and
-      |globalSumReal|.
+      |applyPreconditioner|, |massMatrixMatvec|,
+      |globalSumReal|, and |broadcastReal|.
 
       Input/output:
 
@@ -171,6 +171,42 @@ primme_params
             }
          }
 
+      }
+
+      When calling :c:func:`sprimme` and :c:func:`cprimme` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
+
+   .. c:member:: void (*broadcastReal)(void *buffer, int *count, primme_params *primme, int *ierr)
+
+      Broadcast function from process with ID zero. It is optional in parallel executions, and no need for sequential programs.
+
+      :param buffer: array of size ``count`` with the local input values.
+      :param count: array size of ``sendBuf`` and ``recvBuf``.
+      :param primme: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      The actual type of ``buffer`` depends on which function is being calling. For :c:func:`dprimme`
+      and :c:func:`zprimme` it is ``double``, and for :c:func:`sprimme` and  :c:func:`cprimme` it is ``float``.
+      Note that ``count`` is the number of values of the actual type.
+ 
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
+         | this field is read by :c:func:`dprimme`.
+
+      When MPI is used, this can be a simply wrapper to MPI_Bcast() as shown below:
+
+      .. code:: c
+
+         void broadcastForDouble(void *buffer, int *count, 
+                                 primme_params *primme, int *ierr) {
+            MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
+            if(MPI_Bcast(buffer, *count, MPI_DOUBLE, 0 /* root */,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
+            }
+         }
       }
 
       When calling :c:func:`sprimme` and :c:func:`cprimme` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.

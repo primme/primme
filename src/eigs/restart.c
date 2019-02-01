@@ -478,7 +478,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       }
 
    }
-   CHKERR(globalSum_RHprimme(&fn, &fn, 1, ctx));
+   CHKERR(broadcast_RHprimme(&fn, 1, ctx));
       
    if (fn > 0.0) {
       if (*restartsSinceReset <= 1) {
@@ -1336,13 +1336,13 @@ int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,
       HSCALAR *work;
       assert(nVtBV == nX0e - nX0b);
       CHKERR(Num_malloc_SHprimme((nX0e - nX0b) * evecsSize, &work, ctx));
-      Num_zero_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize, ctx);
       if (ctx.procID == 0) {
+         Num_zero_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize, ctx);
          CHKERR(Num_gemm_SHprimme("N", "N", evecsSize, nX0e - nX0b, nV, 1.0,
                &VtBV[evecsSize * ldVtBV], ldVtBV, h, ldh, 0.0, work, evecsSize,
                ctx));
       }
-      CHKERR(globalSum_SHprimme(work, work, evecsSize * (nX0e - nX0b), ctx));
+      CHKERR(broadcast_SHprimme(work, evecsSize * (nX0e - nX0b), ctx));
       Num_copy_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize,
             &VtBV[evecsSize * ldVtBV], ldVtBV, ctx);
       CHKERR(Num_free_SHprimme(work, ctx));
@@ -2425,16 +2425,10 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
       Num_zero_matrix_SHprimme(&rwork[1 + basisSize * retained], basisSize,
             *numPrevRetained - retained, basisSize, ctx);
    }
-   else {
-      rwork[0] = 0.0;
-      Num_zero_matrix_SHprimme(
-            rwork + 1, basisSize, *numPrevRetained, basisSize, ctx);
-   }
 
    /* Broadcast hVecs(indexOfPreviousVecs:indexOfPreviousVecs+numPrevRetained) */
 
-   CHKERR(globalSum_SHprimme(rwork, rwork, basisSize * (*numPrevRetained) + 1,
-                             ctx));
+   CHKERR(broadcast_SHprimme(rwork, basisSize * (*numPrevRetained) + 1, ctx));
    *numPrevRetained = (int)REAL_PART(rwork[0]);
    Num_copy_matrix_SHprimme(rwork + 1, basisSize, *numPrevRetained, basisSize,
          &hVecs[ldhVecs * indexOfPreviousVecs], ldhVecs, ctx);

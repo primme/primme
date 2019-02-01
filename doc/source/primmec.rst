@@ -177,6 +177,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       | ``int`` |procID|,  rank of this process
       | ``PRIMME_INT`` |nLocal|,  number of rows stored in this process
       | ``void (*`` |globalSumReal| ``)(...)``, sum reduction among processes
+      | ``void (*`` |broadcastReal| ``)(...)``, broadcast array among processes
       |
       | *Accelerate the convergence*
       | ``void (*`` |applyPreconditioner| ``)(...)``, preconditioner-vector product.
@@ -235,6 +236,7 @@ PRIMME stores the data on the structure :c:type:`primme_params`, which has the n
       int procID;             // rank of this process 
       PRIMME_INT nLocal;      // number of rows stored in this process
       void (*globalSumReal)(...); // sum reduction among processes
+      void (*broadcastReal)(...); // broadcast array among processes
       
       /* Accelerate the convergence */
       void (*applyPreconditioner)(...);     // precond-vector product
@@ -280,7 +282,7 @@ the matrix-vector product (|matrixMatvec|), as they define the problem to be sol
 For parallel programs, |nLocal|, |procID| and |globalSumReal| are also required.
 
 In addition, most users would want to specify how many eigenpairs to find,
-and provide a preconditioner (if available).
+|numEvals|, and provide a preconditioner |applyPreconditioner| (if available).
 
 It is useful to have set all these before calling :c:func:`primme_set_method`.
 Also, if users have a preference on |maxBasisSize|, |maxBlockSize|, etc, they
