@@ -94,6 +94,8 @@ primme_context primme_get_context(primme_params *primme) {
       ctx.numProcs = primme->numProcs;
       ctx.procID = primme->procID;
       ctx.mpicomm = primme->commInfo;
+      ctx.globalSum = globalSum_Tprimme;
+      ctx.bcast = broadcast_Tprimme; 
       ctx.queue = primme->queue;
       ctx.report = monitor_report;
 #ifdef PRIMME_PROFILE
@@ -419,7 +421,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    /* Reduce and copy back G0 and H0 */
 
    if (ctx.numProcs > 1) {
-      CHKERR(globalSum_SHprimme(workGH, workGH, nGH, ctx));
+      CHKERR(globalSum_SHprimme(workGH, nGH, ctx));
    }
    if (G) Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx);
    if (H) Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx);
@@ -433,7 +435,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
       if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
       if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
       if (xnorms) for (i=nxb; i<nxe; i++) tmp[j++] = xnorms[i-nxb];
-      if (j) CHKERR(globalSum_RHprimme(tmp, tmp, j, ctx));
+      if (j) CHKERR(globalSum_RHprimme(tmp, j, ctx));
       j = 0;
       if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
       if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
@@ -549,37 +551,82 @@ int convTestFun_Sprimme(HREAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,
 #ifdef USE_HOST
 
 TEMPLATE_PLEASE
-int globalSum_Sprimme(SCALAR *sendBuf, SCALAR *recvBuf, int count, 
-   primme_context ctx) {
+int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
+
+#if defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX)
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_float;
+#else
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_double;
+#endif
+
+   return globalSum_Tprimme(buffer, PRIMME_OP_SCALAR, count, ctx);
+}
+
+TEMPLATE_PLEASE
+int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
+#if defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX)
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_float;
+#else
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_double;
+#endif
+
+   return broadcast_Tprimme(buffer, PRIMME_OP_SCALAR, count, ctx);
+}
+
+#ifdef USE_DOUBLE
+
+TEMPLATE_PLEASE
+int globalSum_Tprimme(
+      void *buffer, primme_op_datatype buffert, int count, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int ierr;
-   double t0=0.0;
 
-   if (primme && primme->globalSumReal) {
-      t0 = primme_wTimer();
+   /* Quick exit */
 
-      /* If it is a complex type, count real and imaginary part */
-#ifdef USE_COMPLEX
-      count *= 2;
+   if (!primme || primme->numProcs == 1 || !primme->globalSumReal) {
+      return 0;
+   }
+
+
+#if defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX)
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_float;
+#else
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_double;
 #endif
-      CHKERRM((primme->globalSumReal(sendBuf, recvBuf, &count, primme, &ierr),
-               ierr), PRIMME_USER_FAILURE,
-            "Error returned by 'globalSumReal' %d", ierr);
 
-      primme->stats.numGlobalSum++;
-      primme->stats.timeGlobalSum += primme_wTimer() - t0;
-      primme->stats.volumeGlobalSum += count;
-   }
-   else {
-      Num_copy_Sprimme(count, sendBuf, 1, recvBuf, 1, ctx);
-   }
+   double t0 = primme_wTimer();
+
+   /* Cast buffer */
+
+   void *buffer0 = NULL;
+   CHKERR(Num_matrix_astype_Sprimme(buffer, 1, count, 1, buffert, &buffer0,
+         NULL, PRIMME_OP_SCALAR, 1 /* alloc */, 1 /* copy */, ctx));
+
+   /* If it is a complex type, count real and imaginary part */
+   int count0 = count;
+#ifdef USE_COMPLEX
+   count0 *= 2;
+#endif
+   int ierr = 0;
+   CHKERRM((primme->globalSumReal(buffer0, buffer0, &count0, primme, &ierr),
+                 ierr),
+         PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+
+   /* Copy back buffer0 */
+
+   CHKERR(Num_matrix_astype_Sprimme(buffer0, 1, count, 1, PRIMME_OP_SCALAR,
+         (void **)&buffer, NULL, buffert, -1 /* dealloc */, 1 /* copy */, ctx));
+
+   primme->stats.numGlobalSum++;
+   primme->stats.timeGlobalSum += primme_wTimer() - t0;
+   primme->stats.volumeGlobalSum += count;
 
    return 0;
 }
 
 TEMPLATE_PLEASE
-int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
+int broadcast_Tprimme(
+      void *buffer, primme_op_datatype buffert, int count, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int ierr;
@@ -590,22 +637,42 @@ int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
       return 0;
    }
 
+#if defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX)
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_float;
+#else
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_double;
+#endif
+
    double t0 = primme_wTimer();
+
+   /* Cast buffer */
+
+   HSCALAR *buffer0 = NULL;
+   CHKERR(Num_matrix_astype_Sprimme(buffer, 1, count, 1, buffert,
+         (void **)&buffer0, NULL, PRIMME_OP_SCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+
    if (primme->broadcastReal) {
 
       /* If it is a complex type, count real and imaginary part */
+      int count0 = count;
 #ifdef USE_COMPLEX
-      count *= 2;
+      count0 *= 2;
 #endif
-      CHKERRM((primme->broadcastReal(buffer, &count, primme, &ierr), ierr),
+      CHKERRM((primme->broadcastReal(buffer0, &count0, primme, &ierr), ierr),
             PRIMME_USER_FAILURE, "Error returned by 'broadcastReal' %d", ierr);
 
    } else {
       if (primme->procID != 0) {
-         CHKERR(Num_zero_matrix_SHprimme(buffer, 1, count, 1, ctx));
+         CHKERR(Num_zero_matrix_SHprimme(buffer0, 1, count, 1, ctx));
       }
-      CHKERR(globalSum_SHprimme(buffer, buffer, count, ctx));
+      CHKERR(globalSum_SHprimme(buffer0, count, ctx));
    }
+
+   /* Copy back buffer0 */
+
+   CHKERR(Num_matrix_astype_Sprimme(buffer0, 1, count, 1, PRIMME_OP_SCALAR,
+         (void **)&buffer, NULL, buffert, -1 /* dealloc */, 1 /* copy */, ctx));
 
    primme->stats.numBroadcast++;
    primme->stats.timeBroadcast += primme_wTimer() - t0;
@@ -614,7 +681,6 @@ int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
    return 0;
 }
 
-#ifdef USE_DOUBLE
 TEMPLATE_PLEASE
 int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
 
@@ -651,6 +717,7 @@ int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
 
    return 0;
 }
+
 #endif /* USE_DOUBLE */
 
 #endif /* USE_HOST */
@@ -768,7 +835,7 @@ int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
    for (i=0; i<n; i++) {
       result[i] = Num_dot_Sprimme(m, &x[ldx * i], 1, &y[ldy * i], 1, ctx);
    }
-   CHKERR(globalSum_SHprimme(result, result, n, ctx));
+   CHKERR(globalSum_SHprimme(result, n, ctx));
 
    return 0;
 }
@@ -802,7 +869,7 @@ int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,
       result[i] =
             REAL_PART(Num_dot_Sprimme(m, &x[ldx * i], 1, &y[ldy * i], 1, ctx));
    }
-   CHKERR(globalSum_RHprimme(result, result, n, ctx));
+   CHKERR(globalSum_RHprimme(result, n, ctx));
 
    return 0;
 }

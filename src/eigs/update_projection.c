@@ -126,7 +126,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
             numCols, rwork, &count);
       assert(count <= (numCols+blockSize)*blockSize);
 
-      CHKERR(globalSum_SHprimme(rwork, rwork, count, ctx));
+      CHKERR(globalSum_SHprimme(rwork, count, ctx));
 
       Num_copy_compact_trimatrix_SHprimme(rwork, m, blockSize, numCols,
             &Z[ldZ*numCols], ldZ);
@@ -145,7 +145,7 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       Num_copy_matrix_SHprimme(&Z[numCols], blockSize, numCols, ldZ,
             &rwork[m*blockSize], blockSize, ctx);
 
-      CHKERR(globalSum_SHprimme(rwork, rwork, count, ctx));
+      CHKERR(globalSum_SHprimme(rwork, count, ctx));
 
       Num_copy_matrix_SHprimme(rwork, m, blockSize, m, &Z[ldZ*numCols],
             ldZ, ctx);

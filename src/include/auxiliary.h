@@ -35,6 +35,9 @@
 #define auxiliary_H
 int Num_malloc_sprimme(PRIMME_INT n, float **x, primme_context ctx);
 int Num_free_sprimme(float *x, primme_context ctx);
+int Num_matrix_astype_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
 int Num_copy_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, float *y, PRIMME_INT ldy,
       primme_context ctx);
@@ -67,6 +70,9 @@ int Num_scale_matrix_sprimme(float *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, float *s, float *y, PRIMME_INT ldy, primme_context ctx);
 int Num_malloc_cprimme(PRIMME_INT n, PRIMME_COMPLEX_FLOAT **x, primme_context ctx);
 int Num_free_cprimme(PRIMME_COMPLEX_FLOAT *x, primme_context ctx);
+int Num_matrix_astype_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
 int Num_copy_matrix_cprimme(PRIMME_COMPLEX_FLOAT *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, PRIMME_COMPLEX_FLOAT *y, PRIMME_INT ldy,
       primme_context ctx);
@@ -149,6 +155,21 @@ int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx);
 #  define Num_free_iprimmeRHprimme CONCAT(Num_free_iprimme,HOST_REAL_SUF)
 #endif
 int Num_free_iprimme(int *x, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_matrix_astype_Sprimme)
+#  define Num_matrix_astype_Sprimme CONCAT(Num_matrix_astype_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_matrix_astype_Rprimme)
+#  define Num_matrix_astype_Rprimme CONCAT(Num_matrix_astype_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_matrix_astype_SHprimme)
+#  define Num_matrix_astype_SHprimme CONCAT(Num_matrix_astype_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_matrix_astype_RHprimme)
+#  define Num_matrix_astype_RHprimme CONCAT(Num_matrix_astype_,HOST_REAL_SUF)
+#endif
+int Num_matrix_astype_dprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_Sprimme)
 #  define Num_copy_matrix_Sprimme CONCAT(Num_copy_matrix_,SCALAR_SUF)
 #endif
@@ -350,6 +371,9 @@ int Num_scale_matrix_dprimme(double *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, double *s, double *y, PRIMME_INT ldy, primme_context ctx);
 int Num_malloc_zprimme(PRIMME_INT n, PRIMME_COMPLEX_DOUBLE **x, primme_context ctx);
 int Num_free_zprimme(PRIMME_COMPLEX_DOUBLE *x, primme_context ctx);
+int Num_matrix_astype_zprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
 int Num_copy_matrix_zprimme(PRIMME_COMPLEX_DOUBLE *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, PRIMME_COMPLEX_DOUBLE *y, PRIMME_INT ldy,
       primme_context ctx);

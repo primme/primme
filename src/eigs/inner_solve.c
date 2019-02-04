@@ -409,7 +409,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 #endif
       }
 
-      if (dot_sol) CHKERR(globalSum_RHprimme(dot_sol, dot_sol, blockSize, ctx));
+      if (dot_sol) CHKERR(globalSum_RHprimme(dot_sol, blockSize, ctx));
 
       /* Compute B-norm of sol if adapting stopping and a generalized problem is
        * being solved */
@@ -805,7 +805,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
          1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
 
    /* Global sum: overlaps = Q'*v */
-   CHKERR(globalSum_SHprimme(overlaps, overlaps, numCols * blockSize, ctx));
+   CHKERR(globalSum_SHprimme(overlaps, numCols * blockSize, ctx));
 
    /* Backsolve only if there is a skew projector */
    if (Mfact != NULL) {

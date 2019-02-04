@@ -391,15 +391,16 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  *
  **********************************************************************/
 
-#define PRINTFALLCTX(CTX, L, ...) { \
-   if ((CTX).report && (L) <= (CTX).printLevel) { \
-      int len = snprintf(NULL, 0, __VA_ARGS__)+1; \
-      char *str = malloc(len); \
-      snprintf(str, len, __VA_ARGS__); \
-      (CTX).report(str, -1.0, (CTX)); \
-      free(str); \
-   }\
-}
+#define PRINTFALLCTX(CTX, L, ...)                                              \
+   {                                                                           \
+      if ((CTX).report && (L) <= (CTX).printLevel) {                           \
+         int len = snprintf(NULL, 0, __VA_ARGS__) + 1;                         \
+         char *str = (char *)malloc(len);                                      \
+         snprintf(str, len, __VA_ARGS__);                                      \
+         (CTX).report(str, -1.0, (CTX));                                       \
+         free(str);                                                            \
+      }                                                                        \
+   }
 
 /**********************************************************************
  * Macro PRINTFALL - report some information. It invokes ctx.report if the
@@ -484,6 +485,62 @@ static inline const char *__compose_function_name(const char *path,
 #define PROFILE_BEGIN(CALL)
 #define PROFILE_END
 #endif
+
+/*****************************************************************************/
+/* Parallel checks                                                           */
+/*****************************************************************************/
+
+static inline uint32_t hash_call(const char *str, double value) {
+   uint32_t hash = 5381;
+   int c;
+
+   while ((c = *str++)) hash = hash * 33 + c;
+   hash = hash * 33 + ((uint32_t *)&value)[0];
+   hash = hash * 33 + ((uint32_t *)&value)[1];
+
+   return hash;
+}
+
+/**********************************************************************
+ * Macro PARALLEL_CHECK(CALL) - Check all processes are executing CALL
+ *    and it returns the same value. If a process is executing a different
+ *    PARALLEL_CHECK or CALL returns a different value, it is returned
+ *    PRIMME_PARALLEL_FAILURE.
+ *
+ *    NOTE: CALL is only evaluated once. Avoid to put several
+ *    PARALLEL_CHECK with same expression CALL on the same line.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * CALL    value that is check
+ *
+ **********************************************************************/
+
+#define PARALLEL_CHECK(CALL)                                                   \
+   {                                                                           \
+      double __value = CALL;                                                   \
+      uint32_t __hash_call =                                                   \
+                     hash_call(STR(CALL) __FILE__ STR(__LINE__), __value),     \
+               __hash_call0 = __hash_call;                                     \
+      CHKERR(ctx.bcast(&__hash_call0, primme_op_float, 1, ctx));               \
+      float __not_is_equal = (__hash_call != __hash_call0 ? 1 : 0),            \
+            __not_is_equal_global = __not_is_equal;                            \
+      CHKERR(ctx.globalSum(&__not_is_equal_global, primme_op_float, 1, ctx));  \
+      if (__not_is_equal_global != 0 && ctx.procID == 0) {                     \
+         PRINTFALL(1,                                                          \
+               "PRIMME: Process 0 has value %12g for '" STR(                   \
+                     CALL) "' (" __FILE__ ":" STR(__LINE__) ")\n",             \
+               __value);                                                       \
+      }                                                                        \
+      if (__not_is_equal != 0) {                                               \
+         PRINTFALL(1,                                                          \
+               "PRIMME: Process %d has different value %12g for '" STR(        \
+                     CALL) "' (" __FILE__ ":" STR(__LINE__) ")\n",             \
+               ctx.procID, __value);                                   \
+      }                                                                        \
+      if (__not_is_equal_global != 0) CHKERR(PRIMME_PARALLEL_FAILURE);         \
+   }
+
 
 /*****************************************************************************/
 /* Error management                                                          */
@@ -632,6 +689,10 @@ typedef struct primme_context_str {
    int numProcs;     /* number of processes */
    int procID;       /* process id */
    void *mpicomm;    /* MPI communicator */
+   int (*bcast)(void *buffer, primme_op_datatype buffer_type, int count,
+         struct primme_context_str ctx); /* broadcast */
+   int (*globalSum)(void *buffer, primme_op_datatype buffer_type, int count,
+         struct primme_context_str ctx); /* global reduction */
 
    /* For MAGMA */
    void *queue;      /* magma device queue (magma_queue_t*) */

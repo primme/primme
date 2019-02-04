@@ -95,6 +95,16 @@ typedef enum {
    primme_orth_explicit_I           /* explicitly compute V'*B*V */
 } primme_orth;
 
+/* Datatype of vectors passed on matrixMatvec, applyPreconditioner,           */
+/* massMatrixMatvec and globalSumReal                                         */
+typedef enum {
+   primme_op_default,   /* The same type as the primme call */
+   primme_op_quad,
+   primme_op_double,
+   primme_op_float,
+   primme_op_half
+} primme_op_datatype;
+
 typedef struct primme_stats {
    PRIMME_INT numOuterIterations;
    PRIMME_INT numRestarts;

@@ -54,8 +54,7 @@ int applyPreconditioner_sprimme(float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       float *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_sprimme(float eval, float *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx);
-int globalSum_sprimme(float *sendBuf, float *recvBuf, int count,
-   primme_context ctx);
+int globalSum_sprimme(float *buffer, int count, primme_context ctx);
 int broadcast_sprimme(float *buffer, int count, primme_context ctx);
 float problemNorm_sprimme(
       int overrideUserEstimations, struct primme_params *primme);
@@ -86,8 +85,7 @@ int applyPreconditioner_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT nLocal, PRIM
       PRIMME_COMPLEX_FLOAT *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_cprimme(float eval, PRIMME_COMPLEX_FLOAT *evec, int givenEvec, float rNorm,
       int *isconv, primme_context ctx);
-int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *sendBuf, PRIMME_COMPLEX_FLOAT *recvBuf, int count,
-   primme_context ctx);
+int globalSum_cprimme(PRIMME_COMPLEX_FLOAT *buffer, int count, primme_context ctx);
 int broadcast_cprimme(PRIMME_COMPLEX_FLOAT *buffer, int count, primme_context ctx);
 float problemNorm_cprimme(
       int overrideUserEstimations, struct primme_params *primme);
@@ -204,8 +202,7 @@ int convTestFun_dprimme(double eval, double *evec, int givenEvec, double rNorm,
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHprimme)
 #  define globalSum_RHprimme CONCAT(globalSum_,HOST_REAL_SUF)
 #endif
-int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
-   primme_context ctx);
+int globalSum_dprimme(double *buffer, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_Sprimme)
 #  define broadcast_Sprimme CONCAT(broadcast_,SCALAR_SUF)
 #endif
@@ -219,6 +216,34 @@ int globalSum_dprimme(double *sendBuf, double *recvBuf, int count,
 #  define broadcast_RHprimme CONCAT(broadcast_,HOST_REAL_SUF)
 #endif
 int broadcast_dprimme(double *buffer, int count, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSprimme)
+#  define globalSum_TprimmeSprimme CONCAT(globalSum_Tprimme,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRprimme)
+#  define globalSum_TprimmeRprimme CONCAT(globalSum_Tprimme,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHprimme)
+#  define globalSum_TprimmeSHprimme CONCAT(globalSum_Tprimme,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHprimme)
+#  define globalSum_TprimmeRHprimme CONCAT(globalSum_Tprimme,HOST_REAL_SUF)
+#endif
+int globalSum_Tprimme(
+      void *buffer, primme_op_datatype buffert, int count, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSprimme)
+#  define broadcast_TprimmeSprimme CONCAT(broadcast_Tprimme,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRprimme)
+#  define broadcast_TprimmeRprimme CONCAT(broadcast_Tprimme,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHprimme)
+#  define broadcast_TprimmeSHprimme CONCAT(broadcast_Tprimme,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHprimme)
+#  define broadcast_TprimmeRHprimme CONCAT(broadcast_Tprimme,HOST_REAL_SUF)
+#endif
+int broadcast_Tprimme(
+      void *buffer, primme_op_datatype buffert, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSprimme)
 #  define broadcast_iprimmeSprimme CONCAT(broadcast_iprimme,SCALAR_SUF)
 #endif
@@ -309,8 +334,7 @@ int applyPreconditioner_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT nLocal, PRI
       PRIMME_COMPLEX_DOUBLE *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int convTestFun_zprimme(double eval, PRIMME_COMPLEX_DOUBLE *evec, int givenEvec, double rNorm,
       int *isconv, primme_context ctx);
-int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *sendBuf, PRIMME_COMPLEX_DOUBLE *recvBuf, int count,
-   primme_context ctx);
+int globalSum_zprimme(PRIMME_COMPLEX_DOUBLE *buffer, int count, primme_context ctx);
 int broadcast_zprimme(PRIMME_COMPLEX_DOUBLE *buffer, int count, primme_context ctx);
 double problemNorm_zprimme(
       int overrideUserEstimations, struct primme_params *primme);

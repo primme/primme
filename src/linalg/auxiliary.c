@@ -183,6 +183,140 @@ int Num_free_iprimme(int *x, primme_context ctx) {
 
 #endif /* USE_DOUBLE */
 
+
+/******************************************************************************
+ * Function Num_copy_matrix - Copy the matrix x into y
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x and y *can* overlap
+ *
+ ******************************************************************************/
+
+#define Num_copy_matrix_Tprimme(x, xcast, m, n, ldx, y, ldy, ctx) { \
+   int i, j; \
+   \
+   assert((m) == 0 || (n) == 0 || ((ldx) >= (m) && (ldy) >= (m))); \
+   \
+   if ((void*)x != (void*)y) \
+      for (i = 0; i < (n); i++) \
+         for (j = 0; j < (m); j++) \
+               (y)[i * (ldy) + j] = xcast (x)[i * (ldx) + j]; \
+}
+
+/******************************************************************************
+ * Function Num_matrix_astype - Create a matrix, y (if asked) and copy the
+ *    matrix x into y (if asked).
+ *
+ *    do_alloc do_copy xt==yt action
+ *    --------------------------------------------
+ *        0       0      *    do nothing
+ *        0       1      *    copy x into y
+ *        1       0      0    create y of type yt
+ *        1       1      0    create y of type yt and copy x into y
+ *        1       *      1    assign *y = x
+ *       -1       *      1    do nothing
+ *       -1       0      0    destroy x
+ *       -1       1      0    copy x into y and destroy x
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * xt          The datatype of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ * yt          The datatype of y
+ *
+ * NOTE: x and y *cannot* partially overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx) {
+
+#if defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX)
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_float;
+#else
+   primme_op_datatype PRIMME_OP_SCALAR = primme_op_double;
+#endif
+
+   /* Replace primme_op_default */
+
+   if (xt == primme_op_default) xt = PRIMME_OP_SCALAR;
+   if (yt == primme_op_default) yt = PRIMME_OP_SCALAR;
+   
+   /* Call the function that y has the type of the SCALAR */
+
+   if (yt != PRIMME_OP_SCALAR) {
+      switch(yt) {
+#ifndef USE_COMPLEX
+      case primme_op_float:  return Num_matrix_astype_sprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+      case primme_op_double: return Num_matrix_astype_dprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#else
+      case primme_op_float:  return Num_matrix_astype_cprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+      case primme_op_double: return Num_matrix_astype_zprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#endif
+      default: CHKERR(-1);
+      }
+   }
+
+   /* Quick exit */
+
+   if (xt == PRIMME_OP_SCALAR && do_alloc) {
+      *y = x;
+      if (ldy) *ldy = ldx;
+      return 0;
+   }
+
+   /* Create workspace for y and copy x on y */
+
+   SCALAR *y0 = NULL;
+   PRIMME_INT ldy0 = 0;
+   if (do_alloc > 0) {
+      Mem_keep_frame(
+            ctx); /* The next allocation will not be freed in this function */
+      CHKERR(Num_malloc_Sprimme(m * n, &y0, ctx));
+      *y = (void*)y0;
+      ldy0 = m;
+      if (ldy) *ldy = m;
+   } else {
+      y0 = (SCALAR*)*y;
+      ldy0 = (ldy ? *ldy : 1);
+   }
+
+   if (do_copy) {
+      switch (xt) {
+#ifndef USE_COMPLEX
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, /* no cast */, m, n, ldx, y0, ldy0, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, /* no cast */, m, n, ldx, y0, ldy0, ctx); break;
+#else
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, /* no cast */, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, /* no cast */, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+#endif
+      default: CHKERR(-1);
+      }
+   }
+
+   /* Destroy x if asked */
+
+   if (do_alloc < 0 && x != y0) CHKERR(Num_free_Sprimme((HSCALAR *)x, ctx));
+
+   return 0;
+}
+
+
 /******************************************************************************
  * Function Num_copy_matrix - Copy the matrix x into y
  *

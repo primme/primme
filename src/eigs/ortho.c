@@ -111,7 +111,7 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
  * nLocal     Number of rows of each vector stored on this node
  *
  * rworkSize  Length of rwork array
- * primme     Primme struct. Contains globalSumDouble and Parallelism info
+ * primme     Primme struct. Contains globalSumReal and Parallelism info
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
@@ -251,8 +251,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
          }
 
          overlaps[i+numLocked] = s02;
-         CHKERR(globalSum_SHprimme(overlaps, overlaps, i + numLocked + 1,
-                  ctx));
+         CHKERR(globalSum_SHprimme(overlaps, i + numLocked + 1, ctx));
 
          if (updateR) {
              if (R) Num_axpy_SHprimme(i, 1.0, overlaps, 1, &R[ldR*i], 1, ctx);
@@ -281,29 +280,17 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             s0 = sqrt(s02 = REAL_PART(overlaps[i+numLocked]));
          }
 
-         /* Compute the norm of the resulting vector implicitly */
+         /* Compute the norm s1 explicitly */
          
-         {
-            HREAL temp = REAL_PART(Num_dot_SHprimme(i+numLocked,overlaps,1,overlaps,1,ctx));
-            s1 = sqrt(s12 = max(0.0L, s02-temp));
+         if (B) {
+            CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
+            Bx_update = 1;
          }
-         
-         /* If s1 decreased too much, its implicit computation may have       */
-         /* problem. Compute s1 explicitly in that cases                      */
-         
-         int s1_update = 0;      // flag if s1 has been computed explicitly
-         if ( s1 < s0*sqrt(MACHINE_EPSILON) || nOrth > 1 || !primme || B) {  
-            if (B) {
-               CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
-               Bx_update = 1;
-            }
-            HREAL temp =
-                REAL_PART(Num_dot_Sprimme(nLocal, &V[ldV * i], 1, Bx, 1, ctx));
-            if (primme) primme->stats.numOrthoInnerProds += 1;
-            CHKERR(globalSum_RHprimme(&temp, &s12, 1, ctx));
-            s1 = sqrt(s12);
-            s1_update = 1;
-         }
+         s12 = REAL_PART(
+               Num_dot_Sprimme(nLocal, &V[ldV * i], 1, Bx, 1, ctx));
+         if (primme) primme->stats.numOrthoInnerProds += 1;
+         CHKERR(globalSum_RHprimme(&s12, 1, ctx));
+         s1 = sqrt(s12);
 
          if (s1 <= MACHINE_EPSILON*s0) {
             PRINTF(5, "Vector %d lost all significant digits in ortho",
@@ -316,19 +303,7 @@ static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             s02 = s12;
          }
          else {
-            if (updateR && R) {
-               if (!s1_update) {
-                  if (B && !Bx_update) {
-                     CHKERR(B(&V[ldV*i], ldV, Bx, nLocal, 1, Bctx));
-                  }
-                  HREAL temp = REAL_PART(Num_dot_Sprimme(nLocal,
-                           &V[ldV*i], 1, Bx, 1, ctx));
-                  if (primme) primme->stats.numOrthoInnerProds += 1;
-                  CHKERR(globalSum_RHprimme(&temp, &s1, 1, ctx));
-                  s1 = sqrt(max((HREAL)0, s1));
-               }
-               R[ldR*i + i] = s1;
-            }
+            if (updateR && R) R[ldR * i + i] = s1;
 
             if (ISFINITE((HREAL)(1.0/s1))) {
                Num_scal_Sprimme(nLocal, 1.0/s1, &V[ldV*i], 1, ctx);
@@ -663,7 +638,7 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
             /* Pass the check when the norm of V(b1:b2-1) are close to one */
             for (i = b1; i < b2 &&
                          ABS(VLtBVL[ldVLtVL * (numLocked + i) + numLocked + i] -
-                               1.0) < .8;
+                               (HSCALAR)1.0) < .8;
                   i++)
                ;
             if (i >= b2) break;
@@ -856,7 +831,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
 
    /* Reduction on y */
 
-   CHKERR(globalSum_SHprimme(y, y, nQ*nX, ctx));
+   CHKERR(globalSum_SHprimme(y, nQ*nX, ctx));
    
    /* z = QtBQ\y */
 
@@ -906,7 +881,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
 
    if (norms) {
       /* Store the reduction of norms */
-      CHKERR(globalSum_RHprimme(norms, norms, nX, ctx));
+      CHKERR(globalSum_RHprimme(norms, nX, ctx));
  
       for (i=0; i<nX; i++) norms[i] = sqrt(norms[i]);
       primme->stats.numOrthoInnerProds += nX;
@@ -1045,7 +1020,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
 
    /* B = globalSum(Bo) */
    if (ctx.numProcs > 1) {
-      CHKERR(globalSum_SHprimme(Bo, Bo, (nQ + nW) * nX, ctx));
+      CHKERR(globalSum_SHprimme(Bo, (nQ + nW) * nX, ctx));
       CHKERR(Num_copy_matrix_SHprimme(Bo, nQ+nW, nX, nQ+nW, B, ldB, ctx));
    }
 

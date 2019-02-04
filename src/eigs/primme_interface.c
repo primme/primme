@@ -1141,7 +1141,7 @@ int primme_set_member(primme_params *primme, primme_params_label label,
               primme->eps = *v.double_v;
       break;
       case PRIMME_orth:
-              primme->orth = *v.int_v;
+              primme->orth = (primme_orth)*v.int_v;
       break;
       case PRIMME_printLevel:
               if (*v.int_v > INT_MAX) return 1; else 

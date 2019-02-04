@@ -195,8 +195,6 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    int converged;           /* True when all required Ritz vals. converged   */
    int LockingProblem;      /* Flag==1 if practically converged pairs locked */
    int restartLimitReached; /* True when maximum restarts performed          */
-   int numPrevRetained;     /* Number of vectors retained using recurrence-  */
-                            /* based restarting.                             */
    int nprevhVecs;          /* Number of vectors stored in prevhVecs         */
    int numArbitraryVecs;    /* Columns in hVecs computed with RR instead of  */
                             /* the current extraction method.                */
@@ -377,7 +375,6 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    converged = FALSE;
    LockingProblem = 0;
 
-   numPrevRetained = 0;
    blockSize = 0; 
 
    for (i=0; i<primme->numEvals; i++) perm[i] = i;
@@ -487,7 +484,6 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                          primme->maxOuterIterations) &&
              !wholeSpace) {
 
-         numPrevRetained = 0;
          nprevhVecs = 0;
          int candidates_prepared = 0;  /* Has prepare_candidates been called? */
 
@@ -1408,7 +1404,6 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    HREAL *hValsBlock;    /* contiguous copy of the hVals to be tested */
    HSCALAR *hVecsBlock;  /* contiguous copy of the hVecs columns to be tested */     
    int *flagsBlock;     /* contiguous copy of the flags to be tested */
-   int *prevFlags;       /* copy of the flags from previous iteration */
    HREAL *hValsBlock0;   /* workspace for hValsBlock */
    HSCALAR *hVecsBlock0; /* workspace for hVecsBlock */
    HREAL *XNorms=NULL;   /* 2-norm of V*hVecs */
@@ -1419,8 +1414,6 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    CHKERR(Num_malloc_RHprimme(maxBlockSize, &hValsBlock0, ctx));
    CHKERR(Num_malloc_SHprimme(ldhVecs*maxBlockSize, &hVecsBlock0, ctx));
    CHKERR(Num_malloc_iprimme(maxBlockSize, &flagsBlock, ctx));
-   CHKERR(Num_malloc_iprimme(basisSize, &prevFlags, ctx));
-   for (i = 0; i < basisSize; i++) prevFlags[i] = flags[i];
    if (primme->massMatrixMatvec) {
       CHKERR(Num_malloc_RHprimme(maxBlockSize, &XNorms, ctx));
    }
@@ -1443,18 +1436,24 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       }
    }
 
-   /* Update map */
+   /* Assign to each eigenpair a pair from previous iteration that is close in
+    * angle */
 
-   if (blockNormsSize > 0) {
+   if (ctx.procID == 0) {
       CHKERR(map_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs, ldprevhVecs,
-            hVecs, 0, iev[blockNormsSize - 1] + 1, ldhVecs, map, ctx));
+            hVecs, 0, basisSize, ldhVecs, map, ctx));
    }
+   CHKERR(broadcast_iprimme(map, basisSize, ctx));
+
+   /* Reorder the flags from previous iteration following map */
+
+   CHKERR(permute_vecs_iprimme(flags, basisSize, map, ctx));
 
    *recentlyConverged = 0;
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i=*blockSize; i<blockNormsSize; i++)
-         flagsBlock[i-*blockSize] = prevFlags[map[iev[i]]];
+         flagsBlock[i-*blockSize] = flags[iev[i]];
       CHKERR(check_convergence_Sprimme(&X[(*blockSize) * ldV], ldV, computeXR,
             &R[(*blockSize) * ldW], ldW, computeXR, evecs, numLocked, ldevecs,
             Bevecs, ldBevecs, VtBV, ldVtBV, 0, blockNormsSize, flagsBlock,
@@ -1555,13 +1554,13 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       blki = *blockSize;
       CHKERR(prepare_vecs_SHprimme(basisSize, lasti + 1, maxBlockSize - blki, H,
             ldH, hVals, hSVals, hVecs, ldhVecs, targetShiftIndex,
-            numArbitraryVecs, *smallestResNorm, prevFlags, map, 1, hVecsRot,
-            ldhVecsRot, prevhVecs, nprevhVecs, ldprevhVecs, ctx));
+            numArbitraryVecs, *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot,
+            ctx));
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
       for (i=lasti+1; i<basisSize && blki < maxBlockSize; i++) {
-         if (prevFlags[map[i]] == UNCONVERGED) iev[blki++] = i;
+         if (flags[i] == UNCONVERGED) iev[blki++] = i;
       }
 
       /* If no new candidates or all required solutions converged yet, go out */
@@ -1621,18 +1620,9 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       }
    }
 
-   /* Transfer the rest of the flags */
-
-   CHKERR(map_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs, ldprevhVecs,
-         hVecs, lasti + 1, basisSize, ldhVecs, map, ctx));
-   for (i = lasti + 1; i < basisSize; i++) {
-      flags[i] = prevFlags[map[i]];
-   }
-
    CHKERR(Num_free_RHprimme(hValsBlock0, ctx));
    CHKERR(Num_free_SHprimme(hVecsBlock0, ctx));
    CHKERR(Num_free_iprimme(flagsBlock, ctx));
-   CHKERR(Num_free_iprimme(prevFlags, ctx));
    CHKERR(Num_free_RHprimme(XNorms, ctx));
 
    return 0;
@@ -1684,7 +1674,7 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
             ctx.primme->nLocal, &W[ldW * i], 1, &W[ldW * i], 1, ctx));
    }
       
-   CHKERR(globalSum_RHprimme(resNorms, resNorms, basisSize, ctx));
+   CHKERR(globalSum_RHprimme(resNorms, basisSize, ctx));
    for (i=0; i < basisSize; i++)
       resNorms[i] = sqrt(resNorms[i]);
 
@@ -1756,7 +1746,7 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int switchto=0;
-   HREAL est_slowdown, est_ratio_MV_outer, ratio, globalRatio; 
+   HREAL est_slowdown, est_ratio_MV_outer, ratio; 
 
    /* ----------------------------------------------------------------- */
    /* Asymptotic evaluation of the JDQMR versus GD+k for small numEvals */
@@ -1770,11 +1760,9 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
       est_ratio_MV_outer = 1000;    /* practically all time is in inner its */
       ratio = ratio_JDQMR_GDpk(model, 0, est_slowdown, est_ratio_MV_outer);
 
-      /* If more many procs, make sure that all have the same ratio */
-      if (primme->numProcs > 1) {
-        CHKERR(globalSum_RHprimme(&ratio, &globalRatio, 1, ctx));
-        ratio = globalRatio / primme->numProcs;
-      }
+      /* Average the ratio among the processes */
+      CHKERR(globalSum_RHprimme(&ratio, 1, ctx));
+      ratio /= (HREAL)primme->numProcs;
 
       if (ratio > 1.05) { 
          /* Always use GD+k. No further model updates */
@@ -1800,11 +1788,9 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
    ratio = ratio_JDQMR_GDpk(model, 0, model->JDQMR_slowdown, 
                                   model->ratio_MV_outer);
 
-   /* If more many procs, make sure that all have the same ratio */
-   if (primme->numProcs > 1) {
-     CHKERR(globalSum_RHprimme(&ratio, &globalRatio, 1, ctx));
-     ratio = globalRatio / primme->numProcs;
-   }
+   /* Average the ratio among the processes */
+   CHKERR(globalSum_RHprimme(&ratio, 1, ctx));
+   ratio /= (HREAL)primme->numProcs;
    
    if (ratio > 1.05) {
       primme->dynamicMethodSwitch = switchto; 
@@ -1866,7 +1852,7 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int switchto=0;
-   HREAL ratio, globalRatio;
+   HREAL ratio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */
    /* do not include restart costs. Remain with GD+k until a restart occurs */
@@ -1895,11 +1881,9 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
    ratio = ratio_JDQMR_GDpk(model, 0, model->JDQMR_slowdown, 
                                   model->ratio_MV_outer);
 
-   /* If more many procs, make sure that all have the same ratio */
-   if (primme->numProcs > 1) {
-     CHKERR(globalSum_RHprimme(&ratio, &globalRatio, 1, ctx));
-     ratio = globalRatio / primme->numProcs;
-   }
+   /* Average the ratio among the processes */
+   CHKERR(globalSum_RHprimme(&ratio, 1, ctx));
+   ratio /= (HREAL)primme->numProcs;
 
    if (ratio < 0.95) {
       primme->dynamicMethodSwitch = switchto;

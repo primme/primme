@@ -40,8 +40,8 @@ int solve_H_sprimme(float *H, int basisSize, int ldH, float *VtBV, int ldVtBV,
 int prepare_vecs_sprimme(int basisSize, int i0, int blockSize, float *H,
       int ldH, float *hVals, float *hSVals, float *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int *map, int RRForAll, float *hVecsRot, int ldhVecsRot,
-      float *prevhVecs, int nprevhVecs, int ldprevhVecs, primme_context ctx);
+      int *flags, int RRForAll, float *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
 int map_vecs_sprimme(float *V, int m, int nV, int ldV, float *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
 int solve_H_cprimme(PRIMME_COMPLEX_FLOAT *H, int basisSize, int ldH, PRIMME_COMPLEX_FLOAT *VtBV, int ldVtBV,
@@ -51,8 +51,8 @@ int solve_H_cprimme(PRIMME_COMPLEX_FLOAT *H, int basisSize, int ldH, PRIMME_COMP
 int prepare_vecs_cprimme(int basisSize, int i0, int blockSize, PRIMME_COMPLEX_FLOAT *H,
       int ldH, float *hVals, float *hSVals, PRIMME_COMPLEX_FLOAT *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int *map, int RRForAll, PRIMME_COMPLEX_FLOAT *hVecsRot, int ldhVecsRot,
-      PRIMME_COMPLEX_FLOAT *prevhVecs, int nprevhVecs, int ldprevhVecs, primme_context ctx);
+      int *flags, int RRForAll, PRIMME_COMPLEX_FLOAT *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
 int map_vecs_cprimme(PRIMME_COMPLEX_FLOAT *V, int m, int nV, int ldV, PRIMME_COMPLEX_FLOAT *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Sprimme)
@@ -86,8 +86,8 @@ int solve_H_dprimme(double *H, int basisSize, int ldH, double *VtBV, int ldVtBV,
 int prepare_vecs_dprimme(int basisSize, int i0, int blockSize, double *H,
       int ldH, double *hVals, double *hSVals, double *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int *map, int RRForAll, double *hVecsRot, int ldhVecsRot,
-      double *prevhVecs, int nprevhVecs, int ldprevhVecs, primme_context ctx);
+      int *flags, int RRForAll, double *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Sprimme)
 #  define map_vecs_Sprimme CONCAT(map_vecs_,SCALAR_SUF)
 #endif
@@ -109,8 +109,8 @@ int solve_H_zprimme(PRIMME_COMPLEX_DOUBLE *H, int basisSize, int ldH, PRIMME_COM
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize, PRIMME_COMPLEX_DOUBLE *H,
       int ldH, double *hVals, double *hSVals, PRIMME_COMPLEX_DOUBLE *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int *map, int RRForAll, PRIMME_COMPLEX_DOUBLE *hVecsRot, int ldhVecsRot,
-      PRIMME_COMPLEX_DOUBLE *prevhVecs, int nprevhVecs, int ldprevhVecs, primme_context ctx);
+      int *flags, int RRForAll, PRIMME_COMPLEX_DOUBLE *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
 int map_vecs_zprimme(PRIMME_COMPLEX_DOUBLE *V, int m, int nV, int ldV, PRIMME_COMPLEX_DOUBLE *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
 #endif

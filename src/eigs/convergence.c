@@ -234,7 +234,6 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
       double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx) {
 
-   primme_params *primme = ctx.primme;
    int i;
    HREAL *norms;
 

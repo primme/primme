@@ -512,7 +512,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
             &VtBV0[n * (primme->numOrthoConst + *numLocked) +
                    primme->numOrthoConst + *numLocked],
             n, ctx));
-      CHKERR(globalSum_SHprimme(VtBV0, VtBV0, n*n, ctx));
+      CHKERR(globalSum_SHprimme(VtBV0, n*n, ctx));
       int i,j;
       for (i = 0; i < n; i++) {
          for (j = 0; j <= i; j++) {
@@ -530,7 +530,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       CHKERR(Num_malloc_SHprimme(restartSize * restartSize, &H0, ctx));
       CHKERR(Num_gemm_ddh_Sprimme("C", "N", restartSize, restartSize,
             primme->nLocal, 1.0, W, ldV, V, ldV, 0.0, H0, restartSize, ctx));
-      CHKERR(globalSum_SHprimme(H0, H0, restartSize * restartSize, ctx));
+      CHKERR(globalSum_SHprimme(H0, restartSize * restartSize, ctx));
       int i, j;
       for (i = 0; i < restartSize; i++) {
          for (j = 0; j <= i; j++) {

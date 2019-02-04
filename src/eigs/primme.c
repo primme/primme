@@ -114,7 +114,6 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
 int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
             primme_params *primme) {
 
-   int *perm;
    SCALAR *evecs = (SCALAR *)evecs_; /* Change type of evecs */
 
    /* zero out the timer */
@@ -520,66 +519,55 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
 static int check_params_coherence(primme_context ctx) {
    primme_params *primme = ctx.primme;
 
-   /* Quick exit */
-
-   if (primme->globalSumReal == NULL) {
-      return 0;
-   }
-
    /* Check number of procs and procs with id zero */
 
-   HREAL aux[2] = {(HREAL)1.0, (HREAL)(primme->procID == 0 ? 1.0 : 0.0)};
-   CHKERR(globalSum_RHprimme(aux, aux, 2, ctx));
-   CHKERRM((aux[0] > 1) != (primme->numProcs > 1),
+   HREAL aux[2] = {(HREAL)1.0, (HREAL)(ctx.procID == 0 ? 1.0 : 0.0)};
+   CHKERR(globalSum_RHprimme(aux, 2, ctx));
+   CHKERRM((aux[0] > 1) != (ctx.numProcs > 1),
          -1, "numProcs does not match the actual number of processes");
-   CHKERRM(aux[1] != (HREAL)1.0, -1,
-         "There is not a single process with ID zero");
+   CHKERRM(aux[1] > 1, -1, "There is not a single process with ID zero");
+
+   /* Check broadcast */
+
+   HREAL val = 1234, val0 = val;
+   CHKERR(broadcast_RHprimme(&val, 1, ctx));
+   CHKERRM(fabs(val - val0) > val0 * MACHINE_EPSILON * 1.3, -1,
+         "broadcast function does not work properly");
 
    /* Check that all processes has the same value for the next params */
 
-#define PARALLEL_CHECK(p)                                                      \
-   {                                                                           \
-      HREAL preal0 = primme->p;                                                \
-      HREAL preal = primme->p;                                                 \
-      CHKERR(broadcast_RHprimme(&preal0, 1, ctx));                             \
-      CHKERRM(ISFINITE(preal0) && fabs(preal - preal0) >                       \
-                                        MACHINE_EPSILON * 10 * fabs(preal0),   \
-            -1, "The value of '" STR(p) "' does not match in all processes.")  \
-   }
-
-   PARALLEL_CHECK(n);
-   PARALLEL_CHECK(numEvals);
-   PARALLEL_CHECK(target);
-   PARALLEL_CHECK(numTargetShifts);
-   PARALLEL_CHECK(dynamicMethodSwitch);
-   PARALLEL_CHECK(locking);
-   PARALLEL_CHECK(initSize);
-   PARALLEL_CHECK(numOrthoConst);
-   PARALLEL_CHECK(maxBasisSize);
-   PARALLEL_CHECK(minRestartSize);
-   PARALLEL_CHECK(maxBlockSize);
-   PARALLEL_CHECK(maxMatvecs);
-   PARALLEL_CHECK(maxOuterIterations);
-   PARALLEL_CHECK(aNorm);
-   PARALLEL_CHECK(BNorm);
-   PARALLEL_CHECK(invBNorm);
-   PARALLEL_CHECK(eps);
-   PARALLEL_CHECK(orth);
-   PARALLEL_CHECK(initBasisMode);
-   PARALLEL_CHECK(projectionParams.projection);
-   PARALLEL_CHECK(restartingParams.maxPrevRetain);
-   PARALLEL_CHECK(correctionParams.precondition);
-   PARALLEL_CHECK(correctionParams.robustShifts);
-   PARALLEL_CHECK(correctionParams.maxInnerIterations);
-   PARALLEL_CHECK(correctionParams.projectors.LeftQ);
-   PARALLEL_CHECK(correctionParams.projectors.LeftX);
-   PARALLEL_CHECK(correctionParams.projectors.RightQ);
-   PARALLEL_CHECK(correctionParams.projectors.RightX);
-   PARALLEL_CHECK(correctionParams.projectors.SkewQ);
-   PARALLEL_CHECK(correctionParams.projectors.SkewX);
-   PARALLEL_CHECK(correctionParams.convTest);
-   PARALLEL_CHECK(correctionParams.relTolBase);
-#undef PARALLEL_CHECK
+   PARALLEL_CHECK(primme->n);
+   PARALLEL_CHECK(primme->numEvals);
+   PARALLEL_CHECK(primme->target);
+   PARALLEL_CHECK(primme->numTargetShifts);
+   PARALLEL_CHECK(primme->dynamicMethodSwitch);
+   PARALLEL_CHECK(primme->locking);
+   PARALLEL_CHECK(primme->initSize);
+   PARALLEL_CHECK(primme->numOrthoConst);
+   PARALLEL_CHECK(primme->maxBasisSize);
+   PARALLEL_CHECK(primme->minRestartSize);
+   PARALLEL_CHECK(primme->maxBlockSize);
+   PARALLEL_CHECK(primme->maxMatvecs);
+   PARALLEL_CHECK(primme->maxOuterIterations);
+   PARALLEL_CHECK(primme->aNorm);
+   PARALLEL_CHECK(primme->BNorm);
+   PARALLEL_CHECK(primme->invBNorm);
+   PARALLEL_CHECK(primme->eps);
+   PARALLEL_CHECK(primme->orth);
+   PARALLEL_CHECK(primme->initBasisMode);
+   PARALLEL_CHECK(primme->projectionParams.projection);
+   PARALLEL_CHECK(primme->restartingParams.maxPrevRetain);
+   PARALLEL_CHECK(primme->correctionParams.precondition);
+   PARALLEL_CHECK(primme->correctionParams.robustShifts);
+   PARALLEL_CHECK(primme->correctionParams.maxInnerIterations);
+   PARALLEL_CHECK(primme->correctionParams.projectors.LeftQ);
+   PARALLEL_CHECK(primme->correctionParams.projectors.LeftX);
+   PARALLEL_CHECK(primme->correctionParams.projectors.RightQ);
+   PARALLEL_CHECK(primme->correctionParams.projectors.RightX);
+   PARALLEL_CHECK(primme->correctionParams.projectors.SkewQ);
+   PARALLEL_CHECK(primme->correctionParams.projectors.SkewX);
+   PARALLEL_CHECK(primme->correctionParams.convTest);
+   PARALLEL_CHECK(primme->correctionParams.relTolBase);
 
    return 0;
 }
@@ -602,11 +590,11 @@ static int coordinated_exit(int ret, primme_context ctx) {
    if (ret != PRIMME_PARALLEL_FAILURE && primme->globalSumReal) {
       HREAL pret = (HREAL)(ret != 0 ? 1 : 0);
       int count = 1, ierr = 0;
-      CHKERRM((primme->globalSumReal(&pret, &pret, &count, primme, &ierr),
-               ierr), PRIMME_USER_FAILURE,
-            "Error returned by 'globalSumReal' %d", ierr);
+      CHKERRM(
+            (primme->globalSumReal(&pret, &pret, &count, primme, &ierr), ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
       if (pret > 0.0) return ret ? ret : PRIMME_PARALLEL_FAILURE;
    }
 
-   return 0;
+   return ret;
 }

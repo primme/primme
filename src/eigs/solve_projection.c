@@ -792,8 +792,8 @@ TEMPLATE_PLEASE
 int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       int ldH, REAL *hVals, REAL *hSVals, SCALAR *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int *map, int RRForAll, SCALAR *hVecsRot, int ldhVecsRot,
-      SCALAR *prevhVecs, int nprevhVecs, int ldprevhVecs, primme_context ctx) {
+      int *flags, int RRForAll, SCALAR *hVecsRot, int ldhVecsRot,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j, k;         /* Loop indices */
@@ -809,9 +809,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
 
       if (flags) {
          for (i = i0, j = 0; i < basisSize && j < blockSize; i++) {
-            CHKERR(map_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs,
-                  ldprevhVecs, hVecs, i, i + 1, ldhVecs, map, ctx));
-            if (flags[map[i]] == UNCONVERGED) j++;
+            if (flags[i] == UNCONVERGED) j++;
          }
       }
 
@@ -846,9 +844,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       /* -------------------------------------------------------------------- */
 
       for ( ; j < i; j++) {
-         CHKERR(map_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs, ldprevhVecs,
-               hVecs, j, j + 1, ldhVecs, map, ctx));
-         if (!flags || flags[map[j]] == UNCONVERGED)
+         if (!flags || flags[j] == UNCONVERGED)
             candidates++;
       }
      
