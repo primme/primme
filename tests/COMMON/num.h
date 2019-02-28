@@ -40,8 +40,8 @@
 #else
 #  define IMAGINARY 0.0
 #endif
-#define Sprimme CONCAT(SCALAR_PRE,primme)
-#define Sprimme_svds CONCAT(SCALAR_PRE,primme_svds)
+#define Sprimme SCALAR_SUF
+#define Sprimme_svds CONCAT(SCALAR_SUF,_svds)
 #include <stdlib.h>   /* malloc, free */
 #define primme_calloc(N,S,D) (malloc((N)*(S)))
 #define ASSERT_MSG(COND, RETURN, ...) { if (!(COND)) {fprintf(stderr, "Error in " __FUNCT__ ": " __VA_ARGS__); return (RETURN);} }
