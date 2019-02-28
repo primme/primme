@@ -79,15 +79,15 @@ C     Defining easy to remember labels for setting the
 C     members of the primme structure from Fortran
 C-------------------------------------------------------
       INTEGER
-     : PRIMME_n                                      
-     : PRIMME_matrixMatvec                           
-     : PRIMME_matrixMatvec_type                      
-     : PRIMME_applyPreconditioner                    
-     : PRIMME_applyPreconditioner_type               
-     : PRIMME_massMatrixMatvec                       
-     : PRIMME_massMatrixMatvec_type                  
-     : PRIMME_numProcs                               
-     : PRIMME_procID                                 
+     : PRIMME_n                                      , 
+     : PRIMME_matrixMatvec                           , 
+     : PRIMME_matrixMatvec_type                      , 
+     : PRIMME_applyPreconditioner                    , 
+     : PRIMME_applyPreconditioner_type               , 
+     : PRIMME_massMatrixMatvec                       , 
+     : PRIMME_massMatrixMatvec_type                  , 
+     : PRIMME_numProcs                               , 
+     : PRIMME_procID                                 , 
      : PRIMME_commInfo                               ,
      : PRIMME_nLocal                                 ,
      : PRIMME_globalSumReal                          ,
@@ -316,5 +316,5 @@ C-------------------------------------------------------
      : primme_op_double = 2,
      : primme_op_float = 3,
      : primme_op_half = 4,
-     : primme_op_half = 5
+     : primme_op_int = 5
      : )
