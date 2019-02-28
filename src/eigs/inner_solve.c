@@ -61,6 +61,8 @@ static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
       PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
       SCALAR *result, PRIMME_INT ldresult, primme_context ctx);
 
+static int perm_set_value_on_pos(int *p, int val, int pos, int n);
+
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
  *    
@@ -333,8 +335,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
                      &sol[ldsol * i], ldsol, ctx);
             }
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
 
@@ -350,8 +351,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
                      &sol[ldsol * i], ldsol, ctx);
             }
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
 
@@ -432,16 +432,14 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          if (fabs(rho_prev[p[i]]) == 0.0L ) {
             PRINTF(5, "Exiting because abs(rho) %e in block vector %d",
                   fabs(rho_prev[p[i]]), p[i]);
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
       
          if (numIts > 0 && tau[p[i]] < LTolerance) {
             PRINTF(5, " tau < LTol %e %e in block vector %d", tau[p[i]],
                   LTolerance, p[i]);
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
          if (ETolerance > 0.0 || ETolerance_factor > 0.0) {
@@ -500,38 +498,33 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             if (numIts > 0 && (tau_prev[p[i]] <= eres_updated[p[i]] ||
                                     eres_prev <= tau[p[i]])) {
                PRINTF(5, " tau < R eres for block vector %d", p[i]);
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
             if (primme->target == primme_smallest &&
                   eval_updated > eval_prev[p[i]]) {
                PRINTF(5, "eval_updated > eval_prev in block vector %d", p[i]);
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
             else if (primme->target == primme_largest && eval_updated < eval_prev[p[i]]){
                PRINTF(5, "eval_updated < eval_prev in block vector %d", p[i]);
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             } else if (primme->target == primme_closest_abs &&
                        fabs(eval[p[i]] - eval_updated) >
                              tau_init[p[i]] + eres_updated[p[i]]) {
                PRINTF(5, "|eval-eval_updated| > tau0+eres in block vector %d",
                      p[i]);
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
           
             if (numIts > 0 && eres_updated[p[i]] < ETolerance*tau_init[p[i]]) {
                PRINTF(5, "eres < eresTol %e in block vector %d",
                      eres_updated[p[i]], p[i]);
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
@@ -554,8 +547,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                      "criterion in block vector %d",
                      p[i]);
                (*touch)++;
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
@@ -586,8 +578,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                      "eigenvalue and residual norm "
                      "passed convergence criterion in block vector %d",
                      p[i]);
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
@@ -895,6 +886,40 @@ static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
    }
 
    return 0;
+}
+
+/*******************************************************************************
+ * Subroutine perm_set_value_on_pos - find the position of the value on the
+ *    vector and swap with the given position.
+ *
+ * Input/Output Parameters
+ * -----------------------
+ * p      The input vector (it is modified)
+ *
+ * val    The value to seek
+ *
+ * pos    The position where the value is going to be moved
+ *
+ * n      The length of the vector
+ *
+ * Output Parameters
+ * -----------------
+ * error code
+ *
+ ******************************************************************************/
+
+static int perm_set_value_on_pos(int *p, int val, int pos, int n) {
+
+   int i;
+   for (i=0; i<n; i++) {
+      if (p[i] == val) {
+         p[i] = p[pos];
+         p[pos] = val;
+         return 0;
+      }
+   }
+
+   return -1;
 }
 
 #endif /* SUPPORTED_TYPE */
