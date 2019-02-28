@@ -73,6 +73,8 @@
 #include "update_W.h"
 #endif
  
+#ifdef SUPPORTED_TYPE
+
 static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
       int ldVLtVL, HSCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
       PRIMME_INT ldLocked, int numLocked,
@@ -85,8 +87,9 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       HSCALAR *A, int ldA, HREAL *D, HSCALAR *Y, int ldY, int Yortho, SCALAR *W,
       int nW, PRIMME_INT ldW, HSCALAR *B, int ldB, primme_context ctx);
 
-static int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY, HREAL *evals,
-      int *Yortho, primme_context ctx);
+static int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
+      HREAL *evals, int *Yortho, primme_context ctx);
+
 static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
 
 
@@ -132,7 +135,8 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
  * 
  **********************************************************************/
 
-static int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
+TEMPLATE_PLEASE
+int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
       int b1, int b2, SCALAR *locked, PRIMME_INT ldLocked, int numLocked,
       HSCALAR *RLocked, int ldRLocked, PRIMME_INT nLocal,
       int (*B)(SCALAR *, PRIMME_INT, SCALAR *, PRIMME_INT, int, void *),
@@ -373,9 +377,9 @@ int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2
 }
 
 #ifdef USE_HOST
-struct local_matvec_ctx { SCALAR *B; int n, ldB; primme_context ctx;};
+struct local_matvec_ctx { HSCALAR *B; int n, ldB; primme_context ctx;};
 
-static int local_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
+static int local_matvec(HSCALAR *x, PRIMME_INT ldx, HSCALAR *y, PRIMME_INT ldy,
       int bs, void *Bctx_) {
    struct local_matvec_ctx *Bctx = (struct local_matvec_ctx*)Bctx_;
    Num_zero_matrix_SHprimme(y, Bctx->n, 1, Bctx->n, Bctx->ctx);
@@ -385,9 +389,9 @@ static int local_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
 }
 
 TEMPLATE_PLEASE
-int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
-      int ldR, int b1, int b2, SCALAR *locked, int ldLocked,
-      int numLocked, PRIMME_INT nLocal, SCALAR *B, int ldB, PRIMME_INT *iseed,
+int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,
+      int ldR, int b1, int b2, HSCALAR *locked, int ldLocked,
+      int numLocked, PRIMME_INT nLocal, HSCALAR *B, int ldB, PRIMME_INT *iseed,
       primme_context ctx) {
 
    /* Remove MPI communications from the context */
@@ -401,7 +405,7 @@ int Bortho_local_Sprimme(SCALAR *V, int ldV, SCALAR *R,
 
    struct local_matvec_ctx Bctx = {B, (int)nLocal, ldB, ctx};
    int b2_out;
-   CHKERR(Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
+   CHKERR(Bortho_gen_SHprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
          numLocked, NULL, 0, nLocal, B ? local_matvec : NULL, &Bctx, iseed,
          &b2_out, ctx));
    return b2_out == b2 + 1 ? 0 : -3;
@@ -714,7 +718,7 @@ static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
             CHKERR(Num_gemm_SHprimme("C", "N", b2 - b1, b2 - b1, b2 - b1, 1.0,
                   Y, b2 - b1, r, ldr, 0.0, C, b2 - b1, ctx));
          } else {
-            CHKERR(Num_copy_matrix_Sprimme(
+            CHKERR(Num_copy_matrix_SHprimme(
                   r, b2 - b1, b2 - b1, ldr, C, b2 - b1, ctx));
             CHKERR(Num_trmm_SHprimme("L", "U", "N", "N", b2 - b1, b2 - b1, 1.0,
                   Y, b2 - b1, C, b2 - b1, ctx));
@@ -999,8 +1003,8 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
             ldXo = m;
          } else {
             /* TODO: Fix this for GPUs */
-            CHKERR(Num_trsm_SHprimme(
-                  "R", "U", "N", "N", m, nX, 1.0, Y, ldY, &X[i], ldX));
+            CHKERR(Num_trsm_hd_Sprimme(
+                  "R", "U", "N", "N", m, nX, 1.0, Y, ldY, &X[i], ldX, ctx));
             Xo = &X[i];
             ldXo = ldX;
          }
@@ -1113,3 +1117,5 @@ static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
 
    return i;
 }
+
+#endif /* SUPPORTED_TYPE */

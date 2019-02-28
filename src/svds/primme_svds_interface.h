@@ -40,6 +40,6 @@
 #include "primme.h"
 
 void primme_svds_set_defaults(primme_svds_params *primme_svds);
-#define Sprimme_svds CONCAT(SCALAR_PRE,primme_svds)
+#define Sprimme_svds CONCAT(SCALAR_SUF,_svds)
 
 #endif

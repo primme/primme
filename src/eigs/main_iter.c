@@ -49,6 +49,8 @@
 #include "auxiliary_eigs.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 /*----------------------------------------------------------------------------*
  * The following are needed for the Dynamic Method Switching
  *----------------------------------------------------------------------------*/
@@ -335,6 +337,8 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                               &prevRitzVals, ctx));
    CHKERR(Num_malloc_RHprimme(primme->maxBlockSize, &blockNorms, ctx));
    CHKERR(Num_malloc_RHprimme(primme->maxBasisSize, &basisNorms, ctx));
+   CHKERR(
+         Num_zero_matrix_RHprimme(basisNorms, 1, primme->maxBasisSize, 1, ctx));
 
    /* Integer objects */
 
@@ -545,7 +549,7 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      &numArbitraryVecs, &smallestResNorm, hVecsRot,
                      primme->maxBasisSize, numConverged, basisNorms, &reset,
                      VtBV, ldVtBV, prevhVecs, nprevhVecs, primme->maxBasisSize,
-                     practConvCheck, map, ctx);
+                     practConvCheck, map, startTime, ctx);
                assert(recentlyConverged >= 0);
                candidates_prepared = 1;
             }
@@ -568,17 +572,10 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Report iteration */
 
-            if (primme->monitorFun) {
-               primme_event EVENT_OUTER_ITERATION = primme_event_outer_iteration;
-               primme->stats.elapsedTime = primme_wTimer() - startTime;
-               int err;
-               CHKERRM((primme->monitorFun(hVals, &basisSize, flags, iev,
-                              &blockSize, basisNorms, &numConverged, evals,
-                              &numLocked, lockedFlags, resNorms, NULL, NULL,
-                              NULL, NULL, &EVENT_OUTER_ITERATION, primme, &err),
-                             err),
-                     -1, "Error returned by monitorFun: %d", err);
-            }
+            CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, iev, blockSize,
+                  basisNorms, numConverged, evals, numLocked, lockedFlags,
+                  resNorms, -1, -1.0, NULL, 0.0, primme_event_outer_iteration,
+                  startTime, ctx));
 
             /* Reset touch every time an eigenpair converges */
 
@@ -741,17 +738,10 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      flags[iev[i]] = PRACTICALLY_CONVERGED;
                      numConverged++;
                      /* Report a pair was soft converged */
-                     if (primme->monitorFun) {
-                        int ONE = 1;
-                        primme_event EVENT_CONVERGED = primme_event_converged;
-                        int err;
-                        CHKERRM((primme->monitorFun(hVals, &basisSize, flags,
-                                       &iev[i], &ONE, basisNorms, &numConverged,
-                                       NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                                       NULL, &EVENT_CONVERGED, primme, &err),
-                                      err),
-                              -1, "Error returned by monitorFun: %d", err);
-                     }
+                     CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, &iev[i],
+                           1, basisNorms, numConverged, NULL, 0, NULL, NULL,
+                           -1, -1.0, NULL, 0.0, primme_event_converged,
+                           startTime, ctx));
                   }
                }
                CHKERR(Num_free_SHprimme(Rlocked, ctx));
@@ -944,7 +934,7 @@ int main_iter_Sprimme(HREAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   iev, &blockSize, &recentlyConverged, &numArbitraryVecs,
                   dummySmallestResNorm, hVecsRot, primme->maxBasisSize,
                   numConverged, basisNorms, &reset, VtBV, ldVtBV, prevhVecs,
-                  nprevhVecs, primme->maxBasisSize, 0, map, ctx);
+                  nprevhVecs, primme->maxBasisSize, 0, map, startTime, ctx);
             assert(recentlyConverged >= 0);
 
             /* When QR is computed and there are more than one target shift   */
@@ -1397,7 +1387,8 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       int *numArbitraryVecs, double *smallestResNorm, HSCALAR *hVecsRot,
       int ldhVecsRot, int numConverged, HREAL *basisNorms, int *reset,
       HSCALAR *VtBV, int ldVtBV, HSCALAR *prevhVecs, int nprevhVecs,
-      int ldprevhVecs, int practConvChecking, int *map, primme_context ctx) {
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, blki;         /* loop variables */
@@ -1511,17 +1502,10 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                     primme->numEvals + 1 - (*recentlyConverged) - numConverged);
 
             /* Report a pair was soft converged */
-            if (primme->monitorFun) {
-               int ONE = 1, numConverged0 = numConverged+*recentlyConverged;
-               primme_event EVENT_CONVERGED = primme_event_converged;
-               int err;
-               CHKERRM((primme->monitorFun(hVals, &basisSize, flags, &iev[blki],
-                              &ONE, basisNorms, &numConverged0, NULL, NULL,
-                              NULL, NULL, NULL, NULL, NULL, NULL,
-                              &EVENT_CONVERGED, primme, &err),
-                             err),
-                     -1, "Error returned by monitorFun: %d", err);
-            }
+            CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, &iev[blki], 1,
+                  basisNorms, numConverged + *recentlyConverged, NULL, 0, NULL,
+                  NULL, -1, -1.0, NULL, 0.0, primme_event_converged, startTime,
+                  ctx));
          }
          else if (flagsBlock[i] == UNCONVERGED) {
             /* Update the smallest residual norm */
@@ -2271,3 +2255,5 @@ static void displayModel(primme_CostModel *model){
    fprintf(stdout," ------------------------------\n");
 }
 #endif
+
+#endif /* SUPPORTED_TYPE */

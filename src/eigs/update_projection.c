@@ -43,6 +43,8 @@
 #include "update_projection.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 /*******************************************************************************
  * Subroutine update_projection - Z = X'*Y. If Z is a Hermitian matrix 
  *    whose columns will be updated with blockSize vectors, even though space 
@@ -156,3 +158,5 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */

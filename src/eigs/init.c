@@ -47,6 +47,8 @@
 #include "auxiliary_eigs.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, int dv1, int dv2,
       SCALAR *locked, PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV,
@@ -321,3 +323,5 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */

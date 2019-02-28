@@ -42,6 +42,7 @@
 #include "ortho.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
 
 /*******************************************************************************
  * Subroutine matrixMatvec_ - Computes A*V(:,nv+1) through A*V(:,nv+blksze)
@@ -67,8 +68,6 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int ierr = 0;
-   double t0;
 
    if (blockSize <= 0)
       return 0;
@@ -76,24 +75,45 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    assert(ldV >= nLocal && ldW >= nLocal);
    assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
 
-   t0 = primme_wTimer();
+   double t0 = primme_wTimer();
+
+   /* Cast V and W */
+
+   SCALAR *Vb = &V[ldV * basisSize], *Wb = &W[ldW * basisSize];
+   void *V0, *W0;
+   PRIMME_INT ldV0, ldW0;
+   CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
+         PRIMME_OP_SCALAR, &V0, &ldV0, primme->matrixMatvec_type, 1 /* alloc */,
+         1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(Wb, nLocal, blockSize, ldW,
+         PRIMME_OP_SCALAR, &W0, &ldW0, primme->matrixMatvec_type, 1 /* alloc */,
+         0 /* no copy */, ctx));
 
    /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
 
-   CHKERRM((primme->matrixMatvec(&V[ldV * basisSize], &ldV, &W[ldW * basisSize],
-                  &ldW, &blockSize, primme, &ierr),
-                 ierr),
+   int ierr = 0;
+   CHKERRM(
+         (primme->matrixMatvec(V0, &ldV0, W0, &ldW0, &blockSize, primme, &ierr),
+               ierr),
          PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
+
+   /* Copy back W */
+
+   CHKERR(Num_matrix_astype_Sprimme(W0, nLocal, blockSize, ldW0,
+         primme->matrixMatvec_type, (void **)&Wb, &ldW,
+         PRIMME_OP_SCALAR, 0 /* not alloc */, 1 /* copy */, ctx));
+
+   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+   if (Wb != W0) CHKERR(Num_free_Sprimme((SCALAR*)W0, ctx));
 
    primme->stats.timeMatvec += primme_wTimer() - t0;
    primme->stats.numMatvecs += blockSize;
 
    return 0;
-
 }
 
 /*******************************************************************************
- * Subroutine matrixMatvec_ - Computes B*V(:,nv+1:nv+blksze)
+ * Subroutine massMatrixMatvec - Computes B*V(:,nv+1:nv+blksze)
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -115,8 +135,6 @@ int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int ierr = 0;
-   double t0;
 
    if (blockSize <= 0)
       return 0;
@@ -124,14 +142,36 @@ int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    assert(ldV >= nLocal && ldBV >= nLocal);
    assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
 
-   t0 = primme_wTimer();
+   double t0 = primme_wTimer();
+
+   /* Cast V and BV */
+
+   SCALAR *Vb = &V[ldV * basisSize], *BVb = &BV[ldBV * basisSize];
+   void *V0, *BV0;
+   PRIMME_INT ldV0, ldBV0;
+   CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
+         PRIMME_OP_SCALAR, &V0, &ldV0, primme->massMatrixMatvec_type,
+         1 /* alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(BVb, nLocal, blockSize, ldBV,
+         PRIMME_OP_SCALAR, &BV0, &ldBV0, primme->massMatrixMatvec_type,
+         1 /* alloc */, 0 /* no copy */, ctx));
 
    /* BV(:,c) = B*V(:,c) for c = basisSize:basisSize+blockSize-1 */
 
-   CHKERRM((primme->massMatrixMatvec(&V[ldV * basisSize], &ldV,
-                  &BV[ldBV * basisSize], &ldBV, &blockSize, primme, &ierr),
+   int ierr = 0;
+   CHKERRM((primme->massMatrixMatvec(
+                  V0, &ldV0, BV0, &ldBV, &blockSize, primme, &ierr),
                  ierr),
          PRIMME_USER_FAILURE, "Error returned by 'massMatrixMatvec' %d", ierr);
+
+   /* Copy back BV */
+
+   CHKERR(Num_matrix_astype_Sprimme(BV0, nLocal, blockSize, ldBV0,
+         primme->matrixMatvec_type, (void **)&BVb, &ldBV, PRIMME_OP_SCALAR,
+         0 /* not alloc */, 1 /* copy */, ctx));
+
+   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+   if (BVb != BV0) CHKERR(Num_free_Sprimme((SCALAR*)BV0, ctx));
 
    primme->stats.timeMatvec += primme_wTimer() - t0;
    primme->stats.numMatvecs += blockSize;
@@ -193,3 +233,5 @@ int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */

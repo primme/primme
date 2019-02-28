@@ -47,14 +47,36 @@
 /* (complex double and complex float) and C++ (std::complex<double> and       */
 /* std::complex<float>). Of course both complex types are binary compatible.  */
 
+#ifdef __clang__
+#  define PRIMME_HALF _Float16
+#  define PRIMME_WITH_NATIVE_HALF
+#else
+   struct _primme_half {int short a;};
+#  define PRIMME_HALF struct _primme_half
+#endif
+
+#define PRIMME_QUAD double long
+
 #ifdef __cplusplus
 #  include <complex>
+#  ifdef PRIMME_WITH_NATIVE_HALF
+#     define PRIMME_COMPLEX_HALF std::complex<_Float16>
+#     define PRIMME_WITH_NATIVE_COMPLEX_HALF
+#  else
+      struct _primme_complex_half {PRIMME_HALF r; PRIMME_HALF i;};
+#     define PRIMME_COMPLEX_HALF struct _primme_complex_half
+#  endif
 #  define PRIMME_COMPLEX_FLOAT std::complex<float>
 #  define PRIMME_COMPLEX_DOUBLE std::complex<double>
+#  define PRIMME_COMPLEX_QUAD std::complex<PRIMME_QUAD>
 #else
 #  include <complex.h>
+/* Complex half is not part of C99 */
+   struct _primme_complex_half {PRIMME_HALF r; PRIMME_HALF i;};
+#  define PRIMME_COMPLEX_HALF struct _primme_complex_half
 #  define PRIMME_COMPLEX_FLOAT float complex
 #  define PRIMME_COMPLEX_DOUBLE double complex
+#  define PRIMME_COMPLEX_QUAD long double complex
 #endif
 
 /* Required by some C++ compilers when including inttypes.h */
@@ -103,5 +125,5 @@
 #define PRIMME_USER_FAILURE               -41
 #define PRIMME_ORTHO_CONST_FAILURE        -42
 #define PRIMME_PARALLEL_FAILURE           -43
-
+#define PRIMME_FUNCTION_UNAVAILABLE       -44
 #endif /* PRIMME_H */

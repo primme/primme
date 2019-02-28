@@ -40,7 +40,10 @@ ARCHS := float floatcomplex double doublecomplex
 ifeq ($(PRIMME_WITH_MAGMA),yes)
    ARCHS += $(foreach a,$(ARCHS),$(a)magma)
 endif
-ALL_ARCHS := FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
+ifeq ($(PRIMME_WITH_HALF),yes)
+   ARCHS += half halfcomplex
+endif
+ALL_ARCHS := HALF HALFCOMPLEX FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
    FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA
 
 OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
@@ -109,6 +112,12 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 
 %floatcomplex.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX -c $< -o $@
+
+%half.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALF -c $< -o $@
+
+%halfcomplex.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALFCOMPLEX -c $< -o $@
 
 %doublemagma.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLE_MAGMA -c $< -o $@

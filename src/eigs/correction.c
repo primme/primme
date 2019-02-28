@@ -42,6 +42,8 @@
 #include "auxiliary_eigs.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 static HREAL computeRobustShift(int blockIndex, double resNorm, 
    HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 
    HREAL *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
@@ -974,3 +976,5 @@ static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    return 0;
 
 } /* setup_JD_projectors */
+
+#endif /* SUPPORTED_TYPE */

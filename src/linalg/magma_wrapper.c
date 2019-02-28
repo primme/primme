@@ -46,6 +46,9 @@
 #include "magma_wrapper.h"
 #endif
 
+
+#ifdef SUPPORTED_TYPE
+
 #ifdef USE_MAGMA
 
 #if defined(MAGMA_ILP64) || defined(MKL_ILP64)
@@ -555,3 +558,5 @@ int Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 } 
 
 #endif /* USE_MAGMA */
+
+#endif /* SUPPORTED_TYPE */

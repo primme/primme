@@ -38,6 +38,6 @@
 
 void primme_set_defaults(primme_params *params);
 void primme_display_params_prefix(const char* prefix, primme_params primme);
-#define Sprimme CONCAT(SCALAR_PRE,primme)
+#define Sprimme SCALAR_SUF
 
 #endif

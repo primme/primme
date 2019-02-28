@@ -33,25 +33,45 @@
 
 #ifndef update_W_H
 #define update_W_H
-int matrixMatvec_sprimme(float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      float *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_hprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_sprimme(float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      float *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_hprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_sprimme(float *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, float *W,
-      PRIMME_INT ldW, float *Q, PRIMME_INT ldQ, float *R, int ldR,
-      float *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_hprimme(dummy_type_hprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_hprimme *W,
+      PRIMME_INT ldW, dummy_type_hprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
+      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
-int matrixMatvec_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      PRIMME_COMPLEX_FLOAT *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_kprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_cprimme(PRIMME_COMPLEX_FLOAT *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_kprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_cprimme(PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, PRIMME_COMPLEX_FLOAT *W,
-      PRIMME_INT ldW, PRIMME_COMPLEX_FLOAT *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *R, int ldR,
-      PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_kprimme(dummy_type_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_kprimme *W,
+      PRIMME_INT ldW, dummy_type_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
+      int blockSize, int *nQ, primme_context ctx);
+int matrixMatvec_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_sprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_sprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int update_Q_sprimme(dummy_type_sprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_sprimme *W,
+      PRIMME_INT ldW, dummy_type_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
+      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
+      int blockSize, int *nQ, primme_context ctx);
+int matrixMatvec_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int update_Q_cprimme(dummy_type_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(matrixMatvec_Sprimme)
 #  define matrixMatvec_Sprimme CONCAT(matrixMatvec_,SCALAR_SUF)
@@ -65,8 +85,14 @@ int update_Q_cprimme(PRIMME_COMPLEX_FLOAT *BV, PRIMME_INT nLocal, PRIMME_INT ldB
 #if !defined(CHECK_TEMPLATE) && !defined(matrixMatvec_RHprimme)
 #  define matrixMatvec_RHprimme CONCAT(matrixMatvec_,HOST_REAL_SUF)
 #endif
-int matrixMatvec_dprimme(double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      double *W, PRIMME_INT ldW, int basisSize, int blockSize,
+#if !defined(CHECK_TEMPLATE) && !defined(matrixMatvec_SXprimme)
+#  define matrixMatvec_SXprimme CONCAT(matrixMatvec_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(matrixMatvec_RXprimme)
+#  define matrixMatvec_RXprimme CONCAT(matrixMatvec_,XREAL_SUF)
+#endif
+int matrixMatvec_dprimme(dummy_type_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_dprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(massMatrixMatvec_Sprimme)
 #  define massMatrixMatvec_Sprimme CONCAT(massMatrixMatvec_,SCALAR_SUF)
@@ -80,8 +106,14 @@ int matrixMatvec_dprimme(double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 #if !defined(CHECK_TEMPLATE) && !defined(massMatrixMatvec_RHprimme)
 #  define massMatrixMatvec_RHprimme CONCAT(massMatrixMatvec_,HOST_REAL_SUF)
 #endif
-int massMatrixMatvec_dprimme(double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      double *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+#if !defined(CHECK_TEMPLATE) && !defined(massMatrixMatvec_SXprimme)
+#  define massMatrixMatvec_SXprimme CONCAT(massMatrixMatvec_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(massMatrixMatvec_RXprimme)
+#  define massMatrixMatvec_RXprimme CONCAT(massMatrixMatvec_,XREAL_SUF)
+#endif
+int massMatrixMatvec_dprimme(dummy_type_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_dprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_Q_Sprimme)
 #  define update_Q_Sprimme CONCAT(update_Q_,SCALAR_SUF)
@@ -95,58 +127,64 @@ int massMatrixMatvec_dprimme(double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 #if !defined(CHECK_TEMPLATE) && !defined(update_Q_RHprimme)
 #  define update_Q_RHprimme CONCAT(update_Q_,HOST_REAL_SUF)
 #endif
-int update_Q_dprimme(double *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, double *W,
-      PRIMME_INT ldW, double *Q, PRIMME_INT ldQ, double *R, int ldR,
-      double *QtQ, int ldQtQ, double targetShift, int basisSize,
+#if !defined(CHECK_TEMPLATE) && !defined(update_Q_SXprimme)
+#  define update_Q_SXprimme CONCAT(update_Q_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_Q_RXprimme)
+#  define update_Q_RXprimme CONCAT(update_Q_,XREAL_SUF)
+#endif
+int update_Q_dprimme(dummy_type_dprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_dprimme *W,
+      PRIMME_INT ldW, dummy_type_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *R, int ldR,
+      dummy_type_dprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
-int matrixMatvec_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      PRIMME_COMPLEX_DOUBLE *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_zprimme(dummy_type_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_zprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_zprimme(PRIMME_COMPLEX_DOUBLE *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      PRIMME_COMPLEX_DOUBLE *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_zprimme(dummy_type_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_zprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_zprimme(PRIMME_COMPLEX_DOUBLE *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, PRIMME_COMPLEX_DOUBLE *W,
-      PRIMME_INT ldW, PRIMME_COMPLEX_DOUBLE *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *R, int ldR,
-      PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_zprimme(dummy_type_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_zprimme *W,
+      PRIMME_INT ldW, dummy_type_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
+      dummy_type_zprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
-int matrixMatvec_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_float *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_sprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_smagmaprimme(magma_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_float *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_smagmaprimme(magma_float *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, magma_float *W,
-      PRIMME_INT ldW, magma_float *Q, PRIMME_INT ldQ, float *R, int ldR,
-      float *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_magma_sprimme(dummy_type_magma_sprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_sprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
+      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
-int matrixMatvec_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_complex_float *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_cprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_cmagmaprimme(magma_complex_float *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_complex_float *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_cmagmaprimme(magma_complex_float *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, magma_complex_float *W,
-      PRIMME_INT ldW, magma_complex_float *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_FLOAT *R, int ldR,
-      PRIMME_COMPLEX_FLOAT *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_magma_cprimme(dummy_type_magma_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_cprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
-int matrixMatvec_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_double *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_dprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_dmagmaprimme(magma_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_double *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_dmagmaprimme(magma_double *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, magma_double *W,
-      PRIMME_INT ldW, magma_double *Q, PRIMME_INT ldQ, double *R, int ldR,
-      double *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_magma_dprimme(dummy_type_magma_dprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_dprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *R, int ldR,
+      dummy_type_dprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
-int matrixMatvec_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_complex_double *W, PRIMME_INT ldW, int basisSize, int blockSize,
+int matrixMatvec_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_zprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx);
-int massMatrixMatvec_zmagmaprimme(magma_complex_double *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      magma_complex_double *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+int massMatrixMatvec_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
       primme_context ctx);
-int update_Q_zmagmaprimme(magma_complex_double *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, magma_complex_double *W,
-      PRIMME_INT ldW, magma_complex_double *Q, PRIMME_INT ldQ, PRIMME_COMPLEX_DOUBLE *R, int ldR,
-      PRIMME_COMPLEX_DOUBLE *QtQ, int ldQtQ, double targetShift, int basisSize,
+int update_Q_magma_zprimme(dummy_type_magma_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_zprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
+      dummy_type_zprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
       int blockSize, int *nQ, primme_context ctx);
 #endif
