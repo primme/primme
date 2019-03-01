@@ -331,7 +331,7 @@ function [varargout] = primme_svds(varargin)
          error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
       end
       opts = rmfield(opts, 'disp');
-   elseif nargout >= 5 || showHist
+   elseif nargout >= 5 || (~isempty(showHist) && showHist)
       dispLevel = 1;
    end
    if isempty(showHist)
