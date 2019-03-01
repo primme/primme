@@ -56,7 +56,9 @@
 #define TEMPLATE_H
 
 /* Including MAGMA headers before C99 complex.h avoid compiler issues */
-#if !defined(CHECK_TEMPLATE) && (defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) || defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA))
+#if !defined(CHECK_TEMPLATE) &&                                                \
+      (defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) ||          \
+            defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA))
 #  include <magma_v2.h>
 #endif
 
@@ -69,17 +71,78 @@
 #include "primme.h"
 
 /*****************************************************************************/
+/* General                                                                   */
+/*****************************************************************************/
+
+/* Macros emitted by ctemplate and used here */
+#define CONCAT(a, b) CONCATX(a, b)
+#define CONCATX(a, b) a ## b
+#define STR(X) STR0(X)
+#define STR0(X) #X
+
+/*****************************************************************************/
 /* Arithmetic                                                                */
 /*****************************************************************************/
 
-/* Fake types for MAGMA. Compiler will complain when assigning a value and  */
-/* add, subtract, multiply and divide with a GPU type. Also when a GPU type */
-/* argument is passed when a non-GPU is expected.                           */
+/* Helper macros and types used to define SCALAR and REAL and their variants */
 
-typedef struct {double a;}  magma_double;
-typedef struct {float a;}  magma_float;
-typedef struct {PRIMME_COMPLEX_DOUBLE a;} magma_complex_double;
-typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
+#ifdef USE_DOUBLE
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) D
+#elif defined(USE_DOUBLECOMPLEX)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) Z
+#elif defined(USE_FLOAT)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) S
+#elif defined(USE_FLOATCOMPLEX)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) C
+#elif defined(USE_HALF)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) H
+#elif defined(USE_HALFCOMPLEX)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) K
+#elif defined(USE_QUAD)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) Q
+#elif defined(USE_QUADCOMPLEX)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) W
+
+
+#elif USE_DOUBLE_MAGMA
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GD
+#elif defined(USE_DOUBLECOMPLEX_MAGMA)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GZ
+#elif defined(USE_FLOAT_MAGMA)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GS
+#elif defined(USE_FLOATCOMPLEX_MAGMA)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GC
+#elif defined(USE_HALF_MAGMA)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GH
+#elif defined(USE_HALFCOMPLEX_MAGMA)
+#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GK
+
+#else
+#  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
+#endif
+
+/* BLAS/LAPACK types: allowed arithmetic (copy, add, multiply) on cpu */
+
+typedef PRIMME_HALF                        dummy_type_hprimme;
+typedef PRIMME_COMPLEX_HALF                dummy_type_kprimme;
+typedef float                              dummy_type_sprimme;
+typedef PRIMME_COMPLEX_FLOAT               dummy_type_cprimme;
+typedef double                             dummy_type_dprimme;
+typedef PRIMME_COMPLEX_DOUBLE              dummy_type_zprimme;
+typedef PRIMME_QUAD                        dummy_type_qprimme;
+typedef PRIMME_COMPLEX_QUAD                dummy_type_wprimme;
+
+/* MAGMA types: not allowed arithmetic on cpu */
+
+typedef struct { PRIMME_HALF a; }          dummy_type_magma_hprimme;
+typedef struct { PRIMME_COMPLEX_HALF a; }  dummy_type_magma_kprimme;
+typedef struct { float a; }                dummy_type_magma_sprimme;
+typedef struct { PRIMME_COMPLEX_FLOAT a; } dummy_type_magma_cprimme;
+typedef struct { double a; }               dummy_type_magma_dprimme;
+typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_zprimme;
+typedef struct { PRIMME_QUAD a; }          dummy_type_magma_qprimme;
+typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
+
 
 /**********************************************************************
  * Macros USE_FLOAT, USE_FLOATCOMPLEX, USE_DOUBLE and USE_DOUBLECOMPLEX -
@@ -87,14 +150,17 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  *    type of SCALAR, one of float, complex float, double or complex double.
  *
  * Macro SCALAR - type of the matrices problem and the eigenvectors.
+ *    It is a fake type, no arithmetic allowed. Compiler will complain when
+ *    assigning a value and add, subtract, multiply and divide.
  *
  * Macro REAL - type of the real part of SCALAR, and the type of the
- *    eigenvalues.
+ *    eigenvalues.  It is a fake type, no arithmetic allowed.
  *
- * Macro SCALAR_PRE - prefix used in Xprimme C interface function (dprimme,
- *    zprimme...) and in BLAS/LAPACK functions.
+ * Macro XSCALAR - type of the matrices problem and the eigenvectors.
+ *    Arithmetic is allowed.
  *
- * Macro REAL_PRE - prefix used in BLAS/LAPACK functions.
+ * Macro XREAL - type of the real part of SCALAR, and the type of the
+ *    eigenvalues. Arithmetic is allowd
  *
  * Macro SCALAR_SUF - suffix appended in functions whose prototypes have
  *    SCALAR and REAL arguments and is called from other files.
@@ -112,126 +178,104 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
  * Macro USE_HOST - CPU version
  *
  * Macro USE_MAGMA - MAGMA version
+ *
+ * Macro SUPPORTED_TYPE - defined if functions with the current type
+ *    are going to be built.
  **********************************************************************/
 
-#if defined(USE_DOUBLE)
-#  define SCALAR_PRE d
-#  define REAL_PRE d
-#  define SCALAR_SUF dprimme
-#  define REAL_SUF dprimme
-#  define SCALAR double
-#  define REAL double
-#  define MACHINE_EPSILON DBL_EPSILON
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) || defined(USE_FLOAT) ||     \
+      defined(USE_FLOATCOMPLEX) || defined(USE_DOUBLE) ||                      \
+      defined(USE_DOUBLECOMPLEX)
 #  define USE_HOST
-#elif defined(USE_DOUBLECOMPLEX)
-#  define SCALAR_PRE z
-#  define REAL_PRE d
-#  define SCALAR_SUF zprimme
-#  define REAL_SUF dprimme
-#  define USE_COMPLEX
-#  define SCALAR PRIMME_COMPLEX_DOUBLE
-#  define REAL double
-#  define MACHINE_EPSILON DBL_EPSILON
-#  define USE_HOST
-#elif defined(USE_FLOAT)
-#  define SCALAR_PRE s
-#  define REAL_PRE s
-#  define SCALAR_SUF sprimme
-#  define REAL_SUF sprimme
-#  define SCALAR float
-#  define REAL float
-#  define MACHINE_EPSILON FLT_EPSILON
-#  define USE_HOST
-#elif defined(USE_FLOATCOMPLEX)
-#  define SCALAR_PRE c
-#  define REAL_PRE s
-#  define SCALAR_SUF cprimme
-#  define REAL_SUF sprimme
-#  define USE_COMPLEX
-#  define SCALAR PRIMME_COMPLEX_FLOAT
-#  define REAL float
-#  define MACHINE_EPSILON FLT_EPSILON
-#  define USE_HOST
-
-/* MAGMA types */
-
-#elif defined(USE_DOUBLE_MAGMA)
-#  define SCALAR_PRE magma_d
-#  define REAL_PRE magma_d
-#  define SCALAR_SUF dmagmaprimme
-#  define REAL_SUF dmagmaprimme
-#  define HOST_SCALAR_SUF dprimme
-#  define HOST_REAL_SUF dprimme
-#  define SCALAR magma_double
-#  define REAL magma_double
-#  define HSCALAR double
-#  define HREAL double
-#  define MAGMA_SCALAR double
-#  define MAGMA_REAL double
-#  define MACHINE_EPSILON DBL_EPSILON
-#  define USE_MAGMA
-#elif defined(USE_DOUBLECOMPLEX_MAGMA)
-#  define SCALAR_PRE magma_z
-#  define REAL_PRE magma_d
-#  define SCALAR_SUF zmagmaprimme
-#  define REAL_SUF dmagmaprimme
-#  define HOST_SCALAR_SUF zprimme
-#  define HOST_REAL_SUF dprimme
-#  define USE_COMPLEX
-#  define SCALAR magma_complex_double
-#  define REAL magma_double
-#  define HSCALAR PRIMME_COMPLEX_DOUBLE
-#  define HREAL double
-#  define MAGMA_SCALAR magmaDoubleComplex
-#  define MAGMA_REAL double
-#  define MACHINE_EPSILON DBL_EPSILON
-#  define USE_MAGMA
-#elif defined(USE_FLOAT_MAGMA)
-#  define SCALAR_PRE magma_s
-#  define REAL_PRE magma_s
-#  define SCALAR_SUF smagmaprimme
-#  define REAL_SUF smagmaprimme
-#  define HOST_SCALAR_SUF sprimme
-#  define HOST_REAL_SUF sprimme
-#  define SCALAR magma_float
-#  define REAL magma_float
-#  define HSCALAR float
-#  define HREAL float
-#  define MAGMA_SCALAR float
-#  define MAGMA_REAL float
-#  define MACHINE_EPSILON FLT_EPSILON
-#  define USE_MAGMA
-#elif defined(USE_FLOATCOMPLEX_MAGMA)
-#  define SCALAR_PRE magma_c
-#  define REAL_PRE magma_s
-#  define SCALAR_SUF cmagmaprimme
-#  define REAL_SUF smagmaprimme
-#  define HOST_SCALAR_SUF cprimme
-#  define HOST_REAL_SUF sprimme
-#  define USE_COMPLEX
-#  define SCALAR magma_complex_float
-#  define REAL magma_float
-#  define HSCALAR PRIMME_COMPLEX_FLOAT
-#  define HREAL float
-#  define MAGMA_SCALAR magmaFloatComplex
-#  define MAGMA_REAL float
-#  define MACHINE_EPSILON FLT_EPSILON
+#elif defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) ||           \
+      defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA)
 #  define USE_MAGMA
 #else
-#  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
+#  error 
 #endif
 
-#ifndef HOST_SCALAR_SUF
-#  define HOST_SCALAR_SUF SCALAR_SUF
+#if defined(USE_HALF) || defined(USE_HALF_MAGMA) || defined(USE_FLOAT) ||      \
+      defined(USE_FLOAT_MAGMA) || defined(USE_DOUBLE) ||                       \
+      defined(USE_DOUBLE_MAGMA) || defined(USE_QUAD) ||                        \
+      defined(USE_QUAD_MAGMA)
+#  define USE_REAL
+#elif defined(USE_HALFCOMPLEX) || defined(USE_HALFCOMPLEX_MAGMA) ||            \
+      defined(USE_FLOATCOMPLEX) || defined(USE_FLOATCOMPLEX_MAGMA) ||          \
+      defined(USE_DOUBLECOMPLEX) || defined(USE_DOUBLECOMPLEX_MAGMA) ||        \
+      defined(USE_QUADCOMPLEX) || defined(USE_QUADCOMPLEX_MAGMA)
+#  define USE_COMPLEX
+#else
+#  error 
 #endif
-#ifndef HOST_REAL_SUF
-#  define HOST_REAL_SUF REAL_SUF
-#endif
-#ifndef HSCALAR
-#  define HSCALAR SCALAR
-#endif
-#ifndef HREAL
-#  define HREAL REAL
+
+#define SCALAR_SUF                                                             \
+   CONCAT(                                                                     \
+         ARITH(/* BLAS/LAPACK */ h, k, s, c, d, z, q, w, /* MAGMA */ magma_h,  \
+               magma_k, magma_s, magma_c, magma_d, magma_z, magma_q, magma_w), \
+         primme)
+
+#define XSCALAR_SUF                                                            \
+   CONCAT(ARITH(/* BLAS/LAPACK */ h, k, s, c, d, z, q, w, /* MAGMA */ h, k, s, \
+                c, d, z, q, w),                                                \
+         primme)
+
+#define HOST_SCALAR_SUF                                                        \
+   CONCAT(ARITH(/* BLAS/LAPACK */ s, c, s, c, d, z, q, w, /* MAGMA */ s, c, s, \
+                c, d, z, q, w),                                                \
+         primme)
+
+#define SCALAR CONCAT(dummy_type_, SCALAR_SUF)
+#define XSCALAR CONCAT(dummy_type_, XSCALAR_SUF)
+#define HSCALAR CONCAT(dummy_type_, HOST_SCALAR_SUF)
+
+#define REAL_SUF                                                               \
+   CONCAT(                                                                     \
+         ARITH(/* BLAS/LAPACK */ h, h, s, s, d, d, q, q, /* MAGMA */ magma_h,  \
+               magma_h, magma_s, magma_s, magma_d, magma_d, magma_q, magma_q), \
+         primme)
+
+#define XREAL_SUF                                                              \
+   CONCAT(ARITH(/* BLAS/LAPACK */ h, h, s, s, d, d, q, q, /* MAGMA */ h, h, s, \
+                s, d, d, q, q),                                                \
+         primme)
+
+#define HOST_REAL_SUF                                                          \
+   CONCAT(ARITH(/* BLAS/LAPACK */ s, s, s, s, d, d, q, q, /* MAGMA */ s, s, s, \
+                s, d, d, q, q),                                                \
+         primme)
+
+#define REAL CONCAT(dummy_type_, REAL_SUF)
+#define XREAL CONCAT(dummy_type_, XREAL_SUF)
+#define HREAL CONCAT(dummy_type_, HOST_REAL_SUF)
+
+#define MACHINE_EPSILON                                                        \
+   ARITH(/* BLAS/LAPACK */ 0.000977, 0.000977, FLT_EPSILON, FLT_EPSILON,       \
+         DBL_EPSILON, DBL_EPSILON, 1.92593e-34, 1.92593e-34,                   \
+         /* MAGMA */ 0.000977, 0.000977, FLT_EPSILON, FLT_EPSILON,             \
+         DBL_EPSILON, DBL_EPSILON, 1.92593e-34, 1.92593e-34)
+
+#define PRIMME_OP_SCALAR                                                       \
+   ARITH(/* BLAS/LAPACK */ primme_op_half, primme_op_half, primme_op_float,    \
+         primme_op_float, primme_op_double, primme_op_double, primme_op_quad,  \
+         primme_op_quad, /* MAGMA */ primme_op_half, primme_op_half,           \
+         primme_op_float, primme_op_float, primme_op_double, primme_op_double, \
+         primme_op_quad, primme_op_quad)
+
+#define PRIMME_OP_REAL PRIMME_OP_SCALAR
+
+#define PRIMME_OP_HSCALAR                                                      \
+   ARITH(/* BLAS/LAPACK */ primme_op_float, primme_op_float, primme_op_float,  \
+         primme_op_float, primme_op_double, primme_op_double, primme_op_quad,  \
+         primme_op_quad, /* MAGMA */ primme_op_float, primme_op_float,         \
+         primme_op_float, primme_op_float, primme_op_double, primme_op_double, \
+         primme_op_quad, primme_op_quad)
+
+#define PRIMME_OP_HREAL PRIMME_OP_HSCALAR
+
+#if defined(CHECK_TEMPLATE) ||                                                 \
+      (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) ||                     \
+      defined(PRIMME_WITH_NATIVE_HALF)
+#  define SUPPORTED_TYPE
 #endif
 
 /* A C99 code with complex type is not a valid C++ code. However C++          */
@@ -243,15 +287,18 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #ifdef USE_COMPLEX
 #  ifndef __cplusplus
 #     define REAL_PART(x) (creal(x))
+#     define IMAGINARY_PART(x) (cimag(x))
 #     define ABS(x) (cabs(x))
 #     define CONJ(x) (conj(x))
 #  else
 #     define REAL_PART(x) (std::real(x))
+#     define IMAGINARY_PART(x) (std::imag(x))
 #     define ABS(x) (std::abs(x))
 #     define CONJ(x) (std::conj(x))
 #  endif
 #else
 #  define REAL_PART(x) (x)
+#  define IMAGINARY_PART(x) 0
 #  define ABS(x) (fabs(x))
 #  define CONJ(x) (x)
 #endif
@@ -266,7 +313,7 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #endif
 
 /* exp and log macros cause warnings on some systems. PRIMME only uses  */
-/* the double version of these functions.                               */
+/* the non-complex version of these functions.                          */
 
 #ifdef pow
 #  undef pow
@@ -284,12 +331,51 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #  define ISFINITE std::isfinite
 #endif
 
+/* Helper macros to support complex arithmetic for types without complex   */
+/* support in C99. For now, only half precision has this problem. The      */
+/* approach is to cast the unsupported complex type to a supported type    */
+/* with more precision. For instance, complex half precision is cast to    */
+/* complex single precision.                                               */
+/*                                                                         */
+/* NOTE: 'A' is an unsupported complex type and 'B' is a supported type    */
+/* SET_ZERO(A)       : set A = 0                                           */
+/* SET_COMPLEX(A, B) : set A = B                                           */
+/* TO_COMPLEX(A)     : cast A to a supported complex type                  */
+/* PLUS_EQUAL(A, B)  : set A += B                                          */
+/* MULT_EQUAL(A, B)  : set A *= B                                          */
+
+#if defined(USE_HALFCOMPLEX) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
+#  define SET_ZERO(A) {(A).r = 0; (A).i = 0;}
+#  define SET_COMPLEX(A,B) {(A).r = REAL_PART(B); (A).i = IMAGINARY_PART(B);}
+#  define TO_COMPLEX(A) ((A).r + (A).i * _Complex_I)
+#  define PLUS_EQUAL(A,B) {(A).r += REAL_PART(B); (A).i += IMAGINARY_PART(B);}
+#  define MULT_EQUAL(A, B)                                                     \
+   {                                                                           \
+      HSCALAR C = TO_COMPLEX(A) * (B);                                         \
+      (A).r += REAL_PART(C);                                                   \
+      (A).i += IMAGINARY_PART(C);                                              \
+   }
+#else
+#  define SET_ZERO(A) {(A) = 0.0;}
+#  define SET_COMPLEX(A,B) (A) = (B)
+#  if defined(USE_HALFCOMPLEX) && defined(__cplusplus)
+#     define TO_COMPLEX(A) (HSCALAR(REAL_PART(A), IMAGINARY_PART(A)))
+#     define PLUS_EQUAL(A, B) (A) = TO_COMPLEX(A) + (B)
+#     define MULT_EQUAL(A, B) (A) = TO_COMPLEX(A) * (B)
+#  else
+#     define TO_COMPLEX(A) (A)
+#     define PLUS_EQUAL(A, B) (A) += (B)
+#     define MULT_EQUAL(A, B) (A) *= (B)
+#  endif
+#endif
+
+
 /* TEMPLATE_PLEASE tags the functions whose prototypes depends on macros and  */
 /* are used in other files. The macro has value only when the tool ctemplate  */
 /* is inspecting the source files, which is indicated by the macro            */
-/* CHECK_TEMPLATE begin defined. See Makefile and tools/ctemplate.            */
+/* CHECK_TEMPLATE being defined. See Makefile and tools/ctemplate.            */
 /*                                                                            */
-/* When SCALAR is not a complex type (e.g., float and double) the function it */
+/* When SCALAR is not a complex type (e.g., float and double) the function    */
 /* will be referred as _Sprimme and _Rprimme. Otherwise it will be referred   */
 /* only as _Sprimme. The term TEMPLATE_PLEASE should prefix every function    */
 /* that will be instantiated with different values for SCALAR and REAL.       */
@@ -297,15 +383,20 @@ typedef struct {PRIMME_COMPLEX_FLOAT a;} magma_complex_float;
 #ifdef CHECK_TEMPLATE
 #  ifdef USE_DOUBLE
 #     define TEMPLATE_PLEASE \
-        APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") USE(RHprimme,"HOST_REAL_SUF")
+        APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") USE(RHprimme,"HOST_REAL_SUF") USE(SXprimme,"XSCALAR_SUF") USE(RXprimme,"XREAL_SUF")
 #  else
 #     define TEMPLATE_PLEASE \
         APPEND_FUNC(Sprimme,SCALAR_SUF)
 #  endif
+
 /* Avoid to use the final type for integers and complex in generated       */
-/* headers file. Instead use PRIMME_COMPLEX_FLOAT and _DOUBLE.             */
+/* headers file. Instead use PRIMME_COMPLEX_FLOAT, _HALF and _DOUBLE.      */
+#  undef PRIMME_HALF
+#  undef PRIMME_COMPLEX_HALF
 #  undef PRIMME_COMPLEX_FLOAT
 #  undef PRIMME_COMPLEX_DOUBLE
+#  undef PRIMME_QUAD
+#  undef PRIMME_COMPLEX_QUAD
 #  undef PRIMME_INT
 #else
 #  define TEMPLATE_PLEASE
@@ -709,12 +800,6 @@ typedef struct primme_context_str {
 /* Miscellanea                                                               */
 /*****************************************************************************/
 
-/* Used by macros emitted by ctemplate */
-#define CONCAT(a, b) CONCATX(a, b)
-#define CONCATX(a, b) a ## b
-#define STR(X) STR0(X)
-#define STR0(X) #X
-
 #define TO_INT(X) ((X) < INT_MAX ? (X) : INT_MAX)
 
 #ifdef F77UNDERSCORE
@@ -730,4 +815,4 @@ typedef struct primme_context_str {
 #  define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#endif
+#endif /* TEMPLATE_H */

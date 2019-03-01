@@ -127,7 +127,7 @@ Now sum_x calls sum_f or sum_d depending of the value of the macro SUF.
 
 def generate_definitions(s):
 	r = []
-	p = r'\s*'.join(r'APPEND_FUNC \( (?P<SUF>\w*) , (?P<NEW>\w*) \) (?P<USE>(USE \( \w* , "\w*" \) )*) (?P<D>[^{]+ (?P<F>\b\w+\b) \([^{;]*) \{'.split())
+	p = r'\s*'.join(r'APPEND_FUNC \( (?P<SUF>\w*) , (?P<NEW>\w*) \) (?P<USE>(USE \( \w* , "\w*" \) )*) (?P<D>[^{(;]+ (?P<F>\b\w+\b) \([^{;]*) \{'.split())
 	for m in re.finditer(p, s):
 		# Replace SUF by NEW in the function name F
 		Fnew = re.sub(m.group('SUF')+'$', m.group('NEW'), m.group('F'))

@@ -44,7 +44,9 @@
 #include "auxiliary_eigs.h"
 #endif
 
-#ifdef USE_HOST
+#ifdef SUPPORTED_TYPE
+
+#if defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF))
 
 static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
       SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
@@ -531,8 +533,8 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       Num_copy_matrix_Sprimme(
             VtBV, basisSize, basisSize, ldVtBV, U_VtBV, basisSize, ctx);
       CHKERR(Num_potrf_Sprimme("U", basisSize, U_VtBV, basisSize, NULL, ctx));
-      Num_trsm_Sprimme("R", "U", "N", "N", basisSize, basisSize, 1.0, U_VtBV,
-            basisSize, hVecs, basisSize);
+      CHKERR(Num_trsm_Sprimme("R", "U", "N", "N", basisSize, basisSize, 1.0,
+            U_VtBV, basisSize, hVecs, basisSize, ctx));
    }
 
    /* Note gesvd returns transpose(V) rather than V and sorted in descending */
@@ -554,8 +556,8 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
          rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs, ctx);
 
    if (VtBV) {
-      Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, U_VtBV,
-            basisSize, hVecs, ldhVecs);
+      CHKERR(Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0,
+            U_VtBV, basisSize, hVecs, ldhVecs, ctx));
       CHKERR(Num_free_Sprimme(U_VtBV, ctx));
    }
 
@@ -990,7 +992,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
             if (k < i) continue;
 
             /* Update ipmax and jmax */
-            ipmax = ABS(ipij / Vnorms[j]);
+            ipmax = fabs(ipij / Vnorms[j]);
             jmax = j;
          }
       }
@@ -1009,4 +1011,6 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
    return 0;
 }
 
-#endif /* USE_HOST */
+#endif /* defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)) */
+
+#endif /* SUPPORTED_TYPE */

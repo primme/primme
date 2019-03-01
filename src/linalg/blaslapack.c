@@ -42,14 +42,18 @@
 #include "template.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
-#include "blaslapack.h"
-#include "auxiliary.h" // cyclic
+#  include "blaslapack.h"
+#  include "auxiliary.h" // cyclic
 #endif
+
+
+#ifdef SUPPORTED_TYPE
 
 #ifdef USE_HOST
 
 #include "blaslapack_private.h"
 
+#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 static int free_fn_dummy (void *p, primme_context ctx) {
    (void)ctx;
    free(p);
@@ -66,7 +70,8 @@ static int free_fn_dummy (void *p, primme_context ctx) {
  * 
  ******************************************************************************/
 
-static int Num_malloc_iblasprimme(PRIMME_INT n, PRIMME_BLASINT **x, primme_context ctx) {
+static int Num_malloc_iblasprimme(
+      PRIMME_INT n, PRIMME_BLASINT **x, primme_context ctx) {
    (void)ctx;
 
    /* Quick exit */
@@ -113,6 +118,7 @@ static int Num_free_iblasprimme(PRIMME_BLASINT *x, primme_context ctx) {
 
    return 0;
 }
+#endif /* !defined(USE_HALF) && !defined(USE_HALFCOMPLEX) */
 
 
 
@@ -124,6 +130,7 @@ TEMPLATE_PLEASE
 int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                       primme_context ctx) {
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    (void)ctx;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -137,16 +144,21 @@ int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       y += ln;
    }
    return 0;
+
+#else
+   return Num_copy_matrix_Sprimme(x, 1, n, incx, y, incy, ctx);
+#endif
 }
 
 /*******************************************************************************
  * Subroutine Num_gemm_Sprimme - C = op(A)*op(B), with C size m x n
  ******************************************************************************/
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
-int  Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta,
-      SCALAR *c, int ldc, primme_context ctx) {
+int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
+      int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
+      HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -159,7 +171,7 @@ int  Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    if (m == 0 || n == 0) return 0;
 
    /* Quick exit */
-   if (k == 0) {
+   if (k == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
          Num_zero_matrix_Sprimme(c, m, n, ldc, ctx);
       }
@@ -180,26 +192,78 @@ int  Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
             transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
    }
 
-   XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
+   XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c,
+         &lldc);
 
    return 0;
 
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 TEMPLATE_PLEASE
 int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
-      SCALAR *c, int ldc, primme_context ctx) {
-   return Num_gemm_Sprimme(
-         transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc, ctx);
+      int k, HSCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb,
+      HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
+
+   /* Cast the matrices a and c to HSCALAR */
+
+   HSCALAR *af = NULL, *cf = NULL;
+   PRIMME_INT ldaf, ldcf, ldc0 = ldc;
+   int ma = (*transa == 'N' || *transa == 'n') ? m : k;
+   int na = (*transa == 'N' || *transa == 'n') ? k : m;
+
+   CHKERR(Num_matrix_astype_Sprimme(a, ma, na, lda, primme_op_default,
+         (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+   CHKERR(Num_matrix_astype_Sprimme(c, m, n, ldc, primme_op_default,
+         (void **)&cf, &ldcf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+
+   /* Call the kernel */
+
+   CHKERR(Num_gemm_SHprimme(transa, transb, m, n, k, alpha, af, ldaf, b, ldb,
+         beta, cf, ldcf, ctx));
+
+   /* Copy back c and destroy the cast matrices */
+
+   if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(cf, m, n, ldcf, PRIMME_OP_HSCALAR,
+         (void **)&c, &ldc0, primme_op_default, -1 /* destroy */, 1 /* copy */,
+         ctx));
+
+   return 0;
 }
 
 TEMPLATE_PLEASE
 int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
-      int k, SCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb, SCALAR beta,
-      SCALAR *c, int ldc, primme_context ctx) {
-   return Num_gemm_Sprimme(
-         transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc, ctx);
+      int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
+      HSCALAR beta, HSCALAR *c, int ldc, primme_context ctx) {
+
+   /* Cast the matrices a and b to HSCALAR */
+
+   HSCALAR *af = NULL, *bf = NULL;
+   PRIMME_INT ldaf, ldbf;
+   int ma = (*transa == 'N' || *transa == 'n') ? m : k;
+   int na = (*transa == 'N' || *transa == 'n') ? k : m;
+   int mb = (*transb == 'N' || *transb == 'n') ? k : n;
+   int nb = (*transb == 'N' || *transb == 'n') ? n : k;
+
+   CHKERR(Num_matrix_astype_Sprimme(a, ma, na, lda, primme_op_default,
+         (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+   CHKERR(Num_matrix_astype_Sprimme(b, mb, nb, ldb, primme_op_default,
+         (void **)&bf, &ldbf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+
+   /* Call the kernel */
+
+   CHKERR(Num_gemm_SHprimme(transa, transb, m, n, k, alpha, af, ldaf, bf, ldbf,
+         beta, c, ldc, ctx));
+
+   if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
+   if (b != (SCALAR*)bf) CHKERR(Num_free_SHprimme(bf, ctx));
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -207,9 +271,10 @@ int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
  *    where C size m x n.
  ******************************************************************************/
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
-      SCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, SCALAR beta, 
+      HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, HSCALAR beta, 
       SCALAR *c, int ldc) {
 
    PRIMME_BLASINT lm = m;
@@ -225,15 +290,17 @@ int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
 
    return 0;
 }
+#endif
 
 /*******************************************************************************
  * Subroutine Num_trmm_Sprimme - B = A*B or B*A where A is triangular,
  *    with B size m x n.
  ******************************************************************************/
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_trmm_Sprimme(const char *side, const char *uplo,
-      const char *transa, const char *diag, int m, int n, SCALAR alpha,
+      const char *transa, const char *diag, int m, int n, HSCALAR alpha,
       SCALAR *a, int lda, SCALAR *b, int ldb, primme_context ctx) {
 
    (void)ctx;
@@ -249,15 +316,17 @@ int Num_trmm_Sprimme(const char *side, const char *uplo,
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutine Num_gemv_Sprimme - y = alpha*A*x + beta*y, with A size m x n
  ******************************************************************************/
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
-int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, SCALAR *y, int incy,
-      primme_context ctx) {
+int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
+      SCALAR *a, int lda, SCALAR *x, int incx, HSCALAR beta, SCALAR *y,
+      int incy, primme_context ctx) {
 
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
@@ -271,12 +340,12 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
    if (mA == 0) return 0;
 
    /* Quick exit */
-   if (nA == 0) {
+   if (nA == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
          Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx);
       }
       else {
-      Num_scal_Sprimme(mA, beta, y, incy, ctx);
+         Num_scal_Sprimme(mA, beta, y, incy, ctx);
       }
       return 0;
    }
@@ -309,6 +378,7 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutine Num_gemv_ddh_Sprimme - y = alpha*A*x + beta*y, with A size m x n
@@ -316,12 +386,32 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, HSCALAR *y,
+int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
+      SCALAR *a, int lda, SCALAR *x, int incx, HSCALAR beta, HSCALAR *y,
       int incy, primme_context ctx) {
 
-   return Num_gemv_Sprimme(
-         transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
+   /* Cast the matrices a and x to HSCALAR */
+
+   HSCALAR *af = NULL, *xf = NULL;
+   PRIMME_INT ldaf, incxf;
+   int mx = (*transa == 'N' || *transa == 'n') ? n : m;
+
+   CHKERR(Num_matrix_astype_Sprimme(a, m, n, lda, primme_op_default,
+         (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+   CHKERR(Num_matrix_astype_Sprimme(x, 1, mx, incx, primme_op_default,
+         (void **)&xf, &incxf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+
+   /* Call the kernel */
+
+   CHKERR(Num_gemv_SHprimme(
+         transa, m, n, alpha, af, m, xf, 1, beta, y, incy, ctx));
+
+   if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
+   if (x != (SCALAR*)xf) CHKERR(Num_free_SHprimme(xf, ctx));
+
+   return 0;
 }
 
 /*******************************************************************************
@@ -330,32 +420,32 @@ int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, SCALAR alpha,
-      SCALAR *a, int lda, HSCALAR *x, int incx, SCALAR beta, SCALAR *y,
+int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
+      SCALAR *a, int lda, HSCALAR *x, int incx, HSCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
-   return Num_gemv_Sprimme(
-         transa, m, n, alpha, a, lda, x, incx, beta, y, incy, ctx);
-}
+   /* Cast the matrices a and y to HSCALAR */
 
-/*******************************************************************************
- * Subroutine Num_hemv_Sprimme - y = alpha*A*x + beta*y where A is Hermitian
- ******************************************************************************/
+   HSCALAR *af = NULL, *yf = NULL;
+   PRIMME_INT ldaf, incyf, incy0 = incy;
+   int my = (*transa == 'N' || *transa == 'n') ? m : n;
 
-TEMPLATE_PLEASE
-int Num_hemv_Sprimme(const char *uplo, int n, SCALAR alpha, 
-   SCALAR *a, int lda, SCALAR *x, int incx, SCALAR beta, 
-   SCALAR *y, int incy) {
+   CHKERR(Num_matrix_astype_Sprimme(a, m, n, lda, primme_op_default,
+         (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+   CHKERR(Num_matrix_astype_Sprimme(y, 1, my, incy, primme_op_default,
+         (void **)&yf, &incyf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
 
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT llda = lda;
-   PRIMME_BLASINT lincx = incx;
-   PRIMME_BLASINT lincy = incy;
+   CHKERR(Num_gemv_SHprimme(
+         transa, m, n, alpha, af, m, x, incx, beta, yf, incyf, ctx));
 
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
+   /* Copy back y and destroy cast matrices */
 
-   XHEMV(uplo, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
+   if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(yf, 1, my, incyf, PRIMME_OP_HSCALAR,
+         (void **)&y, &incy0, primme_op_default, -1 /* destroy */, 1 /* copy */,
+         ctx));
 
    return 0;
 }
@@ -365,10 +455,11 @@ int Num_hemv_Sprimme(const char *uplo, int n, SCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, 
+int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
    SCALAR *y, int incy, primme_context ctx) {
 
    (void)ctx;
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
@@ -380,6 +471,11 @@ int Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
       x += ln;
       y += ln;
    }
+#else
+   PRIMME_INT i;
+   for (i = 0; i < n; i++)
+      PLUS_EQUAL(y[incy * i], alpha * TO_COMPLEX(x[incx * i]));
+#endif
 
    return 0;
 }
@@ -389,23 +485,23 @@ int Num_axpy_Sprimme(PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
+HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                        primme_context ctx) {
    (void)ctx;
 /* NOTE: vecLib doesn't follow BLAS reference for sdot */
-#if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__)))
+#if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__))) || (defined(USE_HALF) && !defined(BLASLAPACK_WITH_HALF))
 /* ---- Explicit implementation of the zdotc() --- */
    PRIMME_INT i;
-   SCALAR zdotc = 0.0;
+   HSCALAR zdotc = 0.0;
    if (n <= 0) return(zdotc);
    if (incx == 1 && incy == 1) {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += CONJ(x[i]) * y[i];
+         zdotc += CONJ(TO_COMPLEX(x[i])) * TO_COMPLEX(y[i]);
       }
    }
    else {
       for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += CONJ(x[i*incx]) * y[i*incy];
+         zdotc += CONJ(TO_COMPLEX(x[i*incx])) * TO_COMPLEX(y[i*incy]);
       }
    }
    return zdotc;
@@ -414,7 +510,7 @@ SCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
-   SCALAR r = 0.0;
+   HSCALAR r = 0.0;
 
    while(n > 0) {
       ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
@@ -444,7 +540,8 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
 
    assert(idist < 4); /* complex distributions are not supported */
    return Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x, ctx);
-#else
+
+#elif (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    PRIMME_BLASINT lidist = idist;
    PRIMME_BLASINT llength;
    PRIMME_BLASINT temp[4];
@@ -471,6 +568,15 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
          iseed[i] = (int)liseed[i];
 
    return 0;
+#else
+   /* Call the HSCALAR kernel and copy back the result */
+   HSCALAR *xf = NULL;
+   CHKERR(Num_malloc_SHprimme(length, &xf, ctx));
+   CHKERR(Num_larnv_SHprimme(idist, iseed, length, xf, ctx));
+   CHKERR(Num_matrix_astype_SHprimme(xf, length, 1, length, PRIMME_OP_HSCALAR,
+         (void **)&x, NULL, PRIMME_OP_SCALAR, -1 /* destroy */, 1 /* copy */,
+         ctx));
+   return 0;
 #endif
 }
 
@@ -480,9 +586,10 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
  
 TEMPLATE_PLEASE
 int Num_scal_Sprimme(
-      PRIMME_INT n, SCALAR alpha, SCALAR *x, int incx, primme_context ctx) {
+      PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, primme_context ctx) {
 
    (void)ctx;
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
 
@@ -492,6 +599,10 @@ int Num_scal_Sprimme(
       n -= (PRIMME_INT)ln;
       x += ln;
    }
+#else
+   PRIMME_INT i;
+   for (i = 0; i < n; i++) MULT_EQUAL(x[incx * i], alpha);
+#endif
 
    return 0;
 }
@@ -505,6 +616,7 @@ int Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       primme_context ctx) {
 
    (void)ctx;
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
@@ -516,7 +628,14 @@ int Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       x += ln;
       y += ln;
    }
-
+#else
+   PRIMME_INT i;
+   for (i = 0; i < n; i++) {
+      HSCALAR a = TO_COMPLEX(x[incx * i]);
+      x[incx * i] = y[incy * i];
+      SET_COMPLEX(y[incy * i], a);
+   }
+#endif
    return 0;
 }
 
@@ -525,6 +644,7 @@ int Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
  * NOTE: xheevx is used instead of xheev because xheev is not in ESSL
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       int lda, REAL *w, primme_context ctx) {
@@ -644,6 +764,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
 #endif
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 
 /*******************************************************************************
@@ -651,6 +772,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
  * NOTE: xhegvx is used instead of xhegv because xhegv is not in ESSL
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
       int lda, SCALAR *b0, int ldb0, REAL *w, primme_context ctx) {
@@ -786,11 +908,13 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
  
 #endif
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutines for dense singular value decomposition
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
       SCALAR *a, int lda, REAL *s, SCALAR *u, int ldu, SCALAR *vt, int ldvt,
@@ -845,11 +969,13 @@ int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,
           (int)linfo);
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutine Num_hetrf_Sprimme - LL^H factorization with pivoting
  ******************************************************************************/
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
    primme_context ctx) {
@@ -924,11 +1050,13 @@ int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
 
 #endif
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutine Num_hetrs_Sprimme - b = A\b where A may store a LL^H factorization
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,
       int *ipivot, SCALAR *b, int ldb, primme_context ctx) {
@@ -970,11 +1098,13 @@ int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutine Num_potrf_Sprimme - Cholesky factorization
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,
       primme_context ctx) {
@@ -998,17 +1128,20 @@ int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 
 /*******************************************************************************
  * Subroutine Num_trsm_Sprimme - b = op(A)\b, where A is triangular
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
-      const char *diag, int m, int n, SCALAR alpha, SCALAR *a, int lda,
-      SCALAR *b, int ldb) {
+      const char *diag, int m, int n, HSCALAR alpha, SCALAR *a, int lda,
+      SCALAR *b, int ldb, primme_context ctx) {
 
+   (void)ctx;
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -1021,11 +1154,36 @@ int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
+
+TEMPLATE_PLEASE
+int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
+      const char *diag, int m, int n, HSCALAR alpha, HSCALAR *a, int lda,
+      SCALAR *b, int ldb, primme_context ctx) {
+
+   /* Cast the matrice b to HSCALAR */
+
+   HSCALAR *bf = NULL;
+   PRIMME_INT ldbf;
+   CHKERR(Num_matrix_astype_Sprimme(b, m, n, ldb, primme_op_default,
+         (void **)&bf, &ldbf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+ 
+   /* Call the kernel */
+
+   CHKERR(Num_trsm_SHprimme(
+         side, uplo, transa, diag, m, n, alpha, a, lda, bf, ldbf, ctx));
+
+   if (b != (SCALAR*)bf) CHKERR(Num_free_SHprimme(bf, ctx));
+
+   return 0;
+}
 
 /*******************************************************************************
  * Subroutine Num_getrf_Sprimme - Factorize A=LU
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_getrf_Sprimme(
       int m, int n, SCALAR *a, int lda, int *ipivot, primme_context ctx) {
@@ -1060,11 +1218,13 @@ int Num_getrf_Sprimme(
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
  * Subroutine Num_getrs_Sprimme - Computes A\X where A=LU computed with getrf
  ******************************************************************************/
  
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
 int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
       int *ipivot, SCALAR *b, int ldb, primme_context ctx) {
@@ -1101,5 +1261,8 @@ int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
 
    return 0;
 }
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 #endif /* USE_HOST */
+
+#endif /* SUPPORTED_TYPE */

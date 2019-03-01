@@ -45,6 +45,8 @@
 #include "magma_wrapper.h"
 #endif
 
+#ifdef SUPPORTED_TYPE
+
 #ifdef USE_HOST
 
 #if !(defined (__APPLE__) && defined (__MACH__))
@@ -246,12 +248,6 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx) {
 
-#if defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX)
-   primme_op_datatype PRIMME_OP_SCALAR = primme_op_float;
-#else
-   primme_op_datatype PRIMME_OP_SCALAR = primme_op_double;
-#endif
-
    /* Replace primme_op_default */
 
    if (xt == primme_op_default) xt = PRIMME_OP_SCALAR;
@@ -262,13 +258,26 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
    if (yt != PRIMME_OP_SCALAR) {
       switch(yt) {
 #ifndef USE_COMPLEX
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   return Num_matrix_astype_hprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
       case primme_op_float:  return Num_matrix_astype_sprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
       case primme_op_double: return Num_matrix_astype_dprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+      case primme_op_quad:   return Num_matrix_astype_qprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
+      case primme_op_int:    return Num_matrix_astype_iprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #else
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_HALF
+      case primme_op_half:   return Num_matrix_astype_kprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
       case primme_op_float:  return Num_matrix_astype_cprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
       case primme_op_double: return Num_matrix_astype_zprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  ifdef PRIMME_WITH_NATIVE_QUAD
+      case primme_op_quad:   return Num_matrix_astype_wprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
 #endif
-      default: CHKERR(-1);
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
       }
    }
 
@@ -298,24 +307,137 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 
    if (do_copy) {
       switch (xt) {
-#ifndef USE_COMPLEX
-      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, /* no cast */, m, n, ldx, y0, ldy0, ctx); break;
-      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, /* no cast */, m, n, ldx, y0, ldy0, ctx); break;
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX)
+#  define CAST (float)
 #else
-      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, /* no cast */, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
-      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, /* no cast */, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+#  define CAST
 #endif
-      default: CHKERR(-1);
+#ifndef USE_COMPLEX
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+#  endif
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+      case primme_op_quad:   Num_copy_matrix_Tprimme((PRIMME_QUAD*)x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+      case primme_op_int:    Num_copy_matrix_Tprimme((int*)        x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+#else
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_HALF
+      case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+#  endif
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+      case primme_op_quad:   Num_copy_matrix_Tprimme((PRIMME_QUAD*)x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+#endif
+#undef CAST
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
       }
    }
 
    /* Destroy x if asked */
 
-   if (do_alloc < 0 && x != y0) CHKERR(Num_free_Sprimme((HSCALAR *)x, ctx));
+   if (do_alloc < 0 && x != y0) CHKERR(Num_free_Sprimme((SCALAR *)x, ctx));
 
    return 0;
 }
 
+#ifdef USE_DOUBLE
+
+TEMPLATE_PLEASE
+int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx) {
+
+   /* Replace primme_op_default */
+
+   if (xt == primme_op_default) xt = primme_op_int;
+   if (yt == primme_op_default) yt = primme_op_int;
+   
+   /* Call the function that y has the type of the SCALAR */
+
+   if (yt != primme_op_int) {
+      switch(yt) {
+#ifndef USE_COMPLEX
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   return Num_matrix_astype_hprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
+      case primme_op_float:  return Num_matrix_astype_sprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+      case primme_op_double: return Num_matrix_astype_dprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+      case primme_op_quad:   return Num_matrix_astype_qprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
+#else
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_HALF
+      case primme_op_half:   return Num_matrix_astype_kprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
+      case primme_op_float:  return Num_matrix_astype_cprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+      case primme_op_double: return Num_matrix_astype_zprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  ifdef PRIMME_WITH_NATIVE_QUAD
+      case primme_op_quad:   return Num_matrix_astype_wprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#  endif
+#endif
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+      }
+   }
+
+   /* Quick exit */
+
+   if (xt == primme_op_int && do_alloc) {
+      *y = x;
+      if (ldy) *ldy = ldx;
+      return 0;
+   }
+
+   /* Create workspace for y and copy x on y */
+
+   int *y0 = NULL;
+   PRIMME_INT ldy0 = 0;
+   if (do_alloc > 0) {
+      Mem_keep_frame(
+            ctx); /* The next allocation will not be freed in this function */
+      CHKERR(Num_malloc_iprimme(m * n, &y0, ctx));
+      *y = (void*)y0;
+      ldy0 = m;
+      if (ldy) *ldy = m;
+   } else {
+      y0 = (int*)*y;
+      ldy0 = (ldy ? *ldy : 1);
+   }
+
+   if (do_copy) {
+      switch (xt) {
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX)
+#  define CAST (float)
+#else
+#  define CAST
+#endif
+#ifndef USE_COMPLEX
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+#  endif
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+      case primme_op_quad:   Num_copy_matrix_Tprimme((PRIMME_QUAD*)x, CAST, m, n, ldx, y0, ldy0, ctx); break;
+#else
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_HALF
+      case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+#  endif
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+      case primme_op_quad:   Num_copy_matrix_Tprimme((PRIMME_QUAD*)x, CAST, m*2, n, ldx*2, (REAL*)y0, ldy0*2, ctx); break;
+#endif
+#undef CAST
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+      }
+   }
+
+   /* Destroy x if asked */
+
+   if (do_alloc < 0 && x != y0) CHKERR(Num_free_iprimme((int *)x, ctx));
+
+   return 0;
+}
+
+#endif /* USE_DOUBLE */
 
 /******************************************************************************
  * Function Num_copy_matrix - Copy the matrix x into y
@@ -394,6 +516,7 @@ int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
  *
  ******************************************************************************/
 
+#if !defined(USE_HALFCOMPLEX) || defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
 TEMPLATE_PLEASE
 int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
@@ -406,11 +529,11 @@ int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    /* TODO: assert x and y don't overlap */
    for (i = 0; i < n; i++)
       for (j = 0; j < m; j++)
-            y[j * ldy + i] = CONJ(x[i * ldx + j]);
+         y[j * ldy + i] = CONJ(x[i * ldx + j]);
 
    return 0;
 }
-
+#endif
 
 /******************************************************************************
  * Function Num_zero_matrix - Zero the matrix
@@ -433,10 +556,38 @@ int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    for (i=0; i<n; i++)
       for (j=0; j<m; j++)
-         x[i*ldx+j] = 0.0;
+         SET_ZERO(x[i*ldx+j]);
 
    return 0;
 } 
+
+#ifdef USE_DOUBLE
+TEMPLATE_PLEASE
+int Num_zero_matrix_Tprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
+      PRIMME_INT n, PRIMME_INT ldx, primme_context ctx) {
+
+   switch (xt) {
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   return Num_zero_matrix_hprimme((PRIMME_HALF*)x, m, n, ldx, ctx);
+#  endif
+      case primme_op_float:  return Num_zero_matrix_sprimme((float*)      x, m, n, ldx, ctx);
+      case primme_op_double: return Num_zero_matrix_dprimme((double*)     x, m, n, ldx, ctx);
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+      case primme_op_quad:   return Num_zero_matrix_qprimme((PRIME_QUAD*) x, m, n, ldx, ctx);
+#  endif
+      case primme_op_int: {
+         PRIMME_INT i, j;
+         int *xi = (int *)x;
+         for (i = 0; i < n; i++)
+            for (j = 0; j < m; j++) xi[i * ldx + j] = 0;
+         break;
+      }
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+   }
+
+   return 0;
+}
+#endif /* USE_DOUBLE */
 
 /******************************************************************************
  * Function Num_set_matrix - Set all elements in a matrix with a given value
@@ -502,7 +653,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
          for (i=0; i<n; i++) {
             memmove(&y[i*ldy], &x[i*ldx], sizeof(SCALAR)*min(i0+i+1, m));
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
       else {
@@ -511,7 +662,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
             for (j=0, jm=min(i0+i+1, m); j<jm; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero lower part*/
-            if (zero) for (j=min(i0+i+1, m); j<m; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=min(i0+i+1, m); j<m; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
    }
@@ -523,7 +674,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
          for (i=0; i<n; i++) {
             memmove(&y[i*ldy+i0+i], &x[i*ldx+i0+i], sizeof(SCALAR)*(m-min(i0+i, m)));
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
       else {
@@ -532,7 +683,7 @@ int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,
             for (j=i+i0; j<m; j++)
                y[i*ldy+j] = x[i*ldx+j];
             /* zero upper part*/
-            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) y[i*ldy+j] = 0.0;
+            if (zero) for (j=0, jm=min(i0+i, m); j<jm; j++) SET_ZERO(y[i*ldy+j]);
          }
       }
    }
@@ -635,6 +786,7 @@ int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
  *
  ******************************************************************************/
 
+#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 TEMPLATE_PLEASE
 int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
                               int ldH, SCALAR *R, int ldR, primme_context ctx) {
@@ -654,6 +806,7 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
 
   return 0;
 }
+#endif /* !defined(USE_HALF) && !defined(USE_HALFCOMPLEX) */
 
 #endif /* USE_HOST */
 
@@ -976,3 +1129,5 @@ int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */
