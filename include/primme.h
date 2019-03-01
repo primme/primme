@@ -47,7 +47,7 @@
 /* (complex double and complex float) and C++ (std::complex<double> and       */
 /* std::complex<float>). Of course both complex types are binary compatible.  */
 
-#ifdef __clang__
+#if defined(__clang__) && defined(__FLT16_EPSILON__)
 #  define PRIMME_HALF _Float16
 #  define PRIMME_WITH_NATIVE_HALF
 #else
