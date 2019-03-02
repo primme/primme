@@ -27,7 +27,7 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: primme.c
+ * File: primme_c.c
  *
  * Purpose - Real, SCALAR precision front end to the multimethod eigensolver
  *
@@ -59,6 +59,7 @@
 #include "primme_interface.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
+#include "primme_c.h"
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
 #endif
@@ -67,8 +68,6 @@
 
 static int check_params_coherence(primme_context ctx);
 static int coordinated_exit(int ret, primme_context ctx);
-static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
-            primme_params *primme, primme_context ctx);
 static int check_input(
       REAL *evals, SCALAR *evecs, REAL *resNorms, primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
@@ -82,7 +81,7 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
 #endif /* SUPPORTED_TYPE */
 
 /*******************************************************************************
- * Subroutine Sprimme - This routine is a front end used to perform 
+ * Subroutine Xprimme - This routine is a front end used to perform 
  *    error checking on the input parameters, perform validation, 
  *    and make the call to main_iter. 
  *
@@ -117,22 +116,70 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Sprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
+int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
 #ifdef SUPPORTED_TYPE
+
    /* Generate context */
 
    primme_context ctx = primme_get_context(primme);
 
-   /* Main call */
+   /* Set the current type as the default type for user's operators */
 
-   int ret = Sprimme_for_real(evals, evecs, resNorms, primme, ctx);
+   if (primme->matrixMatvec && primme->matrixMatvec_type == primme_op_default)
+      primme->matrixMatvec_type = PRIMME_OP_SCALAR;
+   if (primme->massMatrixMatvec && primme->massMatrixMatvec_type == primme_op_default)
+      primme->massMatrixMatvec_type = PRIMME_OP_SCALAR;
+   if (primme->applyPreconditioner && primme->applyPreconditioner_type == primme_op_default)
+      primme->applyPreconditioner_type = PRIMME_OP_SCALAR;
+   if (primme->globalSumReal && primme->globalSumReal_type == primme_op_default)
+      primme->globalSumReal_type = PRIMME_OP_SCALAR;
+   if (primme->broadcastReal && primme->broadcastReal_type == primme_op_default)
+      primme->broadcastReal_type = PRIMME_OP_SCALAR;
+   if (primme->convTestFun && primme->convTestFun_type == primme_op_default)
+      primme->convTestFun_type = PRIMME_OP_SCALAR;
+   if (primme->monitorFun && primme->monitorFun_type == primme_op_default)
+      primme->monitorFun_type = PRIMME_OP_SCALAR;
+
+   /* call primme for the internal working precision */
+
+   int ret;
+   primme_op_datatype t = primme->internalPrecision;
+   if (t == primme_op_default) t = PRIMME_OP_SCALAR;
+   switch (t) {
+#ifndef USE_COMPLEX
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   ret = wrapper_hprimme(PRIMME_OP_SCALAR, (PRIMME_HALF*)evals, (PRIMME_HALF*)evecs, (PRIMME_HALF*)resNorms, ctx); break;
+#  endif
+      case primme_op_float:  ret = wrapper_sprimme(PRIMME_OP_SCALAR, (float*)      evals, (float*)      evecs, (float*)      resNorms, ctx); break;
+      case primme_op_double: ret = wrapper_dprimme(PRIMME_OP_SCALAR, (double*)     evals, (double*)     evecs, (double*)     resNorms, ctx); break;
+#  ifdef PRIMME_WITH_NATIVE_QUAD
+      case primme_op_quad:   ret = wrapper_qprimme(PRIMME_OP_SCALAR, (PRIMME_QUAD*)evals, (PRIMME_QUAD*)evecs, (PRIMME_QUAD*)resNorms, ctx); break;
+#  endif
+#else
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_HALF
+      case primme_op_half:   ret = wrapper_kprimme(PRIMME_OP_SCALAR, (PRIMME_HALF*)evals, (PRIMME_COMPLEX_HALF*)  evecs, (PRIMME_HALF*)resNorms, ctx); break;
+#  endif
+      case primme_op_float:  ret = wrapper_cprimme(PRIMME_OP_SCALAR, (float*)      evals, (PRIMME_COMPLEX_FLOAT*) evecs, (float*)      resNorms, ctx); break;
+      case primme_op_double: ret = wrapper_zprimme(PRIMME_OP_SCALAR, (double*)     evals, (PRIMME_COMPLEX_DOUBLE*)evecs, (double*)     resNorms, ctx); break;
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+      case primme_op_quad:   ret = wrapper_wprimme(PRIMME_OP_SCALAR, (PRIMME_QUAD*)evals, (PRIMME_COMPLEX_QUAD*)  evecs, (PRIMME_QUAD*)resNorms, ctx); break;
+#  endif
+#endif
+      default:               ret = PRIMME_FUNCTION_UNAVAILABLE;
+   }
 
    /* Free context */
 
    primme_free_context(ctx);
 #else
+
+   (void)evals;
+   (void)evecs;
+   (void)resNorms;
+   (void)primme;
+
    int ret = PRIMME_FUNCTION_UNAVAILABLE;
 #endif
 
@@ -142,10 +189,11 @@ int Sprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
 
 #ifdef SUPPORTED_TYPE
 
-static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
-            primme_params *primme, primme_context ctx) {
+TEMPLATE_PLEASE
+int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx) {
 
-   SCALAR *evecs = (SCALAR *)evecs_; /* Change type of evecs */
+   primme_params *primme = ctx.primme;
 
    /* zero out the timer */
    double t0 = primme_wTimer();
@@ -224,6 +272,7 @@ static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
 
    if (!primme->convTestFun) {
       primme->convTestFun = convTestFunAbsolute;
+      primme->convTestFun_type = PRIMME_OP_SCALAR;
       if (primme->eps == 0.0) {
          primme->eps = MACHINE_EPSILON*1e4;
       }
@@ -233,6 +282,7 @@ static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
 
    if (!primme->monitorFun) {
       primme->monitorFun = default_monitor;
+      primme->monitorFun_type = PRIMME_OP_SCALAR;
    }
 
    /* Check primme input data for bounds, correct values etc. */
@@ -240,29 +290,39 @@ static int Sprimme_for_real(XREAL *evals, XSCALAR *evecs_, XREAL *resNorms,
    CHKERR(coordinated_exit(check_params_coherence(ctx), ctx));
    CHKERR(check_input(evals, evecs, resNorms, primme))
        
-   /* Cast evals and resNorms to HREAL */
+   /* Cast evals, evecs and resNorms to working precision */
 
    HREAL *evals0, *resNorms0;
-   CHKERR(Num_matrix_astype_RHprimme(evals, 1, primme->numEvals, 1,
-         PRIMME_OP_REAL, (void **)&evals0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
+   SCALAR *evecs0;
+   CHKERR(Num_matrix_astype_RHprimme(evals, 1, primme->numEvals, 1, input_type,
+         (void **)&evals0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
          0 /* not copy */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals, 1,
-         PRIMME_OP_REAL, (void **)&resNorms0, NULL, PRIMME_OP_HREAL,
-         1 /* alloc */, 0 /* not copy */, ctx));
+   PRIMME_INT ldevecs0;
+   CHKERR(Num_matrix_astype_Sprimme(evecs, primme->nLocal,
+         max(primme->numEvals, primme->initSize), primme->ldevecs, input_type,
+         (void **)&evecs0, &ldevecs0, PRIMME_OP_SCALAR, 1 /* alloc */,
+         primme->initSize > 0 ? 1 : 0 /* copy? */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals, 1, input_type,
+         (void **)&resNorms0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
+         0 /* not copy */, ctx));
 
    /* Call the solver */
 
    int ret;
-   CHKERR(coordinated_exit(main_iter_Sprimme(
-         evals0, evecs, primme->ldevecs, resNorms0, t0, &ret, ctx), ctx));
+   CHKERR(coordinated_exit(
+         main_iter_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, ctx),
+         ctx));
 
-   /* Copy back evals and resNorms */
+   /* Copy back evals, evecs and resNorms */
 
    CHKERR(Num_matrix_astype_RHprimme(evals0, 1, primme->numEvals, 1,
-         PRIMME_OP_HREAL, (void **)&evals, NULL, PRIMME_OP_REAL,
-         -1 /* destroy */, 1 /* copy */, ctx));
+         PRIMME_OP_HREAL, (void **)&evals, NULL, input_type, -1 /* destroy */,
+         1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(evecs0, primme->nLocal, primme->initSize,
+         ldevecs0, PRIMME_OP_SCALAR, (void **)&evecs, &primme->ldevecs,
+         input_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
-         PRIMME_OP_HREAL, (void **)&resNorms, NULL, PRIMME_OP_REAL,
+         PRIMME_OP_HREAL, (void **)&resNorms, NULL, input_type,
          -1 /* destroy */, 1 /* copy */, ctx));
 
    primme->stats.elapsedTime = primme_wTimer() - t0;

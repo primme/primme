@@ -546,18 +546,34 @@ int convTestFun_Sprimme(HREAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,
       int *isconv, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int ierr=0;
+
+   /* Cast eval and rNorm */
+
    double evald = eval, rNormd = rNorm;
+
+   /* Cast evec if given */
+
+   void *evec0 = NULL;
+   if (evec && givenEvec)
+      CHKERR(Num_matrix_astype_Sprimme(evec, primme->nLocal, 1, primme->nLocal,
+            PRIMME_OP_SCALAR, &evec0, NULL, primme->convTestFun_type,
+            1 /* alloc */, 1 /* copy */, ctx));
+
    /* If an evec is going to be passed to convTestFun, but nLocal is 0,       */
    /* then fake the evec with a nonzero pointer in order to not be mistaken   */
    /* by not passing a vector.                                                */
    SCALAR dummy;
-   if (primme->nLocal == 0 && givenEvec) evec = &dummy;
 
+   if (primme->nLocal == 0 && givenEvec) evec0 = &dummy;
+
+   int ierr=0;
    CHKERRM((primme->convTestFun(&evald, givenEvec ? evec : NULL, &rNormd,
                   isconv, primme, &ierr),
                  ierr),
          -1, "Error returned by 'convTestFun' %d", ierr);
+
+   if (primme->nLocal > 0 && evec && givenEvec && evec != (SCALAR *)evec0)
+      CHKERR(Num_free_Sprimme((SCALAR*)evec0, ctx));
 
    return 0;
 }
@@ -846,43 +862,48 @@ int monitorFun_Sprimme(HREAL *basisEvals, int basisSize, int *basisFlags,
    primme_params *primme = ctx.primme;
    if (!primme->monitorFun) return 0;
 
-   /* Cast basisEvals, basisNorms, lockedEvals and lockedNorms to REAL */
+   /* Cast basisEvals, basisNorms, lockedEvals, lockedNorms and LSRes */
+   /* to monitorFun_type                                              */
 
-   XREAL *basisEvals0, *basisNorms0, *lockedEvals0, *lockedNorms0;
-   CHKERR(Num_matrix_astype_Rprimme(basisEvals, 1, basisSize, 1,
-         PRIMME_OP_HREAL, (void **)&basisEvals0, NULL, PRIMME_OP_REAL,
+   void *basisEvals0, *basisNorms0, *lockedEvals0, *lockedNorms0, *LSRes0;
+   CHKERR(Num_matrix_astype_RHprimme(basisEvals, 1, basisSize, 1,
+         PRIMME_OP_HREAL, (void **)&basisEvals0, NULL, primme->monitorFun_type,
          1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_Rprimme(basisNorms, 1, basisSize, 1,
-         PRIMME_OP_HREAL, (void **)&basisNorms0, NULL, PRIMME_OP_REAL,
+   CHKERR(Num_matrix_astype_RHprimme(basisNorms, 1, basisSize, 1,
+         PRIMME_OP_HREAL, (void **)&basisNorms0, NULL, primme->monitorFun_type,
          1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_Rprimme(lockedEvals, 1, numLocked, 1,
-         PRIMME_OP_HREAL, (void **)&lockedEvals0, NULL, PRIMME_OP_REAL,
+   CHKERR(Num_matrix_astype_RHprimme(lockedEvals, 1, numLocked, 1,
+         PRIMME_OP_HREAL, (void **)&lockedEvals0, NULL, primme->monitorFun_type,
          1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_Rprimme(lockedNorms, 1, numLocked, 1,
-         PRIMME_OP_HREAL, (void **)&lockedNorms0, NULL, PRIMME_OP_REAL,
+   CHKERR(Num_matrix_astype_RHprimme(lockedNorms, 1, numLocked, 1,
+         PRIMME_OP_HREAL, (void **)&lockedNorms0, NULL, primme->monitorFun_type,
+         1 /* alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(&LSRes, 1, 1, 1,
+         PRIMME_OP_HREAL, (void **)&LSRes0, NULL, primme->monitorFun_type,
          1 /* alloc */, 1 /* copy */, ctx));
 
    /* Call the user-defined functions */
 
    primme->stats.elapsedTime = primme_wTimer() - startTime;
    int err;
-   XREAL LSRes0 = LSRes;
    CHKERRM(
          (primme->monitorFun(basisEvals0, &basisSize, basisFlags, iblock,
                 &blockSize, basisNorms0, &numConverged, lockedEvals0, &numLocked,
                 lockedFlags, lockedNorms0, inner_its >= 0 ? &inner_its : NULL,
-                LSRes >= 0 ? &LSRes0 : NULL, msg, &time, &event, primme, &err),
+                LSRes >= 0 ? LSRes0 : NULL, msg, &time, &event, primme, &err),
                err),
          -1, "Error returned by monitorFun: %d", err);
 
    if (basisEvals != (HREAL *)basisEvals0)
-      CHKERR(Num_free_Rprimme(basisEvals0, ctx));
+      CHKERR(Num_free_RHprimme(basisEvals0, ctx));
    if (basisNorms != (HREAL *)basisNorms0)
-      CHKERR(Num_free_Rprimme(basisNorms0, ctx));
+      CHKERR(Num_free_RHprimme(basisNorms0, ctx));
    if (lockedEvals != (HREAL *)lockedEvals0)
-      CHKERR(Num_free_Rprimme(lockedEvals0, ctx));
+      CHKERR(Num_free_RHprimme(lockedEvals0, ctx));
    if (lockedNorms != (HREAL *)lockedNorms0)
-      CHKERR(Num_free_Rprimme(lockedNorms0, ctx));
+      CHKERR(Num_free_RHprimme(lockedNorms0, ctx));
+   if (&LSRes != (HREAL *)LSRes0)
+      CHKERR(Num_free_RHprimme(LSRes0, ctx));
 
    return 0;
 } 

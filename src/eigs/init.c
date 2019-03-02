@@ -286,7 +286,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    /*----------------------------------------------------------------------*/
 
    for (i=dv1; i<dv1+blockSize; i++) {
-      Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV*i], ctx);
+      CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV*i], ctx));
    }
    int nV=0;
    CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, dv1,

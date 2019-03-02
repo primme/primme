@@ -45,10 +45,10 @@
  * The only difference from primme: the return value passed as parameter 
  *****************************************************************************/
 
-void AS_FORTRAN(Sprimme)(XREAL *evals, XSCALAR *evecs,
+void AS_FORTRAN(Xprimme)(XREAL *evals, XSCALAR *evecs,
       XREAL *rnorms, primme_params **primme, int *ierr) {
 
-  *ierr = SCALAR_SUF(evals, evecs, rnorms, *primme);
+  *ierr = Xprimme(evals, evecs, rnorms, *primme);
 
 } /* end of xprimme_f77 wrapper for calling from Fortran */
 

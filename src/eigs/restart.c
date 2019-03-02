@@ -1212,15 +1212,10 @@ static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
          /* Report a pair was hard locked */
          /* NOTE: do this before sorting evals */
          if (primme->monitorFun) {
-            primme_event EVENT_LOCKED = primme_event_locked;
-            int err;
             lockedFlags[*numLocked-1] = flags[i];
-            primme->stats.elapsedTime = primme_wTimer() - startTime;
-            CHKERRM((primme->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL,
-                           NULL, evals, numLocked, lockedFlags, resNorms, NULL,
-                           NULL, NULL, NULL, &EVENT_LOCKED, primme, &err),
-                          err),
-                  -1, "Error returned by monitorFun: %d", err);
+            CHKERR(monitorFun_Sprimme(NULL, 0, NULL, NULL, 0, NULL, 0, evals,
+                  *numLocked, lockedFlags, resNorms, -1, 0.0, NULL, 0.0,
+                  primme_event_locked, startTime, ctx));
          }
 
          insertionSort(eval, evals, resNorm, resNorms, flags[i], lockedFlags,

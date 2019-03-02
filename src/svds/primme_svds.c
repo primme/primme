@@ -166,6 +166,11 @@ int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms,
 
    primme_svds_free_context(ctx);
 #else
+   (void)svals;
+   (void)svecs;
+   (void)resNorms;
+   (void)primme_svds;
+
    int ret = PRIMME_FUNCTION_UNAVAILABLE;
 #endif
 
@@ -256,7 +261,7 @@ static int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms,
    CHKERR(copy_last_params_from_svds(0, NULL, svecs,
             NULL, &allocatedTargetShifts, &svecs0, ctx));
 
-   ret = Sprimme(svals, (XSCALAR*)svecs0, resNorms, &primme_svds->primme);
+   ret = Xprimme(svals, (XSCALAR*)svecs0, resNorms, &primme_svds->primme);
 
    CHKERR(copy_last_params_to_svds(
             0, svals, svecs, resNorms, allocatedTargetShifts, ctx));
@@ -288,7 +293,7 @@ static int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms,
    Num_copy_matrix_Sprimme(&svecs0[ldbackupSvecs * primme_svds->numOrthoConst],
          ldbackupSvecs, nconv, ldbackupSvecs, backupSvecs, ldbackupSvecs, ctx);
 
-   ret = Sprimme(svals + nconv, (XSCALAR *)svecs0, resNorms + nconv,
+   ret = Xprimme(svals + nconv, (XSCALAR *)svecs0, resNorms + nconv,
          &primme_svds->primmeStage2);
 
    /* Copy back the backup svecs */
@@ -940,7 +945,6 @@ static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
  *
  ******************************************************************************/
 
-TEMPLATE_PLEASE
 static void primme_svds_free_context(primme_context ctx) {
 
    /* Deregister the allocation of the current frame */

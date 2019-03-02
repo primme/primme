@@ -7,7 +7,7 @@ eigs/init*.o : include/numerical.h eigs/init.h eigs/update_W.h eigs/ortho.h eigs
 eigs/inner_solve*.o : include/numerical.h eigs/const.h eigs/inner_solve.h eigs/factorize.h eigs/update_W.h eigs/auxiliary_eigs.h
 eigs/main_iter*.o : include/numerical.h eigs/const.h eigs/main_iter.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/auxiliary_eigs.h
 eigs/ortho*.o : include/numerical.h eigs/const.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/update_W.h
-eigs/primme*.o : include/numerical.h eigs/const.h include/primme_interface.h eigs/main_iter.h eigs/auxiliary_eigs.h
+eigs/primme_c*.o : include/numerical.h eigs/const.h include/primme_interface.h eigs/primme_c.h eigs/main_iter.h eigs/auxiliary_eigs.h
 eigs/primme_f77*.o : eigs/primme_f77_private.h include/notemplate.h
 eigs/primme_interface*.o : include/template.h include/primme_interface.h eigs/const.h include/notemplate.h
 eigs/restart*.o : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h eigs/restart.h eigs/ortho.h eigs/solve_projection.h eigs/factorize.h eigs/update_projection.h eigs/update_W.h eigs/convergence.h

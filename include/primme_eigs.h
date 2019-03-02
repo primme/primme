@@ -168,19 +168,19 @@ typedef struct primme_params {
    void (*matrixMatvec)
       ( void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
         struct primme_params *primme, int *ierr);
-   primme_op_datatype matrixMatvec_type;
+   primme_op_datatype matrixMatvec_type; /* expected type of x and y */
 
    /* Preconditioner applied on block of vectors (if available) */
    void (*applyPreconditioner)
       ( void *x, PRIMME_INT *ldx,  void *y, PRIMME_INT *ldy, int *blockSize,
         struct primme_params *primme, int *ierr);
-   primme_op_datatype applyPreconditioner_type;
+   primme_op_datatype applyPreconditioner_type; /* expected type of x and y */
 
    /* Matrix times a multivector for mass matrix B for generalized Ax = xBl */
    void (*massMatrixMatvec)
       ( void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
         struct primme_params *primme, int *ierr);
-   primme_op_datatype massMatrixMatvec_type;
+   primme_op_datatype massMatrixMatvec_type; /* expected type of x and y */
 
    /* input for the following is only required for parallel programs */
    int numProcs;
@@ -190,10 +190,10 @@ typedef struct primme_params {
    void (*globalSumReal)
       (void *sendBuf, void *recvBuf, int *count, struct primme_params *primme,
        int *ierr );
-   primme_op_datatype globalSumReal_type;
+   primme_op_datatype globalSumReal_type; /* expected type of sendBuf and recvBuf */
    void (*broadcastReal)(
          void *buffer, int *count, struct primme_params *primme, int *ierr);
-   primme_op_datatype broadcastReal_type;
+   primme_op_datatype broadcastReal_type; /* expected type of buffer */
 
    /*Though primme_initialize will assign defaults, most users will set these */
    int numEvals;          
@@ -217,6 +217,7 @@ typedef struct primme_params {
    double invBNorm;              /* Approximate 2-norm of inv(B) */
    double eps;
    primme_orth orth;
+   primme_op_datatype internalPrecision; /* force primme to work in that precision */
 
    int printLevel;
    FILE *outputFile;
@@ -236,12 +237,14 @@ typedef struct primme_params {
 
    void (*convTestFun)(double *eval, void *evec, double *rNorm, int *isconv, 
          struct primme_params *primme, int *ierr);
+   primme_op_datatype convTestFun_type; /* expected type of evec */
    void *convtest;
    void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags,
          int *iblock, int *blockSize, void *basisNorms, int *numConverged,
          void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
          int *inner_its, void *LSRes, const char *msg, double *time,
          primme_event *event, struct primme_params *primme, int *err);
+   primme_op_datatype monitorFun_type; /* expected type of FP arrays */
    void *monitor;
    void *queue;      /* magma device queue (magma_queue_t*) */
    const char *profile; /* regex expression with functions to monitor times */
@@ -309,56 +312,59 @@ typedef enum {
    PRIMME_invBNorm                               = 31  ,
    PRIMME_eps                                    = 32  ,
    PRIMME_orth                                   = 33  ,
-   PRIMME_printLevel                             = 34  ,
-   PRIMME_outputFile                             = 35  ,
-   PRIMME_matrix                                 = 36  ,
-   PRIMME_massMatrix                             = 37  ,
-   PRIMME_preconditioner                         = 38  ,
-   PRIMME_initBasisMode                          = 39  ,
-   PRIMME_projectionParams_projection            = 40  ,
-   PRIMME_restartingParams_maxPrevRetain         = 41  ,
-   PRIMME_correctionParams_precondition          = 42  ,
-   PRIMME_correctionParams_robustShifts          = 43  ,
-   PRIMME_correctionParams_maxInnerIterations    = 44  ,
-   PRIMME_correctionParams_projectors_LeftQ      = 45  ,
-   PRIMME_correctionParams_projectors_LeftX      = 46  ,
-   PRIMME_correctionParams_projectors_RightQ     = 47  ,
-   PRIMME_correctionParams_projectors_RightX     = 48  ,
-   PRIMME_correctionParams_projectors_SkewQ      = 49  ,
-   PRIMME_correctionParams_projectors_SkewX      = 50  ,
-   PRIMME_correctionParams_convTest              = 51  ,
-   PRIMME_correctionParams_relTolBase            = 52  ,
-   PRIMME_stats_numOuterIterations               = 53  ,
-   PRIMME_stats_numRestarts                      = 54  ,
-   PRIMME_stats_numMatvecs                       = 55  ,
-   PRIMME_stats_numPreconds                      = 56  ,
-   PRIMME_stats_numGlobalSum                     = 57  ,
-   PRIMME_stats_volumeGlobalSum                  = 58  ,
-   PRIMME_stats_numBroadcast                     = 59  ,
-   PRIMME_stats_volumeBroadcast                  = 60  ,
-   PRIMME_stats_numOrthoInnerProds               = 61  ,
-   PRIMME_stats_elapsedTime                      = 62  ,
-   PRIMME_stats_timeMatvec                       = 63  ,
-   PRIMME_stats_timePrecond                      = 64  ,
-   PRIMME_stats_timeOrtho                        = 65  ,
-   PRIMME_stats_timeGlobalSum                    = 66  ,
-   PRIMME_stats_timeBroadcast                    = 67  ,
-   PRIMME_stats_estimateMinEVal                  = 68  ,
-   PRIMME_stats_estimateMaxEVal                  = 69  ,
-   PRIMME_stats_estimateLargestSVal              = 70  ,
-   PRIMME_stats_estimateBNorm                    = 71  ,
-   PRIMME_stats_estimateInvBNorm                 = 72  ,
-   PRIMME_stats_maxConvTol                       = 73  ,
-   PRIMME_stats_lockingIssue                     = 74  ,
-   PRIMME_dynamicMethodSwitch                    = 75  ,
-   PRIMME_convTestFun                            = 76  ,
-   PRIMME_convtest                               = 77  ,
-   PRIMME_ldevecs                                = 78  ,
-   PRIMME_ldOPs                                  = 79  ,
-   PRIMME_monitorFun                             = 80  ,
-   PRIMME_monitor                                = 81  ,
-   PRIMME_queue                                  = 82  ,
-   PRIMME_profile                                = 83  
+   PRIMME_internalPrecision                      = 34  ,
+   PRIMME_printLevel                             = 35  ,
+   PRIMME_outputFile                             = 36  ,
+   PRIMME_matrix                                 = 37  ,
+   PRIMME_massMatrix                             = 38  ,
+   PRIMME_preconditioner                         = 39  ,
+   PRIMME_initBasisMode                          = 40  ,
+   PRIMME_projectionParams_projection            = 41  ,
+   PRIMME_restartingParams_maxPrevRetain         = 42  ,
+   PRIMME_correctionParams_precondition          = 43  ,
+   PRIMME_correctionParams_robustShifts          = 44  ,
+   PRIMME_correctionParams_maxInnerIterations    = 45  ,
+   PRIMME_correctionParams_projectors_LeftQ      = 46  ,
+   PRIMME_correctionParams_projectors_LeftX      = 47  ,
+   PRIMME_correctionParams_projectors_RightQ     = 48  ,
+   PRIMME_correctionParams_projectors_RightX     = 49  ,
+   PRIMME_correctionParams_projectors_SkewQ      = 50  ,
+   PRIMME_correctionParams_projectors_SkewX      = 51  ,
+   PRIMME_correctionParams_convTest              = 52  ,
+   PRIMME_correctionParams_relTolBase            = 53  ,
+   PRIMME_stats_numOuterIterations               = 54  ,
+   PRIMME_stats_numRestarts                      = 55  ,
+   PRIMME_stats_numMatvecs                       = 56  ,
+   PRIMME_stats_numPreconds                      = 57  ,
+   PRIMME_stats_numGlobalSum                     = 58  ,
+   PRIMME_stats_volumeGlobalSum                  = 59  ,
+   PRIMME_stats_numBroadcast                     = 60  ,
+   PRIMME_stats_volumeBroadcast                  = 61  ,
+   PRIMME_stats_numOrthoInnerProds               = 62  ,
+   PRIMME_stats_elapsedTime                      = 63  ,
+   PRIMME_stats_timeMatvec                       = 64  ,
+   PRIMME_stats_timePrecond                      = 65  ,
+   PRIMME_stats_timeOrtho                        = 66  ,
+   PRIMME_stats_timeGlobalSum                    = 67  ,
+   PRIMME_stats_timeBroadcast                    = 68  ,
+   PRIMME_stats_estimateMinEVal                  = 69  ,
+   PRIMME_stats_estimateMaxEVal                  = 70  ,
+   PRIMME_stats_estimateLargestSVal              = 71  ,
+   PRIMME_stats_estimateBNorm                    = 72  ,
+   PRIMME_stats_estimateInvBNorm                 = 73  ,
+   PRIMME_stats_maxConvTol                       = 74  ,
+   PRIMME_stats_lockingIssue                     = 75  ,
+   PRIMME_dynamicMethodSwitch                    = 76  ,
+   PRIMME_convTestFun                            = 77  ,
+   PRIMME_convTestFun_type                       = 78  ,
+   PRIMME_convtest                               = 79  ,
+   PRIMME_ldevecs                                = 80  ,
+   PRIMME_ldOPs                                  = 81  ,
+   PRIMME_monitorFun                             = 82  ,
+   PRIMME_monitorFun_type                        = 83  ,
+   PRIMME_monitor                                = 84  ,
+   PRIMME_queue                                  = 85  ,
+   PRIMME_profile                                = 86  
 } primme_params_label;
 
 int hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, 

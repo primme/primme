@@ -97,4 +97,16 @@ check_style:
 tags:
 	@$(MAKE) -C src ../tags
 
+#
+# Convenient actions to build half precision (optional)
+#
+
+lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export PRIMME_WITH_HALF := yes
+lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := clang
+lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
+matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
+lib-clang-half: lib
+matlab-clang-half-debug: export MEXFLAGS := CXX=clang LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
+matlab-clang-half matlab-clang-half-debug: matlab
+
 .NOTPARALLEL:

@@ -40,12 +40,14 @@
 #include <assert.h>
 #include <math.h>
 #include "template.h"
+
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #  include "blaslapack.h"
 #  include "auxiliary.h" // cyclic
 #endif
 
+#define PRIMME_BLOCK_SIZE 512
 
 #ifdef SUPPORTED_TYPE
 
@@ -205,6 +207,12 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, HSCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb,
       HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
 
+   /* Quick exit */
+
+   if (m == 0 || n == 0 ||
+         ((k == 0 || ABS(alpha) == 0.0) && beta == (HSCALAR)1.0))
+      return 0;
+
    /* Cast the matrices a and c to HSCALAR */
 
    HSCALAR *af = NULL, *cf = NULL;
@@ -212,10 +220,10 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
    int ma = (*transa == 'N' || *transa == 'n') ? m : k;
    int na = (*transa == 'N' || *transa == 'n') ? k : m;
 
-   CHKERR(Num_matrix_astype_Sprimme(a, ma, na, lda, primme_op_default,
+   CHKERR(Num_matrix_astype_Sprimme(a, ma, na, lda, PRIMME_OP_SCALAR,
          (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
-   CHKERR(Num_matrix_astype_Sprimme(c, m, n, ldc, primme_op_default,
+   CHKERR(Num_matrix_astype_Sprimme(c, m, n, ldc, PRIMME_OP_SCALAR,
          (void **)&cf, &ldcf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
 
@@ -228,7 +236,7 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
 
    if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
    CHKERR(Num_matrix_astype_Sprimme(cf, m, n, ldcf, PRIMME_OP_HSCALAR,
-         (void **)&c, &ldc0, primme_op_default, -1 /* destroy */, 1 /* copy */,
+         (void **)&c, &ldc0, PRIMME_OP_SCALAR, -1 /* destroy */, 1 /* copy */,
          ctx));
 
    return 0;
@@ -239,29 +247,50 @@ int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
       HSCALAR beta, HSCALAR *c, int ldc, primme_context ctx) {
 
+   /* Quick exit */
+
+   if (m == 0 || n == 0 ||
+         ((k == 0 || ABS(alpha) == 0.0) && beta == (HSCALAR)1.0))
+      return 0;
+
+   /* If input matrices are going to be cast and the operation is the inner */
+   /* product between, that is, C = A'*B, then stream the operation */
+
+   PRIMME_INT K = k;
+   if (PRIMME_OP_SCALAR != PRIMME_OP_HSCALAR &&
+         (*transa == 'C' || *transa == 'C') &&
+         (*transb == 'N' || *transb == 'n') && k > PRIMME_BLOCK_SIZE) {
+      K = PRIMME_BLOCK_SIZE;
+   }
+
    /* Cast the matrices a and b to HSCALAR */
 
    HSCALAR *af = NULL, *bf = NULL;
    PRIMME_INT ldaf, ldbf;
-   int ma = (*transa == 'N' || *transa == 'n') ? m : k;
    int na = (*transa == 'N' || *transa == 'n') ? k : m;
-   int mb = (*transb == 'N' || *transb == 'n') ? k : n;
    int nb = (*transb == 'N' || *transb == 'n') ? n : k;
 
-   CHKERR(Num_matrix_astype_Sprimme(a, ma, na, lda, primme_op_default,
-         (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
-         ctx));
-   CHKERR(Num_matrix_astype_Sprimme(b, mb, nb, ldb, primme_op_default,
-         (void **)&bf, &ldbf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
-         ctx));
+   PRIMME_INT i;
+   for (i=0; i<k; i+=K, K=min(K,k-i)) {
+      CHKERR(Num_matrix_astype_Sprimme(&a[i], K, na, lda, PRIMME_OP_SCALAR,
+            (void **)&af, &ldaf, PRIMME_OP_HSCALAR,
+            i == 0 /* alloc the first time */, 1 /* copy */, ctx));
+      CHKERR(Num_matrix_astype_Sprimme(&b[i], K, nb, ldb, PRIMME_OP_SCALAR,
+            (void **)&bf, &ldbf, PRIMME_OP_HSCALAR,
+            i == 0 /* alloc the first time */, 1 /* copy */, ctx));
 
-   /* Call the kernel */
+      /* Call the kernel */
 
-   CHKERR(Num_gemm_SHprimme(transa, transb, m, n, k, alpha, af, ldaf, bf, ldbf,
-         beta, c, ldc, ctx));
+      CHKERR(Num_gemm_SHprimme(transa, transb, m, n, K, alpha, af, ldaf, bf,
+            ldbf, beta, c, ldc, ctx));
 
-   if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
-   if (b != (SCALAR*)bf) CHKERR(Num_free_SHprimme(bf, ctx));
+      /* Update beta */
+
+      beta = (HSCALAR)1.0;
+   }
+
+   if (a != (SCALAR *)af) CHKERR(Num_free_SHprimme(af, ctx));
+   if (b != (SCALAR *)bf) CHKERR(Num_free_SHprimme(bf, ctx));
 
    return 0;
 }
@@ -396,10 +425,10 @@ int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    PRIMME_INT ldaf, incxf;
    int mx = (*transa == 'N' || *transa == 'n') ? n : m;
 
-   CHKERR(Num_matrix_astype_Sprimme(a, m, n, lda, primme_op_default,
+   CHKERR(Num_matrix_astype_Sprimme(a, m, n, lda, PRIMME_OP_SCALAR,
          (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
-   CHKERR(Num_matrix_astype_Sprimme(x, 1, mx, incx, primme_op_default,
+   CHKERR(Num_matrix_astype_Sprimme(x, 1, mx, incx, PRIMME_OP_SCALAR,
          (void **)&xf, &incxf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
 
@@ -430,10 +459,10 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    PRIMME_INT ldaf, incyf, incy0 = incy;
    int my = (*transa == 'N' || *transa == 'n') ? m : n;
 
-   CHKERR(Num_matrix_astype_Sprimme(a, m, n, lda, primme_op_default,
+   CHKERR(Num_matrix_astype_Sprimme(a, m, n, lda, PRIMME_OP_SCALAR,
          (void **)&af, &ldaf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
-   CHKERR(Num_matrix_astype_Sprimme(y, 1, my, incy, primme_op_default,
+   CHKERR(Num_matrix_astype_Sprimme(y, 1, my, incy, PRIMME_OP_SCALAR,
          (void **)&yf, &incyf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
 
@@ -444,7 +473,7 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
 
    if (a != (SCALAR*)af) CHKERR(Num_free_SHprimme(af, ctx));
    CHKERR(Num_matrix_astype_Sprimme(yf, 1, my, incyf, PRIMME_OP_HSCALAR,
-         (void **)&y, &incy0, primme_op_default, -1 /* destroy */, 1 /* copy */,
+         (void **)&y, &incy0, PRIMME_OP_SCALAR, -1 /* destroy */, 1 /* copy */,
          ctx));
 
    return 0;
@@ -573,7 +602,7 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
    HSCALAR *xf = NULL;
    CHKERR(Num_malloc_SHprimme(length, &xf, ctx));
    CHKERR(Num_larnv_SHprimme(idist, iseed, length, xf, ctx));
-   CHKERR(Num_matrix_astype_SHprimme(xf, length, 1, length, PRIMME_OP_HSCALAR,
+   CHKERR(Num_matrix_astype_SHprimme(xf, 1, length, 1, PRIMME_OP_HSCALAR,
          (void **)&x, NULL, PRIMME_OP_SCALAR, -1 /* destroy */, 1 /* copy */,
          ctx));
    return 0;
@@ -1161,20 +1190,25 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, HSCALAR alpha, HSCALAR *a, int lda,
       SCALAR *b, int ldb, primme_context ctx) {
 
-   /* Cast the matrice b to HSCALAR */
+   /* Cast the matrix b to HSCALAR */
 
    HSCALAR *bf = NULL;
    PRIMME_INT ldbf;
-   CHKERR(Num_matrix_astype_Sprimme(b, m, n, ldb, primme_op_default,
-         (void **)&bf, &ldbf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */,
-         ctx));
- 
+   CHKERR(
+         Num_matrix_astype_Sprimme(b, m, n, ldb, PRIMME_OP_SCALAR, (void **)&bf,
+               &ldbf, PRIMME_OP_HSCALAR, 1 /* alloc */, 1 /* copy */, ctx));
+
    /* Call the kernel */
 
    CHKERR(Num_trsm_SHprimme(
          side, uplo, transa, diag, m, n, alpha, a, lda, bf, ldbf, ctx));
 
-   if (b != (SCALAR*)bf) CHKERR(Num_free_SHprimme(bf, ctx));
+   /* Copy back and destroy the cast matrix */
+
+   PRIMME_INT ldb_ = ldb;
+   CHKERR(Num_matrix_astype_Sprimme(bf, m, n, ldbf, PRIMME_OP_HSCALAR,
+         (void **)&b, &ldb_, PRIMME_OP_SCALAR, -1 /* destroy */, 1 /* copy */,
+         ctx));
 
    return 0;
 }

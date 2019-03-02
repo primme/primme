@@ -45,8 +45,6 @@ int Num_copy_matrix_conj_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT
       PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
-int Num_set_matrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_hprimme value, primme_context ctx);
 int Num_copy_trimatrix_hprimme(dummy_type_hprimme *x, int m, int n, int ldx, int ul,
       int i0, dummy_type_hprimme *y, int ldy, int zero);
 int Num_copy_trimatrix_compact_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int n,
@@ -76,8 +74,6 @@ int Num_copy_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       primme_context ctx);
 int Num_zero_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
-int Num_set_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_kprimme value, primme_context ctx);
 int Num_copy_trimatrix_kprimme(dummy_type_kprimme *x, int m, int n, int ldx, int ul,
       int i0, dummy_type_kprimme *y, int ldy, int zero);
 int Num_copy_trimatrix_compact_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int n,
@@ -109,8 +105,6 @@ int Num_copy_matrix_conj_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT
       PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
-int Num_set_matrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme value, primme_context ctx);
 int Num_copy_trimatrix_sprimme(dummy_type_sprimme *x, int m, int n, int ldx, int ul,
       int i0, dummy_type_sprimme *y, int ldy, int zero);
 int Num_copy_trimatrix_compact_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int n,
@@ -144,8 +138,6 @@ int Num_copy_matrix_conj_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT
       PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
-int Num_set_matrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cprimme value, primme_context ctx);
 int Num_copy_trimatrix_cprimme(dummy_type_cprimme *x, int m, int n, int ldx, int ul,
       int i0, dummy_type_cprimme *y, int ldy, int zero);
 int Num_copy_trimatrix_compact_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int n,
@@ -366,26 +358,6 @@ int Num_zero_matrix_dprimme(dummy_type_dprimme *x, PRIMME_INT m, PRIMME_INT n,
 #endif
 int Num_zero_matrix_Tprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
       PRIMME_INT n, PRIMME_INT ldx, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Sprimme)
-#  define Num_set_matrix_Sprimme CONCAT(Num_set_matrix_,SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rprimme)
-#  define Num_set_matrix_Rprimme CONCAT(Num_set_matrix_,REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHprimme)
-#  define Num_set_matrix_SHprimme CONCAT(Num_set_matrix_,HOST_SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHprimme)
-#  define Num_set_matrix_RHprimme CONCAT(Num_set_matrix_,HOST_REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SXprimme)
-#  define Num_set_matrix_SXprimme CONCAT(Num_set_matrix_,XSCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RXprimme)
-#  define Num_set_matrix_RXprimme CONCAT(Num_set_matrix_,XREAL_SUF)
-#endif
-int Num_set_matrix_dprimme(dummy_type_dprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_dprimme value, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_trimatrix_Sprimme)
 #  define Num_copy_trimatrix_Sprimme CONCAT(Num_copy_trimatrix_,SCALAR_SUF)
 #endif
@@ -600,8 +572,6 @@ int Num_copy_matrix_conj_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT
       PRIMME_INT ldx, dummy_type_zprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
-int Num_set_matrix_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_zprimme value, primme_context ctx);
 int Num_copy_trimatrix_zprimme(dummy_type_zprimme *x, int m, int n, int ldx, int ul,
       int i0, dummy_type_zprimme *y, int ldy, int zero);
 int Num_copy_trimatrix_compact_zprimme(dummy_type_zprimme *x, PRIMME_INT m, int n,

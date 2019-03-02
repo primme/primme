@@ -26,6 +26,7 @@ F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
 CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O
+PRIMME_WITH_HALF ?= yes
 
 # GPUs compiler flags
 #---------------------------------------------------------------

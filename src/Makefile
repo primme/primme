@@ -20,7 +20,7 @@ SOURCES := \
    eigs/inner_solve.c \
    eigs/main_iter.c \
    eigs/ortho.c \
-   eigs/primme.c \
+   eigs/primme_c.c \
    eigs/primme_f77.c \
    eigs/primme_interface.c \
    eigs/restart.c \
@@ -66,6 +66,7 @@ AUTOMATED_HEADERS_EIGS := \
    eigs/inner_solve.h \
    eigs/main_iter.h \
    eigs/ortho.h \
+   eigs/primme_c.h \
    eigs/factorize.h \
    eigs/restart.h \
    eigs/update_W.h \
@@ -139,6 +140,7 @@ UNAME ?= $(shell uname)
 
 ../lib/$(LIBRARY): $(OBJS)
 	@mkdir -p ../lib
+	@rm -f $@
 ifeq ($(UNAME), Darwin)
 	@libtool -static -o $@ $(OBJS) -no_warning_for_no_symbols
 else

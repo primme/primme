@@ -48,7 +48,7 @@
 /* std::complex<float>). Of course both complex types are binary compatible.  */
 
 #if defined(__clang__) && defined(__FLT16_EPSILON__)
-#  define PRIMME_HALF _Float16
+#  define PRIMME_HALF __fp16
 #  define PRIMME_WITH_NATIVE_HALF
 #else
    struct _primme_half {int short a;};
@@ -60,7 +60,7 @@
 #ifdef __cplusplus
 #  include <complex>
 #  ifdef PRIMME_WITH_NATIVE_HALF
-#     define PRIMME_COMPLEX_HALF std::complex<_Float16>
+#     define PRIMME_COMPLEX_HALF std::complex<PRIMME_HALF>
 #     define PRIMME_WITH_NATIVE_COMPLEX_HALF
 #  else
       struct _primme_complex_half {PRIMME_HALF r; PRIMME_HALF i;};

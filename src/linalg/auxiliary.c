@@ -362,7 +362,7 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 #  endif
       case primme_op_float:  return Num_matrix_astype_sprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
       case primme_op_double: return Num_matrix_astype_dprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
-#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+#  ifdef PRIMME_WITH_NATIVE_QUAD
       case primme_op_quad:   return Num_matrix_astype_qprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #  endif
 #else
@@ -371,7 +371,7 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 #  endif
       case primme_op_float:  return Num_matrix_astype_cprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
       case primme_op_double: return Num_matrix_astype_zprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
-#  ifdef PRIMME_WITH_NATIVE_QUAD
+#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
       case primme_op_quad:   return Num_matrix_astype_wprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #  endif
 #endif
@@ -588,33 +588,6 @@ int Num_zero_matrix_Tprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
    return 0;
 }
 #endif /* USE_DOUBLE */
-
-/******************************************************************************
- * Function Num_set_matrix - Set all elements in a matrix with a given value
- *
- * PARAMETERS
- * ---------------------------
- * x           The matrix
- * m           The number of rows of x
- * n           The number of columns of x
- * ldx         The leading dimension of x
- * value       The value to set
- *
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-int Num_set_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, SCALAR value, primme_context ctx) {
-
-  (void)ctx;
-   PRIMME_INT i,j;
-
-   for (i=0; i<n; i++)
-      for (j=0; j<m; j++)
-         x[i*ldx+j] = value;
-
-   return 0;
-} 
 
 /******************************************************************************
  * Function Num_copy_trimatrix - Copy the upper/lower triangular part of the

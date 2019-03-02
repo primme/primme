@@ -129,6 +129,7 @@ void primme_initialize(primme_params *primme) {
    primme->maxOuterIterations                  = INT_MAX;
    primme->restartingParams.maxPrevRetain      = -1;
    primme->orth                                = primme_orth_default;
+   primme->internalPrecision                   = primme_op_default;
 
    /* correction parameters (inner) */
    primme->correctionParams.precondition       = -1;
@@ -182,17 +183,19 @@ void primme_initialize(primme_params *primme) {
    primme->iseed[3] = -1;   /* PRIMME will set thse later uniquely per proc */
    primme->ShiftsForPreconditioner = NULL;
    primme->convTestFun             = NULL;
+   primme->convTestFun_type        = primme_op_default;
    primme->convtest                = NULL;
    primme->ldevecs                 = -1;
    primme->ldOPs                   = -1;
    primme->monitorFun              = NULL;
+   primme->monitorFun_type         = primme_op_default;
    primme->monitor                 = NULL;
    primme->queue                   = NULL;
    primme->profile                 = NULL;
 }
 
 /*******************************************************************************
- * Subroutine primme_free - Free memory resources allocated by Sprimme.
+ * Subroutine primme_free - Free memory resources allocated by Xprimme.
  * 
  * INPUT/OUTPUT PARAMETERS
  * ----------------------------------
@@ -865,6 +868,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_orth:
               v->int_v = primme->orth;
       break;
+      case PRIMME_internalPrecision:
+              v->int_v = primme->internalPrecision;
+      break;
       case PRIMME_printLevel:
               v->int_v = primme->printLevel;
       break;
@@ -988,11 +994,17 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_convTestFun:
               v->convTestFun_v = primme->convTestFun;
       break;
+      case PRIMME_convTestFun_type:
+              v->int_v = primme->convTestFun_type;
+      break;
       case PRIMME_convtest:
               v->ptr_v = primme->convtest;
       break;
       case PRIMME_monitorFun:
               v->monitorFun_v = primme->monitorFun;
+      break;
+      case PRIMME_monitorFun_type:
+              v->int_v = primme->monitorFun_type;
       break;
       case PRIMME_monitor:
               v->ptr_v = primme->monitor;
@@ -1166,6 +1178,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_orth:
               primme->orth = (primme_orth)*v.int_v;
       break;
+      case PRIMME_internalPrecision:
+              primme->internalPrecision = (primme_op_datatype)*v.int_v;
+      break;
       case PRIMME_printLevel:
               if (*v.int_v > INT_MAX) return 1; else 
               primme->printLevel = (int)*v.int_v;
@@ -1297,6 +1312,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_convTestFun:
               primme->convTestFun = v.convTestFun_v;
       break;
+      case PRIMME_convTestFun_type:
+              primme->convTestFun_type = *v.int_v;
+      break;
       case PRIMME_convtest:
               primme->convtest = v.ptr_v;
       break;
@@ -1308,6 +1326,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_monitorFun:
               primme->monitorFun = v.monitorFun_v;
+      break;
+      case PRIMME_monitorFun_type:
+              primme->monitorFun_type = *v.int_v;
       break;
       case PRIMME_monitor:
               primme->monitor = v.ptr_v;
@@ -1396,6 +1417,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(invBNorm                     , invBNorm);
    IF_IS(eps                          , eps);
    IF_IS(orth                         , orth);
+   IF_IS(internalPrecision            , internalPrecision);
    IF_IS(printLevel                   , printLevel);
    IF_IS(outputFile                   , outputFile);
    IF_IS(matrix                       , matrix);
@@ -1438,10 +1460,12 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_maxConvTol             , stats_maxConvTol);
    IF_IS(stats_lockingIssue           , stats_lockingIssue);
    IF_IS(convTestFun                  , convTestFun);
+   IF_IS(convTestFun_type             , convTestFun_type);
    IF_IS(convtest                     , convtest);
    IF_IS(ldevecs                      , ldevecs);
    IF_IS(ldOPs                        , ldOPs);
    IF_IS(monitorFun                   , monitorFun);
+   IF_IS(monitorFun_type              , monitorFun_type);
    IF_IS(monitor                      , monitor);
    IF_IS(queue                        , queue);
    IF_IS(profile                      , profile);
@@ -1460,6 +1484,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_matrixMatvec_type:
       case PRIMME_applyPreconditioner_type:
       case PRIMME_globalSumReal_type:
+      case PRIMME_broadcastReal_type:
       case PRIMME_massMatrixMatvec_type:
       case PRIMME_n:
       case PRIMME_numEvals:
@@ -1475,6 +1500,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_maxOuterIterations:
       case PRIMME_initBasisMode:
       case PRIMME_orth:
+      case PRIMME_internalPrecision:
       case PRIMME_projectionParams_projection:
       case PRIMME_restartingParams_maxPrevRetain:
       case PRIMME_correctionParams_precondition:
@@ -1501,6 +1527,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_printLevel:
       case PRIMME_ldevecs:
       case PRIMME_ldOPs:
+      case PRIMME_monitorFun_type:
+      case PRIMME_convTestFun_type:
       if (type) *type = primme_int;
       if (arity) *arity = 1;
       break;
