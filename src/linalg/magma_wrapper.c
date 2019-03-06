@@ -56,6 +56,36 @@
 #  include <cublas_v2.h>
 #endif
 
+/* The next functions are only exposed using C++.                    */
+/* These signatures are copied from MAGMA header file magmablas_h.h. */
+
+#if defined(MAGMA_WITH_HALF) && !defined(__cplusplus)
+void
+magmablas_slag2h(
+    magma_int_t m, magma_int_t n,
+    float const * dA, magma_int_t lda,
+    magmaHalf* dHA, magma_int_t ldha,
+    magma_int_t *info, magma_queue_t queue);
+
+void
+magmablas_hlag2s(
+    magma_int_t m, magma_int_t n,
+    magmaHalf_const_ptr dA, magma_int_t lda,
+    float             *dSA, magma_int_t ldsa,
+    magma_queue_t queue );
+
+void
+magma_hgemm(
+    magma_trans_t transA, magma_trans_t transB,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaHalf alpha,
+    magmaHalf_const_ptr dA, magma_int_t ldda,
+    magmaHalf_const_ptr dB, magma_int_t lddb,
+    magmaHalf beta,
+    magmaHalf_ptr       dC, magma_int_t lddc,
+    magma_queue_t queue );
+#endif
+
 #ifdef USE_DOUBLE_MAGMA
 #  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,D)
 #  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,D)

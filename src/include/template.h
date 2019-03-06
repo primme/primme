@@ -67,7 +67,7 @@
 
 #  include <magma_v2.h>
 
-#  if MAGMA_VERSION_MAJOR >= 2 && MAGMA_VERSION_MINOR >= 5 && defined(__cplusplus)
+#  if MAGMA_VERSION_MAJOR >= 2 && MAGMA_VERSION_MINOR >= 5
 #     define MAGMA_WITH_HALF
 #  endif
 #endif
@@ -158,6 +158,9 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
  *
  * Macro SUPPORTED_TYPE - defined if functions with the current type
  *    are going to be built.
+ *
+ * Macro SUPPORTED_HALF_TYPE - defined if functions with the current type
+ *    has a version in half.
  **********************************************************************/
 
 /* Helper macros and types used to define SCALAR and REAL and their variants */
@@ -257,15 +260,24 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 
 #define PRIMME_OP_HREAL PRIMME_OP_HSCALAR
 
-/* Define SUPPORTED_TYPE when inspecting the signature functions. Also define */
-/* the macro for any setting without half precision, and for half precision   */
-/* if the compiler supports half precision.                                   */
+/* For host types, define SUPPORTED_HALF_TYPE when the compiler supports half
+ * precision. For MAGMA, define the macro if MAGMA also supports half precision.
+ *
+ * Define SUPPORTED_TYPE when inspecting the signature functions to generate
+ * the signature for all possible functions. Also define the macro for any
+ * setting without half precision, and for half precision if the compiler
+ * supports half precision.
+ */
+
+#define SUPPORTED_HALF_TYPE                                                    \
+   defined(PRIMME_WITH_NATIVE_HALF) &&                                         \
+         (defined(USE_HOST) ||                                                 \
+               (defined(USE_MAGMA) && defined(MAGMA_WITH_HALF)))
 
 #if defined(CHECK_TEMPLATE) ||                                                 \
       (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX) &&                      \
             !defined(USE_HALF_MAGMA) && !defined(USE_HALFCOMPLEX_MAGMA)) ||    \
-      (defined(PRIMME_WITH_NATIVE_HALF) &&                                     \
-            (defined(USE_HOST) || defined(MAGMA_WITH_HALF)))
+      defined(SUPPORTED_HALF_TYPE)
 #  define SUPPORTED_TYPE
 #endif
 

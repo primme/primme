@@ -92,7 +92,7 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 
    if (yt != PRIMME_OP_SCALAR) {
       switch(yt) {
-#ifdef PRIMME_WITH_NATIVE_HALF
+#ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   return Num_matrix_astype_Shprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #endif
       case primme_op_float:  return Num_matrix_astype_Ssprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
@@ -160,7 +160,7 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 
    if (yt != primme_op_int) {
       switch(yt) {
-#ifdef PRIMME_WITH_NATIVE_HALF
+#ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   return Num_matrix_astype_Shprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #endif
       case primme_op_float:  return Num_matrix_astype_Ssprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
@@ -250,7 +250,7 @@ int Num_zero_matrix_Tprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
       PRIMME_INT n, PRIMME_INT ldx, primme_context ctx) {
 
    switch (xt) {
-#  ifdef PRIMME_WITH_NATIVE_HALF
+#  ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   return Num_zero_matrix_hprimme((PRIMME_HALF*)x, m, n, ldx, ctx);
 #  endif
       case primme_op_float:  return Num_zero_matrix_sprimme((float*)      x, m, n, ldx, ctx);

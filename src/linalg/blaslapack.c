@@ -355,7 +355,7 @@ int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
 #endif
 
    switch (xt) {
-#  ifdef PRIMME_WITH_NATIVE_HALF
+#  ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
 #  endif
       case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
@@ -384,7 +384,7 @@ int Num_copy_Tmatrix_iprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
 #endif
 
    switch (xt) {
-#  ifdef PRIMME_WITH_NATIVE_HALF
+#  ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m, n, ldx, y, ldy, ctx); break;
 #  endif
       case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m, n, ldx, y, ldy, ctx); break;

@@ -148,7 +148,7 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
    primme_op_datatype t = primme->internalPrecision;
    if (t == primme_op_default) t = PRIMME_OP_SCALAR;
    switch (t) {
-#  ifdef PRIMME_WITH_NATIVE_HALF
+#  ifdef SUPPORTED_HALF_TYPE
    case primme_op_half:
       ret = wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
             (void *)resNorms, ctx);
