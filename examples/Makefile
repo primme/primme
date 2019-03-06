@@ -29,7 +29,7 @@ endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
   EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
-  override INCLUDE += $(MAGMA_CFLAGS)
+  override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
 
 $(EXAMPLES_C): %: %.o

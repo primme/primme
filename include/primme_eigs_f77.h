@@ -286,10 +286,10 @@ C-------------------------------------------------------
      : primme_event_converged,
      : primme_event_locked,
      : primme_op_default, 
-     : primme_op_quad,
-     : primme_op_double,
-     : primme_op_float,
      : primme_op_half,
+     : primme_op_float,
+     : primme_op_double,
+     : primme_op_quad,
      : primme_op_int
 
       parameter(
@@ -318,9 +318,9 @@ C-------------------------------------------------------
      : primme_event_converged = 4,
      : primme_event_locked = 5,
      : primme_op_default = 0, 
-     : primme_op_quad = 1,
-     : primme_op_double = 2,
-     : primme_op_float = 3,
-     : primme_op_half = 4,
+     : primme_op_half = 1,
+     : primme_op_float = 2,
+     : primme_op_double = 3,
+     : primme_op_quad = 4,
      : primme_op_int = 5
      : )

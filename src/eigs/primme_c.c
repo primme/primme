@@ -69,7 +69,7 @@
 static int check_params_coherence(primme_context ctx);
 static int coordinated_exit(int ret, primme_context ctx);
 static int check_input(
-      REAL *evals, SCALAR *evecs, REAL *resNorms, primme_params *primme);
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
 static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
@@ -148,26 +148,27 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
    primme_op_datatype t = primme->internalPrecision;
    if (t == primme_op_default) t = PRIMME_OP_SCALAR;
    switch (t) {
-#ifndef USE_COMPLEX
 #  ifdef PRIMME_WITH_NATIVE_HALF
-      case primme_op_half:   ret = wrapper_hprimme(PRIMME_OP_SCALAR, (PRIMME_HALF*)evals, (PRIMME_HALF*)evecs, (PRIMME_HALF*)resNorms, ctx); break;
+   case primme_op_half:
+      ret = wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
 #  endif
-      case primme_op_float:  ret = wrapper_sprimme(PRIMME_OP_SCALAR, (float*)      evals, (float*)      evecs, (float*)      resNorms, ctx); break;
-      case primme_op_double: ret = wrapper_dprimme(PRIMME_OP_SCALAR, (double*)     evals, (double*)     evecs, (double*)     resNorms, ctx); break;
+   case primme_op_float:
+      ret = wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
+   case primme_op_double:
+      ret = wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
 #  ifdef PRIMME_WITH_NATIVE_QUAD
-      case primme_op_quad:   ret = wrapper_qprimme(PRIMME_OP_SCALAR, (PRIMME_QUAD*)evals, (PRIMME_QUAD*)evecs, (PRIMME_QUAD*)resNorms, ctx); break;
+   case primme_op_quad:
+      ret = wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
 #  endif
-#else
-#  ifdef PRIMME_WITH_NATIVE_COMPLEX_HALF
-      case primme_op_half:   ret = wrapper_kprimme(PRIMME_OP_SCALAR, (PRIMME_HALF*)evals, (PRIMME_COMPLEX_HALF*)  evecs, (PRIMME_HALF*)resNorms, ctx); break;
-#  endif
-      case primme_op_float:  ret = wrapper_cprimme(PRIMME_OP_SCALAR, (float*)      evals, (PRIMME_COMPLEX_FLOAT*) evecs, (float*)      resNorms, ctx); break;
-      case primme_op_double: ret = wrapper_zprimme(PRIMME_OP_SCALAR, (double*)     evals, (PRIMME_COMPLEX_DOUBLE*)evecs, (double*)     resNorms, ctx); break;
-#  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
-      case primme_op_quad:   ret = wrapper_wprimme(PRIMME_OP_SCALAR, (PRIMME_QUAD*)evals, (PRIMME_COMPLEX_QUAD*)  evecs, (PRIMME_QUAD*)resNorms, ctx); break;
-#  endif
-#endif
-      default:               ret = PRIMME_FUNCTION_UNAVAILABLE;
+   default: ret = PRIMME_FUNCTION_UNAVAILABLE;
    }
 
    /* Free context */
@@ -181,7 +182,7 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
    (void)primme;
 
    int ret = PRIMME_FUNCTION_UNAVAILABLE;
-#endif
+#endif /* SUPPORTED_TYPE */
 
    return ret;
 }
@@ -331,9 +332,8 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
 
 
 /******************************************************************************
- *
- * static int check_input(double *evals, SCALAR *evecs, double *resNorms, 
- *                        primme_params *primme) 
+ * Subroutine check_input - checks the value of the input arrays, evals,
+ *    evecs, and resNorms and the values of primme_params.
  *
  * INPUT
  * -----
@@ -341,11 +341,11 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
  *  primme                   the main structure of parameters 
  *
  * return value -   0    If input parameters in primme are appropriate
- *              -4..-32  Inappropriate input parameters were found
+ *                 <0    Inappropriate input parameters were found
  *
  ******************************************************************************/
 static int check_input(
-      REAL *evals, SCALAR *evecs, REAL *resNorms, primme_params *primme) {
+      void *evals, void *evecs, void *resNorms, primme_params *primme) {
    int ret;
    ret = 0;
 
@@ -441,9 +441,7 @@ static int check_input(
    }
 
    return ret;
-  /***************************************************************************/
-} /* end of check_input
-   ***************************************************************************/
+}
 
 /*******************************************************************************
  * Subroutine convTestFunAbsolute - This routine implements primme_params.

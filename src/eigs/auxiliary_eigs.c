@@ -895,15 +895,15 @@ int monitorFun_Sprimme(HREAL *basisEvals, int basisSize, int *basisFlags,
          -1, "Error returned by monitorFun: %d", err);
 
    if (basisEvals != (HREAL *)basisEvals0)
-      CHKERR(Num_free_RHprimme(basisEvals0, ctx));
+      CHKERR(Num_free_RHprimme((HREAL *)basisEvals0, ctx));
    if (basisNorms != (HREAL *)basisNorms0)
-      CHKERR(Num_free_RHprimme(basisNorms0, ctx));
+      CHKERR(Num_free_RHprimme((HREAL *)basisNorms0, ctx));
    if (lockedEvals != (HREAL *)lockedEvals0)
-      CHKERR(Num_free_RHprimme(lockedEvals0, ctx));
+      CHKERR(Num_free_RHprimme((HREAL *)lockedEvals0, ctx));
    if (lockedNorms != (HREAL *)lockedNorms0)
-      CHKERR(Num_free_RHprimme(lockedNorms0, ctx));
+      CHKERR(Num_free_RHprimme((HREAL *)lockedNorms0, ctx));
    if (&LSRes != (HREAL *)LSRes0)
-      CHKERR(Num_free_RHprimme(LSRes0, ctx));
+      CHKERR(Num_free_RHprimme((HREAL *)LSRes0, ctx));
 
    return 0;
 } 

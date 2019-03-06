@@ -99,10 +99,10 @@ typedef enum {
 /* massMatrixMatvec and globalSumReal                                         */
 typedef enum {
    primme_op_default,   /* The same type as the primme call */
-   primme_op_quad,
-   primme_op_double,
-   primme_op_float,
    primme_op_half,
+   primme_op_float,
+   primme_op_double,
+   primme_op_quad,
    primme_op_int
 } primme_op_datatype;
 
@@ -378,6 +378,10 @@ int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms,
 int dprimme(double *evals, double *evecs, double *resNorms, 
       primme_params *primme);
 int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);
+int magma_hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
+int magma_kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
       primme_params *primme);
 int magma_sprimme(float *evals, float *evecs, float *resNorms, 
       primme_params *primme);

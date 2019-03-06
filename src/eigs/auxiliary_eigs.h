@@ -195,6 +195,78 @@ int monitorFun_cprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basis
 #if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRXprimme)
 #  define primme_get_contextRXprimme CONCAT(primme_get_context,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextShprimme)
+#  define primme_get_contextShprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRhprimme)
+#  define primme_get_contextRhprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSsprimme)
+#  define primme_get_contextSsprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRsprimme)
+#  define primme_get_contextRsprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSdprimme)
+#  define primme_get_contextSdprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRdprimme)
+#  define primme_get_contextRdprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSqprimme)
+#  define primme_get_contextSqprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRqprimme)
+#  define primme_get_contextRqprimme CONCAT(primme_get_context,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSXhprimme)
+#  define primme_get_contextSXhprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRXhprimme)
+#  define primme_get_contextRXhprimme CONCAT(primme_get_context,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSXsprimme)
+#  define primme_get_contextSXsprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRXsprimme)
+#  define primme_get_contextRXsprimme CONCAT(primme_get_context,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSXdprimme)
+#  define primme_get_contextSXdprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRXdprimme)
+#  define primme_get_contextRXdprimme CONCAT(primme_get_context,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSXqprimme)
+#  define primme_get_contextSXqprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRXqprimme)
+#  define primme_get_contextRXqprimme CONCAT(primme_get_context,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSHhprimme)
+#  define primme_get_contextSHhprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRHhprimme)
+#  define primme_get_contextRHhprimme CONCAT(primme_get_context,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSHsprimme)
+#  define primme_get_contextSHsprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRHsprimme)
+#  define primme_get_contextRHsprimme CONCAT(primme_get_context,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSHdprimme)
+#  define primme_get_contextSHdprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRHdprimme)
+#  define primme_get_contextRHdprimme CONCAT(primme_get_context,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSHqprimme)
+#  define primme_get_contextSHqprimme CONCAT(primme_get_context,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextRHqprimme)
+#  define primme_get_contextRHqprimme CONCAT(primme_get_context,CONCAT(CONCAT(,q),primme))
+#endif
 primme_context primme_get_context(primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSprimme)
 #  define primme_free_contextSprimme CONCAT(primme_free_context,SCALAR_SUF)
@@ -213,6 +285,78 @@ primme_context primme_get_context(primme_params *primme);
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRXprimme)
 #  define primme_free_contextRXprimme CONCAT(primme_free_context,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextShprimme)
+#  define primme_free_contextShprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRhprimme)
+#  define primme_free_contextRhprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSsprimme)
+#  define primme_free_contextSsprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRsprimme)
+#  define primme_free_contextRsprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSdprimme)
+#  define primme_free_contextSdprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRdprimme)
+#  define primme_free_contextRdprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSqprimme)
+#  define primme_free_contextSqprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRqprimme)
+#  define primme_free_contextRqprimme CONCAT(primme_free_context,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSXhprimme)
+#  define primme_free_contextSXhprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRXhprimme)
+#  define primme_free_contextRXhprimme CONCAT(primme_free_context,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSXsprimme)
+#  define primme_free_contextSXsprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRXsprimme)
+#  define primme_free_contextRXsprimme CONCAT(primme_free_context,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSXdprimme)
+#  define primme_free_contextSXdprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRXdprimme)
+#  define primme_free_contextRXdprimme CONCAT(primme_free_context,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSXqprimme)
+#  define primme_free_contextSXqprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRXqprimme)
+#  define primme_free_contextRXqprimme CONCAT(primme_free_context,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSHhprimme)
+#  define primme_free_contextSHhprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRHhprimme)
+#  define primme_free_contextRHhprimme CONCAT(primme_free_context,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSHsprimme)
+#  define primme_free_contextSHsprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRHsprimme)
+#  define primme_free_contextRHsprimme CONCAT(primme_free_context,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSHdprimme)
+#  define primme_free_contextSHdprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRHdprimme)
+#  define primme_free_contextRHdprimme CONCAT(primme_free_context,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextSHqprimme)
+#  define primme_free_contextSHqprimme CONCAT(primme_free_context,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(primme_free_contextRHqprimme)
+#  define primme_free_contextRHqprimme CONCAT(primme_free_context,CONCAT(CONCAT(,q),primme))
 #endif
 void primme_free_context(primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Sprimme)
@@ -233,6 +377,78 @@ void primme_free_context(primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RXprimme)
 #  define Num_compute_residual_RXprimme CONCAT(Num_compute_residual_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Shprimme)
+#  define Num_compute_residual_Shprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Rhprimme)
+#  define Num_compute_residual_Rhprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Ssprimme)
+#  define Num_compute_residual_Ssprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Rsprimme)
+#  define Num_compute_residual_Rsprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Sdprimme)
+#  define Num_compute_residual_Sdprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Rdprimme)
+#  define Num_compute_residual_Rdprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Sqprimme)
+#  define Num_compute_residual_Sqprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_Rqprimme)
+#  define Num_compute_residual_Rqprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SXhprimme)
+#  define Num_compute_residual_SXhprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RXhprimme)
+#  define Num_compute_residual_RXhprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SXsprimme)
+#  define Num_compute_residual_SXsprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RXsprimme)
+#  define Num_compute_residual_RXsprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SXdprimme)
+#  define Num_compute_residual_SXdprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RXdprimme)
+#  define Num_compute_residual_RXdprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SXqprimme)
+#  define Num_compute_residual_SXqprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RXqprimme)
+#  define Num_compute_residual_RXqprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SHhprimme)
+#  define Num_compute_residual_SHhprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RHhprimme)
+#  define Num_compute_residual_RHhprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SHsprimme)
+#  define Num_compute_residual_SHsprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RHsprimme)
+#  define Num_compute_residual_RHsprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SHdprimme)
+#  define Num_compute_residual_SHdprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RHdprimme)
+#  define Num_compute_residual_RHdprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_SHqprimme)
+#  define Num_compute_residual_SHqprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_residual_RHqprimme)
+#  define Num_compute_residual_RHqprimme CONCAT(Num_compute_residual_,CONCAT(CONCAT(,q),primme))
+#endif
 void Num_compute_residual_dprimme(PRIMME_INT n, dummy_type_dprimme eval, dummy_type_dprimme *Bx,
    dummy_type_dprimme *Ax, dummy_type_dprimme *r, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Sprimme)
@@ -252,6 +468,78 @@ void Num_compute_residual_dprimme(PRIMME_INT n, dummy_type_dprimme eval, dummy_t
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RXprimme)
 #  define Num_update_VWXR_RXprimme CONCAT(Num_update_VWXR_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Shprimme)
+#  define Num_update_VWXR_Shprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Rhprimme)
+#  define Num_update_VWXR_Rhprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Ssprimme)
+#  define Num_update_VWXR_Ssprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Rsprimme)
+#  define Num_update_VWXR_Rsprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Sdprimme)
+#  define Num_update_VWXR_Sdprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Rdprimme)
+#  define Num_update_VWXR_Rdprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Sqprimme)
+#  define Num_update_VWXR_Sqprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_Rqprimme)
+#  define Num_update_VWXR_Rqprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SXhprimme)
+#  define Num_update_VWXR_SXhprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RXhprimme)
+#  define Num_update_VWXR_RXhprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SXsprimme)
+#  define Num_update_VWXR_SXsprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RXsprimme)
+#  define Num_update_VWXR_RXsprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SXdprimme)
+#  define Num_update_VWXR_SXdprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RXdprimme)
+#  define Num_update_VWXR_RXdprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SXqprimme)
+#  define Num_update_VWXR_SXqprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RXqprimme)
+#  define Num_update_VWXR_RXqprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SHhprimme)
+#  define Num_update_VWXR_SHhprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RHhprimme)
+#  define Num_update_VWXR_RHhprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SHsprimme)
+#  define Num_update_VWXR_SHsprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RHsprimme)
+#  define Num_update_VWXR_RHsprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SHdprimme)
+#  define Num_update_VWXR_SHdprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RHdprimme)
+#  define Num_update_VWXR_RHdprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_SHqprimme)
+#  define Num_update_VWXR_SHqprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_update_VWXR_RHqprimme)
+#  define Num_update_VWXR_RHqprimme CONCAT(Num_update_VWXR_,CONCAT(CONCAT(,q),primme))
 #endif
 int Num_update_VWXR_dprimme(dummy_type_dprimme *V, dummy_type_dprimme *W, dummy_type_dprimme *BV, PRIMME_INT mV,
       int nV, PRIMME_INT ldV, dummy_type_dprimme *h, int nh, int ldh, dummy_type_dprimme *hVals,
@@ -286,6 +574,78 @@ int Num_update_VWXR_dprimme(dummy_type_dprimme *V, dummy_type_dprimme *W, dummy_
 #if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RXprimme)
 #  define applyPreconditioner_RXprimme CONCAT(applyPreconditioner_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Shprimme)
+#  define applyPreconditioner_Shprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Rhprimme)
+#  define applyPreconditioner_Rhprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Ssprimme)
+#  define applyPreconditioner_Ssprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Rsprimme)
+#  define applyPreconditioner_Rsprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Sdprimme)
+#  define applyPreconditioner_Sdprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Rdprimme)
+#  define applyPreconditioner_Rdprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Sqprimme)
+#  define applyPreconditioner_Sqprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_Rqprimme)
+#  define applyPreconditioner_Rqprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SXhprimme)
+#  define applyPreconditioner_SXhprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RXhprimme)
+#  define applyPreconditioner_RXhprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SXsprimme)
+#  define applyPreconditioner_SXsprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RXsprimme)
+#  define applyPreconditioner_RXsprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SXdprimme)
+#  define applyPreconditioner_SXdprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RXdprimme)
+#  define applyPreconditioner_RXdprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SXqprimme)
+#  define applyPreconditioner_SXqprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RXqprimme)
+#  define applyPreconditioner_RXqprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SHhprimme)
+#  define applyPreconditioner_SHhprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RHhprimme)
+#  define applyPreconditioner_RHhprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SHsprimme)
+#  define applyPreconditioner_SHsprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RHsprimme)
+#  define applyPreconditioner_RHsprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SHdprimme)
+#  define applyPreconditioner_SHdprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RHdprimme)
+#  define applyPreconditioner_RHdprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_SHqprimme)
+#  define applyPreconditioner_SHqprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(applyPreconditioner_RHqprimme)
+#  define applyPreconditioner_RHqprimme CONCAT(applyPreconditioner_,CONCAT(CONCAT(,q),primme))
+#endif
 int applyPreconditioner_dprimme(dummy_type_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Sprimme)
@@ -305,6 +665,78 @@ int applyPreconditioner_dprimme(dummy_type_dprimme *V, PRIMME_INT nLocal, PRIMME
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RXprimme)
 #  define convTestFun_RXprimme CONCAT(convTestFun_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Shprimme)
+#  define convTestFun_Shprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Rhprimme)
+#  define convTestFun_Rhprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Ssprimme)
+#  define convTestFun_Ssprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Rsprimme)
+#  define convTestFun_Rsprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Sdprimme)
+#  define convTestFun_Sdprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Rdprimme)
+#  define convTestFun_Rdprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Sqprimme)
+#  define convTestFun_Sqprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_Rqprimme)
+#  define convTestFun_Rqprimme CONCAT(convTestFun_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SXhprimme)
+#  define convTestFun_SXhprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RXhprimme)
+#  define convTestFun_RXhprimme CONCAT(convTestFun_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SXsprimme)
+#  define convTestFun_SXsprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RXsprimme)
+#  define convTestFun_RXsprimme CONCAT(convTestFun_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SXdprimme)
+#  define convTestFun_SXdprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RXdprimme)
+#  define convTestFun_RXdprimme CONCAT(convTestFun_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SXqprimme)
+#  define convTestFun_SXqprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RXqprimme)
+#  define convTestFun_RXqprimme CONCAT(convTestFun_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SHhprimme)
+#  define convTestFun_SHhprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RHhprimme)
+#  define convTestFun_RHhprimme CONCAT(convTestFun_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SHsprimme)
+#  define convTestFun_SHsprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RHsprimme)
+#  define convTestFun_RHsprimme CONCAT(convTestFun_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SHdprimme)
+#  define convTestFun_SHdprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RHdprimme)
+#  define convTestFun_RHdprimme CONCAT(convTestFun_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_SHqprimme)
+#  define convTestFun_SHqprimme CONCAT(convTestFun_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFun_RHqprimme)
+#  define convTestFun_RHqprimme CONCAT(convTestFun_,CONCAT(CONCAT(,q),primme))
 #endif
 int convTestFun_dprimme(dummy_type_dprimme eval, dummy_type_dprimme *evec, int givenEvec, dummy_type_dprimme rNorm,
       int *isconv, primme_context ctx);
@@ -326,6 +758,78 @@ int convTestFun_dprimme(dummy_type_dprimme eval, dummy_type_dprimme *evec, int g
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_RXprimme)
 #  define globalSum_RXprimme CONCAT(globalSum_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Shprimme)
+#  define globalSum_Shprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Rhprimme)
+#  define globalSum_Rhprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Ssprimme)
+#  define globalSum_Ssprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Rsprimme)
+#  define globalSum_Rsprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Sdprimme)
+#  define globalSum_Sdprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Rdprimme)
+#  define globalSum_Rdprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Sqprimme)
+#  define globalSum_Sqprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_Rqprimme)
+#  define globalSum_Rqprimme CONCAT(globalSum_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SXhprimme)
+#  define globalSum_SXhprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RXhprimme)
+#  define globalSum_RXhprimme CONCAT(globalSum_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SXsprimme)
+#  define globalSum_SXsprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RXsprimme)
+#  define globalSum_RXsprimme CONCAT(globalSum_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SXdprimme)
+#  define globalSum_SXdprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RXdprimme)
+#  define globalSum_RXdprimme CONCAT(globalSum_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SXqprimme)
+#  define globalSum_SXqprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RXqprimme)
+#  define globalSum_RXqprimme CONCAT(globalSum_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SHhprimme)
+#  define globalSum_SHhprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHhprimme)
+#  define globalSum_RHhprimme CONCAT(globalSum_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SHsprimme)
+#  define globalSum_SHsprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHsprimme)
+#  define globalSum_RHsprimme CONCAT(globalSum_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SHdprimme)
+#  define globalSum_SHdprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHdprimme)
+#  define globalSum_RHdprimme CONCAT(globalSum_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_SHqprimme)
+#  define globalSum_SHqprimme CONCAT(globalSum_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHqprimme)
+#  define globalSum_RHqprimme CONCAT(globalSum_,CONCAT(CONCAT(,q),primme))
+#endif
 int globalSum_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_Sprimme)
 #  define broadcast_Sprimme CONCAT(broadcast_,SCALAR_SUF)
@@ -345,6 +849,78 @@ int globalSum_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx)
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_RXprimme)
 #  define broadcast_RXprimme CONCAT(broadcast_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Shprimme)
+#  define broadcast_Shprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Rhprimme)
+#  define broadcast_Rhprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Ssprimme)
+#  define broadcast_Ssprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Rsprimme)
+#  define broadcast_Rsprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Sdprimme)
+#  define broadcast_Sdprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Rdprimme)
+#  define broadcast_Rdprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Sqprimme)
+#  define broadcast_Sqprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_Rqprimme)
+#  define broadcast_Rqprimme CONCAT(broadcast_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SXhprimme)
+#  define broadcast_SXhprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RXhprimme)
+#  define broadcast_RXhprimme CONCAT(broadcast_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SXsprimme)
+#  define broadcast_SXsprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RXsprimme)
+#  define broadcast_RXsprimme CONCAT(broadcast_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SXdprimme)
+#  define broadcast_SXdprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RXdprimme)
+#  define broadcast_RXdprimme CONCAT(broadcast_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SXqprimme)
+#  define broadcast_SXqprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RXqprimme)
+#  define broadcast_RXqprimme CONCAT(broadcast_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SHhprimme)
+#  define broadcast_SHhprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RHhprimme)
+#  define broadcast_RHhprimme CONCAT(broadcast_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SHsprimme)
+#  define broadcast_SHsprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RHsprimme)
+#  define broadcast_RHsprimme CONCAT(broadcast_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SHdprimme)
+#  define broadcast_SHdprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RHdprimme)
+#  define broadcast_RHdprimme CONCAT(broadcast_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_SHqprimme)
+#  define broadcast_SHqprimme CONCAT(broadcast_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_RHqprimme)
+#  define broadcast_RHqprimme CONCAT(broadcast_,CONCAT(CONCAT(,q),primme))
+#endif
 int broadcast_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSprimme)
 #  define globalSum_TprimmeSprimme CONCAT(globalSum_Tprimme,SCALAR_SUF)
@@ -363,6 +939,78 @@ int broadcast_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXprimme)
 #  define globalSum_TprimmeRXprimme CONCAT(globalSum_Tprimme,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeShprimme)
+#  define globalSum_TprimmeShprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRhprimme)
+#  define globalSum_TprimmeRhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSsprimme)
+#  define globalSum_TprimmeSsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRsprimme)
+#  define globalSum_TprimmeRsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSdprimme)
+#  define globalSum_TprimmeSdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRdprimme)
+#  define globalSum_TprimmeRdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSqprimme)
+#  define globalSum_TprimmeSqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRqprimme)
+#  define globalSum_TprimmeRqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXhprimme)
+#  define globalSum_TprimmeSXhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXhprimme)
+#  define globalSum_TprimmeRXhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXsprimme)
+#  define globalSum_TprimmeSXsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXsprimme)
+#  define globalSum_TprimmeRXsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXdprimme)
+#  define globalSum_TprimmeSXdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXdprimme)
+#  define globalSum_TprimmeRXdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXqprimme)
+#  define globalSum_TprimmeSXqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXqprimme)
+#  define globalSum_TprimmeRXqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHhprimme)
+#  define globalSum_TprimmeSHhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHhprimme)
+#  define globalSum_TprimmeRHhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHsprimme)
+#  define globalSum_TprimmeSHsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHsprimme)
+#  define globalSum_TprimmeRHsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHdprimme)
+#  define globalSum_TprimmeSHdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHdprimme)
+#  define globalSum_TprimmeRHdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHqprimme)
+#  define globalSum_TprimmeSHqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHqprimme)
+#  define globalSum_TprimmeRHqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(,q),primme))
 #endif
 int globalSum_Tprimme(
       void *buffer, primme_op_datatype buffert, int count, primme_context ctx);
@@ -384,6 +1032,78 @@ int globalSum_Tprimme(
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXprimme)
 #  define broadcast_TprimmeRXprimme CONCAT(broadcast_Tprimme,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeShprimme)
+#  define broadcast_TprimmeShprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRhprimme)
+#  define broadcast_TprimmeRhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSsprimme)
+#  define broadcast_TprimmeSsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRsprimme)
+#  define broadcast_TprimmeRsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSdprimme)
+#  define broadcast_TprimmeSdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRdprimme)
+#  define broadcast_TprimmeRdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSqprimme)
+#  define broadcast_TprimmeSqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRqprimme)
+#  define broadcast_TprimmeRqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXhprimme)
+#  define broadcast_TprimmeSXhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXhprimme)
+#  define broadcast_TprimmeRXhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXsprimme)
+#  define broadcast_TprimmeSXsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXsprimme)
+#  define broadcast_TprimmeRXsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXdprimme)
+#  define broadcast_TprimmeSXdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXdprimme)
+#  define broadcast_TprimmeRXdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXqprimme)
+#  define broadcast_TprimmeSXqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXqprimme)
+#  define broadcast_TprimmeRXqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHhprimme)
+#  define broadcast_TprimmeSHhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHhprimme)
+#  define broadcast_TprimmeRHhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHsprimme)
+#  define broadcast_TprimmeSHsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHsprimme)
+#  define broadcast_TprimmeRHsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHdprimme)
+#  define broadcast_TprimmeSHdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHdprimme)
+#  define broadcast_TprimmeRHdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHqprimme)
+#  define broadcast_TprimmeSHqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHqprimme)
+#  define broadcast_TprimmeRHqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(,q),primme))
+#endif
 int broadcast_Tprimme(
       void *buffer, primme_op_datatype buffert, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSprimme)
@@ -404,6 +1124,78 @@ int broadcast_Tprimme(
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRXprimme)
 #  define broadcast_iprimmeRXprimme CONCAT(broadcast_iprimme,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeShprimme)
+#  define broadcast_iprimmeShprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRhprimme)
+#  define broadcast_iprimmeRhprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSsprimme)
+#  define broadcast_iprimmeSsprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRsprimme)
+#  define broadcast_iprimmeRsprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSdprimme)
+#  define broadcast_iprimmeSdprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRdprimme)
+#  define broadcast_iprimmeRdprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSqprimme)
+#  define broadcast_iprimmeSqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRqprimme)
+#  define broadcast_iprimmeRqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSXhprimme)
+#  define broadcast_iprimmeSXhprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRXhprimme)
+#  define broadcast_iprimmeRXhprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSXsprimme)
+#  define broadcast_iprimmeSXsprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRXsprimme)
+#  define broadcast_iprimmeRXsprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSXdprimme)
+#  define broadcast_iprimmeSXdprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRXdprimme)
+#  define broadcast_iprimmeRXdprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSXqprimme)
+#  define broadcast_iprimmeSXqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRXqprimme)
+#  define broadcast_iprimmeRXqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSHhprimme)
+#  define broadcast_iprimmeSHhprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRHhprimme)
+#  define broadcast_iprimmeRHhprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSHsprimme)
+#  define broadcast_iprimmeSHsprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRHsprimme)
+#  define broadcast_iprimmeRHsprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSHdprimme)
+#  define broadcast_iprimmeSHdprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRHdprimme)
+#  define broadcast_iprimmeRHdprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSHqprimme)
+#  define broadcast_iprimmeSHqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeRHqprimme)
+#  define broadcast_iprimmeRHqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(,q),primme))
+#endif
 int broadcast_iprimme(int *buffer, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Sprimme)
 #  define problemNorm_Sprimme CONCAT(problemNorm_,SCALAR_SUF)
@@ -422,6 +1214,78 @@ int broadcast_iprimme(int *buffer, int count, primme_context ctx);
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RXprimme)
 #  define problemNorm_RXprimme CONCAT(problemNorm_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Shprimme)
+#  define problemNorm_Shprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Rhprimme)
+#  define problemNorm_Rhprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Ssprimme)
+#  define problemNorm_Ssprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Rsprimme)
+#  define problemNorm_Rsprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Sdprimme)
+#  define problemNorm_Sdprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Rdprimme)
+#  define problemNorm_Rdprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Sqprimme)
+#  define problemNorm_Sqprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Rqprimme)
+#  define problemNorm_Rqprimme CONCAT(problemNorm_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SXhprimme)
+#  define problemNorm_SXhprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RXhprimme)
+#  define problemNorm_RXhprimme CONCAT(problemNorm_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SXsprimme)
+#  define problemNorm_SXsprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RXsprimme)
+#  define problemNorm_RXsprimme CONCAT(problemNorm_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SXdprimme)
+#  define problemNorm_SXdprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RXdprimme)
+#  define problemNorm_RXdprimme CONCAT(problemNorm_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SXqprimme)
+#  define problemNorm_SXqprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RXqprimme)
+#  define problemNorm_RXqprimme CONCAT(problemNorm_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SHhprimme)
+#  define problemNorm_SHhprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RHhprimme)
+#  define problemNorm_RHhprimme CONCAT(problemNorm_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SHsprimme)
+#  define problemNorm_SHsprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RHsprimme)
+#  define problemNorm_RHsprimme CONCAT(problemNorm_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SHdprimme)
+#  define problemNorm_SHdprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RHdprimme)
+#  define problemNorm_RHdprimme CONCAT(problemNorm_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_SHqprimme)
+#  define problemNorm_SHqprimme CONCAT(problemNorm_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(problemNorm_RHqprimme)
+#  define problemNorm_RHqprimme CONCAT(problemNorm_,CONCAT(CONCAT(,q),primme))
 #endif
 dummy_type_dprimme problemNorm_dprimme(
       int overrideUserEstimations, struct primme_params *primme);
@@ -443,6 +1307,78 @@ dummy_type_dprimme problemNorm_dprimme(
 #if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RXprimme)
 #  define deltaEig_RXprimme CONCAT(deltaEig_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Shprimme)
+#  define deltaEig_Shprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Rhprimme)
+#  define deltaEig_Rhprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Ssprimme)
+#  define deltaEig_Ssprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Rsprimme)
+#  define deltaEig_Rsprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Sdprimme)
+#  define deltaEig_Sdprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Rdprimme)
+#  define deltaEig_Rdprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Sqprimme)
+#  define deltaEig_Sqprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_Rqprimme)
+#  define deltaEig_Rqprimme CONCAT(deltaEig_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SXhprimme)
+#  define deltaEig_SXhprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RXhprimme)
+#  define deltaEig_RXhprimme CONCAT(deltaEig_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SXsprimme)
+#  define deltaEig_SXsprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RXsprimme)
+#  define deltaEig_RXsprimme CONCAT(deltaEig_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SXdprimme)
+#  define deltaEig_SXdprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RXdprimme)
+#  define deltaEig_RXdprimme CONCAT(deltaEig_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SXqprimme)
+#  define deltaEig_SXqprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RXqprimme)
+#  define deltaEig_RXqprimme CONCAT(deltaEig_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SHhprimme)
+#  define deltaEig_SHhprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RHhprimme)
+#  define deltaEig_RHhprimme CONCAT(deltaEig_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SHsprimme)
+#  define deltaEig_SHsprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RHsprimme)
+#  define deltaEig_RHsprimme CONCAT(deltaEig_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SHdprimme)
+#  define deltaEig_SHdprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RHdprimme)
+#  define deltaEig_RHdprimme CONCAT(deltaEig_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_SHqprimme)
+#  define deltaEig_SHqprimme CONCAT(deltaEig_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(deltaEig_RHqprimme)
+#  define deltaEig_RHqprimme CONCAT(deltaEig_,CONCAT(CONCAT(,q),primme))
+#endif
 dummy_type_dprimme deltaEig_dprimme(
       int overrideUserEstimations, struct primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Sprimme)
@@ -462,6 +1398,78 @@ dummy_type_dprimme deltaEig_dprimme(
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RXprimme)
 #  define Num_dist_dots_RXprimme CONCAT(Num_dist_dots_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Shprimme)
+#  define Num_dist_dots_Shprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Rhprimme)
+#  define Num_dist_dots_Rhprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Ssprimme)
+#  define Num_dist_dots_Ssprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Rsprimme)
+#  define Num_dist_dots_Rsprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Sdprimme)
+#  define Num_dist_dots_Sdprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Rdprimme)
+#  define Num_dist_dots_Rdprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Sqprimme)
+#  define Num_dist_dots_Sqprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Rqprimme)
+#  define Num_dist_dots_Rqprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SXhprimme)
+#  define Num_dist_dots_SXhprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RXhprimme)
+#  define Num_dist_dots_RXhprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SXsprimme)
+#  define Num_dist_dots_SXsprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RXsprimme)
+#  define Num_dist_dots_RXsprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SXdprimme)
+#  define Num_dist_dots_SXdprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RXdprimme)
+#  define Num_dist_dots_RXdprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SXqprimme)
+#  define Num_dist_dots_SXqprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RXqprimme)
+#  define Num_dist_dots_RXqprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SHhprimme)
+#  define Num_dist_dots_SHhprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RHhprimme)
+#  define Num_dist_dots_RHhprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SHsprimme)
+#  define Num_dist_dots_SHsprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RHsprimme)
+#  define Num_dist_dots_RHsprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SHdprimme)
+#  define Num_dist_dots_SHdprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RHdprimme)
+#  define Num_dist_dots_RHdprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_SHqprimme)
+#  define Num_dist_dots_SHqprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_RHqprimme)
+#  define Num_dist_dots_RHqprimme CONCAT(Num_dist_dots_,CONCAT(CONCAT(,q),primme))
 #endif
 int Num_dist_dots_dprimme(dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type_dprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
@@ -483,6 +1491,78 @@ int Num_dist_dots_dprimme(dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type_dpri
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RXprimme)
 #  define Num_dist_dots_real_RXprimme CONCAT(Num_dist_dots_real_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Shprimme)
+#  define Num_dist_dots_real_Shprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Rhprimme)
+#  define Num_dist_dots_real_Rhprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Ssprimme)
+#  define Num_dist_dots_real_Ssprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Rsprimme)
+#  define Num_dist_dots_real_Rsprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Sdprimme)
+#  define Num_dist_dots_real_Sdprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Rdprimme)
+#  define Num_dist_dots_real_Rdprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Sqprimme)
+#  define Num_dist_dots_real_Sqprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_Rqprimme)
+#  define Num_dist_dots_real_Rqprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SXhprimme)
+#  define Num_dist_dots_real_SXhprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RXhprimme)
+#  define Num_dist_dots_real_RXhprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SXsprimme)
+#  define Num_dist_dots_real_SXsprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RXsprimme)
+#  define Num_dist_dots_real_RXsprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SXdprimme)
+#  define Num_dist_dots_real_SXdprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RXdprimme)
+#  define Num_dist_dots_real_RXdprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SXqprimme)
+#  define Num_dist_dots_real_SXqprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RXqprimme)
+#  define Num_dist_dots_real_RXqprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SHhprimme)
+#  define Num_dist_dots_real_SHhprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RHhprimme)
+#  define Num_dist_dots_real_RHhprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SHsprimme)
+#  define Num_dist_dots_real_SHsprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RHsprimme)
+#  define Num_dist_dots_real_RHsprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SHdprimme)
+#  define Num_dist_dots_real_SHdprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RHdprimme)
+#  define Num_dist_dots_real_RHdprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_SHqprimme)
+#  define Num_dist_dots_real_SHqprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_real_RHqprimme)
+#  define Num_dist_dots_real_RHqprimme CONCAT(Num_dist_dots_real_,CONCAT(CONCAT(,q),primme))
+#endif
 int Num_dist_dots_real_dprimme(dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type_dprimme *y,
       PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Sprimme)
@@ -502,6 +1582,78 @@ int Num_dist_dots_real_dprimme(dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RXprimme)
 #  define monitorFun_RXprimme CONCAT(monitorFun_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Shprimme)
+#  define monitorFun_Shprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Rhprimme)
+#  define monitorFun_Rhprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Ssprimme)
+#  define monitorFun_Ssprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Rsprimme)
+#  define monitorFun_Rsprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Sdprimme)
+#  define monitorFun_Sdprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Rdprimme)
+#  define monitorFun_Rdprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Sqprimme)
+#  define monitorFun_Sqprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_Rqprimme)
+#  define monitorFun_Rqprimme CONCAT(monitorFun_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SXhprimme)
+#  define monitorFun_SXhprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RXhprimme)
+#  define monitorFun_RXhprimme CONCAT(monitorFun_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SXsprimme)
+#  define monitorFun_SXsprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RXsprimme)
+#  define monitorFun_RXsprimme CONCAT(monitorFun_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SXdprimme)
+#  define monitorFun_SXdprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RXdprimme)
+#  define monitorFun_RXdprimme CONCAT(monitorFun_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SXqprimme)
+#  define monitorFun_SXqprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RXqprimme)
+#  define monitorFun_RXqprimme CONCAT(monitorFun_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SHhprimme)
+#  define monitorFun_SHhprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RHhprimme)
+#  define monitorFun_RHhprimme CONCAT(monitorFun_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SHsprimme)
+#  define monitorFun_SHsprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RHsprimme)
+#  define monitorFun_RHsprimme CONCAT(monitorFun_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SHdprimme)
+#  define monitorFun_SHdprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RHdprimme)
+#  define monitorFun_RHdprimme CONCAT(monitorFun_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_SHqprimme)
+#  define monitorFun_SHqprimme CONCAT(monitorFun_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(monitorFun_RHqprimme)
+#  define monitorFun_RHqprimme CONCAT(monitorFun_,CONCAT(CONCAT(,q),primme))
 #endif
 int monitorFun_dprimme(dummy_type_dprimme *basisEvals, int basisSize, int *basisFlags,
       int *iblock, int blockSize, dummy_type_dprimme *basisNorms, int numConverged,
@@ -679,5 +1831,73 @@ int monitorFun_magma_zprimme(dummy_type_dprimme *basisEvals, int basisSize, int 
       int *iblock, int blockSize, dummy_type_dprimme *basisNorms, int numConverged,
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_magma_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_magma_hprimme *Bx,
+   dummy_type_magma_hprimme *Ax, dummy_type_magma_hprimme *r, primme_context ctx);
+int Num_update_VWXR_magma_hprimme(dummy_type_magma_hprimme *V, dummy_type_magma_hprimme *W, dummy_type_magma_hprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_magma_hprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_magma_hprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_magma_hprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_magma_hprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_magma_hprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_magma_hprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_magma_hprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_magma_hprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_sprimme *G, int nG, int ldG,
+      dummy_type_sprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_magma_hprimme(dummy_type_sprimme eval, dummy_type_magma_hprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+dummy_type_sprimme problemNorm_magma_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_magma_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int Num_dist_dots_real_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_magma_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_magma_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_kprimme *Bx,
+   dummy_type_magma_kprimme *Ax, dummy_type_magma_kprimme *r, primme_context ctx);
+int Num_update_VWXR_magma_kprimme(dummy_type_magma_kprimme *V, dummy_type_magma_kprimme *W, dummy_type_magma_kprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_magma_kprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_magma_kprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_magma_kprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_magma_kprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_magma_kprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_magma_kprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_magma_kprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_magma_kprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_cprimme *G, int nG, int ldG,
+      dummy_type_cprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_magma_kprimme(dummy_type_sprimme eval, dummy_type_magma_kprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+dummy_type_sprimme problemNorm_magma_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_magma_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
+int Num_dist_dots_real_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_magma_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
 #endif

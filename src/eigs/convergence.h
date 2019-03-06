@@ -71,6 +71,78 @@ int check_convergence_cprimme(dummy_type_cprimme *X, PRIMME_INT ldX, int givenX,
 #if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RXprimme)
 #  define check_convergence_RXprimme CONCAT(check_convergence_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Shprimme)
+#  define check_convergence_Shprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Rhprimme)
+#  define check_convergence_Rhprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Ssprimme)
+#  define check_convergence_Ssprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Rsprimme)
+#  define check_convergence_Rsprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Sdprimme)
+#  define check_convergence_Sdprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Rdprimme)
+#  define check_convergence_Rdprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Sqprimme)
+#  define check_convergence_Sqprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_Rqprimme)
+#  define check_convergence_Rqprimme CONCAT(check_convergence_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SXhprimme)
+#  define check_convergence_SXhprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RXhprimme)
+#  define check_convergence_RXhprimme CONCAT(check_convergence_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SXsprimme)
+#  define check_convergence_SXsprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RXsprimme)
+#  define check_convergence_RXsprimme CONCAT(check_convergence_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SXdprimme)
+#  define check_convergence_SXdprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RXdprimme)
+#  define check_convergence_RXdprimme CONCAT(check_convergence_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SXqprimme)
+#  define check_convergence_SXqprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RXqprimme)
+#  define check_convergence_RXqprimme CONCAT(check_convergence_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SHhprimme)
+#  define check_convergence_SHhprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RHhprimme)
+#  define check_convergence_RHhprimme CONCAT(check_convergence_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SHsprimme)
+#  define check_convergence_SHsprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RHsprimme)
+#  define check_convergence_RHsprimme CONCAT(check_convergence_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SHdprimme)
+#  define check_convergence_SHdprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RHdprimme)
+#  define check_convergence_RHdprimme CONCAT(check_convergence_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_SHqprimme)
+#  define check_convergence_SHqprimme CONCAT(check_convergence_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_convergence_RHqprimme)
+#  define check_convergence_RHqprimme CONCAT(check_convergence_,CONCAT(CONCAT(,q),primme))
+#endif
 int check_convergence_dprimme(dummy_type_dprimme *X, PRIMME_INT ldX, int givenX, dummy_type_dprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_dprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *VtBV,
@@ -101,4 +173,14 @@ int check_convergence_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT ldX,
       PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
       int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
       dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+int check_convergence_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_hprimme *R,
+      PRIMME_INT ldR, int givenR, dummy_type_magma_hprimme *evecs, int numLocked,
+      PRIMME_INT ldevecs, dummy_type_magma_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
+      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
+      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+int check_convergence_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_kprimme *R,
+      PRIMME_INT ldR, int givenR, dummy_type_magma_kprimme *evecs, int numLocked,
+      PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
+      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
+      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
 #endif

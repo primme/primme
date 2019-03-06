@@ -89,6 +89,7 @@ uninstall:
 		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
 
 deps:
+	touch src/*/*.c
 	@$(MAKE) -C src auto_headers
 
 check_style:

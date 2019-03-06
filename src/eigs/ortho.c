@@ -1002,7 +1002,6 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
             CHKERR(Num_copy_matrix_Sprimme(Xo, m, nX, m, &X[i], ldX, ctx));
             ldXo = m;
          } else {
-            /* TODO: Fix this for GPUs */
             CHKERR(Num_trsm_hd_Sprimme(
                   "R", "U", "N", "N", m, nX, 1.0, Y, ldY, &X[i], ldX, ctx));
             Xo = &X[i];

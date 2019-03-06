@@ -41,10 +41,11 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
    ARCHS += $(foreach a,$(ARCHS),$(a)magma)
 endif
 ifeq ($(PRIMME_WITH_HALF),yes)
-   ARCHS += half halfcomplex
+   ARCHS += half halfcomplex halfmagma halfcomplexmagma
 endif
 ALL_ARCHS := HALF HALFCOMPLEX FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
-   FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA
+   FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA \
+   HALF_MAGMA HALFCOMPLEX_MAGMA
 
 OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
 
@@ -131,6 +132,13 @@ auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
 
 %floatcomplexmagma.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX_MAGMA -c $< -o $@
+
+%halfmagma.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALF_MAGMA -c $< -o $@
+
+%halfcomplexmagma.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALFCOMPLEX_MAGMA -c $< -o $@
+
 
 #
 # Archive object files in the full library

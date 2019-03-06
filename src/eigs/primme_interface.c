@@ -1313,7 +1313,7 @@ int primme_set_member(primme_params *primme, primme_params_label label,
               primme->convTestFun = v.convTestFun_v;
       break;
       case PRIMME_convTestFun_type:
-              primme->convTestFun_type = *v.int_v;
+              primme->convTestFun_type = (primme_op_datatype)*v.int_v;
       break;
       case PRIMME_convtest:
               primme->convtest = v.ptr_v;
@@ -1328,7 +1328,7 @@ int primme_set_member(primme_params *primme, primme_params_label label,
               primme->monitorFun = v.monitorFun_v;
       break;
       case PRIMME_monitorFun_type:
-              primme->monitorFun_type = *v.int_v;
+              primme->monitorFun_type = (primme_op_datatype)*v.int_v;
       break;
       case PRIMME_monitor:
               primme->monitor = v.ptr_v;

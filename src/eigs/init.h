@@ -75,6 +75,78 @@ int init_basis_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 #if !defined(CHECK_TEMPLATE) && !defined(init_basis_RXprimme)
 #  define init_basis_RXprimme CONCAT(init_basis_,XREAL_SUF)
 #endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Shprimme)
+#  define init_basis_Shprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Rhprimme)
+#  define init_basis_Rhprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Ssprimme)
+#  define init_basis_Ssprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Rsprimme)
+#  define init_basis_Rsprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Sdprimme)
+#  define init_basis_Sdprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Rdprimme)
+#  define init_basis_Rdprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Sqprimme)
+#  define init_basis_Sqprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_Rqprimme)
+#  define init_basis_Rqprimme CONCAT(init_basis_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SXhprimme)
+#  define init_basis_SXhprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RXhprimme)
+#  define init_basis_RXhprimme CONCAT(init_basis_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SXsprimme)
+#  define init_basis_SXsprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RXsprimme)
+#  define init_basis_RXsprimme CONCAT(init_basis_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SXdprimme)
+#  define init_basis_SXdprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RXdprimme)
+#  define init_basis_RXdprimme CONCAT(init_basis_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SXqprimme)
+#  define init_basis_SXqprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RXqprimme)
+#  define init_basis_RXqprimme CONCAT(init_basis_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SHhprimme)
+#  define init_basis_SHhprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RHhprimme)
+#  define init_basis_RHhprimme CONCAT(init_basis_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SHsprimme)
+#  define init_basis_SHsprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RHsprimme)
+#  define init_basis_RHsprimme CONCAT(init_basis_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SHdprimme)
+#  define init_basis_SHdprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RHdprimme)
+#  define init_basis_RHdprimme CONCAT(init_basis_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_SHqprimme)
+#  define init_basis_SHqprimme CONCAT(init_basis_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(init_basis_RHqprimme)
+#  define init_basis_RHqprimme CONCAT(init_basis_,CONCAT(CONCAT(,q),primme))
+#endif
 int init_basis_dprimme(dummy_type_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_dprimme *W,
       PRIMME_INT ldW, dummy_type_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *evecsHat,
@@ -110,5 +182,17 @@ int init_basis_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLocal, PRI
       PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_zprimme *evecsHat,
       PRIMME_INT ldevecsHat, dummy_type_zprimme *M, int ldM, dummy_type_zprimme *Mfact, int ldMfact,
       int *ipivot, dummy_type_zprimme *VtBV, int ldVtBV, int maxRank, int *basisSize,
+      int *nextGuess, int *numGuesses, primme_context ctx);
+int init_basis_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_magma_hprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, dummy_type_magma_hprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_magma_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_hprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_sprimme *M, int ldM, dummy_type_sprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_sprimme *VtBV, int ldVtBV, int maxRank, int *basisSize,
+      int *nextGuess, int *numGuesses, primme_context ctx);
+int init_basis_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_magma_kprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_kprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *M, int ldM, dummy_type_cprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_cprimme *VtBV, int ldVtBV, int maxRank, int *basisSize,
       int *nextGuess, int *numGuesses, primme_context ctx);
 #endif

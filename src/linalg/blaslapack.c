@@ -34,8 +34,6 @@
  *
  ******************************************************************************/
 
-
-#include <stdlib.h>   /* free */
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
@@ -55,12 +53,139 @@
 
 #include "blaslapack_private.h"
 
-#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 static int free_fn_dummy (void *p, primme_context ctx) {
    (void)ctx;
    free(p);
    return 0;
 }
+
+/******************************************************************************
+ * Function Num_malloc_Sprimme - Allocate a vector of scalars
+ *
+ * PARAMETERS
+ * ---------------------------
+ * n           The number of elements
+ * v           returned pointer
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
+   (void)ctx;
+
+   /* Quick exit */
+
+   if (n <= 0) {
+      *x = NULL;
+      return 0;
+   }
+
+   /* Allocate memory */
+
+   *x = (SCALAR *)malloc(sizeof(SCALAR) * n);
+   if (*x == NULL) return PRIMME_MALLOC_FAILURE;
+
+   /* Register the allocation */
+
+   Mem_keep_frame(ctx);
+   Mem_register_alloc(*x, free_fn_dummy, ctx);
+
+   return 0;
+}
+
+/******************************************************************************
+ * Function Num_free_Sprimme - Free allocated a vector of scalars
+ *
+ * PARAMETERS
+ * ---------------------------
+ * v           allocated pointer
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_free_Sprimme(SCALAR *x, primme_context ctx) {
+
+   /* Quick exit */
+
+   if (!x) return 0;
+
+   /* Deregister the allocation */
+
+   Mem_deregister_alloc(x, ctx);
+
+   /* Free pointer */
+
+   free(x);
+
+   return 0;
+}
+
+#ifdef USE_DOUBLE
+
+/******************************************************************************
+ * Function Num_malloc_iprimme - Allocate a vector of integers
+ *
+ * PARAMETERS
+ * ---------------------------
+ * n           The number of elements
+ * v           returned pointer
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {
+   (void)ctx;
+
+   /* Quick exit */
+
+   if (n <= 0) {
+      *x = NULL;
+      return 0;
+   }
+
+   /* Allocate memory */
+
+   *x = (int *)malloc(sizeof(int) * n);
+   if (*x == NULL) return PRIMME_MALLOC_FAILURE;
+
+   /* Register the allocation */
+
+   Mem_keep_frame(ctx);
+   Mem_register_alloc(*x, free_fn_dummy, ctx);
+
+   return 0;
+}
+
+/******************************************************************************
+ * Function Num_free_iprimme - Free allocated a vector of integers
+ *
+ * PARAMETERS
+ * ---------------------------
+ * v           allocated pointer
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_free_iprimme(int *x, primme_context ctx) {
+   /* Quick exit */
+
+   if (!x) return 0;
+
+   /* Deregister the allocation */
+
+   Mem_deregister_alloc(x, ctx);
+
+   /* Free pointer */
+
+   free(x);
+
+   return 0;
+}
+
+#endif /* USE_DOUBLE */
+
+
+#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 
 /******************************************************************************
  * Function Num_malloc_iblasprimme - Allocate a vector of integers
@@ -151,6 +276,216 @@ int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
    return Num_copy_matrix_Sprimme(x, 1, n, incx, y, incy, ctx);
 #endif
 }
+
+/******************************************************************************
+ * Function Num_copy_matrix_Tprimme - Copy the matrix x into y. The types of
+ *    x and y can be different.
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x and y *can* overlap
+ *
+ ******************************************************************************/
+
+#define Num_copy_matrix_Tprimme(x, xcast, m, n, ldx, y, ldy, ctx) { \
+   int i, j; \
+   \
+   assert((m) == 0 || (n) == 0 || ((ldx) >= (m) && (ldy) >= (m))); \
+   \
+   if ((void*)x != (void*)y) \
+      for (i = 0; i < (n); i++) \
+         for (j = 0; j < (m); j++) \
+               (y)[i * (ldy) + j] = xcast (x)[i * (ldx) + j]; \
+}
+
+/******************************************************************************
+ * Function Num_copy_Tmatrix - Copy the matrix x with type given as a parameter
+ *    into y
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * xt          The type of x
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x and y *can* overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
+      PRIMME_INT n, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
+      primme_context ctx) {
+   (void)ctx;
+
+   /* Quick exit */
+
+   if (xt == primme_op_default || xt == PRIMME_OP_SCALAR) {
+      CHKERR(Num_copy_matrix_Sprimme((SCALAR*)x, m, n, ldx, y, ldy, ctx));
+      return 0;
+   }
+
+   if (m == 0 || n == 0) return 0;
+
+   /* In-place casting is not supported */
+
+   if (x == y) return PRIMME_FUNCTION_UNAVAILABLE;
+
+#ifdef USE_COMPLEX
+   return Num_copy_Tmatrix_Rprimme(
+         x, xt, m * 2, n, ldx * 2, (REAL *)y, ldy * 2, ctx);
+#else
+
+ 
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX)
+#  define CAST (float)
+#else
+#  define CAST
+#endif
+
+   switch (xt) {
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
+#  endif
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
+      case primme_op_quad:   Num_copy_matrix_Tprimme((PRIMME_QUAD*)x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
+      case primme_op_int:    Num_copy_matrix_Tprimme((int*)        x, CAST, m, n, ldx, (XSCALAR*)y, ldy, ctx); break;
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+   }
+#undef CAST
+
+   return 0;
+#endif /* USE_COMPLEX */
+}
+
+#ifdef USE_DOUBLE
+TEMPLATE_PLEASE
+int Num_copy_Tmatrix_iprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
+      PRIMME_INT n, PRIMME_INT ldx, int *y, PRIMME_INT ldy,
+      primme_context ctx) {
+   (void)ctx;
+
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX)
+#  define CAST (float)
+#else
+#  define CAST
+#endif
+
+   switch (xt) {
+#  ifdef PRIMME_WITH_NATIVE_HALF
+      case primme_op_half:   Num_copy_matrix_Tprimme((PRIMME_HALF*)x, CAST, m, n, ldx, y, ldy, ctx); break;
+#  endif
+      case primme_op_float:  Num_copy_matrix_Tprimme((float*)      x, CAST, m, n, ldx, y, ldy, ctx); break;
+      case primme_op_double: Num_copy_matrix_Tprimme((double*)     x, CAST, m, n, ldx, y, ldy, ctx); break;
+      case primme_op_quad:   Num_copy_matrix_Tprimme((PRIMME_QUAD*)x, CAST, m, n, ldx, y, ldy, ctx); break;
+      case primme_op_int:    Num_copy_matrix_Tprimme((int*)        x, CAST, m, n, ldx, y, ldy, ctx); break;
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+   }
+#undef CAST
+
+   return 0;
+}
+#endif /* USE_DOUBLE */
+
+/******************************************************************************
+ * Function Num_copy_matrix - Copy the matrix x into y
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ * NOTE: x and y *can* overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
+      primme_context ctx) {
+   (void)ctx;
+
+   PRIMME_INT i, j;
+
+   assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
+
+   /* Do nothing if x and y are the same matrix */
+   if (x == y && ldx == ldy)
+      return 0;
+
+   /* Copy a contiguous memory region */
+   if (ldx == ldy && ldx == m) {
+      memmove(y, x, sizeof(SCALAR) * m * n);
+   }
+
+   /* Copy the matrix some rows back or forward */
+   else if (ldx == ldy && (y > x ? y - x : x - y) < ldx) {
+      for (i = 0; i < n; i++)
+         memmove(&y[i * ldy], &x[i * ldx], sizeof(SCALAR) * m);
+   }
+
+   /* Copy the matrix some columns forward */
+   else if (ldx == ldy && y > x && y - x > ldx) {
+      for (i = n - 1; i >= 0; i--)
+         for (j = 0; j < m; j++)
+            y[i * ldy + j] = x[i * ldx + j];
+   }
+
+   /* Copy the matrix some columns backward, and other cases */
+   else {
+      /* TODO: assert x and y don't overlap */
+      for (i = 0; i < n; i++) {
+         for (j = 0; j < m; j++) {
+            y[i * ldy + j] = x[i * ldx + j];
+         }
+      }
+   }
+
+   return 0;
+}
+
+/******************************************************************************
+ * Function Num_zero_matrix - Zero the matrix
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_context ctx) {
+  (void)ctx;
+
+   PRIMME_INT i,j;
+
+   for (i=0; i<n; i++)
+      for (j=0; j<m; j++)
+         SET_ZERO(x[i*ldx+j]);
+
+   return 0;
+} 
+
 
 /*******************************************************************************
  * Subroutine Num_gemm_Sprimme - C = op(A)*op(B), with C size m x n

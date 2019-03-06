@@ -234,6 +234,10 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
       primme_svds_params *primme_svds);
+int magma_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
+int magma_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
 int magma_sprimme_svds(float *svals, float *svecs, float *resNorms,
       primme_svds_params *primme_svds);
 int magma_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,

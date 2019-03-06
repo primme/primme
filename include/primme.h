@@ -59,13 +59,8 @@
 
 #ifdef __cplusplus
 #  include <complex>
-#  ifdef PRIMME_WITH_NATIVE_HALF
-#     define PRIMME_COMPLEX_HALF std::complex<PRIMME_HALF>
-#     define PRIMME_WITH_NATIVE_COMPLEX_HALF
-#  else
-      struct _primme_complex_half {PRIMME_HALF r; PRIMME_HALF i;};
-#     define PRIMME_COMPLEX_HALF struct _primme_complex_half
-#  endif
+   struct _primme_complex_half {PRIMME_HALF r; PRIMME_HALF i;};
+#  define PRIMME_COMPLEX_HALF struct _primme_complex_half
 #  define PRIMME_COMPLEX_FLOAT std::complex<float>
 #  define PRIMME_COMPLEX_DOUBLE std::complex<double>
 #  define PRIMME_COMPLEX_QUAD std::complex<PRIMME_QUAD>

@@ -56,15 +56,29 @@
 #define TEMPLATE_H
 
 /* Including MAGMA headers before C99 complex.h avoid compiler issues */
+/* Also trick MAGMA into using a C++ compiler to expose half precision functions */
 #if !defined(CHECK_TEMPLATE) &&                                                \
-      (defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) ||          \
+      (defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA) ||            \
+            defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) ||     \
             defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA))
+
+/* NOTE: MAGMA supports half from version 2.5 and still does not support   */
+/*       half complex (because CUBLAS does not support it either)          */
+
 #  include <magma_v2.h>
+
+#  if MAGMA_VERSION_MAJOR >= 2 && MAGMA_VERSION_MINOR >= 5 && defined(__cplusplus)
+#     define MAGMA_WITH_HALF
+#  endif
 #endif
+
 
 #include <limits.h>    
 #include <float.h>
 #include <stdint.h>
+#if !(defined (__APPLE__) && defined (__MACH__))
+#  include <malloc.h> /* malloc */
+#endif
 #include <stdlib.h>   /* malloc, free */
 #include <string.h>   /* strlen */
 #include <stdio.h>    /* snprintf */
@@ -83,43 +97,6 @@
 /*****************************************************************************/
 /* Arithmetic                                                                */
 /*****************************************************************************/
-
-/* Helper macros and types used to define SCALAR and REAL and their variants */
-
-#ifdef USE_DOUBLE
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) D
-#elif defined(USE_DOUBLECOMPLEX)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) Z
-#elif defined(USE_FLOAT)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) S
-#elif defined(USE_FLOATCOMPLEX)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) C
-#elif defined(USE_HALF)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) H
-#elif defined(USE_HALFCOMPLEX)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) K
-#elif defined(USE_QUAD)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) Q
-#elif defined(USE_QUADCOMPLEX)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) W
-
-
-#elif USE_DOUBLE_MAGMA
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GD
-#elif defined(USE_DOUBLECOMPLEX_MAGMA)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GZ
-#elif defined(USE_FLOAT_MAGMA)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GS
-#elif defined(USE_FLOATCOMPLEX_MAGMA)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GC
-#elif defined(USE_HALF_MAGMA)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GH
-#elif defined(USE_HALFCOMPLEX_MAGMA)
-#  define ARITH(H,K,S,C,D,Z,Q,W,GH,GK,GS,GC,GD,GZ,GQ,GW) GK
-
-#else
-#  error "An arithmetic should be selected, please define one of USE_DOUBLE, USE_DOUBLECOMPLEX, USE_FLOAT or USE_FLOATCOMPLEX."
-#endif
 
 /* BLAS/LAPACK types: allowed arithmetic (copy, add, multiply) on cpu */
 
@@ -183,15 +160,25 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
  *    are going to be built.
  **********************************************************************/
 
+/* Helper macros and types used to define SCALAR and REAL and their variants */
+
+#define HOST_STEM
+
 #if defined(USE_HALF) || defined(USE_HALFCOMPLEX) || defined(USE_FLOAT) ||     \
       defined(USE_FLOATCOMPLEX) || defined(USE_DOUBLE) ||                      \
       defined(USE_DOUBLECOMPLEX)
 #  define USE_HOST
+#  define STEM
 #elif defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) ||           \
-      defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA)
+      defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA) ||         \
+      defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)
 #  define USE_MAGMA
+#  define STEM magma_
 #else
 #  error 
+#endif
+#if !defined(CHECK_TEMPLATE)
+#   define STEM_C STEM
 #endif
 
 #if defined(USE_HALF) || defined(USE_HALF_MAGMA) || defined(USE_FLOAT) ||      \
@@ -199,82 +186,86 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
       defined(USE_DOUBLE_MAGMA) || defined(USE_QUAD) ||                        \
       defined(USE_QUAD_MAGMA)
 #  define USE_REAL
+#  define USE_ARITH(Re,Co) Re
 #elif defined(USE_HALFCOMPLEX) || defined(USE_HALFCOMPLEX_MAGMA) ||            \
       defined(USE_FLOATCOMPLEX) || defined(USE_FLOATCOMPLEX_MAGMA) ||          \
       defined(USE_DOUBLECOMPLEX) || defined(USE_DOUBLECOMPLEX_MAGMA) ||        \
       defined(USE_QUADCOMPLEX) || defined(USE_QUADCOMPLEX_MAGMA)
 #  define USE_COMPLEX
+#  define USE_ARITH(Re,Co) Co
 #else
 #  error 
 #endif
 
-#define SCALAR_SUF                                                             \
-   CONCAT(                                                                     \
-         ARITH(/* BLAS/LAPACK */ h, k, s, c, d, z, q, w, /* MAGMA */ magma_h,  \
-               magma_k, magma_s, magma_c, magma_d, magma_z, magma_q, magma_w), \
-         primme)
+#if   defined(USE_DOUBLE)        || defined(USE_DOUBLE_MAGMA)
+#  define      ARITH(H,K,S,C,D,Z,Q,W) D
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) D
+#elif defined(USE_DOUBLECOMPLEX) || defined(USE_DOUBLECOMPLEX_MAGMA)
+#  define      ARITH(H,K,S,C,D,Z,Q,W) Z
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) D
+#elif defined(USE_FLOAT)         || defined(USE_FLOAT_MAGMA)          
+#  define      ARITH(H,K,S,C,D,Z,Q,W) S
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) S
+#elif defined(USE_FLOATCOMPLEX)  || defined(USE_FLOATCOMPLEX_MAGMA)          
+#  define      ARITH(H,K,S,C,D,Z,Q,W) C
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) S
+#elif defined(USE_HALF)          || defined(USE_HALF_MAGMA)          
+#  define      ARITH(H,K,S,C,D,Z,Q,W) H
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) H
+#elif defined(USE_HALFCOMPLEX)   || defined(USE_HALFCOMPLEX_MAGMA)          
+#  define      ARITH(H,K,S,C,D,Z,Q,W) K
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) H
+#elif defined(USE_QUAD)          || defined(USE_QUAD_MAGMA)          
+#  define      ARITH(H,K,S,C,D,Z,Q,W) Q
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) Q
+#elif defined(USE_QUADCOMPLEX)   || defined(USE_QUADCOMPLEX_MAGMA)          
+#  define      ARITH(H,K,S,C,D,Z,Q,W) W
+#  define REAL_ARITH(H,K,S,C,D,Z,Q,W) Q
+#else
+#  error
+#endif
 
-#define XSCALAR_SUF                                                            \
-   CONCAT(ARITH(/* BLAS/LAPACK */ h, k, s, c, d, z, q, w, /* MAGMA */ h, k, s, \
-                c, d, z, q, w),                                                \
-         primme)
-
-#define HOST_SCALAR_SUF                                                        \
-   CONCAT(ARITH(/* BLAS/LAPACK */ s, c, s, c, d, z, q, w, /* MAGMA */ s, c, s, \
-                c, d, z, q, w),                                                \
-         primme)
+#define SCALAR_SUF      CONCAT(CONCAT(STEM,ARITH(h,k,s,c,d,z,q,w)),primme)
+#define XSCALAR_SUF     CONCAT(CONCAT(HOST_STEM,ARITH(h,k,s,c,d,z,q,w)),primme)
+#define HOST_SCALAR_SUF CONCAT(CONCAT(HOST_STEM,ARITH(s,c,s,c,d,z,q,w)),primme)
 
 #define SCALAR CONCAT(dummy_type_, SCALAR_SUF)
 #define XSCALAR CONCAT(dummy_type_, XSCALAR_SUF)
 #define HSCALAR CONCAT(dummy_type_, HOST_SCALAR_SUF)
 
-#define REAL_SUF                                                               \
-   CONCAT(                                                                     \
-         ARITH(/* BLAS/LAPACK */ h, h, s, s, d, d, q, q, /* MAGMA */ magma_h,  \
-               magma_h, magma_s, magma_s, magma_d, magma_d, magma_q, magma_q), \
-         primme)
-
-#define XREAL_SUF                                                              \
-   CONCAT(ARITH(/* BLAS/LAPACK */ h, h, s, s, d, d, q, q, /* MAGMA */ h, h, s, \
-                s, d, d, q, q),                                                \
-         primme)
-
-#define HOST_REAL_SUF                                                          \
-   CONCAT(ARITH(/* BLAS/LAPACK */ s, s, s, s, d, d, q, q, /* MAGMA */ s, s, s, \
-                s, d, d, q, q),                                                \
-         primme)
+#define REAL_SUF      CONCAT(CONCAT(STEM,REAL_ARITH(h,k,s,c,d,z,q,w)),primme)
+#define XREAL_SUF     CONCAT(CONCAT(HOST_STEM,REAL_ARITH(h,k,s,c,d,z,q,w)),primme)
+#define HOST_REAL_SUF CONCAT(CONCAT(HOST_STEM,REAL_ARITH(s,c,s,c,d,z,q,w)),primme)
 
 #define REAL CONCAT(dummy_type_, REAL_SUF)
 #define XREAL CONCAT(dummy_type_, XREAL_SUF)
 #define HREAL CONCAT(dummy_type_, HOST_REAL_SUF)
 
 #define MACHINE_EPSILON                                                        \
-   ARITH(/* BLAS/LAPACK */ 0.000977, 0.000977, FLT_EPSILON, FLT_EPSILON,       \
-         DBL_EPSILON, DBL_EPSILON, 1.92593e-34, 1.92593e-34,                   \
-         /* MAGMA */ 0.000977, 0.000977, FLT_EPSILON, FLT_EPSILON,             \
-         DBL_EPSILON, DBL_EPSILON, 1.92593e-34, 1.92593e-34)
+   ARITH(0.000977, 0.000977, FLT_EPSILON, FLT_EPSILON, DBL_EPSILON,            \
+         DBL_EPSILON, 1.92593e-34, 1.92593e-34)
 
 #define PRIMME_OP_SCALAR                                                       \
-   ARITH(/* BLAS/LAPACK */ primme_op_half, primme_op_half, primme_op_float,    \
-         primme_op_float, primme_op_double, primme_op_double, primme_op_quad,  \
-         primme_op_quad, /* MAGMA */ primme_op_half, primme_op_half,           \
-         primme_op_float, primme_op_float, primme_op_double, primme_op_double, \
-         primme_op_quad, primme_op_quad)
+   ARITH(primme_op_half, primme_op_half, primme_op_float, primme_op_float,     \
+         primme_op_double, primme_op_double, primme_op_quad, primme_op_quad)
 
 #define PRIMME_OP_REAL PRIMME_OP_SCALAR
 
 #define PRIMME_OP_HSCALAR                                                      \
-   ARITH(/* BLAS/LAPACK */ primme_op_float, primme_op_float, primme_op_float,  \
-         primme_op_float, primme_op_double, primme_op_double, primme_op_quad,  \
-         primme_op_quad, /* MAGMA */ primme_op_float, primme_op_float,         \
-         primme_op_float, primme_op_float, primme_op_double, primme_op_double, \
-         primme_op_quad, primme_op_quad)
+   ARITH(primme_op_float, primme_op_float, primme_op_float, primme_op_float,   \
+         primme_op_double, primme_op_double, primme_op_quad, primme_op_quad)
 
 #define PRIMME_OP_HREAL PRIMME_OP_HSCALAR
 
+/* Define SUPPORTED_TYPE when inspecting the signature functions. Also define */
+/* the macro for any setting without half precision, and for half precision   */
+/* if the compiler supports half precision.                                   */
+
 #if defined(CHECK_TEMPLATE) ||                                                 \
-      (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) ||                     \
-      defined(PRIMME_WITH_NATIVE_HALF)
+      (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX) &&                      \
+            !defined(USE_HALF_MAGMA) && !defined(USE_HALFCOMPLEX_MAGMA)) ||    \
+      (defined(PRIMME_WITH_NATIVE_HALF) &&                                     \
+            (defined(USE_HOST) || defined(MAGMA_WITH_HALF)))
 #  define SUPPORTED_TYPE
 #endif
 
@@ -347,7 +338,11 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 #if defined(USE_HALFCOMPLEX) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
 #  define SET_ZERO(A) {(A).r = 0; (A).i = 0;}
 #  define SET_COMPLEX(A,B) {(A).r = REAL_PART(B); (A).i = IMAGINARY_PART(B);}
-#  define TO_COMPLEX(A) ((A).r + (A).i * _Complex_I)
+#  ifndef __cplusplus
+#     define TO_COMPLEX(A) ((A).r + (A).i * _Complex_I)
+#  else
+#     define TO_COMPLEX(A) (std::complex<HREAL>((HREAL)((A).r), (HREAL)((A).i)))
+#  endif
 #  define PLUS_EQUAL(A,B) {(A).r += REAL_PART(B); (A).i += IMAGINARY_PART(B);}
 #  define MULT_EQUAL(A, B)                                                     \
    {                                                                           \
@@ -382,8 +377,23 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 
 #ifdef CHECK_TEMPLATE
 #  ifdef USE_DOUBLE
+#     define USE_SR(Re,Co,T,XH,STEM) \
+         USE(CONCAT(CONCAT(CONCAT(S,XH),T),primme), STR0(CONCAT(CONCAT(STEM,USE_ARITH(Re,Co)),primme))) \
+         USE(CONCAT(CONCAT(CONCAT(R,XH),T),primme), STR0(CONCAT(CONCAT(STEM,Re),primme)))
+
+#     define USE_TYPE(H,K,S,C,D,Z,Q,W,XH,STEM)  \
+         USE_SR(H,K,h,XH,STEM) \
+         USE_SR(S,C,s,XH,STEM) \
+         USE_SR(D,Z,d,XH,STEM) \
+         USE_SR(Q,W,q,XH,STEM)
+
 #     define TEMPLATE_PLEASE \
-        APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") USE(RHprimme,"HOST_REAL_SUF") USE(SXprimme,"XSCALAR_SUF") USE(RXprimme,"XREAL_SUF")
+         APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") \
+         USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") \
+         USE(RHprimme,"HOST_REAL_SUF") USE(SXprimme,"XSCALAR_SUF") \
+         USE(RXprimme,"XREAL_SUF") USE_TYPE(h,k,s,c,d,z,q,w, , STEM_C) \
+         USE_TYPE(h,k,s,c,d,z,q,w, X, HOST_STEM) \
+         USE_TYPE(s,c,s,c,d,z,q,w, H, HOST_STEM)
 #  else
 #     define TEMPLATE_PLEASE \
         APPEND_FUNC(Sprimme,SCALAR_SUF)
