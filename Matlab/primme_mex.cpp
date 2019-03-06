@@ -341,6 +341,28 @@ static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resN
    return zprimme_svds(svals, svecs, resNorms, primme_svds);
 }
 
+// Select the function based on primme_op_datatype
+
+template <typename T, typename F, template <typename, typename> class S, typename R=typename S<T,F>::t >
+typename S<T,F>::t select_fun(primme_op_datatype t) {
+   if (!isComplex<T>()) {
+      switch (t) {
+      case primme_op_default: return S<T,F>::f;
+      case primme_op_double:  return S<double,F>::f;
+      case primme_op_float:   return S<float,F>::f;
+      default: return nullptr;
+      }
+   } else {
+      switch (t) {
+      case primme_op_default: return S<T,F>::f;
+      case primme_op_double:  return S<std::complex<double>,F>::f;
+      case primme_op_float:   return S<std::complex<float>,F>::f;
+      default: return nullptr;
+      }
+   }
+}
+
+
 // Check that there are N input arguments in a MATLAB function
 
 #define ASSERT_NUMARGSIN(N) \
@@ -829,7 +851,7 @@ struct getMatrixField {
    }
 };
 
-struct getPreconditinerField {
+struct getPreconditionerField {
    static void* get(primme_params *primme) {
       return primme->preconditioner;
    }
@@ -847,43 +869,47 @@ struct getMassMatrixField {
 // copy the content of its returned mxArray into the output vector y.
 
 template <typename T, typename F>
-static void matrixMatvecEigs(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+struct matrixMatvecEigs {
+   typedef void (*t)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, struct primme_params *primme, int *ierr);
+   static void f(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, struct primme_params *primme, int *ierr)
-{  
-   mxArray *prhs[2], *plhs[1];
+   {  
+      mxArray *prhs[2], *plhs[1];
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   // Check interrupt handler
-   if (!keepRunning) {
-      *ierr = 1;
+      // Check interrupt handler
+      if (!keepRunning) {
+         *ierr = 1;
       return;
-   }
+      }
 #endif
 
-   if (*blockSize <= 0) {*ierr = 0; return;}
+      if (*blockSize <= 0) {*ierr = 0; return;}
 
-   // Create input vector x (avoid copy if possible)
+      // Create input vector x (avoid copy if possible)
 
-   prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, primme->n,
-         (PRIMME_INT)*blockSize, *ldx, true);
+      prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, primme->n,
+            (PRIMME_INT)*blockSize, *ldx, true);
 
-   // Call the callback
+      // Call the callback
 
-   prhs[0] = (mxArray*)F::get(primme);
-   *ierr = mexCallMATLAB(1, plhs, 2, prhs, "feval");
+      prhs[0] = (mxArray*)F::get(primme);
+      *ierr = mexCallMATLAB(1, plhs, 2, prhs, "feval");
 
-   // Copy lhs[0] to y and destroy it
+      // Copy lhs[0] to y and destroy it
 
-   if (plhs[0]) {
-      copy_mxArray(plhs[0], (T*)y, primme->n, (PRIMME_INT)*blockSize, *ldy);
-      mxDestroyArray(plhs[0]);
+      if (plhs[0]) {
+         copy_mxArray(plhs[0], (T*)y, primme->n, (PRIMME_INT)*blockSize, *ldy);
+         mxDestroyArray(plhs[0]);
+      }
+
+      // Destroy prhs[1]
+
+      if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
+      mxDestroyArray(prhs[1]); 
    }
-
-   // Destroy prhs[1]
-
-   if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
-   mxDestroyArray(prhs[1]); 
-}
+};
 
 template <typename T>
 static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv, 
@@ -1034,12 +1060,17 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    // Set matvec and preconditioner and monitorFun and convTestFun
 
-   primme->matrixMatvec = matrixMatvecEigs<T, getMatrixField>;
+   primme->matrixMatvec = select_fun<T, getMatrixField, matrixMatvecEigs>(
+         primme->matrixMatvec_type);
    if (primme->massMatrix) {
-      primme->massMatrixMatvec = matrixMatvecEigs<T, getMassMatrixField>;
+      primme->massMatrixMatvec =
+            select_fun<T, getMassMatrixField, matrixMatvecEigs>(
+                  primme->massMatrixMatvec_type);
    }
    if (primme->correctionParams.precondition) {
-      primme->applyPreconditioner = matrixMatvecEigs<T, getPreconditinerField>;
+      primme->applyPreconditioner =
+            select_fun<T, getPreconditionerField, matrixMatvecEigs>(
+                  primme->applyPreconditioner_type);
    }
    if (primme->monitor) {
       primme->monitorFun = monitorFunEigs<T>;
@@ -1498,51 +1529,56 @@ struct getSvdsForPreconditioner {
 // passed in callback depending on mode.
 
 template <typename T, typename F>
-static void matrixMatvecSvds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+struct matrixMatvecSvds {
+   typedef void (*t)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, int *mode, struct primme_svds_params *primme_svds,
+      int *ierr);
+   static void f(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, int *mode, struct primme_svds_params *primme_svds,
       int *ierr)
-{  
-   mxArray *prhs[3], *plhs[1];
+   {  
+      mxArray *prhs[3], *plhs[1];
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   // Check interrupt handler
-   if (!keepRunning) {
-      *ierr = 1;
-      return;
-   }
+      // Check interrupt handler
+      if (!keepRunning) {
+         *ierr = 1;
+         return;
+      }
 #endif
 
-   if (*blockSize <= 0) {*ierr = 0; return;}
+      if (*blockSize <= 0) {*ierr = 0; return;}
 
-   // Get numbers of rows of x and y
-   PRIMME_INT mx, my;
-   const char *str;
-   F::get(*mode, primme_svds, &mx, &my, &prhs[0], &str);
-   assert(mx > 0);
+      // Get numbers of rows of x and y
+      PRIMME_INT mx, my;
+      const char *str;
+      F::get(*mode, primme_svds, &mx, &my, &prhs[0], &str);
+      assert(mx > 0);
 
-   // Create input vector x (avoid copy if possible)
+      // Create input vector x (avoid copy if possible)
 
-   prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, mx,
-         (PRIMME_INT)*blockSize, *ldx, true);
-   prhs[2] = mxCreateString(str);
+      prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, mx,
+            (PRIMME_INT)*blockSize, *ldx, true);
+      prhs[2] = mxCreateString(str);
 
-   // Call the callback
+      // Call the callback
 
-   *ierr = mexCallMATLAB(1, plhs, 3, prhs, "feval");
+      *ierr = mexCallMATLAB(1, plhs, 3, prhs, "feval");
 
-   // Copy lhs[0] to y and destroy it
+      // Copy lhs[0] to y and destroy it
 
-   if (plhs[0]) {
-      copy_mxArray(plhs[0], (T*)y, my, (PRIMME_INT)*blockSize, *ldy);
-      mxDestroyArray(plhs[0]);
+      if (plhs[0]) {
+         copy_mxArray(plhs[0], (T*)y, my, (PRIMME_INT)*blockSize, *ldy);
+         mxDestroyArray(plhs[0]);
+      }
+
+      // Destroy prhs[*]
+
+      if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
+      mxDestroyArray(prhs[1]); 
+      mxDestroyArray(prhs[2]); 
    }
-
-   // Destroy prhs[*]
-
-   if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
-   mxDestroyArray(prhs[1]); 
-   mxDestroyArray(prhs[2]); 
-}
+};
 
 template <typename T>
 static void convTestFunSvds(double *sval, void *leftsvec, void *rightsvec,
@@ -1701,10 +1737,13 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
 
    // Set matvec and preconditioner and monitorFun and convTestFun
 
-   primme_svds->matrixMatvec = matrixMatvecSvds<T, getSvdsForMatrix>;
+   primme_svds->matrixMatvec =
+         select_fun<T, getSvdsForMatrix, matrixMatvecSvds>(
+               primme_svds->matrixMatvec_type);
    if (primme_svds->preconditioner) {
       primme_svds->applyPreconditioner =
-         matrixMatvecSvds<T, getSvdsForPreconditioner>;
+            select_fun<T, getSvdsForPreconditioner, matrixMatvecSvds>(
+                  primme_svds->applyPreconditioner_type);
    }
    if (primme_svds->monitor) {
       primme_svds->monitorFun = monitorFunSvds<T>;
