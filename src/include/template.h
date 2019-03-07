@@ -269,10 +269,10 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
  * supports half precision.
  */
 
-#define SUPPORTED_HALF_TYPE                                                    \
-   defined(PRIMME_WITH_NATIVE_HALF) &&                                         \
-         (defined(USE_HOST) ||                                                 \
-               (defined(USE_MAGMA) && defined(MAGMA_WITH_HALF)))
+#if defined(PRIMME_WITH_NATIVE_HALF) &&                                        \
+      (defined(USE_HOST) || (defined(USE_MAGMA) && defined(MAGMA_WITH_HALF)))
+#  define SUPPORTED_HALF_TYPE
+#endif
 
 #if defined(CHECK_TEMPLATE) ||                                                 \
       (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX) &&                      \
