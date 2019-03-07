@@ -2,12 +2,20 @@
 # Makefile for building PRIMME MEX
 #-------------------------------------------------------------
 
+include ../Make_flags
+
 # Name of MEX source file
 MEXNAME = primme_mex
 
 # PRIMME includes and linking
 INCLUDE = -I../include
 LIBS = -L../lib -lprimme -lm
+
+ifeq ($(PRIMME_WITH_MAGMA),yes)
+INCLUDE += -I$(MAGMADIR)/include
+LIBS += -L$(MAGMADIR)/lib -lmagma  \
+        -L$(CUDADIR)/lib64 -lcublas -lcudart
+endif
 
 #------------------------------------------------------------
 # MATLAB configuration
@@ -25,6 +33,7 @@ MEX ?= mex
 MEXFLAGS += -O -largeArrayDims
 # For debug:
 # MEXFLAGS += -g -largeArrayDims
+MW_NVCC_PATH ?= $(CUDADIR)/bin
 
 # Extra libraries to link
 MEXLIBS += -lmwlapack -lmwblas
@@ -48,6 +57,9 @@ all: matlab
 
 matlab:
 	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp
+
+matlab-cuda:
+	$(MATLAB) -nodesktop -nodisplay -nojvm -r "setenv('MW_NVCC_PATH','$(MW_NVCC_PATH)'); try;mexcuda $(MEXFLAGS) -DUSE_GPUARRAY $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp; catch me,disp(getReport(me));end, exit" < /dev/null
 
 octave:
 	$(MKOCTFILE) --mex $(OCTFLAGS) $(LIBS) $(INCLUDE) $(MEXNAME).cpp

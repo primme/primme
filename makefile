@@ -54,6 +54,10 @@ matlab: clean clean_lib
 	@$(MAKE) lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64" PRIMME_WITH_MAGMA=no
 	@$(MAKE) -C Matlab matlab
 
+matlab-cuda: clean clean_lib
+	@$(MAKE) lib CFLAGS="${CFLAGS} -DPRIMME_BLASINT_SIZE=64" PRIMME_WITH_MAGMA=yes
+	@$(MAKE) -C Matlab matlab-cuda
+
 octave: clean clean_lib
 	@$(MAKE) lib PRIMME_WITH_MAGMA=no
 	@$(MAKE) -C Matlab octave

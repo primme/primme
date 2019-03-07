@@ -30,6 +30,7 @@ function [varargout] = primme_svds(varargin)
 %   OPTIONS.display  toggle information display (see HIST)         0
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   0
 %   OPTIONS.isdouble if 0, the matrix is single; else it's double  1
+%   OPTIONS.isgpu    if 0, the matrix is gpuArray; else it isn't   0
 %   OPTIONS.method   which equivalent eigenproblem to solve
 %                    - 'primme_svds_normalequations': A'*A or A*A'
 %                    - 'primme_svds_augmented': [0 A';A 0]
@@ -187,8 +188,13 @@ function [varargout] = primme_svds(varargin)
       opts.matrixMatvec = @(x,mode)matvecsvds(A,x,mode);
 
       % Get type and complexity
+      Agpu = strcmp(class(A), 'gpuArray');
+      if Agpu
+         Adouble = strcmp(classUnderlying(A), 'double');
+      else
+         Adouble = strcmp(class(A), 'double');
+      end
       Acomplex = ~isreal(A);
-      Adouble = strcmp(class(A), 'double');
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
       m = round(varargin{nextArg});
@@ -204,6 +210,7 @@ function [varargout] = primme_svds(varargin)
       % Assume complex double matrix
       Acomplex = 1;
       Adouble = 1;
+      Agpu = 0;
    end
 
    if nargin >= nextArg
@@ -292,15 +299,34 @@ function [varargout] = primme_svds(varargin)
    else
       Aclass = 'single';
    end
+   if isnumeric(A) && issparse(A) && strcmp(Aclass, 'single')
+      opts.matrixMatvec_type = 'primme_op_double';
+      Aclass = 'double';
+   end
+
+   % Process 'isgpu' in opts
+   if isfield(opts, 'isgpu')
+      Agpu = opts.isgpu;
+      opts = rmfield(opts, 'isgpu');
+   end
+   if Agpu
+      d = gpuDevice;
+      opts.commInfo = d.Index - 1;
+   end
 
    % Test whether the given matrix and preconditioner are valid
+   if ~Agpu
+      test_x = @(n)ones(n, 1, Aclass);
+   else
+      test_x = @(n)ones(n, 1, Aclass, 'gpuArray');
+   end
    try
-      x = opts.matrixMatvec(ones(opts.n, 1, Aclass), 'notransp');
-      x = opts.matrixMatvec(ones(opts.m, 1, Aclass), 'transp');
+      x = opts.matrixMatvec(test_x(opts.n), 'notransp');
+      x = opts.matrixMatvec(test_x(opts.m), 'transp');
       if isfield(opts, 'applyPreconditioner')
-         x = opts.applyPreconditioner(ones(opts.n, 1, Aclass), 'AHA');
-         x = opts.applyPreconditioner(ones(opts.m, 1, Aclass), 'AAH');
-         x = opts.applyPreconditioner(ones(opts.m+opts.n, 1, Aclass), 'aug');
+         x = opts.applyPreconditioner(test_x(opts.n), 'AHA');
+         x = opts.applyPreconditioner(test_x(opts.m), 'AAH');
+         x = opts.applyPreconditioner(test_x(opts.m+opts.n), 'aug');
       end
       clear x;
    catch ME
@@ -510,6 +536,9 @@ function [varargout] = primme_svds(varargin)
          else
             type = 's';
          end
+      end
+      if Agpu
+         type = ['magma_' type];
       end
       xprimme_svds = [type 'primme_svds'];
 
@@ -773,51 +802,53 @@ end
 function s = primme_error_msg(errorCode)
 
    msg = {};
-   msg{43+  0} = 'success';
-   msg{43+  1} = 'reported only amount of required memory';
-   msg{43+ -1} = 'unexpected failure';
-   msg{43+ -2} = 'memory allocation failure';
-   msg{43+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
-   msg{43+ -4} = 'argument primme is NULL';
-   msg{43+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
-   msg{43+ -6} = 'numProcs' < 1';
-   msg{43+ -7} = 'matrixMatvec is NULL';
-   msg{43+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
-   msg{43+ -9} = 'not used';
-   msg{43+-10} = 'numEvals > n';
-   msg{43+-11} = 'numEvals < 0';
-   msg{43+-12} = 'eps > 0 and eps < machine precision';
-   msg{43+-13} = 'target is not properly defined';
-   msg{43+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
-   msg{43+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
-   msg{43+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
-   msg{43+-17} = 'maxBasisSize < 2';
-   msg{43+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
-   msg{43+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
-   msg{43+-20} = 'maxPrevRetain < 0';
-   msg{43+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
-   msg{43+-22} = 'initSize < 0';
-   msg{43+-23} = 'locking == 0 and initSize > maxBasisSize';
-   msg{43+-24} = 'locking and initSize > numEvals';
-   msg{43+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
-   msg{43+-26} = 'minRestartSize >= n';
-   msg{43+-27} = 'printLevel < 0 or printLevel > 5';
-   msg{43+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
-   msg{43+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
-   msg{43+-30} = 'evals is NULL, but not evecs and resNorms';
-   msg{43+-31} = 'evecs is NULL, but not evals and resNorms';
-   msg{43+-32} = 'resNorms is NULL, but not evecs and evals';
-   msg{43+-33} = 'locking == 0 and minRestartSize < numEvals';
-   msg{43+-34} = 'ldevecs is less than nLocal';
-   msg{43+-35} = 'ldOPs is non-zero and less than nLocal';
-   msg{43+-36} = 'not enough memory for realWork';
-   msg{43+-37} = 'not enough memory for intWork';
-   msg{43+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
-   msg{43+-40} = 'factorization failure';
-   msg{43+-41} = 'user cancelled execution';
-   msg{43+-42} = 'orthogonalization failure';
+   msg{45+  0} = 'success';
+   msg{45+  1} = 'reported only amount of required memory';
+   msg{45+ -1} = 'unexpected failure';
+   msg{45+ -2} = 'memory allocation failure';
+   msg{45+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
+   msg{45+ -4} = 'argument primme is NULL';
+   msg{45+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
+   msg{45+ -6} = 'numProcs' < 1';
+   msg{45+ -7} = 'matrixMatvec is NULL';
+   msg{45+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
+   msg{45+ -9} = 'not used';
+   msg{45+-10} = 'numEvals > n';
+   msg{45+-11} = 'numEvals < 0';
+   msg{45+-12} = 'eps > 0 and eps < machine precision';
+   msg{45+-13} = 'target is not properly defined';
+   msg{45+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
+   msg{45+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
+   msg{45+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
+   msg{45+-17} = 'maxBasisSize < 2';
+   msg{45+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
+   msg{45+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
+   msg{45+-20} = 'maxPrevRetain < 0';
+   msg{45+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
+   msg{45+-22} = 'initSize < 0';
+   msg{45+-23} = 'locking == 0 and initSize > maxBasisSize';
+   msg{45+-24} = 'locking and initSize > numEvals';
+   msg{45+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
+   msg{45+-26} = 'minRestartSize >= n';
+   msg{45+-27} = 'printLevel < 0 or printLevel > 5';
+   msg{45+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
+   msg{45+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
+   msg{45+-30} = 'evals is NULL, but not evecs and resNorms';
+   msg{45+-31} = 'evecs is NULL, but not evals and resNorms';
+   msg{45+-32} = 'resNorms is NULL, but not evecs and evals';
+   msg{45+-33} = 'locking == 0 and minRestartSize < numEvals';
+   msg{45+-34} = 'ldevecs is less than nLocal';
+   msg{45+-35} = 'ldOPs is non-zero and less than nLocal';
+   msg{45+-36} = 'not enough memory for realWork';
+   msg{45+-37} = 'not enough memory for intWork';
+   msg{45+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
+   msg{45+-40} = 'factorization failure';
+   msg{45+-41} = 'user cancelled execution';
+   msg{45+-42} = 'orthogonalization failure';
+   msg{45+-43} = 'parallel failure';
+   msg{45+-44} = 'unavailable functionality';
 
-   errorCode = errorCode + 43;
+   errorCode = errorCode + 45;
    if errorCode > 0 && errorCode <= numel(msg)
       s = msg{errorCode};
    else
@@ -827,33 +858,35 @@ end
 
 function s = primme_svds_error_msg(errorCode)
    msg = {};
-   msg{43+  0} = 'success';
-   msg{43+ -1} = 'unexpected failure';
-   msg{43+ -2} = 'memory allocation failure';
-   msg{43+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
-   msg{43+ -4} = 'primme_svds is NULL';
-   msg{43+ -5} = 'Wrong value for m or n or mLocal or nLocal';
-   msg{43+ -6} = 'Wrong value for numProcs';
-   msg{43+ -7} = 'matrixMatvec is not set';
-   msg{43+ -8} = 'applyPreconditioner is not set but precondition == 1 ';
-   msg{43+ -9} = 'numProcs >1 but globalSumDouble is not set';
-   msg{43+-10} = 'Wrong value for numSvals, it''s larger than min(m, n)';
-   msg{43+-11} = 'Wrong value for numSvals, it''s smaller than 1';
-   msg{43+-13} = 'Wrong value for target';
-   msg{43+-14} = 'Wrong value for method';
-   msg{43+-15} = 'Not supported combination of method and methodStage2';
-   msg{43+-16} = 'Wrong value for printLevel';
-   msg{43+-17} = 'svals is not set';
-   msg{43+-18} = 'svecs is not set';
-   msg{43+-19} = 'resNorms is not set';
-   msg{43+-20} = 'not enough memory for realWork';
-   msg{43+-21} = 'not enough memory for intWork';
-   msg{43+-40} = 'factorization failure';
-   msg{43+-41} = 'user cancel execution';
-   msg{43+-42} = 'orthogonalization failure';
+   msg{45+  0} = 'success';
+   msg{45+ -1} = 'unexpected failure';
+   msg{45+ -2} = 'memory allocation failure';
+   msg{45+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
+   msg{45+ -4} = 'primme_svds is NULL';
+   msg{45+ -5} = 'Wrong value for m or n or mLocal or nLocal';
+   msg{45+ -6} = 'Wrong value for numProcs';
+   msg{45+ -7} = 'matrixMatvec is not set';
+   msg{45+ -8} = 'applyPreconditioner is not set but precondition == 1 ';
+   msg{45+ -9} = 'numProcs >1 but globalSumDouble is not set';
+   msg{45+-10} = 'Wrong value for numSvals, it''s larger than min(m, n)';
+   msg{45+-11} = 'Wrong value for numSvals, it''s smaller than 1';
+   msg{45+-13} = 'Wrong value for target';
+   msg{45+-14} = 'Wrong value for method';
+   msg{45+-15} = 'Not supported combination of method and methodStage2';
+   msg{45+-16} = 'Wrong value for printLevel';
+   msg{45+-17} = 'svals is not set';
+   msg{45+-18} = 'svecs is not set';
+   msg{45+-19} = 'resNorms is not set';
+   msg{45+-20} = 'not enough memory for realWork';
+   msg{45+-21} = 'not enough memory for intWork';
+   msg{45+-40} = 'factorization failure';
+   msg{45+-41} = 'user cancel execution';
+   msg{45+-42} = 'orthogonalization failure';
+   msg{45+-43} = 'parallel failure';
+   msg{45+-44} = 'unavailable functionality';
 
    if errorCode >= -100
-      errorCode = errorCode + 43;
+      errorCode = errorCode + 45;
       if errorCode > 0 && errorCode < numel(msg)
          s = msg{errorCode};
       else

@@ -49,6 +49,11 @@
 #include <cassert>
 #include "mex.h"
 #include "primme.h"
+#ifdef USE_GPUARRAY
+#  include "gpu/mxGPUArray.h"
+#  include <cuda_runtime.h>
+#  include "magma_v2.h"
+#endif
 
 // Attempt to capture ctrl+c
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
@@ -133,6 +138,41 @@ mxClassID toClassID<PRIMME_INT>(void) { return mxINT64_CLASS; }
 template <>
 mxClassID toClassID<int>(void) { return mxINT32_CLASS; }
 
+// Return the size of an element of mxClassID
+
+size_t getSizeMxClassId(mxClassID id) {
+   switch(id) {
+   case mxDOUBLE_CLASS: return sizeof(double);
+   case mxSINGLE_CLASS: return sizeof(float);
+   case mxINT8_CLASS: return (size_t)1;
+   case mxUINT8_CLASS: return (size_t)1;
+   case mxINT16_CLASS: return (size_t)2;
+   case mxUINT16_CLASS: return (size_t)2;
+   case mxINT32_CLASS: return (size_t)4;
+   case mxUINT32_CLASS: return (size_t)4;
+   case mxINT64_CLASS: return (size_t)8;
+   case mxUINT64_CLASS: return (size_t)8;
+   case mxLOGICAL_CLASS: return sizeof(mxLogical);
+   default:
+      mexErrMsgTxt("Unsupported matrix type");
+   }
+   return 0;
+}
+
+// Template cpu/gpu
+
+struct CPU {
+   CPU() {}
+};
+struct GPU {
+   GPU() {}
+};
+static bool isCPU(CPU) { return true; }
+static bool isGPU(CPU) { return false; }
+static bool isCPU(GPU) { return false; }
+static bool isGPU(GPU) { return true; }
+
+
 // Auxiliary function for copy_mxArray, copy the content of a mxArray with
 // compatible C type TX to a C array of type TY.
 // Arguments:
@@ -175,7 +215,7 @@ static void copy_mxArray_kernel(const mxArray *x, std::complex<TY> *y, I m, I n,
 // - ldy: leading dimension of y
 
 template <typename TY, typename I>
-static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
+static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy, CPU) {
 
    /* Check dimensions */
 
@@ -231,6 +271,50 @@ static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
    }      
 }
 
+#ifdef USE_GPUARRAY
+
+template <typename TY, typename I>
+static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy, GPU) {
+
+   /* Get gpuArray */
+
+   mxGPUArray const *xgpu = mxGPUCreateFromMxArray(x);
+
+   /* Check dimensions */
+
+   const mwSize *dims = mxGPUGetDimensions(xgpu);
+   mwSize ndims = mxGPUGetNumberOfDimensions(xgpu);
+   assert(ldy >= m);
+   if (!((ndims == 1 && dims[0] == m && n == 1)
+            || (ndims == 2 && dims[0] == 1 && dims[1] == m && n == 1)
+            || (ndims == 2 && dims[0] == m && dims[1] == n))) {
+      mexErrMsgTxtPrintf2("Unsupported matrix dimension; it should be %dx%d",
+            (int)m, (int)n);
+      return;
+   }
+
+   /* Check that the size of x and y are the same */
+
+   if (getSizeMxClassId(mxGPUGetClassID(xgpu)) *
+               (mxGPUGetComplexity(xgpu) == mxREAL ? 1 : 2) !=
+         sizeof(TY)) {
+      mexErrMsgTxt("Not supported to copy matrices of different types");
+   }
+
+   /* Do the copy */
+
+   void const *xdata = mxGPUGetDataReadOnly(xgpu);
+   if (cudaMemcpy2D(y, ldy * sizeof(TY), xdata, m * sizeof(TY), m * sizeof(TY),
+             n, cudaMemcpyDeviceToDevice) != cudaSuccess) {
+      mexErrMsgTxt("Error copying data");
+   }
+
+   /* Destroy gpuArray */
+
+   mxGPUDestroyGPUArray(xgpu);
+}
+#endif /* USE_GPUARRAY */
+
 // Creates a mxArray with the content of a C array
 // Arguments:
 // - y: C type array from to get the values
@@ -240,11 +324,10 @@ static void copy_mxArray(const mxArray *x, TY *y, I m, I n, I ldy) {
 // - avoidCopy: if true, try to use y as the data of the output mxArray
 
 template <typename T, typename I>
-static mxArray* create_mxArray(T *y, I m, I n, I ldy, bool avoidCopy=false) {
+static mxArray* create_mxArray(T *y, I m, I n, I ldy, CPU, bool avoidCopy=false) {
 
-   // If pointer is null, set zero columns
-
-   if (!y) n = 0;
+   if (isComplex<T>())
+         mexErrMsgTxt("This should not happen");
 
    // We avoid to copy when the T isn't complex and the leading dimension of
    // y is the number of row. This trick only works in Octave, MATLAB requires
@@ -259,8 +342,8 @@ static mxArray* create_mxArray(T *y, I m, I n, I ldy, bool avoidCopy=false) {
       // Set data and dimensions of the new mxArray
 
       mxSetData(x, y);
-      mxSetM(x, (mwSize)m);
-      mxSetN(x, (mwSize)n);
+      mxSetM(x, (mwSize)macro_max(m, 0));
+      mxSetN(x, (mwSize)macro_max(n, 0));
 
       return x;
    }
@@ -269,13 +352,15 @@ static mxArray* create_mxArray(T *y, I m, I n, I ldy, bool avoidCopy=false) {
    {
       // Create mxArray with dimensions m x n and proper complexity
 
-      mxArray *x = mxCreateNumericMatrix((mwSize)m, (mwSize)n,
-            toClassID<T>(), mxREAL);
+      mxArray *x = mxCreateNumericMatrix((mwSize)macro_max(m, 0),
+            (mwSize)macro_max(n, 0), toClassID<T>(), mxREAL);
 
       // Copy the content of y into the mxArray
-
-      T *px = (T*)mxGetData(x);
-      for (I i=0; i<n; i++) for (I j=0; j<m; j++) px[m*i+j] = y[ldy*i+j];
+      if (y) {
+         T *px = (T *)mxGetData(x);
+         for (I i = 0; i < n; i++)
+            for (I j = 0; j < m; j++) px[m * i + j] = y[ldy * i + j];
+      }
 
       return x;
    }
@@ -283,26 +368,61 @@ static mxArray* create_mxArray(T *y, I m, I n, I ldy, bool avoidCopy=false) {
 
 template <typename T, typename I>
 static mxArray* create_mxArray(std::complex<T> *y, I m, I n, I ldy,
-      bool avoidCopy=false) {
+      CPU, bool avoidCopy=false) {
 
    // When y is complex isn't possible to save the copy
    (void)avoidCopy;
 
    // Create mxArray with dimensions m x n and proper complexity
 
-   mxArray *x = mxCreateNumericMatrix((mwSize)m, (mwSize)n,
-         toClassID<T>(), mxCOMPLEX);
+   mxArray *x = mxCreateNumericMatrix((mwSize)macro_max(m, 0),
+         (mwSize)macro_max(n, 0), toClassID<T>(), mxCOMPLEX);
 
    // Copy the content of y into the mxArray
 
-   T *pxr = (T*)mxGetData(x), *pxi = (T*)mxGetImagData(x);
-   for (I i=0; i<n; i++) for (I j=0; j<m; j++) {
-      pxr[m*i+j] = std::real(y[ldy*i+j]);
-      pxi[m*i+j] = std::imag(y[ldy*i+j]);
+   if (y) {
+      T *pxr = (T *)mxGetData(x), *pxi = (T *)mxGetImagData(x);
+      for (I i = 0; i < n; i++)
+         for (I j = 0; j < m; j++) {
+            pxr[m * i + j] = std::real(y[ldy * i + j]);
+            pxi[m * i + j] = std::imag(y[ldy * i + j]);
+         }
    }
 
    return x;
 }
+
+#ifdef USE_GPUARRAY
+
+template <typename T, typename I>
+static mxArray* create_mxArray(T *y, I m, I n, I ldy, GPU, bool avoidCopy=false) {
+
+   m = macro_max(m, 0);
+   n = macro_max(n, 0);
+
+   // Create mxArray with dimensions m x n and proper complexity
+
+   mwSize dims[2] = {(mwSize)m, (mwSize)n};
+   mxGPUArray *xgpu = mxGPUCreateGPUArray(2, dims, toClassID<T>(),
+         isComplex<T>() ? mxCOMPLEX : mxREAL, MX_GPU_DO_NOT_INITIALIZE);
+
+   // Copy the content of y into the gpuArray
+
+   if (y) {
+      void *xdata = mxGPUGetData(xgpu);
+      if (cudaMemcpy2D(xdata, m * sizeof(T), y, ldy * sizeof(T), m * sizeof(T),
+                n, cudaMemcpyDeviceToDevice) != cudaSuccess) {
+         mexErrMsgTxt("Error copying data");
+      }
+   }
+
+   mxArray* x = mxGPUCreateMxArrayOnGPU(xgpu);
+   mxGPUDestroyGPUArray(xgpu);
+
+   return x;
+}
+
+#endif /* GPU_ARRAY */
 
 static mxArray *create_mxArray(
       const char *y, bool avoidCopy) {
@@ -313,50 +433,82 @@ static mxArray *create_mxArray(
 
 // Template version of sprimme, cprimme, dprimme and zprimme
 
-static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme) {
+static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme, CPU) {
       return sprimme(evals, evecs, resNorms, primme);
 }
-static int tprimme(float *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme) {
+static int tprimme(float *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme, CPU) {
       return cprimme(evals, evecs, resNorms, primme);
 }
-static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme) {
+static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme, CPU) {
       return dprimme(evals, evecs, resNorms, primme);
 }
-static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme) {
+static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme, CPU) {
       return zprimme(evals, evecs, resNorms, primme);
 }
+#ifdef USE_GPUARRAY
+static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme, GPU) {
+      return magma_sprimme(evals, evecs, resNorms, primme);
+}
+static int tprimme(float *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme, GPU) {
+      return magma_cprimme(evals, evecs, resNorms, primme);
+}
+static int tprimme(double *evals, double *evecs, double *resNorms, primme_params *primme, GPU) {
+      return magma_dprimme(evals, evecs, resNorms, primme);
+}
+static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme, GPU) {
+      return magma_zprimme(evals, evecs, resNorms, primme);
+}
+#endif /* GPU_ARRAY */
+
 
 // Template version of sprimme_svds, cprimme_svds, dprimme_svds and zprimme_svds
 
-static int tprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds) { 
+static int tprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds, CPU) { 
    return sprimme_svds(svals, svecs, resNorms, primme_svds);
 }
-static int tprimme_svds(float *svals, std::complex<float> *svecs, float *resNorms, primme_svds_params *primme_svds) {
+static int tprimme_svds(float *svals, std::complex<float> *svecs, float *resNorms, primme_svds_params *primme_svds, CPU) {
    return cprimme_svds(svals, svecs, resNorms, primme_svds);
 }
-static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds) { 
+static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds, CPU) { 
    return dprimme_svds(svals, svecs, resNorms, primme_svds);
 }
-static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds) {
+static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds, CPU) {
    return zprimme_svds(svals, svecs, resNorms, primme_svds);
 }
+#ifdef USE_GPUARRAY
+static int tprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds, GPU) { 
+   return magma_sprimme_svds(svals, svecs, resNorms, primme_svds);
+}
+static int tprimme_svds(float *svals, std::complex<float> *svecs, float *resNorms, primme_svds_params *primme_svds, GPU) {
+   return magma_cprimme_svds(svals, svecs, resNorms, primme_svds);
+}
+static int tprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds, GPU) { 
+   return magma_dprimme_svds(svals, svecs, resNorms, primme_svds);
+}
+static int tprimme_svds(double *svals, std::complex<double> *svecs, double *resNorms, primme_svds_params *primme_svds, GPU) {
+   return magma_zprimme_svds(svals, svecs, resNorms, primme_svds);
+}
+#endif /* GPU_ARRAY */
+
 
 // Select the function based on primme_op_datatype
 
-template <typename T, typename F, template <typename, typename> class S, typename R=typename S<T,F>::t >
-typename S<T,F>::t select_fun(primme_op_datatype t) {
+template <typename T, typename F, typename G,
+      template <typename, typename, typename> class S,
+      typename R = typename S<T, F, G>::t>
+typename S<T, F, G>::t select_fun(primme_op_datatype t) {
    if (!isComplex<T>()) {
       switch (t) {
-      case primme_op_default: return S<T,F>::f;
-      case primme_op_double:  return S<double,F>::f;
-      case primme_op_float:   return S<float,F>::f;
+      case primme_op_default: return S<T,F,G>::f;
+      case primme_op_double:  return S<double,F,G>::f;
+      case primme_op_float:   return S<float,F,G>::f;
       default: return nullptr;
       }
    } else {
       switch (t) {
-      case primme_op_default: return S<T,F>::f;
-      case primme_op_double:  return S<std::complex<double>,F>::f;
-      case primme_op_float:   return S<std::complex<float>,F>::f;
+      case primme_op_default: return S<T,F,G>::f;
+      case primme_op_double:  return S<std::complex<double>,F,G>::f;
+      case primme_op_float:   return S<std::complex<float>,F,G>::f;
       default: return nullptr;
       }
    }
@@ -569,6 +721,16 @@ static void mexFunction_primme_free(int nlhs, mxArray *plhs[], int nrhs,
    if (primme->preconditioner) mxDestroyArray((mxArray*)primme->preconditioner);
    if (primme->convtest) mxDestroyArray((mxArray*)primme->convtest);
    if (primme->monitor) mxDestroyArray((mxArray*)primme->monitor);
+   if (primme->commInfo) mxDestroyArray((mxArray*)primme->commInfo);
+#ifdef USE_GPUARRAY
+   if (primme->queue) {
+      // and finalize MAGMA.
+      magma_queue_destroy(*(magma_queue_t*)primme->queue);
+      free(primme->queue);
+      magma_finalize();
+   }
+#endif
+
    primme_free(primme);
    delete primme;
 }
@@ -593,7 +755,7 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
       case PRIMME_iseed:
       {
          ASSERT_NUMERIC(2);
-         copy_mxArray(prhs[2], primme->iseed, 4, 1, 4);
+         copy_mxArray(prhs[2], primme->iseed, 4, 1, 4, CPU());
          break;
       }
 
@@ -604,7 +766,7 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
          int n = (int)mxGetNumberOfElements(prhs[2]);
          primme->targetShifts = new double[n];
          primme->numTargetShifts = n;
-         copy_mxArray(prhs[2], primme->targetShifts, n, 1, n);
+         copy_mxArray(prhs[2], primme->targetShifts, n, 1, n, CPU());
          break;
       }
 
@@ -658,12 +820,21 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
          break;
       }
 
+      case PRIMME_commInfo:
+      {
+         ASSERT_NUMERIC_OR_CHAR(2);
+         if (primme->commInfo) mxDestroyArray((mxArray*)primme->commInfo);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme->commInfo = (void*)a;
+         break;
+      }
+
 
       // Forbidden members
  
       case PRIMME_numProcs:
       case PRIMME_procID:
-      case PRIMME_commInfo:
       case PRIMME_nLocal:
       case PRIMME_globalSumReal:
       case PRIMME_numTargetShifts:
@@ -701,7 +872,7 @@ static void mexFunction_primme_set_member(int nlhs, mxArray *plhs[], int nrhs,
          else if (ptype == primme_double) {
             ASSERT_NUMERIC(2);
             double v;
-            copy_mxArray(prhs[2], &v, 1, 1, 1);
+            copy_mxArray(prhs[2], &v, 1, 1, 1, CPU());
             CHKERR(primme_set_member(primme, label, &v));
          }
 
@@ -739,14 +910,14 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
 
       case PRIMME_iseed:
       {
-         plhs[0] = create_mxArray(primme->iseed, 4, 1, 4);
+         plhs[0] = create_mxArray(primme->iseed, 4, 1, 4, CPU());
          break;
       }
 
       case PRIMME_targetShifts:
       {
          plhs[0] = create_mxArray(primme->targetShifts, primme->numTargetShifts,
-               1, primme->numTargetShifts);
+               1, primme->numTargetShifts, CPU());
          break;
       }
 
@@ -815,7 +986,7 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          if (ptype == primme_int) {
             PRIMME_INT v;
             CHKERR(primme_get_member(primme, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1);
+            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
          }
 
          // Get members with type double
@@ -823,7 +994,7 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          else if (ptype == primme_double) {
             double v;
             CHKERR(primme_get_member(primme, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1);
+            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
          }
 
          // Get members with type string
@@ -868,7 +1039,7 @@ struct getMassMatrixField {
 // from input vector x, call the function handler returned by F(primme) and
 // copy the content of its returned mxArray into the output vector y.
 
-template <typename T, typename F>
+template <typename T, typename F, typename CPUGPU>
 struct matrixMatvecEigs {
    typedef void (*t)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, struct primme_params *primme, int *ierr);
@@ -889,8 +1060,8 @@ struct matrixMatvecEigs {
 
       // Create input vector x (avoid copy if possible)
 
-      prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, primme->n,
-            (PRIMME_INT)*blockSize, *ldx, true);
+      prhs[1] = create_mxArray(
+            (T *)x, primme->n, (PRIMME_INT)*blockSize, *ldx, CPUGPU(), true);
 
       // Call the callback
 
@@ -900,18 +1071,19 @@ struct matrixMatvecEigs {
       // Copy lhs[0] to y and destroy it
 
       if (plhs[0]) {
-         copy_mxArray(plhs[0], (T*)y, primme->n, (PRIMME_INT)*blockSize, *ldy);
+         copy_mxArray(plhs[0], (T *)y, primme->n, (PRIMME_INT)*blockSize, *ldy,
+               CPUGPU());
          mxDestroyArray(plhs[0]);
       }
 
       // Destroy prhs[1]
 
-      if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
+      if (isCPU(CPUGPU()) && mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
       mxDestroyArray(prhs[1]); 
    }
 };
 
-template <typename T>
+template <typename T, typename CPUGPU>
 static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv, 
          struct primme_params *primme, int *ierr)
 {  
@@ -919,10 +1091,10 @@ static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv
 
    // Create input vectors (avoid copy if possible)
 
-   prhs[1] = create_mxArray<double,int>(eval, eval?1:0, 1, eval?1:0);
-   prhs[2] = create_mxArray<typename Real<T>::type,int>((T*)evec,
-         evec?primme->nLocal:0, 1, evec?primme->nLocal:0, true);
-   prhs[3] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0);
+   prhs[1] = create_mxArray<double,int>(eval, eval?1:0, 1, eval?1:0, CPU());
+   prhs[2] = create_mxArray((T *)evec, evec ? primme->nLocal : (PRIMME_INT)0,
+         (PRIMME_INT)1, evec ? primme->nLocal : (PRIMME_INT)0, CPUGPU(), true);
+   prhs[3] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0, CPU());
 
    // Call the callback
 
@@ -932,13 +1104,13 @@ static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv
    // Copy plhs[0] to isConv and destroy it
 
    if (plhs[0]) {
-      copy_mxArray(plhs[0], isConv, 1, 1, 1);
+      copy_mxArray(plhs[0], isConv, 1, 1, 1, CPU());
       mxDestroyArray(plhs[0]);
    }
 
    // Destroy prhs[1..3]
 
-   if (mxGetData(prhs[2]) == evec)         mxSetData(prhs[2], NULL);
+   if (isCPU(CPUGPU()) && mxGetData(prhs[2]) == evec) mxSetData(prhs[2], NULL);
    for (int i=1; i<4; i++) mxDestroyArray(prhs[i]); 
 }
 
@@ -955,26 +1127,27 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
 
    typedef typename Real<T>::type R;
    prhs[1] = create_mxArray<R, int>((R *)basisEvals, basisSize ? *basisSize : 0,
-         1, basisSize ? *basisSize : 0, true);
+         1, basisSize ? *basisSize : 0, CPU(), true);
    prhs[2] = create_mxArray<int, int>(basisFlags, basisFlags ? *basisSize : 0,
-         1, basisFlags ? *basisSize : 0, true);
+         1, basisFlags ? *basisSize : 0, CPU(), true);
    prhs[3] = create_mxArray<int, int>(iblock, blockSize ? *blockSize : 0, 1,
-         blockSize ? *blockSize : 0, true);
+         blockSize ? *blockSize : 0, CPU(), true);
    prhs[4] = create_mxArray<R, int>((R *)basisNorms, basisSize ? *basisSize : 0,
-         1, basisSize ? *basisSize : 0, true);
+         1, basisSize ? *basisSize : 0, CPU(), true);
    prhs[5] = create_mxArray<int, int>(
-         numConverged, numConverged ? 1 : 0, 1, 1, true);
-   prhs[6] = create_mxArray<R, int>((R *)lockedEvals,
-         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
-   prhs[7] = create_mxArray<int, int>(lockedFlags, numLocked ? *numLocked : 0,
-         1, numLocked ? *numLocked : 0, true);
-   prhs[8] = create_mxArray<R, int>((R *)lockedNorms,
-         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
-   prhs[9] = create_mxArray<int, int>(inner_its, inner_its ? 1 : 0, 1, 1, true);
-   prhs[10] = create_mxArray<R, int>((R *)LSRes, LSRes ? 1 : 0, 1, 1, true);
+         numConverged, numConverged ? 1 : 0, 1, 1, CPU(), true);
+   int numLocked0 = numLocked && *numLocked > 0 ? *numLocked : 0;
+   prhs[6] = create_mxArray<R, int>(
+         (R *)lockedEvals, numLocked0, 1, numLocked0, CPU(), true);
+   prhs[7] = create_mxArray<int, int>(
+         lockedFlags, numLocked0, 1, numLocked0, CPU(), true);
+   prhs[8] = create_mxArray<R, int>(
+         (R *)lockedNorms, numLocked0, 1, numLocked0, CPU(), true);
+   prhs[9] = create_mxArray<int, int>(inner_its, inner_its ? 1 : 0, 1, 1, CPU(), true);
+   prhs[10] = create_mxArray<R, int>((R *)LSRes, LSRes ? 1 : 0, 1, 1, CPU(), true);
    prhs[11] = create_mxArray(msg, true);
-   prhs[12] = create_mxArray<double, int>(time, time ? 1 : 0, 1, 1, true);
-   prhs[13] = create_mxArray<int, int>((int *)event, event ? 1 : 0, 1, 1, true);
+   prhs[12] = create_mxArray<double, int>(time, time ? 1 : 0, 1, 1, CPU(), true);
+   prhs[13] = create_mxArray<int, int>((int *)event, event ? 1 : 0, 1, 1, CPU(), true);
 
    // Call the callback
 
@@ -1003,7 +1176,7 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
 // Wrapper around xprimme; prototype:
 // [ret, evals, rnorms, evecs] = mexFunction_xprimme(init_guesses, primme)
 
-template<typename T>
+template<typename T, typename CPUGPU>
 static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
       const mxArray *prhs[])
 {
@@ -1013,12 +1186,34 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    primme_params *primme = (primme_params*)mxArrayToPointer(prhs[1]);
 
+#ifdef USE_GPUARRAY
+   if (isGPU(CPUGPU())) {
+      if (!primme->commInfo)
+         mexErrMsgTxt("Set primme.commInfo with the GPU index");
+
+      // Initialize the MathWorks GPU API
+      mxInitGPU();
+
+      // Initialize MAGMA
+      magma_init();
+
+      // Create a context
+      int gpuDevice;
+      copy_mxArray((mxArray*)primme->commInfo, &gpuDevice, 1, 1, 1, CPU());
+      if (primme->queue)
+         magma_queue_destroy(*(magma_queue_t *)primme->queue);
+      else
+         primme->queue = malloc(sizeof(magma_queue_t));
+      magma_queue_create(gpuDevice, (magma_queue_t*)primme->queue);
+   }
+#endif
+
    // Allocate evals, rnorms and evecs; if possible create the mxArray and use
    // its data
 
    typename Real<T>::type *evals, *rnorms;
    T *evecs;
-   mxArray *mxEvals, *mxRnorms, *mxEvecs;
+   mxArray *mxEvals, *mxRnorms, *mxEvecs = nullptr;
 
    if (nlhs <= 0) {
       evals = new typename Real<T>::type[primme->numEvals];
@@ -1040,7 +1235,20 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
       rnorms = (typename Real<T>::type*)mxGetData(mxRnorms);
    }
 
-   if (nlhs <= 2 || isComplex<T>() || primme->numOrthoConst > 0) {
+#ifdef USE_GPUARRAY
+   mxGPUArray *mxgpuEvecs  = nullptr; 
+   if (isGPU(CPUGPU())) {
+      mwSize dims[2] = {(mwSize)macro_max(primme->n, 0),
+            (mwSize)macro_max(
+                  primme->numOrthoConst +
+                        macro_max(primme->numEvals, primme->initSize),
+                  0)};
+      mxgpuEvecs = mxGPUCreateGPUArray(2, dims, toClassID<T>(),
+            isComplex<T>() ? mxCOMPLEX : mxREAL, MX_GPU_DO_NOT_INITIALIZE);
+      evecs = (T*)mxGPUGetData(mxgpuEvecs);
+   } else 
+#endif
+   if (nlhs <= 3 || isComplex<T>() || primme->numOrthoConst > 0) {
       evecs = new T[(primme->numOrthoConst+primme->numEvals)*primme->n];
       mxEvecs = NULL;
    }
@@ -1055,28 +1263,29 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    if (primme->numOrthoConst + primme->initSize > 0) {
       ASSERT_NUMERIC(0);
       copy_mxArray(prhs[0], evecs, primme->n,
-            (PRIMME_INT)primme->numOrthoConst+primme->initSize, primme->n);
+            (PRIMME_INT)primme->numOrthoConst + primme->initSize, primme->n,
+            CPUGPU());
    }
 
    // Set matvec and preconditioner and monitorFun and convTestFun
 
-   primme->matrixMatvec = select_fun<T, getMatrixField, matrixMatvecEigs>(
+   primme->matrixMatvec = select_fun<T, getMatrixField, CPUGPU, matrixMatvecEigs>(
          primme->matrixMatvec_type);
    if (primme->massMatrix) {
       primme->massMatrixMatvec =
-            select_fun<T, getMassMatrixField, matrixMatvecEigs>(
+            select_fun<T, getMassMatrixField, CPUGPU, matrixMatvecEigs>(
                   primme->massMatrixMatvec_type);
    }
    if (primme->correctionParams.precondition) {
       primme->applyPreconditioner =
-            select_fun<T, getPreconditionerField, matrixMatvecEigs>(
+            select_fun<T, getPreconditionerField, CPUGPU, matrixMatvecEigs>(
                   primme->applyPreconditioner_type);
    }
    if (primme->monitor) {
       primme->monitorFun = monitorFunEigs<T>;
    }
    if (primme->convtest) {
-      primme->convTestFun = convTestFunEigs<T>;
+      primme->convTestFun = convTestFunEigs<T, CPUGPU>;
    }
 
 
@@ -1090,7 +1299,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    // Call xprimme
 
-   int ret = tprimme(evals, evecs, rnorms, primme);
+   int ret = tprimme(evals, evecs, rnorms, primme, CPUGPU());
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
    // Unset ctrl+c handler
@@ -1100,7 +1309,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    // Return error code
 
-   plhs[0] = create_mxArray(&ret, 1, 1, 1);
+   plhs[0] = create_mxArray(&ret, 1, 1, 1, CPU());
 
    // Return evals
 
@@ -1125,20 +1334,29 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Return evecs
 
    if (nlhs >= 4) {
-      if (!mxEvecs) {
-         mxEvecs = create_mxArray<typename Real<T>::type,PRIMME_INT>(
-               &evecs[primme->n*primme->numOrthoConst], primme->n,
-               (PRIMME_INT)primme->initSize, primme->n);
-         delete [] evecs;
+      if (primme->numOrthoConst > 0 || (isCPU(CPUGPU()) && !mxEvecs)) {
+         mxEvecs = create_mxArray(&evecs[primme->n * primme->numOrthoConst],
+               primme->n, (PRIMME_INT)primme->initSize, primme->n, CPUGPU());
+         if (isCPU(CPUGPU()) && evecs) {
+            delete[] evecs;
+         }
       }
-      else {
-         mxSetN(mxEvecs, primme->initSize);
+#ifdef USE_GPUARRAY
+      else if (!mxEvecs && isGPU(CPUGPU())) {
+         mxEvecs = mxGPUCreateMxArrayOnGPU(mxgpuEvecs);
       }
+#endif
       plhs[3] = mxEvecs;
    }
-   else {
-      delete [] evecs;
+   else if (isCPU(CPUGPU())) {
+      if (evecs) delete [] evecs;
    }
+
+#ifdef USE_GPUARRAY
+   if (isGPU(CPUGPU())) {
+      if (mxgpuEvecs) mxGPUDestroyGPUArray(mxgpuEvecs);
+   }
+#endif
 }
 
 // Wrapper around primme_svds_initialize; prototype:
@@ -1194,6 +1412,16 @@ static void mexFunction_primme_svds_free(int nlhs, mxArray *plhs[], int nrhs,
    if (primme_svds->preconditioner) mxDestroyArray((mxArray*)primme_svds->preconditioner);
    if (primme_svds->monitor) mxDestroyArray((mxArray*)primme_svds->monitor);
    if (primme_svds->convtest) mxDestroyArray((mxArray*)primme_svds->convtest);
+   if (primme_svds->commInfo) mxDestroyArray((mxArray*)primme_svds->commInfo);
+#ifdef USE_GPUARRAY
+   if (primme_svds->queue) {
+      // and finalize MAGMA.
+      magma_queue_destroy(*(magma_queue_t*)primme_svds->queue);
+      free(primme_svds->queue);
+      magma_finalize();
+   }
+#endif
+
    primme_svds_free(primme_svds);
    delete primme_svds;
 }
@@ -1217,7 +1445,7 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_iseed:
       {
          ASSERT_NUMERIC(2);
-         copy_mxArray(prhs[2], primme_svds->iseed, 4, 1, 4);
+         copy_mxArray(prhs[2], primme_svds->iseed, 4, 1, 4, CPU());
          break;
       }
 
@@ -1229,7 +1457,7 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
          int n = (int)mxGetNumberOfElements(prhs[2]);
          primme_svds->targetShifts = new double[n];
          primme_svds->numTargetShifts = n;
-         copy_mxArray(prhs[2], primme_svds->targetShifts, n, 1, n);
+         copy_mxArray(prhs[2], primme_svds->targetShifts, n, 1, n, CPU());
          break;
       }
 
@@ -1273,6 +1501,15 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
          primme_svds->monitor = (void*)a;
          break;
       }
+      case PRIMME_SVDS_commInfo:
+      {
+         ASSERT_NUMERIC_OR_CHAR(2);
+         if (primme_svds->commInfo) mxDestroyArray((mxArray*)primme_svds->commInfo);
+         mxArray *a = mxDuplicateArray(prhs[2]);
+         mexMakeArrayPersistent(a);
+         primme_svds->commInfo = (void*)a;
+         break;
+      }
 
 
       // Forbidden members
@@ -1283,7 +1520,6 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
       case PRIMME_SVDS_procID: 
       case PRIMME_SVDS_mLocal: 
       case PRIMME_SVDS_nLocal: 
-      case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
       case PRIMME_SVDS_numTargetShifts:
       case PRIMME_SVDS_matrix:
@@ -1318,7 +1554,7 @@ static void mexFunction_primme_svds_set_member(int nlhs, mxArray *plhs[],
          else if (ptype == primme_double) {
             ASSERT_NUMERIC(2);
             double v;
-            copy_mxArray(prhs[2], &v, 1, 1, 1);
+            copy_mxArray(prhs[2], &v, 1, 1, 1, CPU());
             CHKERR(primme_svds_set_member(primme_svds, label, &v));
          }
 
@@ -1355,14 +1591,14 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
 
       case PRIMME_SVDS_iseed:
       {
-         plhs[0] = create_mxArray(primme_svds->iseed, 4, 1, 4);
+         plhs[0] = create_mxArray(primme_svds->iseed, 4, 1, 4, CPU());
          break;
       }
 
       case PRIMME_SVDS_targetShifts:
       {
          plhs[0] = create_mxArray(primme_svds->targetShifts,
-               primme_svds->numTargetShifts, 1, primme_svds->numTargetShifts);
+               primme_svds->numTargetShifts, 1, primme_svds->numTargetShifts, CPU());
          break;
       }
 
@@ -1438,7 +1674,7 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
          if (ptype == primme_int) {
             PRIMME_INT v;
             CHKERR(primme_svds_get_member(primme_svds, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1);
+            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
          }
 
          // Set members with type double
@@ -1446,7 +1682,7 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
          else if (ptype == primme_double) {
             double v;
             CHKERR(primme_svds_get_member(primme_svds, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1);
+            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
          }
 
          // Get members with type string
@@ -1528,7 +1764,7 @@ struct getSvdsForPreconditioner {
 // functor F returns also the number of rows in x and y and the string
 // passed in callback depending on mode.
 
-template <typename T, typename F>
+template <typename T, typename F, typename CPUGPU>
 struct matrixMatvecSvds {
    typedef void (*t)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, int *mode, struct primme_svds_params *primme_svds,
@@ -1557,8 +1793,8 @@ struct matrixMatvecSvds {
 
       // Create input vector x (avoid copy if possible)
 
-      prhs[1] = create_mxArray<typename Real<T>::type,PRIMME_INT>((T*)x, mx,
-            (PRIMME_INT)*blockSize, *ldx, true);
+      prhs[1] = create_mxArray(
+            (T *)x, mx, (PRIMME_INT)*blockSize, *ldx, CPUGPU(), true);
       prhs[2] = mxCreateString(str);
 
       // Call the callback
@@ -1568,19 +1804,20 @@ struct matrixMatvecSvds {
       // Copy lhs[0] to y and destroy it
 
       if (plhs[0]) {
-         copy_mxArray(plhs[0], (T*)y, my, (PRIMME_INT)*blockSize, *ldy);
+         copy_mxArray(
+               plhs[0], (T *)y, my, (PRIMME_INT)*blockSize, *ldy, CPUGPU());
          mxDestroyArray(plhs[0]);
       }
 
       // Destroy prhs[*]
 
-      if (mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
+      if (isCPU(CPUGPU()) && mxGetData(prhs[1]) == x) mxSetData(prhs[1], NULL);
       mxDestroyArray(prhs[1]); 
       mxDestroyArray(prhs[2]); 
    }
 };
 
-template <typename T>
+template <typename T, typename CPUGPU>
 static void convTestFunSvds(double *sval, void *leftsvec, void *rightsvec,
       double *rNorm, int *method, int *isConv,
       struct primme_svds_params *primme_svds, int *ierr) {
@@ -1590,14 +1827,14 @@ static void convTestFunSvds(double *sval, void *leftsvec, void *rightsvec,
 
    // Create input vectors (avoid copy if possible)
 
-   prhs[1] = create_mxArray<double,int>(sval, sval?1:0, 1, sval?1:0);
-   prhs[2] = create_mxArray<typename Real<T>::type,int>((T*)leftsvec,
-         leftsvec?primme_svds->mLocal:0, 1, leftsvec?primme_svds->mLocal:0,
-         true);
-   prhs[3] = create_mxArray<typename Real<T>::type,int>((T*)rightsvec,
-         rightsvec?primme_svds->nLocal:0, 1, rightsvec?primme_svds->nLocal:0,
-         true);
-   prhs[4] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0);
+   prhs[1] = create_mxArray<double,int>(sval, sval?1:0, 1, sval?1:0, CPU());
+   prhs[2] = create_mxArray((T *)leftsvec,
+         leftsvec ? primme_svds->mLocal : (PRIMME_INT)0, (PRIMME_INT)1,
+         leftsvec ? primme_svds->mLocal : (PRIMME_INT)0, CPUGPU(), true);
+   prhs[3] = create_mxArray((T *)rightsvec,
+         rightsvec ? primme_svds->nLocal : (PRIMME_INT)0, (PRIMME_INT)1,
+         rightsvec ? primme_svds->nLocal : (PRIMME_INT)0, CPUGPU(), true);
+   prhs[4] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0, CPU());
 
    // Call the callback
 
@@ -1607,14 +1844,16 @@ static void convTestFunSvds(double *sval, void *leftsvec, void *rightsvec,
    // Copy plhs[0] to isConv and destroy it
 
    if (plhs[0]) {
-      copy_mxArray(plhs[0], isConv, 1, 1, 1);
+      copy_mxArray(plhs[0], isConv, 1, 1, 1, CPU());
       mxDestroyArray(plhs[0]);
    }
 
    // Destroy prhs[1..4]
 
-   if (mxGetData(prhs[2]) == leftsvec)      mxSetData(prhs[2], NULL);
-   if (mxGetData(prhs[3]) == rightsvec)     mxSetData(prhs[3], NULL);
+   if (isCPU(CPUGPU()) && mxGetData(prhs[2]) == leftsvec)
+      mxSetData(prhs[2], NULL);
+   if (isCPU(CPUGPU()) && mxGetData(prhs[3]) == rightsvec)
+      mxSetData(prhs[3], NULL);
    for (int i=1; i<5; i++) mxDestroyArray(prhs[i]); 
 }
 
@@ -1632,27 +1871,28 @@ static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
 
    typedef typename Real<T>::type R;
    prhs[1] = create_mxArray<R, int>((R *)basisSvals, basisSize ? *basisSize : 0,
-         1, basisSize ? *basisSize : 0, true);
+         1, basisSize ? *basisSize : 0, CPU(), true);
    prhs[2] = create_mxArray<int, int>(basisFlags, basisFlags ? *basisSize : 0,
-         1, basisFlags ? *basisSize : 0, true);
+         1, basisFlags ? *basisSize : 0, CPU(), true);
    prhs[3] = create_mxArray<int, int>(iblock, blockSize ? *blockSize : 0, 1,
-         blockSize ? *blockSize : 0, true);
+         blockSize ? *blockSize : 0, CPU(), true);
    prhs[4] = create_mxArray<R, int>((R *)basisNorms, basisSize ? *basisSize : 0,
-         1, basisSize ? *basisSize : 0, true);
+         1, basisSize ? *basisSize : 0, CPU(), true);
    prhs[5] = create_mxArray<int, int>(
-         numConverged, numConverged ? 1 : 0, 1, 1, true);
-   prhs[6] = create_mxArray<R, int>((R *)lockedSvals,
-         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
-   prhs[7] = create_mxArray<int, int>(lockedFlags, numLocked ? *numLocked : 0,
-         1, numLocked ? *numLocked : 0, true);
-   prhs[8] = create_mxArray<R, int>((R *)lockedNorms,
-         numLocked ? *numLocked : 0, 1, numLocked ? *numLocked : 0, true);
-   prhs[9] = create_mxArray<int, int>(inner_its, inner_its ? 1 : 0, 1, 1, true);
-   prhs[10] = create_mxArray<R, int>((R *)LSRes, LSRes ? 1 : 0, 1, 1, true);
+         numConverged, numConverged ? 1 : 0, 1, 1, CPU(), true);
+   int numLocked0 = numLocked && *numLocked > 0 ? *numLocked : 0;
+   prhs[6] = create_mxArray<R, int>(
+         (R *)lockedSvals, numLocked0, 1, numLocked0, CPU(), true);
+   prhs[7] = create_mxArray<int, int>(
+         lockedFlags, numLocked0, 1, numLocked0, CPU(), true);
+   prhs[8] = create_mxArray<R, int>(
+         (R *)lockedNorms, numLocked0, 1, numLocked0, CPU(), true);
+   prhs[9] = create_mxArray<int, int>(inner_its, inner_its ? 1 : 0, 1, 1, CPU(), true);
+   prhs[10] = create_mxArray<R, int>((R *)LSRes, LSRes ? 1 : 0, 1, 1, CPU(), true);
    prhs[11] = create_mxArray(msg, true);
-   prhs[12] = create_mxArray<double, int>(time, time ? 1 : 0, 1, 1, true);
-   prhs[13] = create_mxArray<int, int>((int *)event, event ? 1 : 0, 1, 1, true);
-   prhs[14] = create_mxArray<int, int>(stage, stage ? 1 : 0, 1, 1, true);
+   prhs[12] = create_mxArray<double, int>(time, time ? 1 : 0, 1, 1, CPU(), true);
+   prhs[13] = create_mxArray<int, int>((int *)event, event ? 1 : 0, 1, 1, CPU(), true);
+   prhs[14] = create_mxArray<int, int>(stage, stage ? 1 : 0, 1, 1, CPU(), true);
 
    // Call the callback
 
@@ -1683,7 +1923,7 @@ static void monitorFunSvds(void *basisSvals, int *basisSize, int *basisFlags,
 // [ret, evals, rnorms, evecs] = mexFunction_xprimme_svds(...
 //                            init_guesses_left, init_guesses_right, primme_svds)
 
-template<typename T>
+template<typename T, typename CPUGPU>
 static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
       const mxArray *prhs[])
 {
@@ -1692,6 +1932,29 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
    ASSERT_POINTER(2);
 
    primme_svds_params *primme_svds = (primme_svds_params*)mxArrayToPointer(prhs[2]);
+
+#ifdef USE_GPUARRAY
+   if (isGPU(CPUGPU())) {
+      if (!primme_svds->commInfo)
+         mexErrMsgTxt("Set primme_svds.commInfo with the GPU index");
+
+      // Initialize the MathWorks GPU API
+      mxInitGPU();
+
+      // Initialize MAGMA
+      magma_init();
+
+      // Create a context
+      int gpuDevice;
+      copy_mxArray((mxArray*)primme_svds->commInfo, &gpuDevice, 1, 1, 1, CPU());
+      if (primme_svds->queue)
+         magma_queue_destroy(*(magma_queue_t *)primme_svds->queue);
+      else
+         primme_svds->queue = malloc(sizeof(magma_queue_t));
+      magma_queue_create(gpuDevice, (magma_queue_t*)primme_svds->queue);
+   }
+#endif
+
 
    // Allocate svals, rnorms and svecs; if possible create the mxArray and use
    // its data
@@ -1720,9 +1983,20 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
       rnorms = (typename Real<T>::type*)mxGetData(mxRnorms);
    }
 
-   int n = primme_svds->numOrthoConst
+   PRIMME_INT n = primme_svds->numOrthoConst
       + macro_max(primme_svds->initSize, primme_svds->numSvals);
-   svecs = new T[n*(primme_svds->m+primme_svds->n)];
+#ifdef USE_GPUARRAY
+   mxGPUArray *mxgpuSvecs  = nullptr; 
+   if (isGPU(CPUGPU())) {
+      mwSize dims[2] = {(mwSize)primme_svds->m+primme_svds->n, (mwSize)n};
+      mxgpuSvecs = mxGPUCreateGPUArray(2, dims, toClassID<T>(),
+            isComplex<T>() ? mxCOMPLEX : mxREAL, MX_GPU_DO_NOT_INITIALIZE);
+      svecs = (T*)mxGPUGetData(mxgpuSvecs);
+   } else 
+#endif
+   {
+      svecs = new T[n*(primme_svds->m+primme_svds->n)];
+   }
 
    // Copy initial vectors
 
@@ -1730,26 +2004,26 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
       ASSERT_NUMERIC(0);
       int ninit = primme_svds->numOrthoConst+primme_svds->initSize;
       copy_mxArray(prhs[0], svecs, primme_svds->m, (PRIMME_INT)ninit,
-            primme_svds->m);
+            primme_svds->m, CPUGPU());
       copy_mxArray(prhs[1], &svecs[primme_svds->m*ninit], primme_svds->n,
-            (PRIMME_INT)ninit, primme_svds->n);
+            (PRIMME_INT)ninit, primme_svds->n, CPUGPU());
    }
 
    // Set matvec and preconditioner and monitorFun and convTestFun
 
    primme_svds->matrixMatvec =
-         select_fun<T, getSvdsForMatrix, matrixMatvecSvds>(
+         select_fun<T, getSvdsForMatrix, CPUGPU, matrixMatvecSvds>(
                primme_svds->matrixMatvec_type);
    if (primme_svds->preconditioner) {
       primme_svds->applyPreconditioner =
-            select_fun<T, getSvdsForPreconditioner, matrixMatvecSvds>(
+            select_fun<T, getSvdsForPreconditioner, CPUGPU, matrixMatvecSvds>(
                   primme_svds->applyPreconditioner_type);
    }
    if (primme_svds->monitor) {
       primme_svds->monitorFun = monitorFunSvds<T>;
    }
    if (primme_svds->convtest) {
-      primme_svds->convTestFun = convTestFunSvds<T>;
+      primme_svds->convTestFun = convTestFunSvds<T, CPUGPU>;
    }
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
@@ -1762,7 +2036,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
 
    // Call xprimme_svds
 
-   int ret = tprimme_svds(svals, svecs, rnorms, primme_svds);
+   int ret = tprimme_svds(svals, svecs, rnorms, primme_svds, CPUGPU());
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__FreeBSD__)
    // Unset ctrl+c handler
@@ -1772,7 +2046,7 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
 
    // Return error code
 
-   plhs[0] = create_mxArray(&ret, 1, 1, 1);
+   plhs[0] = create_mxArray(&ret, 1, 1, 1, CPU());
 
    // Return svals
 
@@ -1797,19 +2071,26 @@ static void mexFunction_xprimme_svds(int nlhs, mxArray *plhs[], int nrhs,
    // Return svecs
 
    if (nlhs >= 4) {
-      plhs[3] = create_mxArray<typename Real<T>::type,PRIMME_INT>(
-            &svecs[primme_svds->m*primme_svds->numOrthoConst], primme_svds->m,
-            (PRIMME_INT)primme_svds->initSize, primme_svds->m);
+      plhs[3] = create_mxArray(
+            &svecs[primme_svds->m * primme_svds->numOrthoConst], primme_svds->m,
+            (PRIMME_INT)primme_svds->initSize, primme_svds->m, CPUGPU());
    }
 
    if (nlhs >= 5) {
-      plhs[4] = create_mxArray<typename Real<T>::type,PRIMME_INT>(
-            &svecs[primme_svds->m*(primme_svds->numOrthoConst+primme_svds->initSize)
-            + primme_svds->n*primme_svds->numOrthoConst], primme_svds->n,
-            (PRIMME_INT)primme_svds->initSize, primme_svds->n);
+      plhs[4] = create_mxArray(
+            &svecs[primme_svds->m *
+                         (primme_svds->numOrthoConst + primme_svds->initSize) +
+                   primme_svds->n * primme_svds->numOrthoConst],
+            primme_svds->n, (PRIMME_INT)primme_svds->initSize, primme_svds->n,
+            CPUGPU());
    }
 
-   delete [] svecs;
+#ifdef USE_GPUARRAY
+   if (isGPU(CPUGPU())) {
+      if (mxgpuSvecs) mxGPUDestroyGPUArray(mxgpuSvecs);
+   } else 
+#endif
+      if (svecs) delete [] svecs;
 }
 
 // Main function: dispatch the call to the proper mexFunction_* function
@@ -1821,25 +2102,38 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
    char *function_name = mxArrayToString(prhs[0]);
+   bool called = false;
 
    #define PRIMME_TRY_CALL(F) \
-      if (strcmp(#F, function_name) == 0) mexFunction_ ## F (nlhs, plhs, nrhs-1, &prhs[1]);
-   #define PRIMME_TRY_CALL_T(F, FT) \
-      if (strcmp(#F, function_name) == 0) mexFunction_ ## FT (nlhs, plhs, nrhs-1, &prhs[1]);
+      if (strcmp(#F, function_name) == 0) called=true,mexFunction_ ## F (nlhs, plhs, nrhs-1, &prhs[1]);
+   #define PRIMME_TRY_CALL_T(F, FT, T, G) \
+      if (strcmp(#F, function_name) == 0) called=true,mexFunction_ ## FT < T , G > (nlhs, plhs, nrhs-1, &prhs[1]);
 
-   PRIMME_TRY_CALL_T(sprimme, xprimme<float>);
-   PRIMME_TRY_CALL_T(cprimme, xprimme<std::complex<float> >);
-   PRIMME_TRY_CALL_T(dprimme, xprimme<double>);
-   PRIMME_TRY_CALL_T(zprimme, xprimme<std::complex<double> >);
+   PRIMME_TRY_CALL_T(sprimme, xprimme, float, CPU);
+   PRIMME_TRY_CALL_T(cprimme, xprimme, std::complex<float>, CPU);
+   PRIMME_TRY_CALL_T(dprimme, xprimme, double, CPU);
+   PRIMME_TRY_CALL_T(zprimme, xprimme, std::complex<double>, CPU);
+#ifdef USE_GPUARRAY
+   PRIMME_TRY_CALL_T(magma_sprimme, xprimme, float, GPU);
+   PRIMME_TRY_CALL_T(magma_cprimme, xprimme, std::complex<float>, GPU);
+   PRIMME_TRY_CALL_T(magma_dprimme, xprimme, double, GPU);
+   PRIMME_TRY_CALL_T(magma_zprimme, xprimme, std::complex<double>, GPU);
+#endif
    PRIMME_TRY_CALL(primme_initialize);
    PRIMME_TRY_CALL(primme_set_method);
    PRIMME_TRY_CALL(primme_get_member);
    PRIMME_TRY_CALL(primme_set_member);
    PRIMME_TRY_CALL(primme_free);
-   PRIMME_TRY_CALL_T(sprimme_svds, xprimme_svds<float>);
-   PRIMME_TRY_CALL_T(cprimme_svds, xprimme_svds<std::complex<float> >);
-   PRIMME_TRY_CALL_T(dprimme_svds, xprimme_svds<double>);
-   PRIMME_TRY_CALL_T(zprimme_svds, xprimme_svds<std::complex<double> >);
+   PRIMME_TRY_CALL_T(sprimme_svds, xprimme_svds, float, CPU);
+   PRIMME_TRY_CALL_T(cprimme_svds, xprimme_svds, std::complex<float>, CPU);
+   PRIMME_TRY_CALL_T(dprimme_svds, xprimme_svds, double, CPU);
+   PRIMME_TRY_CALL_T(zprimme_svds, xprimme_svds, std::complex<double>, CPU);
+#ifdef USE_GPUARRAY
+   PRIMME_TRY_CALL_T(magma_sprimme_svds, xprimme_svds, float, GPU);
+   PRIMME_TRY_CALL_T(magma_cprimme_svds, xprimme_svds, std::complex<float>, GPU);
+   PRIMME_TRY_CALL_T(magma_dprimme_svds, xprimme_svds, double, GPU);
+   PRIMME_TRY_CALL_T(magma_zprimme_svds, xprimme_svds, std::complex<double>, GPU);
+#endif
    PRIMME_TRY_CALL(primme_svds_initialize);
    PRIMME_TRY_CALL(primme_svds_set_method);
    PRIMME_TRY_CALL(primme_svds_set_member);
@@ -1848,4 +2142,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    #undef PRIMME_TRY_CALL
    #undef PRIMME_TRY_CALL_T
+
+   if (!called)
+      mexErrMsgTxtPrintf1("Unavailable function: %s", function_name);
 }
