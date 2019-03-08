@@ -56,8 +56,8 @@
 #define TEMPLATE_H
 
 /* Including MAGMA headers before C99 complex.h avoid compiler issues */
-/* Also trick MAGMA into using a C++ compiler to expose half precision functions */
-#if !defined(CHECK_TEMPLATE) &&                                                \
+
+#if !defined(CHECK_TEMPLATE) && defined(PRIMME_WITH_MAGMA) &&                  \
       (defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA) ||            \
             defined(USE_FLOAT_MAGMA) || defined(USE_FLOATCOMPLEX_MAGMA) ||     \
             defined(USE_DOUBLE_MAGMA) || defined(USE_DOUBLECOMPLEX_MAGMA))
@@ -267,14 +267,19 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
  */
 
 #if defined(PRIMME_WITH_NATIVE_HALF) &&                                        \
-      (defined(USE_HOST) || (defined(USE_MAGMA) && defined(MAGMA_WITH_HALF)))
+      (defined(USE_HOST) ||                                                    \
+            (defined(PRIMME_WITH_MAGMA) && defined(USE_MAGMA) &&               \
+                  defined(MAGMA_WITH_HALF)))
 #  define SUPPORTED_HALF_TYPE
 #endif
 
 #if defined(CHECK_TEMPLATE) ||                                                 \
-      (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX) &&                      \
-            !defined(USE_HALF_MAGMA) && !defined(USE_HALFCOMPLEX_MAGMA)) ||    \
-      defined(SUPPORTED_HALF_TYPE)
+      (defined(USE_HOST) &&                                                    \
+            ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) ||              \
+                  defined(SUPPORTED_HALF_TYPE))) ||                            \
+      (defined(USE_MAGMA) && defined(PRIMME_WITH_MAGMA) &&                     \
+            ((!defined(USE_HALF_MAGMA) && !defined(USE_HALFCOMPLEX_MAGMA)) ||  \
+                  defined(SUPPORTED_HALF_TYPE)))
 #  define SUPPORTED_TYPE
 #endif
 

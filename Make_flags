@@ -26,14 +26,18 @@ F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
 CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O
-PRIMME_WITH_HALF ?= yes
+PRIMME_WITH_HALF ?= no
+ifeq ($(PRIMME_WITH_HALF), yes)
+    CFLAGS += -DPRIMME_WITH_HALF
+endif
 
 # GPUs compiler flags
 #---------------------------------------------------------------
+# MAGMADIR = /usr/local/magma-2.5.0
 PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
 CUDADIR  ?= /usr/local/cuda
 ifeq ($(PRIMME_WITH_MAGMA), yes)
-    override CFLAGS += -I$(MAGMADIR)/include -I$(CUDADIR)/include
+    override CFLAGS += -I$(MAGMADIR)/include -I$(CUDADIR)/include -DPRIMME_WITH_MAGMA
 endif
 
 #---------------------------------------------------------------

@@ -36,13 +36,10 @@ SOURCES := \
    svds/primme_svds_f77.c \
    svds/primme_svds_interface.c
 
-ARCHS := float floatcomplex double doublecomplex
-ifeq ($(PRIMME_WITH_HALF),yes)
-   ARCHS += half halfcomplex
-endif
-ifeq ($(PRIMME_WITH_MAGMA),yes)
-   ARCHS += $(foreach a,$(ARCHS),$(a)magma)
-endif
+ARCHS := half float double
+ARCHS += $(foreach a,$(ARCHS),$(a)complex)
+ARCHS += $(foreach a,$(ARCHS),$(a)magma)
+
 ALL_ARCHS := HALF HALFCOMPLEX FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
    FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA \
    HALF_MAGMA HALFCOMPLEX_MAGMA

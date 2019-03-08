@@ -51,9 +51,11 @@
 #  define USE_CUBLAS
 #endif
 
-#include <cuda_runtime.h>
-#ifdef USE_CUBLAS
-#  include <cublas_v2.h>
+#ifndef CHECK_TEMPLATE
+#  include <cuda_runtime.h>
+#  ifdef USE_CUBLAS
+#    include <cublas_v2.h>
+#  endif
 #endif
 
 /* The next functions are only exposed using C++.                    */
