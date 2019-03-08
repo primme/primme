@@ -76,9 +76,6 @@
 #include <limits.h>    
 #include <float.h>
 #include <stdint.h>
-#if !(defined (__APPLE__) && defined (__MACH__))
-#  include <malloc.h> /* malloc */
-#endif
 #include <stdlib.h>   /* malloc, free */
 #include <string.h>   /* strlen */
 #include <stdio.h>    /* snprintf */
