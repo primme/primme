@@ -22,6 +22,10 @@ endif
 
 # MATLAB MEX compiler
 MEX ?= mex
+ifneq ($(findstring MEX,$(shell $(MEX) -version)),MEX)
+   MEX_ERROR = $(error Invalid MATLAB`s mex, $(MEX). Set MEX=/path/to/Matlab/bin/mex)
+endif
+
 # Linux
 # MEX = /usr/local/matlab/bin/mex
 #
@@ -56,9 +60,11 @@ OCTAVE ?= octave --no-gui -H -q
 all: matlab
 
 matlab:
+	$(MEX_ERROR)
 	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp
 
 matlab-cuda:
+	$(MEX_ERROR)
 	$(MATLAB) -nodesktop -nodisplay -nojvm -r "setenv('MW_NVCC_PATH','$(MW_NVCC_PATH)'); try;mexcuda $(MEXFLAGS) -DUSE_GPUARRAY $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp; catch me,disp(getReport(me));end, exit" < /dev/null
 
 octave:
