@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,8 @@ extern "C" {
 #define AS_FORTRAN(X) AS_FORTRANX(X)
 #define AS_FORTRANX(X) FORTRAN_FUNCTION(X ## _f77)
 
-void AS_FORTRAN(Sprimme_svds)(HREAL *svals, HSCALAR *svecs,
-      HREAL *resNorms, primme_svds_params **primme_svds, int *ierr);
+void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,
+      XREAL *resNorms, primme_svds_params **primme_svds, int *ierr);
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE

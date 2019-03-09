@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,8 @@
 
 #ifndef CONST_H
 #define CONST_H
+
+#include "numerical.h"
 
 #define TRUE  1
 #define FALSE 0

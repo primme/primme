@@ -39,10 +39,7 @@
 #include <assert.h>
 #include <math.h>
 #include "template.h"
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
 #include "memman.h"
-#endif
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
@@ -87,6 +84,9 @@ int Mem_pop_frame(primme_context *ctx) {
          a->p = f;
          a->free_fn = free_dummy;
          a->prev = NULL;
+#ifndef NDEBUG
+         a->debug = NULL;
+#endif
          ctx->mm->prev = f;
       } else {
          if (f) free(f);
@@ -113,6 +113,14 @@ int Mem_pop_frame(primme_context *ctx) {
 
       /* Check that at this point there should be no registered allocation */
 
+#ifndef NDEBUG
+      primme_alloc *a = ctx->mm->prev_alloc;
+      while (a) {
+         PRINTFALLCTX(*ctx, 1, "Warning: the allocation at %s has not been freed",
+               a->debug ? a->debug : "unknown");
+         a = a->prev;
+      }
+#endif 
       assert(ctx->mm->prev_alloc == NULL);
 
       /* But if there are allocations, just free them */
@@ -188,6 +196,9 @@ int Mem_register_alloc(void *p, free_fn_type free_fn, primme_context ctx) {
    a->p = p;
    a->free_fn = free_fn;
    a->prev = prev_alloc;
+#ifndef NDEBUG
+   a->debug = NULL;
+#endif
    ctx.mm->prev_alloc = a;
 
    return 0;
@@ -232,5 +243,35 @@ int Mem_deregister_alloc(void *p, primme_context ctx) {
 
    return 0;
 }
+
+/*******************************************************************************
+ * Subroutine Mem_register_alloc - Register a pointer been allocated and the
+ *    function to free the pointer.
+ * 
+ * INPUT PARAMETERS
+ * ----------------------------------
+ * p        Pointer been allocated
+ * free_fn  Function to free the pointer
+ * ctx      context
+ *
+ ******************************************************************************/
+
+int Mem_debug_frame(const char *debug, primme_context ctx) {
+
+   /* Quick exit */
+
+   if (!ctx.mm) return 0;
+
+#ifndef NDEBUG
+   primme_alloc *a = ctx.mm->prev_alloc;
+   while(a) {
+      if (!a->debug) a->debug = debug;
+      a = a->prev;
+   }
+#endif
+
+   return 0;
+}
+
 
 #endif /* USE_DOUBLE */

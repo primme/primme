@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,6 @@
  *
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -44,6 +41,8 @@
 #include "inner_solve.h"
 #include "auxiliary_eigs.h"
 #endif
+
+#ifdef SUPPORTED_TYPE
 
 static HREAL computeRobustShift(int blockIndex, double resNorm, 
    HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 
@@ -977,3 +976,5 @@ static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    return 0;
 
 } /* setup_JD_projectors */
+
+#endif /* SUPPORTED_TYPE */

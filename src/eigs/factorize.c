@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,9 +34,6 @@
  *  
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
@@ -44,7 +41,9 @@
 #include "factorize.h"
 #endif
 
-#ifdef USE_HOST
+#ifdef SUPPORTED_TYPE
+
+#if defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF))
 
 /******************************************************************************
  * Function UDUDecompose - This function computes an UDU decomposition of the
@@ -147,7 +146,7 @@ int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
 
 }
 
-#endif /* USE_HOST */
+#endif /* defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)) */
 
 /*******************************************************************************
  * Subroutine update_XKinvBX - Updates the matrix M=X'*Kinv*B*X and returns
@@ -231,7 +230,7 @@ int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,
    return 0;
 }
 
-#ifdef USE_HOST
+#if defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF))
 
 /******************************************************************************
  * Function MSolve - This function solves a dense hermitian linear system
@@ -296,4 +295,6 @@ int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,
    return 0;
 }
 
-#endif /* USE_HOST */
+#endif /* defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)) */
+
+#endif /* SUPPORTED_TYPE */

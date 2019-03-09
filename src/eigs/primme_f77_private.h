@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
 #define PRIMME_F77_PRIVATE_H
 
 #include "template.h"
-#include "primme_interface.h" /* for Sprimme */
+#include "primme_interface.h" /* for Xprimme */
 
 /* Prototypes for Fortran-C interface */
 
@@ -48,8 +48,8 @@ extern "C" {
 #define AS_FORTRAN(X) AS_FORTRANX(X)
 #define AS_FORTRANX(X) FORTRAN_FUNCTION(X ## _f77)
 
-void AS_FORTRAN(Sprimme)(HREAL *evals, HSCALAR *evecs,
-      HREAL *rnorms, primme_params **primme, int *ierr);
+void AS_FORTRAN(Xprimme)(XREAL *evals, XSCALAR *evecs,
+      XREAL *rnorms, primme_params **primme, int *ierr);
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE

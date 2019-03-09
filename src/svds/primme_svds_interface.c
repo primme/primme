@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,8 @@
 static void copy_params_from_svds(primme_svds_params *primme_svds, int stage);
 static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme, int *ierr);
+static void broadcastRealSvds(
+      void *buffer, int *count, primme_params *primme, int *ierr);
 
 /*****************************************************************************
  * Initialize handles also the allocation of primme_svds structure 
@@ -100,6 +102,9 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->nLocal                  = -1;
    primme_svds->commInfo                = NULL;
    primme_svds->globalSumReal           = NULL;
+   primme_svds->globalSumReal_type      = primme_op_default;
+   primme_svds->broadcastReal           = NULL;
+   primme_svds->broadcastReal_type      = primme_op_default;
 
    /* Use these pointers to provide matrix/preconditioner */
    primme_svds->matrix                  = NULL;
@@ -107,7 +112,9 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
 
    /* Matvec and preconditioner */
    primme_svds->matrixMatvec            = NULL;
+   primme_svds->matrixMatvec_type       = primme_op_default;
    primme_svds->applyPreconditioner     = NULL;
+   primme_svds->applyPreconditioner_type= primme_op_default;
 
    /* Other important parameters users may set */
    primme_svds->aNorm                   = 0.0L;
@@ -129,12 +136,15 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->stats.numPreconds                   = 0;
    primme_svds->stats.numGlobalSum                  = 0;
    primme_svds->stats.volumeGlobalSum               = 0;
+   primme_svds->stats.numBroadcast                  = 0;
+   primme_svds->stats.volumeBroadcast               = 0;
    primme_svds->stats.numOrthoInnerProds            = 0.0;
    primme_svds->stats.elapsedTime                   = 0.0;
    primme_svds->stats.timeMatvec                    = 0.0;
    primme_svds->stats.timePrecond                   = 0.0;
    primme_svds->stats.timeOrtho                     = 0.0;
    primme_svds->stats.timeGlobalSum                 = 0.0;
+   primme_svds->stats.timeBroadcast                 = 0.0;
 
    /* Internally used variables */
    primme_svds->iseed[0] = -1;   /* To set iseed, we first need procID           */ 
@@ -146,6 +156,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->monitorFun              = NULL;
    primme_svds->monitor                 = NULL;
    primme_svds->queue                   = NULL;
+   primme_svds->profile                 = NULL;
 
    primme_initialize(&primme_svds->primme);
    primme_initialize(&primme_svds->primmeStage2);
@@ -299,11 +310,16 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
    /* ---------------------------------------------- */
    /* Set some parameters only for parallel programs */
    /* ---------------------------------------------- */
-   if (primme_svds->numProcs > 1 && primme_svds->globalSumReal != NULL) {
+   if (primme_svds->numProcs > 1) {
       primme->procID = primme_svds->procID;
       primme->numProcs = primme_svds->numProcs;
       primme->commInfo = primme_svds->commInfo;
+   }
+   if (primme_svds->globalSumReal != NULL) {
       primme->globalSumReal = globalSumRealSvds;
+   }
+   if (primme_svds->broadcastReal != NULL) {
+      primme->broadcastReal = broadcastRealSvds;
    }
 
    switch(method) {
@@ -494,6 +510,18 @@ static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count,
 }
 
 /*******************************************************************************
+ * Subroutine broadcastRealSvds - implementation of primme_params' broadcastReal
+ *    that uses the callback defined in primme_svds_params.
+ * 
+ ******************************************************************************/
+
+static void broadcastRealSvds(
+      void *buffer, int *count, primme_params *primme, int *ierr) {
+   primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
+   primme_svds->broadcastReal(buffer, count, primme_svds, ierr);
+}
+
+/*******************************************************************************
  * Subroutine primme_svds_get_member - get the value of a parameter in
  *    primme_svds_params
  * 
@@ -521,8 +549,7 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
       void *ptr_v;
       void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
-      primme_svds_target target_v;
-      primme_svds_operator operator_v;
+      void (*broadcastRealFunc_v) (void *,int *,struct primme_svds_params*,int*);
       double double_v;
       FILE *file_v;
       void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
@@ -530,9 +557,11 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
             struct primme_svds_params *primme, int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-            void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-            int *inner_its, void *LSRes, primme_event *event, int *stage,
+            void *lockedSvals, int *numLocked, int *lockedFlags,
+            void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
+            double *time, primme_event *event, int *stage,
             struct primme_svds_params *primme_svds, int *err);
+      const char *str_v;
    } *v = (union value_t*)value;
 
    switch(label) {
@@ -551,8 +580,14 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_matrixMatvec :
          v->matFunc_v = primme_svds->matrixMatvec;
          break;
+      case PRIMME_SVDS_matrixMatvec_type:
+         v->int_v = primme_svds->matrixMatvec_type;
+         break;
       case PRIMME_SVDS_applyPreconditioner :
          v->matFunc_v = primme_svds->applyPreconditioner;
+         break;
+      case PRIMME_SVDS_applyPreconditioner_type:
+         v->int_v = primme_svds->applyPreconditioner_type;
          break;
       case PRIMME_SVDS_numProcs :
          v->int_v = primme_svds->numProcs;
@@ -572,11 +607,20 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_globalSumReal :
          v->globalSumRealFunc_v = primme_svds->globalSumReal;
          break;
+      case PRIMME_SVDS_globalSumReal_type:
+         v->int_v = primme_svds->globalSumReal_type;
+         break;
+      case PRIMME_SVDS_broadcastReal :
+         v->broadcastRealFunc_v = primme_svds->broadcastReal;
+         break;
+      case PRIMME_SVDS_broadcastReal_type:
+         v->int_v = primme_svds->broadcastReal_type;
+         break;
       case PRIMME_SVDS_numSvals :
          v->int_v = primme_svds->numSvals;
          break;
       case PRIMME_SVDS_target :
-         v->target_v = primme_svds->target;
+         v->int_v = primme_svds->target;
          break;
       case PRIMME_SVDS_numTargetShifts :
          v->int_v = primme_svds->numTargetShifts;
@@ -587,10 +631,10 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
          }
          break;
       case PRIMME_SVDS_method :
-         v->operator_v = primme_svds->method;
+         v->int_v = primme_svds->method;
          break;
       case PRIMME_SVDS_methodStage2 :
-         v->operator_v = primme_svds->methodStage2;
+         v->int_v = primme_svds->methodStage2;
          break;
       case PRIMME_SVDS_matrix :
          v->ptr_v = primme_svds->matrix;
@@ -654,6 +698,12 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_volumeGlobalSum:
          v->int_v = primme_svds->stats.volumeGlobalSum;
          break;
+      case PRIMME_SVDS_stats_numBroadcast:
+         v->int_v = primme_svds->stats.numBroadcast;
+         break;
+      case PRIMME_SVDS_stats_volumeBroadcast:
+         v->int_v = primme_svds->stats.volumeBroadcast;
+         break;
       case PRIMME_SVDS_stats_numOrthoInnerProds:
          v->double_v = primme_svds->stats.numOrthoInnerProds;
          break;
@@ -672,6 +722,9 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeGlobalSum:
          v->double_v = primme_svds->stats.timeGlobalSum;
          break;
+      case PRIMME_SVDS_stats_timeBroadcast:
+         v->double_v = primme_svds->stats.timeBroadcast;
+         break;
       case PRIMME_SVDS_convTestFun:
          v->convTestFun_v = primme_svds->convTestFun;
          break;
@@ -683,6 +736,12 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
          break;
       case PRIMME_SVDS_monitor:
          v->ptr_v = primme_svds->monitor;
+         break;
+      case PRIMME_SVDS_queue:
+         v->ptr_v = primme_svds->queue;
+         break;
+      case PRIMME_SVDS_profile:
+         v->str_v = primme_svds->profile;
          break;
       default:
          return 1;
@@ -717,8 +776,7 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       void (*matFunc_v) (void*,PRIMME_INT*,void*,PRIMME_INT*,int*,int*,struct primme_svds_params*,int*);
       void *ptr_v;
       void (*globalSumRealFunc_v) (void *,void *,int *,struct primme_svds_params*,int*);
-      primme_svds_target *target_v;
-      primme_svds_operator *operator_v;
+      void (*broadcastRealFunc_v) (void *,int *,struct primme_svds_params*,int*);
       double *double_v;
       FILE *file_v;
       void (*convTestFun_v)(double *sval, void *leftsvec, void *rightsvec,
@@ -726,10 +784,11 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
             struct primme_svds_params *primme, int *ierr);
       void (*monitorFun_v)(void *basisSvals, int *basisSize, int *basisFlags,
             int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-            void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-            int *inner_its, void *LSRes, primme_event *event, int *stage,
+            void *lockedSvals, int *numLocked, int *lockedFlags,
+            void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
+            double *time, primme_event *event, int *stage,
             struct primme_svds_params *primme_svds, int *err);
-
+      const char *str_v;
    } v = *(union value_t*)&value;
 
    switch(label) {
@@ -748,8 +807,14 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_matrixMatvec :
          primme_svds->matrixMatvec = v.matFunc_v;
          break;
+      case PRIMME_SVDS_matrixMatvec_type:
+         primme_svds->matrixMatvec_type = (primme_op_datatype)*v.int_v;
+         break;
       case PRIMME_SVDS_applyPreconditioner :
          primme_svds->applyPreconditioner = v.matFunc_v;
+         break;
+      case PRIMME_SVDS_applyPreconditioner_type:
+         primme_svds->applyPreconditioner_type = (primme_op_datatype)*v.int_v;
          break;
       case PRIMME_SVDS_numProcs :
          if (*v.int_v > INT_MAX) return 1; else
@@ -771,12 +836,21 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_globalSumReal :
          primme_svds->globalSumReal = v.globalSumRealFunc_v;
          break;
+      case PRIMME_SVDS_globalSumReal_type:
+         primme_svds->globalSumReal_type = (primme_op_datatype)*v.int_v;
+         break;
+      case PRIMME_SVDS_broadcastReal :
+         primme_svds->broadcastReal = v.broadcastRealFunc_v;
+         break;
+      case PRIMME_SVDS_broadcastReal_type:
+         primme_svds->broadcastReal_type = (primme_op_datatype)*v.int_v;
+         break;
       case PRIMME_SVDS_numSvals :
          if (*v.int_v > INT_MAX) return 1; else 
          primme_svds->numSvals = (int)*v.int_v;
          break;
       case PRIMME_SVDS_target :
-         primme_svds->target = *v.target_v;
+         primme_svds->target = (primme_svds_target)*v.int_v;
          break;
       case PRIMME_SVDS_numTargetShifts :
          if (*v.int_v > INT_MAX) return 1; else 
@@ -786,10 +860,10 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
          primme_svds->targetShifts = v.double_v;
          break;
       case PRIMME_SVDS_method :
-         primme_svds->method = *v.operator_v;
+         primme_svds->method = (primme_svds_operator)*v.int_v;
          break;
       case PRIMME_SVDS_methodStage2 :
-         primme_svds->methodStage2 = *v.operator_v;
+         primme_svds->methodStage2 = (primme_svds_operator)*v.int_v;
          break;
       case PRIMME_SVDS_matrix :
          primme_svds->matrix = v.ptr_v;
@@ -857,6 +931,9 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_volumeGlobalSum:
          primme_svds->stats.volumeGlobalSum = *v.int_v;
          break;
+      case PRIMME_SVDS_stats_volumeBroadcast:
+         primme_svds->stats.volumeBroadcast = *v.int_v;
+         break;
       case PRIMME_SVDS_stats_numOrthoInnerProds:
          primme_svds->stats.numOrthoInnerProds = *v.double_v;
          break;
@@ -875,6 +952,9 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeGlobalSum:
          primme_svds->stats.timeGlobalSum = *v.double_v;
          break;
+      case PRIMME_SVDS_stats_timeBroadcast:
+         primme_svds->stats.timeBroadcast = *v.double_v;
+         break;
       case PRIMME_SVDS_convTestFun:
          primme_svds->convTestFun = v.convTestFun_v;
          break;
@@ -886,6 +966,12 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
          break;
       case PRIMME_SVDS_monitor:
          primme_svds->monitor = v.ptr_v;
+         break;
+      case PRIMME_SVDS_queue:
+         primme_svds->queue = v.ptr_v;
+         break;
+      case PRIMME_SVDS_profile:
+         primme_svds->profile = v.str_v;
          break;
       default:
          return 1;
@@ -938,13 +1024,18 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(m);
    IF_IS(n);
    IF_IS(matrixMatvec);
+   IF_IS(matrixMatvec_type);
    IF_IS(applyPreconditioner);
+   IF_IS(applyPreconditioner_type);
    IF_IS(numProcs);
    IF_IS(procID);
    IF_IS(mLocal);
    IF_IS(nLocal);
    IF_IS(commInfo);
    IF_IS(globalSumReal);
+   IF_IS(globalSumReal_type);
+   IF_IS(broadcastReal);
+   IF_IS(broadcastReal_type);
    IF_IS(numSvals);
    IF_IS(target);
    IF_IS(numTargetShifts);
@@ -971,16 +1062,21 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_numPreconds);
    IF_IS(stats_numGlobalSum);
    IF_IS(stats_volumeGlobalSum);
+   IF_IS(stats_numBroadcast);
+   IF_IS(stats_volumeBroadcast);
    IF_IS(stats_numOrthoInnerProds);
    IF_IS(stats_elapsedTime);
    IF_IS(stats_timeMatvec);
    IF_IS(stats_timePrecond);
    IF_IS(stats_timeOrtho);
    IF_IS(stats_timeGlobalSum);
+   IF_IS(stats_timeBroadcast);
    IF_IS(convTestFun);
    IF_IS(convtest);
    IF_IS(monitorFun);
    IF_IS(monitor);
+   IF_IS(queue);
+   IF_IS(profile);
 #undef IF_IS
 
    /* Return label/label_name */
@@ -993,6 +1089,9 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    switch(label) {
       /* members with type int */
 
+      case PRIMME_SVDS_matrixMatvec_type: 
+      case PRIMME_SVDS_applyPreconditioner_type:
+      case PRIMME_SVDS_globalSumReal_type:
       case PRIMME_SVDS_m: 
       case PRIMME_SVDS_n:
       case PRIMME_SVDS_numSvals:
@@ -1013,6 +1112,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_stats_numPreconds:
       case PRIMME_SVDS_stats_numGlobalSum:
       case PRIMME_SVDS_stats_volumeGlobalSum:
+      case PRIMME_SVDS_stats_numBroadcast:
+      case PRIMME_SVDS_stats_volumeBroadcast:
       case PRIMME_SVDS_iseed:
       case PRIMME_SVDS_numProcs: 
       case PRIMME_SVDS_procID: 
@@ -1033,6 +1134,7 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_stats_timePrecond:
       case PRIMME_SVDS_stats_timeOrtho:
       case PRIMME_SVDS_stats_timeGlobalSum:
+      case PRIMME_SVDS_stats_timeBroadcast:
       if (type) *type = primme_double;
       if (arity) *arity = 1;
       break;
@@ -1050,6 +1152,7 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_applyPreconditioner:
       case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
+      case PRIMME_SVDS_broadcastReal:
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
@@ -1057,7 +1160,13 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_convtest:
       case PRIMME_SVDS_monitorFun:
       case PRIMME_SVDS_monitor:
+      case PRIMME_SVDS_queue:
       if (type) *type = primme_pointer;
+      if (arity) *arity = 1;
+      break;
+
+      case PRIMME_SVDS_profile:
+      if (type) *type = primme_string;
       if (arity) *arity = 1;
       break;
 

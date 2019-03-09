@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,6 @@
 
 void primme_set_defaults(primme_params *params);
 void primme_display_params_prefix(const char* prefix, primme_params primme);
-#define Sprimme CONCAT(SCALAR_PRE,primme)
+#define Xprimme SCALAR_SUF
 
 #endif

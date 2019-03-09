@@ -27,8 +27,10 @@ function [varargout] = primme_svds(varargin)
 %   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
 %   OPTIONS.disp     level of reporting 0-3 (see HIST)             0
+%   OPTIONS.display  toggle information display (see HIST)         0
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   0
 %   OPTIONS.isdouble if 0, the matrix is single; else it's double  1
+%   OPTIONS.isgpu    if 0, the matrix is gpuArray; else it isn't   0
 %   OPTIONS.method   which equivalent eigenproblem to solve
 %                    - 'primme_svds_normalequations': A'*A or A*A'
 %                    - 'primme_svds_augmented': [0 A';A 0]
@@ -47,6 +49,16 @@ function [varargout] = primme_svds(varargin)
 %   If OPTIONS.convTestFun(SVAL,LSVEC,RSVEC,RNORM) returns a nonzero
 %   value, the triplet (SVAL,LSVEC,RSVEC) with residual norm RNORM
 %   is considered converged.
+%
+%   OPTIONS.profiler returns times from selected PRIMME's internal
+%   functions. If 1, STATS returns times for the main functions.
+%   If it is a cell, STATS returns times for those functions only.
+%   For instance, {'Bortho'} returns times for all function calls
+%   containing 'Bortho' on main_iteration. {'??/Bortho'} returns
+%   all calls regardless the caller. {'**/Borth'} returns all calls
+%   containing 'Bortho' grouped by callers. And {'++/Borth'} grouped
+%   by invocations. {'Bortho/*'} returns times taken by functions
+%   called at Bortho.
 %
 %   The available options for OPTIONS.primme and primmeStage2 are
 %   the same as PRIMME_EIGS, plus the option 'method'. For detailed
@@ -83,7 +95,7 @@ function [varargout] = primme_svds(varargin)
 %
 %   [U,S,V,R,STATS] = PRIMME_SVDS(...) returns how many times A and P were
 %   used and elapsed time. The application of A is counted independently from
-%   the application of A'.
+%   the application of A', and functions selected OPTIONS.profile.
 %
 %   [U,S,V,R,STATS,HIST] = PRIMME_SVDS(...) returns the convergence history,
 %   instead of printing it. Every row is a record, and the columns report:
@@ -97,11 +109,15 @@ function [varargout] = primme_svds(varargin)
 %   HIST(:,7): residual norm
 %   HIST(:,8): QMR residual norm
 %
-%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
-%   has one row per converged triplet and only the first four columns are
-%   reported; if OPTS.disp == 2, HIST has one row per outer iteration and only
-%   the first seven columns are reported; and otherwise HIST has one row per QMR
-%   iteration and all columns are reported.
+%   OPTIONS.disp controls the granularity of the record. If OPTIONS.disp == 1,
+%   HIST has one row per converged triplet and only the first four columns
+%   together with the sixth and the seventh are reported. If OPTIONS.disp == 2,
+%   HIST has one row per outer iteration and converged value and only the first
+%   seven columns are reported. Otherwise HIST has one row per QMR iteration,
+%   outer iteration and converged value, and all columns are reported.
+%
+%   The convergence history is displayed if OPTIONS.disp > 0 and either HIST is
+%   not returned or OPTIONS.display == 1.
 %
 %   Examples:
 %      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -172,8 +188,13 @@ function [varargout] = primme_svds(varargin)
       opts.matrixMatvec = @(x,mode)matvecsvds(A,x,mode);
 
       % Get type and complexity
+      Agpu = strcmp(class(A), 'gpuArray');
+      if Agpu
+         Adouble = strcmp(classUnderlying(A), 'double');
+      else
+         Adouble = strcmp(class(A), 'double');
+      end
       Acomplex = ~isreal(A);
-      Adouble = strcmp(class(A), 'double');
    else
       opts.matrixMatvec = fcnchk_gen(A); % get the function handle of user's function
       m = round(varargin{nextArg});
@@ -189,6 +210,7 @@ function [varargout] = primme_svds(varargin)
       % Assume complex double matrix
       Acomplex = 1;
       Adouble = 1;
+      Agpu = 0;
    end
 
    if nargin >= nextArg
@@ -277,19 +299,55 @@ function [varargout] = primme_svds(varargin)
    else
       Aclass = 'single';
    end
+   if isnumeric(A) && issparse(A) && strcmp(Aclass, 'single')
+      opts.matrixMatvec_type = 'primme_op_double';
+      Aclass = 'double';
+   end
+
+   % Process 'isgpu' in opts
+   if isfield(opts, 'isgpu')
+      Agpu = opts.isgpu;
+      opts = rmfield(opts, 'isgpu');
+   end
+   if Agpu
+      d = gpuDevice;
+      opts.commInfo = d.Index - 1;
+   end
 
    % Test whether the given matrix and preconditioner are valid
+   if ~Agpu
+      test_x = @(n)ones(n, 1, Aclass);
+   else
+      test_x = @(n)ones(n, 1, Aclass, 'gpuArray');
+   end
    try
-      x = opts.matrixMatvec(ones(opts.n, 1, Aclass), 'notransp');
-      x = opts.matrixMatvec(ones(opts.m, 1, Aclass), 'transp');
+      x = opts.matrixMatvec(test_x(opts.n), 'notransp');
+      x = opts.matrixMatvec(test_x(opts.m), 'transp');
       if isfield(opts, 'applyPreconditioner')
-         x = opts.applyPreconditioner(ones(opts.n, 1, Aclass), 'AHA');
-         x = opts.applyPreconditioner(ones(opts.m, 1, Aclass), 'AAH');
-         x = opts.applyPreconditioner(ones(opts.m+opts.n, 1, Aclass), 'aug');
+         x = opts.applyPreconditioner(test_x(opts.n), 'AHA');
+         x = opts.applyPreconditioner(test_x(opts.m), 'AAH');
+         x = opts.applyPreconditioner(test_x(opts.m+opts.n), 'aug');
       end
       clear x;
    catch ME
       rethrow(ME);
+   end
+
+   % Process 'display' in opts
+   showHist = [];
+   dispLevel = 0;
+   if isfield(opts, 'display')
+      showHist = opts.display;
+      if numel(showHist) ~= 1 || (showHist ~= 0 && showHist ~= 1)
+         error('Invalid value in opts.display; it should be 0 or 1');
+      end
+      opts = rmfield(opts, 'display');
+      if showHist
+         dispLevel = 1;
+      end
+   elseif nargout >= 5
+      showHist = false;
+      dispLevel = 1;
    end
 
    % Process 'disp' in opts
@@ -299,10 +357,22 @@ function [varargout] = primme_svds(varargin)
          error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
       end
       opts = rmfield(opts, 'disp');
-   elseif nargout >= 6
+   elseif nargout >= 5 || (~isempty(showHist) && showHist)
       dispLevel = 1;
-   else
-      dispLevel = 0;
+   end
+   if isempty(showHist)
+      showHist = dispLevel > 0;
+   end
+
+   % Process profile
+   profile0 = {};
+   if isfield(opts, 'profile')
+      if isnumeric(opts.profile) && numel(opts.profile) == 1 && opts.profile == 1
+         opts.profile = {'init','update_Q','update_projection','solve_H','check_convergence','prepare_candidates','Bortho','restart'};
+      end
+      profile0 = opts.profile;
+      keyboard
+      opts.profile = get_regex_from_cell(opts.profile);
    end
 
    % Rename tol, maxit and p as eps, maxMatvecs and maxBasisSize
@@ -421,94 +491,124 @@ function [varargout] = primme_svds(varargin)
    % Create primme_params
    primme_svds = primme_mex('primme_svds_initialize');
 
-   % Set other options in primme_svds_params
-   primme_svds_set_members(opts, primme_svds);
+   % This long try-catch make sure that primme_svds_free is called
+   try 
+      % Set other options in primme_svds_params
+      primme_svds_set_members(opts, primme_svds);
 
-   % Set method in primme_svds_params
-   primme_mex('primme_svds_set_method', method, primmeStage0method, ...
-                                        primmeStage1method, primme_svds);
+      % Set method in primme_svds_params
+      primme_mex('primme_svds_set_method', method, primmeStage0method, ...
+                                           primmeStage1method, primme_svds);
 
-   % Set monitor and shared variables with the monitor
-   hist = [];
-   %locking = primme_mex('primme_get_member', primme, 'locking');
-   nconv = 0;
-   return_hist = 0;
-   if dispLevel > 0
-      % NOTE: Octave doesn't support function handler for nested functions
-      primme_mex('primme_svds_set_member', primme_svds, 'monitorFun', ...
-            @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11));
-   end
-   if nargout >= 5
-      return_hist = 1;
-   elseif dispLevel == 1
-      fprintf('#MV\tTime\t\tNConv\tStage\n');
-   elseif dispLevel == 2
-      fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\n');
-   elseif dispLevel == 3
-      fprintf('#MV\tTime\t\tNConv\tStage\tIdx\tValue\tRes\tQMR_Res\n');
-   end
+      % Set monitor and shared variables with the monitor
+      hist = [];
+      histSize = 0;
+      prof = struct();
+      nconv = 0;
+      return_hist = nargout >= 6;
+      return_prof = nargout >= 5;
 
-   % Select solver
-   if Adouble
-      if Acomplex
-         type = 'z';
-      else
-         type = 'd';
+      if dispLevel > 0 || return_prof
+         % NOTE: Octave doesn't support function handler for nested functions
+         primme_mex('primme_svds_set_member', primme_svds, 'monitorFun', ...
+               @(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13)record_history(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13));
       end
-   else
-      if Acomplex
-         type = 'c';
-      else
-         type = 's';
+      if showHist
+         if dispLevel == 1
+            fprintf('#  MV\t Time\t NConv\t Stage\t Value\t  Res\n');
+         elseif dispLevel == 2
+            fprintf('#  MV\t Time\t NConv\t Stage\t  Idx\t Value\t  Res\n');
+         elseif dispLevel == 3
+            fprintf('#  MV\t Time\t NConv\t Stage\t  Idx\t Value\t  Res\t  QMR_Res\n');
+         end
       end
-   end
-   xprimme_svds = [type 'primme_svds'];
 
-   % Call xprimme_svds
-   [ierr, svals, norms, svecsl, svecsr] = primme_mex(xprimme_svds, init{1}, ...
-               init{2}, primme_svds); 
+      % Select solver
+      if Adouble
+         if Acomplex
+            type = 'z';
+         else
+            type = 'd';
+         end
+      else
+         if Acomplex
+            type = 'c';
+         else
+            type = 's';
+         end
+      end
+      if Agpu
+         type = ['magma_' type];
+      end
+      xprimme_svds = [type 'primme_svds'];
 
-   % Process error code and return the required arguments
-   if mod(ierr, -100) == -3 % if it is -3, -103 or -203
-      warning([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
-   elseif ierr ~= 0
-      error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
-   end
-   
-   % Return smallest or interior singular triplets in descending order
-   if strcmp(opts.target,'primme_svds_smallest') || strcmp(opts.target,'primme_svds_closest_abs')
-      [svals,ind] = sort(svals,'descend');
-      svecsl = svecsl(:,ind);
-      svecsr = svecsr(:,ind);
-   end
+      % Call xprimme_svds
+      [ierr, svals, norms, svecsl, svecsr] = primme_mex(xprimme_svds, init{1}, ...
+                  init{2}, primme_svds); 
 
-   if nargout <= 1
-      varargout{1} = svals;
-   elseif nargout == 2
-      varargout{1} = svals;
-      varargout{2} = norms;
-   elseif nargout >= 3
-      varargout{1} = svecsl;
-      varargout{2} = diag(svals);
-      varargout{3} = svecsr;
+      % Process error code and return the required arguments
+      if mod(ierr, -100) == -3 % if it is -3, -103 or -203
+         warning([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+      elseif ierr ~= 0
+         error([xprimme_svds ' returned ' num2str(ierr) ': ' primme_svds_error_msg(ierr)]);
+      end
+      
+      % Return smallest or interior singular triplets in descending order
+      if strcmp(opts.target,'primme_svds_smallest') || strcmp(opts.target,'primme_svds_closest_abs')
+         [svals,ind] = sort(svals,'descend');
+         svecsl = svecsl(:,ind);
+         svecsr = svecsr(:,ind);
+      end
+
+      if nargout <= 1
+         varargout{1} = svals;
+      elseif nargout == 2
+         varargout{1} = svals;
+         varargout{2} = norms;
+      elseif nargout >= 3
+         varargout{1} = svecsl;
+         varargout{2} = diag(svals);
+         varargout{3} = svecsr;
+      end
+      if (nargout >= 4)
+         varargout{4} = norms;
+      end
+      if (nargout >= 5)
+         if return_prof
+            stats = make_nice_profile(prof, profile0);
+         else
+            stats = struct();
+         end
+         stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
+         stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
+         stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
+         varargout{5} = stats;
+      end
+      if (nargout >= 6)
+         varargout{6} = hist(1:histSize,:);
+      end
+   catch ME
+      primme_mex('primme_svds_free', primme_svds);
+      rethrow(ME)
    end
-   if (nargout >= 4)
-      varargout{4} = norms;
-   end
-   if (nargout >= 5)
-      stats = struct();
-      stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
-      stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
-      stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
-      varargout{5} = stats;
-   end
-   if (nargout >= 6)
-      varargout{6} = hist;
-   end
+   primme_mex('primme_svds_free', primme_svds);
 
    function record_history(basisSvals, basisFlags, iblock, basisNorms, ...
          numConverged, lockedSvals, lockedFlags, lockedNorms, inner_its, ...
-         LSRes, event, stage)
+         LSRes, msg, time, event, stage)
+
+      if event == 6 % primme_event_message
+         warning(['PRIMME: ' msg]);
+         return;
+      elseif event == 7 % primme_event_profiler
+         if return_prof
+            if ~isfield(prof, msg)
+               prof.(msg) = [];
+            end
+            prof.(msg) = [prof.(msg) time];
+         end
+         return;
+      end
 
       numMatvecs = double(primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs'));
       methodStage2 = double(primme_mex('primme_svds_get_member', primme_svds, 'methodStage2'));
@@ -524,7 +624,7 @@ function [varargout] = primme_svds(varargin)
       end
       maxInnerIterations = primme_mex('primme_get_member', primme, 'correction_maxInnerIterations');
       elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
-      hist_rows = size(hist, 1);
+      histline = [];
       if event == 0 || (event == 4 && ~locking) || event == 5
          if ~locking && ~isempty(numConverged)
             nconv = double(numConverged);
@@ -534,15 +634,22 @@ function [varargout] = primme_svds(varargin)
       end
       stage = double(stage) + 1;
       if dispLevel == 0
+         % Do nothing
       elseif dispLevel == 1
-         if (event == 4 && ~locking) || event == 5
-            hist = [hist; numMatvecs elapsedTime nconv stage];
+         if event == 4 && ~locking
+            for i=1:numel(iblock)
+               histline = [histline; numMatvecs elapsedTime nconv stage basisSvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+            end
+         elseif event == 5
+            histline = [histline; numMatvecs elapsedTime nconv stage lockedSvals(end) lockedNorms(end)];
          end
       elseif dispLevel == 2
-         if event == 0 || (nconv == opts.numSvals && ((event == 4 && ~locking) || event == 5))
+         if event == 0 || event == 4 && ~locking
             for i=1:numel(iblock)
-               hist = [hist; numMatvecs elapsedTime nconv stage i basisSvals(iblock(i)+1) basisNorms(iblock(i)+1)];
+               histline = [histline; numMatvecs elapsedTime nconv stage i basisSvals(iblock(i)+1) basisNorms(iblock(i)+1)];
             end
+         elseif event == 5
+            histline = [histline; numMatvecs elapsedTime nconv stage 1 lockedSvals(end) lockedNorms(end)];
          end
       elseif dispLevel == 3
          if event == 1
@@ -553,22 +660,31 @@ function [varargout] = primme_svds(varargin)
                value = nan;
                resNorm = nan;
             end
-            hist = [hist; numMatvecs elapsedTime nconv stage nan value resNorm  LSRes];
-         elseif (maxInnerIterations == 0 || nconv == opts.numSvals) && (event == 0 || ((event == 4 && ~locking) || event == 5))
+            histline = [histline; numMatvecs elapsedTime nconv stage nan value resNorm  LSRes];
+         elseif (maxInnerIterations == 0 || nconv == opts.numSvals) && (event == 0 || (event == 4 && ~locking))
             for i=1:numel(iblock)
                hist = [hist; numMatvecs elapsedTime nconv stage i basisSvals(iblock(i)+1) basisNorms(iblock(i)+1) nan];
             end
+         elseif (maxInnerIterations == 0 || nconv == opts.numSvals) && event == 5
+               histline = [histline; numMatvecs elapsedTime nconv stage 1 lockedSvals(end) lockedNorms(end) nan];
          end
       end
-      if ~return_hist && size(hist,1) > hist_rows
-         template{1} = '%d\t%f\t%d\t%d\n';
-         template{2} = '%d\t%f\t%d\t%d\t%d\t%g\t%e\n';
-         template{3} = '%d\t%f\t%d\t%d\t%d\t%g\t%e\t%e\n';
-         for i=hist_rows+1:size(hist,1)
-            a = num2cell(hist(i,:));
+      if showHist && size(histline,1) > 0
+         template{1} = '%7d\t%-5.g\t%7d\t%7d\t%-5.1g\t%-5.1e\n';
+         template{2} = '%7d\t%-5.g\t%7d\t%7d\t%7d\t%-5.4g\t%5.1e\n';
+         template{3} = '%7d\t%-5.g\t%7d\t%7d\t%7d\t%-5.4g\t%5.1e\t%5.1e\n';
+         for i=1:size(histline,1)
+            a = num2cell(histline(i,:));
             fprintf(template{dispLevel}, a{:});
          end
-         hist = [];
+      end
+      if return_hist
+         if size(hist,1) < histSize + size(histline,1)
+            l = max(histSize*2, histSize + size(histline,1));
+            hist(l,size(histline,2)) = 0;
+         end
+         hist(histSize+1:histSize+size(histline,1),:) = histline;
+         histSize = histSize + size(histline,1);
       end
    end
 end
@@ -686,48 +802,53 @@ end
 function s = primme_error_msg(errorCode)
 
    msg = {};
-   msg{39+  0} = 'success';
-   msg{39+  1} = 'reported only amount of required memory';
-   msg{39+ -1} = 'failed in allocating int or real workspace';
-   msg{39+ -2} = 'malloc failed in allocating a permutation integer array';
-   msg{39+ -3} = 'main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in stderr';
-   msg{39+ -4} = 'argument primme is NULL';
-   msg{39+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
-   msg{39+ -6} = 'numProcs' < 1';
-   msg{39+ -7} = 'matrixMatvec is NULL';
-   msg{39+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
-   msg{39+ -9} = 'not used';
-   msg{39+-10} = 'numEvals > n';
-   msg{39+-11} = 'numEvals < 0';
-   msg{39+-12} = 'eps > 0 and eps < machine precision';
-   msg{39+-13} = 'target is not properly defined';
-   msg{39+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
-   msg{39+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
-   msg{39+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
-   msg{39+-17} = 'maxBasisSize < 2';
-   msg{39+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
-   msg{39+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
-   msg{39+-20} = 'maxPrevRetain < 0';
-   msg{39+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
-   msg{39+-22} = 'initSize < 0';
-   msg{39+-23} = 'locking == 0 and initSize > maxBasisSize';
-   msg{39+-24} = 'locking and initSize > numEvals';
-   msg{39+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
-   msg{39+-26} = 'minRestartSize >= n';
-   msg{39+-27} = 'printLevel < 0 or printLevel > 5';
-   msg{39+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
-   msg{39+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
-   msg{39+-30} = 'evals is NULL, but not evecs and resNorms';
-   msg{39+-31} = 'evecs is NULL, but not evals and resNorms';
-   msg{39+-32} = 'resNorms is NULL, but not evecs and evals';
-   msg{39+-33} = 'locking == 0 and minRestartSize < numEvals';
-   msg{39+-34} = 'ldevecs is less than nLocal';
-   msg{39+-35} = 'ldOPs is non-zero and less than nLocal';
-   msg{39+-36} = 'not enough memory for realWork';
-   msg{39+-37} = 'not enough memory for intWork';
-   msg{39+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
+   msg{45+  0} = 'success';
+   msg{45+  1} = 'reported only amount of required memory';
+   msg{45+ -1} = 'unexpected failure';
+   msg{45+ -2} = 'memory allocation failure';
+   msg{45+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
+   msg{45+ -4} = 'argument primme is NULL';
+   msg{45+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
+   msg{45+ -6} = 'numProcs' < 1';
+   msg{45+ -7} = 'matrixMatvec is NULL';
+   msg{45+ -8} = 'applyPreconditioner is NULL and precondition is not NULL';
+   msg{45+ -9} = 'not used';
+   msg{45+-10} = 'numEvals > n';
+   msg{45+-11} = 'numEvals < 0';
+   msg{45+-12} = 'eps > 0 and eps < machine precision';
+   msg{45+-13} = 'target is not properly defined';
+   msg{45+-14} = 'target is one of primme_largest_abs, primme_closest_geq, primme_closest_leq or primme_closest_abs but numTargetShifts <= 0 (no shifts)';
+   msg{45+-15} = 'target is one of primme_largest_abs primme_closest_geq primme_closest_leq or primme_closest_abs but targetShifts is NULL  (no shifts array)';
+   msg{45+-16} = 'numOrthoConst < 0 or numOrthoConst > n (no free dimensions left)';
+   msg{45+-17} = 'maxBasisSize < 2';
+   msg{45+-18} = 'minRestartSize < 0 or minRestartSize shouldn''t be zero';
+   msg{45+-19} = 'maxBlockSize < 0 or maxBlockSize shouldn''t be zero';
+   msg{45+-20} = 'maxPrevRetain < 0';
+   msg{45+-21} = 'scheme is not one of *primme_thick* or *primme_dtr*';
+   msg{45+-22} = 'initSize < 0';
+   msg{45+-23} = 'locking == 0 and initSize > maxBasisSize';
+   msg{45+-24} = 'locking and initSize > numEvals';
+   msg{45+-25} = 'maxPrevRetain + minRestartSize >= maxBasisSize';
+   msg{45+-26} = 'minRestartSize >= n';
+   msg{45+-27} = 'printLevel < 0 or printLevel > 5';
+   msg{45+-28} = 'convTest is not one of primme_full_LTolerance primme_decreasing_LTolerance primme_adaptive_ETolerance or primme_adaptive';
+   msg{45+-29} = 'convTest == primme_decreasing_LTolerance and relTolBase <= 1';
+   msg{45+-30} = 'evals is NULL, but not evecs and resNorms';
+   msg{45+-31} = 'evecs is NULL, but not evals and resNorms';
+   msg{45+-32} = 'resNorms is NULL, but not evecs and evals';
+   msg{45+-33} = 'locking == 0 and minRestartSize < numEvals';
+   msg{45+-34} = 'ldevecs is less than nLocal';
+   msg{45+-35} = 'ldOPs is non-zero and less than nLocal';
+   msg{45+-36} = 'not enough memory for realWork';
+   msg{45+-37} = 'not enough memory for intWork';
+   msg{45+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
+   msg{45+-40} = 'factorization failure';
+   msg{45+-41} = 'user cancelled execution';
+   msg{45+-42} = 'orthogonalization failure';
+   msg{45+-43} = 'parallel failure';
+   msg{45+-44} = 'unavailable functionality';
 
-   errorCode = errorCode + 39;
+   errorCode = errorCode + 45;
    if errorCode > 0 && errorCode <= numel(msg)
       s = msg{errorCode};
    else
@@ -737,31 +858,35 @@ end
 
 function s = primme_svds_error_msg(errorCode)
    msg = {};
-   msg{22+  0} = 'success';
-   msg{22+  1} = 'reported only amount of required memory';
-   msg{22+ -1} = 'failed in allocating int or real workspace';
-   msg{22+ -2} = 'malloc failed in allocating a permutation integer array';
-   msg{22+ -3} = 'main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in stderr';
-   msg{22+ -4} = 'primme_svds is NULL';
-   msg{22+ -5} = 'Wrong value for m or n or mLocal or nLocal';
-   msg{22+ -6} = 'Wrong value for numProcs';
-   msg{22+ -7} = 'matrixMatvec is not set';
-   msg{22+ -8} = 'applyPreconditioner is not set but precondition == 1 ';
-   msg{22+ -9} = 'numProcs >1 but globalSumDouble is not set';
-   msg{22+-10} = 'Wrong value for numSvals, it''s larger than min(m, n)';
-   msg{22+-11} = 'Wrong value for numSvals, it''s smaller than 1';
-   msg{22+-13} = 'Wrong value for target';
-   msg{22+-14} = 'Wrong value for method';
-   msg{22+-15} = 'Not supported combination of method and methodStage2';
-   msg{22+-16} = 'Wrong value for printLevel';
-   msg{22+-17} = 'svals is not set';
-   msg{22+-18} = 'svecs is not set';
-   msg{22+-19} = 'resNorms is not set';
-   msg{22+-20} = 'not enough memory for realWork';
-   msg{22+-21} = 'not enough memory for intWork';
+   msg{45+  0} = 'success';
+   msg{45+ -1} = 'unexpected failure';
+   msg{45+ -2} = 'memory allocation failure';
+   msg{45+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
+   msg{45+ -4} = 'primme_svds is NULL';
+   msg{45+ -5} = 'Wrong value for m or n or mLocal or nLocal';
+   msg{45+ -6} = 'Wrong value for numProcs';
+   msg{45+ -7} = 'matrixMatvec is not set';
+   msg{45+ -8} = 'applyPreconditioner is not set but precondition == 1 ';
+   msg{45+ -9} = 'numProcs >1 but globalSumDouble is not set';
+   msg{45+-10} = 'Wrong value for numSvals, it''s larger than min(m, n)';
+   msg{45+-11} = 'Wrong value for numSvals, it''s smaller than 1';
+   msg{45+-13} = 'Wrong value for target';
+   msg{45+-14} = 'Wrong value for method';
+   msg{45+-15} = 'Not supported combination of method and methodStage2';
+   msg{45+-16} = 'Wrong value for printLevel';
+   msg{45+-17} = 'svals is not set';
+   msg{45+-18} = 'svecs is not set';
+   msg{45+-19} = 'resNorms is not set';
+   msg{45+-20} = 'not enough memory for realWork';
+   msg{45+-21} = 'not enough memory for intWork';
+   msg{45+-40} = 'factorization failure';
+   msg{45+-41} = 'user cancel execution';
+   msg{45+-42} = 'orthogonalization failure';
+   msg{45+-43} = 'parallel failure';
+   msg{45+-44} = 'unavailable functionality';
 
    if errorCode >= -100
-      errorCode = errorCode + 22;
+      errorCode = errorCode + 45;
       if errorCode > 0 && errorCode < numel(msg)
          s = msg{errorCode};
       else
@@ -771,5 +896,77 @@ function s = primme_svds_error_msg(errorCode)
       s = ['Error from first stage: ' primme_error_msg(errorCode+100)];
    else
       s = ['Error from second stage: ' primme_error_msg(errorCode+200)];
+   end
+end
+
+function x = replace_globs(x)
+   x = strrep(strrep(strrep(x, '??', '%'), '++', '%'), '**', '%');
+   x = strrep(strrep(strrep(x, '*', '[^~]*'), '+', '[^~]*'), '?', '[^~]*');
+   x = strrep(x, '%', '.*');
+end
+
+function r = get_regex(c)
+   if ~ischar(c)
+      error('Not valid regex');
+      return;
+   end
+  
+   r = ['^~[^~]*' strjoin(cellfun(@(x)sprintf('~%s[^~]*', replace_globs(x)), strsplit(c, '/'), 'UniformOutput',false), '') '$'];
+end
+
+function r = get_regex_from_cell(c)
+   if ischar(c)
+      r = c;
+   elseif iscell(c)
+      r = strjoin(cellfun(@(x)['\(' get_regex(x) '\)'],c,'UniformOutput',false),'\\|');
+   else
+      error('Not valid profile');
+   end
+end
+
+function r = get_group_name(f, s)
+   s = strsplit(['?/' s], '/');
+   r = {};
+   for si = 1:numel(s)
+      p = sprintf('^~%s[^~]*', replace_globs(s{si}));
+      [~,l] = regexp(f, p);
+      d = f(2:l);
+      if strfind(s{si}, '?')
+         r{end+1} = s{si};
+      elseif strfind(s{si}, '**')
+         r{end+1} = strjoin(cellfun(@(x)regexp(x,'[^(]+','match','once'), strsplit(d,'~'), 'UniformOutput',false), '/');
+      elseif strfind(s{si}, '+')
+         r{end+1} = d;
+      elseif strfind(s{si}, '*')
+         r{end+1} = regexp(d,'[^(]+','match','once');
+      else
+         r{end+1} = s{si};
+      end
+      f = f(l+1:end);
+   end
+   r = strjoin(r(2:end), '/');
+end
+
+function r = make_nice_profile(prof, groups)
+   if ~iscell(groups)
+      r = prof;
+      return;
+   end
+
+   r = struct();
+   func_names = fieldnames(prof);
+   for fi = 1:numel(func_names);
+      f = func_names{fi};
+      for s = groups
+         s = s{1};
+         if ~isempty(regexp(f, get_regex(s)))
+            g = get_group_name(f, s);
+            if ~isfield(r, g)
+               r.(g) = [];
+            end
+            r.(g) = [r.(g) prof.(f)];
+            continue
+         end
+      end
    end
 end

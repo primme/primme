@@ -2,6 +2,8 @@
 # Makefile for building PRIMME MEX
 #-------------------------------------------------------------
 
+include ../Make_flags
+
 # Name of MEX source file
 MEXNAME = primme_mex
 
@@ -9,11 +11,21 @@ MEXNAME = primme_mex
 INCLUDE = -I../include
 LIBS = -L../lib -lprimme -lm
 
+ifeq ($(PRIMME_WITH_MAGMA),yes)
+INCLUDE += -I$(MAGMADIR)/include
+LIBS += -L$(MAGMADIR)/lib -lmagma  \
+        -L$(CUDADIR)/lib64 -lcublas -lcudart
+endif
+
 #------------------------------------------------------------
 # MATLAB configuration
 
 # MATLAB MEX compiler
 MEX ?= mex
+ifneq ($(findstring MEX,$(shell $(MEX) -version 2>&1 || true)),MEX)
+   MEX_ERROR = $(error Invalid MATLAB`s mex, $(MEX). Set MEX=/path/to/Matlab/bin/mex)
+endif
+
 # Linux
 # MEX = /usr/local/matlab/bin/mex
 #
@@ -25,6 +37,7 @@ MEX ?= mex
 MEXFLAGS += -O -largeArrayDims
 # For debug:
 # MEXFLAGS += -g -largeArrayDims
+MW_NVCC_PATH ?= $(CUDADIR)/bin
 
 # Extra libraries to link
 MEXLIBS += -lmwlapack -lmwblas
@@ -47,7 +60,12 @@ OCTAVE ?= octave --no-gui -H -q
 all: matlab
 
 matlab:
+	$(MEX_ERROR)
 	$(MEX) $(MEXFLAGS) $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp
+
+matlab-cuda:
+	$(MEX_ERROR)
+	$(MATLAB) -nodesktop -nodisplay -nojvm -r "setenv('MW_NVCC_PATH','$(MW_NVCC_PATH)'); try;mexcuda $(MEXFLAGS) -DUSE_GPUARRAY $(LIBS) $(MEXLIBS) $(INCLUDE) -output $(MEXNAME) $(MEXNAME).cpp; catch me,disp(getReport(me));end, exit" < /dev/null
 
 octave:
 	$(MKOCTFILE) --mex $(OCTFLAGS) $(LIBS) $(INCLUDE) $(MEXNAME).cpp

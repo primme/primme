@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  **********************************************************************
- * File: primme_interface.h
+ * File: primme_svds_interface.h
  *
  * Purpose - Contains public definitions and prototypes implemented in
  *           primme_svds_interface.c.
@@ -40,6 +40,6 @@
 #include "primme.h"
 
 void primme_svds_set_defaults(primme_svds_params *primme_svds);
-#define Sprimme_svds CONCAT(SCALAR_PRE,primme_svds)
+#define Sprimme_svds CONCAT(SCALAR_SUF,_svds)
 
 #endif

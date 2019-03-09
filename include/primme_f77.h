@@ -1,5 +1,5 @@
 C*******************************************************************************
-C  Copyright (c) 2017, College of William & Mary
+C  Copyright (c) 2018, College of William & Mary
 C  All rights reserved.
 C
 C  Redistribution and use in source and binary forms, with or without

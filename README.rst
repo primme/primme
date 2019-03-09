@@ -2,40 +2,50 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ========================================================
 
-PRIMME, pronounced as *prime*, computes
-a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. 
-It can also compute singular values and vectors of a square or rectangular matrix. 
-It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
-It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+PRIMME, pronounced as *prime*, is a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
+PRIMME is especially optimized for large, difficult problems.
+Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
+It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence. 
 PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
 
 Making and Linking
 ------------------
 
-`Make_flags` has the flags and compilers used to make `libprimme.a`:
+To generate the static and the shared library type::
 
-* `CC`, compiler program such as ``gcc``, ``clang`` or ``icc``.
-* `CFLAGS`, compiler options such as ``-g`` or ``-O3``.
+    make lib     #  builds lib/libprimme.a
+    make solib   #  builds lib/libprimme.so (or lib/libprimme.dylib)
 
-After customizing `Make_flags`, type this to generate `libprimme.a`::
+The shared library is generated with the action `solib` instead. Usual flags are supported
 
-    make lib
+* `CC`, compiler program such as ``gcc``, ``clang`` or ``icc``
+* `CFLAGS`, compiler options such as ``-g`` or ``-O3``
+* `CUDADIR`, directory of CUDA installation (optional)
+* `MAGMADIR`, directory of MAGMA_ installation (optional)
+* `PRIMME_WITH_HALF`, activates support for half precision if it set to `yes`;
+  compiler supporting `__fp16` is required, e.g., clang.
 
-Making can be also done at the command line::
+The flags can be indicated by customizing `Make_flags` or directly introduced at the command line::
 
     make lib CC=clang CFLAGS='-O3'
 
-Optionally for building some of the external interfaces just do::
+For building the external interfaces just do::
 
-    make matlab
+    make matlab       # Set MATLAB=/path/Matlab/bin/matlab MEX=/path/Matlab/bin/mex if needed
+    make matlab-cuda  # Requires to set CUDADIR and MAGMADIR
     make octave
     make python
     make R_install
 
-Alternatively to install the development version of PRIMME on R::
+We provide packages of the released version for R (see `R PRIMME`_)::
 
-    library(devtools)
-    install_github("primme/primme", subdir="R")
+    install.packages('PRIMME')
+
+and Python (see `Python primme`_)::
+
+    pip install numpy   # if numpy is not installed yet
+    pip install scipy   # if scipy is not installed yet
+    pip install primme
 
 C Library Interface
 -------------------
@@ -64,9 +74,9 @@ The call arguments are:
 * `resNorms`, array to return the residual norms of the triplets; and
 * `primme_svds`, structure that specify the matrix problem, which values are wanted and several method options.
 
-There are available versions for complex double, float and float double.
+There are available versions for `half` and `float` and complex variants.
 See documentation in `readme.txt` file and in ``doc`` directory; also it is online at doc_.
-The `examples` directory is plenty of self-contained examples in C, C++ and F77, and some of them using PETSc_.
+The `examples` directory has several self-contained examples in C, C++ and F77, some of them using PETSc_ and MAGMA_.
 
 Citing this code 
 ----------------
@@ -80,7 +90,7 @@ Please cite (bibtex_):
 
 * L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-Performance
   Preconditioned SVD Solver for Accurate Large-Scale Computations*,
-  J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
+  SIAM J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
 More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
@@ -125,5 +135,8 @@ the webpage http://www.cs.wm.edu/~andreas/software.
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/software
 .. _`github`: https://github.com/primme/primme
 .. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
+.. _`R PRIMME`: https://cran.r-project.org/web/packages/PRIMME/index.html
+.. _`Python primme`: https://pypi.org/project/primme/
 .. _PETSc : http://www.mcs.anl.gov/petsc/
 .. _`bibtex`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
+.. _MAGMA: http://icl.cs.utk.edu/magma/

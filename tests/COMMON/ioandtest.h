@@ -1,6 +1,6 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2017 College of William & Mary,
+ *   Copyright (C) 2018 College of William & Mary,
  *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
@@ -29,21 +29,22 @@
 #ifndef IOANDTEST_H
 #define IOANDTEST_H
 
-#include "primme_svds.h"
+#include "primme.h"
 #include "shared_utils.h"
  
+primme_context get_dummy_context();
 int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
-                   SCALAR *evecs, double *rnorms, int *perm, int checkInterface);
+                   SCALAR *evecs, double *rnorms, int *perm);
 int writeBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, int *perm,
                                     primme_params *primme);
 int readBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                    int n, int Xcols, int *Xcolsout, int nLocal,
-                                   int *perm, primme_params *primme);
+                                   int *perm);
 int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_svds, double *svals,
                         SCALAR *svecs, double *rnorms, int *perm);
 int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                        int m, int n, int Xcols, int *Xcolsout, int mLocal, int nLocal,
-                                       int *perm, primme_svds_params *primme_svds_out);
+                                       int *perm);
 int writeBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, int *perm,
                                     primme_svds_params *primme_svds);
 #endif

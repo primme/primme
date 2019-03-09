@@ -6,8 +6,11 @@ install:
 	./setup.py install
 
 # Test target: run the tests
-test: tests.py examples.py
-	python tests.py
+test: examples.py
+	$(PYTHON) examples.py
+
+all_tests: tests.py examples.py
+	$(PYTHON) tests.py
 
 # Clean target
 clean:

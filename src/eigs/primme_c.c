@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: primme.c
+ * File: primme_c.c
  *
  * Purpose - Real, SCALAR precision front end to the multimethod eigensolver
  *
@@ -54,31 +54,34 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>   /* mallocs, free */
-#include <stdio.h>    
 #include "numerical.h"
 #include "const.h"
 #include "primme_interface.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
-#include "wtime.h"
+#include "primme_c.h"
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
 #endif
 
-static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
-                       primme_params *primme);
+#ifdef SUPPORTED_TYPE
+
+static int check_params_coherence(primme_context ctx);
+static int coordinated_exit(int ret, primme_context ctx);
+static int check_input(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
 static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
    primme_params *primme, int *ierr);
 static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, primme_params *primme,
-      int *err);
+      int *inner_its, void *LSRes, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
 
+#endif /* SUPPORTED_TYPE */
 
 /*******************************************************************************
- * Subroutine Sprimme - This routine is a front end used to perform 
+ * Subroutine Xprimme - This routine is a front end used to perform 
  *    error checking on the input parameters, perform validation, 
  *    and make the call to main_iter. 
  *
@@ -113,11 +116,85 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
+int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
-   int *perm;
-   SCALAR *evecs = (SCALAR *)evecs_; /* Change type of evecs */
+#ifdef SUPPORTED_TYPE
+
+   /* Generate context */
+
+   primme_context ctx = primme_get_context(primme);
+
+   /* Set the current type as the default type for user's operators */
+
+   if (primme->matrixMatvec && primme->matrixMatvec_type == primme_op_default)
+      primme->matrixMatvec_type = PRIMME_OP_SCALAR;
+   if (primme->massMatrixMatvec && primme->massMatrixMatvec_type == primme_op_default)
+      primme->massMatrixMatvec_type = PRIMME_OP_SCALAR;
+   if (primme->applyPreconditioner && primme->applyPreconditioner_type == primme_op_default)
+      primme->applyPreconditioner_type = PRIMME_OP_SCALAR;
+   if (primme->globalSumReal && primme->globalSumReal_type == primme_op_default)
+      primme->globalSumReal_type = PRIMME_OP_SCALAR;
+   if (primme->broadcastReal && primme->broadcastReal_type == primme_op_default)
+      primme->broadcastReal_type = PRIMME_OP_SCALAR;
+   if (primme->convTestFun && primme->convTestFun_type == primme_op_default)
+      primme->convTestFun_type = PRIMME_OP_SCALAR;
+   if (primme->monitorFun && primme->monitorFun_type == primme_op_default)
+      primme->monitorFun_type = PRIMME_OP_SCALAR;
+
+   /* call primme for the internal working precision */
+
+   int ret;
+   primme_op_datatype t = primme->internalPrecision;
+   if (t == primme_op_default) t = PRIMME_OP_SCALAR;
+   switch (t) {
+#  ifdef SUPPORTED_HALF_TYPE
+   case primme_op_half:
+      ret = wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
+#  endif
+   case primme_op_float:
+      ret = wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
+   case primme_op_double:
+      ret = wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
+#  ifdef PRIMME_WITH_NATIVE_QUAD
+   case primme_op_quad:
+      ret = wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+            (void *)resNorms, ctx);
+      break;
+#  endif
+   default: ret = PRIMME_FUNCTION_UNAVAILABLE;
+   }
+
+   /* Free context */
+
+   primme_free_context(ctx);
+#else
+
+   (void)evals;
+   (void)evecs;
+   (void)resNorms;
+   (void)primme;
+
+   int ret = PRIMME_FUNCTION_UNAVAILABLE;
+#endif /* SUPPORTED_TYPE */
+
+   return ret;
+}
+
+
+#ifdef SUPPORTED_TYPE
+
+TEMPLATE_PLEASE
+int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
 
    /* zero out the timer */
    double t0 = primme_wTimer();
@@ -134,12 +211,15 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    if (primme->orth == primme_orth_default) {
 #ifdef USE_HOST
-      /* By default PRIMME tries to use block orthogonalization for the host. */
-      /* The current code for block orthogonalization does not produce */
-      /* a machine precision orthonormal basis. So the use of explicit */
-      /* orthogonalization is recommended */
+      /* The current code for block orthogonalization does not produce     */
+      /* a machine precision orthonormal basis. So block orthogonalization */
+      /* is used only when V'BV is computed explicitly.                    */
 
-      primme->orth = primme_orth_explicit_I;
+      if (primme->maxBlockSize > 1) {
+         primme->orth = primme_orth_explicit_I;
+      } else {
+         primme->orth = primme_orth_implicit_I;
+      }
 #else
 
       /* Observed orthogonality issues finding the largest/smallest values in  */
@@ -148,15 +228,29 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
 #  ifdef USE_FLOAT
       if (primme->projectionParams.projection == primme_proj_RR &&
-            (primme->target == primme_largest ||
-             primme->target == primme_smallest ||
-             primme->target == primme_largest_abs)) {
+                  (primme->target == primme_largest ||
+                        primme->target == primme_smallest ||
+                        primme->target == primme_largest_abs) ||
+            primme->maxBlockSize > 1) {
          primme->orth = primme_orth_explicit_I;
       }
       else
 #  endif
          primme->orth = primme_orth_implicit_I;
 #endif
+   }
+
+   /* If we are free to choose the leading dimension of V and W, use    */
+   /* a multiple of PRIMME_BLOCK_SIZE. This may improve the performance */
+   /* of Num_update_VWXR_Sprimme and Bortho_block_Sprimme.              */
+
+   if (primme->ldOPs == -1) {
+      if (PRIMME_BLOCK_SIZE < INT_MAX) {
+         primme->ldOPs = min(((primme->nLocal + PRIMME_BLOCK_SIZE - 1)
+                  /PRIMME_BLOCK_SIZE)*PRIMME_BLOCK_SIZE, primme->nLocal);
+      } else {
+         primme->ldOPs = primme->nLocal;
+      }
    }
 
    /* Deprecated input:                                              */
@@ -179,6 +273,7 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    if (!primme->convTestFun) {
       primme->convTestFun = convTestFunAbsolute;
+      primme->convTestFun_type = PRIMME_OP_SCALAR;
       if (primme->eps == 0.0) {
          primme->eps = MACHINE_EPSILON*1e4;
       }
@@ -188,44 +283,48 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
    if (!primme->monitorFun) {
       primme->monitorFun = default_monitor;
+      primme->monitorFun_type = PRIMME_OP_SCALAR;
    }
-
-   /* Generate context */
-
-   primme_context ctx = primme_get_context(primme);
 
    /* Check primme input data for bounds, correct values etc. */
 
-   int ret = check_input(evals, evecs, resNorms, primme);
-   if (ret != 0) return ret;
+   CHKERR(coordinated_exit(check_params_coherence(ctx), ctx));
+   CHKERR(check_input(evals, evecs, resNorms, primme))
+       
+   /* Cast evals, evecs and resNorms to working precision */
 
-   /* --------------------------------------------------------- */
-   /* Allocate workspace that will be needed locally by Sprimme */
-   /* --------------------------------------------------------- */
-   CHKERR(Num_malloc_iprimme(primme->numEvals, &perm, ctx));
+   HREAL *evals0, *resNorms0;
+   SCALAR *evecs0;
+   CHKERR(Num_matrix_astype_RHprimme(evals, 1, primme->numEvals, 1, input_type,
+         (void **)&evals0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
+         0 /* not copy */, ctx));
+   PRIMME_INT ldevecs0;
+   CHKERR(Num_matrix_astype_Sprimme(evecs, primme->nLocal,
+         max(primme->numEvals, primme->initSize), primme->ldevecs, input_type,
+         (void **)&evecs0, &ldevecs0, PRIMME_OP_SCALAR, 1 /* alloc */,
+         primme->initSize > 0 ? 1 : 0 /* copy? */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals, 1, input_type,
+         (void **)&resNorms0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
+         0 /* not copy */, ctx));
 
-   /*----------------------------------------------------------------------*/
-   /* Call the solver                                                      */
-   /*----------------------------------------------------------------------*/
+   /* Call the solver */
 
-   CHKERR(main_iter_Sprimme(
-         evals, perm, evecs, primme->ldevecs, resNorms, t0, &ret, ctx));
+   int ret;
+   CHKERR(coordinated_exit(
+         main_iter_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, ctx),
+         ctx));
 
-   /*----------------------------------------------------------------------*/
-   /* If locking is engaged, the converged Ritz vectors are stored in the  */
-   /* order they converged.  They must then be permuted so that they       */
-   /* correspond to the sorted Ritz values in evals.                       */
-   /*----------------------------------------------------------------------*/
+   /* Copy back evals, evecs and resNorms */
 
-   CHKERR(permute_vecs_Sprimme(&evecs[primme->numOrthoConst * primme->ldevecs],
-            primme->nLocal, primme->initSize, primme->ldevecs, perm,
-            ctx));
-
-   CHKERR(Num_free_iprimme(perm, ctx));
-
-   /* Free context */
-
-   primme_free_context(ctx);
+   CHKERR(Num_matrix_astype_RHprimme(evals0, 1, primme->numEvals, 1,
+         PRIMME_OP_HREAL, (void **)&evals, NULL, input_type, -1 /* destroy */,
+         1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(evecs0, primme->nLocal, primme->initSize,
+         ldevecs0, PRIMME_OP_SCALAR, (void **)&evecs, &primme->ldevecs,
+         input_type, -1 /* destroy */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
+         PRIMME_OP_HREAL, (void **)&resNorms, NULL, input_type,
+         -1 /* destroy */, 1 /* copy */, ctx));
 
    primme->stats.elapsedTime = primme_wTimer() - t0;
    return ret;
@@ -233,9 +332,8 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
 
 
 /******************************************************************************
- *
- * static int check_input(double *evals, SCALAR *evecs, double *resNorms, 
- *                        primme_params *primme) 
+ * Subroutine check_input - checks the value of the input arrays, evals,
+ *    evecs, and resNorms and the values of primme_params.
  *
  * INPUT
  * -----
@@ -243,11 +341,11 @@ int Sprimme(HREAL *evals, HSCALAR *evecs_, HREAL *resNorms,
  *  primme                   the main structure of parameters 
  *
  * return value -   0    If input parameters in primme are appropriate
- *              -4..-32  Inappropriate input parameters were found
+ *                 <0    Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms, 
-                       primme_params *primme) {
+static int check_input(
+      void *evals, void *evecs, void *resNorms, primme_params *primme) {
    int ret;
    ret = 0;
 
@@ -277,7 +375,7 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
       ret = -13;
    else if (primme->numOrthoConst < 0 || primme->numOrthoConst > primme->n)
       ret = -16;
-   else if (primme->maxBasisSize <= 2 && primme->maxBasisSize+primme->numOrthoConst != primme->n) 
+   else if (primme->maxBasisSize < 2 && primme->n > 2) 
       ret = -17;
    else if (primme->minRestartSize < 0 || (primme->minRestartSize == 0
                                     && primme->n > 2 && primme->numEvals > 0))
@@ -343,9 +441,7 @@ static int check_input(HREAL *evals, SCALAR *evecs, HREAL *resNorms,
    }
 
    return ret;
-  /***************************************************************************/
-} /* end of check_input
-   ***************************************************************************/
+}
 
 /*******************************************************************************
  * Subroutine convTestFunAbsolute - This routine implements primme_params.
@@ -415,22 +511,26 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
 static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
-      int *inner_its, void *LSRes_, primme_event *event, primme_params *primme,
-      int *err)
-{
-   HREAL *basisEvals = (HREAL*)basisEvals_, *basisNorms = (HREAL*)basisNorms_,
-        *lockedEvals = (HREAL*)lockedEvals_, *lockedNorms = (HREAL*)lockedNorms_,
-        *LSRes = (HREAL*)LSRes_;
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err) {
+
+   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
+        *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
+        *LSRes = (XREAL*)LSRes_;
+
    assert(event != NULL && primme != NULL);
 
-   /* Only print report if this is proc zero */
-   if (primme->procID == 0 && primme->outputFile) {
+   /* Only print report if this is proc zero or it is profiling */
+   if (primme->outputFile &&
+         (primme->procID == 0 || *event == primme_event_profile)) {
       switch(*event) {
       case primme_event_outer_iteration:
-         assert(basisEvals && basisSize && basisFlags && iblock && blockSize
-                && basisNorms && numConverged);
-         assert(!primme->locking || (lockedEvals && numLocked && lockedFlags
-                 && lockedNorms));
+         assert(basisSize && (!*basisSize || (basisEvals && basisFlags)) &&
+                blockSize && (!*blockSize || (iblock && basisNorms)) &&
+                numConverged);
+         assert(!primme->locking ||
+                (numLocked && (!*numLocked || (lockedEvals && lockedFlags &&
+                                                    lockedNorms))));
          if (primme->printLevel >= 3) {
             int i;  /* Loop variable */
             int found;  /* Reported eigenpairs found */
@@ -445,7 +545,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                      "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
                      primme->stats.numOuterIterations, found, i,
                      primme->stats.numMatvecs, primme->stats.elapsedTime,
-                     basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
+                     (double)basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
             }
          }
          break;
@@ -466,8 +566,8 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                || (primme->locking && primme->printLevel >= 5))
             fprintf(primme->outputFile, 
                   "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
-                  *numConverged, iblock[0], basisEvals[iblock[0]],
-                  basisNorms[iblock[0]], primme->stats.numMatvecs,
+                  *numConverged, iblock[0], (double)basisEvals[iblock[0]],
+                  (double)basisNorms[iblock[0]], primme->stats.numMatvecs,
                   primme->stats.elapsedTime);
          break;
       case primme_event_locked:
@@ -475,8 +575,24 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          if (primme->printLevel >= 2) { 
             fprintf(primme->outputFile, 
                   "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
-                  *numLocked-1, lockedEvals[*numLocked-1], lockedNorms[*numLocked-1], 
+                  *numLocked-1, (double)lockedEvals[*numLocked-1], (double)lockedNorms[*numLocked-1], 
                   primme->stats.numMatvecs, primme->stats.elapsedTime, lockedFlags[*numLocked-1]);
+         }
+         break;
+      case primme_event_message:
+         assert(msg != NULL);
+         if (primme->printLevel >= 2) { 
+            fprintf(primme->outputFile, 
+                  "%s\n", msg);
+         }
+         break;
+      case primme_event_profile:
+         assert(msg != NULL && time != NULL);
+         if (primme->printLevel >= 3 && *time < 0.0) { 
+            fprintf(primme->outputFile, "entering in %s proc %d\n", msg, primme->procID);
+         }
+         if (primme->printLevel >= 2 && *time >= 0.0) { 
+            fprintf(primme->outputFile, "time for %s : %g proc %d\n", msg, *time, primme->procID);
          }
          break;
       default:
@@ -486,3 +602,100 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
    }
    *err = 0;
 }
+
+/******************************************************************************
+ * check_params_coherence - check that all processes has the same values in
+ *    critical parameters.
+ *
+ * INPUT
+ * -----
+ *  primme         the main structure of parameters 
+ *
+ * RETURN:
+ *    error code
+ ******************************************************************************/
+
+static int check_params_coherence(primme_context ctx) {
+   primme_params *primme = ctx.primme;
+
+   /* Check number of procs and procs with id zero */
+
+   HREAL aux[2] = {(HREAL)1.0, (HREAL)(ctx.procID == 0 ? 1.0 : 0.0)};
+   CHKERR(globalSum_RHprimme(aux, 2, ctx));
+   CHKERRM((aux[0] > 1) != (ctx.numProcs > 1),
+         -1, "numProcs does not match the actual number of processes");
+   CHKERRM(aux[1] > 1, -1, "There is not a single process with ID zero");
+
+   /* Check broadcast */
+
+   HREAL val = 1234, val0 = val;
+   CHKERR(broadcast_RHprimme(&val, 1, ctx));
+   CHKERRM(fabs(val - val0) > val0 * MACHINE_EPSILON * 1.3, -1,
+         "broadcast function does not work properly");
+
+   /* Check that all processes has the same value for the next params */
+
+   PARALLEL_CHECK(primme->n);
+   PARALLEL_CHECK(primme->numEvals);
+   PARALLEL_CHECK(primme->target);
+   PARALLEL_CHECK(primme->numTargetShifts);
+   PARALLEL_CHECK(primme->dynamicMethodSwitch);
+   PARALLEL_CHECK(primme->locking);
+   PARALLEL_CHECK(primme->initSize);
+   PARALLEL_CHECK(primme->numOrthoConst);
+   PARALLEL_CHECK(primme->maxBasisSize);
+   PARALLEL_CHECK(primme->minRestartSize);
+   PARALLEL_CHECK(primme->maxBlockSize);
+   PARALLEL_CHECK(primme->maxMatvecs);
+   PARALLEL_CHECK(primme->maxOuterIterations);
+   PARALLEL_CHECK(primme->aNorm);
+   PARALLEL_CHECK(primme->BNorm);
+   PARALLEL_CHECK(primme->invBNorm);
+   PARALLEL_CHECK(primme->eps);
+   PARALLEL_CHECK(primme->orth);
+   PARALLEL_CHECK(primme->initBasisMode);
+   PARALLEL_CHECK(primme->projectionParams.projection);
+   PARALLEL_CHECK(primme->restartingParams.maxPrevRetain);
+   PARALLEL_CHECK(primme->correctionParams.precondition);
+   PARALLEL_CHECK(primme->correctionParams.robustShifts);
+   PARALLEL_CHECK(primme->correctionParams.maxInnerIterations);
+   PARALLEL_CHECK(primme->correctionParams.projectors.LeftQ);
+   PARALLEL_CHECK(primme->correctionParams.projectors.LeftX);
+   PARALLEL_CHECK(primme->correctionParams.projectors.RightQ);
+   PARALLEL_CHECK(primme->correctionParams.projectors.RightX);
+   PARALLEL_CHECK(primme->correctionParams.projectors.SkewQ);
+   PARALLEL_CHECK(primme->correctionParams.projectors.SkewX);
+   PARALLEL_CHECK(primme->correctionParams.convTest);
+   PARALLEL_CHECK(primme->correctionParams.relTolBase);
+
+   return 0;
+}
+
+/******************************************************************************
+ * coordinated_exit - make sure that if main_iter returns error in some process,
+ *    then all processes return an error.
+ *
+ * INPUT
+ * -----
+ *  primme         the main structure of parameters 
+ *
+ * RETURN:
+ *    error code
+ ******************************************************************************/
+static int coordinated_exit(int ret, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   if (ret != PRIMME_PARALLEL_FAILURE && primme->globalSumReal) {
+      HREAL pret = (HREAL)(ret != 0 ? 1 : 0);
+      int count = 1, ierr = 0;
+      CHKERRM(
+            (primme->globalSumReal(&pret, &pret, &count, primme, &ierr), ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+      if (pret > 0.0) return ret ? ret : PRIMME_PARALLEL_FAILURE;
+   }
+
+   return ret;
+}
+
+#endif /* SUPPORTED_TYPE */

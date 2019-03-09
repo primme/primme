@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, College of William & Mary
+ * Copyright (c) 2016, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,9 @@
 #include <math.h>
 #include <assert.h>
 
+#include "magma_v2.h"
+#include "magmasparse.h"
+
 #include "primme.h"   /* header file for PRIMME SVDS too */ 
 
 #ifndef min
@@ -46,12 +49,10 @@
 #define max(A,B) ((A)>=(B)?(A):(B))
 #endif
 
-
-void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *transpose, primme_svds_params *primme_svds, int *ierr);
-void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                                int *mode, primme_svds_params *primme_svds, int *ierr);
-
+void magmaSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *trans,
+                    primme_svds_params *primme_svds, int *err);
+void magmaDummy(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode,
+                    primme_svds_params *primme_svds, int *err);
 
 int main (int argc, char *argv[]) {
 
@@ -66,40 +67,84 @@ int main (int argc, char *argv[]) {
                      /* PRIMME SVDS configuration struct */
 
    /* Other miscellaneous items */
+   int m=100,n=500; /* problem size */
    int ret;
-   int i;
+   int i, j, k;
    double mu = 1e-5;
+
+   int *col, *row;
+   double *val;
+
+   /* Write the Lauchli matrix in CSR
+
+      [ 1  1  1  1  1 ...   1 ],  ei = 1 - (1 - mu)*i/(min(m,n) - 1)
+      [e0  0  0  0  0 ...   0 ]
+      [ 0 e1  0  0  0 ...   0 ]
+      ...
+      [ 0  0  0  0  0 ... en-1]
+   */
+
+   row = (int*) calloc(m+1, sizeof(int));
+   col = (int*) calloc((m>0?n:0)+min(max(0,m-1),n), sizeof(int));
+   val = (double*) calloc((m>0?n:0)+min(max(0,m-1),n), sizeof(double));
+
+   for (i = j = 0; i < m; i++) {
+      row[i] = j;
+      if (i == 0) {
+         for (k = 0; k < n; k++) {
+            col[j] = k; val[j] = 1.0; j++;
+         }
+      }
+      else if (i-1 < n) {
+         col[j] = i-1; val[j] = 1.0 - (1.0-mu)*(i-1)/(min(m,n)-1); j++;
+      }
+   }
+   row[m] = j;
+
+   /* Initialize MAGMA and create some LA structures */
+   magma_init();
+   magma_queue_t queue;
+   magma_queue_create(0, &queue);
+
+   magma_d_matrix A={Magma_CSR}, At={Magma_CSR}, dA[2]={Magma_CSR, Magma_CSR};
+
+   /* Pass the matrix to MAGMA and copy it to the GPU */
+   magma_dcsrset(m, n, row, col, val, &A, queue);
+   magma_dmtransposeconjugate(A, &At, queue);
+   magma_dmtransfer(A, &dA[0], Magma_CPU, Magma_DEV, queue);
+   magma_dmtransfer(At, &dA[1], Magma_CPU, Magma_DEV, queue);
 
    /* Set default values in PRIMME SVDS configuration struct */
    primme_svds_initialize(&primme_svds);
 
    /* Set problem matrix */
-   primme_svds.matrixMatvec = LauchliMatrixMatvec;
-   primme_svds.matrix = &mu;
+   primme_svds.matrixMatvec = magmaSparseMatrixMatvec;
+   primme_svds.matrix = &dA;
                            /* Function that implements the matrix-vector products
                               A*x and A^t*x  */
   
    /* Set problem parameters */
-   primme_svds.m = 500;
-   primme_svds.n = 100; /* set problem dimension */
-   primme_svds.numSvals = 4;   /* Number of wanted singular values */
-   primme_svds.eps = 1e-6;     /* ||r|| <= eps * ||matrix|| */
+   primme_svds.m = m;
+   primme_svds.n = n; /* set problem dimension */
+   primme_svds.numSvals = 4;   /* Number of wanted eigenpairs */
+   primme_svds.eps = 1e-12;     /* ||r|| <= eps * ||matrix|| */
    primme_svds.target = primme_svds_smallest;
                                /* Seeking for the largest singular values  */
 
    /* Set preconditioner (optional) */
-   primme_svds.applyPreconditioner = LauchliApplyPreconditioner;
+   //primme_svds.applyPreconditioner = magmaDummy;
+   //primme_svds.primmeStage2.projectionParams.projection = primme_proj_RR;
 
    /* Set method to solve the singular value problem and
       the underneath eigenvalue problem (optional) */
-   primme_svds_set_method(primme_svds_default, PRIMME_DEFAULT_METHOD,
-                              PRIMME_DEFAULT_METHOD, &primme_svds);
+   primme_svds_set_method(primme_svds_default, PRIMME_DEFAULT_MIN_TIME,
+                              PRIMME_DEFAULT_MIN_TIME, &primme_svds);
    /*  primme_svds_default: devs choice, now being hybrid, which first solve
        the normal equation and then the augmented problem.
        PRIMME_DEFAULT_METHOD devs choice of the solver at every stage. But other methods
        can be set such as DYNAMIC or PRIMME_LOBPCG_OrthoBasis_Window. */
 
-   primme_svds.printLevel = 3;
+   primme_svds.printLevel = 5;
 
 
    /* Set advanced parameters if you know what are you doing (optional) */
@@ -122,12 +167,14 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    svals = (double*)malloc(primme_svds.numSvals*sizeof(double));
-   svecs = (double*)malloc((primme_svds.n+primme_svds.m)
-         *primme_svds.numSvals*sizeof(double));
+   if (magma_dmalloc(&svecs,(primme_svds.n+primme_svds.m)
+         *primme_svds.numSvals) != MAGMA_SUCCESS) {return -1;};
    rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
 
+   primme_svds.queue = &queue;
+
    /* Call primme_svds  */
-   ret = dprimme_svds(svals, svecs, rnorms, &primme_svds);
+   ret = magma_dprimme_svds(svals, svecs, rnorms, &primme_svds);
 
    if (ret != 0) {
       fprintf(primme_svds.outputFile, 
@@ -141,7 +188,7 @@ int main (int argc, char *argv[]) {
       fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
          svals[i], rnorms[i]); 
    }
-   fprintf(primme_svds.outputFile, " %d singular triplets converged\n", primme_svds.initSize);
+   fprintf(primme_svds.outputFile, " %d eigenpairs converged\n", primme_svds.initSize);
    fprintf(primme_svds.outputFile, "Tolerance : %-22.15E\n", 
                                                          primme_svds.aNorm*primme_svds.eps);
    fprintf(primme_svds.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
@@ -149,129 +196,63 @@ int main (int argc, char *argv[]) {
    fprintf(primme_svds.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme_svds.stats.numRestarts);
    fprintf(primme_svds.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme_svds.stats.numMatvecs);
    fprintf(primme_svds.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme_svds.stats.numPreconds);
-   if (primme_svds.stats.lockingIssue) {
-      fprintf(primme_svds.outputFile, "\nA locking problem has occurred.\n"
-         "Some triplets do not have a residual norm less than the tolerance.\n"
-         "However, the subspace of evecs is accurate to the required tolerance.\n");
-   }
-
+   fprintf(primme_svds.outputFile, "Time      : (total) %g (matvec) %g (precond) %g (ortho) %g\n", primme_svds.stats.elapsedTime, primme_svds.stats.timeMatvec, primme_svds.stats.timePrecond, primme_svds.stats.timeOrtho);
 
    primme_svds_free(&primme_svds);
    free(svals);
-   free(svecs);
    free(rnorms);
 
   return(0);
 }
 
-/* lauchli block matrix-vector product, y = a * x (or y = a^t * x), where
-
-   - x, input dense matrix of size primme_svds.n (or primme_svds.m) x blocksize;
-   - y, output dense matrix of size primme_svds.m (or primme_svds.n) x blocksize;
-   - a, lauchli matrix of dimensions primme_svds.m x (primme_svds.m+1) with this form:
-
-        [ 1  1  1  1  1 ...   1 ],  ei = 1 - (1 - mu)*i/(min(m,n) - 1)
-        [e0  0  0  0  0 ...   0 ]
-        [ 0 e1  0  0  0 ...   0 ]
-         ...
-        [ 0  0  0  0  0 ... en-1]
-*/
-
-void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                         int *transpose, primme_svds_params *primme_svds, int *err) {
-   
-   int i;            /* vector index, from 0 to *blockSize-1 */
-   int j;
-   int min_m_n = min(primme_svds->m, primme_svds->n);
-   double *xvec;     /* pointer to i-th input vector x */
-   double *yvec;     /* pointer to i-th output vector y */
-   double mu = *(double*)primme_svds->matrix;
-
-   if (*transpose == 0) { /* Do y <- A * x */
-      for (i=0; i<*blockSize; i++) { 
-         xvec = (double *)x + (*ldx)*i;
-         yvec = (double *)y + (*ldy)*i;
-         yvec[0] = 0;
-         for (j=0; j<primme_svds->n; j++) {
-            yvec[0] += xvec[j];
-         }
-         for (j=1; j<primme_svds->m; j++) {
-            yvec[j] = j-1<primme_svds->n ? xvec[j-1]*(1.0 - (1.0 - mu)*(j-1)/(min_m_n - 1)) : 0.0;
-         }      
-      }
-   } else { /* Do y <- A^t * x */
+void magmaSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *trans,
+                    primme_svds_params *primme_svds, int *err) {
+   int i;            /* vector index, from 0 to *blockSize-1*/
+   magma_d_matrix *A = primme_svds->matrix;
+ 
+   if (!*trans) { // y <- A*x
       for (i=0; i<*blockSize; i++) {
-         xvec = (double *)x + (*ldx)*i;
-         yvec = (double *)y + (*ldy)*i;
-         for (j=0; j<primme_svds->n; j++) {
-            yvec[j] = xvec[0];
-            if (j+1 < primme_svds->m) yvec[j] += xvec[j+1]*(1.0 - (1.0 - mu)*j/(min_m_n - 1));
-         }
+         magma_d_matrix vx = {Magma_CSR};  /* i-th input vector x */
+         magma_d_matrix vy = {Magma_CSR};  /* i-th output vector y */
+
+         magma_dvset_dev(primme_svds->nLocal, 1, (double *)x + *ldx*i, &vx, *(magma_queue_t*)primme_svds->primme.queue);
+         magma_dvset_dev(primme_svds->mLocal, 1, (double *)y + *ldy*i, &vy, *(magma_queue_t*)primme_svds->primme.queue);
+
+         magma_d_spmv(1.0, A[0], vx, 0.0, vy, *(magma_queue_t*)primme_svds->primme.queue);
+      }
+   }
+   else { // y <- A'*x
+      for (i=0; i<*blockSize; i++) {
+         magma_d_matrix vx = {Magma_CSR};  /* i-th input vector x */
+         magma_d_matrix vy = {Magma_CSR};  /* i-th output vector y */
+
+         magma_dvset_dev(primme_svds->mLocal, 1, (double *)x + *ldx*i, &vx, *(magma_queue_t*)primme_svds->primme.queue);
+         magma_dvset_dev(primme_svds->nLocal, 1, (double *)y + *ldy*i, &vy, *(magma_queue_t*)primme_svds->primme.queue);
+
+         magma_d_spmv(1.0, A[1], vx, 0.0, vy, *(magma_queue_t*)primme_svds->primme.queue);
       }
    }
    *err = 0;
 }
 
-/* This performs Y = M^{-1} * X, where
-
-   - X, input dense matrix of size primme_svds.n (or primme_svds.m or m+n) x blockSize;
-   - Y, output dense matrix of size primme_svds.n (or primme_svds.m or m+n) x blockSize;
-   - M, preconditioner for A^t*A (or A*A^t or [0 A^t; A 0]), where A is the Lauchli matrix.
-*/
-
-void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
-                                int *mode, primme_svds_params *primme_svds, int *ierr) {
-   
-   int i;            /* vector index, from 0 to *blockSize-1*/
-   int j;            /* row index */
-   double *xvec;     /* pointer to i-th input vector x */
-   double *yvec;     /* pointer to i-th output vector y */
-   int modeAtA = primme_svds_op_AtA, modeAAt = primme_svds_op_AAt;
-   double mu = *(double*)primme_svds->matrix;
-   double  *aux;
-   PRIMME_INT ldaux;
-   int notrans = 0, trans = 1;
-   int min_m_n = min(primme_svds->m, primme_svds->n);
-    
+void magmaDummy(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, int *mode,
+                    primme_svds_params *primme_svds, int *err) {
+ 
+   int nrows=0;
    if (*mode == primme_svds_op_AtA) {
-      /* Preconditioner for A^t*A, diag(A^t*A)^{-1} */
-      for (i=0; i<*blockSize; i++) { 
-         xvec = (double *)x + (*ldx)*i;
-         yvec = (double *)y + (*ldy)*i;
-         for (j=0; j<primme_svds->n; j++) {
-            double ei = j<primme_svds->m ? 1.0 - (1.0 - mu)*j/(min_m_n - 1) : 0.0;
-            yvec[j] = xvec[j]/(1.0 + ei*ei);
-         }      
-      }
+     nrows = primme_svds->nLocal;
    }
    else if (*mode == primme_svds_op_AAt) {
-      /* Preconditioner for A*A^t, diag(A*A^t)^{-1} */
-      for (i=0; i<*blockSize; i++) {
-         xvec = (double *)x + (*ldx)*i;
-         yvec = (double *)y + (*ldy)*i;
-         yvec[0] = xvec[0]/(double)primme_svds->m;
-         for (j=1; j<primme_svds->m; j++) {
-            double ei = j<primme_svds->n ? 1.0 - (1.0 - mu)*j/(min_m_n - 1) : 1.0;
-            yvec[j] = xvec[j]/ei/ei;
-         }
-      }
+      nrows = primme_svds->mLocal;
    }
    else if (*mode == primme_svds_op_augmented) {
-      /* Preconditioner for [0 A^t; A 0],
-         [diag(A^t*A) 0; 0 diag(A*A^t)]^{-1}*[0 A^t; A 0] */
-
-      /* [y0; y1] <- [0 A^t; A 0] * [x0; x1] */
-      ldaux = primme_svds->n+primme_svds->m;
-      aux = (double*)malloc(sizeof(double)*(*blockSize)*ldaux);
-      primme_svds->matrixMatvec(x, ldx, &aux[primme_svds->n], &ldaux, blockSize, &notrans, primme_svds, ierr);
-      xvec = (double *)x + primme_svds->n;
-      primme_svds->matrixMatvec(xvec, ldx, aux, &ldaux, blockSize, &trans, primme_svds, ierr);
-      /* y0 <- preconditioner for A^t*A  * y0 */
-      LauchliApplyPreconditioner(aux, &ldaux, y, ldy, blockSize, &modeAtA, primme_svds, ierr);
-      /* y1 <- preconditioner for A*A^t  * y1 */
-      yvec = (double *)y + primme_svds->n;
-      LauchliApplyPreconditioner(&aux[primme_svds->n], &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
-      free(aux);
+      nrows = primme_svds->mLocal + primme_svds->nLocal;
    }
-   *ierr = 0;
+   else {
+      *err = -1;
+      return;
+   }
+
+   magma_dcopymatrix(nrows, *blockSize, (double*)x, *ldx, (double*)y, *ldy, *(magma_queue_t*)primme_svds->primme.queue);
+   *err = 0;
 }

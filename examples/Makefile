@@ -8,7 +8,7 @@ include ../Link_flags
 
 override INCLUDE += -I../include
 override FINCLUDE += -I../include
-LIBDIRS += -L../lib
+LIBS := ../lib/libprimme.a $(LIBS)
 
 EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_svds_dseq ex_svds_zseq
 EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx
@@ -28,8 +28,8 @@ ifeq ($(USE_PETSC), yes)
 endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
-  EXAMPLES_C += ex_eigs_dmagma
-  override INCLUDE += $(MAGMA_CFLAGS)
+  EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
+  override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
 
 $(EXAMPLES_C): %: %.o
@@ -81,52 +81,58 @@ clean:
 veryclean: clean
 	@rm -f $(EXAMPLES_C) $(EXAMPLES_F77) $(EXAMPLES_CXX)
 
+ifeq ($(UNAME), FreeBSD)
+  M4 ?= m4 -g
+else
+  M4 ?= m4
+endif
+
 ex_eigs_dseq.c: ex_c.m4
-	m4 ex_c.m4 > $@
+	$(M4) ex_c.m4 > $@
 
 ex_eigs_zseq.c: ex_c.m4
-	m4 -D USE_COMPLEX -D ADVANCED ex_c.m4 > $@
+	$(M4) -D USE_COMPLEX -D ADVANCED ex_c.m4 > $@
 
 ex_eigs_zseqxx.cxx: ex_c.m4
-	m4 -D USE_COMPLEX -D USE_COMPLEX_CXX -D ADVANCED ex_c.m4 > $@
+	$(M4) -D USE_COMPLEX -D USE_COMPLEX_CXX -D ADVANCED ex_c.m4 > $@
 
 ex_eigs_petsc.c: ex_c.m4
-	m4 -D USE_PETSC ex_c.m4 > $@
+	$(M4) -D USE_PETSC ex_c.m4 > $@
 
 ex_eigs_dseqf77.f: ex_f77.m4
-	m4 ex_f77.m4 > $@
+	$(M4) ex_f77.m4 > $@
 
 ex_eigs_zseqf77.f: ex_f77.m4
-	m4 -D USE_COMPLEX ex_f77.m4 > $@
+	$(M4) -D USE_COMPLEX ex_f77.m4 > $@
 
 ex_eigs_petscf77.F: ex_f77.m4
-	m4 -D USE_PETSC ex_f77.m4 > $@
+	$(M4) -D USE_PETSC ex_f77.m4 > $@
 
 ex_eigs_petscf77ptr.F: ex_f77.m4
-	m4 -D USE_PETSC -D USE_POINTER ex_f77.m4 > $@
+	$(M4) -D USE_PETSC -D USE_POINTER ex_f77.m4 > $@
 
 ex_svds_dseq.c: exsvd_c.m4
-	m4 exsvd_c.m4 > $@
+	$(M4) exsvd_c.m4 > $@
 
 ex_svds_zseq.c: exsvd_c.m4
-	m4 -D USE_COMPLEX -D ADVANCED_HYBRID exsvd_c.m4 > $@
+	$(M4) -D USE_COMPLEX -D ADVANCED_HYBRID exsvd_c.m4 > $@
 
 ex_svds_zseqxx.cxx: exsvd_c.m4
-	m4 -D USE_COMPLEX -D USE_COMPLEX_CXX -D ADVANCED_HYBRID exsvd_c.m4 > $@
+	$(M4) -D USE_COMPLEX -D USE_COMPLEX_CXX -D ADVANCED_HYBRID exsvd_c.m4 > $@
 
 ex_svds_petsc.c: exsvd_c.m4
-	m4 -D USE_PETSC exsvd_c.m4 > $@
+	$(M4) -D USE_PETSC exsvd_c.m4 > $@
 
 ex_svds_dseqf77.f: exsvd_f77.m4
-	m4 exsvd_f77.m4 > $@
+	$(M4) exsvd_f77.m4 > $@
 
 ex_svds_zseqf77.f: exsvd_f77.m4
-	m4 -D USE_COMPLEX exsvd_f77.m4 > $@
+	$(M4) -D USE_COMPLEX exsvd_f77.m4 > $@
 
 ex_svds_petscf77.F: exsvd_f77.m4
-	m4 -D USE_PETSC exsvd_f77.m4 > $@
+	$(M4) -D USE_PETSC exsvd_f77.m4 > $@
 
 ex_svds_petscf77ptr.F: exsvd_f77.m4
-	m4 -D USE_PETSC -D USE_POINTER exsvd_f77.m4 > $@
+	$(M4) -D USE_PETSC -D USE_POINTER exsvd_f77.m4 > $@
 
 .PHONY: clean veryclean all examples

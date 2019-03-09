@@ -8,6 +8,7 @@
 .. |commInfo|                              replace:: :c:member:`commInfo                           <primme_params.commInfo>`
 .. |nLocal|                                replace:: :c:member:`nLocal                             <primme_params.nLocal>`
 .. |globalSumReal|                         replace:: :c:member:`globalSumReal                      <primme_params.globalSumReal>`
+.. |broadcastReal|                         replace:: :c:member:`broadcastReal                      <primme_params.broadcastReal>`
 .. |numEvals|                              replace:: :c:member:`numEvals                           <primme_params.numEvals>`
 .. |target|                                replace:: :c:member:`target                             <primme_params.target>`
 .. |numTargetShifts|                       replace:: :c:member:`numTargetShifts                    <primme_params.numTargetShifts>`
@@ -111,6 +112,7 @@
 .. |SmLocal|                 replace:: :c:member:`mLocal                       <primme_svds_params.mLocal>`
 .. |SnLocal|                 replace:: :c:member:`nLocal                       <primme_svds_params.nLocal>`
 .. |SglobalSumReal|          replace:: :c:member:`globalSumReal                <primme_svds_params.globalSumReal>`
+.. |SbroadcastReal|          replace:: :c:member:`broadcastReal                <primme_svds_params.broadcastReal>`
 .. |SapplyPreconditioner|    replace:: :c:member:`applyPreconditioner          <primme_svds_params.applyPreconditioner>`
 .. |SinitSize|               replace:: :c:member:`initSize                     <primme_svds_params.initSize>`
 .. |SmaxBasisSize|           replace:: :c:member:`maxBasisSize                 <primme_svds_params.maxBasisSize>`

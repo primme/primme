@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,8 @@
 #include "primme_svds_interface.h"
 
 
-void AS_FORTRAN(Sprimme_svds)(HREAL *svals, HSCALAR *svecs,
-      HREAL *resNorms, primme_svds_params **primme_svds, int *ierr) {
+void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,
+      XREAL *resNorms, primme_svds_params **primme_svds, int *ierr) {
    *ierr = Sprimme_svds(svals, svecs, resNorms, *primme_svds);
 }
 

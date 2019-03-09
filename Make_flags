@@ -4,6 +4,8 @@
 #---------------------------------------------------------------
 
 # Define the path to the created PRIMME library
+MAJORVERSION := 3
+VERSION := 3.0
 UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
     SLIB = dylib
@@ -12,6 +14,7 @@ else
 endif
 LIBRARY = libprimme.a
 SOLIBRARY = libprimme.$(SLIB)
+SONAMELIBRARY = libprimme.$(SLIB).$(VERSION)
 
 
 # Define compilers and flags
@@ -23,13 +26,20 @@ F77      ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
 CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O
+PRIMME_WITH_HALF ?= no
+ifeq ($(PRIMME_WITH_HALF), yes)
+    CFLAGS += -DPRIMME_WITH_HALF
+endif
 
 # GPUs compiler flags
 #---------------------------------------------------------------
-PRIMME_WITH_MAGMA ?= yes
-MAGMADIR ?= $(HOME)/POST/src/magma-2.2.0
-CUDADIR  ?= /scratch/eloy.scratch/cuda
-override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
+# MAGMADIR = /usr/local/magma-2.5.0
+PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
+CUDADIR  ?= /usr/local/cuda
+ifeq ($(PRIMME_WITH_MAGMA), yes)
+    override CFLAGS += -I$(MAGMADIR)/include -I$(CUDADIR)/include -DPRIMME_WITH_MAGMA
+endif
+
 #---------------------------------------------------------------
 # IBM architectures
 #CC       = xlc
@@ -52,21 +62,6 @@ override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADI
 #CFLAGS   = -O2
 #FFLAGS   = -O2
 #---------------------------------------------------------------
-# Sun various architectures
-# whirlwind
-#CFLAGS +=  -xtarget=ultra2e -xarch=v8plusa -xcache=16/32/1:512/64/4
-# twister
-#CFLAGS +=  -xtarget=ultra3cu -xarch=v8plusa -xcache=64/32/4:8192/512/2
-# typhoon
-#CFLAGS +=  -xtarget=ultra2i -xarch=v8plusa -xcache=16/32/1:2048/64/1
-# tornado
-#CFLAGS +=  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
-# hurricane
-#CFLAGS +=  -xtarget=ultra2 -xarch=v8plusa -xcache=16/32/1:4096/64/1
-#CFLAGS +=  -xtarget=generic -xarch=v8plusa
-#---------------------------------------------------------------
-# Cray architectures
-# CFLAGS += -O3 -march=native -mtune=native -funroll-loops  -ffast-math -fstrict-aliasing  -std=gnu99 -msse2 -msse3
 
 
 #---------------------------------------------------------------
@@ -80,3 +75,13 @@ override CFLAGS += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADI
 
 RANLIB ?= ranlib
 R ?= R
+PYTHON ?= $(if $(findstring 1984, $(shell python -c 'print(1984)')), \
+  python, \
+  $(if $(findstring 1984, $(shell python2 -c 'print(1984)')),python2,python3))
+
+#---------------------------------------------------------------
+#  Installation
+#---------------------------------------------------------------
+
+includedir ?= $(DESTDIR)$(PREFIX)/include
+libdir ?= $(DESTDIR)$(PREFIX)/lib

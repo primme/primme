@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,13 +69,16 @@ typedef struct primme_svds_stats {
    PRIMME_INT numMatvecs;
    PRIMME_INT numPreconds;
    PRIMME_INT numGlobalSum;         /* times called globalSumReal */
+   PRIMME_INT numBroadcast;         /* times called broadcastReal */
    PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
+   PRIMME_INT volumeBroadcast;      /* number of SCALARs broadcast by broadcastReal */
    double numOrthoInnerProds;       /* number of inner prods done by Ortho */
    double elapsedTime; 
    double timeMatvec;               /* time expend by matrixMatvec */
    double timePrecond;              /* time expend by applyPreconditioner */
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
+   double timeBroadcast;            /* time expend by broadcastReal  */
    PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
 } primme_svds_stats;
 
@@ -93,9 +96,11 @@ typedef struct primme_svds_params {
    void (*matrixMatvec) 
       (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
        int *transpose, struct primme_svds_params *primme_svds, int *ierr);
+   primme_op_datatype matrixMatvec_type;
    void (*applyPreconditioner)
       (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize,
        int *transpose, struct primme_svds_params *primme_svds, int *ierr);
+   primme_op_datatype applyPreconditioner_type;
 
    /* Input for the following is only required for parallel programs */
    int numProcs;
@@ -106,6 +111,10 @@ typedef struct primme_svds_params {
    void (*globalSumReal)
       (void *sendBuf, void *recvBuf, int *count,
        struct primme_svds_params *primme_svds, int *ierr);
+   primme_op_datatype globalSumReal_type;
+   void (*broadcastReal)(void *buffer, int *count,
+         struct primme_svds_params *primme_svds, int *ierr);
+   primme_op_datatype broadcastReal_type;
 
    /* Though primme_svds_initialize will assign defaults, most users will set these */
    int numSvals;
@@ -140,67 +149,83 @@ typedef struct primme_svds_params {
          struct primme_svds_params *primme, int *ierr);
    void *convtest;
    void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-      void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, int *stage,
-      struct primme_svds_params *primme_svds, int *err);
+         int *iblock, int *blockSize, void *basisNorms, int *numConverged,
+         void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms,
+         int *inner_its, void *LSRes, const char *msg, double *time,
+         primme_event *event, int *stage,
+         struct primme_svds_params *primme_svds, int *err);
    void *monitor;
    void *queue;   	/* magma device queue (magma_queue_t*) */
+   const char *profile; /* regex expression with functions to monitor times */
 } primme_svds_params;
 
 typedef enum {
-   PRIMME_SVDS_primme = 0,
-   PRIMME_SVDS_primmeStage2 = 1,
-   PRIMME_SVDS_m = 2,
-   PRIMME_SVDS_n = 3,
-   PRIMME_SVDS_matrixMatvec = 4,
-   PRIMME_SVDS_applyPreconditioner = 5,
-   PRIMME_SVDS_numProcs = 6,
-   PRIMME_SVDS_procID = 7,
-   PRIMME_SVDS_mLocal = 8,
-   PRIMME_SVDS_nLocal = 9,
-   PRIMME_SVDS_commInfo = 10,
-   PRIMME_SVDS_globalSumReal = 11,
-   PRIMME_SVDS_numSvals = 12,
-   PRIMME_SVDS_target = 13,
-   PRIMME_SVDS_numTargetShifts = 14,
-   PRIMME_SVDS_targetShifts = 15,
-   PRIMME_SVDS_method = 16,
-   PRIMME_SVDS_methodStage2 = 17,
-   PRIMME_SVDS_matrix = 22,
-   PRIMME_SVDS_preconditioner = 23,
-   PRIMME_SVDS_locking = 24,
-   PRIMME_SVDS_numOrthoConst = 25,
-   PRIMME_SVDS_aNorm = 26,
-   PRIMME_SVDS_eps = 27,
-   PRIMME_SVDS_precondition = 28,
-   PRIMME_SVDS_initSize = 29,
-   PRIMME_SVDS_maxBasisSize = 30,
-   PRIMME_SVDS_maxBlockSize = 31,
-   PRIMME_SVDS_maxMatvecs = 32,
-   PRIMME_SVDS_iseed = 33,
-   PRIMME_SVDS_printLevel = 34,
-   PRIMME_SVDS_outputFile = 35,
-   PRIMME_SVDS_stats_numOuterIterations = 36,
-   PRIMME_SVDS_stats_numRestarts = 37,
-   PRIMME_SVDS_stats_numMatvecs = 38,
-   PRIMME_SVDS_stats_numPreconds = 39,
-   PRIMME_SVDS_stats_numGlobalSum = 391,
-   PRIMME_SVDS_stats_volumeGlobalSum = 392,
-   PRIMME_SVDS_stats_numOrthoInnerProds = 393,
-   PRIMME_SVDS_stats_elapsedTime = 40,
-   PRIMME_SVDS_stats_timeMatvec = 401,
-   PRIMME_SVDS_stats_timePrecond = 402,
-   PRIMME_SVDS_stats_timeOrtho = 403,
-   PRIMME_SVDS_stats_timeGlobalSum = 404,
-   PRIMME_SVDS_stats_lockingIssue = 405,
-   PRIMME_SVDS_convTestFun = 405,
-   PRIMME_SVDS_convtest = 406,
-   PRIMME_SVDS_monitorFun = 41,
-   PRIMME_SVDS_monitor = 42,
-   PRIMME_SVDS_queue = 43
+   /* NOTE: you can maintain the column of numbers with g+Ctrl-A in vim */
+   PRIMME_SVDS_primme                       = 1,
+   PRIMME_SVDS_primmeStage2                 = 2,
+   PRIMME_SVDS_m                            = 3,
+   PRIMME_SVDS_n                            = 4,
+   PRIMME_SVDS_matrixMatvec                 = 5,
+   PRIMME_SVDS_matrixMatvec_type            = 6,
+   PRIMME_SVDS_applyPreconditioner          = 7,
+   PRIMME_SVDS_applyPreconditioner_type     = 8,
+   PRIMME_SVDS_numProcs                     = 9,
+   PRIMME_SVDS_procID                       = 10,
+   PRIMME_SVDS_mLocal                       = 11,
+   PRIMME_SVDS_nLocal                       = 12,
+   PRIMME_SVDS_commInfo                     = 13,
+   PRIMME_SVDS_globalSumReal                = 14,
+   PRIMME_SVDS_globalSumReal_type           = 15,
+   PRIMME_SVDS_broadcastReal                = 16,
+   PRIMME_SVDS_broadcastReal_type           = 17,
+   PRIMME_SVDS_numSvals                     = 18,
+   PRIMME_SVDS_target                       = 19,
+   PRIMME_SVDS_numTargetShifts              = 20,
+   PRIMME_SVDS_targetShifts                 = 21,
+   PRIMME_SVDS_method                       = 22,
+   PRIMME_SVDS_methodStage2                 = 23,
+   PRIMME_SVDS_matrix                       = 24,
+   PRIMME_SVDS_preconditioner               = 25,
+   PRIMME_SVDS_locking                      = 26,
+   PRIMME_SVDS_numOrthoConst                = 27,
+   PRIMME_SVDS_aNorm                        = 28,
+   PRIMME_SVDS_eps                          = 29,
+   PRIMME_SVDS_precondition                 = 30,
+   PRIMME_SVDS_initSize                     = 31,
+   PRIMME_SVDS_maxBasisSize                 = 32,
+   PRIMME_SVDS_maxBlockSize                 = 33,
+   PRIMME_SVDS_maxMatvecs                   = 34,
+   PRIMME_SVDS_iseed                        = 35,
+   PRIMME_SVDS_printLevel                   = 36,
+   PRIMME_SVDS_outputFile                   = 37,
+   PRIMME_SVDS_stats_numOuterIterations     = 38,
+   PRIMME_SVDS_stats_numRestarts            = 39,
+   PRIMME_SVDS_stats_numMatvecs             = 40,
+   PRIMME_SVDS_stats_numPreconds            = 41,
+   PRIMME_SVDS_stats_numGlobalSum           = 42,
+   PRIMME_SVDS_stats_volumeGlobalSum        = 43,
+   PRIMME_SVDS_stats_numBroadcast           = 44,
+   PRIMME_SVDS_stats_volumeBroadcast        = 45,
+   PRIMME_SVDS_stats_numOrthoInnerProds     = 46,
+   PRIMME_SVDS_stats_elapsedTime            = 47,
+   PRIMME_SVDS_stats_timeMatvec             = 48,
+   PRIMME_SVDS_stats_timePrecond            = 49,
+   PRIMME_SVDS_stats_timeOrtho              = 50,
+   PRIMME_SVDS_stats_timeGlobalSum          = 51,
+   PRIMME_SVDS_stats_timeBroadcast          = 52,
+   PRIMME_SVDS_stats_lockingIssue           = 53,
+   PRIMME_SVDS_convTestFun                  = 54,
+   PRIMME_SVDS_convtest                     = 55,
+   PRIMME_SVDS_monitorFun                   = 56,
+   PRIMME_SVDS_monitor                      = 57,
+   PRIMME_SVDS_queue                        = 58,
+   PRIMME_SVDS_profile                      = 59 
 } primme_svds_params_label;
 
+int hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
+int kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
 int sprimme_svds(float *svals, float *svecs, float *resNorms,
       primme_svds_params *primme_svds);
 int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
@@ -208,6 +233,10 @@ int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
 int dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
+      primme_svds_params *primme_svds);
+int magma_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
+int magma_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms,
       primme_svds_params *primme_svds);
 int magma_sprimme_svds(float *svals, float *svecs, float *resNorms,
       primme_svds_params *primme_svds);

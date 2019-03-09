@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,18 +33,18 @@
 
 #ifndef update_projection_H
 #define update_projection_H
-int update_projection_sprimme(float *X, PRIMME_INT ldX, float *Y,
-      PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+int update_projection_hprimme(dummy_type_hprimme *X, PRIMME_INT ldX, dummy_type_hprimme *Y,
+      PRIMME_INT ldY, dummy_type_sprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_sprimme(float *X, int nX0, int nX1, PRIMME_INT ldX,
-      float *Y, int nY0, int nY1, PRIMME_INT ldY, float *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
-int update_projection_cprimme(PRIMME_COMPLEX_FLOAT *X, PRIMME_INT ldX, PRIMME_COMPLEX_FLOAT *Y,
-      PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+int update_projection_kprimme(dummy_type_kprimme *X, PRIMME_INT ldX, dummy_type_kprimme *Y,
+      PRIMME_INT ldY, dummy_type_cprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_cprimme(PRIMME_COMPLEX_FLOAT *X, int nX0, int nX1, PRIMME_INT ldX,
-      PRIMME_COMPLEX_FLOAT *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
+int update_projection_sprimme(dummy_type_sprimme *X, PRIMME_INT ldX, dummy_type_sprimme *Y,
+      PRIMME_INT ldY, dummy_type_sprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cprimme(dummy_type_cprimme *X, PRIMME_INT ldX, dummy_type_cprimme *Y,
+      PRIMME_INT ldY, dummy_type_cprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sprimme)
 #  define update_projection_Sprimme CONCAT(update_projection_,SCALAR_SUF)
 #endif
@@ -57,52 +57,106 @@ int update_projection_gen_cprimme(PRIMME_COMPLEX_FLOAT *X, int nX0, int nX1, PRI
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHprimme)
 #  define update_projection_RHprimme CONCAT(update_projection_,HOST_REAL_SUF)
 #endif
-int update_projection_dprimme(double *X, PRIMME_INT ldX, double *Y,
-      PRIMME_INT ldY, double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
-      int numCols, int blockSize, int isSymmetric, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(update_projection_gen_Sprimme)
-#  define update_projection_gen_Sprimme CONCAT(update_projection_gen_,SCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXprimme)
+#  define update_projection_SXprimme CONCAT(update_projection_,XSCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(update_projection_gen_Rprimme)
-#  define update_projection_gen_Rprimme CONCAT(update_projection_gen_,REAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXprimme)
+#  define update_projection_RXprimme CONCAT(update_projection_,XREAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(update_projection_gen_SHprimme)
-#  define update_projection_gen_SHprimme CONCAT(update_projection_gen_,HOST_SCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Shprimme)
+#  define update_projection_Shprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(update_projection_gen_RHprimme)
-#  define update_projection_gen_RHprimme CONCAT(update_projection_gen_,HOST_REAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rhprimme)
+#  define update_projection_Rhprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,h),primme))
 #endif
-int update_projection_gen_dprimme(double *X, int nX0, int nX1, PRIMME_INT ldX,
-      double *Y, int nY0, int nY1, PRIMME_INT ldY, double *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
-int update_projection_zprimme(PRIMME_COMPLEX_DOUBLE *X, PRIMME_INT ldX, PRIMME_COMPLEX_DOUBLE *Y,
-      PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Ssprimme)
+#  define update_projection_Ssprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rsprimme)
+#  define update_projection_Rsprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sdprimme)
+#  define update_projection_Sdprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rdprimme)
+#  define update_projection_Rdprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sqprimme)
+#  define update_projection_Sqprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rqprimme)
+#  define update_projection_Rqprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXhprimme)
+#  define update_projection_SXhprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXhprimme)
+#  define update_projection_RXhprimme CONCAT(update_projection_,CONCAT(CONCAT(,h),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXsprimme)
+#  define update_projection_SXsprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXsprimme)
+#  define update_projection_RXsprimme CONCAT(update_projection_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXdprimme)
+#  define update_projection_SXdprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXdprimme)
+#  define update_projection_RXdprimme CONCAT(update_projection_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXqprimme)
+#  define update_projection_SXqprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXqprimme)
+#  define update_projection_RXqprimme CONCAT(update_projection_,CONCAT(CONCAT(,q),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHhprimme)
+#  define update_projection_SHhprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHhprimme)
+#  define update_projection_RHhprimme CONCAT(update_projection_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHsprimme)
+#  define update_projection_SHsprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHsprimme)
+#  define update_projection_RHsprimme CONCAT(update_projection_,CONCAT(CONCAT(,s),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHdprimme)
+#  define update_projection_SHdprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHdprimme)
+#  define update_projection_RHdprimme CONCAT(update_projection_,CONCAT(CONCAT(,d),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHqprimme)
+#  define update_projection_SHqprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHqprimme)
+#  define update_projection_RHqprimme CONCAT(update_projection_,CONCAT(CONCAT(,q),primme))
+#endif
+int update_projection_dprimme(dummy_type_dprimme *X, PRIMME_INT ldX, dummy_type_dprimme *Y,
+      PRIMME_INT ldY, dummy_type_dprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_zprimme(PRIMME_COMPLEX_DOUBLE *X, int nX0, int nX1, PRIMME_INT ldX,
-      PRIMME_COMPLEX_DOUBLE *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
-int update_projection_smagmaprimme(magma_float *X, PRIMME_INT ldX, magma_float *Y,
-      PRIMME_INT ldY, float *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+int update_projection_zprimme(dummy_type_zprimme *X, PRIMME_INT ldX, dummy_type_zprimme *Y,
+      PRIMME_INT ldY, dummy_type_zprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_smagmaprimme(magma_float *X, int nX0, int nX1, PRIMME_INT ldX,
-      magma_float *Y, int nY0, int nY1, PRIMME_INT ldY, float *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
-int update_projection_cmagmaprimme(magma_complex_float *X, PRIMME_INT ldX, magma_complex_float *Y,
-      PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+int update_projection_magma_sprimme(dummy_type_magma_sprimme *X, PRIMME_INT ldX, dummy_type_magma_sprimme *Y,
+      PRIMME_INT ldY, dummy_type_sprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_cmagmaprimme(magma_complex_float *X, int nX0, int nX1, PRIMME_INT ldX,
-      magma_complex_float *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_FLOAT *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
-int update_projection_dmagmaprimme(magma_double *X, PRIMME_INT ldX, magma_double *Y,
-      PRIMME_INT ldY, double *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+int update_projection_magma_cprimme(dummy_type_magma_cprimme *X, PRIMME_INT ldX, dummy_type_magma_cprimme *Y,
+      PRIMME_INT ldY, dummy_type_cprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_dmagmaprimme(magma_double *X, int nX0, int nX1, PRIMME_INT ldX,
-      magma_double *Y, int nY0, int nY1, PRIMME_INT ldY, double *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
-int update_projection_zmagmaprimme(magma_complex_double *X, PRIMME_INT ldX, magma_complex_double *Y,
-      PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+int update_projection_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT ldX, dummy_type_magma_dprimme *Y,
+      PRIMME_INT ldY, dummy_type_dprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
-int update_projection_gen_zmagmaprimme(magma_complex_double *X, int nX0, int nX1, PRIMME_INT ldX,
-      magma_complex_double *Y, int nY0, int nY1, PRIMME_INT ldY, PRIMME_COMPLEX_DOUBLE *Z, PRIMME_INT ldZ,
-      PRIMME_INT nLocal, primme_context ctx);
+int update_projection_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT ldX, dummy_type_magma_zprimme *Y,
+      PRIMME_INT ldY, dummy_type_zprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT ldX, dummy_type_magma_hprimme *Y,
+      PRIMME_INT ldY, dummy_type_sprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT ldX, dummy_type_magma_kprimme *Y,
+      PRIMME_INT ldY, dummy_type_cprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 #endif

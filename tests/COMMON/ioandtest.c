@@ -1,6 +1,6 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2017 College of William & Mary,
+ *   Copyright (C) 2018 College of William & Mary,
  *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
@@ -29,16 +29,24 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <assert.h>
 #include "primme.h"
 #include "num.h"
 #include "ioandtest.h"
+#include "../src/eigs/auxiliary_eigs.h"
+#include "../src/eigs/ortho.h"
+
+primme_context get_dummy_context() {
+   primme_context ctx;
+   memset(&ctx, 0, sizeof(primme_context));
+}
 
 static REAL primme_dot_real(SCALAR *x, SCALAR *y, primme_params *primme) {
    REAL aux, aux0;
    int n = 1;
    int ierr;
-   aux = REAL_PART(Num_dot_Sprimme(primme->nLocal, x, 1, y, 1));
+   aux = REAL_PART(Num_dot_Sprimme(primme->nLocal, x, 1, y, 1, get_dummy_context()));
    if (primme->globalSumReal) {
       primme->globalSumReal(&aux, &aux0, &n, primme, &ierr);
       return aux0;
@@ -50,7 +58,7 @@ static REAL primme_svds_dot_real(SCALAR *x, SCALAR *y, int trans, primme_svds_pa
    REAL aux, aux0;
    int n = 1;
    int ierr;
-   aux = REAL_PART(Num_dot_Sprimme(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1));
+   aux = REAL_PART(Num_dot_Sprimme(trans ? primme->nLocal : primme->mLocal, x, 1, y, 1, get_dummy_context()));
    if (primme->globalSumReal) {
       primme->globalSumReal(&aux, &aux0, &n, primme, &ierr);
       return aux0;
@@ -61,66 +69,15 @@ static REAL primme_svds_dot_real(SCALAR *x, SCALAR *y, int trans, primme_svds_pa
 #undef __FUNCT__
 #define __FUNCT__ "check_solution"
 int check_solution(const char *checkXFileName, primme_params *primme, double *evals,
-                   SCALAR *evecs, double *rnorms, int *perm, int checkInterface) {
+                   SCALAR *evecs, double *rnorms, int *perm) {
 
-   double eval0, rnorm0, prod, bound, delta;
+   double eval0, prod, bound, delta;
    SCALAR *Ax, *r, *X=NULL, *h, *h0;
    int i, j, cols, retX=0, one=1, ierr=0;
-   primme_params primme0;
 
    /* Read stored eigenvectors and primme_params */
    ASSERT_MSG(readBinaryEvecsAndPrimmeParams(checkXFileName, NULL, &X, primme->n, primme->n, &cols,
-                                             primme->nLocal, perm, checkInterface ? &primme0 : NULL) == 0, -1, "");
-   /* Check primme_params */
-#  define CHECK_PRIMME_PARAM(F) \
-        if (primme0. F != primme-> F ) { \
-           fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", (int)primme-> F , (int)primme0. F ); \
-           retX = 1; \
-        }
-#  define CHECK_PRIMME_PARAM_DOUBLE(F) \
-        if (fabs(primme0. F - primme-> F) > primme-> F * 1e-14) { \
-           fprintf(stderr, "Warning: discrepancy in primme." #F ", %.16e should be close to %.16e\n", primme-> F , primme0. F ); \
-           retX = 1; \
-        }
-#  define CHECK_PRIMME_PARAM_TOL(F, T) \
-        if (abs((int)primme0. F - (int)primme-> F ) > (int)primme-> F * T /100+1) { \
-           fprintf(stderr, "Warning: discrepancy in primme." #F ", %d should be close to %d\n", (int)primme-> F , (int)primme0. F ); \
-           retX = 1; \
-        }
-
-   if (primme0.n && checkInterface) {
-      CHECK_PRIMME_PARAM(n);
-      CHECK_PRIMME_PARAM(numEvals);
-      CHECK_PRIMME_PARAM(target);
-      CHECK_PRIMME_PARAM(numTargetShifts);
-      CHECK_PRIMME_PARAM(dynamicMethodSwitch);
-      CHECK_PRIMME_PARAM(locking);
-      CHECK_PRIMME_PARAM(numOrthoConst);
-      CHECK_PRIMME_PARAM(maxBasisSize);
-      CHECK_PRIMME_PARAM(minRestartSize);
-      CHECK_PRIMME_PARAM(restartingParams.scheme);
-      CHECK_PRIMME_PARAM(restartingParams.maxPrevRetain);
-      CHECK_PRIMME_PARAM(correctionParams.precondition);
-      CHECK_PRIMME_PARAM(correctionParams.robustShifts);
-      CHECK_PRIMME_PARAM(correctionParams.maxInnerIterations);
-      CHECK_PRIMME_PARAM(correctionParams.projectors.LeftQ);
-      CHECK_PRIMME_PARAM(correctionParams.projectors.LeftX);
-      CHECK_PRIMME_PARAM(correctionParams.projectors.RightQ);
-      CHECK_PRIMME_PARAM(correctionParams.projectors.RightX);
-      CHECK_PRIMME_PARAM(correctionParams.projectors.SkewQ);
-      CHECK_PRIMME_PARAM(correctionParams.projectors.SkewX);
-      CHECK_PRIMME_PARAM(correctionParams.convTest);
-      CHECK_PRIMME_PARAM_DOUBLE(aNorm);
-      CHECK_PRIMME_PARAM_DOUBLE(eps);
-      CHECK_PRIMME_PARAM_DOUBLE(correctionParams.relTolBase);
-      CHECK_PRIMME_PARAM(initSize);
-      CHECK_PRIMME_PARAM_TOL(stats.numMatvecs, 40);
-   }
-
-#  undef CHECK_PRIMME_PARAM
-#  undef CHECK_PRIMME_PARAM_DOUBLE
-#  undef CHECK_PRIMME_PARAM_TOL
-
+                                             primme->nLocal, perm) == 0, -1, "");
    i = max(cols, primme->initSize);
    h = (SCALAR *)primme_calloc(i*2, sizeof(SCALAR), "h"); h0 = &h[i];
    Ax = (SCALAR *)primme_calloc(primme->nLocal, sizeof(SCALAR), "Ax");
@@ -132,15 +89,18 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       delta = min(delta, fabs(evals[i]-evals[i-1]));
    }
 
+   primme_params primme0 = *primme;
+   primme_context ctx = primme_get_context(&primme0);
+
    for (i=0; i < primme->initSize; i++) {
       /* Check |V(:,0:i-1)'V(:,i)| < sqrt(machEps) */
-      Num_gemv_Sprimme("C", primme->nLocal, i+1, 1.0, evecs, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
+      Num_gemv_Sprimme("C", primme->nLocal, i+1, 1.0, evecs, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1, ctx);
       if (primme->globalSumReal) {
          int cols0 = (i+1)*sizeof(SCALAR)/sizeof(double);
          primme->globalSumReal(h, h0, &cols0, primme, &ierr);
       }
       else h0 = h;
-      prod = REAL_PART(Num_dot_Sprimme(i, h0, 1, h0, 1));
+      prod = REAL_PART(Num_dot_Sprimme(i, h0, 1, h0, 1, ctx));
       prod = sqrt(prod);
       if (prod > 1e-7 && primme->procID == 0) {
          fprintf(stderr, "Warning: |EVecs[1:%d-1]'Evec[%d]| = %-3E\n", i+1, i+1, prod);
@@ -160,29 +120,32 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       }
       /* Check |A*V(:,i) - (V(:,i)'A*V(:,i))*V(:,i)| < |r| */
       for (j=0; j<primme->nLocal; j++) r[j] = Ax[j] - evals[i]*evecs[primme->nLocal*i+j];
-      rnorm0 = sqrt(primme_dot_real(r, r, primme));
-      if (fabs(rnorms[i]-rnorm0) > max(0.1*rnorm0, 10*max(primme->aNorm,fabs(evals[i]))*MACHINE_EPSILON) && primme->procID == 0) {
+      HREAL rnorm0 = sqrt(primme_dot_real(r, r, primme));
+      if (fabs(rnorms[i]-rnorm0) > max(2*rnorm0, 10*max(primme->aNorm,fabs(evals[i]))*MACHINE_EPSILON) && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E, residual %5E should be close to %5E\n", i+1, evals[i], rnorms[i], rnorm0);
          retX = 1;
       }
-      if (rnorm0 > primme->eps*primme->aNorm*sqrt((double)primme->numEvals) && primme->aNorm > 0.0 && primme->procID == 0) {
+      CHKERR(ortho_single_iteration_Sprimme(evecs, primme->initSize, primme->nLocal, evecs, primme->nLocal, NULL, 0, r, NULL, 1, primme->nLocal, &rnorm0, ctx));
+      if (rnorm0 > primme->eps*primme->aNorm*2 && primme->aNorm > 0.0 && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E, RR residual %5E is larger than tolerance %5E\n", i+1, evals[i], rnorm0, primme->eps*primme->aNorm*sqrt((double)primme->numEvals));
          retX = 1;
       }
       /* Check angle X and V(:,i) is less than twice the max angle of the eigenvector with largest residual  */
-      Num_gemv_Sprimme("C", primme->nLocal, cols, 1.0, X, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1);
+      Num_gemv_Sprimme("C", primme->nLocal, cols, 1.0, X, primme->nLocal, &evecs[primme->nLocal*i], 1, 0., h, 1, ctx);
       if (primme->globalSumReal) {
          int cols0 = cols*sizeof(SCALAR)/sizeof(double);
          primme->globalSumReal(h, h0, &cols0, primme, &ierr);
       }
       else h0 = h;
-      prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1));
+      prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1, ctx));
       bound = primme->aNorm*primme->eps/delta;
       if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme->procID == 0) {
          fprintf(stderr, "Warning: Eval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i+1, evals[i], prod, delta);
          retX = 1;
       }
    }
+
+   primme_free_context(ctx);
    free(h);
    free(X);
    free(r);
@@ -195,7 +158,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
 #define __FUNCT__ "readBinaryEvecsAndPrimmeParams"
 int readBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                           int n, int Xcols, int *Xcolsout, int nLocal,
-                                          int *perm, primme_params *primme_out) {
+                                          int *perm) {
 
 #  define FREAD(A, B, C, D) { ASSERT_MSG(fread(A, B, C, D) == (size_t)C, -1, "Unexpected end of file\n"); }
 
@@ -236,18 +199,6 @@ int readBinaryEvecsAndPrimmeParams(const char *fileName, SCALAR *X, SCALAR **Xou
          }
       }
    }
-   fseek(f, (cols*n + 3)*sizeof(d), SEEK_SET);
-
-   /* Read primme_params */
-   if (primme_out) {
-      FREAD(&d, sizeof(d), 1, f);
-      if ((int)REAL_PART(d) == (int)sizeof(*primme_out)) {
-         FREAD(primme_out, sizeof(*primme_out), 1, f);
-      }
-      else
-         primme_out->n = 0;
-   }
-
    fclose(f);
    return 0;
 
@@ -319,51 +270,11 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
    double sval0, rnorm0, prod, delta, bound;
    SCALAR *Ax, *r, *X=NULL, *h, *h0, *U, *V;
    int i, j, cols, retX=0, one=1, notrans=0, trans=1, ierr=0;
-   primme_svds_params primme_svds0;
 
    /* Read stored singular vectors and primme_svds_params */
    ASSERT_MSG(readBinaryEvecsAndPrimmeSvdsParams(checkXFileName, NULL, &X, primme_svds->m,
       primme_svds->n, primme_svds->m, &cols, primme_svds->mLocal, primme_svds->nLocal,
-      perm, &primme_svds0) == 0, -1, "");
-
-   /* Check primme_svds_params */
-#  define CHECK_PRIMME_PARAM(F) \
-        if (primme_svds0. F != primme_svds-> F ) { \
-           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", (int)primme_svds-> F , (int)primme_svds0. F ); \
-           retX = 1; \
-        }
-#  define CHECK_PRIMME_PARAM_DOUBLE(F) \
-        if (fabs(primme_svds0. F - primme_svds-> F) > primme_svds-> F * 1e-14) { \
-           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %.16e should be close to %.16e\n", primme_svds-> F , primme_svds0. F ); \
-           retX = 1; \
-        }
-#  define CHECK_PRIMME_PARAM_TOL(F, T) \
-        if (abs((int)primme_svds0. F - (int)primme_svds-> F ) > (int)primme_svds-> F * T /100+1) { \
-           fprintf(stderr, "Warning: discrepancy in primme_svds." #F ", %d should be close to %d\n", (int)primme_svds-> F , (int)primme_svds0. F ); \
-           retX = 1; \
-        }
-
-   if (primme_svds0.n) {
-      CHECK_PRIMME_PARAM(m);
-      CHECK_PRIMME_PARAM(n);
-      CHECK_PRIMME_PARAM(numSvals);
-      CHECK_PRIMME_PARAM(target);
-      CHECK_PRIMME_PARAM(numTargetShifts);
-      CHECK_PRIMME_PARAM(locking);
-      CHECK_PRIMME_PARAM(numOrthoConst);
-      CHECK_PRIMME_PARAM(maxBasisSize);
-      CHECK_PRIMME_PARAM(maxBlockSize);
-      CHECK_PRIMME_PARAM_DOUBLE(aNorm);
-      CHECK_PRIMME_PARAM_DOUBLE(eps);
-      CHECK_PRIMME_PARAM(initSize);
-      CHECK_PRIMME_PARAM_TOL(stats.numMatvecs, 60);
-      CHECK_PRIMME_PARAM(method);
-      CHECK_PRIMME_PARAM(methodStage2);
-   }
-
-#  undef CHECK_PRIMME_PARAM
-#  undef CHECK_PRIMME_PARAM_DOUBLE
-#  undef CHECK_PRIMME_PARAM_TOL
+      perm) == 0, -1, "");
 
    h = (SCALAR *)primme_calloc(cols*2, sizeof(SCALAR), "h"); h0 = &h[cols];
    Ax = (SCALAR *)primme_calloc(max(primme_svds->mLocal, primme_svds->nLocal), sizeof(SCALAR), "Ax");
@@ -375,6 +286,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
       delta = min(delta, fabs(svals[i]-svals[i-1]));
    }
 
+   primme_context ctx = get_dummy_context();
    U = svecs;
    V = &svecs[primme_svds->mLocal*cols];   
    for (i=0; i < primme_svds->initSize; i++) {
@@ -412,13 +324,13 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
          retX = 1;
       }
       /* Check angle X and U(:,i) is less than twice the max angle of the eigenvector with largest residual  */
-      Num_gemv_Sprimme("C", primme_svds->mLocal, cols, 1.0, X, primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1, 0., h, 1);
+      Num_gemv_Sprimme("C", primme_svds->mLocal, cols, 1.0, X, primme_svds->mLocal, &svecs[primme_svds->mLocal*i], 1, 0., h, 1, ctx);
       if (primme_svds->globalSumReal) {
          int cols0 = cols*sizeof(SCALAR)/sizeof(double);
          primme_svds->globalSumReal(h, h0, &cols0, primme_svds, &ierr);
       }
       else h0 = h;
-      prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1));
+      prod = REAL_PART(Num_dot_Sprimme(cols, h0, 1, h0, 1, ctx));
       bound = primme_svds->aNorm*primme_svds->eps/delta;
       if ((sqrt(2.0)*prod+1.0)/(sqrt(2.0)*bound+1.0) < (sqrt(2.0)*prod - 1.0)/(1.0 - sqrt(2.0)*bound) && primme_svds->procID == 0) {
          fprintf(stderr, "Warning: Sval[%d] = %-22.15E not found on X, cos angle = %5E, delta = %5E\n", i+1, svals[i], prod, delta);
@@ -437,7 +349,7 @@ int check_solution_svds(const char *checkXFileName, primme_svds_params *primme_s
 #define __FUNCT__ "readBinaryEvecsAndPrimmeSvdsParams"
 int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, SCALAR **Xout,
                                        int m, int n, int Xcols, int *Xcolsout, int mLocal, int nLocal,
-                                       int *perm, primme_svds_params *primme_svds_out) {
+                                       int *perm) {
 
 #  define FREAD(A, B, C, D) { ASSERT_MSG(fread(A, B, C, D) == (size_t)C, -1, "Unexpected end of file\n"); }
 
@@ -486,17 +398,6 @@ int readBinaryEvecsAndPrimmeSvdsParams(const char *fileName, SCALAR *X, SCALAR *
             }
          }
       }
-   }
-   fseek(f, (cols*(m+n) + 4)*sizeof(d), SEEK_SET);
-
-   /* Read primme_params */
-   if (primme_svds_out) {
-      FREAD(&d, sizeof(d), 1, f);
-      if ((int)REAL_PART(d) == (int)sizeof(*primme_svds_out)) {
-         FREAD(primme_svds_out, sizeof(*primme_svds_out), 1, f);
-      }
-      else
-         primme_svds_out->m = primme_svds_out-> n = 0;
    }
 
    fclose(f);

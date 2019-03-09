@@ -1,6 +1,6 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2017 College of William & Mary,
+ *   Copyright (C) 2018 College of William & Mary,
  *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
@@ -197,11 +197,6 @@ int read_solver_params(char *configFileName, char *outputFileName,
                }
             }
          }
-
-         READ_FIELD_OPParams(restarting, scheme,
-            OPTIONParams(restarting, scheme, primme_thick)
-            OPTIONParams(restarting, scheme, primme_dtr)
-         );
 
          READ_FIELDParams(restarting, maxPrevRetain, "%d");
 

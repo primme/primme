@@ -1,6 +1,6 @@
 /*******************************************************************************
  *   PRIMME PReconditioned Iterative MultiMethod Eigensolver
- *   Copyright (C) 2017 College of William & Mary,
+ *   Copyright (C) 2018 College of William & Mary,
  *   James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos, Lingfei Wu
  *
  *   This file is part of PRIMME.
@@ -75,8 +75,6 @@ PetscLogEvent PRIMME_GLOBAL_SUM;
 #include "primme.h"
 #include "shared_utils.h"
 #include "ioandtest.h"
-/* wtime.h header file is included so primme's timimg functions can be used */
-#include "../../src/include/wtime.h"
 
 static int real_main (int argc, char *argv[]);
 static int setMatrixAndPrecond(driver_params *driver, primme_params *primme, int **permutation);
@@ -215,19 +213,6 @@ static int real_main (int argc, char *argv[]) {
    primme_set_method(method, &primme);
 
    /* --------------------------------------- */
-   /* Optional: report memory requirements    */
-   /* --------------------------------------- */
-
-   ret = Sprimme(NULL,NULL,NULL,&primme);
-   if (master) {
-      fprintf(primme.outputFile,"PRIMME will allocate the following memory:\n");
-      fprintf(primme.outputFile," processor %d, real workspace, %ld bytes\n",
-                                      procID, primme.realWorkSize);
-      fprintf(primme.outputFile," processor %d, int  workspace, %d bytes\n",
-                                      procID, primme.intWorkSize);
-   }
-
-   /* --------------------------------------- */
    /* Display given parameter configuration   */
    /* Place this after the dprimme() to see   */
    /* any changes dprimme() made to PRIMME    */
@@ -255,11 +240,12 @@ static int real_main (int argc, char *argv[]) {
    /* ------------------------ */
 
    /* Read initial guess from a file */
+   primme_context ctx = get_dummy_context();
    if (driver.initialGuessesFileName[0] && primme.initSize+primme.numOrthoConst > 0) {
       int cols, i=0;
       ASSERT_MSG(readBinaryEvecsAndPrimmeParams(driver.initialGuessesFileName, evecs, NULL, primme.n,
                                                 min(primme.initSize+primme.numOrthoConst, primme.numEvals),
-                                                &cols, primme.nLocal, permutation, &primme) != 0, 1, "");
+                                                &cols, primme.nLocal, permutation) != 0, 1, "");
       primme.numOrthoConst = min(primme.numOrthoConst, cols);
 
       /* Perturb the initial guesses by a vector with some norm  */
@@ -268,19 +254,19 @@ static int real_main (int argc, char *argv[]) {
          double norm;
          int j;
          for (i=primme.numOrthoConst; i<min(cols, primme.initSize+primme.numOrthoConst); i++) {
-            Num_larnv_Sprimme(2, primme.iseed, primme.nLocal, r);
-            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme.nLocal, r, 1, r, 1)));
+            Num_larnv_Sprimme(2, primme.iseed, primme.nLocal, r, ctx);
+            norm = sqrt(REAL_PART(Num_dot_Sprimme(primme.nLocal, r, 1, r, 1, ctx)));
             for (j=0; j<primme.nLocal; j++)
                evecs[primme.nLocal*i+j] += r[j]/norm*driver.initialGuessesPert;
          }
          free(r);
       }
       Num_larnv_Sprimme(2, primme.iseed, (primme.initSize+primme.numOrthoConst-i)*primme.nLocal,
-                     &evecs[primme.nLocal*i]);
+                     &evecs[primme.nLocal*i], ctx);
    } else if (primme.numOrthoConst > 0) {
       ASSERT_MSG(0, 1, "numOrthoConst > 0 but no value in initialGuessesFileName.\n");
    } else if (primme.initSize > 0) {
-      Num_larnv_Sprimme(2, primme.iseed, primme.initSize*primme.nLocal, evecs);
+      Num_larnv_Sprimme(2, primme.iseed, primme.initSize*primme.nLocal, evecs, ctx);
    }
 
 
@@ -288,20 +274,10 @@ static int real_main (int argc, char *argv[]) {
    /*  Call primme  */
    /* ------------- */
 
-   wt1 = primme_get_wtime(); 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   primme_get_time(&ut1,&st1);
-#endif
-
    ret = Sprimme(evals, evecs, rnorms, &primme);
 
-   wt2 = primme_get_wtime();
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   primme_get_time(&ut2,&st2);
-#endif
-
    if (driver.checkXFileName[0]) {
-      retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms, permutation, driver.checkInterface);
+      retX = check_solution(driver.checkXFileName, &primme, evals, evecs, rnorms, permutation);
    }
 
    /* --------------------------------------------------------------------- */
@@ -316,12 +292,6 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------------------------------------- */
 
    if (master) {
-      fprintf(primme.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-      fprintf(primme.outputFile, "User Time           : %f seconds\n", ut2-ut1);
-      fprintf(primme.outputFile, "Syst Time           : %f seconds\n", st2-st1);
-#endif
-
       for (i=0; i < primme.initSize; i++) {
          fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
             evals[i], rnorms[i]); 
@@ -337,8 +307,9 @@ static int real_main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Preconds   : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
       fprintf(primme.outputFile, "Time matvecs  : %f\n",  primme.stats.timeMatvec);
       fprintf(primme.outputFile, "Time precond  : %f\n",  primme.stats.timePrecond);
-      fprintf(primme.outputFile, "Time ortho  : %f\n",  primme.stats.timeOrtho);
-      if (primme.locking && primme.intWork && primme.intWork[0] == 1) {
+      fprintf(primme.outputFile, "Time ortho    : %f\n",  primme.stats.timeOrtho);
+      fprintf(primme.outputFile, "Wallclock Runtime  : %f\n",  primme.stats.elapsedTime);
+      if (primme.stats.lockingIssue) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme.outputFile,
             "Some eigenpairs do not have a residual norm less than the tolerance.\n");
@@ -359,7 +330,6 @@ static int real_main (int argc, char *argv[]) {
       }
    }
 
-   fclose(primme.outputFile);
    destroyMatrixAndPrecond(&driver, &primme, permutation);
    primme_free(&primme);
    free(evals);

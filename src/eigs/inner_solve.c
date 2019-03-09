@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,20 +33,17 @@
  *  
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <assert.h>
 #include "numerical.h"
 #include "const.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
-#include "wtime.h"
 #include "inner_solve.h"
 #include "factorize.h"
 #include "update_W.h"
 #include "auxiliary_eigs.h"
 #endif
+
+#ifdef SUPPORTED_TYPE
 
 static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
       PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
@@ -63,6 +60,8 @@ static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
       SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
       PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
       SCALAR *result, PRIMME_INT ldresult, primme_context ctx);
+
+static int perm_set_value_on_pos(int *p, int val, int pos, int n);
 
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
@@ -328,31 +327,31 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       for (i=0; i<blockSize; i++) p0[i] = i;
       for (i = conv = 0; i < blockSize; i++) {
          if (!ISFINITE(sigma_prev[p[i]]) || sigma_prev[p[i]] == 0.0L) {
-            if (primme->printLevel >= 5 && primme->procID == 0) {
-               fprintf(primme->outputFile, "Exiting because SIGMA %e in block vector %d\n", sigma_prev[p[i]], p[i]);
-            }
+            PRINTF(5, "Exiting because SIGMA %e in block vector %d",
+                  sigma_prev[p[i]], p[i]);
+
             /* sol = r if first iteration */
             if (numIts == 0) {
                Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
                      &sol[ldsol * i], ldsol, ctx);
             }
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
 
          alpha_prev[p[i]] = rho_prev[p[i]]/sigma_prev[p[i]];
-         if (!ISFINITE(alpha_prev[p[i]]) || fabs(alpha_prev[p[i]]) < MACHINE_EPSILON || fabs(alpha_prev[p[i]]) > 1.0L/MACHINE_EPSILON){
-            if (primme->printLevel >= 5 && primme->procID == 0) {
-               fprintf(primme->outputFile,"Exiting because ALPHA %e in block vector %d\n",alpha_prev[p[i]], p[i]);
-            }
+         if (!ISFINITE(alpha_prev[p[i]]) ||
+               fabs(alpha_prev[p[i]]) < MACHINE_EPSILON ||
+               fabs(alpha_prev[p[i]]) > 1.0L / MACHINE_EPSILON) {
+            PRINTF(5, "Exiting because ALPHA %e in block vector %d",
+                  alpha_prev[p[i]], p[i]);
+
             /* sol = r if first iteration */
             if (numIts == 0) {
                Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
                      &sol[ldsol * i], ldsol, ctx);
             }
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
 
@@ -392,12 +391,15 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          int j;
          if (dot_sol) dot_sol[i] = 0.0;
          for (j = 0; j < nLocal; j++) {
-            delta[i * nLocal + j] = delta[i * nLocal + j] * (HSCALAR)gamma[p[i]] +
-                                    d[nLocal * i + j] * (HSCALAR)eta[p[i]];
-            sol[ldsol * i + j] = delta[nLocal * i + j] + sol[ldsol * i + j];
+            SET_COMPLEX(delta[i * nLocal + j],
+                  TO_COMPLEX(delta[i * nLocal + j]) * (HSCALAR)gamma[p[i]] +
+                        TO_COMPLEX(d[nLocal * i + j]) * (HSCALAR)eta[p[i]]);
+            SET_COMPLEX(
+                  sol[ldsol * i + j], TO_COMPLEX(delta[nLocal * i + j]) +
+                                            TO_COMPLEX(sol[ldsol * i + j]));
             if (dot_sol)
-               dot_sol[i] +=
-                     REAL_PART(CONJ(sol[ldsol * i + j]) * sol[ldsol * i + j]);
+               dot_sol[i] += REAL_PART(CONJ(TO_COMPLEX(sol[ldsol * i + j])) *
+                                       TO_COMPLEX(sol[ldsol * i + j]));
          }
 #else
          Num_scal_Sprimme(
@@ -412,7 +414,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 #endif
       }
 
-      if (dot_sol) CHKERR(globalSum_RHprimme(dot_sol, dot_sol, blockSize, ctx));
+      if (dot_sol) CHKERR(globalSum_RHprimme(dot_sol, blockSize, ctx));
 
       /* Compute B-norm of sol if adapting stopping and a generalized problem is
        * being solved */
@@ -428,21 +430,16 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       for (i=0; i<blockSize; i++) p0[i] = i;
       for (i = conv = 0; i < blockSize; i++) {
          if (fabs(rho_prev[p[i]]) == 0.0L ) {
-            if (primme->printLevel >= 5 && primme->procID == 0) {
-               fprintf(primme->outputFile,"Exiting because abs(rho) %e in block vector %d\n",
-                     fabs(rho_prev[p[i]]), p[i]);
-            }
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            PRINTF(5, "Exiting because abs(rho) %e in block vector %d",
+                  fabs(rho_prev[p[i]]), p[i]);
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
       
          if (numIts > 0 && tau[p[i]] < LTolerance) {
-            if (primme->printLevel >= 5 && primme->procID == 0) {
-               fprintf(primme->outputFile, " tau < LTol %e %e in block vector %d\n",tau[p[i]], LTolerance, p[i]);
-            }
-            p0[blockSize - ++conv] = i;
-            p0[i] = blockSize - conv;
+            PRINTF(5, " tau < LTol %e %e in block vector %d", tau[p[i]],
+                  LTolerance, p[i]);
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
          if (ETolerance > 0.0 || ETolerance_factor > 0.0) {
@@ -498,50 +495,36 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             /* Stopping criteria                                       */
             /* --------------------------------------------------------*/
 
-            if (numIts > 0 &&
-                  (tau_prev[p[i]] <= eres_updated[p[i]] || eres_prev <= tau[p[i]])) {
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile, " tau < R eres for block vector %d\n", p[i]);
-               }
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+            if (numIts > 0 && (tau_prev[p[i]] <= eres_updated[p[i]] ||
+                                    eres_prev <= tau[p[i]])) {
+               PRINTF(5, " tau < R eres for block vector %d", p[i]);
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
             if (primme->target == primme_smallest &&
                   eval_updated > eval_prev[p[i]]) {
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile, "eval_updated > eval_prev in block vector %d\n", p[i]);
-               }
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               PRINTF(5, "eval_updated > eval_prev in block vector %d", p[i]);
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
             else if (primme->target == primme_largest && eval_updated < eval_prev[p[i]]){
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile, "eval_updated < eval_prev in block vector %d\n", p[i]);
-               }
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               PRINTF(5, "eval_updated < eval_prev in block vector %d", p[i]);
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             } else if (primme->target == primme_closest_abs &&
                        fabs(eval[p[i]] - eval_updated) >
                              tau_init[p[i]] + eres_updated[p[i]]) {
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile,
-                        "|eval-eval_updated| > tau0+eres in block vector %d\n", p[i]);
-               }
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               PRINTF(5, "|eval-eval_updated| > tau0+eres in block vector %d",
+                     p[i]);
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
           
             if (numIts > 0 && eres_updated[p[i]] < ETolerance*tau_init[p[i]]) {
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile, "eres < eresTol %e in block vector %d\n",eres_updated[p[i]], p[i]);
-               }
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               PRINTF(5, "eres < eresTol %e in block vector %d",
+                     eres_updated[p[i]], p[i]);
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
@@ -559,14 +542,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   0 /* evec not given */, tol, &isConv, ctx));
 
             if (numIts > 0 && isConv) {
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile,
-                        " eigenvalue and residual norm "
-                        "passed convergence criterion in block vector %d\n", p[i]);
-               }
+               PRINTF(5,
+                     "eigenvalue and residual norm passed convergence "
+                     "criterion in block vector %d",
+                     p[i]);
                (*touch)++;
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
@@ -574,18 +555,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
             /* Report inner iteration */
             if (primme->monitorFun) {
-               int ZERO = 0, ONE = 1;
-               primme_event EVENT_INNER_ITERATION = primme_event_inner_iteration;
-               int err;
-               primme->stats.elapsedTime = primme_wTimer() - startTime;
-               HREAL evalr = eval_updated, resr = eres_updated[p[i]], taur = tau[p[i]];
+               int ZERO = 0, UNCO = UNCONVERGED;
+               HREAL evalr = eval_updated, resr = eres_updated[p[i]];
 
-               CHKERRM((primme->monitorFun(&evalr, &ONE, NULL, &ZERO, &ONE,
-                              &resr, NULL, NULL, NULL, NULL, NULL, &numIts,
-                              &taur, &EVENT_INNER_ITERATION, primme, &err),
-                             err),
-                     PRIMME_USER_FAILURE, "Error returned by monitorFun: %d",
-                     err);
+               CHKERR(monitorFun_Sprimme(&evalr, 1, &UNCO, &ZERO, 1, &resr, -1,
+                     NULL, -1, NULL, NULL, numIts, tau[p[i]], NULL, 0.0,
+                     primme_event_inner_iteration, startTime, ctx));
             }
 
            /* --------------------------------------------------------*/
@@ -599,30 +574,20 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   tau[p[i]] / LTolerance_factor, &isConv, ctx));
 
             if (numIts > 0 && isConv) {
-               if (primme->printLevel >= 5 && primme->procID == 0) {
-                  fprintf(primme->outputFile,
-                        " eigenvalue and residual norm "
-                        "passed convergence criterion in block vector %d\n", p[i]);
-               }
-               p0[blockSize - ++conv] = i;
-               p0[i] = blockSize - conv;
+               PRINTF(5,
+                     "eigenvalue and residual norm "
+                     "passed convergence criterion in block vector %d",
+                     p[i]);
+               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
 
             else if (primme->monitorFun) {
                /* Report for non adaptive inner iterations */
-               int ZERO = 0, ONE = 1, UNCO = UNCONVERGED;
-               primme_event EVENT_INNER_ITERATION =
-                     primme_event_inner_iteration;
-               int err;
-               primme->stats.elapsedTime = primme_wTimer() - startTime;
-               HREAL evalr = eval[p[i]], resr = rnorm[p[i]], taur = tau[p[i]];
-               CHKERRM((primme->monitorFun(&evalr, &ONE, &UNCO, &ZERO, &ONE,
-                              &resr, NULL, NULL, NULL, NULL, NULL, &numIts,
-                              &taur, &EVENT_INNER_ITERATION, primme, &err),
-                             err),
-                     PRIMME_USER_FAILURE, "Error returned by monitorFun: %d",
-                     err);
+               int ZERO = 0, UNCO = UNCONVERGED;
+               CHKERR(monitorFun_Sprimme(&eval[p[i]], 1, &UNCO, &ZERO, 1,
+                     &rnorm[p[i]], -1, NULL, -1, NULL, NULL, numIts, tau[p[i]],
+                     NULL, 0.0, primme_event_inner_iteration, startTime, ctx));
             }
          }
       }
@@ -703,7 +668,6 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    CHKERR(Num_free_iprimme(p, ctx));
    CHKERR(Num_free_iprimme(p0, ctx));
  
-   for (i=0; i<blockSize; i++) rnorm[i] = eres_updated[i];
    return 0;
 }
    
@@ -821,7 +785,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
          1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
 
    /* Global sum: overlaps = Q'*v */
-   CHKERR(globalSum_SHprimme(overlaps, overlaps, numCols * blockSize, ctx));
+   CHKERR(globalSum_SHprimme(overlaps, numCols * blockSize, ctx));
 
    /* Backsolve only if there is a skew projector */
    if (Mfact != NULL) {
@@ -923,3 +887,39 @@ static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
 
    return 0;
 }
+
+/*******************************************************************************
+ * Subroutine perm_set_value_on_pos - find the position of the value on the
+ *    vector and swap with the given position.
+ *
+ * Input/Output Parameters
+ * -----------------------
+ * p      The input vector (it is modified)
+ *
+ * val    The value to seek
+ *
+ * pos    The position where the value is going to be moved
+ *
+ * n      The length of the vector
+ *
+ * Output Parameters
+ * -----------------
+ * error code
+ *
+ ******************************************************************************/
+
+static int perm_set_value_on_pos(int *p, int val, int pos, int n) {
+
+   int i;
+   for (i=0; i<n; i++) {
+      if (p[i] == val) {
+         p[i] = p[pos];
+         p[pos] = val;
+         return 0;
+      }
+   }
+
+   return -1;
+}
+
+#endif /* SUPPORTED_TYPE */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,12 +41,13 @@
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "init.h"
-#include "update_projection.h"
 #include "update_W.h"
 #include "ortho.h"
 #include "factorize.h"
 #include "auxiliary_eigs.h"
 #endif
+
+#ifdef SUPPORTED_TYPE
 
 static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, int dv1, int dv2,
@@ -285,13 +286,13 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    /*----------------------------------------------------------------------*/
 
    for (i=dv1; i<dv1+blockSize; i++) {
-      Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV*i], ctx);
+      CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV*i], ctx));
    }
    int nV=0;
    CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, dv1,
          dv1 + blockSize - 1, locked, ldlocked, numLocked, BV, ldBV, NULL, 0,
          nLocal, maxRank, &nV, ctx));
-   CHKERRM(nV != dv1+blockSize, -1, "Random basis is not full rank\n");
+   CHKERRM(nV != dv1+blockSize, -1, "Random basis is not full rank");
 
    /* Generate the remaining vectors in the sequence */
 
@@ -314,7 +315,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, nV, i + m - 1,
             locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal,
             primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
-      CHKERRM(nV != i+m, -1, "Random basis in not full rank\n");
+      CHKERRM(nV != i+m, -1, "Random basis in not full rank");
    }
 
    CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, dv2-blockSize+1,
@@ -322,3 +323,5 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */

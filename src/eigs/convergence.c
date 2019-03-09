@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, College of William & Mary
+ * Copyright (c) 2018, College of William & Mary
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,6 @@
  *
  ******************************************************************************/
 
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -44,6 +41,8 @@
 #include "ortho.h"
 #include "auxiliary_eigs.h"
 #endif
+
+#ifdef SUPPORTED_TYPE
 
 static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       int evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
@@ -67,8 +66,7 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
  * left, right    Range of vectors to be checked for convergence
  * blockNorms     Residual norms of the Ritz vectors starting from left
  * hVals          The Ritz values
- * caller         caller function: 0: prepare_candidates, 1: restart_locking,
- *                                 2: main_iteration checking practical. conv.
+ * practConvCheck Disable (-1) or enforce (1) the practically convergence checking
  * VtBV           evecs'*B*evecs
  * ctx            Structure containing various solver parameters
  *
@@ -88,7 +86,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       PRIMME_INT ldR, int givenR, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HSCALAR *VtBV,
       int ldVtBV, int left, int right, int *flags, HREAL *blockNorms,
-      HREAL *hVals, int *reset, int caller, primme_context ctx) {
+      HREAL *hVals, int *reset, int practConvCheck, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -98,7 +96,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
    double targetShift;     /* target shift */
-   (void)caller;
 
    CHKERR(Num_malloc_iprimme(right-left, &toProject, ctx));
 
@@ -170,9 +167,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       /* consider converged still.                                         */
       /* ----------------------------------------------------------------- */
 
-      else if (primme->locking && numLocked > 0 &&
-               blockNorms[i - left] < attainableTol) {
-         if (givenR) {
+      else if (primme->locking && numLocked > 0 && practConvCheck >= 0) {
+         if (givenR && blockNorms[i - left] < attainableTol) {
             toProject[numToProject++] = i-left;
          }
          else if (flags[i] != PRACTICALLY_CONVERGED) {
@@ -240,7 +236,6 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
       double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx) {
 
-   primme_params *primme = ctx.primme;
    int i;
    HREAL *norms;
 
@@ -267,12 +262,8 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       blockNorms[iev[i]] = norms[i];
      
       if (norms[i] <= tol) {
-         if (primme->printLevel >= 5 && primme->procID == 0) {
-            fprintf(primme->outputFile,
-                  " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e\n", left + iev[i],
-                  (double)blockNorms[i]);
-            fflush(primme->outputFile);
-         }
+         PRINTF(5, " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e",
+               left + iev[i], (double)blockNorms[i]);
          flags[left+iev[i]] = PRACTICALLY_CONVERGED;
       }
       else {
@@ -284,3 +275,5 @@ static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
 
    return 0;
 }
+
+#endif /* SUPPORTED_TYPE */
