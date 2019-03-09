@@ -22,7 +22,7 @@ endif
 
 # MATLAB MEX compiler
 MEX ?= mex
-ifneq ($(findstring MEX,$(shell $(MEX) -version)),MEX)
+ifneq ($(findstring MEX,$(shell $(MEX) -version 2>&1 || true)),MEX)
    MEX_ERROR = $(error Invalid MATLAB`s mex, $(MEX). Set MEX=/path/to/Matlab/bin/mex)
 endif
 
