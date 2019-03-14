@@ -209,35 +209,21 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    /* Set some defaults  */
    primme_set_defaults(primme);
 
-   if (primme->orth == primme_orth_default) {
-#ifdef USE_HOST
-      /* The current code for block orthogonalization does not produce     */
-      /* a machine precision orthonormal basis. So block orthogonalization */
-      /* is used only when V'BV is computed explicitly.                    */
+   /* Observed orthogonality issues finding the largest/smallest values in  */
+   /* single precision. Computing V'*B*V and solving the projected problem  */
+   /* V'AVx = V'BVxl mitigates the problem.                                 */
+   /* Also if maxBlockSize > 1, the code uses the block orthogonalization   */
+   /* instead of Gram-Schmidt. But the current block orthogonalization does */
+   /* not produce a machine precision orthonormal basis, and we deal with   */
+   /* this by computing V'*B*V also in this case.                           */
 
-      if (primme->maxBlockSize > 1) {
+
+   if (primme->orth == primme_orth_default) {
+      if (PRIMME_OP_SCALAR <= primme_op_float || primme->maxBlockSize > 1) {
          primme->orth = primme_orth_explicit_I;
       } else {
          primme->orth = primme_orth_implicit_I;
       }
-#else
-
-      /* Observed orthogonality issues finding the largest/smallest values in  */
-      /* single precision. Computing V'*B*V and solving the projected problem  */
-      /* V'AVx = V'BVxl mitigates the problem.                                 */
-
-#  ifdef USE_FLOAT
-      if (primme->projectionParams.projection == primme_proj_RR &&
-                  (primme->target == primme_largest ||
-                        primme->target == primme_smallest ||
-                        primme->target == primme_largest_abs) ||
-            primme->maxBlockSize > 1) {
-         primme->orth = primme_orth_explicit_I;
-      }
-      else
-#  endif
-         primme->orth = primme_orth_implicit_I;
-#endif
    }
 
    /* If we are free to choose the leading dimension of V and W, use    */
