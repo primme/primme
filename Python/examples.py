@@ -38,15 +38,34 @@ import primme
 A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
 
 # Compute the three largest eigenvalues of A with a residual norm tolerance of 1e-6
-evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
+evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', maxBlockSize=2)
 assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
 print(evals) # [ 99.,  98.,  97.]
+import sys
+sys.stdout.flush()
 
 # Compute the three largest eigenvalues of A orthogonal to the previous computed
 # eigenvectors, i.e., the next three eigenvalues
 evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
 assert_allclose(evals, [ 96.,  95.,  94.], atol=1e-6*100)
 print(evals) # [ 96.,  95.,  94.]
+
+try:
+    import pycuda.autoinit
+    import pycuda.sparse.packeted
+    import pycuda.sparse.coordinate
+    with_gpuarray = True
+except Exception:
+    with_gpuarray = False
+    print("Not testing GPU examples")
+
+if with_gpuarray:
+    A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
+    Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
+    evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA', maxBlockSize=1)
+    assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
+    print(evals) # [ 99.,  98.,  97.]
+    
 
 # Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
 A = scipy.sparse.spdiags(range(10), [0], 100, 10)
@@ -63,9 +82,9 @@ A = scipy.sparse.rand(10000, 100, density=0.001, random_state=10)
 # Compute the three closest singular values to 6.0 with a tolerance of 1e-6
 svecs_left, svals, svecs_right, stats = primme.svds(A, 3, which='SM', tol=1e-6,
                                                     return_stats=True)
-assert_allclose(svals, [0.79488437, 0.85890809, 0.87174328], atol=1e-6*103)
-print(svals) # [ 0.79488437  0.85890809  0.87174328]
-print(stats["elapsedTime"], stats["numMatvecs"]) # it took that seconds and 101 matvecs
+A_svals = svals
+print(svals)
+print(stats["elapsedTime"], stats["numMatvecs"])
 
 # Compute the square diagonal preconditioner
 prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
@@ -74,5 +93,18 @@ prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
 # Recompute the singular values but using the preconditioner
 svecs_left, svals, svecs_right, stats = primme.svds(A, 3, which='SM', tol=1e-6,
                         precAHA=prec, return_stats=True)
-assert_allclose(svals, [0.79488437, 0.85890809, 0.87174328], atol=1e-6*103)
-print(stats["elapsedTime"], stats["numMatvecs"]) # it took that seconds and 45 matvecs
+assert_allclose(svals, A_svals, atol=1e-6*100)
+print(stats["elapsedTime"], stats["numMatvecs"])
+
+if with_gpuarray:
+    # NOTE: PacketedSpMV only supports square matrices
+    A = scipy.sparse.spdiags(np.asarray([range(100),np.ones(100)], dtype=np.float32), [0,1], 100, 100)
+    ADgpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
+    AHgpu = pycuda.sparse.packeted.PacketedSpMV(A.H, True, A.dtype)
+    #from scipy.sparse.linalg.interface import LinearOperator
+    Agpu = primme.LinearOperator(A.shape, matvec=ADgpu, rmatvec=AHgpu, dtype=A.dtype, support_matmat=False)
+    print(Agpu)
+    svecs_left, svals, svecs_right, stats = primme.svds(Agpu, 3, which='SM', tol=1e-6,
+                                           use_gpuarray=True, return_stats=True, printLevel=3)
+    assert_allclose(svals, [0.79488437, 0.85890809, 0.87174328], atol=1e-6*103)
+    print(svals) # [ 0.79488437  0.85890809  0.87174328]

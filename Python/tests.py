@@ -154,163 +154,163 @@ def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
    if add_stats:
       st.add("eigsh: " + case_desc, ("eigsh",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
 
-def test_primme_eigsh():
-   """
-   Test cases for primme.eighs for standard problems.
-   """
-
-   for n in (2, 3, 5, 10, 100):
-      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
-         tol = np.finfo(dtype).eps**.5 * 0.1
-         for gen in (ElasticRod, MikotaPair, diagonal):
-            A = toStandardProblem(gen(n, dtype=dtype))
-            evals, evecs = np.linalg.eigh(A)
-            sigma0 = evals[0]*.51 + evals[-1]*.49
-            for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
-               if gen.__name__ != "ElasticRod" and sigma is not None:
-                  precs = (None, jacobi_prec(A, sigma))
-               else:
-                  precs = (None,)
-               for prec in precs:
-                  for k in (1, 2, 3, 5, 10, 70):
-                     if k > n: continue
-                     case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                           (gen.__name__, n, dtype, k, prec is not None, which, sigma))
-                     yield (eigsh_check, eigsh, A, None, 1, k, prec, which, sigma, tol, evals, case_desc)
-
-def test_primme_eigsh_gen():
-   """
-   Test cases for primme.eighs for generalized problems.
-   """
-
-   for n in (2, 3, 5, 10, 100):
-      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
-         tol = np.finfo(dtype).eps**.5 * 0.1
-         for gen in (ElasticRod, MikotaPair):
-            A, B = gen(n, dtype=dtype)
-            stdP = toStandardProblem((A,B))
-            evals, evecs = np.linalg.eigh(stdP)
-            normInvB = 1./min(np.linalg.eigvalsh(B))
-            sigma0 = evals[0]*.51 + evals[-1]*.49
-            for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
-               if gen.__name__ != "ElasticRod" and sigma is not None:
-                  precs = (None, jacobi_prec(stdP, sigma))
-               else:
-                  precs = (None,)
-               for prec in precs:
-                  for k in (1, 2, 3, 5, 10, 50):
-                     if k > n: continue
-                     case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                           (gen.__name__, n, dtype, k, prec is not None, which, sigma))
-                     yield (eigsh_check, eigsh, A, B, normInvB, k, prec, which, sigma, tol, evals, case_desc)
-
-def test_primme_eigsh_matrix_types():
-   """
-   Test cases for primme.eighs with csr and LinearOperator matrix types.
-   """
-   n = 10
-   for dtype in (np.float64, np.complex64):
-      A = toStandardProblem(MikotaPair(n, dtype=dtype))
-      evals, evecs = np.linalg.eigh(A)
-      sigma0 = evals[0]*.51 + evals[-1]*.49
-      for op in ((lambda x : x), csr_matrix, aslinearoperator): 
-         which, sigma = 'SM', sigma0
-         prec = jacobi_prec(A, sigma)
-         k = 5
-         M = op(prec) if prec is not None else None
-         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                      (MikotaPair.__name__, n, dtype, k, prec is None, which, sigma))
-         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, evals, case_desc, False)
-
-
-def select_pairs_svds(k, which, svals):
-   """
-   Return the k values that svds should return for that which.
-   """
-
-   if which == 'LM':
-      f = lambda x : -x
-   elif which == 'SM':
-      f = lambda x : x
-   else:
-      sigma = float(which)
-      f = lambda x : abs(x - sigma)
-
-   n = max(svals.shape)
-   return np.array(sorted(svals, key=f)[0:k])
- 
-def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc, add_stats=True):
-   """
-   Test svds
-   """
-
-   try:
-      svl, sva, svr, stats = svds_solver(A, k, None, which=which, tol=tol,
-            maxMatvecs=30000, return_stats=True, **M)
-   except Exception as e:
-      raise Exception("Ups! Case %s\n%s" % (case_desc, e))
-   sol_svals = select_pairs_svds(k, which, exact_svals)
-   svr = svr.T.conj()
-
-   # Check singular values are close enough to the exact ones
-   ANorm = np.amax(exact_svals)
-   assert_allclose(sorted(sva), sorted(sol_svals), atol=ANorm*tol, rtol=1, err_msg=case_desc)
-
-   # Check the residual norm associated to the returned pairs
-   R = A.dot(svr) - svl.dot(np.diag(sva))
-   Rnorms = np.linalg.norm(R, axis=0)
-   assert_allclose(Rnorms, np.zeros(k), atol=ANorm*tol*(k**.5), rtol=1, err_msg=case_desc)
-
-   # Add stats
-   if add_stats:
-      st.add("svds: " + case_desc, ("svds",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
-
-def test_primme_svds():
-   """
-   Generate all test cases for primme.svds.
-   """
-
-   for n in (2, 3, 5, 10, 50, 100):
-      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
-         tol = np.finfo(dtype).eps**.5 * 0.1
-         c = np.finfo(dtype).eps**.333
-         for gen_name, gen in (("MikotaPair", (lambda n, d: toStandardProblem(MikotaPair(n, dtype=d)))),
-                               ("Lauchli_like_vert", (lambda n, d: Lauchli_like(n*2, n, c, dtype=d))),
-                               ("Lauchli_like_hori", (lambda n, d: Lauchli_like(n, n*2, c, dtype=d)))):
-            A = gen(n, dtype)
-            svl, sva, svr = np.linalg.svd(A, full_matrices=False)
-            sigma0 = sva[0]*.51 + sva[-1]*.49
-            for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
-               for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
-                  # If the condition number is too large, the first stage may end
-                  # with approximations of larger values than the actual smallest
-                  if (gen_name == "MikotaPair" and n > 50
-                           and (dtype is np.float32 or dtype is np.complex64)
-                           and which != 'LM'):
-                     continue
-                  for k in (1, 2, 3, 5, 10, 15):
-                     if k > n: continue
-                     case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
-                           (gen_name, n, dtype, k, bool(prec), which, tol))
-                     yield (svds_check, svds, A, k, prec, which, tol, sva, case_desc)
-
-def test_primme_svds_matrix_types():
-   """
-   Generate all test cases for primme.svds with csr and LinearOperator matrix types.
-   """
-
-   n = 10
-   for dtype in (np.float64, np.complex64):
-      A = Lauchli_like(n*2, n, dtype=dtype)
-      svl, sva, svr = np.linalg.svd(A, full_matrices=False)
-      sigma0 = sva[0]*.51 + sva[-1]*.49
-      for op in ((lambda x : x), csr_matrix, aslinearoperator): 
-         which, sigma = 'SM', 0
-         prec = sqr_diagonal_prec(A, sigma)
-         k = 2
-         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
-                      ("Lauchli_like_vert", n, dtype, k, bool(prec), which))
-         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, case_desc, False)
+#def test_primme_eigsh():
+#   """
+#   Test cases for primme.eighs for standard problems.
+#   """
+#
+#   for n in (2, 3, 5, 10, 100):
+#      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
+#         tol = np.finfo(dtype).eps**.5 * 0.1
+#         for gen in (ElasticRod, MikotaPair, diagonal):
+#            A = toStandardProblem(gen(n, dtype=dtype))
+#            evals, evecs = np.linalg.eigh(A)
+#            sigma0 = evals[0]*.51 + evals[-1]*.49
+#            for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
+#               if gen.__name__ != "ElasticRod" and sigma is not None:
+#                  precs = (None, jacobi_prec(A, sigma))
+#               else:
+#                  precs = (None,)
+#               for prec in precs:
+#                  for k in (1, 2, 3, 5, 10, 70):
+#                     if k > n: continue
+#                     case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
+#                           (gen.__name__, n, dtype, k, prec is not None, which, sigma))
+#                     yield (eigsh_check, eigsh, A, None, 1, k, prec, which, sigma, tol, evals, case_desc)
+#
+#def test_primme_eigsh_gen():
+#   """
+#   Test cases for primme.eighs for generalized problems.
+#   """
+#
+#   for n in (2, 3, 5, 10, 100):
+#      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
+#         tol = np.finfo(dtype).eps**.5 * 0.1
+#         for gen in (ElasticRod, MikotaPair):
+#            A, B = gen(n, dtype=dtype)
+#            stdP = toStandardProblem((A,B))
+#            evals, evecs = np.linalg.eigh(stdP)
+#            normInvB = 1./min(np.linalg.eigvalsh(B))
+#            sigma0 = evals[0]*.51 + evals[-1]*.49
+#            for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
+#               if gen.__name__ != "ElasticRod" and sigma is not None:
+#                  precs = (None, jacobi_prec(stdP, sigma))
+#               else:
+#                  precs = (None,)
+#               for prec in precs:
+#                  for k in (1, 2, 3, 5, 10, 50):
+#                     if k > n: continue
+#                     case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
+#                           (gen.__name__, n, dtype, k, prec is not None, which, sigma))
+#                     yield (eigsh_check, eigsh, A, B, normInvB, k, prec, which, sigma, tol, evals, case_desc)
+#
+#def test_primme_eigsh_matrix_types():
+#   """
+#   Test cases for primme.eighs with csr and LinearOperator matrix types.
+#   """
+#   n = 10
+#   for dtype in (np.float64, np.complex64):
+#      A = toStandardProblem(MikotaPair(n, dtype=dtype))
+#      evals, evecs = np.linalg.eigh(A)
+#      sigma0 = evals[0]*.51 + evals[-1]*.49
+#      for op in ((lambda x : x), csr_matrix, aslinearoperator): 
+#         which, sigma = 'SM', sigma0
+#         prec = jacobi_prec(A, sigma)
+#         k = 5
+#         M = op(prec) if prec is not None else None
+#         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
+#                      (MikotaPair.__name__, n, dtype, k, prec is None, which, sigma))
+#         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, evals, case_desc, False)
+#
+#
+#def select_pairs_svds(k, which, svals):
+#   """
+#   Return the k values that svds should return for that which.
+#   """
+#
+#   if which == 'LM':
+#      f = lambda x : -x
+#   elif which == 'SM':
+#      f = lambda x : x
+#   else:
+#      sigma = float(which)
+#      f = lambda x : abs(x - sigma)
+#
+#   n = max(svals.shape)
+#   return np.array(sorted(svals, key=f)[0:k])
+# 
+#def svds_check(svds_solver, A, k, M, which, tol, exact_svals, case_desc, add_stats=True):
+#   """
+#   Test svds
+#   """
+#
+#   try:
+#      svl, sva, svr, stats = svds_solver(A, k, None, which=which, tol=tol,
+#            maxMatvecs=30000, return_stats=True, **M)
+#   except Exception as e:
+#      raise Exception("Ups! Case %s\n%s" % (case_desc, e))
+#   sol_svals = select_pairs_svds(k, which, exact_svals)
+#   svr = svr.T.conj()
+#
+#   # Check singular values are close enough to the exact ones
+#   ANorm = np.amax(exact_svals)
+#   assert_allclose(sorted(sva), sorted(sol_svals), atol=ANorm*tol, rtol=1, err_msg=case_desc)
+#
+#   # Check the residual norm associated to the returned pairs
+#   R = A.dot(svr) - svl.dot(np.diag(sva))
+#   Rnorms = np.linalg.norm(R, axis=0)
+#   assert_allclose(Rnorms, np.zeros(k), atol=ANorm*tol*(k**.5), rtol=1, err_msg=case_desc)
+#
+#   # Add stats
+#   if add_stats:
+#      st.add("svds: " + case_desc, ("svds",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
+#
+#def test_primme_svds():
+#   """
+#   Generate all test cases for primme.svds.
+#   """
+#
+#   for n in (2, 3, 5, 10, 50, 100):
+#      for dtype in (np.float32, np.complex64, np.float64, np.complex128):
+#         tol = np.finfo(dtype).eps**.5 * 0.1
+#         c = np.finfo(dtype).eps**.333
+#         for gen_name, gen in (("MikotaPair", (lambda n, d: toStandardProblem(MikotaPair(n, dtype=d)))),
+#                               ("Lauchli_like_vert", (lambda n, d: Lauchli_like(n*2, n, c, dtype=d))),
+#                               ("Lauchli_like_hori", (lambda n, d: Lauchli_like(n, n*2, c, dtype=d)))):
+#            A = gen(n, dtype)
+#            svl, sva, svr = np.linalg.svd(A, full_matrices=False)
+#            sigma0 = sva[0]*.51 + sva[-1]*.49
+#            for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
+#               for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
+#                  # If the condition number is too large, the first stage may end
+#                  # with approximations of larger values than the actual smallest
+#                  if (gen_name == "MikotaPair" and n > 50
+#                           and (dtype is np.float32 or dtype is np.complex64)
+#                           and which != 'LM'):
+#                     continue
+#                  for k in (1, 2, 3, 5, 10, 15):
+#                     if k > n: continue
+#                     case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
+#                           (gen_name, n, dtype, k, bool(prec), which, tol))
+#                     yield (svds_check, svds, A, k, prec, which, tol, sva, case_desc)
+#
+#def test_primme_svds_matrix_types():
+#   """
+#   Generate all test cases for primme.svds with csr and LinearOperator matrix types.
+#   """
+#
+#   n = 10
+#   for dtype in (np.float64, np.complex64):
+#      A = Lauchli_like(n*2, n, dtype=dtype)
+#      svl, sva, svr = np.linalg.svd(A, full_matrices=False)
+#      sigma0 = sva[0]*.51 + sva[-1]*.49
+#      for op in ((lambda x : x), csr_matrix, aslinearoperator): 
+#         which, sigma = 'SM', 0
+#         prec = sqr_diagonal_prec(A, sigma)
+#         k = 2
+#         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
+#                      ("Lauchli_like_vert", n, dtype, k, bool(prec), which))
+#         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, case_desc, False)
 
 def test_examples_from_doc():
    import doctest

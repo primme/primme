@@ -1,35 +1,69 @@
-
+from inspect import signature
+import traceback
 import numpy as np
 cimport numpy as np
-from scipy.sparse.linalg.interface import aslinearoperator
+from scipy.sparse.linalg.interface import aslinearoperator, LinearOperator as NumPyLinearOperator
 cimport cython
 from cython cimport view
+try:
+    import pycuda.autoinit
+    import pycuda.gpuarray as gpuarray
+    import pycuda.driver
+    import pycuda.sparse.operator
+    import pycuda.sparse.coordinate
+    import pycuda.sparse.packeted 
+except Exception as e:
+    gpuarray_exception = e
+    gpuarray = None
 
-cdef extern from "../include/primme.h":
-    struct primme_params:
+class LinearOperator:
+    def __init__(self, shape, matvec, rmatvec=None, support_matmat=True, dtype=None):
+
+        self.shape = shape
+
+        def __matmat(matvec, X, Y=None):
+            if Y is None:
+                Y = X.copy()
+            for i in range(X.shape[1]):
+                Y[:,i] = matvec(X[:,i], Y[:,i])
+            return Y
+
+        def __process_matvec(matvec):
+            if len(signature(matvec).parameters) <= 1:
+                matvec2 = lambda X,_: matvec(X)
+            else:
+                matvec2 = matvec
+            if not support_matmat:
+                matmat = lambda X,Y: __matmat(matvec2, X, Y)
+            else:
+                matmat = matvec2
+            return matmat
+
+        self.matvec = __process_matvec(matvec)
+        self.rmatvec = __process_matvec(rmatvec)
+        self.dtype = dtype
+
+    @property
+    def H(self):
+        return LinearOperator(self.shape, self.rmatvec, self.matvec, self.dtype)
+
+    def __repr__(self):
+        return "LinearOperator(shape=%s, matvec=%s, rmatvec=%s, dtype=%s)" %(self.shape, self.matvec, self.rmatvec, self.dtype)
+
+
+cdef extern from "magma_v2.h":
+    struct magma_queue:
         pass
-    ctypedef int primme_preset_method
-    ctypedef enum primme_type:
-        primme_int, primme_double, primme_pointer
-    ctypedef int primme_params_label
-    ctypedef int primme_event
-    int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
-    int cprimme(float *evals, np.complex64_t *evecs, float *resNorms, primme_params *primme)
-    int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
-    int zprimme(double *evals, np.complex128_t *evecs, double *resNorms, primme_params *primme)
-    int magma_sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
-    int magma_cprimme(float *evals, np.complex64_t *evecs, float *resNorms, primme_params *primme)
-    int magma_dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
-    int magma_zprimme(double *evals, np.complex128_t *evecs, double *resNorms, primme_params *primme)
-    primme_params* primme_params_create()
-    int primme_params_destroy(primme_params *primme)
-    void primme_initialize(primme_params *primme)
-    int  primme_set_method(primme_preset_method method, primme_params *params)
-    void primme_free(primme_params *primme)
-    int primme_get_member(primme_params *primme, primme_params_label label, void *value)
-    int primme_set_member(primme_params *primme, primme_params_label label, void *value)
-    int primme_member_info(primme_params_label *label, const char** label_name, primme_type *t, int *arity)
-    int primme_constant_info(const char* label_name, int *value)
+    ctypedef magma_queue* magma_queue_t
+    int magma_init()
+    int magma_finalize()
+    void magma_queue_create(int device, magma_queue_t *queue)
+    void magma_queue_destroy(magma_queue_t queue)
+    #void magma_copymatrix(int m, int n, int elemsize, void *src, int ldsrc, void *dst, int lddst, magma_queue_t queue)
+    void magma_queue_sync(magma_queue_t queue)
+
+cdef extern from "cuda_runtime.h":
+    int cudaMemset2D(void * x, size_t ld, int value, size_t bytes_column, int n)
 
 ctypedef fused numerics:
     float
@@ -41,18 +75,116 @@ ctypedef fused numerics_real:
     float
     double
 
+# Initialize MAGMA
+# NOTE: see documentation for set_device
+
+__device_id = -1
+cdef magma_queue_t __queue = NULL
+
+def set_device(device):
+    """
+    Set the GPU device that the functions eigsh and svds will use in case the
+    input matrix is on GPU.
+
+    WARNING: setting a new device may invalidate previous CUDA handlers.
+
+    Parameters
+    ----------
+    device : int, positive or zero
+        GPU device index
+    """
+
+    device = int(device)
+    if device < 0:
+        raise ValueError("device should be >= 0")
+
+    # Avoid creating new queues
+    global __device_id
+    if device == __device_id:
+        return 
+
+    if __queue is not NULL:
+        magma_queue_destroy(__queue)
+    magma_queue_create(device, &__queue)
+    __device_id = device
+
+if gpuarray is not None:
+    if magma_init() != 0:
+        raise RuntimeError('MAGMA initialization failed')
+    set_device(pycuda.autoinit.context.get_device().get_attribute(pycuda.driver.device_attribute.PCI_DEVICE_ID))
+
+# Exception captured in user-defined functions
+cpdef Exception __user_function_exception = None
+
+cdef np.dtype get_np_type(numerics *p):
+    if numerics == double: return np.dtype(np.double)
+    elif numerics == float: return np.dtype(np.float32)
+    elif numerics == np.complex64_t: return np.dtype(np.complex64)
+    elif numerics == np.complex128_t: return np.dtype(np.complex128)
+
+cdef np.dtype get_np_type0(numerics *p):
+    cdef double *pd
+    cdef float *pf
+    cdef np.complex128_t *pcd
+    cdef np.complex64_t *pcf
+    if cython.typeof(p) == cython.typeof(pd):
+        return np.dtype(np.double)
+    elif cython.typeof(p) == cython.typeof(pf):
+        return np.dtype(np.float32)
+    elif cython.typeof(p) == cython.typeof(pcd):
+        return np.dtype(np.complex128)
+    elif cython.typeof(p) == cython.typeof(pcf):
+        return np.dtype(np.complex64)
+    else:
+        return None
+
+def __get_real_dtype(dtype):
+    if dtype.type is np.complex64 or dtype.type is np.float32:
+        return np.dtype(np.float32)
+    else:
+        return np.dtype(np.float64)
+
+cdef extern from "../include/primme.h":
+    struct primme_params:
+        pass
+    ctypedef int primme_preset_method
+    ctypedef enum primme_type:
+        primme_int, primme_double, primme_pointer
+    ctypedef int primme_params_label
+    ctypedef int primme_event
+    int sprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
+    int cprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
+    int dprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    int zprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    int magma_sprimme(float *evals, void *evecs, void *resNorms, primme_params *primme)
+    int magma_cprimme(float *evals, void *evecs, void *resNorms, primme_params *primme)
+    int magma_dprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    int magma_zprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    void primme_display_params(primme_params primme)
+    primme_params* primme_params_create()
+    int primme_params_destroy(primme_params *primme)
+    void primme_initialize(primme_params *primme)
+    int  primme_set_method(primme_preset_method method, primme_params *params)
+    void primme_free(primme_params *primme)
+    int primme_get_member(primme_params *primme, primme_params_label label, void *value)
+    int primme_set_member(primme_params *primme, primme_params_label label, void *value)
+    int primme_member_info(primme_params_label *label, const char** label_name, primme_type *t, int *arity)
+    int primme_constant_info(const char* label_name, int *value)
+
 cdef class PrimmeParams:
     cpdef primme_params *pp
     def __cinit__(self):
-        self.pp = primme_params_create()
+        self.pp = primme_params_create() 
         if self.pp is NULL:
             raise MemoryError()
+        primme_params_set_pointer(self.pp, "queue", <void*>&__queue)
 
     def __dealloc__(self):
         if self.pp is not NULL:
             primme_params_destroy(self.pp)
     
-def primme_params_get(PrimmeParams pp_, field_):
+def __primme_params_get(PrimmeParams pp_, field_):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_params_label l = -1
@@ -79,26 +211,50 @@ def primme_params_get(PrimmeParams pp_, field_):
 cdef object primme_params_get_object(primme_params *primme, cython.p_char field):
     cdef primme_params_label l = -1
     cdef primme_type t
-    cdef int arity
-    primme_member_info(&l, <const char **>&field, &t, &arity)
-    assert l >= 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+    cdef int arity, r
     cdef void *v_pvoid
-    primme_get_member(primme, l, &v_pvoid)
-    return <object>v_pvoid
+    try:
+        r = primme_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        r = primme_get_member(primme, l, &v_pvoid)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        if v_pvoid is NULL: return None
+        return <object>v_pvoid
+    except:
+        return None
+
+cdef void* primme_params_get_pointer(primme_params *primme, cython.p_char field):
+    cdef primme_params_label l = -1
+    cdef primme_type t
+    cdef int arity, r
+    cdef void *v_pvoid
+    try:
+        r = primme_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        r = primme_get_member(primme, l, &v_pvoid)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        return v_pvoid
+    except:
+        return NULL
 
 cdef np.int64_t primme_params_get_int(primme_params *primme, cython.p_char field):
     cdef primme_params_label l = -1
     cdef primme_type t
-    cdef int arity
-    primme_member_info(&l, <const char **>&field, &t, &arity)
-    assert l >= 0 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
+    cdef int arity, r
     cdef np.int64_t v_int
-    primme_get_member(primme, l, &v_int)
-    return v_int
+    try:
+        r = primme_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
+        r = primme_get_member(primme, l, &v_int)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        return v_int
+    except:
+        return -1
 
-def primme_params_set(PrimmeParams pp_, field_, value):
+def __primme_params_set(PrimmeParams pp_, field_, value):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
-    cdef const char* field = <const char *>field_
+    cdef const char* field = <const char*>field_
     cdef primme_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -111,7 +267,8 @@ def primme_params_set(PrimmeParams pp_, field_, value):
     if t == primme_pointer:
         primme_set_member(primme, l, <void*>value)
     elif t == primme_int:
-        if isinstance(value, str):
+        if isinstance(value, (bytes,str)):
+            value = bytes(value, 'ASCII')
             primme_constant_info(<const char*>value, &i)
             value = i
         v_int = value
@@ -120,9 +277,9 @@ def primme_params_set(PrimmeParams pp_, field_, value):
         v_double = value
         primme_set_member(primme, l, &v_double)
     else:
-        raise ValueError("Not supported type for member '%s'" % field)
+        raise ValueError("Not supported type for member '%s'" % field_)
    
-cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, void* value):
+cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, void* value) except *:
     cdef primme_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -130,7 +287,7 @@ cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, 
     assert(l >= 0 and arity == 1 and t == primme_pointer)
     primme_set_member(primme, l, value)
 
-cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, double *value):
+cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, double *value) except *:
     cdef primme_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -139,62 +296,92 @@ cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, 
     primme_set_member(primme, l, value)
 
 
-cdef np.dtype get_np_type(numerics *p):
-    cdef double *pd
-    cdef float *pf
-    cdef np.complex128_t *pcd
-    cdef np.complex64_t *pcf
-    if cython.typeof(p) == cython.typeof(pd):
-        return np.dtype(np.double)
-    elif cython.typeof(p) == cython.typeof(pf):
-        return np.dtype(np.float32)
-    elif cython.typeof(p) == cython.typeof(pcd):
-        return np.dtype(np.complex128)
-    elif cython.typeof(p) == cython.typeof(pcf):
-        return np.dtype(np.complex64)
+cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    if blockSize[0] <= 0:
+        ierr[0] = 0
+        return
+    ierr[0] = 1
+    cdef object matvec 
+    cdef numerics[::1, :] x_view
+    global __user_function_exception
+    try:
+        matvec = primme_params_get_object(primme, operator)
+        if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
+        n = primme_params_get_int(primme, "nLocal")
+        x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
+        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:])
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
 
 cdef void c_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-    if blockSize[0] <= 0:
-        ierr[0] = 0
-        return
-    ierr[0] = 1
-    cdef object matvec = primme_params_get_object(primme, 'matrix')
-    n = primme_params_get_int(primme, "nLocal")
-    x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    y_py = matvec(x_py)
-    (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    c_matvec_gen_numpy("matrix", x, ldx, y, ldy, blockSize, primme, ierr)
 
 cdef void c_massmatvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-    if blockSize[0] <= 0:
-        ierr[0] = 0
-        return
-    ierr[0] = 1
-    cdef object massmatvec = primme_params_get_object(primme, 'massMatrix')
-    n = primme_params_get_int(primme, "nLocal")
-    x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    y_py = massmatvec(x_py)
-    (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    c_matvec_gen_numpy("massMatrix", x, ldx, y, ldy, blockSize, primme, ierr)
 
 cdef void c_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    c_matvec_gen_numpy("preconditioner", x, ldx, y, ldy, blockSize, primme, ierr)
+
+if gpuarray is not None:
+    import pycuda.driver
+    class Holder(pycuda.driver.PointerHolderBase):
+        def __init__(self, ptr):
+            super().__init__()
+            self.__ptr = ptr
+    
+        def get_pointer(self):
+            return self.__ptr
+    
+        def __int__(self):
+            return self.__ptr
+
+        def __index__(self):
+            return self.__ptr
+
+        def as_buffer(self, size, offset=0):
+            cdef char[::1] view = <char[:size]>(<char*>(<size_t>(self.__ptr + offset)))
+            return view
+else:
+    class Holder:
+        pass
+
+cdef void c_matvec_gen_gpuarray(cython.p_char operator, numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
     if blockSize[0] <= 0:
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object precond = primme_params_get_object(primme, 'preconditioner')
-    n = primme_params_get_int(primme, "nLocal")
-    x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    y_py = precond(x_py)
-    (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    cdef object matvec
+    global __user_function_exception
+    try:
+        matvec = primme_params_get_object(primme, operator)
+        n = primme_params_get_int(primme, "nLocal")
+        magma_queue_sync(__queue)
+        x_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
+        y_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
+        y_py.fill(0)
+        y0_py = matvec(x_py, y_py)
+        if y0_py.ptr != y_py.ptr:
+            y_py.set(y0_py)
+        pycuda.autoinit.context.synchronize()
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
+
+cdef void c_matvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    c_matvec_gen_gpuarray("matrix", x, ldx, y, ldy, blockSize, primme, ierr)
+
+cdef void c_massmatvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    c_matvec_gen_gpuarray("massMatrix", x, ldx, y, ldy, blockSize, primme, ierr)
+
+cdef void c_precond_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    c_matvec_gen_gpuarray("preconditioner", x, ldx, y, ldy, blockSize, primme, ierr)
+
 
 cdef void c_monitor(numerics_real *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, numerics_real *basisNorms, int *numConverged, numerics_real *lockedEvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms, int *inner_its, numerics_real *LSRes, primme_event *event, primme_params *primme, int *ierr):
     ierr[0] = 1
     cdef object monitor = primme_params_get_object(primme, 'monitor')
+    if monitor is None: return
     cdef int bs = basisSize[0] if basisSize is not NULL else 0
     cdef int blks = blockSize[0] if blockSize is not NULL else 0
     cdef int nLocked = numLocked[0] if numLocked is not NULL else 0
@@ -215,7 +402,7 @@ cdef void c_monitor(numerics_real *basisEvals, int *basisSize, int *basisFlags, 
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
-          Minv=None, OPinv=None, mode='normal', lock=None,
+          Minv=None, OPinv=None, mode='normal', lock=None, use_gpuarray=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
           maxPrevRetain=0, method=None, return_history=False, **kargs):
     """
@@ -231,13 +418,13 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     Parameters
     ----------
-    A : An N x N matrix, array, sparse matrix, or LinearOperator
+    A : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
         the operation A * x, where A is a real symmetric matrix or complex
         Hermitian.
     k : int, optional
         The number of eigenvalues and eigenvectors to be computed. Must be
         1 <= k < min(A.shape).
-    M : An N x N matrix, array, sparse matrix, or LinearOperator
+    M : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
         (not supported yet)
         the operation M * x for the generalized eigenvalue problem
 
@@ -248,7 +435,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         results, the data type of M should be the same as that of A.
     sigma : real, optional
         Find eigenvalues near sigma.
-    v0 : N x i, ndarray, optional
+    v0 : N x i, ndarray or GPUArray, optional
         Initial guesses to the eigenvectors.
     ncv : int, optional
         The maximum size of the basis
@@ -275,17 +462,21 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         The default value is sqrt of machine precision.
     Minv : (not supported yet)
         The inverse of M in the generalized eigenproblem.
-    OPinv : N x N matrix, array, sparse matrix, or LinearOperator, optional
+    OPinv : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
         Preconditioner to accelerate the convergence. Usually it is an
         approximation of the inverse of (A - sigma*M).
     return_eigenvectors : bool, optional
         Return eigenvectors (True) in addition to eigenvalues
     mode : string ['normal' | 'buckling' | 'cayley']
         Only 'normal' mode is supported.
-    lock : N x i, ndarray, optional
+    lock : N x i, ndarray or GPUArray, optional
         Seek the eigenvectors orthogonal to these ones. The provided
         vectors *should* be orthonormal. Useful to avoid converging to previously
         computed solutions.
+    use_gpuarray : bool
+        Set to True if A, M and Minv accept and return GPUArray. In that case the
+        eigenvectors evecs are also returned as GPUArray. Otherwise all operators
+        accept and return numpy.ndarray and evecs is also of that class.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     minRestartSize : int, optional
@@ -313,7 +504,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     -------
     w : array
         Array of k eigenvalues ordered to best satisfy "which".
-    v : array
+    v : ndarray or GPUArray, shape=(N, k)
         An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
         the eigenvector corresponding to the eigenvalue ``w[i]``.
     stats : dict, optional (if return_stats)
@@ -373,50 +564,80 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> new_evals, new_evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
     >>> new_evals # the next three largest eigenvalues
     array([96., 95., 94.])
+
+    >>> import primme, scipy.sparse
+    >>> import pycuda.sparse.packeted
+    >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+    >>> Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
+    >>> evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
+    >>> evals # the three largest eigenvalues of A
     """
+
+    if use_gpuarray != True:
+        try:
+            A = aslinearoperator(A)
+        except Exception as e:
+            numpy_exception = e
+        
+    if use_gpuarray is None and not isinstance(A, (list, np.ndarray, NumPyLinearOperator)):
+        if gpuarray is None:
+            raise RuntimeError("Error trying to import pycuda.sparse.operator.OperatorBase, because use_gpuarray is not set and A is not a list, np.ndarray or scipy.sparse.linalg.interface.LinearOperator") from gpuarray_exception
+        if isinstance(A, (pycuda.sparse.operator.OperatorBase, pycuda.sparse.coordinate.CoordinateSpMV, pycuda.sparse.packeted.PacketedSpMV)):
+            use_gpuarray = True
+        else:
+            raise RuntimeError("Error trying to coerce A as scipy's LinearOperator. A is not is not a list, np.ndarray, scipy.sparse.linalg.interface.LinearOperator or pycuda.sparse.operator.OperatorBase, and use_gpuarray is not set") from numpy_exception
 
     PP = PrimmeParams()
     cdef primme_params *pp = PP.pp
- 
-    A = aslinearoperator(A)
-    if len(A.shape) != 2 or A.shape[0] != A.shape[1]:
-        raise ValueError('A: expected square matrix (shape=%s)' % A.shape)
 
-    primme_params_set(PP, "matrix", A)
-    n = A.shape[0]
-    primme_params_set(PP, "n", n)
+    shape = A.shape
+        
+    if len(shape) != 2 or shape[0] != shape[1]:
+        raise ValueError('A: expected square matrix (shape=%s)' % shape)
+
+    # The matvec for GPUArray accepts a second input parameter with the
+    # destination array, that is, the signature is y = A(x, y). Modify the
+    # input A to allow a second input parameter.
+
+    if use_gpuarray and len(signature(A).parameters) == 1:
+        def A(x, y=None, A=A): return A(x)
+    
+    __primme_params_set(PP, "matrix", A)
+    n = shape[0]
+    __primme_params_set(PP, "n", n)
 
     if M is not None:
-        M = aslinearoperator(M)
-        if len(M.shape) != 2 or A.shape[0] != M.shape[0]:
+        if not use_gpuarray:
+            M = aslinearoperator(M)
+        if len(M.shape) != 2 or shape[0] != M.shape[0]:
             raise ValueError('M: expected square matrix (shape=%s)' % A.shape)
-        primme_params_set(PP, "massMatrix", M)
+        __primme_params_set(PP, "massMatrix", M)
 
     if k <= 0 or k > n:
         raise ValueError("k=%d must be between 1 and %d, the order of the "
                          "square input matrix." % (k, n))
-    primme_params_set(PP, "numEvals", k)
+    __primme_params_set(PP, "numEvals", k)
 
     if which == 'LM':
-        primme_params_set(PP, "target", "primme_largest_abs")
+        __primme_params_set(PP, "target", "primme_largest_abs")
         if sigma is None:
             sigma = 0.0
     elif which == 'LA':
-        primme_params_set(PP, "target", "primme_largest")
+        __primme_params_set(PP, "target", "primme_largest")
         sigma = None
     elif which == 'SA':
-        primme_params_set(PP, "target", "primme_smallest")
+        __primme_params_set(PP, "target", "primme_smallest")
         sigma = None
     elif which == 'SM':
-        primme_params_set(PP, "target", "primme_closest_abs")
+        __primme_params_set(PP, "target", "primme_closest_abs")
         if sigma is None:
             sigma = 0.0
     elif which == 'CLT':
-        primme_params_set(PP, "target", "primme_closest_leq")
+        __primme_params_set(PP, "target", "primme_closest_leq")
         if sigma is None:
             sigma = 0.0
     elif which == 'CGT':
-        primme_params_set(PP, "target", "primme_closest_geq")
+        __primme_params_set(PP, "target", "primme_closest_geq")
         if sigma is None:
             sigma = 0.0
     else:
@@ -425,37 +646,38 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     cdef double sigma_c
     if sigma is not None:
         sigma_c = float(sigma)
-        primme_params_set(PP, "numTargetShifts", 1)
+        __primme_params_set(PP, "numTargetShifts", 1)
         primme_params_set_doubles(pp, "targetShifts", &sigma_c)
 
-    primme_params_set(PP, "eps", tol)
+    __primme_params_set(PP, "eps", tol)
 
     if ncv is not None:
-        primme_params_set(PP, "maxBasisSize", ncv)
+        __primme_params_set(PP, "maxBasisSize", ncv)
 
     if maxiter is not None:
-        primme_params_set(PP, "maxMatvecs", maxiter)
+        __primme_params_set(PP, "maxMatvecs", maxiter)
 
     if OPinv is not None:
-        OPinv = aslinearoperator(OPinv)
+        if not use_gpuarray:
+            OPinv = aslinearoperator(OPinv)
         if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
             raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,n))
-        primme_params_set(PP, "correction_precondition", 1)
-        primme_params_set(PP, "preconditioner", <object>OPinv)
+        __primme_params_set(PP, "correction_precondition", 1)
+        __primme_params_set(PP, "preconditioner", <object>OPinv)
     else:
-        primme_params_set(PP, "correction_precondition", 0)
+        __primme_params_set(PP, "correction_precondition", 0)
 
     numOrthoConst = 0
     if lock is not None:
         if lock.shape[0] != n:
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,n))
         numOrthoConst = min(lock.shape[1], n)
-        primme_params_set(PP, "numOrthoConst", numOrthoConst)
+        __primme_params_set(PP, "numOrthoConst", numOrthoConst)
 
     # Set other parameters
     for dk, dv in kargs.items():
       try:
-        primme_params_set(PP, dk, dv)
+        __primme_params_set(PP, dk, dv)
       except:
         raise ValueError("Invalid option '%s' with value '%s'" % (dk, dv))
 
@@ -466,112 +688,180 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             lockedEvals, lockedFlags, lockedNorms, inner_its, LSRes, event):
         
         if event == 0 and iblock and len(iblock)>0: # event iteration
-            hist["numMatvecs"].append(primme_params_get(PP, 'stats_numMatvecs'))
-            hist["elapsedTime"].append(primme_params_get(PP, 'stats_elapsedTime'))
+            hist["numMatvecs"].append(__primme_params_get(PP, 'stats_numMatvecs'))
+            hist["elapsedTime"].append(__primme_params_get(PP, 'stats_elapsedTime'))
             hist["nconv"].append(numConverged)
             hist["eval"].append(basisEvals[iblock[0]])
             hist["resNorm"].append(basisNorms[0])
 
     if return_history:
-        primme_params_set(PP, 'monitor', mon)
+        __primme_params_set(PP, 'monitor', mon)
 
     if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
         dtype = A.dtype
 
-    if dtype.type is np.complex64:
-        rtype = np.dtype(np.float32)
-        primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex64_t])
-        if M: 
-            primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex64_t])
-        primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[np.complex64_t])
-        if return_history:
-            primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
-    elif dtype.type is np.float32:
-        rtype = np.dtype(np.float32)
-        primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[float])
-        if M: 
-            primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[float])
-        primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[float])
-        if return_history:
-            primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
-    elif dtype.type is np.float64:
-        rtype = np.dtype(np.float64)
-        primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[double])
-        if M: 
-            primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[double])
-        primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[double])
-        if return_history:
-            primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
-    else:
-        rtype = np.dtype(np.float64)
-        primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex128_t])
-        if M: 
-            primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex128_t])
-        primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[np.complex128_t])
-        if return_history:
-            primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
+    if not use_gpuarray:
+        if dtype.type is np.complex64:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex64_t])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex64_t])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[np.complex64_t])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
+        elif dtype.type is np.float32:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[float])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[float])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[float])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
+        elif dtype.type is np.float64:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[double])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[double])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[double])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
+        else:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex128_t])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex128_t])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[np.complex128_t])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
+    else: # use_gpuarray
+        if dtype.type is np.complex64:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[np.complex64_t])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[np.complex64_t])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[np.complex64_t])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
+        elif dtype.type is np.float32:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[float])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[float])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[float])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
+        elif dtype.type is np.float64:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[double])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[double])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[double])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
+        else:
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[np.complex128_t])
+            if M: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[np.complex128_t])
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[np.complex128_t])
+            if return_history:
+                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
 
+    cdef void *evecs_p
+    cdef double[::1] evals_d, norms_d
+    cdef float[::1] evals_s, norms_s
+    cdef float[::1, :] evecs_s
+    cdef double[::1, :] evecs_d
+    cdef np.complex64_t[::1, :] evecs_c
+    cdef np.complex128_t[::1, :] evecs_z
+
+    rtype = __get_real_dtype(dtype);
     evals = np.zeros(k, rtype)
     norms = np.zeros(k, rtype)
-    evecs = np.zeros((n, numOrthoConst+k), dtype, order='F')
+    if rtype.type is np.float64:
+        evals_d, norms_d = evals, norms
+    else:
+        evals_s, norms_s = evals, norms
+    
+
+    if not use_gpuarray:
+        evecs = np.zeros((n, numOrthoConst+k), dtype, order='F')
+        if dtype.type is np.float64:
+            evecs_d = evecs
+            evecs_p = <void*>&evecs_d[0,0]
+        elif dtype.type is np.float32:
+            evecs_s = evecs
+            evecs_p = <void*>&evecs_s[0,0]
+        elif dtype.type is np.complex64:
+            evecs_c = evecs
+            evecs_p = <void*>&evecs_c[0,0]
+        elif dtype.type is np.complex128:
+            evecs_z = evecs
+            evecs_p = <void*>&evecs_z[0,0]
+    else:
+        evecs = gpuarray.zeros((n, numOrthoConst+k), dtype, order='F')
+        evecs_p = <void*>(<size_t>evecs.ptr)
 
     if lock is not None:
-        np.copyto(evecs[:, 0:numOrthoConst], lock[:, 0:numOrthoConst])
+        if not use_gpuarray:
+            np.copyto(evecs[:, 0:numOrthoConst], lock[:, 0:numOrthoConst])
+        else:
+            evecs[:, 0:numOrthoConst].set(lock[:, 0:numOrthoConst])
 
     if v0 is not None:
         initSize = min(v0.shape[1], k)
-        primme_params_set(PP, "initSize", initSize)
-        np.copyto(evecs[:, numOrthoConst:numOrthoConst+initSize],
-            v0[:, 0:initSize])
+        __primme_params_set(PP, "initSize", initSize)
+        if not use_gpuarray:
+            np.copyto(evecs[:, numOrthoConst:numOrthoConst+initSize],
+                v0[:, 0:initSize])
+        else:
+            evecs[:, numOrthoConst:numOrthoConst+initSize].set(v0[:, 0:initSize])
 
     if maxBlockSize:
-        primme_params_set(PP, "maxBlockSize", maxBlockSize)
+        __primme_params_set(PP, "maxBlockSize", maxBlockSize)
 
     if minRestartSize:
-        primme_params_set(PP, "minRestartSize", minRestartSize)
+        __primme_params_set(PP, "minRestartSize", minRestartSize)
 
     if maxPrevRetain:
-        primme_params_set(PP, "restarting_maxPrevRetain", maxPrevRetain)
+        __primme_params_set(PP, "restarting_maxPrevRetain", maxPrevRetain)
 
     cdef int method_int = -1;
     if method is not None:
+        method = bytes(method, 'ASCII')
         primme_constant_info(<const char *>method, &method_int)
         if method_int < 0:
             raise ValueError('Not valid "method": %s' % method)
         primme_set_method(method_int, pp)
- 
-    cdef np.ndarray[double, ndim=1, mode="c"] evals_d, norms_d
-    cdef np.ndarray[float, ndim=1, mode="c"] evals_f, norms_f
-    cdef np.ndarray[float, ndim=2, mode="fortran"] evecs_f
-    cdef np.ndarray[double, ndim=2, mode="fortran"] evecs_d
-    cdef np.ndarray[np.complex64_t, ndim=2, mode="fortran"] evecs_c
-    cdef np.ndarray[np.complex128_t, ndim=2, mode="fortran"] evecs_z
 
-    if dtype.type is np.complex64:
-        evals_f, norms_f, evecs_c = evals, norms, evecs
-        err = cprimme(&evals_f[0], &evecs_c[0,0], &norms_f[0], pp)
-    elif dtype.type is np.float32:
-        evals_f, norms_f, evecs_f = evals, norms, evecs
-        err = sprimme(&evals_f[0], &evecs_f[0,0], &norms_f[0], pp)
-    elif dtype.type is np.float64:
-        evals_d, norms_d, evecs_d = evals, norms, evecs
-        err = dprimme(&evals_d[0], &evecs_d[0,0], &norms_d[0], pp)
+    global __user_function_exception
+    __user_function_exception = None
+    if not use_gpuarray:
+        if dtype.type is np.complex64:
+            err = cprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float32:
+            err = sprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float64:
+            err = dprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
+        else:
+            err = zprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
     else:
-        evals_d, norms_d, evecs_z = evals, norms, evecs
-        err = zprimme(&evals_d[0], &evecs_z[0,0], &norms_d[0], pp)
+        if dtype.type is np.complex64:
+            err = magma_cprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float32:
+            err = magma_sprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float64:
+            err = magma_dprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
+        else:
+            err = magma_zprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
 
     if err != 0:
-        raise PrimmeError(err)
+        if __user_function_exception is not None:
+            raise PrimmeError(err) from __user_function_exception
+        else:
+            raise PrimmeError(err)
 
-    initSize = primme_params_get(PP, "initSize")
+    initSize = __primme_params_get(PP, "initSize")
     evals = evals[0:initSize]
     norms = norms[0:initSize]
     evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
 
     if return_stats:
-        stats = dict((f, primme_params_get(PP, "stats_" + f)) for f in [
+        stats = dict((f, __primme_params_get(PP, "stats_" + f)) for f in [
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime", "estimateMinEVal",
             "estimateMaxEVal", "estimateLargestSVal"])
@@ -594,14 +884,14 @@ cdef extern from "../include/primme.h":
         primme_svds_op_AtA,
         primme_svds_op_AAt,
         primme_svds_op_augmented
-    int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int cprimme_svds(float *svals, np.complex64_t *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
-    int zprimme_svds(double *svals, np.complex128_t *svecs, double *resNorms, primme_svds_params *primme_svds)
-    int magma_sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int magma_cprimme_svds(float *svals,  np.complex64_t *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int magma_dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
-    int magma_zprimme_svds(double *svals,  np.complex128_t *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int sprimme_svds(float *svals, void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int cprimme_svds(float *svals, void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int dprimme_svds(double *svals, void *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int zprimme_svds(double *svals, void *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int magma_sprimme_svds(float *svals, void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int magma_cprimme_svds(float *svals,  void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int magma_dprimme_svds(double *svals, void *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int magma_zprimme_svds(double *svals,  void *svecs, double *resNorms, primme_svds_params *primme_svds)
     primme_svds_params* primme_svds_params_create()
     int primme_svds_params_destroy(primme_svds_params *primme_svds)
     void primme_svds_initialize(primme_svds_params *primme_svds)
@@ -619,12 +909,14 @@ cdef class PrimmeSvdsParams:
         self.pp = primme_svds_params_create()
         if self.pp is NULL:
             raise MemoryError()
+        primme_svds_params_set_pointer(self.pp, "queue", <void*>&__queue)
 
     def __dealloc__(self):
         if self.pp is not NULL:
             primme_svds_params_destroy(self.pp)
     
 def primme_svds_params_get(PrimmeSvdsParams pp_, field_):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_svds_params_label l = -1
@@ -648,7 +940,7 @@ def primme_svds_params_get(PrimmeSvdsParams pp_, field_):
     else:
         raise ValueError("Not supported type for member '%s'" % field)
 
-cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, char *field):
+cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cython.p_char field):
     cdef primme_svds_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -669,6 +961,7 @@ cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cyth
     return v_int
 
 def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_svds_params_label l = -1
@@ -683,7 +976,8 @@ def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     if t == primme_pointer:
         primme_svds_set_member(primme_svds, l, <void*>value)
     elif t == primme_int:
-        if isinstance(value, str):
+        if isinstance(value, (bytes,str)):
+            value = bytes(value, 'ASCII')
             primme_svds_constant_info(<const char*>value, &i)
             value = i
         v_int = value
@@ -692,9 +986,9 @@ def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
         v_double = value
         primme_svds_set_member(primme_svds, l, &v_double)
     else:
-        raise ValueError("Not supported type for member '%s'" % field)
+        raise ValueError("Not supported type for member '%s'" % field_)
    
-cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython.p_char field, void* value):
+cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython.p_char field, void* value) except *:
     cdef primme_svds_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -702,7 +996,7 @@ cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython
     assert(l >= 0 and arity == 1 and t == primme_pointer)
     primme_svds_set_member(primme_svds, l, value)
 
-cdef void primme_svds_params_set_doubles(primme_svds_params *primme_svds, cython.p_char field, double *value):
+cdef void primme_svds_params_set_doubles(primme_svds_params *primme_svds, cython.p_char field, double *value) except *:
     cdef primme_svds_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -716,44 +1010,114 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object A = primme_svds_params_get_object(primme_svds, 'matrix')
-    m = primme_svds_params_get_int(primme_svds, "mLocal")
-    n = primme_svds_params_get_int(primme_svds, "nLocal")
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    if transpose[0] == 0:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-        y_py = A.matmat(x_py)
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:m,:] = y_py[:,:]
-    else:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:m,:]
-        y_py = A.H.matmat(x_py)
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    cdef object A 
+    cdef numerics[:, :] x_view
+    global __user_function_exception
+    try:
+        A = primme_svds_params_get_object(primme_svds, 'matrix')
+        if A is None: raise RuntimeError("Not defined function for the matrix problem")
+        m = primme_svds_params_get_int(primme_svds, "mLocal")
+        n = primme_svds_params_get_int(primme_svds, "nLocal")
+        x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
+        if transpose[0] == 0:
+            (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:])
+        else:
+            (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:])
+        ierr[0] = 0
+    except Exception as e:
+        traceback.print_exc(e)
+        __user_function_exception = e
+
 
 cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_svds_operator *mode, primme_svds_params *primme_svds, int *ierr):
     if blockSize[0] <= 0:
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
-    m = primme_svds_params_get_int(primme_svds, "mLocal")
-    n = primme_svds_params_get_int(primme_svds, "nLocal")
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    if mode[0] == primme_svds_op_AtA:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-        y_py = precond(x_py, mode[0])
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    elif mode[0] == primme_svds_op_AAt:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:m,:]
-        y_py = precond(x_py, mode[0])
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:m,:] = y_py[:,:]
-    elif mode[0] == primme_svds_op_augmented:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:m+n,:]
-        y_py = precond(x_py, mode[0])
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:m+n,:] = y_py[:,:]
-    else:
+    cdef object precond 
+    cdef numerics[::1, :] x_view
+    global __user_function_exception
+    try:
+        precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
+        if precond is None: raise RuntimeError("Not defined function for the preconditioner")
+        m = primme_svds_params_get_int(primme_svds, "mLocal")
+        n = primme_svds_params_get_int(primme_svds, "nLocal")
+        x_view = <numerics[:ldy[0]:1, :blockSize[0]]> x
+        if mode[0] == primme_svds_op_AtA:
+            (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = precond(x_view[:n,:], mode[0])
+        elif mode[0] == primme_svds_op_AAt:
+            (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = precond(x_view[:m,:], mode[0])
+        elif mode[0] == primme_svds_op_augmented:
+            (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = precond(x_view[:m+n,:], mode[0])
+        else:
+            return
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
+
+
+cdef void c_svds_matvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr):
+    if blockSize[0] <= 0:
+        ierr[0] = 0
         return
-    ierr[0] = 0
+    ierr[0] = 1
+    cdef object A 
+    global __user_function_exception
+    try:
+        A = primme_svds_params_get_object(primme_svds, 'matrix')
+        if A is None: raise RuntimeError("Not defined function for the matrix problem")
+        m = primme_svds_params_get_int(primme_svds, "mLocal")
+        n = primme_svds_params_get_int(primme_svds, "nLocal")
+        x_shape = (n if transpose[0] == 0 else m, blockSize[0])
+        y_shape = (m if transpose[0] == 0 else n, blockSize[0])
+        x_py = gpuarray.GPUArray(x_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
+        y_py = gpuarray.GPUArray(y_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
+        #y_py.fill(0)
+        cudaMemset2D(y, ldy[0]*sizeof(numerics), 0, y_shape[0]*sizeof(numerics), blockSize[0])
+        magma_queue_sync(__queue)
+        print(blockSize[0], ldx[0], ldy[0], m, n)
+        if transpose[0] == 0:
+            y0_py = A.matvec(x_py, y_py)
+        else:
+            y0_py = A.rmatvec(x_py, y_py)
+        if y_py.ptr != y0_py.ptr:
+            y_py.set(y0_py)
+        pycuda.autoinit.context.synchronize()
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
+
+
+cdef void c_svds_precond_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_svds_operator *mode, primme_svds_params *primme_svds, int *ierr):
+    if blockSize[0] <= 0:
+        ierr[0] = 0
+        return
+    ierr[0] = 1
+    cdef object precond 
+    global __user_function_exception
+    try:
+        precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
+        if precond is None: raise RuntimeError("Not defined function for the preconditioner")
+        m = primme_svds_params_get_int(primme_svds, "mLocal")
+        n = primme_svds_params_get_int(primme_svds, "nLocal")
+        if mode[0] == primme_svds_op_AtA:
+            shape = (n, blockSize[0])
+        elif mode[0] == primme_svds_op_AAt:
+            shape = (m, blockSize[0])
+        elif mode[0] == primme_svds_op_augmented:
+            shape = (m+n, blockSize[0])
+        else:
+            return
+        magma_queue_sync(__queue)
+        x_py = gpuarray.GPUArray(shape, get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
+        y_py = gpuarray.GPUArray(shape, get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
+        y0_py = precond(x_py, y_py, mode[0])
+        if y0_py.ptr != y_py.ptr:
+            y_py.set(y0_py)
+        pycuda.autoinit.context.synchronize()
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
 
 cdef void c_svds_monitor(numerics_real *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
       numerics_real *basisNorms, int *numConverged, numerics_real *lockedSvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms,
@@ -781,7 +1145,7 @@ cdef void c_svds_monitor(numerics_real *basisSvals, int *basisSize, int *basisFl
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
-         u0=None, orthou0=None, orthov0=None,
+         u0=None, orthou0=None, orthov0=None, use_gpuarray=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
          return_history=False, **kargs):
@@ -790,7 +1154,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     Parameters
     ----------
-    A : {sparse matrix, LinearOperator}
+    A : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function
         Array to compute the SVD on, of shape (M, N)
     k : int, optional
         Number of singular values and vectors to compute.
@@ -820,13 +1184,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Initial guesses for the right singular vectors.
     maxiter : int, optional
         Maximum number of matvecs with A and A.H. 
-    precAHA : {N x N matrix, array, sparse matrix, LinearOperator}, optional
+    precAHA : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function, optional
         Approximate inverse of (A.H*A - sigma**2*I). If provided and M>=N, it
         usually accelerates the convergence.
-    precAAH : {M x M matrix, array, sparse matrix, LinearOperator}, optional
+    precAAH : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function, optional
         Approximate inverse of (A*A.H - sigma**2*I). If provided and M<N, it
         usually accelerates the convergence.
-    precAug : {(M+N) x (M+N) matrix, array, sparse matrix, LinearOperator}, optional
+    precAug : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function, optional
         Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).
     orthou0 : ndarray, optional
         Left orthogonal vector constrain.
@@ -836,6 +1200,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         is computed. Useful to avoid converging to previously computed solutions.
     orthov0 : ndarray, optional
         Right orthogonal vector constrain. See orthou0.
+    use_gpuarray : bool
+        Set to True if A and prec* accept and return GPUArray. In that case the
+        singular vectors svecs are also returned as GPUArray. Otherwise all operators
+        accept and return numpy.ndarray and svecs is also of that class.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     return_stats : bool, optional
@@ -845,12 +1213,12 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     Returns
     -------
-    u : ndarray, shape=(M, k), optional
+    u : ndarray or GPUArray, shape=(M, k), optional
         Unitary matrix having left singular vectors as columns.
         Returned if `return_singular_vectors` is True.
     s : ndarray, shape=(k,)
         The singular values.
-    vt : ndarray, shape=(k, N), optional
+    vt : ndarray or GPUArray, shape=(k, N), optional
         Unitary matrix having right singular vectors as rows.
         Returned if `return_singular_vectors` is True.
     stats : dict, optional (if return_stats)
@@ -911,11 +1279,30 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
     >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
     ['5.99871', '5.99057', '6.01065']
+
+    >>> import primme, scipy.sparse
+    >>> import pycuda.sparse.packeted
+    >>> A = scipy.sparse.rand(10000, 100, random_state=10)
+    >>> Agpu = pycuda.sparse.packeted.PacketedSpMV(A, False, A.dtype)
+    >>> evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
+    >>> evals # the three largest eigenvalues of A
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
  
-    A = aslinearoperator(A)
+    if use_gpuarray != True:
+        try:
+            A = aslinearoperator(A)
+        except Exception as e:
+            numpy_exception = e
+        
+    if use_gpuarray is None and not isinstance(A, NumPyLinearOperator):
+        if gpuarray is None:
+            raise RuntimeError("Error trying to import pycuda.sparse.operator.OperatorBase, because use_gpuarray is not set and A is not a list, np.ndarray or scipy.sparse.linalg.interface.LinearOperator") from gpuarray_exception
+        if isinstance(A, (pycuda.sparse.operator.OperatorBase, pycuda.sparse.coordinate.CoordinateSpMV, pycuda.sparse.packeted.PacketedSpMV)):
+            use_gpuarray = True
+        else:
+            raise RuntimeError("Error trying to coerce A as scipy's LinearOperator. A is not is not a list, np.ndarray, scipy.sparse.linalg.interface.LinearOperator or pycuda.sparse.operator.OperatorBase, and use_gpuarray is not set") from numpy_exception
 
     cdef int m, n
     m, n = A.shape
@@ -928,28 +1315,41 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     primme_svds_params_set(PP, "numSvals", k)
 
     if precAHA is not None:
-        precAHA = aslinearoperator(precAHA)
+        if not use_gpuarray:
+            precAHA = aslinearoperator(precAHA)
         if precAHA.shape[0] != precAHA.shape[1] or precAHA.shape[0] != n:
             raise ValueError('precAHA: expected square matrix with size %d' % n)
 
     if precAAH is not None:
-        precAAH = aslinearoperator(precAAH)
+        if not use_gpuarray:
+            precAAH = aslinearoperator(precAAH)
         if precAAH.shape[0] != precAAH.shape[1] or precAAH.shape[0] != m:
             raise ValueError('precAAH: expected square matrix with size %d' % m)
 
     if precAug is not None:
-        precAug = aslinearoperator(precAug)
+        if not use_gpuarray:
+            precAug = aslinearoperator(precAug)
         if precAug.shape[0] != precAug.shape[1] or precAug.shape[0] != m+n:
             raise ValueError('precAug: expected square matrix with size %d' % (m+n))
 
-    def prevec(X, mode):
-        if mode == primme_svds_op_AtA and precAHA is not None:
-            return precAHA.matmat(X)
-        elif mode == primme_svds_op_AAt and precAAH is not None:
-            return precAAH.matmat(X) 
-        elif mode == primme_svds_op_augmented and precAug is not None:
-            return precAug.matmat(X) 
-        return X
+    if not use_gpuarray:
+        def prevec(X, mode):
+            if mode == primme_svds_op_AtA and precAHA is not None:
+                return precAHA.matmat(X)
+            elif mode == primme_svds_op_AAt and precAAH is not None:
+                return precAAH.matmat(X) 
+            elif mode == primme_svds_op_augmented and precAug is not None:
+                return precAug.matmat(X) 
+            return X
+    else:
+        def prevec(X, Y, mode):
+            if mode == primme_svds_op_AtA and precAHA is not None:
+                return precAHA(X, Y)
+            elif mode == primme_svds_op_AAt and precAAH is not None:
+                return precAAH(X, Y) 
+            elif mode == primme_svds_op_augmented and precAug is not None:
+                return precAug(X, Y) 
+            return X
 
     if precAHA is not None or precAAH is not None or precAug is not None:
         primme_svds_params_set(PP, "precondition", 1)
@@ -1034,39 +1434,89 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
       except:
         raise ValueError("Invalid option '%s' with value '%s'" % (dk, dv))
 
+    print(A.dtype)
     if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
         dtype = A.dtype
 
-    if dtype.type is np.complex64:
-        rtype = np.dtype(np.float32)
-        primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex64_t])
-        primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex64_t])
-        if return_history:
-            primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
-    elif dtype.type is np.float32:
-        rtype = np.dtype(np.float32)
-        primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[float])
-        primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[float])
-        if return_history:
-            primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
-    elif dtype.type is np.float64:
-        rtype = np.dtype(np.float64)
-        primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[double])
-        primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[double])
-        if return_history:
-            primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
+    if not use_gpuarray:
+        if dtype.type is np.complex64:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex64_t])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex64_t])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
+        elif dtype.type is np.float32:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[float])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[float])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
+        elif dtype.type is np.float64:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[double])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[double])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
+        else:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex128_t])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex128_t])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
     else:
-        rtype = np.dtype(np.float64)
-        primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex128_t])
-        primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex128_t])
-        if return_history:
-            primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
+        if dtype.type is np.complex64:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[np.complex64_t])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[np.complex64_t])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
+        elif dtype.type is np.float32:
+            print('calling')
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[float])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[float])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
+        elif dtype.type is np.float64:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[double])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[double])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
+        else:
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[np.complex128_t])
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[np.complex128_t])
+            if return_history:
+                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
 
+    cdef void *svecs_p
+    cdef double[::1] svals_d, norms_d
+    cdef float[::1] svals_s, norms_s
+    cdef float[::1] svecs_s
+    cdef double[::1] svecs_d
+    cdef np.complex64_t[::1] svecs_c
+    cdef np.complex128_t[::1] svecs_z
+
+    rtype = __get_real_dtype(dtype);
     svals = np.zeros(k, rtype)
-    svecs = np.empty(((m+n)*(numOrthoConst+k),), dtype)
     norms = np.zeros(k, rtype)
+    if rtype.type is np.float64:
+        svals_d, norms_d = svals, norms
+    else:
+        svals_s, norms_s = svals, norms
+ 
+    if not use_gpuarray:
+        svecs = np.empty(((m+n)*(numOrthoConst+k),), dtype)
+        if dtype.type is np.float64:
+            svecs_d = svecs
+            svecs_p = <void*>&svecs_d[0]
+        elif dtype.type is np.float32:
+            svecs_s = svecs
+            svecs_p = <void*>&svecs_s[0]
+        elif dtype.type is np.complex64:
+            svecs_c = svecs
+            svecs_p = <void*>&svecs_c[0]
+        elif dtype.type is np.complex128:
+            svecs_z = svecs
+            svecs_p = <void*>&svecs_z[0]
+    else:
+        svecs = gpuarray.zeros((m+n)*(numOrthoConst+k), dtype)
+        svecs_p = <void*>(<size_t>svecs.ptr)
 
     u0, v0 = check_pair(u0, v0, "v0 or u0")
     
@@ -1084,64 +1534,45 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             raise ValueError('Not valid "methodStage2": %s' % methodStage2)
         primme_svds_set_method(method_int, methodStage1_int, methodStage2_int, pp)
 
-    cdef np.ndarray[double, ndim=1, mode="c"] svals_d, norms_d
-    cdef np.ndarray[float, ndim=1, mode="c"] svals_f, norms_f
-    cdef np.ndarray[float, ndim=1, mode="c"] svecs_f
-    cdef np.ndarray[double, ndim=1, mode="c"] svecs_d
-    cdef np.ndarray[np.complex64_t, ndim=1, mode="c"] svecs_c
-    cdef np.ndarray[np.complex128_t, ndim=1, mode="c"] svecs_z
-
-    if dtype.type is np.complex64:
-        svals_f, norms_f, svecs_c = svals, norms, svecs
-    elif dtype.type is np.float32:
-        svals_f, norms_f, svecs_f = svals, norms, svecs
-    elif dtype.type is np.float64:
-        svals_d, norms_d, svecs_d = svals, norms, svecs
-    else:
-        svals_d, norms_d, svecs_z = svals, norms, svecs
-
     cdef int initSize = 0
     if v0 is not None:
         initSize = min(v0.shape[1], k)
         primme_svds_params_set(PP, "initSize", initSize)
-        if dtype.type is np.complex64:
-            (<np.complex64_t[:m:1, :initSize]>&svecs_c[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<np.complex64_t[:n:1, :initSize]>&svecs_c[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
-        elif dtype.type is np.float32:
-            (<float[:m:1, :initSize]>&svecs_f[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<float[:n:1, :initSize]>&svecs_f[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
-        elif dtype.type is np.float64:
-            (<double[:m:1, :initSize]>&svecs_d[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<double[:n:1, :initSize]>&svecs_d[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
-        else:
-            (<np.complex128_t[:m:1, :initSize]>&svecs_z[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<np.complex128_t[:n:1, :initSize]>&svecs_z[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
+        svecs[m*numOrthoConst:m*(numOrthoConst+initSize)].reshape((m,initSize), order='F')[:,:] = u0[:,:initSize]
+        svecs[m*(numOrthoConst+initSize)+n*numOrthoConst:(m+n)*(numOrthoConst+initSize)].reshape((n,initSize), order='F')[:,:] = v0[:,:initSize]
 
     if orthou0 is not None:
-        if dtype.type is np.complex64:
-            (<np.complex64_t[:m:1, :numOrthoConst]>&svecs_c[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<np.complex64_t[:n:1, :numOrthoConst]>&svecs_c[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
-        elif dtype.type is np.float32:
-            (<float[:m:1, :numOrthoConst]>&svecs_f[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<float[:n:1, :numOrthoConst]>&svecs_f[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
-        elif dtype.type is np.float64:
-            (<double[:m:1, :numOrthoConst]>&svecs_d[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<double[:n:1, :numOrthoConst]>&svecs_d[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
-        else:
-            (<np.complex128_t[:m:1, :numOrthoConst]>&svecs_z[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<np.complex128_t[:n:1, :numOrthoConst]>&svecs_z[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
+        svecs[0:m*numOrthoConst].reshape((m,numOrthoConst), order='F')[:,:] = orthou0[:,0:numOrthoConst]
+        svecs[m*(numOrthoConst+initSize):m*(numOrthoConst+initSize)+n*numOrthoConst].reshape((n,numOrthoConst), order='F')[:,:] = orthov0[:,:initSize]
 
-    if dtype.type is np.complex64:
-        err = cprimme_svds(&svals_f[0], &svecs_c[0], &norms_f[0], pp)
-    elif dtype.type is np.float32:
-        err = sprimme_svds(&svals_f[0], &svecs_f[0], &norms_f[0], pp)
-    elif dtype.type is np.float64:
-        err = dprimme_svds(&svals_d[0], &svecs_d[0], &norms_d[0], pp)
+    global __user_function_exception
+    __user_function_exception = None
+    print(dtype)
+    if not use_gpuarray:
+        if dtype.type is np.complex64:
+            err = cprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float32:
+            err = sprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float64:
+            err = dprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
+        else:
+            err = zprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
     else:
-        err = zprimme_svds(&svals_d[0], &svecs_z[0], &norms_d[0], pp)
+        if dtype.type is np.complex64:
+            err = magma_cprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float32:
+            print('calling')
+            err = magma_sprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
+        elif dtype.type is np.float64:
+            err = magma_dprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
+        else:
+            err = magma_zprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
 
     if err != 0:
-        raise PrimmeSvdsError(err)
+        if __user_function_exception is not None:
+            raise PrimmeSvdsError(err) from __user_function_exception
+        else:
+            raise PrimmeSvdsError(err)
 
     if return_stats:
         stats = dict((f, primme_svds_params_get(PP, 'stats_' + f)) for f in [
@@ -1158,22 +1589,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     numOrthoConst = primme_svds_params_get(PP, "numOrthoConst")
     norms = norms[0:initSize]
-    if dtype.type is np.complex64:
-        svecsl = np.asarray(<np.complex64_t[:m:1, :initSize]>&svecs_c[m*numOrthoConst])
-        svecsr = np.asarray(<np.complex64_t[:n:1, :initSize]>&svecs_c[m*(numOrthoConst+initSize)+n*numOrthoConst])
-    elif dtype.type is np.float32:
-        svecsl = np.asarray(<float[:m:1, :initSize]>&svecs_f[m*numOrthoConst])
-        svecsr = np.asarray(<float[:n:1, :initSize]>&svecs_f[m*(numOrthoConst+initSize)+n*numOrthoConst])
-    elif dtype.type is np.float64:
-        svecsl = np.asarray(<double[:m:1, :initSize]>&svecs_d[m*numOrthoConst])
-        svecsr = np.asarray(<double[:n:1, :initSize]>&svecs_d[m*(numOrthoConst+initSize)+n*numOrthoConst])
-    else:
-        svecsl = np.asarray(<np.complex128_t[:m:1, :initSize]>&svecs_z[m*numOrthoConst])
-        svecsr = np.asarray(<np.complex128_t[:n:1, :initSize]>&svecs_z[m*(numOrthoConst+initSize)+n*numOrthoConst])
 
     # Make copies and transpose conjugate svecsr
-    svecsl = svecsl.copy()
-    svecsr = svecsr.T.conj().copy()
+    svecsl = svecs[m*numOrthoConst:m*(numOrthoConst+initSize)].reshape((m,initSize), order='F').copy()
+    svecsr = svecs[m*(numOrthoConst+initSize)+n*numOrthoConst:(m+n)*(numOrthoConst+initSize)].reshape((n,initSize), order='F').T.conj().copy()
 
     if not return_stats:
         return svecsl, svals, svecsr
@@ -1225,7 +1644,12 @@ _PRIMMEErrors = {
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
 -36 : "not enough memory for realWork",
 -37 : "not enough memory for intWork",
--38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'"
+-38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
+-40 : 'factorization failure',
+-41 : 'user cancelled execution',
+-42 : 'orthogonalization failure',
+-43 : 'parallel failure',
+-44 : 'unavailable functionality'
 }
 
 _PRIMMESvdsErrors = {
@@ -1250,7 +1674,12 @@ _PRIMMESvdsErrors = {
 -18 : "svecs is not set",
 -19 : "resNorms is not set",
 -20 : "not enough memory for realWork",
--21 : "not enough memory for intWork"
+-21 : "not enough memory for intWork",
+-40 : 'factorization failure',
+-41 : 'user cancelled execution',
+-42 : 'orthogonalization failure',
+-43 : 'parallel failure',
+-44 : 'unavailable functionality'
 }
 
 

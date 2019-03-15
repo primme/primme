@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from codecs import open
-from os import path
+from os import path, environ
 import sys
 
 def get_numpy_options():
@@ -55,12 +55,34 @@ def get_numpy_options():
    else:
       r['extra_objects'] = ['../lib/libprimme.a']
 
+   # Add CUDA
+   if "CUDADIR" in environ:
+      CUDADIR= environ["CUDADIR"]
+      r['include_dirs'].append("%s/include" % CUDADIR)
+      if sys.platform == 'win32':
+         raise NotImplementedError("Not supported win32")
+      else:
+         r['library_dirs'].append("%s/lib64" % CUDADIR)
+         r['libraries'] = ['cublas', 'cudart', 'cusparse'] + r['libraries']
+         r['extra_link_args'].append('-fopenmp')
+ 
+   # Add MAGMA
+   if "MAGMADIR" in environ:
+      MAGMADIR = environ["MAGMADIR"]
+      r['include_dirs'].append("%s/include" % MAGMADIR)
+      if sys.platform == 'win32':
+         r['library_dirs'].append("%s/lib" % MAGMADIR)
+         r['libraries'].append("magma")
+      else:
+         r['extra_objects'].append('%s/lib/libmagma.a' % MAGMADIR)
    return r
 
 def setup_package():
    import sys
    from distutils.core import setup
    from distutils.extension import Extension
+   #from Cython.Distutils.extension import Extension
+   #from Cython.Distutils.old_build_ext import old_build_ext
    from Cython.Build import cythonize
    
    try:
@@ -69,7 +91,7 @@ def setup_package():
       raise Exception("numpy not installed; please, install numpy and scipy before primme")
    else:
       extra_options = get_numpy_options()
-   
+
    # Get the long description from the README file
    here = path.abspath(path.dirname(__file__))
    with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
@@ -79,8 +101,8 @@ def setup_package():
    # Array extension module
    _Primme = Extension("primme",
                       ["primme.pyx"],
+                      extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"],
                       **extra_options
-                      #extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"]
                       )
    
    # NumyTypemapTests setup
