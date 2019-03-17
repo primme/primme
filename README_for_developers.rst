@@ -2,7 +2,7 @@
 Notes for Developers
 ====================
 
-.. warning::
+::
 
     The information in this document is relevant for modifying and maintaining PRIMME.
     Please find the documentation about using PRIMME in the user manual.
@@ -120,7 +120,7 @@ The macro MACHINE_EPSILON has the machine epsilon of the type for SCALAR and REA
 Complex, half, quad
 -------------------
 
-The header :file:`include/primme.h` defines the complex types for half, single, double and quad, named PRIMME_COMPLEX_HALF, PRIMME_COMPLEX_FLOAT, PRIMME_COMPLEX_DOUBLE, PRIMME_COMPLEX_QUAD. Use the next macros for expressions with XSCALAR/SCALAR/HSCALAR type:
+The header `include/primme.h` defines the complex types for half, single, double and quad, named PRIMME_COMPLEX_HALF, PRIMME_COMPLEX_FLOAT, PRIMME_COMPLEX_DOUBLE, PRIMME_COMPLEX_QUAD. Use the next macros for expressions with XSCALAR/SCALAR/HSCALAR type:
 
 - REAL_PART(A): the real part of A
 - IMAGINARY_PART(A): the imaginary part of A
