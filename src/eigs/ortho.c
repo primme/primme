@@ -62,6 +62,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/ortho.c"
+#endif
+
 #include <assert.h>
 #include "numerical.h"
 #include "const.h"
@@ -74,24 +78,6 @@
 #endif
  
 #ifdef SUPPORTED_TYPE
-
-static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
-      int ldVLtVL, HSCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
-      PRIMME_INT ldLocked, int numLocked,
-      int (*B)(SCALAR *, PRIMME_INT, SCALAR *, PRIMME_INT, int, void *),
-      void *Bctx, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
-
-static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
-      HSCALAR *A, int ldA, HREAL *D, HSCALAR *Y, int ldY, int Yortho, SCALAR *W,
-      int nW, PRIMME_INT ldW, HSCALAR *B, int ldB, primme_context ctx);
-
-static int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
-      HREAL *evals, int *Yortho, primme_context ctx);
-
-static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV);
-
 
 /**********************************************************************
  * Function ortho - This routine orthonormalizes
@@ -377,14 +363,18 @@ int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2
 }
 
 #ifdef USE_HOST
-struct local_matvec_ctx { HSCALAR *B; int n, ldB; primme_context ctx;};
 
-static int local_matvec(HSCALAR *x, PRIMME_INT ldx, HSCALAR *y, PRIMME_INT ldy,
+#ifndef ORTHO__PRIVATE_H
+#define ORTHO__PRIVATE_H
+struct local_matvec_ctx { /* HSCALAR */ void *B; int n, ldB; primme_context ctx;};
+#endif /* ORTHO__PRIVATE_H */
+
+STATIC int local_matvec(HSCALAR *x, PRIMME_INT ldx, HSCALAR *y, PRIMME_INT ldy,
       int bs, void *Bctx_) {
    struct local_matvec_ctx *Bctx = (struct local_matvec_ctx*)Bctx_;
    Num_zero_matrix_SHprimme(y, Bctx->n, 1, Bctx->n, Bctx->ctx);
-   Num_hemm_SHprimme(
-         "L", "U", Bctx->n, bs, 1.0, Bctx->B, Bctx->ldB, x, ldx, 0.0, y, ldy);
+   Num_hemm_SHprimme("L", "U", Bctx->n, bs, 1.0, (HSCALAR *)Bctx->B, Bctx->ldB,
+         x, ldx, 0.0, y, ldy);
    return 0;
 }
 
@@ -403,7 +393,7 @@ int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,
 
    /* Call orthogonalization */
 
-   struct local_matvec_ctx Bctx = {B, (int)nLocal, ldB, ctx};
+   struct local_matvec_ctx Bctx = {(void *)B, (int)nLocal, ldB, ctx};
    int b2_out;
    CHKERR(Bortho_gen_SHprimme(V, ldV, R, ldR, b1, b2, locked, ldLocked,
          numLocked, NULL, 0, nLocal, B ? local_matvec : NULL, &Bctx, iseed,
@@ -413,7 +403,7 @@ int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,
 
 #endif /* USE_HOST */
 
-static int B_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
+STATIC int B_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
       int bs, void *ctx_) {
    primme_context ctx = *(primme_context*)ctx_;
    CHKERR(massMatrixMatvec_Sprimme(
@@ -485,7 +475,7 @@ int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
  * 
  **********************************************************************/
 
-static int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
+STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
       int ldVLtVL, HSCALAR *R, PRIMME_INT ldR, int b1, int b2, SCALAR *locked,
       PRIMME_INT ldLocked, int numLocked,
       int (*B)(SCALAR *, PRIMME_INT, SCALAR *, PRIMME_INT, int, void *),
@@ -934,7 +924,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
  *
  ******************************************************************************/
 
-static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
       HSCALAR *A, int ldA, HREAL *D, HSCALAR *Y, int ldY, int Yortho, SCALAR *W,
       int nW, PRIMME_INT ldW, HSCALAR *B, int ldB, primme_context ctx) {
@@ -1056,7 +1046,7 @@ static int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
  * error code
  ******************************************************************************/
 
-static int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
+STATIC int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
       HREAL *evals, int *Yortho, primme_context ctx) {
 
    int i, j; /* Loop variables    */
@@ -1098,7 +1088,7 @@ static int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
    return 0;
 }
 
-static int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
+STATIC int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
 
    (void)n0;
 

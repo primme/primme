@@ -33,34 +33,6 @@
 
 #ifndef factorize_H
 #define factorize_H
-int update_XKinvBX_hprimme(dummy_type_hprimme *X, PRIMME_INT ldX, dummy_type_hprimme *KinvBX,
-      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
-      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
-      primme_context ctx);
-int update_XKinvBX_kprimme(dummy_type_kprimme *X, PRIMME_INT ldX, dummy_type_kprimme *KinvBX,
-      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
-      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
-      primme_context ctx);
-int UDUDecompose_sprimme(dummy_type_sprimme *M, int ldM, dummy_type_sprimme *UDU, int ldUDU,
-      int *ipivot, int dimM, primme_context ctx);
-int UDUSolve_sprimme(dummy_type_sprimme *UDU, int *ipivot, int dim, dummy_type_sprimme *rhs, int nrhs,
-      int ldrhs, dummy_type_sprimme *sol, int ldsol, primme_context ctx);
-int update_XKinvBX_sprimme(dummy_type_sprimme *X, PRIMME_INT ldX, dummy_type_sprimme *KinvBX,
-      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
-      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
-      primme_context ctx);
-int MSolve_sprimme(dummy_type_sprimme *Mfact, int *ipivot, int dim, dummy_type_sprimme *rhs, int nrhs,
-      int ldrhs, dummy_type_sprimme *sol, int ldsol, primme_context ctx);
-int UDUDecompose_cprimme(dummy_type_cprimme *M, int ldM, dummy_type_cprimme *UDU, int ldUDU,
-      int *ipivot, int dimM, primme_context ctx);
-int UDUSolve_cprimme(dummy_type_cprimme *UDU, int *ipivot, int dim, dummy_type_cprimme *rhs, int nrhs,
-      int ldrhs, dummy_type_cprimme *sol, int ldsol, primme_context ctx);
-int update_XKinvBX_cprimme(dummy_type_cprimme *X, PRIMME_INT ldX, dummy_type_cprimme *KinvBX,
-      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
-      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
-      primme_context ctx);
-int MSolve_cprimme(dummy_type_cprimme *Mfact, int *ipivot, int dim, dummy_type_cprimme *rhs, int nrhs,
-      int ldrhs, dummy_type_cprimme *sol, int ldsol, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(UDUDecompose_Sprimme)
 #  define UDUDecompose_Sprimme CONCAT(UDUDecompose_,SCALAR_SUF)
 #endif
@@ -431,6 +403,34 @@ int update_XKinvBX_dprimme(dummy_type_dprimme *X, PRIMME_INT ldX, dummy_type_dpr
 #endif
 int MSolve_dprimme(dummy_type_dprimme *Mfact, int *ipivot, int dim, dummy_type_dprimme *rhs, int nrhs,
       int ldrhs, dummy_type_dprimme *sol, int ldsol, primme_context ctx);
+int update_XKinvBX_hprimme(dummy_type_hprimme *X, PRIMME_INT ldX, dummy_type_hprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_kprimme(dummy_type_kprimme *X, PRIMME_INT ldX, dummy_type_kprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int UDUDecompose_sprimme(dummy_type_sprimme *M, int ldM, dummy_type_sprimme *UDU, int ldUDU,
+      int *ipivot, int dimM, primme_context ctx);
+int UDUSolve_sprimme(dummy_type_sprimme *UDU, int *ipivot, int dim, dummy_type_sprimme *rhs, int nrhs,
+      int ldrhs, dummy_type_sprimme *sol, int ldsol, primme_context ctx);
+int update_XKinvBX_sprimme(dummy_type_sprimme *X, PRIMME_INT ldX, dummy_type_sprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int MSolve_sprimme(dummy_type_sprimme *Mfact, int *ipivot, int dim, dummy_type_sprimme *rhs, int nrhs,
+      int ldrhs, dummy_type_sprimme *sol, int ldsol, primme_context ctx);
+int UDUDecompose_cprimme(dummy_type_cprimme *M, int ldM, dummy_type_cprimme *UDU, int ldUDU,
+      int *ipivot, int dimM, primme_context ctx);
+int UDUSolve_cprimme(dummy_type_cprimme *UDU, int *ipivot, int dim, dummy_type_cprimme *rhs, int nrhs,
+      int ldrhs, dummy_type_cprimme *sol, int ldsol, primme_context ctx);
+int update_XKinvBX_cprimme(dummy_type_cprimme *X, PRIMME_INT ldX, dummy_type_cprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int MSolve_cprimme(dummy_type_cprimme *Mfact, int *ipivot, int dim, dummy_type_cprimme *rhs, int nrhs,
+      int ldrhs, dummy_type_cprimme *sol, int ldsol, primme_context ctx);
 int UDUDecompose_zprimme(dummy_type_zprimme *M, int ldM, dummy_type_zprimme *UDU, int ldUDU,
       int *ipivot, int dimM, primme_context ctx);
 int UDUSolve_zprimme(dummy_type_zprimme *UDU, int *ipivot, int dim, dummy_type_zprimme *rhs, int nrhs,
@@ -441,6 +441,14 @@ int update_XKinvBX_zprimme(dummy_type_zprimme *X, PRIMME_INT ldX, dummy_type_zpr
       primme_context ctx);
 int MSolve_zprimme(dummy_type_zprimme *Mfact, int *ipivot, int dim, dummy_type_zprimme *rhs, int nrhs,
       int ldrhs, dummy_type_zprimme *sol, int ldsol, primme_context ctx);
+int update_XKinvBX_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT ldX, dummy_type_magma_hprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT ldX, dummy_type_magma_kprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
 int update_XKinvBX_magma_sprimme(dummy_type_magma_sprimme *X, PRIMME_INT ldX, dummy_type_magma_sprimme *KinvBX,
       PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
       int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
@@ -456,13 +464,5 @@ int update_XKinvBX_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT ldX, du
 int update_XKinvBX_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT ldX, dummy_type_magma_zprimme *KinvBX,
       PRIMME_INT ldKinvBX, dummy_type_zprimme *M, int ldM, int numCols,
       int blockSize, dummy_type_zprimme *Mfact, int ldMfact, int *ipivot,
-      primme_context ctx);
-int update_XKinvBX_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT ldX, dummy_type_magma_hprimme *KinvBX,
-      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
-      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
-      primme_context ctx);
-int update_XKinvBX_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT ldX, dummy_type_magma_kprimme *KinvBX,
-      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
-      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
       primme_context ctx);
 #endif

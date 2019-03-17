@@ -33,6 +33,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/restart.c"
+#endif
+
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -48,82 +52,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
-      SCALAR *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
-      HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
-      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
-      PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HREAL *evals,
-      HREAL *resNorms, int *numConverged, int numPrevRetained,
-      int *indexOfPreviousVecs, int *hVecsPerm, HSCALAR *H, int ldH,
-      HSCALAR *VtBV, int ldVtBV, primme_context ctx);
-
-static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
-      SCALAR *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
-      HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
-      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
-      PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HREAL *evals,
-      int *numConverged, int *numLocked, HREAL *resNorms, int *lockedFlags,
-      int *evecsperm, int numPrevRetained, int *indexOfPreviousVecs,
-      int *hVecsPerm, HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
-      double startTime, primme_context ctx);
-
-static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH,
-      HSCALAR *VtBV, int ldVtBV, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
-      HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV, HSCALAR *QtBQ, int ldQtQ,
-      HSCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, HREAL *hSVals,
-      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, SCALAR *evecs,
-      int *evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
-      SCALAR *evecsHat, PRIMME_INT ldevecsHat, HSCALAR *M, int ldM,
-      HSCALAR *Mfact, int ldMfact, int *ipivot, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot,
-      int ldhVecsRot, primme_context ctx);
-
-static int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
-      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, int restartSize,
-      int basisSize, int numConverged, int numPrevRetained,
-      int indexOfPreviousVecs, int *hVecsPerm, int *targetShiftIndex,
-      primme_context ctx);
-
-static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH, SCALAR *Q,
-      PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtQ,
-      int ldQtQ, HSCALAR *VtBV, int ldVtBV, HSCALAR *hU, int ldhU, int newldhU,
-      int indexOfPreviousVecsBeforeRestart, HSCALAR *hVecs, int ldhVecs,
-      int newldhVecs, HREAL *hVals, HREAL *hSVals, int *restartPerm,
-      int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
-      int indexOfPreviousVecs, int *targetShiftIndex, int numConverged,
-      int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
-      primme_context ctx);
-
-static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
-      PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH,
-      SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR,
-      HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV,
-      int ldVtBV, HSCALAR *hU, int ldhU, int newldhU, HSCALAR *hVecs,
-      int ldhVecs, int newldhVecs, HREAL *hVals, HREAL *hSVals,
-      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot,
-      int ldhVecsRot, primme_context ctx);
-
-static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
-      int ldhVecs, int indexOfPreviousVecs, HSCALAR *VtBV, int ldVtBV,
-      HSCALAR *prevhVecs, int nprevhVecs, int ldprevhVecs, int *flags,
-      int *numPrevRetained, primme_context ctx);
-
-static void insertionSort(HREAL newVal, HREAL *evals, HREAL newNorm,
-   HREAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
-
-static int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
-      SCALAR *Bx, int n, int *p, PRIMME_INT ldx, SCALAR *Ax, PRIMME_INT ldAx,
-      SCALAR *xo, SCALAR *Bxo, int no, PRIMME_INT ldxo, int io0, SCALAR *ro,
-      PRIMME_INT ldro, SCALAR *xd, SCALAR *Bxd, int nd, int *pd,
-      PRIMME_INT ldxd, SCALAR *rd, PRIMME_INT ldrd, primme_context ctx);
 
 /*******************************************************************************
  * Subroutine: restart - This routine replaces V with V*c, some subset
@@ -647,7 +575,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
  *       
  ******************************************************************************/
 
-static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
+STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       SCALAR *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
       int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
@@ -880,7 +808,7 @@ static int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
  *       
  ******************************************************************************/
 
-static int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
+STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       SCALAR *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       HSCALAR *hVecs, int ldhVecs, int *restartPerm, HREAL *hVals, int *flags,
       int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
@@ -1470,7 +1398,7 @@ int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,
  *       
  ******************************************************************************/
 
-static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
+STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH,
       HSCALAR *VtBV, int ldVtBV, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
       HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ,
@@ -1662,7 +1590,7 @@ static int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  ******************************************************************************/
 
-static int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
+STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
       HSCALAR *hVecs, int ldhVecs, int newldhVecs, HREAL *hVals, int restartSize,
       int basisSize, int numConverged, int numPrevRetained,
       int indexOfPreviousVecs, int *hVecsPerm, int *targetShiftIndex,
@@ -1877,7 +1805,7 @@ static int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
  *
  ******************************************************************************/
 
-static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
+STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH, SCALAR *Q,
       PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtQ,
       int ldQtQ, HSCALAR *VtBV, int ldVtBV, HSCALAR *hU, int ldhU, int newldhU,
@@ -2286,7 +2214,7 @@ static int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *
  ******************************************************************************/
 
-static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
+STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH,
       SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR,
       HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV,
@@ -2373,7 +2301,7 @@ static int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  ******************************************************************************/
 
-static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
+STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
       int ldhVecs, int indexOfPreviousVecs, HSCALAR *VtBV, int ldVtBV,
       HSCALAR *prevhVecs, int nprevhVecs, int ldprevhVecs, int *flags,
       int *numPrevRetained, primme_context ctx) {
@@ -2472,7 +2400,7 @@ static int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
  *
  ******************************************************************************/
 
-static void insertionSort(HREAL newVal, HREAL *evals, HREAL newNorm,
+STATIC void insertionSort(HREAL newVal, HREAL *evals, HREAL newNorm,
    HREAL *resNorms, int newFlag, int *flags, int *perm, int numLocked,
    primme_params *primme) {
 
@@ -2612,7 +2540,7 @@ static void insertionSort(HREAL newVal, HREAL *evals, HREAL newNorm,
  *
  ******************************************************************************/
 
-static int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
+STATIC int compute_residual_columns(PRIMME_INT m, HREAL *evals, SCALAR *x,
       SCALAR *Bx, int n, int *p, PRIMME_INT ldx, SCALAR *Ax, PRIMME_INT ldAx,
       SCALAR *xo, SCALAR *Bxo, int no, PRIMME_INT ldxo, int io0, SCALAR *ro,
       PRIMME_INT ldro, SCALAR *xd, SCALAR *Bxd, int nd, int *pd,

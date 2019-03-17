@@ -2,13 +2,14 @@
 include ../Make_flags
 
 HEADERS := \
+   include/common.h \
    include/template.h \
+   include/template_types.h \
+   include/template_undef.h \
    include/numerical.h \
    include/primme_interface.h \
    include/memman.h \
    eigs/const.h \
-   eigs/primme_f77_private.h \
-   svds/primme_svds_f77_private.h \
    svds/primme_svds_interface.h
 
 SOURCES := \
@@ -32,19 +33,11 @@ SOURCES := \
    linalg/magma_wrapper.c \
    linalg/memman.c \
    linalg/wtime.c \
-   svds/primme_svds.c \
+   svds/primme_svds_c.c \
    svds/primme_svds_f77.c \
    svds/primme_svds_interface.c
 
-ARCHS := half float double
-ARCHS += $(foreach a,$(ARCHS),$(a)complex)
-ARCHS += $(foreach a,$(ARCHS),$(a)magma)
-
-ALL_ARCHS := HALF HALFCOMPLEX FLOAT FLOATCOMPLEX DOUBLE DOUBLECOMPLEX \
-   FLOAT_MAGMA FLOATCOMPLEX_MAGMA DOUBLE_MAGMA DOUBLECOMPLEX_MAGMA \
-   HALF_MAGMA HALFCOMPLEX_MAGMA
-
-OBJS := $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
+OBJS := $(patsubst %.c,%.o,$(SOURCES))
 
 INCLUDE += -I../include -Iinclude
 INCLUDES := $(sort $(foreach dir,../include,$(wildcard $(dir)/*.h))) $(HEADERS)
@@ -57,7 +50,7 @@ AUTOMATED_HEADERS_LINALG := \
    include/blaslapack.h \
    include/magma_wrapper.h \
    include/auxiliary.h
-AUTOMATED_HEADERS_EIGS := \
+AUTOMATED_HEADERS_OTHERS := \
    eigs/auxiliary_eigs.h \
    eigs/solve_projection.h \
    eigs/convergence.h \
@@ -70,72 +63,33 @@ AUTOMATED_HEADERS_EIGS := \
    eigs/update_W.h \
    eigs/correction.h \
    eigs/update_projection.h \
-   eigs/init.h
+   eigs/init.h \
+   svds/primme_svds_c.h
 
 CPPFLAGS_ONLY_PREPROCESS ?= -E
 
 $(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c tools/AUTO_HEADER
-	@cat tools/AUTO_HEADER > $@; \
-	echo "#ifndef $(*F)_H" > $@.t; \
-	echo "#define $(*F)_H" >> $@.t; \
-	for arch in $(ALL_ARCHS) ; do \
-	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | $(PYTHON) tools/ctemplate >> $@.t; \
-	done; \
-	cat $@.t >> $@; rm -f $@.t; \
+	cat tools/AUTO_HEADER > $@; \
+	echo "#ifndef $(*F)_H" >> $@; \
+	echo "#define $(*F)_H" >> $@; \
+	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
 	echo "#endif" >> $@
 
-$(AUTOMATED_HEADERS_EIGS): %.h : %.c tools/AUTO_HEADER
-	@cat tools/AUTO_HEADER > $@; \
-	echo "#ifndef $(*F)_H" > $@.t; \
-	echo "#define $(*F)_H" >> $@.t; \
-	for arch in $(ALL_ARCHS) ; do \
-	   $(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE -DUSE_$$arch $< | $(PYTHON) tools/ctemplate >> $@.t; \
-	done; \
-	cat $@.t >> $@; rm -f $@.t; \
+$(AUTOMATED_HEADERS_OTHERS): %.h : %.c tools/AUTO_HEADER
+	cat tools/AUTO_HEADER > $@; \
+	echo "#ifndef $(*F)_H" >> $@; \
+	echo "#define $(*F)_H" >> $@; \
+	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
 	echo "#endif" >> $@
 
-auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
+auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_OTHERS)
 
 #
 # Compilation
 #
 
-%double.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLE -c $< -o $@
-
-%doublecomplex.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLECOMPLEX -c $< -o $@
-
-%float.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOAT -c $< -o $@
-
-%floatcomplex.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX -c $< -o $@
-
-%half.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALF -c $< -o $@
-
-%halfcomplex.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALFCOMPLEX -c $< -o $@
-
-%doublemagma.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLE_MAGMA -c $< -o $@
-
-%doublecomplexmagma.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_DOUBLECOMPLEX_MAGMA -c $< -o $@
-
-%floatmagma.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOAT_MAGMA -c $< -o $@
-
-%floatcomplexmagma.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_FLOATCOMPLEX_MAGMA -c $< -o $@
-
-%halfmagma.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALF_MAGMA -c $< -o $@
-
-%halfcomplexmagma.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -DUSE_HALFCOMPLEX_MAGMA -c $< -o $@
-
+%.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 #
 # Archive object files in the full library
@@ -191,7 +145,7 @@ clean:
 #
 
 # NOTE: make may update deps and reload it automatically
-deps: $(INCLUDES) $(SOURCES) $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_EIGS)
+deps: $(INCLUDES) $(SOURCES) $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_OTHERS)
 	@echo "# This file is generated automatically. Please don't modify" > deps
 	@
 	@# Added dependencies on headers for building the objects

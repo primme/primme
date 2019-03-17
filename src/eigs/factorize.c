@@ -34,6 +34,10 @@
  *  
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/factorize.c"
+#endif
+
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE

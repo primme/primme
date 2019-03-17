@@ -33,14 +33,6 @@
 
 #ifndef primme_c_H
 #define primme_c_H
-int wrapper_hprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
-int wrapper_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
-int wrapper_sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
-int wrapper_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Sprimme)
 #  define wrapper_Sprimme CONCAT(wrapper_,SCALAR_SUF)
 #endif
@@ -133,18 +125,173 @@ int wrapper_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
 #endif
 int wrapper_dprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(check_input)
+#  define check_input CONCAT(check_input,SCALAR_SUF)
+#endif
+int check_inputdprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+#if !defined(CHECK_TEMPLATE) && !defined(convTestFunAbsolute)
+#  define convTestFunAbsolute CONCAT(convTestFunAbsolute,SCALAR_SUF)
+#endif
+void convTestFunAbsolutedprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+#if !defined(CHECK_TEMPLATE) && !defined(default_monitor)
+#  define default_monitor CONCAT(default_monitor,SCALAR_SUF)
+#endif
+void default_monitordprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+#if !defined(CHECK_TEMPLATE) && !defined(check_params_coherence)
+#  define check_params_coherence CONCAT(check_params_coherence,SCALAR_SUF)
+#endif
+int check_params_coherencedprimme(primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(coordinated_exit)
+#  define coordinated_exit CONCAT(coordinated_exit,SCALAR_SUF)
+#endif
+int coordinated_exitdprimme(int ret, primme_context ctx);
+int wrapper_hprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputhprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutehprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorhprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencehprimme(primme_context ctx);
+int coordinated_exithprimme(int ret, primme_context ctx);
+int wrapper_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputkprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutekprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorkprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencekprimme(primme_context ctx);
+int coordinated_exitkprimme(int ret, primme_context ctx);
+int wrapper_sprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputsprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutesprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorsprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencesprimme(primme_context ctx);
+int coordinated_exitsprimme(int ret, primme_context ctx);
+int wrapper_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputcprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecprimme(primme_context ctx);
+int coordinated_exitcprimme(int ret, primme_context ctx);
 int wrapper_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
-int wrapper_magma_sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
-int wrapper_magma_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
-int wrapper_magma_dprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
-int wrapper_magma_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+int check_inputzprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutezprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorzprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencezprimme(primme_context ctx);
+int coordinated_exitzprimme(int ret, primme_context ctx);
 int wrapper_magma_hprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
+int check_inputmagma_hprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_hprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_hprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_hprimme(primme_context ctx);
+int coordinated_exitmagma_hprimme(int ret, primme_context ctx);
 int wrapper_magma_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
+int check_inputmagma_kprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_kprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_kprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_kprimme(primme_context ctx);
+int coordinated_exitmagma_kprimme(int ret, primme_context ctx);
+int wrapper_magma_sprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_sprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_sprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_sprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_sprimme(primme_context ctx);
+int coordinated_exitmagma_sprimme(int ret, primme_context ctx);
+int wrapper_magma_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_cprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_cprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_cprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_cprimme(primme_context ctx);
+int coordinated_exitmagma_cprimme(int ret, primme_context ctx);
+int wrapper_magma_dprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_dprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_dprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_dprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_dprimme(primme_context ctx);
+int coordinated_exitmagma_dprimme(int ret, primme_context ctx);
+int wrapper_magma_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_zprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_zprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_zprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_zprimme(primme_context ctx);
+int coordinated_exitmagma_zprimme(int ret, primme_context ctx);
 #endif

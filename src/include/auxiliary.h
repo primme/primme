@@ -33,104 +33,6 @@
 
 #ifndef auxiliary_H
 #define auxiliary_H
-int Num_matrix_astype_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
-      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
-int Num_copy_matrix_conj_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_copy_trimatrix_hprimme(dummy_type_hprimme *x, int m, int n, int ldx, int ul,
-      int i0, dummy_type_hprimme *y, int ldy, int zero);
-int Num_copy_trimatrix_compact_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int n,
-      PRIMME_INT ldx, int i0, dummy_type_hprimme *y, int *ly);
-int Num_copy_compact_trimatrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int n, int i0,
-      dummy_type_hprimme *y, int ldy);
-int Num_copy_matrix_columns_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, dummy_type_hprimme *y, int *yin,
-                                     PRIMME_INT ldy, primme_context ctx);
-int Num_copy_matrix_rows_hprimme(dummy_type_hprimme *x, int *xim, int m, int n,
-                                     PRIMME_INT ldx, dummy_type_hprimme *y, int *yim,
-                                     PRIMME_INT ldy, primme_context ctx);
-int permute_vecs_hprimme(dummy_type_hprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                         int *perm_, primme_context ctx);
-dummy_type_hprimme* Num_compact_vecs_hprimme(dummy_type_hprimme *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, dummy_type_hprimme *work, PRIMME_INT ldwork,
-      int avoidCopy, primme_context ctx);
-int Num_scale_matrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_matrix_astype_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
-      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
-int Num_copy_trimatrix_kprimme(dummy_type_kprimme *x, int m, int n, int ldx, int ul,
-      int i0, dummy_type_kprimme *y, int ldy, int zero);
-int Num_copy_trimatrix_compact_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int n,
-      PRIMME_INT ldx, int i0, dummy_type_kprimme *y, int *ly);
-int Num_copy_compact_trimatrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int n, int i0,
-      dummy_type_kprimme *y, int ldy);
-int Num_copy_matrix_columns_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, dummy_type_kprimme *y, int *yin,
-                                     PRIMME_INT ldy, primme_context ctx);
-int Num_copy_matrix_rows_kprimme(dummy_type_kprimme *x, int *xim, int m, int n,
-                                     PRIMME_INT ldx, dummy_type_kprimme *y, int *yim,
-                                     PRIMME_INT ldy, primme_context ctx);
-int permute_vecs_kprimme(dummy_type_kprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                         int *perm_, primme_context ctx);
-dummy_type_kprimme* Num_compact_vecs_kprimme(dummy_type_kprimme *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, dummy_type_kprimme *work, PRIMME_INT ldwork,
-      int avoidCopy, primme_context ctx);
-int Num_scale_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_kprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_matrix_astype_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
-      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
-int Num_copy_matrix_conj_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_copy_trimatrix_sprimme(dummy_type_sprimme *x, int m, int n, int ldx, int ul,
-      int i0, dummy_type_sprimme *y, int ldy, int zero);
-int Num_copy_trimatrix_compact_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int n,
-      PRIMME_INT ldx, int i0, dummy_type_sprimme *y, int *ly);
-int Num_copy_compact_trimatrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int n, int i0,
-      dummy_type_sprimme *y, int ldy);
-int compute_submatrix_sprimme(dummy_type_sprimme *X, int nX, int ldX, dummy_type_sprimme *H, int nH,
-                              int ldH, dummy_type_sprimme *R, int ldR, primme_context ctx);
-int Num_copy_matrix_columns_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, dummy_type_sprimme *y, int *yin,
-                                     PRIMME_INT ldy, primme_context ctx);
-int Num_copy_matrix_rows_sprimme(dummy_type_sprimme *x, int *xim, int m, int n,
-                                     PRIMME_INT ldx, dummy_type_sprimme *y, int *yim,
-                                     PRIMME_INT ldy, primme_context ctx);
-int permute_vecs_sprimme(dummy_type_sprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                         int *perm_, primme_context ctx);
-dummy_type_sprimme* Num_compact_vecs_sprimme(dummy_type_sprimme *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, dummy_type_sprimme *work, PRIMME_INT ldwork,
-      int avoidCopy, primme_context ctx);
-int Num_scale_matrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_matrix_astype_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
-      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
-int Num_copy_matrix_conj_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_copy_trimatrix_cprimme(dummy_type_cprimme *x, int m, int n, int ldx, int ul,
-      int i0, dummy_type_cprimme *y, int ldy, int zero);
-int Num_copy_trimatrix_compact_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int n,
-      PRIMME_INT ldx, int i0, dummy_type_cprimme *y, int *ly);
-int Num_copy_compact_trimatrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int n, int i0,
-      dummy_type_cprimme *y, int ldy);
-int compute_submatrix_cprimme(dummy_type_cprimme *X, int nX, int ldX, dummy_type_cprimme *H, int nH,
-                              int ldH, dummy_type_cprimme *R, int ldR, primme_context ctx);
-int Num_copy_matrix_columns_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, dummy_type_cprimme *y, int *yin,
-                                     PRIMME_INT ldy, primme_context ctx);
-int Num_copy_matrix_rows_cprimme(dummy_type_cprimme *x, int *xim, int m, int n,
-                                     PRIMME_INT ldx, dummy_type_cprimme *y, int *yim,
-                                     PRIMME_INT ldy, primme_context ctx);
-int permute_vecs_cprimme(dummy_type_cprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                         int *perm_, primme_context ctx);
-dummy_type_cprimme* Num_compact_vecs_cprimme(dummy_type_cprimme *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, dummy_type_cprimme *work, PRIMME_INT ldwork,
-      int avoidCopy, primme_context ctx);
-int Num_scale_matrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_matrix_astype_Sprimme)
 #  define Num_matrix_astype_Sprimme CONCAT(Num_matrix_astype_,SCALAR_SUF)
 #endif
@@ -1423,6 +1325,104 @@ dummy_type_dprimme* Num_compact_vecs_dprimme(dummy_type_dprimme *vecs, PRIMME_IN
 #endif
 int Num_scale_matrix_dprimme(dummy_type_dprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_dprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_conj_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_copy_trimatrix_hprimme(dummy_type_hprimme *x, int m, int n, int ldx, int ul,
+      int i0, dummy_type_hprimme *y, int ldy, int zero);
+int Num_copy_trimatrix_compact_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int n,
+      PRIMME_INT ldx, int i0, dummy_type_hprimme *y, int *ly);
+int Num_copy_compact_trimatrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int n, int i0,
+      dummy_type_hprimme *y, int ldy);
+int Num_copy_matrix_columns_hprimme(dummy_type_hprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_hprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_hprimme(dummy_type_hprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_hprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_hprimme(dummy_type_hprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_hprimme* Num_compact_vecs_hprimme(dummy_type_hprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_hprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_trimatrix_kprimme(dummy_type_kprimme *x, int m, int n, int ldx, int ul,
+      int i0, dummy_type_kprimme *y, int ldy, int zero);
+int Num_copy_trimatrix_compact_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int n,
+      PRIMME_INT ldx, int i0, dummy_type_kprimme *y, int *ly);
+int Num_copy_compact_trimatrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int n, int i0,
+      dummy_type_kprimme *y, int ldy);
+int Num_copy_matrix_columns_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_kprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_kprimme(dummy_type_kprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_kprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_kprimme(dummy_type_kprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_kprimme* Num_compact_vecs_kprimme(dummy_type_kprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_kprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_kprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_conj_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_copy_trimatrix_sprimme(dummy_type_sprimme *x, int m, int n, int ldx, int ul,
+      int i0, dummy_type_sprimme *y, int ldy, int zero);
+int Num_copy_trimatrix_compact_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int n,
+      PRIMME_INT ldx, int i0, dummy_type_sprimme *y, int *ly);
+int Num_copy_compact_trimatrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int n, int i0,
+      dummy_type_sprimme *y, int ldy);
+int compute_submatrix_sprimme(dummy_type_sprimme *X, int nX, int ldX, dummy_type_sprimme *H, int nH,
+                              int ldH, dummy_type_sprimme *R, int ldR, primme_context ctx);
+int Num_copy_matrix_columns_sprimme(dummy_type_sprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_sprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_sprimme(dummy_type_sprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_sprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_sprimme(dummy_type_sprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_sprimme* Num_compact_vecs_sprimme(dummy_type_sprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_sprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_conj_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_copy_trimatrix_cprimme(dummy_type_cprimme *x, int m, int n, int ldx, int ul,
+      int i0, dummy_type_cprimme *y, int ldy, int zero);
+int Num_copy_trimatrix_compact_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int n,
+      PRIMME_INT ldx, int i0, dummy_type_cprimme *y, int *ly);
+int Num_copy_compact_trimatrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int n, int i0,
+      dummy_type_cprimme *y, int ldy);
+int compute_submatrix_cprimme(dummy_type_cprimme *X, int nX, int ldX, dummy_type_cprimme *H, int nH,
+                              int ldH, dummy_type_cprimme *R, int ldR, primme_context ctx);
+int Num_copy_matrix_columns_cprimme(dummy_type_cprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cprimme(dummy_type_cprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cprimme(dummy_type_cprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cprimme* Num_compact_vecs_cprimme(dummy_type_cprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_matrix_astype_zprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1449,6 +1449,38 @@ dummy_type_zprimme* Num_compact_vecs_zprimme(dummy_type_zprimme *vecs, PRIMME_IN
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_zprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_magma_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_columns_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_magma_hprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_magma_hprimme(dummy_type_magma_hprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_magma_hprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_magma_hprimme(dummy_type_magma_hprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_magma_hprimme* Num_compact_vecs_magma_hprimme(dummy_type_magma_hprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_magma_hprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_hprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_magma_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_columns_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_magma_kprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_magma_kprimme(dummy_type_magma_kprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_magma_kprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_magma_kprimme(dummy_type_magma_kprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_magma_kprimme* Num_compact_vecs_magma_kprimme(dummy_type_magma_kprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_magma_kprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_kprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_matrix_astype_magma_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1513,36 +1545,4 @@ dummy_type_magma_zprimme* Num_compact_vecs_magma_zprimme(dummy_type_magma_zprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_magma_zprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_matrix_astype_magma_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
-      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
-int Num_copy_matrix_columns_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, dummy_type_magma_hprimme *y, int *yin,
-                                     PRIMME_INT ldy, primme_context ctx);
-int Num_copy_matrix_rows_magma_hprimme(dummy_type_magma_hprimme *x, int *xim, int m, int n,
-                                     PRIMME_INT ldx, dummy_type_magma_hprimme *y, int *yim,
-                                     PRIMME_INT ldy, primme_context ctx);
-int permute_vecs_magma_hprimme(dummy_type_magma_hprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                         int *perm_, primme_context ctx);
-dummy_type_magma_hprimme* Num_compact_vecs_magma_hprimme(dummy_type_magma_hprimme *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, dummy_type_magma_hprimme *work, PRIMME_INT ldwork,
-      int avoidCopy, primme_context ctx);
-int Num_scale_matrix_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_hprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_matrix_astype_magma_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
-      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
-int Num_copy_matrix_columns_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, int *xin, int n,
-                                     PRIMME_INT ldx, dummy_type_magma_kprimme *y, int *yin,
-                                     PRIMME_INT ldy, primme_context ctx);
-int Num_copy_matrix_rows_magma_kprimme(dummy_type_magma_kprimme *x, int *xim, int m, int n,
-                                     PRIMME_INT ldx, dummy_type_magma_kprimme *y, int *yim,
-                                     PRIMME_INT ldy, primme_context ctx);
-int permute_vecs_magma_kprimme(dummy_type_magma_kprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
-                         int *perm_, primme_context ctx);
-dummy_type_magma_kprimme* Num_compact_vecs_magma_kprimme(dummy_type_magma_kprimme *vecs, PRIMME_INT m, int n,
-      PRIMME_INT ld, int *perm, dummy_type_magma_kprimme *work, PRIMME_INT ldwork,
-      int avoidCopy, primme_context ctx);
-int Num_scale_matrix_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_kprimme *y, PRIMME_INT ldy, primme_context ctx);
 #endif

@@ -33,6 +33,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/correction.c"
+#endif
+
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -43,31 +47,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static HREAL computeRobustShift(int blockIndex, double resNorm, 
-   HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 
-   HREAL *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
-
-static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, 
-   int *flags, int basisSize, HREAL *sortedRitzVals, int *ilev, int blockSize,
-   primme_params *primme);
-
-static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
-      PRIMME_INT ldx, SCALAR *Bx, PRIMME_INT ldBx, int blockSize,
-      primme_context ctx);
-
-static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
-      PRIMME_INT ldBx, SCALAR *evecs, PRIMME_INT ldevecs, SCALAR *Bevecs,
-      PRIMME_INT ldBevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
-      SCALAR *KinvBx, PRIMME_INT ldKinvBx, HSCALAR *xKinvBx,
-      SCALAR **LprojectorQ, PRIMME_INT *ldLprojectorQ, SCALAR **LprojectorX,
-      PRIMME_INT *ldLprojectorX, SCALAR **LprojectorBQ,
-      PRIMME_INT *ldLprojectorBQ, SCALAR **LprojectorBX,
-      PRIMME_INT *ldLprojectorBX, SCALAR **RprojectorQ,
-      PRIMME_INT *ldRprojectorQ, SCALAR **RprojectorX,
-      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
-      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
-      int numConverged, int blockSize, primme_context ctx);
 
 /*******************************************************************************
  * Subroutine solve_correction - This routine solves the correction equation
@@ -502,7 +481,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *         will compute shift := shift +/- epsilon.
  ******************************************************************************/
 
-static HREAL computeRobustShift(int blockIndex, double resNorm, 
+STATIC HREAL computeRobustShift(int blockIndex, double resNorm, 
    HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 
    HREAL *approxOlsenShift, int numSorted, int *ilev, primme_params *primme) {
 
@@ -617,7 +596,7 @@ static HREAL computeRobustShift(int blockIndex, double resNorm,
  ******************************************************************************/
 
 
-static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, 
+STATIC void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, 
    int *flags, int basisSize, HREAL *sortedRitzVals, int *ilev, int blockSize,
    primme_params *primme) {
    
@@ -696,7 +675,7 @@ static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals,
  *
  ******************************************************************************/
 
-static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
+STATIC int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
       PRIMME_INT ldx, SCALAR *Bx, PRIMME_INT ldBx, int blockSize,
       primme_context ctx) {
 
@@ -840,7 +819,7 @@ static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
  *
  ******************************************************************************/
 
-static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
+STATIC int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       PRIMME_INT ldBx, SCALAR *evecs, PRIMME_INT ldevecs, SCALAR *Bevecs,
       PRIMME_INT ldBevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
       SCALAR *KinvBx, PRIMME_INT ldKinvBx, HSCALAR *xKinvBx,

@@ -33,18 +33,20 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../linalg/wtime.c"
+#endif
+
 #include <stdlib.h>
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
-#include "wtime.h"
-#endif
+#include "numerical.h"
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
+#include "notemplate.h"
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 

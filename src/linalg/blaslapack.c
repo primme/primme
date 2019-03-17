@@ -34,18 +34,12 @@
  *
  ******************************************************************************/
 
+#define THIS_FILE "../linalg/blaslapack.c"
+
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
-#include "template.h"
-
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
-#  include "blaslapack.h"
-#  include "auxiliary.h" // cyclic
-#endif
-
-#define PRIMME_BLOCK_SIZE 512
+#include "numerical.h"
 
 #ifdef SUPPORTED_TYPE
 
@@ -53,11 +47,13 @@
 
 #include "blaslapack_private.h"
 
+#ifdef USE_DOUBLE
 static int free_fn_dummy (void *p, primme_context ctx) {
    (void)ctx;
    free(p);
    return 0;
 }
+#endif
 
 /******************************************************************************
  * Function Num_malloc_Sprimme - Allocate a vector of scalars
@@ -182,10 +178,7 @@ int Num_free_iprimme(int *x, primme_context ctx) {
    return 0;
 }
 
-#endif /* USE_DOUBLE */
 
-
-#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 
 /******************************************************************************
  * Function Num_malloc_iblasprimme - Allocate a vector of integers
@@ -245,7 +238,7 @@ static int Num_free_iblasprimme(PRIMME_BLASINT *x, primme_context ctx) {
 
    return 0;
 }
-#endif /* !defined(USE_HALF) && !defined(USE_HALFCOMPLEX) */
+#endif /* USE_DOUBLE */
 
 
 

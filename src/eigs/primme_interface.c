@@ -36,12 +36,16 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/primme_interface.c"
+#endif
+
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
 #include <string.h>  /* strcmp */  
 #include <limits.h>    
-#include "template.h"
+#include "numerical.h"
 #include "primme_interface.h"
 #include "const.h"
 

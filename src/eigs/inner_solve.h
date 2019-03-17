@@ -33,46 +33,6 @@
 
 #ifndef inner_solve_H
 #define inner_solve_H
-int inner_solve_hprimme(int blockSize, dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_hprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_hprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
-      dummy_type_hprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_hprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_hprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_hprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_hprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_hprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_kprimme(int blockSize, dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_kprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_kprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
-      dummy_type_kprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_kprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_kprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_kprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_kprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_kprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_sprimme(int blockSize, dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_sprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
-      dummy_type_sprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_sprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_sprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_sprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_sprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_sprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_cprimme(int blockSize, dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
-      dummy_type_cprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_cprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_cprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_cprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_cprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_cprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Sprimme)
 #  define inner_solve_Sprimme CONCAT(inner_solve_,SCALAR_SUF)
 #endif
@@ -173,6 +133,128 @@ int inner_solve_dprimme(int blockSize, dummy_type_dprimme *x, PRIMME_INT ldx, du
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_dprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
       double *shift, int *touch, double startTime, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(apply_projected_preconditioner)
+#  define apply_projected_preconditioner CONCAT(apply_projected_preconditioner,SCALAR_SUF)
+#endif
+int apply_projected_preconditionerdprimme(dummy_type_dprimme *v, PRIMME_INT ldv, dummy_type_dprimme *Q,
+      PRIMME_INT ldQ, dummy_type_dprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_dprimme *x,
+      PRIMME_INT ldx, dummy_type_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_dprimme *xKinvBx,
+      dummy_type_dprimme *Mfact, int *ipivot, dummy_type_dprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(apply_skew_projector)
+#  define apply_skew_projector CONCAT(apply_skew_projector,SCALAR_SUF)
+#endif
+int apply_skew_projectordprimme(dummy_type_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_dprimme *Mfact, int *ipivot, int numCols, dummy_type_dprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(apply_projected_matrix)
+#  define apply_projected_matrix CONCAT(apply_projected_matrix,SCALAR_SUF)
+#endif
+int apply_projected_matrixdprimme(dummy_type_dprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_dprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_dprimme *X,
+      PRIMME_INT ldX, dummy_type_dprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_dprimme *result, PRIMME_INT ldresult, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(perm_set_value_on_pos)
+#  define perm_set_value_on_pos CONCAT(perm_set_value_on_pos,SCALAR_SUF)
+#endif
+int perm_set_value_on_posdprimme(int *p, int val, int pos, int n);
+int inner_solve_hprimme(int blockSize, dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_hprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_hprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
+      dummy_type_hprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_hprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_hprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_hprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_hprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_hprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionerhprimme(dummy_type_hprimme *v, PRIMME_INT ldv, dummy_type_hprimme *Q,
+      PRIMME_INT ldQ, dummy_type_hprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_hprimme *x,
+      PRIMME_INT ldx, dummy_type_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
+      dummy_type_sprimme *Mfact, int *ipivot, dummy_type_hprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectorhprimme(dummy_type_hprimme *Q, PRIMME_INT ldQ, dummy_type_hprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_hprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixhprimme(dummy_type_hprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_hprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_hprimme *X,
+      PRIMME_INT ldX, dummy_type_hprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_hprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_poshprimme(int *p, int val, int pos, int n);
+int inner_solve_kprimme(int blockSize, dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_kprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_kprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
+      dummy_type_kprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_kprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_kprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_kprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_kprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_kprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionerkprimme(dummy_type_kprimme *v, PRIMME_INT ldv, dummy_type_kprimme *Q,
+      PRIMME_INT ldQ, dummy_type_kprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_kprimme *x,
+      PRIMME_INT ldx, dummy_type_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
+      dummy_type_cprimme *Mfact, int *ipivot, dummy_type_kprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectorkprimme(dummy_type_kprimme *Q, PRIMME_INT ldQ, dummy_type_kprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_kprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixkprimme(dummy_type_kprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_kprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_kprimme *X,
+      PRIMME_INT ldX, dummy_type_kprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_kprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_poskprimme(int *p, int val, int pos, int n);
+int inner_solve_sprimme(int blockSize, dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_sprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
+      dummy_type_sprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_sprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_sprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_sprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_sprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_sprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionersprimme(dummy_type_sprimme *v, PRIMME_INT ldv, dummy_type_sprimme *Q,
+      PRIMME_INT ldQ, dummy_type_sprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_sprimme *x,
+      PRIMME_INT ldx, dummy_type_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
+      dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectorsprimme(dummy_type_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_sprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixsprimme(dummy_type_sprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_sprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *X,
+      PRIMME_INT ldX, dummy_type_sprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_sprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_possprimme(int *p, int val, int pos, int n);
+int inner_solve_cprimme(int blockSize, dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
+      dummy_type_cprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_cprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_cprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_cprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_cprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_cprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionercprimme(dummy_type_cprimme *v, PRIMME_INT ldv, dummy_type_cprimme *Q,
+      PRIMME_INT ldQ, dummy_type_cprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_cprimme *x,
+      PRIMME_INT ldx, dummy_type_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
+      dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectorcprimme(dummy_type_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_cprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixcprimme(dummy_type_cprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_cprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *X,
+      PRIMME_INT ldX, dummy_type_cprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_cprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_poscprimme(int *p, int val, int pos, int n);
 int inner_solve_zprimme(int blockSize, dummy_type_zprimme *x, PRIMME_INT ldx, dummy_type_zprimme *Bx,
       PRIMME_INT ldBx, dummy_type_zprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_zprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *xKinvBx,
@@ -183,46 +265,20 @@ int inner_solve_zprimme(int blockSize, dummy_type_zprimme *x, PRIMME_INT ldx, du
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_zprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
       double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_magma_sprimme(int blockSize, dummy_type_magma_sprimme *x, PRIMME_INT ldx, dummy_type_magma_sprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_magma_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_sprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
-      dummy_type_magma_sprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_sprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_magma_sprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_magma_sprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_sprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_magma_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_magma_sprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_magma_cprimme(int blockSize, dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_magma_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_cprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
-      dummy_type_magma_cprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_cprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_magma_cprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_magma_cprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_cprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_magma_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_magma_cprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_magma_dprimme(int blockSize, dummy_type_magma_dprimme *x, PRIMME_INT ldx, dummy_type_magma_dprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_magma_dprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_magma_dprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_dprimme *Mfact, int *ipivot, dummy_type_dprimme *xKinvBx,
-      dummy_type_magma_dprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_dprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_magma_dprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_magma_dprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_dprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_magma_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_magma_dprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
-int inner_solve_magma_zprimme(int blockSize, dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *Bx,
-      PRIMME_INT ldBx, dummy_type_magma_zprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_magma_zprimme *evecs,
-      PRIMME_INT ldevecs, dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *xKinvBx,
-      dummy_type_magma_zprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_zprimme *LprojectorX,
-      PRIMME_INT ldLprojectorX, dummy_type_magma_zprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
-      dummy_type_magma_zprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_zprimme *RprojectorQ,
-      PRIMME_INT ldRprojectorQ, dummy_type_magma_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, dummy_type_magma_zprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionerzprimme(dummy_type_zprimme *v, PRIMME_INT ldv, dummy_type_zprimme *Q,
+      PRIMME_INT ldQ, dummy_type_zprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_zprimme *x,
+      PRIMME_INT ldx, dummy_type_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_zprimme *xKinvBx,
+      dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectorzprimme(dummy_type_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_zprimme *Mfact, int *ipivot, int numCols, dummy_type_zprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixzprimme(dummy_type_zprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_zprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_zprimme *X,
+      PRIMME_INT ldX, dummy_type_zprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_zprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_poszprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_hprimme(int blockSize, dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_hprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_hprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
@@ -233,6 +289,20 @@ int inner_solve_magma_hprimme(int blockSize, dummy_type_magma_hprimme *x, PRIMME
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_hprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
       double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionermagma_hprimme(dummy_type_magma_hprimme *v, PRIMME_INT ldv, dummy_type_magma_hprimme *Q,
+      PRIMME_INT ldQ, dummy_type_magma_hprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_hprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
+      dummy_type_sprimme *Mfact, int *ipivot, dummy_type_magma_hprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectormagma_hprimme(dummy_type_magma_hprimme *Q, PRIMME_INT ldQ, dummy_type_magma_hprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_hprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixmagma_hprimme(dummy_type_magma_hprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_magma_hprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_hprimme *X,
+      PRIMME_INT ldX, dummy_type_magma_hprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_magma_hprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_posmagma_hprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_kprimme(int blockSize, dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_kprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_kprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
@@ -243,4 +313,114 @@ int inner_solve_magma_kprimme(int blockSize, dummy_type_magma_kprimme *x, PRIMME
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_kprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
       double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionermagma_kprimme(dummy_type_magma_kprimme *v, PRIMME_INT ldv, dummy_type_magma_kprimme *Q,
+      PRIMME_INT ldQ, dummy_type_magma_kprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_kprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
+      dummy_type_cprimme *Mfact, int *ipivot, dummy_type_magma_kprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectormagma_kprimme(dummy_type_magma_kprimme *Q, PRIMME_INT ldQ, dummy_type_magma_kprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_kprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixmagma_kprimme(dummy_type_magma_kprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_magma_kprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_kprimme *X,
+      PRIMME_INT ldX, dummy_type_magma_kprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_magma_kprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_posmagma_kprimme(int *p, int val, int pos, int n);
+int inner_solve_magma_sprimme(int blockSize, dummy_type_magma_sprimme *x, PRIMME_INT ldx, dummy_type_magma_sprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_sprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *xKinvBx,
+      dummy_type_magma_sprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_sprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_magma_sprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_magma_sprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_sprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_magma_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_magma_sprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionermagma_sprimme(dummy_type_magma_sprimme *v, PRIMME_INT ldv, dummy_type_magma_sprimme *Q,
+      PRIMME_INT ldQ, dummy_type_magma_sprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_sprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
+      dummy_type_sprimme *Mfact, int *ipivot, dummy_type_magma_sprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectormagma_sprimme(dummy_type_magma_sprimme *Q, PRIMME_INT ldQ, dummy_type_magma_sprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_sprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixmagma_sprimme(dummy_type_magma_sprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_magma_sprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_sprimme *X,
+      PRIMME_INT ldX, dummy_type_magma_sprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_magma_sprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_posmagma_sprimme(int *p, int val, int pos, int n);
+int inner_solve_magma_cprimme(int blockSize, dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_cprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *xKinvBx,
+      dummy_type_magma_cprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_cprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_magma_cprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_magma_cprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_cprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_magma_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_magma_cprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionermagma_cprimme(dummy_type_magma_cprimme *v, PRIMME_INT ldv, dummy_type_magma_cprimme *Q,
+      PRIMME_INT ldQ, dummy_type_magma_cprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_cprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
+      dummy_type_cprimme *Mfact, int *ipivot, dummy_type_magma_cprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectormagma_cprimme(dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, dummy_type_magma_cprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_cprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixmagma_cprimme(dummy_type_magma_cprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_cprimme *X,
+      PRIMME_INT ldX, dummy_type_magma_cprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_magma_cprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_posmagma_cprimme(int *p, int val, int pos, int n);
+int inner_solve_magma_dprimme(int blockSize, dummy_type_magma_dprimme *x, PRIMME_INT ldx, dummy_type_magma_dprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_dprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_magma_dprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_dprimme *Mfact, int *ipivot, dummy_type_dprimme *xKinvBx,
+      dummy_type_magma_dprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_dprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_magma_dprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_magma_dprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_dprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_magma_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_magma_dprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionermagma_dprimme(dummy_type_magma_dprimme *v, PRIMME_INT ldv, dummy_type_magma_dprimme *Q,
+      PRIMME_INT ldQ, dummy_type_magma_dprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_dprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_dprimme *xKinvBx,
+      dummy_type_dprimme *Mfact, int *ipivot, dummy_type_magma_dprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectormagma_dprimme(dummy_type_magma_dprimme *Q, PRIMME_INT ldQ, dummy_type_magma_dprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_dprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_dprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixmagma_dprimme(dummy_type_magma_dprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_magma_dprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_dprimme *X,
+      PRIMME_INT ldX, dummy_type_magma_dprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_magma_dprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_posmagma_dprimme(int *p, int val, int pos, int n);
+int inner_solve_magma_zprimme(int blockSize, dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_zprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_magma_zprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *xKinvBx,
+      dummy_type_magma_zprimme *LprojectorQ, PRIMME_INT ldLprojectorQ, dummy_type_magma_zprimme *LprojectorX,
+      PRIMME_INT ldLprojectorX, dummy_type_magma_zprimme *LprojectorBQ, PRIMME_INT ldLprojectorBQ,
+      dummy_type_magma_zprimme *LprojectorBX, PRIMME_INT ldLprojectorBX, dummy_type_magma_zprimme *RprojectorQ,
+      PRIMME_INT ldRprojectorQ, dummy_type_magma_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
+      int sizeRprojectorX, dummy_type_magma_zprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
+      double *shift, int *touch, double startTime, primme_context ctx);
+int apply_projected_preconditionermagma_zprimme(dummy_type_magma_zprimme *v, PRIMME_INT ldv, dummy_type_magma_zprimme *Q,
+      PRIMME_INT ldQ, dummy_type_magma_zprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_zprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
+      int sizeRprojectorQ, int sizeRprojectorX, dummy_type_zprimme *xKinvBx,
+      dummy_type_zprimme *Mfact, int *ipivot, dummy_type_magma_zprimme *result, PRIMME_INT ldresult,
+      int blockSize, primme_context ctx);
+int apply_skew_projectormagma_zprimme(dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, dummy_type_magma_zprimme *Qhat,
+      PRIMME_INT ldQhat, dummy_type_zprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_zprimme *v,
+      PRIMME_INT ldv, int blockSize, primme_context ctx);
+int apply_projected_matrixmagma_zprimme(dummy_type_magma_zprimme *v, PRIMME_INT ldv, double *shift,
+      dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_zprimme *X,
+      PRIMME_INT ldX, dummy_type_magma_zprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
+      dummy_type_magma_zprimme *result, PRIMME_INT ldresult, primme_context ctx);
+int perm_set_value_on_posmagma_zprimme(int *p, int val, int pos, int n);
 #endif

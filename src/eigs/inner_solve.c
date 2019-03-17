@@ -33,6 +33,10 @@
  *  
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/inner_solve.c"
+#endif
+
 #include "numerical.h"
 #include "const.h"
 /* Keep automatically generated headers under this section  */
@@ -44,24 +48,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
-      PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
-      PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *Mfact,
-      int *ipivot, SCALAR *result, PRIMME_INT ldresult, int blockSize,
-      primme_context ctx);
-
-static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
-      PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
-
-static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
-      SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
-      PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      SCALAR *result, PRIMME_INT ldresult, primme_context ctx);
-
-static int perm_set_value_on_pos(int *p, int val, int pos, int n);
 
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
@@ -714,7 +700,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
  *
  ******************************************************************************/
 
-static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
+STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
       PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
       PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvBx,
@@ -769,7 +755,7 @@ static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
  * 
  ******************************************************************************/
 
-static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
+STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
       PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
       PRIMME_INT ldv, int blockSize, primme_context ctx) {
 
@@ -833,7 +819,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
  *
  ******************************************************************************/
 
-static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
+STATIC int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
       SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
       PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
       SCALAR *result, PRIMME_INT ldresult, primme_context ctx) {
@@ -908,7 +894,7 @@ static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
  *
  ******************************************************************************/
 
-static int perm_set_value_on_pos(int *p, int val, int pos, int n) {
+STATIC int perm_set_value_on_pos(int *p, int val, int pos, int n) {
 
    int i;
    for (i=0; i<n; i++) {

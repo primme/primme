@@ -33,17 +33,14 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../linalg/auxiliary.c"
+#endif
 
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
-#include "template.h"
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
-#include "auxiliary.h"
-#include "blaslapack.h"
-#include "magma_wrapper.h"
-#endif
+#include "numerical.h"
 
 #ifdef SUPPORTED_TYPE
 

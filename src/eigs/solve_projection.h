@@ -33,28 +33,6 @@
 
 #ifndef solve_projection_H
 #define solve_projection_H
-int solve_H_sprimme(dummy_type_sprimme *H, int basisSize, int ldH, dummy_type_sprimme *VtBV, int ldVtBV,
-      dummy_type_sprimme *R, int ldR, dummy_type_sprimme *QtV, int ldQtV, dummy_type_sprimme *QtQ, int ldQtQ,
-      dummy_type_sprimme *hU, int ldhU, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
-      dummy_type_sprimme *hSVals, int numConverged, primme_context ctx);
-int prepare_vecs_sprimme(int basisSize, int i0, int blockSize, dummy_type_sprimme *H,
-      int ldH, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals, dummy_type_sprimme *hVecs, int ldhVecs,
-      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int RRForAll, dummy_type_sprimme *hVecsRot, int ldhVecsRot,
-      primme_context ctx);
-int map_vecs_sprimme(dummy_type_sprimme *V, int m, int nV, int ldV, dummy_type_sprimme *W, int n0,
-      int n, int ldW, int *p, primme_context ctx);
-int solve_H_cprimme(dummy_type_cprimme *H, int basisSize, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
-      dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtV, int ldQtV, dummy_type_cprimme *QtQ, int ldQtQ,
-      dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
-      dummy_type_sprimme *hSVals, int numConverged, primme_context ctx);
-int prepare_vecs_cprimme(int basisSize, int i0, int blockSize, dummy_type_cprimme *H,
-      int ldH, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals, dummy_type_cprimme *hVecs, int ldhVecs,
-      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int RRForAll, dummy_type_cprimme *hVecsRot, int ldhVecsRot,
-      primme_context ctx);
-int map_vecs_cprimme(dummy_type_cprimme *V, int m, int nV, int ldV, dummy_type_cprimme *W, int n0,
-      int n, int ldW, int *p, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Sprimme)
 #  define solve_H_Sprimme CONCAT(solve_H_,SCALAR_SUF)
 #endif
@@ -149,6 +127,32 @@ int solve_H_dprimme(dummy_type_dprimme *H, int basisSize, int ldH, dummy_type_dp
       dummy_type_dprimme *R, int ldR, dummy_type_dprimme *QtV, int ldQtV, dummy_type_dprimme *QtQ, int ldQtQ,
       dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
       dummy_type_dprimme *hSVals, int numConverged, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Sprimme)
+#  define solve_H_RR_Sprimme CONCAT(solve_H_RR_Sprimme,SCALAR_SUF)
+#endif
+int solve_H_RR_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *VtBV, int ldVtBV,
+      dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, int basisSize, int numConverged,
+      primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_Harm_Sprimme)
+#  define solve_H_Harm_Sprimme CONCAT(solve_H_Harm_Sprimme,SCALAR_SUF)
+#endif
+int solve_H_Harm_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *QtV, int ldQtV,
+      dummy_type_dprimme *R, int ldR, dummy_type_dprimme *QtQ, int ldQtQ, dummy_type_dprimme *VtBV, int ldVtBV,
+      dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hVals,
+      int basisSize, int numConverged, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_Ref_Sprimme)
+#  define solve_H_Ref_Sprimme CONCAT(solve_H_Ref_Sprimme,SCALAR_SUF)
+#endif
+int solve_H_Ref_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hSVals, dummy_type_dprimme *R, int ldR, dummy_type_dprimme *QtQ,
+      int ldQtQ, dummy_type_dprimme *VtBV, int ldVtBV, dummy_type_dprimme *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_brcast_Sprimme)
+#  define solve_H_brcast_Sprimme CONCAT(solve_H_brcast_Sprimme,SCALAR_SUF)
+#endif
+int solve_H_brcast_Sprimmedprimme(int basisSize, dummy_type_dprimme *hU, int ldhU,
+                                  dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
+                                  dummy_type_dprimme *hSVals, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Sprimme)
 #  define prepare_vecs_Sprimme CONCAT(prepare_vecs_,SCALAR_SUF)
 #endif
@@ -336,10 +340,74 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize, dummy_type_dprimm
 #endif
 int map_vecs_dprimme(dummy_type_dprimme *V, int m, int nV, int ldV, dummy_type_dprimme *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
+int solve_H_sprimme(dummy_type_sprimme *H, int basisSize, int ldH, dummy_type_sprimme *VtBV, int ldVtBV,
+      dummy_type_sprimme *R, int ldR, dummy_type_sprimme *QtV, int ldQtV, dummy_type_sprimme *QtQ, int ldQtQ,
+      dummy_type_sprimme *hU, int ldhU, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
+      dummy_type_sprimme *hSVals, int numConverged, primme_context ctx);
+int solve_H_RR_Sprimmesprimme(dummy_type_sprimme *H, int ldH, dummy_type_sprimme *VtBV, int ldVtBV,
+      dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, int basisSize, int numConverged,
+      primme_context ctx);
+int solve_H_Harm_Sprimmesprimme(dummy_type_sprimme *H, int ldH, dummy_type_sprimme *QtV, int ldQtV,
+      dummy_type_sprimme *R, int ldR, dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *VtBV, int ldVtBV,
+      dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hU, int ldhU, dummy_type_sprimme *hVals,
+      int basisSize, int numConverged, primme_context ctx);
+int solve_H_Ref_Sprimmesprimme(dummy_type_sprimme *H, int ldH, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hU, int ldhU, dummy_type_sprimme *hSVals, dummy_type_sprimme *R, int ldR, dummy_type_sprimme *QtQ,
+      int ldQtQ, dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
+int solve_H_brcast_Sprimmesprimme(int basisSize, dummy_type_sprimme *hU, int ldhU,
+                                  dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
+                                  dummy_type_sprimme *hSVals, primme_context ctx);
+int prepare_vecs_sprimme(int basisSize, int i0, int blockSize, dummy_type_sprimme *H,
+      int ldH, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals, dummy_type_sprimme *hVecs, int ldhVecs,
+      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
+      int *flags, int RRForAll, dummy_type_sprimme *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
+int map_vecs_sprimme(dummy_type_sprimme *V, int m, int nV, int ldV, dummy_type_sprimme *W, int n0,
+      int n, int ldW, int *p, primme_context ctx);
+int solve_H_cprimme(dummy_type_cprimme *H, int basisSize, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
+      dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtV, int ldQtV, dummy_type_cprimme *QtQ, int ldQtQ,
+      dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
+      dummy_type_sprimme *hSVals, int numConverged, primme_context ctx);
+int solve_H_RR_Sprimmecprimme(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
+      dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, int basisSize, int numConverged,
+      primme_context ctx);
+int solve_H_Harm_Sprimmecprimme(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *QtV, int ldQtV,
+      dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *VtBV, int ldVtBV,
+      dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hU, int ldhU, dummy_type_sprimme *hVals,
+      int basisSize, int numConverged, primme_context ctx);
+int solve_H_Ref_Sprimmecprimme(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hU, int ldhU, dummy_type_sprimme *hSVals, dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtQ,
+      int ldQtQ, dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_sprimme *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
+int solve_H_brcast_Sprimmecprimme(int basisSize, dummy_type_cprimme *hU, int ldhU,
+                                  dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
+                                  dummy_type_sprimme *hSVals, primme_context ctx);
+int prepare_vecs_cprimme(int basisSize, int i0, int blockSize, dummy_type_cprimme *H,
+      int ldH, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals, dummy_type_cprimme *hVecs, int ldhVecs,
+      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
+      int *flags, int RRForAll, dummy_type_cprimme *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
+int map_vecs_cprimme(dummy_type_cprimme *V, int m, int nV, int ldV, dummy_type_cprimme *W, int n0,
+      int n, int ldW, int *p, primme_context ctx);
 int solve_H_zprimme(dummy_type_zprimme *H, int basisSize, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
       dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtV, int ldQtV, dummy_type_zprimme *QtQ, int ldQtQ,
       dummy_type_zprimme *hU, int ldhU, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
       dummy_type_dprimme *hSVals, int numConverged, primme_context ctx);
+int solve_H_RR_Sprimmezprimme(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
+      dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, int basisSize, int numConverged,
+      primme_context ctx);
+int solve_H_Harm_Sprimmezprimme(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *QtV, int ldQtV,
+      dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *VtBV, int ldVtBV,
+      dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hU, int ldhU, dummy_type_dprimme *hVals,
+      int basisSize, int numConverged, primme_context ctx);
+int solve_H_Ref_Sprimmezprimme(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_zprimme *hU, int ldhU, dummy_type_dprimme *hSVals, dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtQ,
+      int ldQtQ, dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_dprimme *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
+int solve_H_brcast_Sprimmezprimme(int basisSize, dummy_type_zprimme *hU, int ldhU,
+                                  dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
+                                  dummy_type_dprimme *hSVals, primme_context ctx);
 int prepare_vecs_zprimme(int basisSize, int i0, int blockSize, dummy_type_zprimme *H,
       int ldH, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals, dummy_type_zprimme *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,

@@ -54,6 +54,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/primme_c.c"
+#endif
+
 #include "numerical.h"
 #include "const.h"
 #include "primme_interface.h"
@@ -63,22 +67,6 @@
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
 #endif
-
-#ifdef SUPPORTED_TYPE
-
-static int check_params_coherence(primme_context ctx);
-static int coordinated_exit(int ret, primme_context ctx);
-static int check_input(
-      void *evals, void *evecs, void *resNorms, primme_params *primme);
-static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme, int *ierr);
-static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-      void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, const char *msg, double *time,
-      primme_event *event, primme_params *primme, int *err);
-
-#endif /* SUPPORTED_TYPE */
 
 /*******************************************************************************
  * Subroutine Xprimme - This routine is a front end used to perform 
@@ -330,7 +318,7 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
  *                 <0    Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(
+STATIC int check_input(
       void *evals, void *evecs, void *resNorms, primme_params *primme) {
    int ret;
    ret = 0;
@@ -447,7 +435,7 @@ static int check_input(
  * isConv      if it isn't zero the approximate pair is marked as converged
  ******************************************************************************/
 
-static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
+STATIC void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
       int *isConv, primme_params *primme, int *ierr) {
 
    (void)eval; /* unused parameter */
@@ -494,7 +482,7 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
  * 
  ******************************************************************************/
 
-static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
+STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
@@ -601,7 +589,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
  *    error code
  ******************************************************************************/
 
-static int check_params_coherence(primme_context ctx) {
+STATIC int check_params_coherence(primme_context ctx) {
    primme_params *primme = ctx.primme;
 
    /* Check number of procs and procs with id zero */
@@ -668,7 +656,7 @@ static int check_params_coherence(primme_context ctx) {
  * RETURN:
  *    error code
  ******************************************************************************/
-static int coordinated_exit(int ret, primme_context ctx) {
+STATIC int coordinated_exit(int ret, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 

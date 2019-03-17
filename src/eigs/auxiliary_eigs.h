@@ -33,150 +33,6 @@
 
 #ifndef auxiliary_eigs_H
 #define auxiliary_eigs_H
-void Num_compute_residual_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_hprimme *Bx,
-   dummy_type_hprimme *Ax, dummy_type_hprimme *r, primme_context ctx);
-int Num_update_VWXR_hprimme(dummy_type_hprimme *V, dummy_type_hprimme *W, dummy_type_hprimme *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
-      dummy_type_hprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      dummy_type_hprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      dummy_type_hprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      dummy_type_hprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      dummy_type_hprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
-      dummy_type_hprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      dummy_type_hprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      dummy_type_hprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      dummy_type_sprimme *rnorms, int nrb, int nre,
-      dummy_type_sprimme *G, int nG, int ldG,
-      dummy_type_sprimme *H, int nH, int ldH,
-      dummy_type_sprimme *xnorms, int nxb, int nxe,
-      primme_context ctx);
-int applyPreconditioner_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      dummy_type_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_hprimme(dummy_type_sprimme eval, dummy_type_hprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
-      int *isconv, primme_context ctx);
-int globalSum_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
-int broadcast_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
-dummy_type_sprimme problemNorm_hprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-dummy_type_sprimme deltaEig_hprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-int Num_dist_dots_hprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy,
-      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int Num_dist_dots_real_hprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y,
-      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int monitorFun_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
-      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
-      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx);
-void Num_compute_residual_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_kprimme *Bx,
-   dummy_type_kprimme *Ax, dummy_type_kprimme *r, primme_context ctx);
-int Num_update_VWXR_kprimme(dummy_type_kprimme *V, dummy_type_kprimme *W, dummy_type_kprimme *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
-      dummy_type_kprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      dummy_type_kprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      dummy_type_kprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      dummy_type_kprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      dummy_type_kprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
-      dummy_type_kprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      dummy_type_kprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      dummy_type_kprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      dummy_type_sprimme *rnorms, int nrb, int nre,
-      dummy_type_cprimme *G, int nG, int ldG,
-      dummy_type_cprimme *H, int nH, int ldH,
-      dummy_type_sprimme *xnorms, int nxb, int nxe,
-      primme_context ctx);
-int applyPreconditioner_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      dummy_type_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_kprimme(dummy_type_sprimme eval, dummy_type_kprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
-      int *isconv, primme_context ctx);
-int globalSum_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
-int broadcast_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
-dummy_type_sprimme problemNorm_kprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-dummy_type_sprimme deltaEig_kprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-int Num_dist_dots_kprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y, PRIMME_INT ldy,
-      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
-int Num_dist_dots_real_kprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y,
-      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int monitorFun_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
-      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
-      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx);
-void Num_compute_residual_sprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_sprimme *Bx,
-   dummy_type_sprimme *Ax, dummy_type_sprimme *r, primme_context ctx);
-int Num_update_VWXR_sprimme(dummy_type_sprimme *V, dummy_type_sprimme *W, dummy_type_sprimme *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
-      dummy_type_sprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      dummy_type_sprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      dummy_type_sprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      dummy_type_sprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      dummy_type_sprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
-      dummy_type_sprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      dummy_type_sprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      dummy_type_sprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      dummy_type_sprimme *rnorms, int nrb, int nre,
-      dummy_type_sprimme *G, int nG, int ldG,
-      dummy_type_sprimme *H, int nH, int ldH,
-      dummy_type_sprimme *xnorms, int nxb, int nxe,
-      primme_context ctx);
-int applyPreconditioner_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      dummy_type_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_sprimme(dummy_type_sprimme eval, dummy_type_sprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
-      int *isconv, primme_context ctx);
-int globalSum_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
-int broadcast_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
-dummy_type_sprimme problemNorm_sprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-dummy_type_sprimme deltaEig_sprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-int Num_dist_dots_sprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy,
-      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int Num_dist_dots_real_sprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y,
-      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int monitorFun_sprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
-      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
-      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx);
-void Num_compute_residual_cprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_cprimme *Bx,
-   dummy_type_cprimme *Ax, dummy_type_cprimme *r, primme_context ctx);
-int Num_update_VWXR_cprimme(dummy_type_cprimme *V, dummy_type_cprimme *W, dummy_type_cprimme *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
-      dummy_type_cprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      dummy_type_cprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      dummy_type_cprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      dummy_type_cprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      dummy_type_cprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
-      dummy_type_cprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      dummy_type_cprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      dummy_type_cprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      dummy_type_sprimme *rnorms, int nrb, int nre,
-      dummy_type_cprimme *G, int nG, int ldG,
-      dummy_type_cprimme *H, int nH, int ldH,
-      dummy_type_sprimme *xnorms, int nxb, int nxe,
-      primme_context ctx);
-int applyPreconditioner_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      dummy_type_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_cprimme(dummy_type_sprimme eval, dummy_type_cprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
-      int *isconv, primme_context ctx);
-int globalSum_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
-int broadcast_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
-dummy_type_sprimme problemNorm_cprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-dummy_type_sprimme deltaEig_cprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-int Num_dist_dots_cprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy,
-      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
-int Num_dist_dots_real_cprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y,
-      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int monitorFun_cprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
-      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
-      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(primme_get_contextSprimme)
 #  define primme_get_contextSprimme CONCAT(primme_get_context,SCALAR_SUF)
 #endif
@@ -1660,6 +1516,150 @@ int monitorFun_dprimme(dummy_type_dprimme *basisEvals, int basisSize, int *basis
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_hprimme *Bx,
+   dummy_type_hprimme *Ax, dummy_type_hprimme *r, primme_context ctx);
+int Num_update_VWXR_hprimme(dummy_type_hprimme *V, dummy_type_hprimme *W, dummy_type_hprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_hprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_hprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_hprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_hprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_hprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_hprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_hprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_hprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_sprimme *G, int nG, int ldG,
+      dummy_type_sprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_hprimme(dummy_type_sprimme eval, dummy_type_hprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+int globalSum_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
+int broadcast_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
+dummy_type_sprimme problemNorm_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_hprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int Num_dist_dots_real_hprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_kprimme *Bx,
+   dummy_type_kprimme *Ax, dummy_type_kprimme *r, primme_context ctx);
+int Num_update_VWXR_kprimme(dummy_type_kprimme *V, dummy_type_kprimme *W, dummy_type_kprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_kprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_kprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_kprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_kprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_kprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_kprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_kprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_kprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_cprimme *G, int nG, int ldG,
+      dummy_type_cprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_kprimme(dummy_type_sprimme eval, dummy_type_kprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+int globalSum_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
+int broadcast_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
+dummy_type_sprimme problemNorm_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_kprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
+int Num_dist_dots_real_kprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_sprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_sprimme *Bx,
+   dummy_type_sprimme *Ax, dummy_type_sprimme *r, primme_context ctx);
+int Num_update_VWXR_sprimme(dummy_type_sprimme *V, dummy_type_sprimme *W, dummy_type_sprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_sprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_sprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_sprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_sprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_sprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_sprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_sprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_sprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_sprimme *G, int nG, int ldG,
+      dummy_type_sprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_sprimme(dummy_type_sprimme eval, dummy_type_sprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+int globalSum_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
+int broadcast_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
+dummy_type_sprimme problemNorm_sprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_sprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_sprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int Num_dist_dots_real_sprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_sprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_cprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_cprimme *Bx,
+   dummy_type_cprimme *Ax, dummy_type_cprimme *r, primme_context ctx);
+int Num_update_VWXR_cprimme(dummy_type_cprimme *V, dummy_type_cprimme *W, dummy_type_cprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_cprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_cprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_cprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_cprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_cprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_cprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_cprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_cprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_cprimme *G, int nG, int ldG,
+      dummy_type_cprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_cprimme(dummy_type_sprimme eval, dummy_type_cprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+int globalSum_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
+int broadcast_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
+dummy_type_sprimme problemNorm_cprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_cprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_cprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
+int Num_dist_dots_real_cprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_cprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
 void Num_compute_residual_zprimme(PRIMME_INT n, dummy_type_zprimme eval, dummy_type_zprimme *Bx,
    dummy_type_zprimme *Ax, dummy_type_zprimme *r, primme_context ctx);
 int Num_update_VWXR_zprimme(dummy_type_zprimme *V, dummy_type_zprimme *W, dummy_type_zprimme *BV, PRIMME_INT mV,
@@ -1695,6 +1695,74 @@ int monitorFun_zprimme(dummy_type_dprimme *basisEvals, int basisSize, int *basis
       int *iblock, int blockSize, dummy_type_dprimme *basisNorms, int numConverged,
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_magma_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_magma_hprimme *Bx,
+   dummy_type_magma_hprimme *Ax, dummy_type_magma_hprimme *r, primme_context ctx);
+int Num_update_VWXR_magma_hprimme(dummy_type_magma_hprimme *V, dummy_type_magma_hprimme *W, dummy_type_magma_hprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_magma_hprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_magma_hprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_magma_hprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_magma_hprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_magma_hprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_magma_hprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_magma_hprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_magma_hprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_sprimme *G, int nG, int ldG,
+      dummy_type_sprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_magma_hprimme(dummy_type_sprimme eval, dummy_type_magma_hprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+dummy_type_sprimme problemNorm_magma_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_magma_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int Num_dist_dots_real_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_magma_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, double startTime, primme_context ctx);
+void Num_compute_residual_magma_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_kprimme *Bx,
+   dummy_type_magma_kprimme *Ax, dummy_type_magma_kprimme *r, primme_context ctx);
+int Num_update_VWXR_magma_kprimme(dummy_type_magma_kprimme *V, dummy_type_magma_kprimme *W, dummy_type_magma_kprimme *BV, PRIMME_INT mV,
+      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
+      dummy_type_magma_kprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
+      dummy_type_magma_kprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
+      dummy_type_magma_kprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
+      dummy_type_magma_kprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
+      dummy_type_magma_kprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
+      dummy_type_magma_kprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
+      dummy_type_magma_kprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
+      dummy_type_magma_kprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
+      dummy_type_sprimme *rnorms, int nrb, int nre,
+      dummy_type_cprimme *G, int nG, int ldG,
+      dummy_type_cprimme *H, int nH, int ldH,
+      dummy_type_sprimme *xnorms, int nxb, int nxe,
+      primme_context ctx);
+int applyPreconditioner_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_magma_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int convTestFun_magma_kprimme(dummy_type_sprimme eval, dummy_type_magma_kprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
+      int *isconv, primme_context ctx);
+dummy_type_sprimme problemNorm_magma_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_magma_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+int Num_dist_dots_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
+int Num_dist_dots_real_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int monitorFun_magma_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
 void Num_compute_residual_magma_sprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_magma_sprimme *Bx,
    dummy_type_magma_sprimme *Ax, dummy_type_magma_sprimme *r, primme_context ctx);
@@ -1831,73 +1899,5 @@ int monitorFun_magma_zprimme(dummy_type_dprimme *basisEvals, int basisSize, int 
       int *iblock, int blockSize, dummy_type_dprimme *basisNorms, int numConverged,
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx);
-void Num_compute_residual_magma_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_magma_hprimme *Bx,
-   dummy_type_magma_hprimme *Ax, dummy_type_magma_hprimme *r, primme_context ctx);
-int Num_update_VWXR_magma_hprimme(dummy_type_magma_hprimme *V, dummy_type_magma_hprimme *W, dummy_type_magma_hprimme *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, dummy_type_sprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
-      dummy_type_magma_hprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      dummy_type_magma_hprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      dummy_type_magma_hprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      dummy_type_magma_hprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      dummy_type_magma_hprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
-      dummy_type_magma_hprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      dummy_type_magma_hprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      dummy_type_magma_hprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      dummy_type_sprimme *rnorms, int nrb, int nre,
-      dummy_type_sprimme *G, int nG, int ldG,
-      dummy_type_sprimme *H, int nH, int ldH,
-      dummy_type_sprimme *xnorms, int nxb, int nxe,
-      primme_context ctx);
-int applyPreconditioner_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      dummy_type_magma_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_magma_hprimme(dummy_type_sprimme eval, dummy_type_magma_hprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
-      int *isconv, primme_context ctx);
-dummy_type_sprimme problemNorm_magma_hprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-dummy_type_sprimme deltaEig_magma_hprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-int Num_dist_dots_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y, PRIMME_INT ldy,
-      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int Num_dist_dots_real_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y,
-      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int monitorFun_magma_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
-      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
-      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx);
-void Num_compute_residual_magma_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_kprimme *Bx,
-   dummy_type_magma_kprimme *Ax, dummy_type_magma_kprimme *r, primme_context ctx);
-int Num_update_VWXR_magma_kprimme(dummy_type_magma_kprimme *V, dummy_type_magma_kprimme *W, dummy_type_magma_kprimme *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, dummy_type_cprimme *h, int nh, int ldh, dummy_type_sprimme *hVals,
-      dummy_type_magma_kprimme *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      dummy_type_magma_kprimme *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      dummy_type_magma_kprimme *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      dummy_type_magma_kprimme *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      dummy_type_magma_kprimme *R, int nRb, int nRe, PRIMME_INT ldR, dummy_type_sprimme *Rnorms,
-      dummy_type_magma_kprimme *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      dummy_type_magma_kprimme *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      dummy_type_magma_kprimme *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      dummy_type_sprimme *rnorms, int nrb, int nre,
-      dummy_type_cprimme *G, int nG, int ldG,
-      dummy_type_cprimme *H, int nH, int ldH,
-      dummy_type_sprimme *xnorms, int nxb, int nxe,
-      primme_context ctx);
-int applyPreconditioner_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      dummy_type_magma_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int convTestFun_magma_kprimme(dummy_type_sprimme eval, dummy_type_magma_kprimme *evec, int givenEvec, dummy_type_sprimme rNorm,
-      int *isconv, primme_context ctx);
-dummy_type_sprimme problemNorm_magma_kprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-dummy_type_sprimme deltaEig_magma_kprimme(
-      int overrideUserEstimations, struct primme_params *primme);
-int Num_dist_dots_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y, PRIMME_INT ldy,
-      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
-int Num_dist_dots_real_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y,
-      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
-int monitorFun_magma_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
-      dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
-      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
 #endif

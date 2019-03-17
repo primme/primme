@@ -33,6 +33,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/solve_projection.c"
+#endif
+
 #include <math.h>
 #include <assert.h>
 #include "const.h"
@@ -47,24 +51,6 @@
 #ifdef SUPPORTED_TYPE
 
 #if defined(USE_HOST) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF))
-
-static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
-      primme_context ctx);
-
-static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
-      SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU, REAL *hVals,
-      int basisSize, int numConverged, primme_context ctx);
-
-static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
-      SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R, int ldR, SCALAR *QtQ,
-      int ldQtQ, SCALAR *VtBV, int ldVtBV, REAL *hVals, int basisSize,
-      int targetShiftIndex, primme_context ctx);
-
-static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
-                                  SCALAR *hVecs, int ldhVecs, REAL *hVals,
-                                  REAL *hSVals, primme_context ctx);
 
 /*******************************************************************************
  * Subroutine solve_H - This procedure solves the project problem and return
@@ -197,7 +183,7 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
       SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
       primme_context ctx) {
 
@@ -390,7 +376,7 @@ static int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
+STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
       SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
       SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU, REAL *hVals,
       int basisSize, int numConverged, primme_context ctx) {
@@ -502,7 +488,7 @@ static int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
  *     - -1 was unsuccessful
  ******************************************************************************/
 
-static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
+STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R, int ldR, SCALAR *QtQ,
       int ldQtQ, SCALAR *VtBV, int ldVtBV, REAL *hVals, int basisSize,
       int targetShiftIndex, primme_context ctx) {
@@ -618,7 +604,7 @@ static int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
  * error code                          
  ******************************************************************************/
 
-static int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
+STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
                                   SCALAR *hVecs, int ldhVecs, REAL *hVals,
                                   REAL *hSVals, primme_context ctx) {
 

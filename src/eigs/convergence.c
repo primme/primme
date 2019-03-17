@@ -33,6 +33,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/convergence.c"
+#endif
+
 #include "const.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
@@ -43,11 +47,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
-      int evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
-      int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
-      double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx);
 
 /*******************************************************************************
  * Subroutine check_convergence - This procedure checks the block vectors for  
@@ -231,7 +230,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
  * flags           Indicates which Ritz pairs have converged
  ******************************************************************************/
 
-static int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
+STATIC int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       int evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, HREAL *blockNorms,
       double tol, HSCALAR *VtBV, int ldVtBV, primme_context ctx) {

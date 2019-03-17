@@ -34,6 +34,10 @@
  *  
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/init.c"
+#endif
+
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -48,11 +52,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      SCALAR *W, PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, int dv1, int dv2,
-      SCALAR *locked, PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV,
-      int ldVtV, int maxRank, primme_context ctx);
 
 /*******************************************************************************
  * subroutine init_basis - This subroutine is used to 
@@ -257,7 +256,7 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
  * 
  ******************************************************************************/
 
-static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+STATIC int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, int dv1, int dv2,
       SCALAR *locked, PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV,
       int ldVtV, int maxRank, primme_context ctx) {

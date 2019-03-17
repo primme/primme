@@ -34,14 +34,11 @@
  *
  ******************************************************************************/
 
-#include "template.h"
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
-#include "blaslapack.h"
-#include "auxiliary.h"
-#include "magma_wrapper.h"
+#ifndef THIS_FILE
+#define THIS_FILE "../linalg/magma_wrapper.c"
 #endif
 
+#include "numerical.h"
 
 #ifdef SUPPORTED_TYPE
 
@@ -61,7 +58,9 @@
 /* The next functions are only exposed using C++.                    */
 /* These signatures are copied from MAGMA header file magmablas_h.h. */
 
-#if defined(MAGMA_WITH_HALF) && !defined(__cplusplus)
+#if !defined(MAGMA_WRAPPER_PRIVATE_HALF) && defined(MAGMA_WITH_HALF) && !defined(__cplusplus)
+#define MAGMA_WRAPPER_PRIVATE_HALF
+
 void
 magmablas_slag2h(
     magma_int_t m, magma_int_t n,
@@ -86,39 +85,31 @@ magma_hgemm(
     magmaHalf beta,
     magmaHalf_ptr       dC, magma_int_t lddc,
     magma_queue_t queue );
+
 #endif
 
-#ifdef USE_DOUBLE_MAGMA
-#  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,D)
-#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,D)
-#elif defined(USE_DOUBLECOMPLEX_MAGMA)
-#  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,Z)
-#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,Z)
-#elif defined(USE_FLOAT_MAGMA)
-#  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,S)
-#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,S)
-#elif defined(USE_FLOATCOMPLEX_MAGMA)
-#  define MAGMA_FUNCTION(S,C,D,Z) CONCAT(magma_,C)
-#  define MAGMABLAS_FUNCTION(S,C,D,Z) CONCAT(magmablas_,C)
-#endif
+#ifndef MAGMA_WRAPPER_PRIVATE
+#define MAGMA_WRAPPER_PRIVATE
 
 #define MAGMA_SCALAR                                                           \
    ARITH(magmaHalf, , float, magmaFloatComplex, double, magmaDoubleComplex, , )
 
-#define XLASET  MAGMABLAS_FUNCTION(slaset, claset, dlaset, zlaset)
+#define XLASET  CONCAT(magmablas_,ARITH( , , slaset, claset, dlaset, zlaset, , ))
 
-#define XCOPY     MAGMA_FUNCTION(scopy , ccopy , dcopy , zcopy )   
-#define XGEMM     MAGMA_FUNCTION(sgemm , cgemm , dgemm , zgemm )
-#define XGEMV     MAGMA_FUNCTION(sgemv , cgemv , dgemv , zgemv )
-#define XAXPY     MAGMA_FUNCTION(saxpy , caxpy , daxpy , zaxpy )
-#define XDOT      MAGMA_FUNCTION(sdot  , cdotc , ddot  , zdotc )
-#define XSCAL     MAGMA_FUNCTION(sscal , cscal , dscal , zscal )
-#define XTRSM     MAGMA_FUNCTION(strsm , ctrsm , dtrsm , ztrsm )
+#define XCOPY     CONCAT(magma_,ARITH( , , scopy , ccopy , dcopy , zcopy , , ))   
+#define XGEMM     CONCAT(magma_,ARITH( , , sgemm , cgemm , dgemm , zgemm , , ))
+#define XGEMV     CONCAT(magma_,ARITH( , , sgemv , cgemv , dgemv , zgemv , , ))
+#define XAXPY     CONCAT(magma_,ARITH( , , saxpy , caxpy , daxpy , zaxpy , , ))
+#define XDOT      CONCAT(magma_,ARITH( , , sdot  , cdotc , ddot  , zdotc , , ))
+#define XSCAL     CONCAT(magma_,ARITH( , , sscal , cscal , dscal , zscal , , ))
+#define XTRSM     CONCAT(magma_,ARITH( , , strsm , ctrsm , dtrsm , ztrsm , , ))
 
 static int free_fn_dummy (void *p, primme_context ctx) {
    (void)ctx;
    return magma_free(p) == MAGMA_SUCCESS ? 0 : PRIMME_MALLOC_FAILURE;
 }
+
+#endif /* MAGMA_WRAPPER_PRIVATE */
 
 /******************************************************************************
  * Function Num_malloc - Allocate a vector of scalars
@@ -770,6 +761,9 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
 
 #endif
 }
+
+#undef USE_CUBLAS
+
 #endif /* USE_MAGMA */
 
 #endif /* SUPPORTED_TYPE */

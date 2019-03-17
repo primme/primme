@@ -33,6 +33,11 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/main_iter.c"
+#endif
+
+
 #include "numerical.h"
 #include "const.h"
 /* Keep automatically generated headers under this section  */
@@ -55,6 +60,8 @@
  * The following are needed for the Dynamic Method Switching
  *----------------------------------------------------------------------------*/
 
+#ifndef MAIN_ITER_PRIVATE_H
+#define MAIN_ITER_PRIVATE_H
 typedef struct {
    /* Time measurements for various components of the solver */
    double MV_PR;          /* OPp operator MV+PR time                          */
@@ -99,24 +106,12 @@ typedef struct {
    double accum_gdk;      /* Accumulates gdk_times += gdk+MV+PR               */
 
 } primme_CostModel;
+#endif /* MAIN_ITER_PRIVATE_H */
 
-static void initializeModel(primme_CostModel *model, primme_params *primme);
-static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx);
-static int switch_from_GDpk (primme_CostModel *model, primme_context ctx);
-static int update_statistics(primme_CostModel *model, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged, 
-   double currentResNorm, double aNormEst);
-static double ratio_JDQMR_GDpk(primme_CostModel *CostModel, int numLocked,
-   double estimate_slowdown, double estimate_ratio_outer_MV);
-static void update_slowdown(primme_CostModel *model);
 
 #if 0
-static void displayModel(primme_CostModel *model);
+STATIC void displayModel(primme_CostModel *model);
 #endif
-
-static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      SCALAR *BV, PRIMME_INT ldBV, HREAL *hVals, int basisSize, HREAL *resNorms,
-      int *flags, int *converged, primme_context ctx);
 
 /******************************************************************************
  * Subroutine main_iter - This routine implements a more general, parallel, 
@@ -1643,7 +1638,7 @@ int prepare_candidates_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  ******************************************************************************/
 
-static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
+STATIC int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *BV, PRIMME_INT ldBV, HREAL *hVals, int basisSize, HREAL *resNorms,
       int *flags, int *converged, primme_context ctx) {
 
@@ -1726,8 +1721,9 @@ static int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *
  ******************************************************************************/
 
-static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
+STATIC int switch_from_JDQMR(void *model_, primme_context ctx) {
 
+   primme_CostModel *model = (primme_CostModel *)model_;
    primme_params *primme = ctx.primme;
    int switchto=0;
    HREAL est_slowdown, est_ratio_MV_outer, ratio; 
@@ -1832,8 +1828,9 @@ static int switch_from_JDQMR(primme_CostModel *model, primme_context ctx) {
  *              changed if there is a switch)
  *
  ******************************************************************************/
-static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
+STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
 
+   primme_CostModel *model = (primme_CostModel *)model_;
    primme_params *primme = ctx.primme;
    int switchto=0;
    HREAL ratio;
@@ -1971,10 +1968,11 @@ static int switch_from_GDpk(primme_CostModel *model, primme_context ctx) {
  *     1    Model updated. Proceed with relative evaluation of the methods
  *
  ******************************************************************************/
-static int update_statistics(primme_CostModel *model, primme_params *primme,
+STATIC int update_statistics(void *model_, primme_params *primme,
    double current_time, int recentConv, int calledAtRestart, int numConverged, 
    double currentResNorm, double aNormEst) {
 
+   primme_CostModel *model = (primme_CostModel *)model_;
    double low_res, elapsed_time, time_in_outer, kinn;
    int kout, nMV;
 
@@ -2131,9 +2129,10 @@ static int update_statistics(primme_CostModel *model, primme_params *primme,
  *           GDpk_time               gd+mv+pr
  *
  ******************************************************************************/
-static double ratio_JDQMR_GDpk(primme_CostModel *model, int numLocked,
+STATIC double ratio_JDQMR_GDpk(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer) {
    
+   primme_CostModel *model = (primme_CostModel *)model_;
    return estimate_slowdown* 
      ( model->qmr_plus_MV_PR + model->project_locked*numLocked + 
        (model->gdk_plus_MV - model->qmr_only - model->qmr_plus_MV_PR  
@@ -2150,7 +2149,8 @@ static double ratio_JDQMR_GDpk(primme_CostModel *model, int numLocked,
  *    max(1.1, (kinn+2)/(kinn+1)) < slowdown < min(2.5, kinn+2)
  *
  ******************************************************************************/
-static void update_slowdown(primme_CostModel *model) {
+STATIC void update_slowdown(void *model_) {
+   primme_CostModel *model = (primme_CostModel *)model_;
   double slowdown;
 
   if (model->gdk_conv_rate < 1.0) {
@@ -2183,7 +2183,8 @@ static void update_slowdown(primme_CostModel *model) {
 /******************************************************************************
  * Function initializeModel - Initializes model members
  ******************************************************************************/
-static void initializeModel(primme_CostModel *model, primme_params *primme) {
+STATIC void initializeModel(void *model_, primme_params *primme) {
+   primme_CostModel *model = (primme_CostModel *)model_;
    model->MV_PR          = 0.0L;
    model->MV             = 0.0L;
    model->PR             = 0.0L;
@@ -2224,7 +2225,7 @@ static void initializeModel(primme_CostModel *model, primme_params *primme) {
  * Function to display the model parameters --- For debugging purposes only
  *
  ******************************************************************************/
-static void displayModel(primme_CostModel *model){
+STATIC void displayModel(primme_CostModel *model){
    fprintf(stdout," MV %e\n", model->MV);
    fprintf(stdout," PR %e\n", model->PR);
    fprintf(stdout," MVPR %e\n", model->MV_PR);

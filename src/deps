@@ -1,38 +1,39 @@
 # This file is generated automatically. Please don't modify
-eigs/auxiliary_eigs*.o : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h
-eigs/convergence*.o : eigs/const.h include/numerical.h eigs/convergence.h eigs/ortho.h eigs/auxiliary_eigs.h
-eigs/correction*.o : eigs/const.h include/numerical.h eigs/correction.h eigs/inner_solve.h eigs/auxiliary_eigs.h
-eigs/factorize*.o : include/numerical.h eigs/update_projection.h eigs/factorize.h
-eigs/init*.o : include/numerical.h eigs/init.h eigs/update_W.h eigs/ortho.h eigs/factorize.h eigs/auxiliary_eigs.h
-eigs/inner_solve*.o : include/numerical.h eigs/const.h eigs/inner_solve.h eigs/factorize.h eigs/update_W.h eigs/auxiliary_eigs.h
-eigs/main_iter*.o : include/numerical.h eigs/const.h eigs/main_iter.h eigs/convergence.h eigs/correction.h eigs/init.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/update_projection.h eigs/update_W.h eigs/auxiliary_eigs.h
-eigs/ortho*.o : include/numerical.h eigs/const.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/update_W.h
-eigs/primme_c*.o : include/numerical.h eigs/const.h include/primme_interface.h eigs/primme_c.h eigs/main_iter.h eigs/auxiliary_eigs.h
-eigs/primme_f77*.o : eigs/primme_f77_private.h include/notemplate.h
-eigs/primme_interface*.o : include/template.h include/primme_interface.h eigs/const.h include/notemplate.h
-eigs/restart*.o : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h eigs/restart.h eigs/ortho.h eigs/solve_projection.h eigs/factorize.h eigs/update_projection.h eigs/update_W.h eigs/convergence.h
-eigs/solve_projection*.o : eigs/const.h include/numerical.h eigs/solve_projection.h eigs/ortho.h eigs/auxiliary_eigs.h
-eigs/update_projection*.o : eigs/const.h include/numerical.h eigs/auxiliary_eigs.h eigs/update_projection.h
-eigs/update_W*.o : include/numerical.h eigs/update_W.h eigs/auxiliary_eigs.h eigs/ortho.h
-linalg/auxiliary*.o : include/template.h include/auxiliary.h include/blaslapack.h include/magma_wrapper.h
-linalg/blaslapack*.o : include/template.h include/blaslapack.h include/auxiliary.h linalg/blaslapack_private.h
-linalg/magma_wrapper*.o : include/template.h include/blaslapack.h include/auxiliary.h include/magma_wrapper.h
-linalg/memman*.o : include/template.h include/memman.h include/notemplate.h
-linalg/wtime*.o : include/wtime.h
-svds/primme_svds*.o : include/numerical.h include/primme_interface.h svds/primme_svds_interface.h svds/../eigs/const.h
-svds/primme_svds_f77*.o : svds/primme_svds_f77_private.h svds/primme_svds_interface.h include/notemplate.h
-svds/primme_svds_interface*.o : include/numerical.h svds/primme_svds_interface.h include/primme_interface.h include/notemplate.h
-../include/primme.h : ../include/primme_eigs.h ../include/primme_svds.h
+eigs/auxiliary_eigs*.o : include/numerical.h eigs/auxiliary_eigs.h eigs/const.h
+eigs/convergence*.o : include/numerical.h eigs/convergence.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/const.h
+eigs/correction*.o : eigs/inner_solve.h include/numerical.h eigs/correction.h eigs/auxiliary_eigs.h eigs/const.h
+eigs/factorize*.o : eigs/factorize.h include/numerical.h eigs/update_projection.h
+eigs/init*.o : include/numerical.h eigs/update_W.h eigs/factorize.h eigs/init.h eigs/auxiliary_eigs.h eigs/ortho.h
+eigs/inner_solve*.o : eigs/inner_solve.h include/numerical.h eigs/update_W.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/const.h
+eigs/main_iter*.o : eigs/main_iter.h include/numerical.h eigs/update_projection.h eigs/correction.h eigs/update_W.h eigs/convergence.h eigs/init.h eigs/restart.h eigs/auxiliary_eigs.h eigs/solve_projection.h eigs/ortho.h eigs/const.h
+eigs/ortho*.o : include/numerical.h eigs/update_W.h eigs/factorize.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/const.h
+eigs/primme_c*.o : include/primme_interface.h eigs/main_iter.h eigs/primme_c.h include/numerical.h eigs/auxiliary_eigs.h eigs/const.h
+eigs/primme_f77*.o : include/primme_interface.h include/numerical.h
+eigs/primme_interface*.o : include/primme_interface.h include/numerical.h include/notemplate.h eigs/const.h
+eigs/restart*.o : include/numerical.h eigs/update_projection.h eigs/update_W.h eigs/factorize.h eigs/convergence.h eigs/auxiliary_eigs.h eigs/restart.h eigs/solve_projection.h eigs/ortho.h eigs/const.h
+eigs/solve_projection*.o : include/numerical.h eigs/const.h eigs/auxiliary_eigs.h eigs/ortho.h eigs/solve_projection.h
+eigs/update_projection*.o : include/numerical.h eigs/auxiliary_eigs.h eigs/update_projection.h eigs/const.h
+eigs/update_W*.o : eigs/update_W.h eigs/ortho.h include/numerical.h eigs/auxiliary_eigs.h
+linalg/auxiliary*.o : include/numerical.h
+linalg/blaslapack*.o : include/numerical.h linalg/blaslapack_private.h
+linalg/magma_wrapper*.o : include/numerical.h
+linalg/memman*.o : include/numerical.h include/notemplate.h
+linalg/wtime*.o : include/numerical.h include/notemplate.h
+svds/primme_svds_c*.o : include/primme_interface.h include/numerical.h svds/primme_svds_interface.h svds/../eigs/const.h svds/primme_svds_c.h
+svds/primme_svds_f77*.o : include/numerical.h svds/primme_svds_interface.h
+svds/primme_svds_interface*.o : include/primme_interface.h include/numerical.h svds/primme_svds_interface.h include/notemplate.h
+../include/primme.h : ../include/primme_svds.h ../include/primme_eigs.h
 ../include/primme_eigs.h : 
 ../include/primme_eigs_f77.h : 
 ../include/primme_f77.h : 
 ../include/primme_svds.h : ../include/primme_eigs.h
 ../include/primme_svds_f77.h : 
-include/template.h : ../include/primme.h include/memman.h include/wtime.h
-include/numerical.h : include/template.h include/blaslapack.h include/magma_wrapper.h include/auxiliary.h
+include/common.h : include/wtime.h ../include/primme.h include/memman.h
+include/template.h : include/template_types.h
+include/template_types.h : include/template_undef.h
+include/template_undef.h : 
+include/numerical.h : include/template.h include/magma_wrapper.h include/common.h include/auxiliary.h include/blaslapack.h
 include/primme_interface.h : 
 include/memman.h : 
-eigs/const.h : include/numerical.h
-eigs/primme_f77_private.h : include/template.h include/primme_interface.h
-svds/primme_svds_f77_private.h : include/template.h svds/primme_svds_interface.h
-svds/primme_svds_interface.h : ../include/primme.h
+eigs/const.h : 
+svds/primme_svds_interface.h : 

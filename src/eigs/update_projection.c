@@ -33,6 +33,11 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/update_projection.c"
+#endif
+
+
 #include <stdlib.h>
 #include <assert.h>
 #include "const.h"

@@ -33,6 +33,11 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../svds/primme_svds_interface.c"
+#endif
+
+
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    

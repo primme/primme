@@ -33,6 +33,10 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/auxiliary_eigs.c"
+#endif
+
 #include <string.h> /* memset */
 #include "const.h"
 #include "numerical.h"
