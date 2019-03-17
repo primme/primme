@@ -154,4 +154,4 @@ if __name__ == "__main__":
 			source_filename_h = os.path.basename(source_name) + ".h"
 			deps = [d for d in deps if os.path.basename(d) != source_filename_h]
 
-		sys.stdout.write(s + " : " + " ".join(deps) + "\n")
+		sys.stdout.write(s + " : " + " ".join(set(deps)) + "\n")
