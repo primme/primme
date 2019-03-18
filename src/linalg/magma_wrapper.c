@@ -690,9 +690,6 @@ TEMPLATE_PLEASE
 int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
 
-   cudaStream_t stream =
-         magma_queue_get_cuda_stream(*(magma_queue_t *)ctx.queue);
-
    CHKERR(cudaMemset2D(x, sizeof(SCALAR) * ldx, 0, sizeof(SCALAR) * m, n) !=
           cudaSuccess);
 
