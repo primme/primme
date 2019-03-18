@@ -480,7 +480,7 @@ static void myglobalSum(void *sendBuf, void *recvBuf, int *count, struct primme_
 template <typename T>
 static void mymonitorFun(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
       void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
+      int *inner_its, void *LSRes, const char*, double*, primme_event *event, struct primme_params *primme, int *ierr)
 {
     PrimmeParams *pp = static_cast<PrimmeParams*>(primme);
     pp->mon(
@@ -589,7 +589,7 @@ static void myprevec_svds(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
 template <typename T>
 static void mymonitorFun_svds(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
       void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
+      int *inner_its, void *LSRes, const char*, double*, primme_event *event, int *stage, struct primme_svds_params *primme_svds, int *ierr)
 {
     PrimmeSvdsParams *pp = static_cast<PrimmeSvdsParams*>(primme_svds);
     pp->mon(

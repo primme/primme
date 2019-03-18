@@ -114,12 +114,62 @@ __all__ = ['PrimmeParams', 'sprimme', 'cprimme', 'dprimme', 'zprimme', 'eigsh', 
 
 PRIMME_VERSION_MAJOR = _Primme.PRIMME_VERSION_MAJOR
 PRIMME_VERSION_MINOR = _Primme.PRIMME_VERSION_MINOR
+class _primme_half(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, _primme_half, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, _primme_half, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["a"] = _Primme._primme_half_a_set
+    __swig_getmethods__["a"] = _Primme._primme_half_a_get
+    if _newclass:
+        a = _swig_property(_Primme._primme_half_a_get, _Primme._primme_half_a_set)
+
+    def __init__(self):
+        this = _Primme.new__primme_half()
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _Primme.delete__primme_half
+    __del__ = lambda self: None
+_primme_half_swigregister = _Primme._primme_half_swigregister
+_primme_half_swigregister(_primme_half)
+
+class _primme_complex_half(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, _primme_complex_half, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, _primme_complex_half, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["r"] = _Primme._primme_complex_half_r_set
+    __swig_getmethods__["r"] = _Primme._primme_complex_half_r_get
+    if _newclass:
+        r = _swig_property(_Primme._primme_complex_half_r_get, _Primme._primme_complex_half_r_set)
+    __swig_setmethods__["i"] = _Primme._primme_complex_half_i_set
+    __swig_getmethods__["i"] = _Primme._primme_complex_half_i_get
+    if _newclass:
+        i = _swig_property(_Primme._primme_complex_half_i_get, _Primme._primme_complex_half_i_set)
+
+    def __init__(self):
+        this = _Primme.new__primme_complex_half()
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _Primme.delete__primme_complex_half
+    __del__ = lambda self: None
+_primme_complex_half_swigregister = _Primme._primme_complex_half_swigregister
+_primme_complex_half_swigregister(_primme_complex_half)
+
 PRIMME_UNEXPECTED_FAILURE = _Primme.PRIMME_UNEXPECTED_FAILURE
 PRIMME_MALLOC_FAILURE = _Primme.PRIMME_MALLOC_FAILURE
 PRIMME_MAIN_ITER_FAILURE = _Primme.PRIMME_MAIN_ITER_FAILURE
 PRIMME_LAPACK_FAILURE = _Primme.PRIMME_LAPACK_FAILURE
 PRIMME_USER_FAILURE = _Primme.PRIMME_USER_FAILURE
 PRIMME_ORTHO_CONST_FAILURE = _Primme.PRIMME_ORTHO_CONST_FAILURE
+PRIMME_PARALLEL_FAILURE = _Primme.PRIMME_PARALLEL_FAILURE
+PRIMME_FUNCTION_UNAVAILABLE = _Primme.PRIMME_FUNCTION_UNAVAILABLE
 primme_smallest = _Primme.primme_smallest
 primme_largest = _Primme.primme_largest
 primme_closest_geq = _Primme.primme_closest_geq
@@ -144,9 +194,17 @@ primme_event_restart = _Primme.primme_event_restart
 primme_event_reset = _Primme.primme_event_reset
 primme_event_converged = _Primme.primme_event_converged
 primme_event_locked = _Primme.primme_event_locked
+primme_event_message = _Primme.primme_event_message
+primme_event_profile = _Primme.primme_event_profile
 primme_orth_default = _Primme.primme_orth_default
 primme_orth_implicit_I = _Primme.primme_orth_implicit_I
 primme_orth_explicit_I = _Primme.primme_orth_explicit_I
+primme_op_default = _Primme.primme_op_default
+primme_op_half = _Primme.primme_op_half
+primme_op_float = _Primme.primme_op_float
+primme_op_double = _Primme.primme_op_double
+primme_op_quad = _Primme.primme_op_quad
+primme_op_int = _Primme.primme_op_int
 class primme_stats(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, primme_stats, name, value)
@@ -173,10 +231,18 @@ class primme_stats(_object):
     __swig_getmethods__["numGlobalSum"] = _Primme.primme_stats_numGlobalSum_get
     if _newclass:
         numGlobalSum = _swig_property(_Primme.primme_stats_numGlobalSum_get, _Primme.primme_stats_numGlobalSum_set)
+    __swig_setmethods__["numBroadcast"] = _Primme.primme_stats_numBroadcast_set
+    __swig_getmethods__["numBroadcast"] = _Primme.primme_stats_numBroadcast_get
+    if _newclass:
+        numBroadcast = _swig_property(_Primme.primme_stats_numBroadcast_get, _Primme.primme_stats_numBroadcast_set)
     __swig_setmethods__["volumeGlobalSum"] = _Primme.primme_stats_volumeGlobalSum_set
     __swig_getmethods__["volumeGlobalSum"] = _Primme.primme_stats_volumeGlobalSum_get
     if _newclass:
         volumeGlobalSum = _swig_property(_Primme.primme_stats_volumeGlobalSum_get, _Primme.primme_stats_volumeGlobalSum_set)
+    __swig_setmethods__["volumeBroadcast"] = _Primme.primme_stats_volumeBroadcast_set
+    __swig_getmethods__["volumeBroadcast"] = _Primme.primme_stats_volumeBroadcast_get
+    if _newclass:
+        volumeBroadcast = _swig_property(_Primme.primme_stats_volumeBroadcast_get, _Primme.primme_stats_volumeBroadcast_set)
     __swig_setmethods__["numOrthoInnerProds"] = _Primme.primme_stats_numOrthoInnerProds_set
     __swig_getmethods__["numOrthoInnerProds"] = _Primme.primme_stats_numOrthoInnerProds_get
     if _newclass:
@@ -201,6 +267,10 @@ class primme_stats(_object):
     __swig_getmethods__["timeGlobalSum"] = _Primme.primme_stats_timeGlobalSum_get
     if _newclass:
         timeGlobalSum = _swig_property(_Primme.primme_stats_timeGlobalSum_get, _Primme.primme_stats_timeGlobalSum_set)
+    __swig_setmethods__["timeBroadcast"] = _Primme.primme_stats_timeBroadcast_set
+    __swig_getmethods__["timeBroadcast"] = _Primme.primme_stats_timeBroadcast_get
+    if _newclass:
+        timeBroadcast = _swig_property(_Primme.primme_stats_timeBroadcast_get, _Primme.primme_stats_timeBroadcast_set)
     __swig_setmethods__["estimateMinEVal"] = _Primme.primme_stats_estimateMinEVal_set
     __swig_getmethods__["estimateMinEVal"] = _Primme.primme_stats_estimateMinEVal_get
     if _newclass:
@@ -383,6 +453,18 @@ class primme_params(_object):
     __swig_getmethods__["n"] = _Primme.primme_params_n_get
     if _newclass:
         n = _swig_property(_Primme.primme_params_n_get, _Primme.primme_params_n_set)
+    __swig_setmethods__["matrixMatvec_type"] = _Primme.primme_params_matrixMatvec_type_set
+    __swig_getmethods__["matrixMatvec_type"] = _Primme.primme_params_matrixMatvec_type_get
+    if _newclass:
+        matrixMatvec_type = _swig_property(_Primme.primme_params_matrixMatvec_type_get, _Primme.primme_params_matrixMatvec_type_set)
+    __swig_setmethods__["applyPreconditioner_type"] = _Primme.primme_params_applyPreconditioner_type_set
+    __swig_getmethods__["applyPreconditioner_type"] = _Primme.primme_params_applyPreconditioner_type_get
+    if _newclass:
+        applyPreconditioner_type = _swig_property(_Primme.primme_params_applyPreconditioner_type_get, _Primme.primme_params_applyPreconditioner_type_set)
+    __swig_setmethods__["massMatrixMatvec_type"] = _Primme.primme_params_massMatrixMatvec_type_set
+    __swig_getmethods__["massMatrixMatvec_type"] = _Primme.primme_params_massMatrixMatvec_type_get
+    if _newclass:
+        massMatrixMatvec_type = _swig_property(_Primme.primme_params_massMatrixMatvec_type_get, _Primme.primme_params_massMatrixMatvec_type_set)
     __swig_setmethods__["numProcs"] = _Primme.primme_params_numProcs_set
     __swig_getmethods__["numProcs"] = _Primme.primme_params_numProcs_get
     if _newclass:
@@ -399,6 +481,18 @@ class primme_params(_object):
     __swig_getmethods__["globalSumReal"] = _Primme.primme_params_globalSumReal_get
     if _newclass:
         globalSumReal = _swig_property(_Primme.primme_params_globalSumReal_get, _Primme.primme_params_globalSumReal_set)
+    __swig_setmethods__["globalSumReal_type"] = _Primme.primme_params_globalSumReal_type_set
+    __swig_getmethods__["globalSumReal_type"] = _Primme.primme_params_globalSumReal_type_get
+    if _newclass:
+        globalSumReal_type = _swig_property(_Primme.primme_params_globalSumReal_type_get, _Primme.primme_params_globalSumReal_type_set)
+    __swig_setmethods__["broadcastReal"] = _Primme.primme_params_broadcastReal_set
+    __swig_getmethods__["broadcastReal"] = _Primme.primme_params_broadcastReal_get
+    if _newclass:
+        broadcastReal = _swig_property(_Primme.primme_params_broadcastReal_get, _Primme.primme_params_broadcastReal_set)
+    __swig_setmethods__["broadcastReal_type"] = _Primme.primme_params_broadcastReal_type_set
+    __swig_getmethods__["broadcastReal_type"] = _Primme.primme_params_broadcastReal_type_get
+    if _newclass:
+        broadcastReal_type = _swig_property(_Primme.primme_params_broadcastReal_type_get, _Primme.primme_params_broadcastReal_type_set)
     __swig_setmethods__["numEvals"] = _Primme.primme_params_numEvals_set
     __swig_getmethods__["numEvals"] = _Primme.primme_params_numEvals_get
     if _newclass:
@@ -467,6 +561,10 @@ class primme_params(_object):
     __swig_getmethods__["orth"] = _Primme.primme_params_orth_get
     if _newclass:
         orth = _swig_property(_Primme.primme_params_orth_get, _Primme.primme_params_orth_set)
+    __swig_setmethods__["internalPrecision"] = _Primme.primme_params_internalPrecision_set
+    __swig_getmethods__["internalPrecision"] = _Primme.primme_params_internalPrecision_get
+    if _newclass:
+        internalPrecision = _swig_property(_Primme.primme_params_internalPrecision_get, _Primme.primme_params_internalPrecision_set)
     __swig_setmethods__["printLevel"] = _Primme.primme_params_printLevel_set
     __swig_getmethods__["printLevel"] = _Primme.primme_params_printLevel_get
     if _newclass:
@@ -503,14 +601,26 @@ class primme_params(_object):
     __swig_getmethods__["stats"] = _Primme.primme_params_stats_get
     if _newclass:
         stats = _swig_property(_Primme.primme_params_stats_get, _Primme.primme_params_stats_set)
+    __swig_setmethods__["convTestFun_type"] = _Primme.primme_params_convTestFun_type_set
+    __swig_getmethods__["convTestFun_type"] = _Primme.primme_params_convTestFun_type_get
+    if _newclass:
+        convTestFun_type = _swig_property(_Primme.primme_params_convTestFun_type_get, _Primme.primme_params_convTestFun_type_set)
     __swig_setmethods__["convtest"] = _Primme.primme_params_convtest_set
     __swig_getmethods__["convtest"] = _Primme.primme_params_convtest_get
     if _newclass:
         convtest = _swig_property(_Primme.primme_params_convtest_get, _Primme.primme_params_convtest_set)
+    __swig_setmethods__["monitorFun_type"] = _Primme.primme_params_monitorFun_type_set
+    __swig_getmethods__["monitorFun_type"] = _Primme.primme_params_monitorFun_type_get
+    if _newclass:
+        monitorFun_type = _swig_property(_Primme.primme_params_monitorFun_type_get, _Primme.primme_params_monitorFun_type_set)
     __swig_setmethods__["queue"] = _Primme.primme_params_queue_set
     __swig_getmethods__["queue"] = _Primme.primme_params_queue_get
     if _newclass:
         queue = _swig_property(_Primme.primme_params_queue_get, _Primme.primme_params_queue_set)
+    __swig_setmethods__["profile"] = _Primme.primme_params_profile_set
+    __swig_getmethods__["profile"] = _Primme.primme_params_profile_get
+    if _newclass:
+        profile = _swig_property(_Primme.primme_params_profile_get, _Primme.primme_params_profile_set)
 
     def __init__(self):
         this = _Primme.new_primme_params()
@@ -542,14 +652,22 @@ PRIMME_LOBPCG_OrthoBasis_Window = _Primme.PRIMME_LOBPCG_OrthoBasis_Window
 primme_int = _Primme.primme_int
 primme_double = _Primme.primme_double
 primme_pointer = _Primme.primme_pointer
+primme_string = _Primme.primme_string
 PRIMME_n = _Primme.PRIMME_n
 PRIMME_matrixMatvec = _Primme.PRIMME_matrixMatvec
+PRIMME_matrixMatvec_type = _Primme.PRIMME_matrixMatvec_type
 PRIMME_applyPreconditioner = _Primme.PRIMME_applyPreconditioner
+PRIMME_applyPreconditioner_type = _Primme.PRIMME_applyPreconditioner_type
+PRIMME_massMatrixMatvec = _Primme.PRIMME_massMatrixMatvec
+PRIMME_massMatrixMatvec_type = _Primme.PRIMME_massMatrixMatvec_type
 PRIMME_numProcs = _Primme.PRIMME_numProcs
 PRIMME_procID = _Primme.PRIMME_procID
 PRIMME_commInfo = _Primme.PRIMME_commInfo
 PRIMME_nLocal = _Primme.PRIMME_nLocal
 PRIMME_globalSumReal = _Primme.PRIMME_globalSumReal
+PRIMME_globalSumReal_type = _Primme.PRIMME_globalSumReal_type
+PRIMME_broadcastReal = _Primme.PRIMME_broadcastReal
+PRIMME_broadcastReal_type = _Primme.PRIMME_broadcastReal_type
 PRIMME_numEvals = _Primme.PRIMME_numEvals
 PRIMME_target = _Primme.PRIMME_target
 PRIMME_numTargetShifts = _Primme.PRIMME_numTargetShifts
@@ -568,6 +686,7 @@ PRIMME_BNorm = _Primme.PRIMME_BNorm
 PRIMME_invBNorm = _Primme.PRIMME_invBNorm
 PRIMME_eps = _Primme.PRIMME_eps
 PRIMME_orth = _Primme.PRIMME_orth
+PRIMME_internalPrecision = _Primme.PRIMME_internalPrecision
 PRIMME_printLevel = _Primme.PRIMME_printLevel
 PRIMME_outputFile = _Primme.PRIMME_outputFile
 PRIMME_matrix = _Primme.PRIMME_matrix
@@ -593,12 +712,15 @@ PRIMME_stats_numMatvecs = _Primme.PRIMME_stats_numMatvecs
 PRIMME_stats_numPreconds = _Primme.PRIMME_stats_numPreconds
 PRIMME_stats_numGlobalSum = _Primme.PRIMME_stats_numGlobalSum
 PRIMME_stats_volumeGlobalSum = _Primme.PRIMME_stats_volumeGlobalSum
+PRIMME_stats_numBroadcast = _Primme.PRIMME_stats_numBroadcast
+PRIMME_stats_volumeBroadcast = _Primme.PRIMME_stats_volumeBroadcast
 PRIMME_stats_numOrthoInnerProds = _Primme.PRIMME_stats_numOrthoInnerProds
 PRIMME_stats_elapsedTime = _Primme.PRIMME_stats_elapsedTime
 PRIMME_stats_timeMatvec = _Primme.PRIMME_stats_timeMatvec
 PRIMME_stats_timePrecond = _Primme.PRIMME_stats_timePrecond
 PRIMME_stats_timeOrtho = _Primme.PRIMME_stats_timeOrtho
 PRIMME_stats_timeGlobalSum = _Primme.PRIMME_stats_timeGlobalSum
+PRIMME_stats_timeBroadcast = _Primme.PRIMME_stats_timeBroadcast
 PRIMME_stats_estimateMinEVal = _Primme.PRIMME_stats_estimateMinEVal
 PRIMME_stats_estimateMaxEVal = _Primme.PRIMME_stats_estimateMaxEVal
 PRIMME_stats_estimateLargestSVal = _Primme.PRIMME_stats_estimateLargestSVal
@@ -607,14 +729,24 @@ PRIMME_stats_estimateInvBNorm = _Primme.PRIMME_stats_estimateInvBNorm
 PRIMME_stats_maxConvTol = _Primme.PRIMME_stats_maxConvTol
 PRIMME_stats_lockingIssue = _Primme.PRIMME_stats_lockingIssue
 PRIMME_dynamicMethodSwitch = _Primme.PRIMME_dynamicMethodSwitch
-PRIMME_massMatrixMatvec = _Primme.PRIMME_massMatrixMatvec
 PRIMME_convTestFun = _Primme.PRIMME_convTestFun
+PRIMME_convTestFun_type = _Primme.PRIMME_convTestFun_type
 PRIMME_convtest = _Primme.PRIMME_convtest
 PRIMME_ldevecs = _Primme.PRIMME_ldevecs
 PRIMME_ldOPs = _Primme.PRIMME_ldOPs
 PRIMME_monitorFun = _Primme.PRIMME_monitorFun
+PRIMME_monitorFun_type = _Primme.PRIMME_monitorFun_type
 PRIMME_monitor = _Primme.PRIMME_monitor
 PRIMME_queue = _Primme.PRIMME_queue
+PRIMME_profile = _Primme.PRIMME_profile
+
+def hprimme(evals, evecs, resNorms, primme):
+    return _Primme.hprimme(evals, evecs, resNorms, primme)
+hprimme = _Primme.hprimme
+
+def kprimme(evals, evecs, resNorms, primme):
+    return _Primme.kprimme(evals, evecs, resNorms, primme)
+kprimme = _Primme.kprimme
 
 def sprimme(*args):
     return _Primme.sprimme(*args)
@@ -631,6 +763,14 @@ dprimme = _Primme.dprimme
 def zprimme(*args):
     return _Primme.zprimme(*args)
 zprimme = _Primme.zprimme
+
+def magma_hprimme(evals, evecs, resNorms, primme):
+    return _Primme.magma_hprimme(evals, evecs, resNorms, primme)
+magma_hprimme = _Primme.magma_hprimme
+
+def magma_kprimme(evals, evecs, resNorms, primme):
+    return _Primme.magma_kprimme(evals, evecs, resNorms, primme)
+magma_kprimme = _Primme.magma_kprimme
 
 def primme_params_create():
     return _Primme.primme_params_create()
@@ -692,10 +832,18 @@ class primme_svds_stats(_object):
     __swig_getmethods__["numGlobalSum"] = _Primme.primme_svds_stats_numGlobalSum_get
     if _newclass:
         numGlobalSum = _swig_property(_Primme.primme_svds_stats_numGlobalSum_get, _Primme.primme_svds_stats_numGlobalSum_set)
+    __swig_setmethods__["numBroadcast"] = _Primme.primme_svds_stats_numBroadcast_set
+    __swig_getmethods__["numBroadcast"] = _Primme.primme_svds_stats_numBroadcast_get
+    if _newclass:
+        numBroadcast = _swig_property(_Primme.primme_svds_stats_numBroadcast_get, _Primme.primme_svds_stats_numBroadcast_set)
     __swig_setmethods__["volumeGlobalSum"] = _Primme.primme_svds_stats_volumeGlobalSum_set
     __swig_getmethods__["volumeGlobalSum"] = _Primme.primme_svds_stats_volumeGlobalSum_get
     if _newclass:
         volumeGlobalSum = _swig_property(_Primme.primme_svds_stats_volumeGlobalSum_get, _Primme.primme_svds_stats_volumeGlobalSum_set)
+    __swig_setmethods__["volumeBroadcast"] = _Primme.primme_svds_stats_volumeBroadcast_set
+    __swig_getmethods__["volumeBroadcast"] = _Primme.primme_svds_stats_volumeBroadcast_get
+    if _newclass:
+        volumeBroadcast = _swig_property(_Primme.primme_svds_stats_volumeBroadcast_get, _Primme.primme_svds_stats_volumeBroadcast_set)
     __swig_setmethods__["numOrthoInnerProds"] = _Primme.primme_svds_stats_numOrthoInnerProds_set
     __swig_getmethods__["numOrthoInnerProds"] = _Primme.primme_svds_stats_numOrthoInnerProds_get
     if _newclass:
@@ -720,6 +868,10 @@ class primme_svds_stats(_object):
     __swig_getmethods__["timeGlobalSum"] = _Primme.primme_svds_stats_timeGlobalSum_get
     if _newclass:
         timeGlobalSum = _swig_property(_Primme.primme_svds_stats_timeGlobalSum_get, _Primme.primme_svds_stats_timeGlobalSum_set)
+    __swig_setmethods__["timeBroadcast"] = _Primme.primme_svds_stats_timeBroadcast_set
+    __swig_getmethods__["timeBroadcast"] = _Primme.primme_svds_stats_timeBroadcast_get
+    if _newclass:
+        timeBroadcast = _swig_property(_Primme.primme_svds_stats_timeBroadcast_get, _Primme.primme_svds_stats_timeBroadcast_set)
     __swig_setmethods__["lockingIssue"] = _Primme.primme_svds_stats_lockingIssue_set
     __swig_getmethods__["lockingIssue"] = _Primme.primme_svds_stats_lockingIssue_get
     if _newclass:
@@ -750,6 +902,14 @@ class primme_svds_params(_object):
     __swig_getmethods__["n"] = _Primme.primme_svds_params_n_get
     if _newclass:
         n = _swig_property(_Primme.primme_svds_params_n_get, _Primme.primme_svds_params_n_set)
+    __swig_setmethods__["matrixMatvec_type"] = _Primme.primme_svds_params_matrixMatvec_type_set
+    __swig_getmethods__["matrixMatvec_type"] = _Primme.primme_svds_params_matrixMatvec_type_get
+    if _newclass:
+        matrixMatvec_type = _swig_property(_Primme.primme_svds_params_matrixMatvec_type_get, _Primme.primme_svds_params_matrixMatvec_type_set)
+    __swig_setmethods__["applyPreconditioner_type"] = _Primme.primme_svds_params_applyPreconditioner_type_set
+    __swig_getmethods__["applyPreconditioner_type"] = _Primme.primme_svds_params_applyPreconditioner_type_get
+    if _newclass:
+        applyPreconditioner_type = _swig_property(_Primme.primme_svds_params_applyPreconditioner_type_get, _Primme.primme_svds_params_applyPreconditioner_type_set)
     __swig_setmethods__["numProcs"] = _Primme.primme_svds_params_numProcs_set
     __swig_getmethods__["numProcs"] = _Primme.primme_svds_params_numProcs_get
     if _newclass:
@@ -770,6 +930,18 @@ class primme_svds_params(_object):
     __swig_getmethods__["globalSumReal"] = _Primme.primme_svds_params_globalSumReal_get
     if _newclass:
         globalSumReal = _swig_property(_Primme.primme_svds_params_globalSumReal_get, _Primme.primme_svds_params_globalSumReal_set)
+    __swig_setmethods__["globalSumReal_type"] = _Primme.primme_svds_params_globalSumReal_type_set
+    __swig_getmethods__["globalSumReal_type"] = _Primme.primme_svds_params_globalSumReal_type_get
+    if _newclass:
+        globalSumReal_type = _swig_property(_Primme.primme_svds_params_globalSumReal_type_get, _Primme.primme_svds_params_globalSumReal_type_set)
+    __swig_setmethods__["broadcastReal"] = _Primme.primme_svds_params_broadcastReal_set
+    __swig_getmethods__["broadcastReal"] = _Primme.primme_svds_params_broadcastReal_get
+    if _newclass:
+        broadcastReal = _swig_property(_Primme.primme_svds_params_broadcastReal_get, _Primme.primme_svds_params_broadcastReal_set)
+    __swig_setmethods__["broadcastReal_type"] = _Primme.primme_svds_params_broadcastReal_type_set
+    __swig_getmethods__["broadcastReal_type"] = _Primme.primme_svds_params_broadcastReal_type_get
+    if _newclass:
+        broadcastReal_type = _swig_property(_Primme.primme_svds_params_broadcastReal_type_get, _Primme.primme_svds_params_broadcastReal_type_set)
     __swig_setmethods__["numSvals"] = _Primme.primme_svds_params_numSvals_set
     __swig_getmethods__["numSvals"] = _Primme.primme_svds_params_numSvals_get
     if _newclass:
@@ -842,6 +1014,10 @@ class primme_svds_params(_object):
     __swig_getmethods__["queue"] = _Primme.primme_svds_params_queue_get
     if _newclass:
         queue = _swig_property(_Primme.primme_svds_params_queue_get, _Primme.primme_svds_params_queue_set)
+    __swig_setmethods__["profile"] = _Primme.primme_svds_params_profile_set
+    __swig_getmethods__["profile"] = _Primme.primme_svds_params_profile_get
+    if _newclass:
+        profile = _swig_property(_Primme.primme_svds_params_profile_get, _Primme.primme_svds_params_profile_set)
 
     def __init__(self):
         this = _Primme.new_primme_svds_params()
@@ -859,13 +1035,18 @@ PRIMME_SVDS_primmeStage2 = _Primme.PRIMME_SVDS_primmeStage2
 PRIMME_SVDS_m = _Primme.PRIMME_SVDS_m
 PRIMME_SVDS_n = _Primme.PRIMME_SVDS_n
 PRIMME_SVDS_matrixMatvec = _Primme.PRIMME_SVDS_matrixMatvec
+PRIMME_SVDS_matrixMatvec_type = _Primme.PRIMME_SVDS_matrixMatvec_type
 PRIMME_SVDS_applyPreconditioner = _Primme.PRIMME_SVDS_applyPreconditioner
+PRIMME_SVDS_applyPreconditioner_type = _Primme.PRIMME_SVDS_applyPreconditioner_type
 PRIMME_SVDS_numProcs = _Primme.PRIMME_SVDS_numProcs
 PRIMME_SVDS_procID = _Primme.PRIMME_SVDS_procID
 PRIMME_SVDS_mLocal = _Primme.PRIMME_SVDS_mLocal
 PRIMME_SVDS_nLocal = _Primme.PRIMME_SVDS_nLocal
 PRIMME_SVDS_commInfo = _Primme.PRIMME_SVDS_commInfo
 PRIMME_SVDS_globalSumReal = _Primme.PRIMME_SVDS_globalSumReal
+PRIMME_SVDS_globalSumReal_type = _Primme.PRIMME_SVDS_globalSumReal_type
+PRIMME_SVDS_broadcastReal = _Primme.PRIMME_SVDS_broadcastReal
+PRIMME_SVDS_broadcastReal_type = _Primme.PRIMME_SVDS_broadcastReal_type
 PRIMME_SVDS_numSvals = _Primme.PRIMME_SVDS_numSvals
 PRIMME_SVDS_target = _Primme.PRIMME_SVDS_target
 PRIMME_SVDS_numTargetShifts = _Primme.PRIMME_SVDS_numTargetShifts
@@ -892,18 +1073,30 @@ PRIMME_SVDS_stats_numMatvecs = _Primme.PRIMME_SVDS_stats_numMatvecs
 PRIMME_SVDS_stats_numPreconds = _Primme.PRIMME_SVDS_stats_numPreconds
 PRIMME_SVDS_stats_numGlobalSum = _Primme.PRIMME_SVDS_stats_numGlobalSum
 PRIMME_SVDS_stats_volumeGlobalSum = _Primme.PRIMME_SVDS_stats_volumeGlobalSum
+PRIMME_SVDS_stats_numBroadcast = _Primme.PRIMME_SVDS_stats_numBroadcast
+PRIMME_SVDS_stats_volumeBroadcast = _Primme.PRIMME_SVDS_stats_volumeBroadcast
 PRIMME_SVDS_stats_numOrthoInnerProds = _Primme.PRIMME_SVDS_stats_numOrthoInnerProds
 PRIMME_SVDS_stats_elapsedTime = _Primme.PRIMME_SVDS_stats_elapsedTime
 PRIMME_SVDS_stats_timeMatvec = _Primme.PRIMME_SVDS_stats_timeMatvec
 PRIMME_SVDS_stats_timePrecond = _Primme.PRIMME_SVDS_stats_timePrecond
 PRIMME_SVDS_stats_timeOrtho = _Primme.PRIMME_SVDS_stats_timeOrtho
 PRIMME_SVDS_stats_timeGlobalSum = _Primme.PRIMME_SVDS_stats_timeGlobalSum
+PRIMME_SVDS_stats_timeBroadcast = _Primme.PRIMME_SVDS_stats_timeBroadcast
 PRIMME_SVDS_stats_lockingIssue = _Primme.PRIMME_SVDS_stats_lockingIssue
 PRIMME_SVDS_convTestFun = _Primme.PRIMME_SVDS_convTestFun
 PRIMME_SVDS_convtest = _Primme.PRIMME_SVDS_convtest
 PRIMME_SVDS_monitorFun = _Primme.PRIMME_SVDS_monitorFun
 PRIMME_SVDS_monitor = _Primme.PRIMME_SVDS_monitor
 PRIMME_SVDS_queue = _Primme.PRIMME_SVDS_queue
+PRIMME_SVDS_profile = _Primme.PRIMME_SVDS_profile
+
+def hprimme_svds(svals, svecs, resNorms, primme_svds):
+    return _Primme.hprimme_svds(svals, svecs, resNorms, primme_svds)
+hprimme_svds = _Primme.hprimme_svds
+
+def kprimme_svds(svals, svecs, resNorms, primme_svds):
+    return _Primme.kprimme_svds(svals, svecs, resNorms, primme_svds)
+kprimme_svds = _Primme.kprimme_svds
 
 def sprimme_svds(*args):
     return _Primme.sprimme_svds(*args)
@@ -920,6 +1113,14 @@ dprimme_svds = _Primme.dprimme_svds
 def zprimme_svds(*args):
     return _Primme.zprimme_svds(*args)
 zprimme_svds = _Primme.zprimme_svds
+
+def magma_hprimme_svds(svals, svecs, resNorms, primme_svds):
+    return _Primme.magma_hprimme_svds(svals, svecs, resNorms, primme_svds)
+magma_hprimme_svds = _Primme.magma_hprimme_svds
+
+def magma_kprimme_svds(svals, svecs, resNorms, primme_svds):
+    return _Primme.magma_kprimme_svds(svals, svecs, resNorms, primme_svds)
+magma_kprimme_svds = _Primme.magma_kprimme_svds
 
 def primme_svds_params_create():
     return _Primme.primme_svds_params_create()
