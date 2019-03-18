@@ -29,6 +29,7 @@
 #ifndef NUM_H
 #define NUM_H
 
+#include "../../src/include/common.h"
 #include "../../src/include/template.h"
 #include "../../src/include/blaslapack.h"
 #ifdef USE_COMPLEX

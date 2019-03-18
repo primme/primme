@@ -37,9 +37,7 @@
 #ifndef TEMPLATE_TYPES
 #define TEMPLATE_TYPES
 
-#ifndef THIS_FILE
-#error Please define THIS_FILE
-#endif
+#ifdef THIS_FILE
 
 /* Host types */
 
@@ -162,5 +160,5 @@
 // #undef USE_QUADCOMPLEX_MAGMA
 // #include "template_undef.h"
 
-
+#endif /* THIS_FILE */
 #endif /* TEMPLATE_TYPES */
