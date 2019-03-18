@@ -164,7 +164,8 @@ function [varargout] = primme_svds(varargin)
 
    % Check primme_mex exists
    if ~ exist('primme_mex')
-      error 'primme_mex is not available. Try to recompile the MATLAB/Octave''s PRIMME module'
+      warning 'primme_mex is not available. Building PRIMME...'
+      make
    end
 
    % Check arity of input and output arguments
