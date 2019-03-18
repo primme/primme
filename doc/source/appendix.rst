@@ -207,7 +207,6 @@ primme_params
                *ierr = 1;
             }
          }
-      }
 
       When calling :c:func:`sprimme` and :c:func:`cprimme` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 

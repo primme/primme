@@ -19,6 +19,8 @@ Table Of Contents:
 
   * Contact Information
 
+* Support
+
   * Directory Structure
 
   * Making and Linking
@@ -335,6 +337,16 @@ information in the webpage http://www.cs.wm.edu/~andreas/software and
 on github.
 
 
+Support
+*******
+
+* National Science Foundation through grants CCF 1218349, ACI
+  SI2-SSE 1440700, and NSCI 1835821
+
+* Department of Energy through grant Exascale Computing Project
+  17-SC-20-SC
+
+
 Directory Structure
 ===================
 
@@ -646,6 +658,7 @@ next fields:
    int procID;             // rank of this process
    PRIMME_INT nLocal;      // number of rows stored in this process
    void (*globalSumReal)(...); // sum reduction among processes
+   void (*broadcastReal)(...); // broadcast array among processes
 
    /* Accelerate the convergence */
    void (*applyPreconditioner)(...);     // precond-vector product
@@ -692,7 +705,8 @@ the problem to be solved. For parallel programs, "nLocal", "procID"
 and "globalSumReal" are also required.
 
 In addition, most users would want to specify how many eigenpairs to
-find, and provide a preconditioner (if available).
+find, "numEvals", and provide a preconditioner "applyPreconditioner"
+(if available).
 
 It is useful to have set all these before calling
 "primme_set_method()". Also, if users have a preference on
@@ -1379,7 +1393,8 @@ primme_params
       For example, with MPI, it could be a pointer to the MPI
       communicator. PRIMME does not use this. It is available for
       possible use in user functions defined in "matrixMatvec",
-      "applyPreconditioner", "massMatrixMatvec" and "globalSumReal".
+      "applyPreconditioner", "massMatrixMatvec", "globalSumReal", and
+      "broadcastReal".
 
       Input/output:
 
@@ -1431,6 +1446,49 @@ primme_params
          }
 
       }
+
+      When calling "sprimme()" and "cprimme()" replace "MPI_DOUBLE" by
+      "`MPI_FLOAT".
+
+   void (*broadcastReal)(void *buffer, int *count, primme_params *primme, int *ierr)
+
+      Broadcast function from process with ID zero. It is optional in
+      parallel executions, and no need for sequential programs.
+
+      Parameters:
+         * **buffer** -- array of size "count" with the local input
+           values.
+
+         * **count** -- array size of "sendBuf" and "recvBuf".
+
+         * **primme** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      The actual type of "buffer" depends on which function is being
+      calling. For "dprimme()" and "zprimme()" it is "double", and for
+      "sprimme()" and  "cprimme()" it is "float". Note that "count" is
+      the number of values of the actual type.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+            this field is read by "dprimme()".
+
+      When MPI is used, this can be a simply wrapper to MPI_Bcast() as
+      shown below:
+
+         void broadcastForDouble(void *buffer, int *count,
+                                 primme_params *primme, int *ierr) {
+            MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
+            if(MPI_Bcast(buffer, *count, MPI_DOUBLE, 0 /* root */,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
+            }
+         }
 
       When calling "sprimme()" and "cprimme()" replace "MPI_DOUBLE" by
       "`MPI_FLOAT".
@@ -4217,7 +4275,7 @@ primme_svds_params
       For example, with MPI, it could be a pointer to the MPI
       communicator. PRIMME does not use this. It is available for
       possible use in user functions defined in "matrixMatvec",
-      "applyPreconditioner" and "globalSumReal".
+      "applyPreconditioner", "globalSumReal", and "broadcastReal".
 
       Input/output:
 
@@ -4262,6 +4320,50 @@ primme_svds_params
                                   primme_svds_params *primme_svds, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
             if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
+                          communicator) == MPI_SUCCESS) {
+               *ierr = 0;
+            } else {
+               *ierr = 1;
+            }
+         }
+
+      When calling "sprimme_svds()" and "cprimme_svds()" replace
+      "MPI_DOUBLE" by "`MPI_FLOAT".
+
+   void (*broadcastReal)(void *buffer, int *count, primme_svds_params *primme_svds, int *ierr)
+
+      Broadcast function from process with ID zero. It is optional in
+      parallel executions, and no need for sequential programs.
+
+      Parameters:
+         * **buffer** -- array of size "count" with the local input
+           values.
+
+         * **count** -- array size of "sendBuf" and "recvBuf".
+
+         * **primme_svds** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      The actual type of "buffer" depends on which function is being
+      calling. For "dprimme_svds()" and "zprimme_svds()" it is
+      "double", and for "sprimme_svds()" and  "cprimme_svds()" it is
+      "float". Note that "count" is the number of values of the actual
+      type.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to NULL;
+            this field is read by "dprimme()".
+
+      When MPI is used, this can be a simply wrapper to MPI_Bcast() as
+      shown below:
+
+         void broadcastForDouble(void *buffer, int *count,
+                                 primme_svds_params *primme_svds, int *ierr) {
+            MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
+            if(MPI_Bcast(buffer, *count, MPI_DOUBLE, 0 /* root */,
                           communicator) == MPI_SUCCESS) {
                *ierr = 0;
             } else {

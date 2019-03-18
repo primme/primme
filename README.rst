@@ -132,6 +132,12 @@ For reporting bugs or questions about functionality contact `Andreas Stathopoulo
 email, `andreas` at `cs.wm.edu`. See further information in
 the webpage http://www.cs.wm.edu/~andreas/software.
 
+Support
+-------
+
+- National Science Foundation through grants CCF 1218349, ACI SI2-SSE 1440700, and NSCI 1835821
+- Department of Energy through grant Exascale Computing Project 17-SC-20-SC
+
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/software
 .. _`github`: https://github.com/primme/primme
 .. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
