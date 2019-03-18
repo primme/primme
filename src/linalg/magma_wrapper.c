@@ -330,11 +330,11 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
    /* Quick exit */
 
-   if (k == 0) {
+   if (k == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
          Num_zero_matrix_Sprimme(c, m, n, ldc, ctx);
       }
-      else {
+      else if (beta != (HSCALAR)1.0) {
          int i;
          for (i=0; i<n; i++) {
             Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx);
@@ -725,45 +725,52 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
    return PRIMME_FUNCTION_UNAVAILABLE;
 
 #elif defined(USE_HALF_MAGMA)
-   if (*side != 'R' && *side != 'r') return PRIMME_FUNCTION_UNAVAILABLE;
+   int mA = (*side == 'R' || *side == 'r') ? n : m;
 
    /* Create an auxiliary matrix mxm and set the identity matrix */
 
    HSCALAR *ainv;
-   CHKERR(Num_malloc_SHprimme(m * m, &ainv, ctx));
-   CHKERR(Num_zero_matrix_SHprimme(ainv, m, m, m, ctx));
+   CHKERR(Num_malloc_SHprimme(mA * mA, &ainv, ctx));
+   CHKERR(Num_zero_matrix_SHprimme(ainv, mA, mA, mA, ctx));
    int i;
-   for (i = 0; i < m; i++) ainv[m * i + i] = 1.0;
+   for (i = 0; i < mA; i++) ainv[mA * i + i] = 1.0;
 
    /* Compute ainv = inv(A) as A\I */
 
    CHKERR(Num_trsm_SHprimme(
-         "L", uplo, transa, diag, m, m, 1.0, a, lda, ainv, m, ctx));
+         "L", uplo, transa, diag, mA, mA, 1.0, a, lda, ainv, mA, ctx));
 
-   /* Compute bainv = b * ainv */
+   /* Compute bainv = b * ainv or ainv * b */
 
    SCALAR *bainv;
    CHKERR(Num_malloc_Sprimme(m * n, &bainv, ctx));
-   CHKERR(Num_gemm_dhd_Sprimme(
-         "N", "N", n, m, m, alpha, b, ldb, ainv, m, 0.0, bainv, n, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(bainv, m, n, m, ctx));
+   if (*side == 'R' || *side == 'r') {
+      CHKERR(Num_gemm_dhd_Sprimme(
+            "N", "N", m, n, n, alpha, b, ldb, ainv, n, 0.0, bainv, m, ctx));
+   } else {
+      CHKERR(Num_gemm_dhd_Sprimme(
+            "N", "N", m, n, m, alpha, ainv, m, b, ldb, 0.0, bainv, m, ctx));
+   }
 
    /* Copy bainv into b */
 
-   CHKERR(Num_copy_matrix_Sprimme(bainv, n, m, n, b, ldb, ctx));
+   CHKERR(Num_copy_matrix_Sprimme(bainv, m, n, m, b, ldb, ctx));
 
    CHKERR(Num_free_Sprimme(bainv, ctx));
    CHKERR(Num_free_SHprimme(ainv, ctx));
    return 0;
 
 #else
+   int mA = (*side == 'R' || *side == 'r') ? n : m;
    SCALAR *a_dev; /* copy of a on device */
-   CHKERR(Num_malloc_Sprimme(m*m, &a_dev, ctx));
-   magma_setmatrix(m, m, sizeof(SCALAR), (MAGMA_SCALAR *)a, lda,
-         (MAGMA_SCALAR *)a_dev, m, *(magma_queue_t *)ctx.queue);
+   CHKERR(Num_malloc_Sprimme(mA * mA, &a_dev, ctx));
+   magma_setmatrix(mA, mA, sizeof(SCALAR), (MAGMA_SCALAR *)a, lda,
+         (MAGMA_SCALAR *)a_dev, mA, *(magma_queue_t *)ctx.queue);
 
    XTRSM(magma_side_const(*side), magma_uplo_const(*uplo),
          magma_trans_const(*transa), magma_diag_const(*diag), m, n,
-         *(MAGMA_SCALAR *)&alpha, (MAGMA_SCALAR *)a_dev, m, (MAGMA_SCALAR *)b,
+         *(MAGMA_SCALAR *)&alpha, (MAGMA_SCALAR *)a_dev, mA, (MAGMA_SCALAR *)b,
          ldb, *(magma_queue_t *)ctx.queue);
    CHKERR(Num_free_Sprimme(a_dev, ctx));
    return 0;
