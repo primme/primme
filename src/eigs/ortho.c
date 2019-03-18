@@ -977,12 +977,16 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       PRIMME_INT ldXo;
       if (D && Y) {
          /* X = X - Q*A(0:nQ,:) */
-         CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ, A,
-               ldA, 1.0, &X[i], ldX, ctx));
+         if (nQ > 0) {
+            CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ,
+                  A, ldA, 1.0, &X[i], ldX, ctx));
+         }
 
          /* X = X - V*A(nQ:nQ+nV) */
-         CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nV, -1.0, &V[i], ldV,
-               A + nQ, ldA, 1.0, &X[i], ldX, ctx));
+         if (nV > 0) {
+            CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nV, -1.0, &V[i], ldV,
+                  A + nQ, ldA, 1.0, &X[i], ldX, ctx));
+         }
 
          /* Xo = X*Y */
          if (Yortho) {
