@@ -40,8 +40,8 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include "const.h"
 #include "numerical.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "auxiliary_eigs.h"

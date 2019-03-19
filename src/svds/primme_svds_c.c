@@ -41,7 +41,7 @@
 #include "numerical.h"
 #include "primme_interface.h"
 #include "primme_svds_interface.h"
-#include "../eigs/const.h"
+#include "../eigs/common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "primme_svds_c.h"

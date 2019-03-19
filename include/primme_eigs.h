@@ -367,6 +367,8 @@ typedef enum {
    PRIMME_profile                                = 86  
 } primme_params_label;
 
+/* Hermitian operator */
+
 int hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, 
       primme_params *primme);
 int kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
@@ -391,6 +393,22 @@ int magma_dprimme(double *evals, double *evecs, double *resNorms,
       primme_params *primme);
 int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
       primme_params *primme);
+
+/* Normal operator */
+
+int kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
+int cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+      primme_params *primme);
+int zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);
+int magma_kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
+int magma_cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);
+
 primme_params* primme_params_create(void);
 int primme_params_destroy(primme_params *primme);
 void primme_initialize(primme_params *primme);

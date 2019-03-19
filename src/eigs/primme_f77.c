@@ -39,6 +39,8 @@
 
 #include <stdlib.h>   /* free */
 #include "numerical.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 #include "primme_interface.h" /* for Xprimme */
 
 
@@ -51,10 +53,10 @@
  * The only difference from primme: the return value passed as parameter 
  *****************************************************************************/
 
-EXTERN_C void AS_FORTRAN(Xprimme)(XREAL *evals, XSCALAR *evecs,
-      XREAL *rnorms, primme_params **primme, int *ierr) {
+EXTERN_C void AS_FORTRAN(Xprimme)(XEVAL *evals, XSCALAR *evecs, XREAL *rnorms,
+      primme_params **primme, int *ierr) {
 
-  *ierr = Xprimme(evals, evecs, rnorms, *primme);
+   *ierr = Xprimme(evals, evecs, rnorms, *primme);
 
 } /* end of xprimme_f77 wrapper for calling from Fortran */
 

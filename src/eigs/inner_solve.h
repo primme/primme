@@ -34,94 +34,94 @@
 #ifndef inner_solve_H
 #define inner_solve_H
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Sprimme)
-#  define inner_solve_Sprimme CONCAT(inner_solve_,SCALAR_SUF)
+#  define inner_solve_Sprimme CONCAT(inner_solve_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Rprimme)
-#  define inner_solve_Rprimme CONCAT(inner_solve_,REAL_SUF)
+#  define inner_solve_Rprimme CONCAT(inner_solve_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SHprimme)
-#  define inner_solve_SHprimme CONCAT(inner_solve_,HOST_SCALAR_SUF)
+#  define inner_solve_SHprimme CONCAT(inner_solve_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RHprimme)
-#  define inner_solve_RHprimme CONCAT(inner_solve_,HOST_REAL_SUF)
+#  define inner_solve_RHprimme CONCAT(inner_solve_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SXprimme)
-#  define inner_solve_SXprimme CONCAT(inner_solve_,XSCALAR_SUF)
+#  define inner_solve_SXprimme CONCAT(inner_solve_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RXprimme)
-#  define inner_solve_RXprimme CONCAT(inner_solve_,XREAL_SUF)
+#  define inner_solve_RXprimme CONCAT(inner_solve_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Shprimme)
-#  define inner_solve_Shprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define inner_solve_Shprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Rhprimme)
-#  define inner_solve_Rhprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define inner_solve_Rhprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Ssprimme)
-#  define inner_solve_Ssprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define inner_solve_Ssprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Rsprimme)
-#  define inner_solve_Rsprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define inner_solve_Rsprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Sdprimme)
-#  define inner_solve_Sdprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define inner_solve_Sdprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Rdprimme)
-#  define inner_solve_Rdprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define inner_solve_Rdprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Sqprimme)
-#  define inner_solve_Sqprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define inner_solve_Sqprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_Rqprimme)
-#  define inner_solve_Rqprimme CONCAT(inner_solve_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define inner_solve_Rqprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SXhprimme)
-#  define inner_solve_SXhprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define inner_solve_SXhprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RXhprimme)
-#  define inner_solve_RXhprimme CONCAT(inner_solve_,CONCAT(CONCAT(,h),primme))
+#  define inner_solve_RXhprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SXsprimme)
-#  define inner_solve_SXsprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define inner_solve_SXsprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RXsprimme)
-#  define inner_solve_RXsprimme CONCAT(inner_solve_,CONCAT(CONCAT(,s),primme))
+#  define inner_solve_RXsprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SXdprimme)
-#  define inner_solve_SXdprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define inner_solve_SXdprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RXdprimme)
-#  define inner_solve_RXdprimme CONCAT(inner_solve_,CONCAT(CONCAT(,d),primme))
+#  define inner_solve_RXdprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SXqprimme)
-#  define inner_solve_SXqprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define inner_solve_SXqprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RXqprimme)
-#  define inner_solve_RXqprimme CONCAT(inner_solve_,CONCAT(CONCAT(,q),primme))
+#  define inner_solve_RXqprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SHhprimme)
-#  define inner_solve_SHhprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define inner_solve_SHhprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RHhprimme)
-#  define inner_solve_RHhprimme CONCAT(inner_solve_,CONCAT(CONCAT(,s),primme))
+#  define inner_solve_RHhprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SHsprimme)
-#  define inner_solve_SHsprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define inner_solve_SHsprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RHsprimme)
-#  define inner_solve_RHsprimme CONCAT(inner_solve_,CONCAT(CONCAT(,s),primme))
+#  define inner_solve_RHsprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SHdprimme)
-#  define inner_solve_SHdprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define inner_solve_SHdprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RHdprimme)
-#  define inner_solve_RHdprimme CONCAT(inner_solve_,CONCAT(CONCAT(,d),primme))
+#  define inner_solve_RHdprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_SHqprimme)
-#  define inner_solve_SHqprimme CONCAT(inner_solve_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define inner_solve_SHqprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(inner_solve_RHqprimme)
-#  define inner_solve_RHqprimme CONCAT(inner_solve_,CONCAT(CONCAT(,q),primme))
+#  define inner_solve_RHqprimme CONCAT(inner_solve_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int inner_solve_dprimme(int blockSize, dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type_dprimme *Bx,
       PRIMME_INT ldBx, dummy_type_dprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_dprimme *evecs,
@@ -132,9 +132,10 @@ int inner_solve_dprimme(int blockSize, dummy_type_dprimme *x, PRIMME_INT ldx, du
       PRIMME_INT ldRprojectorQ, dummy_type_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_dprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(apply_projected_preconditioner)
-#  define apply_projected_preconditioner CONCAT(apply_projected_preconditioner,SCALAR_SUF)
+#  define apply_projected_preconditioner CONCAT(apply_projected_preconditioner,WITH_KIND(SCALAR_SUF))
 #endif
 int apply_projected_preconditionerdprimme(dummy_type_dprimme *v, PRIMME_INT ldv, dummy_type_dprimme *Q,
       PRIMME_INT ldQ, dummy_type_dprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_dprimme *x,
@@ -143,20 +144,20 @@ int apply_projected_preconditionerdprimme(dummy_type_dprimme *v, PRIMME_INT ldv,
       dummy_type_dprimme *Mfact, int *ipivot, dummy_type_dprimme *result, PRIMME_INT ldresult,
       int blockSize, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(apply_skew_projector)
-#  define apply_skew_projector CONCAT(apply_skew_projector,SCALAR_SUF)
+#  define apply_skew_projector CONCAT(apply_skew_projector,WITH_KIND(SCALAR_SUF))
 #endif
 int apply_skew_projectordprimme(dummy_type_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_dprimme *Mfact, int *ipivot, int numCols, dummy_type_dprimme *v,
       PRIMME_INT ldv, int blockSize, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(apply_projected_matrix)
-#  define apply_projected_matrix CONCAT(apply_projected_matrix,SCALAR_SUF)
+#  define apply_projected_matrix CONCAT(apply_projected_matrix,WITH_KIND(SCALAR_SUF))
 #endif
 int apply_projected_matrixdprimme(dummy_type_dprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_dprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_dprimme *X,
       PRIMME_INT ldX, dummy_type_dprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
       dummy_type_dprimme *result, PRIMME_INT ldresult, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(perm_set_value_on_pos)
-#  define perm_set_value_on_pos CONCAT(perm_set_value_on_pos,SCALAR_SUF)
+#  define perm_set_value_on_pos CONCAT(perm_set_value_on_pos,WITH_KIND(SCALAR_SUF))
 #endif
 int perm_set_value_on_posdprimme(int *p, int val, int pos, int n);
 int inner_solve_hprimme(int blockSize, dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *Bx,
@@ -168,7 +169,8 @@ int inner_solve_hprimme(int blockSize, dummy_type_hprimme *x, PRIMME_INT ldx, du
       PRIMME_INT ldRprojectorQ, dummy_type_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_hprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionerhprimme(dummy_type_hprimme *v, PRIMME_INT ldv, dummy_type_hprimme *Q,
       PRIMME_INT ldQ, dummy_type_hprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_hprimme *x,
       PRIMME_INT ldx, dummy_type_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -192,7 +194,8 @@ int inner_solve_kprimme(int blockSize, dummy_type_kprimme *x, PRIMME_INT ldx, du
       PRIMME_INT ldRprojectorQ, dummy_type_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_kprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionerkprimme(dummy_type_kprimme *v, PRIMME_INT ldv, dummy_type_kprimme *Q,
       PRIMME_INT ldQ, dummy_type_kprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_kprimme *x,
       PRIMME_INT ldx, dummy_type_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -216,7 +219,8 @@ int inner_solve_sprimme(int blockSize, dummy_type_sprimme *x, PRIMME_INT ldx, du
       PRIMME_INT ldRprojectorQ, dummy_type_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_sprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionersprimme(dummy_type_sprimme *v, PRIMME_INT ldv, dummy_type_sprimme *Q,
       PRIMME_INT ldQ, dummy_type_sprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_sprimme *x,
       PRIMME_INT ldx, dummy_type_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -240,7 +244,8 @@ int inner_solve_cprimme(int blockSize, dummy_type_cprimme *x, PRIMME_INT ldx, du
       PRIMME_INT ldRprojectorQ, dummy_type_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_cprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionercprimme(dummy_type_cprimme *v, PRIMME_INT ldv, dummy_type_cprimme *Q,
       PRIMME_INT ldQ, dummy_type_cprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_cprimme *x,
       PRIMME_INT ldx, dummy_type_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -264,7 +269,8 @@ int inner_solve_zprimme(int blockSize, dummy_type_zprimme *x, PRIMME_INT ldx, du
       PRIMME_INT ldRprojectorQ, dummy_type_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_zprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionerzprimme(dummy_type_zprimme *v, PRIMME_INT ldv, dummy_type_zprimme *Q,
       PRIMME_INT ldQ, dummy_type_zprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_zprimme *x,
       PRIMME_INT ldx, dummy_type_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -288,7 +294,8 @@ int inner_solve_magma_hprimme(int blockSize, dummy_type_magma_hprimme *x, PRIMME
       PRIMME_INT ldRprojectorQ, dummy_type_magma_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_hprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionermagma_hprimme(dummy_type_magma_hprimme *v, PRIMME_INT ldv, dummy_type_magma_hprimme *Q,
       PRIMME_INT ldQ, dummy_type_magma_hprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_hprimme *x,
       PRIMME_INT ldx, dummy_type_magma_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -312,7 +319,8 @@ int inner_solve_magma_kprimme(int blockSize, dummy_type_magma_kprimme *x, PRIMME
       PRIMME_INT ldRprojectorQ, dummy_type_magma_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_kprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionermagma_kprimme(dummy_type_magma_kprimme *v, PRIMME_INT ldv, dummy_type_magma_kprimme *Q,
       PRIMME_INT ldQ, dummy_type_magma_kprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_kprimme *x,
       PRIMME_INT ldx, dummy_type_magma_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -336,7 +344,8 @@ int inner_solve_magma_sprimme(int blockSize, dummy_type_magma_sprimme *x, PRIMME
       PRIMME_INT ldRprojectorQ, dummy_type_magma_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_sprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionermagma_sprimme(dummy_type_magma_sprimme *v, PRIMME_INT ldv, dummy_type_magma_sprimme *Q,
       PRIMME_INT ldQ, dummy_type_magma_sprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_sprimme *x,
       PRIMME_INT ldx, dummy_type_magma_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -360,7 +369,8 @@ int inner_solve_magma_cprimme(int blockSize, dummy_type_magma_cprimme *x, PRIMME
       PRIMME_INT ldRprojectorQ, dummy_type_magma_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_cprimme *sol, PRIMME_INT ldsol, dummy_type_sprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionermagma_cprimme(dummy_type_magma_cprimme *v, PRIMME_INT ldv, dummy_type_magma_cprimme *Q,
       PRIMME_INT ldQ, dummy_type_magma_cprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_cprimme *x,
       PRIMME_INT ldx, dummy_type_magma_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -384,7 +394,8 @@ int inner_solve_magma_dprimme(int blockSize, dummy_type_magma_dprimme *x, PRIMME
       PRIMME_INT ldRprojectorQ, dummy_type_magma_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_dprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionermagma_dprimme(dummy_type_magma_dprimme *v, PRIMME_INT ldv, dummy_type_magma_dprimme *Q,
       PRIMME_INT ldQ, dummy_type_magma_dprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_dprimme *x,
       PRIMME_INT ldx, dummy_type_magma_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
@@ -408,7 +419,8 @@ int inner_solve_magma_zprimme(int blockSize, dummy_type_magma_zprimme *x, PRIMME
       PRIMME_INT ldRprojectorQ, dummy_type_magma_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
       int sizeRprojectorX, dummy_type_magma_zprimme *sol, PRIMME_INT ldsol, dummy_type_dprimme *eval,
-      double *shift, int *touch, double startTime, primme_context ctx);
+      double * shift, int *touch, double startTime,
+      primme_context ctx);
 int apply_projected_preconditionermagma_zprimme(dummy_type_magma_zprimme *v, PRIMME_INT ldv, dummy_type_magma_zprimme *Q,
       PRIMME_INT ldQ, dummy_type_magma_zprimme *RprojectorQ, PRIMME_INT ldRprojectorQ, dummy_type_magma_zprimme *x,
       PRIMME_INT ldx, dummy_type_magma_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,

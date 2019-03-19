@@ -47,7 +47,6 @@
 #include <limits.h>    
 #include "numerical.h"
 #include "primme_interface.h"
-#include "const.h"
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE

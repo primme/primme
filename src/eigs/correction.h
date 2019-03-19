@@ -34,94 +34,94 @@
 #ifndef correction_H
 #define correction_H
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Sprimme)
-#  define solve_correction_Sprimme CONCAT(solve_correction_,SCALAR_SUF)
+#  define solve_correction_Sprimme CONCAT(solve_correction_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Rprimme)
-#  define solve_correction_Rprimme CONCAT(solve_correction_,REAL_SUF)
+#  define solve_correction_Rprimme CONCAT(solve_correction_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SHprimme)
-#  define solve_correction_SHprimme CONCAT(solve_correction_,HOST_SCALAR_SUF)
+#  define solve_correction_SHprimme CONCAT(solve_correction_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RHprimme)
-#  define solve_correction_RHprimme CONCAT(solve_correction_,HOST_REAL_SUF)
+#  define solve_correction_RHprimme CONCAT(solve_correction_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SXprimme)
-#  define solve_correction_SXprimme CONCAT(solve_correction_,XSCALAR_SUF)
+#  define solve_correction_SXprimme CONCAT(solve_correction_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RXprimme)
-#  define solve_correction_RXprimme CONCAT(solve_correction_,XREAL_SUF)
+#  define solve_correction_RXprimme CONCAT(solve_correction_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Shprimme)
-#  define solve_correction_Shprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define solve_correction_Shprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Rhprimme)
-#  define solve_correction_Rhprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define solve_correction_Rhprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Ssprimme)
-#  define solve_correction_Ssprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define solve_correction_Ssprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Rsprimme)
-#  define solve_correction_Rsprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define solve_correction_Rsprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Sdprimme)
-#  define solve_correction_Sdprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define solve_correction_Sdprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Rdprimme)
-#  define solve_correction_Rdprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define solve_correction_Rdprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Sqprimme)
-#  define solve_correction_Sqprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define solve_correction_Sqprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_Rqprimme)
-#  define solve_correction_Rqprimme CONCAT(solve_correction_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define solve_correction_Rqprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SXhprimme)
-#  define solve_correction_SXhprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define solve_correction_SXhprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RXhprimme)
-#  define solve_correction_RXhprimme CONCAT(solve_correction_,CONCAT(CONCAT(,h),primme))
+#  define solve_correction_RXhprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SXsprimme)
-#  define solve_correction_SXsprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define solve_correction_SXsprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RXsprimme)
-#  define solve_correction_RXsprimme CONCAT(solve_correction_,CONCAT(CONCAT(,s),primme))
+#  define solve_correction_RXsprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SXdprimme)
-#  define solve_correction_SXdprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define solve_correction_SXdprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RXdprimme)
-#  define solve_correction_RXdprimme CONCAT(solve_correction_,CONCAT(CONCAT(,d),primme))
+#  define solve_correction_RXdprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SXqprimme)
-#  define solve_correction_SXqprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define solve_correction_SXqprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RXqprimme)
-#  define solve_correction_RXqprimme CONCAT(solve_correction_,CONCAT(CONCAT(,q),primme))
+#  define solve_correction_RXqprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SHhprimme)
-#  define solve_correction_SHhprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define solve_correction_SHhprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RHhprimme)
-#  define solve_correction_RHhprimme CONCAT(solve_correction_,CONCAT(CONCAT(,s),primme))
+#  define solve_correction_RHhprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SHsprimme)
-#  define solve_correction_SHsprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define solve_correction_SHsprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RHsprimme)
-#  define solve_correction_RHsprimme CONCAT(solve_correction_,CONCAT(CONCAT(,s),primme))
+#  define solve_correction_RHsprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SHdprimme)
-#  define solve_correction_SHdprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define solve_correction_SHdprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RHdprimme)
-#  define solve_correction_RHdprimme CONCAT(solve_correction_,CONCAT(CONCAT(,d),primme))
+#  define solve_correction_RHdprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_SHqprimme)
-#  define solve_correction_SHqprimme CONCAT(solve_correction_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define solve_correction_SHqprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_correction_RHqprimme)
-#  define solve_correction_RHqprimme CONCAT(solve_correction_,CONCAT(CONCAT(,q),primme))
+#  define solve_correction_RHqprimme CONCAT(solve_correction_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int solve_correction_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W,
       PRIMME_INT ldW, dummy_type_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *evecs,
@@ -132,25 +132,25 @@ int solve_correction_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_d
       dummy_type_dprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(computeRobustShift)
-#  define computeRobustShift CONCAT(computeRobustShift,SCALAR_SUF)
+#  define computeRobustShift CONCAT(computeRobustShift,WITH_KIND(SCALAR_SUF))
 #endif
 dummy_type_dprimme computeRobustShiftdprimme(int blockIndex, double resNorm,
    dummy_type_dprimme *prevRitzVals, int numPrevRitzVals, dummy_type_dprimme *sortedRitzVals,
    dummy_type_dprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(mergeSort)
-#  define mergeSort CONCAT(mergeSort,SCALAR_SUF)
+#  define mergeSort CONCAT(mergeSort,WITH_KIND(SCALAR_SUF))
 #endif
 void mergeSortdprimme(dummy_type_dprimme *lockedEvals, int numLocked, dummy_type_dprimme *ritzVals,
    int *flags, int basisSize, dummy_type_dprimme *sortedRitzVals, int *ilev, int blockSize,
    primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(Olsen_preconditioner_block)
-#  define Olsen_preconditioner_block CONCAT(Olsen_preconditioner_block,SCALAR_SUF)
+#  define Olsen_preconditioner_block CONCAT(Olsen_preconditioner_block,WITH_KIND(SCALAR_SUF))
 #endif
 int Olsen_preconditioner_blockdprimme(dummy_type_dprimme *r, PRIMME_INT ldr, dummy_type_dprimme *x,
       PRIMME_INT ldx, dummy_type_dprimme *Bx, PRIMME_INT ldBx, int blockSize,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(setup_JD_projectors)
-#  define setup_JD_projectors CONCAT(setup_JD_projectors,SCALAR_SUF)
+#  define setup_JD_projectors CONCAT(setup_JD_projectors,WITH_KIND(SCALAR_SUF))
 #endif
 int setup_JD_projectorsdprimme(dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type_dprimme *Bx,
       PRIMME_INT ldBx, dummy_type_dprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *Bevecs,
@@ -190,6 +190,35 @@ int setup_JD_projectorshprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type
       PRIMME_INT *ldLprojectorBQ, dummy_type_hprimme **LprojectorBX,
       PRIMME_INT *ldLprojectorBX, dummy_type_hprimme **RprojectorQ,
       PRIMME_INT *ldRprojectorQ, dummy_type_hprimme **RprojectorX,
+      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
+      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
+      int numConverged, int blockSize, primme_context ctx);
+int solve_correction_kprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
+      PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, dummy_type_kprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_kprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *lockedEvals,
+      int numLocked, int numConvergedStored, dummy_type_cprimme *ritzVals,
+      dummy_type_cprimme *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      dummy_type_sprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx);
+dummy_type_sprimme computeRobustShiftkprimme_normal(int blockIndex, double resNorm,
+   dummy_type_sprimme *prevRitzVals, int numPrevRitzVals, dummy_type_sprimme *sortedRitzVals,
+   dummy_type_sprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+void mergeSortkprimme_normal(dummy_type_sprimme *lockedEvals, int numLocked, dummy_type_sprimme *ritzVals,
+   int *flags, int basisSize, dummy_type_sprimme *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+int Olsen_preconditioner_blockkprimme_normal(dummy_type_kprimme *r, PRIMME_INT ldr, dummy_type_kprimme *x,
+      PRIMME_INT ldx, dummy_type_kprimme *Bx, PRIMME_INT ldBx, int blockSize,
+      primme_context ctx);
+int setup_JD_projectorskprimme_normal(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_kprimme *Bevecs,
+      PRIMME_INT ldBevecs, dummy_type_kprimme *evecsHat, PRIMME_INT ldevecsHat,
+      dummy_type_kprimme *KinvBx, PRIMME_INT ldKinvBx, dummy_type_cprimme *xKinvBx,
+      dummy_type_kprimme **LprojectorQ, PRIMME_INT *ldLprojectorQ, dummy_type_kprimme **LprojectorX,
+      PRIMME_INT *ldLprojectorX, dummy_type_kprimme **LprojectorBQ,
+      PRIMME_INT *ldLprojectorBQ, dummy_type_kprimme **LprojectorBX,
+      PRIMME_INT *ldLprojectorBX, dummy_type_kprimme **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, dummy_type_kprimme **RprojectorX,
       PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
       int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
       int numConverged, int blockSize, primme_context ctx);
@@ -251,6 +280,35 @@ int setup_JD_projectorssprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type
       PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
       int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
       int numConverged, int blockSize, primme_context ctx);
+int solve_correction_cprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *lockedEvals,
+      int numLocked, int numConvergedStored, dummy_type_cprimme *ritzVals,
+      dummy_type_cprimme *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      dummy_type_sprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx);
+dummy_type_sprimme computeRobustShiftcprimme_normal(int blockIndex, double resNorm,
+   dummy_type_sprimme *prevRitzVals, int numPrevRitzVals, dummy_type_sprimme *sortedRitzVals,
+   dummy_type_sprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+void mergeSortcprimme_normal(dummy_type_sprimme *lockedEvals, int numLocked, dummy_type_sprimme *ritzVals,
+   int *flags, int basisSize, dummy_type_sprimme *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+int Olsen_preconditioner_blockcprimme_normal(dummy_type_cprimme *r, PRIMME_INT ldr, dummy_type_cprimme *x,
+      PRIMME_INT ldx, dummy_type_cprimme *Bx, PRIMME_INT ldBx, int blockSize,
+      primme_context ctx);
+int setup_JD_projectorscprimme_normal(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs,
+      PRIMME_INT ldBevecs, dummy_type_cprimme *evecsHat, PRIMME_INT ldevecsHat,
+      dummy_type_cprimme *KinvBx, PRIMME_INT ldKinvBx, dummy_type_cprimme *xKinvBx,
+      dummy_type_cprimme **LprojectorQ, PRIMME_INT *ldLprojectorQ, dummy_type_cprimme **LprojectorX,
+      PRIMME_INT *ldLprojectorX, dummy_type_cprimme **LprojectorBQ,
+      PRIMME_INT *ldLprojectorBQ, dummy_type_cprimme **LprojectorBX,
+      PRIMME_INT *ldLprojectorBX, dummy_type_cprimme **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, dummy_type_cprimme **RprojectorX,
+      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
+      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
+      int numConverged, int blockSize, primme_context ctx);
 int solve_correction_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evecsHat,
@@ -277,6 +335,35 @@ int setup_JD_projectorscprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type
       PRIMME_INT *ldLprojectorBQ, dummy_type_cprimme **LprojectorBX,
       PRIMME_INT *ldLprojectorBX, dummy_type_cprimme **RprojectorQ,
       PRIMME_INT *ldRprojectorQ, dummy_type_cprimme **RprojectorX,
+      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
+      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
+      int numConverged, int blockSize, primme_context ctx);
+int solve_correction_zprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
+      PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *lockedEvals,
+      int numLocked, int numConvergedStored, dummy_type_zprimme *ritzVals,
+      dummy_type_zprimme *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      dummy_type_dprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx);
+dummy_type_dprimme computeRobustShiftzprimme_normal(int blockIndex, double resNorm,
+   dummy_type_dprimme *prevRitzVals, int numPrevRitzVals, dummy_type_dprimme *sortedRitzVals,
+   dummy_type_dprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+void mergeSortzprimme_normal(dummy_type_dprimme *lockedEvals, int numLocked, dummy_type_dprimme *ritzVals,
+   int *flags, int basisSize, dummy_type_dprimme *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+int Olsen_preconditioner_blockzprimme_normal(dummy_type_zprimme *r, PRIMME_INT ldr, dummy_type_zprimme *x,
+      PRIMME_INT ldx, dummy_type_zprimme *Bx, PRIMME_INT ldBx, int blockSize,
+      primme_context ctx);
+int setup_JD_projectorszprimme_normal(dummy_type_zprimme *x, PRIMME_INT ldx, dummy_type_zprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_zprimme *Bevecs,
+      PRIMME_INT ldBevecs, dummy_type_zprimme *evecsHat, PRIMME_INT ldevecsHat,
+      dummy_type_zprimme *KinvBx, PRIMME_INT ldKinvBx, dummy_type_zprimme *xKinvBx,
+      dummy_type_zprimme **LprojectorQ, PRIMME_INT *ldLprojectorQ, dummy_type_zprimme **LprojectorX,
+      PRIMME_INT *ldLprojectorX, dummy_type_zprimme **LprojectorBQ,
+      PRIMME_INT *ldLprojectorBQ, dummy_type_zprimme **LprojectorBX,
+      PRIMME_INT *ldLprojectorBX, dummy_type_zprimme **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, dummy_type_zprimme **RprojectorX,
       PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
       int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
       int numConverged, int blockSize, primme_context ctx);
@@ -338,6 +425,35 @@ int setup_JD_projectorsmagma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx
       PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
       int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
       int numConverged, int blockSize, primme_context ctx);
+int solve_correction_magma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_magma_kprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_kprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *lockedEvals,
+      int numLocked, int numConvergedStored, dummy_type_cprimme *ritzVals,
+      dummy_type_cprimme *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      dummy_type_sprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx);
+dummy_type_sprimme computeRobustShiftmagma_kprimme_normal(int blockIndex, double resNorm,
+   dummy_type_sprimme *prevRitzVals, int numPrevRitzVals, dummy_type_sprimme *sortedRitzVals,
+   dummy_type_sprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+void mergeSortmagma_kprimme_normal(dummy_type_sprimme *lockedEvals, int numLocked, dummy_type_sprimme *ritzVals,
+   int *flags, int basisSize, dummy_type_sprimme *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+int Olsen_preconditioner_blockmagma_kprimme_normal(dummy_type_magma_kprimme *r, PRIMME_INT ldr, dummy_type_magma_kprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_kprimme *Bx, PRIMME_INT ldBx, int blockSize,
+      primme_context ctx);
+int setup_JD_projectorsmagma_kprimme_normal(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs,
+      PRIMME_INT ldBevecs, dummy_type_magma_kprimme *evecsHat, PRIMME_INT ldevecsHat,
+      dummy_type_magma_kprimme *KinvBx, PRIMME_INT ldKinvBx, dummy_type_cprimme *xKinvBx,
+      dummy_type_magma_kprimme **LprojectorQ, PRIMME_INT *ldLprojectorQ, dummy_type_magma_kprimme **LprojectorX,
+      PRIMME_INT *ldLprojectorX, dummy_type_magma_kprimme **LprojectorBQ,
+      PRIMME_INT *ldLprojectorBQ, dummy_type_magma_kprimme **LprojectorBX,
+      PRIMME_INT *ldLprojectorBX, dummy_type_magma_kprimme **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, dummy_type_magma_kprimme **RprojectorX,
+      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
+      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
+      int numConverged, int blockSize, primme_context ctx);
 int solve_correction_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_magma_kprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_kprimme *evecsHat,
@@ -396,6 +512,35 @@ int setup_JD_projectorsmagma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT ldx
       PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
       int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
       int numConverged, int blockSize, primme_context ctx);
+int solve_correction_magma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_magma_cprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_cprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *lockedEvals,
+      int numLocked, int numConvergedStored, dummy_type_cprimme *ritzVals,
+      dummy_type_cprimme *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      dummy_type_sprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx);
+dummy_type_sprimme computeRobustShiftmagma_cprimme_normal(int blockIndex, double resNorm,
+   dummy_type_sprimme *prevRitzVals, int numPrevRitzVals, dummy_type_sprimme *sortedRitzVals,
+   dummy_type_sprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+void mergeSortmagma_cprimme_normal(dummy_type_sprimme *lockedEvals, int numLocked, dummy_type_sprimme *ritzVals,
+   int *flags, int basisSize, dummy_type_sprimme *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+int Olsen_preconditioner_blockmagma_cprimme_normal(dummy_type_magma_cprimme *r, PRIMME_INT ldr, dummy_type_magma_cprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_cprimme *Bx, PRIMME_INT ldBx, int blockSize,
+      primme_context ctx);
+int setup_JD_projectorsmagma_cprimme_normal(dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs,
+      PRIMME_INT ldBevecs, dummy_type_magma_cprimme *evecsHat, PRIMME_INT ldevecsHat,
+      dummy_type_magma_cprimme *KinvBx, PRIMME_INT ldKinvBx, dummy_type_cprimme *xKinvBx,
+      dummy_type_magma_cprimme **LprojectorQ, PRIMME_INT *ldLprojectorQ, dummy_type_magma_cprimme **LprojectorX,
+      PRIMME_INT *ldLprojectorX, dummy_type_magma_cprimme **LprojectorBQ,
+      PRIMME_INT *ldLprojectorBQ, dummy_type_magma_cprimme **LprojectorBX,
+      PRIMME_INT *ldLprojectorBX, dummy_type_magma_cprimme **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, dummy_type_magma_cprimme **RprojectorX,
+      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
+      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
+      int numConverged, int blockSize, primme_context ctx);
 int solve_correction_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_magma_cprimme *evecs,
       PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_cprimme *evecsHat,
@@ -451,6 +596,35 @@ int setup_JD_projectorsmagma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT ldx
       PRIMME_INT *ldLprojectorBQ, dummy_type_magma_dprimme **LprojectorBX,
       PRIMME_INT *ldLprojectorBX, dummy_type_magma_dprimme **RprojectorQ,
       PRIMME_INT *ldRprojectorQ, dummy_type_magma_dprimme **RprojectorX,
+      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
+      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
+      int numConverged, int blockSize, primme_context ctx);
+int solve_correction_magma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, dummy_type_magma_zprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_magma_zprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *lockedEvals,
+      int numLocked, int numConvergedStored, dummy_type_zprimme *ritzVals,
+      dummy_type_zprimme *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      dummy_type_dprimme *blockNorms, int *iev, int blockSize, int *touch, double startTime,
+      primme_context ctx);
+dummy_type_dprimme computeRobustShiftmagma_zprimme_normal(int blockIndex, double resNorm,
+   dummy_type_dprimme *prevRitzVals, int numPrevRitzVals, dummy_type_dprimme *sortedRitzVals,
+   dummy_type_dprimme *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
+void mergeSortmagma_zprimme_normal(dummy_type_dprimme *lockedEvals, int numLocked, dummy_type_dprimme *ritzVals,
+   int *flags, int basisSize, dummy_type_dprimme *sortedRitzVals, int *ilev, int blockSize,
+   primme_params *primme);
+int Olsen_preconditioner_blockmagma_zprimme_normal(dummy_type_magma_zprimme *r, PRIMME_INT ldr, dummy_type_magma_zprimme *x,
+      PRIMME_INT ldx, dummy_type_magma_zprimme *Bx, PRIMME_INT ldBx, int blockSize,
+      primme_context ctx);
+int setup_JD_projectorsmagma_zprimme_normal(dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *Bx,
+      PRIMME_INT ldBx, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs,
+      PRIMME_INT ldBevecs, dummy_type_magma_zprimme *evecsHat, PRIMME_INT ldevecsHat,
+      dummy_type_magma_zprimme *KinvBx, PRIMME_INT ldKinvBx, dummy_type_zprimme *xKinvBx,
+      dummy_type_magma_zprimme **LprojectorQ, PRIMME_INT *ldLprojectorQ, dummy_type_magma_zprimme **LprojectorX,
+      PRIMME_INT *ldLprojectorX, dummy_type_magma_zprimme **LprojectorBQ,
+      PRIMME_INT *ldLprojectorBQ, dummy_type_magma_zprimme **LprojectorBX,
+      PRIMME_INT *ldLprojectorBX, dummy_type_magma_zprimme **RprojectorQ,
+      PRIMME_INT *ldRprojectorQ, dummy_type_magma_zprimme **RprojectorX,
       PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
       int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
       int numConverged, int blockSize, primme_context ctx);

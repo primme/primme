@@ -37,13 +37,15 @@
 #define THIS_FILE "../eigs/convergence.c"
 #endif
 
-#include "const.h"
 #include "numerical.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "convergence.h"
 #include "ortho.h"
 #include "auxiliary_eigs.h"
+#include "auxiliary_eigs_normal.h"
 #endif
 
 #ifdef SUPPORTED_TYPE
@@ -85,7 +87,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       PRIMME_INT ldR, int givenR, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HSCALAR *VtBV,
       int ldVtBV, int left, int right, int *flags, HREAL *blockNorms,
-      HREAL *hVals, int *reset, int practConvCheck, primme_context ctx) {
+      HEVAL *hVals, int *reset, int practConvCheck, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -94,14 +96,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
    double tol;             /* Residual tolerance                                 */
    double attainableTol=0; /* Used in locking to check near convergence problem  */
    int isConv;             /* return of convTestFun                              */
-   double targetShift;     /* target shift */
 
    CHKERR(Num_malloc_iprimme(right-left, &toProject, ctx));
-
-   targetShift = primme->numTargetShifts > 0
-                       ? primme->targetShifts[min(
-                               primme->initSize, primme->numTargetShifts - 1)]
-                       : 0.0;
 
    /* -------------------------------------------- */
    /* Tolerance based on our dynamic norm estimate */
@@ -128,6 +124,12 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       /* Then ignore values so that value +-residual is completely   */
       /* outside of the desired region.                              */
 
+#ifdef USE_HERMITIAN
+      double targetShift = primme->numTargetShifts > 0
+                                 ? primme->targetShifts[min(primme->initSize,
+                                         primme->numTargetShifts - 1)]
+                                 : 0.0;
+
       if ((primme->target == primme_closest_leq
                && hVals[i]-blockNorms[i-left] > targetShift) ||
             (primme->target == primme_closest_geq
@@ -135,6 +137,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
          flags[i] = UNCONVERGED;
          continue;
       }
+#endif
 
       if (blockNorms[i-left] <= primme->stats.maxConvTol) {
          flags[i] = CONVERGED;

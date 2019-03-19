@@ -85,7 +85,7 @@ int main (int argc, char *argv[]) {
    */
 
    /* Set method to solve the problem */
-   primme_set_method(PRIMME_DYNAMIC, &primme);
+   primme_set_method(PRIMME_LOBPCG_OrthoBasis, &primme);
    /* DYNAMIC uses a runtime heuristic to choose the fastest method between
        PRIMME_DEFAULT_MIN_TIME and PRIMME_DEFAULT_MIN_MATVECS. But you can
        set another method, such as PRIMME_LOBPCG_OrthoBasis_Window, directly */

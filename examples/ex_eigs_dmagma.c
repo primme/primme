@@ -39,6 +39,7 @@
 #include <math.h>
 
 #include "magma_v2.h"
+#include "cuda_runtime.h"
 #include "magmasparse.h"
 
 #include "primme.h"   /* header file is required to run primme */ 
@@ -121,7 +122,10 @@ int main (int argc, char *argv[]) {
    */
 
    /* Set method to solve the problem */
-   primme_set_method(PRIMME_DYNAMIC, &primme);
+   // primme_set_method(PRIMME_LOBPCG_OrthoBasis, &primme);
+   primme.maxBlockSize = 2;
+   primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);
+   primme.printLevel = 3;
 //   primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);
 //   primme_set_method(PRIMME_DEFAULT_MIN_TIME, &primme);
    /* DYNAMIC uses a runtime heuristic to choose the fastest method between
@@ -223,6 +227,9 @@ void magmaSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    double *yvec;     
    magma_d_matrix *A = primme->matrix;
  
+   *err = 1;
+   if (cudaMemset2D(y, sizeof(double) * (*ldy), 0, sizeof(double) * primme->n, *blockSize) !=
+          cudaSuccess) return;
    for (i=0; i<*blockSize; i++) {
       magma_d_matrix vx = {Magma_CSR};  /* i-th input vector x */
       magma_d_matrix vy = {Magma_CSR};  /* i-th output vector y */

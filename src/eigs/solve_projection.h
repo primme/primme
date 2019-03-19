@@ -34,214 +34,214 @@
 #ifndef solve_projection_H
 #define solve_projection_H
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Sprimme)
-#  define solve_H_Sprimme CONCAT(solve_H_,SCALAR_SUF)
+#  define solve_H_Sprimme CONCAT(solve_H_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Rprimme)
-#  define solve_H_Rprimme CONCAT(solve_H_,REAL_SUF)
+#  define solve_H_Rprimme CONCAT(solve_H_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SHprimme)
-#  define solve_H_SHprimme CONCAT(solve_H_,HOST_SCALAR_SUF)
+#  define solve_H_SHprimme CONCAT(solve_H_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RHprimme)
-#  define solve_H_RHprimme CONCAT(solve_H_,HOST_REAL_SUF)
+#  define solve_H_RHprimme CONCAT(solve_H_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SXprimme)
-#  define solve_H_SXprimme CONCAT(solve_H_,XSCALAR_SUF)
+#  define solve_H_SXprimme CONCAT(solve_H_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RXprimme)
-#  define solve_H_RXprimme CONCAT(solve_H_,XREAL_SUF)
+#  define solve_H_RXprimme CONCAT(solve_H_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Shprimme)
-#  define solve_H_Shprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define solve_H_Shprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Rhprimme)
-#  define solve_H_Rhprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define solve_H_Rhprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Ssprimme)
-#  define solve_H_Ssprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define solve_H_Ssprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Rsprimme)
-#  define solve_H_Rsprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define solve_H_Rsprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Sdprimme)
-#  define solve_H_Sdprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define solve_H_Sdprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Rdprimme)
-#  define solve_H_Rdprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define solve_H_Rdprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Sqprimme)
-#  define solve_H_Sqprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define solve_H_Sqprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Rqprimme)
-#  define solve_H_Rqprimme CONCAT(solve_H_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define solve_H_Rqprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SXhprimme)
-#  define solve_H_SXhprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define solve_H_SXhprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RXhprimme)
-#  define solve_H_RXhprimme CONCAT(solve_H_,CONCAT(CONCAT(,h),primme))
+#  define solve_H_RXhprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SXsprimme)
-#  define solve_H_SXsprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define solve_H_SXsprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RXsprimme)
-#  define solve_H_RXsprimme CONCAT(solve_H_,CONCAT(CONCAT(,s),primme))
+#  define solve_H_RXsprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SXdprimme)
-#  define solve_H_SXdprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define solve_H_SXdprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RXdprimme)
-#  define solve_H_RXdprimme CONCAT(solve_H_,CONCAT(CONCAT(,d),primme))
+#  define solve_H_RXdprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SXqprimme)
-#  define solve_H_SXqprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define solve_H_SXqprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RXqprimme)
-#  define solve_H_RXqprimme CONCAT(solve_H_,CONCAT(CONCAT(,q),primme))
+#  define solve_H_RXqprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SHhprimme)
-#  define solve_H_SHhprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define solve_H_SHhprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RHhprimme)
-#  define solve_H_RHhprimme CONCAT(solve_H_,CONCAT(CONCAT(,s),primme))
+#  define solve_H_RHhprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SHsprimme)
-#  define solve_H_SHsprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define solve_H_SHsprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RHsprimme)
-#  define solve_H_RHsprimme CONCAT(solve_H_,CONCAT(CONCAT(,s),primme))
+#  define solve_H_RHsprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SHdprimme)
-#  define solve_H_SHdprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define solve_H_SHdprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RHdprimme)
-#  define solve_H_RHdprimme CONCAT(solve_H_,CONCAT(CONCAT(,d),primme))
+#  define solve_H_RHdprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_SHqprimme)
-#  define solve_H_SHqprimme CONCAT(solve_H_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define solve_H_SHqprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RHqprimme)
-#  define solve_H_RHqprimme CONCAT(solve_H_,CONCAT(CONCAT(,q),primme))
+#  define solve_H_RHqprimme CONCAT(solve_H_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int solve_H_dprimme(dummy_type_dprimme *H, int basisSize, int ldH, dummy_type_dprimme *VtBV, int ldVtBV,
       dummy_type_dprimme *R, int ldR, dummy_type_dprimme *QtV, int ldQtV, dummy_type_dprimme *QtQ, int ldQtQ,
       dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
       dummy_type_dprimme *hSVals, int numConverged, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Sprimme)
-#  define solve_H_RR_Sprimme CONCAT(solve_H_RR_Sprimme,SCALAR_SUF)
+#  define solve_H_RR_Sprimme CONCAT(solve_H_RR_Sprimme,WITH_KIND(SCALAR_SUF))
 #endif
 int solve_H_RR_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *VtBV, int ldVtBV,
       dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Harm_Sprimme)
-#  define solve_H_Harm_Sprimme CONCAT(solve_H_Harm_Sprimme,SCALAR_SUF)
+#  define solve_H_Harm_Sprimme CONCAT(solve_H_Harm_Sprimme,WITH_KIND(SCALAR_SUF))
 #endif
 int solve_H_Harm_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *QtV, int ldQtV,
       dummy_type_dprimme *R, int ldR, dummy_type_dprimme *QtQ, int ldQtQ, dummy_type_dprimme *VtBV, int ldVtBV,
       dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hVals,
       int basisSize, int numConverged, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_Ref_Sprimme)
-#  define solve_H_Ref_Sprimme CONCAT(solve_H_Ref_Sprimme,SCALAR_SUF)
+#  define solve_H_Ref_Sprimme CONCAT(solve_H_Ref_Sprimme,WITH_KIND(SCALAR_SUF))
 #endif
 int solve_H_Ref_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *hVecs, int ldhVecs,
       dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hSVals, dummy_type_dprimme *R, int ldR, dummy_type_dprimme *QtQ,
       int ldQtQ, dummy_type_dprimme *VtBV, int ldVtBV, dummy_type_dprimme *hVals, int basisSize,
       int targetShiftIndex, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_brcast_Sprimme)
-#  define solve_H_brcast_Sprimme CONCAT(solve_H_brcast_Sprimme,SCALAR_SUF)
+#  define solve_H_brcast_Sprimme CONCAT(solve_H_brcast_Sprimme,WITH_KIND(SCALAR_SUF))
 #endif
 int solve_H_brcast_Sprimmedprimme(int basisSize, dummy_type_dprimme *hU, int ldhU,
                                   dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
                                   dummy_type_dprimme *hSVals, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Sprimme)
-#  define prepare_vecs_Sprimme CONCAT(prepare_vecs_,SCALAR_SUF)
+#  define prepare_vecs_Sprimme CONCAT(prepare_vecs_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Rprimme)
-#  define prepare_vecs_Rprimme CONCAT(prepare_vecs_,REAL_SUF)
+#  define prepare_vecs_Rprimme CONCAT(prepare_vecs_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SHprimme)
-#  define prepare_vecs_SHprimme CONCAT(prepare_vecs_,HOST_SCALAR_SUF)
+#  define prepare_vecs_SHprimme CONCAT(prepare_vecs_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RHprimme)
-#  define prepare_vecs_RHprimme CONCAT(prepare_vecs_,HOST_REAL_SUF)
+#  define prepare_vecs_RHprimme CONCAT(prepare_vecs_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SXprimme)
-#  define prepare_vecs_SXprimme CONCAT(prepare_vecs_,XSCALAR_SUF)
+#  define prepare_vecs_SXprimme CONCAT(prepare_vecs_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RXprimme)
-#  define prepare_vecs_RXprimme CONCAT(prepare_vecs_,XREAL_SUF)
+#  define prepare_vecs_RXprimme CONCAT(prepare_vecs_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Shprimme)
-#  define prepare_vecs_Shprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define prepare_vecs_Shprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Rhprimme)
-#  define prepare_vecs_Rhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define prepare_vecs_Rhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Ssprimme)
-#  define prepare_vecs_Ssprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define prepare_vecs_Ssprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Rsprimme)
-#  define prepare_vecs_Rsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define prepare_vecs_Rsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Sdprimme)
-#  define prepare_vecs_Sdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define prepare_vecs_Sdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Rdprimme)
-#  define prepare_vecs_Rdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define prepare_vecs_Rdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Sqprimme)
-#  define prepare_vecs_Sqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define prepare_vecs_Sqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_Rqprimme)
-#  define prepare_vecs_Rqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define prepare_vecs_Rqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SXhprimme)
-#  define prepare_vecs_SXhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define prepare_vecs_SXhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RXhprimme)
-#  define prepare_vecs_RXhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,h),primme))
+#  define prepare_vecs_RXhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SXsprimme)
-#  define prepare_vecs_SXsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define prepare_vecs_SXsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RXsprimme)
-#  define prepare_vecs_RXsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,s),primme))
+#  define prepare_vecs_RXsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SXdprimme)
-#  define prepare_vecs_SXdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define prepare_vecs_SXdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RXdprimme)
-#  define prepare_vecs_RXdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,d),primme))
+#  define prepare_vecs_RXdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SXqprimme)
-#  define prepare_vecs_SXqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define prepare_vecs_SXqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RXqprimme)
-#  define prepare_vecs_RXqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,q),primme))
+#  define prepare_vecs_RXqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SHhprimme)
-#  define prepare_vecs_SHhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define prepare_vecs_SHhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RHhprimme)
-#  define prepare_vecs_RHhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,s),primme))
+#  define prepare_vecs_RHhprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SHsprimme)
-#  define prepare_vecs_SHsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define prepare_vecs_SHsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RHsprimme)
-#  define prepare_vecs_RHsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,s),primme))
+#  define prepare_vecs_RHsprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SHdprimme)
-#  define prepare_vecs_SHdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define prepare_vecs_SHdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RHdprimme)
-#  define prepare_vecs_RHdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,d),primme))
+#  define prepare_vecs_RHdprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_SHqprimme)
-#  define prepare_vecs_SHqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define prepare_vecs_SHqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_vecs_RHqprimme)
-#  define prepare_vecs_RHqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(,q),primme))
+#  define prepare_vecs_RHqprimme CONCAT(prepare_vecs_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int prepare_vecs_dprimme(int basisSize, int i0, int blockSize, dummy_type_dprimme *H,
       int ldH, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals, dummy_type_dprimme *hVecs, int ldhVecs,
@@ -249,94 +249,94 @@ int prepare_vecs_dprimme(int basisSize, int i0, int blockSize, dummy_type_dprimm
       int *flags, int RRForAll, dummy_type_dprimme *hVecsRot, int ldhVecsRot,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Sprimme)
-#  define map_vecs_Sprimme CONCAT(map_vecs_,SCALAR_SUF)
+#  define map_vecs_Sprimme CONCAT(map_vecs_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Rprimme)
-#  define map_vecs_Rprimme CONCAT(map_vecs_,REAL_SUF)
+#  define map_vecs_Rprimme CONCAT(map_vecs_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SHprimme)
-#  define map_vecs_SHprimme CONCAT(map_vecs_,HOST_SCALAR_SUF)
+#  define map_vecs_SHprimme CONCAT(map_vecs_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RHprimme)
-#  define map_vecs_RHprimme CONCAT(map_vecs_,HOST_REAL_SUF)
+#  define map_vecs_RHprimme CONCAT(map_vecs_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SXprimme)
-#  define map_vecs_SXprimme CONCAT(map_vecs_,XSCALAR_SUF)
+#  define map_vecs_SXprimme CONCAT(map_vecs_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RXprimme)
-#  define map_vecs_RXprimme CONCAT(map_vecs_,XREAL_SUF)
+#  define map_vecs_RXprimme CONCAT(map_vecs_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Shprimme)
-#  define map_vecs_Shprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define map_vecs_Shprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Rhprimme)
-#  define map_vecs_Rhprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define map_vecs_Rhprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Ssprimme)
-#  define map_vecs_Ssprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define map_vecs_Ssprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Rsprimme)
-#  define map_vecs_Rsprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define map_vecs_Rsprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Sdprimme)
-#  define map_vecs_Sdprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define map_vecs_Sdprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Rdprimme)
-#  define map_vecs_Rdprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define map_vecs_Rdprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Sqprimme)
-#  define map_vecs_Sqprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define map_vecs_Sqprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_Rqprimme)
-#  define map_vecs_Rqprimme CONCAT(map_vecs_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define map_vecs_Rqprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SXhprimme)
-#  define map_vecs_SXhprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define map_vecs_SXhprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RXhprimme)
-#  define map_vecs_RXhprimme CONCAT(map_vecs_,CONCAT(CONCAT(,h),primme))
+#  define map_vecs_RXhprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SXsprimme)
-#  define map_vecs_SXsprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define map_vecs_SXsprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RXsprimme)
-#  define map_vecs_RXsprimme CONCAT(map_vecs_,CONCAT(CONCAT(,s),primme))
+#  define map_vecs_RXsprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SXdprimme)
-#  define map_vecs_SXdprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define map_vecs_SXdprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RXdprimme)
-#  define map_vecs_RXdprimme CONCAT(map_vecs_,CONCAT(CONCAT(,d),primme))
+#  define map_vecs_RXdprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SXqprimme)
-#  define map_vecs_SXqprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define map_vecs_SXqprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RXqprimme)
-#  define map_vecs_RXqprimme CONCAT(map_vecs_,CONCAT(CONCAT(,q),primme))
+#  define map_vecs_RXqprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SHhprimme)
-#  define map_vecs_SHhprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define map_vecs_SHhprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RHhprimme)
-#  define map_vecs_RHhprimme CONCAT(map_vecs_,CONCAT(CONCAT(,s),primme))
+#  define map_vecs_RHhprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SHsprimme)
-#  define map_vecs_SHsprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define map_vecs_SHsprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RHsprimme)
-#  define map_vecs_RHsprimme CONCAT(map_vecs_,CONCAT(CONCAT(,s),primme))
+#  define map_vecs_RHsprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SHdprimme)
-#  define map_vecs_SHdprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define map_vecs_SHdprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RHdprimme)
-#  define map_vecs_RHdprimme CONCAT(map_vecs_,CONCAT(CONCAT(,d),primme))
+#  define map_vecs_RHdprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_SHqprimme)
-#  define map_vecs_SHqprimme CONCAT(map_vecs_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define map_vecs_SHqprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(map_vecs_RHqprimme)
-#  define map_vecs_RHqprimme CONCAT(map_vecs_,CONCAT(CONCAT(,q),primme))
+#  define map_vecs_RHqprimme CONCAT(map_vecs_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int map_vecs_dprimme(dummy_type_dprimme *V, int m, int nV, int ldV, dummy_type_dprimme *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
@@ -365,6 +365,31 @@ int prepare_vecs_sprimme(int basisSize, int i0, int blockSize, dummy_type_sprimm
       primme_context ctx);
 int map_vecs_sprimme(dummy_type_sprimme *V, int m, int nV, int ldV, dummy_type_sprimme *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
+int solve_H_cprimme_normal(dummy_type_cprimme *H, int basisSize, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
+      dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtV, int ldQtV, dummy_type_cprimme *QtQ, int ldQtQ,
+      dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals,
+      dummy_type_sprimme *hSVals, int numConverged, primme_context ctx);
+int solve_H_RR_Sprimmecprimme_normal(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
+      dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, int basisSize, int numConverged,
+      primme_context ctx);
+int solve_H_Harm_Sprimmecprimme_normal(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *QtV, int ldQtV,
+      dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *VtBV, int ldVtBV,
+      dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVals,
+      int basisSize, int numConverged, primme_context ctx);
+int solve_H_Ref_Sprimmecprimme_normal(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hU, int ldhU, dummy_type_sprimme *hSVals, dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtQ,
+      int ldQtQ, dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
+int solve_H_brcast_Sprimmecprimme_normal(int basisSize, dummy_type_cprimme *hU, int ldhU,
+                                  dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals,
+                                  dummy_type_sprimme *hSVals, primme_context ctx);
+int prepare_vecs_cprimme_normal(int basisSize, int i0, int blockSize, dummy_type_cprimme *H,
+      int ldH, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals, dummy_type_cprimme *hVecs, int ldhVecs,
+      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
+      int *flags, int RRForAll, dummy_type_cprimme *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
+int map_vecs_cprimme_normal(dummy_type_cprimme *V, int m, int nV, int ldV, dummy_type_cprimme *W, int n0,
+      int n, int ldW, int *p, primme_context ctx);
 int solve_H_cprimme(dummy_type_cprimme *H, int basisSize, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
       dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtV, int ldQtV, dummy_type_cprimme *QtQ, int ldQtQ,
       dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
@@ -389,6 +414,31 @@ int prepare_vecs_cprimme(int basisSize, int i0, int blockSize, dummy_type_cprimm
       int *flags, int RRForAll, dummy_type_cprimme *hVecsRot, int ldhVecsRot,
       primme_context ctx);
 int map_vecs_cprimme(dummy_type_cprimme *V, int m, int nV, int ldV, dummy_type_cprimme *W, int n0,
+      int n, int ldW, int *p, primme_context ctx);
+int solve_H_zprimme_normal(dummy_type_zprimme *H, int basisSize, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
+      dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtV, int ldQtV, dummy_type_zprimme *QtQ, int ldQtQ,
+      dummy_type_zprimme *hU, int ldhU, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals,
+      dummy_type_dprimme *hSVals, int numConverged, primme_context ctx);
+int solve_H_RR_Sprimmezprimme_normal(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
+      dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, int basisSize, int numConverged,
+      primme_context ctx);
+int solve_H_Harm_Sprimmezprimme_normal(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *QtV, int ldQtV,
+      dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *VtBV, int ldVtBV,
+      dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hU, int ldhU, dummy_type_zprimme *hVals,
+      int basisSize, int numConverged, primme_context ctx);
+int solve_H_Ref_Sprimmezprimme_normal(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_zprimme *hU, int ldhU, dummy_type_dprimme *hSVals, dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtQ,
+      int ldQtQ, dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *hVals, int basisSize,
+      int targetShiftIndex, primme_context ctx);
+int solve_H_brcast_Sprimmezprimme_normal(int basisSize, dummy_type_zprimme *hU, int ldhU,
+                                  dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals,
+                                  dummy_type_dprimme *hSVals, primme_context ctx);
+int prepare_vecs_zprimme_normal(int basisSize, int i0, int blockSize, dummy_type_zprimme *H,
+      int ldH, dummy_type_zprimme *hVals, dummy_type_dprimme *hSVals, dummy_type_zprimme *hVecs, int ldhVecs,
+      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
+      int *flags, int RRForAll, dummy_type_zprimme *hVecsRot, int ldhVecsRot,
+      primme_context ctx);
+int map_vecs_zprimme_normal(dummy_type_zprimme *V, int m, int nV, int ldV, dummy_type_zprimme *W, int n0,
       int n, int ldW, int *p, primme_context ctx);
 int solve_H_zprimme(dummy_type_zprimme *H, int basisSize, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
       dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtV, int ldQtV, dummy_type_zprimme *QtQ, int ldQtQ,

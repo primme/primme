@@ -34,109 +34,109 @@
 #ifndef primme_c_H
 #define primme_c_H
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Sprimme)
-#  define wrapper_Sprimme CONCAT(wrapper_,SCALAR_SUF)
+#  define wrapper_Sprimme CONCAT(wrapper_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Rprimme)
-#  define wrapper_Rprimme CONCAT(wrapper_,REAL_SUF)
+#  define wrapper_Rprimme CONCAT(wrapper_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SHprimme)
-#  define wrapper_SHprimme CONCAT(wrapper_,HOST_SCALAR_SUF)
+#  define wrapper_SHprimme CONCAT(wrapper_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RHprimme)
-#  define wrapper_RHprimme CONCAT(wrapper_,HOST_REAL_SUF)
+#  define wrapper_RHprimme CONCAT(wrapper_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SXprimme)
-#  define wrapper_SXprimme CONCAT(wrapper_,XSCALAR_SUF)
+#  define wrapper_SXprimme CONCAT(wrapper_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RXprimme)
-#  define wrapper_RXprimme CONCAT(wrapper_,XREAL_SUF)
+#  define wrapper_RXprimme CONCAT(wrapper_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Shprimme)
-#  define wrapper_Shprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define wrapper_Shprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Rhprimme)
-#  define wrapper_Rhprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define wrapper_Rhprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Ssprimme)
-#  define wrapper_Ssprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define wrapper_Ssprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Rsprimme)
-#  define wrapper_Rsprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define wrapper_Rsprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Sdprimme)
-#  define wrapper_Sdprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define wrapper_Sdprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Rdprimme)
-#  define wrapper_Rdprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define wrapper_Rdprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Sqprimme)
-#  define wrapper_Sqprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define wrapper_Sqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_Rqprimme)
-#  define wrapper_Rqprimme CONCAT(wrapper_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define wrapper_Rqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SXhprimme)
-#  define wrapper_SXhprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define wrapper_SXhprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RXhprimme)
-#  define wrapper_RXhprimme CONCAT(wrapper_,CONCAT(CONCAT(,h),primme))
+#  define wrapper_RXhprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SXsprimme)
-#  define wrapper_SXsprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define wrapper_SXsprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RXsprimme)
-#  define wrapper_RXsprimme CONCAT(wrapper_,CONCAT(CONCAT(,s),primme))
+#  define wrapper_RXsprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SXdprimme)
-#  define wrapper_SXdprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define wrapper_SXdprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RXdprimme)
-#  define wrapper_RXdprimme CONCAT(wrapper_,CONCAT(CONCAT(,d),primme))
+#  define wrapper_RXdprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SXqprimme)
-#  define wrapper_SXqprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define wrapper_SXqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RXqprimme)
-#  define wrapper_RXqprimme CONCAT(wrapper_,CONCAT(CONCAT(,q),primme))
+#  define wrapper_RXqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SHhprimme)
-#  define wrapper_SHhprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define wrapper_SHhprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RHhprimme)
-#  define wrapper_RHhprimme CONCAT(wrapper_,CONCAT(CONCAT(,s),primme))
+#  define wrapper_RHhprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SHsprimme)
-#  define wrapper_SHsprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define wrapper_SHsprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RHsprimme)
-#  define wrapper_RHsprimme CONCAT(wrapper_,CONCAT(CONCAT(,s),primme))
+#  define wrapper_RHsprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SHdprimme)
-#  define wrapper_SHdprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define wrapper_SHdprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RHdprimme)
-#  define wrapper_RHdprimme CONCAT(wrapper_,CONCAT(CONCAT(,d),primme))
+#  define wrapper_RHdprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_SHqprimme)
-#  define wrapper_SHqprimme CONCAT(wrapper_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define wrapper_SHqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_RHqprimme)
-#  define wrapper_RHqprimme CONCAT(wrapper_,CONCAT(CONCAT(,q),primme))
+#  define wrapper_RHqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int wrapper_dprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(check_input)
-#  define check_input CONCAT(check_input,SCALAR_SUF)
+#  define check_input CONCAT(check_input,WITH_KIND(SCALAR_SUF))
 #endif
 int check_inputdprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 #if !defined(CHECK_TEMPLATE) && !defined(convTestFunAbsolute)
-#  define convTestFunAbsolute CONCAT(convTestFunAbsolute,SCALAR_SUF)
+#  define convTestFunAbsolute CONCAT(convTestFunAbsolute,WITH_KIND(SCALAR_SUF))
 #endif
 void convTestFunAbsolutedprimme(double *eval, void *evec, double *rNorm,
       int *isConv, primme_params *primme, int *ierr);
 #if !defined(CHECK_TEMPLATE) && !defined(default_monitor)
-#  define default_monitor CONCAT(default_monitor,SCALAR_SUF)
+#  define default_monitor CONCAT(default_monitor,WITH_KIND(SCALAR_SUF))
 #endif
 void default_monitordprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
@@ -144,11 +144,11 @@ void default_monitordprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
 #if !defined(CHECK_TEMPLATE) && !defined(check_params_coherence)
-#  define check_params_coherence CONCAT(check_params_coherence,SCALAR_SUF)
+#  define check_params_coherence CONCAT(check_params_coherence,WITH_KIND(SCALAR_SUF))
 #endif
 int check_params_coherencedprimme(primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(coordinated_exit)
-#  define coordinated_exit CONCAT(coordinated_exit,SCALAR_SUF)
+#  define coordinated_exit CONCAT(coordinated_exit,WITH_KIND(SCALAR_SUF))
 #endif
 int coordinated_exitdprimme(int ret, primme_context ctx);
 int wrapper_hprimme(primme_op_datatype input_type, void *evals, void *evecs,
@@ -164,6 +164,19 @@ void default_monitorhprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencehprimme(primme_context ctx);
 int coordinated_exithprimme(int ret, primme_context ctx);
+int wrapper_kprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputkprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutekprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorkprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencekprimme_normal(primme_context ctx);
+int coordinated_exitkprimme_normal(int ret, primme_context ctx);
 int wrapper_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 int check_inputkprimme(
@@ -190,6 +203,19 @@ void default_monitorsprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencesprimme(primme_context ctx);
 int coordinated_exitsprimme(int ret, primme_context ctx);
+int wrapper_cprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputcprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecprimme_normal(primme_context ctx);
+int coordinated_exitcprimme_normal(int ret, primme_context ctx);
 int wrapper_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 int check_inputcprimme(
@@ -203,6 +229,19 @@ void default_monitorcprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencecprimme(primme_context ctx);
 int coordinated_exitcprimme(int ret, primme_context ctx);
+int wrapper_zprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputzprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutezprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorzprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencezprimme_normal(primme_context ctx);
+int coordinated_exitzprimme_normal(int ret, primme_context ctx);
 int wrapper_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 int check_inputzprimme(
@@ -229,6 +268,19 @@ void default_monitormagma_hprimme(void *basisEvals_, int *basisSize, int *basisF
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencemagma_hprimme(primme_context ctx);
 int coordinated_exitmagma_hprimme(int ret, primme_context ctx);
+int wrapper_magma_kprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_kprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_kprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_kprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_kprimme_normal(primme_context ctx);
+int coordinated_exitmagma_kprimme_normal(int ret, primme_context ctx);
 int wrapper_magma_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 int check_inputmagma_kprimme(
@@ -255,6 +307,19 @@ void default_monitormagma_sprimme(void *basisEvals_, int *basisSize, int *basisF
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencemagma_sprimme(primme_context ctx);
 int coordinated_exitmagma_sprimme(int ret, primme_context ctx);
+int wrapper_magma_cprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_cprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_cprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_cprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_cprimme_normal(primme_context ctx);
+int coordinated_exitmagma_cprimme_normal(int ret, primme_context ctx);
 int wrapper_magma_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 int check_inputmagma_cprimme(
@@ -281,6 +346,19 @@ void default_monitormagma_dprimme(void *basisEvals_, int *basisSize, int *basisF
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencemagma_dprimme(primme_context ctx);
 int coordinated_exitmagma_dprimme(int ret, primme_context ctx);
+int wrapper_magma_zprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
+      void *resNorms, primme_context ctx);
+int check_inputmagma_zprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutemagma_zprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitormagma_zprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencemagma_zprimme_normal(primme_context ctx);
+int coordinated_exitmagma_zprimme_normal(int ret, primme_context ctx);
 int wrapper_magma_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
       void *resNorms, primme_context ctx);
 int check_inputmagma_zprimme(

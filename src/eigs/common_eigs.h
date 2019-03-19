@@ -27,21 +27,28 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: primme_interface.h
+ * File: common_eigs.h
  *
- * Purpose - Definitions in primme.c and primme_interface.c used in other modules.
+ * Purpose - Header file containing constants used throughout PRIMME
  *
  ******************************************************************************/
 
-#ifndef PRIMME_INTERFACE_H
-#define PRIMME_INTERFACE_H
+#ifndef COMMON_EIGS_H
+#define COMMON_EIGS_H
 
-void primme_set_defaults(primme_params *params);
-void primme_display_params_prefix(const char* prefix, primme_params primme);
-#ifdef WITH_KIND
-#  define Xprimme WITH_KIND(SCALAR_SUF)
-#else
-#  define Xprimme SCALAR_SUF
-#endif
+/* Values for flags */
 
-#endif
+enum conv_flags {
+   UNCONVERGED,
+   SKIP_UNTIL_RESTART,
+   CONVERGED,
+   PRACTICALLY_CONVERGED
+};
+
+#define EVAL KIND(REAL,SCALAR)
+#define XEVAL KIND(XREAL,XSCALAR)
+#define HEVAL KIND(HREAL,HSCALAR)
+#define EVAL_ABS(X) KIND(fabs,ABS)(X)
+#define EVAL_REAL_PART(X) KIND(,REAL_PART)(X)
+
+#endif /* COMMON_EIGS_H */

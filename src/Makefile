@@ -9,11 +9,13 @@ HEADERS := \
    include/numerical.h \
    include/primme_interface.h \
    include/memman.h \
-   eigs/const.h \
+   eigs/common_eigs.h \
+   eigs/template_normal.h \
    svds/primme_svds_interface.h
 
 SOURCES := \
    eigs/auxiliary_eigs.c \
+   eigs/auxiliary_eigs_normal.c \
    eigs/convergence.c \
    eigs/correction.c \
    eigs/factorize.c \
@@ -52,6 +54,7 @@ AUTOMATED_HEADERS_LINALG := \
    include/auxiliary.h
 AUTOMATED_HEADERS_OTHERS := \
    eigs/auxiliary_eigs.h \
+   eigs/auxiliary_eigs_normal.h \
    eigs/solve_projection.h \
    eigs/convergence.h \
    eigs/inner_solve.h \
@@ -152,6 +155,7 @@ deps: $(INCLUDES) $(SOURCES) $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_OTH
 	@$(PYTHON) tools/dependencies $(INCLUDE) $(SOURCES) -e*.o >> deps
 	@
 	@# Added dependencies on headers from headers not generated automatically
+	@# Exclude includes with // cyclic
 	@$(PYTHON) tools/dependencies $(INCLUDE) $(INCLUDES) -i'include[^\n]+cyclic' >> deps
 
 include deps

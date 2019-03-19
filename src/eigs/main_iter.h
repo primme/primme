@@ -34,186 +34,186 @@
 #ifndef main_iter_H
 #define main_iter_H
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Sprimme)
-#  define main_iter_Sprimme CONCAT(main_iter_,SCALAR_SUF)
+#  define main_iter_Sprimme CONCAT(main_iter_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Rprimme)
-#  define main_iter_Rprimme CONCAT(main_iter_,REAL_SUF)
+#  define main_iter_Rprimme CONCAT(main_iter_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SHprimme)
-#  define main_iter_SHprimme CONCAT(main_iter_,HOST_SCALAR_SUF)
+#  define main_iter_SHprimme CONCAT(main_iter_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RHprimme)
-#  define main_iter_RHprimme CONCAT(main_iter_,HOST_REAL_SUF)
+#  define main_iter_RHprimme CONCAT(main_iter_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SXprimme)
-#  define main_iter_SXprimme CONCAT(main_iter_,XSCALAR_SUF)
+#  define main_iter_SXprimme CONCAT(main_iter_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RXprimme)
-#  define main_iter_RXprimme CONCAT(main_iter_,XREAL_SUF)
+#  define main_iter_RXprimme CONCAT(main_iter_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Shprimme)
-#  define main_iter_Shprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define main_iter_Shprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Rhprimme)
-#  define main_iter_Rhprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define main_iter_Rhprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Ssprimme)
-#  define main_iter_Ssprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define main_iter_Ssprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Rsprimme)
-#  define main_iter_Rsprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define main_iter_Rsprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Sdprimme)
-#  define main_iter_Sdprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define main_iter_Sdprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Rdprimme)
-#  define main_iter_Rdprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define main_iter_Rdprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Sqprimme)
-#  define main_iter_Sqprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define main_iter_Sqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_Rqprimme)
-#  define main_iter_Rqprimme CONCAT(main_iter_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define main_iter_Rqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SXhprimme)
-#  define main_iter_SXhprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define main_iter_SXhprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RXhprimme)
-#  define main_iter_RXhprimme CONCAT(main_iter_,CONCAT(CONCAT(,h),primme))
+#  define main_iter_RXhprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SXsprimme)
-#  define main_iter_SXsprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define main_iter_SXsprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RXsprimme)
-#  define main_iter_RXsprimme CONCAT(main_iter_,CONCAT(CONCAT(,s),primme))
+#  define main_iter_RXsprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SXdprimme)
-#  define main_iter_SXdprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define main_iter_SXdprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RXdprimme)
-#  define main_iter_RXdprimme CONCAT(main_iter_,CONCAT(CONCAT(,d),primme))
+#  define main_iter_RXdprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SXqprimme)
-#  define main_iter_SXqprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define main_iter_SXqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RXqprimme)
-#  define main_iter_RXqprimme CONCAT(main_iter_,CONCAT(CONCAT(,q),primme))
+#  define main_iter_RXqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SHhprimme)
-#  define main_iter_SHhprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define main_iter_SHhprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RHhprimme)
-#  define main_iter_RHhprimme CONCAT(main_iter_,CONCAT(CONCAT(,s),primme))
+#  define main_iter_RHhprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SHsprimme)
-#  define main_iter_SHsprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define main_iter_SHsprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RHsprimme)
-#  define main_iter_RHsprimme CONCAT(main_iter_,CONCAT(CONCAT(,s),primme))
+#  define main_iter_RHsprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SHdprimme)
-#  define main_iter_SHdprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define main_iter_SHdprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RHdprimme)
-#  define main_iter_RHdprimme CONCAT(main_iter_,CONCAT(CONCAT(,d),primme))
+#  define main_iter_RHdprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_SHqprimme)
-#  define main_iter_SHqprimme CONCAT(main_iter_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define main_iter_SHqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(main_iter_RHqprimme)
-#  define main_iter_RHqprimme CONCAT(main_iter_,CONCAT(CONCAT(,q),primme))
+#  define main_iter_RHqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int main_iter_dprimme(dummy_type_dprimme *evals, dummy_type_dprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sprimme)
-#  define prepare_candidates_Sprimme CONCAT(prepare_candidates_,SCALAR_SUF)
+#  define prepare_candidates_Sprimme CONCAT(prepare_candidates_,WITH_KIND(SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rprimme)
-#  define prepare_candidates_Rprimme CONCAT(prepare_candidates_,REAL_SUF)
+#  define prepare_candidates_Rprimme CONCAT(prepare_candidates_,WITH_KIND(REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHprimme)
-#  define prepare_candidates_SHprimme CONCAT(prepare_candidates_,HOST_SCALAR_SUF)
+#  define prepare_candidates_SHprimme CONCAT(prepare_candidates_,WITH_KIND(HOST_SCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHprimme)
-#  define prepare_candidates_RHprimme CONCAT(prepare_candidates_,HOST_REAL_SUF)
+#  define prepare_candidates_RHprimme CONCAT(prepare_candidates_,WITH_KIND(HOST_REAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXprimme)
-#  define prepare_candidates_SXprimme CONCAT(prepare_candidates_,XSCALAR_SUF)
+#  define prepare_candidates_SXprimme CONCAT(prepare_candidates_,WITH_KIND(XSCALAR_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXprimme)
-#  define prepare_candidates_RXprimme CONCAT(prepare_candidates_,XREAL_SUF)
+#  define prepare_candidates_RXprimme CONCAT(prepare_candidates_,WITH_KIND(XREAL_SUF))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Shprimme)
-#  define prepare_candidates_Shprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define prepare_candidates_Shprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rhprimme)
-#  define prepare_candidates_Rhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define prepare_candidates_Rhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Ssprimme)
-#  define prepare_candidates_Ssprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define prepare_candidates_Ssprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rsprimme)
-#  define prepare_candidates_Rsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define prepare_candidates_Rsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sdprimme)
-#  define prepare_candidates_Sdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define prepare_candidates_Sdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rdprimme)
-#  define prepare_candidates_Rdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define prepare_candidates_Rdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sqprimme)
-#  define prepare_candidates_Sqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define prepare_candidates_Sqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rqprimme)
-#  define prepare_candidates_Rqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define prepare_candidates_Rqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXhprimme)
-#  define prepare_candidates_SXhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define prepare_candidates_SXhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXhprimme)
-#  define prepare_candidates_RXhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,h),primme))
+#  define prepare_candidates_RXhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXsprimme)
-#  define prepare_candidates_SXsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define prepare_candidates_SXsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXsprimme)
-#  define prepare_candidates_RXsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,s),primme))
+#  define prepare_candidates_RXsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXdprimme)
-#  define prepare_candidates_SXdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define prepare_candidates_SXdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXdprimme)
-#  define prepare_candidates_RXdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,d),primme))
+#  define prepare_candidates_RXdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXqprimme)
-#  define prepare_candidates_SXqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define prepare_candidates_SXqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXqprimme)
-#  define prepare_candidates_RXqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,q),primme))
+#  define prepare_candidates_RXqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHhprimme)
-#  define prepare_candidates_SHhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define prepare_candidates_SHhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHhprimme)
-#  define prepare_candidates_RHhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,s),primme))
+#  define prepare_candidates_RHhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHsprimme)
-#  define prepare_candidates_SHsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define prepare_candidates_SHsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHsprimme)
-#  define prepare_candidates_RHsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,s),primme))
+#  define prepare_candidates_RHsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHdprimme)
-#  define prepare_candidates_SHdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define prepare_candidates_SHdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHdprimme)
-#  define prepare_candidates_RHdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,d),primme))
+#  define prepare_candidates_RHdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHqprimme)
-#  define prepare_candidates_SHqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define prepare_candidates_SHqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHqprimme)
-#  define prepare_candidates_RHqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(,q),primme))
+#  define prepare_candidates_RHqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int prepare_candidates_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W,
       PRIMME_INT ldW, dummy_type_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
@@ -229,36 +229,36 @@ int prepare_candidates_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(verify_norms)
-#  define verify_norms CONCAT(verify_norms,SCALAR_SUF)
+#  define verify_norms CONCAT(verify_norms,WITH_KIND(SCALAR_SUF))
 #endif
 int verify_normsdprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W, PRIMME_INT ldW,
       dummy_type_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
       int *flags, int *converged, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(switch_from_JDQMR)
-#  define switch_from_JDQMR CONCAT(switch_from_JDQMR,SCALAR_SUF)
+#  define switch_from_JDQMR CONCAT(switch_from_JDQMR,WITH_KIND(SCALAR_SUF))
 #endif
 int switch_from_JDQMRdprimme(void *model_, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(switch_from_GDpk)
-#  define switch_from_GDpk CONCAT(switch_from_GDpk,SCALAR_SUF)
+#  define switch_from_GDpk CONCAT(switch_from_GDpk,WITH_KIND(SCALAR_SUF))
 #endif
 int switch_from_GDpkdprimme(void *model_, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_statistics)
-#  define update_statistics CONCAT(update_statistics,SCALAR_SUF)
+#  define update_statistics CONCAT(update_statistics,WITH_KIND(SCALAR_SUF))
 #endif
 int update_statisticsdprimme(void *model_, primme_params *primme,
    double current_time, int recentConv, int calledAtRestart, int numConverged,
    double currentResNorm, double aNormEst);
 #if !defined(CHECK_TEMPLATE) && !defined(ratio_JDQMR_GDpk)
-#  define ratio_JDQMR_GDpk CONCAT(ratio_JDQMR_GDpk,SCALAR_SUF)
+#  define ratio_JDQMR_GDpk CONCAT(ratio_JDQMR_GDpk,WITH_KIND(SCALAR_SUF))
 #endif
 double ratio_JDQMR_GDpkdprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 #if !defined(CHECK_TEMPLATE) && !defined(update_slowdown)
-#  define update_slowdown CONCAT(update_slowdown,SCALAR_SUF)
+#  define update_slowdown CONCAT(update_slowdown,WITH_KIND(SCALAR_SUF))
 #endif
 void update_slowdowndprimme(void *model_);
 #if !defined(CHECK_TEMPLATE) && !defined(initializeModel)
-#  define initializeModel CONCAT(initializeModel,SCALAR_SUF)
+#  define initializeModel CONCAT(initializeModel,WITH_KIND(SCALAR_SUF))
 #endif
 void initializeModeldprimme(void *model_, primme_params *primme);
 int main_iter_hprimme(dummy_type_sprimme *evals, dummy_type_hprimme *evecs, PRIMME_INT ldevecs,
@@ -288,6 +288,33 @@ double ratio_JDQMR_GDpkhprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownhprimme(void *model_);
 void initializeModelhprimme(void *model_, primme_params *primme);
+int main_iter_kprimme_normal(dummy_type_cprimme *evals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+int prepare_candidates_kprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
+      PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_kprimme *X, dummy_type_kprimme *R, dummy_type_kprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_kprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int verify_normskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W, PRIMME_INT ldW,
+      dummy_type_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *converged, primme_context ctx);
+int switch_from_JDQMRkprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkkprimme_normal(void *model_, primme_context ctx);
+int update_statisticskprimme_normal(void *model_, primme_params *primme,
+   double current_time, int recentConv, int calledAtRestart, int numConverged,
+   double currentResNorm, double aNormEst);
+double ratio_JDQMR_GDpkkprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdownkprimme_normal(void *model_);
+void initializeModelkprimme_normal(void *model_, primme_params *primme);
 int main_iter_kprimme(dummy_type_sprimme *evals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
@@ -342,6 +369,33 @@ double ratio_JDQMR_GDpksprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownsprimme(void *model_);
 void initializeModelsprimme(void *model_, primme_params *primme);
+int main_iter_cprimme_normal(dummy_type_cprimme *evals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+int prepare_candidates_cprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *X, dummy_type_cprimme *R, dummy_type_cprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int verify_normscprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W, PRIMME_INT ldW,
+      dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *converged, primme_context ctx);
+int switch_from_JDQMRcprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkcprimme_normal(void *model_, primme_context ctx);
+int update_statisticscprimme_normal(void *model_, primme_params *primme,
+   double current_time, int recentConv, int calledAtRestart, int numConverged,
+   double currentResNorm, double aNormEst);
+double ratio_JDQMR_GDpkcprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncprimme_normal(void *model_);
+void initializeModelcprimme_normal(void *model_, primme_params *primme);
 int main_iter_cprimme(dummy_type_sprimme *evals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
@@ -369,6 +423,33 @@ double ratio_JDQMR_GDpkcprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdowncprimme(void *model_);
 void initializeModelcprimme(void *model_, primme_params *primme);
+int main_iter_zprimme_normal(dummy_type_zprimme *evals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+int prepare_candidates_zprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
+      PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *X, dummy_type_zprimme *R, dummy_type_zprimme *BX,
+      int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, dummy_type_dprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_dprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_zprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *evals, dummy_type_dprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_zprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_dprimme *basisNorms, int *reset,
+      dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int verify_normszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W, PRIMME_INT ldW,
+      dummy_type_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
+      int *flags, int *converged, primme_context ctx);
+int switch_from_JDQMRzprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkzprimme_normal(void *model_, primme_context ctx);
+int update_statisticszprimme_normal(void *model_, primme_params *primme,
+   double current_time, int recentConv, int calledAtRestart, int numConverged,
+   double currentResNorm, double aNormEst);
+double ratio_JDQMR_GDpkzprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdownzprimme_normal(void *model_);
+void initializeModelzprimme_normal(void *model_, primme_params *primme);
 int main_iter_zprimme(dummy_type_dprimme *evals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
@@ -423,6 +504,33 @@ double ratio_JDQMR_GDpkmagma_hprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_hprimme(void *model_);
 void initializeModelmagma_hprimme(void *model_, primme_params *primme);
+int main_iter_magma_kprimme_normal(dummy_type_cprimme *evals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+int prepare_candidates_magma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_kprimme *X, dummy_type_magma_kprimme *R, dummy_type_magma_kprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_magma_kprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int verify_normsmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W, PRIMME_INT ldW,
+      dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *converged, primme_context ctx);
+int switch_from_JDQMRmagma_kprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkmagma_kprimme_normal(void *model_, primme_context ctx);
+int update_statisticsmagma_kprimme_normal(void *model_, primme_params *primme,
+   double current_time, int recentConv, int calledAtRestart, int numConverged,
+   double currentResNorm, double aNormEst);
+double ratio_JDQMR_GDpkmagma_kprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdownmagma_kprimme_normal(void *model_);
+void initializeModelmagma_kprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_kprimme(dummy_type_sprimme *evals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
@@ -477,6 +585,33 @@ double ratio_JDQMR_GDpkmagma_sprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_sprimme(void *model_);
 void initializeModelmagma_sprimme(void *model_, primme_params *primme);
+int main_iter_magma_cprimme_normal(dummy_type_cprimme *evals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+int prepare_candidates_magma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_cprimme *X, dummy_type_magma_cprimme *R, dummy_type_magma_cprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_magma_cprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int verify_normsmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W, PRIMME_INT ldW,
+      dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *converged, primme_context ctx);
+int switch_from_JDQMRmagma_cprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkmagma_cprimme_normal(void *model_, primme_context ctx);
+int update_statisticsmagma_cprimme_normal(void *model_, primme_params *primme,
+   double current_time, int recentConv, int calledAtRestart, int numConverged,
+   double currentResNorm, double aNormEst);
+double ratio_JDQMR_GDpkmagma_cprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdownmagma_cprimme_normal(void *model_);
+void initializeModelmagma_cprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_cprimme(dummy_type_sprimme *evals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
@@ -531,6 +666,33 @@ double ratio_JDQMR_GDpkmagma_dprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_dprimme(void *model_);
 void initializeModelmagma_dprimme(void *model_, primme_params *primme);
+int main_iter_magma_zprimme_normal(dummy_type_zprimme *evals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+int prepare_candidates_magma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_magma_zprimme *X, dummy_type_magma_zprimme *R, dummy_type_magma_zprimme *BX,
+      int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, dummy_type_dprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_dprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_magma_zprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *evals, dummy_type_dprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_zprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_dprimme *basisNorms, int *reset,
+      dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int verify_normsmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W, PRIMME_INT ldW,
+      dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
+      int *flags, int *converged, primme_context ctx);
+int switch_from_JDQMRmagma_zprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkmagma_zprimme_normal(void *model_, primme_context ctx);
+int update_statisticsmagma_zprimme_normal(void *model_, primme_params *primme,
+   double current_time, int recentConv, int calledAtRestart, int numConverged,
+   double currentResNorm, double aNormEst);
+double ratio_JDQMR_GDpkmagma_zprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdownmagma_zprimme_normal(void *model_);
+void initializeModelmagma_zprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_zprimme(dummy_type_dprimme *evals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
 int prepare_candidates_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,

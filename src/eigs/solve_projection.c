@@ -39,13 +39,15 @@
 
 #include <math.h>
 #include <assert.h>
-#include "const.h"
+#include "common_eigs.h"
 #include "numerical.h"
+#include "template_normal.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "solve_projection.h"
 #include "ortho.h"
 #include "auxiliary_eigs.h"
+#include "auxiliary_eigs_normal.h"
 #endif
 
 #ifdef SUPPORTED_TYPE
@@ -92,7 +94,7 @@
 TEMPLATE_PLEASE
 int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
       SCALAR *R, int ldR, SCALAR *QtV, int ldQtV, SCALAR *QtQ, int ldQtQ,
-      SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs, REAL *hVals,
+      SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs, EVAL *hVals,
       REAL *hSVals, int numConverged, primme_context ctx) {
 
    int i;
@@ -141,13 +143,12 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
    /* -------------------------------------------------------- */
    for (i=0; i<basisSize; i++) {
      ctx.primme->stats.estimateMinEVal =
-         min(ctx.primme->stats.estimateMinEVal, hVals[i]);
+         min(ctx.primme->stats.estimateMinEVal, EVAL_REAL_PART(hVals[i]));
      ctx.primme->stats.estimateMaxEVal =
-         max(ctx.primme->stats.estimateMaxEVal, hVals[i]); 
+         max(ctx.primme->stats.estimateMaxEVal, EVAL_REAL_PART(hVals[i])); 
+     ctx.primme->stats.estimateLargestSVal =
+         max(ctx.primme->stats.estimateLargestSVal, EVAL_ABS(hVals[i])); 
    }
-   ctx.primme->stats.estimateLargestSVal =
-       max(fabs(ctx.primme->stats.estimateMinEVal),
-           fabs(ctx.primme->stats.estimateMaxEVal));
 
    return 0;
 }
@@ -184,16 +185,16 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
  ******************************************************************************/
 
 STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hVecs, int ldhVecs, REAL *hVals, int basisSize, int numConverged,
+      SCALAR *hVecs, int ldhVecs, EVAL *hVals, int basisSize, int numConverged,
       primme_context ctx) {
-
-   primme_params *primme = ctx.primme;
-   int i, j; /* Loop variables    */
-   int index;
-   double targetShift;
 
    /* Some LAPACK implementations don't like zero-size matrices */
    if (basisSize == 0) return 0;
+
+#ifdef USE_HERMITIAN
+   primme_params *primme = ctx.primme;
+   int i, j; /* Loop variables    */
+   int index;
 
    /* ------------------------------------------------------------------- */
    /* Copy the upper triangular portion of H into hvecs.  We need to do   */
@@ -203,17 +204,11 @@ STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
    /* ------------------------------------------------------------------- */
 
    if (primme->target != primme_largest) {
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i <= j; i++) { 
-            hVecs[ldhVecs*j+i] = H[ldH*j+i];
-         }
-      }      
-   }
-   else { /* (primme->target == primme_largest) */
-      for (j=0; j < basisSize; j++) {
-         for (i=0; i <= j; i++) { 
-            hVecs[ldhVecs*j+i] = -H[ldH*j+i];
-         }
+      CHKERR(Num_copy_trimatrix_Sprimme(H, basisSize, basisSize, ldH,
+            0 /* upper part */, 0, hVecs, ldhVecs, 0));
+   } else { /* (primme->target == primme_largest) */
+      for (j = 0; j < basisSize; j++) {
+         for (i = 0; i <= j; i++) hVecs[ldhVecs * j + i] = -H[ldH * j + i];
       }
    }
 
@@ -246,7 +241,7 @@ STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
 
       /* TODO: order properly when numTargetShifts > 1 */
 
-      targetShift = 
+      double targetShift = 
         primme->targetShifts[min(primme->numTargetShifts-1, numConverged)];
 
       if (primme->target == primme_closest_geq) {
@@ -333,6 +328,61 @@ STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
    }
 
    return 0;   
+#else
+
+   /* Copy H into T */
+
+   SCALAR *T;
+   CHKERR(Num_malloc_Sprimme(basisSize * basisSize, &T, ctx));
+   CHKERR(Num_copy_matrix_Sprimme(
+         H, basisSize, basisSize, ldH, T, basisSize, ctx));
+
+   /* Cholesky factorization of VtBV = U'U, and apply T = U'\T/U */
+
+   SCALAR *U=NULL; /* Cholesky factor of VtBV */
+   if (VtBV) {
+      CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &U, ctx));
+      Num_copy_matrix_Sprimme(
+            VtBV, basisSize, basisSize, ldVtBV, U, basisSize, ctx);
+      CHKERR(Num_potrf_Sprimme("U", basisSize, U, basisSize, NULL, ctx));
+      CHKERR(Num_trsm_Sprimme("R", "U", "N", "N", basisSize, basisSize, 1.0,
+            U, basisSize, T, basisSize, ctx));
+      CHKERR(Num_trsm_Sprimme("L", "U", "C", "N", basisSize, basisSize, 1.0,
+            U, basisSize, T, basisSize, ctx));
+   }
+
+
+   /* Compute the Schur factorization of T */
+
+   CHKERR(Num_gees_Sprimme(
+         "V", basisSize, T, basisSize, hVals, hVecs, ldhVecs, ctx));
+   CHKERR(Num_free_Sprimme(T, ctx));
+
+   /* Apply hVecs = U\hVecs */
+
+   if (VtBV) {
+      CHKERR(Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0,
+            U, basisSize, hVecs, ldhVecs, ctx));
+      CHKERR(Num_free_Sprimme(U, ctx));
+   }
+
+   /* Order the eigenpairs following primme.target */
+
+   int i;
+   int *perm;
+   CHKERR(Num_malloc_iprimme(basisSize, &perm, ctx));
+   for (i = 0; i < basisSize; i++) perm[i] = i;
+
+   for (i = 1; i < basisSize; i++) {
+      CHKERR(insertionSort_Sprimme(hVals[i], hVals, 0.0, NULL, 0, NULL, perm, i,
+            numConverged, ctx.primme));
+   }
+   permute_vecs_Sprimme(hVecs, basisSize, basisSize, ldhVecs, perm, ctx);
+
+   CHKERR(Num_free_iprimme(perm, ctx));
+
+   return 0;
+#endif /* USE_HERMITIAN */
 }
 
 /*******************************************************************************
@@ -378,7 +428,7 @@ STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
 
 STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
       SCALAR *R, int ldR, SCALAR *QtQ, int ldQtQ, SCALAR *VtBV, int ldVtBV,
-      SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU, REAL *hVals,
+      SCALAR *hVecs, int ldhVecs, SCALAR *hU, int ldhU, EVAL *hVals,
       int basisSize, int numConverged, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -449,9 +499,8 @@ STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
       ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
-      hVals[i] =
-         REAL_PART(Num_dot_Sprimme(basisSize, &hVecs[ldhVecs*i], 1,
-                  &rwork[basisSize*i], 1, ctx));
+      hVals[i] = KIND(REAL_PART, )(Num_dot_Sprimme(
+            basisSize, &hVecs[ldhVecs * i], 1, &rwork[basisSize * i], 1, ctx));
    }
    CHKERR(Num_free_Sprimme(rwork, ctx));
 
@@ -490,7 +539,7 @@ STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
 
 STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       SCALAR *hU, int ldhU, REAL *hSVals, SCALAR *R, int ldR, SCALAR *QtQ,
-      int ldQtQ, SCALAR *VtBV, int ldVtBV, REAL *hVals, int basisSize,
+      int ldQtQ, SCALAR *VtBV, int ldVtBV, EVAL *hVals, int basisSize,
       int targetShiftIndex, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
@@ -568,8 +617,8 @@ STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
       ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
 
    for (i=0; i<basisSize; i++) {
-      hVals[i] = REAL_PART(Num_dot_Sprimme(basisSize, &hVecs[ldhVecs*i], 1,
-               &rwork[basisSize*i], 1, ctx));
+      hVals[i] = KIND(REAL_PART, )(Num_dot_Sprimme(
+            basisSize, &hVecs[ldhVecs * i], 1, &rwork[basisSize * i], 1, ctx));
    }
    CHKERR(Num_free_Sprimme(rwork, ctx));
 
@@ -605,7 +654,7 @@ STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
  ******************************************************************************/
 
 STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
-                                  SCALAR *hVecs, int ldhVecs, REAL *hVals,
+                                  SCALAR *hVecs, int ldhVecs, EVAL *hVals,
                                   REAL *hSVals, primme_context ctx) {
 
 
@@ -622,7 +671,7 @@ STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
    int n=0;  /* number of SCALAR packed */
    if (hVecs) n += basisSize*basisSize;
    if (hU) n += basisSize*basisSize;
-   if (hVals) n += (basisSize + c-1)/c;
+   if (hVals) n += KIND((basisSize + c - 1) / c, basisSize);
    if (hSVals) n += (basisSize + c-1)/c;
    CHKERR(Num_malloc_Sprimme(n, &rwork, ctx));
    rwork0 = rwork;
@@ -651,12 +700,18 @@ STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
 
    if (hVals) {
       if (ctx.primme->procID == 0) {
-         rwork0[(basisSize + c-1)/c-1] = 0.0; /* When complex, avoid to reduce with an   */
-                                              /* uninitialized value                     */
+#ifdef USE_HERMITIAN
+         //  When complex, avoid to reduce with an uninitialized value
+         rwork0[(basisSize + c-1)/c-1] = 0.0; 
          Num_copy_matrix_Rprimme(hVals, basisSize, 1, basisSize, (REAL*)rwork0,
                basisSize, ctx);
+         rwork0 += (basisSize + c - 1) / c;
+#else
+         Num_copy_matrix_Sprimme(
+               hVals, basisSize, 1, basisSize, rwork0, basisSize, ctx);
+         rwork0 += basisSize;
+#endif
       }
-      rwork0 += (basisSize + c-1)/c;
    }
 
    /* Pack hSVals */
@@ -695,9 +750,15 @@ STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
    /* Unpack hVals */
 
    if (hVals) {
+#ifdef USE_HERMITIAN
       Num_copy_matrix_Rprimme((REAL*)rwork0, basisSize, 1, basisSize, hVals,
             basisSize, ctx);
       rwork0 += (basisSize + c-1)/c;
+#else
+      Num_copy_matrix_Sprimme(
+            rwork0, basisSize, 1, basisSize, hVals, basisSize, ctx);
+      rwork0 += basisSize;
+#endif
    }
 
    /* Unpack hSVals */
@@ -778,7 +839,7 @@ STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
 
 TEMPLATE_PLEASE
 int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
-      int ldH, REAL *hVals, REAL *hSVals, SCALAR *hVecs, int ldhVecs,
+      int ldH, EVAL *hVals, REAL *hSVals, SCALAR *hVecs, int ldhVecs,
       int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
       int *flags, int RRForAll, SCALAR *hVecsRot, int ldhVecsRot,
       primme_context ctx) {
@@ -860,7 +921,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
          /* we don't use the value when it is zero.                           */
 
          double minDiff = sqrt(2.0)*hSVals[basisSize-1]*MACHINE_EPSILON/
-            (aNorm*eps/fabs(hVals[i]-hVals[i-1]));
+            (aNorm*eps/EVAL_ABS(hVals[i]-hVals[i-1]));
          double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
          double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 

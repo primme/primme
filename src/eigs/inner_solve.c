@@ -38,16 +38,20 @@
 #endif
 
 #include "numerical.h"
-#include "const.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "inner_solve.h"
 #include "factorize.h"
 #include "update_W.h"
 #include "auxiliary_eigs.h"
+#include "auxiliary_eigs_normal.h"
 #endif
 
 #ifdef SUPPORTED_TYPE
+
+#ifdef USE_HERMITIAN
 
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
@@ -133,8 +137,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       SCALAR *LprojectorBX, PRIMME_INT ldLprojectorBX, SCALAR *RprojectorQ,
       PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, SCALAR *sol, PRIMME_INT ldsol, HREAL *eval,
-      double *shift, int *touch, double startTime, primme_context ctx) {
+      int sizeRprojectorX, SCALAR *sol, PRIMME_INT ldsol, HEVAL *eval,
+      KIND(double, PRIMME_COMPLEX_DOUBLE) * shift, int *touch, double startTime,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
@@ -552,7 +557,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
            /* --------------------------------------------------------*/
          } /* End of if adaptive JDQMR section                        */
            /* --------------------------------------------------------*/
-         else {
+         else
+         {
             /* Check if the linear system residual norm (tau) is less         */
             /* than eps*aNorm*LTolerance_factor                               */
 
@@ -653,7 +659,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    CHKERR(Num_free_RHprimme(dot_sol, ctx));
    CHKERR(Num_free_iprimme(p, ctx));
    CHKERR(Num_free_iprimme(p0, ctx));
- 
+
    return 0;
 }
    
@@ -907,5 +913,7 @@ STATIC int perm_set_value_on_pos(int *p, int val, int pos, int n) {
 
    return -1;
 }
+
+#endif /* USE_HERMITIAN */
 
 #endif /* SUPPORTED_TYPE */

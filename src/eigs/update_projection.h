@@ -52,76 +52,76 @@
 #  define update_projection_RXprimme CONCAT(update_projection_,XREAL_SUF)
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Shprimme)
-#  define update_projection_Shprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme))
+#  define update_projection_Shprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rhprimme)
-#  define update_projection_Rhprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,h),primme))
+#  define update_projection_Rhprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Ssprimme)
-#  define update_projection_Ssprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme))
+#  define update_projection_Ssprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rsprimme)
-#  define update_projection_Rsprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,s),primme))
+#  define update_projection_Rsprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sdprimme)
-#  define update_projection_Sdprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme))
+#  define update_projection_Sdprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rdprimme)
-#  define update_projection_Rdprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,d),primme))
+#  define update_projection_Rdprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Sqprimme)
-#  define update_projection_Sqprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme))
+#  define update_projection_Sqprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_Rqprimme)
-#  define update_projection_Rqprimme CONCAT(update_projection_,CONCAT(CONCAT(STEM_C,q),primme))
+#  define update_projection_Rqprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXhprimme)
-#  define update_projection_SXhprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(h,k)),primme))
+#  define update_projection_SXhprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXhprimme)
-#  define update_projection_RXhprimme CONCAT(update_projection_,CONCAT(CONCAT(,h),primme))
+#  define update_projection_RXhprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,h),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXsprimme)
-#  define update_projection_SXsprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define update_projection_SXsprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXsprimme)
-#  define update_projection_RXsprimme CONCAT(update_projection_,CONCAT(CONCAT(,s),primme))
+#  define update_projection_RXsprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXdprimme)
-#  define update_projection_SXdprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define update_projection_SXdprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXdprimme)
-#  define update_projection_RXdprimme CONCAT(update_projection_,CONCAT(CONCAT(,d),primme))
+#  define update_projection_RXdprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,d),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SXqprimme)
-#  define update_projection_SXqprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define update_projection_SXqprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RXqprimme)
-#  define update_projection_RXqprimme CONCAT(update_projection_,CONCAT(CONCAT(,q),primme))
+#  define update_projection_RXqprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHhprimme)
-#  define update_projection_SHhprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define update_projection_SHhprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHhprimme)
-#  define update_projection_RHhprimme CONCAT(update_projection_,CONCAT(CONCAT(,s),primme))
+#  define update_projection_RHhprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHsprimme)
-#  define update_projection_SHsprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(s,c)),primme))
+#  define update_projection_SHsprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHsprimme)
-#  define update_projection_RHsprimme CONCAT(update_projection_,CONCAT(CONCAT(,s),primme))
+#  define update_projection_RHsprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHdprimme)
-#  define update_projection_SHdprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(d,z)),primme))
+#  define update_projection_SHdprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHdprimme)
-#  define update_projection_RHdprimme CONCAT(update_projection_,CONCAT(CONCAT(,d),primme))
+#  define update_projection_RHdprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,d),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_SHqprimme)
-#  define update_projection_SHqprimme CONCAT(update_projection_,CONCAT(CONCAT(,USE_ARITH(q,w)),primme))
+#  define update_projection_SHqprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
 #endif
 #if !defined(CHECK_TEMPLATE) && !defined(update_projection_RHqprimme)
-#  define update_projection_RHqprimme CONCAT(update_projection_,CONCAT(CONCAT(,q),primme))
+#  define update_projection_RHqprimme CONCAT(update_projection_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int update_projection_dprimme(dummy_type_dprimme *X, PRIMME_INT ldX, dummy_type_dprimme *Y,
       PRIMME_INT ldY, dummy_type_dprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,

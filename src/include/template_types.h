@@ -92,6 +92,7 @@
 #include THIS_FILE
 #include "template_undef.h"
 #undef USE_DOUBLECOMPLEX
+
 // #define USE_QUAD
 // #include THIS_FILE
 // #include "template_undef.h"
@@ -148,6 +149,7 @@
 #warning compiling double complex magma
 #endif
 #define USE_DOUBLECOMPLEX_MAGMA
+#include "template.h" // cyclic
 // #include THIS_FILE
 // #include "template_undef.h"
 // #undef USE_DOUBLECOMPLEX_MAGMA

@@ -250,33 +250,28 @@
 
 #  define USE_ARITH(Re,Co) ARITH(Re,Co,Re,Co,Re,Co,Re,Co)
 
-#  define USE_SR(Re,Co,T,XH,STEM) \
-      USE(CONCAT(CONCAT(CONCAT(S,XH),T),primme), STR0(CONCAT(CONCAT(STEM,USE_ARITH(Re,Co)),primme))) \
-      USE(CONCAT(CONCAT(CONCAT(R,XH),T),primme), STR0(CONCAT(CONCAT(STEM,Re),primme)))
+#  define USE_SR(Re,Co,T,XH,STEM,POST) \
+      USE(CONCAT(CONCAT(CONCAT(S,XH),T),primme), STR0(CONCAT(CONCAT(CONCAT(STEM,USE_ARITH(Re,Co)),primme),POST))) \
+      USE(CONCAT(CONCAT(CONCAT(R,XH),T),primme), STR0(CONCAT(CONCAT(CONCAT(STEM,Re),primme),POST)))
 
-#  define USE_TYPE(H,K,S,C,D,Z,Q,W,XH,STEM)  \
-      USE_SR(H,K,h,XH,STEM) \
-      USE_SR(S,C,s,XH,STEM) \
-      USE_SR(D,Z,d,XH,STEM) \
-      USE_SR(Q,W,q,XH,STEM)
+#  define USE_TYPE(H,K,S,C,D,Z,Q,W,XH,STEM,POST)  \
+      USE_SR(H,K,h,XH,STEM,POST) \
+      USE_SR(S,C,s,XH,STEM,POST) \
+      USE_SR(D,Z,d,XH,STEM,POST) \
+      USE_SR(Q,W,q,XH,STEM,POST)
 
 #endif /* TEMPLATE_H_PRIVATE */
 
 #ifdef CHECK_TEMPLATE
-#  ifdef USE_DOUBLE
-#     define TEMPLATE_PLEASE \
-         APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") \
-         USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") \
-         USE(RHprimme,"HOST_REAL_SUF") USE(SXprimme,"XSCALAR_SUF") \
-         USE(RXprimme,"XREAL_SUF") USE_TYPE(h,k,s,c,d,z,q,w, , STEM_C) \
-         USE_TYPE(h,k,s,c,d,z,q,w, X, HOST_STEM) \
-         USE_TYPE(s,c,s,c,d,z,q,w, H, HOST_STEM)
+#  define TEMPLATE_PLEASE \
+      APPEND_FUNC(Sprimme,SCALAR_SUF) USE(Sprimme,"SCALAR_SUF") \
+      USE(Rprimme,"REAL_SUF") USE(SHprimme,"HOST_SCALAR_SUF") \
+      USE(RHprimme,"HOST_REAL_SUF") USE(SXprimme,"XSCALAR_SUF") \
+      USE(RXprimme,"XREAL_SUF") USE_TYPE(h,k,s,c,d,z,q,w, , STEM_C, ) \
+      USE_TYPE(h,k,s,c,d,z,q,w, X, HOST_STEM, ) \
+      USE_TYPE(s,c,s,c,d,z,q,w, H, HOST_STEM, )
 
-#     define STATIC APPEND_FUNC(,SCALAR_SUF) USE(,"SCALAR_SUF")
-#  else
-#     define TEMPLATE_PLEASE APPEND_FUNC(Sprimme,SCALAR_SUF)
-#     define STATIC APPEND_FUNC(,SCALAR_SUF)
-#  endif
+#  define STATIC APPEND_FUNC(,SCALAR_SUF) USE(,"SCALAR_SUF")
 
 #else
 #  define TEMPLATE_PLEASE

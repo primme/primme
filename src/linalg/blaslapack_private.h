@@ -81,6 +81,7 @@
 #define XLARNV    LAPACK(ARITH(hlarnv, klarnv, slarnv, clarnv, dlarnv, zlarnv, , ))
 #define XHEEV     LAPACK(ARITH(hsyev , kheev , ssyev , cheev , dsyev , zheev , , ))
 #define XHEEVX    LAPACK(ARITH(hsyevx, kheevx, ssyevx, cheevx, dsyevx, zheevx, , ))
+#define XGEES     LAPACK(ARITH(hgees , kgees , sgees , cgees , dgees , zgees , , ))
 #define XHEGV     LAPACK(ARITH(hsygv , khegv , ssygv , chegv , dsygv , zhegv , , ))
 #define XHEGVX    LAPACK(ARITH(hsygvx, khegvx, ssygvx, chegvx, dsygvx, zhegvx, , ))
 #define XGESVD    LAPACK(ARITH(hgesvd, kgesvd, sgesvd, cgesvd, dgesvd, zgesvd, , ))
@@ -119,6 +120,7 @@ void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCA
 #else
 void XHEEV(STRING jobz, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *w, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
 void XHEEVX(STRING jobz, STRING range, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *vl, REAL *vu, PRIMME_BLASINT *il, PRIMME_BLASINT *iu, REAL *abstol, PRIMME_BLASINT *m,  REAL *w, SCALAR *z, PRIMME_BLASINT *ldz, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *iwork, PRIMME_BLASINT *ifail, PRIMME_BLASINT *info);
+void XGEES(STRING jobvs, STRING uplo, void *, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *sdim, SCALAR *w, SCALAR *vs, PRIMME_BLASINT *ldvs, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *bwork, PRIMME_BLASINT *info);
 void XHEGV(PRIMME_BLASINT *itype, STRING jobz, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, SCALAR *b, PRIMME_BLASINT *ldb, REAL *w, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
 void XHEGVX(PRIMME_BLASINT *itype, STRING jobz, STRING range, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, SCALAR *b, PRIMME_BLASINT *ldb, REAL *vl, REAL *vu, PRIMME_BLASINT *il, PRIMME_BLASINT *iu, REAL *abstol, PRIMME_BLASINT *m,  REAL *w, SCALAR *z, PRIMME_BLASINT *ldz, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *iwork, PRIMME_BLASINT *ifail, PRIMME_BLASINT *info);
 void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *s, SCALAR *u, PRIMME_BLASINT *ldu, SCALAR *vt, PRIMME_BLASINT *ldvt, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);

@@ -59,7 +59,8 @@
 #endif
 
 #include "numerical.h"
-#include "const.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 #include "primme_interface.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
@@ -104,7 +105,7 @@
  *
  ******************************************************************************/
 
-int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
+int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
 #ifdef SUPPORTED_TYPE
@@ -267,11 +268,12 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
        
    /* Cast evals, evecs and resNorms to working precision */
 
-   HREAL *evals0, *resNorms0;
+   HEVAL *evals0;
+   HREAL *resNorms0;
    SCALAR *evecs0;
-   CHKERR(Num_matrix_astype_RHprimme(evals, 1, primme->numEvals, 1, input_type,
-         (void **)&evals0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
-         0 /* not copy */, ctx));
+   CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals, 1,
+         primme->numEvals, 1, input_type, (void **)&evals0, NULL,
+         PRIMME_OP_HREAL, 1 /* alloc */, 0 /* not copy */, ctx));
    PRIMME_INT ldevecs0;
    CHKERR(Num_matrix_astype_Sprimme(evecs, primme->nLocal,
          max(primme->numEvals, primme->initSize), primme->ldevecs, input_type,
@@ -290,9 +292,9 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
 
    /* Copy back evals, evecs and resNorms */
 
-   CHKERR(Num_matrix_astype_RHprimme(evals0, 1, primme->numEvals, 1,
-         PRIMME_OP_HREAL, (void **)&evals, NULL, input_type, -1 /* destroy */,
-         1 /* copy */, ctx));
+   CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals0,
+         1, primme->numEvals, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
+         input_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_matrix_astype_Sprimme(evecs0, primme->nLocal, primme->initSize,
          ldevecs0, PRIMME_OP_SCALAR, (void **)&evecs, &primme->ldevecs,
          input_type, -1 /* destroy */, 1 /* copy */, ctx));

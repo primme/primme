@@ -1268,6 +1268,57 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
+ * Subroutines for dense Schur decomposition
+ * NOTE: only for complex matrices
+ ******************************************************************************/
+ 
+#if defined(USE_COMPLEX) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF))
+
+TEMPLATE_PLEASE
+int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,
+      SCALAR *vs, int ldvs, primme_context ctx) {
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldvs = ldvs;
+   PRIMME_BLASINT lldwork = 0;
+   PRIMME_BLASINT linfo = 0;
+   PRIMME_BLASINT lsdim = 0;
+   REAL *rwork;
+   PRIMME_BLASINT dummyi=0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
+
+   /* Allocate arrays */
+
+   CHKERR(Num_malloc_Rprimme(n, &rwork, ctx));
+
+   /* Call to know the optimal workspace */
+
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XGEES(jobvs, "N", NULL, &ln, a, &llda, &lsdim, w, vs, &lldvs, &lwork0,
+         &lldwork, rwork, &dummyi, &linfo);
+   lldwork = REAL_PART(lwork0);
+
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XGEES(jobvs, "N", NULL, &ln, a, &llda, &lsdim, w, vs, &lldvs, work,
+            &lldwork, rwork, &dummyi, &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
+
+   CHKERR(Num_free_Rprimme(rwork, ctx));
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgees with info %d",
+          (int)linfo);
+   return 0;
+}
+#endif /* defined(USE_COMPLEX) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)) */
+
+/*******************************************************************************
  * Subroutines for dense singular value decomposition
  ******************************************************************************/
  

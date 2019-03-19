@@ -68,7 +68,7 @@
 
 #include <assert.h>
 #include "numerical.h"
-#include "const.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "factorize.h"
