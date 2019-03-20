@@ -507,9 +507,9 @@ int monitorFun_dprimme(dummy_type_dprimme *basisEvals, int basisSize, int *basis
 #if !defined(CHECK_TEMPLATE) && !defined(insertionSort_RHqprimme)
 #  define insertionSort_RHqprimme CONCAT(insertionSort_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
-int insertionSort_dprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals, dummy_type_dprimme newNorm,
-   dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_dprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals,
+      dummy_type_dprimme newNorm, dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_hprimme *Bx,
    dummy_type_hprimme *Ax, dummy_type_hprimme *r, primme_context ctx);
 int Num_update_VWXR_hprimme(dummy_type_hprimme *V, dummy_type_hprimme *W, dummy_type_hprimme *BV, PRIMME_INT mV,
@@ -534,9 +534,9 @@ int monitorFun_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basis
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_hprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_hprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_kprimme_normal(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_kprimme *Bx,
    dummy_type_kprimme *Ax, dummy_type_kprimme *r, primme_context ctx);
 int Num_update_VWXR_kprimme_normal(dummy_type_kprimme *V, dummy_type_kprimme *W, dummy_type_kprimme *BV, PRIMME_INT mV,
@@ -561,9 +561,9 @@ int monitorFun_kprimme_normal(dummy_type_cprimme *basisEvals, int basisSize, int
       dummy_type_cprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_kprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_kprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_kprimme *Bx,
    dummy_type_kprimme *Ax, dummy_type_kprimme *r, primme_context ctx);
 int Num_update_VWXR_kprimme(dummy_type_kprimme *V, dummy_type_kprimme *W, dummy_type_kprimme *BV, PRIMME_INT mV,
@@ -588,9 +588,9 @@ int monitorFun_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basis
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_kprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_kprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_sprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_sprimme *Bx,
    dummy_type_sprimme *Ax, dummy_type_sprimme *r, primme_context ctx);
 int Num_update_VWXR_sprimme(dummy_type_sprimme *V, dummy_type_sprimme *W, dummy_type_sprimme *BV, PRIMME_INT mV,
@@ -615,9 +615,9 @@ int monitorFun_sprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basis
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_sprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_sprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_cprimme_normal(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_cprimme *Bx,
    dummy_type_cprimme *Ax, dummy_type_cprimme *r, primme_context ctx);
 int Num_update_VWXR_cprimme_normal(dummy_type_cprimme *V, dummy_type_cprimme *W, dummy_type_cprimme *BV, PRIMME_INT mV,
@@ -642,9 +642,9 @@ int monitorFun_cprimme_normal(dummy_type_cprimme *basisEvals, int basisSize, int
       dummy_type_cprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_cprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_cprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_cprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_cprimme *Bx,
    dummy_type_cprimme *Ax, dummy_type_cprimme *r, primme_context ctx);
 int Num_update_VWXR_cprimme(dummy_type_cprimme *V, dummy_type_cprimme *W, dummy_type_cprimme *BV, PRIMME_INT mV,
@@ -669,9 +669,9 @@ int monitorFun_cprimme(dummy_type_sprimme *basisEvals, int basisSize, int *basis
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_cprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_cprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_zprimme_normal(PRIMME_INT n, dummy_type_zprimme eval, dummy_type_zprimme *Bx,
    dummy_type_zprimme *Ax, dummy_type_zprimme *r, primme_context ctx);
 int Num_update_VWXR_zprimme_normal(dummy_type_zprimme *V, dummy_type_zprimme *W, dummy_type_zprimme *BV, PRIMME_INT mV,
@@ -696,9 +696,9 @@ int monitorFun_zprimme_normal(dummy_type_zprimme *basisEvals, int basisSize, int
       dummy_type_zprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_zprimme_normal(dummy_type_zprimme newVal, dummy_type_zprimme *evals, dummy_type_dprimme newNorm,
-   dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_zprimme_normal(dummy_type_zprimme newVal, dummy_type_zprimme *evals,
+      dummy_type_dprimme newNorm, dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_zprimme(PRIMME_INT n, dummy_type_zprimme eval, dummy_type_zprimme *Bx,
    dummy_type_zprimme *Ax, dummy_type_zprimme *r, primme_context ctx);
 int Num_update_VWXR_zprimme(dummy_type_zprimme *V, dummy_type_zprimme *W, dummy_type_zprimme *BV, PRIMME_INT mV,
@@ -723,9 +723,9 @@ int monitorFun_zprimme(dummy_type_dprimme *basisEvals, int basisSize, int *basis
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_zprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals, dummy_type_dprimme newNorm,
-   dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_zprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals,
+      dummy_type_dprimme newNorm, dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_hprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_magma_hprimme *Bx,
    dummy_type_magma_hprimme *Ax, dummy_type_magma_hprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_hprimme(dummy_type_magma_hprimme *V, dummy_type_magma_hprimme *W, dummy_type_magma_hprimme *BV, PRIMME_INT mV,
@@ -750,9 +750,9 @@ int monitorFun_magma_hprimme(dummy_type_sprimme *basisEvals, int basisSize, int 
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_hprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_hprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_kprimme_normal(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_kprimme *Bx,
    dummy_type_magma_kprimme *Ax, dummy_type_magma_kprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_kprimme_normal(dummy_type_magma_kprimme *V, dummy_type_magma_kprimme *W, dummy_type_magma_kprimme *BV, PRIMME_INT mV,
@@ -777,9 +777,9 @@ int monitorFun_magma_kprimme_normal(dummy_type_cprimme *basisEvals, int basisSiz
       dummy_type_cprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_kprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_kprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_kprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_kprimme *Bx,
    dummy_type_magma_kprimme *Ax, dummy_type_magma_kprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_kprimme(dummy_type_magma_kprimme *V, dummy_type_magma_kprimme *W, dummy_type_magma_kprimme *BV, PRIMME_INT mV,
@@ -804,9 +804,9 @@ int monitorFun_magma_kprimme(dummy_type_sprimme *basisEvals, int basisSize, int 
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_kprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_kprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_sprimme(PRIMME_INT n, dummy_type_sprimme eval, dummy_type_magma_sprimme *Bx,
    dummy_type_magma_sprimme *Ax, dummy_type_magma_sprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_sprimme(dummy_type_magma_sprimme *V, dummy_type_magma_sprimme *W, dummy_type_magma_sprimme *BV, PRIMME_INT mV,
@@ -831,9 +831,9 @@ int monitorFun_magma_sprimme(dummy_type_sprimme *basisEvals, int basisSize, int 
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_sprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_sprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_cprimme_normal(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_cprimme *Bx,
    dummy_type_magma_cprimme *Ax, dummy_type_magma_cprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_cprimme_normal(dummy_type_magma_cprimme *V, dummy_type_magma_cprimme *W, dummy_type_magma_cprimme *BV, PRIMME_INT mV,
@@ -858,9 +858,9 @@ int monitorFun_magma_cprimme_normal(dummy_type_cprimme *basisEvals, int basisSiz
       dummy_type_cprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_cprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_cprimme_normal(dummy_type_cprimme newVal, dummy_type_cprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_cprimme(PRIMME_INT n, dummy_type_cprimme eval, dummy_type_magma_cprimme *Bx,
    dummy_type_magma_cprimme *Ax, dummy_type_magma_cprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_cprimme(dummy_type_magma_cprimme *V, dummy_type_magma_cprimme *W, dummy_type_magma_cprimme *BV, PRIMME_INT mV,
@@ -885,9 +885,9 @@ int monitorFun_magma_cprimme(dummy_type_sprimme *basisEvals, int basisSize, int 
       dummy_type_sprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
       int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_cprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals, dummy_type_sprimme newNorm,
-   dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_cprimme(dummy_type_sprimme newVal, dummy_type_sprimme *evals,
+      dummy_type_sprimme newNorm, dummy_type_sprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_dprimme(PRIMME_INT n, dummy_type_dprimme eval, dummy_type_magma_dprimme *Bx,
    dummy_type_magma_dprimme *Ax, dummy_type_magma_dprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_dprimme(dummy_type_magma_dprimme *V, dummy_type_magma_dprimme *W, dummy_type_magma_dprimme *BV, PRIMME_INT mV,
@@ -912,9 +912,9 @@ int monitorFun_magma_dprimme(dummy_type_dprimme *basisEvals, int basisSize, int 
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_dprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals, dummy_type_dprimme newNorm,
-   dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_dprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals,
+      dummy_type_dprimme newNorm, dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_zprimme_normal(PRIMME_INT n, dummy_type_zprimme eval, dummy_type_magma_zprimme *Bx,
    dummy_type_magma_zprimme *Ax, dummy_type_magma_zprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_zprimme_normal(dummy_type_magma_zprimme *V, dummy_type_magma_zprimme *W, dummy_type_magma_zprimme *BV, PRIMME_INT mV,
@@ -939,9 +939,9 @@ int monitorFun_magma_zprimme_normal(dummy_type_zprimme *basisEvals, int basisSiz
       dummy_type_zprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_zprimme_normal(dummy_type_zprimme newVal, dummy_type_zprimme *evals, dummy_type_dprimme newNorm,
-   dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_zprimme_normal(dummy_type_zprimme newVal, dummy_type_zprimme *evals,
+      dummy_type_dprimme newNorm, dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 void Num_compute_residual_magma_zprimme(PRIMME_INT n, dummy_type_zprimme eval, dummy_type_magma_zprimme *Bx,
    dummy_type_magma_zprimme *Ax, dummy_type_magma_zprimme *r, primme_context ctx);
 int Num_update_VWXR_magma_zprimme(dummy_type_magma_zprimme *V, dummy_type_magma_zprimme *W, dummy_type_magma_zprimme *BV, PRIMME_INT mV,
@@ -966,7 +966,7 @@ int monitorFun_magma_zprimme(dummy_type_dprimme *basisEvals, int basisSize, int 
       dummy_type_dprimme *lockedEvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
       int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
       primme_event event, double startTime, primme_context ctx);
-int insertionSort_magma_zprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals, dummy_type_dprimme newNorm,
-   dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int numLocked,
-   primme_params *primme);
+int insertionSort_magma_zprimme(dummy_type_dprimme newVal, dummy_type_dprimme *evals,
+      dummy_type_dprimme newNorm, dummy_type_dprimme *resNorms, int newFlag, int *flags, int *perm, int n,
+      int initialShift, primme_params *primme);
 #endif

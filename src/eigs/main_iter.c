@@ -448,9 +448,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       }
 
       if (H)
-        CHKERR(update_projection_Sprimme(
-            V, ldV, W, ldW, H, primme->maxBasisSize, primme->nLocal, 0,
-            basisSize, 1 /*symmetric*/, ctx));
+         CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
+               primme->maxBasisSize, primme->nLocal, 0, basisSize,
+               KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));
 
       if (QtV) {
         CHKERR(update_projection_Sprimme(
@@ -778,9 +778,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* eigenproblem for the new H.                          */
 
             if (H)
-              CHKERR(update_projection_Sprimme(
-                  V, ldV, W, ldW, H, primme->maxBasisSize, primme->nLocal,
-                  basisSize, blockSize, 1 /*symmetric*/, ctx));
+               CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
+                     primme->maxBasisSize, primme->nLocal, basisSize, blockSize,
+                     KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));
 
             if (QtV)
               CHKERR(update_projection_Sprimme(
@@ -1080,9 +1080,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* Extend H by numNew columns and rows and solve the */
             /* eigenproblem for the new H.                       */
 
-            if (H) CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
+            if (H)
+               CHKERR(update_projection_Sprimme(V, ldV, W, ldW, H,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
-                     1/*symmetric*/, ctx));
+                     KIND(1 /*symmetric*/, 0 /*unsymmetric */), ctx));
             if (QtV) CHKERR(update_projection_Sprimme(Q, ldQ, V, ldV, QtV,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
                      0/*unsymmetric*/, ctx));

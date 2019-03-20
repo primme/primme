@@ -1100,15 +1100,10 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* Update H */
 
    if (primme->orth == primme_orth_explicit_I) {
-      HSCALAR *rwork;
-      CHKERR(Num_malloc_SHprimme(failed * (left + numPacked), &rwork, ctx));
-      Num_copy_matrix_columns_SHprimme(&H[left * ldH], left+numPacked,
-            ifailed, failed, ldH, rwork, NULL, left+numPacked, ctx);
-      Num_copy_matrix_SHprimme(rwork, left, failed,
-            left + numPacked, &H[left * ldH], ldH, ctx);
-      Num_copy_matrix_rows_SHprimme(rwork + left, ifailed, failed, failed,
-            left + numPacked, &H[ldH * left + left], NULL, ldH, ctx);
-      CHKERR(Num_free_SHprimme(rwork, ctx));
+      Num_copy_matrix_columns_SHprimme(&H[left * ldH], left + numPacked,
+            ifailed, failed, ldH, &H[left * ldH], NULL, ldH, ctx);
+      Num_copy_matrix_rows_SHprimme(H + left, ifailed, failed, left + failed,
+            ldH, &H[left], NULL, ldH, ctx);
    }
 
    CHKERR(Num_free_iprimme(ifailed, ctx));
