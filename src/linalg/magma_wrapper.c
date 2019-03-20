@@ -381,6 +381,10 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, HSCALAR alpha, SCALAR *a, int lda, HSCALAR *b, int ldb,
       HSCALAR beta, SCALAR *c, int ldc, primme_context ctx) {
 
+   /* Quick exit */
+
+   if (m == 0 || n == 0) return 0;
+
 #if defined(USE_HALFCOMPLEX_MAGMA)
    return PRIMME_FUNCTION_UNAVAILABLE;
 
@@ -390,8 +394,10 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
 
    SCALAR *b_dev; /* copy of b on device */
    CHKERR(Num_malloc_Sprimme(mb*nb, &b_dev, ctx));
-   magma_setmatrix(mb, nb, sizeof(SCALAR), (MAGMA_SCALAR *)b, ldb,
-         (MAGMA_SCALAR *)b_dev, mb, *(magma_queue_t *)ctx.queue);
+   if (mb != 0 && nb != 0) {
+      magma_setmatrix(mb, nb, sizeof(SCALAR), (MAGMA_SCALAR *)b, ldb,
+            (MAGMA_SCALAR *)b_dev, mb, *(magma_queue_t *)ctx.queue);
+   }
    CHKERR(Num_gemm_Sprimme(
          transa, transb, m, n, k, alpha, a, lda, b_dev, mb, beta, c, ldc, ctx));
    CHKERR(Num_free_Sprimme(b_dev, ctx));
@@ -409,6 +415,9 @@ TEMPLATE_PLEASE
 int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
       int k, HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb,
       HSCALAR beta, HSCALAR *c, int ldc, primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return 0;
 
 #if defined(USE_HALFCOMPLEX_MAGMA)
    return PRIMME_FUNCTION_UNAVAILABLE;
@@ -497,7 +506,8 @@ int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    return PRIMME_FUNCTION_UNAVAILABLE;
 
 #else
-  int my = (*transa == 'N' || *transa == 'n') ? m : n;
+   int my = (*transa == 'N' || *transa == 'n') ? m : n;
+   if (my == 0) return 0;
 
    SCALAR *y_dev; /* copy of y on device */
    CHKERR(Num_malloc_Sprimme(my, &y_dev, ctx));
@@ -531,7 +541,8 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    return PRIMME_FUNCTION_UNAVAILABLE;
 
 #else
-  int mx = (*transa == 'N' || *transa == 'n') ? n : m;
+   int mx = (*transa == 'N' || *transa == 'n') ? n : m;
+   if (mx == 0) return 0;
 
    SCALAR *x_dev; /* copy of x on device */
    CHKERR(Num_malloc_Sprimme(mx, &x_dev, ctx));
@@ -552,6 +563,9 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
 TEMPLATE_PLEASE
 int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
    SCALAR *y, int incy, primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
 
 #if defined(USE_HALFCOMPLEX_MAGMA)
    return PRIMME_FUNCTION_UNAVAILABLE;
@@ -579,6 +593,9 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
 TEMPLATE_PLEASE
 HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
 
 #if defined(USE_HALFCOMPLEX_MAGMA)
    float nan2[2] = {NAN, NAN};
@@ -609,6 +626,9 @@ TEMPLATE_PLEASE
 int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       primme_context ctx) {
 
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
+
 #if defined(USE_HALFCOMPLEX_MAGMA)
    return PRIMME_FUNCTION_UNAVAILABLE;
 
@@ -634,6 +654,9 @@ int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
 TEMPLATE_PLEASE
 int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       SCALAR *x, primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (length == 0) return 0;
 
    HSCALAR *x_host;
    CHKERR(Num_malloc_SHprimme(length, &x_host, ctx));
@@ -699,8 +722,8 @@ TEMPLATE_PLEASE
 int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx) {
 
-   cudaStream_t stream =
-         magma_queue_get_cuda_stream(*(magma_queue_t *)ctx.queue);
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return 0;
 
    CHKERR(cudaMemset2D(x, sizeof(SCALAR) * ldx, 0, sizeof(SCALAR) * m, n) !=
           cudaSuccess);
