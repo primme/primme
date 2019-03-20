@@ -250,6 +250,10 @@ TEMPLATE_PLEASE
 int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                       primme_context ctx) {
 
+   /* Quick exit */
+
+   if (x == y && incx == incy) return 0;
+
 #if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    (void)ctx;
    PRIMME_BLASINT ln = n;
