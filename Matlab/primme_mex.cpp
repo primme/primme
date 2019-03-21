@@ -445,6 +445,12 @@ static int tprimme(double *evals, double *evecs, double *resNorms, primme_params
 static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme, CPU) {
       return zprimme(evals, evecs, resNorms, primme);
 }
+static int tprimme(std::complex<float> *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme, CPU) {
+      return cprimme_normal(evals, evecs, resNorms, primme);
+}
+static int tprimme(std::complex<double> *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme, CPU) {
+      return zprimme_normal(evals, evecs, resNorms, primme);
+}
 #ifdef USE_GPUARRAY
 static int tprimme(float *evals, float *evecs, float *resNorms, primme_params *primme, GPU) {
       return magma_sprimme(evals, evecs, resNorms, primme);
@@ -457,6 +463,12 @@ static int tprimme(double *evals, double *evecs, double *resNorms, primme_params
 }
 static int tprimme(double *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme, GPU) {
       return magma_zprimme(evals, evecs, resNorms, primme);
+}
+static int tprimme(std::complex<float> *evals, std::complex<float> *evecs, float *resNorms, primme_params *primme, GPU) {
+      return magma_cprimme_normal(evals, evecs, resNorms, primme);
+}
+static int tprimme(std::complex<double> *evals, std::complex<double> *evecs, double *resNorms, primme_params *primme, GPU) {
+      return magma_zprimme_normal(evals, evecs, resNorms, primme);
 }
 #endif /* GPU_ARRAY */
 
@@ -1083,7 +1095,7 @@ struct matrixMatvecEigs {
    }
 };
 
-template <typename T, typename CPUGPU>
+template <typename T, typename CPUGPU, typename EVAL>
 static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv, 
          struct primme_params *primme, int *ierr)
 {  
@@ -1091,7 +1103,7 @@ static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv
 
    // Create input vectors (avoid copy if possible)
 
-   prhs[1] = create_mxArray<double,int>(eval, eval?1:0, 1, eval?1:0, CPU());
+   prhs[1] = create_mxArray((EVAL *)eval, eval ? 1 : 0, 1, eval ? 1 : 0, CPU());
    prhs[2] = create_mxArray((T *)evec, evec ? primme->nLocal : (PRIMME_INT)0,
          (PRIMME_INT)1, evec ? primme->nLocal : (PRIMME_INT)0, CPUGPU(), true);
    prhs[3] = create_mxArray<double,int>(rNorm, rNorm?1:0, 1, rNorm?1:0, CPU());
@@ -1114,7 +1126,7 @@ static void convTestFunEigs(double *eval, void *evec, double *rNorm, int *isConv
    for (int i=1; i<4; i++) mxDestroyArray(prhs[i]); 
 }
 
-template <typename T>
+template <typename T, typename EVAL>
 static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms, int *numConverged,
       void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
@@ -1126,7 +1138,7 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
    // Create input vectors (avoid copy if possible)
 
    typedef typename Real<T>::type R;
-   prhs[1] = create_mxArray<R, int>((R *)basisEvals, basisSize ? *basisSize : 0,
+   prhs[1] = create_mxArray<R, int>((EVAL *)basisEvals, basisSize ? *basisSize : 0,
          1, basisSize ? *basisSize : 0, CPU(), true);
    prhs[2] = create_mxArray<int, int>(basisFlags, basisFlags ? *basisSize : 0,
          1, basisFlags ? *basisSize : 0, CPU(), true);
@@ -1138,7 +1150,7 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
          numConverged, numConverged ? 1 : 0, 1, 1, CPU(), true);
    int numLocked0 = numLocked && *numLocked > 0 ? *numLocked : 0;
    prhs[6] = create_mxArray<R, int>(
-         (R *)lockedEvals, numLocked0, 1, numLocked0, CPU(), true);
+         (EVAL *)lockedEvals, numLocked0, 1, numLocked0, CPU(), true);
    prhs[7] = create_mxArray<int, int>(
          lockedFlags, numLocked0, 1, numLocked0, CPU(), true);
    prhs[8] = create_mxArray<R, int>(
@@ -1176,7 +1188,7 @@ static void monitorFunEigs(void *basisEvals, int *basisSize, int *basisFlags,
 // Wrapper around xprimme; prototype:
 // [ret, evals, rnorms, evecs] = mexFunction_xprimme(init_guesses, primme)
 
-template<typename T, typename CPUGPU>
+template<typename T, typename CPUGPU, typename EVAL>
 static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
       const mxArray *prhs[])
 {
@@ -1211,18 +1223,19 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Allocate evals, rnorms and evecs; if possible create the mxArray and use
    // its data
 
-   typename Real<T>::type *evals, *rnorms;
+   EVAL *evals;
+   typename Real<T>::type *rnorms;
    T *evecs;
    mxArray *mxEvals, *mxRnorms, *mxEvecs = nullptr;
 
-   if (nlhs <= 0) {
-      evals = new typename Real<T>::type[primme->numEvals];
+   if (nlhs <= 0 || isComplex<EVAL>()) {
+      evals = new EVAL[primme->numEvals];
       mxEvals = NULL;
    }
    else {
-      mxEvals = mxCreateNumericMatrix(primme->numEvals, 1,
-            toClassID<typename Real<T>::type>(), mxREAL);
-      evals = (typename Real<T>::type*)mxGetData(mxEvals);
+      mxEvals = mxCreateNumericMatrix(primme->numEvals, 1, toClassID<EVAL>(),
+            mxREAL);
+      evals = (EVAL *)mxGetData(mxEvals);
    }
 
    if (nlhs <= 1) {
@@ -1282,10 +1295,10 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
                   primme->applyPreconditioner_type);
    }
    if (primme->monitor) {
-      primme->monitorFun = monitorFunEigs<T>;
+      primme->monitorFun = monitorFunEigs<T, EVAL>;
    }
    if (primme->convtest) {
-      primme->convTestFun = convTestFunEigs<T, CPUGPU>;
+      primme->convTestFun = convTestFunEigs<T, CPUGPU, EVAL>;
    }
 
 
@@ -1314,6 +1327,11 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Return evals
 
    if (nlhs >= 2) {
+      if (!mxEvals) {
+         mxEvals = create_mxArray(evals, (int)primme->initSize, 1,
+               (int)primme->initSize, CPUGPU());
+         delete [] evals;
+      }
       mxSetM(mxEvals, primme->initSize);
       plhs[1] = mxEvals;
    }
@@ -2106,18 +2124,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    #define PRIMME_TRY_CALL(F) \
       if (strcmp(#F, function_name) == 0) called=true,mexFunction_ ## F (nlhs, plhs, nrhs-1, &prhs[1]);
-   #define PRIMME_TRY_CALL_T(F, FT, T, G) \
-      if (strcmp(#F, function_name) == 0) called=true,mexFunction_ ## FT < T , G > (nlhs, plhs, nrhs-1, &prhs[1]);
+   #define PRIMME_TRY_CALL_T(F, FT, ...) \
+      if (strcmp(#F, function_name) == 0) called=true,mexFunction_ ## FT < __VA_ARGS__ > (nlhs, plhs, nrhs-1, &prhs[1]);
 
-   PRIMME_TRY_CALL_T(sprimme, xprimme, float, CPU);
-   PRIMME_TRY_CALL_T(cprimme, xprimme, std::complex<float>, CPU);
-   PRIMME_TRY_CALL_T(dprimme, xprimme, double, CPU);
-   PRIMME_TRY_CALL_T(zprimme, xprimme, std::complex<double>, CPU);
+   PRIMME_TRY_CALL_T(sprimme, xprimme, float, CPU, float);
+   PRIMME_TRY_CALL_T(cprimme, xprimme, std::complex<float>, CPU, float);
+   PRIMME_TRY_CALL_T(dprimme, xprimme, double, CPU, double);
+   PRIMME_TRY_CALL_T(zprimme, xprimme, std::complex<double>, CPU, double);
+   PRIMME_TRY_CALL_T(cprimme_normal, xprimme, std::complex<float>, CPU,  std::complex<float>);
+   PRIMME_TRY_CALL_T(zprimme_normal, xprimme, std::complex<double>, CPU, std::complex<double>);
 #ifdef USE_GPUARRAY
-   PRIMME_TRY_CALL_T(magma_sprimme, xprimme, float, GPU);
-   PRIMME_TRY_CALL_T(magma_cprimme, xprimme, std::complex<float>, GPU);
-   PRIMME_TRY_CALL_T(magma_dprimme, xprimme, double, GPU);
-   PRIMME_TRY_CALL_T(magma_zprimme, xprimme, std::complex<double>, GPU);
+   PRIMME_TRY_CALL_T(magma_sprimme, xprimme, float, GPU, float);
+   PRIMME_TRY_CALL_T(magma_cprimme, xprimme, std::complex<float>, GPU, float);
+   PRIMME_TRY_CALL_T(magma_dprimme, xprimme, double, GPU, double);
+   PRIMME_TRY_CALL_T(magma_zprimme, xprimme, std::complex<double>, GPU, double);
+   PRIMME_TRY_CALL_T(magma_cprimme_normal, xprimme, std::complex<float>, GPU,  std::complex<float>);
+   PRIMME_TRY_CALL_T(magma_zprimme_normal, xprimme, std::complex<double>, GPU, std::complex<double>);
 #endif
    PRIMME_TRY_CALL(primme_initialize);
    PRIMME_TRY_CALL(primme_set_method);

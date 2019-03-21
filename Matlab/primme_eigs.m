@@ -46,6 +46,7 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.isdouble: whether the class of in/out vectors in AFUN are
 %          double or single {false}
 %     OPTS.isgpu: whether the class of in/out vectors in AFUN are gpuArray {false}
+%     OPTS.ishermitian: whether A is Hermitian; otherwise it is considered normal {true}
 %     OPTS.targetShifts: shifts for interior eigenvalues (see TARGET) {[]}
 %     OPTS.v0: any number of initial guesses to the eigenvectors {[]}
 %     OPTS.orthoConst: external orthogonalization constraints {[]}
@@ -205,12 +206,10 @@ function [varargout] = primme_eigs(varargin)
    Acomplex = true;
    Adouble = true;
    Agpu = false;
+   Aherm = true;
    if isnumeric(A)
       % Check matrix is Hermitian and get matrix dimension
       [m, n] = size(A);
-      if m < 1e4 && ~ishermitian(A)
-         error('Input matrix must be real symmetric or complex Hermitian');
-      end
       opts.n = n;
       opts.matrixMatvec = @(x)A*x;
 
@@ -363,6 +362,16 @@ function [varargout] = primme_eigs(varargin)
       Adouble = opts.isdouble;
       opts = rmfield(opts, 'isdouble');
    end
+
+   % Process 'ishermitian' in opts
+   if isfield(opts, 'ishermitian')
+      Aherm = opts.ishermitian;
+      opts = rmfield(opts, 'ishermitian');
+   end
+   if m < 1e4 && isnumeric(A) && Aherm && ~ishermitian(A)
+      error('Input matrix must be real symmetric or complex Hermitian, or set OPTS.ishermitian to false');
+   end
+
    % Process 'isgpu' in opts
    if isfield(opts, 'isgpu')
       Agpu = opts.isgpu;
@@ -545,6 +554,9 @@ function [varargout] = primme_eigs(varargin)
          type = ['magma_' type];
       end
       xprimme = [type 'primme'];
+      if ~Aherm
+         xprimme = [xprimme '_normal'];
+      end
 
       % Call xprimme
       [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
@@ -665,11 +677,13 @@ function [varargout] = primme_eigs(varargin)
          end
       end
       if showHist && size(histline,1) > 0
-         template{1} = '%7d\t%-5.g\t%7d\t%-5.1g\t%-5.1e\n';
-         template{2} = '%7d\t%-5.g\t%7d\t%7d\t%-5.4g\t%5.1e\n';
-         template{3} = '%7d\t%-5.g\t%7d\t%7d\t%-5.4g\t%5.1e\t%5.1e\n';
+         template{1} = '%7d\t%-5.g\t%7d\t%s\t%-5.1e\n';
+         template{2} = '%7d\t%-5.g\t%7d\t%7d\t%s\t%5.1e\n';
+         template{3} = '%7d\t%-5.g\t%7d\t%7d\t%s\t%5.1e\t%5.1e\n';
          for i=1:size(histline,1)
             a = num2cell(histline(i,:));
+            if dispLevel == 1, ieval = 4; else ieval = 5; end
+            a{ieval} = num2str(a{ieval}, '%-5.1e');
             fprintf(template{dispLevel}, a{:});
          end
       end
