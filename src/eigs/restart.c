@@ -1244,7 +1244,7 @@ int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,
             Bevecs?&Bevecs[ldBevecs*BevecsSize]:NULL, nBX2b, nBX2e, ldBevecs,
             rnorms, nrb, nre,
             VtBV?&VtBV[evecsSize*ldVtBV+evecsSize]:NULL, nVtBV, ldVtBV,
-            primme->orth == primme_orth_explicit_I?H:NULL, nH, ldH,
+            KIND(primme->orth == primme_orth_explicit_I,1)?H:NULL, nH, ldH,
             NULL, 0, 0,
             ctx));
 
@@ -1600,16 +1600,15 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
    int orderedIndexOfPreviousVecs;  /* index of prev. vecs after applying hVecsPerm */
    double aNorm = primme?max(primme->aNorm, primme->stats.estimateLargestSVal):0.0;
 
+#ifdef USE_HERMITIAN
    if (primme->orth == primme_orth_implicit_I) {
-   /* ---------------------------------------------------------------------- */
-   /* If coefficient vectors from the previous iteration were retained, then */
-   /* insert the computed overlap matrix into the restarted H                */
-   /* ---------------------------------------------------------------------- */
 
-      CHKERR(compute_submatrix_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs],
-               numPrevRetained, ldhVecs, H,
-               basisSize, ldH, &H[ldH*indexOfPreviousVecs+indexOfPreviousVecs],
-               ldH, ctx));
+      // If coefficient vectors from the previous iteration were retained, then
+      // insert the computed overlap matrix into the restarted H
+
+      CHKERR(compute_submatrix_SHprimme(&hVecs[ldhVecs * indexOfPreviousVecs],
+            numPrevRetained, ldhVecs, H, basisSize, ldH, 1 /* Hermitian */,
+            &H[ldH * indexOfPreviousVecs + indexOfPreviousVecs], ldH, ctx));
 
       /* ----------------------------------------------------------------- */
       /* Y = V*hVecs([0:indexOfPreviousVecs-1 \                            */
@@ -1619,24 +1618,22 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
       /* part of H and VtBV.                                               */
       /* ----------------------------------------------------------------- */
 
-      for (j=0; j < indexOfPreviousVecs; j++) {
-         for (i=0; i < j; i++) {
-            H[ldH*j+i] = 0.0;
-         }
-         H[ldH*j+j] = hVals[j];
+      CHKERR(Num_zero_matrix_Sprimme(
+            H, restartSize, indexOfPreviousVecs, ldH, ctx));
+      CHKERR(Num_zero_matrix_Sprimme(&H[ldH * indexOfPreviousVecs],
+            indexOfPreviousVecs, numPrevRetained, ldH, ctx));
+      CHKERR(Num_zero_matrix_Sprimme(
+            &H[ldH * (indexOfPreviousVecs + numPrevRetained)], restartSize,
+            restartSize - indexOfPreviousVecs - numPrevRetained, ldH, ctx));
+
+      for (j = 0; j < indexOfPreviousVecs; j++) {
+         H[ldH * j + j] = hVals[j];
       }
-      for (j=indexOfPreviousVecs; j<indexOfPreviousVecs+numPrevRetained; j++) {
-         for (i=0; i < indexOfPreviousVecs; i++) {
-            H[ldH*j+i] = 0.0;
-         }
-      }
-      for (j=indexOfPreviousVecs+numPrevRetained; j < restartSize; j++) {
-         for (i=0; i < j; i++) {
-            H[ldH*j+i] = 0.0;
-         }
-         H[ldH*j+j] = hVals[j];
+      for (j = indexOfPreviousVecs + numPrevRetained; j < restartSize; j++) {
+         H[ldH * j + j] = hVals[j];
       }
    }
+#endif /* USE_HERMITIAN */
 
    /* ---------------------------------------------------------------------- */
    /* Solve the whole matrix when the targetShift has to change              */ 
@@ -1829,10 +1826,12 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* Replace H by hVecs' * H * hVecs */
    /* ------------------------------- */
 
+#ifdef USE_HERMITIAN
    if (H && primme->orth == primme_orth_implicit_I) {
-      CHKERR(compute_submatrix_SHprimme(
-            hVecs, restartSize, ldhVecs, H, basisSize, ldH, H, ldH, ctx));
+      CHKERR(compute_submatrix_SHprimme(hVecs, restartSize, ldhVecs, H,
+            basisSize, ldH, 1 /* Hermitian */, H, ldH, ctx));
    }
+#endif /* USE_HERMITIAN */
 
    /* -------------------------------------- */
    /* Quick exit if the target has changed   */
@@ -2241,10 +2240,12 @@ STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    /* Replace H by hVecs' * H * hVecs */
    /* ------------------------------- */
 
+#ifdef USE_HERMITIAN
    if (primme->orth == primme_orth_implicit_I) {
-      CHKERR(compute_submatrix_SHprimme(
-               hVecs, restartSize, ldhVecs, H, basisSize, ldH, H, ldH, ctx));
+      CHKERR(compute_submatrix_SHprimme(hVecs, restartSize, ldhVecs, H,
+            basisSize, ldH, 1 /* Hermitian */, H, ldH, ctx));
    }
+#endif /* USE_HERMITIAN */
 
    /* ------------------------------- */
    /* Update targetShiftIndex         */

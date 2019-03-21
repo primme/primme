@@ -413,7 +413,8 @@ int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
 
 /*******************************************************************************
  * Subroutine compute_submatrix - This subroutine computes the nX x nX submatrix
- *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix.
+ *    R = X'*H*X, where H stores the upper triangular part of a symmetric matrix,
+ *    or H is a full non-Hermitian matrix.
  *    
  * Input parameters
  * ----------------
@@ -427,9 +428,7 @@ int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
  *
  * ldH      Leading dimension of H
  *
- * rwork    Work array.  Must be of size nH x nX
- *
- * lrwork   Length of the work array
+ * isherm   whether H is Hermitian
  *
  * ldR      Leading dimension of R
  *
@@ -442,16 +441,26 @@ int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
 #if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 TEMPLATE_PLEASE
 int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
-                              int ldH, SCALAR *R, int ldR, primme_context ctx) {
+      int ldH, int isherm, SCALAR *R, int ldR, primme_context ctx) {
 
-  if (nH == 0 || nX == 0)
-    return 0;
+   if (nH == 0 || nX == 0) return 0;
 
    SCALAR *rwork;
    CHKERR(Num_malloc_Sprimme((size_t)nH * (size_t)nX, &rwork, ctx));
+
+   /* rwork = H * X */
+
    Num_zero_matrix_Sprimme(rwork, nH, nX, nH, ctx);
-   CHKERR(Num_hemm_Sprimme(
-         "L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH));
+   if (isherm) {
+      CHKERR(Num_hemm_Sprimme(
+            "L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH));
+   } else {
+      CHKERR(Num_gemm_Sprimme(
+            "N", "N", nH, nX, nH, 1.0, H, ldH, X, ldX, 0.0, rwork, nH, ctx));
+   }
+
+   /* R = X' * rwork */
+
    Num_zero_matrix_Sprimme(R, nX, nX, ldR, ctx);
    CHKERR(Num_gemm_Sprimme(
          "C", "N", nX, nX, nH, 1.0, X, ldX, rwork, nH, 0.0, R, ldR, ctx));

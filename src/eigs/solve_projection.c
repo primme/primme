@@ -956,8 +956,10 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
             hVecsRot[ldhVecsRot*k+k] = 1.0;
  
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
-         CHKERR(compute_submatrix_Sprimme(&hVecs[ldhVecs*j], aBasisSize,
-               ldhVecs, H, basisSize, ldH, aH, aBasisSize, ctx));
+         CHKERR(compute_submatrix_Sprimme(&hVecs[ldhVecs * j], aBasisSize,
+               ldhVecs, H, basisSize, ldH,
+               KIND(1 /* Hermitian */, 0 /* non-Hermitian */), aH, aBasisSize,
+               ctx));
 
          /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
          CHKERR(solve_H_RR_Sprimme(aH, aBasisSize, NULL, 0, ahVecs, ldhVecsRot,

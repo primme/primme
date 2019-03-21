@@ -339,7 +339,10 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
           Olsen_preconditioner_block(r, ldW, x, ldV, Bx, ldBV, blockSize, ctx);
       }
       else {
-         if ( primme->correctionParams.projectors.RightX ) {   
+         if (primme->correctionParams.projectors.RightX &&
+               ((primme->correctionParams.precondition &&
+                      primme->applyPreconditioner) ||
+                     Bx != x)) {
 #ifdef USE_HERMITIAN
             /*Compute a cheap approximation to OLSENS, where (x'Kinvr)/xKinvx */
             /*is approximated by e: Kinvr-e*KinvBx=Kinv(r-e*x)=Kinv(I-ct*x*x')r*/
@@ -350,7 +353,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                      &Bx[ldBV * blockIndex], 1, &r[ldW * blockIndex], 1, ctx);
             }
 #else
-            return PRIMME_FUNCTION_UNAVAILABLE;
+            CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
 #endif
          }
 
@@ -443,7 +446,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(Num_free_Sprimme(KinvBx, ctx));
       CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(blockRitzVals, ctx));
 #else
-   return  PRIMME_FUNCTION_UNAVAILABLE;
+      CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
 #endif /* USE_HERMITIAN */
    } /* JDqmr variants */
 
