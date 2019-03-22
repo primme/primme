@@ -339,10 +339,17 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
           Olsen_preconditioner_block(r, ldW, x, ldV, Bx, ldBV, blockSize, ctx);
       }
       else {
+         // In general the Olsen's approximation is not useful without
+         // preconditioning. However expanding the basis with r - approxOlsen*x
+         // helps in checking the practical convergence. Check main_iter for
+         // more details.
+
          if (primme->correctionParams.projectors.RightX &&
                ((primme->correctionParams.precondition &&
                       primme->applyPreconditioner) ||
-                     Bx != x)) {
+                     Bx != x ||
+                     (primme->locking &&
+                           primme->orth == primme_orth_implicit_I))) {
 #ifdef USE_HERMITIAN
             /*Compute a cheap approximation to OLSENS, where (x'Kinvr)/xKinvx */
             /*is approximated by e: Kinvr-e*KinvBx=Kinv(r-e*x)=Kinv(I-ct*x*x')r*/

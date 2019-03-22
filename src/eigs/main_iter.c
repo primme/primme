@@ -710,21 +710,42 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                break;
             }
 
-            /* If locking with GD and no preconditioning is running, check    */
-            /* practically convergence here. A pair in the block is marked as */
-            /* practically converged if this is sqrt(|r|^2 - |Rlocked|^2)     */
-            /* small enough to pass the convergence criterion.                */
+            // If locking with GD and no preconditioning is running, check
+            // practically convergence here. A pair in the block is marked as
+            // practically converged if the next expression is small enough to
+            // pass the convergence criterion:
+            //    sqrt(|r|^2 - |Rlocked|^2*(1 + |Xx|^2)),
+            // where Rlocked is V_locked'*r and Xx is V_locked'*x.
+            // The term Xx is not totally clear. It appears in the perturbation
+            // analysis of the eigenproblem with V_locked and x. And it is
+            // necessary to pass the next test for complex:
+            // tests/testi-100-LOBPCG_OrthoBasis_Window-100-primme_closest_abs-primme_proj_refined.F
 
             if (primme->locking && !primme->massMatrixMatvec &&
                   !primme->correctionParams.precondition &&
                   primme->correctionParams.maxInnerIterations == 0) {
                for (i = 0; i < blockSize0 && numConverged < primme->numEvals;
                      i++) {
+                  HREAL normXx = 0.0;
+                  if (primme->orth == primme_orth_explicit_I) {
+                     HSCALAR *Xx = NULL;
+                     CHKERR(Num_malloc_SHprimme(numLocked, &Xx, ctx));
+                     CHKERR(Num_zero_matrix_SHprimme(
+                           Xx, numLocked, 1, numLocked, ctx));
+                     CHKERR(Num_gemv_SHprimme("N", numLocked, basisSize, 1.0,
+                           &VtBV[ldVtBV * numLocked], ldVtBV,
+                           &hVecs[iev[i] * basisSize], 1, 0.0, Xx, 1, ctx));
+                     normXx =
+                           ABS(Num_dot_SHprimme(numLocked, Xx, 1, Xx, 1, ctx));
+                     CHKERR(Num_free_SHprimme(Xx, ctx));
+                  }
                   HREAL normRlockedi =
                         ABS(Num_dot_SHprimme(ldRlocked, &Rlocked[ldRlocked * i],
                               1, &Rlocked[ldRlocked * i], 1, ctx));
-                  HREAL newBlockNorm = sqrt(
-                        max(blockNorms[i] * blockNorms[i] - normRlockedi, 0.0));
+                  HREAL newBlockNorm =
+                        sqrt(max(blockNorms[i] * blockNorms[i] -
+                                       normRlockedi * (1. + normXx),
+                              0.0));
                   CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
                         ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
                         evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
