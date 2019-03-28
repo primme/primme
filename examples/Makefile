@@ -12,7 +12,7 @@ LIBS := ../lib/libprimme.a $(LIBS)
 
 EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_svds_dseq ex_svds_zseq
 EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx
-EXAMPLES_F77 = ex_eigs_dseqf77 ex_eigs_zseqf77 ex_svds_dseqf77 ex_svds_zseqf77
+EXAMPLES_F = ex_eigs_dseqf77 ex_eigs_zseqf77 ex_svds_dseqf77 ex_svds_zseqf77 ex_eigs_dseqf90 ex_svds_dseqf90
 
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
 
@@ -38,7 +38,7 @@ $(EXAMPLES_C): %: %.o
 $(EXAMPLES_CXX): %: %.o
 	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
-$(EXAMPLES_F77): % : %.o
+$(EXAMPLES_F): % : %.o
 	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 .c.o:
@@ -49,6 +49,9 @@ $(EXAMPLES_F77): % : %.o
 
 .f.o .F.o:
 	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+
+%.o: %.f90
+	$(FC) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
 all: examples
 
