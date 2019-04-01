@@ -792,6 +792,62 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
 #endif
 }
 
+/*******************************************************************************
+ * Subroutine Num_compute_gramm_ddh - Computes the upper part of the Gramm matrix
+ *    X' * Y if the result is Hermitian, or the full matrix otherwise, and
+ *    do H = X' * Y + alpha * H.
+ *
+ * Input/Output parameters
+ * -----------------------
+ * X, Y     The input matrices
+ *
+ * m, n     Number of rows and columns of X and Y
+ *
+ * ldX,ldY  Leading dimension of X and Y
+ *
+ * H        Output matrix storing alpha * H + X' * Y
+ *
+ * ldH      Leading dimension of H
+ *
+ * isherm   Whether X' * Y is Hermitian
+ * 
+ * Return
+ * ------
+ * error code
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
+      SCALAR *Y, PRIMME_INT ldY, HSCALAR alpha, HSCALAR *H, int ldH, int isherm,
+      primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return 0;
+
+   if (!isherm) {
+      return Num_gemm_ddh_Sprimme(
+            "C", "N", n, n, m, 1.0, X, ldX, Y, ldY, alpha, H, ldH, ctx);
+   }
+
+   SCALAR *H_dev; /* copy of H on device */
+   CHKERR(Num_malloc_Sprimme(n * n, &H_dev, ctx));
+   if (ABS(alpha) == 0.0) {
+      CHKERR(Num_zero_matrix_Sprimme(H_dev, n, n, n, ctx));
+   } else {
+      magma_setmatrix(n, n, sizeof(SCALAR), (MAGMA_SCALAR *)H, ldH,
+            (MAGMA_SCALAR *)H_dev, ldH, *(magma_queue_t *)ctx.queue);
+   }
+   CHKERR(Num_compute_gramm_Sprimme(
+         X, m, n, ldX, Y, ldY, alpha, H_dev, n, 1 /* symmetric */, 4, ctx));
+   magma_getmatrix(n, n, sizeof(SCALAR), (MAGMA_SCALAR *)H_dev, n,
+         (MAGMA_SCALAR *)H, ldH, *(magma_queue_t *)ctx.queue);
+   CHKERR(Num_free_Sprimme(H_dev, ctx));
+
+   return 0;
+}
+
+
 #undef USE_CUBLAS
 
 #endif /* USE_MAGMA */

@@ -125,97 +125,10 @@
 #endif
 int main_iter_dprimme(dummy_type_dprimme *evals, dummy_type_dprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sprimme)
-#  define prepare_candidates_Sprimme CONCAT(prepare_candidates_,WITH_KIND(SCALAR_SUF))
+#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates)
+#  define prepare_candidates CONCAT(prepare_candidates,WITH_KIND(SCALAR_SUF))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rprimme)
-#  define prepare_candidates_Rprimme CONCAT(prepare_candidates_,WITH_KIND(REAL_SUF))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHprimme)
-#  define prepare_candidates_SHprimme CONCAT(prepare_candidates_,WITH_KIND(HOST_SCALAR_SUF))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHprimme)
-#  define prepare_candidates_RHprimme CONCAT(prepare_candidates_,WITH_KIND(HOST_REAL_SUF))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXprimme)
-#  define prepare_candidates_SXprimme CONCAT(prepare_candidates_,WITH_KIND(XSCALAR_SUF))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXprimme)
-#  define prepare_candidates_RXprimme CONCAT(prepare_candidates_,WITH_KIND(XREAL_SUF))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Shprimme)
-#  define prepare_candidates_Shprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rhprimme)
-#  define prepare_candidates_Rhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Ssprimme)
-#  define prepare_candidates_Ssprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rsprimme)
-#  define prepare_candidates_Rsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sdprimme)
-#  define prepare_candidates_Sdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rdprimme)
-#  define prepare_candidates_Rdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Sqprimme)
-#  define prepare_candidates_Sqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_Rqprimme)
-#  define prepare_candidates_Rqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXhprimme)
-#  define prepare_candidates_SXhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXhprimme)
-#  define prepare_candidates_RXhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXsprimme)
-#  define prepare_candidates_SXsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXsprimme)
-#  define prepare_candidates_RXsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXdprimme)
-#  define prepare_candidates_SXdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXdprimme)
-#  define prepare_candidates_RXdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SXqprimme)
-#  define prepare_candidates_SXqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RXqprimme)
-#  define prepare_candidates_RXqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHhprimme)
-#  define prepare_candidates_SHhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHhprimme)
-#  define prepare_candidates_RHhprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHsprimme)
-#  define prepare_candidates_SHsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHsprimme)
-#  define prepare_candidates_RHsprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHdprimme)
-#  define prepare_candidates_SHdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHdprimme)
-#  define prepare_candidates_RHdprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_SHqprimme)
-#  define prepare_candidates_SHqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates_RHqprimme)
-#  define prepare_candidates_RHqprimme CONCAT(prepare_candidates_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
-#endif
-int prepare_candidates_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W,
+int prepare_candidatesdprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W,
       PRIMME_INT ldW, dummy_type_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_dprimme *X, dummy_type_dprimme *R, dummy_type_dprimme *BX,
       int computeXR, dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals,
@@ -263,7 +176,7 @@ void update_slowdowndprimme(void *model_);
 void initializeModeldprimme(void *model_, primme_params *primme);
 int main_iter_hprimme(dummy_type_sprimme *evals, dummy_type_hprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_hprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_hprimme *W,
+int prepare_candidateshprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_hprimme *W,
       PRIMME_INT ldW, dummy_type_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_hprimme *X, dummy_type_hprimme *R, dummy_type_hprimme *BX,
       int computeXR, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -290,7 +203,7 @@ void update_slowdownhprimme(void *model_);
 void initializeModelhprimme(void *model_, primme_params *primme);
 int main_iter_kprimme_normal(dummy_type_cprimme *evals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_kprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
+int prepare_candidateskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
       PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_kprimme *X, dummy_type_kprimme *R, dummy_type_kprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
@@ -317,7 +230,7 @@ void update_slowdownkprimme_normal(void *model_);
 void initializeModelkprimme_normal(void *model_, primme_params *primme);
 int main_iter_kprimme(dummy_type_sprimme *evals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
+int prepare_candidateskprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
       PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_kprimme *X, dummy_type_kprimme *R, dummy_type_kprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -344,7 +257,7 @@ void update_slowdownkprimme(void *model_);
 void initializeModelkprimme(void *model_, primme_params *primme);
 int main_iter_sprimme(dummy_type_sprimme *evals, dummy_type_sprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_sprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *W,
+int prepare_candidatessprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *W,
       PRIMME_INT ldW, dummy_type_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *X, dummy_type_sprimme *R, dummy_type_sprimme *BX,
       int computeXR, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -371,7 +284,7 @@ void update_slowdownsprimme(void *model_);
 void initializeModelsprimme(void *model_, primme_params *primme);
 int main_iter_cprimme_normal(dummy_type_cprimme *evals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_cprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
+int prepare_candidatescprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *X, dummy_type_cprimme *R, dummy_type_cprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
@@ -398,7 +311,7 @@ void update_slowdowncprimme_normal(void *model_);
 void initializeModelcprimme_normal(void *model_, primme_params *primme);
 int main_iter_cprimme(dummy_type_sprimme *evals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
+int prepare_candidatescprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *X, dummy_type_cprimme *R, dummy_type_cprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -425,7 +338,7 @@ void update_slowdowncprimme(void *model_);
 void initializeModelcprimme(void *model_, primme_params *primme);
 int main_iter_zprimme_normal(dummy_type_zprimme *evals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_zprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
+int prepare_candidateszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
       PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *X, dummy_type_zprimme *R, dummy_type_zprimme *BX,
       int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, dummy_type_dprimme *hSVals,
@@ -452,7 +365,7 @@ void update_slowdownzprimme_normal(void *model_);
 void initializeModelzprimme_normal(void *model_, primme_params *primme);
 int main_iter_zprimme(dummy_type_dprimme *evals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
+int prepare_candidateszprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
       PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *X, dummy_type_zprimme *R, dummy_type_zprimme *BX,
       int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals,
@@ -479,7 +392,7 @@ void update_slowdownzprimme(void *model_);
 void initializeModelzprimme(void *model_, primme_params *primme);
 int main_iter_magma_hprimme(dummy_type_sprimme *evals, dummy_type_magma_hprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_magma_hprimme *W,
+int prepare_candidatesmagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_magma_hprimme *W,
       PRIMME_INT ldW, dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_magma_hprimme *X, dummy_type_magma_hprimme *R, dummy_type_magma_hprimme *BX,
       int computeXR, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -506,7 +419,7 @@ void update_slowdownmagma_hprimme(void *model_);
 void initializeModelmagma_hprimme(void *model_, primme_params *primme);
 int main_iter_magma_kprimme_normal(dummy_type_cprimme *evals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+int prepare_candidatesmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_kprimme *X, dummy_type_magma_kprimme *R, dummy_type_magma_kprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
@@ -533,7 +446,7 @@ void update_slowdownmagma_kprimme_normal(void *model_);
 void initializeModelmagma_kprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_kprimme(dummy_type_sprimme *evals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+int prepare_candidatesmagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_kprimme *X, dummy_type_magma_kprimme *R, dummy_type_magma_kprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -560,7 +473,7 @@ void update_slowdownmagma_kprimme(void *model_);
 void initializeModelmagma_kprimme(void *model_, primme_params *primme);
 int main_iter_magma_sprimme(dummy_type_sprimme *evals, dummy_type_magma_sprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_magma_sprimme *W,
+int prepare_candidatesmagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_magma_sprimme *W,
       PRIMME_INT ldW, dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_magma_sprimme *X, dummy_type_magma_sprimme *R, dummy_type_magma_sprimme *BX,
       int computeXR, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -587,7 +500,7 @@ void update_slowdownmagma_sprimme(void *model_);
 void initializeModelmagma_sprimme(void *model_, primme_params *primme);
 int main_iter_magma_cprimme_normal(dummy_type_cprimme *evals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
+int prepare_candidatesmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_cprimme *X, dummy_type_magma_cprimme *R, dummy_type_magma_cprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
@@ -614,7 +527,7 @@ void update_slowdownmagma_cprimme_normal(void *model_);
 void initializeModelmagma_cprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_cprimme(dummy_type_sprimme *evals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
+int prepare_candidatesmagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_cprimme *X, dummy_type_magma_cprimme *R, dummy_type_magma_cprimme *BX,
       int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
@@ -641,7 +554,7 @@ void update_slowdownmagma_cprimme(void *model_);
 void initializeModelmagma_cprimme(void *model_, primme_params *primme);
 int main_iter_magma_dprimme(dummy_type_dprimme *evals, dummy_type_magma_dprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_magma_dprimme *W,
+int prepare_candidatesmagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_magma_dprimme *W,
       PRIMME_INT ldW, dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_magma_dprimme *X, dummy_type_magma_dprimme *R, dummy_type_magma_dprimme *BX,
       int computeXR, dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals,
@@ -668,7 +581,7 @@ void update_slowdownmagma_dprimme(void *model_);
 void initializeModelmagma_dprimme(void *model_, primme_params *primme);
 int main_iter_magma_zprimme_normal(dummy_type_zprimme *evals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
+int prepare_candidatesmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
       PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_magma_zprimme *X, dummy_type_magma_zprimme *R, dummy_type_magma_zprimme *BX,
       int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, dummy_type_dprimme *hSVals,
@@ -695,7 +608,7 @@ void update_slowdownmagma_zprimme_normal(void *model_);
 void initializeModelmagma_zprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_zprimme(dummy_type_dprimme *evals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs,
       dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
-int prepare_candidates_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
+int prepare_candidatesmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
       PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_magma_zprimme *X, dummy_type_magma_zprimme *R, dummy_type_magma_zprimme *BX,
       int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals,

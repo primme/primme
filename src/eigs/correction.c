@@ -215,16 +215,17 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          double targetShift = primme->targetShifts[min(
                primme->numTargetShifts - 1, numLocked)];
          int sortedIndex = ilev[blockIndex];
-         if (EVAL_ABS(sortedRitzVals[sortedIndex] - targetShift) >=
+         if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) >=
                blockNorms[blockIndex] * sqrt(primme->stats.estimateInvBNorm)) {
             blockOfShifts[blockIndex] = targetShift;
          } else {
             blockOfShifts[blockIndex] =
                   sortedRitzVals[sortedIndex] +
-                  blockNorms[blockIndex] *
-                        sqrt(primme->stats.estimateInvBNorm) *
-                        (targetShift - sortedRitzVals[sortedIndex]) /
-                        EVAL_ABS(targetShift - sortedRitzVals[sortedIndex]);
+                  ((HEVAL)(blockNorms[blockIndex] *
+                           sqrt(primme->stats.estimateInvBNorm))) *
+                        ((HEVAL)targetShift - sortedRitzVals[sortedIndex]) /
+                        EVAL_ABS(
+                              (HEVAL)targetShift - sortedRitzVals[sortedIndex]);
          }
 
          if (sortedIndex < *numPrevRitzVals) {

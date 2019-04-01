@@ -51,7 +51,7 @@
 #ifdef SUPPORTED_TYPE
 
 /******************************************************************************
- * Function Num_compute_residual - This subroutine performs the next operation
+ * Function Num_compute_residuals - This subroutine performs the next operation
  *    in a cache-friendly way:
  *
  *    r = Ax - eval*Bx
@@ -67,16 +67,35 @@
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *Bx,
-   SCALAR *Ax, SCALAR *r, primme_context ctx) {
+int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,
+      SCALAR *Bx, PRIMME_INT ldBx, SCALAR *Ax, PRIMME_INT ldAx, SCALAR *r,
+      PRIMME_INT ldr, primme_context ctx) {
 
-   int k, M=min(n,PRIMME_BLOCK_SIZE);
-
-   for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      Num_copy_Sprimme(M, &Ax[k], 1, &r[k], 1, ctx);
-      Num_axpy_Sprimme(M, -eval, &Bx[k], 1, &r[k], 1, ctx);
+#ifdef USE_HOST
+   int j;
+   for (j = 0; j < n; j++) {
+      int k, M = min(m, PRIMME_BLOCK_SIZE);
+      for (k = 0; k < m; k += M, M = min(M, m - k)) {
+         CHKERR(Num_copy_Sprimme(
+               M, &Ax[ldAx * j + k], 1, &r[ldr * j + k], 1, ctx));
+         CHKERR(Num_axpy_Sprimme(
+               M, -eval[j], &Bx[ldBx * j + k], 1, &r[ldr * j + k], 1, ctx));
+      }
    }
 
+#else
+   // Cache is not exploit for GPU; also Num_copy_Sprimme has a lot of overhead
+
+   int j;
+
+   CHKERR(Num_copy_matrix_Sprimme(Ax, m, n, ldAx, r, ldr, ctx));
+   for (j = 0; j < n; j++) {
+      CHKERR(Num_axpy_Sprimme(
+            m, -eval[j], &Bx[ldBx * j], 1, &r[ldr * j], 1, ctx));
+   }
+#endif
+
+   return 0;
 }
 
 /******************************************************************************
@@ -199,9 +218,9 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    CHKERR(Num_malloc_Sprimme(m * (nYe - nYb), &Y, ctx));
    CHKERR(Num_malloc_Sprimme(m * (nBXe - nBXb), &BX, ctx));
    ldX = ldY = ldBX = m;
-   Num_zero_matrix_Sprimme(X, m, nXe - nXb, ldX, ctx);
-   Num_zero_matrix_Sprimme(Y, m, nYe - nYb, ldY, ctx);
-   Num_zero_matrix_Sprimme(BX, m, nBXe - nBXb, ldBX, ctx);
+   CHKERR(Num_zero_matrix_Sprimme(X, m, nXe - nXb, ldX, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(Y, m, nYe - nYb, ldY, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(BX, m, nBXe - nBXb, ldBX, ctx));
 
    int nGH = (G ? nG * nG : 0) + (H ? nH * nH : 0);
    if (ctx.numProcs > 1) {
@@ -222,8 +241,8 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
 
    if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = 0.0;
    if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = 0.0;
-   if (G) Num_zero_matrix_SHprimme(G0, nG, nG, ldG0, ctx);
-   if (H) Num_zero_matrix_SHprimme(H0, nH, nH, ldH0, ctx);
+   if (G) CHKERR(Num_zero_matrix_SHprimme(G0, nG, nG, ldG0, ctx));
+   if (H) CHKERR(Num_zero_matrix_SHprimme(H0, nH, nH, ldH0, ctx));
    if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = 0.0;
 
    for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
@@ -232,24 +251,25 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
          &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX, ctx));
 
       /* X0 = X(nX0b-nXb:nX0e-nXb-1) */
-      if (X0) Num_copy_matrix_Sprimme(&X[ldX*(nX0b-nXb)], m, nX0e-nX0b,
-            ldX, &X0[i], ldX0, ctx);
+      if (X0)
+         CHKERR(Num_copy_matrix_Sprimme(
+               &X[ldX * (nX0b - nXb)], m, nX0e - nX0b, ldX, &X0[i], ldX0, ctx));
 
       /* X1 = X(nX1b-nXb:nX1e-nXb-1) */
-      if (X1) Num_copy_matrix_Sprimme(&X[ldX*(nX1b-nXb)], m, nX1e-nX1b,
-            ldX, &X1[i], ldX1, ctx);
+      if (X1) CHKERR(Num_copy_matrix_Sprimme(&X[ldX*(nX1b-nXb)], m, nX1e-nX1b,
+            ldX, &X1[i], ldX1, ctx));
 
       /* X2 = X(nX2b-nXb:nX2e-nXb-1) */
-      if (X2) Num_copy_matrix_Sprimme(&X[ldX*(nX2b-nXb)], m, nX2e-nX2b,
-            ldX, &X2[i], ldX2, ctx);
+      if (X2) CHKERR(Num_copy_matrix_Sprimme(&X[ldX*(nX2b-nXb)], m, nX2e-nX2b,
+            ldX, &X2[i], ldX2, ctx));
 
       /* Y = W*h(nYb:nYe-1) */
       if (nYb < nYe) CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nYe-nYb, nV,
             1.0, &W[i], ldV, &h[nYb*ldh], ldh, 0.0, Y, ldY, ctx));
 
       /* Wo = Y(nWob-nYb:nWoe-nYb-1) */
-      if (Wo) Num_copy_matrix_Sprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
-            ldY, &Wo[i], ldWo, ctx);
+      if (Wo) CHKERR(Num_copy_matrix_Sprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
+            ldY, &Wo[i], ldWo, ctx));
 
       /* BX = BV*h(nBXb:nBXe-1) */
 
@@ -257,29 +277,31 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
          &BV[i], ldV, &h[nBXb*ldh], ldh, 0.0, BX, ldBX, ctx));
 
       /* BX0 = BX(nX0b-nXb:nX0e-nXb-1) */
-      if (BX0) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX0b-nBXb)], m, nBX0e-nBX0b,
-            ldBX, &BX0[i], ldBX0, ctx);
+      if (BX0)
+         CHKERR(Num_copy_matrix_Sprimme(&BX[ldBX * (nBX0b - nBXb)], m,
+               nBX0e - nBX0b, ldBX, &BX0[i], ldBX0, ctx));
 
       /* BX1 = BX(nBX1b-nBXb:nBX1e-nBXb-1) */
-      if (BX1) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX1b-nBXb)], m, nBX1e-nBX1b,
-            ldBX, &BX1[i], ldBX1, ctx);
+      if (BX1) CHKERR(Num_copy_matrix_Sprimme(&BX[ldBX*(nBX1b-nBXb)], m, nBX1e-nBX1b,
+            ldBX, &BX1[i], ldBX1, ctx));
 
       /* BX2 = BX(nBX2b-nBXb:nBX2e-nBXb-1) */
-      if (BX2) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX2b-nBXb)], m, nBX2e-nBX2b,
-            ldBX, &BX2[i], ldBX2, ctx);
+      if (BX2) CHKERR(Num_copy_matrix_Sprimme(&BX[ldBX*(nBX2b-nBXb)], m, nBX2e-nBX2b,
+            ldBX, &BX2[i], ldBX2, ctx));
 
       /* G += X(:,0:nG-1)'*X(:,0:nG-1) */
 
       if (G) {
-         CHKERR(Num_gemm_ddh_Sprimme("C", "N", nG, nG, m, 1.0, X, ldX,
-               BV ? BX : X, ldX, 1.0, G0, ldG0, ctx));
+         CHKERR(Num_compute_gramm_ddh_Sprimme(X, m, nG, ldX, BV ? BX : X, ldX,
+               i == 0 ? 0.0 : 1.0, G0, ldG0, 1 /* symmetric */, ctx));
       }
 
       /* H = X(:,0:nH-1)'*Y(:,0:nH-1) */
 
       if (H) {
-         CHKERR(Num_gemm_ddh_Sprimme(
-               "C", "N", nH, nH, m, 1.0, X, ldX, Y, ldY, 1.0, H0, ldH0, ctx));
+         CHKERR(Num_compute_gramm_ddh_Sprimme(X, m, nH, ldX, Y, ldY,
+               i == 0 ? 0.0 : 1.0, H0, ldH0,
+               KIND(1 /*symmetric*/, 0 /*not symmetric*/), ctx));
       }
 
       /* xnorms = norm(X(nxb-nXb:nxe-nXb-1)) */
@@ -289,24 +311,29 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
       }
 
       /* R = Y(nRb-nYb:nRe-nYb-1) - BX(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
-      if (R) for (j=nRb; j<nRe; j++) {
-            Num_compute_residual_Sprimme(m, hVals[j],
-                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
-                  &Y[ldY * (j - nYb)], &R[i + ldR * (j - nRb)], ctx);
-            if (Rnorms) {
+      if (R) {
+         CHKERR(Num_compute_residuals_Sprimme(m, nRe - nRb, &hVals[nRb],
+               BV ? &BX[ldBX * (nRb - nBXb)] : &X[ldX * (nRb - nXb)],
+               BV ? ldBX : ldX, &Y[ldY * (nRb - nYb)], ldY, &R[i], ldR, ctx));
+         if (Rnorms) {
+            for (j = nRb; j < nRe; j++) {
                Rnorms[j - nRb] +=
                      REAL_PART(Num_dot_Sprimme(m, &R[i + ldR * (j - nRb)], 1,
                            &R[i + ldR * (j - nRb)], 1, ctx));
+            }
          }
       }
 
       /* rnorms = Y(nrb-nYb:nre-nYb-1) - BX(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
-      if (rnorms) for (j=nrb; j<nre; j++) {
-            Num_compute_residual_Sprimme(m, hVals[j],
-                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
-                  &Y[ldY * (j - nYb)], &Y[ldY * (j - nYb)], ctx);
+      if (rnorms)  {
+         CHKERR(Num_compute_residuals_Sprimme(m, nre - nrb, &hVals[nrb],
+               BV ? &BX[ldBX * (nrb - nBXb)] : &X[ldX * (nrb - nXb)],
+               BV ? ldBX : ldX, &Y[ldY * (nrb - nYb)], ldY,
+               &Y[ldY * (nrb - nYb)], ldY, ctx));
+         for (j = nrb; j < nre; j++) {
             rnorms[j - nrb] += REAL_PART(Num_dot_Sprimme(
                   m, &Y[ldY * (j - nYb)], 1, &Y[ldY * (j - nYb)], 1, ctx));
+         }
       }
    }
 
@@ -315,8 +342,8 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    if (ctx.numProcs > 1) {
       CHKERR(globalSum_SHprimme(workGH, nGH, ctx));
    }
-   if (G) Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx);
-   if (H) Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx);
+   if (G) CHKERR(Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx));
+   if (H) CHKERR(Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx));
 
    /* Reduce Rnorms, rnorms and xnorms and sqrt the results */
 

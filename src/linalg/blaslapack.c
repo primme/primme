@@ -1680,6 +1680,42 @@ int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
 }
 #endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
+/*******************************************************************************
+ * Subroutine Num_compute_gramm_ddh - Computes the upper part of the Gramm matrix
+ *    X' * Y if the result is Hermitian, or the full matrix otherwise, and
+ *    do H = X' * Y + alpha * H.
+ *
+ * Input/Output parameters
+ * -----------------------
+ * X, Y     The input matrices
+ *
+ * m, n     Number of rows and columns of X and Y
+ *
+ * ldX,ldY  Leading dimension of X and Y
+ *
+ * H        Output matrix storing alpha * H + X' * Y
+ *
+ * ldH      Leading dimension of H
+ *
+ * isherm   Whether X' * Y is Hermitian
+ * 
+ * Return
+ * ------
+ * error code
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
+      SCALAR *Y, PRIMME_INT ldY, SCALAR alpha, SCALAR *H, int ldH, int isherm,
+      primme_context ctx) {
+
+   CHKERR(Num_gemm_Sprimme(
+         "C", "N", n, n, m, 1.0, X, ldX, Y, ldY, alpha, H, ldH, ctx));
+
+   return 0;
+}
+
 #endif /* USE_HOST */
 
 #endif /* SUPPORTED_TYPE */

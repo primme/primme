@@ -14,7 +14,7 @@ eigs/primme_interface*.o : include/notemplate.h include/numerical.h include/prim
 eigs/restart*.o : eigs/auxiliary_eigs.h eigs/auxiliary_eigs_normal.h eigs/common_eigs.h eigs/convergence.h eigs/factorize.h eigs/ortho.h eigs/restart.h eigs/solve_projection.h eigs/template_normal.h eigs/update_W.h eigs/update_projection.h include/numerical.h
 eigs/solve_projection*.o : eigs/auxiliary_eigs.h eigs/auxiliary_eigs_normal.h eigs/common_eigs.h eigs/ortho.h eigs/solve_projection.h eigs/template_normal.h include/numerical.h
 eigs/update_projection*.o : eigs/auxiliary_eigs.h eigs/common_eigs.h eigs/update_projection.h include/numerical.h
-eigs/update_W*.o : eigs/auxiliary_eigs.h eigs/auxiliary_eigs_normal.h eigs/ortho.h eigs/template_normal.h eigs/update_W.h include/numerical.h
+eigs/update_W*.o : eigs/auxiliary_eigs.h eigs/auxiliary_eigs_normal.h eigs/common_eigs.h eigs/ortho.h eigs/template_normal.h eigs/update_W.h include/numerical.h
 linalg/auxiliary*.o : include/numerical.h
 linalg/blaslapack*.o : include/numerical.h linalg/blaslapack_private.h
 linalg/magma_wrapper*.o : include/numerical.h

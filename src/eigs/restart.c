@@ -637,12 +637,11 @@ STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
    *restartSize += numPrevRetained;
 
-   *ievSize = max(0, min(min(min(
-                  primme->maxBlockSize,
-                  primme->numEvals-*numConverged+1),
-                  primme->maxBasisSize-*restartSize-numPrevRetained),
-                  basisSize-*numConverged));
-   *ievSize = max(0, min(*ievSize, primme->minRestartSize - *numConverged));
+   *ievSize = max(0, min(min(min(min(min(*ievSize, primme->maxBlockSize),
+                                       primme->numEvals - *numConverged + 1),
+                                   primme->maxBasisSize - *restartSize),
+                               basisSize - *numConverged),
+                           primme->minRestartSize - *numConverged));
 
    /* Generate restartPerm */
 
@@ -1618,11 +1617,11 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
       /* part of H and VtBV.                                               */
       /* ----------------------------------------------------------------- */
 
-      CHKERR(Num_zero_matrix_Sprimme(
+      CHKERR(Num_zero_matrix_SHprimme(
             H, restartSize, indexOfPreviousVecs, ldH, ctx));
-      CHKERR(Num_zero_matrix_Sprimme(&H[ldH * indexOfPreviousVecs],
+      CHKERR(Num_zero_matrix_SHprimme(&H[ldH * indexOfPreviousVecs],
             indexOfPreviousVecs, numPrevRetained, ldH, ctx));
-      CHKERR(Num_zero_matrix_Sprimme(
+      CHKERR(Num_zero_matrix_SHprimme(
             &H[ldH * (indexOfPreviousVecs + numPrevRetained)], restartSize,
             restartSize - indexOfPreviousVecs - numPrevRetained, ldH, ctx));
 
@@ -2446,41 +2445,43 @@ STATIC int compute_residual_columns(PRIMME_INT m, HEVAL *evals, SCALAR *x,
    for (k=0; k<m; k+=M, M=min(M,m-k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
          if (id < nd && io < no && pd[id] == io+io0) {
-            Num_copy_matrix_Sprimme(
-                  &xo[io * ldxo + k], M, 1, ldxo, &X0[id * M], M, ctx);
+            CHKERR(Num_copy_matrix_Sprimme(
+                  &xo[io * ldxo + k], M, 1, ldxo, &X0[id * M], M, ctx));
             if (Bxo)
-               Num_copy_matrix_Sprimme(
-                     &Bxo[io * ldxo + k], M, 1, ldxo, &BX0[id * M], M, ctx);
-            Num_copy_matrix_Sprimme(
-                  &ro[io * ldro + k], M, 1, ldro, &R0[id * M], M, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(
+                     &Bxo[io * ldxo + k], M, 1, ldxo, &BX0[id * M], M, ctx));
+            CHKERR(Num_copy_matrix_Sprimme(
+                  &ro[io * ldro + k], M, 1, ldro, &R0[id * M], M, ctx));
             io++;
          }
          else {
             assert(id >= nd || i < n);
-            Num_copy_matrix_Sprimme(
-                  &x[p[i] * ldx + k], M, 1, ldx, &x[i * ldx + k], ldx, ctx);
+            CHKERR(Num_copy_matrix_Sprimme(
+                  &x[p[i] * ldx + k], M, 1, ldx, &x[i * ldx + k], ldx, ctx));
             if (Bx)
-               Num_copy_matrix_Sprimme(&Bx[p[i] * ldx + k], M, 1, ldx,
-                     &Bx[i * ldx + k], ldx, ctx);
-            Num_copy_matrix_Sprimme(&Ax[p[i] * ldAx + k], M, 1, ldAx,
-                  &Ax[i * ldAx + k], ldAx, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(&Bx[p[i] * ldx + k], M, 1, ldx,
+                     &Bx[i * ldx + k], ldx, ctx));
+            CHKERR(Num_copy_matrix_Sprimme(&Ax[p[i] * ldAx + k], M, 1, ldAx,
+                  &Ax[i * ldAx + k], ldAx, ctx));
             if (id < nd) {
-               Num_copy_matrix_Sprimme(
-                     &x[p[i] * ldx + k], M, 1, ldx, &X0[id * M], M, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(
+                     &x[p[i] * ldx + k], M, 1, ldx, &X0[id * M], M, ctx));
                if (Bx)
-                  Num_copy_matrix_Sprimme(
-                        &Bx[p[i] * ldx + k], M, 1, ldx, &BX0[id * M], M, ctx);
-               Num_compute_residual_Sprimme(M, evals[p[i]],
-                     Bx ? &Bx[p[i] * ldx + k] : &x[p[i] * ldx + k],
-                     &Ax[p[i] * ldAx + k], &R0[id * M], ctx);
+                  CHKERR(Num_copy_matrix_Sprimme(
+                        &Bx[p[i] * ldx + k], M, 1, ldx, &BX0[id * M], M, ctx));
+               CHKERR(Num_compute_residuals_Sprimme(M, 1, &evals[p[i]],
+                     Bx ? &Bx[p[i] * ldx + k] : &x[p[i] * ldx + k], ldx,
+                     &Ax[p[i] * ldAx + k], ldAx, &R0[id * M], M, ctx));
             }
             i++;
          }
       }
       assert(id >= nd);
-      Num_copy_matrix_Sprimme(X0, M, nd, M, &xd[k], ldxd, ctx);
-      if (Bxd) Num_copy_matrix_Sprimme(BX0, M, nd, M, &Bxd[k], ldxd, ctx);
-      Num_copy_matrix_Sprimme(R0, M, nd, M, &rd[k], ldrd, ctx);
+      CHKERR(Num_copy_matrix_Sprimme(X0, M, nd, M, &xd[k], ldxd, ctx));
+      if (Bxd) {
+         CHKERR(Num_copy_matrix_Sprimme(BX0, M, nd, M, &Bxd[k], ldxd, ctx));
+      }
+      CHKERR(Num_copy_matrix_Sprimme(R0, M, nd, M, &rd[k], ldrd, ctx));
    }
 
    CHKERR(Num_free_Sprimme(X0, ctx));

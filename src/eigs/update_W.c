@@ -41,6 +41,7 @@
 
 #include "numerical.h"
 #include "template_normal.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "update_W.h"
@@ -88,10 +89,14 @@ int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
           ldR >= basisSize + blockSize);
 
    /* Q(:,c) = W(:,c) - BV(:,c)*target for c = basisSize:basisSize+blockSize-1 */
-   for (i=basisSize; i<basisSize+blockSize; i++) {
-      Num_compute_residual_Sprimme(
-            nLocal, targetShift, &BV[ldBV * i], &W[ldW * i], &Q[ldQ * i], ctx);
-   }
+
+   HEVAL *t;
+   CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(blockSize, &t, ctx));
+   for (i=0; i<blockSize; i++) t[i] = targetShift;
+   CHKERR(Num_compute_residuals_Sprimme(nLocal, blockSize, t,
+         &BV[ldBV * basisSize], ldBV, &W[ldW * basisSize], ldW,
+         &Q[ldQ * basisSize], ldQ, ctx));
+   CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(t, ctx));
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
 

@@ -2987,6 +2987,99 @@ int Num_getrf_dprimme(
 #endif
 int Num_getrs_dprimme(const char *trans, int n, int nrhs, dummy_type_dprimme *a, int lda,
       int *ipivot, dummy_type_dprimme *b, int ldb, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Sprimme)
+#  define Num_compute_gramm_ddh_Sprimme CONCAT(Num_compute_gramm_ddh_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Rprimme)
+#  define Num_compute_gramm_ddh_Rprimme CONCAT(Num_compute_gramm_ddh_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SHprimme)
+#  define Num_compute_gramm_ddh_SHprimme CONCAT(Num_compute_gramm_ddh_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RHprimme)
+#  define Num_compute_gramm_ddh_RHprimme CONCAT(Num_compute_gramm_ddh_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SXprimme)
+#  define Num_compute_gramm_ddh_SXprimme CONCAT(Num_compute_gramm_ddh_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RXprimme)
+#  define Num_compute_gramm_ddh_RXprimme CONCAT(Num_compute_gramm_ddh_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Shprimme)
+#  define Num_compute_gramm_ddh_Shprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Rhprimme)
+#  define Num_compute_gramm_ddh_Rhprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Ssprimme)
+#  define Num_compute_gramm_ddh_Ssprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Rsprimme)
+#  define Num_compute_gramm_ddh_Rsprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Sdprimme)
+#  define Num_compute_gramm_ddh_Sdprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Rdprimme)
+#  define Num_compute_gramm_ddh_Rdprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Sqprimme)
+#  define Num_compute_gramm_ddh_Sqprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_Rqprimme)
+#  define Num_compute_gramm_ddh_Rqprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SXhprimme)
+#  define Num_compute_gramm_ddh_SXhprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RXhprimme)
+#  define Num_compute_gramm_ddh_RXhprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SXsprimme)
+#  define Num_compute_gramm_ddh_SXsprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RXsprimme)
+#  define Num_compute_gramm_ddh_RXsprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SXdprimme)
+#  define Num_compute_gramm_ddh_SXdprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RXdprimme)
+#  define Num_compute_gramm_ddh_RXdprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SXqprimme)
+#  define Num_compute_gramm_ddh_SXqprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RXqprimme)
+#  define Num_compute_gramm_ddh_RXqprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SHhprimme)
+#  define Num_compute_gramm_ddh_SHhprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RHhprimme)
+#  define Num_compute_gramm_ddh_RHhprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SHsprimme)
+#  define Num_compute_gramm_ddh_SHsprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RHsprimme)
+#  define Num_compute_gramm_ddh_RHsprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SHdprimme)
+#  define Num_compute_gramm_ddh_SHdprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RHdprimme)
+#  define Num_compute_gramm_ddh_RHdprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_SHqprimme)
+#  define Num_compute_gramm_ddh_SHqprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_ddh_RHqprimme)
+#  define Num_compute_gramm_ddh_RHqprimme CONCAT(Num_compute_gramm_ddh_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_compute_gramm_ddh_dprimme(dummy_type_dprimme *X, PRIMME_INT m, int n, int ldX,
+      dummy_type_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
+      primme_context ctx);
 int Num_malloc_hprimme(PRIMME_INT n, dummy_type_hprimme **x, primme_context ctx);
 int Num_free_hprimme(dummy_type_hprimme *x, primme_context ctx);
 int Num_copy_hprimme(PRIMME_INT n, dummy_type_hprimme *x, int incx, dummy_type_hprimme *y, int incy,
@@ -3024,6 +3117,9 @@ int Num_swap_hprimme(PRIMME_INT n, dummy_type_hprimme *x, int incx, dummy_type_h
 int Num_trsm_hd_hprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, dummy_type_sprimme alpha, dummy_type_sprimme *a, int lda,
       dummy_type_hprimme *b, int ldb, primme_context ctx);
+int Num_compute_gramm_ddh_hprimme(dummy_type_hprimme *X, PRIMME_INT m, int n, int ldX,
+      dummy_type_hprimme *Y, PRIMME_INT ldY, dummy_type_hprimme alpha, dummy_type_hprimme *H, int ldH, int isherm,
+      primme_context ctx);
 int Num_malloc_kprimme(PRIMME_INT n, dummy_type_kprimme **x, primme_context ctx);
 int Num_free_kprimme(dummy_type_kprimme *x, primme_context ctx);
 int Num_copy_kprimme(PRIMME_INT n, dummy_type_kprimme *x, int incx, dummy_type_kprimme *y, int incy,
@@ -3061,6 +3157,9 @@ int Num_swap_kprimme(PRIMME_INT n, dummy_type_kprimme *x, int incx, dummy_type_k
 int Num_trsm_hd_kprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, dummy_type_cprimme alpha, dummy_type_cprimme *a, int lda,
       dummy_type_kprimme *b, int ldb, primme_context ctx);
+int Num_compute_gramm_ddh_kprimme(dummy_type_kprimme *X, PRIMME_INT m, int n, int ldX,
+      dummy_type_kprimme *Y, PRIMME_INT ldY, dummy_type_kprimme alpha, dummy_type_kprimme *H, int ldH, int isherm,
+      primme_context ctx);
 int Num_malloc_sprimme(PRIMME_INT n, dummy_type_sprimme **x, primme_context ctx);
 int Num_free_sprimme(dummy_type_sprimme *x, primme_context ctx);
 int Num_copy_sprimme(PRIMME_INT n, dummy_type_sprimme *x, int incx, dummy_type_sprimme *y, int incy,
@@ -3130,6 +3229,9 @@ int Num_getrf_sprimme(
       int m, int n, dummy_type_sprimme *a, int lda, int *ipivot, primme_context ctx);
 int Num_getrs_sprimme(const char *trans, int n, int nrhs, dummy_type_sprimme *a, int lda,
       int *ipivot, dummy_type_sprimme *b, int ldb, primme_context ctx);
+int Num_compute_gramm_ddh_sprimme(dummy_type_sprimme *X, PRIMME_INT m, int n, int ldX,
+      dummy_type_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
+      primme_context ctx);
 int Num_malloc_cprimme(PRIMME_INT n, dummy_type_cprimme **x, primme_context ctx);
 int Num_free_cprimme(dummy_type_cprimme *x, primme_context ctx);
 int Num_copy_cprimme(PRIMME_INT n, dummy_type_cprimme *x, int incx, dummy_type_cprimme *y, int incy,
@@ -3291,6 +3393,9 @@ int Num_getrf_cprimme(
       int m, int n, dummy_type_cprimme *a, int lda, int *ipivot, primme_context ctx);
 int Num_getrs_cprimme(const char *trans, int n, int nrhs, dummy_type_cprimme *a, int lda,
       int *ipivot, dummy_type_cprimme *b, int ldb, primme_context ctx);
+int Num_compute_gramm_ddh_cprimme(dummy_type_cprimme *X, PRIMME_INT m, int n, int ldX,
+      dummy_type_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
+      primme_context ctx);
 int Num_malloc_zprimme(PRIMME_INT n, dummy_type_zprimme **x, primme_context ctx);
 int Num_free_zprimme(dummy_type_zprimme *x, primme_context ctx);
 int Num_copy_zprimme(PRIMME_INT n, dummy_type_zprimme *x, int incx, dummy_type_zprimme *y, int incy,
@@ -3362,4 +3467,7 @@ int Num_getrf_zprimme(
       int m, int n, dummy_type_zprimme *a, int lda, int *ipivot, primme_context ctx);
 int Num_getrs_zprimme(const char *trans, int n, int nrhs, dummy_type_zprimme *a, int lda,
       int *ipivot, dummy_type_zprimme *b, int ldb, primme_context ctx);
+int Num_compute_gramm_ddh_zprimme(dummy_type_zprimme *X, PRIMME_INT m, int n, int ldX,
+      dummy_type_zprimme *Y, PRIMME_INT ldY, dummy_type_zprimme alpha, dummy_type_zprimme *H, int ldH, int isherm,
+      primme_context ctx);
 #endif

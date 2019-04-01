@@ -605,24 +605,30 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
       /* Do A <= [locked V(0:b2)]'*B*Xc always                                  */
 
       if (B) {
-         CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1,
-               ldV, &V[ldV * b1], b2 - b1, ldV, VLtBVLdA, nVL,
-               its == 0 ? NULL : D, Y, b2 - b1, Yortho, NULL, 0, 0, A, ldA,
-               ctx));
+         if (its > 0) {
+            CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1,
+                  b2, ldV, VLtBVLdA, nVL, D, Y, b2 - b1, Yortho, NULL, 0, NULL,
+                  0, ctx));
+         }
 
          /* Update BX */
          CHKERR(B(&V[ldV * b1], ldV, BX, ldBX, b2 - b1, Bctx));
 
-         CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, NULL, 0,
-               0, BX, b2 - b1, ldBX, NULL, 0, NULL, NULL, 0, 0, V, b2, ldV, A,
-               ldA, ctx));
+         CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1, b2,
+               ldV, NULL, 0, NULL, NULL, 0, 0, BX, ldBX, A, ldA, ctx));
       } else {
-         CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1,
-               ldV, &V[ldV * b1], b2 - b1, ldV, VLtBVLdA, nVL,
-               its == 0 ? NULL : D, Y, b2 - b1, Yortho, V, b2, ldV, A, ldA,
-               ctx));
+         CHKERR(Num_ortho_kernel(locked, nLocal, numLocked, ldLocked, V, b1, b2,
+               ldV, VLtBVLdA, nVL, its == 0 ? NULL : D, Y, b2 - b1, Yortho,
+               &V[ldV * b1], ldV, A, ldA, ctx));
       }
-      if (primme) primme->stats.numOrthoInnerProds += (numLocked+b2)*(b2-b1);
+      if (primme) {
+         primme->stats.numOrthoInnerProds += (numLocked + b1) * (b2 - b1) +
+#ifdef USE_HOST
+                                             (b2 - b1) * (b2 - b1);
+#else
+                                             (b2 - b1 + 1) / 2 * (b2 - b1);
+#endif
+      }
 
       /* Check convergence */
 
@@ -658,13 +664,8 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          for (i=0; i<b2-b1; i++) {
             N[i] = sqrt(max(ABS(C[(b2-b1)*i+i]), MACHINE_EPSILON));
          }
-         for (i=0; i<b2-b1; i++) {
-            for (j=0; j<=i; j++) {
-               C[(b2 - b1) * i + j] =
-                     (C[(b2 - b1) * i + j] + CONJ(C[(b2 - b1) * j + i])) /
-                     (HSCALAR)2.0 / N[i] / N[j];
-            }
-         }
+         for (i = 0; i < b2 - b1; i++)
+            for (j = 0; j <= i; j++) C[(b2 - b1) * i + j] /= N[i] * N[j];
 
          /* [D, Y] = eig(C) or Y = chol(C) */
 
@@ -892,45 +893,40 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
 /******************************************************************************
  * Function Num_ortho_kernel - This subroutine performs the next operations:
  *
- *    X = (X - [Q V]*A)*Y/D if A, D and Y provided
- *    B = [Q W]'*X
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * Q           input matrix
- * m           number of rows on Q, V, W, Z, X
- * nQ          number of columns of Q
- * ldQ         leading dimension of Q
- * V           input matrix of size m x nV
- * ldV         leading dimension of V
- * A           input matrix of size nQ+nV x nX
- * ldA         leading dimension of A
- * D           diagonal of a diagonal matrix (optional)
- * Y           input matrix of size nX x nX (optional)
- * ldY         leading dimension of Y (optional)
- * Yortho      Whether Y is orthonormal matrix (1) or a Cholesky factor (0)
- * W           input matrix of size m x nW
- * ldW         leading dimension of W
+ *    V(b1:b2) = (V(b1:b2) - [Q V]*A)*Y/D if A, D and Y provided
+ *    B = [Q V]'*W
  *
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
- * ----------------------------------
- * X           input/output matrix
- * nX          number of columns of X
- * ldX         leading dimension of X
- * B           output matrix of size nQ+nW x nX
+ * ---------------------------
+ * Q           input matrix
+ * m           number of rows on Q, V
+ * nQ          number of columns of Q
+ * ldQ         leading dimension of Q
+ * V           input/output matrix of size m x b2
+ * ldV         leading dimension of V
+ * A           input matrix of size nQ+b2 x (b2-b1)
+ * ldA         leading dimension of A
+ * D           diagonal of a diagonal matrix (optional)
+ * Y           input matrix of size (b2-b1) x (b2-b1) (optional)
+ * ldY         leading dimension of Y (optional)
+ * Yortho      Whether Y is orthonormal matrix (1) or a Cholesky factor (0)
+ * W           input matrix of size m x b2-b1
+ * ldW         leading dimension of W
+ * B           output matrix of size (nQ+b2) x (b2-b1)
  * ldB         leading dimension of B
- * rwork       scalar workspace
- * ldrwork     size of rwork
  *
  ******************************************************************************/
 
 STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      SCALAR *V, int nV, PRIMME_INT ldV, SCALAR *X, int nX, PRIMME_INT ldX,
-      HSCALAR *A, int ldA, HREAL *D, HSCALAR *Y, int ldY, int Yortho, SCALAR *W,
-      int nW, PRIMME_INT ldW, HSCALAR *B, int ldB, primme_context ctx) {
+      SCALAR *V, int b1, int b2, PRIMME_INT ldV, HSCALAR *A, int ldA, HREAL *D,
+      HSCALAR *Y, int ldY, int Yortho, SCALAR *W, PRIMME_INT ldW, HSCALAR *B,
+      int ldB, primme_context ctx) {
 
    PRIMME_INT i;     /* Loop variables */
    PRIMME_INT m;
+   /* Set X = V(b1:b2) */
+   int nX = b2 - b1;
+   SCALAR *X = &V[ldV * b1];
    SCALAR *Xo = NULL;
 
    if (D && Y) {
@@ -944,7 +940,7 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
          m = min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
       }
       if (Yortho) {
-         CHKERR(Num_malloc_Sprimme(m*nX, &Xo, ctx));
+         CHKERR(Num_malloc_Sprimme(m * nX, &Xo, ctx));
          CHKERR(Num_zero_matrix_Sprimme(Xo, m, nX, m, ctx));
       }
    }
@@ -958,12 +954,12 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
       Bo = B;
       ldBo = ldB;
    } else {
-      CHKERR(Num_malloc_SHprimme((nQ+nW)*nX, &Bo, ctx));
-      ldBo = nQ + nW;
+      CHKERR(Num_malloc_SHprimme((nQ + b2) * nX, &Bo, ctx));
+      ldBo = nQ + b2;
    }
 
    /* Zero Bo */
-   CHKERR(Num_zero_matrix_SHprimme(Bo, nQ + nW, nX, ldBo, ctx));
+   if (Bo) CHKERR(Num_zero_matrix_SHprimme(Bo, nQ + b2, nX, ldBo, ctx));
 
    /* Y(:,i) = Y(:,i)/D[i] */
    if (D && Y) {
@@ -979,46 +975,58 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
          /* X = X - Q*A(0:nQ,:) */
          if (nQ > 0) {
             CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &Q[i], ldQ,
-                  A, ldA, 1.0, &X[i], ldX, ctx));
+                  A, ldA, 1.0, &X[i], ldV, ctx));
          }
 
-         /* X = X - V*A(nQ:nQ+nV) */
-         if (nV > 0) {
-            CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nV, -1.0, &V[i], ldV,
-                  A + nQ, ldA, 1.0, &X[i], ldX, ctx));
+         /* X = X - V*A(nQ:nQ+b1) */
+         if (b1 > 0) {
+            CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, b1, -1.0, &V[i], ldV,
+                  A + nQ, ldA, 1.0, &X[i], ldV, ctx));
          }
 
          /* Xo = X*Y */
          if (Yortho) {
-            CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nX, 1.0, &X[i], ldX, Y,
+            CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nX, 1.0, &X[i], ldV, Y,
                   ldY, 0.0, Xo, m, ctx));
             /* X = Xo*D */
-            CHKERR(Num_copy_matrix_Sprimme(Xo, m, nX, m, &X[i], ldX, ctx));
+            CHKERR(Num_copy_matrix_Sprimme(Xo, m, nX, m, &X[i], ldV, ctx));
             ldXo = m;
          } else {
             CHKERR(Num_trsm_hd_Sprimme(
-                  "R", "U", "N", "N", m, nX, 1.0, Y, ldY, &X[i], ldX, ctx));
+                  "R", "U", "N", "N", m, nX, 1.0, Y, ldY, &X[i], ldV, ctx));
             Xo = &X[i];
-            ldXo = ldX;
+            ldXo = ldV;
          }
       } else {
          Xo = &X[i];
-         ldXo = ldX;
+         ldXo = ldV;
       }
 
-      /* Bo(0:nQ-1,:) += Q'*X */
-      CHKERR(Num_gemm_ddh_Sprimme("C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, Xo,
-            ldXo, 1.0, Bo, ldBo, ctx));
+      if (!W || !Bo) continue;
 
-      /* Bo(nQ:nQ+nW-1) += W'*Z */
-      CHKERR(Num_gemm_ddh_Sprimme("C", "N", nW, nX, m, 1.0, &W[i], ldW, Xo,
-            ldXo, 1.0, Bo + nQ, ldBo, ctx));
+      /* Bo(0:nQ-1,:) += Q'*W */
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, &W[i],
+            ldW, i == 0 ? 0.0 : 1.0, Bo, ldBo, ctx));
+#ifdef USE_HOST
+      /* Bo(nQ:nQ+b2-1,:) += V(:b2-1)'*W */
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", b2, nX, m, 1.0, &V[i], ldV, &W[i],
+            ldW, i == 0 ? 0.0 : 1.0, Bo + nQ, ldBo, ctx));
+#else
+      /* Bo(nQ:nQ+b1-1,:) += V(:b1-1)'*W */
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", b1, nX, m, 1.0, &V[i], ldV, &W[i],
+            ldW, i == 0 ? 0.0 : 1.0, Bo + nQ, ldBo, ctx));
+
+      /* Bo(nQ+b1:nQ+b2-1,:) += V(b1:b2-1)'*W */
+      CHKERR(Num_compute_gramm_ddh_Sprimme(&V[ldV * b1 + i], m, nX, ldV, &W[i],
+            ldW, i == 0 ? 0.0 : 1.0, Bo + nQ + b1, ldBo, 1 /* symmetric */,
+            ctx));
+#endif
    }
 
    /* B = globalSum(Bo) */
    if (ctx.numProcs > 1) {
-      CHKERR(globalSum_SHprimme(Bo, (nQ + nW) * nX, ctx));
-      CHKERR(Num_copy_matrix_SHprimme(Bo, nQ+nW, nX, nQ+nW, B, ldB, ctx));
+      CHKERR(globalSum_SHprimme(Bo, (nQ + b2) * nX, ctx));
+      CHKERR(Num_copy_matrix_SHprimme(Bo, nQ+b2, nX, nQ+b2, B, ldB, ctx));
    }
 
    if (ctx.numProcs > 1) CHKERR(Num_free_SHprimme(Bo, ctx));

@@ -449,6 +449,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.maxInnerIterations = 0;
       primme->correctionParams.projectors.RightX  = 1;
       primme->correctionParams.projectors.SkewX   = 0;
+      primme->initBasisMode                       = primme_init_random;
    }
    else if (method == PRIMME_LOBPCG_OrthoBasis_Window) {
       /* Observed needing to restart with two vectors at least to converge    */
@@ -470,6 +471,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.maxInnerIterations = 0;
       primme->correctionParams.projectors.RightX  = 1;
       primme->correctionParams.projectors.SkewX   = 0;
+      primme->initBasisMode                       = primme_init_random;
    }
    else if (method == PRIMME_DYNAMIC) {
       if (primme->restartingParams.maxPrevRetain <= 0) {

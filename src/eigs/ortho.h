@@ -620,9 +620,9 @@ int ortho_single_iteration_dprimme(dummy_type_dprimme *Q, int nQ, PRIMME_INT ldQ
 #  define Num_ortho_kernel CONCAT(Num_ortho_kernel,SCALAR_SUF)
 #endif
 int Num_ortho_kerneldprimme(dummy_type_dprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_dprimme *V, int nV, PRIMME_INT ldV, dummy_type_dprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_dprimme *A, int ldA, dummy_type_dprimme *D, dummy_type_dprimme *Y, int ldY, int Yortho, dummy_type_dprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_dprimme *B, int ldB, primme_context ctx);
+      dummy_type_dprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_dprimme *A, int ldA, dummy_type_dprimme *D,
+      dummy_type_dprimme *Y, int ldY, int Yortho, dummy_type_dprimme *W, PRIMME_INT ldW, dummy_type_dprimme *B,
+      int ldB, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(decomposition)
 #  define decomposition CONCAT(decomposition,SCALAR_SUF)
 #endif
@@ -667,9 +667,9 @@ int ortho_single_iteration_hprimme(dummy_type_hprimme *Q, int nQ, PRIMME_INT ldQ
       dummy_type_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *QtBQ, int ldQtBQ, dummy_type_hprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelhprimme(dummy_type_hprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_hprimme *V, int nV, PRIMME_INT ldV, dummy_type_hprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_hprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_sprimme *B, int ldB, primme_context ctx);
+      dummy_type_hprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_hprimme *W, PRIMME_INT ldW, dummy_type_sprimme *B,
+      int ldB, primme_context ctx);
 int decompositionhprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationhprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
@@ -708,9 +708,9 @@ int ortho_single_iteration_kprimme(dummy_type_kprimme *Q, int nQ, PRIMME_INT ldQ
       dummy_type_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *QtBQ, int ldQtBQ, dummy_type_kprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelkprimme(dummy_type_kprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_kprimme *V, int nV, PRIMME_INT ldV, dummy_type_kprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_kprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_cprimme *B, int ldB, primme_context ctx);
+      dummy_type_kprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_kprimme *W, PRIMME_INT ldW, dummy_type_cprimme *B,
+      int ldB, primme_context ctx);
 int decompositionkprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationkprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
@@ -749,9 +749,9 @@ int ortho_single_iteration_sprimme(dummy_type_sprimme *Q, int nQ, PRIMME_INT ldQ
       dummy_type_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *QtBQ, int ldQtBQ, dummy_type_sprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelsprimme(dummy_type_sprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_sprimme *V, int nV, PRIMME_INT ldV, dummy_type_sprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_sprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_sprimme *B, int ldB, primme_context ctx);
+      dummy_type_sprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_sprimme *W, PRIMME_INT ldW, dummy_type_sprimme *B,
+      int ldB, primme_context ctx);
 int decompositionsprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationsprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
@@ -790,9 +790,9 @@ int ortho_single_iteration_cprimme(dummy_type_cprimme *Q, int nQ, PRIMME_INT ldQ
       dummy_type_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *QtBQ, int ldQtBQ, dummy_type_cprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelcprimme(dummy_type_cprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_cprimme *V, int nV, PRIMME_INT ldV, dummy_type_cprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_cprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_cprimme *B, int ldB, primme_context ctx);
+      dummy_type_cprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_cprimme *W, PRIMME_INT ldW, dummy_type_cprimme *B,
+      int ldB, primme_context ctx);
 int decompositioncprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
@@ -831,9 +831,9 @@ int ortho_single_iteration_zprimme(dummy_type_zprimme *Q, int nQ, PRIMME_INT ldQ
       dummy_type_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_zprimme *QtBQ, int ldQtBQ, dummy_type_zprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_dprimme *norms, primme_context ctx);
 int Num_ortho_kernelzprimme(dummy_type_zprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_zprimme *V, int nV, PRIMME_INT ldV, dummy_type_zprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_zprimme *A, int ldA, dummy_type_dprimme *D, dummy_type_zprimme *Y, int ldY, int Yortho, dummy_type_zprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_zprimme *B, int ldB, primme_context ctx);
+      dummy_type_zprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_zprimme *A, int ldA, dummy_type_dprimme *D,
+      dummy_type_zprimme *Y, int ldY, int Yortho, dummy_type_zprimme *W, PRIMME_INT ldW, dummy_type_zprimme *B,
+      int ldB, primme_context ctx);
 int decompositionzprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationzprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
@@ -866,9 +866,9 @@ int ortho_single_iteration_magma_hprimme(dummy_type_magma_hprimme *Q, int nQ, PR
       dummy_type_magma_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *QtBQ, int ldQtBQ, dummy_type_magma_hprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelmagma_hprimme(dummy_type_magma_hprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_magma_hprimme *V, int nV, PRIMME_INT ldV, dummy_type_magma_hprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_magma_hprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_sprimme *B, int ldB, primme_context ctx);
+      dummy_type_magma_hprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_magma_hprimme *W, PRIMME_INT ldW, dummy_type_sprimme *B,
+      int ldB, primme_context ctx);
 int decompositionmagma_hprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_hprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
@@ -901,9 +901,9 @@ int ortho_single_iteration_magma_kprimme(dummy_type_magma_kprimme *Q, int nQ, PR
       dummy_type_magma_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *QtBQ, int ldQtBQ, dummy_type_magma_kprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelmagma_kprimme(dummy_type_magma_kprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_magma_kprimme *V, int nV, PRIMME_INT ldV, dummy_type_magma_kprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_magma_kprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_cprimme *B, int ldB, primme_context ctx);
+      dummy_type_magma_kprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_magma_kprimme *W, PRIMME_INT ldW, dummy_type_cprimme *B,
+      int ldB, primme_context ctx);
 int decompositionmagma_kprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_kprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
@@ -936,9 +936,9 @@ int ortho_single_iteration_magma_sprimme(dummy_type_magma_sprimme *Q, int nQ, PR
       dummy_type_magma_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *QtBQ, int ldQtBQ, dummy_type_magma_sprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelmagma_sprimme(dummy_type_magma_sprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_magma_sprimme *V, int nV, PRIMME_INT ldV, dummy_type_magma_sprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_magma_sprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_sprimme *B, int ldB, primme_context ctx);
+      dummy_type_magma_sprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_magma_sprimme *W, PRIMME_INT ldW, dummy_type_sprimme *B,
+      int ldB, primme_context ctx);
 int decompositionmagma_sprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_sprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
@@ -971,9 +971,9 @@ int ortho_single_iteration_magma_cprimme(dummy_type_magma_cprimme *Q, int nQ, PR
       dummy_type_magma_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *QtBQ, int ldQtBQ, dummy_type_magma_cprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
 int Num_ortho_kernelmagma_cprimme(dummy_type_magma_cprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_magma_cprimme *V, int nV, PRIMME_INT ldV, dummy_type_magma_cprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D, dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_magma_cprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_cprimme *B, int ldB, primme_context ctx);
+      dummy_type_magma_cprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_magma_cprimme *W, PRIMME_INT ldW, dummy_type_cprimme *B,
+      int ldB, primme_context ctx);
 int decompositionmagma_cprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_cprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
@@ -1006,9 +1006,9 @@ int ortho_single_iteration_magma_dprimme(dummy_type_magma_dprimme *Q, int nQ, PR
       dummy_type_magma_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_dprimme *QtBQ, int ldQtBQ, dummy_type_magma_dprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_dprimme *norms, primme_context ctx);
 int Num_ortho_kernelmagma_dprimme(dummy_type_magma_dprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_magma_dprimme *V, int nV, PRIMME_INT ldV, dummy_type_magma_dprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_dprimme *A, int ldA, dummy_type_dprimme *D, dummy_type_dprimme *Y, int ldY, int Yortho, dummy_type_magma_dprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_dprimme *B, int ldB, primme_context ctx);
+      dummy_type_magma_dprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_dprimme *A, int ldA, dummy_type_dprimme *D,
+      dummy_type_dprimme *Y, int ldY, int Yortho, dummy_type_magma_dprimme *W, PRIMME_INT ldW, dummy_type_dprimme *B,
+      int ldB, primme_context ctx);
 int decompositionmagma_dprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_dprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
@@ -1041,9 +1041,9 @@ int ortho_single_iteration_magma_zprimme(dummy_type_magma_zprimme *Q, int nQ, PR
       dummy_type_magma_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_zprimme *QtBQ, int ldQtBQ, dummy_type_magma_zprimme *X,
       int *inX, int nX, PRIMME_INT ldX, dummy_type_dprimme *norms, primme_context ctx);
 int Num_ortho_kernelmagma_zprimme(dummy_type_magma_zprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
-      dummy_type_magma_zprimme *V, int nV, PRIMME_INT ldV, dummy_type_magma_zprimme *X, int nX, PRIMME_INT ldX,
-      dummy_type_zprimme *A, int ldA, dummy_type_dprimme *D, dummy_type_zprimme *Y, int ldY, int Yortho, dummy_type_magma_zprimme *W,
-      int nW, PRIMME_INT ldW, dummy_type_zprimme *B, int ldB, primme_context ctx);
+      dummy_type_magma_zprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_zprimme *A, int ldA, dummy_type_dprimme *D,
+      dummy_type_zprimme *Y, int ldY, int Yortho, dummy_type_magma_zprimme *W, PRIMME_INT ldW, dummy_type_zprimme *B,
+      int ldB, primme_context ctx);
 int decompositionmagma_zprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_zprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
