@@ -368,7 +368,7 @@ function [varargout] = primme_eigs(varargin)
       Aherm = opts.ishermitian;
       opts = rmfield(opts, 'ishermitian');
    end
-   if m < 1e4 && isnumeric(A) && Aherm && ~ishermitian(A)
+   if isnumeric(A) && m < 1e4 && Aherm && ~ishermitian(A)
       error('Input matrix must be real symmetric or complex Hermitian, or set OPTS.ishermitian to false');
    end
 
