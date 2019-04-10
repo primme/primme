@@ -490,9 +490,10 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err) {
 
-   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
-        *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
-        *LSRes = (XREAL*)LSRes_;
+   XEVAL *basisEvals = (XEVAL *)basisEvals_,
+         *lockedEvals = (XEVAL *)lockedEvals_;
+   XREAL *basisNorms = (XREAL *)basisNorms_,
+         *lockedNorms = (XREAL *)lockedNorms_, *LSRes = (XREAL *)LSRes_;
 
    assert(event != NULL && primme != NULL);
 
@@ -517,11 +518,17 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                found = *numConverged;
 
             for (i=0; i < *blockSize; i++) {
-               fprintf(primme->outputFile, 
-                     "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
+               fprintf(primme->outputFile,
+                     "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P
+                     " Sec %E EV %13E " KIND(, "%13E i ") "|r| %.3E\n",
                      primme->stats.numOuterIterations, found, i,
                      primme->stats.numMatvecs, primme->stats.elapsedTime,
-                     (double)basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
+                     (double)EVAL_REAL_PART(basisEvals[iblock[i]]),
+#ifndef USE_HERMITIAN
+                     (double)IMAGINARY_PART(basisEvals[iblock[i]]),
+#endif
+
+                     (double)basisNorms[iblock[i]]);
             }
          }
          break;
@@ -530,29 +537,44 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          (void)inner_its;
          if (primme->printLevel >= 4) {
             fprintf(primme->outputFile,
-                  "INN MV %" PRIMME_INT_P " Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n",
+                  "INN MV %" PRIMME_INT_P " Sec %e Eval %13E " KIND(
+                        , "%13E i ") "Lin|r| %.3e EV|r| %.3e\n",
                   primme->stats.numMatvecs, primme->stats.elapsedTime,
-                  (double)basisEvals[iblock[0]], (double)*LSRes,
-                  (double)basisNorms[iblock[0]]);
+                  (double)EVAL_REAL_PART(basisEvals[iblock[0]]),
+#ifndef USE_HERMITIAN
+                  (double)IMAGINARY_PART(basisEvals[iblock[0]]),
+#endif
+                  (double)*LSRes, (double)basisNorms[iblock[0]]);
          }
         break;
       case primme_event_converged:
          assert(numConverged && iblock && basisEvals && basisNorms);
          if ((!primme->locking && primme->printLevel >= 2)
                || (primme->locking && primme->printLevel >= 5))
-            fprintf(primme->outputFile, 
-                  "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
-                  *numConverged, iblock[0], (double)basisEvals[iblock[0]],
+            fprintf(primme->outputFile,
+                  "#Converged %d eval[ %d ]= %13E " KIND(,
+                        "%13E i ") "norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
+                  *numConverged, iblock[0],
+                  (double)EVAL_REAL_PART(basisEvals[iblock[0]]),
+#ifndef USE_HERMITIAN
+                  (double)IMAGINARY_PART(basisEvals[iblock[0]]),
+#endif
                   (double)basisNorms[iblock[0]], primme->stats.numMatvecs,
                   primme->stats.elapsedTime);
          break;
       case primme_event_locked:
          assert(numLocked && lockedEvals && lockedNorms && lockedFlags);
-         if (primme->printLevel >= 2) { 
-            fprintf(primme->outputFile, 
-                  "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
-                  *numLocked-1, (double)lockedEvals[*numLocked-1], (double)lockedNorms[*numLocked-1], 
-                  primme->stats.numMatvecs, primme->stats.elapsedTime, lockedFlags[*numLocked-1]);
+         if (primme->printLevel >= 2) {
+            fprintf(primme->outputFile,
+                  "Lock epair[ %d ]= %13E " KIND(
+                        , "%13E i ") "norm %.4e Mvecs %" PRIMME_INT_P
+                                     " Time %.4e Flag %d\n",
+                  *numLocked - 1, (double)lockedEvals[*numLocked - 1],
+#ifndef USE_HERMITIAN
+                  (double)IMAGINARY_PART(lockedEvals[*numLocked - 1]),
+#endif
+                  (double)lockedNorms[*numLocked - 1], primme->stats.numMatvecs,
+                  primme->stats.elapsedTime, lockedFlags[*numLocked - 1]);
          }
          break;
       case primme_event_message:
