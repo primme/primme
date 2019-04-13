@@ -150,7 +150,7 @@
  * supports half precision.
  */
 
-#if defined(PRIMME_WITH_NATIVE_HALF) &&                                        \
+#if defined(PRIMME_WITH_HALF) && defined(PRIMME_WITH_NATIVE_HALF) &&           \
       (defined(USE_HOST) ||                                                    \
             (defined(PRIMME_WITH_MAGMA) && defined(USE_MAGMA) &&               \
                   defined(MAGMA_WITH_HALF)))
