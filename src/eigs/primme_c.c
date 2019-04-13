@@ -525,7 +525,7 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                      primme->stats.numMatvecs, primme->stats.elapsedTime,
                      (double)EVAL_REAL_PART(basisEvals[iblock[i]]),
 #ifndef USE_HERMITIAN
-                     (double)IMAGINARY_PART(basisEvals[iblock[i]]),
+                     (double)EVAL_IMAGINARY_PART(basisEvals[iblock[i]]),
 #endif
 
                      (double)basisNorms[iblock[i]]);
@@ -542,7 +542,7 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                   primme->stats.numMatvecs, primme->stats.elapsedTime,
                   (double)EVAL_REAL_PART(basisEvals[iblock[0]]),
 #ifndef USE_HERMITIAN
-                  (double)IMAGINARY_PART(basisEvals[iblock[0]]),
+                  (double)EVAL_IMAGINARY_PART(basisEvals[iblock[0]]),
 #endif
                   (double)*LSRes, (double)basisNorms[iblock[0]]);
          }
@@ -557,7 +557,7 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                   *numConverged, iblock[0],
                   (double)EVAL_REAL_PART(basisEvals[iblock[0]]),
 #ifndef USE_HERMITIAN
-                  (double)IMAGINARY_PART(basisEvals[iblock[0]]),
+                  (double)EVAL_IMAGINARY_PART(basisEvals[iblock[0]]),
 #endif
                   (double)basisNorms[iblock[0]], primme->stats.numMatvecs,
                   primme->stats.elapsedTime);
@@ -569,9 +569,10 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                   "Lock epair[ %d ]= %13E " KIND(
                         , "%13E i ") "norm %.4e Mvecs %" PRIMME_INT_P
                                      " Time %.4e Flag %d\n",
-                  *numLocked - 1, (double)lockedEvals[*numLocked - 1],
+                  *numLocked - 1,
+                  (double)EVAL_REAL_PART(lockedEvals[*numLocked - 1]),
 #ifndef USE_HERMITIAN
-                  (double)IMAGINARY_PART(lockedEvals[*numLocked - 1]),
+                  (double)EVAL_IMAGINARY_PART(lockedEvals[*numLocked - 1]),
 #endif
                   (double)lockedNorms[*numLocked - 1], primme->stats.numMatvecs,
                   primme->stats.elapsedTime, lockedFlags[*numLocked - 1]);

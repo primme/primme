@@ -96,6 +96,8 @@
 #endif /* NUMERICAL_PRIVATE_H */
 
 
+#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -136,3 +138,5 @@ void XGETRS(STRING trans, PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PR
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */

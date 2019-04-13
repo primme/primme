@@ -1707,10 +1707,10 @@ int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
 
 TEMPLATE_PLEASE
 int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
-      SCALAR *Y, PRIMME_INT ldY, SCALAR alpha, SCALAR *H, int ldH, int isherm,
+      SCALAR *Y, PRIMME_INT ldY, HSCALAR alpha, HSCALAR *H, int ldH, int isherm,
       primme_context ctx) {
 
-   CHKERR(Num_gemm_Sprimme(
+   CHKERR(Num_gemm_ddh_Sprimme(
          "C", "N", n, n, m, 1.0, X, ldX, Y, ldY, alpha, H, ldH, ctx));
 
    return 0;

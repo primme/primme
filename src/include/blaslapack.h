@@ -3118,7 +3118,7 @@ int Num_trsm_hd_hprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, dummy_type_sprimme alpha, dummy_type_sprimme *a, int lda,
       dummy_type_hprimme *b, int ldb, primme_context ctx);
 int Num_compute_gramm_ddh_hprimme(dummy_type_hprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_hprimme *Y, PRIMME_INT ldY, dummy_type_hprimme alpha, dummy_type_hprimme *H, int ldH, int isherm,
+      dummy_type_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_malloc_kprimme(PRIMME_INT n, dummy_type_kprimme **x, primme_context ctx);
 int Num_free_kprimme(dummy_type_kprimme *x, primme_context ctx);
@@ -3158,7 +3158,7 @@ int Num_trsm_hd_kprimme(const char *side, const char *uplo, const char *transa,
       const char *diag, int m, int n, dummy_type_cprimme alpha, dummy_type_cprimme *a, int lda,
       dummy_type_kprimme *b, int ldb, primme_context ctx);
 int Num_compute_gramm_ddh_kprimme(dummy_type_kprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_kprimme *Y, PRIMME_INT ldY, dummy_type_kprimme alpha, dummy_type_kprimme *H, int ldH, int isherm,
+      dummy_type_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_malloc_sprimme(PRIMME_INT n, dummy_type_sprimme **x, primme_context ctx);
 int Num_free_sprimme(dummy_type_sprimme *x, primme_context ctx);

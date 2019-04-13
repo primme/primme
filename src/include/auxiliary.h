@@ -1325,99 +1325,6 @@ dummy_type_dprimme* Num_compact_vecs_dprimme(dummy_type_dprimme *vecs, PRIMME_IN
 #endif
 int Num_scale_matrix_dprimme(dummy_type_dprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_dprimme *y, PRIMME_INT ldy, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Sprimme)
-#  define Num_compute_gramm_Sprimme CONCAT(Num_compute_gramm_,SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Rprimme)
-#  define Num_compute_gramm_Rprimme CONCAT(Num_compute_gramm_,REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SHprimme)
-#  define Num_compute_gramm_SHprimme CONCAT(Num_compute_gramm_,HOST_SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RHprimme)
-#  define Num_compute_gramm_RHprimme CONCAT(Num_compute_gramm_,HOST_REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SXprimme)
-#  define Num_compute_gramm_SXprimme CONCAT(Num_compute_gramm_,XSCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RXprimme)
-#  define Num_compute_gramm_RXprimme CONCAT(Num_compute_gramm_,XREAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Shprimme)
-#  define Num_compute_gramm_Shprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Rhprimme)
-#  define Num_compute_gramm_Rhprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Ssprimme)
-#  define Num_compute_gramm_Ssprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Rsprimme)
-#  define Num_compute_gramm_Rsprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Sdprimme)
-#  define Num_compute_gramm_Sdprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Rdprimme)
-#  define Num_compute_gramm_Rdprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Sqprimme)
-#  define Num_compute_gramm_Sqprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_Rqprimme)
-#  define Num_compute_gramm_Rqprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SXhprimme)
-#  define Num_compute_gramm_SXhprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RXhprimme)
-#  define Num_compute_gramm_RXhprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,h),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SXsprimme)
-#  define Num_compute_gramm_SXsprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RXsprimme)
-#  define Num_compute_gramm_RXsprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SXdprimme)
-#  define Num_compute_gramm_SXdprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RXdprimme)
-#  define Num_compute_gramm_RXdprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SXqprimme)
-#  define Num_compute_gramm_SXqprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RXqprimme)
-#  define Num_compute_gramm_RXqprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,q),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SHhprimme)
-#  define Num_compute_gramm_SHhprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RHhprimme)
-#  define Num_compute_gramm_RHhprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SHsprimme)
-#  define Num_compute_gramm_SHsprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RHsprimme)
-#  define Num_compute_gramm_RHsprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SHdprimme)
-#  define Num_compute_gramm_SHdprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RHdprimme)
-#  define Num_compute_gramm_RHdprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_SHqprimme)
-#  define Num_compute_gramm_SHqprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_compute_gramm_RHqprimme)
-#  define Num_compute_gramm_RHqprimme CONCAT(Num_compute_gramm_,CONCAT(CONCAT(CONCAT(,q),primme),))
-#endif
-int Num_compute_gramm_dprimme(dummy_type_dprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1442,9 +1349,6 @@ dummy_type_hprimme* Num_compact_vecs_hprimme(dummy_type_hprimme *vecs, PRIMME_IN
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_hprimme(dummy_type_hprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_hprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1467,9 +1371,6 @@ dummy_type_kprimme* Num_compact_vecs_kprimme(dummy_type_kprimme *vecs, PRIMME_IN
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_kprimme(dummy_type_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_kprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_kprimme(dummy_type_kprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_kprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1496,9 +1397,6 @@ dummy_type_sprimme* Num_compact_vecs_sprimme(dummy_type_sprimme *vecs, PRIMME_IN
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_sprimme(dummy_type_sprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1525,9 +1423,6 @@ dummy_type_cprimme* Num_compact_vecs_cprimme(dummy_type_cprimme *vecs, PRIMME_IN
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_cprimme(dummy_type_cprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_zprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1554,9 +1449,6 @@ dummy_type_zprimme* Num_compact_vecs_zprimme(dummy_type_zprimme *vecs, PRIMME_IN
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_zprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_zprimme(dummy_type_zprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_zprimme *Y, PRIMME_INT ldY, dummy_type_zprimme alpha, dummy_type_zprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_magma_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1573,9 +1465,6 @@ dummy_type_magma_hprimme* Num_compact_vecs_magma_hprimme(dummy_type_magma_hprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_hprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_magma_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_magma_hprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_magma_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1592,9 +1481,6 @@ dummy_type_magma_kprimme* Num_compact_vecs_magma_kprimme(dummy_type_magma_kprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_kprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_magma_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_magma_kprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_magma_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1611,9 +1497,6 @@ dummy_type_magma_sprimme* Num_compact_vecs_magma_sprimme(dummy_type_magma_sprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_sprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_magma_sprimme(dummy_type_magma_sprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_magma_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_magma_sprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_magma_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1630,9 +1513,6 @@ dummy_type_magma_cprimme* Num_compact_vecs_magma_cprimme(dummy_type_magma_cprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_cprimme(dummy_type_magma_cprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_magma_cprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_magma_cprimme(dummy_type_magma_cprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_magma_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_magma_cprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_magma_dprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1649,9 +1529,6 @@ dummy_type_magma_dprimme* Num_compact_vecs_magma_dprimme(dummy_type_magma_dprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_magma_dprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_magma_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_magma_dprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 int Num_matrix_astype_magma_zprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
@@ -1668,7 +1545,4 @@ dummy_type_magma_zprimme* Num_compact_vecs_magma_zprimme(dummy_type_magma_zprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_magma_zprimme *y, PRIMME_INT ldy, primme_context ctx);
-int Num_compute_gramm_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT m, int n, int ldX,
-      dummy_type_magma_zprimme *Y, PRIMME_INT ldY, dummy_type_zprimme alpha, dummy_type_magma_zprimme *H, int ldH, int isherm,
-      int deep, primme_context ctx);
 #endif
