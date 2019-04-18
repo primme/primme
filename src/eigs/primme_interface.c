@@ -822,9 +822,10 @@ int primme_get_member(primme_params *primme, primme_params_label label,
               v->int_v = primme->numTargetShifts;
       break;
       case PRIMME_targetShifts:
-         for (i=0; i< primme->numTargetShifts; i++) {
-             (&v->double_v)[i] = primme->targetShifts[i];
-         }
+              v->ptr_v = primme->targetShifts;
+      break;
+      case PRIMME_ShiftsForPreconditioner:
+              v->ptr_v = primme->ShiftsForPreconditioner;
       break;
       case PRIMME_locking:
               v->int_v = primme->locking;
@@ -1129,6 +1130,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_targetShifts:
               primme->targetShifts = v.double_v;
       break;
+      case PRIMME_ShiftsForPreconditioner:
+              primme->ShiftsForPreconditioner = v.double_v;
+      break;
       case PRIMME_locking:
               if (*v.int_v > INT_MAX) return 1; else 
               primme->locking = (int)*v.int_v;
@@ -1428,6 +1432,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(matrix                       , matrix);
    IF_IS(massMatrix                   , massMatrix);
    IF_IS(preconditioner               , preconditioner);
+   IF_IS(ShiftsForPreconditioner      , ShiftsForPreconditioner);
    IF_IS(initBasisMode                , initBasisMode);
    IF_IS(projection_projection        , projectionParams_projection);
    IF_IS(restarting_maxPrevRetain     , restartingParams_maxPrevRetain);
@@ -1565,6 +1570,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       break;
  
       case PRIMME_targetShifts:
+      case PRIMME_ShiftsForPreconditioner:
       if (type) *type = primme_double;
       if (arity) *arity = 0;
       break;

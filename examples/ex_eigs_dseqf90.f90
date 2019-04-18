@@ -57,7 +57,7 @@ Program primmeF90Example
    integer(c_int64_t), parameter :: numTargetShifts = 2
    real(c_double) :: TargetShifts(numTargetShifts) = (/3.0D0, 5.1D0/)
    
-   external MV, ApplyPrecon
+   procedure(primme_eigs_matvec) :: MV, ApplyPrecon
    
    ! Eigenvalues, eigenvectors, and their residual norms
    
@@ -67,7 +67,8 @@ Program primmeF90Example
    
    ! Other vars
    
-   integer :: i, ierr
+   integer :: ierr
+   integer(c_int64_t) :: i
    real(c_double) :: epsil, aNorm
    integer(c_int64_t) :: numIts, numMatvecs
    
@@ -140,7 +141,7 @@ Program primmeF90Example
    ! Reporting of evals and residuals
 
    do i = 1, numemax
-      print '(a,i1,a,G24.16,a E12.4)',' eval(', i, ') = ', evals(i), '    residual norm =', rnorms(i)
+      print '(a,i1,a,G24.16,a,E12.4)',' eval(', i, ') = ', evals(i), '    residual norm =', rnorms(i)
    end do
    ierr = primme_params_destroy(primme)
    stop
@@ -198,7 +199,7 @@ end
 ! - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
 !
 subroutine ApplyPrecon(x,ldx,y,ldy,k,primme, ierr)
-   use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
+   use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double, c_f_pointer
    implicit none
    include 'primme_f90.inc'
    integer(c_int64_t) ldx, ldy
@@ -208,10 +209,15 @@ subroutine ApplyPrecon(x,ldx,y,ldy,k,primme, ierr)
    integer(c_int) :: k,ierr
    integer :: j
 
+   real(c_double), pointer :: shifts(:)
+   type(c_ptr) :: pshifts
+
    ierr = primme_get_member(primme, PRIMME_n, n)
+   ierr = primme_get_member(primme, PRIMME_ShiftsForPreconditioner, pshifts)
+   call c_f_pointer(pshifts, shifts, shape=[k])
    do j=1,k
       do i=1,n
-         y(i,j) = x(i,j)/2.0
+         y(i,j) = x(i,j)/(2.0 - shifts(k))
       enddo
    enddo
    ierr = 0

@@ -1632,6 +1632,9 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
          H[ldH * j + j] = hVals[j];
       }
    }
+#else
+   (void)ldhVecs;
+   (void)basisSize;
 #endif /* USE_HERMITIAN */
 
    /* ---------------------------------------------------------------------- */
@@ -2244,6 +2247,9 @@ STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(compute_submatrix_SHprimme(hVecs, restartSize, ldhVecs, H,
             basisSize, ldH, 1 /* Hermitian */, H, ldH, ctx));
    }
+#else
+   (void)ldhVecs;
+   (void)basisSize;
 #endif /* USE_HERMITIAN */
 
    /* ------------------------------- */

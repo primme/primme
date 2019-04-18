@@ -97,53 +97,54 @@ integer, parameter :: PRIMME_outputFile                             = 36
 integer, parameter :: PRIMME_matrix                                 = 37
 integer, parameter :: PRIMME_massMatrix                             = 38
 integer, parameter :: PRIMME_preconditioner                         = 39
-integer, parameter :: PRIMME_initBasisMode                          = 40
-integer, parameter :: PRIMME_projectionParams_projection            = 41
-integer, parameter :: PRIMME_restartingParams_maxPrevRetain         = 42
-integer, parameter :: PRIMME_correctionParams_precondition          = 43
-integer, parameter :: PRIMME_correctionParams_robustShifts          = 44
-integer, parameter :: PRIMME_correctionParams_maxInnerIterations    = 45
-integer, parameter :: PRIMME_correctionParams_projectors_LeftQ      = 46
-integer, parameter :: PRIMME_correctionParams_projectors_LeftX      = 47
-integer, parameter :: PRIMME_correctionParams_projectors_RightQ     = 48
-integer, parameter :: PRIMME_correctionParams_projectors_RightX     = 49
-integer, parameter :: PRIMME_correctionParams_projectors_SkewQ      = 50
-integer, parameter :: PRIMME_correctionParams_projectors_SkewX      = 51
-integer, parameter :: PRIMME_correctionParams_convTest              = 52
-integer, parameter :: PRIMME_correctionParams_relTolBase            = 53
-integer, parameter :: PRIMME_stats_numOuterIterations               = 54
-integer, parameter :: PRIMME_stats_numRestarts                      = 55
-integer, parameter :: PRIMME_stats_numMatvecs                       = 56
-integer, parameter :: PRIMME_stats_numPreconds                      = 57
-integer, parameter :: PRIMME_stats_numGlobalSum                     = 58
-integer, parameter :: PRIMME_stats_volumeGlobalSum                  = 59
-integer, parameter :: PRIMME_stats_numBroadcast                     = 60
-integer, parameter :: PRIMME_stats_volumeBroadcast                  = 61
-integer, parameter :: PRIMME_stats_numOrthoInnerProds               = 62
-integer, parameter :: PRIMME_stats_elapsedTime                      = 63
-integer, parameter :: PRIMME_stats_timeMatvec                       = 64
-integer, parameter :: PRIMME_stats_timePrecond                      = 65
-integer, parameter :: PRIMME_stats_timeOrtho                        = 66
-integer, parameter :: PRIMME_stats_timeGlobalSum                    = 67
-integer, parameter :: PRIMME_stats_timeBroadcast                    = 68
-integer, parameter :: PRIMME_stats_estimateMinEVal                  = 69
-integer, parameter :: PRIMME_stats_estimateMaxEVal                  = 70
-integer, parameter :: PRIMME_stats_estimateLargestSVal              = 71
-integer, parameter :: PRIMME_stats_estimateBNorm                    = 72
-integer, parameter :: PRIMME_stats_estimateInvBNorm                 = 73
-integer, parameter :: PRIMME_stats_maxConvTol                       = 74
-integer, parameter :: PRIMME_stats_lockingIssue                     = 75
-integer, parameter :: PRIMME_dynamicMethodSwitch                    = 76
-integer, parameter :: PRIMME_convTestFun                            = 77
-integer, parameter :: PRIMME_convTestFun_type                       = 78
-integer, parameter :: PRIMME_convtest                               = 79
-integer, parameter :: PRIMME_ldevecs                                = 80
-integer, parameter :: PRIMME_ldOPs                                  = 81
-integer, parameter :: PRIMME_monitorFun                             = 82
-integer, parameter :: PRIMME_monitorFun_type                        = 83
-integer, parameter :: PRIMME_monitor                                = 84
-integer, parameter :: PRIMME_queue                                  = 85
-integer, parameter :: PRIMME_profile                                = 86  
+integer, parameter :: PRIMME_ShiftsForPreconditioner                = 40
+integer, parameter :: PRIMME_initBasisMode                          = 41
+integer, parameter :: PRIMME_projectionParams_projection            = 42
+integer, parameter :: PRIMME_restartingParams_maxPrevRetain         = 43
+integer, parameter :: PRIMME_correctionParams_precondition          = 44
+integer, parameter :: PRIMME_correctionParams_robustShifts          = 45
+integer, parameter :: PRIMME_correctionParams_maxInnerIterations    = 46
+integer, parameter :: PRIMME_correctionParams_projectors_LeftQ      = 47
+integer, parameter :: PRIMME_correctionParams_projectors_LeftX      = 48
+integer, parameter :: PRIMME_correctionParams_projectors_RightQ     = 49
+integer, parameter :: PRIMME_correctionParams_projectors_RightX     = 50
+integer, parameter :: PRIMME_correctionParams_projectors_SkewQ      = 51
+integer, parameter :: PRIMME_correctionParams_projectors_SkewX      = 52
+integer, parameter :: PRIMME_correctionParams_convTest              = 53
+integer, parameter :: PRIMME_correctionParams_relTolBase            = 54
+integer, parameter :: PRIMME_stats_numOuterIterations               = 55
+integer, parameter :: PRIMME_stats_numRestarts                      = 56
+integer, parameter :: PRIMME_stats_numMatvecs                       = 57
+integer, parameter :: PRIMME_stats_numPreconds                      = 58
+integer, parameter :: PRIMME_stats_numGlobalSum                     = 59
+integer, parameter :: PRIMME_stats_volumeGlobalSum                  = 60
+integer, parameter :: PRIMME_stats_numBroadcast                     = 61
+integer, parameter :: PRIMME_stats_volumeBroadcast                  = 62
+integer, parameter :: PRIMME_stats_numOrthoInnerProds               = 63
+integer, parameter :: PRIMME_stats_elapsedTime                      = 64
+integer, parameter :: PRIMME_stats_timeMatvec                       = 65
+integer, parameter :: PRIMME_stats_timePrecond                      = 66
+integer, parameter :: PRIMME_stats_timeOrtho                        = 67
+integer, parameter :: PRIMME_stats_timeGlobalSum                    = 68
+integer, parameter :: PRIMME_stats_timeBroadcast                    = 69
+integer, parameter :: PRIMME_stats_estimateMinEVal                  = 70
+integer, parameter :: PRIMME_stats_estimateMaxEVal                  = 71
+integer, parameter :: PRIMME_stats_estimateLargestSVal              = 72
+integer, parameter :: PRIMME_stats_estimateBNorm                    = 73
+integer, parameter :: PRIMME_stats_estimateInvBNorm                 = 74
+integer, parameter :: PRIMME_stats_maxConvTol                       = 75
+integer, parameter :: PRIMME_stats_lockingIssue                     = 76
+integer, parameter :: PRIMME_dynamicMethodSwitch                    = 77
+integer, parameter :: PRIMME_convTestFun                            = 78
+integer, parameter :: PRIMME_convTestFun_type                       = 79
+integer, parameter :: PRIMME_convtest                               = 80
+integer, parameter :: PRIMME_ldevecs                                = 81
+integer, parameter :: PRIMME_ldOPs                                  = 82
+integer, parameter :: PRIMME_monitorFun                             = 83
+integer, parameter :: PRIMME_monitorFun_type                        = 84
+integer, parameter :: PRIMME_monitor                                = 85
+integer, parameter :: PRIMME_queue                                  = 86
+integer, parameter :: PRIMME_profile                                = 87  
 
 !-------------------------------------------------------
 !    Defining easy to remember labels for setting the 
@@ -187,7 +188,7 @@ integer(kind=c_int64_t), parameter :: primme_op_int = 5
 
 abstract interface
    subroutine primme_eigs_matvec(x, ldx, y, ldy, blockSize, primme, ierr) bind(c)
-      use iso_c_binding, only: c_ptr, c_int, c_int64_t
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
       integer(c_int64_t) :: ldx, ldy
       type(*) :: x(ldx,*), y(ldy,*)
       type(c_ptr), value :: primme
@@ -218,12 +219,28 @@ interface primme_get_member
       integer(c_int) :: primme_get_member_int
    end function
 
+   function primme_get_member_ints4(primme, label, value) bind(c, name="primme_get_member")
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t
+      type(c_ptr), intent(in), value :: primme
+      integer(c_int), intent(in), value :: label
+      integer(kind=c_int64_t), dimension(*) :: value
+      integer(c_int) :: primme_get_member_ints4
+   end function
+
    function primme_get_member_double(primme, label, value) bind(c, name="primme_get_member")
       use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       real(kind=c_double), intent(out) :: value
       integer(c_int) :: primme_get_member_double
+   end function
+
+   function primme_get_member_ptr(primme, label, value) bind(c, name="primme_get_member")
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t
+      type(c_ptr), value :: primme
+      integer(c_int), value :: label
+      type(c_ptr), intent(out) :: value
+      integer(c_int) :: primme_get_member_ptr
    end function
 end interface primme_get_member
 
@@ -248,7 +265,7 @@ interface primme_set_member
       use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
       type(c_ptr), value :: primme
       integer(c_int), value :: label
-      real(kind=c_double), dimension(*) :: value
+      real(c_double), dimension(*) :: value
       integer(c_int) :: primme_set_member_doubles
    end function
 
@@ -269,7 +286,7 @@ interface primme_set_member
    end function
 
    function primme_set_member_matvec(primme, label, value) bind(c, name="primme_set_member")
-      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_double
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       procedure(primme_eigs_matvec) :: value

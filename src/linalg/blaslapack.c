@@ -1710,6 +1710,8 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
       SCALAR *Y, PRIMME_INT ldY, HSCALAR alpha, HSCALAR *H, int ldH, int isherm,
       primme_context ctx) {
 
+   (void)isherm;
+
    CHKERR(Num_gemm_ddh_Sprimme(
          "C", "N", n, n, m, 1.0, X, ldX, Y, ldY, alpha, H, ldH, ctx));
 

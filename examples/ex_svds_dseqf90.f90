@@ -53,15 +53,14 @@ Program primmeSvdsF77Example
    integer(c_int64_t) :: NUMSmax         = 5
    integer(c_int64_t) :: BLOCKmax        = 1
    integer(c_int64_t) :: maxMatvecs      = 300000
-   real(c_double)  :: ETOL            = 1.0D-12
+   real(c_double)  :: STOL            = 1.0D-12
    integer(c_int64_t) :: printLevel      = 2
    integer(c_int64_t), parameter :: numTargetShifts = 1
    real(c_double) :: TargetShifts(numTargetShifts) = (/0.5D0/)
-   real(c_double) :: TOL
    double precision :: c
 
    common c
-   external MV, ApplyPrecon
+   procedure(primme_svds_matvec) MV, ApplyPrecon
 
    ! Singular values, vectors and their residual norms
 
@@ -71,7 +70,8 @@ Program primmeSvdsF77Example
 
    ! Other vars
 
-   integer i,ierr
+   integer :: ierr
+   integer(c_int64_t) :: i
    real(c_double)  epsil, aNorm
 
    ! Initialize PRIMME
@@ -83,7 +83,7 @@ Program primmeSvdsF77Example
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_m, m)
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_n, n)
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_numSvals, NUMSmax)
-   ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_eps, TOL)
+   ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_eps, STOL)
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_target, primme_svds_closest_abs)
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_numTargetShifts, numTargetShifts)
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_targetShifts, TargetShifts)
@@ -138,7 +138,7 @@ Program primmeSvdsF77Example
    ! Reporting of svals and residuals
 
    do i = 1, NUMSmax
-      print '(a,i1,a,G24.16,a E12.4)',' sval(', i, ') = ', svals(i), '    residual norm =', rnorms(i)
+      print '(a,i1,a,G24.16,a,E12.4)',' sval(', i, ') = ', svals(i), '    residual norm =', rnorms(i)
    enddo
    stop
 end
@@ -217,7 +217,7 @@ end
 ! - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
 !      
 subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr)
-   use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
+   use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double, c_f_pointer
    implicit none
 
    intrinsic min
@@ -226,15 +226,20 @@ subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr)
    real(c_double) :: x(ldx,*), y(ldy,*)
    type(c_ptr), value :: primme_svds
    integer(c_int) :: k,mode,ierr
-   integer i,j
+   integer(c_int64_t) i
+   integer j
 
    double precision :: c, ei
    common c
-   real(c_double)  shift
+   real(c_double), pointer :: shifts(:)
+   type(c_ptr) :: pshifts
+   integer(c_int64_t) :: numTargetShifts
 
    ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_m, m)
    ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_n, n)
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_targetShifts, shift)
+   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_targetShifts, pshifts)
+   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_numTargetShifts, numTargetShifts)
+   call c_f_pointer(pshifts, shifts, shape=[numTargetShifts])
 
    if (mode.eq.PRIMME_SVDS_op_AtA) then
       do j=1,k
@@ -244,7 +249,7 @@ subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr)
             else
                ei = 0
             endif
-            y(i,j) = x(i,j)/(1.0 + ei*ei - shift*shift)
+            y(i,j) = x(i,j)/(1.0 + ei*ei - shifts(1)*shifts(1))
          enddo
       enddo
    else if (mode.eq.PRIMME_SVDS_op_AAt) then
@@ -256,7 +261,7 @@ subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr)
             else
                ei = 0.0
             endif
-            y(i,j) = x(i,j)/(ei*ei - shift*shift)
+            y(i,j) = x(i,j)/(ei*ei - shifts(1)*shifts(1))
          enddo
       enddo
    else if (mode.eq.PRIMME_SVDS_op_augmented) then

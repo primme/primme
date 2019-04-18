@@ -166,12 +166,12 @@ interface primme_svds_get_member
       integer(c_int) :: primme_svds_get_member_double
    end function
 
-   function primme_svds_get_member_doubles(primme_svds, label, value) bind(c, name="primme_svds_get_member")
-      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
+   function primme_svds_get_member_ptr(primme_svds, label, value) bind(c, name="primme_svds_get_member")
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t
       type(c_ptr), value :: primme_svds
       integer(c_int), value :: label
-      real(kind=c_double), dimension(*) :: value
-      integer(c_int) :: primme_svds_get_member_doubles
+      type(c_ptr), intent(out) :: value
+      integer(c_int) :: primme_svds_get_member_ptr
    end function
 end interface primme_svds_get_member
  

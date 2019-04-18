@@ -970,7 +970,6 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
    }
 
    for (i=0; i < M; i+=m, m=min(m,M-i)) {
-      PRIMME_INT ldXo;
       if (D && Y) {
          /* X = X - Q*A(0:nQ,:) */
          if (nQ > 0) {
@@ -990,16 +989,10 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
                   ldY, 0.0, Xo, m, ctx));
             /* X = Xo*D */
             CHKERR(Num_copy_matrix_Sprimme(Xo, m, nX, m, &X[i], ldV, ctx));
-            ldXo = m;
          } else {
             CHKERR(Num_trsm_hd_Sprimme(
                   "R", "U", "N", "N", m, nX, 1.0, Y, ldY, &X[i], ldV, ctx));
-            Xo = &X[i];
-            ldXo = ldV;
          }
-      } else {
-         Xo = &X[i];
-         ldXo = ldV;
       }
 
       if (!W || !Bo) continue;
