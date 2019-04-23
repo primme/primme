@@ -217,7 +217,7 @@ subroutine ApplyPrecon(x,ldx,y,ldy,k,primme, ierr)
    call c_f_pointer(pshifts, shifts, shape=[k])
    do j=1,k
       do i=1,n
-         y(i,j) = x(i,j)/(2.0 - shifts(k))
+         y(i,j) = x(i,j)/(2.0 - shifts(j))
       enddo
    enddo
    ierr = 0
