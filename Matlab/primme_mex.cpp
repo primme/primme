@@ -1248,26 +1248,27 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
       rnorms = (typename Real<T>::type*)mxGetData(mxRnorms);
    }
 
+   // Number of columns in matrix evecs
+   int nevecs =
+         primme->numOrthoConst + macro_max(primme->numEvals, primme->initSize);
+
 #ifdef USE_GPUARRAY
    mxGPUArray *mxgpuEvecs  = nullptr; 
    if (isGPU(CPUGPU())) {
-      mwSize dims[2] = {(mwSize)macro_max(primme->n, 0),
-            (mwSize)macro_max(
-                  primme->numOrthoConst +
-                        macro_max(primme->numEvals, primme->initSize),
-                  0)};
+      mwSize dims[2] = {
+            (mwSize)macro_max(primme->n, 0), (mwSize)macro_max(nevecs, 0)};
       mxgpuEvecs = mxGPUCreateGPUArray(2, dims, toClassID<T>(),
             isComplex<T>() ? mxCOMPLEX : mxREAL, MX_GPU_DO_NOT_INITIALIZE);
       evecs = (T*)mxGPUGetData(mxgpuEvecs);
    } else 
 #endif
    if (nlhs <= 3 || isComplex<T>() || primme->numOrthoConst > 0) {
-      evecs = new T[(primme->numOrthoConst+primme->numEvals)*primme->n];
+      evecs = new T[primme->n * nevecs];
       mxEvecs = NULL;
    }
    else {
-      mxEvecs = mxCreateNumericMatrix(primme->n, primme->numEvals,
-            toClassID<T>(), mxREAL);
+      mxEvecs =
+            mxCreateNumericMatrix(primme->n, nevecs, toClassID<T>(), mxREAL);
       evecs = (T*)mxGetData(mxEvecs);
    }
 
