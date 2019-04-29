@@ -445,7 +445,7 @@ int broadcast_Tprimme(
 
    double t0 = primme_wTimer();
 
-   if (primme && primme->globalSumReal) {
+   if (primme && primme->broadcastReal) {
       /* Cast buffer */
 
       void *buffer0 = NULL;
