@@ -131,6 +131,10 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
    if (primme->monitorFun && primme->monitorFun_type == primme_op_default)
       primme->monitorFun_type = PRIMME_OP_SCALAR;
 
+   /* Number of returned eigenpairs */
+
+   int outInitSize = 0;
+
    /* call primme for the internal working precision */
 
    int ret;
@@ -140,21 +144,21 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
 #  ifdef SUPPORTED_HALF_TYPE
    case primme_op_half:
       ret = wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
 #  endif
    case primme_op_float:
       ret = wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
    case primme_op_double:
       ret = wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
 #  ifdef PRIMME_WITH_NATIVE_QUAD
    case primme_op_quad:
       ret = wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
 #  endif
    default: ret = PRIMME_FUNCTION_UNAVAILABLE;
@@ -163,14 +167,18 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
    /* Free context */
 
    primme_free_context(ctx);
+
+   /* Set the number of returned eigenpairs */
+
+   primme->initSize = outInitSize;
 #else
 
    (void)evals;
    (void)evecs;
    (void)resNorms;
-   (void)primme;
 
    int ret = PRIMME_FUNCTION_UNAVAILABLE;
+   primme->initSize = 0;
 #endif /* SUPPORTED_TYPE */
 
    return ret;
@@ -181,14 +189,20 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
 
 TEMPLATE_PLEASE
 int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx) {
+      void *resNorms, int *outInitSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
+   /* In case of error, return initSize = 0 */
+
+   *outInitSize = 0;
+
    /* zero out the timer */
+
    double t0 = primme_wTimer();
 
    /* Set some defaults for sequential programs */
+
    if (primme->numProcs <= 1 && evals != NULL && evecs != NULL &&
          resNorms != NULL) {
       primme->nLocal = primme->n;
@@ -196,6 +210,7 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    }
 
    /* Set some defaults  */
+
    primme_set_defaults(primme);
 
    /* Observed orthogonality issues finding the largest/smallest values in  */
@@ -229,6 +244,7 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    }
 
    /* Deprecated input:                                              */
+
    if (evals == NULL && evecs == NULL && resNorms == NULL)
       return 0;
 
@@ -301,6 +317,10 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
          PRIMME_OP_HREAL, (void **)&resNorms, NULL, input_type,
          -1 /* destroy */, 1 /* copy */, ctx));
+
+   /* If no error, return initSize */
+
+   *outInitSize = primme->initSize;
 
    primme->stats.elapsedTime = primme_wTimer() - t0;
    return ret;

@@ -124,7 +124,7 @@
 #  define wrapper_RHqprimme CONCAT(wrapper_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int wrapper_dprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(check_input)
 #  define check_input CONCAT(check_input,WITH_KIND(SCALAR_SUF))
 #endif
@@ -152,7 +152,7 @@ int check_params_coherencedprimme(primme_context ctx);
 #endif
 int coordinated_exitdprimme(int ret, primme_context ctx);
 int wrapper_hprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputhprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutehprimme(double *eval, void *evec, double *rNorm,
@@ -165,7 +165,7 @@ void default_monitorhprimme(void *basisEvals_, int *basisSize, int *basisFlags,
 int check_params_coherencehprimme(primme_context ctx);
 int coordinated_exithprimme(int ret, primme_context ctx);
 int wrapper_kprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputkprimme_normal(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutekprimme_normal(double *eval, void *evec, double *rNorm,
@@ -178,7 +178,7 @@ void default_monitorkprimme_normal(void *basisEvals_, int *basisSize, int *basis
 int check_params_coherencekprimme_normal(primme_context ctx);
 int coordinated_exitkprimme_normal(int ret, primme_context ctx);
 int wrapper_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputkprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutekprimme(double *eval, void *evec, double *rNorm,
@@ -191,7 +191,7 @@ void default_monitorkprimme(void *basisEvals_, int *basisSize, int *basisFlags,
 int check_params_coherencekprimme(primme_context ctx);
 int coordinated_exitkprimme(int ret, primme_context ctx);
 int wrapper_sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputsprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutesprimme(double *eval, void *evec, double *rNorm,
@@ -204,7 +204,7 @@ void default_monitorsprimme(void *basisEvals_, int *basisSize, int *basisFlags,
 int check_params_coherencesprimme(primme_context ctx);
 int coordinated_exitsprimme(int ret, primme_context ctx);
 int wrapper_cprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputcprimme_normal(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutecprimme_normal(double *eval, void *evec, double *rNorm,
@@ -217,7 +217,7 @@ void default_monitorcprimme_normal(void *basisEvals_, int *basisSize, int *basis
 int check_params_coherencecprimme_normal(primme_context ctx);
 int coordinated_exitcprimme_normal(int ret, primme_context ctx);
 int wrapper_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputcprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutecprimme(double *eval, void *evec, double *rNorm,
@@ -230,7 +230,7 @@ void default_monitorcprimme(void *basisEvals_, int *basisSize, int *basisFlags,
 int check_params_coherencecprimme(primme_context ctx);
 int coordinated_exitcprimme(int ret, primme_context ctx);
 int wrapper_zprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputzprimme_normal(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutezprimme_normal(double *eval, void *evec, double *rNorm,
@@ -243,7 +243,7 @@ void default_monitorzprimme_normal(void *basisEvals_, int *basisSize, int *basis
 int check_params_coherencezprimme_normal(primme_context ctx);
 int coordinated_exitzprimme_normal(int ret, primme_context ctx);
 int wrapper_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputzprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutezprimme(double *eval, void *evec, double *rNorm,
@@ -256,7 +256,7 @@ void default_monitorzprimme(void *basisEvals_, int *basisSize, int *basisFlags,
 int check_params_coherencezprimme(primme_context ctx);
 int coordinated_exitzprimme(int ret, primme_context ctx);
 int wrapper_magma_hprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_hprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_hprimme(double *eval, void *evec, double *rNorm,
@@ -269,7 +269,7 @@ void default_monitormagma_hprimme(void *basisEvals_, int *basisSize, int *basisF
 int check_params_coherencemagma_hprimme(primme_context ctx);
 int coordinated_exitmagma_hprimme(int ret, primme_context ctx);
 int wrapper_magma_kprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_kprimme_normal(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_kprimme_normal(double *eval, void *evec, double *rNorm,
@@ -282,7 +282,7 @@ void default_monitormagma_kprimme_normal(void *basisEvals_, int *basisSize, int 
 int check_params_coherencemagma_kprimme_normal(primme_context ctx);
 int coordinated_exitmagma_kprimme_normal(int ret, primme_context ctx);
 int wrapper_magma_kprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_kprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_kprimme(double *eval, void *evec, double *rNorm,
@@ -295,7 +295,7 @@ void default_monitormagma_kprimme(void *basisEvals_, int *basisSize, int *basisF
 int check_params_coherencemagma_kprimme(primme_context ctx);
 int coordinated_exitmagma_kprimme(int ret, primme_context ctx);
 int wrapper_magma_sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_sprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_sprimme(double *eval, void *evec, double *rNorm,
@@ -308,7 +308,7 @@ void default_monitormagma_sprimme(void *basisEvals_, int *basisSize, int *basisF
 int check_params_coherencemagma_sprimme(primme_context ctx);
 int coordinated_exitmagma_sprimme(int ret, primme_context ctx);
 int wrapper_magma_cprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_cprimme_normal(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_cprimme_normal(double *eval, void *evec, double *rNorm,
@@ -321,7 +321,7 @@ void default_monitormagma_cprimme_normal(void *basisEvals_, int *basisSize, int 
 int check_params_coherencemagma_cprimme_normal(primme_context ctx);
 int coordinated_exitmagma_cprimme_normal(int ret, primme_context ctx);
 int wrapper_magma_cprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_cprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_cprimme(double *eval, void *evec, double *rNorm,
@@ -334,7 +334,7 @@ void default_monitormagma_cprimme(void *basisEvals_, int *basisSize, int *basisF
 int check_params_coherencemagma_cprimme(primme_context ctx);
 int coordinated_exitmagma_cprimme(int ret, primme_context ctx);
 int wrapper_magma_dprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_dprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_dprimme(double *eval, void *evec, double *rNorm,
@@ -347,7 +347,7 @@ void default_monitormagma_dprimme(void *basisEvals_, int *basisSize, int *basisF
 int check_params_coherencemagma_dprimme(primme_context ctx);
 int coordinated_exitmagma_dprimme(int ret, primme_context ctx);
 int wrapper_magma_zprimme_normal(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_zprimme_normal(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_zprimme_normal(double *eval, void *evec, double *rNorm,
@@ -360,7 +360,7 @@ void default_monitormagma_zprimme_normal(void *basisEvals_, int *basisSize, int 
 int check_params_coherencemagma_zprimme_normal(primme_context ctx);
 int coordinated_exitmagma_zprimme_normal(int ret, primme_context ctx);
 int wrapper_magma_zprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx);
+      void *resNorms, int *outInitSize, primme_context ctx);
 int check_inputmagma_zprimme(
       void *evals, void *evecs, void *resNorms, primme_params *primme);
 void convTestFunAbsolutemagma_zprimme(double *eval, void *evec, double *rNorm,
