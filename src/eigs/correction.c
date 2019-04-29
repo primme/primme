@@ -653,13 +653,13 @@ STATIC void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals,
       /* II. If the list of current Ritz values has been completely merged,*/
       /* or if lockedEvals[eval] greater/less than ritzVals[ritzVal], then */
       /* merge lockedEvals[eval] into the list of sorted Ritz values.      */
-  
-      if (eval >= numLocked || (primme->target == primme_largest && 
-                               ritzVals[ritzVal] >= lockedEvals[eval])
-                           || (primme->target == primme_smallest &&
-                               ritzVals[ritzVal] <= lockedEvals[eval])
-         ) 
-      {
+
+      if (eval >= numLocked ||
+            (ritzVal < basisSize &&
+                        (primme->target == primme_largest &&
+                              ritzVals[ritzVal] >= lockedEvals[eval]) ||
+                  (primme->target == primme_smallest &&
+                        ritzVals[ritzVal] <= lockedEvals[eval]))) {
          sortedRitzVals[count] = ritzVals[ritzVal];
 
          /* If the Ritz value just merged is unconverged and there is room */
