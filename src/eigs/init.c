@@ -305,15 +305,15 @@ STATIC int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
             &V[ldV * i], nLocal, m, ldV, &W[ldW * (i - blockSize)], ldW, ctx);
 
       CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, i, i + m - 1,
-            locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal,
-            primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
+            locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal, maxRank,
+            &nV, ctx));
       int j;
       for (j = nV; j < i + m; j++) {
          Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV * j], ctx);
       }
       CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, nV, i + m - 1,
-            locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal,
-            primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
+            locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal, maxRank,
+            &nV, ctx));
       CHKERRM(nV != i+m, -1, "Random basis in not full rank");
    }
 
