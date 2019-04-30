@@ -19,7 +19,7 @@ linalg/auxiliary*.o : include/numerical.h
 linalg/blaslapack*.o : include/numerical.h linalg/blaslapack_private.h
 linalg/magma_wrapper*.o : include/numerical.h
 linalg/memman*.o : include/notemplate.h include/numerical.h
-linalg/wtime*.o : include/notemplate.h include/numerical.h
+linalg/wtime*.o : 
 svds/primme_svds_c*.o : include/numerical.h include/primme_interface.h svds/../eigs/common_eigs.h svds/primme_svds_c.h svds/primme_svds_interface.h
 svds/primme_svds_f77*.o : include/numerical.h svds/primme_svds_interface.h
 svds/primme_svds_interface*.o : include/notemplate.h include/numerical.h include/primme_interface.h svds/primme_svds_interface.h
