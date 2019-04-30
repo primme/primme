@@ -15,6 +15,7 @@ EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx
 EXAMPLES_F = ex_eigs_dseqf77 ex_eigs_zseqf77 ex_svds_dseqf77 ex_svds_zseqf77 ex_eigs_dseqf90 ex_svds_dseqf90
 
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
+USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,$(USE_PETSC))
 
 ifeq ($(USE_PETSC), yes)
   include ${PETSC_DIR}/lib/petsc/conf/variables
@@ -22,9 +23,14 @@ ifeq ($(USE_PETSC), yes)
   override FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
-  EXAMPLES_C += ex_eigs_petsc ex_svds_petsc
+  EXAMPLES_C += ex_eigs_petsc ex_svds_petsc ex_eigs_mpi
   EXAMPLES_F77 += ex_eigs_petscf77 ex_eigs_petscf77ptr ex_svds_petscf77 ex_svds_petscf77ptr
   MPIRUN ?= mpirun -np 4
+else ifeq ($(USE_MPI),yes)
+  EXAMPLES_C +=  ex_eigs_mpi
+  MPIRUN ?= mpirun -np 4
+  CC ?= mpicc
+  CLDR ?= mpicc
 endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
