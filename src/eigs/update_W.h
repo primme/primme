@@ -125,74 +125,74 @@
 #endif
 int update_Q_dprimme(dummy_type_dprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_dprimme *W,
       PRIMME_INT ldW, dummy_type_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *R, int ldR,
-      dummy_type_dprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_dprimme *QtQ, int ldQtQ, dummy_type_dprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_hprimme(dummy_type_hprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_hprimme *W,
       PRIMME_INT ldW, dummy_type_hprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
-      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_kprimme_normal(dummy_type_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_kprimme *W,
       PRIMME_INT ldW, dummy_type_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_kprimme(dummy_type_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_kprimme *W,
       PRIMME_INT ldW, dummy_type_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_sprimme(dummy_type_sprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_sprimme *W,
       PRIMME_INT ldW, dummy_type_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
-      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_cprimme_normal(dummy_type_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_cprimme(dummy_type_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_zprimme_normal(dummy_type_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_zprimme *W,
       PRIMME_INT ldW, dummy_type_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
-      dummy_type_zprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_zprimme(dummy_type_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_zprimme *W,
       PRIMME_INT ldW, dummy_type_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
-      dummy_type_zprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_hprimme(dummy_type_magma_hprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_hprimme *W,
       PRIMME_INT ldW, dummy_type_magma_hprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
-      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_kprimme_normal(dummy_type_magma_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_kprimme(dummy_type_magma_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_sprimme(dummy_type_magma_sprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_sprimme *W,
       PRIMME_INT ldW, dummy_type_magma_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
-      dummy_type_sprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_cprimme_normal(dummy_type_magma_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_cprimme(dummy_type_magma_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
-      dummy_type_cprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_dprimme(dummy_type_magma_dprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_dprimme *W,
       PRIMME_INT ldW, dummy_type_magma_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *R, int ldR,
-      dummy_type_dprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_dprimme *QtQ, int ldQtQ, dummy_type_dprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_zprimme_normal(dummy_type_magma_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_zprimme *W,
       PRIMME_INT ldW, dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
-      dummy_type_zprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 int update_Q_magma_zprimme(dummy_type_magma_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_magma_zprimme *W,
       PRIMME_INT ldW, dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
-      dummy_type_zprimme *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx);
+      dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 #endif

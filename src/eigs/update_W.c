@@ -71,13 +71,14 @@
  * Q          The Q factor
  * R          The R factor
  * QtQ        Q'Q
+ * fQtQ       The Cholesky factor of QtQ
  ******************************************************************************/
 
 TEMPLATE_PLEASE
 int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR,
-      HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx) {
+      HSCALAR *QtQ, int ldQtQ, HSCALAR *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx) {
 
    int i;
 
@@ -100,8 +101,8 @@ int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
 
-   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, R,
-         ldR, *nQ, *nQ + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
+   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, fQtQ, ldfQtQ, R, ldR, *nQ,
+         *nQ + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
          ctx.primme->maxBasisSize, nQ, ctx));
 
    /* Zero the lower-left part of R */

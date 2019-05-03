@@ -416,10 +416,10 @@ int B_matvecdprimme(dummy_type_dprimme *x, PRIMME_INT ldx, dummy_type_dprimme *y
 #  define Bortho_block_RHqprimme CONCAT(Bortho_block_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int Bortho_block_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_dprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_dprimme *BV, PRIMME_INT ldBV,
-      dummy_type_dprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
-      int *b2_out, primme_context ctx);
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(ortho_block_Sprimme)
 #  define ortho_block_Sprimme CONCAT(ortho_block_,SCALAR_SUF)
 #endif
@@ -511,15 +511,16 @@ int Bortho_block_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprim
 #  define ortho_block_RHqprimme CONCAT(ortho_block_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int ortho_block_dprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_dprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_dprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_dprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Bortho_block_gen_Sprimme)
 #  define Bortho_block_gen_Sprimme CONCAT(Bortho_block_gen_Sprimme,SCALAR_SUF)
 #endif
 int Bortho_block_gen_Sprimmedprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
-      int ldVLtVL, dummy_type_dprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_dprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_dprimme *, PRIMME_INT, dummy_type_dprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -632,6 +633,98 @@ int decompositiondprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprim
 #  define rank_estimation CONCAT(rank_estimation,SCALAR_SUF)
 #endif
 int rank_estimationdprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Sprimme)
+#  define update_cholesky_Sprimme CONCAT(update_cholesky_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Rprimme)
+#  define update_cholesky_Rprimme CONCAT(update_cholesky_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SHprimme)
+#  define update_cholesky_SHprimme CONCAT(update_cholesky_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RHprimme)
+#  define update_cholesky_RHprimme CONCAT(update_cholesky_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SXprimme)
+#  define update_cholesky_SXprimme CONCAT(update_cholesky_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RXprimme)
+#  define update_cholesky_RXprimme CONCAT(update_cholesky_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Shprimme)
+#  define update_cholesky_Shprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Rhprimme)
+#  define update_cholesky_Rhprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Ssprimme)
+#  define update_cholesky_Ssprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Rsprimme)
+#  define update_cholesky_Rsprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Sdprimme)
+#  define update_cholesky_Sdprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Rdprimme)
+#  define update_cholesky_Rdprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Sqprimme)
+#  define update_cholesky_Sqprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Rqprimme)
+#  define update_cholesky_Rqprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SXhprimme)
+#  define update_cholesky_SXhprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RXhprimme)
+#  define update_cholesky_RXhprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SXsprimme)
+#  define update_cholesky_SXsprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RXsprimme)
+#  define update_cholesky_RXsprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SXdprimme)
+#  define update_cholesky_SXdprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RXdprimme)
+#  define update_cholesky_RXdprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SXqprimme)
+#  define update_cholesky_SXqprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RXqprimme)
+#  define update_cholesky_RXqprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SHhprimme)
+#  define update_cholesky_SHhprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RHhprimme)
+#  define update_cholesky_RHhprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SHsprimme)
+#  define update_cholesky_SHsprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RHsprimme)
+#  define update_cholesky_RHsprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SHdprimme)
+#  define update_cholesky_SHdprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RHdprimme)
+#  define update_cholesky_RHdprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_SHqprimme)
+#  define update_cholesky_SHqprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_RHqprimme)
+#  define update_cholesky_RHqprimme CONCAT(update_cholesky_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int update_cholesky_dprimme(dummy_type_dprimme *VtV, int ldVtV, dummy_type_dprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_hprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
       int b1, int b2, dummy_type_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -649,17 +742,18 @@ int Bortho_local_hprimme(dummy_type_sprimme *V, int ldV, dummy_type_sprimme *R,
 int B_matvechprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_hprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_hprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_hprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_hprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_hprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_hprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_sprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmehprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_hprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_hprimme *, PRIMME_INT, dummy_type_hprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -673,6 +767,8 @@ int Num_ortho_kernelhprimme(dummy_type_hprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionhprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationhprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_hprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
       int b1, int b2, dummy_type_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -690,17 +786,18 @@ int Bortho_local_kprimme(dummy_type_cprimme *V, int ldV, dummy_type_cprimme *R,
 int B_matveckprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_kprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_kprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_kprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_cprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmekprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_kprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_kprimme *, PRIMME_INT, dummy_type_kprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -714,6 +811,8 @@ int Num_ortho_kernelkprimme(dummy_type_kprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionkprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationkprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_kprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_sprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
       int b1, int b2, dummy_type_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -731,17 +830,18 @@ int Bortho_local_sprimme(dummy_type_sprimme *V, int ldV, dummy_type_sprimme *R,
 int B_matvecsprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_sprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_sprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_sprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_sprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_sprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_sprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_sprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmesprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_sprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_sprimme *, PRIMME_INT, dummy_type_sprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -755,6 +855,8 @@ int Num_ortho_kernelsprimme(dummy_type_sprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionsprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationsprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_sprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
       int b1, int b2, dummy_type_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -772,17 +874,18 @@ int Bortho_local_cprimme(dummy_type_cprimme *V, int ldV, dummy_type_cprimme *R,
 int B_matveccprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_cprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_cprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_cprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_cprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmecprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_cprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_cprimme *, PRIMME_INT, dummy_type_cprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -796,6 +899,8 @@ int Num_ortho_kernelcprimme(dummy_type_cprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositioncprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR,
       int b1, int b2, dummy_type_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_zprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -813,17 +918,18 @@ int Bortho_local_zprimme(dummy_type_zprimme *V, int ldV, dummy_type_zprimme *R,
 int B_matveczprimme(dummy_type_zprimme *x, PRIMME_INT ldx, dummy_type_zprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_zprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_zprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_zprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_zprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_zprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmezprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
-      int ldVLtVL, dummy_type_zprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_zprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_zprimme *, PRIMME_INT, dummy_type_zprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -837,6 +943,8 @@ int Num_ortho_kernelzprimme(dummy_type_zprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionzprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationzprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
       int b1, int b2, dummy_type_magma_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -848,17 +956,18 @@ int ortho_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_
 int B_matvecmagma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_hprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_magma_hprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_hprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_sprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmemagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_hprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_magma_hprimme *, PRIMME_INT, dummy_type_magma_hprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -872,6 +981,8 @@ int Num_ortho_kernelmagma_hprimme(dummy_type_magma_hprimme *Q, PRIMME_INT M, int
 int decompositionmagma_hprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_hprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_magma_hprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
       int b1, int b2, dummy_type_magma_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -883,17 +994,18 @@ int ortho_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_
 int B_matvecmagma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_kprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_kprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_cprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmemagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_kprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_magma_kprimme *, PRIMME_INT, dummy_type_magma_kprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -907,6 +1019,8 @@ int Num_ortho_kernelmagma_kprimme(dummy_type_magma_kprimme *Q, PRIMME_INT M, int
 int decompositionmagma_kprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_kprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_magma_kprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
       int b1, int b2, dummy_type_magma_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -918,17 +1032,18 @@ int ortho_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_
 int B_matvecmagma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT ldx, dummy_type_magma_sprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_sprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_magma_sprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_sprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_sprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmemagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
-      int ldVLtVL, dummy_type_sprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_sprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_magma_sprimme *, PRIMME_INT, dummy_type_magma_sprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -942,6 +1057,8 @@ int Num_ortho_kernelmagma_sprimme(dummy_type_magma_sprimme *Q, PRIMME_INT M, int
 int decompositionmagma_sprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_sprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_magma_sprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
       int b1, int b2, dummy_type_magma_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -953,17 +1070,18 @@ int ortho_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_
 int B_matvecmagma_cprimme(dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_cprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_cprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_cprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmemagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
-      int ldVLtVL, dummy_type_cprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_cprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_magma_cprimme *, PRIMME_INT, dummy_type_magma_cprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -977,6 +1095,8 @@ int Num_ortho_kernelmagma_cprimme(dummy_type_magma_cprimme *Q, PRIMME_INT M, int
 int decompositionmagma_cprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_cprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_magma_cprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *R, int ldR,
       int b1, int b2, dummy_type_magma_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_dprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -988,17 +1108,18 @@ int ortho_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_
 int B_matvecmagma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT ldx, dummy_type_magma_dprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_dprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_magma_dprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_dprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_dprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_dprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmemagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
-      int ldVLtVL, dummy_type_dprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_dprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_magma_dprimme *, PRIMME_INT, dummy_type_magma_dprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -1012,6 +1133,8 @@ int Num_ortho_kernelmagma_dprimme(dummy_type_magma_dprimme *Q, PRIMME_INT M, int
 int decompositionmagma_dprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_dprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_magma_dprimme(dummy_type_dprimme *VtV, int ldVtV, dummy_type_dprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 int Bortho_gen_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR,
       int b1, int b2, dummy_type_magma_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_zprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
@@ -1023,17 +1146,18 @@ int ortho_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_
 int B_matvecmagma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *y, PRIMME_INT ldy,
       int bs, void *ctx_);
 int Bortho_block_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_zprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
       dummy_type_zprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
       int *b2_out, primme_context ctx);
-int ortho_block_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
-      int ldVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_zprimme *locked,
-      PRIMME_INT ldLocked, int numLocked, dummy_type_zprimme *RLocked, int ldRLocked,
-      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
 int Bortho_block_gen_Sprimmemagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
-      int ldVLtVL, dummy_type_zprimme *R, PRIMME_INT ldR, int b1, int b2, dummy_type_magma_zprimme *locked,
-      PRIMME_INT ldLocked, int numLocked,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_magma_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
       int (*B)(dummy_type_magma_zprimme *, PRIMME_INT, dummy_type_magma_zprimme *, PRIMME_INT, int, void *),
       void *Bctx, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *RLocked, int ldRLocked,
       PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
@@ -1047,4 +1171,6 @@ int Num_ortho_kernelmagma_zprimme(dummy_type_magma_zprimme *Q, PRIMME_INT M, int
 int decompositionmagma_zprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_zprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_magma_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 #endif

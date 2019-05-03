@@ -611,7 +611,7 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
             fprintf(primme->outputFile, "entering in %s proc %d\n", msg, primme->procID);
          }
          if (primme->printLevel >= 2 && *time >= 0.0) { 
-            fprintf(primme->outputFile, "time for %s : %g proc %d\n", msg, *time, primme->procID);
+            fprintf(primme->outputFile, "time %g for %s proc %d\n", *time, msg, primme->procID);
          }
          break;
       default:

@@ -156,10 +156,18 @@
  *
  * ldVtBV           The leading dimension of VtBV
  *
+ * fVtBV            The Cholesky factor of VtBV
+ *
+ * ldfVtBV          The leading dimension of fVtBV
+ * 
  * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
  *
  * ldQ, ldR         The leading dimension of Q and R
  *
+ * fQtQ             The Cholesky factor of QtQ
+ *
+ * ldfQtQ           The leading dimension of fQtQ
+ * 
  * numConverged     The number of converged eigenpairs
  *
  * numLocked        The number of locked eigenpairs
@@ -199,9 +207,10 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       int *numConvergedStored, HSCALAR *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int numGuesses, HEVAL *prevRitzVals,
       int *numPrevRitzVals, HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
-      SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV,
-      HSCALAR *QtQ, int ldQtQ, HSCALAR *hU, int ldhU, int newldhU,
-      HSCALAR *hVecs, int ldhVecs, int newldhVecs, int *restartSizeOutput,
+      HSCALAR *fVtBV, int ldfVtBV, SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R,
+      int ldR, HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *fQtQ,
+      int ldfQtQ, HSCALAR *hU, int ldhU, int newldhU, HSCALAR *hVecs,
+      int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, HSCALAR *hVecsRot,
       int ldhVecsRot, int *restartsSinceReset, double startTime,
       primme_context ctx) {
@@ -302,8 +311,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       indexOfPreviousVecs = restartSize;
    indexOfPreviousVecsBeforeRestart = indexOfPreviousVecs;
 
+   int nLocked = primme->numOrthoConst + *numLocked;
    {
-      int nLocked = primme->numOrthoConst + *numLocked;
       CHKERR(ortho_coefficient_vectors_Sprimme(hVecs, basisSize, ldhVecs,
             indexOfPreviousVecs,
             VtBV ? &VtBV[nLocked * ldVtBV + nLocked] : NULL, ldVtBV, prevhVecs,
@@ -333,6 +342,14 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
             ctx));
    }
 
+   /* Update fVtBV */
+
+   if (fVtBV) {
+      int newnLocked = primme->numOrthoConst + *numLocked;
+      CHKERR(update_cholesky_Sprimme(VtBV, ldVtBV, fVtBV, ldfVtBV, nLocked,
+            newnLocked + restartSize, ctx));
+   }
+
    /* Rearrange prevRitzVals according to restartPerm */
 
    if (primme->target != primme_smallest && primme->target != primme_largest) {
@@ -354,13 +371,13 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    if (newldhVecs == 0) newldhVecs = restartSize;
    if (newldhU == 0) newldhU = restartSize;
    CHKERR(restart_projection_Sprimme(V, ldV, W, ldV, BV, ldV, H, ldH, VtBV,
-         ldVtBV, Q, ldQ, nLocal, R, ldR, QtV, ldQtV, QtQ, ldQtQ, hU, ldhU,
-         newldhU, indexOfPreviousVecsBeforeRestart, hVecs, ldhVecs, newldhVecs,
-         hVals, hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
-         numPrevRetained, indexOfPreviousVecs, evecs, numConvergedStored,
-         ldevecs, Bevecs, ldBevecs, evecsHat, ldevecsHat, M, ldM, Mfact,
-         ldMfact, ipivot, targetShiftIndex, *numConverged, numArbitraryVecs,
-         hVecsRot, ldhVecsRot, ctx));
+         ldVtBV, Q, ldQ, nLocal, R, ldR, QtV, ldQtV, QtQ, ldQtQ, fQtQ, ldfQtQ,
+         hU, ldhU, newldhU, indexOfPreviousVecsBeforeRestart, hVecs, ldhVecs,
+         newldhVecs, hVals, hSVals, restartPerm, hVecsPerm, restartSize,
+         basisSize, numPrevRetained, indexOfPreviousVecs, evecs,
+         numConvergedStored, ldevecs, Bevecs, ldBevecs, evecsHat, ldevecsHat, M,
+         ldM, Mfact, ldMfact, ipivot, targetShiftIndex, *numConverged,
+         numArbitraryVecs, hVecsRot, ldhVecsRot, ctx));
    CHKERR(Num_free_iprimme(restartPerm, ctx));
 
    /* If all request eigenpairs converged, move the converged vectors at the  */
@@ -1333,6 +1350,10 @@ int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,
  *
  * ldQ, ldR         The leading dimension of Q and R
  *
+ * fQtQ             The Cholesky factor of QtQ
+ *
+ * ldfQtQ           The leading dimension of fQtQ
+ * 
  * QtV              = Q'*V
  *
  * ldQtV            The leading dimension of QtV
@@ -1400,15 +1421,16 @@ STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH,
       HSCALAR *VtBV, int ldVtBV, SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal,
       HSCALAR *R, int ldR, HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ,
-      HSCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
-      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HEVAL *hVals, HREAL *hSVals,
-      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
-      int numPrevRetained, int indexOfPreviousVecs, SCALAR *evecs,
-      int *evecsSize, PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs,
-      SCALAR *evecsHat, PRIMME_INT ldevecsHat, HSCALAR *M, int ldM,
-      HSCALAR *Mfact, int ldMfact, int *ipivot, int *targetShiftIndex,
-      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot,
-      int ldhVecsRot, primme_context ctx) {
+      HSCALAR *fQtQ, int ldfQtQ, HSCALAR *hU, int ldhU, int newldhU,
+      int indexOfPreviousVecsBeforeRestart, HSCALAR *hVecs, int ldhVecs,
+      int newldhVecs, HEVAL *hVals, HREAL *hSVals, int *restartPerm,
+      int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
+      int indexOfPreviousVecs, SCALAR *evecs, int *evecsSize,
+      PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, SCALAR *evecsHat,
+      PRIMME_INT ldevecsHat, HSCALAR *M, int ldM, HSCALAR *Mfact, int ldMfact,
+      int *ipivot, int *targetShiftIndex, int numConverged,
+      int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
@@ -1425,16 +1447,16 @@ STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    case primme_proj_harmonic:
       CHKERR(restart_harmonic(V, ldV, W, ldW, BV, ldBV, H, ldH, Q, ldQ, nLocal,
-            R, ldR, QtV, ldQtV, QtQ, ldQtQ, VtBV, ldVtBV, hU, ldhU, newldhU,
-            hVecs, ldhVecs, newldhVecs, hVals, hSVals, restartPerm, hVecsPerm,
-            restartSize, basisSize, numPrevRetained, indexOfPreviousVecs,
-            targetShiftIndex, numConverged, numArbitraryVecs, hVecsRot,
-            ldhVecsRot, ctx));
+            R, ldR, QtV, ldQtV, QtQ, ldQtQ, fQtQ, ldfQtQ, VtBV, ldVtBV, hU,
+            ldhU, newldhU, hVecs, ldhVecs, newldhVecs, hVals, hSVals,
+            restartPerm, hVecsPerm, restartSize, basisSize, numPrevRetained,
+            indexOfPreviousVecs, targetShiftIndex, numConverged,
+            numArbitraryVecs, hVecsRot, ldhVecsRot, ctx));
       break;
 
    case primme_proj_refined:
       CHKERR(restart_refined(V, ldV, W, ldW, BV, ldBV, H, ldH, Q, ldQ, nLocal,
-            R, ldR, QtQ, ldQtQ, VtBV, ldVtBV, hU, ldhU, newldhU,
+            R, ldR, QtQ, ldQtQ, fQtQ, ldfQtQ, VtBV, ldVtBV, hU, ldhU, newldhU,
             indexOfPreviousVecsBeforeRestart, hVecs, ldhVecs, newldhVecs, hVals,
             hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
             numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
@@ -1769,6 +1791,10 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
  *
  * hU               The left singular vectors of R
  *
+ * fQtQ             The Cholesky factor of QtQ
+ *
+ * ldfQtQ           The leading dimension of fQtQ
+ *
  * ldhU             The leading dimension of the input hU
  *
  * newldhU          The leading dimension of the output hU
@@ -1807,13 +1833,13 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
 STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH, SCALAR *Q,
       PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR, HSCALAR *QtQ,
-      int ldQtQ, HSCALAR *VtBV, int ldVtBV, HSCALAR *hU, int ldhU, int newldhU,
-      int indexOfPreviousVecsBeforeRestart, HSCALAR *hVecs, int ldhVecs,
-      int newldhVecs, HEVAL *hVals, HREAL *hSVals, int *restartPerm,
-      int *hVecsPerm, int restartSize, int basisSize, int numPrevRetained,
-      int indexOfPreviousVecs, int *targetShiftIndex, int numConverged,
-      int *numArbitraryVecs, HSCALAR *hVecsRot, int ldhVecsRot,
-      primme_context ctx) {
+      int ldQtQ, HSCALAR *fQtQ, int ldfQtQ, HSCALAR *VtBV, int ldVtBV,
+      HSCALAR *hU, int ldhU, int newldhU, int indexOfPreviousVecsBeforeRestart,
+      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HEVAL *hVals, HREAL *hSVals,
+      int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
+      int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
+      int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot,
+      int ldhVecsRot, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, j;          /* Loop variables                                       */
@@ -1854,8 +1880,8 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
       int nQ = 0;
       CHKERR(update_Q_Sprimme(BV ? BV : V, nLocal, BV ? ldBV : ldV, W, ldW, Q,
-            ldQ, R, ldR, QtQ, ldQtQ, primme->targetShifts[*targetShiftIndex],
-            0, restartSize, &nQ, ctx));
+            ldQ, R, ldR, QtQ, ldQtQ, fQtQ, ldfQtQ,
+            primme->targetShifts[*targetShiftIndex], 0, restartSize, &nQ, ctx));
       CHKERRM(restartSize != nQ, -1, "Not supported deficient QR");
 
       CHKERR(solve_H_SHprimme(H, restartSize, ldH,
@@ -1967,20 +1993,11 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    CHKERR(Num_free_SHprimme(rwork, ctx));
    CHKERR(Num_free_SHprimme(hVecsRot0, ctx));
 
+   /* hU = C'\hU, where C is the Cholesky factor of QtQ */
+
    if (QtQ) {
-      /* Factorize QtQ = CC' */
-
-      HSCALAR *U_QtBQ;
-      CHKERR(Num_malloc_SHprimme(basisSize*basisSize, &U_QtBQ, ctx));
-      Num_copy_matrix_SHprimme(
-            QtQ, basisSize, basisSize, ldQtQ, U_QtBQ, basisSize, ctx);
-      CHKERR(Num_potrf_SHprimme("U", basisSize, U_QtBQ, basisSize, NULL, ctx));
-
-      /* hU = C'\hU */
-
       CHKERR(Num_trsm_SHprimme("R", "U", "N", "N", basisSize, nRegular, 1.0,
-            U_QtBQ, basisSize, hU, ldhU, ctx));
-      CHKERR(Num_free_SHprimme(U_QtBQ, ctx));
+            fQtQ, ldfQtQ, hU, ldhU, ctx));
    }
 
    /* hU = [hU RPrevhVecs] */
@@ -2036,6 +2053,13 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
             NULL, 0, 0,
             NULL, 0, 0,
             ctx));
+
+   /* Update fQtQ */
+
+   if (QtQ) {
+      CHKERR(update_cholesky_Sprimme(
+            QtQ, ldQtQ, fQtQ, ldfQtQ, 0, restartSize, ctx));
+   }
 
    /* ---------------------------------------------------------------------- */
    /* R may lost the triangular structure after the previous permutation, so */
@@ -2176,6 +2200,10 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
  *
  * ldQ, ldR         The leading dimension of Q and R
  *
+ * fQtQ             The Cholesky factor of QtQ
+ *
+ * ldfQtQ           The leading dimension of fQtQ
+ *
  * QtV              = Q'*V
  *
  * ldQtV            The leading dimension of QtV
@@ -2220,9 +2248,9 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, HSCALAR *H, int ldH,
       SCALAR *Q, PRIMME_INT ldQ, PRIMME_INT nLocal, HSCALAR *R, int ldR,
-      HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *VtBV,
-      int ldVtBV, HSCALAR *hU, int ldhU, int newldhU, HSCALAR *hVecs,
-      int ldhVecs, int newldhVecs, HEVAL *hVals, HREAL *hSVals,
+      HSCALAR *QtV, int ldQtV, HSCALAR *QtQ, int ldQtQ, HSCALAR *fQtQ,
+      int ldfQtQ, HSCALAR *VtBV, int ldVtBV, HSCALAR *hU, int ldhU, int newldhU,
+      HSCALAR *hVecs, int ldhVecs, int newldhVecs, HEVAL *hVals, HREAL *hSVals,
       int *restartPerm, int *hVecsPerm, int restartSize, int basisSize,
       int numPrevRetained, int indexOfPreviousVecs, int *targetShiftIndex,
       int numConverged, int *numArbitraryVecs, HSCALAR *hVecsRot,
@@ -2264,8 +2292,8 @@ STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    int nQ = 0;
    CHKERR(update_Q_Sprimme(BV ? BV : V, nLocal, BV ? ldBV : ldV, W, ldW, Q, ldQ,
-         R, ldR, QtQ, ldQtQ, primme->targetShifts[*targetShiftIndex], 0,
-         restartSize, &nQ, ctx));
+         R, ldR, QtQ, ldQtQ, fQtQ, ldfQtQ,
+         primme->targetShifts[*targetShiftIndex], 0, restartSize, &nQ, ctx));
    CHKERRM(restartSize != nQ, -1, "Not supported deficient QR");
 
    /* ------------------------------- */
