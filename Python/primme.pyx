@@ -192,7 +192,7 @@ cdef void c_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t 
     (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
     ierr[0] = 0
 
-cdef void c_monitor(numerics_real *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, numerics_real *basisNorms, int *numConverged, numerics_real *lockedEvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms, int *inner_its, numerics_real *LSRes, primme_event *event, primme_params *primme, int *ierr):
+cdef void c_monitor(numerics_real *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, numerics_real *basisNorms, int *numConverged, numerics_real *lockedEvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms, int *inner_its, numerics_real *LSRes, const char *msg, double *time, primme_event *event, primme_params *primme, int *ierr):
     ierr[0] = 1
     cdef object monitor = primme_params_get_object(primme, 'monitor')
     cdef int bs = basisSize[0] if basisSize is not NULL else 0
@@ -209,7 +209,7 @@ cdef void c_monitor(numerics_real *basisEvals, int *basisSize, int *basisFlags, 
         <numerics_real[:nLocked]>lockedNorms if lockedNorms is not NULL and nLocked > 0 else None,
         inner_its[0] if inner_its is not NULL else None,
         LSRes[0] if LSRes is not NULL else None,
-        event[0])
+        event[0] if event is not NULL else None)
     ierr[0] = 0
 
 
@@ -757,7 +757,7 @@ cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int
 
 cdef void c_svds_monitor(numerics_real *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
       numerics_real *basisNorms, int *numConverged, numerics_real *lockedSvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms,
-      int *inner_its, numerics_real *LSRes, primme_event *event, int *stage, primme_svds_params *primme_svds, int *ierr):
+      int *inner_its, numerics_real *LSRes, const char *msg, double *time, primme_event *event, int *stage, primme_svds_params *primme_svds, int *ierr):
     ierr[0] = 1
     cdef object monitor = primme_svds_params_get_object(primme_svds, 'monitor')
     cdef int blks = blockSize[0] if blockSize is not NULL else 0
@@ -774,7 +774,8 @@ cdef void c_svds_monitor(numerics_real *basisSvals, int *basisSize, int *basisFl
         <numerics_real[:nLocked]>lockedNorms if lockedNorms is not NULL and nLocked > 0 else None,
         inner_its[0] if inner_its is not NULL else None,
         LSRes[0] if LSRes is not NULL else None,
-        event[0], stage[0])
+        event[0] if event is not NULL else None,
+        stage[0] if stage is not NULL else None)
     ierr[0] = 0
 
 
