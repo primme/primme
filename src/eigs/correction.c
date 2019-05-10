@@ -212,10 +212,13 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          // sqrt(|inv(B)|), then we take the closest point in the interval Ritz
          // value +- residual norm to the user shift as the proper shift.
 
-         double targetShift = primme->targetShifts[min(
-               primme->numTargetShifts - 1, numLocked)];
+         double targetShift =
+               primme->numTargetShifts > 0
+                     ? primme->targetShifts[min(
+                             primme->numTargetShifts - 1, numLocked)]
+                     : 0.0;
          int sortedIndex = ilev[blockIndex];
-         if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) >=
+         if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) <
                blockNorms[blockIndex] * sqrt(primme->stats.estimateInvBNorm)) {
             blockOfShifts[blockIndex] = targetShift;
          } else {
