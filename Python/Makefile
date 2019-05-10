@@ -1,3 +1,4 @@
+include ../Make_flags
 
 all:
 	./setup.py build_ext -i
