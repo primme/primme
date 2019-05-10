@@ -281,7 +281,7 @@ int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    int ierr = 0;
    CHKERRM((primme->massMatrixMatvec(
-                  V0, &ldV0, BV0, &ldBV, &blockSize, primme, &ierr),
+                  V0, &ldV0, BV0, &ldBV0, &blockSize, primme, &ierr),
                  ierr),
          PRIMME_USER_FAILURE, "Error returned by 'massMatrixMatvec' %d", ierr);
 
