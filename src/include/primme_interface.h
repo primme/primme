@@ -38,6 +38,10 @@
 
 void primme_set_defaults(primme_params *params);
 void primme_display_params_prefix(const char* prefix, primme_params primme);
-#define Xprimme SCALAR_SUF
+#ifdef WITH_KIND
+#  define Xprimme WITH_KIND(SCALAR_SUF)
+#else
+#  define Xprimme SCALAR_SUF
+#endif
 
 #endif

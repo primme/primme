@@ -34,6 +34,10 @@
  *  
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/init.c"
+#endif
+
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -48,11 +52,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      SCALAR *W, PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, int dv1, int dv2,
-      SCALAR *locked, PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV,
-      int ldVtV, int maxRank, primme_context ctx);
 
 /*******************************************************************************
  * subroutine init_basis - This subroutine is used to 
@@ -85,13 +84,7 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  *
  * machEps    double machine precision
  * 
- * rwork      Double precision work array needed by other subroutines called
- *            by initialize_basis
- *
- * rworkSize  At most the maximum of (maximum size required by the 
- *            orthogonalization routine, maximum worksize by UDUDecompose)
- *
- * primme       Structure containing various solver parameters
+ * ctx          Structure containing various solver parameters
  * 
  * 
  * 
@@ -119,6 +112,10 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  *
  * ipivot       The pivots of the Mfact factorization
  *
+ * VtBV         V'*B*V (used by Bortho_block)
+ *
+ * fVtBV        The Cholesky factor of VtBV (used by Bortho_block)
+ *
  * Return value
  * ------------
  *  error code
@@ -129,8 +126,9 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, SCALAR *evecs,
       PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, SCALAR *evecsHat,
       PRIMME_INT ldevecsHat, HSCALAR *M, int ldM, HSCALAR *Mfact, int ldMfact,
-      int *ipivot, HSCALAR *VtBV, int ldVtBV, int maxRank, int *basisSize,
-      int *nextGuess, int *numGuesses, primme_context ctx) {
+      int *ipivot, HSCALAR *VtBV, int ldVtBV, HSCALAR *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;
@@ -145,9 +143,9 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
 
    if (primme->numOrthoConst > 0) {
       int nV;
-      CHKERR(Bortho_block_Sprimme(evecs, ldevecs, VtBV, ldVtBV, NULL, 0, 0,
-            primme->numOrthoConst - 1, NULL, 0, 0, Bevecs, ldBevecs, NULL, 0,
-            nLocal, maxRank, &nV, ctx));
+      CHKERR(Bortho_block_Sprimme(evecs, ldevecs, VtBV, ldVtBV, fVtBV, ldfVtBV,
+            NULL, 0, 0, primme->numOrthoConst - 1, NULL, 0, 0, Bevecs, ldBevecs,
+            NULL, 0, nLocal, maxRank, &nV, ctx));
       CHKERRM(nV != primme->numOrthoConst, PRIMME_ORTHO_CONST_FAILURE,
             "The given orthogonal constrains are not full rank");
 
@@ -205,9 +203,9 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
    *basisSize = initSize + random;
 
    /* Orthonormalize the guesses provided by the user */
-   CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, NULL, 0, 0, *basisSize - 1,
-         evecs, ldevecs, primme->numOrthoConst, BV, ldBV, NULL, 0, nLocal,
-         maxRank, basisSize, ctx));
+   CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, fVtBV, ldfVtBV, NULL, 0, 0,
+         *basisSize - 1, evecs, ldevecs, primme->numOrthoConst, BV, ldBV, NULL,
+         0, nLocal, maxRank, basisSize, ctx));
 
    CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, ctx));
 
@@ -215,8 +213,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
       int minRestartSize =
             min(primme->minRestartSize, primme->n - primme->numOrthoConst);
       CHKERR(init_block_krylov(V, nLocal, ldV, W, ldW, BV, ldBV, *basisSize,
-            minRestartSize - 1, evecs, ldevecs, primme->numOrthoConst,
-            VtBV, ldVtBV, maxRank, ctx));
+            minRestartSize - 1, evecs, ldevecs, primme->numOrthoConst, VtBV,
+            ldVtBV, fVtBV, ldfVtBV, maxRank, ctx));
 
       *basisSize = minRestartSize;
    }
@@ -239,16 +237,16 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
  *
  * machEps     machine precision needed in ortho()
  *
- * rwork       Real work array
- *
- * rworkSize   Size of rwork array
- *
  * 
  * INPUT/OUTPUT ARRAYS
  * -------------------
  * V  The orthonormal basis
  * 
  * W  A*V
+ *
+ * VtBV         V'*B*V (used by Bortho_block)
+ *
+ * fVtBV        The Cholesky factor of VtBV (used by Bortho_block)
  *
  * Return value
  * ------------
@@ -257,10 +255,10 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
  * 
  ******************************************************************************/
 
-static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+STATIC int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, int dv1, int dv2,
-      SCALAR *locked, PRIMME_INT ldlocked, int numLocked, HSCALAR *VtV,
-      int ldVtV, int maxRank, primme_context ctx) {
+      SCALAR *locked, PRIMME_INT ldlocked, int numLocked, HSCALAR *VtBV,
+      int ldVtBV, HSCALAR *fVtBV, int ldfVtBV, int maxRank, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;               /* Loop variables */
@@ -289,9 +287,9 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV*i], ctx));
    }
    int nV=0;
-   CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, dv1,
-         dv1 + blockSize - 1, locked, ldlocked, numLocked, BV, ldBV, NULL, 0,
-         nLocal, maxRank, &nV, ctx));
+   CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, fVtBV, ldfVtBV, NULL, 0,
+         dv1, dv1 + blockSize - 1, locked, ldlocked, numLocked, BV, ldBV, NULL,
+         0, nLocal, maxRank, &nV, ctx));
    CHKERRM(nV != dv1+blockSize, -1, "Random basis is not full rank");
 
    /* Generate the remaining vectors in the sequence */
@@ -305,16 +303,16 @@ static int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       Num_copy_matrix_Sprimme(
             &V[ldV * i], nLocal, m, ldV, &W[ldW * (i - blockSize)], ldW, ctx);
 
-      CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, i, i + m - 1,
-            locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal,
-            primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
+      CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, fVtBV, ldfVtBV, NULL, 0,
+            i, i + m - 1, locked, ldlocked, numLocked, BV, ldBV, NULL, 0,
+            nLocal, maxRank, &nV, ctx));
       int j;
       for (j = nV; j < i + m; j++) {
          Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV * j], ctx);
       }
-      CHKERR(Bortho_block_Sprimme(V, ldV, VtV, ldVtV, NULL, 0, nV, i + m - 1,
-            locked, ldlocked, numLocked, BV, ldBV, NULL, 0, nLocal,
-            primme->numOrthoConst + primme->maxBasisSize, &nV, ctx));
+      CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, fVtBV, ldfVtBV, NULL, 0,
+            nV, i + m - 1, locked, ldlocked, numLocked, BV, ldBV, NULL, 0,
+            nLocal, maxRank, &nV, ctx));
       CHKERRM(nV != i+m, -1, "Random basis in not full rank");
    }
 

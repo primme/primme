@@ -27,46 +27,68 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: primme_f77_private.h
+ * File: template_normal.h
  *
- * Purpose - Definitions used exclusively by primme_f77.c
+ * Purpose - Force a compilation for Hermitian and normal operator
  *
  ******************************************************************************/
 
-#ifndef PRIMME_F77_PRIVATE_H
-#define PRIMME_F77_PRIVATE_H
+#ifndef TEMPLATE_NORMAL_H
+#define TEMPLATE_NORMAL_H
 
-#include "template.h"
-#include "primme_interface.h" /* for Xprimme */
-
-/* Prototypes for Fortran-C interface */
-
-#ifdef __cplusplus
-extern "C" {
+#ifndef WITH_KIND
+#define WITH_KIND(X) CONCAT(X,KIND(,_normal))
 #endif
 
-#define AS_FORTRAN(X) AS_FORTRANX(X)
-#define AS_FORTRANX(X) FORTRAN_FUNCTION(X ## _f77)
+#ifdef THIS_FILE
 
-void AS_FORTRAN(Xprimme)(XREAL *evals, XSCALAR *evecs,
-      XREAL *rnorms, primme_params **primme, int *ierr);
+#ifdef CHECK_TEMPLATE
+#  undef TEMPLATE_PLEASE
+#  undef STATIC
+#  define TEMPLATE_PLEASE \
+      APPEND_FUNC(Sprimme,WITH_KIND(SCALAR_SUF)) \
+      USE(Sprimme, STR0(WITH_KIND(SCALAR_SUF))) \
+      USE(Rprimme, STR0(WITH_KIND(REAL_SUF))) \
+      USE(SHprimme,STR0(WITH_KIND(HOST_SCALAR_SUF))) \
+      USE(RHprimme,STR0(WITH_KIND(HOST_REAL_SUF))) \
+      USE(SXprimme,STR0(WITH_KIND(XSCALAR_SUF))) \
+      USE(RXprimme,STR0(WITH_KIND(XREAL_SUF))) \
+      USE_TYPE(h,k,s,c,d,z,q,w,  , STEM_C, KIND_C) \
+      USE_TYPE(h,k,s,c,d,z,q,w, X, HOST_STEM, KIND_C) \
+      USE_TYPE(s,c,s,c,d,z,q,w, H, HOST_STEM, KIND_C)
 
-/* Only define these functions ones */
-#ifdef USE_DOUBLE
-void AS_FORTRAN(primme_initialize)(primme_params **primme);
-void AS_FORTRAN(primme_free)(primme_params **primme);
-void AS_FORTRAN(primme_display_params)(primme_params **primme);
-void AS_FORTRAN(primme_printstacktrace)(primme_params **primme);
-void AS_FORTRAN(primme_set_method)(primme_params **primme, primme_preset_method *method, int *returnValue);
-void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label, void *ptr, int *ierr);
-void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i, double *shift);
-void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label, void *ptr, int *ierr);
-void AS_FORTRAN(primmetop_get_member)(primme_params **primme, int *label, void *ptr, int *ierr);
-void AS_FORTRAN(primmetop_get_prec_shift)(primme_params **primme, int *i, double *shift);
+#  define STATIC APPEND_FUNC(,WITH_KIND(SCALAR_SUF)) USE(,STR0(WITH_KIND(SCALAR_SUF)))
+#elif !defined(KIND_C)
+#  define KIND_C WITH_KIND()
 #endif
 
-#ifdef __cplusplus
-}
+#undef KIND
+#undef USE_HERMITIAN
+#undef USE_NORMAL
+
+// #define SHOW_TYPE
+
+#ifdef USE_COMPLEX
+#  ifdef SHOW_TYPE
+#     warning compiling normal
+#  endif
+#  define USE_NORMAL
+#  define KIND(H,N) N
+#  include THIS_FILE
+#  undef USE_NORMAL
+#  undef KIND
 #endif
 
-#endif /* PRIMME_F77_PRIVATE_H */
+#ifdef SHOW_TYPE
+#warning compiling Hermitian
+#endif
+#define USE_HERMITIAN
+#define KIND(H,N) H
+// #include THIS_FILE
+// #undef USE_HERMITIAN
+// #undef KIND
+
+#undef TEMPLATE_NORMAL_H
+
+#endif /* THIS_FILE */
+#endif /* TEMPLATE_NORMAL_H */

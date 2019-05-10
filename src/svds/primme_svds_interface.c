@@ -33,6 +33,11 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../svds/primme_svds_interface.c"
+#endif
+
+
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
@@ -626,9 +631,7 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
          v->int_v = primme_svds->numTargetShifts;
          break;
       case PRIMME_SVDS_targetShifts :
-         for (i=0; i< primme_svds->numTargetShifts; i++) {
-             (&v->double_v)[i] = primme_svds->targetShifts[i];
-         }
+         v->ptr_v = primme_svds->targetShifts;
          break;
       case PRIMME_SVDS_method :
          v->int_v = primme_svds->method;

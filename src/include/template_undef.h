@@ -27,34 +27,35 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: const.h
+ * File: template_undef.h
  *
- * Purpose - Header file containing constants used throughout PRIMME
+ * Purpose - Undefine macros defined in template.h
  *
  ******************************************************************************/
 
-#ifndef CONST_H
-#define CONST_H
+#ifdef TEMPLATE_H
 
-#include "numerical.h"
+#undef TEMPLATE_H
+#undef HOST_STEM
+#undef USE_HOST
+#undef USE_MAGMA
+#undef STEM
+#undef IMPL
+#undef USE_REAL
+#undef USE_COMPLEX
+#undef ARITH
+#undef REAL_ARITH
+#undef SUPPORTED_TYPE
+#undef REAL_PART
+#undef IMAGINARY_PART
+#undef ABS
+#undef CONJ
+#undef SET_ZERO
+#undef SET_COMPLEX
+#undef TO_COMPLEX
+#undef PLUS_EQUAL
+#undef MULT_EQUAL
+#undef TEMPLATE_PLEASE
+#undef STATIC
 
-#define TRUE  1
-#define FALSE 0
-
-/* Values for flags */
-
-enum conv_flags {
-   UNCONVERGED,
-   SKIP_UNTIL_RESTART,
-   CONVERGED,
-   PRACTICALLY_CONVERGED
-};
-
-/* Used in kernels in auxiliary_eigs.c, ortho.c and restart.c */
-#ifdef USE_MAGMA
-#define PRIMME_BLOCK_SIZE INT_MAX
-#else
-#define PRIMME_BLOCK_SIZE 512
-#endif
-
-#endif /* CONST_H */
+#endif /* TEMPLATE_H */

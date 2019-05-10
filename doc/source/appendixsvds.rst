@@ -216,7 +216,6 @@ primme_svds_params
                *ierr = 1;
             }
          }
-      }
 
       When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 

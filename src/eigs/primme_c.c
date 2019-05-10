@@ -54,8 +54,13 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/primme_c.c"
+#endif
+
 #include "numerical.h"
-#include "const.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 #include "primme_interface.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
@@ -63,22 +68,6 @@
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
 #endif
-
-#ifdef SUPPORTED_TYPE
-
-static int check_params_coherence(primme_context ctx);
-static int coordinated_exit(int ret, primme_context ctx);
-static int check_input(
-      void *evals, void *evecs, void *resNorms, primme_params *primme);
-static void convTestFunAbsolute(double *eval, void *evec, double *rNorm, int *isConv,
-   primme_params *primme, int *ierr);
-static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
-      int *iblock, int *blockSize, void *basisNorms, int *numConverged,
-      void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
-      int *inner_its, void *LSRes, const char *msg, double *time,
-      primme_event *event, primme_params *primme, int *err);
-
-#endif /* SUPPORTED_TYPE */
 
 /*******************************************************************************
  * Subroutine Xprimme - This routine is a front end used to perform 
@@ -116,7 +105,7 @@ static void default_monitor(void *basisEvals, int *basisSize, int *basisFlags,
  *
  ******************************************************************************/
 
-int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
+int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
 #ifdef SUPPORTED_TYPE
@@ -142,6 +131,10 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
    if (primme->monitorFun && primme->monitorFun_type == primme_op_default)
       primme->monitorFun_type = PRIMME_OP_SCALAR;
 
+   /* Number of returned eigenpairs */
+
+   int outInitSize = 0;
+
    /* call primme for the internal working precision */
 
    int ret;
@@ -151,21 +144,21 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
 #  ifdef SUPPORTED_HALF_TYPE
    case primme_op_half:
       ret = wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
 #  endif
    case primme_op_float:
       ret = wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
    case primme_op_double:
       ret = wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
 #  ifdef PRIMME_WITH_NATIVE_QUAD
    case primme_op_quad:
       ret = wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, ctx);
+            (void *)resNorms, &outInitSize, ctx);
       break;
 #  endif
    default: ret = PRIMME_FUNCTION_UNAVAILABLE;
@@ -174,14 +167,18 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
    /* Free context */
 
    primme_free_context(ctx);
+
+   /* Set the number of returned eigenpairs */
+
+   primme->initSize = outInitSize;
 #else
 
    (void)evals;
    (void)evecs;
    (void)resNorms;
-   (void)primme;
 
    int ret = PRIMME_FUNCTION_UNAVAILABLE;
+   primme->initSize = 0;
 #endif /* SUPPORTED_TYPE */
 
    return ret;
@@ -192,14 +189,20 @@ int Xprimme(XREAL *evals, XSCALAR *evecs, XREAL *resNorms,
 
 TEMPLATE_PLEASE
 int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_context ctx) {
+      void *resNorms, int *outInitSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
+   /* In case of error, return initSize = 0 */
+
+   *outInitSize = 0;
+
    /* zero out the timer */
+
    double t0 = primme_wTimer();
 
    /* Set some defaults for sequential programs */
+
    if (primme->numProcs <= 1 && evals != NULL && evecs != NULL &&
          resNorms != NULL) {
       primme->nLocal = primme->n;
@@ -207,37 +210,24 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    }
 
    /* Set some defaults  */
+
    primme_set_defaults(primme);
 
-   if (primme->orth == primme_orth_default) {
-#ifdef USE_HOST
-      /* The current code for block orthogonalization does not produce     */
-      /* a machine precision orthonormal basis. So block orthogonalization */
-      /* is used only when V'BV is computed explicitly.                    */
+   /* Observed orthogonality issues finding the largest/smallest values in  */
+   /* single precision. Computing V'*B*V and solving the projected problem  */
+   /* V'AVx = V'BVxl mitigates the problem.                                 */
+   /* Also if maxBlockSize > 1, the code uses the block orthogonalization   */
+   /* instead of Gram-Schmidt. But the current block orthogonalization does */
+   /* not produce a machine precision orthonormal basis, and we deal with   */
+   /* this by computing V'*B*V also in this case.                           */
 
-      if (primme->maxBlockSize > 1) {
+
+   if (primme->orth == primme_orth_default) {
+      if (PRIMME_OP_SCALAR <= primme_op_float || primme->maxBlockSize > 1) {
          primme->orth = primme_orth_explicit_I;
       } else {
          primme->orth = primme_orth_implicit_I;
       }
-#else
-
-      /* Observed orthogonality issues finding the largest/smallest values in  */
-      /* single precision. Computing V'*B*V and solving the projected problem  */
-      /* V'AVx = V'BVxl mitigates the problem.                                 */
-
-#  ifdef USE_FLOAT
-      if (primme->projectionParams.projection == primme_proj_RR &&
-                  (primme->target == primme_largest ||
-                        primme->target == primme_smallest ||
-                        primme->target == primme_largest_abs) ||
-            primme->maxBlockSize > 1) {
-         primme->orth = primme_orth_explicit_I;
-      }
-      else
-#  endif
-         primme->orth = primme_orth_implicit_I;
-#endif
    }
 
    /* If we are free to choose the leading dimension of V and W, use    */
@@ -254,6 +244,7 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    }
 
    /* Deprecated input:                                              */
+
    if (evals == NULL && evecs == NULL && resNorms == NULL)
       return 0;
 
@@ -293,11 +284,12 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
        
    /* Cast evals, evecs and resNorms to working precision */
 
-   HREAL *evals0, *resNorms0;
+   HEVAL *evals0;
+   HREAL *resNorms0;
    SCALAR *evecs0;
-   CHKERR(Num_matrix_astype_RHprimme(evals, 1, primme->numEvals, 1, input_type,
-         (void **)&evals0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
-         0 /* not copy */, ctx));
+   CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals, 1,
+         primme->numEvals, 1, input_type, (void **)&evals0, NULL,
+         PRIMME_OP_HREAL, 1 /* alloc */, 0 /* not copy */, ctx));
    PRIMME_INT ldevecs0;
    CHKERR(Num_matrix_astype_Sprimme(evecs, primme->nLocal,
          max(primme->numEvals, primme->initSize), primme->ldevecs, input_type,
@@ -316,15 +308,19 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
 
    /* Copy back evals, evecs and resNorms */
 
-   CHKERR(Num_matrix_astype_RHprimme(evals0, 1, primme->numEvals, 1,
-         PRIMME_OP_HREAL, (void **)&evals, NULL, input_type, -1 /* destroy */,
-         1 /* copy */, ctx));
+   CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals0,
+         1, primme->numEvals, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
+         input_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_matrix_astype_Sprimme(evecs0, primme->nLocal, primme->initSize,
          ldevecs0, PRIMME_OP_SCALAR, (void **)&evecs, &primme->ldevecs,
          input_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
          PRIMME_OP_HREAL, (void **)&resNorms, NULL, input_type,
          -1 /* destroy */, 1 /* copy */, ctx));
+
+   /* If no error, return initSize */
+
+   *outInitSize = primme->initSize;
 
    primme->stats.elapsedTime = primme_wTimer() - t0;
    return ret;
@@ -344,7 +340,7 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
  *                 <0    Inappropriate input parameters were found
  *
  ******************************************************************************/
-static int check_input(
+STATIC int check_input(
       void *evals, void *evecs, void *resNorms, primme_params *primme) {
    int ret;
    ret = 0;
@@ -461,7 +457,7 @@ static int check_input(
  * isConv      if it isn't zero the approximate pair is marked as converged
  ******************************************************************************/
 
-static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
+STATIC void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
       int *isConv, primme_params *primme, int *ierr) {
 
    (void)eval; /* unused parameter */
@@ -508,15 +504,16 @@ static void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
  * 
  ******************************************************************************/
 
-static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
+STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err) {
 
-   XREAL *basisEvals = (XREAL*)basisEvals_, *basisNorms = (XREAL*)basisNorms_,
-        *lockedEvals = (XREAL*)lockedEvals_, *lockedNorms = (XREAL*)lockedNorms_,
-        *LSRes = (XREAL*)LSRes_;
+   XEVAL *basisEvals = (XEVAL *)basisEvals_,
+         *lockedEvals = (XEVAL *)lockedEvals_;
+   XREAL *basisNorms = (XREAL *)basisNorms_,
+         *lockedNorms = (XREAL *)lockedNorms_, *LSRes = (XREAL *)LSRes_;
 
    assert(event != NULL && primme != NULL);
 
@@ -541,11 +538,17 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
                found = *numConverged;
 
             for (i=0; i < *blockSize; i++) {
-               fprintf(primme->outputFile, 
-                     "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P " Sec %E EV %13E |r| %.3E\n",
+               fprintf(primme->outputFile,
+                     "OUT %" PRIMME_INT_P " conv %d blk %d MV %" PRIMME_INT_P
+                     " Sec %E EV %13E " KIND(, "%13E i ") "|r| %.3E\n",
                      primme->stats.numOuterIterations, found, i,
                      primme->stats.numMatvecs, primme->stats.elapsedTime,
-                     (double)basisEvals[iblock[i]], (double)basisNorms[iblock[i]]);
+                     (double)EVAL_REAL_PART(basisEvals[iblock[i]]),
+#ifndef USE_HERMITIAN
+                     (double)EVAL_IMAGINARY_PART(basisEvals[iblock[i]]),
+#endif
+
+                     (double)basisNorms[iblock[i]]);
             }
          }
          break;
@@ -554,29 +557,45 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
          (void)inner_its;
          if (primme->printLevel >= 4) {
             fprintf(primme->outputFile,
-                  "INN MV %" PRIMME_INT_P " Sec %e Eval %e Lin|r| %.3e EV|r| %.3e\n",
+                  "INN MV %" PRIMME_INT_P " Sec %e Eval %13E " KIND(
+                        , "%13E i ") "Lin|r| %.3e EV|r| %.3e\n",
                   primme->stats.numMatvecs, primme->stats.elapsedTime,
-                  (double)basisEvals[iblock[0]], (double)*LSRes,
-                  (double)basisNorms[iblock[0]]);
+                  (double)EVAL_REAL_PART(basisEvals[iblock[0]]),
+#ifndef USE_HERMITIAN
+                  (double)EVAL_IMAGINARY_PART(basisEvals[iblock[0]]),
+#endif
+                  (double)*LSRes, (double)basisNorms[iblock[0]]);
          }
         break;
       case primme_event_converged:
          assert(numConverged && iblock && basisEvals && basisNorms);
          if ((!primme->locking && primme->printLevel >= 2)
                || (primme->locking && primme->printLevel >= 5))
-            fprintf(primme->outputFile, 
-                  "#Converged %d eval[ %d ]= %e norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
-                  *numConverged, iblock[0], (double)basisEvals[iblock[0]],
+            fprintf(primme->outputFile,
+                  "#Converged %d eval[ %d ]= %13E " KIND(,
+                        "%13E i ") "norm %e Mvecs %" PRIMME_INT_P " Time %g\n",
+                  *numConverged, iblock[0],
+                  (double)EVAL_REAL_PART(basisEvals[iblock[0]]),
+#ifndef USE_HERMITIAN
+                  (double)EVAL_IMAGINARY_PART(basisEvals[iblock[0]]),
+#endif
                   (double)basisNorms[iblock[0]], primme->stats.numMatvecs,
                   primme->stats.elapsedTime);
          break;
       case primme_event_locked:
          assert(numLocked && lockedEvals && lockedNorms && lockedFlags);
-         if (primme->printLevel >= 2) { 
-            fprintf(primme->outputFile, 
-                  "Lock epair[ %d ]= %e norm %.4e Mvecs %" PRIMME_INT_P " Time %.4e Flag %d\n",
-                  *numLocked-1, (double)lockedEvals[*numLocked-1], (double)lockedNorms[*numLocked-1], 
-                  primme->stats.numMatvecs, primme->stats.elapsedTime, lockedFlags[*numLocked-1]);
+         if (primme->printLevel >= 2) {
+            fprintf(primme->outputFile,
+                  "Lock epair[ %d ]= %13E " KIND(
+                        , "%13E i ") "norm %.4e Mvecs %" PRIMME_INT_P
+                                     " Time %.4e Flag %d\n",
+                  *numLocked - 1,
+                  (double)EVAL_REAL_PART(lockedEvals[*numLocked - 1]),
+#ifndef USE_HERMITIAN
+                  (double)EVAL_IMAGINARY_PART(lockedEvals[*numLocked - 1]),
+#endif
+                  (double)lockedNorms[*numLocked - 1], primme->stats.numMatvecs,
+                  primme->stats.elapsedTime, lockedFlags[*numLocked - 1]);
          }
          break;
       case primme_event_message:
@@ -592,7 +611,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
             fprintf(primme->outputFile, "entering in %s proc %d\n", msg, primme->procID);
          }
          if (primme->printLevel >= 2 && *time >= 0.0) { 
-            fprintf(primme->outputFile, "time for %s : %g proc %d\n", msg, *time, primme->procID);
+            fprintf(primme->outputFile, "time %g for %s proc %d\n", *time, msg, primme->procID);
          }
          break;
       default:
@@ -615,7 +634,7 @@ static void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
  *    error code
  ******************************************************************************/
 
-static int check_params_coherence(primme_context ctx) {
+STATIC int check_params_coherence(primme_context ctx) {
    primme_params *primme = ctx.primme;
 
    /* Check number of procs and procs with id zero */
@@ -682,7 +701,7 @@ static int check_params_coherence(primme_context ctx) {
  * RETURN:
  *    error code
  ******************************************************************************/
-static int coordinated_exit(int ret, primme_context ctx) {
+STATIC int coordinated_exit(int ret, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 

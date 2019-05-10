@@ -34,18 +34,12 @@
  *
  ******************************************************************************/
 
+#define THIS_FILE "../linalg/blaslapack.c"
+
 #include <string.h>   /* memmove */
 #include <assert.h>
 #include <math.h>
-#include "template.h"
-
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
-#  include "blaslapack.h"
-#  include "auxiliary.h" // cyclic
-#endif
-
-#define PRIMME_BLOCK_SIZE 512
+#include "numerical.h"
 
 #ifdef SUPPORTED_TYPE
 
@@ -53,11 +47,13 @@
 
 #include "blaslapack_private.h"
 
+#ifdef USE_DOUBLE
 static int free_fn_dummy (void *p, primme_context ctx) {
    (void)ctx;
    free(p);
    return 0;
 }
+#endif
 
 /******************************************************************************
  * Function Num_malloc_Sprimme - Allocate a vector of scalars
@@ -182,10 +178,7 @@ int Num_free_iprimme(int *x, primme_context ctx) {
    return 0;
 }
 
-#endif /* USE_DOUBLE */
 
-
-#if !defined(USE_HALF) && !defined(USE_HALFCOMPLEX)
 
 /******************************************************************************
  * Function Num_malloc_iblasprimme - Allocate a vector of integers
@@ -245,7 +238,7 @@ static int Num_free_iblasprimme(PRIMME_BLASINT *x, primme_context ctx) {
 
    return 0;
 }
-#endif /* !defined(USE_HALF) && !defined(USE_HALFCOMPLEX) */
+#endif /* USE_DOUBLE */
 
 
 
@@ -256,6 +249,10 @@ static int Num_free_iblasprimme(PRIMME_BLASINT *x, primme_context ctx) {
 TEMPLATE_PLEASE
 int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                       primme_context ctx) {
+
+   /* Quick exit */
+
+   if (x == y && incx == incy) return 0;
 
 #if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    (void)ctx;
@@ -1275,6 +1272,57 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
 
 /*******************************************************************************
+ * Subroutines for dense Schur decomposition
+ * NOTE: only for complex matrices
+ ******************************************************************************/
+ 
+#if defined(USE_COMPLEX) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF))
+
+TEMPLATE_PLEASE
+int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,
+      SCALAR *vs, int ldvs, primme_context ctx) {
+
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldvs = ldvs;
+   PRIMME_BLASINT lldwork = 0;
+   PRIMME_BLASINT linfo = 0;
+   PRIMME_BLASINT lsdim = 0;
+   REAL *rwork;
+   PRIMME_BLASINT dummyi=0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
+
+   /* Allocate arrays */
+
+   CHKERR(Num_malloc_Rprimme(n, &rwork, ctx));
+
+   /* Call to know the optimal workspace */
+
+   lldwork = -1;
+   SCALAR lwork0 = 0;
+   XGEES(jobvs, "N", NULL, &ln, a, &llda, &lsdim, w, vs, &lldvs, &lwork0,
+         &lldwork, rwork, &dummyi, &linfo);
+   lldwork = REAL_PART(lwork0);
+
+   if (linfo == 0) {
+      SCALAR *work = NULL;
+      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+      XGEES(jobvs, "N", NULL, &ln, a, &llda, &lsdim, w, vs, &lldvs, work,
+            &lldwork, rwork, &dummyi, &linfo);
+      CHKERR(Num_free_Sprimme(work, ctx));
+   }
+
+   CHKERR(Num_free_Rprimme(rwork, ctx));
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgees with info %d",
+          (int)linfo);
+   return 0;
+}
+#endif /* defined(USE_COMPLEX) && ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)) */
+
+/*******************************************************************************
  * Subroutines for dense singular value decomposition
  ******************************************************************************/
  
@@ -1631,6 +1679,44 @@ int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,
    return 0;
 }
 #endif /* (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF) */
+
+/*******************************************************************************
+ * Subroutine Num_compute_gramm_ddh - Computes the upper part of the Gramm matrix
+ *    X' * Y if the result is Hermitian, or the full matrix otherwise, and
+ *    do H = X' * Y + alpha * H.
+ *
+ * Input/Output parameters
+ * -----------------------
+ * X, Y     The input matrices
+ *
+ * m, n     Number of rows and columns of X and Y
+ *
+ * ldX,ldY  Leading dimension of X and Y
+ *
+ * H        Output matrix storing alpha * H + X' * Y
+ *
+ * ldH      Leading dimension of H
+ *
+ * isherm   Whether X' * Y is Hermitian
+ * 
+ * Return
+ * ------
+ * error code
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
+      SCALAR *Y, PRIMME_INT ldY, HSCALAR alpha, HSCALAR *H, int ldH, int isherm,
+      primme_context ctx) {
+
+   (void)isherm;
+
+   CHKERR(Num_gemm_ddh_Sprimme(
+         "C", "N", n, n, m, 1.0, X, ldX, Y, ldY, alpha, H, ldH, ctx));
+
+   return 0;
+}
 
 #endif /* USE_HOST */
 

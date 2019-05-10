@@ -33,8 +33,13 @@
  *
  ******************************************************************************/
 
-#include "const.h"
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/correction.c"
+#endif
+
 #include "numerical.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "correction.h"
@@ -43,31 +48,6 @@
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-static HREAL computeRobustShift(int blockIndex, double resNorm, 
-   HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 
-   HREAL *approxOlsenShift, int numSorted, int *ilev, primme_params *primme);
-
-static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, 
-   int *flags, int basisSize, HREAL *sortedRitzVals, int *ilev, int blockSize,
-   primme_params *primme);
-
-static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
-      PRIMME_INT ldx, SCALAR *Bx, PRIMME_INT ldBx, int blockSize,
-      primme_context ctx);
-
-static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
-      PRIMME_INT ldBx, SCALAR *evecs, PRIMME_INT ldevecs, SCALAR *Bevecs,
-      PRIMME_INT ldBevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
-      SCALAR *KinvBx, PRIMME_INT ldKinvBx, HSCALAR *xKinvBx,
-      SCALAR **LprojectorQ, PRIMME_INT *ldLprojectorQ, SCALAR **LprojectorX,
-      PRIMME_INT *ldLprojectorX, SCALAR **LprojectorBQ,
-      PRIMME_INT *ldLprojectorBQ, SCALAR **LprojectorBX,
-      PRIMME_INT *ldLprojectorBX, SCALAR **RprojectorQ,
-      PRIMME_INT *ldRprojectorQ, SCALAR **RprojectorX,
-      PRIMME_INT *ldRprojectorX, int *sizeLprojectorQ, int *sizeLprojectorX,
-      int *sizeRprojectorQ, int *sizeRprojectorX, int numLocked,
-      int numConverged, int blockSize, primme_context ctx);
 
 /*******************************************************************************
  * Subroutine solve_correction - This routine solves the correction equation
@@ -154,11 +134,25 @@ TEMPLATE_PLEASE
 int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, SCALAR *evecs,
       PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, SCALAR *evecsHat,
-      PRIMME_INT ldevecsHat, HSCALAR *Mfact, int *ipivot, HREAL *lockedEvals,
-      int numLocked, int numConvergedStored, HREAL *ritzVals,
-      HREAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
+      PRIMME_INT ldevecsHat, HSCALAR *Mfact, int *ipivot, HEVAL *lockedEvals,
+      int numLocked, int numConvergedStored, HEVAL *ritzVals,
+      HEVAL *prevRitzVals, int *numPrevRitzVals, int *flags, int basisSize,
       HREAL *blockNorms, int *iev, int blockSize, int *touch, double startTime,
       primme_context ctx) {
+
+   KIND(, (void)lockedEvals);
+   KIND(, (void)flags);
+   KIND(, (void)evecs);
+   KIND(, (void)ldevecs);
+   KIND(, (void)Bevecs);
+   KIND(, (void)ldBevecs);
+   KIND(, (void)evecsHat);
+   KIND(, (void)ldevecsHat);
+   KIND(, (void)Mfact);
+   KIND(, (void)ipivot);
+   KIND(, (void)numConvergedStored);
+   KIND(, (void)touch);
+   KIND(, (void)startTime);
 
    primme_params *primme = ctx.primme;
    int blockIndex; /* Loop index.  Ranges from 0..blockSize-1.       */
@@ -166,12 +160,14 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                    /* values to their positions in the sortedEvals   */
                    /* array.                                         */
 
-   HREAL *sortedRitzVals; /* Sorted array of current and converged Ritz     */
+   HEVAL *sortedRitzVals; /* Sorted array of current and converged Ritz     */
                           /* values.  Size of array is numLocked+basisSize. */
-   double *blockOfShifts; /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
+   KIND(double, PRIMME_COMPLEX_DOUBLE) *
+         blockOfShifts;   /* Shifts for (A-shiftI) or (if needed) (K-shiftI)*/
    HREAL *approxOlsenEps; /* Shifts for approximate Olsen implementation    */
 
-   CHKERR(Num_malloc_dprimme(blockSize, &blockOfShifts, ctx));
+   CHKERR(KIND(Num_malloc_dprimme, Num_malloc_zprimme)(
+         blockSize, &blockOfShifts, ctx));
    CHKERR(Num_malloc_RHprimme(blockSize, &approxOlsenEps, ctx));
 
    /*------------------------------------------------------------*/
@@ -183,6 +179,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    /* approxOlsenEps will contain error approximations for eigenavalues    */
    /* to be used for Olsen's method (when innerIterations =0).             */
 
+#ifdef USE_HERMITIAN
    if (primme->locking && (primme->target == primme_smallest ||
                                 primme->target == primme_largest)) {
       /* Combine the sorted list of locked Ritz values with the sorted  */
@@ -193,8 +190,9 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(Num_malloc_iprimme(blockSize, &ilev, ctx));
       mergeSort(lockedEvals, numLocked, ritzVals, flags, basisSize,
             sortedRitzVals, ilev, blockSize, primme);
-   }
-   else {
+   } else
+#endif /* USE_HERMITIAN */
+   {
       /* In the case of soft-locking or when we look for interior ones  */
       /* the sorted evals are simply the ritzVals, targeted as iev      */
 
@@ -210,36 +208,29 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
       for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
 
-         /* Considering |Ritz value - exact eigenvalue| <= residual norm, then      */
-         /* we take the closest point in the interval Ritz value +- residual norm   */
-         /* to the user shift as the proper shift.                                  */
+         // Considering |Ritz value - exact eigenvalue| <= residual norm *
+         // sqrt(|inv(B)|), then we take the closest point in the interval Ritz
+         // value +- residual norm to the user shift as the proper shift.
 
+         double targetShift = primme->targetShifts[min(
+               primme->numTargetShifts - 1, numLocked)];
          int sortedIndex = ilev[blockIndex];
-         if (sortedRitzVals[sortedIndex] -
-                           blockNorms[blockIndex] *
-                                 sqrt(primme->stats.estimateInvBNorm) <
-                     primme->targetShifts[min(
-                           primme->numTargetShifts - 1, numLocked)] &&
-               primme->targetShifts[min(
-                     primme->numTargetShifts - 1, numLocked)] <
-                     sortedRitzVals[sortedIndex] +
-                           blockNorms[blockIndex] *
-                                 sqrt(primme->stats.estimateInvBNorm))
-            blockOfShifts[blockIndex] = 
-               primme->targetShifts[min(primme->numTargetShifts-1, numLocked)];
-         else
+         if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) >=
+               blockNorms[blockIndex] * sqrt(primme->stats.estimateInvBNorm)) {
+            blockOfShifts[blockIndex] = targetShift;
+         } else {
             blockOfShifts[blockIndex] =
                   sortedRitzVals[sortedIndex] +
-                  blockNorms[blockIndex] *
-                        sqrt(primme->stats.estimateInvBNorm) *
-                        (primme->targetShifts[min(primme->numTargetShifts - 1,
-                               numLocked)] < sortedRitzVals[sortedIndex]
-                                    ? -1
-                                    : 1);
+                  ((HEVAL)(blockNorms[blockIndex] *
+                           sqrt(primme->stats.estimateInvBNorm))) *
+                        ((HEVAL)targetShift - sortedRitzVals[sortedIndex]) /
+                        EVAL_ABS(
+                              (HEVAL)targetShift - sortedRitzVals[sortedIndex]);
+         }
 
          if (sortedIndex < *numPrevRitzVals) {
-            approxOlsenEps[blockIndex] = 
-            fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
+            approxOlsenEps[blockIndex] = EVAL_ABS(
+                  prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
          }  
          else {
             approxOlsenEps[blockIndex] =
@@ -249,14 +240,15 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
       /* Remember the previous ritz values*/
       *numPrevRitzVals = basisSize;
-      Num_copy_RHprimme(
-            *numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1, ctx);
+      CHKERR(KIND(Num_copy_RHprimme, Num_copy_SHprimme)(
+            *numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1, ctx));
 
    } /* user provided shifts */
-   else {    
-   /*-----------------------------------------------------------------*/
-   /* else it is primme_smallest or primme_largest                    */
-   /*-----------------------------------------------------------------*/
+#ifdef USE_HERMITIAN
+   else {
+      /*-----------------------------------------------------------------*/
+      /* else it is primme_smallest or primme_largest                    */
+      /*-----------------------------------------------------------------*/
 
       if (primme->correctionParams.robustShifts) { 
          /*----------------------------------------------------*/
@@ -268,12 +260,12 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    
             int sortedIndex = ilev[blockIndex];
             HREAL eval = sortedRitzVals[sortedIndex];
-   
-            HREAL robustShift = computeRobustShift(blockIndex, 
-              blockNorms[blockIndex], prevRitzVals, *numPrevRitzVals, 
-              sortedRitzVals, &approxOlsenEps[blockIndex], 
-              numLocked+basisSize, ilev, primme);
-   
+
+            HREAL robustShift = computeRobustShift(blockIndex,
+                  blockNorms[blockIndex], prevRitzVals, *numPrevRitzVals,
+                  sortedRitzVals, &approxOlsenEps[blockIndex],
+                  numLocked + basisSize, ilev, primme);
+
             /* Subtract/add the shift if looking for the smallest/largest  */
             /* eigenvalues, Do not go beyond the previous computed eigval  */
        
@@ -304,8 +296,8 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             int sortedIndex = ilev[blockIndex];
             blockOfShifts[blockIndex] = ritzVals[ritzIndex];
             if (sortedIndex < *numPrevRitzVals) {
-               approxOlsenEps[blockIndex] = 
-               fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
+               approxOlsenEps[blockIndex] = fabs(
+                     prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
             }
             else {
                approxOlsenEps[blockIndex] =
@@ -321,12 +313,13 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             *numPrevRitzVals, sortedRitzVals, 1, prevRitzVals, 1, ctx);
 
    } /* else primme_smallest or primme_largest */
+#endif /* USE_HERMITIAN */
 
    /* Equip the primme struct with the blockOfShifts, in case the user */
    /* wants to precondition (K-sigma_i I)^{-1} with a different shift  */
    /* for each vector                                                  */
 
-   primme->ShiftsForPreconditioner = blockOfShifts;
+   primme->ShiftsForPreconditioner = (double *)blockOfShifts;
 
    /*------------------------------------------------------------ */
    /*  Generalized Davidson variants -- No inner iterations       */
@@ -347,7 +340,18 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
           Olsen_preconditioner_block(r, ldW, x, ldV, Bx, ldBV, blockSize, ctx);
       }
       else {
-         if ( primme->correctionParams.projectors.RightX ) {   
+         // In general the Olsen's approximation is not useful without
+         // preconditioning. However expanding the basis with r - approxOlsen*x
+         // helps in checking the practical convergence. Check main_iter for
+         // more details.
+
+         if (primme->correctionParams.projectors.RightX &&
+               ((primme->correctionParams.precondition &&
+                      primme->applyPreconditioner) ||
+                     Bx != x ||
+                     (primme->locking &&
+                           primme->orth == primme_orth_implicit_I))) {
+#ifdef USE_HERMITIAN
             /*Compute a cheap approximation to OLSENS, where (x'Kinvr)/xKinvx */
             /*is approximated by e: Kinvr-e*KinvBx=Kinv(r-e*x)=Kinv(I-ct*x*x')r*/
 
@@ -355,7 +359,10 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                /* Compute r_i = r_i - err_i * Bx_i */
                Num_axpy_Sprimme(primme->nLocal, -approxOlsenEps[blockIndex],
                      &Bx[ldBV * blockIndex], 1, &r[ldW * blockIndex], 1, ctx);
-            } /* for */
+            }
+#else
+            CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+#endif
          }
 
          /* GD: compute K^{-1}r , or approx.Olsen: K^{-1}(r-eBx) */
@@ -368,6 +375,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    /*  JDQMR --- JD inner-outer variants                           */
    /* ------------------------------------------------------------ */
    else {  /* maxInnerIterations > 0  We perform inner-outer JDQMR */
+#ifdef USE_HERMITIAN
       int touch0 = *touch;
 
       SCALAR *sol, *KinvBx;
@@ -416,11 +424,13 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* index, and the shift for the correction equation. Also make the   */
       /* shift available to PRIMME, in case (K-shift B)^-1 is needed       */
 
-      HREAL *blockRitzVals;
-      CHKERR(Num_malloc_RHprimme(blockSize, &blockRitzVals, ctx));
-      Num_compact_vecs_RHprimme(ritzVals, 1, blockSize, 1, iev, blockRitzVals,
-            1, 0 /* force copy */, ctx);
-      primme->ShiftsForPreconditioner = blockOfShifts;
+      HEVAL *blockRitzVals;
+      CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(
+            blockSize, &blockRitzVals, ctx));
+      KIND(Num_compact_vecs_RHprimme, Num_compact_vecs_SHprimme)
+      (ritzVals, 1, blockSize, 1, iev, blockRitzVals, 1, 0 /* force copy */,
+            ctx);
+      primme->ShiftsForPreconditioner = (double *)blockOfShifts;
 
       /* Pass the original value of touch and update touch as the maximum  */
       /* value that takes for all inner_solve calls                        */
@@ -442,13 +452,15 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       CHKERR(Num_free_SHprimme(xKinvBx, ctx));
       CHKERR(Num_free_Sprimme(sol, ctx));
       CHKERR(Num_free_Sprimme(KinvBx, ctx));
-      CHKERR(Num_free_RHprimme(blockRitzVals, ctx));
-
+      CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(blockRitzVals, ctx));
+#else
+      CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+#endif /* USE_HERMITIAN */
    } /* JDqmr variants */
 
    if (sortedRitzVals != ritzVals)
-      CHKERR(Num_free_RHprimme(sortedRitzVals, ctx));
-   CHKERR(Num_free_dprimme(blockOfShifts, ctx));
+      CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(sortedRitzVals, ctx));
+   CHKERR(KIND(Num_free_dprimme, Num_free_zprimme)(blockOfShifts, ctx));
    CHKERR(Num_free_RHprimme(approxOlsenEps, ctx));
    if (ilev != iev) CHKERR(Num_free_iprimme(ilev, ctx));
 
@@ -502,7 +514,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *         will compute shift := shift +/- epsilon.
  ******************************************************************************/
 
-static HREAL computeRobustShift(int blockIndex, double resNorm, 
+STATIC HREAL computeRobustShift(int blockIndex, double resNorm, 
    HREAL *prevRitzVals, int numPrevRitzVals, HREAL *sortedRitzVals, 
    HREAL *approxOlsenShift, int numSorted, int *ilev, primme_params *primme) {
 
@@ -616,8 +628,7 @@ static HREAL computeRobustShift(int blockIndex, double resNorm,
  *
  ******************************************************************************/
 
-
-static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, 
+STATIC void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, 
    int *flags, int basisSize, HREAL *sortedRitzVals, int *ilev, int blockSize,
    primme_params *primme) {
    
@@ -642,13 +653,13 @@ static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals,
       /* II. If the list of current Ritz values has been completely merged,*/
       /* or if lockedEvals[eval] greater/less than ritzVals[ritzVal], then */
       /* merge lockedEvals[eval] into the list of sorted Ritz values.      */
-  
-      if (eval >= numLocked || (primme->target == primme_largest && 
-                               ritzVals[ritzVal] >= lockedEvals[eval])
-                           || (primme->target == primme_smallest &&
-                               ritzVals[ritzVal] <= lockedEvals[eval])
-         ) 
-      {
+
+      if (eval >= numLocked ||
+            (ritzVal < basisSize &&
+                        (primme->target == primme_largest &&
+                              ritzVals[ritzVal] >= lockedEvals[eval]) ||
+                  (primme->target == primme_smallest &&
+                        ritzVals[ritzVal] <= lockedEvals[eval]))) {
          sortedRitzVals[count] = ritzVals[ritzVal];
 
          /* If the Ritz value just merged is unconverged and there is room */
@@ -696,7 +707,7 @@ static void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals,
  *
  ******************************************************************************/
 
-static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
+STATIC int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
       PRIMME_INT ldx, SCALAR *Bx, PRIMME_INT ldBx, int blockSize,
       primme_context ctx) {
 
@@ -755,7 +766,7 @@ static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
 
    return 0;
 
-} /* of Olsen_preconditiner_block */
+}
 
 /*******************************************************************************
  *   subroutine setup_JD_projectors()
@@ -840,7 +851,7 @@ static int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
  *
  ******************************************************************************/
 
-static int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
+STATIC int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       PRIMME_INT ldBx, SCALAR *evecs, PRIMME_INT ldevecs, SCALAR *Bevecs,
       PRIMME_INT ldBevecs, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
       SCALAR *KinvBx, PRIMME_INT ldKinvBx, HSCALAR *xKinvBx,

@@ -33,18 +33,13 @@
  *
  ******************************************************************************/
 
+#define THIS_FILE "../linalg/wtime.c"
+
 #include <stdlib.h>
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
-/* Keep automatically generated headers under this section  */
-#ifndef CHECK_TEMPLATE
-#include "wtime.h"
-#endif
-
-/* Only define these functions ones */
-#ifdef USE_DOUBLE
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 
@@ -85,5 +80,3 @@ double primme_wTimer() {
 }
 
 #endif
-
-#endif /* USE_DOUBLE */

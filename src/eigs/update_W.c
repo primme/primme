@@ -34,150 +34,23 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/update_W.c"
+#endif
+
+
 #include "numerical.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "update_W.h"
 #include "auxiliary_eigs.h"
+#include "auxiliary_eigs_normal.h"
 #include "ortho.h"
 #endif
 
 #ifdef SUPPORTED_TYPE
-
-/*******************************************************************************
- * Subroutine matrixMatvec_ - Computes A*V(:,nv+1) through A*V(:,nv+blksze)
- *           where V(:,nv+1:nv+blksze) are the new correction vectors.
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * V          The orthonormal basis
- * nLocal     Number of rows of each vector stored on this node
- * ldV        The leading dimension of V
- * ldW        The leading dimension of W
- * basisSize  Number of vectors in V
- * blockSize  The current block size
- * 
- * INPUT/OUTPUT ARRAYS
- * -------------------
- * W          A*V
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      SCALAR *W, PRIMME_INT ldW, int basisSize, int blockSize,
-      primme_context ctx) {
-
-   primme_params *primme = ctx.primme;
-
-   if (blockSize <= 0)
-      return 0;
-
-   assert(ldV >= nLocal && ldW >= nLocal);
-   assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
-
-   double t0 = primme_wTimer();
-
-   /* Cast V and W */
-
-   SCALAR *Vb = &V[ldV * basisSize], *Wb = &W[ldW * basisSize];
-   void *V0, *W0;
-   PRIMME_INT ldV0, ldW0;
-   CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
-         PRIMME_OP_SCALAR, &V0, &ldV0, primme->matrixMatvec_type, 1 /* alloc */,
-         1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_Sprimme(Wb, nLocal, blockSize, ldW,
-         PRIMME_OP_SCALAR, &W0, &ldW0, primme->matrixMatvec_type, 1 /* alloc */,
-         0 /* no copy */, ctx));
-
-   /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
-
-   int ierr = 0;
-   CHKERRM(
-         (primme->matrixMatvec(V0, &ldV0, W0, &ldW0, &blockSize, primme, &ierr),
-               ierr),
-         PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
-
-   /* Copy back W */
-
-   CHKERR(Num_matrix_astype_Sprimme(W0, nLocal, blockSize, ldW0,
-         primme->matrixMatvec_type, (void **)&Wb, &ldW,
-         PRIMME_OP_SCALAR, 0 /* not alloc */, 1 /* copy */, ctx));
-
-   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
-   if (Wb != W0) CHKERR(Num_free_Sprimme((SCALAR*)W0, ctx));
-
-   primme->stats.timeMatvec += primme_wTimer() - t0;
-   primme->stats.numMatvecs += blockSize;
-
-   return 0;
-}
-
-/*******************************************************************************
- * Subroutine massMatrixMatvec - Computes B*V(:,nv+1:nv+blksze)
- *
- * INPUT ARRAYS AND PARAMETERS
- * ---------------------------
- * V          The orthonormal basis
- * nLocal     Number of rows of each vector stored on this node
- * ldV        The leading dimension of V
- * ldW        The leading dimension of W
- * basisSize  Number of vectors in V
- * blockSize  The current block size
- * 
- * INPUT/OUTPUT ARRAYS
- * -------------------
- * BV          B*V
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
-      SCALAR *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
-      primme_context ctx) {
-
-   primme_params *primme = ctx.primme;
-
-   if (blockSize <= 0)
-      return 0;
-
-   assert(ldV >= nLocal && ldBV >= nLocal);
-   assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
-
-   double t0 = primme_wTimer();
-
-   /* Cast V and BV */
-
-   SCALAR *Vb = &V[ldV * basisSize], *BVb = &BV[ldBV * basisSize];
-   void *V0, *BV0;
-   PRIMME_INT ldV0, ldBV0;
-   CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
-         PRIMME_OP_SCALAR, &V0, &ldV0, primme->massMatrixMatvec_type,
-         1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_Sprimme(BVb, nLocal, blockSize, ldBV,
-         PRIMME_OP_SCALAR, &BV0, &ldBV0, primme->massMatrixMatvec_type,
-         1 /* alloc */, 0 /* no copy */, ctx));
-
-   /* BV(:,c) = B*V(:,c) for c = basisSize:basisSize+blockSize-1 */
-
-   int ierr = 0;
-   CHKERRM((primme->massMatrixMatvec(
-                  V0, &ldV0, BV0, &ldBV, &blockSize, primme, &ierr),
-                 ierr),
-         PRIMME_USER_FAILURE, "Error returned by 'massMatrixMatvec' %d", ierr);
-
-   /* Copy back BV */
-
-   CHKERR(Num_matrix_astype_Sprimme(BV0, nLocal, blockSize, ldBV0,
-         primme->matrixMatvec_type, (void **)&BVb, &ldBV, PRIMME_OP_SCALAR,
-         0 /* not alloc */, 1 /* copy */, ctx));
-
-   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
-   if (BVb != BV0) CHKERR(Num_free_Sprimme((SCALAR*)BV0, ctx));
-
-   primme->stats.timeMatvec += primme_wTimer() - t0;
-   primme->stats.numMatvecs += blockSize;
-
-   return 0;
-}
 
 /*******************************************************************************
  * Subroutine update_QR - Computes the QR factorization (A-targetShift*B)*V
@@ -198,13 +71,14 @@ int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
  * Q          The Q factor
  * R          The R factor
  * QtQ        Q'Q
+ * fQtQ       The Cholesky factor of QtQ
  ******************************************************************************/
 
 TEMPLATE_PLEASE
 int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
       PRIMME_INT ldW, SCALAR *Q, PRIMME_INT ldQ, HSCALAR *R, int ldR,
-      HSCALAR *QtQ, int ldQtQ, double targetShift, int basisSize,
-      int blockSize, int *nQ, primme_context ctx) {
+      HSCALAR *QtQ, int ldQtQ, HSCALAR *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx) {
 
    int i;
 
@@ -216,15 +90,19 @@ int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,
           ldR >= basisSize + blockSize);
 
    /* Q(:,c) = W(:,c) - BV(:,c)*target for c = basisSize:basisSize+blockSize-1 */
-   for (i=basisSize; i<basisSize+blockSize; i++) {
-      Num_compute_residual_Sprimme(
-            nLocal, targetShift, &BV[ldBV * i], &W[ldW * i], &Q[ldQ * i], ctx);
-   }
+
+   HEVAL *t;
+   CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(blockSize, &t, ctx));
+   for (i=0; i<blockSize; i++) t[i] = targetShift;
+   CHKERR(Num_compute_residuals_Sprimme(nLocal, blockSize, t,
+         &BV[ldBV * basisSize], ldBV, &W[ldW * basisSize], ldW,
+         &Q[ldQ * basisSize], ldQ, ctx));
+   CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(t, ctx));
 
    /* Ortho Q(:,c) for c = basisSize:basisSize+blockSize-1 */
 
-   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, R,
-         ldR, *nQ, *nQ + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
+   CHKERR(ortho_block_Sprimme(Q, ldQ, QtQ, ldQtQ, fQtQ, ldfQtQ, R, ldR, *nQ,
+         *nQ + blockSize - 1, NULL, 0, 0, NULL, 0, nLocal,
          ctx.primme->maxBasisSize, nQ, ctx));
 
    /* Zero the lower-left part of R */

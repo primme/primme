@@ -1,5 +1,5 @@
 C*******************************************************************************
-C  Copyright (c) 2017, College of William & Mary                                   
+C  Copyright (c) 2018, College of William & Mary                                   
 C  All rights reserved.                                                            
 C                                                                                  
 C  Redistribution and use in source and binary forms, with or without
@@ -160,8 +160,6 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
      :                                                 printLevel, ierr)
         call primme_set_member_f77(primme, PRIMME_maxMatvecs,
      :                                                 maxMatvecs, ierr)
-        call primme_set_member_f77(primme, 
-     :         PRIMME_restartingParams_scheme, PRIMME_thick, ierr)
 !
 !       Set the method to be used (after n, numEvals, and precondition have
 !       been set. Also after basisSize is set, if desired.)
@@ -228,6 +226,7 @@ C  Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
            enddo
  9000      FORMAT (1x,'E(',i1,') = ',G24.16,4x,
      &            'residual norm =', E12.4)
+        call primme_free_f77(primme)
         endif
 
         call PetscFinalize(ierr)

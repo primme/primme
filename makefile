@@ -93,7 +93,8 @@ uninstall:
 		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
 
 deps:
-	touch src/*/*.c
+	@touch src/*/*.c
+	@rm -f src/deps
 	@$(MAKE) -C src auto_headers
 
 check_style:
@@ -110,7 +111,7 @@ lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: e
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := clang
 lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
 matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
-lib-clang-half: lib
+lib-clang-half lib-clang-half-debug: lib
 matlab-clang-half-debug: export MEXFLAGS := CXX=clang LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
 matlab-clang-half matlab-clang-half-debug: matlab
 

@@ -33,6 +33,7 @@
  *
  ******************************************************************************/
 
+#include "common.h"
 #include "template.h"
 #ifndef CHECK_TEMPLATE
 #include "blaslapack.h"

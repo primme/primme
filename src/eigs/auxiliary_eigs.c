@@ -27,14 +27,19 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: auxiliary.c
+ * File: auxiliary_eigs.c
  *
- * Purpose - Miscellanea functions used by PRIMME EIGS
+ * Purpose - Miscellanea functions used by PRIMME EIGS not dependent on the
+ *           Hermiticity/normality of the operator
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/auxiliary_eigs.c"
+#endif
+
 #include <string.h> /* memset */
-#include "const.h"
+#include "common_eigs.h"
 #include "numerical.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
@@ -160,303 +165,141 @@ void primme_free_context(primme_context ctx) {
 
 #endif /* USE_DOUBLE */
 
-/******************************************************************************
- * Function Num_compute_residual - This subroutine performs the next operation
- *    in a cache-friendly way:
- *
- *    r = Ax - eval*Bx
- *
- * PARAMETERS
- * ---------------------------
- * n           The number of rows of x, Ax and r
- * eval        The value to compute the residual vector r
- * Bx          The vector Bx
- * Ax          The vector Ax
- * r           On output r = Ax - eval*Bx
- *
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-void Num_compute_residual_Sprimme(PRIMME_INT n, HSCALAR eval, SCALAR *Bx,
-   SCALAR *Ax, SCALAR *r, primme_context ctx) {
-
-   int k, M=min(n,PRIMME_BLOCK_SIZE);
-
-   for (k=0; k<n; k+=M, M=min(M,n-k)) {
-      Num_copy_Sprimme(M, &Ax[k], 1, &r[k], 1, ctx);
-      Num_axpy_Sprimme(M, -eval, &Bx[k], 1, &r[k], 1, ctx);
-   }
-
-}
-
-/******************************************************************************
- * Function Num_update_VWXR - This subroutine performs the next operations:
- *
- *    X0 = V*h(nX0b+1:nX0e), X1 = V*h(nX1b+1:nX1e), X2 = V*h(nX2b+1:nX2e)
- *    Wo = W*h(nWob+1:nWoe),
- *    BX0 = BV*h(nBX0b+1:nBX0e), BX1 = BV*h(nBX1b+1:nBX1e)
- *    R = W*h(nRb+1:nRe) - BV*h(nRb+1:nRe)*diag(hVals(nRb+1:nRe)),
- *    Rnorms = norms(R),
- *    rnorms = norms(W*h(nrb+1:nre) - BV*h(nrb+1:nre)*diag(hVals(nrb+1:nre)))
- *    xnorms = norms(V*h(nxb+1:nxe))
- *    G = (V*h(1:nG))'*BV*h(1:nG)
- *    H = (V*h(1:nH))'*W*h(1:nH)
- *
- * NOTE: if Rnorms and rnorms are requested, nRb-nRe+nrb-nre < mV
+/*******************************************************************************
+ * Subroutine matrixMatvec_ - Computes A*V(:,nv+1) through A*V(:,nv+blksze)
+ *           where V(:,nv+1:nv+blksze) are the new correction vectors.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * V, W, BV    input basis
- * mV,nV,ldV   number of rows and columns and leading dimension of V, W and BV
- * h           input rotation matrix
- * nh          Number of columns of h
- * ldh         The leading dimension of h
- * hVals       Array of values
- *
- * OUTPUT ARRAYS AND PARAMETERS
- * ----------------------------
- * X0             Output matrix V*h(nX0b:nX0e-1) (optional)
- * nX0b, nX0e     Range of columns of h
- * X1             Output matrix V*h(nX1b:nX1e-1) (optional)
- * nX1b, nX1e     Range of columns of h
- * X2             Output matrix V*h(nX2b:nX2e-1) (optional)
- * nX2b, nX2e     Range of columns of h
- * Wo             Output matrix W*h(nWob:nWoe-1) (optional)
- * nWob, nWoe     Range of columns of h
- * BX0            Output matrix BV*h(nBX0b:nBX0e-1) (optional)
- * nBX0b, nBX0e   Range of columns of h
- * BX1            Output matrix BV*h(nBX1b:nBX1e-1) (optional)
- * nBX1b, nBX1e   Range of columns of h
- * BX2            Output matrix BV*h(nBX2b:nBX2e-1) (optional)
- * nBX2b, nBX2e   Range of columns of h
- * R              Output matrix (optional)
- * nRb, nRe       Range of columns of h and hVals
- * Rnorms         Output array with the norms of R (optional)
- * rnorms         Output array with the extra residual vector norms (optional)
- * nrb, nre       Columns of residual vector to compute the norm
- * xnorms         Output array with V*h(nxb:nxe-1) vector norms (optional)
- * nxb, nxe       Columns of V*h to compute the norm
+ * V          The orthonormal basis
+ * nLocal     Number of rows of each vector stored on this node
+ * ldV        The leading dimension of V
+ * ldW        The leading dimension of W
+ * basisSize  Number of vectors in V
+ * blockSize  The current block size
  * 
- * NOTE: n*e, n*b are zero-base indices of ranges where the first value is
- *       included and the last isn't.
- *
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * W          A*V
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
-      int nV, PRIMME_INT ldV, HSCALAR *h, int nh, int ldh, HREAL *hVals,
-      SCALAR *X0, int nX0b, int nX0e, PRIMME_INT ldX0,
-      SCALAR *X1, int nX1b, int nX1e, PRIMME_INT ldX1,
-      SCALAR *X2, int nX2b, int nX2e, PRIMME_INT ldX2,
-      SCALAR *Wo, int nWob, int nWoe, PRIMME_INT ldWo,
-      SCALAR *R, int nRb, int nRe, PRIMME_INT ldR, HREAL *Rnorms,
-      SCALAR *BX0, int nBX0b, int nBX0e, PRIMME_INT ldBX0,
-      SCALAR *BX1, int nBX1b, int nBX1e, PRIMME_INT ldBX1,
-      SCALAR *BX2, int nBX2b, int nBX2e, PRIMME_INT ldBX2,
-      HREAL *rnorms, int nrb, int nre,
-      HSCALAR *G, int nG, int ldG,
-      HSCALAR *H, int nH, int ldH,
-      HREAL *xnorms, int nxb, int nxe,
+int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *W, PRIMME_INT ldW, int basisSize, int blockSize,
       primme_context ctx) {
 
-   PRIMME_INT i;     /* Loop variables */
-   int j;            /* Loop variables */
-   int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
-   int nXb, nXe, nYb, nYe, nBXb, nBXe, ldG0=0, ldH0=0;
-   PRIMME_INT ldX, ldY, ldBX;
-   SCALAR *X, *Y, *BX;
-   HSCALAR *G0=NULL, *H0=NULL, *workGH = NULL;
+   primme_params *primme = ctx.primme;
 
-   assert(mV <= ldV && nh <= ldh && (!G || nG <= ldG) && (!H || nH <= ldH));
-   assert(Rnorms == NULL || nRb >= nRe || nrb >= nre || Rnorms != rnorms);
+   if (blockSize <= 0)
+      return 0;
 
-   /* Figure out which columns of V*h, W*h and BV*h to compute */
+   assert(ldV >= nLocal && ldW >= nLocal);
+   assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
 
-   nXb = nYb = nBXb = INT_MAX;
-   nXe = nYe = nBXe = 0;
+   double t0 = primme_wTimer();
 
-   if (X0 && nX0b < nX0e) nXb = min(nXb, nX0b), nXe = max(nXe, nX0e);
-   if (X1 && nX1b < nX1e) nXb = min(nXb, nX1b), nXe = max(nXe, nX1e);
-   if (X2 && nX2b < nX2e) nXb = min(nXb, nX2b), nXe = max(nXe, nX2e);
-   if (R && nRb < nRe && !BV) nXb = min(nXb, nRb), nXe = max(nXe, nRe);
-   if (G && nG > 0) nXb = min(nXb, 0), nXe = max(nXe, nG);
-   if (H && nH > 0) nXb = min(nXb, 0), nXe = max(nXe, nH);
-   if (rnorms && nrb < nre && !BV) nXb = min(nXb, nrb), nXe = max(nXe, nre);
-   if (xnorms && nxb < nxe) nXb = min(nXb, nxb), nXe = max(nXe, nxe);
-   nXe = max(nXe, nXb);
+   /* Cast V and W */
 
-   if (Wo && nWob < nWoe) nYb = min(nYb, nWob), nYe = max(nYe, nWoe);
-   if (R && nRb < nRe) nYb = min(nYb, nRb), nYe = max(nYe, nRe);
-   if (rnorms && nrb < nre) nYb = min(nYb, nrb), nYe = max(nYe, nre);
-   if (H && nH > 0) nYb = min(nYb, 0), nYe = max(nYe, nH);
-   nYe = max(nYe, nYb);
+   SCALAR *Vb = &V[ldV * basisSize], *Wb = &W[ldW * basisSize];
+   void *V0, *W0;
+   PRIMME_INT ldV0, ldW0;
+   CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
+         PRIMME_OP_SCALAR, &V0, &ldV0, primme->matrixMatvec_type, 1 /* alloc */,
+         1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(Wb, nLocal, blockSize, ldW,
+         PRIMME_OP_SCALAR, &W0, &ldW0, primme->matrixMatvec_type, 1 /* alloc */,
+         0 /* no copy */, ctx));
 
-   if (BV) {
-      if (BX0 && nBX0b < nBX0e) nBXb = min(nBXb, nBX0b), nBXe = max(nBXe, nBX0e);
-      if (BX1 && nBX1b < nBX1e) nBXb = min(nBXb, nBX1b), nBXe = max(nBXe, nBX1e);
-      if (BX2 && nBX2b < nBX2e) nBXb = min(nBXb, nBX2b), nBXe = max(nBXe, nBX2e);
-      if (R && nRb < nRe) nBXb = min(nBXb, nRb), nBXe = max(nBXe, nRe);
-      if (G && nG > 0) nBXb = min(nBXb, 0), nBXe = max(nBXe, nG);
-      if (rnorms && nrb < nre) nBXb = min(nBXb, nrb), nBXe = max(nBXe, nre);
-   }
-   nBXe = max(nBXe, nBXb);
+   /* W(:,c) = A*V(:,c) for c = basisSize:basisSize+blockSize-1 */
 
-   assert(nXe <= nh || nXb >= nXe); /* Check dimension */
-   assert(nYe <= nh || nYb >= nYe); /* Check dimension */
-   assert(nBXe <= nh || nBXb >= nXe); /* Check dimension */
+   int ierr = 0;
+   CHKERRM(
+         (primme->matrixMatvec(V0, &ldV0, W0, &ldW0, &blockSize, primme, &ierr),
+               ierr),
+         PRIMME_USER_FAILURE, "Error returned by 'matrixMatvec' %d", ierr);
 
-   CHKERR(Num_malloc_Sprimme(m * (nXe - nXb), &X, ctx));
-   CHKERR(Num_malloc_Sprimme(m * (nYe - nYb), &Y, ctx));
-   CHKERR(Num_malloc_Sprimme(m * (nBXe - nBXb), &BX, ctx));
-   ldX = ldY = ldBX = m;
-   Num_zero_matrix_Sprimme(X, m, nXe - nXb, ldX, ctx);
-   Num_zero_matrix_Sprimme(Y, m, nYe - nYb, ldY, ctx);
-   Num_zero_matrix_Sprimme(BX, m, nBXe - nBXb, ldBX, ctx);
+   /* Copy back W */
 
-   int nGH = (G ? nG * nG : 0) + (H ? nH * nH : 0);
-   if (ctx.numProcs > 1) {
-      CHKERR(Num_malloc_SHprimme(nGH, &workGH, ctx));
-      if (G) {
-         G0 = workGH;
-         ldG0 = nG;
-      }
-      if (H) {
-         H0 = workGH + (G ? nG * nG : 0);
-         ldH0 = nH;
-      }
-   }
-   else {
-      G0 = G; ldG0 = ldG;
-      H0 = H; ldH0 = ldH;
-   }
+   CHKERR(Num_matrix_astype_Sprimme(W0, nLocal, blockSize, ldW0,
+         primme->matrixMatvec_type, (void **)&Wb, &ldW,
+         PRIMME_OP_SCALAR, 0 /* not alloc */, 1 /* copy */, ctx));
 
-   if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = 0.0;
-   if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = 0.0;
-   if (G) Num_zero_matrix_SHprimme(G0, nG, nG, ldG0, ctx);
-   if (H) Num_zero_matrix_SHprimme(H0, nH, nH, ldH0, ctx);
-   if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = 0.0;
+   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+   if (Wb != W0) CHKERR(Num_free_Sprimme((SCALAR*)W0, ctx));
 
-   for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
-      /* X = V*h(nXb:nXe-1) */
-      CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nXe-nXb, nV, 1.0,
-         &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX, ctx));
+   primme->stats.timeMatvec += primme_wTimer() - t0;
+   primme->stats.numMatvecs += blockSize;
 
-      /* X0 = X(nX0b-nXb:nX0e-nXb-1) */
-      if (X0) Num_copy_matrix_Sprimme(&X[ldX*(nX0b-nXb)], m, nX0e-nX0b,
-            ldX, &X0[i], ldX0, ctx);
-
-      /* X1 = X(nX1b-nXb:nX1e-nXb-1) */
-      if (X1) Num_copy_matrix_Sprimme(&X[ldX*(nX1b-nXb)], m, nX1e-nX1b,
-            ldX, &X1[i], ldX1, ctx);
-
-      /* X2 = X(nX2b-nXb:nX2e-nXb-1) */
-      if (X2) Num_copy_matrix_Sprimme(&X[ldX*(nX2b-nXb)], m, nX2e-nX2b,
-            ldX, &X2[i], ldX2, ctx);
-
-      /* Y = W*h(nYb:nYe-1) */
-      if (nYb < nYe) CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nYe-nYb, nV,
-            1.0, &W[i], ldV, &h[nYb*ldh], ldh, 0.0, Y, ldY, ctx));
-
-      /* Wo = Y(nWob-nYb:nWoe-nYb-1) */
-      if (Wo) Num_copy_matrix_Sprimme(&Y[ldY*(nWob-nYb)], m, nWoe-nWob,
-            ldY, &Wo[i], ldWo, ctx);
-
-      /* BX = BV*h(nBXb:nBXe-1) */
-
-      if (BV) CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nBXe-nBXb, nV, 1.0,
-         &BV[i], ldV, &h[nBXb*ldh], ldh, 0.0, BX, ldBX, ctx));
-
-      /* BX0 = BX(nX0b-nXb:nX0e-nXb-1) */
-      if (BX0) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX0b-nBXb)], m, nBX0e-nBX0b,
-            ldBX, &BX0[i], ldBX0, ctx);
-
-      /* BX1 = BX(nBX1b-nBXb:nBX1e-nBXb-1) */
-      if (BX1) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX1b-nBXb)], m, nBX1e-nBX1b,
-            ldBX, &BX1[i], ldBX1, ctx);
-
-      /* BX2 = BX(nBX2b-nBXb:nBX2e-nBXb-1) */
-      if (BX2) Num_copy_matrix_Sprimme(&BX[ldBX*(nBX2b-nBXb)], m, nBX2e-nBX2b,
-            ldBX, &BX2[i], ldBX2, ctx);
-
-      /* G += X(:,0:nG-1)'*X(:,0:nG-1) */
-
-      if (G) {
-         CHKERR(Num_gemm_ddh_Sprimme("C", "N", nG, nG, m, 1.0, X, ldX,
-               BV ? BX : X, ldX, 1.0, G0, ldG0, ctx));
-      }
-
-      /* H = X(:,0:nH-1)'*Y(:,0:nH-1) */
-
-      if (H) {
-         CHKERR(Num_gemm_ddh_Sprimme(
-               "C", "N", nH, nH, m, 1.0, X, ldX, Y, ldY, 1.0, H0, ldH0, ctx));
-      }
-
-      /* xnorms = norm(X(nxb-nXb:nxe-nXb-1)) */
-      if (xnorms) for (j=nxb; j<nxe; j++) {
-            xnorms[j - nxb] += REAL_PART(Num_dot_Sprimme(
-                  m, &X[ldX * (j - nXb)], 1, &X[ldX * (j - nXb)], 1, ctx));
-      }
-
-      /* R = Y(nRb-nYb:nRe-nYb-1) - BX(nRb-nYb:nRe-nYb-1)*diag(nRb:nRe-1) */
-      if (R) for (j=nRb; j<nRe; j++) {
-            Num_compute_residual_Sprimme(m, hVals[j],
-                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
-                  &Y[ldY * (j - nYb)], &R[i + ldR * (j - nRb)], ctx);
-            if (Rnorms) {
-               Rnorms[j - nRb] +=
-                     REAL_PART(Num_dot_Sprimme(m, &R[i + ldR * (j - nRb)], 1,
-                           &R[i + ldR * (j - nRb)], 1, ctx));
-         }
-      }
-
-      /* rnorms = Y(nrb-nYb:nre-nYb-1) - BX(nrb-nYb:nre-nYb-1)*diag(nrb:nre-1) */
-      if (rnorms) for (j=nrb; j<nre; j++) {
-            Num_compute_residual_Sprimme(m, hVals[j],
-                  BV ? &BX[ldBX * (j - nBXb)] : &X[ldX * (j - nXb)],
-                  &Y[ldY * (j - nYb)], &Y[ldY * (j - nYb)], ctx);
-            rnorms[j - nrb] += REAL_PART(Num_dot_Sprimme(
-                  m, &Y[ldY * (j - nYb)], 1, &Y[ldY * (j - nYb)], 1, ctx));
-      }
-   }
-
-   /* Reduce and copy back G0 and H0 */
-
-   if (ctx.numProcs > 1) {
-      CHKERR(globalSum_SHprimme(workGH, nGH, ctx));
-   }
-   if (G) Num_copy_matrix_SHprimme(G0, nG, nG, ldG0, G, ldG, ctx);
-   if (H) Num_copy_matrix_SHprimme(H0, nH, nH, ldH0, H, ldH, ctx);
-
-   /* Reduce Rnorms, rnorms and xnorms and sqrt the results */
-
-   if (ctx.numProcs > 1) {
-      HREAL *tmp;
-      CHKERR(Num_malloc_RHprimme(nRe - nRb + nre - nrb + nxe - nxb, &tmp, ctx));
-      j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) tmp[j++] = Rnorms[i-nRb];
-      if (rnorms) for (i=nrb; i<nre; i++) tmp[j++] = rnorms[i-nrb];
-      if (xnorms) for (i=nxb; i<nxe; i++) tmp[j++] = xnorms[i-nxb];
-      if (j) CHKERR(globalSum_RHprimme(tmp, j, ctx));
-      j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
-      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
-      if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = sqrt(tmp[j++]);
-      CHKERR(Num_free_RHprimme(tmp, ctx));
-   }
-   else {
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(Rnorms[i-nRb]);
-      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(rnorms[i-nrb]);
-      if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = sqrt(xnorms[i-nxb]);
-   }
-
-   CHKERR(Num_free_Sprimme(X, ctx));
-   CHKERR(Num_free_Sprimme(Y, ctx));
-   CHKERR(Num_free_Sprimme(BX, ctx));
-   CHKERR(Num_free_SHprimme(workGH, ctx));
-
-   return 0; 
+   return 0;
 }
+
+/*******************************************************************************
+ * Subroutine massMatrixMatvec - Computes B*V(:,nv+1:nv+blksze)
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V          The orthonormal basis
+ * nLocal     Number of rows of each vector stored on this node
+ * ldV        The leading dimension of V
+ * ldW        The leading dimension of W
+ * basisSize  Number of vectors in V
+ * blockSize  The current block size
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * BV          B*V
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      SCALAR *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   if (blockSize <= 0)
+      return 0;
+
+   assert(ldV >= nLocal && ldBV >= nLocal);
+   assert(primme->ldOPs == 0 || primme->ldOPs >= nLocal);
+
+   double t0 = primme_wTimer();
+
+   /* Cast V and BV */
+
+   SCALAR *Vb = &V[ldV * basisSize], *BVb = &BV[ldBV * basisSize];
+   void *V0, *BV0;
+   PRIMME_INT ldV0, ldBV0;
+   CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
+         PRIMME_OP_SCALAR, &V0, &ldV0, primme->massMatrixMatvec_type,
+         1 /* alloc */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(BVb, nLocal, blockSize, ldBV,
+         PRIMME_OP_SCALAR, &BV0, &ldBV0, primme->massMatrixMatvec_type,
+         1 /* alloc */, 0 /* no copy */, ctx));
+
+   /* BV(:,c) = B*V(:,c) for c = basisSize:basisSize+blockSize-1 */
+
+   int ierr = 0;
+   CHKERRM((primme->massMatrixMatvec(
+                  V0, &ldV0, BV0, &ldBV, &blockSize, primme, &ierr),
+                 ierr),
+         PRIMME_USER_FAILURE, "Error returned by 'massMatrixMatvec' %d", ierr);
+
+   /* Copy back BV */
+
+   CHKERR(Num_matrix_astype_Sprimme(BV0, nLocal, blockSize, ldBV0,
+         primme->matrixMatvec_type, (void **)&BVb, &ldBV, PRIMME_OP_SCALAR,
+         0 /* not alloc */, 1 /* copy */, ctx));
+
+   if (Vb != V0) CHKERR(Num_free_Sprimme((SCALAR*)V0, ctx));
+   if (BVb != BV0) CHKERR(Num_free_Sprimme((SCALAR*)BV0, ctx));
+
+   primme->stats.timeMatvec += primme_wTimer() - t0;
+   primme->stats.numMatvecs += blockSize;
+
+   return 0;
+}
+
 
 /*******************************************************************************
  * Subroutine applyPreconditioner - apply preconditioner to V
@@ -520,60 +363,6 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    }
 
    primme->stats.timePrecond += primme_wTimer() - t0;
-
-   return 0;
-}
-
-/*******************************************************************************
- * Subroutine convTestFun - wrapper around primme.convTestFun; evaluate if the
- *    the approximate eigenpair eval, evec with given residual norm is
- *    considered as converged.
- *
- * INPUT PARAMETERS
- * ----------------
- * eval       the eigenvalue
- * evec       the eigenvector
- * givenEvec  whether eigenvector is provided
- * rNorm      the residual vector norm
- * 
- * OUTPUT
- * ------
- * isconv   if non-zero, the pair is considered converged.
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-int convTestFun_Sprimme(HREAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,
-      int *isconv, primme_context ctx) {
-
-   primme_params *primme = ctx.primme;
-
-   /* Cast eval and rNorm */
-
-   double evald = eval, rNormd = rNorm;
-
-   /* Cast evec if given */
-
-   void *evec0 = NULL;
-   if (evec && givenEvec)
-      CHKERR(Num_matrix_astype_Sprimme(evec, primme->nLocal, 1, primme->nLocal,
-            PRIMME_OP_SCALAR, &evec0, NULL, primme->convTestFun_type,
-            1 /* alloc */, 1 /* copy */, ctx));
-
-   /* If an evec is going to be passed to convTestFun, but nLocal is 0,       */
-   /* then fake the evec with a nonzero pointer in order to not be mistaken   */
-   /* by not passing a vector.                                                */
-   SCALAR dummy;
-
-   if (primme->nLocal == 0 && givenEvec) evec0 = &dummy;
-
-   int ierr=0;
-   CHKERRM((primme->convTestFun(&evald, givenEvec ? evec : NULL, &rNormd,
-                  isconv, primme, &ierr),
-                 ierr),
-         -1, "Error returned by 'convTestFun' %d", ierr);
-
-   if (primme->nLocal > 0 && evec && givenEvec && evec != (SCALAR *)evec0)
-      CHKERR(Num_free_Sprimme((SCALAR*)evec0, ctx));
 
    return 0;
 }
@@ -656,7 +445,7 @@ int broadcast_Tprimme(
 
    double t0 = primme_wTimer();
 
-   if (primme && primme->globalSumReal) {
+   if (primme && primme->broadcastReal) {
       /* Cast buffer */
 
       void *buffer0 = NULL;
@@ -850,61 +639,5 @@ int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,
    return 0;
 }
 
-TEMPLATE_PLEASE
-int monitorFun_Sprimme(HREAL *basisEvals, int basisSize, int *basisFlags,
-      int *iblock, int blockSize, HREAL *basisNorms, int numConverged,
-      HREAL *lockedEvals, int numLocked, int *lockedFlags, HREAL *lockedNorms,
-      int inner_its, HREAL LSRes, const char *msg, double time,
-      primme_event event, double startTime, primme_context ctx) {
-
-   /* Quick exit */
-
-   primme_params *primme = ctx.primme;
-   if (!primme->monitorFun) return 0;
-
-   /* Cast basisEvals, basisNorms, lockedEvals, lockedNorms and LSRes */
-   /* to monitorFun_type                                              */
-
-   void *basisEvals0, *basisNorms0, *lockedEvals0, *lockedNorms0, *LSRes0;
-   CHKERR(Num_matrix_astype_RHprimme(basisEvals, 1, basisSize, 1,
-         PRIMME_OP_HREAL, (void **)&basisEvals0, NULL, primme->monitorFun_type,
-         1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(basisNorms, 1, basisSize, 1,
-         PRIMME_OP_HREAL, (void **)&basisNorms0, NULL, primme->monitorFun_type,
-         1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(lockedEvals, 1, numLocked, 1,
-         PRIMME_OP_HREAL, (void **)&lockedEvals0, NULL, primme->monitorFun_type,
-         1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(lockedNorms, 1, numLocked, 1,
-         PRIMME_OP_HREAL, (void **)&lockedNorms0, NULL, primme->monitorFun_type,
-         1 /* alloc */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(&LSRes, 1, 1, 1,
-         PRIMME_OP_HREAL, (void **)&LSRes0, NULL, primme->monitorFun_type,
-         1 /* alloc */, 1 /* copy */, ctx));
-
-   /* Call the user-defined functions */
-
-   primme->stats.elapsedTime = primme_wTimer() - startTime;
-   int err;
-   CHKERRM(
-         (primme->monitorFun(basisEvals0, &basisSize, basisFlags, iblock,
-                &blockSize, basisNorms0, &numConverged, lockedEvals0, &numLocked,
-                lockedFlags, lockedNorms0, inner_its >= 0 ? &inner_its : NULL,
-                LSRes >= 0 ? LSRes0 : NULL, msg, &time, &event, primme, &err),
-               err),
-         -1, "Error returned by monitorFun: %d", err);
-
-   if (basisEvals != (HREAL *)basisEvals0)
-      CHKERR(Num_free_RHprimme((HREAL *)basisEvals0, ctx));
-   if (basisNorms != (HREAL *)basisNorms0)
-      CHKERR(Num_free_RHprimme((HREAL *)basisNorms0, ctx));
-   if (lockedEvals != (HREAL *)lockedEvals0)
-      CHKERR(Num_free_RHprimme((HREAL *)lockedEvals0, ctx));
-   if (lockedNorms != (HREAL *)lockedNorms0)
-      CHKERR(Num_free_RHprimme((HREAL *)lockedNorms0, ctx));
-   if (&LSRes != (HREAL *)LSRes0)
-      CHKERR(Num_free_RHprimme((HREAL *)LSRes0, ctx));
-
-   return 0;
-} 
+ 
 #endif /* SUPPORTED_TYPE */

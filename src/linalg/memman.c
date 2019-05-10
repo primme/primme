@@ -34,12 +34,14 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../linalg/memman.c"
+#endif
 
 #include <stdlib.h>   /* free */
 #include <assert.h>
 #include <math.h>
-#include "template.h"
-#include "memman.h"
+#include "numerical.h"
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
