@@ -15,7 +15,7 @@ all_tests: tests.py examples.py
 
 # Clean target
 clean:
-	$(RM) -rf build primme.so
+	$(RM) -rf build primme.*so
 
 veryclean: clean
 

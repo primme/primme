@@ -4,33 +4,6 @@ cimport numpy as np
 from scipy.sparse.linalg.interface import aslinearoperator
 cimport cython
 from cython cimport view
-
-cdef extern from "../include/primme.h":
-    struct primme_params:
-        pass
-    ctypedef int primme_preset_method
-    ctypedef enum primme_type:
-        primme_int, primme_double, primme_pointer
-    ctypedef int primme_params_label
-    ctypedef int primme_event
-    int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
-    int cprimme(float *evals, np.complex64_t *evecs, float *resNorms, primme_params *primme)
-    int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
-    int zprimme(double *evals, np.complex128_t *evecs, double *resNorms, primme_params *primme)
-    int magma_sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
-    int magma_cprimme(float *evals, np.complex64_t *evecs, float *resNorms, primme_params *primme)
-    int magma_dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
-    int magma_zprimme(double *evals, np.complex128_t *evecs, double *resNorms, primme_params *primme)
-    primme_params* primme_params_create()
-    int primme_params_destroy(primme_params *primme)
-    void primme_initialize(primme_params *primme)
-    int  primme_set_method(primme_preset_method method, primme_params *params)
-    void primme_free(primme_params *primme)
-    int primme_get_member(primme_params *primme, primme_params_label label, void *value)
-    int primme_set_member(primme_params *primme, primme_params_label label, void *value)
-    int primme_member_info(primme_params_label *label, const char** label_name, primme_type *t, int *arity)
-    int primme_constant_info(const char* label_name, int *value)
-
 ctypedef fused numerics:
     float
     double
@@ -40,6 +13,65 @@ ctypedef fused numerics:
 ctypedef fused numerics_real:
     float
     double
+
+# Exception captured in user-defined functions
+cpdef Exception __user_function_exception = None
+
+cdef np.dtype get_np_type(numerics *p):
+    if numerics == double: return np.dtype(np.double)
+    elif numerics == float: return np.dtype(np.float32)
+    elif numerics == np.complex64_t: return np.dtype(np.complex64)
+    elif numerics == np.complex128_t: return np.dtype(np.complex128)
+
+cdef np.dtype get_np_type0(numerics *p):
+    cdef double *pd
+    cdef float *pf
+    cdef np.complex128_t *pcd
+    cdef np.complex64_t *pcf
+    if cython.typeof(p) == cython.typeof(pd):
+        return np.dtype(np.double)
+    elif cython.typeof(p) == cython.typeof(pf):
+        return np.dtype(np.float32)
+    elif cython.typeof(p) == cython.typeof(pcd):
+        return np.dtype(np.complex128)
+    elif cython.typeof(p) == cython.typeof(pcf):
+        return np.dtype(np.complex64)
+    else:
+        return None
+
+def __get_real_dtype(dtype):
+    if dtype.type is np.complex64 or dtype.type is np.float32:
+        return np.dtype(np.float32)
+    else:
+        return np.dtype(np.float64)
+
+
+cdef extern from "../include/primme.h":
+    struct primme_params:
+        pass
+    ctypedef int primme_preset_method
+    ctypedef enum primme_type:
+        primme_int, primme_double, primme_pointer
+    ctypedef int primme_params_label
+    ctypedef int primme_event
+    int sprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
+    int cprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
+    int dprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    int zprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    int magma_sprimme(float *evals, void *evecs, void *resNorms, primme_params *primme)
+    int magma_cprimme(float *evals, void *evecs, void *resNorms, primme_params *primme)
+    int magma_dprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    int magma_zprimme(double *evals, void *evecs, double *resNorms, primme_params *primme)
+    void primme_display_params(primme_params primme)
+    primme_params* primme_params_create()
+    int primme_params_destroy(primme_params *primme)
+    void primme_initialize(primme_params *primme)
+    int  primme_set_method(primme_preset_method method, primme_params *params)
+    void primme_free(primme_params *primme)
+    int primme_get_member(primme_params *primme, primme_params_label label, void *value)
+    int primme_set_member(primme_params *primme, primme_params_label label, void *value)
+    int primme_member_info(primme_params_label *label, const char** label_name, primme_type *t, int *arity)
+    int primme_constant_info(const char* label_name, int *value)
 
 cdef class PrimmeParams:
     cpdef primme_params *pp
@@ -52,7 +84,8 @@ cdef class PrimmeParams:
         if self.pp is not NULL:
             primme_params_destroy(self.pp)
     
-def primme_params_get(PrimmeParams pp_, field_):
+def __primme_params_get(PrimmeParams pp_, field_):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_params_label l = -1
@@ -79,26 +112,50 @@ def primme_params_get(PrimmeParams pp_, field_):
 cdef object primme_params_get_object(primme_params *primme, cython.p_char field):
     cdef primme_params_label l = -1
     cdef primme_type t
-    cdef int arity
-    primme_member_info(&l, <const char **>&field, &t, &arity)
-    assert l >= 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+    cdef int arity, r
     cdef void *v_pvoid
-    primme_get_member(primme, l, &v_pvoid)
-    return <object>v_pvoid
+    try:
+        r = primme_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        r = primme_get_member(primme, l, &v_pvoid)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        if v_pvoid is NULL: return None
+        return <object>v_pvoid
+    except:
+        return None
+
+cdef void* primme_params_get_pointer(primme_params *primme, cython.p_char field):
+    cdef primme_params_label l = -1
+    cdef primme_type t
+    cdef int arity, r
+    cdef void *v_pvoid
+    try:
+        r = primme_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        r = primme_get_member(primme, l, &v_pvoid)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        return v_pvoid
+    except:
+        return NULL
 
 cdef np.int64_t primme_params_get_int(primme_params *primme, cython.p_char field):
     cdef primme_params_label l = -1
     cdef primme_type t
-    cdef int arity
-    primme_member_info(&l, <const char **>&field, &t, &arity)
-    assert l >= 0 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
+    cdef int arity, r
     cdef np.int64_t v_int
-    primme_get_member(primme, l, &v_int)
-    return v_int
+    try:
+        r = primme_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
+        r = primme_get_member(primme, l, &v_int)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        return v_int
+    except:
+        return -1
 
-def primme_params_set(PrimmeParams pp_, field_, value):
+def __primme_params_set(PrimmeParams pp_, field_, value):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
-    cdef const char* field = <const char *>field_
+    cdef const char* field = <const char*>field_
     cdef primme_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -111,7 +168,8 @@ def primme_params_set(PrimmeParams pp_, field_, value):
     if t == primme_pointer:
         primme_set_member(primme, l, <void*>value)
     elif t == primme_int:
-        if isinstance(value, str):
+        if isinstance(value, (bytes,str)):
+            value = bytes(value, 'ASCII')
             primme_constant_info(<const char*>value, &i)
             value = i
         v_int = value
@@ -120,9 +178,9 @@ def primme_params_set(PrimmeParams pp_, field_, value):
         v_double = value
         primme_set_member(primme, l, &v_double)
     else:
-        raise ValueError("Not supported type for member '%s'" % field)
+        raise ValueError("Not supported type for member '%s'" % field_)
    
-cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, void* value):
+cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, void* value) except *:
     cdef primme_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -130,7 +188,7 @@ cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, 
     assert(l >= 0 and arity == 1 and t == primme_pointer)
     primme_set_member(primme, l, value)
 
-cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, double *value):
+cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, double *value) except *:
     cdef primme_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -139,62 +197,37 @@ cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, 
     primme_set_member(primme, l, value)
 
 
-cdef np.dtype get_np_type(numerics *p):
-    cdef double *pd
-    cdef float *pf
-    cdef np.complex128_t *pcd
-    cdef np.complex64_t *pcf
-    if cython.typeof(p) == cython.typeof(pd):
-        return np.dtype(np.double)
-    elif cython.typeof(p) == cython.typeof(pf):
-        return np.dtype(np.float32)
-    elif cython.typeof(p) == cython.typeof(pcd):
-        return np.dtype(np.complex128)
-    elif cython.typeof(p) == cython.typeof(pcf):
-        return np.dtype(np.complex64)
+cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    if blockSize[0] <= 0:
+        ierr[0] = 0
+        return
+    ierr[0] = 1
+    cdef object matvec 
+    cdef numerics[::1, :] x_view
+    global __user_function_exception
+    try:
+        matvec = primme_params_get_object(primme, operator)
+        if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
+        n = primme_params_get_int(primme, "nLocal")
+        x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
+        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:])
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
 
 cdef void c_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-    if blockSize[0] <= 0:
-        ierr[0] = 0
-        return
-    ierr[0] = 1
-    cdef object matvec = primme_params_get_object(primme, 'matrix')
-    n = primme_params_get_int(primme, "nLocal")
-    x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    y_py = matvec(x_py)
-    (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    c_matvec_gen_numpy("matrix", x, ldx, y, ldy, blockSize, primme, ierr)
 
 cdef void c_massmatvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-    if blockSize[0] <= 0:
-        ierr[0] = 0
-        return
-    ierr[0] = 1
-    cdef object massmatvec = primme_params_get_object(primme, 'massMatrix')
-    n = primme_params_get_int(primme, "nLocal")
-    x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    y_py = massmatvec(x_py)
-    (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    c_matvec_gen_numpy("massMatrix", x, ldx, y, ldy, blockSize, primme, ierr)
 
 cdef void c_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-    if blockSize[0] <= 0:
-        ierr[0] = 0
-        return
-    ierr[0] = 1
-    cdef object precond = primme_params_get_object(primme, 'preconditioner')
-    n = primme_params_get_int(primme, "nLocal")
-    x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    y_py = precond(x_py)
-    (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    c_matvec_gen_numpy("preconditioner", x, ldx, y, ldy, blockSize, primme, ierr)
 
 cdef void c_monitor(numerics_real *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, numerics_real *basisNorms, int *numConverged, numerics_real *lockedEvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms, int *inner_its, numerics_real *LSRes, const char *msg, double *time, primme_event *event, primme_params *primme, int *ierr):
     ierr[0] = 1
     cdef object monitor = primme_params_get_object(primme, 'monitor')
+    if monitor is None: return
     cdef int bs = basisSize[0] if basisSize is not NULL else 0
     cdef int blks = blockSize[0] if blockSize is not NULL else 0
     cdef int nLocked = numLocked[0] if numLocked is not NULL else 0
@@ -375,48 +408,50 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     array([96., 95., 94.])
     """
 
+    A = aslinearoperator(A)
     PP = PrimmeParams()
     cdef primme_params *pp = PP.pp
  
-    A = aslinearoperator(A)
-    if len(A.shape) != 2 or A.shape[0] != A.shape[1]:
-        raise ValueError('A: expected square matrix (shape=%s)' % A.shape)
+    shape = A.shape
+        
+    if len(shape) != 2 or shape[0] != shape[1]:
+        raise ValueError('A: expected square matrix (shape=%s)' % shape)
 
-    primme_params_set(PP, "matrix", A)
-    n = A.shape[0]
-    primme_params_set(PP, "n", n)
+    __primme_params_set(PP, "matrix", A)
+    n = shape[0]
+    __primme_params_set(PP, "n", n)
 
     if M is not None:
         M = aslinearoperator(M)
-        if len(M.shape) != 2 or A.shape[0] != M.shape[0]:
+        if len(M.shape) != 2 or shape[0] != M.shape[0]:
             raise ValueError('M: expected square matrix (shape=%s)' % A.shape)
-        primme_params_set(PP, "massMatrix", M)
+        __primme_params_set(PP, "massMatrix", M)
 
     if k <= 0 or k > n:
         raise ValueError("k=%d must be between 1 and %d, the order of the "
                          "square input matrix." % (k, n))
-    primme_params_set(PP, "numEvals", k)
+    __primme_params_set(PP, "numEvals", k)
 
     if which == 'LM':
-        primme_params_set(PP, "target", "primme_largest_abs")
+        __primme_params_set(PP, "target", "primme_largest_abs")
         if sigma is None:
             sigma = 0.0
     elif which == 'LA':
-        primme_params_set(PP, "target", "primme_largest")
+        __primme_params_set(PP, "target", "primme_largest")
         sigma = None
     elif which == 'SA':
-        primme_params_set(PP, "target", "primme_smallest")
+        __primme_params_set(PP, "target", "primme_smallest")
         sigma = None
     elif which == 'SM':
-        primme_params_set(PP, "target", "primme_closest_abs")
+        __primme_params_set(PP, "target", "primme_closest_abs")
         if sigma is None:
             sigma = 0.0
     elif which == 'CLT':
-        primme_params_set(PP, "target", "primme_closest_leq")
+        __primme_params_set(PP, "target", "primme_closest_leq")
         if sigma is None:
             sigma = 0.0
     elif which == 'CGT':
-        primme_params_set(PP, "target", "primme_closest_geq")
+        __primme_params_set(PP, "target", "primme_closest_geq")
         if sigma is None:
             sigma = 0.0
     else:
@@ -425,37 +460,37 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     cdef double sigma_c
     if sigma is not None:
         sigma_c = float(sigma)
-        primme_params_set(PP, "numTargetShifts", 1)
+        __primme_params_set(PP, "numTargetShifts", 1)
         primme_params_set_doubles(pp, "targetShifts", &sigma_c)
 
-    primme_params_set(PP, "eps", tol)
+    __primme_params_set(PP, "eps", tol)
 
     if ncv is not None:
-        primme_params_set(PP, "maxBasisSize", ncv)
+        __primme_params_set(PP, "maxBasisSize", ncv)
 
     if maxiter is not None:
-        primme_params_set(PP, "maxMatvecs", maxiter)
+        __primme_params_set(PP, "maxMatvecs", maxiter)
 
     if OPinv is not None:
         OPinv = aslinearoperator(OPinv)
         if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
             raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,n))
-        primme_params_set(PP, "correction_precondition", 1)
-        primme_params_set(PP, "preconditioner", <object>OPinv)
+        __primme_params_set(PP, "correction_precondition", 1)
+        __primme_params_set(PP, "preconditioner", <object>OPinv)
     else:
-        primme_params_set(PP, "correction_precondition", 0)
+        __primme_params_set(PP, "correction_precondition", 0)
 
     numOrthoConst = 0
     if lock is not None:
         if lock.shape[0] != n:
             raise ValueError('lock: expected matrix with the same columns as A (shape=%s)' % (lock.shape,n))
         numOrthoConst = min(lock.shape[1], n)
-        primme_params_set(PP, "numOrthoConst", numOrthoConst)
+        __primme_params_set(PP, "numOrthoConst", numOrthoConst)
 
     # Set other parameters
     for dk, dv in kargs.items():
       try:
-        primme_params_set(PP, dk, dv)
+        __primme_params_set(PP, dk, dv)
       except:
         raise ValueError("Invalid option '%s' with value '%s'" % (dk, dv))
 
@@ -466,14 +501,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             lockedEvals, lockedFlags, lockedNorms, inner_its, LSRes, event):
         
         if event == 0 and iblock and len(iblock)>0: # event iteration
-            hist["numMatvecs"].append(primme_params_get(PP, 'stats_numMatvecs'))
-            hist["elapsedTime"].append(primme_params_get(PP, 'stats_elapsedTime'))
+            hist["numMatvecs"].append(__primme_params_get(PP, 'stats_numMatvecs'))
+            hist["elapsedTime"].append(__primme_params_get(PP, 'stats_elapsedTime'))
             hist["nconv"].append(numConverged)
             hist["eval"].append(basisEvals[iblock[0]])
             hist["resNorm"].append(basisNorms[0])
 
     if return_history:
-        primme_params_set(PP, 'monitor', mon)
+        __primme_params_set(PP, 'monitor', mon)
 
     if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
@@ -481,7 +516,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         dtype = A.dtype
 
     if dtype.type is np.complex64:
-        rtype = np.dtype(np.float32)
         primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex64_t])
         if M: 
             primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex64_t])
@@ -489,7 +523,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if return_history:
             primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
     elif dtype.type is np.float32:
-        rtype = np.dtype(np.float32)
         primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[float])
         if M: 
             primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[float])
@@ -497,7 +530,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if return_history:
             primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
     elif dtype.type is np.float64:
-        rtype = np.dtype(np.float64)
         primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[double])
         if M: 
             primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[double])
@@ -505,7 +537,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if return_history:
             primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
     else:
-        rtype = np.dtype(np.float64)
         primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex128_t])
         if M: 
             primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex128_t])
@@ -513,65 +544,86 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if return_history:
             primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
 
+    cdef void *evecs_p
+    cdef double[::1] evals_d, norms_d
+    cdef float[::1] evals_s, norms_s
+    cdef float[::1, :] evecs_s
+    cdef double[::1, :] evecs_d
+    cdef np.complex64_t[::1, :] evecs_c
+    cdef np.complex128_t[::1, :] evecs_z
+
+    rtype = __get_real_dtype(dtype);
     evals = np.zeros(k, rtype)
     norms = np.zeros(k, rtype)
+    if rtype.type is np.float64:
+        evals_d, norms_d = evals, norms
+    else:
+        evals_s, norms_s = evals, norms
+    
     evecs = np.zeros((n, numOrthoConst+k), dtype, order='F')
+    if dtype.type is np.float64:
+        evecs_d = evecs
+        evecs_p = <void*>&evecs_d[0,0]
+    elif dtype.type is np.float32:
+        evecs_s = evecs
+        evecs_p = <void*>&evecs_s[0,0]
+    elif dtype.type is np.complex64:
+        evecs_c = evecs
+        evecs_p = <void*>&evecs_c[0,0]
+    elif dtype.type is np.complex128:
+        evecs_z = evecs
+        evecs_p = <void*>&evecs_z[0,0]
 
     if lock is not None:
         np.copyto(evecs[:, 0:numOrthoConst], lock[:, 0:numOrthoConst])
 
     if v0 is not None:
         initSize = min(v0.shape[1], k)
-        primme_params_set(PP, "initSize", initSize)
+        __primme_params_set(PP, "initSize", initSize)
         np.copyto(evecs[:, numOrthoConst:numOrthoConst+initSize],
             v0[:, 0:initSize])
 
     if maxBlockSize:
-        primme_params_set(PP, "maxBlockSize", maxBlockSize)
+        __primme_params_set(PP, "maxBlockSize", maxBlockSize)
 
     if minRestartSize:
-        primme_params_set(PP, "minRestartSize", minRestartSize)
+        __primme_params_set(PP, "minRestartSize", minRestartSize)
 
     if maxPrevRetain:
-        primme_params_set(PP, "restarting_maxPrevRetain", maxPrevRetain)
+        __primme_params_set(PP, "restarting_maxPrevRetain", maxPrevRetain)
 
     cdef int method_int = -1;
     if method is not None:
+        method = bytes(method, 'ASCII')
         primme_constant_info(<const char *>method, &method_int)
         if method_int < 0:
             raise ValueError('Not valid "method": %s' % method)
         primme_set_method(method_int, pp)
  
-    cdef np.ndarray[double, ndim=1, mode="c"] evals_d, norms_d
-    cdef np.ndarray[float, ndim=1, mode="c"] evals_f, norms_f
-    cdef np.ndarray[float, ndim=2, mode="fortran"] evecs_f
-    cdef np.ndarray[double, ndim=2, mode="fortran"] evecs_d
-    cdef np.ndarray[np.complex64_t, ndim=2, mode="fortran"] evecs_c
-    cdef np.ndarray[np.complex128_t, ndim=2, mode="fortran"] evecs_z
-
+    global __user_function_exception
+    __user_function_exception = None
     if dtype.type is np.complex64:
-        evals_f, norms_f, evecs_c = evals, norms, evecs
-        err = cprimme(&evals_f[0], &evecs_c[0,0], &norms_f[0], pp)
+        err = cprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
     elif dtype.type is np.float32:
-        evals_f, norms_f, evecs_f = evals, norms, evecs
-        err = sprimme(&evals_f[0], &evecs_f[0,0], &norms_f[0], pp)
+        err = sprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
     elif dtype.type is np.float64:
-        evals_d, norms_d, evecs_d = evals, norms, evecs
-        err = dprimme(&evals_d[0], &evecs_d[0,0], &norms_d[0], pp)
+        err = dprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
     else:
-        evals_d, norms_d, evecs_z = evals, norms, evecs
-        err = zprimme(&evals_d[0], &evecs_z[0,0], &norms_d[0], pp)
+        err = zprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
 
     if err != 0:
-        raise PrimmeError(err)
+        if __user_function_exception is not None:
+            raise PrimmeError(err) from __user_function_exception
+        else:
+            raise PrimmeError(err)
 
-    initSize = primme_params_get(PP, "initSize")
+    initSize = __primme_params_get(PP, "initSize")
     evals = evals[0:initSize]
     norms = norms[0:initSize]
     evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
 
     if return_stats:
-        stats = dict((f, primme_params_get(PP, "stats_" + f)) for f in [
+        stats = dict((f, __primme_params_get(PP, "stats_" + f)) for f in [
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime", "estimateMinEVal",
             "estimateMaxEVal", "estimateLargestSVal"])
@@ -594,14 +646,14 @@ cdef extern from "../include/primme.h":
         primme_svds_op_AtA,
         primme_svds_op_AAt,
         primme_svds_op_augmented
-    int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int cprimme_svds(float *svals, np.complex64_t *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
-    int zprimme_svds(double *svals, np.complex128_t *svecs, double *resNorms, primme_svds_params *primme_svds)
-    int magma_sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int magma_cprimme_svds(float *svals,  np.complex64_t *svecs, float *resNorms, primme_svds_params *primme_svds)
-    int magma_dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
-    int magma_zprimme_svds(double *svals,  np.complex128_t *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int sprimme_svds(float *svals, void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int cprimme_svds(float *svals, void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int dprimme_svds(double *svals, void *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int zprimme_svds(double *svals, void *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int magma_sprimme_svds(float *svals, void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int magma_cprimme_svds(float *svals,  void *svecs, float *resNorms, primme_svds_params *primme_svds)
+    int magma_dprimme_svds(double *svals, void *svecs, double *resNorms, primme_svds_params *primme_svds)
+    int magma_zprimme_svds(double *svals,  void *svecs, double *resNorms, primme_svds_params *primme_svds)
     primme_svds_params* primme_svds_params_create()
     int primme_svds_params_destroy(primme_svds_params *primme_svds)
     void primme_svds_initialize(primme_svds_params *primme_svds)
@@ -625,6 +677,7 @@ cdef class PrimmeSvdsParams:
             primme_svds_params_destroy(self.pp)
     
 def primme_svds_params_get(PrimmeSvdsParams pp_, field_):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_svds_params_label l = -1
@@ -648,7 +701,7 @@ def primme_svds_params_get(PrimmeSvdsParams pp_, field_):
     else:
         raise ValueError("Not supported type for member '%s'" % field)
 
-cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, char *field):
+cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cython.p_char field):
     cdef primme_svds_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -669,6 +722,7 @@ cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cyth
     return v_int
 
 def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
+    field_ = bytes(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_svds_params_label l = -1
@@ -683,7 +737,8 @@ def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     if t == primme_pointer:
         primme_svds_set_member(primme_svds, l, <void*>value)
     elif t == primme_int:
-        if isinstance(value, str):
+        if isinstance(value, (bytes,str)):
+            value = bytes(value, 'ASCII')
             primme_svds_constant_info(<const char*>value, &i)
             value = i
         v_int = value
@@ -692,9 +747,9 @@ def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
         v_double = value
         primme_svds_set_member(primme_svds, l, &v_double)
     else:
-        raise ValueError("Not supported type for member '%s'" % field)
+        raise ValueError("Not supported type for member '%s'" % field_)
    
-cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython.p_char field, void* value):
+cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython.p_char field, void* value) except *:
     cdef primme_svds_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -702,7 +757,7 @@ cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython
     assert(l >= 0 and arity == 1 and t == primme_pointer)
     primme_svds_set_member(primme_svds, l, value)
 
-cdef void primme_svds_params_set_doubles(primme_svds_params *primme_svds, cython.p_char field, double *value):
+cdef void primme_svds_params_set_doubles(primme_svds_params *primme_svds, cython.p_char field, double *value) except *:
     cdef primme_svds_params_label l = -1
     cdef primme_type t
     cdef int arity
@@ -716,44 +771,49 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object A = primme_svds_params_get_object(primme_svds, 'matrix')
-    m = primme_svds_params_get_int(primme_svds, "mLocal")
-    n = primme_svds_params_get_int(primme_svds, "nLocal")
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    if transpose[0] == 0:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-        y_py = A.matmat(x_py)
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:m,:] = y_py[:,:]
-    else:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:m,:]
-        y_py = A.H.matmat(x_py)
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    ierr[0] = 0
+    cdef object A 
+    cdef numerics[:, :] x_view
+    global __user_function_exception
+    try:
+        A = primme_svds_params_get_object(primme_svds, 'matrix')
+        if A is None: raise RuntimeError("Not defined function for the matrix problem")
+        m = primme_svds_params_get_int(primme_svds, "mLocal")
+        n = primme_svds_params_get_int(primme_svds, "nLocal")
+        x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
+        if transpose[0] == 0:
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:])
+        else:
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:])
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
+
 
 cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_svds_operator *mode, primme_svds_params *primme_svds, int *ierr):
     if blockSize[0] <= 0:
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
-    m = primme_svds_params_get_int(primme_svds, "mLocal")
-    n = primme_svds_params_get_int(primme_svds, "nLocal")
-    cdef np.ndarray[numerics, ndim=2, mode="strided"] y_py
-    if mode[0] == primme_svds_op_AtA:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:n,:]
-        y_py = precond(x_py, mode[0])
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:n,:] = y_py[:,:]
-    elif mode[0] == primme_svds_op_AAt:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:m,:]
-        y_py = precond(x_py, mode[0])
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:m,:] = y_py[:,:]
-    elif mode[0] == primme_svds_op_augmented:
-        x_py = np.asarray(<numerics[:ldx[0]:1, :blockSize[0]]>x)[0:m+n,:]
-        y_py = precond(x_py, mode[0])
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[0:m+n,:] = y_py[:,:]
-    else:
-        return
-    ierr[0] = 0
+    cdef object precond 
+    cdef numerics[::1, :] x_view
+    global __user_function_exception
+    try:
+        precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
+        if precond is None: raise RuntimeError("Not defined function for the preconditioner")
+        m = primme_svds_params_get_int(primme_svds, "mLocal")
+        n = primme_svds_params_get_int(primme_svds, "nLocal")
+        x_view = <numerics[:ldy[0]:1, :blockSize[0]]> x
+        if mode[0] == primme_svds_op_AtA:
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = precond(x_view[:n,:], mode[0])
+        elif mode[0] == primme_svds_op_AAt:
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = precond(x_view[:m,:], mode[0])
+        elif mode[0] == primme_svds_op_augmented:
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = precond(x_view[:m+n,:], mode[0])
+        else:
+            return
+        ierr[0] = 0
+    except Exception as e:
+        __user_function_exception = e
 
 cdef void c_svds_monitor(numerics_real *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize,
       numerics_real *basisNorms, int *numConverged, numerics_real *lockedSvals, int *numLocked, int *lockedFlags, numerics_real *lockedNorms,
@@ -905,13 +965,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     >>> svals # the three smallest singular values of A
     array([1., 2., 3.])
 
-    >>> import primme, scipy.sparse
+    >>> import primme, scipy.sparse, numpy as np
     >>> A = scipy.sparse.rand(10000, 100, random_state=10)
     >>> prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
     ...           [0], 100, 100) # square diag. preconditioner
     >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
-    >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
-    ['5.99871', '5.99057', '6.01065']
+    >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 6.0
+    ['6.00761', '6.01431', '5.98441']
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
@@ -1041,33 +1101,55 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         dtype = A.dtype
 
     if dtype.type is np.complex64:
-        rtype = np.dtype(np.float32)
         primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex64_t])
         primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex64_t])
         if return_history:
             primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
     elif dtype.type is np.float32:
-        rtype = np.dtype(np.float32)
         primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[float])
         primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[float])
         if return_history:
             primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
     elif dtype.type is np.float64:
-        rtype = np.dtype(np.float64)
         primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[double])
         primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[double])
         if return_history:
             primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
     else:
-        rtype = np.dtype(np.float64)
         primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex128_t])
         primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex128_t])
         if return_history:
             primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
 
+    cdef void *svecs_p
+    cdef double[::1] svals_d, norms_d
+    cdef float[::1] svals_s, norms_s
+    cdef float[::1] svecs_s
+    cdef double[::1] svecs_d
+    cdef np.complex64_t[::1] svecs_c
+    cdef np.complex128_t[::1] svecs_z
+
+    rtype = __get_real_dtype(dtype);
     svals = np.zeros(k, rtype)
-    svecs = np.empty(((m+n)*(numOrthoConst+k),), dtype)
     norms = np.zeros(k, rtype)
+    if rtype.type is np.float64:
+        svals_d, norms_d = svals, norms
+    else:
+        svals_s, norms_s = svals, norms
+ 
+    svecs = np.empty(((m+n)*(numOrthoConst+k),), dtype)
+    if dtype.type is np.float64:
+        svecs_d = svecs
+        svecs_p = <void*>&svecs_d[0]
+    elif dtype.type is np.float32:
+        svecs_s = svecs
+        svecs_p = <void*>&svecs_s[0]
+    elif dtype.type is np.complex64:
+        svecs_c = svecs
+        svecs_p = <void*>&svecs_c[0]
+    elif dtype.type is np.complex128:
+        svecs_z = svecs
+        svecs_p = <void*>&svecs_z[0]
 
     u0, v0 = check_pair(u0, v0, "v0 or u0")
     
@@ -1085,64 +1167,33 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             raise ValueError('Not valid "methodStage2": %s' % methodStage2)
         primme_svds_set_method(method_int, methodStage1_int, methodStage2_int, pp)
 
-    cdef np.ndarray[double, ndim=1, mode="c"] svals_d, norms_d
-    cdef np.ndarray[float, ndim=1, mode="c"] svals_f, norms_f
-    cdef np.ndarray[float, ndim=1, mode="c"] svecs_f
-    cdef np.ndarray[double, ndim=1, mode="c"] svecs_d
-    cdef np.ndarray[np.complex64_t, ndim=1, mode="c"] svecs_c
-    cdef np.ndarray[np.complex128_t, ndim=1, mode="c"] svecs_z
-
-    if dtype.type is np.complex64:
-        svals_f, norms_f, svecs_c = svals, norms, svecs
-    elif dtype.type is np.float32:
-        svals_f, norms_f, svecs_f = svals, norms, svecs
-    elif dtype.type is np.float64:
-        svals_d, norms_d, svecs_d = svals, norms, svecs
-    else:
-        svals_d, norms_d, svecs_z = svals, norms, svecs
-
     cdef int initSize = 0
     if v0 is not None:
         initSize = min(v0.shape[1], k)
         primme_svds_params_set(PP, "initSize", initSize)
-        if dtype.type is np.complex64:
-            (<np.complex64_t[:m:1, :initSize]>&svecs_c[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<np.complex64_t[:n:1, :initSize]>&svecs_c[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
-        elif dtype.type is np.float32:
-            (<float[:m:1, :initSize]>&svecs_f[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<float[:n:1, :initSize]>&svecs_f[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
-        elif dtype.type is np.float64:
-            (<double[:m:1, :initSize]>&svecs_d[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<double[:n:1, :initSize]>&svecs_d[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
-        else:
-            (<np.complex128_t[:m:1, :initSize]>&svecs_z[m*numOrthoConst])[:,:] = u0[:, 0:initSize]
-            (<np.complex128_t[:n:1, :initSize]>&svecs_z[m*(numOrthoConst+initSize)+n*numOrthoConst])[:,:] = v0[:, 0:initSize]
+        svecs[m*numOrthoConst:m*(numOrthoConst+initSize)].reshape((m,initSize), order='F')[:,:] = u0[:,:initSize]
+        svecs[m*(numOrthoConst+initSize)+n*numOrthoConst:(m+n)*(numOrthoConst+initSize)].reshape((n,initSize), order='F')[:,:] = v0[:,:initSize]
 
     if orthou0 is not None:
-        if dtype.type is np.complex64:
-            (<np.complex64_t[:m:1, :numOrthoConst]>&svecs_c[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<np.complex64_t[:n:1, :numOrthoConst]>&svecs_c[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
-        elif dtype.type is np.float32:
-            (<float[:m:1, :numOrthoConst]>&svecs_f[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<float[:n:1, :numOrthoConst]>&svecs_f[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
-        elif dtype.type is np.float64:
-            (<double[:m:1, :numOrthoConst]>&svecs_d[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<double[:n:1, :numOrthoConst]>&svecs_d[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
-        else:
-            (<np.complex128_t[:m:1, :numOrthoConst]>&svecs_z[0])[:,:] = orthou0[:, 0:numOrthoConst]
-            (<np.complex128_t[:n:1, :numOrthoConst]>&svecs_z[m*(numOrthoConst+initSize)])[:,:] = orthov0[:, 0:numOrthoConst]
+        svecs[0:m*numOrthoConst].reshape((m,numOrthoConst), order='F')[:,:] = orthou0[:,0:numOrthoConst]
+        svecs[m*(numOrthoConst+initSize):m*(numOrthoConst+initSize)+n*numOrthoConst].reshape((n,numOrthoConst), order='F')[:,:] = orthov0[:,:initSize]
 
+    global __user_function_exception
+    __user_function_exception = None
     if dtype.type is np.complex64:
-        err = cprimme_svds(&svals_f[0], &svecs_c[0], &norms_f[0], pp)
+        err = cprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
     elif dtype.type is np.float32:
-        err = sprimme_svds(&svals_f[0], &svecs_f[0], &norms_f[0], pp)
+        err = sprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
     elif dtype.type is np.float64:
-        err = dprimme_svds(&svals_d[0], &svecs_d[0], &norms_d[0], pp)
+        err = dprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
     else:
-        err = zprimme_svds(&svals_d[0], &svecs_z[0], &norms_d[0], pp)
+        err = zprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
 
     if err != 0:
-        raise PrimmeSvdsError(err)
+        if __user_function_exception is not None:
+            raise PrimmeSvdsError(err) from __user_function_exception
+        else:
+            raise PrimmeSvdsError(err)
 
     if return_stats:
         stats = dict((f, primme_svds_params_get(PP, 'stats_' + f)) for f in [
@@ -1159,22 +1210,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     numOrthoConst = primme_svds_params_get(PP, "numOrthoConst")
     norms = norms[0:initSize]
-    if dtype.type is np.complex64:
-        svecsl = np.asarray(<np.complex64_t[:m:1, :initSize]>&svecs_c[m*numOrthoConst])
-        svecsr = np.asarray(<np.complex64_t[:n:1, :initSize]>&svecs_c[m*(numOrthoConst+initSize)+n*numOrthoConst])
-    elif dtype.type is np.float32:
-        svecsl = np.asarray(<float[:m:1, :initSize]>&svecs_f[m*numOrthoConst])
-        svecsr = np.asarray(<float[:n:1, :initSize]>&svecs_f[m*(numOrthoConst+initSize)+n*numOrthoConst])
-    elif dtype.type is np.float64:
-        svecsl = np.asarray(<double[:m:1, :initSize]>&svecs_d[m*numOrthoConst])
-        svecsr = np.asarray(<double[:n:1, :initSize]>&svecs_d[m*(numOrthoConst+initSize)+n*numOrthoConst])
-    else:
-        svecsl = np.asarray(<np.complex128_t[:m:1, :initSize]>&svecs_z[m*numOrthoConst])
-        svecsr = np.asarray(<np.complex128_t[:n:1, :initSize]>&svecs_z[m*(numOrthoConst+initSize)+n*numOrthoConst])
 
     # Make copies and transpose conjugate svecsr
-    svecsl = svecsl.copy()
-    svecsr = svecsr.T.conj().copy()
+    svecsl = svecs[m*numOrthoConst:m*(numOrthoConst+initSize)].reshape((m,initSize), order='F').copy()
+    svecsr = svecs[m*(numOrthoConst+initSize)+n*numOrthoConst:(m+n)*(numOrthoConst+initSize)].reshape((n,initSize), order='F').T.conj().copy()
 
     if not return_stats:
         return svecsl, svals, svecsr
@@ -1226,7 +1265,12 @@ _PRIMMEErrors = {
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
 -36 : "not enough memory for realWork",
 -37 : "not enough memory for intWork",
--38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'"
+-38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
+-40 : 'factorization failure',
+-41 : 'user cancelled execution',
+-42 : 'orthogonalization failure',
+-43 : 'parallel failure',
+-44 : 'unavailable functionality'
 }
 
 _PRIMMESvdsErrors = {
@@ -1251,7 +1295,12 @@ _PRIMMESvdsErrors = {
 -18 : "svecs is not set",
 -19 : "resNorms is not set",
 -20 : "not enough memory for realWork",
--21 : "not enough memory for intWork"
+-21 : "not enough memory for intWork",
+-40 : 'factorization failure',
+-41 : 'user cancelled execution',
+-42 : 'orthogonalization failure',
+-43 : 'parallel failure',
+-44 : 'unavailable functionality'
 }
 
 

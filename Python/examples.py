@@ -63,9 +63,9 @@ A = scipy.sparse.rand(10000, 100, density=0.001, random_state=10)
 # Compute the three closest singular values to 6.0 with a tolerance of 1e-6
 svecs_left, svals, svecs_right, stats = primme.svds(A, 3, which='SM', tol=1e-6,
                                                     return_stats=True)
-assert_allclose(svals, [0.79488437, 0.85890809, 0.87174328], atol=1e-6*103)
-print(svals) # [ 0.79488437  0.85890809  0.87174328]
-print(stats["elapsedTime"], stats["numMatvecs"]) # it took that seconds and 101 matvecs
+A_svals = svals
+print(svals)
+print(stats["elapsedTime"], stats["numMatvecs"])
 
 # Compute the square diagonal preconditioner
 prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
@@ -74,5 +74,5 @@ prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
 # Recompute the singular values but using the preconditioner
 svecs_left, svals, svecs_right, stats = primme.svds(A, 3, which='SM', tol=1e-6,
                         precAHA=prec, return_stats=True)
-assert_allclose(svals, [0.79488437, 0.85890809, 0.87174328], atol=1e-6*103)
-print(stats["elapsedTime"], stats["numMatvecs"]) # it took that seconds and 45 matvecs
+assert_allclose(svals, A_svals, atol=1e-6*100)
+print(stats["elapsedTime"], stats["numMatvecs"])
