@@ -659,10 +659,10 @@ STATIC void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals,
 
       if (eval >= numLocked ||
             (ritzVal < basisSize &&
-                        (primme->target == primme_largest &&
-                              ritzVals[ritzVal] >= lockedEvals[eval]) ||
-                  (primme->target == primme_smallest &&
-                        ritzVals[ritzVal] <= lockedEvals[eval]))) {
+                  ((primme->target == primme_largest &&
+                         ritzVals[ritzVal] >= lockedEvals[eval]) ||
+                        (primme->target == primme_smallest &&
+                              ritzVals[ritzVal] <= lockedEvals[eval])))) {
          sortedRitzVals[count] = ritzVals[ritzVal];
 
          /* If the Ritz value just merged is unconverged and there is room */

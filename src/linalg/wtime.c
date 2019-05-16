@@ -41,6 +41,10 @@
 #  include <sys/resource.h>
 #endif
 
+#ifndef CHECK_TEMPLATE
+#include "wtime.h"
+#endif
+
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 
 double primme_wTimer() {
