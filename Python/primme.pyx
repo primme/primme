@@ -4,6 +4,8 @@ cimport numpy as np
 from scipy.sparse.linalg.interface import aslinearoperator
 cimport cython
 from cython cimport view
+from builtins import bytes as bytesp23 # bytes compatibility Py2/3
+
 ctypedef fused numerics:
     float
     double
@@ -85,7 +87,7 @@ cdef class PrimmeParams:
             primme_params_destroy(self.pp)
     
 def __primme_params_get(PrimmeParams pp_, field_):
-    field_ = bytes(field_, 'ASCII')
+    field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_params_label l = -1
@@ -153,7 +155,7 @@ cdef np.int64_t primme_params_get_int(primme_params *primme, cython.p_char field
         return -1
 
 def __primme_params_set(PrimmeParams pp_, field_, value):
-    field_ = bytes(field_, 'ASCII')
+    field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char*>field_
     cdef primme_params_label l = -1
@@ -168,8 +170,8 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
     if t == primme_pointer:
         primme_set_member(primme, l, <void*>value)
     elif t == primme_int:
-        if isinstance(value, (bytes,str)):
-            value = bytes(value, 'ASCII')
+        if isinstance(value, (bytesp23,str)):
+            value = bytesp23(value, 'ASCII')
             primme_constant_info(<const char*>value, &i)
             value = i
         v_int = value
@@ -594,7 +596,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     cdef int method_int = -1;
     if method is not None:
-        method = bytes(method, 'ASCII')
+        method = bytesp23(method, 'ASCII')
         primme_constant_info(<const char *>method, &method_int)
         if method_int < 0:
             raise ValueError('Not valid "method": %s' % method)
@@ -677,7 +679,7 @@ cdef class PrimmeSvdsParams:
             primme_svds_params_destroy(self.pp)
     
 def primme_svds_params_get(PrimmeSvdsParams pp_, field_):
-    field_ = bytes(field_, 'ASCII')
+    field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_svds_params_label l = -1
@@ -722,7 +724,7 @@ cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cyth
     return v_int
 
 def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
-    field_ = bytes(field_, 'ASCII')
+    field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
     cdef primme_svds_params_label l = -1
@@ -737,8 +739,8 @@ def primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     if t == primme_pointer:
         primme_svds_set_member(primme_svds, l, <void*>value)
     elif t == primme_int:
-        if isinstance(value, (bytes,str)):
-            value = bytes(value, 'ASCII')
+        if isinstance(value, (bytesp23,str)):
+            value = bytesp23(value, 'ASCII')
             primme_svds_constant_info(<const char*>value, &i)
             value = i
         v_int = value
@@ -971,7 +973,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     ...           [0], 100, 100) # square diag. preconditioner
     >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
     >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 6.0
-    ['6.00761', '6.01431', '5.98441']
+    ['5.99871', '5.99057', '6.01065']
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
