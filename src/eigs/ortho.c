@@ -1188,6 +1188,8 @@ int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,
    CHKERR(Num_copy_matrix_SHprimme(
          A, n, n - n0, n, &fVtV[ldfVtV * n0], ldfVtV, ctx));
    CHKERR(Num_free_SHprimme(A, ctx));
+
+   return 0;
 }
 
 #endif /* SUPPORTED_TYPE */

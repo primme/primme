@@ -41,23 +41,16 @@
 #include <stdlib.h>   /* free */
 #include <assert.h>
 #include <math.h>
-#include "numerical.h"
+#include "common.h"
+#include "memman.h"
 
-/* Only define these functions ones */
-#ifdef USE_DOUBLE
-#include "notemplate.h"
 
 /*******************************************************************************
- * Subroutine Mem_pop_frame - Remove the last frame pushed in the context.
+ * Subroutine Mem_push_frame - Push a new frame in the context.
  * 
  * INPUT PARAMETERS
- * ----------------
- * prev     previous frame
- * curr     current frame
- *
- * OUTPUT PARAMETERS
- * -----------------
- * next     what will be the next frame
+ * ----------------------------------
+ * ctx      context
  *
  ******************************************************************************/
 
@@ -67,34 +60,61 @@ static int free_dummy(void *p, primme_context ctx) {
    return 0;
 }
 
+int Mem_push_frame(primme_context *ctx) {
+
+   /* Quick exit */
+
+   if (!ctx) return 0;
+
+   primme_frame *f = NULL;
+   primme_alloc *a = NULL;
+   if (MALLOC_PRIMME(1, &f) == 0 && MALLOC_PRIMME(1, &a) == 0) {
+      f->prev_alloc = a;
+      f->keep_frame = 0;
+      f->prev = ctx->mm;
+      a->p = f;
+      a->free_fn = free_dummy;
+      a->prev = NULL;
+#ifndef NDEBUG
+      a->debug = NULL;
+#endif
+      ctx->mm = f;
+   } else {
+      if (f) free(f);
+      if (a) free(a);
+      return -1;
+   }
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine Mem_pop_frame - Remove the last frame pushed in the context.
+ * 
+ * INPUT PARAMETERS
+ * ----------------------------------
+ * ctx      context
+ *
+ ******************************************************************************/
+
 int Mem_pop_frame(primme_context *ctx) {
 
    /* Quick exit */
 
    if (!ctx || !ctx->mm) return 0;
 
-   /* Create a new frame and set it as next if there is no previous frame     */
-   /* and they want to keep the frame. Register the allocation of the frame.  */
+   /* Show message if there is no previous frame  and they want to keep the
+    * frame. */
 
-   if (ctx->mm->keep_frame && !ctx->mm->prev) {
-      primme_frame *f = NULL;
-      primme_alloc *a = NULL;
-      if (MALLOC_PRIMME(1, &f) == 0 && MALLOC_PRIMME(1, &a) == 0) {
-         f->prev_alloc = a;
-         f->keep_frame = 0;
-         f->prev = NULL;
-         a->p = f;
-         a->free_fn = free_dummy;
-         a->prev = NULL;
-#ifndef NDEBUG
-         a->debug = NULL;
-#endif
-         ctx->mm->prev = f;
-      } else {
-         if (f) free(f);
-         if (a) free(a);
-      }
+   if (ctx->mm->keep_frame && !ctx->mm->prev && !ctx->mm->prev_alloc) {
+      PRINTFALLCTX(*ctx, 1, "Warning: no frame where to keep allocations");
+      return -1;
    }
+
+   /* Store the reference to the previous frame. The current frame may be freed
+    * in the followings commands. */
+
+   primme_frame *mm_prev = ctx->mm->prev;
 
    /* If it is asked to keep the frame, transfer all registers to the   */
    /* previous frame.                                                   */
@@ -113,26 +133,29 @@ int Mem_pop_frame(primme_context *ctx) {
 
    else {
 
-      /* Check that at this point there should be no registered allocation */
+      /* Warning about allocations not made by Mem_push_frame */
 
 #ifndef NDEBUG
       primme_alloc *a = ctx->mm->prev_alloc;
       while (a) {
-         PRINTFALLCTX(*ctx, 1, "Warning: the allocation at %s has not been freed",
+         if (a->free_fn != free_dummy) {
+            PRINTFALLCTX(*ctx, 1,
+                  "Warning: the allocation at %s has not been freed",
                a->debug ? a->debug : "unknown");
+            assert(0);
+         }
          a = a->prev;
       }
 #endif 
-      assert(ctx->mm->prev_alloc == NULL);
 
-      /* But if there are allocations, just free them */
+      /* If there are allocations, just free them */
  
       Mem_pop_clean_frame(*ctx);
    }
 
    /* Set the current frame as the previous one */
 
-   ctx->mm = ctx->mm->prev;
+   ctx->mm = mm_prev;
 
    return 0;
 }
@@ -149,13 +172,13 @@ int Mem_pop_frame(primme_context *ctx) {
 int Mem_pop_clean_frame(primme_context ctx) {
 
    primme_alloc *a = ctx.mm ? ctx.mm->prev_alloc : NULL;
+   if (ctx.mm) ctx.mm->prev_alloc = NULL;
    while (a) {
       primme_alloc *a_prev = a->prev;
       if (a->p) a->free_fn(a->p, ctx);
       free(a);
       a = a_prev;
    }
-   if (ctx.mm) ctx.mm->prev_alloc = NULL;
 
    return 0;
 }
@@ -274,6 +297,3 @@ int Mem_debug_frame(const char *debug, primme_context ctx) {
 
    return 0;
 }
-
-
-#endif /* USE_DOUBLE */

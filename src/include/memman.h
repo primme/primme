@@ -58,6 +58,7 @@ typedef struct primme_frame_str {
                         
 } primme_frame;
 
+int Mem_push_frame(struct primme_context_str *ctx);
 int Mem_pop_frame(struct primme_context_str *ctx);
 int Mem_pop_clean_frame(struct primme_context_str ctx);
 int Mem_keep_frame(struct primme_context_str ctx);

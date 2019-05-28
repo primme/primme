@@ -143,22 +143,26 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
    switch (t) {
 #  ifdef SUPPORTED_HALF_TYPE
    case primme_op_half:
-      ret = wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, &outInitSize, ctx);
+      CHKERRVAL(wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+                      (void *)resNorms, &outInitSize, ctx),
+            &ret);
       break;
 #  endif
    case primme_op_float:
-      ret = wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, &outInitSize, ctx);
+      CHKERRVAL(wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+                      (void *)resNorms, &outInitSize, ctx),
+            &ret);
       break;
    case primme_op_double:
-      ret = wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, &outInitSize, ctx);
+      CHKERRVAL(wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+                      (void *)resNorms, &outInitSize, ctx),
+            &ret);
       break;
 #  ifdef PRIMME_WITH_NATIVE_QUAD
    case primme_op_quad:
-      ret = wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-            (void *)resNorms, &outInitSize, ctx);
+      CHKERRVAL(wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
+                      (void *)resNorms, &outInitSize, ctx),
+            &ret);
       break;
 #  endif
    default: ret = PRIMME_FUNCTION_UNAVAILABLE;

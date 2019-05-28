@@ -221,7 +221,7 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
    ctx.mm = &__frame;
 
 /**********************************************************************
- * Macro MEM_POP_FRAME(ERRN) - If ERRN is 0, it just removes all registered
+ * Macro MEM_POP_FRAME(ERRN) - If *ERRN is 0, it just removes all registered
  *    allocations. Otherwise it also frees all allocations.
  *
  * NOTE: only one call is allowed in the same block of code (anything between
@@ -230,19 +230,27 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 
 #ifndef NDEBUG
 #define MEM_POP_FRAME(ERRN) { \
-   if (ERRN) {\
+   if (*(ERRN)) {\
       Mem_pop_clean_frame(ctx);\
    } else {\
       Mem_debug_frame(__FILE__ ": " STR(__LINE__), ctx);\
-      Mem_pop_frame(&ctx); \
+      if (Mem_pop_frame(&ctx)) { \
+         Mem_pop_clean_frame(ctx); \
+         PRINTFALL(1, "PRIMME: Error popping frame, most likely forgotten call to Mem_keep_frame.");\
+         *(ERRN) = -1; \
+      }\
    }\
 }
 #else
 #define MEM_POP_FRAME(ERRN) { \
-   if (ERRN) {\
+   if (*(ERRN)) {\
       Mem_pop_clean_frame(ctx);\
    } else {\
-      Mem_pop_frame(&ctx); \
+      if (Mem_pop_frame(&ctx)) { \
+         Mem_pop_clean_frame(ctx); \
+         PRINTFALL(1, "PRIMME: Error popping frame, most likely forgotten call to Mem_keep_frame.");\
+         *(ERRN) = -1; \
+      }\
    }\
 }
 #endif
@@ -449,7 +457,7 @@ static inline uint32_t hash_call(const char *str, double value) {
    PROFILE_BEGIN(STR(ERRN)); \
    int __err = (ERRN); assert(__err==0);\
    PROFILE_END; \
-   MEM_POP_FRAME(__err); \
+   MEM_POP_FRAME(&__err); \
    if (__err) {\
       PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s", __err, __LINE__, #ERRN );\
       return __err;\
@@ -481,7 +489,7 @@ static inline uint32_t hash_call(const char *str, double value) {
    PROFILE_BEGIN(STR(ERRN)); \
    int __err = (ERRN); assert(__err==0);\
    PROFILE_END; \
-   MEM_POP_FRAME(__err); \
+   MEM_POP_FRAME(&__err); \
    if (__err) {\
       PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s", __err, __LINE__, #ERRN );\
       PRINTFALL(1, "PRIMME: " __VA_ARGS__);\
@@ -509,11 +517,34 @@ static inline uint32_t hash_call(const char *str, double value) {
    PROFILE_BEGIN(STR(ERRN)); \
    int __err = (ERRN); assert(__err==0);\
    PROFILE_END; \
-   MEM_POP_FRAME(__err); \
+   MEM_POP_FRAME(&__err); \
    if (__err) {\
       PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", __err, __LINE__, #ERRN );\
       ACTION;\
       return;\
+   } \
+}
+
+/**********************************************************************
+ * Macro CHKERRVAL - set the error code on the second macro argument.
+ *
+ *    ERRN is only evaluated once.
+ *
+ * INPUT PARAMETERS
+ * ----------------
+ * ERRN    Expression that returns an error code
+ * RET     Variable where to assign the error code
+ *
+ **********************************************************************/
+
+#define CHKERRVAL(ERRN, RET) { \
+   MEM_PUSH_FRAME; \
+   PROFILE_BEGIN(STR(ERRN)); \
+   *(RET) = (ERRN);\
+   PROFILE_END; \
+   MEM_POP_FRAME((RET)); \
+   if (*(RET)) {\
+      PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", *(RET), __LINE__, #ERRN );\
    } \
 }
 

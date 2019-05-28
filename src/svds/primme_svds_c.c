@@ -58,13 +58,16 @@
    (PRIMME_SVDS_STATS).numMatvecs         OP  (PRIMME_STATS).numMatvecs*2      ;\
    (PRIMME_SVDS_STATS).numPreconds        OP  (PRIMME_STATS).numPreconds       ;\
    (PRIMME_SVDS_STATS).numGlobalSum       OP  (PRIMME_STATS).numGlobalSum      ;\
+   (PRIMME_SVDS_STATS).numBroadcast       OP  (PRIMME_STATS).numBroadcast      ;\
    (PRIMME_SVDS_STATS).volumeGlobalSum    OP  (PRIMME_STATS).volumeGlobalSum   ;\
+   (PRIMME_SVDS_STATS).volumeBroadcast    OP  (PRIMME_STATS).volumeBroadcast   ;\
    (PRIMME_SVDS_STATS).numOrthoInnerProds OP  (PRIMME_STATS).numOrthoInnerProds;\
    (PRIMME_SVDS_STATS).elapsedTime        OP  (PRIMME_STATS).elapsedTime       ;\
    (PRIMME_SVDS_STATS).timeMatvec         OP  (PRIMME_STATS).timeMatvec        ;\
    (PRIMME_SVDS_STATS).timePrecond        OP  (PRIMME_STATS).timePrecond       ;\
    (PRIMME_SVDS_STATS).timeOrtho          OP  (PRIMME_STATS).timeOrtho         ;\
    (PRIMME_SVDS_STATS).timeGlobalSum      OP  (PRIMME_STATS).timeGlobalSum     ;\
+   (PRIMME_SVDS_STATS).timeBroadcast      OP  (PRIMME_STATS).timeBroadcast     ;\
    (PRIMME_SVDS_STATS).lockingIssue       OP  (PRIMME_STATS).lockingIssue      ;\
 }
 
@@ -148,6 +151,10 @@ static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
 #endif
    }
 
+   /* All error routines assume that there is frame. We push one here */
+
+   Mem_push_frame(&ctx);
+
    return ctx;
 } 
 
@@ -162,20 +169,12 @@ static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {
 
 static void primme_svds_free_context(primme_context ctx) {
 
-   /* Deregister the allocation of the current frame */
-
-   primme_frame *curr = ctx.mm;
-   Mem_deregister_alloc(curr, ctx);
-
-   /* Pop the current frame */
+   /* Pop frame pushed in primme_get_context */
 
    Mem_pop_frame(&ctx);
 
-   /* Free the current frame */
-
-   if (curr) free(curr);
-
    /* Free profiler */
+
 #ifdef PRIMME_PROFILE
    if (ctx.path) regfree(&ctx.profile);
    if (ctx.timeoff) free(ctx.timeoff);
@@ -231,7 +230,8 @@ int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms,
 
    /* Main call */
 
-   int ret = Sprimme_svds_for_real(svals, svecs, resNorms, ctx);
+   int ret;
+   CHKERRVAL(Sprimme_svds_for_real(svals, svecs, resNorms, ctx), &ret);
 
    /* Free context */
 
@@ -942,6 +942,7 @@ STATIC void matrixMatvecSVDS(void *x_, PRIMME_INT *ldx, void *y_,
    primme_svds_operator method = &primme_svds->primme == primme ?
       primme_svds->method : primme_svds->methodStage2;
    int i, bs;
+   *ierr = 0;
 
    switch(method) {
       case primme_svds_op_AtA:
@@ -1367,7 +1368,8 @@ STATIC void default_monitor_svds(void *basisSvals_, int *basisSize, int *basisFl
    XREAL *basisSvals = (XREAL*)basisSvals_, *basisNorms = (XREAL*)basisNorms_,
          *lockedSvals = (XREAL*)lockedSvals_, *lockedNorms = (XREAL*)lockedNorms_,
          *LSRes = (XREAL*)LSRes_;
-   assert(event != NULL && primme_svds != NULL && stage != NULL);
+   assert(event != NULL && primme_svds != NULL &&
+          (stage != NULL || *event == primme_event_message));
 
    /* Only print report if this is proc zero or it is profiling */
    if (primme_svds->outputFile &&
@@ -1629,6 +1631,7 @@ STATIC void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    if (*event == primme_event_converged && primme->locking
          && primme->printLevel <= 4) {
       *err = 0;
+      primme_svds_free_context(ctx);
       return;
    }
 

@@ -128,6 +128,10 @@ primme_context primme_get_context(primme_params *primme) {
 #endif
    }
 
+   /* All error routines assume that there is frame. We push one here */
+
+   Mem_push_frame(&ctx);
+
    return ctx;
 } 
 
@@ -143,20 +147,12 @@ primme_context primme_get_context(primme_params *primme) {
 TEMPLATE_PLEASE
 void primme_free_context(primme_context ctx) {
 
-   /* Deregister the allocation of the current frame */
-
-   primme_frame *curr = ctx.mm;
-   Mem_deregister_alloc(curr, ctx);
-
-   /* Pop the current frame */
+   /* Pop frame pushed in primme_get_context */
 
    Mem_pop_frame(&ctx);
 
-   /* Free the current frame */
-
-   if (curr) free(curr);
-
    /* Free profiler */
+
 #ifdef PRIMME_PROFILE
    if (ctx.path) regfree(&ctx.profile);
    if (ctx.timeoff) free(ctx.timeoff);
