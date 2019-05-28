@@ -28,7 +28,7 @@ The previous and current state of the framework
 
 In version 1 of PRIMME, a script translated the generic code into the specialized version for every precision. A few memory allocations are made at the beginning of the execution of the main routine, and internal functions passed pointers to workspaces, making error and memory management simple.
 
-In versions 2, the source code uses macros and conditional compilation for implementing polymorphism. The tool ctemplate_ generates macros associated with the internal functions that implicitly change the function's name for every type, following a similar scheme as Fortran 77 functions are named.  See section func_names_. The tool also generates forward definitions for all the function variants. Error and memory management are handled similarly as PETSc. Dynamic memory is used instead of workspaces, but the memory was not free in many cases if an error happens.
+In versions 2, the source code uses macros and conditional compilation for implementing polymorphism. The tool ctemplate_ generates macros associated with the internal functions that implicitly change the function's name for every type, following a similar scheme as Fortran 77 functions are named.  See section func_names_. The tool also generates forward definitions for all the function variants. Error and memory management are handled similarly as PETSc. Dynamic memory is used instead of workspaces, but the memory was not freed in many cases if an error happens.
 
 In version 3, which is the current version, the source files include themselves several times instead of calling the compiler several times for the different types. It is introduced support for half precision and GPU. More macros are added to call for a specific type and also for the CPU version of a function. CHKERR_ tracks memory allocations and notifies if an allocation was not freed.
 
@@ -158,7 +158,7 @@ Memory and error management
 
 Recent versions of PRIMME are using dynamic memory to manage the memory. In general, the use of dynamic memory simplifies the code by not having to take care of providing enough working space for all subsequent calls. The small drawback of dynamic memory is to mingle with error management. The goal is to avoid writing specific code to free allocated memory in case of an error happening in the body of a function.
 
-By default, calls to PRIMME internal functions should be made under an error checker macro, CHKERR_, CHKERRM_ or CHKERRA_, if the function returns an error code. Besides, these macros expect the variable `ctx`, which is a `struct` with information about the allocations besides other things. Consider the next function::
+By default, calls to PRIMME internal functions should be made under an error checker macro, CHKERR_, CHKERRM_ or CHKERRA_, if the function returns an error code. These macros expect the variable `ctx`, which is a `struct` with information about the allocations besides other things. Consider the next function::
 
     TEMPLATE_PLEASE int dummy_Sprimme(SCALAR *v, PRIMME_INT n, primme_context ctx) {
         SCALAR *x;
