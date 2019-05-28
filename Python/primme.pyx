@@ -973,7 +973,6 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     ...           [0], 100, 100) # square diag. preconditioner
     >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
     >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 6.0
-    ['5.99871', '5.99057', '6.01065']
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
