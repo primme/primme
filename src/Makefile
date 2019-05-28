@@ -149,14 +149,10 @@ clean:
 
 # NOTE: make may update deps and reload it automatically
 deps: $(INCLUDES) $(SOURCES) $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_OTHERS)
-	@echo "# This file is generated automatically. Please don't modify" > deps
-	@
-	@# Added dependencies on headers for building the objects
-	@$(PYTHON) tools/dependencies $(INCLUDE) $(SOURCES) -e*.o >> deps
-	@
-	@# Added dependencies on headers from headers not generated automatically
-	@# Exclude includes with // cyclic
-	@$(PYTHON) tools/dependencies $(INCLUDE) $(INCLUDES) -i'include[^\n]+cyclic' >> deps
+	echo "# This file is generated automatically. Please don't modify" > deps
+	
+	# Added dependencies on headers for building the objects
+	$(PYTHON) tools/dependencies $(INCLUDE) $(SOURCES) -e.o >> deps
 
 include deps
 
