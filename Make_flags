@@ -30,6 +30,11 @@ PRIMME_WITH_HALF ?= no
 ifeq ($(PRIMME_WITH_HALF), yes)
     CFLAGS += -DPRIMME_WITH_HALF
 endif
+PRIMME_WITH_FLOAT ?= yes
+ifneq ($(PRIMME_WITH_FLOAT), yes)
+    CFLAGS += -DPRIMME_WITHOUT_FLOAT
+endif
+
 
 # GPUs compiler flags
 #---------------------------------------------------------------

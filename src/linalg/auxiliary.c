@@ -92,7 +92,9 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 #ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   return Num_matrix_astype_Shprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #endif
+#ifndef PRIMME_WITHOUT_FLOAT
       case primme_op_float:  return Num_matrix_astype_Ssprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#endif
       case primme_op_double: return Num_matrix_astype_Sdprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
       case primme_op_quad:   return Num_matrix_astype_Sqprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
@@ -160,7 +162,9 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 #ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   return Num_matrix_astype_Shprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #endif
+#ifndef PRIMME_WITHOUT_FLOAT
       case primme_op_float:  return Num_matrix_astype_Ssprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
+#endif
       case primme_op_double: return Num_matrix_astype_Sdprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
 #ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
       case primme_op_quad:   return Num_matrix_astype_Sqprimme(x, m, n, ldx, xt, y, ldy, yt, do_alloc, do_copy, ctx);
@@ -250,7 +254,9 @@ int Num_zero_matrix_Tprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
 #  ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   return Num_zero_matrix_hprimme((PRIMME_HALF*)x, m, n, ldx, ctx);
 #  endif
+#  ifndef PRIMME_WITHOUT_FLOAT
       case primme_op_float:  return Num_zero_matrix_sprimme((float*)      x, m, n, ldx, ctx);
+#  endif
       case primme_op_double: return Num_zero_matrix_dprimme((double*)     x, m, n, ldx, ctx);
 #  ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
       case primme_op_quad:   return Num_zero_matrix_qprimme((PRIME_QUAD*) x, m, n, ldx, ctx);

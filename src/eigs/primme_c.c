@@ -148,11 +148,13 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
             &ret);
       break;
 #  endif
+#  ifndef PRIMME_WITHOUT_FLOAT
    case primme_op_float:
       CHKERRVAL(wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
                       (void *)resNorms, &outInitSize, ctx),
             &ret);
       break;
+#  endif
    case primme_op_double:
       CHKERRVAL(wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
                       (void *)resNorms, &outInitSize, ctx),

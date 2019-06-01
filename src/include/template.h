@@ -157,14 +157,25 @@
 #  define SUPPORTED_HALF_TYPE
 #endif
 
-#if defined(CHECK_TEMPLATE) ||                                                 \
-      (defined(USE_HOST) &&                                                    \
-            ((!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) ||              \
-                  defined(SUPPORTED_HALF_TYPE))) ||                            \
-      (defined(USE_MAGMA) && defined(PRIMME_WITH_MAGMA) &&                     \
-            ((!defined(USE_HALF_MAGMA) && !defined(USE_HALFCOMPLEX_MAGMA)) ||  \
-                  defined(SUPPORTED_HALF_TYPE)))
-#  define SUPPORTED_TYPE
+// Undefine SUPPORTED_TYPE when the current type is not supported. That is if
+// one the next applies:
+// - USE_HALF/COMPLEX/_MAGMA is defined but SUPPORTED_HALF_TYPE is not.
+// - USE_FLOAT/COMPLEX/_MAGMA is defined but PRIMME_WITHOUT_FLOAT is defined.
+// - USE_MAGMA is defined but PRIMME_WITH_MAGMA is not.
+
+#define SUPPORTED_TYPE
+#if !defined(CHECK_TEMPLATE) &&                                                \
+      (((defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                      \
+              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)) &&    \
+             !defined(SUPPORTED_HALF_TYPE)) ||                                 \
+            ((defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)) &&    \
+                  !defined(MAGMA_WITH_HALF)) ||                                \
+            (defined(USE_MAGMA) && !defined(PRIMME_WITH_MAGMA)) ||             \
+            ((defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX) ||               \
+                   defined(USE_FLOAT_MAGMA) ||                                 \
+                   defined(USE_FLOATCOMPLEX_MAGMA)) &&                         \
+                  defined(PRIMME_WITHOUT_FLOAT)))
+#  undef SUPPORTED_TYPE
 #endif
 
 /* A C99 code with complex type is not a valid C++ code. However C++          */
