@@ -37,6 +37,7 @@
 #'
 #' Compute a few eigenpairs from a specified region (the largest, the smallest,
 #' the closest to a point) on a symmetric/Hermitian matrix using PRIMME [1].
+#' Generalized symmetric/Hermitian problem is also supported.
 #' Only the matrix-vector product of the matrix is required. The used method is
 #' usually faster than a direct method (such as \code{\link{eigen}}) if
 #' seeking a few eigenpairs and the matrix-vector product is cheap. For
@@ -70,13 +71,16 @@
 #'        the closest eigenvalues to \eqn{\sigma}. If it is a matrix
 #'        it is used as prec \%*\% x; otherwise it is used as prec(x).
 #' @param isreal whether A \%*\% x always returns real number and not complex.
+#' @param B symmetric/Hermitian positive definite matrix or a function with
+#'        signature f(x) that returns \code{B \%*\% x}. If given, the function
+#'        returns the eigenpairs of (A,B).
 #' @param ... other PRIMME options (see details).
 #' @return list with the next elements
 #'    \describe{
 #'       \item{\code{values}}{the eigenvalues \eqn{\lambda_i}}
 #'       \item{\code{vectors}}{the eigenvectors \eqn{x_i}}
 #'       \item{\code{rnorms}}{the residual vector norms
-#'          \eqn{\|A x_i - \lambda_i x_i\|}{||A*x_i - lambda_i*x_i||}.}
+#'          \eqn{\|A x_i - \lambda_i B x_i\|}{||A*x_i - lambda_i*B*x_i||}.}
 #'       \item{\code{stats$numMatvecs}}{number of matrix-vector products performed}
 #'       \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
 #'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
@@ -165,6 +169,10 @@
 #' r <- eigs_sym(A, 3, 2.5, tol=1e-3); # compute the values with
 #' r$rnorms                                    # residual norm <= 1e-3*||A||
 #'
+#' B <- diag(rev(1:10));
+#' r <- eigs_sym(A, 3, B=B); # compute the 3 largest eigenpairs of
+#'                           # the generalized problem (A,B)
+#'
 #' # Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
 #' # and see how reduce the number matrix-vector products
 #' A <- diag(1:1000)   # we use a larger matrix to amplify the difference
@@ -192,7 +200,7 @@
 #' @export
 
 eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
-      x0=NULL, ortho=NULL, prec=NULL, isreal=NULL, ...) {
+      x0=NULL, ortho=NULL, prec=NULL, isreal=NULL, B=NULL, ...) {
 
    # Extra arguments are considered PRIMME options
    opts <- list(...);
@@ -231,6 +239,40 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
       }
       else {
          Af <- function(x) A %*% x;
+      }
+   }
+
+   # If B is a matrix, check that B has the same dimension as A
+   if (is.null(B)) {
+      Bf <- NULL;
+   }
+   else if (is.function(B)) {
+      Bf <- B;
+   }
+   else if (length(dim(B)) != 2 || ncol(B) != nrow(B) || ncol(B) != opts$n) {
+      stop("B should be a square matrix with the same dimension as A, or a function")
+   }
+   else {
+      # Convert integer and logical matrices to double
+      if (is.matrix(B) && (is.integer(B) || is.logical(B))) {
+         B <- as.double(B);
+         dim(B) = c(opts$n, opts$n);
+      }
+
+      # Restrict matrix to double and complex
+      Bismatrix <- (is.matrix(B) && (is.double(B) || is.complex(B)));
+
+      Bisreal_suggestion <-
+         if (Bismatrix) is.double(B)
+         else (inherits(B, "Matrix") && substr(class(B), 0, 1) == "d");
+      if ((is.null(isreal) || isreal == Bisreal_suggestion) && (
+               Bismatrix ||
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(B)) ||
+               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(B)) )) {
+         Bf <- B;
+      }
+      else {
+         Bf <- function(x) B %*% x;
       }
    }
 
@@ -322,9 +364,9 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
 
    # Call PRIMME
    r <- if (!isreal)
-      .zprimme(ortho, x0, Af, NULL, precf, convTest, primme)
+      .zprimme(ortho, x0, Af, Bf, precf, convTest, primme)
    else
-      .dprimme(ortho, x0, Af, NULL, precf, convTest, primme);
+      .dprimme(ortho, x0, Af, Bf, precf, convTest, primme);
 
    # Get stats
    r$stats$numMatvecs <- .primme_get_member("stats_numMatvecs", primme)

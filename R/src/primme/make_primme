@@ -1,16 +1,16 @@
 
 
-SOURCES = \
+SOURCES := \
    eigs/auxiliary_eigs.c \
+   eigs/auxiliary_eigs_normal.c \
    eigs/convergence.c \
    eigs/correction.c \
    eigs/factorize.c \
-   eigs/globalsum.c \
    eigs/init.c \
    eigs/inner_solve.c \
    eigs/main_iter.c \
    eigs/ortho.c \
-   eigs/primme.c \
+   eigs/primme_c.c \
    eigs/primme_f77.c \
    eigs/primme_interface.c \
    eigs/restart.c \
@@ -19,15 +19,16 @@ SOURCES = \
    eigs/update_W.c \
    linalg/auxiliary.c \
    linalg/blaslapack.c \
+   linalg/magma_wrapper.c \
+   linalg/memman.c \
    linalg/wtime.c \
-   svds/primme_svds.c \
+   svds/primme_svds_c.c \
    svds/primme_svds_f77.c \
    svds/primme_svds_interface.c
 
-LAPACK_SOURCES = zhegv.c
+OBJS := $(patsubst %.c,%.o,$(SOURCES))
 
-ARCHS = double doublecomplex
-OBJS = $(foreach arch,$(ARCHS),$(patsubst %.c,%$(arch).o,$(SOURCES)))
+LAPACK_SOURCES = zhegv.c
 
 LAPACK_OBJS = $(patsubst %.c,%.o,$(LAPACK_SOURCES))
 
@@ -40,11 +41,8 @@ INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) -c $< -o $@
 
-%double.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -DUSE_DOUBLE -c $< -o $@
-
-%doublecomplex.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -DUSE_DOUBLECOMPLEX -c $< -o $@
+$(OBJS): %.o: %.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -c $< -o $@
 
 #
 # Archive object files in the full library
