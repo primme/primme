@@ -1083,14 +1083,12 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #  ifdef USE_COMPLEX
    REAL *rwork;
 #  endif
-   SCALAR dummys=0;
-   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
+   if (n == 0) return 0;
 
 #  ifdef USE_COMPLEX
-   CHKERR(Num_malloc_Sprimme(3*n, &rwork));
+   CHKERR(Num_malloc_Rprimme(3*n, &rwork, ctx));
 #  endif
 
    /* Call to know the optimal workspace */
@@ -1116,7 +1114,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    }
 
 #  ifdef USE_COMPLEX
-   CHKERR(Num_free_Sprimme(rwork));
+   CHKERR(Num_free_Rprimme(rwork, ctx));
 #  endif
    
    CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d",
@@ -1227,18 +1225,16 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #  ifdef USE_COMPLEX
    REAL *rwork;
 #  endif
-   SCALAR dummys=0;
-   REAL   dummyr=0;
 
    /* Zero dimension matrix may cause problems */
-   if (n == 0) return;
+   if (n == 0) return 0;
 
    CHKERR(Num_malloc_Sprimme(n*n, &b, ctx)); 
 #  ifdef USE_COMPLEX
-   CHKERR(Num_malloc_Sprimme(3*n, &rwork, ctx));
+   CHKERR(Num_malloc_Rprimme(3*n, &rwork, ctx));
 #  endif
 
-   Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n);
+   Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n, ctx);
 
    /* Call to know the optimal workspace */
 
@@ -1264,8 +1260,9 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
    CHKERR(Num_free_Sprimme(b, ctx)); 
 #  ifdef USE_COMPLEX
-   CHKERR(Num_free_Sprimme(rwork, ctx));
+   CHKERR(Num_free_Rprimme(rwork, ctx));
 #  endif
+   return 0;
  
 #endif
 }
@@ -1436,6 +1433,8 @@ int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,
 
 #else /* USE_ZGESV */
 
+   (void)ipivot;
+   (void)ctx;
    /* Lapack's R core library doesn't have zhetrf. The functionality is       */
    /* implemented by replacing the input matrix with a full general matrix.   */
    /* And Num_zhetrs_Sprimme will solve the general linear system.            */
@@ -1499,6 +1498,7 @@ int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,
    CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xhetrs with info %d",
           (int)linfo);
 #else /* USE_ZGESV */
+   (void)uplo;
    XGESV(&ln, &lnrhs, a, &llda, lipivot, b, &lldb, &linfo);
    CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xgesv with info %d",
           (int)linfo);

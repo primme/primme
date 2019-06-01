@@ -83,6 +83,7 @@
 #define XHEEVX    LAPACK(ARITH(hsyevx, kheevx, ssyevx, cheevx, dsyevx, zheevx, , ))
 #define XGEES     LAPACK(ARITH(hgees , kgees , sgees , cgees , dgees , zgees , , ))
 #define XHEGV     LAPACK(ARITH(hsygv , khegv , ssygv , chegv , dsygv , zhegv , , ))
+#define XGESV     LAPACK(ARITH(hgesv , kgesv , sgesv , cgesv , dgesv , zgesv , , ))
 #define XHEGVX    LAPACK(ARITH(hsygvx, khegvx, ssygvx, chegvx, dsygvx, zhegvx, , ))
 #define XGESVD    LAPACK(ARITH(hgesvd, kgesvd, sgesvd, cgesvd, dgesvd, zgesvd, , ))
 #define XHETRF    LAPACK(ARITH(hsytrf, khetrf, ssytrf, chetrf, dsytrf, zhetrf, , ))
@@ -127,6 +128,7 @@ void XHEGV(PRIMME_BLASINT *itype, STRING jobz, STRING uplo, PRIMME_BLASINT *n, S
 void XHEGVX(PRIMME_BLASINT *itype, STRING jobz, STRING range, STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, SCALAR *b, PRIMME_BLASINT *ldb, REAL *vl, REAL *vu, PRIMME_BLASINT *il, PRIMME_BLASINT *iu, REAL *abstol, PRIMME_BLASINT *m,  REAL *w, SCALAR *z, PRIMME_BLASINT *ldz, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *iwork, PRIMME_BLASINT *ifail, PRIMME_BLASINT *info);
 void XGESVD(STRING jobu, STRING jobvt, PRIMME_BLASINT *m, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, REAL *s, SCALAR *u, PRIMME_BLASINT *ldu, SCALAR *vt, PRIMME_BLASINT *ldvt, SCALAR *work, PRIMME_BLASINT *ldwork, REAL *rwork, PRIMME_BLASINT *info);
 #endif
+void XGESV(PRIMME_BLASINT *n, PRIMME_BLASINT *nrhs, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipiv, SCALAR *b, PRIMME_BLASINT *ldb, PRIMME_BLASINT *info);
 void XSCAL(PRIMME_BLASINT *n, SCALAR *alpha, SCALAR *x, PRIMME_BLASINT *incx);
 void XLARNV(PRIMME_BLASINT *idist, PRIMME_BLASINT *iseed, PRIMME_BLASINT *n, SCALAR *x);
 void XHETRF(STRING uplo, PRIMME_BLASINT *n, SCALAR *a, PRIMME_BLASINT *lda, PRIMME_BLASINT *ipivot, SCALAR *work, PRIMME_BLASINT *ldwork, PRIMME_BLASINT *info);
