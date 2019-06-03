@@ -200,17 +200,19 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       ilev = iev;
    }
 
-   /*-----------------------------------------------------------------*/
-   /* For interior pairs use not the robust, but user provided shifts */
-   /*-----------------------------------------------------------------*/
+   // For interior pairs we an approach based on the target shift given by the
+   // user. For Rayleigh-Ritz, the Ritz value does not get monotonically closer
+   // to the exact value, and it is not trusted as a good shift until its
+   // residual vector norm is small. We capture this hint in the following
+   // heuristic: take the closest point in the interval Ritz value +- residual
+   // norm to the target as the shift. For refined extraction,
+   //     |Ritz value - target| <= the Ritz singular value.
+   // So we use the Ritz value as the shift as soon as the Ritz value is closer
+   // to the Ritz singular value than to the target.
 
    if (primme->target != primme_smallest && primme->target != primme_largest) {
 
       for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
-
-         // Considering |Ritz value - exact eigenvalue| <= residual norm *
-         // sqrt(|inv(B)|), then we take the closest point in the interval Ritz
-         // value +- residual norm to the user shift as the proper shift.
 
          double targetShift =
                primme->numTargetShifts > 0
@@ -221,6 +223,9 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) <
                blockNorms[blockIndex] * sqrt(primme->stats.estimateInvBNorm)) {
             blockOfShifts[blockIndex] = targetShift;
+         } else if (primme->projectionParams.projection ==
+                    primme_proj_refined) {
+            blockOfShifts[blockIndex] = sortedRitzVals[sortedIndex];
          } else {
             blockOfShifts[blockIndex] =
                   sortedRitzVals[sortedIndex] +
