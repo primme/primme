@@ -108,6 +108,11 @@ tags:
 # Convenient actions to build half precision (optional)
 #
 
+lib-debug-sanitize all_tests-debug-sanitize: export CFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize all_tests-debug-sanitize: export LDFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize: lib
+all_tests-debug-sanitize: all_tests
+
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export PRIMME_WITH_HALF := yes
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := clang
 lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
