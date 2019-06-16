@@ -182,8 +182,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
    *nextGuess = primme->numOrthoConst + initSize;
 
    /* Copy over the initial guesses provided by the user */
-   Num_copy_matrix_Sprimme(&evecs[primme->numOrthoConst * ldevecs], nLocal,
-         initSize, ldevecs, V, ldV, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(&evecs[primme->numOrthoConst * ldevecs],
+         nLocal, initSize, ldevecs, V, ldV, ctx));
 
    switch (primme->initBasisMode) {
    case primme_init_krylov: random = 0; break;
@@ -300,8 +300,8 @@ STATIC int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       CHKERR(matrixMatvec_Sprimme(&V[ldV*(i-blockSize)], nLocal, ldV,
                &V[ldV*i], ldV, 0, m, ctx));
 
-      Num_copy_matrix_Sprimme(
-            &V[ldV * i], nLocal, m, ldV, &W[ldW * (i - blockSize)], ldW, ctx);
+      CHKERR(Num_copy_matrix_Sprimme(
+            &V[ldV * i], nLocal, m, ldV, &W[ldW * (i - blockSize)], ldW, ctx));
 
       CHKERR(Bortho_block_Sprimme(V, ldV, VtBV, ldVtBV, fVtBV, ldfVtBV, NULL, 0,
             i, i + m - 1, locked, ldlocked, numLocked, BV, ldBV, NULL, 0,

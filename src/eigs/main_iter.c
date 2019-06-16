@@ -368,6 +368,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.numBroadcast                  = 0;
    primme->stats.volumeGlobalSum               = 0;
    primme->stats.volumeBroadcast               = 0;
+   primme->stats.flopsDense                    = 0;
    primme->stats.numOrthoInnerProds            = 0.0;
    primme->stats.elapsedTime                   = 0.0;
    primme->stats.timeMatvec                    = 0.0;
@@ -375,6 +376,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.timeOrtho                     = 0.0;
    primme->stats.timeGlobalSum                 = 0.0;
    primme->stats.timeBroadcast                 = 0.0;
+   primme->stats.timeDense                     = 0.0;
    primme->stats.estimateMinEVal               = HUGE_VAL;
    primme->stats.estimateMaxEVal               = -HUGE_VAL;
    primme->stats.estimateLargestSVal           = -HUGE_VAL;
@@ -821,11 +823,11 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Copy hVecs into prevhVecs */
 
-            Num_copy_matrix_SHprimme(hVecs, basisSize, basisSize, basisSize,
-                  prevhVecs, primme->maxBasisSize, ctx);
-            Num_zero_matrix_SHprimme(&prevhVecs[basisSize],
+            CHKERR(Num_copy_matrix_SHprimme(hVecs, basisSize, basisSize,
+                  basisSize, prevhVecs, primme->maxBasisSize, ctx));
+            CHKERR(Num_zero_matrix_SHprimme(&prevhVecs[basisSize],
                   primme->maxBasisSize - basisSize, basisSize,
-                  primme->maxBasisSize, ctx);
+                  primme->maxBasisSize, ctx));
             nprevhVecs = basisSize;
 
             basisSize += blockSize;
@@ -1108,8 +1110,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      primme->n)
                   - primme->numOrthoConst - numLocked - basisSize);
 
-            Num_copy_matrix_Sprimme(&evecs[nextGuess*ldevecs], primme->nLocal,
-                  numNew, ldevecs, &V[basisSize*ldV], ldV, ctx);
+            CHKERR(Num_copy_matrix_Sprimme(&evecs[nextGuess * ldevecs],
+                  primme->nLocal, numNew, ldevecs, &V[basisSize * ldV], ldV,
+                  ctx));
 
             nextGuess += numNew;
             numGuesses -= numNew;
@@ -1210,14 +1213,12 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          /* then return success, else return with a failure.     */
  
          if (numConverged == primme->numEvals || wholeSpace) {
-            if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
             *ret = 0;
-            goto clean;
          }
          else {
             *ret = PRIMME_MAIN_ITER_FAILURE;
-            goto clean;
          }
+         goto clean;
 
       }
       else {      /* no locking. Verify that everything is converged  */
@@ -1251,8 +1252,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                perm[i] = i;
             }
 
-            Num_copy_matrix_Sprimme(V, primme->nLocal, primme->numEvals, ldV,
-               &evecs[ldevecs*primme->numOrthoConst], ldevecs, ctx);
+            CHKERR(Num_copy_matrix_Sprimme(V, primme->nLocal, primme->numEvals,
+                  ldV, &evecs[ldevecs * primme->numOrthoConst], ldevecs, ctx));
 
             /* The target values all remained converged, then return */
             /* successfully, else return with a failure code.        */
@@ -1271,14 +1272,12 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             }
 
             if (converged) {
-               if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
                *ret = 0;
-               goto clean;
             }
             else {
                *ret = PRIMME_MAIN_ITER_FAILURE;
-               goto clean;
             }
+               goto clean;
 
          }
          else if (!converged) {
@@ -1313,9 +1312,12 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    } /* while (!converged)  Outer verification loop
       * -------------------------------------------------------------- */
 
-   if (primme->aNorm <= 0.0L) primme->aNorm = primme->stats.estimateLargestSVal;
-
 clean:
+   if (primme->aNorm <= 0.0L) {
+      primme->aNorm =
+            primme->stats.estimateLargestSVal / primme->stats.estimateInvBNorm;
+   }
+
    /*----------------------------------------------------------------------*/
    /* If locking is engaged, the converged Ritz vectors are stored in the  */
    /* order they converged.  They must then be permuted so that they       */
@@ -1582,13 +1584,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
             if (computeXR) {
-               Num_copy_matrix_Sprimme(&X[blki * ldV], nLocal, 1, ldV,
-                     &X[(*blockSize) * ldV], ldV, ctx);
-               Num_copy_matrix_Sprimme(&R[blki * ldW], nLocal, 1, ldW,
-                     &R[(*blockSize) * ldW], ldW, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(&X[blki * ldV], nLocal, 1, ldV,
+                     &X[(*blockSize) * ldV], ldV, ctx));
+               CHKERR(Num_copy_matrix_Sprimme(&R[blki * ldW], nLocal, 1, ldW,
+                     &R[(*blockSize) * ldW], ldW, ctx));
                if (BX) {
-                  Num_copy_matrix_Sprimme(&BX[blki * ldBV], nLocal, 1, ldBV,
-                        &BX[(*blockSize) * ldBV], ldBV, ctx);
+                  CHKERR(Num_copy_matrix_Sprimme(&BX[blki * ldBV], nLocal, 1,
+                        ldBV, &BX[(*blockSize) * ldBV], ldBV, ctx));
                }
             }
             (*blockSize)++;

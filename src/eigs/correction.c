@@ -757,8 +757,8 @@ STATIC int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,
 
    int blockIndex;
    for (blockIndex = 0; blockIndex < blockSize; blockIndex++) {
-      Num_copy_matrix_Sprimme(&Kinvr[ldKinvBxr * blockIndex],
-            primme->nLocal, 1, ldKinvBxr, &x[ldx * blockIndex], ldx, ctx);
+      CHKERR(Num_copy_matrix_Sprimme(&Kinvr[ldKinvBxr * blockIndex],
+            primme->nLocal, 1, ldKinvBxr, &x[ldx * blockIndex], ldx, ctx));
 
       if (ABS(xKinvBx[blockIndex]) > 0.0) {
          HSCALAR alpha;
@@ -911,11 +911,11 @@ STATIC int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       *ldLprojectorBQ = ldBevecs;
       if (primme->correctionParams.projectors.LeftX) {
          if (blockSize <= 1) {
-            Num_copy_matrix_Sprimme(x, n, blockSize, ldx,
-                  &evecs[sizeEvecs * ldevecs], ldevecs, ctx);
+            CHKERR(Num_copy_matrix_Sprimme(x, n, blockSize, ldx,
+                  &evecs[sizeEvecs * ldevecs], ldevecs, ctx));
             if (Bx != x) {
-               Num_copy_matrix_Sprimme(Bx, n, blockSize, ldBx,
-                     &Bevecs[sizeEvecs * ldBevecs], ldBevecs, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(Bx, n, blockSize, ldBx,
+                     &Bevecs[sizeEvecs * ldBevecs], ldBevecs, ctx));
             }
             *sizeLprojectorQ += blockSize;
          }

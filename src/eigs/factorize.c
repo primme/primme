@@ -141,7 +141,7 @@ int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,
       }
    }
    else {
-      Num_copy_matrix_SHprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx);
+      CHKERR(Num_copy_matrix_SHprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx));
       CHKERR(Num_hetrs_Sprimme("U", dim, nrhs, UDU, dim, ipivot, sol, ldsol,
                   ctx));
    }
@@ -224,7 +224,7 @@ int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,
    else {
       /* Copy M into Mfact */
 
-      Num_copy_matrix_SHprimme(M, nM, nM, ldM, Mfact, ldMfact, ctx);
+      CHKERR(Num_copy_matrix_SHprimme(M, nM, nM, ldM, Mfact, ldMfact, ctx));
 
       /* Perform the LU decomposition */
 
@@ -283,7 +283,7 @@ int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,
 
    /* Copy rhs into sol */
 
-   Num_copy_matrix_Sprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(rhs, dim, nrhs, ldrhs, sol, ldsol, ctx));
 
    /* Solve with the proper decomposition */
 

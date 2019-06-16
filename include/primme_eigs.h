@@ -115,6 +115,7 @@ typedef struct primme_stats {
    PRIMME_INT numBroadcast;         /* times called broadcastReal */
    PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
    PRIMME_INT volumeBroadcast;      /* number of SCALARs broadcast by broadcastReal */
+   double flopsDense;               /* FLOPS done by Num_update_VWXR_Sprimme */
    double numOrthoInnerProds;       /* number of inner prods done by Ortho */
    double elapsedTime; 
    double timeMatvec;               /* time expend by matrixMatvec */
@@ -122,6 +123,7 @@ typedef struct primme_stats {
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
    double timeBroadcast;            /* time expend by broadcastReal  */
+   double timeDense;                /* time expend by Num_update_VWXR_Sprimme */
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
@@ -345,31 +347,33 @@ typedef enum {
    PRIMME_stats_volumeGlobalSum                  = 60  ,
    PRIMME_stats_numBroadcast                     = 61  ,
    PRIMME_stats_volumeBroadcast                  = 62  ,
-   PRIMME_stats_numOrthoInnerProds               = 63  ,
-   PRIMME_stats_elapsedTime                      = 64  ,
-   PRIMME_stats_timeMatvec                       = 65  ,
-   PRIMME_stats_timePrecond                      = 66  ,
-   PRIMME_stats_timeOrtho                        = 67  ,
-   PRIMME_stats_timeGlobalSum                    = 68  ,
-   PRIMME_stats_timeBroadcast                    = 69  ,
-   PRIMME_stats_estimateMinEVal                  = 70  ,
-   PRIMME_stats_estimateMaxEVal                  = 71  ,
-   PRIMME_stats_estimateLargestSVal              = 72  ,
-   PRIMME_stats_estimateBNorm                    = 73  ,
-   PRIMME_stats_estimateInvBNorm                 = 74  ,
-   PRIMME_stats_maxConvTol                       = 75  ,
-   PRIMME_stats_lockingIssue                     = 76  ,
-   PRIMME_dynamicMethodSwitch                    = 77  ,
-   PRIMME_convTestFun                            = 78  ,
-   PRIMME_convTestFun_type                       = 79  ,
-   PRIMME_convtest                               = 80  ,
-   PRIMME_ldevecs                                = 81  ,
-   PRIMME_ldOPs                                  = 82  ,
-   PRIMME_monitorFun                             = 83  ,
-   PRIMME_monitorFun_type                        = 84  ,
-   PRIMME_monitor                                = 85  ,
-   PRIMME_queue                                  = 86  ,
-   PRIMME_profile                                = 87  
+   PRIMME_stats_flopsDense                       = 63  ,
+   PRIMME_stats_numOrthoInnerProds               = 64  ,
+   PRIMME_stats_elapsedTime                      = 65  ,
+   PRIMME_stats_timeMatvec                       = 66  ,
+   PRIMME_stats_timePrecond                      = 67  ,
+   PRIMME_stats_timeOrtho                        = 68  ,
+   PRIMME_stats_timeGlobalSum                    = 69  ,
+   PRIMME_stats_timeBroadcast                    = 70  ,
+   PRIMME_stats_timeDense                        = 71  ,
+   PRIMME_stats_estimateMinEVal                  = 72  ,
+   PRIMME_stats_estimateMaxEVal                  = 73  ,
+   PRIMME_stats_estimateLargestSVal              = 74  ,
+   PRIMME_stats_estimateBNorm                    = 75  ,
+   PRIMME_stats_estimateInvBNorm                 = 76  ,
+   PRIMME_stats_maxConvTol                       = 77  ,
+   PRIMME_stats_lockingIssue                     = 78  ,
+   PRIMME_dynamicMethodSwitch                    = 79  ,
+   PRIMME_convTestFun                            = 80  ,
+   PRIMME_convTestFun_type                       = 81  ,
+   PRIMME_convtest                               = 82  ,
+   PRIMME_ldevecs                                = 83  ,
+   PRIMME_ldOPs                                  = 84  ,
+   PRIMME_monitorFun                             = 85  ,
+   PRIMME_monitorFun_type                        = 86  ,
+   PRIMME_monitor                                = 87  ,
+   PRIMME_queue                                  = 88  ,
+   PRIMME_profile                                = 89  
 } primme_params_label;
 
 /* Hermitian operator */

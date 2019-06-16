@@ -1071,12 +1071,12 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
       /* Copy X and R after the failed vectors */
 
-      Num_copy_matrix_Sprimme(X, nLocal, sizeBlockNorms, ldV,
-            &V[(left + failed) * ldV], ldV, ctx);
-      Num_copy_matrix_Sprimme(R, nLocal, sizeBlockNorms, ldV,
-            &W[(left + failed) * ldV], ldV, ctx);
-      Num_copy_matrix_Sprimme(BX, nLocal, sizeBlockNorms, ldV,
-            &BV[(left + failed) * ldV], ldV, ctx);
+      CHKERR(Num_copy_matrix_Sprimme(X, nLocal, sizeBlockNorms, ldV,
+            &V[(left + failed) * ldV], ldV, ctx));
+      CHKERR(Num_copy_matrix_Sprimme(R, nLocal, sizeBlockNorms, ldV,
+            &W[(left + failed) * ldV], ldV, ctx));
+      CHKERR(Num_copy_matrix_Sprimme(BX, nLocal, sizeBlockNorms, ldV,
+            &BV[(left + failed) * ldV], ldV, ctx));
    }
 
    /* Modify hVals, hVecs and restartPerm to add the pairs failed to */
@@ -1102,13 +1102,13 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       int nVtBV = nLocked + left + numPacked;
       HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme(nVtBV * (left + numPacked), &rwork, ctx));
-      Num_copy_matrix_columns_SHprimme(&VtBV[nLocked * ldVtBV], nVtBV,
-            iV, left+numPacked, ldVtBV, rwork, NULL, nVtBV, ctx);
-      Num_copy_matrix_SHprimme(rwork, nLocked, left + numPacked, nVtBV,
-            &VtBV[nLocked * ldVtBV], ldVtBV, ctx);
-      Num_copy_matrix_rows_SHprimme(rwork + nLocked, iV, left + numPacked,
-            left + numPacked, nVtBV, &VtBV[ldVtBV * nLocked + nLocked], NULL,
-            ldVtBV, ctx);
+      CHKERR(Num_copy_matrix_columns_SHprimme(&VtBV[nLocked * ldVtBV], nVtBV,
+            iV, left + numPacked, ldVtBV, rwork, NULL, nVtBV, ctx));
+      CHKERR(Num_copy_matrix_SHprimme(rwork, nLocked, left + numPacked, nVtBV,
+            &VtBV[nLocked * ldVtBV], ldVtBV, ctx));
+      CHKERR(Num_copy_matrix_rows_SHprimme(rwork + nLocked, iV,
+            left + numPacked, left + numPacked, nVtBV,
+            &VtBV[ldVtBV * nLocked + nLocked], NULL, ldVtBV, ctx));
       CHKERR(Num_free_SHprimme(rwork, ctx));
       CHKERR(Num_free_iprimme(iV, ctx));
    }
@@ -1116,10 +1116,10 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* Update H */
 
    if (primme->orth == primme_orth_explicit_I) {
-      Num_copy_matrix_columns_SHprimme(&H[left * ldH], left + numPacked,
-            ifailed, failed, ldH, &H[left * ldH], NULL, ldH, ctx);
-      Num_copy_matrix_rows_SHprimme(H + left, ifailed, failed, left + failed,
-            ldH, &H[left], NULL, ldH, ctx);
+      CHKERR(Num_copy_matrix_columns_SHprimme(&H[left * ldH], left + numPacked,
+            ifailed, failed, ldH, &H[left * ldH], NULL, ldH, ctx));
+      CHKERR(Num_copy_matrix_rows_SHprimme(H + left, ifailed, failed,
+            left + failed, ldH, &H[left], NULL, ldH, ctx));
    }
 
    CHKERR(Num_free_iprimme(ifailed, ctx));
@@ -1135,19 +1135,19 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
        if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
          HREAL resNorm = resNorms[*numLocked] = lockedResNorms[i-left];
          HEVAL eval = evals[*numLocked];
-         Num_copy_matrix_Sprimme(
+         CHKERR(Num_copy_matrix_Sprimme(
                &evecs[(numLocked0 + i - left + primme->numOrthoConst) *
                ldevecs],
                nLocal, 1, ldevecs,
-               &evecs[(*numLocked + primme->numOrthoConst) * ldevecs],
-               ldevecs, ctx);
+               &evecs[(*numLocked + primme->numOrthoConst) * ldevecs], ldevecs,
+               ctx));
          if (Bevecs) {
-            Num_copy_matrix_Sprimme(
+            CHKERR(Num_copy_matrix_Sprimme(
                   &Bevecs[(numLocked0 + i - left + primme->numOrthoConst) *
                   ldBevecs],
                   nLocal, 1, ldBevecs,
                   &Bevecs[(*numLocked + primme->numOrthoConst) * ldBevecs],
-                  ldBevecs, ctx);
+                  ldBevecs, ctx));
          }
 
          (*numLocked)++;
@@ -1283,8 +1283,8 @@ int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,
                ctx));
       }
       CHKERR(broadcast_SHprimme(work, evecsSize * (nX0e - nX0b), ctx));
-      Num_copy_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize,
-            &VtBV[evecsSize * ldVtBV], ldVtBV, ctx);
+      CHKERR(Num_copy_matrix_SHprimme(work, evecsSize, nX0e - nX0b, evecsSize,
+            &VtBV[evecsSize * ldVtBV], ldVtBV, ctx));
       CHKERR(Num_free_SHprimme(work, ctx));
    }
 
@@ -1957,10 +1957,11 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    CHKERR(Num_malloc_SHprimme((size_t)mhVecsRot0 * nRegular, &hVecsRot0, ctx));
 
    /* 1) hVecsRot0 = hVecsRot(hVecsPerm(restartPerm(0:newNumArbitraryVecs-1))) */
-   Num_zero_matrix_SHprimme(hVecsRot0, mhVecsRot0, nRegular, mhVecsRot0, ctx);
-   Num_copy_matrix_columns_SHprimme(hVecsRot, *numArbitraryVecs,
+   CHKERR(Num_zero_matrix_SHprimme(
+         hVecsRot0, mhVecsRot0, nRegular, mhVecsRot0, ctx));
+   CHKERR(Num_copy_matrix_columns_SHprimme(hVecsRot, *numArbitraryVecs,
          restartPerm0, newNumArbitraryVecs, ldhVecsRot, hVecsRot0, NULL,
-         mhVecsRot0, ctx);
+         mhVecsRot0, ctx));
 
    /* 2) hVecsRot0 = diag(hSVals)*hVecsRot0 */
    for (i=0; i<newNumArbitraryVecs; i++) {
@@ -1988,8 +1989,8 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    CHKERR(Num_malloc_SHprimme((size_t)basisSize * nRegular, &rwork, ctx));
    CHKERR(Num_gemm_SHprimme("N", "N", basisSize, nRegular, mhVecsRot0, 1.0, hU,
          ldhU, hVecsRot0, mhVecsRot0, 0.0, rwork, basisSize, ctx));
-   Num_copy_matrix_SHprimme(rwork, basisSize, nRegular, basisSize, hU,
-         basisSize, ctx);
+   CHKERR(Num_copy_matrix_SHprimme(
+         rwork, basisSize, nRegular, basisSize, hU, basisSize, ctx));
    CHKERR(Num_free_SHprimme(rwork, ctx));
    CHKERR(Num_free_SHprimme(hVecsRot0, ctx));
 
@@ -2001,8 +2002,8 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    }
 
    /* hU = [hU RPrevhVecs] */
-   Num_copy_matrix_SHprimme(RPrevhVecs, basisSize, numPrevRetained,
-         basisSize, &hU[basisSize*nRegular], basisSize, ctx);
+   CHKERR(Num_copy_matrix_SHprimme(RPrevhVecs, basisSize, numPrevRetained,
+         basisSize, &hU[basisSize * nRegular], basisSize, ctx));
    CHKERR(Num_free_SHprimme(RPrevhVecs, ctx));
 
    /* [hU, R] = ortho(hU, nRegular:nRegular+numPrevRetained-1) */
@@ -2372,27 +2373,28 @@ STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
 
          if (ABS(R) < MACHINE_EPSILON * sqrt(retained + 1.0)) continue;
 
-         Num_copy_matrix_SHprimme(&prevhVecs[ldprevhVecs * i], basisSize, 1,
-               ldprevhVecs, &hVecs[ldhVecs * (indexOfPreviousVecs + retained)],
-               ldhVecs, ctx);
+         CHKERR(Num_copy_matrix_SHprimme(&prevhVecs[ldprevhVecs * i], basisSize,
+               1, ldprevhVecs,
+               &hVecs[ldhVecs * (indexOfPreviousVecs + retained)], ldhVecs,
+               ctx));
          retained++;
       }
 
       PRINTF(5, "retain_previous: numPrevRetained: %d", retained);
 
       rwork[0] = (HSCALAR)retained;
-      Num_copy_matrix_SHprimme(&hVecs[ldhVecs*indexOfPreviousVecs], basisSize,
-            retained, ldhVecs, rwork+1, basisSize, ctx);
-      Num_zero_matrix_SHprimme(&rwork[1 + basisSize * retained], basisSize,
-            *numPrevRetained - retained, basisSize, ctx);
+      CHKERR(Num_copy_matrix_SHprimme(&hVecs[ldhVecs * indexOfPreviousVecs],
+            basisSize, retained, ldhVecs, rwork + 1, basisSize, ctx));
+      CHKERR(Num_zero_matrix_SHprimme(&rwork[1 + basisSize * retained],
+            basisSize, *numPrevRetained - retained, basisSize, ctx));
    }
 
    /* Broadcast hVecs(indexOfPreviousVecs:indexOfPreviousVecs+numPrevRetained) */
 
    CHKERR(broadcast_SHprimme(rwork, basisSize * (*numPrevRetained) + 1, ctx));
    *numPrevRetained = (int)REAL_PART(rwork[0]);
-   Num_copy_matrix_SHprimme(rwork + 1, basisSize, *numPrevRetained, basisSize,
-         &hVecs[ldhVecs * indexOfPreviousVecs], ldhVecs, ctx);
+   CHKERR(Num_copy_matrix_SHprimme(rwork + 1, basisSize, *numPrevRetained,
+         basisSize, &hVecs[ldhVecs * indexOfPreviousVecs], ldhVecs, ctx));
 
    CHKERR(Num_free_SHprimme(rwork, ctx));
 
@@ -2464,10 +2466,12 @@ STATIC int compute_residual_columns(PRIMME_INT m, HEVAL *evals, SCALAR *x,
    /* Quick exit */
 
    if (n == 0) {
-      Num_copy_matrix_Sprimme(xo, m, min(no,nd), ldxo, xd, ldxd, ctx);
-      if (Bxd)
-         Num_copy_matrix_Sprimme(Bxo, m, min(no, nd), ldxo, Bxd, ldxd, ctx);
-      Num_copy_matrix_Sprimme(ro, m, min(no,nd), ldro, rd, ldrd, ctx);
+      CHKERR(Num_copy_matrix_Sprimme(xo, m, min(no,nd), ldxo, xd, ldxd, ctx));
+      if (Bxd) {
+         CHKERR(Num_copy_matrix_Sprimme(
+               Bxo, m, min(no, nd), ldxo, Bxd, ldxd, ctx));
+      }
+      CHKERR(Num_copy_matrix_Sprimme(ro, m, min(no, nd), ldro, rd, ldrd, ctx));
       return 0;
    }
 

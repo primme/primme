@@ -269,7 +269,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    /* --------------------------------------------------------*/
 
    /* Assume zero initial guess */
-   Num_copy_matrix_Sprimme(r, nLocal, blockSize, ldr, g, nLocal, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(r, nLocal, blockSize, ldr, g, nLocal, ctx));
 
    CHKERR(apply_projected_preconditioner(g, nLocal, evecs, ldevecs, RprojectorQ,
          ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX, sizeRprojectorQ,
@@ -323,8 +323,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
             /* sol = r if first iteration */
             if (numIts == 0) {
-               Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
-                     &sol[ldsol * i], ldsol, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(
+                     &r[ldr * i], nLocal, 1, ldr, &sol[ldsol * i], ldsol, ctx));
             }
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
@@ -339,8 +339,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
             /* sol = r if first iteration */
             if (numIts == 0) {
-               Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
-                     &sol[ldsol * i], ldsol, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(
+                     &r[ldr * i], nLocal, 1, ldr, &sol[ldsol * i], ldsol, ctx));
             }
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
@@ -560,10 +560,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          else
          {
             /* Check if the linear system residual norm (tau) is less         */
-            /* than eps*aNorm*LTolerance_factor                               */
+            /* than eps*aNorm*LTolerance_factor. Note that QMR residual can   */
+            /* be sqrt(iterations) times away from the actual residual.       */
 
             CHKERR(convTestFun_Sprimme(eval[p[i]], NULL, 0 /* evec not given */,
-                  tau[p[i]] / LTolerance_factor, &isConv, ctx));
+                  tau[p[i]] / LTolerance_factor * sqrt((double)numIts), &isConv,
+                  ctx));
 
             if (numIts > 0 && isConv) {
                PRINTF(5,
@@ -769,12 +771,15 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 
    if (numCols <= 0 || blockSize <= 0) return 0;
 
+   double t0 = primme_wTimer();
+
    HSCALAR *overlaps; /* overlaps of v with columns of Q   */
    CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
 
    /* Compute workspace = Q'*v */
    CHKERR(Num_gemm_ddh_Sprimme("C", "N", numCols, blockSize, primme->nLocal,
          1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
+   if (primme) primme->stats.numOrthoInnerProds += numCols * blockSize;
 
    /* Global sum: overlaps = Q'*v */
    CHKERR(globalSum_SHprimme(overlaps, numCols * blockSize, ctx));
@@ -793,6 +798,8 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
          -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
 
    CHKERR(Num_free_SHprimme(overlaps, ctx));
+
+   if (primme) primme->stats.timeOrtho += primme_wTimer() - t0;
 
    return 0;
 }

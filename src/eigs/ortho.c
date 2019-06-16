@@ -653,9 +653,10 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          /*   = A(b1:b2-1,:) -
             (A(0:numLocked+b1-1,:)'*(VLtBVL\A(0:numLocked+b1-1,:))   */
 
-         Num_copy_matrix_SHprimme(
-               &A[numLocked + b1], b2 - b1, b2 - b1, ldA, C, b2 - b1, ctx);
-         CHKERR(Num_copy_matrix_SHprimme(A, nVL, b2 - b1, ldA, VLtBVLdA, nVL, ctx));
+         CHKERR(Num_copy_matrix_SHprimme(
+               &A[numLocked + b1], b2 - b1, b2 - b1, ldA, C, b2 - b1, ctx));
+         CHKERR(Num_copy_matrix_SHprimme(
+               A, nVL, b2 - b1, ldA, VLtBVLdA, nVL, ctx));
          CHKERR(Num_trsm_SHprimme("L", "U", "C", "N", nVL, b2 - b1, 1.0,
                fVLtBVL, ldfVLtBVL, VLtBVLdA, nVL, ctx));
          CHKERR(Num_gemm_SHprimme("C", "N", b2 - b1, b2 - b1, numLocked + b1,
@@ -831,8 +832,8 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
       CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
       Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx);
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
-         Num_copy_matrix_columns_Sprimme(
-               &X[i], m, inX, nX, ldX, X0, NULL, m, ctx);
+         CHKERR(Num_copy_matrix_columns_Sprimme(
+               &X[i], m, inX, nX, ldX, X0, NULL, m, ctx));
          CHKERR(Num_gemm_ddh_Sprimme(
                "C", "N", nQ, nX, m, 1.0, &Q[i], ldQ, X0, m, 1.0, y, nQ, ctx));
       }
@@ -873,14 +874,14 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
    if (norms) for (i=0; i<nX; i++) norms[i] = 0.0;
    for (i=0; i < mQ; i+=m, m=min(m,mQ-i)) {
       if (inX) {
-        Num_copy_matrix_columns_Sprimme(&X[i], m, inX, nX, ldX, X0, NULL, m,
-                                        ctx);
+         CHKERR(Num_copy_matrix_columns_Sprimme(
+               &X[i], m, inX, nX, ldX, X0, NULL, m, ctx));
       }
       CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nX, nQ, -1.0, &BQ[i], ldBQ, y, nQ,
             1.0, inX ? X0 : &X[i], inX ? m : ldX, ctx));
       if (inX) {
-         Num_copy_matrix_columns_Sprimme(
-               X0, m, NULL, nX, m, &X[i], inX, ldX, ctx);
+         CHKERR(Num_copy_matrix_columns_Sprimme(
+               X0, m, NULL, nX, m, &X[i], inX, ldX, ctx));
       }
       if (norms) {
          for (j = 0; j < nX; j++) {
