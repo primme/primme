@@ -101,6 +101,7 @@ check_style:
 	@( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 tags:
+	rm -f tags
 	@$(MAKE) -C src ../tags
 
 #

@@ -128,7 +128,7 @@ endif
 	@ctags --tag-relative=yes  -o $@.base $^;\
 	cp $@.base $@.all;\
 	for pre in R SH RH s c d z; do \
-		sed "s/Sprimme/$${pre}primme/g" $@.base >> $@.all;\
+		sed "s/Sprimme/$${pre}primme/" $@.base >> $@.all;\
 	done;\
 	LC_COLLATE=C sort -d -u $@.all > $@;\
 	rm -f $@.base $@.all
