@@ -257,16 +257,21 @@ function [varargout] = primme_eigs(varargin)
    end
 
    if ABfun
-      n = round(varargin{nextArg});
-      if ~isscalar(n) || ~isreal(n) || (n<0) || ~isfinite(n)
-         error(message('The size of input matrices must be an positive integer'));
+      n = varargin{nextArg};
+      if ~isscalar(n) || ~isnumeric(n) || (n<0) || ~isfinite(n)
+         error(message('The size of input matrices must be a positive integer'));
       end
+      n = round(n);
       opts.n = n;
       nextArg = nextArg + 1;
    end
 
    if nargin >= nextArg
-      opts.numEvals = round(varargin{nextArg});
+      opts.numEvals = varargin{nextArg};
+      if ~isscalar(opts.numEvals) || ~isnumeric(opts.numEvals) || (opts.numEvals<0) || ~isfinite(opts.numEvals)
+         error(message('The argument numEvals must be a positive integer'));
+      end
+      opts.numEvals = round(opts.numEvals);
       nextArg = nextArg + 1;
    else
       opts.numEvals = min(6, opts.n);
