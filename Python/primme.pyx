@@ -1,10 +1,14 @@
+# cython: language_level=2, c_string_type=bytes, c_string_encoding=ascii
 
 import numpy as np
 cimport numpy as np
 from scipy.sparse.linalg.interface import aslinearoperator
 cimport cython
 from cython cimport view
-from builtins import bytes as bytesp23 # bytes compatibility Py2/3
+try:
+    from builtins import bytes as bytesp23 # bytes compatibility Py2/3
+except Exception as e:
+    raise Exception('package future is not installed') from e
 
 ctypedef fused numerics:
     float
@@ -963,16 +967,18 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     --------
     >>> import primme, scipy.sparse
     >>> A = scipy.sparse.spdiags(range(1, 11), [0], 100, 10) # sparse diag. rect. matrix
-    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, tol=1e-6, which='SM')
-    >>> svals # the three smallest singular values of A
-    array([1., 2., 3.])
+    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, tol=1e-6, which='LM')
+    >>> svals # the three largest singular values of A
+    array([10., 9., 8.])
 
     >>> import primme, scipy.sparse, numpy as np
     >>> A = scipy.sparse.rand(10000, 100, random_state=10)
     >>> prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
     ...           [0], 100, 100) # square diag. preconditioner
-    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
-    >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 6.0
+    >>> # the three smallest singular values of A, using preconditioning
+    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
+    >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
+    ['4.57263', '4.78752', '4.82229']
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
