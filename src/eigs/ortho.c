@@ -74,7 +74,6 @@
 #include "factorize.h"
 #include "auxiliary_eigs.h"
 #include "ortho.h"
-#include "update_W.h"
 #endif
  
 #ifdef SUPPORTED_TYPE
@@ -149,9 +148,13 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
    tol = sqrt(2.0L)/2.0L;
 
    /* Zero the columns from b1 to b2 of R */
-   if (R) Num_zero_matrix_SHprimme(&R[b1 * ldR], b2 + 1, b2 - b1 + 1, ldR, ctx);
+   if (R) {
+      CHKERR(Num_zero_matrix_SHprimme(
+            &R[b1 * ldR], b2 + 1, b2 - b1 + 1, ldR, ctx));
+   }
    if (RLocked) {
-      Num_zero_matrix_SHprimme(RLocked, numLocked, b2 - b1 + 1, ldRLocked, ctx);
+      CHKERR(Num_zero_matrix_SHprimme(
+            RLocked, numLocked, b2 - b1 + 1, ldRLocked, ctx));
    }
 
    /*---------------------------------------------------*/
@@ -201,7 +204,7 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             PRINTF(5, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P,
                   i, nLocal);
 
-            Num_larnv_Sprimme(2, iseed, nLocal, &V[ldV*i], ctx); 
+            CHKERR(Num_larnv_Sprimme(2, iseed, nLocal, &V[ldV*i], ctx)); 
             randomizations++;
             nOrth = 0;
             Bx_update = 0;    // V[i] has changed, so Bx != B*V[i]
@@ -244,10 +247,13 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
          CHKERR(globalSum_SHprimme(overlaps, i + numLocked + 1, ctx));
 
          if (updateR) {
-             if (R) Num_axpy_SHprimme(i, 1.0, overlaps, 1, &R[ldR*i], 1, ctx);
-             if (RLocked) {
-                Num_axpy_SHprimme(numLocked, 1.0, overlaps + i, 1,
-                      &RLocked[ldRLocked * (i - b1)], 1, ctx);
+            if (R) {
+               CHKERR(Num_axpy_SHprimme(
+                     i, 1.0, overlaps, 1, &R[ldR * i], 1, ctx));
+            }
+            if (RLocked) {
+               CHKERR(Num_axpy_SHprimme(numLocked, 1.0, overlaps + i, 1,
+                     &RLocked[ldRLocked * (i - b1)], 1, ctx));
              }
          }
 
@@ -282,7 +288,7 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
          CHKERR(globalSum_RHprimme(&s12, 1, ctx));
          s1 = sqrt(s12);
 
-         if (s1 <= MACHINE_EPSILON*s0) {
+         if (!ISFINITE(s0) || !ISFINITE(s1) || s1 <= MACHINE_EPSILON * s0) {
             PRINTF(5, "Vector %d lost all significant digits in ortho",
                   i - b1);
             nOrth = maxNumOrthos;
@@ -296,7 +302,7 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             if (updateR && R) R[ldR * i + i] = s1;
 
             if (ISFINITE((HREAL)(1.0/s1))) {
-               Num_scal_Sprimme(nLocal, 1.0/s1, &V[ldV*i], 1, ctx);
+               CHKERR(Num_scal_Sprimme(nLocal, 1.0/s1, &V[ldV*i], 1, ctx));
                break;
             }
             else {
@@ -366,15 +372,20 @@ int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2
 
 #ifndef ORTHO__PRIVATE_H
 #define ORTHO__PRIVATE_H
-struct local_matvec_ctx { /* HSCALAR */ void *B; int n, ldB; primme_context ctx;};
+struct local_matvec_ctx { /* HSCALAR */
+   void *B;
+   int n, ldB;
+   primme_context ctx;
+};
 #endif /* ORTHO__PRIVATE_H */
 
 STATIC int local_matvec(HSCALAR *x, PRIMME_INT ldx, HSCALAR *y, PRIMME_INT ldy,
       int bs, void *Bctx_) {
    struct local_matvec_ctx *Bctx = (struct local_matvec_ctx*)Bctx_;
-   Num_zero_matrix_SHprimme(y, Bctx->n, 1, Bctx->n, Bctx->ctx);
-   Num_hemm_SHprimme("L", "U", Bctx->n, bs, 1.0, (HSCALAR *)Bctx->B, Bctx->ldB,
-         x, ldx, 0.0, y, ldy);
+   primme_context ctx = Bctx->ctx;
+   CHKERR(Num_zero_matrix_SHprimme(y, Bctx->n, 1, Bctx->n, ctx));
+   CHKERR(Num_hemm_SHprimme("L", "U", Bctx->n, bs, 1.0, (HSCALAR *)Bctx->B,
+         Bctx->ldB, x, ldx, 0.0, y, ldy, ctx));
    return 0;
 }
 
@@ -539,20 +550,21 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
    int ldr = 0;
 
    if (R) {
-      Num_zero_matrix_SHprimme(&R[ldR * b1], b1, b2 - b1, ldR, ctx);
+      CHKERR(Num_zero_matrix_SHprimme(&R[ldR * b1], b1, b2 - b1, ldR, ctx));
       r = &R[ldR * b1 + b1];
       ldr = ldR;
    }
 
    if (RLocked) {
-      Num_zero_matrix_SHprimme(RLocked, numLocked, b2 - b1, ldRLocked, ctx);
+      CHKERR(Num_zero_matrix_SHprimme(
+            RLocked, numLocked, b2 - b1, ldRLocked, ctx));
       if (!r) {
          CHKERR(Num_malloc_SHprimme((b2 - b1) * (b2 - b1), &r, ctx));
          ldr = b2 - b1;
       }
    }
    if (r) {
-      Num_zero_matrix_SHprimme(r, b2 - b1, b2 - b1, ldr, ctx);
+      CHKERR(Num_zero_matrix_SHprimme(r, b2 - b1, b2 - b1, ldr, ctx));
       for (i=0; i<b2 - b1; i++) {
          r[ldr*i+i] = 1.0;
       }
@@ -648,6 +660,15 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
       }
 
       if (ctx.procID == 0) {
+         // If the norm of the vector overflows, discard the inner product with
+         // other vectors and set the maximum value as the norm
+         for (i = 0; i < b2 - b1; i++) {
+            if (REAL_PART(A[ldA * i + i]) < MACHINE_MAX) continue;
+            CHKERR(Num_zero_matrix_SHprimme(&VLtBVL[ldVLtBVL * (numLocked + i)],
+                  numLocked + i, 1, ldVLtBVL, ctx));
+            A[ldA * i + i] = (HSCALAR)MACHINE_MAX;
+         }
+
          /* C = Xn'*B*Xn = Xc'*(I-B*Vc/(Vc'*B*Vc)*Vc'*B)*Xc = Xc'*B*Xc -
             (Xc'*B*Vc)*((Vc'*B*Vc)\(Vc'*B*Xc))       */
          /*   = A(b1:b2-1,:) -
@@ -821,7 +842,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
 
    HSCALAR *y;
    CHKERR(Num_malloc_SHprimme(nQ * nX, &y, ctx));
-   Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx);
+   CHKERR(Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx));
    if (!inX) {
       CHKERR(Num_gemm_ddh_Sprimme(
             "C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ, ctx));
@@ -830,7 +851,7 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
       int m=min(M, mQ);
       SCALAR *X0;
       CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
-      Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx);
+      CHKERR(Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx));
       for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
          CHKERR(Num_copy_matrix_columns_Sprimme(
                &X[i], m, inX, nX, ldX, X0, NULL, m, ctx));
@@ -982,7 +1003,7 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
    if (D && Y) {
       if (Yortho) {
          for (i=0; i < nX; i++) D[i] = 1.0/D[i];
-         Num_scale_matrix_SHprimme(Y, nX, nX, ldY, D, Y, ldY, ctx);
+         CHKERR(Num_scale_matrix_SHprimme(Y, nX, nX, ldY, D, Y, ldY, ctx));
       }
    }
 
@@ -1047,7 +1068,7 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
 
 /*******************************************************************************
  * Subroutine decomposition - This procedure compute the Cholesky factor of H.
- * 	If it fails, it returns instead the eigendecomposition of H.
+ *    If it fails, it returns instead the eigendecomposition of H.
  *        
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -1141,10 +1162,11 @@ STATIC int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
    int i, j;
 
    for(i=n0; i<n1; i++) {
-      if (ABS(V[i * ldV + i]) == (HREAL)0.0) break;
+      HREAL Vii = REAL_PART(V[i * ldV + i]);
+      if (!ISFINITE(Vii) || Vii <= (HREAL)0.0) break;
       for (j = 0; j < i; j++) {
          if (ABS(V[i * ldV + j]) >
-               .8 / n * sqrt(ABS(V[i * ldV + i]) * ABS(V[j * ldV + j])))
+               .8 / n * sqrt(Vii * REAL_PART(V[j * ldV + j])))
             break;
       }
       if (j < i) break;

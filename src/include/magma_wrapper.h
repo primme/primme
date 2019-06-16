@@ -33,6 +33,97 @@
 
 #ifndef magma_wrapper_H
 #define magma_wrapper_H
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Sprimme)
+#  define Num_check_pointer_Sprimme CONCAT(Num_check_pointer_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Rprimme)
+#  define Num_check_pointer_Rprimme CONCAT(Num_check_pointer_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SHprimme)
+#  define Num_check_pointer_SHprimme CONCAT(Num_check_pointer_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RHprimme)
+#  define Num_check_pointer_RHprimme CONCAT(Num_check_pointer_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SXprimme)
+#  define Num_check_pointer_SXprimme CONCAT(Num_check_pointer_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RXprimme)
+#  define Num_check_pointer_RXprimme CONCAT(Num_check_pointer_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Shprimme)
+#  define Num_check_pointer_Shprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Rhprimme)
+#  define Num_check_pointer_Rhprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Ssprimme)
+#  define Num_check_pointer_Ssprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Rsprimme)
+#  define Num_check_pointer_Rsprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Sdprimme)
+#  define Num_check_pointer_Sdprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Rdprimme)
+#  define Num_check_pointer_Rdprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Sqprimme)
+#  define Num_check_pointer_Sqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Rqprimme)
+#  define Num_check_pointer_Rqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SXhprimme)
+#  define Num_check_pointer_SXhprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RXhprimme)
+#  define Num_check_pointer_RXhprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SXsprimme)
+#  define Num_check_pointer_SXsprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RXsprimme)
+#  define Num_check_pointer_RXsprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SXdprimme)
+#  define Num_check_pointer_SXdprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RXdprimme)
+#  define Num_check_pointer_RXdprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SXqprimme)
+#  define Num_check_pointer_SXqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RXqprimme)
+#  define Num_check_pointer_RXqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SHhprimme)
+#  define Num_check_pointer_SHhprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RHhprimme)
+#  define Num_check_pointer_RHhprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SHsprimme)
+#  define Num_check_pointer_SHsprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RHsprimme)
+#  define Num_check_pointer_RHsprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SHdprimme)
+#  define Num_check_pointer_SHdprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RHdprimme)
+#  define Num_check_pointer_RHdprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_SHqprimme)
+#  define Num_check_pointer_SHqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_RHqprimme)
+#  define Num_check_pointer_RHqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_check_pointer_magma_hprimme(void *x);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_Sprimme)
 #  define Num_malloc_Sprimme CONCAT(Num_malloc_,SCALAR_SUF)
 #endif
@@ -1790,6 +1881,7 @@ int Num_compute_gramm_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT m, i
 int Num_compute_gramm_ddh_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_magma_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_check_pointer_magma_kprimme(void *x);
 int Num_malloc_magma_kprimme(PRIMME_INT n, dummy_type_magma_kprimme **x, primme_context ctx);
 int Num_free_magma_kprimme(dummy_type_magma_kprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_magma_kprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -1837,6 +1929,7 @@ int Num_compute_gramm_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT m, i
 int Num_compute_gramm_ddh_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_magma_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_check_pointer_magma_sprimme(void *x);
 int Num_malloc_magma_sprimme(PRIMME_INT n, dummy_type_magma_sprimme **x, primme_context ctx);
 int Num_free_magma_sprimme(dummy_type_magma_sprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_magma_sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -1884,6 +1977,7 @@ int Num_compute_gramm_magma_sprimme(dummy_type_magma_sprimme *X, PRIMME_INT m, i
 int Num_compute_gramm_ddh_magma_sprimme(dummy_type_magma_sprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_magma_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_check_pointer_magma_cprimme(void *x);
 int Num_malloc_magma_cprimme(PRIMME_INT n, dummy_type_magma_cprimme **x, primme_context ctx);
 int Num_free_magma_cprimme(dummy_type_magma_cprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_magma_cprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -1931,6 +2025,7 @@ int Num_compute_gramm_magma_cprimme(dummy_type_magma_cprimme *X, PRIMME_INT m, i
 int Num_compute_gramm_ddh_magma_cprimme(dummy_type_magma_cprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_magma_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_check_pointer_magma_dprimme(void *x);
 int Num_malloc_magma_dprimme(PRIMME_INT n, dummy_type_magma_dprimme **x, primme_context ctx);
 int Num_free_magma_dprimme(dummy_type_magma_dprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_magma_dprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -1978,6 +2073,7 @@ int Num_compute_gramm_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT m, i
 int Num_compute_gramm_ddh_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_magma_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_check_pointer_magma_zprimme(void *x);
 int Num_malloc_magma_zprimme(PRIMME_INT n, dummy_type_magma_zprimme **x, primme_context ctx);
 int Num_free_magma_zprimme(dummy_type_magma_zprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_magma_zprimme(void *x, primme_op_datatype xt, PRIMME_INT m,

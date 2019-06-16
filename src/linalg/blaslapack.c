@@ -56,6 +56,23 @@ static int free_fn_dummy (void *p, primme_context ctx) {
 #endif
 
 /******************************************************************************
+ * Function Num_check_pointer - Return no error code if the pointer is on host.
+ * 
+ * NOTE: Any check is performed for now.
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           pointer to check
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_check_pointer_Sprimme(void *x) {
+   (void)x;
+   return 0;
+}
+
+/******************************************************************************
  * Function Num_malloc_Sprimme - Allocate a vector of scalars
  *
  * PARAMETERS
@@ -629,8 +646,9 @@ int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
 TEMPLATE_PLEASE
 int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
       HSCALAR alpha, SCALAR *a, int lda, SCALAR *b, int ldb, HSCALAR beta, 
-      SCALAR *c, int ldc) {
+      SCALAR *c, int ldc, primme_context ctx) {
 
+   (void)ctx;
    PRIMME_BLASINT lm = m;
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;

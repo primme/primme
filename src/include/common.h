@@ -146,6 +146,10 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
    ARITH(0.000977, 0.000977, FLT_EPSILON, FLT_EPSILON, DBL_EPSILON,            \
          DBL_EPSILON, 1.92593e-34, 1.92593e-34)
 
+#define MACHINE_MAX                                                            \
+   ARITH(65504.0, 65504.0, FLT_MAX, FLT_MAX, DBL_MAX, DBL_MAX, FLT128_MAX,     \
+         FLT128_MAX)
+
 #define PRIMME_OP_SCALAR                                                       \
    ARITH(primme_op_half, primme_op_half, primme_op_float, primme_op_float,     \
          primme_op_double, primme_op_double, primme_op_quad, primme_op_quad)

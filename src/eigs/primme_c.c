@@ -108,6 +108,36 @@
 int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
+   return Xprimme_aux((void *)evals, (void *)evecs, (void *)resNorms, primme,
+         PRIMME_OP_SCALAR);
+}
+
+// Definition for *hsprimme, *ksprimme, and *kcprimme
+
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                      \
+              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)
+
+#  ifdef USE_HERMITIAN
+      // Expand the terms {,magma_}{hs,ks}primme
+#     define Xsprimme  CONCAT(CONCAT(STEM,USE_ARITH(hs,ks)),primme)
+#  else
+      // Expand the terms {,magma_}kcprimme_normal
+#     define Xsprimme  WITH_KIND(CONCAT(CONCAT(STEM,kc),primme))
+#  endif
+
+int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,
+      float *resNorms, primme_params *primme) {
+
+   return Xprimme_aux((void *)evals, (void *)evecs, (void *)resNorms, primme,
+         primme_op_float);
+}
+
+#  undef Xsprimme
+#endif
+
+STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type) {
+
 #ifdef SUPPORTED_TYPE
 
    /* Generate context */
@@ -143,27 +173,27 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
    switch (t) {
 #  ifdef SUPPORTED_HALF_TYPE
    case primme_op_half:
-      CHKERRVAL(wrapper_Shprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-                      (void *)resNorms, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Shprimme(PRIMME_OP_SCALAR, evals, evecs,
+                      resNorms, evals_resNorms_type, &outInitSize, ctx),
             &ret);
       break;
 #  endif
 #  ifndef PRIMME_WITHOUT_FLOAT
    case primme_op_float:
-      CHKERRVAL(wrapper_Ssprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-                      (void *)resNorms, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Ssprimme(PRIMME_OP_SCALAR, evals, evecs,
+                      resNorms, evals_resNorms_type, &outInitSize, ctx),
             &ret);
       break;
 #  endif
    case primme_op_double:
-      CHKERRVAL(wrapper_Sdprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-                      (void *)resNorms, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Sdprimme(PRIMME_OP_SCALAR, evals, evecs,
+                      resNorms, evals_resNorms_type, &outInitSize, ctx),
             &ret);
       break;
 #  ifdef PRIMME_WITH_NATIVE_QUAD
    case primme_op_quad:
-      CHKERRVAL(wrapper_Sqprimme(PRIMME_OP_SCALAR, (void *)evals, (void *)evecs,
-                      (void *)resNorms, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Sqprimme(PRIMME_OP_SCALAR, evals, evecs,
+                      resNorms, evals_resNorms_type, &outInitSize, ctx),
             &ret);
       break;
 #  endif
@@ -195,7 +225,8 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
 
 TEMPLATE_PLEASE
 int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, int *outInitSize, primme_context ctx) {
+      void *resNorms, primme_op_datatype evals_resNorms_type, int *outInitSize,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
@@ -294,16 +325,16 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    HREAL *resNorms0;
    SCALAR *evecs0;
    CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals, 1,
-         primme->numEvals, 1, input_type, (void **)&evals0, NULL,
+         primme->numEvals, 1, evals_resNorms_type, (void **)&evals0, NULL,
          PRIMME_OP_HREAL, 1 /* alloc */, 0 /* not copy */, ctx));
    PRIMME_INT ldevecs0;
    CHKERR(Num_matrix_astype_Sprimme(evecs, primme->nLocal,
          max(primme->numEvals, primme->initSize), primme->ldevecs, input_type,
          (void **)&evecs0, &ldevecs0, PRIMME_OP_SCALAR, 1 /* alloc */,
          primme->initSize > 0 ? 1 : 0 /* copy? */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals, 1, input_type,
-         (void **)&resNorms0, NULL, PRIMME_OP_HREAL, 1 /* alloc */,
-         0 /* not copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals,
+         1, evals_resNorms_type, (void **)&resNorms0, NULL, PRIMME_OP_HREAL,
+         1 /* alloc */, 0 /* not copy */, ctx));
 
    /* Call the solver */
 
@@ -316,12 +347,12 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
 
    CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals0,
          1, primme->numEvals, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
-         input_type, -1 /* destroy */, 1 /* copy */, ctx));
+         evals_resNorms_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_matrix_astype_Sprimme(evecs0, primme->nLocal, primme->initSize,
          ldevecs0, PRIMME_OP_SCALAR, (void **)&evecs, &primme->ldevecs,
          input_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
-         PRIMME_OP_HREAL, (void **)&resNorms, NULL, input_type,
+         PRIMME_OP_HREAL, (void **)&resNorms, NULL, evals_resNorms_type,
          -1 /* destroy */, 1 /* copy */, ctx));
 
    /* If no error, return initSize */
@@ -410,7 +441,7 @@ STATIC int check_input(
       ret = -29;
    else if (evals == NULL)
       ret = -30;
-   else if (evecs == NULL)
+   else if (evecs == NULL || Num_check_pointer_Sprimme(evecs))
       ret = -31;
    else if (resNorms == NULL)
       ret = -32;

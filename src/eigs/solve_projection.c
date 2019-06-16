@@ -495,8 +495,8 @@ STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
 
    /* Compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_hemm_Sprimme("L", "U", basisSize, basisSize, 1.0, H,
-      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
+   CHKERR(Num_hemm_Sprimme("L", "U", basisSize, basisSize, 1.0, H,
+      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize, ctx));
 
    for (i=0; i<basisSize; i++) {
       hVals[i] = KIND(REAL_PART, )(Num_dot_Sprimme(
@@ -613,8 +613,8 @@ STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
 
    /* compute Rayleigh quotient lambda_i = x_i'*H*x_i */
 
-   Num_hemm_Sprimme("L", "U", basisSize, basisSize, 1.0, H,
-      ldH, hVecs, ldhVecs, 0.0, rwork, basisSize);
+   CHKERR(Num_hemm_Sprimme("L", "U", basisSize, basisSize, 1.0, H, ldH, hVecs,
+         ldhVecs, 0.0, rwork, basisSize, ctx));
 
    for (i=0; i<basisSize; i++) {
       hVals[i] = KIND(REAL_PART, )(Num_dot_Sprimme(

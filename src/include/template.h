@@ -216,7 +216,7 @@
 /* PLUS_EQUAL(A, B)  : set A += B                                          */
 /* MULT_EQUAL(A, B)  : set A *= B                                          */
 
-#if defined(USE_HALFCOMPLEX) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
+#if (defined(USE_HALFCOMPLEX) || defined(USE_HALFCOMPLEX_MAGMA)) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
 #  define SET_ZERO(A) {(A).r = 0; (A).i = 0;}
 #  define SET_COMPLEX(A,B) {(A).r = REAL_PART(B); (A).i = IMAGINARY_PART(B);}
 #  ifndef __cplusplus

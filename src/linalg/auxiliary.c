@@ -459,7 +459,7 @@ int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,
    Num_zero_matrix_Sprimme(rwork, nH, nX, nH, ctx);
    if (isherm) {
       CHKERR(Num_hemm_Sprimme(
-            "L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH));
+            "L", "U", nH, nX, 1.0, H, ldH, X, ldX, 0.0, rwork, nH, ctx));
    } else {
       CHKERR(Num_gemm_Sprimme(
             "N", "N", nH, nX, nH, 1.0, H, ldH, X, ldX, 0.0, rwork, nH, ctx));

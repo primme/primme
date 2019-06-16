@@ -403,6 +403,15 @@ int magma_dprimme(double *evals, double *evecs, double *resNorms,
 int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
       primme_params *primme);
 
+int hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+
 /* Normal operator */
 
 int kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
@@ -416,6 +425,11 @@ int magma_kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs,
 int magma_cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
       primme_params *primme);
 int magma_zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);
+
+int kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
       primme_params *primme);
 
 primme_params* primme_params_create(void);
