@@ -48,6 +48,12 @@ evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
 assert_allclose(evals, [ 96.,  95.,  94.], atol=1e-6*100)
 print(evals) # [ 96.,  95.,  94.]
 
+# Estimation of the largest eigenvalue in magnitude
+def convtest_lm(eval, evecl, rnorm):
+   return np.abs(eval) > 0.1 * rnorm
+eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
+assert_allclose(eval, [ 99.], atol=.1)
+
 # Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
 A = scipy.sparse.spdiags(range(10), [0], 100, 10)
 
@@ -76,3 +82,10 @@ svecs_left, svals, svecs_right, stats = primme.svds(A, 3, which='SM', tol=1e-6,
                         precAHA=prec, return_stats=True)
 assert_allclose(svals, A_svals, atol=1e-6*100)
 print(stats["elapsedTime"], stats["numMatvecs"])
+
+# Estimation of the smallest singular value
+def convtest_sm(sval, svecl, svecr, rnorm):
+   return sval > 0.1 * rnorm
+svec_left, sval, svec_right, stats = primme.svds(A, 1, which='SM',
+                        convtest=convtest_sm, return_stats=True)
+assert_allclose(sval, [ 1.], atol=.1)
