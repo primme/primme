@@ -338,3 +338,79 @@ interface xprimme
       integer(c_int) :: cprimme
    end function
 end interface xprimme
+
+interface magma_xprimme
+   function magma_dprimme(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_double
+      real(c_double), dimension(*), intent(out) :: evals, rnorms
+      real(c_double), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: magma_dprimme
+   end function
+
+   function magma_zprimme(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_double
+      real(c_double), dimension(*), intent(out) :: evals, rnorms
+      complex(c_double), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: magma_zprimme
+   end function
+
+   function magma_sprimme(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_float
+      real(c_float), dimension(*), intent(out) :: evals, rnorms
+      real(c_float), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: magma_sprimme
+   end function
+
+   function magma_cprimme(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_float
+      real(c_float), dimension(*), intent(out) :: evals, rnorms
+      complex(c_float), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: magma_cprimme
+   end function
+end interface magma_xprimme
+
+interface xprimme_normal
+   function zprimme_normal(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_double
+      real(c_double), dimension(*), intent(out) :: rnorms
+      complex(c_double), dimension(*), intent(out) :: evals
+      complex(c_double), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: zprimme_normal
+   end function
+
+   function cprimme_normal(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_float
+      real(c_float), dimension(*), intent(out) :: rnorms
+      complex(c_real), dimension(*), intent(out) :: evals
+      complex(c_float), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: cprimme_normal
+   end function
+end interface xprimme
+
+interface magma_xprimme_normal
+   function magma_zprimme_normal(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_double
+      real(c_double), dimension(*), intent(out) :: rnorms
+      complex(c_double), dimension(*), intent(out) :: evals
+      complex(c_double), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: magma_zprimme_normal
+   end function
+
+   function magma_cprimme_normal(evals, evecs, rnorms, primme) bind(c)
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_float
+      real(c_float), dimension(*), intent(out) :: rnorms
+      complex(c_float), dimension(*), intent(out) :: evals
+      complex(c_float), dimension(*) :: evecs
+      type(c_ptr), value :: primme
+      integer(c_int) :: magma_cprimme_normal
+   end function
+end interface magma_xprimme
+
+
