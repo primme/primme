@@ -33,11 +33,104 @@
 
 #ifndef primme_svds_c_H
 #define primme_svds_c_H
-#if !defined(CHECK_TEMPLATE) && !defined(Sprimme_svds_for_real)
-#  define Sprimme_svds_for_real CONCAT(Sprimme_svds_for_real,SCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Xprimme_svds_aux)
+#  define Xprimme_svds_aux CONCAT(Xprimme_svds_aux,SCALAR_SUF)
 #endif
-int Sprimme_svds_for_realdprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs_, dummy_type_dprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxdprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs, dummy_type_dprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Sprimme)
+#  define wrapper_svds_Sprimme CONCAT(wrapper_svds_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Rprimme)
+#  define wrapper_svds_Rprimme CONCAT(wrapper_svds_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SHprimme)
+#  define wrapper_svds_SHprimme CONCAT(wrapper_svds_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RHprimme)
+#  define wrapper_svds_RHprimme CONCAT(wrapper_svds_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SXprimme)
+#  define wrapper_svds_SXprimme CONCAT(wrapper_svds_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RXprimme)
+#  define wrapper_svds_RXprimme CONCAT(wrapper_svds_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Shprimme)
+#  define wrapper_svds_Shprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Rhprimme)
+#  define wrapper_svds_Rhprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Ssprimme)
+#  define wrapper_svds_Ssprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Rsprimme)
+#  define wrapper_svds_Rsprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Sdprimme)
+#  define wrapper_svds_Sdprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Rdprimme)
+#  define wrapper_svds_Rdprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Sqprimme)
+#  define wrapper_svds_Sqprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Rqprimme)
+#  define wrapper_svds_Rqprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SXhprimme)
+#  define wrapper_svds_SXhprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RXhprimme)
+#  define wrapper_svds_RXhprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SXsprimme)
+#  define wrapper_svds_SXsprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RXsprimme)
+#  define wrapper_svds_RXsprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SXdprimme)
+#  define wrapper_svds_SXdprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RXdprimme)
+#  define wrapper_svds_RXdprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SXqprimme)
+#  define wrapper_svds_SXqprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RXqprimme)
+#  define wrapper_svds_RXqprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SHhprimme)
+#  define wrapper_svds_SHhprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RHhprimme)
+#  define wrapper_svds_RHhprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SHsprimme)
+#  define wrapper_svds_SHsprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RHsprimme)
+#  define wrapper_svds_RHsprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SHdprimme)
+#  define wrapper_svds_SHdprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RHdprimme)
+#  define wrapper_svds_RHdprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_SHqprimme)
+#  define wrapper_svds_SHqprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_RHqprimme)
+#  define wrapper_svds_RHqprimme CONCAT(wrapper_svds_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int wrapper_svds_dprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(comp_double)
 #  define comp_double CONCAT(comp_double,SCALAR_SUF)
 #endif
@@ -133,8 +226,11 @@ void monitor_stage2dprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realhprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs_, dummy_type_hprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxhprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs, dummy_type_hprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_hprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublehprimme(const void *a, const void *b);
 int copy_last_params_from_svdshprimme(int stage, dummy_type_hprimme *svals, dummy_type_hprimme *svecs,
       dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
@@ -182,8 +278,11 @@ void monitor_stage2hprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realkprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs_, dummy_type_hprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxkprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs, dummy_type_hprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_kprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublekprimme(const void *a, const void *b);
 int copy_last_params_from_svdskprimme(int stage, dummy_type_hprimme *svals, dummy_type_kprimme *svecs,
       dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
@@ -231,8 +330,11 @@ void monitor_stage2kprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realsprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs_, dummy_type_sprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxsprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs, dummy_type_sprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_sprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublesprimme(const void *a, const void *b);
 int copy_last_params_from_svdssprimme(int stage, dummy_type_sprimme *svals, dummy_type_sprimme *svecs,
       dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
@@ -280,8 +382,11 @@ void monitor_stage2sprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realcprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs_, dummy_type_sprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxcprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs, dummy_type_sprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublecprimme(const void *a, const void *b);
 int copy_last_params_from_svdscprimme(int stage, dummy_type_sprimme *svals, dummy_type_cprimme *svecs,
       dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
@@ -329,8 +434,11 @@ void monitor_stage2cprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realzprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs_, dummy_type_dprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxzprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs, dummy_type_dprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_zprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublezprimme(const void *a, const void *b);
 int copy_last_params_from_svdszprimme(int stage, dummy_type_dprimme *svals, dummy_type_zprimme *svecs,
       dummy_type_dprimme *rnorms, int *allocatedTargetShifts,
@@ -378,8 +486,11 @@ void monitor_stage2zprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realmagma_hprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs_, dummy_type_hprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxmagma_hprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs, dummy_type_hprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_magma_hprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublemagma_hprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_hprimme(int stage, dummy_type_hprimme *svals, dummy_type_magma_hprimme *svecs,
       dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
@@ -427,8 +538,11 @@ void monitor_stage2magma_hprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realmagma_kprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs_, dummy_type_hprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxmagma_kprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs, dummy_type_hprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_magma_kprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublemagma_kprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_kprimme(int stage, dummy_type_hprimme *svals, dummy_type_magma_kprimme *svecs,
       dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
@@ -476,8 +590,11 @@ void monitor_stage2magma_kprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realmagma_sprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs_, dummy_type_sprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxmagma_sprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs, dummy_type_sprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_magma_sprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublemagma_sprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_sprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_sprimme *svecs,
       dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
@@ -525,8 +642,11 @@ void monitor_stage2magma_sprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realmagma_cprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs_, dummy_type_sprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxmagma_cprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs, dummy_type_sprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_magma_cprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublemagma_cprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_cprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_cprimme *svecs,
       dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
@@ -574,8 +694,11 @@ void monitor_stage2magma_cprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realmagma_dprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs_, dummy_type_dprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxmagma_dprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs, dummy_type_dprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_magma_dprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublemagma_dprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_dprimme(int stage, dummy_type_dprimme *svals, dummy_type_magma_dprimme *svecs,
       dummy_type_dprimme *rnorms, int *allocatedTargetShifts,
@@ -623,8 +746,11 @@ void monitor_stage2magma_dprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Sprimme_svds_for_realmagma_zprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs_, dummy_type_dprimme *resNorms,
-      primme_context ctx);
+int Xprimme_svds_auxmagma_zprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs, dummy_type_dprimme *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_magma_zprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
 int comp_doublemagma_zprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_zprimme(int stage, dummy_type_dprimme *svals, dummy_type_magma_zprimme *svecs,
       dummy_type_dprimme *rnorms, int *allocatedTargetShifts,

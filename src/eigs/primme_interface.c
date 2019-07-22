@@ -705,6 +705,11 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTIF(orth, primme_orth_implicit_I);
    PRINTIF(orth, primme_orth_explicit_I);
 
+   PRINTIF(internalPrecision, primme_op_half);
+   PRINTIF(internalPrecision, primme_op_float);
+   PRINTIF(internalPrecision, primme_op_double);
+   PRINTIF(internalPrecision, primme_op_quad);
+
    PRINTParams(restarting, maxPrevRetain, %d);
 
    fprintf(outputFile, "\n// Correction parameters\n");

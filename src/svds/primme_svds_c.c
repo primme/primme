@@ -188,21 +188,17 @@ static void primme_svds_free_context(primme_context ctx) {
  *    error checking on the input parameters, perform validation, 
  *    and make the call to main_iter. 
  *
- *    Calling Sprimme_svds with all svals, svecs, resNorms set to NULL
- *    returns the int and real memory required in the following primme fields:
- *            int primme->intWorkSize : bytes of int workspace needed
- *       long int primme->realWorkSize: bytes of real workspace needed
- * 
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
- * evals  Contains the converged Ritz values upon return.   Should be of size 
- *        primme->numEvals.
+ * svals  Contains the converged Ritz values upon return.   Should be of size 
+ *        primme_svds->numSvals.
  * 
- * evecs  The local portions of the converged Ritz vectors.  The dimension of
- *        the array is at least primme->nLocal*primme->numEvals
+ * svecs  The local portions of the converged Ritz vectors.  The dimension of
+ *        the array is at least
+ *        (primme_svds->mLocal+primme_svds->nLocal)*primme_svds->numSvals
  *
  * resNorms  The residual norms of the converged Ritz vectors.  Should be of 
- *           size primme->numEvals
+ *           size primme_svds->numSvals
  *  
  * primme  Structure containing various solver parameters and statistics
  *         See readme.txt for INPUT/OUTPUT variables in primme
@@ -223,48 +219,185 @@ static void primme_svds_free_context(primme_context ctx) {
 int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, 
       primme_svds_params *primme_svds) {
 
+   return Xprimme_svds_aux((void *)svals, (void *)svecs, (void *)resNorms,
+         primme_svds, PRIMME_OP_SCALAR);
+}
+
+// Definition for *hsprimme_svds and *ksprimme_primme
+
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                      \
+              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)
+
+   // Expand the terms {,magma_}{hs,ks}primme
+#  define Xsprimme_svds CONCAT(CONCAT(STEM, USE_ARITH(hs, ks)), primme_svds)
+
+int Xsprimme_svds(float *svals, XSCALAR *svecs, float *resNorms,
+      primme_svds_params *primme_svds) {
+
+   return Xprimme_svds_aux((void *)svals, (void *)svecs, (void *)resNorms,
+         primme_svds, primme_op_float);
+}
+
+#  undef Xsprimme_svds
+#endif
+
+/*******************************************************************************
+ * Subroutine Sprimme_svds - set defaults depending on the callee's type, and
+ *    call wrapper_Sprimme with type set in internalPrecision. 
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * svals  Contains the converged Ritz values upon return.   Should be of size 
+ *        primme_svds->numSvals.
+ * 
+ * svecs  The local portions of the converged Ritz vectors.  The dimension of
+ *        the array is at least
+ *        (primme_svds->mLocal+primme_svds->nLocal)*primme_svds->numSvals
+ *
+ * resNorms  The residual norms of the converged Ritz vectors.  Should be of 
+ *           size primme_svds->numSvals
+ *  
+ * primme  Structure containing various solver parameters and statistics
+ *         See readme.txt for INPUT/OUTPUT variables in primme
+ *
+ * svals_resNorms_type The type of the given arrays svals and resNorsm.
+ *
+ * Return Value
+ * ------------
+ * return error code
+ ******************************************************************************/
+
+STATIC int Xprimme_svds_aux(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, 
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type) {
+
 #ifdef SUPPORTED_TYPE
+
    /* Generate context */
 
    primme_context ctx = primme_svds_get_context(primme_svds);
 
-   /* Main call */
+   /* Set the current type as the default type for user's operators */
+
+   if (primme_svds->matrixMatvec && primme_svds->matrixMatvec_type == primme_op_default)
+      primme_svds->matrixMatvec_type = PRIMME_OP_SCALAR;
+   if (primme_svds->applyPreconditioner && primme_svds->applyPreconditioner_type == primme_op_default)
+      primme_svds->applyPreconditioner_type = PRIMME_OP_SCALAR;
+   if (primme_svds->globalSumReal && primme_svds->globalSumReal_type == primme_op_default)
+      primme_svds->globalSumReal_type = PRIMME_OP_SCALAR;
+   if (primme_svds->broadcastReal && primme_svds->broadcastReal_type == primme_op_default)
+      primme_svds->broadcastReal_type = PRIMME_OP_SCALAR;
+   if (primme_svds->convTestFun && primme_svds->convTestFun_type == primme_op_default)
+      primme_svds->convTestFun_type = PRIMME_OP_SCALAR;
+   if (primme_svds->monitorFun && primme_svds->monitorFun_type == primme_op_default)
+      primme_svds->monitorFun_type = PRIMME_OP_SCALAR;
+
+   /* Number of returned singular triplets */
+
+   int outInitSize = 0;
+
+   /* call primme for the internal working precision */
 
    int ret;
-   CHKERRVAL(Sprimme_svds_for_real(svals, svecs, resNorms, ctx), &ret);
+   primme_op_datatype t = primme_svds->internalPrecision;
+   if (t == primme_op_default) t = PRIMME_OP_SCALAR;
+   switch (t) {
+#  ifdef SUPPORTED_HALF_TYPE
+   case primme_op_half:
+      CHKERRVAL(wrapper_svds_Shprimme(svals, svecs, resNorms,
+                      svals_resNorms_type, PRIMME_OP_SCALAR, &outInitSize, ctx),
+            &ret);
+      break;
+#  endif
+#  ifndef PRIMME_WITHOUT_FLOAT
+   case primme_op_float:
+      CHKERRVAL(wrapper_svds_Ssprimme(svals, svecs, resNorms,
+                      svals_resNorms_type, PRIMME_OP_SCALAR, &outInitSize, ctx),
+            &ret);
+      break;
+#  endif
+   case primme_op_double:
+      CHKERRVAL(wrapper_svds_Sdprimme(svals, svecs, resNorms,
+                      svals_resNorms_type, PRIMME_OP_SCALAR, &outInitSize, ctx),
+            &ret);
+      break;
+#  ifdef PRIMME_WITH_NATIVE_QUAD
+   case primme_op_quad:
+      CHKERRVAL(wrapper_svds_Sqprimme(svals, svecs, resNorms,
+                      svals_resNorms_type, PRIMME_OP_SCALAR, &outInitSize, ctx),
+            &ret);
+      break;
+#  endif
+   default: ret = PRIMME_FUNCTION_UNAVAILABLE;
+   }
 
    /* Free context */
 
    primme_svds_free_context(ctx);
+
+   /* Set the number of returned triplets */
+
+   primme_svds->initSize = outInitSize;
+
+   return ret;
 #else
+
    (void)svals;
    (void)svecs;
    (void)resNorms;
-   (void)primme_svds;
 
-   int ret = PRIMME_FUNCTION_UNAVAILABLE;
-#endif
-
-   return ret;
+   primme_svds->initSize = 0;
+   return PRIMME_FUNCTION_UNAVAILABLE;
+#endif /* SUPPORTED_TYPE */
 }
 
 
 #ifdef SUPPORTED_TYPE
 
-STATIC int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms, 
-      primme_context ctx) {
+/*******************************************************************************
+ * Subroutine Sprimme_svds - Perform error checking on the input parameters,
+ *    configure the eigensolvers, and make the solver calls. 
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * svals  Contains the converged Ritz values upon return.   Should be of size 
+ *        primme_svds->numSvals.
+ * 
+ * svecs  The local portions of the converged Ritz vectors.  The dimension of
+ *        the array is at least
+ *        (primme_svds->mLocal+primme_svds->nLocal)*primme_svds->numSvals
+ *
+ * resNorms  The residual norms of the converged Ritz vectors.  Should be of 
+ *           size primme_svds->numSvals
+ *  
+ * svals_resNorms_type The type of the arrays svals and resNorsm.
+ *
+ * svecs_type The type of the array svecs
+ *
+ * outInitSize The number of columns returned back.
+ *
+ * ctx    primme context
+ *
+ * Return Value
+ * ------------
+ * return error code
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx) {
 
    primme_svds_params *primme_svds = ctx.primme_svds;
 
-   int ret, allocatedTargetShifts;
-   SCALAR *svecs = (SCALAR*)svecs_; /* Change type of svecs */
-   SCALAR *svecs0;
+   /* In case of error, return initSize = 0 */
+
+   *outInitSize = 0;
 
    /* ------------------------------------ */
    /* Set defaults for sequential programs */
    /* ------------------------------------ */
-   if (primme_svds->numProcs <= 1 && svals != NULL && svecs != NULL &&
-         resNorms != NULL) {
+   if (primme_svds->numProcs <= 1 && svals_ != NULL && svecs_ != NULL &&
+         resNorms_ != NULL) {
       primme_svds->mLocal = primme_svds->m;
       primme_svds->nLocal = primme_svds->n;
       primme_svds->procID = 0;
@@ -275,13 +408,10 @@ STATIC int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms,
    /* Set some defaults  */
    /* ------------------ */
    primme_svds_set_defaults(primme_svds);
-   if (fabs(primme_svds->eps) == 0.0) {
-      primme_svds->eps = MACHINE_EPSILON*1e4;
-   }
 
    /* Deprecated input  */
 
-   if (svals == NULL && svecs == NULL && resNorms == NULL)
+   if (svals_ == NULL && svecs_ == NULL && resNorms_ == NULL)
       return 0;
 
    /* ----------------------------------------------------------- */
@@ -289,18 +419,23 @@ STATIC int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms,
    /* specify all parameters in primme_svds structure. Check if   */
    /* primme_svds inputs are good for bounds, correct values etc. */
    /* ----------------------------------------------------------- */
-   CHKERR(primme_svds_check_input(svals, svecs, resNorms, primme_svds)); 
+   CHKERR(primme_svds_check_input(svals_, svecs_, resNorms_, primme_svds)); 
 
-   /* ----------------------------------------- */
-   /* Set default monitor and convergence test  */
-   /* ----------------------------------------- */
+   /* Set default convTetFun  */
 
    if (!primme_svds->convTestFun) {
       primme_svds->convTestFun = default_convTestFun;
+      primme_svds->convTestFun_type = PRIMME_OP_SCALAR;
+      if (primme_svds->eps == 0.0) {
+         primme_svds->eps = MACHINE_EPSILON * 1e4;
+      }
    }
+
+   /* Set default monitor     */
 
    if (!primme_svds->monitorFun) {
       primme_svds->monitorFun = default_monitor_svds;
+      primme_svds->monitorFun_type = PRIMME_OP_SCALAR;
    }
 
    /* ----------------------- */
@@ -321,14 +456,34 @@ STATIC int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms,
    primme_svds->stats.timeGlobalSum                 = 0.0;
    primme_svds->stats.lockingIssue                  = 0;
 
+   /* Cast svals, svecs and resNorms to working precision */
+
+   PRIMME_INT ldsvecs = primme_svds->mLocal + primme_svds->nLocal;
+   HREAL *svals, *resNorms;
+   SCALAR *svecs;
+   CHKERR(Num_matrix_astype_RHprimme(svals_, 1, primme_svds->numSvals, 1,
+         svals_resNorms_type, (void **)&svals, NULL, PRIMME_OP_HREAL,
+         1 /* alloc */, 0 /* not copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(svecs_,
+         primme_svds->mLocal + primme_svds->nLocal,
+         primme_svds->numOrthoConst +
+               max(primme_svds->numSvals, primme_svds->initSize),
+         ldsvecs, svecs_type, (void **)&svecs, NULL, PRIMME_OP_SCALAR,
+         1 /* alloc */,
+         primme_svds->numOrthoConst + primme_svds->initSize > 0 ? 1
+                                                                : 0 /* copy? */,
+         ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms_, 1, primme_svds->numSvals,
+         1, svals_resNorms_type, (void **)&resNorms, NULL, PRIMME_OP_HREAL,
+         1 /* alloc */, 0 /* not copy */, ctx));
+
    /* --------------- */
    /* Execute stage 1 */
    /* --------------- */
 
-   if (primme_svds->eps == 0.0) {
-      primme_svds->eps = MACHINE_EPSILON*1e4;
-   }
+   int ret, allocatedTargetShifts;
 
+   SCALAR *svecs0;
    CHKERR(copy_last_params_from_svds(0, NULL, svecs,
             NULL, &allocatedTargetShifts, &svecs0, ctx));
 
@@ -337,50 +492,48 @@ STATIC int Sprimme_svds_for_real(XREAL *svals, XSCALAR *svecs_, XREAL *resNorms,
    CHKERR(copy_last_params_to_svds(
             0, svals, svecs, resNorms, allocatedTargetShifts, ctx));
 
-   if(ret != 0) {
-      return ret - 100;
-   }
-   if (primme_svds->methodStage2 == primme_svds_op_none) {
-      return 0;
-   }
+   if (ret != 0) ret = ret - 100;
 
    /* --------------- */
    /* Execute stage 2 */
    /* --------------- */
 
-   CHKERR(copy_last_params_from_svds(
+   if (primme_svds->methodStage2 != primme_svds_op_none && ret == 0) {
+      CHKERR(copy_last_params_from_svds(
             1, svals, svecs, resNorms, &allocatedTargetShifts, &svecs0, ctx));
 
-   /* The value numSvals-primme->numEvals indicates how many svals */
-   /* are already converged. So shift svals and resnorms that much */
-   int nconv = primme_svds->numSvals - primme_svds->primmeStage2.numEvals;
+      /* The value numSvals-primme->numEvals indicates how many svals */
+      /* are already converged. So shift svals and resnorms that much */
+      int nconv = primme_svds->numSvals - primme_svds->primmeStage2.numEvals;
 
-   /* From PRIMME 3.0, the orthogonal may be modified, so we back them up */
-   /* TODO: remove this */
+      ret = Xprimme(svals + nconv, (XSCALAR *)svecs0, resNorms + nconv,
+            &primme_svds->primmeStage2);
 
-   SCALAR *backupSvecs=NULL;
-   PRIMME_INT ldbackupSvecs = primme_svds->mLocal + primme_svds->nLocal;
-   CHKERR(Num_malloc_Sprimme(ldbackupSvecs * nconv, &backupSvecs, ctx));
-   Num_copy_matrix_Sprimme(&svecs0[ldbackupSvecs * primme_svds->numOrthoConst],
-         ldbackupSvecs, nconv, ldbackupSvecs, backupSvecs, ldbackupSvecs, ctx);
-
-   ret = Xprimme(svals + nconv, (XSCALAR *)svecs0, resNorms + nconv,
-         &primme_svds->primmeStage2);
-
-   /* Copy back the backup svecs */
-
-   Num_copy_matrix_Sprimme(backupSvecs, ldbackupSvecs, nconv, ldbackupSvecs,
-         &svecs0[ldbackupSvecs * primme_svds->numOrthoConst], ldbackupSvecs,
-         ctx);
-   CHKERR(Num_free_Sprimme(backupSvecs, ctx));
-
-   CHKERR(copy_last_params_to_svds(
+      CHKERR(copy_last_params_to_svds(
             1, svals, svecs, resNorms, allocatedTargetShifts, ctx));
 
-   if(ret != 0) {
-      return ret - 200;
+      if (ret != 0)  ret = ret - 200;
    }
-   return 0;
+
+   /* Copy back evals, evecs and resNorms */
+
+   CHKERR(Num_matrix_astype_RHprimme(svals,
+         1, primme_svds->initSize, 1, PRIMME_OP_HREAL, (void **)&svals_, NULL,
+         svals_resNorms_type, -1 /* destroy */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Sprimme(svecs,
+         primme_svds->mLocal + primme_svds->nLocal,
+         primme_svds->numOrthoConst + primme_svds->initSize, ldsvecs,
+         PRIMME_OP_SCALAR, (void **)&svecs_, &ldsvecs, svecs_type,
+         -1 /* destroy */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme_svds->initSize, 1,
+         PRIMME_OP_HREAL, (void **)&resNorms_, NULL, svals_resNorms_type,
+         -1 /* destroy */, 1 /* copy */, ctx));
+
+   /* If no error, return initSize */
+
+   *outInitSize = primme_svds->initSize;
+
+   return ret;
 }
 
 STATIC int comp_double(const void *a, const void *b)

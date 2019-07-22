@@ -211,6 +211,105 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 #endif /* USE_DOUBLE */
 
 /******************************************************************************
+ * Function Num_copy_matrix_astype - copy the matrix x into y.
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * xm0         The starting row
+ * xn0         The starting column
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * xt          The datatype of x
+ * y           On output y = x
+ * xm0         The starting row
+ * xn0         The starting column
+ * ldy         The leading dimension of y
+ * yt          The datatype of y
+ *
+ * NOTE: x and y *cannot* partially overlap
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx) {
+
+   /* Replace primme_op_default */
+
+   if (xt == primme_op_default) xt = PRIMME_OP_SCALAR;
+   if (yt == primme_op_default) yt = PRIMME_OP_SCALAR;
+   
+   /* Call the function that y has the type of the SCALAR */
+
+   if (yt != PRIMME_OP_SCALAR) {
+      switch(yt) {
+#ifdef SUPPORTED_HALF_TYPE
+      case primme_op_half:   return Num_copy_matrix_astype_Shprimme(x, xm0, xn0, m, n, ldx, xt, y, ym0, yn0, ldy, yt, ctx);
+#endif
+#ifndef PRIMME_WITHOUT_FLOAT
+      case primme_op_float:  return Num_copy_matrix_astype_Ssprimme(x, xm0, xn0, m, n, ldx, xt, y, ym0, yn0, ldy, yt, ctx);
+#endif
+      case primme_op_double: return Num_copy_matrix_astype_Sdprimme(x, xm0, xn0, m, n, ldx, xt, y, ym0, yn0, ldy, yt, ctx);
+#ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+      case primme_op_quad:   return Num_copy_matrix_astype_Sqprimme(x, xm0, xn0, m, n, ldx, xt, y, ym0, yn0, ldy, yt, ctx);
+#endif
+      default: CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+      }
+   }
+
+   size_t xt_size;
+   CHKERR(Num_sizeof_Sprimme(xt, &xt_size));
+   return Num_copy_Tmatrix_Sprimme(&((char *)x)[xt_size * (xm0 + ldx * xn0)],
+         xt, m, n, ldx, &((SCALAR *)y)[ym0 + ldy * yn0], ldy, ctx);
+}
+
+ /******************************************************************************
+ * Function Num_sizeof_Sprimme - Return the size of an element with the given
+ *    type.
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * ---------------------------
+ * t    Type
+ *
+ * RETURN
+ * ------
+ * int  Size of the type in bytes
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {
+
+   if (t == primme_op_default) t = PRIMME_OP_SCALAR;
+
+   *s = 0;
+
+   switch(t) {
+#  ifdef SUPPORTED_HALF_TYPE
+   case primme_op_half:    *s = sizeof(PRIMME_HALF); break;
+#  endif
+   case primme_op_float:   *s = sizeof(float); break;
+   case primme_op_double:  *s = sizeof(double); break;
+#  ifdef PRIMME_WITH_NATIVE_QUAD
+   case primme_op_quad:    *s = sizeof(PRIMME_QUAD); break;
+#  endif
+   case primme_op_int:     *s = sizeof(int); break;
+   default:                return PRIMME_FUNCTION_UNAVAILABLE;
+   }
+
+#ifdef USE_COMPLEX
+   *s *= 2;
+#endif
+
+   return 0;
+}
+
+
+/******************************************************************************
  * Function Num_copy_matrix_conj - Copy the matrix x' into y
  *
  * PARAMETERS

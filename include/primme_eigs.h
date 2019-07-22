@@ -246,7 +246,7 @@ typedef struct primme_params {
          void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
          int *inner_its, void *LSRes, const char *msg, double *time,
          primme_event *event, struct primme_params *primme, int *err);
-   primme_op_datatype monitorFun_type; /* expected type of FP arrays */
+   primme_op_datatype monitorFun_type; /* expected type of float-point arrays */
    void *monitor;
    void *queue;      /* magma device queue (magma_queue_t*) */
    const char *profile; /* regex expression with functions to monitor times */

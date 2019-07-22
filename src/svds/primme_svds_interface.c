@@ -110,6 +110,7 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->globalSumReal_type      = primme_op_default;
    primme_svds->broadcastReal           = NULL;
    primme_svds->broadcastReal_type      = primme_op_default;
+   primme_svds->internalPrecision       = primme_op_default;
 
    /* Use these pointers to provide matrix/preconditioner */
    primme_svds->matrix                  = NULL;
@@ -157,8 +158,10 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->iseed[2] = -1;   /* Unless users provide their own iseeds,       */
    primme_svds->iseed[3] = -1;   /* PRIMME will set thse later uniquely per proc */
    primme_svds->convTestFun             = NULL;
+   primme_svds->convTestFun_type        = primme_op_default;
    primme_svds->convtest                = NULL;
    primme_svds->monitorFun              = NULL;
+   primme_svds->monitorFun_type         = primme_op_default;
    primme_svds->monitor                 = NULL;
    primme_svds->queue                   = NULL;
    primme_svds->profile                 = NULL;
@@ -466,6 +469,12 @@ fprintf(outputFile, "// ---------------------------------------------------\n"
    PRINTIF(methodStage2, primme_svds_op_AAt);
    PRINTIF(methodStage2, primme_svds_op_augmented);
 
+   PRINTIF(internalPrecision, primme_op_half);
+   PRINTIF(internalPrecision, primme_op_float);
+   PRINTIF(internalPrecision, primme_op_double);
+   PRINTIF(internalPrecision, primme_op_quad);
+
+
    if (primme_svds.method != primme_svds_op_none) {
       fprintf(outputFile, "\n"
                           "// ---------------------------------------------------\n"
@@ -621,6 +630,9 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_broadcastReal_type:
          v->int_v = primme_svds->broadcastReal_type;
          break;
+      case PRIMME_SVDS_internalPrecision:
+         v->int_v = primme_svds->internalPrecision;
+         break;
       case PRIMME_SVDS_numSvals :
          v->int_v = primme_svds->numSvals;
          break;
@@ -731,11 +743,17 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_convTestFun:
          v->convTestFun_v = primme_svds->convTestFun;
          break;
+      case PRIMME_SVDS_convTestFun_type:
+         v->int_v = primme_svds->convTestFun_type;
+         break;
       case PRIMME_SVDS_convtest:
          v->ptr_v = primme_svds->convtest;
          break;
       case PRIMME_SVDS_monitorFun:
          v->monitorFun_v = primme_svds->monitorFun;
+         break;
+      case PRIMME_SVDS_monitorFun_type:
+         v->int_v = primme_svds->monitorFun_type;
          break;
       case PRIMME_SVDS_monitor:
          v->ptr_v = primme_svds->monitor;
@@ -844,6 +862,9 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
          break;
       case PRIMME_SVDS_broadcastReal :
          primme_svds->broadcastReal = v.broadcastRealFunc_v;
+         break;
+      case PRIMME_SVDS_internalPrecision:
+         primme_svds->internalPrecision = (primme_op_datatype)*v.int_v;
          break;
       case PRIMME_SVDS_broadcastReal_type:
          primme_svds->broadcastReal_type = (primme_op_datatype)*v.int_v;
@@ -961,11 +982,17 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_convTestFun:
          primme_svds->convTestFun = v.convTestFun_v;
          break;
+      case PRIMME_SVDS_convTestFun_type:
+         primme_svds->convTestFun_type = *v.int_v;
+         break;
       case PRIMME_SVDS_convtest:
          primme_svds->convtest = v.ptr_v;
          break;
       case PRIMME_SVDS_monitorFun:
          primme_svds->monitorFun = v.monitorFun_v;
+         break;
+      case PRIMME_SVDS_monitorFun_type:
+         primme_svds->monitorFun_type = *v.int_v;
          break;
       case PRIMME_SVDS_monitor:
          primme_svds->monitor = v.ptr_v;
@@ -1039,6 +1066,7 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(globalSumReal_type);
    IF_IS(broadcastReal);
    IF_IS(broadcastReal_type);
+   IF_IS(internalPrecision);
    IF_IS(numSvals);
    IF_IS(target);
    IF_IS(numTargetShifts);
@@ -1075,8 +1103,10 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_timeGlobalSum);
    IF_IS(stats_timeBroadcast);
    IF_IS(convTestFun);
+   IF_IS(convTestFun_type);
    IF_IS(convtest);
    IF_IS(monitorFun);
+   IF_IS(monitorFun_type);
    IF_IS(monitor);
    IF_IS(queue);
    IF_IS(profile);
@@ -1095,6 +1125,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_matrixMatvec_type: 
       case PRIMME_SVDS_applyPreconditioner_type:
       case PRIMME_SVDS_globalSumReal_type:
+      case PRIMME_SVDS_broadcastReal_type:
+      case PRIMME_SVDS_internalPrecision:
       case PRIMME_SVDS_m: 
       case PRIMME_SVDS_n:
       case PRIMME_SVDS_numSvals:
@@ -1123,6 +1155,8 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_mLocal: 
       case PRIMME_SVDS_nLocal: 
       case PRIMME_SVDS_numTargetShifts:
+      case PRIMME_SVDS_convTestFun_type:
+      case PRIMME_SVDS_monitorFun_type:
       if (type) *type = primme_int;
       if (arity) *arity = 1;
       break;
@@ -1220,9 +1254,9 @@ int primme_svds_constant_info(const char* label_name, int *value) {
    IF_IS(primme_svds_op_augmented);
 #undef IF_IS
 
-   /* return error if label not found */
+   /* try primme constants */
 
-   return 1;   
+   return primme_constant_info(label_name, value);
 }
 
 #endif /* USE_DOUBLE */

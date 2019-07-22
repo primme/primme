@@ -115,7 +115,7 @@ int check_solution(const char *checkXFileName, primme_params *primme, double *ev
       primme->matrixMatvec(&evecs[primme->nLocal*i], &primme->nLocal, Ax, &primme->nLocal, &one, primme, &ierr);
       eval0 = primme_dot_real(&evecs[primme->nLocal*i], Ax, primme);
       if (fabs(evals[i] - eval0) > max(rnorms[i], primme->aNorm*primme->eps) && primme->procID == 0) {
-         fprintf(stderr, "Warning: Eval[%d] = %-22.15E should be close to %-22.15E\n", i+1, evals[i], eval0);
+         fprintf(stderr, "Warning: Eval[%d] = %-22.15E should be close to %-22.15E (relative error to |A| %g)\n", i+1, evals[i], eval0, fabs(evals[i] - eval0)/primme->aNorm);
          retX = 1;
       }
       /* Check |A*V(:,i) - (V(:,i)'A*V(:,i))*V(:,i)| < |r| */

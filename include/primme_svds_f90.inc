@@ -84,29 +84,32 @@ integer, parameter ::  PRIMME_SVDS_maxBlockSize                 = 33
 integer, parameter ::  PRIMME_SVDS_maxMatvecs                   = 34
 integer, parameter ::  PRIMME_SVDS_iseed                        = 35
 integer, parameter ::  PRIMME_SVDS_printLevel                   = 36
-integer, parameter ::  PRIMME_SVDS_outputFile                   = 37
-integer, parameter ::  PRIMME_SVDS_stats_numOuterIterations     = 38
-integer, parameter ::  PRIMME_SVDS_stats_numRestarts            = 39
-integer, parameter ::  PRIMME_SVDS_stats_numMatvecs             = 40
-integer, parameter ::  PRIMME_SVDS_stats_numPreconds            = 41
-integer, parameter ::  PRIMME_SVDS_stats_numGlobalSum           = 42
-integer, parameter ::  PRIMME_SVDS_stats_volumeGlobalSum        = 43
-integer, parameter ::  PRIMME_SVDS_stats_numBroadcast           = 44
-integer, parameter ::  PRIMME_SVDS_stats_volumeBroadcast        = 45
-integer, parameter ::  PRIMME_SVDS_stats_numOrthoInnerProds     = 46
-integer, parameter ::  PRIMME_SVDS_stats_elapsedTime            = 47
-integer, parameter ::  PRIMME_SVDS_stats_timeMatvec             = 48
-integer, parameter ::  PRIMME_SVDS_stats_timePrecond            = 49
-integer, parameter ::  PRIMME_SVDS_stats_timeOrtho              = 50
-integer, parameter ::  PRIMME_SVDS_stats_timeGlobalSum          = 51
-integer, parameter ::  PRIMME_SVDS_stats_timeBroadcast          = 52
-integer, parameter ::  PRIMME_SVDS_stats_lockingIssue           = 53
-integer, parameter ::  PRIMME_SVDS_convTestFun                  = 54
-integer, parameter ::  PRIMME_SVDS_convtest                     = 55
-integer, parameter ::  PRIMME_SVDS_monitorFun                   = 56
-integer, parameter ::  PRIMME_SVDS_monitor                      = 57
-integer, parameter ::  PRIMME_SVDS_queue                        = 58
-integer, parameter ::  PRIMME_SVDS_profile                      = 59 
+integer, parameter ::  PRIMME_SVDS_internalPrecision            = 37
+integer, parameter ::  PRIMME_SVDS_outputFile                   = 38
+integer, parameter ::  PRIMME_SVDS_stats_numOuterIterations     = 39
+integer, parameter ::  PRIMME_SVDS_stats_numRestarts            = 40
+integer, parameter ::  PRIMME_SVDS_stats_numMatvecs             = 41
+integer, parameter ::  PRIMME_SVDS_stats_numPreconds            = 42
+integer, parameter ::  PRIMME_SVDS_stats_numGlobalSum           = 43
+integer, parameter ::  PRIMME_SVDS_stats_volumeGlobalSum        = 44
+integer, parameter ::  PRIMME_SVDS_stats_numBroadcast           = 45
+integer, parameter ::  PRIMME_SVDS_stats_volumeBroadcast        = 46
+integer, parameter ::  PRIMME_SVDS_stats_numOrthoInnerProds     = 47
+integer, parameter ::  PRIMME_SVDS_stats_elapsedTime            = 48
+integer, parameter ::  PRIMME_SVDS_stats_timeMatvec             = 49
+integer, parameter ::  PRIMME_SVDS_stats_timePrecond            = 50
+integer, parameter ::  PRIMME_SVDS_stats_timeOrtho              = 51
+integer, parameter ::  PRIMME_SVDS_stats_timeGlobalSum          = 52
+integer, parameter ::  PRIMME_SVDS_stats_timeBroadcast          = 53
+integer, parameter ::  PRIMME_SVDS_stats_lockingIssue           = 54
+integer, parameter ::  PRIMME_SVDS_convTestFun                  = 55
+integer, parameter ::  PRIMME_SVDS_convTestFun_type             = 56
+integer, parameter ::  PRIMME_SVDS_convtest                     = 57
+integer, parameter ::  PRIMME_SVDS_monitorFun                   = 58
+integer, parameter ::  PRIMME_SVDS_monitorFun_type              = 59
+integer, parameter ::  PRIMME_SVDS_monitor                      = 60
+integer, parameter ::  PRIMME_SVDS_queue                        = 61
+integer, parameter ::  PRIMME_SVDS_profile                      = 62 
 
 !-------------------------------------------------------
 !    Defining easy to remember labels for setting the 
@@ -127,11 +130,11 @@ integer(kind=c_int64_t), parameter ::  primme_svds_op_augmented = 3
 !-------------------------------------------------------
 
 abstract interface
-   subroutine primme_svds_matvec(x, ldx, y, ldy, primme, blockSize, mode, ierr) bind(c)
+   subroutine primme_svds_matvec(x, ldx, y, ldy, blockSize, mode, primme_svds, ierr) bind(c)
       use iso_c_binding, only: c_ptr, c_int, c_int64_t
       integer(c_int64_t) :: ldx, ldy
       type(*) :: x(ldx,*), y(ldy,*)
-      type(c_ptr), value :: primme
+      type(c_ptr), value :: primme_svds
       integer(c_int) :: blockSize, mode, ierr
    end subroutine
 end interface

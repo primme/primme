@@ -74,11 +74,6 @@
  *    error checking on the input parameters, perform validation, 
  *    and make the call to main_iter. 
  *
- *    Calling Sprimme with all evals, evecs, resNorms set to NULL
- *    returns the int and real memory required in the following primme fields:
- *            int primme->intWorkSize : bytes of int workspace needed
- *       long int primme->realWorkSize: bytes of real workspace needed
- * 
  * INPUT/OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------------
  * evals  Contains the converged Ritz values upon return.   Should be of size 
@@ -135,6 +130,30 @@ int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,
 #  undef Xsprimme
 #endif
 
+/*******************************************************************************
+ * Subroutine Xprimme_aux - set defaults depending on the callee's type, and
+ *    call wrapper_Sprimme with type set in internalPrecision. 
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * evals  Contains the converged Ritz values upon return.   Should be of size 
+ *        primme->numEvals.
+ * 
+ * evecs  The local portions of the converged Ritz vectors.  The dimension of
+ *        the array is at least primme->nLocal*primme->numEvals
+ *
+ * resNorms  The residual norms of the converged Ritz vectors.  Should be of 
+ *           size primme->numEvals
+ *  
+ * primme  the PRIMME parameters
+ *
+ * evals_resNorms_type The type of the arrays evals and resNorsm.
+ *
+ * Return Value
+ * ------------
+ * return  error code
+ ******************************************************************************/
+
 STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
             primme_params *primme, primme_op_datatype evals_resNorms_type) {
 
@@ -173,27 +192,27 @@ STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
    switch (t) {
 #  ifdef SUPPORTED_HALF_TYPE
    case primme_op_half:
-      CHKERRVAL(wrapper_Shprimme(PRIMME_OP_SCALAR, evals, evecs,
-                      resNorms, evals_resNorms_type, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Shprimme(evals, evecs, resNorms, evals_resNorms_type,
+                      PRIMME_OP_SCALAR, &outInitSize, ctx),
             &ret);
       break;
 #  endif
 #  ifndef PRIMME_WITHOUT_FLOAT
    case primme_op_float:
-      CHKERRVAL(wrapper_Ssprimme(PRIMME_OP_SCALAR, evals, evecs,
-                      resNorms, evals_resNorms_type, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Ssprimme(evals, evecs, resNorms, evals_resNorms_type,
+                      PRIMME_OP_SCALAR, &outInitSize, ctx),
             &ret);
       break;
 #  endif
    case primme_op_double:
-      CHKERRVAL(wrapper_Sdprimme(PRIMME_OP_SCALAR, evals, evecs,
-                      resNorms, evals_resNorms_type, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Sdprimme(evals, evecs, resNorms, evals_resNorms_type,
+                      PRIMME_OP_SCALAR, &outInitSize, ctx),
             &ret);
       break;
 #  ifdef PRIMME_WITH_NATIVE_QUAD
    case primme_op_quad:
-      CHKERRVAL(wrapper_Sqprimme(PRIMME_OP_SCALAR, evals, evecs,
-                      resNorms, evals_resNorms_type, &outInitSize, ctx),
+      CHKERRVAL(wrapper_Sqprimme(evals, evecs, resNorms, evals_resNorms_type,
+                      PRIMME_OP_SCALAR, &outInitSize, ctx),
             &ret);
       break;
 #  endif
@@ -207,26 +226,55 @@ STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
    /* Set the number of returned eigenpairs */
 
    primme->initSize = outInitSize;
+
+   return ret;
 #else
 
    (void)evals;
    (void)evecs;
    (void)resNorms;
 
-   int ret = PRIMME_FUNCTION_UNAVAILABLE;
    primme->initSize = 0;
+   return PRIMME_FUNCTION_UNAVAILABLE;
 #endif /* SUPPORTED_TYPE */
-
-   return ret;
 }
 
 
 #ifdef SUPPORTED_TYPE
 
+/*******************************************************************************
+ * Subroutine wrapper_Sprimme - Perform error checking on the input parameters,
+ *    and make the call to main_iter. 
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * evals  Contains the converged Ritz values upon return.   Should be of size 
+ *        primme->numEvals.
+ * 
+ * evecs  The local portions of the converged Ritz vectors.  The dimension of
+ *        the array is at least primme->nLocal*primme->numEvals
+ *
+ * resNorms  The residual norms of the converged Ritz vectors.  Should be of 
+ *           size primme->numEvals
+ *
+ * evals_resNorms_type The type of the arrays evals and resNorsm.
+ *
+ * evecs_type The type of the array evecs
+ *
+ * outInitSize The number of columns returned back.
+ * 
+ * ctx    primme context
+ *
+ * Return Value
+ * ------------
+ * return  error code
+ ******************************************************************************/
+
+
 TEMPLATE_PLEASE
-int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
-      void *resNorms, primme_op_datatype evals_resNorms_type, int *outInitSize,
-      primme_context ctx) {
+int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
@@ -329,9 +377,11 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
          PRIMME_OP_HREAL, 1 /* alloc */, 0 /* not copy */, ctx));
    PRIMME_INT ldevecs0;
    CHKERR(Num_matrix_astype_Sprimme(evecs, primme->nLocal,
-         max(primme->numEvals, primme->initSize), primme->ldevecs, input_type,
-         (void **)&evecs0, &ldevecs0, PRIMME_OP_SCALAR, 1 /* alloc */,
-         primme->initSize > 0 ? 1 : 0 /* copy? */, ctx));
+         primme->numOrthoConst + max(primme->numEvals, primme->initSize),
+         primme->ldevecs, evecs_type, (void **)&evecs0, &ldevecs0,
+         PRIMME_OP_SCALAR, 1 /* alloc */,
+         primme->numOrthoConst + primme->initSize > 0 ? 1 : 0 /* copy? */,
+         ctx));
    CHKERR(Num_matrix_astype_RHprimme(resNorms, 1, primme->numEvals,
          1, evals_resNorms_type, (void **)&resNorms0, NULL, PRIMME_OP_HREAL,
          1 /* alloc */, 0 /* not copy */, ctx));
@@ -346,12 +396,15 @@ int wrapper_Sprimme(primme_op_datatype input_type, void *evals, void *evecs,
    /* Copy back evals, evecs and resNorms */
 
    CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals0,
-         1, primme->numEvals, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
+         1, primme->initSize, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
          evals_resNorms_type, -1 /* destroy */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_Sprimme(evecs0, primme->nLocal, primme->initSize,
-         ldevecs0, PRIMME_OP_SCALAR, (void **)&evecs, &primme->ldevecs,
-         input_type, -1 /* destroy */, 1 /* copy */, ctx));
-   CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->numEvals, 1,
+   CHKERR(Num_copy_matrix_astype_Sprimme(evecs0, 0, primme->numOrthoConst,
+         primme->nLocal, primme->initSize, ldevecs0, PRIMME_OP_SCALAR, evecs, 0,
+         primme->numOrthoConst, primme->ldevecs, evecs_type, ctx));
+   if (evecs != evecs0) {
+      CHKERR(Num_free_Sprimme(evecs0, ctx));
+   }
+   CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->initSize, 1,
          PRIMME_OP_HREAL, (void **)&resNorms, NULL, evals_resNorms_type,
          -1 /* destroy */, 1 /* copy */, ctx));
 
