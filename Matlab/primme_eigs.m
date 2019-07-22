@@ -55,7 +55,6 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.minRestartSize: minimum Ritz vectors to keep in restarting
 %     OPTS.maxMatvecs: maximum number of matrix vector multiplications {Inf}
 %     OPTS.maxit: maximum number of outer iterations {Inf}
-%     OPTS.scheme: the restart scheme {'primme_thick'}
 %     OPTS.maxPrevRetain: number of Ritz vectors from previous iteration
 %          that are kept after restart {typically >0, see PRIMME doc}
 %     OPTS.robustShifts: setting to true may avoid stagnation or misconvergence 

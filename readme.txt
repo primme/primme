@@ -33,7 +33,9 @@ Table Of Contents:
 
   * C Library Interface
 
-  * FORTRAN Library Interface
+  * FORTRAN 77 Library Interface
+
+  * FORTRAN 90 Library Interface
 
   * Python Interface
 
@@ -50,6 +52,8 @@ Table Of Contents:
   * C Library Interface
 
   * FORTRAN Library Interface
+
+  * FORTRAN 90 Library Interface
 
   * Python Interface
 
@@ -110,6 +114,31 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 =========
+
+Changes in PRIMME 3.0 (released on July 24, 2019):
+
+* Added support for the generalized Hermitian eigenvalue problem
+  (see "massMatrixMatvec") and the standard normal eigenvalue problem
+  (see "dprimme_normal()").
+
+* Added support for GPU (see "magma_dprimme()",
+  "magma_dprimme_normal()", and "magma_dprimme_svds()").
+
+* Added support for half precision (see "hprimme()" and "kprimme()",
+  and other variants for normal eigenproblems and singular value
+  problems).
+
+* Added block orthogonalization (see "orth").
+
+* Added an optional callback for broadcasting (see "broadcastReal"
+  and "broadcastReal").
+
+* The callbacks can work with different precision than the main call
+  (see for instance "matrixMatvec_type" and "globalSumReal_type").
+
+* Added new counters: "numGlobalSum", "volumeGlobalSum",
+  "numBroadcast", "volumeGlobalSum", "timeOrtho", "timeGlobalSum",
+  "timeBroadcast".
 
 Changes in PRIMME 2.2 (released on October 26, 2018):
 
@@ -548,7 +577,9 @@ Eigenvalue Problems
 
 * C Library Interface
 
-* FORTRAN Library Interface
+* FORTRAN 77 Library Interface
+
+* FORTRAN 90 Library Interface
 
 * Python Interface
 
@@ -564,19 +595,25 @@ C Library Interface
 *******************
 
 The PRIMME interface is composed of the following functions. To solve
-real symmetric and Hermitian standard eigenproblems call respectively:
-
-   int sprimme(float *evals, float *evecs, float *resNorms,
-               primme_params *primme);
-
-   int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms,
-               primme_params *primme);
+real symmetric and Hermitian standard eigenproblems call:
 
    int dprimme(double *evals, double *evecs, double *resNorms,
                primme_params *primme);
 
    int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms,
                primme_params *primme);
+
+There are versions for single precision, "sprimme()" and "cprimme()",
+and for half precision "hprimme()", "kprimme()", "hsprimme()",
+"ksprimme()".
+
+To solve normal standard eigenproblems that are not Hermitian call:
+
+   int zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs,
+                    double *resNorms, primme_params *primme);
+
+There are versions for single precision, "cprimme_normal()", and for
+half precision, "kprimme_normal()" and "kcprimme_normal()".
 
 Other useful functions:
 
@@ -614,13 +651,9 @@ To use PRIMME, follow these basic steps.
       ret = primme_set_method(method, &primme);
       ...
 
-4. Then to solve real symmetric standard eigenproblems call:
+4. Then call the solver:
 
       ret = dprimme(evals, evecs, resNorms, &primme);
-
-   The previous is the double precision call. There is available calls
-   for complex double, single and complex single; check it out
-   "zprimme()", "sprimme()" and "cprimme()".
 
    The call arguments are:
 
@@ -637,6 +670,8 @@ To use PRIMME, follow these basic steps.
 
       primme_free(&primme);
 
+See usage examples at the directory *examples*.
+
 
 Parameters Guide
 ================
@@ -645,8 +680,9 @@ PRIMME stores the data on the structure "primme_params", which has the
 next fields:
 
    /* Basic */
-   PRIMME_INT n;                                      // matrix dimension
+   PRIMME_INT n;                               // matrix dimension
    void (*matrixMatvec)(...);             // matrix-vector product
+   void (*massMatrixMatvec)(...);    // mass matrix-vector product
    int numEvals;                    // how many eigenpairs to find
    primme_target target;              // which eigenvalues to find
    int numTargetShifts;       // for targeting interior eigenpairs
@@ -670,6 +706,7 @@ next fields:
    /* User data */
    void *commInfo;
    void *matrix;
+   void *massMatrix;
    void *preconditioner;
    void *convtest;
    void *monitor;
@@ -681,12 +718,10 @@ next fields:
    int locking;
    PRIMME_INT maxMatvecs;
    PRIMME_INT maxOuterIterations;
-   int intWorkSize;
-   size_t realWorkSize;
    PRIMME_INT iseed[4];
-   int *intWork;
-   void *realWork;
    double aNorm;
+   double BNorm;
+   double invBNorm;
    int printLevel;
    FILE *outputFile;
    double *ShiftsForPreconditioner;
@@ -698,6 +733,13 @@ next fields:
    void (*convTestFun)(...); // custom convergence criterion
    PRIMME_INT ldOPS;   // leading dimension to use in matrixMatvec
    void (*monitorFun)(...); // custom convergence history
+   primme_op_datatype matrixMatvec_type;
+   primme_op_datatype massMatrixMatvec_type;
+   primme_op_datatype applyPreconditioner_type;
+   primme_op_datatype globalSumReal_type;
+   primme_op_datatype broadcastReal_type;
+   primme_op_datatype internalPrecision;
+   primme_orth orth;
 
 PRIMME requires the user to set at least the dimension of the matrix
 ("n") and the matrix-vector product ("matrixMatvec"), as they define
@@ -724,72 +766,210 @@ Interface Description
 The next enumerations and functions are declared in "primme.h".
 
 
-sprimme
+?primme
 -------
+
+int hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+
+int hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, primme_params *primme)
+
+int ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+
+int kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 
 int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
 
-   Solve a real symmetric standard eigenproblem.
-
-   Parameters:
-      * **evals** -- array at least of size "numEvals" to store the
-        computed eigenvalues; all processes in a parallel run return
-        this local array with the same values.
-
-      * **resNorms** -- array at least of size "numEvals" to store
-        the residual norms of the computed eigenpairs; all processes
-        in parallel run return this local array with the same values.
-
-      * **evecs** -- array at least of size "nLocal" times
-        "numEvals" to store columnwise the (local part of the)
-        computed eigenvectors.
-
-      * **primme** -- parameters structure.
-
-   Returns:
-      error indicator; see Error Codes.
-
-
-dprimme
--------
+int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
 
 int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 
-   Solve a real symmetric standard eigenproblem.
+int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
+
+   Solve a real symmetric/Hermitian standard or generalized
+   eigenproblem.
+
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_dprimme()" for using GPUs).
 
    Parameters:
       * **evals** -- array at least of size "numEvals" to store the
         computed eigenvalues; all processes in a parallel run return
         this local array with the same values.
 
-      * **resNorms** -- array at least of size "numEvals" to store
-        the residual norms of the computed eigenpairs; all processes
-        in parallel run return this local array with the same values.
-
       * **evecs** -- array at least of size "nLocal" times
         "numEvals" to store columnwise the (local part of the)
         computed eigenvectors.
+
+      * **resNorms** -- array at least of size "numEvals" to store
+        the residual norms of the computed eigenpairs; all processes
+        in parallel run return this local array with the same values.
 
       * **primme** -- parameters structure.
 
    Returns:
       error indicator; see Error Codes.
 
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
 
-cprimme
--------
+   On return, the i-th eigenvector starts at evecs[( "numOrthoConst" +
+   i)* "nLocal" ]. The first vector has index i=0.
 
-int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
-   Solve a Hermitian standard eigenproblem; see function "sprimme()".
+
+*magma_?primme*
+---------------
+
+int magma_hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+
+int magma_hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, primme_params *primme)
+
+int magma_kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+
+int magma_sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
+
+int magma_ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+
+int magma_cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+int magma_dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
+
+int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
+
+   Solve a real symmetric/Hermitian standard or generalized
+   eigenproblem.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "dprimme()" for using only the
+   CPU).
+
+   Parameters:
+      * **evals** -- CPU array at least of size "numEvals" to store
+        the computed eigenvalues; all processes in a parallel run
+        return this local array with the same values.
+
+      * **evecs** -- GPU array at least of size "nLocal" times
+        "numEvals" to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms** -- CPU array at least of size "numEvals" to
+        store the residual norms of the computed eigenpairs; all
+        processes in parallel run return this local array with the
+        same values.
+
+      * **primme** -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs[( "numOrthoConst" +
+   i)* "nLocal" ]. The first vector has index i=0.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
 
-zprimme
--------
+?primme_normal
+--------------
 
-int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
+int kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 
-   Solve a Hermitian standard eigenproblem; see function "dprimme()".
+int kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+
+int cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+int zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
+
+   Solve a normal standard eigenproblem, which may not be Hermitian.
+
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_zprimme_normal()" for using GPUs).
+
+   Parameters:
+      * **evals** -- array at least of size "numEvals" to store the
+        computed eigenvalues; all processes in a parallel run return
+        this local array with the same values.
+
+      * **evecs** -- array at least of size "nLocal" times
+        "numEvals" to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms** -- array at least of size "numEvals" to store
+        the residual norms of the computed eigenpairs; all processes
+        in parallel run return this local array with the same values.
+
+      * **primme** -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs[( "numOrthoConst" +
+   i)* "nLocal" ]. The first vector has index i=0.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+*magma_?primme_normal*
+----------------------
+
+int magma_kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+
+int magma_kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+
+int magma_cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+int magma_zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
+
+   Solve a normal standard eigenproblem, which may not be Hermitian.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "dprimme_normal()" for using only
+   the CPU).
+
+   Parameters:
+      * **evals** -- CPU array at least of size "numEvals" to store
+        the computed eigenvalues; all processes in a parallel run
+        return this local array with the same values.
+
+      * **evecs** -- GPU array at least of size "nLocal" times
+        "numEvals" to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms** -- CPU array at least of size "numEvals" to
+        store the residual norms of the computed eigenpairs; all
+        processes in parallel run return this local array with the
+        same values.
+
+      * **primme** -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs[( "numOrthoConst" +
+   i)* "nLocal" ]. The first vector has index i=0.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
 
 primme_initialize
@@ -799,8 +979,26 @@ void primme_initialize(primme_params *primme)
 
    Set PRIMME parameters structure to the default values.
 
+   Eventually call "primme_free()" to release allocated resources by
+   PRIMME.
+
    Parameters:
       * **primme** -- parameters structure.
+
+
+primme_params_create
+--------------------
+
+primme_params* primme_params_create(void);
+
+   Allocate and initialize a parameters structure to the default
+   values.
+
+   Eventually call "primme_params_destroy()" to release allocated
+   resources by PRIMME.
+
+   Returns:
+      pointer to a parameters structure.
 
 
 primme_set_method
@@ -858,8 +1056,23 @@ void primme_free(primme_params *primme)
    Parameters:
       * **primme** -- parameters structure.
 
-FORTRAN Library Interface
-*************************
+
+primme_params_destroy
+---------------------
+
+int primme_params_destroy(primme_params *primme)
+
+   Free memory allocated by PRIMME associated to a parameters
+   structure created with "primme_params_create()".
+
+   Parameters:
+      * **primme** -- parameters structure.
+
+   Returns:
+      nonzero value if the call is not successful.
+
+FORTRAN 77 Library Interface
+****************************
 
 The next enumerations and functions are declared in "primme_f77.h".
 
@@ -935,24 +1148,38 @@ sprimme_f77(evals, evecs, resNorms, primme, ierr)
    Solve a real symmetric standard eigenproblem using single
    precision.
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_sprimme_f77()" for using GPUs).
+
    Parameters:
       * **evals(*)** (*real*) -- (output) array at least of size
         "numEvals" to store the computed eigenvalues; all parallel
         calls return the same value in this array.
+
+      * **evecs(*)** (*real*) -- (input/output) array at least of
+        size "nLocal" times ("numOrthoConst" + "numEvals") to store
+        columnwise the (local part of the) computed eigenvectors.
 
       * **resNorms(*)** (*real*) -- (output) array at least of size
         "numEvals" to store the residual norms of the computed
         eigenpairs; all parallel calls return the same value in this
         array.
 
-      * **evecs(*)** (*real*) -- (input/output) array at least of
-        size "nLocal" times "numEvals" to store columnwise the (local
-        part of the) computed eigenvectors.
-
       * **primme** (*ptr*) -- parameters structure.
 
       * **ierr** (*integer*) -- (output) error indicator; see Error
         Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
 
 cprimme_f77
@@ -963,17 +1190,39 @@ cprimme_f77(evals, evecs, resNorms, primme, ierr)
    Solve a Hermitian standard eigenproblem. The arguments have the
    same meaning as in function "sprimme_f77()".
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_cprimme_f77()" for using GPUs).
+
    Parameters:
-      * **evals(*)** (*real*) -- (output)
+      * **evals(*)** (*real*) -- (output) array at least of size
+        "numEvals" to store the computed eigenvalues; all parallel
+        calls return the same value in this array.
 
-      * **resNorms(*)** (*real*) -- (output)
+      * **evecs(*)** (*complex real*) -- (input/output) array at
+        least of size "nLocal" times ("numOrthoConst" + "numEvals") to
+        store columnwise the (local part of the) computed
+        eigenvectors.
 
-      * **evecs(*)** (*complex real*) -- (input/output)
+      * **resNorms(*)** (*real*) -- (output) array at least of size
+        "numEvals" to store the residual norms of the computed
+        eigenpairs; all parallel calls return the same value in this
+        array.
 
       * **primme** (*ptr*) -- (input) parameters structure.
 
       * **ierr** (*integer*) -- (output) error indicator; see Error
         Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
 
 dprimme_f77
@@ -984,24 +1233,39 @@ dprimme_f77(evals, evecs, resNorms, primme, ierr)
    Solve a real symmetric standard eigenproblem using double
    precision.
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_dprimme_f77()" for using GPUs).
+
    Parameters:
       * **evals(*)** (*double precision*) -- (output) array at least
         of size "numEvals" to store the computed eigenvalues; all
         parallel calls return the same value in this array.
+
+      * **evecs(*)** (*double precision*) -- (input/output) array at
+        least of size "nLocal" times ("numOrthoConst" + "numEvals") to
+        store columnwise the (local part of the) computed
+        eigenvectors.
 
       * **resNorms(*)** (*double precision*) -- (output) array at
         least of size "numEvals" to store the residual norms of the
         computed eigenpairs; all parallel calls return the same value
         in this array.
 
-      * **evecs(*)** (*double precision*) -- (input/output) array at
-        least of size "nLocal" times "numEvals" to store columnwise
-        the (local part of the) computed eigenvectors.
-
       * **primme** (*ptr*) -- parameters structure.
 
       * **ierr** (*integer*) -- (output) error indicator; see Error
         Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
 
 zprimme_f77
@@ -1012,17 +1276,384 @@ zprimme_f77(evals, evecs, resNorms, primme, ierr)
    Solve a Hermitian standard eigenproblem. The arguments have the
    same meaning as in function "dprimme_f77()".
 
-   Parameters:
-      * **evals(*)** (*double precision*) -- (output)
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_zprimme_f77()" for using GPUs).
 
-      * **resNorms(*)** (*double precision*) -- (output)
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output) array at least
+        of size "numEvals" to store the computed eigenvalues; all
+        parallel calls return the same value in this array.
 
       * **evecs(*)** (*complex double precision*) -- (input/output)
+        array at least of size "nLocal" times ("numOrthoConst" +
+        "numEvals") to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms(*)** (*double precision*) -- (output) array at
+        least of size "numEvals" to store the residual norms of the
+        computed eigenpairs; all parallel calls return the same value
+        in this array.
+
+      * **primme** (*ptr*) -- parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+magma_sprimme_f77
+=================
+
+magma_sprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a real symmetric standard eigenproblem using single
+   precision.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "sprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **evals(*)** (*real*) -- (output) CPU array at least of size
+        "numEvals" to store the computed eigenvalues; all parallel
+        calls return the same value in this array.
+
+      * **evecs(*)** (*real*) -- (input/output) GPU array at least
+        of size "nLocal" times ("numOrthoConst" + "numEvals") to store
+        columnwise the (local part of the) computed eigenvectors.
+
+      * **resNorms(*)** (*real*) -- (output) CPU array at least of
+        size "numEvals" to store the residual norms of the computed
+        eigenpairs; all parallel calls return the same value in this
+        array.
+
+      * **primme** (*ptr*) -- parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+magma_cprimme_f77
+=================
+
+magma_cprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a Hermitian standard eigenproblem. The arguments have the
+   same meaning as in function "sprimme_f77()".
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "cprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **evals(*)** (*real*) -- (output) CPU array at least of size
+        "numEvals" to store the computed eigenvalues; all parallel
+        calls return the same value in this array.
+
+      * **evecs(*)** (*complex real*) -- (input/output) GPU array at
+        least of size "nLocal" times ("numOrthoConst" + "numEvals") to
+        store columnwise the (local part of the) computed
+        eigenvectors.
+
+      * **resNorms(*)** (*real*) -- (output) CPU array at least of
+        size "numEvals" to store the residual norms of the computed
+        eigenpairs; all parallel calls return the same value in this
+        array.
 
       * **primme** (*ptr*) -- (input) parameters structure.
 
       * **ierr** (*integer*) -- (output) error indicator; see Error
         Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+magma_dprimme_f77
+=================
+
+magma_dprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a real symmetric standard eigenproblem using double
+   precision.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "dprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output) CPU array at
+        least of size "numEvals" to store the computed eigenvalues;
+        all parallel calls return the same value in this array.
+
+      * **evecs(*)** (*double precision*) -- (input/output) GPU
+        array at least of size "nLocal" times ("numOrthoConst" +
+        "numEvals") to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms(*)** (*double precision*) -- (output) CPU array
+        at least of size "numEvals" to store the residual norms of the
+        computed eigenpairs; all parallel calls return the same value
+        in this array.
+
+      * **primme** (*ptr*) -- parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+magma_zprimme_f77
+=================
+
+magma_zprimme_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a Hermitian standard eigenproblem. The arguments have the
+   same meaning as in function "dprimme_f77()".
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "zprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output) CPU array at
+        least of size "numEvals" to store the computed eigenvalues;
+        all parallel calls return the same value in this array.
+
+      * **evecs(*)** (*complex double precision*) -- (input/output)
+        GPU array at least of size "nLocal" times ("numOrthoConst" +
+        "numEvals") to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms(*)** (*double precision*) -- (output) CPU array
+        at least of size "numEvals" to store the residual norms of the
+        computed eigenpairs; all parallel calls return the same value
+        in this array.
+
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+cprimme_normal_f77
+==================
+
+cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a normal standard eigenproblem, which may not be Hermitian.
+
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_cprimme_normal_f77()" for using GPUs).
+
+   Parameters:
+      * **evals(*)** (*real*) -- (output) array at least of size
+        "numEvals" to store the computed eigenvalues; all parallel
+        calls return the same value in this array.
+
+      * **evecs(*)** (*complex real*) -- (input/output) array at
+        least of size "nLocal" times ("numOrthoConst" + "numEvals") to
+        store columnwise the (local part of the) computed
+        eigenvectors.
+
+      * **resNorms(*)** (*real*) -- (output) array at least of size
+        "numEvals" to store the residual norms of the computed
+        eigenpairs; all parallel calls return the same value in this
+        array.
+
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+zprimme_normal_f77
+==================
+
+zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a normal standard eigenproblem, which may not be Hermitian.
+
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_zprimme_normal_f77()" for using GPUs).
+
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output) array at least
+        of size "numEvals" to store the computed eigenvalues; all
+        parallel calls return the same value in this array.
+
+      * **evecs(*)** (*complex double precision*) -- (input/output)
+        array at least of size "nLocal" times ("numOrthoConst" +
+        "numEvals") to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms(*)** (*double precision*) -- (output) array at
+        least of size "numEvals" to store the residual norms of the
+        computed eigenpairs; all parallel calls return the same value
+        in this array.
+
+      * **primme** (*ptr*) -- parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+magma_cprimme_normal_f77
+========================
+
+magma_cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a normal standard eigenproblem, which may not be Hermitian.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "cprimme_normal_f77()" for using
+   only the CPU).
+
+   Parameters:
+      * **evals(*)** (*real*) -- (output) CPU array at least of size
+        "numEvals" to store the computed eigenvalues; all parallel
+        calls return the same value in this array.
+
+      * **evecs(*)** (*complex real*) -- (input/output) GPU array at
+        least of size "nLocal" times ("numOrthoConst" + "numEvals") to
+        store columnwise the (local part of the) computed
+        eigenvectors.
+
+      * **resNorms(*)** (*real*) -- (output) CPU array at least of
+        size "numEvals" to store the residual norms of the computed
+        eigenpairs; all parallel calls return the same value in this
+        array.
+
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
+
+
+magma_zprimme_normal_f77
+========================
+
+magma_zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+
+   Solve a normal standard eigenproblem, which may not be Hermitian.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "zprimme_normal_f77()" for using
+   only the CPU).
+
+   Parameters:
+      * **evals(*)** (*double precision*) -- (output) CPU array at
+        least of size "numEvals" to store the computed eigenvalues;
+        all parallel calls return the same value in this array.
+
+      * **evecs(*)** (*complex double precision*) -- (input/output)
+        GPU array at least of size "nLocal" times ("numOrthoConst" +
+        "numEvals") to store columnwise the (local part of the)
+        computed eigenvectors.
+
+      * **resNorms(*)** (*double precision*) -- (output) CPU array
+        at least of size "numEvals" to store the residual norms of the
+        computed eigenpairs; all parallel calls return the same value
+        in this array.
+
+      * **primme** (*ptr*) -- (input) parameters structure.
+
+      * **ierr** (*integer*) -- (output) error indicator; see Error
+        Codes.
+
+   On input, "evecs" should start with the content of the
+   "numOrthoConst" vectors, followed by the "initSize" vectors.
+
+   On return, the i-th eigenvector starts at evecs(( "numOrthoConst" +
+   i - 1)* "nLocal" + 1). The first vector has index i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *evecs*. See details for "matrixMatvec",
+   "massMatrixMatvec", "applyPreconditioner", "globalSumReal",
+   "broadcastReal", and "convTestFun".
 
 
 primme_set_member_f77
@@ -1041,12 +1672,19 @@ primme_set_member_f77(primme, label, value)
 
            "PRIMME_n"
            "PRIMME_matrixMatvec"
+           "PRIMME_matrixMatvec_type"
            "PRIMME_applyPreconditioner"
+           "PRIMME_applyPreconditioner_type"
+           "PRIMME_massMatrixMatvec"
+           "PRIMME_massMatrixMatvec_type"
            "PRIMME_numProcs"
            "PRIMME_procID"
            "PRIMME_commInfo"
            "PRIMME_nLocal"
            "PRIMME_globalSumReal"
+           "PRIMME_globalSumReal_type"
+           "PRIMME_broadcastReal"
+           "PRIMME_broadcastReal_type"
            "PRIMME_numEvals"
            "PRIMME_target"
            "PRIMME_numTargetShifts"
@@ -1059,18 +1697,20 @@ primme_set_member_f77(primme, label, value)
            "PRIMME_maxBlockSize"
            "PRIMME_maxMatvecs"
            "PRIMME_maxOuterIterations"
-           "PRIMME_intWorkSize"
-           "PRIMME_realWorkSize"
            "PRIMME_iseed"
-           "PRIMME_intWork"
-           "PRIMME_realWork"
            "PRIMME_aNorm"
+           "PRIMME_BNorm"
+           "PRIMME_invBNorm"
            "PRIMME_eps"
+           "PRIMME_orth"
+           "PRIMME_internalPrecision"
            "PRIMME_printLevel"
            "PRIMME_outputFile"
            "PRIMME_matrix"
+           "PRIMME_massMatrix"
            "PRIMME_preconditioner"
-           "PRIMME_restartingParams_scheme".
+           "PRIMME_initBasisMode"
+           "PRIMME_projectionParams_projection"
            "PRIMME_restartingParams_maxPrevRetain"
            "PRIMME_correctionParams_precondition"
            "PRIMME_correctionParams_robustShifts"
@@ -1087,9 +1727,36 @@ primme_set_member_f77(primme, label, value)
            "PRIMME_stats_numRestarts"
            "PRIMME_stats_numMatvecs"
            "PRIMME_stats_numPreconds"
+           "PRIMME_stats_numGlobalSum"
+           "PRIMME_stats_volumeGlobalSum"
+           "PRIMME_stats_numBroadcast"
+           "PRIMME_stats_volumeBroadcast"
+           "PRIMME_stats_flopsDense"
+           "PRIMME_stats_numOrthoInnerProds"
            "PRIMME_stats_elapsedTime"
+           "PRIMME_stats_timeMatvec"
+           "PRIMME_stats_timePrecond"
+           "PRIMME_stats_timeOrtho"
+           "PRIMME_stats_timeGlobalSum"
+           "PRIMME_stats_timeBroadcast"
+           "PRIMME_stats_timeDense"
+           "PRIMME_stats_estimateMinEVal"
+           "PRIMME_stats_estimateMaxEVal"
+           "PRIMME_stats_estimateLargestSVal"
+           "PRIMME_stats_estimateBNorm"
+           "PRIMME_stats_estimateInvBNorm"
+           "PRIMME_stats_maxConvTol"
+           "PRIMME_stats_lockingIssue"
            "PRIMME_dynamicMethodSwitch"
-           "PRIMME_massMatrixMatvec"
+           "PRIMME_convTestFun"
+           "PRIMME_convTestFun_type"
+           "PRIMME_convtest"
+           "PRIMME_ldevecs"
+           "PRIMME_ldOPs"
+           "PRIMME_monitorFun"
+           "PRIMME_monitorFun_type"
+           "PRIMME_monitor"
+           "PRIMME_queue"
 
       * **value** --
 
@@ -1131,9 +1798,8 @@ primmetop_get_member_f77(primme, label, value)
      "primme_get_member_f77()".
 
    Note: When "label" is one of "PRIMME_matrixMatvec",
-     "PRIMME_applyPreconditioner", "PRIMME_commInfo",
-     "PRIMME_intWork", "PRIMME_realWork", "PRIMME_matrix" and
-     "PRIMME_preconditioner", the returned "value" is a C pointer
+     "PRIMME_applyPreconditioner", "PRIMME_commInfo", "PRIMME_matrix"
+     and "PRIMME_preconditioner", the returned "value" is a C pointer
      ("void*"). Use Fortran pointer or other extensions to deal with
      it. For instance:
 
@@ -1202,9 +1868,8 @@ primme_get_member_f77(primme, label, value)
      main program, use the function "primmetop_get_member_f77()".
 
    Note: When "label" is one of "PRIMME_matrixMatvec",
-     "PRIMME_applyPreconditioner", "PRIMME_commInfo",
-     "PRIMME_intWork", "PRIMME_realWork", "PRIMME_matrix" and
-     "PRIMME_preconditioner", the returned "value" is a C pointer
+     "PRIMME_applyPreconditioner", "PRIMME_commInfo", "PRIMME_matrix"
+     and "PRIMME_preconditioner", the returned "value" is a C pointer
      ("void*"). Use Fortran pointer or other extensions to deal with
      it. For instance:
 
@@ -1266,6 +1931,17 @@ PRIMME_INT
    The integer size is controlled by the compilation flag
    "PRIMME_INT_SIZE", see Making and Linking.
 
+PRIMME_HALF
+
+   Macro that is "__fp16" if half precision is supported by the
+   compiler. Otherwise it is a struct with the same size as "int
+   short".
+
+PRIMME_COMPLEX_HALF
+
+   Macro that is a struct with fields "r" and "i" with type
+   "PRIMME_HALF".
+
 PRIMME_COMPLEX_FLOAT
 
    Macro that is "complex float" in C and "std::complex<float>" in
@@ -1316,10 +1992,9 @@ primme_params
          * **ierr** -- output error code; if it is set to non-zero,
            the current call to PRIMME will stop.
 
-      The actual type of "x" and "y" depends on which function is
-      being calling. For "dprimme()", it is "double", for "zprimme()"
-      it is "PRIMME_COMPLEX_DOUBLE", for "sprimme()" it is "float" and
-      for "cprimme()" it is "PRIMME_COMPLEX_FLOAT".
+      The actual type of "x" and "y" matches the type of "evecs" of
+      the calling  "dprimme()" (or a variant), unless
+      "matrixMatvec_type" sets another precision.
 
       Input/output:
 
@@ -1329,17 +2004,71 @@ primme_params
    Note: If you have performance issues with leading dimension
      different from "nLocal", set "ldOPs" to "nLocal".
 
+   primme_op_datatype matrixMatvec_type
+
+      Precision of the vectors "x" and "y" passed to "matrixMatvec".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme()" (or a variant). Otherwise, the precision is
+      half, single, or double, if "matrixMatvec_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
+
    void (*applyPreconditioner)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block preconditioner-multivector application, y = M^{-1}x where
       M is usually an approximation of A - \sigma I or A - \sigma B
-      for finding eigenvalues close to \sigma. The function follows
-      the convention of "matrixMatvec".
+      for finding eigenvalues close to \sigma.
+
+      Parameters:
+         * **x** -- matrix of size "nLocal" x "blockSize" in column-
+           major order with leading dimension "ldx".
+
+         * **ldx** -- the leading dimension of the array "x".
+
+         * **y** -- matrix of size "nLocal" x "blockSize" in column-
+           major order with leading dimension "ldy".
+
+         * **ldy** -- the leading dimension of the array "y".
+
+         * **blockSize** -- number of columns in "x" and "y".
+
+         * **primme** -- parameters structure.
+
+         * **ierr** -- output error code; if it is set to non-zero,
+           the current call to PRIMME will stop.
+
+      The actual type of "x" and "y" matches the type of "evecs" of
+      the calling  "dprimme()" (or a variant), unless
+      "applyPreconditioner_type" sets another precision.
 
       Input/output:
 
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme()".
+
+   primme_op_datatype applyPreconditioner_type
+
+      Precision of the vectors "x" and "y" passed to
+      "applyPreconditioner".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme()" (or a variant). Otherwise, the precision is
+      half, single, or double, if "applyPreconditioner_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
 
    void (*massMatrixMatvec)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
@@ -1352,8 +2081,22 @@ primme_params
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme()".
 
-      Warning: Generalized eigenproblems not implemented in current
-        version. This member is included for future compatibility.
+   primme_op_datatype massMatrixMatvec_type
+
+      Precision of the vectors "x" and "y" passed to
+      "massMatrixMatvec".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme()" (or a variant). Otherwise, the precision is
+      half, single, or double, if "massMatrixMatvec_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
 
    int numProcs
 
@@ -1420,10 +2163,11 @@ primme_params
          * **ierr** -- output error code; if it is set to non-zero,
            the current call to PRIMME will stop.
 
-      The actual type of "sendBuf" and "recvBuf" depends on which
-      function is being calling. For "dprimme()" and "zprimme()" it is
-      "double", and for "sprimme()" and  "cprimme()" it is "float".
-      Note that "count" is the number of values of the actual type.
+      The actual type of "sendBuf" and "recvBuf" matches the type of
+      "evecs" of the calling  "dprimme()" (or a variant), unless
+      "globalSumReal_type" sets another precision.
+
+      Note that "count" is the number of values of the real type.
 
       Input/output:
 
@@ -1437,23 +2181,37 @@ primme_params
          void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count,
                                   primme_params *primme, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-            if(MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator) == MPI_SUCCESS) {
-               *ierr = 0;
+            if (sendBuf == recvBuf) {
+              *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             } else {
-               *ierr = 1;
+              *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             }
          }
-
-      }
 
       When calling "sprimme()" and "cprimme()" replace "MPI_DOUBLE" by
       "`MPI_FLOAT".
 
+   primme_op_datatype globalSumReal_type
+
+      Precision of the vectors "sendBuf" and "recvBuf" passed to
+      "globalSumReal".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme()" (or a variant). Otherwise, the precision is
+      half, single, or double, if "globalSumReal_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
+
    void (*broadcastReal)(void *buffer, int *count, primme_params *primme, int *ierr)
 
       Broadcast function from process with ID zero. It is optional in
-      parallel executions, and no need for sequential programs.
+      parallel executions, and not needed for sequential programs.
 
       Parameters:
          * **buffer** -- array of size "count" with the local input
@@ -1466,10 +2224,9 @@ primme_params
          * **ierr** -- output error code; if it is set to non-zero,
            the current call to PRIMME will stop.
 
-      The actual type of "buffer" depends on which function is being
-      calling. For "dprimme()" and "zprimme()" it is "double", and for
-      "sprimme()" and  "cprimme()" it is "float". Note that "count" is
-      the number of values of the actual type.
+      The actual type of "buffer" matches the type of "evecs" of the
+      calling  "dprimme()" (or a variant), unless "globalSumReal_type"
+      sets another precision.
 
       Input/output:
 
@@ -1492,6 +2249,38 @@ primme_params
 
       When calling "sprimme()" and "cprimme()" replace "MPI_DOUBLE" by
       "`MPI_FLOAT".
+
+   primme_op_datatype broadcastReal_type
+
+      Precision of the vector "buffer`" passed to "broadcastReal".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme()" (or a variant). Otherwise, the precision is
+      half, single, or double, if "broadcastReal_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
+
+   primme_op_datatype internalPrecision
+
+      Internal working precision.
+
+      If it is "primme_op_default", most of the vectors are stored
+      with the same precision as the calling "dprimme()" (or a
+      variant), and most of the computations are done in that
+      precision too. Otherwise, the working precision is changed to
+      half, single, or double, if "internalPrecision" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme()".
 
    int numEvals
 
@@ -1660,12 +2449,70 @@ primme_params
             "primme_initialize()" sets this field to 0.0;
             this field is read and written by "dprimme()".
 
+   double BNorm
+
+      An estimate of the norm of B, which is used to estimate the
+      conditioning number of the matrix B.
+
+      If "BNorm" is less than or equal to 0, the code uses the largest
+      absolute Ritz value seen. On return, "BNorm" is then replaced
+      with that value.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0.0;
+            this field is read and written by "dprimme()".
+
+   double invBNorm
+
+      An estimate of the norm of B, which is used in the default
+      convergence criterion (see "eps").
+
+      If "BNorm" is less than or equal to 0, the code uses the largest
+      absolute Ritz value seen. On return, "BNorm" is then replaced
+      with that value.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0.0;
+            this field is read and written by "dprimme()".
+
+   primme_orth orth
+
+      Selects the orthogonalization method used by PRIMME.
+
+      If the value is "primme_orth_implicit_I", the bases are
+      orthogonalized with classical Gram-Schmidt with
+      reorthogonalization stopping when the new vector's norm is not
+      reduced more than 1/sqrt{2} (Daniel's test) from the previous
+      iteration. If several vectors are going to be orthogonalize, the
+      algorithm is applied vector by vector.
+
+      If the value is "primme_orth_explicit_I", the bases are
+      orthogonalized with iterative Cholesky QR (or SVQB if Cholesky
+      factorization fails), stopping when the conditioning of the
+      basis is around sqrt(3). That deviation of the orthogonality
+      level is taken into account in the Galerkin method.
+
+      The option "primme_orth_explicit_I" is usually more expensive in
+      FLOPS, but it may be faster in time than
+      "primme_orth_implicit_I" when "maxBlockSize" is large.
+
+      "primme_orth_explicit_I" is set by default if the precision is
+      larger than single precision and "maxBlockSize" is 1. Otherwise,
+      "primme_orth_explicit_I" is set by default.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to "primme_orth_default";
+            this field is read and written by "dprimme()".
+
    double eps
 
       If "convTestFun" is NULL, an eigenpairs is marked as converged
       when the 2-norm of the residual vector is less than "eps" *
-      "aNorm". The residual vector is A x - \lambda x or A x - \lambda
-      B x.
+      "aNorm" * "invBNorm". The residual vector is A x - \lambda x or
+      A x - \lambda B x.
 
       The default value is machine precision times 10^4.
 
@@ -1832,75 +2679,6 @@ primme_params
             "primme_initialize()" sets this field to "INT_MAX";
             this field is read by "dprimme()".
 
-   int intWorkSize
-
-      If "dprimme()" or "zprimme()" is called with all arguments as
-      NULL except for "primme_params" then PRIMME returns immediately
-      with "intWorkSize" containing the size *in bytes* of the integer
-      workspace that will be required by the parameters set in PRIMME.
-
-      Otherwise if "intWorkSize" is not 0, it should be the size of
-      the integer work array *in bytes* that the user provides in
-      "intWork". If "intWorkSize" is 0, the code will allocate the
-      required space, which can be freed later by calling
-      "primme_free()".
-
-      Input/output:
-
-            "primme_initialize()" sets this field to 0;
-            this field is read and written by "dprimme()".
-
-   size_t realWorkSize
-
-      If "dprimme()" or "zprimme()" is called with all arguments as
-      NULL except for "primme_params" then PRIMME returns immediately
-      with "realWorkSize" containing the size *in bytes* of the real
-      workspace that will be required by the parameters set in PRIMME.
-
-      Otherwise if "realWorkSize" is not 0, it should be the size of
-      the real work array *in bytes* that the user provides in
-      "realWork". If "realWorkSize" is 0, the code will allocate the
-      required space, which can be freed later by calling
-      "primme_free()".
-
-      Input/output:
-
-            "primme_initialize()" sets this field to 0;
-            this field is read and written by "dprimme()".
-
-   int *intWork
-
-      Integer work array.
-
-      If NULL, the code will allocate its own workspace. If the
-      provided space is not enough, the code will return the error
-      code "-37".
-
-      On exit, the first element shows if a locking problem has
-      occurred. Using locking for large "numEvals" may, in some rare
-      cases, cause some pairs to be practically converged, in the
-      sense that their components are in the basis of "evecs". If this
-      is the case, a Rayleigh Ritz on returned "evecs" would provide
-      the accurate eigenvectors (see [r4]).
-
-      Input/output:
-
-            "primme_initialize()" sets this field to NULL;
-            this field is read and written by "dprimme()".
-
-   void *realWork
-
-      Real work array.
-
-      If NULL, the code will allocate its own workspace. If the
-      provided space is not enough, the code will return the error
-      code "-36".
-
-      Input/output:
-
-            "primme_initialize()" sets this field to NULL;
-            this field is read and written by "dprimme()".
-
    PRIMME_INT iseed
 
       The "PRIMME_INT iseed[4]" is an array with the seeds needed by
@@ -1920,6 +2698,15 @@ primme_params
 
       This field may be used to pass any required information in the
       matrix-vector product "matrixMatvec".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to NULL;
+
+   void *massMatrix
+
+      This field may be used to pass any required information in the
+      matrix-vector product "massMatrixMatvec".
 
       Input/output:
 
@@ -1991,22 +2778,6 @@ primme_params
 
             "primme_initialize()" sets this field to "primme_proj_default";
             "primme_set_method()" and "dprimme()" sets it to "primme_proj_RR" if it is "primme_proj_default".
-
-   primme_restartscheme restartingParams.scheme
-
-      Select a restarting strategy:
-
-      * "primme_thick", Thick restarting. This is the most efficient
-        and robust in the general case.
-
-      * "primme_dtr", Dynamic thick restarting. Helpful without
-        preconditioning but it is expensive to implement.
-
-      Input/output:
-
-            "primme_initialize()" sets this field to "primme_thick";
-            written by "primme_set_method()" (see Preset Methods);
-            this field is read by "dprimme()".
 
    int restartingParams.maxPrevRetain
 
@@ -2418,6 +3189,37 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
+   PRIMME_INT stats.numBroadcast
+
+      Hold how many times "broadcastReal" has been called. The value
+      is available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.volumeBroadcast
+
+      Hold how many "REAL" have been broadcast by "broadcastReal". The
+      value is available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   PRIMME_INT stats.numOrthoInnerProds
+
+      Hold how many inner products with vectors of length "nLocal"
+      have been computed during orthogonalization. The value is
+      available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
    double stats.elapsedTime
 
       Hold the wall clock time spent by the call to "dprimme()" or
@@ -2468,6 +3270,16 @@ primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
+   double stats.timeBroadcast
+
+      Hold the wall clock time spent by "broadcastReal". The value is
+      available at the end of the execution.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
    double stats.estimateMinEVal
 
       Hold the estimation of the smallest eigenvalue for the current
@@ -2506,6 +3318,17 @@ primme_params
 
       Hold the maximum residual norm of the converged eigenvectors.
       The value is available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   PRIMME_INT stats.lockingIssue
+
+      It is set to a nonzero value if some of the returned eigenpairs
+      do not pass the convergence criterion. See "convTestFun" and
+      "eps".
 
       Input/output:
 
@@ -2758,8 +3581,6 @@ primme_preset_method
 
       * "maxBlockSize" = "numEvals";
 
-      * "scheme"  = "primme_thick";
-
       * "maxPrevRetain"      = 0;
 
       * "robustShifts"       = 0;
@@ -2784,8 +3605,6 @@ primme_preset_method
 
       * "maxBlockSize" = "numEvals";
 
-      * "scheme"  = "primme_thick";
-
       * "maxPrevRetain"      = "numEvals";
 
       * "robustShifts"       = 0;
@@ -2808,8 +3627,6 @@ primme_preset_method
       * "maxBasisSize" = "maxBlockSize" * 3;
 
       * "minRestartSize" = "maxBlockSize";
-
-      * "scheme"  = "primme_thick";
 
       * "maxPrevRetain"      = "maxBlockSize";
 
@@ -2880,7 +3697,7 @@ values:
 
 * -20: if "maxPrevRetain" < 0.
 
-* -21: if "scheme" is not one of *primme_thick* or *primme_dtr*.
+* -21: deprecated
 
 * -22: if "initSize" < 0.
 
@@ -2913,9 +3730,9 @@ values:
 
 * -35: if "ldOPs" is not zero and less than "nLocal".
 
-* -36: not enough memory for "realWork".
+* -36: deprecated.
 
-* -37: not enough memory for "intWork".
+* -37: deprecated.
 
 * -38: if "locking" == 0 and "target" is "primme_closest_leq" or
   "primme_closest_geq".
@@ -2923,7 +3740,7 @@ values:
 Python Interface
 ****************
 
-Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', ortho=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_history=False, **kargs)
+primme.eigsh()
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -2965,7 +3782,8 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **ncv** (*int**, **optional*) -- The maximum size of the
         basis
 
-      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA'**]*) --
+      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA' | number**]*)
+        --
 
         Which *k* eigenvectors and eigenvalues to find:
 
@@ -2983,15 +3801,23 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
            'CGT' : closest but greater than sigma
 
+           number : the closest to which
+
         When sigma == None, 'LM', 'SM', 'CLT', and 'CGT' treat sigma
         as zero.
 
       * **maxiter** (*int**, **optional*) -- Maximum number of
         iterations.
 
-      * **tol** (*float*) -- Required accuracy for eigenpairs
-        (stopping criterion). The default value is sqrt of machine
-        precision.
+      * **tol** (*float*) --
+
+        Tolerance for eigenpairs (stopping criterion). The default
+        value is sqrt of machine precision.
+
+        An eigenpair "(lamba,v)" is marked as converged when ||A*v -
+        lambda*B*v|| < max(>>|eig(A,B)|<<)*tol.
+
+        The value is ignored if convtest is provided.
 
       * **Minv** (*(**not supported yet**)*) -- The inverse of M in
         the generalized eigenproblem.
@@ -3007,7 +3833,7 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*)
         -- Only 'normal' mode is supported.
 
-      * **ortho** (*N x i**, **ndarray**, **optional*) -- Seek the
+      * **lock** (*N x i**, **ndarray**, **optional*) -- Seek the
         eigenvectors orthogonal to these ones. The provided vectors
         *should* be orthonormal. Useful to avoid converging to
         previously computed solutions.
@@ -3035,6 +3861,15 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
         See a detailed description of the methods and other possible
         values in [2].
+
+      * **convtest** (*callable*) --
+
+        User-defined function to mark an approximate eigenpair as
+        converged.
+
+        The function is called as convtest(eval, evec, resNorm) and
+        returns True if the eigenpair with value *eval*, vector *evec*
+        and residual norm *resNorm* is considered converged.
 
       * **return_stats** (*bool**, **optional*) -- If True, the
         function returns extra information (see stats in Returns).
@@ -3096,7 +3931,7 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         eigenvalues and eigenvectors for a general (nonsymmetric)
         matrix A
 
-     "Primme.svds()"
+     "primme.svds()"
         singular value decomposition for a matrix A
 
    -[ Notes ]-
@@ -3119,14 +3954,14 @@ Primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
    -[ Examples ]-
 
-   >>> import Primme, scipy.sparse
+   >>> import primme, scipy.sparse
    >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
-   >>> evals, evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA')
+   >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
    >>> evals # the three largest eigenvalues of A
-   array([ 99.,  98.,  97.])
-   >>> new_evals, new_evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', ortho=evecs)
+   array([99., 98., 97.])
+   >>> new_evals, new_evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
    >>> new_evals # the next three largest eigenvalues
-   array([ 96.,  95.,  94.])
+   array([96., 95., 94.])
 
 MATLAB Interface
 ****************
@@ -3134,22 +3969,25 @@ MATLAB Interface
 function [varargout] = primme_eigs(varargin)
 
    "primme_eigs()" finds a few eigenvalues and their corresponding
-   eigenvectors of a real symmetric or Hermitian matrix, "A", by
-   calling PRIMME.
+   eigenvectors of a symmetric/Hermitian matrix, "A", or of a
+   generalized problem "(A,B)", by calling PRIMME.
 
    "D = primme_eigs(A)" returns a vector of "A"'s 6 largest magnitude
    eigenvalues.
 
-   "D = primme_eigs(Afun,dim)" accepts a function "Afun" instead of a
-   matrix. "Afun" is a function handle and "y = Afun(x)" returns the
-   matrix-vector product "A*x". In all the following syntaxes, "A" can
-   be replaced by "Afun, dim".
+   "D = primme_eigs(A,B)" returns a vector of the 6 largest magnitude
+   eigenvalues of "(A,B)"
 
-   "D = primme_eigs(A,k)" finds the "k" largest magnitude eigenvalues.
-   "k" must be less than the dimension of the matrix "A".
+   "D = primme_eigs(Afun,Bfun,dim)" "D = primme_eigs(Afun,dim)"
+   accepts a functions "Afun" and "Bfun" instead of matrices. "Afun"
+   and "Bfun" are function handles. "Afun(x)" and "Bfun(x)" return the
+   matrix-vector product "A*x" and "B*x".
 
-   "D = primme_eigs(A,k,target)" returns "k" eigenvalues such that: If
-   "target" is a real number, it finds the closest eigenvalues to
+   "D = primme_eigs(...,k)" finds the "k" largest magnitude
+   eigenvalues. "k" must be less than the dimension of the matrix "A".
+
+   "D = primme_eigs(...,k,target)" returns "k" eigenvalues such that:
+   If "target" is a real number, it finds the closest eigenvalues to
    "target". If "target" is
 
       * "'LA'" or "'SA'", eigenvalues with the largest or smallest
@@ -3176,7 +4014,7 @@ function [varargout] = primme_eigs(varargin)
       * "'CLT'" or "'CGT'", find eigenvalues closest to but less or
         greater than the given values in "OPTS.targetShifts".
 
-   "D = primme_eigs(A,k,target,OPTS)" specifies extra solver
+   "D = primme_eigs(...,k,target,OPTS)" specifies extra solver
    parameters. Some default values are indicated in brackets {}:
 
       * "aNorm": the estimated 2-norm of A {0.0 (estimate the norm
@@ -3191,8 +4029,21 @@ function [varargout] = primme_eigs(varargin)
       * "disp": different level reporting (0-3) (see HIST) {no
         output 0}
 
+      * "display": toggle information display (see HIST)
+
       * "isreal": whether A represented by "Afun" is real or complex
         {false}
+
+      * "isdouble": whether the class of in/out vectors in "Afun"
+        are
+
+           double or single {false}
+
+      * "isgpu": whether the class of in/out vectors in "Afun" are
+        "gpuArray" {false}
+
+      * "ishermitian": whether "A" is Hermitian; otherwise it is
+        considered normal {true}
 
       * "targetShifts": shifts for interior eigenvalues (see
         "target") {[]}
@@ -3215,8 +4066,6 @@ function [varargout] = primme_eigs(varargin)
 
       * "maxit": maximum number of outer iterations (see
         "maxOuterIterations") {Inf}
-
-      * "scheme": the restart scheme {'primme_thick'}
 
       * "maxPrevRetain": number of Ritz vectors from previous
         iteration that are kept after restart {typically >0}
@@ -3360,6 +4209,9 @@ function [varargout] = primme_eigs(varargin)
       d = primme_eigs(A,10,'SM',opts) % 1 eigenvalue closest to 2 and
                                       % 9 eigenvalues closest to 20
 
+      B = diag(100:-1:1);
+      d = primme_eigs(A,B,10,'SM') % the 10 smallest magnitude eigenvalues
+
       opts = struct();
       opts.tol = 1e-4; % set tolerance
       opts.maxBlockSize = 2; % set block size
@@ -3387,6 +4239,8 @@ Singular Value Problems
 * C Library Interface
 
 * FORTRAN Library Interface
+
+* FORTRAN 90 Library Interface
 
 * Python Interface
 
@@ -3526,11 +4380,7 @@ which has the next fields:
    int numOrthoConst;   // orthogonal constrains to the vectors
    int locking;
    PRIMME_INT maxMatvecs;
-   int intWorkSize;
-   size_t realWorkSize;
    PRIMME_INT iseed[4];
-   int *intWork;
-   void *realWork;
    double aNorm;
    int printLevel;
    FILE * outputFile;
@@ -3540,6 +4390,11 @@ which has the next fields:
    primme_params primmeStage2;
    void (*convTestFun)(...); // custom convergence criterion
    void (*monitorFun)(...); // custom convergence history
+   primme_op_datatype matrixMatvec_type;
+   primme_op_datatype applyPreconditioner_type;
+   primme_op_datatype globalSumReal_type;
+   primme_op_datatype broadcastReal_type;
+   primme_op_datatype internalPrecision;
 
 PRIMME SVDS requires the user to set at least the matrix dimensions
 ("m" x "n") and the matrix-vector product ("matrixMatvec"), as they
@@ -3565,63 +4420,39 @@ Interface Description
 The next enumerations and functions are declared in "primme.h".
 
 
-sprimme_svds
+?primme_svds
 ------------
+
+int hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+
+int kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
 
 int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
 
-   Solve a real singular value problem.
-
-   Parameters:
-      * **svals** -- array at least of size "numSvals" to store the
-        computed singular values; all processes in a parallel run
-        return this local array with the same values.
-
-      * **resNorms** -- array at least of size "numSvals" to store
-        the residual norms of the computed triplets; all processes in
-        parallel run return this local array with the same values.
-
-      * **svecs** -- array at least of size ("mLocal" + "nLocal")
-        times "numSvals" to store columnwise the (local part of the)
-        computed left singular vectors and the right singular vectors.
-
-      * **primme_svds** -- parameters structure.
-
-   Returns:
-      error indicator; see Error Codes.
-
-   On input, "svecs" should start with the content of the
-   "numOrthoConst" left vectors, followed by the "initSize" left
-   vectors, followed by the "numOrthoConst" right vectors and followed
-   by the "initSize" right vectors. The i-th left vector starts at
-   svecs[i* "mLocal" ]. The i-th right vector starts at svecs[(
-   "numOrthoConst" + "initSize" )* "mLocal" + i* "nLocal" ].
-
-   On return, the i-th left singular vector starts at svecs[(
-   "numOrthoConst" +i)* "mLocal" ]. The i-th right singular vector
-   starts at svecs[( "numOrthoConst" + "initSize" )* "mLocal" + (
-   "numOrthoConst" +i)* "nLocal" ]. The first vector has i=0.
-
-
-dprimme_svds
-------------
+int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
 
 int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
 
+int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
+
    Solve a real singular value problem.
+
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_dprimme_svds()" for using GPUs).
 
    Parameters:
       * **svals** -- array at least of size "numSvals" to store the
         computed singular values; all processes in a parallel run
         return this local array with the same values.
 
+      * **svecs** -- array at least of size ("mLocal" + "nLocal")
+        times ("numOrthoConst" + "numSvals") to store columnwise the
+        (local part of the) computed left singular vectors and the
+        right singular vectors.
+
       * **resNorms** -- array at least of size "numSvals" to store
         the residual norms of the computed triplets; all processes in
         parallel run return this local array with the same values.
-
-      * **svecs** -- array at least of size ("mLocal" + "nLocal")
-        times "numSvals" to store columnwise the (local part of the)
-        computed left singular vectors and the right singular vectors.
 
       * **primme_svds** -- parameters structure.
 
@@ -3630,33 +4461,75 @@ int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_
 
    On input, "svecs" should start with the content of the
    "numOrthoConst" left vectors, followed by the "initSize" left
-   vectors, followed by the "numOrthoConst" right vectors and followed
-   by the "initSize" right vectors. The i-th left vector starts at
-   svecs[i* "mLocal" ]. The i-th right vector starts at svecs[(
-   "numOrthoConst" + "initSize" )* "mLocal" + i* "nLocal" ].
+   vectors, followed by the "numOrthoConst" right vectors, and
+   followed by the "initSize" right vectors.
 
    On return, the i-th left singular vector starts at svecs[(
    "numOrthoConst" +i)* "mLocal" ]. The i-th right singular vector
    starts at svecs[( "numOrthoConst" + "initSize" )* "mLocal" + (
    "numOrthoConst" +i)* "nLocal" ]. The first vector has i=0.
 
-
-cprimme_svds
-------------
-
-int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
-
-   Solve a complex singular value problem; see function
-   "dprimme_svds()".
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
 
 
-zprimme_svds
-------------
+*magma_?primme_svds*
+--------------------
 
-int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
+int magma_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
 
-   Solve a complex singular value problem; see function
-   "dprimme_svds()".
+int magma_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+
+int magma_sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+int magma_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+int magma_dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
+
+int magma_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
+
+   Solve a real singular value problem.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "dprimme()" for using only the
+   CPU).
+
+   Parameters:
+      * **svals** -- CPU array at least of size "numSvals" to store
+        the computed singular values; all processes in a parallel run
+        return this local array with the same values.
+
+      * **svecs** -- GPU array at least of size ("mLocal" +
+        "nLocal") times ("numOrthoConst" + "numSvals") to store
+        columnwise the (local part of the) computed left singular
+        vectors and the right singular vectors.
+
+      * **resNorms** -- CPU array at least of size "numSvals" to
+        store the residual norms of the computed triplets; all
+        processes in parallel run return this local array with the
+        same values.
+
+      * **primme_svds** -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors, and
+   followed by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs[(
+   "numOrthoConst" +i)* "mLocal" ]. The i-th right singular vector
+   starts at svecs[( "numOrthoConst" + "initSize" )* "mLocal" + (
+   "numOrthoConst" +i)* "nLocal" ]. The first vector has i=0.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
 
 
 primme_svds_initialize
@@ -3668,6 +4541,21 @@ void primme_svds_initialize(primme_svds_params *primme_svds)
 
    Parameters:
       * **primme_svds** -- parameters structure.
+
+
+primme_svds_create
+------------------
+
+primme_svds_params* primme_svds_create()
+
+   Allocate and initialize a parameters structure to the default
+   values.
+
+   Eventually call "primme_svds_params_destroy()" to release allocated
+   resources by PRIMME.
+
+   Parameters:
+      * **primme_sv** -- parameters structure.
 
 
 primme_svds_set_method
@@ -3733,6 +4621,21 @@ void primme_svds_free(primme_svds_params *primme_svds)
    Parameters:
       * **primme_svds** -- parameters structure.
 
+
+primme_svds_params_destroy
+--------------------------
+
+int primme_svds_params_destroy(primme_svds_params *primme)
+
+   Free memory allocated by PRIMME associated to a parameters
+   structure created with "primme_svds_params_create()".
+
+   Parameters:
+      * **primme_svds** -- parameters structure.
+
+   Returns:
+      nonzero value if the call is not successful.
+
 FORTRAN Library Interface
 *************************
 
@@ -3747,26 +4650,44 @@ sprimme_svds_f77(svals, svecs, resNorms, primme_svds)
 
    Solve a real singular value problem using single precision.
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_sprimme_f77()" for using GPUs).
+
    Parameters:
       * **svals(*)** (*real*) -- (output) array at least of size
         "numSvals" to store the computed singular values; all
         processes in a parallel run return this local array with the
         same values.
 
+      * **svecs(*)** (*real*) -- array at least of size ("mLocal" +
+        "nLocal") times ("numOrthoConst" + "numSvals") to store
+        columnwise the (local part of the) computed left singular
+        vectors and the right singular vectors.
+
       * **resNorms(*)** (*real*) -- array at least of size
         "numSvals" to store the residual norms of the computed
         triplets; all processes in parallel run return this local
         array with the same values.
 
-      * **svecs(*)** (*real*) -- array at least of size ("mLocal" +
-        "nLocal") times "numSvals" to store columnwise the (local part
-        of the) computed left singular vectors and the right singular
-        vectors.
-
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
       error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
 
 
 cprimme_svds_f77
@@ -3776,26 +4697,44 @@ cprimme_svds_f77(svals, svecs, resNorms, primme_svds)
 
    Solve a complex singular value problem using single precision.
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_cprimme_f77()" for using GPUs).
+
    Parameters:
       * **svals(*)** (*real*) -- (output) array at least of size
         "numSvals" to store the computed singular values; all
         processes in a parallel run return this local array with the
         same values.
 
+      * **svecs(*)** (*complex*) -- array at least of size ("mLocal"
+        + "nLocal") times ("numOrthoConst" + "numSvals") to store
+        columnwise the (local part of the) computed left singular
+        vectors and the right singular vectors.
+
       * **resNorms(*)** (*real*) -- array at least of size
         "numSvals" to store the residual norms of the computed
         triplets; all processes in parallel run return this local
         array with the same values.
 
-      * **svecs(*)** (*complex*) -- array at least of size ("mLocal"
-        + "nLocal") times "numSvals" to store columnwise the (local
-        part of the) computed left singular vectors and the right
-        singular vectors.
-
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
       error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
 
 
 dprimme_svds_f77
@@ -3805,26 +4744,44 @@ dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
 
    Solve a real singular value problem using double precision.
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_dprimme_f77()" for using GPUs).
+
    Parameters:
       * **svals(*)** (*double precision*) -- (output) array at least
         of size "numSvals" to store the computed singular values; all
         processes in a parallel run return this local array with the
         same values.
 
+      * **svecs(*)** (*double precision*) -- array at least of size
+        ("mLocal" + "nLocal") times ("numOrthoConst" + "numSvals") to
+        store columnwise the (local part of the) computed left
+        singular vectors and the right singular vectors.
+
       * **resNorms(*)** (*double precision*) -- array at least of
         size "numSvals" to store the residual norms of the computed
         triplets; all processes in parallel run return this local
         array with the same values.
 
-      * **svecs(*)** (*double precision*) -- array at least of size
-        ("mLocal" + "nLocal") times "numSvals" to store columnwise the
-        (local part of the) computed left singular vectors and the
-        right singular vectors.
-
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
       error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
 
 
 zprimme_svds_f77
@@ -3834,26 +4791,236 @@ zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
 
    Solve a complex singular value problem using double precision.
 
+   All arrays are stored on CPU, and also the computations are done on
+   CPU (see "magma_zprimme_f77()" for using GPUs).
+
    Parameters:
       * **svals(*)** (*double precision*) -- (output) array at least
         of size "numSvals" to store the computed singular values; all
         processes in a parallel run return this local array with the
         same values.
 
+      * **svecs(*)** (*complex*16*) -- array at least of size
+        ("mLocal" + "nLocal") times ("numOrthoConst" + "numSvals") to
+        store columnwise the (local part of the) computed left
+        singular vectors and the right singular vectors.
+
       * **resNorms(*)** (*double precision*) -- array at least of
         size "numSvals" to store the residual norms of the computed
         triplets; all processes in parallel run return this local
         array with the same values.
 
-      * **svecs(*)** (*complex*16*) -- array at least of size
-        ("mLocal" + "nLocal") times "numSvals" to store columnwise the
-        (local part of the) computed left singular vectors and the
-        right singular vectors.
+      * **primme_svds** (*ptr*) -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
+
+
+magma_sprimme_svds_f77
+======================
+
+magma_sprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+
+   Solve a real singular value problem using single precision.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "sprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **svals(*)** (*real*) -- (output) array at least of size
+        "numSvals" to store the computed singular values; all
+        processes in a parallel run return this local array with the
+        same values.
+
+      * **svecs(*)** (*real*) -- array at least of size ("mLocal" +
+        "nLocal") times ("numOrthoConst" + "numSvals") to store
+        columnwise the (local part of the) computed left singular
+        vectors and the right singular vectors.
+
+      * **resNorms(*)** (*real*) -- array at least of size
+        "numSvals" to store the residual norms of the computed
+        triplets; all processes in parallel run return this local
+        array with the same values.
 
       * **primme_svds** (*ptr*) -- parameters structure.
 
    Returns:
       error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
+
+
+magma_cprimme_svds_f77
+======================
+
+magma_cprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+
+   Solve a complex singular value problem using single precision.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "cprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **svals(*)** (*real*) -- (output) array at least of size
+        "numSvals" to store the computed singular values; all
+        processes in a parallel run return this local array with the
+        same values.
+
+      * **svecs(*)** (*complex*) -- array at least of size ("mLocal"
+        + "nLocal") times ("numOrthoConst" + "numSvals") to store
+        columnwise the (local part of the) computed left singular
+        vectors and the right singular vectors.
+
+      * **resNorms(*)** (*real*) -- array at least of size
+        "numSvals" to store the residual norms of the computed
+        triplets; all processes in parallel run return this local
+        array with the same values.
+
+      * **primme_svds** (*ptr*) -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
+
+
+magma_dprimme_svds_f77
+======================
+
+magma_dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+
+   Solve a real singular value problem using double precision.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "dprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **svals(*)** (*double precision*) -- (output) array at least
+        of size "numSvals" to store the computed singular values; all
+        processes in a parallel run return this local array with the
+        same values.
+
+      * **svecs(*)** (*double precision*) -- array at least of size
+        ("mLocal" + "nLocal") times ("numOrthoConst" + "numSvals") to
+        store columnwise the (local part of the) computed left
+        singular vectors and the right singular vectors.
+
+      * **resNorms(*)** (*double precision*) -- array at least of
+        size "numSvals" to store the residual norms of the computed
+        triplets; all processes in parallel run return this local
+        array with the same values.
+
+      * **primme_svds** (*ptr*) -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
+
+
+magma_zprimme_svds_f77
+======================
+
+magma_zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+
+   Solve a complex singular value problem using double precision.
+
+   Most of the arrays are stored on GPU, and also most of the
+   computations are done on GPU (see "zprimme_f77()" for using only
+   the CPU).
+
+   Parameters:
+      * **svals(*)** (*double precision*) -- (output) array at least
+        of size "numSvals" to store the computed singular values; all
+        processes in a parallel run return this local array with the
+        same values.
+
+      * **svecs(*)** (*complex*16*) -- array at least of size
+        ("mLocal" + "nLocal") times ("numOrthoConst" + "numSvals") to
+        store columnwise the (local part of the) computed left
+        singular vectors and the right singular vectors.
+
+      * **resNorms(*)** (*double precision*) -- array at least of
+        size "numSvals" to store the residual norms of the computed
+        triplets; all processes in parallel run return this local
+        array with the same values.
+
+      * **primme_svds** (*ptr*) -- parameters structure.
+
+   Returns:
+      error indicator; see Error Codes.
+
+   On input, "svecs" should start with the content of the
+   "numOrthoConst" left vectors, followed by the "initSize" left
+   vectors, followed by the "numOrthoConst" right vectors and followed
+   by the "initSize" right vectors.
+
+   On return, the i-th left singular vector starts at svecs((
+   "numOrthoConst" + i - 1) * "mLocal" ). The i-th right singular
+   vector starts at svecs(( "numOrthoConst" + "initSize" )* "mLocal" +
+   ( "numOrthoConst" + i - 1)* "nLocal" ). The first vector has i=1.
+
+   The type and precision of the callbacks depends on the type and
+   precision of *svecs*. See details for "matrixMatvec",
+   "applyPreconditioner", "globalSumReal", "broadcastReal", and
+   "convTestFun".
 
 
 primme_svds_initialize_f77
@@ -3955,23 +5122,24 @@ primme_svds_set_member_f77(primme_svds, label, value)
            "PRIMME_SVDS_m"
            "PRIMME_SVDS_n"
            "PRIMME_SVDS_matrixMatvec"
+           "PRIMME_SVDS_matrixMatvec_type"
            "PRIMME_SVDS_applyPreconditioner"
+           "PRIMME_SVDS_applyPreconditioner_type"
            "PRIMME_SVDS_numProcs"
            "PRIMME_SVDS_procID"
            "PRIMME_SVDS_mLocal"
            "PRIMME_SVDS_nLocal"
            "PRIMME_SVDS_commInfo"
            "PRIMME_SVDS_globalSumReal"
+           "PRIMME_SVDS_globalSumReal_type"
+           "PRIMME_SVDS_broadcastReal"
+           "PRIMME_SVDS_broadcastReal_type"
            "PRIMME_SVDS_numSvals"
            "PRIMME_SVDS_target"
            "PRIMME_SVDS_numTargetShifts"
            "PRIMME_SVDS_targetShifts"
            "PRIMME_SVDS_method"
            "PRIMME_SVDS_methodStage2"
-           "PRIMME_SVDS_intWorkSize"
-           "PRIMME_SVDS_realWorkSize"
-           "PRIMME_SVDS_intWork"
-           "PRIMME_SVDS_realWork"
            "PRIMME_SVDS_matrix"
            "PRIMME_SVDS_preconditioner"
            "PRIMME_SVDS_locking"
@@ -3986,11 +5154,29 @@ primme_svds_set_member_f77(primme_svds, label, value)
            "PRIMME_SVDS_iseed"
            "PRIMME_SVDS_printLevel"
            "PRIMME_SVDS_outputFile"
+           "PRIMME_SVDS_internalPrecision"
+           "PRIMME_SVDS_convTestFun"
+           "PRIMME_SVDS_convTestFun_type"
+           "PRIMME_SVDS_convtest"
+           "PRIMME_SVDS_monitorFun"
+           "PRIMME_SVDS_monitorFun_type"
+           "PRIMME_SVDS_monitor"
+           "PRIMME_SVDS_queue"
            "PRIMME_SVDS_stats_numOuterIterations"
            "PRIMME_SVDS_stats_numRestarts"
            "PRIMME_SVDS_stats_numMatvecs"
            "PRIMME_SVDS_stats_numPreconds"
+           "PRIMME_SVDS_stats_numGlobalSum"
+           "PRIMME_SVDS_stats_numBroadcast"
+           "PRIMME_SVDS_stats_volumeGlobalSum"
+           "PRIMME_SVDS_stats_volumeBroadcast"
            "PRIMME_SVDS_stats_elapsedTime"
+           "PRIMME_SVDS_stats_timeMatvec"
+           "PRIMME_SVDS_stats_timePrecond"
+           "PRIMME_SVDS_stats_timeOrtho"
+           "PRIMME_SVDS_stats_timeGlobalSum"
+           "PRIMME_SVDS_stats_timeBroadcast"
+           "PRIMME_SVDS_stats_lockingIssue"
 
       * **value** -- (input) value to set.
 
@@ -4113,7 +5299,7 @@ primme_svds_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to 0;
+            "primme_svds_initialize()" sets this field to 0;
             this field is read by "dprimme()".
 
    PRIMME_INT n
@@ -4122,7 +5308,7 @@ primme_svds_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to 0;
+            "primme_svds_initialize()" sets this field to 0;
             this field is read by "dprimme()".
 
    void (*matrixMatvec)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
@@ -4156,19 +5342,34 @@ primme_svds_params
       column-major order (elements in the same column with consecutive
       row indices are consecutive in memory).
 
-      The actual type of "x" and "y" depends on which function is
-      being calling. For "dprimme_svds()", it is "double", for
-      "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
-      "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
-      "PRIMME_COMPLEX_FLOAT".
+      The actual type of "x" and "y" matches the type of "evecs" of
+      the calling  "dprimme_svds()" (or a variant), unless
+      "matrixMatvec_type" sets another precision.
 
       Input/output:
 
-            "primme_initialize()" sets this field to NULL;
+            "primme_svds_initialize()" sets this field to NULL;
             this field is read by "dprimme_svds()" and "zprimme_svds()".
 
       Note: Integer arguments are passed by reference to make easier
         the interface to other languages (like Fortran).
+
+   primme_op_datatype matrixMatvec_type
+
+      Precision of the vectors "x" and "y" passed to
+      "matrixMatvec_type".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme_svds()" (or a variant). Otherwise, the
+      precision is half, single, or double, if "matrixMatvec_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme_svds()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
 
    void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
@@ -4210,16 +5411,32 @@ primme_svds_params
       arrays are in column-major order (elements in the same column
       with consecutive row indices are consecutive in memory).
 
-      The actual type of "x" and "y" depends on which function is
-      being calling. For "dprimme_svds()", it is "double", for
-      "zprimme_svds()" it is "PRIMME_COMPLEX_DOUBLE", for
-      "sprimme_svds()" it is "float" and for "cprimme_svds()" it is
-      "PRIMME_COMPLEX_FLOAT".
+      The actual type of "x" and "y" matches the type of "evecs" of
+      the calling  "dprimme_svds()" (or a variant), unless
+      "matrixMatvec_type" sets another precision.
 
       Input/output:
 
-            "primme_initialize()" sets this field to NULL;
+            "primme_svds_initialize()" sets this field to NULL;
             this field is read by "dprimme_svds()" and "zprimme_svds()".
+
+   primme_op_datatype applyPreconditioner_type
+
+      Precision of the vectors "x" and "y" passed to
+      "applyPreconditioner_type".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme_svds()" (or a variant). Otherwise, the
+      precision is half, single, or double, if
+      "applyPreconditioner_type" is "primme_half", "primme_float" or
+      "primme_double" respectively.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme_svds()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
 
    int numProcs
 
@@ -4228,7 +5445,7 @@ primme_svds_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to 1;
+            "primme_svds_initialize()" sets this field to 1;
             this field is read by "dprimme()" and "zprimme_svds()".
 
    int procID
@@ -4319,21 +5536,37 @@ primme_svds_params
          void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count,
                                   primme_svds_params *primme_svds, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
-            if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator) == MPI_SUCCESS) {
-               *ierr = 0;
+            if (sendBuf == recvBuf) {
+              *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             } else {
-               *ierr = 1;
+              *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             }
          }
 
       When calling "sprimme_svds()" and "cprimme_svds()" replace
       "MPI_DOUBLE" by "`MPI_FLOAT".
 
+   primme_op_datatype globalSumReal_type
+
+      Precision of the vectors "sendBuf" and "recvBuf" passed to
+      "globalSumReal".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme_svds()" (or a variant). Otherwise, the
+      precision is half, single, or double, if "globalSumReal_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme_svds()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
+
    void (*broadcastReal)(void *buffer, int *count, primme_svds_params *primme_svds, int *ierr)
 
       Broadcast function from process with ID zero. It is optional in
-      parallel executions, and no need for sequential programs.
+      parallel executions, and not needed for sequential programs.
 
       Parameters:
          * **buffer** -- array of size "count" with the local input
@@ -4346,16 +5579,14 @@ primme_svds_params
          * **ierr** -- output error code; if it is set to non-zero,
            the current call to PRIMME will stop.
 
-      The actual type of "buffer" depends on which function is being
-      calling. For "dprimme_svds()" and "zprimme_svds()" it is
-      "double", and for "sprimme_svds()" and  "cprimme_svds()" it is
-      "float". Note that "count" is the number of values of the actual
-      type.
+      The actual type of "buffer" matches the type of "svecs" of the
+      calling  "dprimme_svds()" (or a variant), unless
+      "globalSumReal_type" sets another precision.
 
       Input/output:
 
             "primme_svds_initialize()" sets this field to NULL;
-            this field is read by "dprimme()".
+            this field is read by "dprimme_svds()".
 
       When MPI is used, this can be a simply wrapper to MPI_Bcast() as
       shown below:
@@ -4382,6 +5613,38 @@ primme_svds_params
 
             "primme_svds_initialize()" sets this field to 1;
             this field is read by "primme_svds_set_method()" (see Preset Methods) and "dprimme_svds()".
+
+   primme_op_datatype broadcastReal_type
+
+      Precision of the vector "buffer`" passed to "broadcastReal".
+
+      If it is "primme_op_default", the vectors' type matches the
+      calling "dprimme_svds()" (or a variant). Otherwise, the
+      precision is half, single, or double, if "broadcastReal_type" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme_svds()", and if it is
+            "primme_op_default" it is set to the value that matches the precision of
+            calling function.
+
+   primme_op_datatype internalPrecision
+
+      Internal working precision.
+
+      If it is "primme_op_default", most of the vectors are stored
+      with the same precision as the calling "dprimme_svds()" (or a
+      variant), and most of the computations are done in that
+      precision too. Otherwise, the working precision is changed to
+      half, single, or double, if "internalPrecision" is
+      "primme_half", "primme_float" or "primme_double" respectively.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to "primme_op_default";
+            this field is read by "dprimme_svds()".
 
    primme_svds_target target
 
@@ -4621,70 +5884,6 @@ primme_svds_params
 
             "primme_svds_initialize()" sets this field to "INT_MAX";
             this field is read by "dprimme_svds()" and "zprimme_svds()".
-
-   int intWorkSize
-
-      If "dprimme_svds()" or "zprimme_svds()" is called with all
-      arguments as NULL except for "primme_svds_params" then it
-      returns immediately with "intWorkSize" containing the size *in
-      bytes* of the integer workspace that will be required by the
-      parameters set.
-
-      Otherwise if "intWorkSize" is not 0, it should be the size of
-      the integer work array *in bytes* that the user provides in
-      "intWork". If "intWorkSize" is 0, the code will allocate the
-      required space, which can be freed later by calling
-      "primme_svds_free()".
-
-      Input/output:
-
-            "primme_svds_initialize()" sets this field to 0;
-            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-   size_t realWorkSize
-
-      If "dprimme_svds()" or "zprimme_svds()" is called with all
-      arguments as NULL except for "primme_svds_params" then it
-      returns immediately with "realWorkSize" containing the size *in
-      bytes* of the real workspace that will be required by the
-      parameters set.
-
-      Otherwise if "realWorkSize" is not 0, it should be the size of
-      the real work array *in bytes* that the user provides in
-      "realWork". If "realWorkSize" is 0, the code will allocate the
-      required space, which can be freed later by calling
-      "primme_svds_free()".
-
-      Input/output:
-
-            "primme_svds_initialize()" sets this field to 0;
-            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-   int *intWork
-
-      Integer work array.
-
-      If NULL, the code will allocate its own workspace. If the
-      provided space is not enough, the code will return the error
-      code "-21".
-
-      Input/output:
-
-            "primme_svds_initialize()" sets this field to NULL;
-            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
-
-   void *realWork
-
-      Real work array.
-
-      If NULL, the code will allocate its own workspace. If the
-      provided space is not enough, the code will return the error
-      code "-20".
-
-      Input/output:
-
-            "primme_svds_initialize()" sets this field to NULL;
-            this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
    PRIMME_INT iseed
 
@@ -4972,7 +6171,7 @@ primme_svds_params
 
       Input/output:
 
-            "primme_initialize()" sets this field to NULL;
+            "primme_svds_initialize()" sets this field to NULL;
             "dprimme_svds()" sets this field to an internal function if it is NULL;
             this field is read by "dprimme_svds()" and "zprimme_svds()".
 
@@ -5023,6 +6222,57 @@ primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()" and "zprimme_svds()".
 
+   PRIMME_INT stats.numGlobalSum
+
+      Hold how many times "globalSumReal" has been called. The value
+      is available during execution and at the end.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   double stats.volumeGlobalSum
+
+      Hold how many "REAL" have been reduced by "globalSumReal". The
+      value is available during execution and at the end.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   PRIMME_INT stats.numBroadcast
+
+      Hold how many times "broadcastReal" has been called. The value
+      is available during execution and at the end.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   double stats.volumeBroadcast
+
+      Hold how many "REAL" have been broadcast by "broadcastReal". The
+      value is available during execution and at the end.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   PRIMME_INT stats.numOrthoInnerProds
+
+      Hold how many inner products with vectors of length "mLocal" and
+      "nLocal" have been computed during orthogonalization. The value
+      is available during execution and at the end.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
    double stats.elapsedTime
 
       Hold the wall clock time spent by the call to "dprimme_svds()"
@@ -5032,6 +6282,66 @@ primme_svds_params
 
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()" and "zprimme_svds()".
+
+   double stats.timeMatvec
+
+      Hold the wall clock time spent by "matrixMatvec". The value is
+      available at the end of the execution.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   double stats.timePrecond
+
+      Hold the wall clock time spent by "applyPreconditioner". The
+      value is available at the end of the execution.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   double stats.timeOrtho
+
+      Hold the wall clock time spent by orthogonalization. The value
+      is available at the end of the execution.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   double stats.timeGlobalSum
+
+      Hold the wall clock time spent by "globalSumReal". The value is
+      available at the end of the execution.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   double stats.timeBroadcast
+
+      Hold the wall clock time spent by "broadcastReal". The value is
+      available at the end of the execution.
+
+      Input/output:
+
+            "primme_svds_initialize()" sets this field to 0;
+            written by "dprimme_svds()".
+
+   PRIMME_INT stats.lockingIssue
+
+      It is set to a nonzero value if some of the returned triplets do
+      not pass the convergence criterion. See "convTestFun" and "eps".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
 
 
 Preset Methods
@@ -5133,15 +6443,15 @@ next values:
 
 * -16: Wrong value for "printLevel",
 
-* -17: "svals" is not set,
+* -17: "svals" is not set.
 
-* -18: "svecs" is not set,
+* -18: "svecs" is not set.
 
-* -19: "resNorms" is not set
+* -19: "resNorms" is not set.
 
-* -20: not enough memory for "realWork"
+* -20: deprecated.
 
-* -21: not enough memory for "intWork"
+* -21: deprecated.
 
 * -100 up to -199: eigensolver error from first stage; see the value
   plus 100 in Error Codes.
@@ -5152,7 +6462,7 @@ next values:
 Python Interface
 ****************
 
-Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, **kargs)
+primme.svds()
 
    Compute k singular values and vectors of the matrix A.
 
@@ -5175,6 +6485,8 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5 is less than "tol"
         * ||A||, or close to the minimum tolerance that the method can
         achieve. See the note.
+
+        The value is ignored if convtest is provided.
 
       * **which** (*str** [**'LM' | 'SM'**] or **number**,
         **optional*) --
@@ -5231,6 +6543,16 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
       * **maxBlockSize** (*int**, **optional*) -- Maximum number of
         vectors added at every iteration.
+
+      * **convtest** (*callable*) --
+
+        User-defined function to mark an approximate singular triplet
+        as converged.
+
+        The function is called as convtest(sval, svecleft, svecright,
+        resNorm) and returns True if the triplet with value *sval*,
+        left vector *svecleft*, right vector *svecright*, and residual
+        norm *resNorm* is considered converged.
 
       * **return_stats** (*bool**, **optional*) -- If True, the
         function returns extra information (see stats in Returns).
@@ -5303,7 +6625,7 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
    See also:
 
-     "Primme.eigsh()"
+     "primme.eigsh()"
         eigenvalue decomposition for a sparse symmetrix/complex
         Hermitian matrix A
 
@@ -5313,19 +6635,20 @@ Primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
    -[ Examples ]-
 
-   >>> import Primme, scipy.sparse
+   >>> import primme, scipy.sparse
    >>> A = scipy.sparse.spdiags(range(1, 11), [0], 100, 10) # sparse diag. rect. matrix
-   >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, tol=1e-6, which='SM')
-   >>> svals # the three smallest singular values of A
-   array([ 1.,  2.,  3.])
+   >>> svecs_left, svals, svecs_right = primme.svds(A, 3, tol=1e-6, which='LM')
+   >>> svals # the three largest singular values of A
+   array([10., 9., 8.])
 
-   >>> import Primme, scipy.sparse
+   >>> import primme, scipy.sparse, numpy as np
    >>> A = scipy.sparse.rand(10000, 100, random_state=10)
    >>> prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
    ...           [0], 100, 100) # square diag. preconditioner
-   >>> svecs_left, svals, svecs_right = Primme.svds(A, 3, which=6.0, tol=1e-6, precAHA=prec)
-   >>> ["%.5f" % x for x in svals.flat] # the three closest singular values of A to 0.5
-   ['5.99871', '5.99057', '6.01065']
+   >>> # the three smallest singular values of A, using preconditioning
+   >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
+   >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
+   ['4.57263', '4.78752', '4.82229']
 
 MATLAB Interface
 ****************

@@ -7,6 +7,7 @@ Eigenvalue Problems
 
    primmec
    primmef77
+   primmef90
    pyeigsh
    mateigs  
    appendix

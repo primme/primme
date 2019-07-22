@@ -16,7 +16,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to 0;
          | this field is read by :c:func:`dprimme`.
 
    .. c:member:: PRIMME_INT n
@@ -25,7 +25,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
+         | :c:func:`primme_svds_initialize` sets this field to 0;
          | this field is read by :c:func:`dprimme`.
 
    .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
@@ -45,19 +45,35 @@ primme_svds_params
       respectively. Elsewhere they have dimensions |SmLocal| x ``blockSize`` and |SnLocal| x ``blockSize``.
       Both arrays are in column-major_ order (elements in the same column with consecutive row indices are consecutive in memory).
 
-      The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
-      for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
-      for :c:func:`cprimme_svds` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
+      The actual type of ``x`` and ``y`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme_svds` (or a variant), unless |SmatrixMatvec_type| sets
+      another precision.
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to NULL;
+         | :c:func:`primme_svds_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
       .. note::
 
          Integer arguments are passed by reference to make easier the interface to other
          languages (like Fortran).
+
+   .. c:member:: primme_op_datatype matrixMatvec_type
+
+      Precision of the vectors ``x`` and ``y`` passed to |SmatrixMatvec_type|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme_svds` (or a variant). Otherwise, the precision is half,
+      single, or double, if |SmatrixMatvec_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
 
    .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
@@ -81,14 +97,30 @@ primme_svds_params
       ``primme_svds_op_AAt``, they are |SmLocal| x ``blockSize``; and otherwise they are (|SmLocal| + |SnLocal|) x ``blockSize``.
       Both arrays are in column-major_ order (elements in the same column with consecutive row indices are consecutive in memory).
 
-      The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
-      for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
-      for :c:func:`cprimme_svds` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
+      The actual type of ``x`` and ``y`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme_svds` (or a variant), unless |SmatrixMatvec_type| sets
+      another precision.
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to NULL;
+         | :c:func:`primme_svds_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+
+   .. c:member:: primme_op_datatype applyPreconditioner_type
+
+      Precision of the vectors ``x`` and ``y`` passed to |SapplyPreconditioner_type|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme_svds` (or a variant). Otherwise, the precision is half,
+      single, or double, if |SapplyPreconditioner_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
 
    .. c:member:: int numProcs
 
@@ -96,7 +128,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 1;
+         | :c:func:`primme_svds_initialize` sets this field to 1;
          | this field is read by :c:func:`dprimme` and :c:func:`zprimme_svds`.
 
    .. c:member:: int procID
@@ -174,33 +206,49 @@ primme_svds_params
          void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count, 
                                   primme_svds_params *primme_svds, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme_svds->commInfo;
-            if (MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator) == MPI_SUCCESS) {
-               *ierr = 0;
+            if (sendBuf == recvBuf) {
+              *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             } else {
-               *ierr = 1;
+              *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             }
          }
 
       When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
+   .. c:member:: primme_op_datatype globalSumReal_type
+
+      Precision of the vectors ``sendBuf`` and ``recvBuf`` passed to |SglobalSumReal|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme_svds` (or a variant). Otherwise, the precision is half,
+      single, or double, if |globalSumReal_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
+
    .. c:member:: void (*broadcastReal)(void *buffer, int *count, primme_svds_params *primme_svds, int *ierr)
 
-      Broadcast function from process with ID zero. It is optional in parallel executions, and no need for sequential programs.
+      Broadcast function from process with ID zero. It is optional in parallel executions, and not needed for sequential programs.
 
       :param buffer: array of size ``count`` with the local input values.
       :param count: array size of ``sendBuf`` and ``recvBuf``.
       :param primme_svds: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      The actual type of ``buffer`` depends on which function is being calling. For :c:func:`dprimme_svds`
-      and :c:func:`zprimme_svds` it is ``double``, and for :c:func:`sprimme_svds` and  :c:func:`cprimme_svds` it is ``float``.
-      Note that ``count`` is the number of values of the actual type.
- 
+      The actual type of ``buffer`` matches the type of ``svecs`` of the
+      calling  :c:func:`dprimme_svds` (or a variant), unless |SglobalSumReal_type| sets
+      another precision.
+
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
-         | this field is read by :c:func:`dprimme`.
+         | this field is read by :c:func:`dprimme_svds`.
 
       When MPI is used, this can be a simply wrapper to MPI_Bcast() as shown below:
 
@@ -228,6 +276,37 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 1;
          | this field is read by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`) and :c:func:`dprimme_svds`.
 
+
+   .. c:member:: primme_op_datatype broadcastReal_type
+
+      Precision of the vector ``buffer``` passed to |SbroadcastReal|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme_svds` (or a variant). Otherwise, the precision is half,
+      single, or double, if |broadcastReal_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
+   .. c:member:: primme_op_datatype internalPrecision
+
+      Internal working precision.
+
+      If it is ``primme_op_default``, most of the vectors are stored with the
+      same precision as the calling :c:func:`dprimme_svds` (or a variant), and most of the
+      computations are done in that precision too. Otherwise, the working precision
+      is changed to half, single, or double, if |SinternalPrecision| is
+      ``primme_half``, ``primme_float`` or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`.
 
    .. index:: interior problem
 
@@ -468,62 +547,6 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to ``INT_MAX``;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: int intWorkSize
-
-      If :c:func:`dprimme_svds` or :c:func:`zprimme_svds` is called with all arguments as NULL
-      except for :c:type:`primme_svds_params` then it returns immediately with |SintWorkSize|
-      containing the size *in bytes* of the integer workspace that will be required by the
-      parameters set.
-
-      Otherwise if |SintWorkSize| is not 0, it should be the size of the integer work array
-      *in bytes* that the user provides in |SintWork|. If |SintWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_svds_free`.
-
-      Input/output:
-
-         | :c:func:`primme_svds_initialize` sets this field to 0;
-         | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
-
-   .. c:member:: size_t realWorkSize
-
-      If :c:func:`dprimme_svds` or :c:func:`zprimme_svds` is called with all arguments as NULL
-      except for :c:type:`primme_svds_params` then it returns immediately with |SrealWorkSize|
-      containing the size *in bytes* of the real workspace that will be required by the
-      parameters set.
-
-      Otherwise if |SrealWorkSize| is not 0, it should be the size of the real work array
-      *in bytes* that the user provides in |SrealWork|. If |SrealWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_svds_free`.
-
-      Input/output:
-
-         | :c:func:`primme_svds_initialize` sets this field to 0;
-         | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
-
-   .. c:member:: int *intWork
-
-      Integer work array.
-
-      If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will return the error code ``-21``.
-
-      Input/output:
-
-         | :c:func:`primme_svds_initialize` sets this field to NULL;
-         | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
-
-   .. c:member:: void *realWork
-
-      Real work array.
-
-      If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will return the error code ``-20``.
-
-      Input/output:
-
-         | :c:func:`primme_svds_initialize` sets this field to NULL;
-         | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
-
    .. c:member:: PRIMME_INT iseed
 
       The ``PRIMME_INT iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
@@ -733,7 +756,7 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to NULL;
+         | :c:func:`primme_svds_initialize` sets this field to NULL;
          | :c:func:`dprimme_svds` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
@@ -783,6 +806,56 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
+   .. c:member:: PRIMME_INT stats.numGlobalSum
+
+      Hold how many times |SglobalSumReal| has been called.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: double stats.volumeGlobalSum
+
+      Hold how many :c:type:`REAL` have been reduced by |SglobalSumReal|.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: PRIMME_INT stats.numBroadcast
+
+      Hold how many times |SbroadcastReal| has been called.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: double stats.volumeBroadcast
+
+      Hold how many :c:type:`REAL` have been broadcast by |SbroadcastReal|.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: PRIMME_INT stats.numOrthoInnerProds
+
+      Hold how many inner products with vectors of length |SmLocal| and |SnLocal| have been computed during orthogonalization.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
    .. c:member:: double stats.elapsedTime
 
       Hold the wall clock time spent by the call to :c:func:`dprimme_svds` or :c:func:`zprimme_svds`.
@@ -791,6 +864,67 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+
+   .. c:member:: double stats.timeMatvec
+
+      Hold the wall clock time spent by |SmatrixMatvec|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: double stats.timePrecond
+
+      Hold the wall clock time spent by |SapplyPreconditioner|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: double stats.timeOrtho
+
+      Hold the wall clock time spent by orthogonalization.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: double stats.timeGlobalSum
+
+      Hold the wall clock time spent by |SglobalSumReal|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: double stats.timeBroadcast
+
+      Hold the wall clock time spent by |SbroadcastReal|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: PRIMME_INT stats.lockingIssue
+
+      It is set to a nonzero value if some of the returned triplets do not pass the convergence criterion.
+      See |SconvTestFun| and |Seps|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
 
 .. _methods_svds:
 
@@ -865,11 +999,11 @@ The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of th
 * -14: Wrong value for |Smethod|,
 * -15: Not supported combination of method and |SmethodStage2|,
 * -16: Wrong value for |SprintLevel|,
-* -17: ``svals`` is not set,
-* -18: ``svecs`` is not set,
-* -19: ``resNorms`` is not set
-* -20: not enough memory for |SrealWork|
-* -21: not enough memory for |SintWork|
+* -17: ``svals`` is not set.
+* -18: ``svecs`` is not set.
+* -19: ``resNorms`` is not set.
+* -20: deprecated.
+* -21: deprecated.
 * -100 up to -199: eigensolver error from first stage; see the value plus 100 in :ref:`error-codes`.
 * -200 up to -299: eigensolver error from second stage; see the value plus 200 in :ref:`error-codes`.
 

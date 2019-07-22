@@ -4,4 +4,4 @@
 Python Interface
 ----------------
 
-.. autofunction:: Primme.svds
+.. autofunction:: primme.svds

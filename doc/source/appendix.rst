@@ -15,6 +15,15 @@ The following data types are macros used in PRIMME as followed.
 
    The integer size is controlled by the compilation flag  ``PRIMME_INT_SIZE``, see :ref:`making`.
 
+.. c:type:: PRIMME_HALF
+
+   Macro that is ``__fp16`` if half precision is supported by the compiler.
+   Otherwise it is a struct with the same size as ``int short``.
+
+.. c:type:: PRIMME_COMPLEX_HALF
+
+   Macro that is a struct with fields ``r`` and ``i`` with type ``PRIMME_HALF``.
+
 .. c:type:: PRIMME_COMPLEX_FLOAT
 
    Macro that is ``complex float`` in C and ``std::complex<float>`` in C++.
@@ -51,9 +60,9 @@ primme_params
       :param primme: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      The actual type of ``x`` and ``y`` depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
-      for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and
-      for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
+      The actual type of ``x`` and ``y`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme` (or a variant), unless |matrixMatvec_type| sets
+      another precision.
 
       Input/output:
 
@@ -65,16 +74,59 @@ primme_params
          If you have performance issues with leading dimension different from |nLocal|,
          set |ldOPs| to |nLocal|.
 
+   .. c:member:: primme_op_datatype matrixMatvec_type
+
+      Precision of the vectors ``x`` and ``y`` passed to |matrixMatvec|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |matrixMatvec_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
    .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block preconditioner-multivector application, :math:`y = M^{-1}x` where :math:`M` is usually an approximation of :math:`A - \sigma I` or :math:`A - \sigma B` for finding eigenvalues close to :math:`\sigma`.
-      The function follows the convention of |matrixMatvec|.
+
+      :param x: matrix of size |nLocal| x ``blockSize`` in column-major_ order with leading dimension ``ldx``.
+      :param ldx: the leading dimension of the array ``x``.
+      :param y: matrix of size |nLocal| x ``blockSize`` in column-major_ order with leading dimension ``ldy``.
+      :param ldy: the leading dimension of the array ``y``.
+      :param blockSize: number of columns in ``x`` and ``y``.
+      :param primme: parameters structure.
+      :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
+
+      The actual type of ``x`` and ``y`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme` (or a variant), unless |applyPreconditioner_type| sets
+      another precision.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
  
+   .. c:member:: primme_op_datatype applyPreconditioner_type
+
+      Precision of the vectors ``x`` and ``y`` passed to |applyPreconditioner|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |applyPreconditioner_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
    .. c:member:: void (*massMatrixMatvec) (void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
       Block matrix-multivector multiplication, :math:`y = B x` in solving :math:`A x = \lambda B x`.
@@ -85,10 +137,21 @@ primme_params
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
 
-      .. warning::
+   .. c:member:: primme_op_datatype massMatrixMatvec_type
 
-         Generalized eigenproblems not implemented in current version.
-         This member is included for future compatibility.
+      Precision of the vectors ``x`` and ``y`` passed to |massMatrixMatvec|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |massMatrixMatvec_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
 
    .. c:member:: int numProcs
 
@@ -146,9 +209,11 @@ primme_params
       :param primme: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      The actual type of ``sendBuf`` and ``recvBuf`` depends on which function is being calling. For :c:func:`dprimme`
-      and :c:func:`zprimme` it is ``double``, and for :c:func:`sprimme` and  :c:func:`cprimme` it is ``float``.
-      Note that ``count`` is the number of values of the actual type.
+      The actual type of ``sendBuf`` and ``recvBuf`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme` (or a variant), unless |globalSumReal_type| sets
+      another precision.
+
+      Note that ``count`` is the number of values of the real type.
  
       Input/output:
 
@@ -163,31 +228,45 @@ primme_params
          void par_GlobalSumForDouble(void *sendBuf, void *recvBuf, int *count, 
                                   primme_params *primme, int *ierr) {
             MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-            if(MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM,
-                          communicator) == MPI_SUCCESS) {
-               *ierr = 0;
+            if (sendBuf == recvBuf) {
+              *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             } else {
-               *ierr = 1;
+              *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
             }
          }
 
-      }
-
       When calling :c:func:`sprimme` and :c:func:`cprimme` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
+
+   .. c:member:: primme_op_datatype globalSumReal_type
+
+      Precision of the vectors ``sendBuf`` and ``recvBuf`` passed to |globalSumReal|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |globalSumReal_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
 
    .. c:member:: void (*broadcastReal)(void *buffer, int *count, primme_params *primme, int *ierr)
 
-      Broadcast function from process with ID zero. It is optional in parallel executions, and no need for sequential programs.
+      Broadcast function from process with ID zero. It is optional in parallel executions, and not needed for sequential programs.
 
       :param buffer: array of size ``count`` with the local input values.
       :param count: array size of ``sendBuf`` and ``recvBuf``.
       :param primme: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      The actual type of ``buffer`` depends on which function is being calling. For :c:func:`dprimme`
-      and :c:func:`zprimme` it is ``double``, and for :c:func:`sprimme` and  :c:func:`cprimme` it is ``float``.
-      Note that ``count`` is the number of values of the actual type.
- 
+      The actual type of ``buffer`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme` (or a variant), unless |globalSumReal_type| sets
+      another precision.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
@@ -209,6 +288,37 @@ primme_params
          }
 
       When calling :c:func:`sprimme` and :c:func:`cprimme` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
+
+   .. c:member:: primme_op_datatype broadcastReal_type
+
+      Precision of the vector ``buffer``` passed to |broadcastReal|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |broadcastReal_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
+   .. c:member:: primme_op_datatype internalPrecision
+
+      Internal working precision.
+
+      If it is ``primme_op_default``, most of the vectors are stored with the
+      same precision as the calling :c:func:`dprimme` (or a variant), and most of the
+      computations are done in that precision too. Otherwise, the working precision
+      is changed to half, single, or double, if |internalPrecision| is
+      ``primme_half``, ``primme_float`` or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`.
 
    .. c:member:: int numEvals
 
@@ -376,10 +486,65 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0.0;
          | this field is read and written by :c:func:`dprimme`.
 
+   .. c:member:: double BNorm
+
+      An estimate of the norm of :math:`B`, which is used to estimate the
+      conditioning number of the matrix :math:`B`.
+
+      If |BNorm| is less than or equal to 0, the code uses the largest absolute
+      Ritz value seen. On return, |BNorm| is then replaced with that value.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0.0;
+         | this field is read and written by :c:func:`dprimme`.
+
+   .. c:member:: double invBNorm
+
+      An estimate of the norm of :math:`B`, which is used in the default convergence
+      criterion (see |eps|).
+
+      If |BNorm| is less than or equal to 0, the code uses the largest absolute
+      Ritz value seen. On return, |BNorm| is then replaced with that value.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0.0;
+         | this field is read and written by :c:func:`dprimme`.
+
+   .. c:member:: primme_orth orth
+
+      Selects the orthogonalization method used by PRIMME.
+
+      If the value is ``primme_orth_implicit_I``, the bases are orthogonalized with
+      classical Gram-Schmidt with reorthogonalization stopping when the new vector's
+      norm is not reduced more than :math:`1/sqrt{2}` (Daniel's test) from the previous
+      iteration. If several vectors are going to be orthogonalize, the algorithm is
+      applied vector by vector.
+
+      If the value is ``primme_orth_explicit_I``, the bases are orthogonalized with
+      iterative Cholesky QR (or SVQB if Cholesky factorization fails), stopping
+      when the conditioning of the basis is around :math:`sqrt(3)`. That
+      deviation of the orthogonality level is taken into account in the Galerkin
+      method.
+      
+      The option ``primme_orth_explicit_I`` is usually more expensive in FLOPS,
+      but it may be faster in time than ``primme_orth_implicit_I`` when |maxBlockSize|
+      is large.
+
+      ``primme_orth_explicit_I`` is set by default if the precision is larger than
+      single precision and |maxBlockSize| is 1. Otherwise, ``primme_orth_explicit_I``
+      is set by default.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_orth_default``;
+         | this field is read and written by :c:func:`dprimme`.
+
    .. c:member:: double eps
 
       If |convTestFun| is NULL, an eigenpairs is marked as converged when the 2-norm
-      of the residual vector is less than |eps| \* |aNorm|.
+      of the residual vector is less than |eps| \* |aNorm| \* |invBNorm|.
       The residual vector is :math:`A x - \lambda x` or :math:`A x - \lambda B x`.
 
       The default value is machine precision times :math:`10^4`.
@@ -548,68 +713,6 @@ primme_params
          | :c:func:`primme_initialize` sets this field to ``INT_MAX``;
          | this field is read by :c:func:`dprimme`.
 
-   .. c:member:: int intWorkSize
-
-      If :c:func:`dprimme` or :c:func:`zprimme` is called with all arguments as NULL
-      except for :c:type:`primme_params` then PRIMME returns immediately with |intWorkSize|
-      containing the size *in bytes* of the integer workspace that will be required by the
-      parameters set in PRIMME.
-
-      Otherwise if |intWorkSize| is not 0, it should be the size of the integer work array
-      *in bytes* that the user provides in |intWork|. If |intWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_free`.
-
-      Input/output:
-
-         | :c:func:`primme_initialize` sets this field to 0;
-         | this field is read and written by :c:func:`dprimme`.
-
-   .. c:member:: size_t realWorkSize
-
-      If :c:func:`dprimme` or :c:func:`zprimme` is called with all arguments as NULL
-      except for :c:type:`primme_params` then PRIMME returns immediately with |realWorkSize|
-      containing the size *in bytes* of the real workspace that will be required by the
-      parameters set in PRIMME.
-
-      Otherwise if |realWorkSize| is not 0, it should be the size of the real work array
-      *in bytes* that the user provides in |realWork|. If |realWorkSize| is 0, the code
-      will allocate the required space, which can be freed later by calling :c:func:`primme_free`.
-
-      Input/output:
-
-         | :c:func:`primme_initialize` sets this field to 0;
-         | this field is read and written by :c:func:`dprimme`.
-
-   .. c:member:: int *intWork
-
-      Integer work array.
-
-      If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will return the error code ``-37``.
-
-      On exit, the first element shows if a locking problem has occurred.
-      Using locking for large |numEvals| may, in some rare cases,
-      cause some pairs to be practically converged, in the sense that their components 
-      are in the basis of ``evecs``. If this is the case, a Rayleigh Ritz on returned
-      ``evecs`` would provide the accurate eigenvectors (see [r4]_).
-
-      Input/output:
-
-         | :c:func:`primme_initialize` sets this field to NULL;
-         | this field is read and written by :c:func:`dprimme`.
-
-   .. c:member:: void *realWork
-
-      Real work array.
-
-      If NULL, the code will allocate its own workspace. If the provided space is not
-      enough, the code will return the error code ``-36``.
-
-      Input/output:
-
-         | :c:func:`primme_initialize` sets this field to NULL;
-         | this field is read and written by :c:func:`dprimme`.
-
    .. c:member:: PRIMME_INT iseed
 
       The ``PRIMME_INT iseed[4]`` is an array with the seeds needed by the LAPACK_ dlarnv and zlarnv.
@@ -631,7 +734,16 @@ primme_params
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
-      
+
+   .. c:member:: void *massMatrix
+
+      This field may be used to pass any required information 
+      in the matrix-vector product |massMatrixMatvec|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
+       
    .. c:member:: void *preconditioner
 
       This field may be used to pass any required information 
@@ -689,21 +801,6 @@ primme_params
          | :c:func:`primme_initialize` sets this field to |primme_proj_default|;
          | :c:func:`primme_set_method` and :c:func:`dprimme` sets it to |primme_proj_RR| if it is |primme_proj_default|.
  
-   .. c:member:: primme_restartscheme restartingParams.scheme
-
-      Select a restarting strategy:
-
-      * ``primme_thick``, Thick restarting. This is the most efficient and robust
-        in the general case.
-      * ``primme_dtr``, Dynamic thick restarting. Helpful without 
-        preconditioning but it is expensive to implement.
-
-      Input/output:
-
-         | :c:func:`primme_initialize` sets this field to |primme_thick|;
-         | written by :c:func:`primme_set_method` (see :ref:`methods`);
-         | this field is read by :c:func:`dprimme`.
-
    .. c:member:: int restartingParams.maxPrevRetain
 
       Number of approximations from previous iteration to be retained
@@ -1066,6 +1163,36 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
+   .. c:member:: PRIMME_INT stats.numBroadcast
+
+      Hold how many times |broadcastReal| has been called.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.volumeBroadcast
+
+      Hold how many :c:type:`REAL` have been broadcast by |broadcastReal|.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: PRIMME_INT stats.numOrthoInnerProds
+
+      Hold how many inner products with vectors of length |nLocal| have been computed during orthogonalization.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
    .. c:member:: double stats.elapsedTime
 
       Hold the wall clock time spent by the call to :c:func:`dprimme` or :c:func:`zprimme`.
@@ -1116,6 +1243,16 @@ primme_params
          | :c:func:`primme_initialize` sets this field to 0;
          | written by :c:func:`dprimme`.
 
+   .. c:member:: double stats.timeBroadcast
+
+      Hold the wall clock time spent by |broadcastReal|.
+      The value is available at the end of the execution.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
    .. c:member:: double stats.estimateMinEVal
 
       Hold the estimation of the smallest eigenvalue for the current eigenproblem.
@@ -1151,6 +1288,16 @@ primme_params
 
       Hold the maximum residual norm of the converged eigenvectors.
       The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: PRIMME_INT stats.lockingIssue
+
+      It is set to a nonzero value if some of the returned eigenpairs do not pass the convergence criterion.
+      See |convTestFun| and |eps|.
 
       Input/output:
 
@@ -1359,7 +1506,6 @@ Preset Methods
          * |maxBasisSize| = |numEvals| \* 2;
          * |minRestartSize| = |numEvals|;
          * |maxBlockSize| = |numEvals|;
-         * |scheme|  = |primme_thick|;
          * |maxPrevRetain|      = 0;
          * |robustShifts|       = 0;
          * |maxInnerIterations| = 0;
@@ -1378,7 +1524,6 @@ Preset Methods
          * |maxBasisSize| = |numEvals| \* 3;
          * |minRestartSize| = |numEvals|;
          * |maxBlockSize| = |numEvals|;
-         * |scheme|  = |primme_thick|;
          * |maxPrevRetain|      = |numEvals|;
          * |robustShifts|       = 0;
          * |maxInnerIterations| = 0;
@@ -1396,7 +1541,6 @@ Preset Methods
          * |locking|    = 0;
          * |maxBasisSize| = |maxBlockSize| \* 3;
          * |minRestartSize| = |maxBlockSize|;
-         * |scheme|  = |primme_thick|;
          * |maxPrevRetain|      = |maxBlockSize|;
          * |robustShifts|       = 0;
          * |maxInnerIterations| = 0;
@@ -1438,7 +1582,7 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -18: if |minRestartSize| < 0 or |minRestartSize| shouldn't be zero.
 * -19: if |maxBlockSize| < 0 or |maxBlockSize| shouldn't be zero.
 * -20: if |maxPrevRetain| < 0.
-* -21: if |scheme| is not one of `primme_thick` or `primme_dtr`.
+* -21: deprecated
 * -22: if |initSize| < 0.
 * -23: if |locking| == 0 and |initSize| > |maxBasisSize|.
 * -24: if |locking| and |initSize| > |numEvals|.
@@ -1455,8 +1599,8 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
 * -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
 * -34: if |ldevecs| < |nLocal|.
 * -35: if |ldOPs| is not zero and less than |nLocal|.
-* -36: not enough memory for |realWork|.
-* -37: not enough memory for |intWork|.
+* -36: deprecated.
+* -37: deprecated.
 * -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
 
 

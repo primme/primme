@@ -39,6 +39,23 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 ^^^^^^^^^
+
+Changes in PRIMME 3.0 (released on July 24, 2019):
+
+* Added support for the generalized Hermitian eigenvalue problem (see |massMatrixMatvec|) and the standard normal eigenvalue problem (see :c:func:`dprimme_normal`).
+
+* Added support for GPU (see :c:func:`magma_dprimme`, :c:func:`magma_dprimme_normal`, and :c:func:`magma_dprimme_svds`).
+
+* Added support for half precision (see :c:func:`hprimme` and :c:func:`kprimme`, and other variants for normal eigenproblems and singular value problems).
+
+* Added block orthogonalization (see |orth|).
+
+* Added an optional callback for broadcasting (see |broadcastReal| and |SbroadcastReal|).
+
+* The callbacks can work with different precision than the main call (see for instance |matrixMatvec_type| and |globalSumReal_type|).
+
+* Added new counters: |numGlobalSum|, |volumeGlobalSum|, |numBroadcast|, |volumeGlobalSum|, |timeOrtho|, |timeGlobalSum|, |timeBroadcast|.
+
 Changes in PRIMME 2.2 (released on October 26, 2018):
 
 * Improved stability for single precision.

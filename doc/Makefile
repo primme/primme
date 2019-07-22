@@ -9,7 +9,7 @@ BUILDDIR      = build
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
-$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed together with napoleon and matlabdomain extension. If you don't know what I'm talking about try 'pip install numpy scipy Sphinx sphinxcontrib-napoleon sphinxcontrib-matlabdomain')
+$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed together with napoleon and matlabdomain extension. If you don't know what I'm talking about try 'pip install numpy scipy Sphinx sphinxcontrib-napoleon sphinxcontrib-matlabdomain sphinx_rtd_theme sphinx-fortran')
 endif
 
 # Internal variables.

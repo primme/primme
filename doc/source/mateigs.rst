@@ -6,18 +6,20 @@ MATLAB Interface
 .. mat:function:: function [varargout] = primme_eigs(varargin)
 
    :mat:func:`primme_eigs` finds a few eigenvalues and their corresponding eigenvectors 
-   of a real symmetric or Hermitian matrix, ``A``, by calling PRIMME_.
+   of a symmetric/Hermitian matrix, ``A``, or of a generalized problem ``(A,B)``, by calling PRIMME_.
 
    ``D = primme_eigs(A)`` returns a vector of ``A``'s 6 largest magnitude eigenvalues.
 
-   ``D = primme_eigs(Afun,dim)`` accepts a function ``Afun`` instead of a matrix. ``Afun``
-   is a function handle and ``y = Afun(x)`` returns the matrix-vector product ``A*x``.
-   In all the following syntaxes, ``A`` can be replaced by ``Afun, dim``.
+   ``D = primme_eigs(A,B)`` returns a vector of the 6 largest magnitude eigenvalues of ``(A,B)``
 
-   ``D = primme_eigs(A,k)`` finds the ``k`` largest magnitude eigenvalues. ``k`` must be
+   ``D = primme_eigs(Afun,Bfun,dim)``
+   ``D = primme_eigs(Afun,dim)`` accepts a functions ``Afun`` and ``Bfun`` instead of matrices. ``Afun``
+   and ``Bfun`` are function handles. ``Afun(x)`` and ``Bfun(x)`` return the matrix-vector product ``A*x`` and ``B*x``.
+
+   ``D = primme_eigs(...,k)`` finds the ``k`` largest magnitude eigenvalues. ``k`` must be
    less than the dimension of the matrix ``A``.
 
-   ``D = primme_eigs(A,k,target)`` returns ``k`` eigenvalues such that: 
+   ``D = primme_eigs(...,k,target)`` returns ``k`` eigenvalues such that: 
    If ``target`` is a real number, it finds the closest eigenvalues to ``target``.
    If ``target`` is
 
@@ -42,7 +44,7 @@ MATLAB Interface
       * ``'CLT'`` or ``'CGT'``, find eigenvalues closest to but less or greater than
         the given values in ``OPTS.targetShifts``.
 
-   ``D = primme_eigs(A,k,target,OPTS)`` specifies extra solver parameters. Some
+   ``D = primme_eigs(...,k,target,OPTS)`` specifies extra solver parameters. Some
    default values are indicated in brackets {}:
 
       * |aNorm|: the estimated 2-norm of A {0.0 (estimate the norm internally)}
@@ -50,7 +52,12 @@ MATLAB Interface
         (see |eps|) {:math:`10^4` times the machine precision}
       * |maxBlockSize|: maximum block size (useful for high multiplicities) {1}
       * ``disp``: different level reporting (0-3) (see HIST) {no output 0}
+      * ``display``: toggle information display (see HIST)
       * ``isreal``: whether A represented by ``Afun`` is real or complex {false}
+      * ``isdouble``: whether the class of in/out vectors in ``Afun`` are
+         double or single {false}
+      * ``isgpu``: whether the class of in/out vectors in ``Afun`` are ``gpuArray`` {false}
+      * ``ishermitian``: whether ``A`` is Hermitian; otherwise it is considered normal {true}
       * |targetShifts|: shifts for interior eigenvalues (see ``target``) {[]}
       * ``v0``: any number of initial guesses to the eigenvectors (see |initSize| {[]}
       * ``orthoConst``: external orthogonalization constraints (see |numOrthoConst| {[]}
@@ -59,7 +66,6 @@ MATLAB Interface
       * |minRestartSize|: minimum Ritz vectors to keep in restarting
       * |maxMatvecs|: maximum number of matrix vector multiplications {Inf}
       * ``maxit``: maximum number of outer iterations (see |maxOuterIterations|) {Inf}
-      * |scheme|: the restart scheme {'primme_thick'}
       * |maxPrevRetain|: number of Ritz vectors from previous iteration that are kept after restart {typically >0}
       * |robustShifts|: setting to true may avoid stagnation or misconvergence 
       * |maxInnerIterations|: maximum number of inner solver iterations
@@ -143,6 +149,9 @@ MATLAB Interface
       opts.targetShifts = [2 20];
       d = primme_eigs(A,10,'SM',opts) % 1 eigenvalue closest to 2 and 
                                       % 9 eigenvalues closest to 20
+
+      B = diag(100:-1:1);
+      d = primme_eigs(A,B,10,'SM') % the 10 smallest magnitude eigenvalues
 
       opts = struct();
       opts.tol = 1e-4; % set tolerance
