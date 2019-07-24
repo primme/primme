@@ -17,7 +17,7 @@ update: clean src/primme/zhegv.c
 	cd ..; find include -name '*.h' -exec cp {} R/inst/{} \;
 	cd ../src; find . -name '*.[ch]' -exec cp {} ../R/src/primme/{} \;
 	R -e "require(Rcpp); compileAttributes();"
-	R -e "require(devtools); document()"
+	R -e "require(devtools); load_all(); document()"
 	#R -e 'require(rmarkdown); render("README.Rmd",output_format="all")'
 	make clean
 
