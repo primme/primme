@@ -94,6 +94,7 @@
 #'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
 #'       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
 #'       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
+#'       \item{\code{stats$timeOrtho}}{time expended in orthogonalizing}
 #'       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
 #'    }
 #'
@@ -371,6 +372,7 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    r$stats$estimateANorm <- .primme_svds_get_member("aNorm", primme_svds)
    r$stats$timeMatvec <- .primme_svds_get_member("stats_timeMatvec", primme_svds)
    r$stats$timePrecond <- .primme_svds_get_member("stats_timePrecond", primme_svds)
+   r$stats$timeOrtho <- .primme_svds_get_member("stats_timeOrtho", primme_svds)
    
    # Free PRIMME SVDS structure
    .primme_svds_free(primme_svds);

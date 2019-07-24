@@ -86,6 +86,7 @@
 #'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
 #'       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
 #'       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
+#'       \item{\code{stats$timeOrtho}}{time expended in orthogonalizing}
 #'       \item{\code{stats$estimateMinEval}}{estimation of the smallest eigenvalue of A}
 #'       \item{\code{stats$estimateMaxEval}}{estimation of the largest eigenvalue of A}
 #'       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
@@ -376,6 +377,7 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
    r$stats$estimateMaxEval <- .primme_get_member("stats_estimateMaxEVal", primme)
    r$stats$estimateANorm <- .primme_get_member("stats_estimateLargestSVal", primme)
    r$stats$timeMatvec <- .primme_get_member("stats_timeMatvec", primme)
+   r$stats$timeOrtho <- .primme_get_member("stats_timeOrtho", primme)
    r$stats$timePrecond <- .primme_get_member("stats_timePrecond", primme)
    
    # Free PRIMME structure
