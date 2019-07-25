@@ -1,6 +1,5 @@
 ## Test environments
-* OS X, R 3.3.3
-* openSUSE 42.1, R 3.3.3
+* Ubuntu 18.04, R 3.4 and devel
 * win-builder (devel and release)
 
 ## R CMD check results
