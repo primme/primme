@@ -1,4 +1,4 @@
-# cython: language_level=2, c_string_type=bytes, c_string_encoding=ascii
+# cython: language_level=2, c_string_type=bytes, c_string_encoding=ascii, embedsignature=True
 
 import numpy as np
 cimport numpy as np
