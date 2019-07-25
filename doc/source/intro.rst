@@ -13,6 +13,22 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran 77, M
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
 
+From PRIMME 2.2 to 3.0:
+
+* Removed constants ``primme_thick`` and ``primme_dtr``, and the member ``scheme`` from ``restarting_params``.
+
+* Added members |numBroadcast|, |volumeBroadcast|, ``flopsDense``, |timeBroadcast|, ``timeDense``, ``estimateBNorm``, ``estimateInvBNorm``, and |lockingIssue| to ``primme_stats``.
+
+* Added members |matrixMatvec_type|, |applyPreconditioner_type|, |massMatrixMatvec_type|, |globalSumReal_type|, |broadcastReal|, |broadcastReal_type|, |BNorm|, |invBNorm|, |orth|, |internalPrecision|, |massMatrix|, |convTestFun_type|, |monitorFun_type|, |queue|, and ``profile`` to :c:type:`primme_params`.
+
+* Added members |SmatrixMatvec_type|, |SapplyPreconditioner_type|, |SglobalSumReal_type|, |SbroadcastReal|, |SbroadcastReal_type|, |SinternalPrecision|, |SconvTestFun_type|, |SmonitorFun_type|, |Squeue|, and ``profile`` to :c:type:`primme_svds_params`.
+
+* Changed callbacks |monitorFun| and |SmonitorFun|.
+
+* Changed the value all constants; see :c:func:`primme_get_member_f77`, :c:func:`primme_set_member_f77`, :c:func:`primme_svds_get_member_f77`, and :c:func:`primme_svds_set_member_f77`.
+
+* Removed ``intWorkSize``, ``realWorkSize``, ``intWork``, ``realWork`` from :c:type:`primme_params` and :c:type:`primme_svds_params`.
+
 From PRIMME 2.0 to 2.1:
 
 * Added members |monitorFun| and ``monitor`` to :c:type:`primme_params`.
@@ -42,9 +58,9 @@ Changelog
 
 Changes in PRIMME 3.0 (released on July 24, 2019):
 
-* Added support for the generalized Hermitian eigenvalue problem (see |massMatrixMatvec|) and the standard normal eigenvalue problem (see :c:func:`dprimme_normal`).
+* Added support for the generalized Hermitian eigenvalue problem (see |massMatrixMatvec|) and the standard normal eigenvalue problem (see :c:func:`zprimme_normal`).
 
-* Added support for GPU (see :c:func:`magma_dprimme`, :c:func:`magma_dprimme_normal`, and :c:func:`magma_dprimme_svds`).
+* Added support for GPU (see :c:func:`magma_dprimme`, :c:func:`magma_zprimme_normal`, and :c:func:`magma_dprimme_svds`).
 
 * Added support for half precision (see :c:func:`hprimme` and :c:func:`kprimme`, and other variants for normal eigenproblems and singular value problems).
 
@@ -55,6 +71,8 @@ Changes in PRIMME 3.0 (released on July 24, 2019):
 * The callbacks can work with different precision than the main call (see for instance |matrixMatvec_type| and |globalSumReal_type|).
 
 * Added new counters: |numGlobalSum|, |volumeGlobalSum|, |numBroadcast|, |volumeGlobalSum|, |timeOrtho|, |timeGlobalSum|, |timeBroadcast|.
+
+* Added :c:func:`primme_params_create`, :c:func:`primme_params_destroy`, :c:func:`primme_svds_params_create`, and :c:func:`primme_svds_params_destroy`.
 
 Changes in PRIMME 2.2 (released on October 26, 2018):
 

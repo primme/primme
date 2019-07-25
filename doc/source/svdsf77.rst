@@ -412,21 +412,21 @@ primme_svds_set_member_f77
      | :c:member:`PRIMME_SVDS_monitorFun_type                <primme_svds_params.monitorFun_type>`
      | :c:member:`PRIMME_SVDS_monitor                        <primme_svds_params.monitor>`
      | :c:member:`PRIMME_SVDS_queue                          <primme_svds_params.queue>`
-     | :c:member:`PRIMME_SVDS_stats_numOuterIterations       <primme_svds_params.stats_numOuterIterations>`
-     | :c:member:`PRIMME_SVDS_stats_numRestarts              <primme_svds_params.stats_numRestarts>`
-     | :c:member:`PRIMME_SVDS_stats_numMatvecs               <primme_svds_params.stats_numMatvecs>`
-     | :c:member:`PRIMME_SVDS_stats_numPreconds              <primme_svds_params.stats_numPreconds>`
-     | :c:member:`PRIMME_SVDS_stats_numGlobalSum             <primme_svds_params.stats_numGlobalSum>`
-     | :c:member:`PRIMME_SVDS_stats_numBroadcast             <primme_svds_params.stats_numBroadcast>`
-     | :c:member:`PRIMME_SVDS_stats_volumeGlobalSum          <primme_svds_params.stats_volumeGlobalSum>`
-     | :c:member:`PRIMME_SVDS_stats_volumeBroadcast          <primme_svds_params.stats_volumeBroadcast>`
-     | :c:member:`PRIMME_SVDS_stats_elapsedTime              <primme_svds_params.stats_elapsedTime>`
-     | :c:member:`PRIMME_SVDS_stats_timeMatvec               <primme_svds_params.stats_timeMatvec>`
-     | :c:member:`PRIMME_SVDS_stats_timePrecond              <primme_svds_params.stats_timePrecond>`
-     | :c:member:`PRIMME_SVDS_stats_timeOrtho                <primme_svds_params.stats_timeOrtho>`
-     | :c:member:`PRIMME_SVDS_stats_timeGlobalSum            <primme_svds_params.stats_timeGlobalSum>`
-     | :c:member:`PRIMME_SVDS_stats_timeBroadcast            <primme_svds_params.stats_timeBroadcast>`
-     | :c:member:`PRIMME_SVDS_stats_lockingIssue             <primme_svds_params.stats_lockingIssue>`
+     | :c:member:`PRIMME_SVDS_stats_numOuterIterations       <primme_svds_params.stats.numOuterIterations>`
+     | :c:member:`PRIMME_SVDS_stats_numRestarts              <primme_svds_params.stats.numRestarts>`
+     | :c:member:`PRIMME_SVDS_stats_numMatvecs               <primme_svds_params.stats.numMatvecs>`
+     | :c:member:`PRIMME_SVDS_stats_numPreconds              <primme_svds_params.stats.numPreconds>`
+     | :c:member:`PRIMME_SVDS_stats_numGlobalSum             <primme_svds_params.stats.numGlobalSum>`
+     | :c:member:`PRIMME_SVDS_stats_numBroadcast             <primme_svds_params.stats.numBroadcast>`
+     | :c:member:`PRIMME_SVDS_stats_volumeGlobalSum          <primme_svds_params.stats.volumeGlobalSum>`
+     | :c:member:`PRIMME_SVDS_stats_volumeBroadcast          <primme_svds_params.stats.volumeBroadcast>`
+     | :c:member:`PRIMME_SVDS_stats_elapsedTime              <primme_svds_params.stats.elapsedTime>`
+     | :c:member:`PRIMME_SVDS_stats_timeMatvec               <primme_svds_params.stats.timeMatvec>`
+     | :c:member:`PRIMME_SVDS_stats_timePrecond              <primme_svds_params.stats.timePrecond>`
+     | :c:member:`PRIMME_SVDS_stats_timeOrtho                <primme_svds_params.stats.timeOrtho>`
+     | :c:member:`PRIMME_SVDS_stats_timeGlobalSum            <primme_svds_params.stats.timeGlobalSum>`
+     | :c:member:`PRIMME_SVDS_stats_timeBroadcast            <primme_svds_params.stats.timeBroadcast>`
+     | :c:member:`PRIMME_SVDS_stats_lockingIssue             <primme_svds_params.stats.lockingIssue>`
 
    :param value: (input) value to set.
 

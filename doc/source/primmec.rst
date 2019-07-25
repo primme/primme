@@ -39,7 +39,8 @@ To solve normal standard eigenproblems that are not Hermitian call:
 
    .. parsed-literal::
 
-      int :c:func:`zprimme_normal <zprimme_normal>` (PRIMME_COMPLEX_DOUBLE \*evals, PRIMME_COMPLEX_DOUBLE \*evecs,
+      int :c:func:`zprimme_normal <zprimme_normal>` (PRIMME_COMPLEX_DOUBLE \*evals,
+                       PRIMME_COMPLEX_DOUBLE \*evecs,
                        double \*resNorms, primme_params \*primme)
 
 .. only:: text
@@ -480,7 +481,7 @@ primme_initialize
 primme_params_create
 """"""""""""""""""""
 
-.. c:function:: primme_params* primme_params_create(void);
+.. c:function:: primme_params* primme_params_create(void)
 
    Allocate and initialize a parameters structure to the default values.
 

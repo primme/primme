@@ -55,7 +55,7 @@ MATLAB Interface
       * ``display``: toggle information display (see HIST)
       * ``isreal``: whether A represented by ``Afun`` is real or complex {false}
       * ``isdouble``: whether the class of in/out vectors in ``Afun`` are
-         double or single {false}
+        double or single {false}
       * ``isgpu``: whether the class of in/out vectors in ``Afun`` are ``gpuArray`` {false}
       * ``ishermitian``: whether ``A`` is Hermitian; otherwise it is considered normal {true}
       * |targetShifts|: shifts for interior eigenvalues (see ``target``) {[]}
