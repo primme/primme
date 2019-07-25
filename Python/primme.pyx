@@ -449,6 +449,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> new_evals, new_evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
     >>> new_evals # the next three largest eigenvalues
     array([96., 95., 94.])
+    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which=50.1)
+    >>> evals # the three closest eigenvalues to 50.1
+    array([50.,  51.,  49.])
+    >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
+    >>> # the smallest eigenvalues of the eigenproblem (A,M)
+    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
+    >>> evals # doctest: +SKIP
+    array([1.0035e-07, 1.0204e-02, 2.0618e-02])
     """
 
     A = aslinearoperator(A)
@@ -505,6 +513,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if sigma is not None:
             raise ValueError("Giving a numeric value in `which`, and also giving `sigma`. Set only one of those.")
         sigma = sigma0
+        __primme_params_set(PP, "target", "primme_closest_abs")
 
     cdef double sigma_c
     if sigma is not None:

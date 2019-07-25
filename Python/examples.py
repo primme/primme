@@ -48,11 +48,23 @@ evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
 assert_allclose(evals, [ 96.,  95.,  94.], atol=1e-6*100)
 print(evals) # [ 96.,  95.,  94.]
 
+# Compute the three closest eigenvalues to 50.1
+evals, evecs = primme.eigsh(A, 3, tol=1e-6, which=50.1)
+assert_allclose(evals, [ 50.,  51.,  49.], atol=1e-6*100)
+print(evals) # [ 50.,  51.,  49.]
+
 # Estimation of the largest eigenvalue in magnitude
 def convtest_lm(eval, evecl, rnorm):
    return np.abs(eval) > 0.1 * rnorm
 eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
+
+# Sparse singular mass matrix
+M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1), dtype=np.float32), [0], 100, 100)
+evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
+assert_allclose(evals, [ 0./99.,  1./98.,  2./97.], atol=1e-6*100)
+print(evals)
+
 
 # Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
 A = scipy.sparse.spdiags(range(10), [0], 100, 10)
