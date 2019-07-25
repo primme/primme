@@ -59,6 +59,7 @@ LEXFLAGS=-lfl
 CC="cc"
 AWK="awk"
 F2C="f2c"
+PYTHON="python"
 
 cat <<EOF > $TMP/lenscrub.l
 /* {definitions} */
@@ -102,6 +103,22 @@ EOF
 ${LEX} -o${TMP}/lenscrub.c ${TMP}/lenscrub.l
 ${CC} -o ${TMP}/lenscrub ${TMP}/lenscrub.c ${LEXFLAGS}
 
+cat << 'EOF' > $TMP/chararrayp1.py
+import re, sys
+
+# Replace var[number] by var[number + 1]
+def repl_var(m):
+        return "%s[%d]" % (m.group(1), int(m.group(2))+1)
+
+# Apply repl_var to all declared variables in 'char var_decl [, var_decl]+ ;'
+pvar = r'\s*'.join(r'(\w+) \[ (\d+) \]'.split())
+def repl_declaration(m):
+        return re.sub(pvar, repl_var, m.group(0))
+
+# Increase the length by one of all char arrays
+p = r'\s*'.join(r'char \w+ \[ \d+ \] (?:, \w+ \[ \d+ \])* ;'.split())
+sys.stdout.write(re.sub(p, repl_declaration, sys.stdin.read()))
+EOF
 
 cat << 'EOF'
 /* f2c.h  --  Standard Fortran to C header file */
@@ -509,6 +526,7 @@ $AWK '
 	}
 	/^$/ {	a=1; }' |
 $SED -e "
-	s/#include \"f2c.h\"//g" 
+	s/#include \"f2c.h\"//g"  |
+$PYTHON $TMP/chararrayp1.py
 
 rm -rf $TMP
