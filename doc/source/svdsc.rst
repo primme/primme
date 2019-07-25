@@ -14,10 +14,6 @@ To solve real and complex singular value problems call respectively:
 
    .. parsed-literal::
 
-      int :c:func:`sprimme_svds <sprimme_svds>` (float \*svals, float \*svecs, float \*resNorms,
-                              :c:type:`primme_svds_params` \*primme_svds)
-      int :c:func:`cprimme_svds <zprimme_svds>` (float \*svals, :c:type:`PRIMME_COMPLEX_FLOAT` \*svecs,
-                       float \*resNorms, primme_svds_params \*primme_svds)
       int :c:func:`dprimme_svds <dprimme_svds>` (double \*svals, double \*svecs, double \*resNorms,
                              primme_svds_params \*primme_svds)
       int :c:func:`zprimme_svds <zprimme_svds>` (double \*svals, :c:type:`PRIMME_COMPLEX_DOUBLE` \*svecs,
@@ -27,17 +23,16 @@ To solve real and complex singular value problems call respectively:
 
    ::
 
-      int sprimme_svds(float *svals, float *svecs, float *resNorms,
-                  primme_svds_params *primme_svds);
-
-      int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
-                  primme_svds_params\*primme_svds);
-
       int dprimme_svds(double *svals, double *svecs, double *resNorms, 
                   primme_svds_params *primme);
 
       int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, 
                   primme_svds_params *primme);
+
+There are versions for single precision, :c:func:`sprimme_svds` and
+:c:func:`cprimme_svds`, and for half precision :c:func:`hprimme_svds`, :c:func:`kprimme_svds`,
+:c:func:`hsprimme_svds`, :c:func:`ksprimme_svds`.
+
 
 Other useful functions:
 
@@ -50,7 +45,7 @@ Other useful functions:
          primme_preset_method methodStage1,
          primme_preset_method methodStage2, primme_svds_params \*primme_svds)
       void :c:func:`primme_svds_display_params <primme_svds_display_params>` (primme_svds_params primme_svds)
-      void :c:func:`primme_svds_free <primme_svds_Free>` (primme_svds_params \*primme_svds)
+      void :c:func:`primme_svds_free <primme_svds_free>` (primme_svds_params \*primme_svds)
 
 .. only:: text
 
@@ -401,7 +396,7 @@ primme_svds_initialize
 primme_svds_create
 """"""""""""""""""
 
-.. c:function:: primme_svds_params* primme_svds_create()
+.. c:function:: primme_svds_params* primme_svds_params_create(void)
 
    Allocate and initialize a parameters structure to the default values.
 

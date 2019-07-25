@@ -17,7 +17,7 @@ primme_svds_params
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
-         | this field is read by :c:func:`dprimme`.
+         | this field is read by :c:func:`dprimme_svds`.
 
    .. c:member:: PRIMME_INT n
 
@@ -26,7 +26,7 @@ primme_svds_params
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
-         | this field is read by :c:func:`dprimme`.
+         | this field is read by :c:func:`dprimme_svds`.
 
    .. c:member:: void (*matrixMatvec) (void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr)
 
@@ -129,7 +129,7 @@ primme_svds_params
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to 1;
-         | this field is read by :c:func:`dprimme` and :c:func:`zprimme_svds`.
+         | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
    .. c:member:: int procID
 
@@ -359,7 +359,7 @@ primme_svds_params
 
       .. note::
 
-         Eventually this is used by  :c:func:`dprimme` and :c:func:`zprimme`. Please
+         Eventually this is used by  :c:func:`dprimme_svds` and :c:func:`zprimme_svds`. Please
          see considerations of |targetShifts|.
 
    .. c:member:: int printLevel
@@ -654,9 +654,9 @@ primme_svds_params
       :param primme_svds: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      The actual type of ``leftsvec`` and ``rightsvec`` depends on which function is being calling. For :c:func:`dprimme_svds`, it is ``double``,
-      for :c:func:`zprimme_svds` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme_svds` it is ``float`` and
-      for :c:func:`cprimme_svds` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
+      The actual type of ``leftsvec`` and ``rightsvec`` matches the type of ``svecs`` of the
+      calling  :c:func:`dprimme_svds` (or a variant), unless |SconvTestFun_type| sets
+      another precision.
 
       .. warning::
 
@@ -669,6 +669,22 @@ primme_svds_params
          | :c:func:`svds_primme_initialize` sets this field to NULL;
          | this field is read and written by :c:func:`dprimme_svds`.
 
+   .. c:member:: primme_op_datatype convTestFun_type
+
+      Precision of the vectors ``leftsvec`` and ``rightsvec`` passed to |SconvTestFun|.
+
+      If it is ``primme_op_default``, the type matches the calling
+      :c:func:`dprimme_svds` (or a variant). Otherwise, the precision is half,
+      single, or double, if |SconvTestFun_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
+
    .. c:member:: void *convtest
 
       This field may be used to pass any required information 
@@ -678,7 +694,7 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
  
-   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, int *stage, primme_svds_params *primme_svds, int *ierr)
+   .. c:member:: void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedSvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, const char *msg, double *time, primme_event *event, int *stage, primme_svds_params *primme_svds, int *ierr)
 
 
       Convergence monitor. Used to customize how to report solver 
@@ -698,6 +714,8 @@ primme_svds_params
       :param lockedNorms:  array with residual norms of the locked triplets.
       :param inner_its:    number of performed QMR iterations in the current correction equation.
       :param LSRes:        residual norm of the linear system at the current QMR iteration.
+      :param msg:          output message or function name.
+      :param time:         time duration.
       :param event:        event reported.
       :param stage:        ``0`` for first stage, ``1`` for second stage.
       :param primme_svds:  parameters structure; the counter in ``stats`` are updated with the current number of matrix-vector products, iterations, elapsed time, etc., since start.
@@ -747,6 +765,12 @@ primme_svds_params
 
         ``inner_its`` and  ``LSRes`` are not be provided.
 
+      * ``*event == primme_event_message``: output message
+
+        ``msg`` is the message to print.
+
+        The rest of the arguments are not provided.
+
       The values of ``basisFlags`` and ``lockedFlags`` are:
 
       * ``0``: unconverged.
@@ -754,11 +778,31 @@ primme_svds_params
       * ``2``: passed convergence test (see |Seps|).
       * ``3``: converged because the solver may not be able to reduce the residual norm further.
 
+      The actual type of ``basisEvals``, ``basisNorms``, ``lockedEvals``, ``lockedNorms`` and ``LSRes`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme_svds` (or a variant), unless |SmonitorFun_type| sets
+      another precision.
+
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
          | :c:func:`dprimme_svds` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
+
+   .. c:member:: primme_op_datatype monitorFun_type
+
+      Precision of the vectors ``basisEvals``, ``basisNorms``, ``lockedEvals``, ``lockedNorms`` and ``LSRes`` passed to |SmonitorFun|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme_svds` (or a variant). Otherwise, the precision is half,
+      single, or double, if |SmonitorFun_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme_svds`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
 
 
    .. c:member:: void *monitor
@@ -922,8 +966,22 @@ primme_svds_params
 
       Input/output:
 
-         | :c:func:`primme_initialize` sets this field to 0;
-         | written by :c:func:`dprimme`.
+         | :c:func:`primme_svds_initialize` sets this field to 0;
+         | written by :c:func:`dprimme_svds`.
+
+   .. c:member:: void *queue
+
+      Pointer to the accelerator's data structure.
+
+      If the main call is :c:func:`dprimme_svds_magma` or a variant, this field
+      should have the pointer to an initialized ``magma_queue_t``.
+
+      See example :file:`examples/ex_svds_dmagma.c`.
+
+      Input/output:
+
+         | :c:func:`primme_svds_initialize` sets this field to NULL;
+         | this field is read by :c:func:`dprimme_svds_magma`.
 
 
 .. _methods_svds:

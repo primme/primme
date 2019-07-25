@@ -1012,7 +1012,7 @@ primme_params
          | this field is read by :c:func:`dprimme`.
 
 
-   .. c:member:: void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, primme_event *event, struct primme_params *primme, int *ierr)
+   .. c:member:: void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, const char *msg, double *time, primme_event *event, struct primme_params *primme, int *ierr)
 
 
       Convergence monitor. Used to customize how to report solver 
@@ -1032,6 +1032,8 @@ primme_params
       :param lockedNorms:  array with the residual norms of the locked pairs.
       :param inner_its:    number of performed QMR iterations in the current correction equation. It resets for each block vector.
       :param LSRes:        residual norm of the linear system at the current QMR iteration.
+      :param msg:          output message or function name.
+      :param time:         time duration.
       :param event:        event reported.
       :param primme:       parameters structure; the counter in ``stats`` are updated with the current number of matrix-vector products, iterations, elapsed time, etc., since start.
       :param ierr:         output error code; if it is set to non-zero, the current call to PRIMME will stop.
@@ -1081,6 +1083,12 @@ primme_params
 
         ``inner_its`` and ``LSRes`` are not provided.
 
+      * ``*event == primme_event_message``: output message
+
+        ``msg`` is the message to print.
+
+        The rest of the arguments are not provided.
+
       The values of ``basisFlags`` and ``lockedFlags`` are:
 
       * ``0``: unconverged.
@@ -1090,11 +1098,31 @@ primme_params
         to reduce the residual norm further without recombining 
         the locked eigenvectors.
 
+      The actual type of ``basisEvals``, ``basisNorms``, ``lockedEvals``, ``lockedNorms`` and ``LSRes`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme` (or a variant), unless |monitorFun_type| sets
+      another precision.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | :c:func:`dprimme` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme`.
+
+   .. c:member:: primme_op_datatype monitorFun_type
+
+      Precision of the vectors ``basisEvals``, ``basisNorms``, ``lockedEvals``, ``lockedNorms`` and ``LSRes`` passed to |monitorFun|.
+
+      If it is ``primme_op_default``, the vectors' type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |monitorFun_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
 
    .. c:member:: void *monitor
 
@@ -1316,14 +1344,30 @@ primme_params
       :param primme: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
 
-      The actual type of ``evec`` depends on which function is being calling. For :c:func:`dprimme`, it is ``double``,
-      for :c:func:`zprimme` it is :c:type:`PRIMME_COMPLEX_DOUBLE`, for :c:func:`sprimme` it is ``float`` and
-      for :c:func:`cprimme` it is :c:type:`PRIMME_COMPLEX_FLOAT`.
+      The actual type of ``evec`` matches the type of ``evecs`` of the
+      calling  :c:func:`dprimme` (or a variant), unless |convTestFun_type| sets
+      another precision.
 
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme`.
+
+   .. c:member:: primme_op_datatype convTestFun_type
+
+      Precision of the vectors ``evec`` passed to |convTestFun|.
+
+      If it is ``primme_op_default``, ``evec``'s type matches the calling
+      :c:func:`dprimme` (or a variant). Otherwise, the precision is half,
+      single, or double, if |convTestFun_type| is ``primme_half``, ``primme_float``
+      or ``primme_double`` respectively.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to ``primme_op_default``;
+         | this field is read by :c:func:`dprimme`, and if it is
+           ``primme_op_default`` it is set to the value that matches the precision of
+           calling function.
 
    .. c:member:: void *convtest
 
@@ -1333,6 +1377,20 @@ primme_params
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
+
+   .. c:member:: void *queue
+
+      Pointer to the accelerator's data structure.
+
+      If the main call is :c:func:`dprimme_magma` or a variant, this field
+      should have the pointer to an initialized ``magma_queue_t``.
+
+      See example :file:`examples/ex_eigs_dmagma.c`.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to NULL;
+         | this field is read by :c:func:`dprimme_magma`.
 
 .. _methods:
 

@@ -513,7 +513,7 @@ primme_set_member_f77
       | :c:member:`PRIMME_massMatrix                          <primme_params.massMatrix>`
       | :c:member:`PRIMME_preconditioner                      <primme_params.preconditioner>`
       | :c:member:`PRIMME_initBasisMode                       <primme_params.initBasisMode>`
-      | :c:member:`PRIMME_projectionParams_projection         <primme_params.projectionParams_projection>`
+      | :c:member:`PRIMME_projectionParams_projection         <primme_params.projectionParams.projection>`
       | :c:member:`PRIMME_restartingParams_maxPrevRetain      <primme_params.restartingParams.maxPrevRetain>`
       | :c:member:`PRIMME_correctionParams_precondition       <primme_params.correctionParams.precondition>`
       | :c:member:`PRIMME_correctionParams_robustShifts       <primme_params.correctionParams.robustShifts>`
