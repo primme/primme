@@ -94,7 +94,7 @@ def __primme_params_get(PrimmeParams pp_, field_):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
-    cdef primme_params_label l = -1
+    cdef primme_params_label l = <primme_params_label>0
     cdef primme_type t
     cdef int arity
     primme_member_info(&l, <const char **>&field, &t, &arity)
@@ -116,7 +116,7 @@ def __primme_params_get(PrimmeParams pp_, field_):
         raise ValueError("Not supported type for member '%s'" % field)
 
 cdef object primme_params_get_object(primme_params *primme, cython.p_char field):
-    cdef primme_params_label l = -1
+    cdef primme_params_label l = <primme_params_label>0
     cdef primme_type t
     cdef int arity, r
     cdef void *v_pvoid
@@ -130,22 +130,8 @@ cdef object primme_params_get_object(primme_params *primme, cython.p_char field)
     except:
         return None
 
-cdef void* primme_params_get_pointer(primme_params *primme, cython.p_char field):
-    cdef primme_params_label l = -1
-    cdef primme_type t
-    cdef int arity, r
-    cdef void *v_pvoid
-    try:
-        r = primme_member_info(&l, <const char **>&field, &t, &arity)
-        assert r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
-        r = primme_get_member(primme, l, &v_pvoid)
-        assert r == 0, "Invalid field '%s'" % <bytes>field
-        return v_pvoid
-    except:
-        return NULL
-
 cdef np.int64_t primme_params_get_int(primme_params *primme, cython.p_char field):
-    cdef primme_params_label l = -1
+    cdef primme_params_label l = <primme_params_label>0
     cdef primme_type t
     cdef int arity, r
     cdef np.int64_t v_int
@@ -162,7 +148,7 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char*>field_
-    cdef primme_params_label l = -1
+    cdef primme_params_label l = <primme_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
@@ -191,7 +177,7 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
         raise ValueError("Not supported type for member '%s'" % field_)
    
 cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, void* value) except *:
-    cdef primme_params_label l = -1
+    cdef primme_params_label l = <primme_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
@@ -200,7 +186,7 @@ cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, 
     assert(r == 0, "Invalid field '%s'" % <bytes>field)
 
 cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, double *value) except *:
-    cdef primme_params_label l = -1
+    cdef primme_params_label l = <primme_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
@@ -613,7 +599,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         if return_history:
             primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
 
-    cdef void *evecs_p
     cdef double[::1] evals_d, norms_d
     cdef float[::1] evals_s, norms_s
     cdef float[::1, :] evecs_s
@@ -632,16 +617,12 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     evecs = np.zeros((n, numOrthoConst+k), dtype, order='F')
     if dtype.type is np.float64:
         evecs_d = evecs
-        evecs_p = <void*>&evecs_d[0,0]
     elif dtype.type is np.float32:
         evecs_s = evecs
-        evecs_p = <void*>&evecs_s[0,0]
     elif dtype.type is np.complex64:
         evecs_c = evecs
-        evecs_p = <void*>&evecs_c[0,0]
     elif dtype.type is np.complex128:
         evecs_z = evecs
-        evecs_p = <void*>&evecs_z[0,0]
 
     if lock is not None:
         np.copyto(evecs[:, 0:numOrthoConst], lock[:, 0:numOrthoConst])
@@ -667,18 +648,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         primme_constant_info(<const char *>method, &method_int)
         if method_int < 0:
             raise ValueError('Not valid "method": %s' % method)
-        primme_set_method(method_int, pp)
+        primme_set_method(<primme_preset_method>method_int, pp)
  
     global __user_function_exception
     __user_function_exception = None
     if dtype.type is np.complex64:
-        err = cprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
+        err = cprimme(&evals_s[0], &evecs_c[0,0], &norms_s[0], pp)
     elif dtype.type is np.float32:
-        err = sprimme(&evals_s[0], evecs_p, &norms_s[0], pp)
+        err = sprimme(&evals_s[0], &evecs_s[0,0], &norms_s[0], pp)
     elif dtype.type is np.float64:
-        err = dprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
+        err = dprimme(&evals_d[0], &evecs_d[0,0], &norms_d[0], pp)
     else:
-        err = zprimme(&evals_d[0], evecs_p, &norms_d[0], pp)
+        err = zprimme(&evals_d[0], &evecs_z[0,0], &norms_d[0], pp)
 
     if err != 0:
         if __user_function_exception is not None:
@@ -749,7 +730,7 @@ def __primme_svds_params_get(PrimmeSvdsParams pp_, field_):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
-    cdef primme_svds_params_label l = -1
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
@@ -771,7 +752,7 @@ def __primme_svds_params_get(PrimmeSvdsParams pp_, field_):
         raise ValueError("Not supported type for member '%s'" % field)
 
 cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cython.p_char field):
-    cdef primme_svds_params_label l = -1
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
     cdef int arity, r
     cdef void *v_pvoid
@@ -786,7 +767,7 @@ cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cytho
         return None
 
 cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cython.p_char field):
-    cdef primme_svds_params_label l = -1
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
     cdef int arity, r
     cdef np.int64_t v_int
@@ -803,7 +784,7 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
-    cdef primme_svds_params_label l = -1
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
@@ -832,7 +813,7 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
         raise ValueError("Not supported type for member '%s'" % field_)
    
 cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython.p_char field, void* value) except *:
-    cdef primme_svds_params_label l = -1
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
@@ -841,7 +822,7 @@ cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython
     assert(r == 0, "Invalid field '%s'" % <bytes>field)
 
 cdef void primme_svds_params_set_doubles(primme_svds_params *primme_svds, cython.p_char field, double *value) except *:
-    cdef primme_svds_params_label l = -1
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
@@ -1242,7 +1223,6 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         if return_history:
             primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
 
-    cdef void *svecs_p
     cdef double[::1] svals_d, norms_d
     cdef float[::1] svals_s, norms_s
     cdef float[::1] svecs_s
@@ -1261,16 +1241,12 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     svecs = np.empty(((m+n)*(numOrthoConst+k),), dtype)
     if dtype.type is np.float64:
         svecs_d = svecs
-        svecs_p = <void*>&svecs_d[0]
     elif dtype.type is np.float32:
         svecs_s = svecs
-        svecs_p = <void*>&svecs_s[0]
     elif dtype.type is np.complex64:
         svecs_c = svecs
-        svecs_p = <void*>&svecs_c[0]
     elif dtype.type is np.complex128:
         svecs_z = svecs
-        svecs_p = <void*>&svecs_z[0]
 
     u0, v0 = check_pair(u0, v0, "v0 or u0")
     
@@ -1286,7 +1262,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         primme_constant_info(methodStage2 if methodStage2 is not None else "PRIMME_DEFAULT_METHOD", &methodStage2_int)
         if methodStage2_int < 0:
             raise ValueError('Not valid "methodStage2": %s' % methodStage2)
-        primme_svds_set_method(method_int, methodStage1_int, methodStage2_int, pp)
+        primme_svds_set_method(<primme_svds_preset_method>method_int, <primme_preset_method>methodStage1_int, <primme_preset_method>methodStage2_int, pp)
 
     cdef int initSize = 0
     if v0 is not None:
@@ -1302,13 +1278,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     global __user_function_exception
     __user_function_exception = None
     if dtype.type is np.complex64:
-        err = cprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
+        err = cprimme_svds(&svals_s[0], &svecs_c[0], &norms_s[0], pp)
     elif dtype.type is np.float32:
-        err = sprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
+        err = sprimme_svds(&svals_s[0], &svecs_s[0], &norms_s[0], pp)
     elif dtype.type is np.float64:
-        err = dprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
+        err = dprimme_svds(&svals_d[0], &svecs_d[0], &norms_d[0], pp)
     else:
-        err = zprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
+        err = zprimme_svds(&svals_d[0], &svecs_z[0], &norms_d[0], pp)
 
     if err != 0:
         if __user_function_exception is not None:
