@@ -219,8 +219,8 @@ static void primme_svds_free_context(primme_context ctx) {
 int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, 
       primme_svds_params *primme_svds) {
 
-   return Xprimme_svds_aux((void *)svals, (void *)svecs, (void *)resNorms,
-         primme_svds, PRIMME_OP_SCALAR);
+   return Xprimme_svds_aux(
+         svals, svecs, resNorms, primme_svds, PRIMME_OP_SCALAR);
 }
 
 // Definition for *hsprimme_svds and *ksprimme_primme
@@ -234,8 +234,8 @@ int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms,
 int Xsprimme_svds(float *svals, XSCALAR *svecs, float *resNorms,
       primme_svds_params *primme_svds) {
 
-   return Xprimme_svds_aux((void *)svals, (void *)svecs, (void *)resNorms,
-         primme_svds, primme_op_float);
+   return Xprimme_svds_aux(
+         svals, svecs, resNorms, primme_svds, primme_op_float);
 }
 
 #  undef Xsprimme_svds
@@ -267,7 +267,7 @@ int Xsprimme_svds(float *svals, XSCALAR *svecs, float *resNorms,
  * return error code
  ******************************************************************************/
 
-STATIC int Xprimme_svds_aux(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, 
+STATIC int Xprimme_svds_aux(void *svals, XSCALAR *svecs, void *resNorms, 
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type) {
 
 #ifdef SUPPORTED_TYPE
@@ -1029,7 +1029,7 @@ STATIC int copy_last_params_to_svds(int stage, XREAL *svals, SCALAR *svecs,
  *              -4..-19  Inappropriate input parameters were found
  *
  ******************************************************************************/
-STATIC int primme_svds_check_input(XREAL *svals, SCALAR *svecs, XREAL *resNorms, 
+STATIC int primme_svds_check_input(void *svals, void *svecs, void *resNorms, 
       primme_svds_params *primme_svds) {
    int ret;
    ret = 0;

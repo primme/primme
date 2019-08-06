@@ -36,7 +36,7 @@
 #if !defined(CHECK_TEMPLATE) && !defined(Xprimme_svds_aux)
 #  define Xprimme_svds_aux CONCAT(Xprimme_svds_aux,SCALAR_SUF)
 #endif
-int Xprimme_svds_auxdprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs, dummy_type_dprimme *resNorms,
+int Xprimme_svds_auxdprimme(void *svals, dummy_type_dprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 #if !defined(CHECK_TEMPLATE) && !defined(wrapper_svds_Sprimme)
 #  define wrapper_svds_Sprimme CONCAT(wrapper_svds_,SCALAR_SUF)
@@ -150,7 +150,7 @@ int copy_last_params_to_svdsdprimme(int stage, dummy_type_dprimme *svals, dummy_
 #if !defined(CHECK_TEMPLATE) && !defined(primme_svds_check_input)
 #  define primme_svds_check_input CONCAT(primme_svds_check_input,SCALAR_SUF)
 #endif
-int primme_svds_check_inputdprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs, dummy_type_dprimme *resNorms,
+int primme_svds_check_inputdprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 #if !defined(CHECK_TEMPLATE) && !defined(matrixMatvecSVDS)
 #  define matrixMatvecSVDS CONCAT(matrixMatvecSVDS,SCALAR_SUF)
@@ -226,7 +226,7 @@ void monitor_stage2dprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxhprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs, dummy_type_hprimme *resNorms,
+int Xprimme_svds_auxhprimme(void *svals, dummy_type_hprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_hprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -238,7 +238,7 @@ int copy_last_params_from_svdshprimme(int stage, dummy_type_hprimme *svals, dumm
 int copy_last_params_to_svdshprimme(int stage, dummy_type_hprimme *svals, dummy_type_hprimme *svecs,
       dummy_type_hprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputhprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs, dummy_type_hprimme *resNorms,
+int primme_svds_check_inputhprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDShprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -278,7 +278,7 @@ void monitor_stage2hprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxkprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs, dummy_type_hprimme *resNorms,
+int Xprimme_svds_auxkprimme(void *svals, dummy_type_kprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_kprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -290,7 +290,7 @@ int copy_last_params_from_svdskprimme(int stage, dummy_type_hprimme *svals, dumm
 int copy_last_params_to_svdskprimme(int stage, dummy_type_hprimme *svals, dummy_type_kprimme *svecs,
       dummy_type_hprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputkprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs, dummy_type_hprimme *resNorms,
+int primme_svds_check_inputkprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSkprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -330,7 +330,7 @@ void monitor_stage2kprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxsprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs, dummy_type_sprimme *resNorms,
+int Xprimme_svds_auxsprimme(void *svals, dummy_type_sprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_sprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -342,7 +342,7 @@ int copy_last_params_from_svdssprimme(int stage, dummy_type_sprimme *svals, dumm
 int copy_last_params_to_svdssprimme(int stage, dummy_type_sprimme *svals, dummy_type_sprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputsprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs, dummy_type_sprimme *resNorms,
+int primme_svds_check_inputsprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSsprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -382,7 +382,7 @@ void monitor_stage2sprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxcprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs, dummy_type_sprimme *resNorms,
+int Xprimme_svds_auxcprimme(void *svals, dummy_type_cprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_cprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -394,7 +394,7 @@ int copy_last_params_from_svdscprimme(int stage, dummy_type_sprimme *svals, dumm
 int copy_last_params_to_svdscprimme(int stage, dummy_type_sprimme *svals, dummy_type_cprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputcprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs, dummy_type_sprimme *resNorms,
+int primme_svds_check_inputcprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDScprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -434,7 +434,7 @@ void monitor_stage2cprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxzprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs, dummy_type_dprimme *resNorms,
+int Xprimme_svds_auxzprimme(void *svals, dummy_type_zprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_zprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -446,7 +446,7 @@ int copy_last_params_from_svdszprimme(int stage, dummy_type_dprimme *svals, dumm
 int copy_last_params_to_svdszprimme(int stage, dummy_type_dprimme *svals, dummy_type_zprimme *svecs,
       dummy_type_dprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputzprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs, dummy_type_dprimme *resNorms,
+int primme_svds_check_inputzprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSzprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -486,7 +486,7 @@ void monitor_stage2zprimme(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxmagma_hprimme(dummy_type_hprimme *svals, dummy_type_hprimme *svecs, dummy_type_hprimme *resNorms,
+int Xprimme_svds_auxmagma_hprimme(void *svals, dummy_type_hprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_magma_hprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -498,7 +498,7 @@ int copy_last_params_from_svdsmagma_hprimme(int stage, dummy_type_hprimme *svals
 int copy_last_params_to_svdsmagma_hprimme(int stage, dummy_type_hprimme *svals, dummy_type_magma_hprimme *svecs,
       dummy_type_hprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputmagma_hprimme(dummy_type_hprimme *svals, dummy_type_magma_hprimme *svecs, dummy_type_hprimme *resNorms,
+int primme_svds_check_inputmagma_hprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSmagma_hprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -538,7 +538,7 @@ void monitor_stage2magma_hprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxmagma_kprimme(dummy_type_hprimme *svals, dummy_type_kprimme *svecs, dummy_type_hprimme *resNorms,
+int Xprimme_svds_auxmagma_kprimme(void *svals, dummy_type_kprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_magma_kprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -550,7 +550,7 @@ int copy_last_params_from_svdsmagma_kprimme(int stage, dummy_type_hprimme *svals
 int copy_last_params_to_svdsmagma_kprimme(int stage, dummy_type_hprimme *svals, dummy_type_magma_kprimme *svecs,
       dummy_type_hprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputmagma_kprimme(dummy_type_hprimme *svals, dummy_type_magma_kprimme *svecs, dummy_type_hprimme *resNorms,
+int primme_svds_check_inputmagma_kprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSmagma_kprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -590,7 +590,7 @@ void monitor_stage2magma_kprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxmagma_sprimme(dummy_type_sprimme *svals, dummy_type_sprimme *svecs, dummy_type_sprimme *resNorms,
+int Xprimme_svds_auxmagma_sprimme(void *svals, dummy_type_sprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_magma_sprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -602,7 +602,7 @@ int copy_last_params_from_svdsmagma_sprimme(int stage, dummy_type_sprimme *svals
 int copy_last_params_to_svdsmagma_sprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_sprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputmagma_sprimme(dummy_type_sprimme *svals, dummy_type_magma_sprimme *svecs, dummy_type_sprimme *resNorms,
+int primme_svds_check_inputmagma_sprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSmagma_sprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -642,7 +642,7 @@ void monitor_stage2magma_sprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxmagma_cprimme(dummy_type_sprimme *svals, dummy_type_cprimme *svecs, dummy_type_sprimme *resNorms,
+int Xprimme_svds_auxmagma_cprimme(void *svals, dummy_type_cprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_magma_cprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -654,7 +654,7 @@ int copy_last_params_from_svdsmagma_cprimme(int stage, dummy_type_sprimme *svals
 int copy_last_params_to_svdsmagma_cprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_cprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputmagma_cprimme(dummy_type_sprimme *svals, dummy_type_magma_cprimme *svecs, dummy_type_sprimme *resNorms,
+int primme_svds_check_inputmagma_cprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSmagma_cprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -694,7 +694,7 @@ void monitor_stage2magma_cprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxmagma_dprimme(dummy_type_dprimme *svals, dummy_type_dprimme *svecs, dummy_type_dprimme *resNorms,
+int Xprimme_svds_auxmagma_dprimme(void *svals, dummy_type_dprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_magma_dprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -706,7 +706,7 @@ int copy_last_params_from_svdsmagma_dprimme(int stage, dummy_type_dprimme *svals
 int copy_last_params_to_svdsmagma_dprimme(int stage, dummy_type_dprimme *svals, dummy_type_magma_dprimme *svecs,
       dummy_type_dprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputmagma_dprimme(dummy_type_dprimme *svals, dummy_type_magma_dprimme *svecs, dummy_type_dprimme *resNorms,
+int primme_svds_check_inputmagma_dprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSmagma_dprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -746,7 +746,7 @@ void monitor_stage2magma_dprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
-int Xprimme_svds_auxmagma_zprimme(dummy_type_dprimme *svals, dummy_type_zprimme *svecs, dummy_type_dprimme *resNorms,
+int Xprimme_svds_auxmagma_zprimme(void *svals, dummy_type_zprimme *svecs, void *resNorms,
       primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
 int wrapper_svds_magma_zprimme(void *svals_, void *svecs_, void *resNorms_,
       primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
@@ -758,7 +758,7 @@ int copy_last_params_from_svdsmagma_zprimme(int stage, dummy_type_dprimme *svals
 int copy_last_params_to_svdsmagma_zprimme(int stage, dummy_type_dprimme *svals, dummy_type_magma_zprimme *svecs,
       dummy_type_dprimme *rnorms, int allocatedTargetShifts,
       primme_context ctx);
-int primme_svds_check_inputmagma_zprimme(dummy_type_dprimme *svals, dummy_type_magma_zprimme *svecs, dummy_type_dprimme *resNorms,
+int primme_svds_check_inputmagma_zprimme(void *svals, void *svecs, void *resNorms,
       primme_svds_params *primme_svds);
 void matrixMatvecSVDSmagma_zprimme(void *x_, PRIMME_INT *ldx, void *y_,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);

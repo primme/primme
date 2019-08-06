@@ -983,7 +983,7 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
          primme_svds->convTestFun = v.convTestFun_v;
          break;
       case PRIMME_SVDS_convTestFun_type:
-         primme_svds->convTestFun_type = *v.int_v;
+         primme_svds->convTestFun_type = (primme_op_datatype)*v.int_v;
          break;
       case PRIMME_SVDS_convtest:
          primme_svds->convtest = v.ptr_v;
@@ -992,7 +992,7 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
          primme_svds->monitorFun = v.monitorFun_v;
          break;
       case PRIMME_SVDS_monitorFun_type:
-         primme_svds->monitorFun_type = *v.int_v;
+         primme_svds->monitorFun_type = (primme_op_datatype)*v.int_v;
          break;
       case PRIMME_SVDS_monitor:
          primme_svds->monitor = v.ptr_v;
