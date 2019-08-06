@@ -2,7 +2,7 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ========================================================
 
-`Primme` is a Python interface to PRIMME_, a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
+`primme` is a Python interface to PRIMME_, a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
 PRIMME is especially optimized for large, difficult problems.
 Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
 It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence.
@@ -17,6 +17,7 @@ You can install the latest version with `pip`::
     pip install numpy   # if numpy is not installed yet
     pip install scipy   # if scipy is not installed yet
     pip install future  # if using python 2
+    conda install mkl-devel # if using Anaconda Python distribution
     pip install primme
 
 Optionally for building the development version do::

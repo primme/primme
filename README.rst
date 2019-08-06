@@ -46,6 +46,7 @@ and Python (see `Python primme`_)::
     pip install numpy   # if numpy is not installed yet
     pip install scipy   # if scipy is not installed yet
     pip install future  # if using python 2
+    conda install mkl-devel # if using Anaconda Python distribution
     pip install primme
 
 C Library Interface
