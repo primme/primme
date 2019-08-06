@@ -4,7 +4,7 @@ PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 
 `primme` is a Python interface to PRIMME_, a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
 PRIMME is especially optimized for large, difficult problems.
-Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
+Real symmetric and complex Hermitian problems, standard `A x = \lambda x` and generalized `A x = \lambda B x`, are supported.
 It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence.
 
 The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
@@ -46,7 +46,7 @@ The following examples compute a few eigenvalues and eigenvectors from a real sy
     array([ 50.,  51.,  49.])
 
 
-The following examples compute a few eigenvalues and eigenvectors from a generalized Hermitian problem, without factorizing or inverting :math:`B`::
+The following examples compute a few eigenvalues and eigenvectors from a generalized Hermitian problem, without factorizing or inverting `B`::
 
     >>> import Primme, scipy.sparse
     >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
@@ -105,7 +105,7 @@ the webpage http://www.cs.wm.edu/~andreas/software.
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/software
 .. _`github`: https://github.com/primme/primme
 .. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
-.. _PETSc : http://www.mcs.anl.gov/petsc/
+.. _PETSc: http://www.mcs.anl.gov/petsc/
 .. _`bibtex`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
 .. _eigsh: http://www.cs.wm.edu/~andreas/software/doc/pyeigsh.html
 .. _svds: http://www.cs.wm.edu/~andreas/software/doc/pysvds.html
