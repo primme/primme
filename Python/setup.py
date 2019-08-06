@@ -4,6 +4,33 @@ from codecs import open
 from os import path
 import sys
 
+primme_source_files = [
+   "primme/src/eigs/auxiliary_eigs.cpp",
+   "primme/src/eigs/auxiliary_eigs_normal.cpp",
+   "primme/src/eigs/convergence.cpp",
+   "primme/src/eigs/correction.cpp",
+   "primme/src/eigs/factorize.cpp",
+   "primme/src/eigs/init.cpp",
+   "primme/src/eigs/inner_solve.cpp",
+   "primme/src/eigs/main_iter.cpp",
+   "primme/src/eigs/ortho.cpp",
+   "primme/src/eigs/primme_c.cpp",
+   "primme/src/eigs/primme_f77.cpp",
+   "primme/src/eigs/primme_interface.cpp",
+   "primme/src/eigs/restart.cpp",
+   "primme/src/eigs/solve_projection.cpp",
+   "primme/src/eigs/update_projection.cpp",
+   "primme/src/eigs/update_W.cpp",
+   "primme/src/linalg/auxiliary.cpp",
+   "primme/src/linalg/blaslapack.cpp",
+   "primme/src/linalg/magma_wrapper.cpp",
+   "primme/src/linalg/memman.cpp",
+   "primme/src/linalg/wtime.cpp",
+   "primme/src/svds/primme_svds_c.cpp",
+   "primme/src/svds/primme_svds_f77.cpp",
+   "primme/src/svds/primme_svds_interface.cpp"
+]
+
 def get_numpy_options():
    # Third-party modules - we depend on numpy for everything
    import numpy
@@ -42,31 +69,32 @@ def get_numpy_options():
    if not blaslapack_libraries and not blaslapack_extra_link_args:
        blaslapack_libraries = ['lapack', 'blas']
 
-   r = dict(
+   return dict(
                    include_dirs = [numpy_include, "primme/include", "primme/src/include"],
                    library_dirs = blaslapack_library_dirs,
                    libraries = blaslapack_libraries,
-                   extra_link_args = blaslapack_extra_link_args
+                   extra_link_args = blaslapack_extra_link_args,
+                   define_macros = [("NDEBUG", None), ("F77UNDERSCORE", None)]
    )
 
-   # Link dynamically on Windows and statically otherwise
-   if sys.platform == 'win32':
-      r['libraries'] = ['primme'] + r['libraries']
-   else:
-      r['extra_objects'] = ['../lib/libprimme.a']
-
-   return r
+def get_basic_options():
+   return dict(
+                   include_dirs = ["primme/include", "primme/src/include"],
+                   define_macros = [("NDEBUG", None), ("F77UNDERSCORE", None)]
+   )
 
 def setup_package():
    import sys
    from distutils.core import setup
    from distutils.extension import Extension
-   from Cython.Build import cythonize
    
    try:
       import numpy
    except:
-      raise Exception("numpy not installed; please, install numpy and scipy before primme")
+      if ('bdist_wheel' in sys.argv[1:] or 'install' in sys.argv[1:] or
+          'build_ext' in sys.argv[1:]):
+         raise Exception("numpy not installed; please, install numpy before primme")
+      extra_options = get_basic_options()
    else:
       extra_options = get_numpy_options()
    
@@ -78,16 +106,17 @@ def setup_package():
    
    # Array extension module
    _Primme = Extension("primme",
-                      ["primme.pyx"],
+                      ["primme.cpp"] + primme_source_files,
                       **extra_options
                       #extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"]
                       )
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "2.1.5",
+         version     = "3.0.2",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
+         long_description_content_type = "text/x-rst",
          url         = "https://github.com/primme/primme",
          author      = "Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu",
          author_email = "eloy@cs.wm.edu",
@@ -118,17 +147,12 @@ def setup_package():
    # that you indicate whether you support Python 2, Python 3 or both.
          'Programming Language :: C',
          'Programming Language :: Python :: 2',
-         'Programming Language :: Python :: 2.6',
-         'Programming Language :: Python :: 2.7',
-         'Programming Language :: Python :: 3',
-         'Programming Language :: Python :: 3.2',
-         'Programming Language :: Python :: 3.3',
-         'Programming Language :: Python :: 3.4',
+         'Programming Language :: Python :: 3'
          ],
-         keywords = "eigenvalues singular values Davidson-type high-performance large-scale matrix",
+         keywords = "eigenvalues singular values generalized Hermitian symmetric Davidson-type high-performance large-scale matrix",
          setup_requires = ['numpy', 'scipy'],
          install_requires = ['future', 'numpy', 'scipy'],
-         ext_modules = cythonize([_Primme])
+         ext_modules = [_Primme]
          )
 
 if __name__ == '__main__':
