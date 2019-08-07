@@ -519,7 +519,7 @@ primme_params
       If the value is ``primme_orth_implicit_I``, the bases are orthogonalized with
       classical Gram-Schmidt with reorthogonalization stopping when the new vector's
       norm is not reduced more than :math:`1/sqrt{2}` (Daniel's test) from the previous
-      iteration. If several vectors are going to be orthogonalize, the algorithm is
+      iteration. If several vectors are going to be orthogonalized, the algorithm is
       applied vector by vector.
 
       If the value is ``primme_orth_explicit_I``, the bases are orthogonalized with
@@ -532,7 +532,7 @@ primme_params
       but it may be faster in time than ``primme_orth_implicit_I`` when |maxBlockSize|
       is large.
 
-      ``primme_orth_explicit_I`` is set by default if the precision is larger than
+      ``primme_orth_implicit_I`` is set by default if the precision is higher than
       single precision and |maxBlockSize| is 1. Otherwise, ``primme_orth_explicit_I``
       is set by default.
 
