@@ -4,6 +4,8 @@
 FORTRAN Library Interface
 -------------------------
 
+.. versionadded:: 2.0
+
 The next enumerations and functions are declared in ``primme_svds_f77.h``.
 
 sprimme_svds_f77
@@ -13,14 +15,14 @@ sprimme_svds_f77
 
    Solve a real singular value problem using single precision.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_sprimme_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_sprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): real
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): real
 
@@ -41,6 +43,8 @@ sprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
 
@@ -51,14 +55,14 @@ cprimme_svds_f77
 
    Solve a complex singular value problem using single precision.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_cprimme_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_cprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): real
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): complex
 
@@ -79,6 +83,8 @@ cprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
 dprimme_svds_f77
@@ -88,14 +94,14 @@ dprimme_svds_f77
 
    Solve a real singular value problem using double precision.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_dprimme_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_dprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): double precision
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): double precision
 
@@ -116,6 +122,8 @@ dprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
 zprimme_svds_f77
@@ -125,14 +133,14 @@ zprimme_svds_f77
 
    Solve a complex singular value problem using double precision.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_zprimme_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_zprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): double precision
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): complex*16
 
@@ -153,6 +161,8 @@ zprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
 magma_sprimme_svds_f77
@@ -162,18 +172,18 @@ magma_sprimme_svds_f77
 
    Solve a real singular value problem using single precision.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`sprimme_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`sprimme_svds_f77` for using only the CPU).
    
-   :param svals(*): (output) array at least of size |SnumSvals| to store the
+   :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): real
 
-   :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+   :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): real
 
-   :param resNorms(*): array at least of size |SnumSvals| to store the
+   :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
    :type resNorms(*): real
@@ -190,8 +200,11 @@ magma_sprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
+   .. versionadded:: 3.0
 
 magma_cprimme_svds_f77
 """"""""""""""""""""""
@@ -200,18 +213,18 @@ magma_cprimme_svds_f77
 
    Solve a complex singular value problem using single precision.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`cprimme_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`cprimme_svds_f77` for using only the CPU).
    
-   :param svals(*): (output) array at least of size |SnumSvals| to store the
+   :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): real
 
-   :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+   :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): complex
 
-   :param resNorms(*): array at least of size |SnumSvals| to store the
+   :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
    :type resNorms(*): real
@@ -228,7 +241,11 @@ magma_cprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
+
+   .. versionadded:: 3.0
 
 magma_dprimme_svds_f77
 """"""""""""""""""""""
@@ -237,18 +254,18 @@ magma_dprimme_svds_f77
 
    Solve a real singular value problem using double precision.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`dprimme_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`dprimme_svds_f77` for using only the CPU).
    
-   :param svals(*): (output) array at least of size |SnumSvals| to store the
+   :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): double precision
 
-   :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+   :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): double precision
 
-   :param resNorms(*): array at least of size |SnumSvals| to store the
+   :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
    :type resNorms(*): double precision
@@ -265,7 +282,11 @@ magma_dprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
+
+   .. versionadded:: 3.0
 
 magma_zprimme_svds_f77
 """"""""""""""""""""""
@@ -274,18 +295,18 @@ magma_zprimme_svds_f77
 
    Solve a complex singular value problem using double precision.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`zprimme_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`zprimme_svds_f77` for using only the CPU).
    
-   :param svals(*): (output) array at least of size |SnumSvals| to store the
+   :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
    :type svals(*): double precision
 
-   :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+   :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
    :type svecs(*): complex*16
 
-   :param resNorms(*): array at least of size |SnumSvals| to store the
+   :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
    :type resNorms(*): double precision
@@ -302,7 +323,11 @@ magma_zprimme_svds_f77
    The i-th right singular vector starts at svecs(( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| + i - 1)\* |SnLocal| ).
    The first vector has i=1.
  
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+
    The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
+
+   .. versionadded:: 3.0
 
 primme_svds_initialize_f77
 """"""""""""""""""""""""""
@@ -310,6 +335,8 @@ primme_svds_initialize_f77
 .. c:function:: primme_svds_initialize_f77(primme_svds)
 
    Set PRIMME SVDS parameters structure to the default values.
+
+   After calling :c:func:`dprimme_svds_f77` (or a variant), call :c:func:`primme_svds_free_f77` to release allocated resources by PRIMME.
 
    :param ptr primme_svds: (output) parameters structure.
 

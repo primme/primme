@@ -131,10 +131,14 @@ MATLAB Interface
       * ``HIST(:,7)``: QMR residual norm
 
    ``OPTS.disp`` controls the granularity of the record. If ``OPTS.disp == 1``, ``HIST``
-   has one row per converged eigenpair and only the first three columns are
-   reported; if ``OPTS.disp == 2``, ``HIST`` has one row per outer iteration and only
-   the first six columns are reported; and otherwise ``HIST`` has one row per QMR
-   iteration and all columns are reported.
+   has one row per converged eigenpair and only the first three columns
+   together with the fifth and the sixth are reported. If ``OPTS.disp == 2``, ``HIST``
+   has one row per outer iteration and converged value, and only the first six
+   columns are reported. Otherwise ``HIST`` has one row per QMR iteration, outer
+   iteration and converged value, and all columns are reported.
+
+   The convergence history is displayed if ``OPTS.disp > 0`` and either ``HIST`` is
+   not returned or ``OPTS.display == 1``.
 
    Examples::
 

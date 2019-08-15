@@ -287,7 +287,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         The number of eigenvalues and eigenvectors to be computed. Must be
         1 <= k < min(A.shape).
     M : An N x N matrix, array, sparse matrix, or LinearOperator
-        (not supported yet)
         the operation M * x for the generalized eigenvalue problem
 
             A * x = w * M * x.

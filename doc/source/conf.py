@@ -44,7 +44,7 @@ master_doc = 'readme'
 
 # General information about the project.
 project = u'PRIMME'
-copyright = u'2018, College of William & Mary'
+copyright = u'2019, College of William & Mary'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

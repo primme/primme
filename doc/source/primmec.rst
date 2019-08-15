@@ -8,7 +8,7 @@ C Library Interface
 -------------------
 
 The PRIMME interface is composed of the following functions.
-To solve real symmetric and Hermitian standard eigenproblems call:
+To solve real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, call:
 
 .. only:: not text
 
@@ -29,11 +29,20 @@ To solve real symmetric and Hermitian standard eigenproblems call:
       int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
                   primme_params *primme);
 
-There are versions for single precision, :c:func:`sprimme` and
-:c:func:`cprimme`, and for half precision :c:func:`hprimme`, :c:func:`kprimme`,
-:c:func:`hsprimme`, :c:func:`ksprimme`.
+There are more versions for matrix problems working in other precisions:
 
-To solve normal standard eigenproblems that are not Hermitian call:
++-----------+--------------------+--------------------+
+| Precision |        Real        |       Complex      |
++===========+====================+====================+
+| half      | :c:func:`hprimme`  | :c:func:`kprimme`  |
+|           | :c:func:`hsprimme` | :c:func:`ksprimme` |
++-----------+--------------------+--------------------+
+| single    | :c:func:`sprimme`  | :c:func:`cprimme`  |
++-----------+--------------------+--------------------+
+| double    | :c:func:`dprimme`  | :c:func:`zprimme`  |
++-----------+--------------------+--------------------+
+
+To solve standard eigenproblems with normal but not necessarily Hermitian matrices call:
 
 .. only:: not text
 
@@ -50,9 +59,18 @@ To solve normal standard eigenproblems that are not Hermitian call:
       int zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs,
                        double *resNorms, primme_params *primme);
 
-There are versions for single precision, :c:func:`cprimme_normal`, and for half
-precision, :c:func:`kprimme_normal` and :c:func:`kcprimme_normal`.
+There are more versions for matrix problems working in other precisions:
 
++-----------+---------------------------+
+| Precision |         Complex           |
++===========+===========================+
+| half      | :c:func:`kprimme_normal`  |
+|           | :c:func:`kcprimme_normal` |
++-----------+---------------------------+
+| single    | :c:func:`cprimme_normal`  |
++-----------+---------------------------+
+| double    | :c:func:`zprimme_normal`  |
++-----------+---------------------------+
 
 Other useful functions:
 
@@ -328,22 +346,26 @@ The next enumerations and functions are declared in ``primme.h``.
 
 .. c:function:: int hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 .. c:function:: int hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, primme_params *primme)
-.. c:function:: int ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
 .. c:function:: int kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+.. c:function:: int ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+
+   .. versionadded:: 3.0
 .. c:function:: int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
 .. c:function:: int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+   .. versionadded:: 2.0
 .. c:function:: int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 .. c:function:: int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
 
    Solve a real symmetric/Hermitian standard or generalized eigenproblem.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_dprimme` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_dprimme` for using GPUs).
 
    :param evals: array at least of size |numEvals| to store the
       computed eigenvalues; all processes in a parallel run return this local array with the same values.
 
-   :param evecs: array at least of size |nLocal| times |numEvals|
-      to store columnwise the (local part of the) computed eigenvectors.
+   :param evecs: array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
+      to store column-wise the (local part for this process of the) computed eigenvectors.
 
    :param resNorms: array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all processes in parallel run return this local array with
@@ -356,10 +378,13 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |SnLocal| ].
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
    The first vector has index i=0.
  
-   The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
+   The functions :c:func:`hsprimme` and :c:func:`ksprimme` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
+
+   The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
 
 `magma_?primme`
 """""""""""""""
@@ -375,13 +400,13 @@ The next enumerations and functions are declared in ``primme.h``.
 
    Solve a real symmetric/Hermitian standard or generalized eigenproblem.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`dprimme` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`dprimme` for using only the CPU).
 
    :param evals: CPU array at least of size |numEvals| to store the
       computed eigenvalues; all processes in a parallel run return this local array with the same values.
 
-   :param evecs: GPU array at least of size |nLocal| times |numEvals|
-      to store columnwise the (local part of the) computed eigenvectors.
+   :param evecs: GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
+      to store column-wise the (local part for this process of the) computed eigenvectors.
 
    :param resNorms: CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all processes in parallel run return this local array with
@@ -394,10 +419,12 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |SnLocal| ].
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
    The first vector has index i=0.
  
    The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+
+   .. versionadded:: 3.0
 
 ?primme_normal
 """"""""""""""
@@ -409,13 +436,13 @@ The next enumerations and functions are declared in ``primme.h``.
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_zprimme_normal` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_zprimme_normal` for using GPUs).
 
    :param evals: array at least of size |numEvals| to store the
       computed eigenvalues; all processes in a parallel run return this local array with the same values.
 
-   :param evecs: array at least of size |nLocal| times |numEvals|
-      to store columnwise the (local part of the) computed eigenvectors.
+   :param evecs: array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
+      to store column-wise the (local part for this process of the) computed eigenvectors.
 
    :param resNorms: array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all processes in parallel run return this local array with
@@ -428,10 +455,12 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |SnLocal| ].
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
    The first vector has index i=0.
  
    The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+
+   .. versionadded:: 3.0
 
 `magma_?primme_normal`
 """"""""""""""""""""""
@@ -443,13 +472,13 @@ The next enumerations and functions are declared in ``primme.h``.
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`dprimme_normal` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`zprimme_normal` for using only the CPU).
 
    :param evals: CPU array at least of size |numEvals| to store the
       computed eigenvalues; all processes in a parallel run return this local array with the same values.
 
-   :param evecs: GPU array at least of size |nLocal| times |numEvals|
-      to store columnwise the (local part of the) computed eigenvectors.
+   :param evecs: GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
+      to store column-wise the (local part for this process of the) computed eigenvectors.
 
    :param resNorms: CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all processes in parallel run return this local array with
@@ -462,21 +491,37 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |SnLocal| ].
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
    The first vector has index i=0.
  
    The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+
+   .. versionadded:: 3.0
 
 primme_initialize
 """""""""""""""""
 
 .. c:function:: void primme_initialize(primme_params *primme)
 
-   Set PRIMME parameters structure to the default values.
+   Initialize a PRIMME parameters structure to the default values.
 
-   Eventually call :c:func:`primme_free` to release allocated resources by PRIMME.
+   After calling :c:func:`dprimme` (or a variant), call :c:func:`primme_free` to release allocated resources by PRIMME.
 
    :param primme: parameters structure.
+
+   Example::
+
+      primme_params primme;
+      primme_initialize(&primme);
+
+      primme.n = 100;
+      ...
+      dprimme(evals, evecs, rnorms, &primme);
+      ...
+
+      primme_free(&primme);
+ 
+   See the alternative function :c:func:`primme_params_create` that also allocates the `primme_params` structure.
 
 primme_params_create
 """"""""""""""""""""
@@ -485,9 +530,24 @@ primme_params_create
 
    Allocate and initialize a parameters structure to the default values.
 
-   Eventually call :c:func:`primme_params_destroy` to release allocated resources by PRIMME.
+   After calling :c:func:`dprimme` (or a variant), call :c:func:`primme_params_destroy` to release allocated resources by PRIMME.
 
    :return: pointer to a parameters structure.
+
+   Example::
+
+      primme_params *primme = primme_params_create();
+
+      primme->n = 100;
+      ...
+      dprimme(evals, evecs, rnorms, primme);
+      ...
+
+      primme_params_destroy(primme);
+
+   See the alternative function :c:func:`primme_initialize` that only initializes the structure.
+
+   .. versionadded:: 3.0
 
 primme_set_method
 """""""""""""""""
@@ -547,5 +607,7 @@ primme_params_destroy
    :param primme: parameters structure.
 
    :return: nonzero value if the call is not successful.
+
+   .. versionadded:: 3.0
 
 .. include:: epilog.inc

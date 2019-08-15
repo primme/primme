@@ -75,6 +75,8 @@ primme_svds_params
            ``primme_op_default`` it is set to the value that matches the precision of
            calling function.
 
+      .. versionadded:: 3.0
+
    .. c:member:: void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
       Block preconditioner-multivector application, :math:`y = M^{-1}x` for finding singular values close to :math:`\sigma`.
@@ -121,6 +123,8 @@ primme_svds_params
          | this field is read by :c:func:`dprimme_svds`, and if it is
            ``primme_op_default`` it is set to the value that matches the precision of
            calling function.
+
+      .. versionadded:: 3.0
 
    .. c:member:: int numProcs
 
@@ -231,6 +235,7 @@ primme_svds_params
            ``primme_op_default`` it is set to the value that matches the precision of
            calling function.
 
+      .. versionadded:: 3.0
 
    .. c:member:: void (*broadcastReal)(void *buffer, int *count, primme_svds_params *primme_svds, int *ierr)
 
@@ -267,6 +272,8 @@ primme_svds_params
 
       When calling :c:func:`sprimme_svds` and :c:func:`cprimme_svds` replace ``MPI_DOUBLE`` by ```MPI_FLOAT``.
 
+      .. versionadded:: 3.0
+
    .. c:member:: int numSvals
 
       Number of singular triplets wanted.
@@ -293,6 +300,8 @@ primme_svds_params
            ``primme_op_default`` it is set to the value that matches the precision of
            calling function.
 
+      .. versionadded:: 3.0
+
    .. c:member:: primme_op_datatype internalPrecision
 
       Internal working precision.
@@ -307,6 +316,8 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to ``primme_op_default``;
          | this field is read by :c:func:`dprimme_svds`.
+
+      .. versionadded:: 3.0
 
    .. index:: interior problem
 
@@ -685,6 +696,8 @@ primme_svds_params
            ``primme_op_default`` it is set to the value that matches the precision of
            calling function.
 
+      .. versionadded:: 3.0
+
    .. c:member:: void *convtest
 
       This field may be used to pass any required information 
@@ -788,6 +801,8 @@ primme_svds_params
          | :c:func:`dprimme_svds` sets this field to an internal function if it is NULL;
          | this field is read by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
+      .. versionchanged:: 3.0
+
    .. c:member:: primme_op_datatype monitorFun_type
 
       Precision of the vectors ``basisEvals``, ``basisNorms``, ``lockedEvals``, ``lockedNorms`` and ``LSRes`` passed to |SmonitorFun|.
@@ -804,6 +819,8 @@ primme_svds_params
            ``primme_op_default`` it is set to the value that matches the precision of
            calling function.
 
+
+      .. versionadded:: 3.0
 
    .. c:member:: void *monitor
 
@@ -860,6 +877,8 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
 
+      .. versionadded:: 3.0
+
    .. c:member:: double stats.volumeGlobalSum
 
       Hold how many :c:type:`REAL` have been reduced by |SglobalSumReal|.
@@ -869,6 +888,8 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
+
+      .. versionadded:: 3.0
 
    .. c:member:: PRIMME_INT stats.numBroadcast
 
@@ -880,6 +901,8 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
 
+      .. versionadded:: 3.0
+
    .. c:member:: double stats.volumeBroadcast
 
       Hold how many :c:type:`REAL` have been broadcast by |SbroadcastReal|.
@@ -890,6 +913,8 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
 
+      .. versionadded:: 3.0
+
    .. c:member:: PRIMME_INT stats.numOrthoInnerProds
 
       Hold how many inner products with vectors of length |SmLocal| and |SnLocal| have been computed during orthogonalization.
@@ -899,6 +924,8 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
+
+      .. versionadded:: 3.0
 
    .. c:member:: double stats.elapsedTime
 
@@ -919,6 +946,8 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
 
+      .. versionadded:: 3.0
+
    .. c:member:: double stats.timePrecond
 
       Hold the wall clock time spent by |SapplyPreconditioner|.
@@ -928,6 +957,8 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
+
+      .. versionadded:: 3.0
 
    .. c:member:: double stats.timeOrtho
 
@@ -939,6 +970,8 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
 
+      .. versionadded:: 3.0
+
    .. c:member:: double stats.timeGlobalSum
 
       Hold the wall clock time spent by |SglobalSumReal|.
@@ -948,6 +981,8 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
+
+      .. versionadded:: 3.0
 
    .. c:member:: double stats.timeBroadcast
 
@@ -959,6 +994,8 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
 
+      .. versionadded:: 3.0
+
    .. c:member:: PRIMME_INT stats.lockingIssue
 
       It is set to a nonzero value if some of the returned triplets do not pass the convergence criterion.
@@ -968,6 +1005,8 @@ primme_svds_params
 
          | :c:func:`primme_svds_initialize` sets this field to 0;
          | written by :c:func:`dprimme_svds`.
+
+      .. versionadded:: 3.0
 
    .. c:member:: void *queue
 
@@ -983,6 +1022,7 @@ primme_svds_params
          | :c:func:`primme_svds_initialize` sets this field to NULL;
          | this field is read by :c:func:`dprimme_svds_magma`.
 
+      .. versionadded:: 3.0
 
 .. _methods_svds:
 

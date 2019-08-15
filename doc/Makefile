@@ -134,8 +134,8 @@ text:
 	@echo
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
 	@rm -f ../readme.txt
-	@for i in readme intro apieigs primmec primmef77 appendix pyeigsh mateigs \
-	          apisvds svdsc svdsf77 appendixsvds pysvds matsvds; do \
+	@for i in readme intro apieigs primmec primmef77 primmef90 appendix pyeigsh mateigs \
+	          apisvds svdsc svdsf77 svdsf90 appendixsvds pysvds matsvds; do \
 		cat $(BUILDDIR)/text/$${i}.txt >> ../readme.txt; \
 		echo >> ../readme.txt; \
 	done
