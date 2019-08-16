@@ -171,6 +171,8 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
    SCALAR *Bx = NULL;
    CHKERR(Num_malloc_Sprimme(B?nLocal:0, &Bx, ctx));
    if (b2_out) *b2_out = b1;
+   double eps_orth;
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
 
    for(i=b1; i <= b2; i++) {
     
@@ -288,7 +290,7 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
          CHKERR(globalSum_RHprimme(&s12, 1, ctx));
          s1 = sqrt(s12);
 
-         if (!ISFINITE(s0) || !ISFINITE(s1) || s1 <= MACHINE_EPSILON * s0) {
+         if (!ISFINITE(s0) || !ISFINITE(s1) || s1 <= eps_orth * s0) {
             PRINTF(5, "Vector %d lost all significant digits in ortho",
                   i - b1);
             nOrth = maxNumOrthos;
@@ -514,6 +516,9 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
       return 0;
    }
 
+   double eps_orth;
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+
    if (VLtBVL == NULL) {
       CHKERR(Bortho_gen_Sprimme(V, ldV, R, ldR, b1, b2 - 1, locked, ldLocked,
             numLocked, RLocked, ldRLocked, nLocal, B, Bctx, primme->iseed,
@@ -688,7 +693,7 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          /* N(i) = ||Xc(:,i)||; normXc = max ||N(i)|| */
 
          for (i=0; i<b2-b1; i++) {
-            N[i] = sqrt(max(ABS(C[(b2-b1)*i+i]), MACHINE_EPSILON));
+            N[i] = sqrt(max(ABS(C[(b2-b1)*i+i]), eps_orth));
          }
          for (i = 0; i < b2 - b1; i++)
             for (j = 0; j <= i; j++) C[(b2 - b1) * i + j] /= N[i] * N[j];
@@ -700,7 +705,7 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          /* D = sqrt(D) */
 
          for (i=0; i<b2-b1; i++) {
-            D[i] = sqrt(max(D[i], MACHINE_EPSILON * (b2 - b1)));
+            D[i] = sqrt(max(D[i], eps_orth * (b2 - b1)));
          }
       }
 

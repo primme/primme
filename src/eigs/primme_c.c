@@ -233,6 +233,7 @@ STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
    (void)evals;
    (void)evecs;
    (void)resNorms;
+   (void)evals_resNorms_type;
 
    primme->initSize = 0;
    return PRIMME_FUNCTION_UNAVAILABLE;
@@ -737,7 +738,7 @@ STATIC int check_params_coherence(primme_context ctx) {
 
    /* Check broadcast */
 
-   HREAL val = 1234, val0 = val;
+   HREAL val = 123, val0 = val;
    CHKERR(broadcast_RHprimme(&val, 1, ctx));
    CHKERRM(fabs(val - val0) > val0 * MACHINE_EPSILON * 1.3, -1,
          "broadcast function does not work properly");

@@ -858,6 +858,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* than s_0 after resetting. The condition restartsSinceReset > 0 */
             /* avoids infinite loop in those cases.                           */
 
+            double eps_orth;
+            CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
             if (primme->projectionParams.projection == primme_proj_refined &&
                   basisSize > 0 && restartsSinceReset > 1 &&
                   targetShiftIndex >= 0 &&
@@ -865,7 +867,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                         hVals[0]) -
                               max(primme->aNorm,
                                     primme->stats.estimateLargestSVal) *
-                                    MACHINE_EPSILON >
+                                    eps_orth >
                         hSVals[0]) {
 
                reset = 2;

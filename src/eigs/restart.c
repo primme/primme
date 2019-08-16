@@ -425,7 +425,6 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
          }
          fn = max(fn, sqrt(n));
       }
-
    }
    CHKERR(broadcast_RHprimme(&fn, 1, ctx));
       
@@ -439,8 +438,10 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
                                             fn * problemNorm_Sprimme(1, primme);
    }
    else {
+      double eps_orth;
+      CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
       primme->stats.estimateResidualError =
-            2 * sqrt((double)*restartsSinceReset) * MACHINE_EPSILON *
+            2 * sqrt((double)*restartsSinceReset) * eps_orth *
             problemNorm_Sprimme(1, primme);
    }
 
@@ -1664,10 +1665,13 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
    /* ---------------------------------------------------------------------- */
 
    int nLocked = primme->numOrthoConst + (primme->locking ? numConverged : 0);
-   if (targetShiftIndex && primme->targetShifts && (*targetShiftIndex < 0
-            || fabs(primme->targetShifts[*targetShiftIndex]
-               - primme->targetShifts[min(primme->numTargetShifts-1,
-                  numConverged)])) > MACHINE_EPSILON*aNorm) {
+   double eps_matrix;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
+   if (targetShiftIndex && primme->targetShifts &&
+         (*targetShiftIndex < 0 ||
+               fabs(primme->targetShifts[*targetShiftIndex] -
+                     primme->targetShifts[min(primme->numTargetShifts - 1,
+                           numConverged)])) > eps_matrix * aNorm) {
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
 
@@ -1871,10 +1875,12 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* NOTE: keep the same condition here as in main_iter */
 
    int nLocked = primme->numOrthoConst + (primme->locking ? numConverged : 0);
+   double eps_matrix;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
    if (*targetShiftIndex < 0 ||
          fabs(primme->targetShifts[*targetShiftIndex] -
                primme->targetShifts[min(primme->numTargetShifts - 1,
-                     numConverged)]) > MACHINE_EPSILON * aNorm) {
+                     numConverged)]) > eps_matrix * aNorm) {
 
       *targetShiftIndex = min(primme->numTargetShifts-1, numConverged);
 

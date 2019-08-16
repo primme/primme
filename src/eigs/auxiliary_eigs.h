@@ -950,6 +950,188 @@ int broadcast_Tprimme(
 #  define broadcast_iprimmeRHqprimme CONCAT(broadcast_iprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int broadcast_iprimme(int *buffer, int count, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Sprimme)
+#  define machineEpsMatrix_Sprimme CONCAT(machineEpsMatrix_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Rprimme)
+#  define machineEpsMatrix_Rprimme CONCAT(machineEpsMatrix_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SHprimme)
+#  define machineEpsMatrix_SHprimme CONCAT(machineEpsMatrix_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RHprimme)
+#  define machineEpsMatrix_RHprimme CONCAT(machineEpsMatrix_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SXprimme)
+#  define machineEpsMatrix_SXprimme CONCAT(machineEpsMatrix_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RXprimme)
+#  define machineEpsMatrix_RXprimme CONCAT(machineEpsMatrix_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Shprimme)
+#  define machineEpsMatrix_Shprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Rhprimme)
+#  define machineEpsMatrix_Rhprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Ssprimme)
+#  define machineEpsMatrix_Ssprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Rsprimme)
+#  define machineEpsMatrix_Rsprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Sdprimme)
+#  define machineEpsMatrix_Sdprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Rdprimme)
+#  define machineEpsMatrix_Rdprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Sqprimme)
+#  define machineEpsMatrix_Sqprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_Rqprimme)
+#  define machineEpsMatrix_Rqprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SXhprimme)
+#  define machineEpsMatrix_SXhprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RXhprimme)
+#  define machineEpsMatrix_RXhprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SXsprimme)
+#  define machineEpsMatrix_SXsprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RXsprimme)
+#  define machineEpsMatrix_RXsprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SXdprimme)
+#  define machineEpsMatrix_SXdprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RXdprimme)
+#  define machineEpsMatrix_RXdprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SXqprimme)
+#  define machineEpsMatrix_SXqprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RXqprimme)
+#  define machineEpsMatrix_RXqprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SHhprimme)
+#  define machineEpsMatrix_SHhprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RHhprimme)
+#  define machineEpsMatrix_RHhprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SHsprimme)
+#  define machineEpsMatrix_SHsprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RHsprimme)
+#  define machineEpsMatrix_RHsprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SHdprimme)
+#  define machineEpsMatrix_SHdprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RHdprimme)
+#  define machineEpsMatrix_RHdprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_SHqprimme)
+#  define machineEpsMatrix_SHqprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsMatrix_RHqprimme)
+#  define machineEpsMatrix_RHqprimme CONCAT(machineEpsMatrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int machineEpsMatrix_dprimme(double *eps, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Sprimme)
+#  define machineEpsOrth_Sprimme CONCAT(machineEpsOrth_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Rprimme)
+#  define machineEpsOrth_Rprimme CONCAT(machineEpsOrth_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SHprimme)
+#  define machineEpsOrth_SHprimme CONCAT(machineEpsOrth_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RHprimme)
+#  define machineEpsOrth_RHprimme CONCAT(machineEpsOrth_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SXprimme)
+#  define machineEpsOrth_SXprimme CONCAT(machineEpsOrth_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RXprimme)
+#  define machineEpsOrth_RXprimme CONCAT(machineEpsOrth_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Shprimme)
+#  define machineEpsOrth_Shprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Rhprimme)
+#  define machineEpsOrth_Rhprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Ssprimme)
+#  define machineEpsOrth_Ssprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Rsprimme)
+#  define machineEpsOrth_Rsprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Sdprimme)
+#  define machineEpsOrth_Sdprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Rdprimme)
+#  define machineEpsOrth_Rdprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Sqprimme)
+#  define machineEpsOrth_Sqprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_Rqprimme)
+#  define machineEpsOrth_Rqprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SXhprimme)
+#  define machineEpsOrth_SXhprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RXhprimme)
+#  define machineEpsOrth_RXhprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SXsprimme)
+#  define machineEpsOrth_SXsprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RXsprimme)
+#  define machineEpsOrth_RXsprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SXdprimme)
+#  define machineEpsOrth_SXdprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RXdprimme)
+#  define machineEpsOrth_RXdprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SXqprimme)
+#  define machineEpsOrth_SXqprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RXqprimme)
+#  define machineEpsOrth_RXqprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SHhprimme)
+#  define machineEpsOrth_SHhprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RHhprimme)
+#  define machineEpsOrth_RHhprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SHsprimme)
+#  define machineEpsOrth_SHsprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RHsprimme)
+#  define machineEpsOrth_RHsprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SHdprimme)
+#  define machineEpsOrth_SHdprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RHdprimme)
+#  define machineEpsOrth_RHdprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_SHqprimme)
+#  define machineEpsOrth_SHqprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(machineEpsOrth_RHqprimme)
+#  define machineEpsOrth_RHqprimme CONCAT(machineEpsOrth_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int machineEpsOrth_dprimme(double *eps, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(problemNorm_Sprimme)
 #  define problemNorm_Sprimme CONCAT(problemNorm_,SCALAR_SUF)
 #endif
@@ -1133,7 +1315,7 @@ dummy_type_dprimme problemNorm_dprimme(
 #  define deltaEig_RHqprimme CONCAT(deltaEig_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 dummy_type_dprimme deltaEig_dprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dist_dots_Sprimme)
 #  define Num_dist_dots_Sprimme CONCAT(Num_dist_dots_,SCALAR_SUF)
 #endif
@@ -1328,10 +1510,12 @@ int applyPreconditioner_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME
       dummy_type_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int globalSum_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
 int broadcast_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
+int machineEpsMatrix_hprimme(double *eps, primme_context ctx);
+int machineEpsOrth_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_hprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_hprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_hprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
 int Num_dist_dots_real_hprimme(dummy_type_hprimme *x, PRIMME_INT ldx, dummy_type_hprimme *y,
@@ -1346,10 +1530,12 @@ int applyPreconditioner_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME
       dummy_type_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int globalSum_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
 int broadcast_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
+int machineEpsMatrix_kprimme(double *eps, primme_context ctx);
+int machineEpsOrth_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_kprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_kprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_kprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
 int Num_dist_dots_real_kprimme(dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *y,
@@ -1364,10 +1550,12 @@ int applyPreconditioner_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME
       dummy_type_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int globalSum_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
 int broadcast_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
+int machineEpsMatrix_sprimme(double *eps, primme_context ctx);
+int machineEpsOrth_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_sprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_sprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_sprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
 int Num_dist_dots_real_sprimme(dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *y,
@@ -1382,10 +1570,12 @@ int applyPreconditioner_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME
       dummy_type_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int globalSum_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
 int broadcast_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
+int machineEpsMatrix_cprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_cprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_cprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
 int Num_dist_dots_real_cprimme(dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *y,
@@ -1400,10 +1590,12 @@ int applyPreconditioner_zprimme(dummy_type_zprimme *V, PRIMME_INT nLocal, PRIMME
       dummy_type_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
 int globalSum_zprimme(dummy_type_zprimme *buffer, int count, primme_context ctx);
 int broadcast_zprimme(dummy_type_zprimme *buffer, int count, primme_context ctx);
+int machineEpsMatrix_zprimme(double *eps, primme_context ctx);
+int machineEpsOrth_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_zprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_dprimme deltaEig_zprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_zprimme(dummy_type_zprimme *x, PRIMME_INT ldx, dummy_type_zprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_zprimme *result, primme_context ctx);
 int Num_dist_dots_real_zprimme(dummy_type_zprimme *x, PRIMME_INT ldx, dummy_type_zprimme *y,
@@ -1416,10 +1608,12 @@ int massMatrixMatvec_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_magma_hprimme(double *eps, primme_context ctx);
+int machineEpsOrth_magma_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_hprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_magma_hprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *y,
@@ -1432,10 +1626,12 @@ int massMatrixMatvec_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_magma_kprimme(double *eps, primme_context ctx);
+int machineEpsOrth_magma_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_kprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_magma_kprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *y,
@@ -1448,10 +1644,12 @@ int massMatrixMatvec_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_magma_sprimme(double *eps, primme_context ctx);
+int machineEpsOrth_magma_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_sprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_magma_sprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_magma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT ldx, dummy_type_magma_sprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT ldx, dummy_type_magma_sprimme *y,
@@ -1464,10 +1662,12 @@ int massMatrixMatvec_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_magma_cprimme(double *eps, primme_context ctx);
+int machineEpsOrth_magma_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_cprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_sprimme deltaEig_magma_cprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_magma_cprimme(dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_cprimme(dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *y,
@@ -1480,10 +1680,12 @@ int massMatrixMatvec_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_magma_dprimme(double *eps, primme_context ctx);
+int machineEpsOrth_magma_dprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_magma_dprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_dprimme deltaEig_magma_dprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_magma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT ldx, dummy_type_magma_dprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT ldx, dummy_type_magma_dprimme *y,
@@ -1496,10 +1698,12 @@ int massMatrixMatvec_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_magma_zprimme(double *eps, primme_context ctx);
+int machineEpsOrth_magma_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_magma_zprimme(
       int overrideUserEstimations, struct primme_params *primme);
 dummy_type_dprimme deltaEig_magma_zprimme(
-      int overrideUserEstimations, struct primme_params *primme);
+      int overrideUserEstimations, primme_context ctx);
 int Num_dist_dots_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *y, PRIMME_INT ldy,
       PRIMME_INT m, int n, dummy_type_zprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *y,

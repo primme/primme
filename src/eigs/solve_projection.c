@@ -880,9 +880,11 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
    /* information.                                                            */
    eps = primme->stats.maxConvTol > 0.0 ? primme->stats.maxConvTol : (
          smallestResNorm < HUGE_VAL ? smallestResNorm/10.0 : 0.0);
+   double eps_orth;
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
    /* NOTE: the constant 6.28 is needed to pass                               */
    /* testi-100-LOBPCG_OrthoBasis-2-primme_closest_abs-primme_proj_refined.F  */
-   eps = max(6.28*MACHINE_EPSILON, eps);
+   eps = max(6.28 * eps_orth, eps);
 
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {

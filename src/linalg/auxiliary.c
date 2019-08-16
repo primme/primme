@@ -274,10 +274,11 @@ int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
  * INPUT/OUTPUT PARAMETERS
  * ---------------------------
  * t    Type
+ * s    returned size of the type in bytes
  *
  * RETURN
  * ------
- * int  Size of the type in bytes
+ * int  error code
  *
  ******************************************************************************/
 
@@ -304,6 +305,51 @@ int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {
 #ifdef USE_COMPLEX
    *s *= 2;
 #endif
+
+   return 0;
+}
+
+/******************************************************************************
+ * Function Num_machine_epsilon_Sprimme - Return the machine epsilon of the
+ *    type.
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * ---------------------------
+ * t    Type
+ * eps  The returned machine epsilon
+ *
+ * RETURN
+ * ------
+ * int  error code
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {
+
+   /* Replace primme_op_default */
+
+   if (t == primme_op_default) t = PRIMME_OP_SCALAR;
+   
+   /* Call the function that t has the type of the SCALAR */
+
+   if (t != PRIMME_OP_SCALAR) {
+      switch(t) {
+#ifdef SUPPORTED_HALF_TYPE
+      case primme_op_half:   return Num_machine_epsilon_Shprimme(t, eps);
+#endif
+#ifndef PRIMME_WITHOUT_FLOAT
+      case primme_op_float:  return Num_machine_epsilon_Ssprimme(t, eps);
+#endif
+      case primme_op_double: return Num_machine_epsilon_Sdprimme(t, eps);
+#ifdef PRIMME_WITH_NATIVE_COMPLEX_QUAD
+      case primme_op_quad:   return Num_machine_epsilon_Sqprimme(t, eps);
+#endif
+      default: return PRIMME_FUNCTION_UNAVAILABLE;
+      }
+   }
+
+   if (eps) *eps = MACHINE_EPSILON;
 
    return 0;
 }

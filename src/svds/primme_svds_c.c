@@ -344,6 +344,7 @@ STATIC int Xprimme_svds_aux(void *svals, XSCALAR *svecs, void *resNorms,
    (void)svals;
    (void)svecs;
    (void)resNorms;
+   (void)svals_resNorms_type;
 
    primme_svds->initSize = 0;
    return PRIMME_FUNCTION_UNAVAILABLE;

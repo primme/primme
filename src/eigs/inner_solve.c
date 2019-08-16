@@ -210,7 +210,10 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
    /* NOTE: In any case stop when linear system residual is less than         */
    /*       max(machEps,eps)*aNorm.                                           */
-   LTolerance = MACHINE_EPSILON * problemNorm_Sprimme(1, primme);
+   double eps_matrix, eps_orth;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+   LTolerance = max(eps_matrix, eps_orth) * problemNorm_Sprimme(1, primme);
    LTolerance_factor = 1.0;
    ETolerance = 0.0;
    ETolerance_factor = 0.0;
