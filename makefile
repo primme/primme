@@ -73,9 +73,9 @@ R_install:
 
 install: solib
 	install -d $(includedir)
-	install -m 644 include/primme.h include/primme_eigs.h \
-		include/primme_eigs_f77.h include/primme_f77.h \
-		include/primme_svds.h include/primme_svds_f77.h \
+	install -m 644 primme_eigs_f77.h primme_eigs_f90.inc primme_eigs.h  \
+	        primme_f77.h primme_f90.inc primme.h primme_svds_f77.h  \
+	        primme_svds_f90.inc primme_svds.h \
 		$(includedir)
 	install -d $(libdir)
 	install -m 644 lib/$(SONAMELIBRARY) $(libdir)
@@ -88,9 +88,11 @@ endif
 
 uninstall:
 	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY)
-	rm -f $(includedir)/primme.h $(includedir)/primme_eigs.h \
-		$(includedir)/primme_eigs_f77.h $(includedir)/primme_f77.h \
-		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
+	rm -f $(includedir)/primme_eigs_f77.h $(includedir)/primme_eigs_f90.inc \
+	      $(includedir)/primme_eigs.h $(includedir)/primme_f77.h \
+	      $(includedir)/primme_f90.inc $(includedir)/primme.h \
+	      $(includedir)/primme_svds_f77.h $(includedir)/primme_svds_f90.inc \
+	      $(includedir)/primme_svds.h
 
 deps:
 	@touch src/*/*.c
