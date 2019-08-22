@@ -63,7 +63,7 @@
 
 static int monitor_report(const char *fun, double time, primme_context ctx) {
    if (ctx.primme && ctx.primme->monitorFun) {
-      int err;
+      int err = 0;
       primme_event event =
             (time >= -.5 ? primme_event_profile : primme_event_message);
 

@@ -142,7 +142,6 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 }
 
 #ifdef USE_HOST
-
 #ifdef USE_DOUBLE
 
 TEMPLATE_PLEASE
@@ -209,6 +208,7 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
 }
 
 #endif /* USE_DOUBLE */
+#endif /* USE_HOST */
 
 /******************************************************************************
  * Function Num_copy_matrix_astype - copy the matrix x into y.
@@ -267,7 +267,8 @@ int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
          xt, m, n, ldx, &((SCALAR *)y)[ym0 + ldy * yn0], ldy, ctx);
 }
 
- /******************************************************************************
+
+/******************************************************************************
  * Function Num_sizeof_Sprimme - Return the size of an element with the given
  *    type.
  *
@@ -354,6 +355,7 @@ int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {
    return 0;
 }
 
+#ifdef USE_HOST
 
 /******************************************************************************
  * Function Num_copy_matrix_conj - Copy the matrix x' into y

@@ -103,7 +103,7 @@
 int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
-   return Xprimme_aux((void *)evals, (void *)evecs, (void *)resNorms, primme,
+   return Xprimme_aux_Sprimme((void *)evals, (void *)evecs, (void *)resNorms, primme,
          PRIMME_OP_SCALAR);
 }
 
@@ -123,7 +123,7 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
 int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,
       float *resNorms, primme_params *primme) {
 
-   return Xprimme_aux((void *)evals, (void *)evecs, (void *)resNorms, primme,
+   return Xprimme_aux_Sprimme((void *)evals, (void *)evecs, (void *)resNorms, primme,
          primme_op_float);
 }
 
@@ -154,7 +154,8 @@ int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,
  * return  error code
  ******************************************************************************/
 
-STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
+TEMPLATE_PLEASE
+int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,
             primme_params *primme, primme_op_datatype evals_resNorms_type) {
 
 #ifdef SUPPORTED_TYPE

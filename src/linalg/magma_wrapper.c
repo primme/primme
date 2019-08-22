@@ -125,7 +125,13 @@ TEMPLATE_PLEASE
 int Num_check_pointer_Sprimme(void *x) {
    struct cudaPointerAttributes ptr_attr;
    if (cudaPointerGetAttributes(&ptr_attr, x) != cudaSuccess) return -1;
+
+#if CUDART_VERSION >= 10000
    if (ptr_attr.type == cudaMemoryTypeHost) return -1;
+#else
+   if (!ptr_attr.isManaged && ptr_attr.memoryType == cudaMemoryTypeHost)
+      return -1;
+#endif
    return 0;
 }
 
