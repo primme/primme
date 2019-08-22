@@ -124,12 +124,6 @@ int main (int argc, char *argv[]) {
 #define __FUNCT__ "real_main"
 static int real_main (int argc, char *argv[]) {
 
-   /* Timing vars */
-   double wt1,wt2;
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   double ut1,ut2,st1,st2;
-#endif
-
    /* Files */
    char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
    
@@ -331,8 +325,6 @@ static int real_main (int argc, char *argv[]) {
    /* --------------------------------------------------------------------- */
 
    if (master) {
-      fprintf(primme_svds.outputFile, "Wallclock Runtime   : %-f\n", wt2-wt1);
-
       for (i=0; i < primme_svds.numSvals; i++) {
          fprintf(primme_svds.outputFile, "Sval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
             svals[i], rnorms[i]); 
@@ -363,7 +355,7 @@ static int real_main (int argc, char *argv[]) {
       }
 
       fprintf(primme_svds.outputFile, "\n\n#,%" PRIMME_INT_P ",%.1f\n\n", primme_svds.stats.numMatvecs,
-         wt2-wt1); 
+         primme_svds.stats.elapsedTime); 
    }
 
    fclose(primme_svds.outputFile);
