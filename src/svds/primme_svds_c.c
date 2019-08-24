@@ -544,7 +544,7 @@ STATIC int comp_double(const void *a, const void *b)
 }
 
 STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
-      XREAL *rnorms, int *allocatedTargetShifts,
+      HREAL *rnorms, int *allocatedTargetShifts,
       SCALAR **out_svecs, primme_context ctx) {
 
    primme_svds_params *primme_svds = ctx.primme_svds;
@@ -579,7 +579,7 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       primme->matrixMatvec_type = primme_svds->matrixMatvec_type;
       primme->matrix = primme_svds;
    }
-   if (!primme->applyPreconditioner) {
+   if (primme_svds->applyPreconditioner && !primme->applyPreconditioner) {
       switch (primme_svds->applyPreconditioner_type) {
 #ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   primme->applyPreconditioner = applyPreconditioner_eigs_Shprimme; break;
@@ -1412,7 +1412,7 @@ void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,
 }
 
 STATIC int Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      XREAL *factors, primme_context ctx) {
+      HREAL *factors, primme_context ctx) {
 
    int i;
    HREAL norm, norm0, factor;
@@ -1648,6 +1648,19 @@ STATIC void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    double aNorm = (primme->aNorm > 0.0) ?
       primme->aNorm : primme->stats.estimateLargestSVal;
    primme_context ctx = primme_svds_get_context(primme_svds);
+
+   /* Check machine precision limit */
+
+   double maxaNorm = max(primme->aNorm, primme->stats.estimateLargestSVal);
+   double eps_matvec = MACHINE_EPSILON;
+   CHKERRA(Num_machine_epsilon_Sprimme(
+                 primme_svds->matrixMatvec_type, &eps_matvec),
+         *ierr = 1);
+   if (rNorm && *rNorm < eps_matvec * maxaNorm * 3.16) {
+      *isConv = 1;
+      *ierr = 0;
+      return;
+   }
 
    /* Update primme_svds->aNorm */
 
@@ -1894,18 +1907,18 @@ STATIC void monitor_single_stage(void *basisEvals_, int *basisSize,
          *LSRes = (XREAL*)LSRes_;
    assert(event != NULL && primme != NULL);
 
-   XREAL *basisSvals, *basisSVNorms, *lockedSvals, *lockedSVNorms;
+   HREAL *basisSvals, *basisSVNorms, *lockedSvals, *lockedSVNorms;
 
-   CHKERRA(Num_malloc_RXprimme(
+   CHKERRA(Num_malloc_RHprimme(
                  basisEvals && basisSize ? *basisSize : 0, &basisSvals, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RXprimme(
+   CHKERRA(Num_malloc_RHprimme(
                  basisEvals && basisSize ? *basisSize : 0, &basisSVNorms, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RXprimme(
+   CHKERRA(Num_malloc_RHprimme(
                  lockedEvals && numLocked ? *numLocked : 0, &lockedSvals, ctx),
          *err = 1);
-   CHKERRA(Num_malloc_RXprimme(lockedEvals && numLocked ? *numLocked : 0,
+   CHKERRA(Num_malloc_RHprimme(lockedEvals && numLocked ? *numLocked : 0,
                  &lockedSVNorms, ctx),
          *err = 1);
 
@@ -1915,7 +1928,7 @@ STATIC void monitor_single_stage(void *basisEvals_, int *basisSize,
 
       if (basisEvals && basisSize) {
          for (i = 0; i < *basisSize; i++) {
-            basisSvals[i] = (XREAL)sqrt(fabs((HREAL)basisEvals[i]));
+            basisSvals[i] = (HREAL)sqrt(fabs((HREAL)basisEvals[i]));
             basisSVNorms[i] =
                   (basisSvals[i] > 0.0 ? (XREAL)((HREAL)basisNorms[i] /
                                                  (HREAL)basisSvals[i])
@@ -1925,7 +1938,7 @@ STATIC void monitor_single_stage(void *basisEvals_, int *basisSize,
 
       if (lockedEvals && numLocked) {
          for (i = 0; i < *numLocked; i++) {
-            lockedSvals[i] = (XREAL)sqrt(fabs((HREAL)lockedEvals[i]));
+            lockedSvals[i] = (HREAL)sqrt(fabs((HREAL)lockedEvals[i]));
             lockedSVNorms[i] =
                   (lockedSvals[i] > 0.0 ? (XREAL)((HREAL)lockedNorms[i] /
                                                   (HREAL)lockedSvals[i])
@@ -1977,10 +1990,10 @@ STATIC void monitor_single_stage(void *basisEvals_, int *basisSize,
          *err = 1);
    primme_svds->stats = stats; /* restore original values */
 
-   CHKERRA(Num_free_RXprimme(basisSvals, ctx), *err = 1);
-   CHKERRA(Num_free_RXprimme(basisSVNorms, ctx), *err = 1);
-   CHKERRA(Num_free_RXprimme(lockedSvals, ctx), *err = 1);
-   CHKERRA(Num_free_RXprimme(lockedSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(lockedSvals, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(lockedSVNorms, ctx), *err = 1);
    if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);
 }
@@ -2044,10 +2057,10 @@ STATIC void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 
    int numLocked0 = lockedEvals&&numLocked?*numLocked:0;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0) + numLocked0;
-   XREAL *basisSvals = NULL, *basisSVNorms = NULL;
+   HREAL *basisSvals = NULL, *basisSVNorms = NULL;
    int *basisSVFlags = NULL, *iblockSV = NULL;
-   CHKERRA(Num_malloc_RXprimme(basisSize0, &basisSvals, ctx), *err = 1);
-   CHKERRA(Num_malloc_RXprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSvals, ctx), *err = 1);
+   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_malloc_iprimme(basisSize0, &basisSVFlags, ctx), *err = 1);
    CHKERRA(Num_malloc_iprimme(
                  blockSize && *blockSize > 0 ? *blockSize : 1, &iblockSV, ctx),
@@ -2062,7 +2075,7 @@ STATIC void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
    int i, j = 0;
    if (lockedEvals && numLocked) {
       for (i = 0; i < *numLocked; i++, j++) {
-         basisSvals[j] = (XREAL)sqrt(fabs((HREAL)lockedEvals[i]));
+         basisSvals[j] = (HREAL)sqrt(fabs((HREAL)lockedEvals[i]));
          basisSVNorms[j] = (basisSvals[i] > 0.0 ? lockedNorms[i] / basisSvals[i]
                                                 : lockedNorms[i]);
          basisSVFlags[j] = lockedFlags[i];
@@ -2071,7 +2084,7 @@ STATIC void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
 
    if (basisEvals && basisSize) {
       for (i = 0; i < *basisSize; i++, j++) {
-         basisSvals[j] = (XREAL)sqrt(fabs((HREAL)basisEvals[i]));
+         basisSvals[j] = (HREAL)sqrt(fabs((HREAL)basisEvals[i]));
          basisSVNorms[j] = (basisSvals[i] > 0.0 ? basisNorms[i] / basisSvals[i]
                                                 : basisNorms[i]);
          basisSVFlags[j] = (basisFlags ? basisFlags[i] : UNCONVERGED);
@@ -2115,8 +2128,8 @@ STATIC void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,
          *err = 1);
    primme_svds->stats = stats; /* restore original values */
 
-   CHKERRA(Num_free_RXprimme(basisSvals, ctx), *err = 1);
-   CHKERRA(Num_free_RXprimme(basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(basisSVFlags, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(iblockSV, ctx), *err = 1);
    if (new_msg) free(new_msg);
@@ -2165,6 +2178,7 @@ STATIC void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
    assert(event != NULL && primme != NULL);
    primme_svds_params *primme_svds = (primme_svds_params *) primme->matrix;
    primme_context ctx = primme_svds_get_context(primme_svds);
+   int i;
 
    /* Included the converged triplets after the first stage as locked */
 
@@ -2172,30 +2186,38 @@ STATIC void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
       primme_svds->numSvals - primme->numEvals : 0;
    int numLockedSV = (lockedEvals&&numLocked?*numLocked:0) + numLockedExtra;
    int basisSize0 = (basisEvals&&basisSize?*basisSize:0);
-   XREAL *basisSVNorms, *lockedSVNorms;
+   HREAL *basisSvals, *basisSVNorms, *lockedSvals, *lockedSVNorms;
    int *lockedSVFlags;
-   CHKERRA(Num_malloc_RXprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
-   CHKERRA(Num_malloc_RXprimme(numLockedSV, &lockedSVNorms, ctx), *err = 1);
+   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSvals, ctx), *err = 1);
+   CHKERRA(Num_malloc_RHprimme(basisSize0, &basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_malloc_RHprimme(numLockedSV, &lockedSvals, ctx), *err = 1);
+   CHKERRA(Num_malloc_RHprimme(numLockedSV, &lockedSVNorms, ctx), *err = 1);
    CHKERRA(Num_malloc_iprimme(numLockedSV, &lockedSVFlags, ctx), *err = 1);
 
    /* SVrnorm = rnorm/sqrt(2) */
 
-   int i;
-   if (basisEvals && basisSize) for (i=0; i<*basisSize; i++) {
+   for (i=0; i<basisSize0; i++) {
+      basisSvals[i] = basisEvals[i];
       basisSVNorms[i] = basisNorms[i]/sqrt(2.0);
    }
+
+   // NOTE: Always lockedEvals and lockedNorms are either NULL or a position
+   // of the vectors svals and resNorms in wrapper_svds_Sprimme. So we can
+   // access to the singular values and residual norms at stage 0.
 
    lockedEvals -= numLockedExtra;
    lockedNorms -= numLockedExtra;
 
    for (i=0; i<numLockedExtra; i++) {
+      lockedSvals[i] = lockedEvals[i];
       lockedSVNorms[i] = lockedNorms[i];
       lockedSVFlags[i] = CONVERGED;
    }
 
    for (i=numLockedExtra; i<numLockedSV; i++) {
-      lockedSVNorms[i] = lockedNorms[i]/sqrt(2.0);
-      lockedSVFlags[i] = lockedFlags[i-numLockedExtra];
+      lockedSvals[i] = lockedEvals[i];
+      lockedSVNorms[i] = lockedNorms[i] / sqrt(2.0);
+      lockedSVFlags[i] = lockedFlags[i - numLockedExtra];
    }
 
    /* Prefix msg with Sprimme1 if the event is a profile */
@@ -2216,17 +2238,19 @@ STATIC void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,
 
    /* Call the user function report */
 
-   CHKERRA(monitorFunSVDS_Sprimme(basisEvals, basisSize ? *basisSize : 0,
+   CHKERRA(monitorFunSVDS_Sprimme(basisSvals, basisSize0,
                  basisFlags, iblock, blockSize ? *blockSize : 0, basisSVNorms,
-                 numConverged ? *numConverged : 0, lockedEvals, numLockedSV,
+                 numConverged ? *numConverged : 0, lockedSvals, numLockedSV,
                  lockedSVFlags, lockedSVNorms, inner_its ? *inner_its : 0,
                  LSRes ? *LSRes : 0.0, msg, time ? *time : 0.0, *event,
                  1 /* stage 2 */, -1.0 /* don't update elapsedTime */, ctx),
          *err = 1);
    primme_svds->stats = stats; /* restore original values */
 
-   CHKERRA(Num_free_RXprimme(basisSVNorms, ctx), *err = 1);
-   CHKERRA(Num_free_RXprimme(lockedSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(basisSvals, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(basisSVNorms, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(lockedSvals, ctx), *err = 1);
+   CHKERRA(Num_free_RHprimme(lockedSVNorms, ctx), *err = 1);
    CHKERRA(Num_free_iprimme(lockedSVFlags, ctx), *err = 1);
    if (new_msg) free(new_msg);
    primme_svds_free_context(ctx);

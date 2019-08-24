@@ -687,7 +687,7 @@ int wrapper_svds_hprimme(void *svals_, void *svecs_, void *resNorms_,
       int *outInitSize, primme_context ctx);
 int comp_doublehprimme(const void *a, const void *b);
 int copy_last_params_from_svdshprimme(int stage, dummy_type_sprimme *svals, dummy_type_hprimme *svecs,
-      dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
       dummy_type_hprimme **out_svecs, primme_context ctx);
 int copy_last_params_to_svdshprimme(int stage, dummy_type_sprimme *svals, dummy_type_hprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
@@ -709,7 +709,7 @@ void matrixMatvec_eigs_hprimme(void *x_, PRIMME_INT *ldx, void *y_,
 void applyPreconditioner_eigs_hprimme(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 int Num_scalInv_Smatrixhprimme(dummy_type_hprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      dummy_type_hprimme *factors, primme_context ctx);
+      dummy_type_sprimme *factors, primme_context ctx);
 int globalSum_Rprimme_svdshprimme(
       dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
 int compute_resNormhprimme(dummy_type_hprimme *leftsvec, dummy_type_hprimme *rightsvec, dummy_type_sprimme *rNorm,
@@ -749,7 +749,7 @@ int wrapper_svds_kprimme(void *svals_, void *svecs_, void *resNorms_,
       int *outInitSize, primme_context ctx);
 int comp_doublekprimme(const void *a, const void *b);
 int copy_last_params_from_svdskprimme(int stage, dummy_type_sprimme *svals, dummy_type_kprimme *svecs,
-      dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
       dummy_type_kprimme **out_svecs, primme_context ctx);
 int copy_last_params_to_svdskprimme(int stage, dummy_type_sprimme *svals, dummy_type_kprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
@@ -771,7 +771,7 @@ void matrixMatvec_eigs_kprimme(void *x_, PRIMME_INT *ldx, void *y_,
 void applyPreconditioner_eigs_kprimme(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 int Num_scalInv_Smatrixkprimme(dummy_type_kprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      dummy_type_hprimme *factors, primme_context ctx);
+      dummy_type_sprimme *factors, primme_context ctx);
 int globalSum_Rprimme_svdskprimme(
       dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
 int compute_resNormkprimme(dummy_type_kprimme *leftsvec, dummy_type_kprimme *rightsvec, dummy_type_sprimme *rNorm,
@@ -997,7 +997,7 @@ int wrapper_svds_magma_hprimme(void *svals_, void *svecs_, void *resNorms_,
       int *outInitSize, primme_context ctx);
 int comp_doublemagma_hprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_hprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_hprimme *svecs,
-      dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
       dummy_type_magma_hprimme **out_svecs, primme_context ctx);
 int copy_last_params_to_svdsmagma_hprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_hprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
@@ -1019,7 +1019,7 @@ void matrixMatvec_eigs_magma_hprimme(void *x_, PRIMME_INT *ldx, void *y_,
 void applyPreconditioner_eigs_magma_hprimme(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 int Num_scalInv_Smatrixmagma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      dummy_type_hprimme *factors, primme_context ctx);
+      dummy_type_sprimme *factors, primme_context ctx);
 int globalSum_Rprimme_svdsmagma_hprimme(
       dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
 int compute_resNormmagma_hprimme(dummy_type_magma_hprimme *leftsvec, dummy_type_magma_hprimme *rightsvec, dummy_type_sprimme *rNorm,
@@ -1059,7 +1059,7 @@ int wrapper_svds_magma_kprimme(void *svals_, void *svecs_, void *resNorms_,
       int *outInitSize, primme_context ctx);
 int comp_doublemagma_kprimme(const void *a, const void *b);
 int copy_last_params_from_svdsmagma_kprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_kprimme *svecs,
-      dummy_type_hprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
       dummy_type_magma_kprimme **out_svecs, primme_context ctx);
 int copy_last_params_to_svdsmagma_kprimme(int stage, dummy_type_sprimme *svals, dummy_type_magma_kprimme *svecs,
       dummy_type_sprimme *rnorms, int allocatedTargetShifts,
@@ -1081,7 +1081,7 @@ void matrixMatvec_eigs_magma_kprimme(void *x_, PRIMME_INT *ldx, void *y_,
 void applyPreconditioner_eigs_magma_kprimme(void *x, PRIMME_INT *ldx, void *y,
       PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 int Num_scalInv_Smatrixmagma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
-      dummy_type_hprimme *factors, primme_context ctx);
+      dummy_type_sprimme *factors, primme_context ctx);
 int globalSum_Rprimme_svdsmagma_kprimme(
       dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
 int compute_resNormmagma_kprimme(dummy_type_magma_kprimme *leftsvec, dummy_type_magma_kprimme *rightsvec, dummy_type_sprimme *rNorm,
