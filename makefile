@@ -127,4 +127,7 @@ all_tests-clang-half-debug: all_tests
 matlab-clang-half-debug: export MEXFLAGS := CXX=clang LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
 matlab-clang-half matlab-clang-half-debug: matlab
 
+python-clang-half-debug: clean clean_lib lib-clang-half-debug
+	@$(MAKE) -C Python clean all  CC='clang -fPIC' LDSHARED='clang -shared -rtlib=compiler-rt -lm'
+
 .NOTPARALLEL:
