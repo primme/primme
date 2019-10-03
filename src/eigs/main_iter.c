@@ -423,7 +423,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    if (primme->dynamicMethodSwitch > 0) {
       initializeModel(&CostModel, primme);
       CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
-      if (primme->numEvals < 5)
+      if (primme->numEvals < 5 ||
+            primme->maxBasisSize + (primme->locking ? primme->numEvals : 0) >=
+                  primme->n)
          primme->dynamicMethodSwitch = 1;   /* Start tentatively GD+k */
       else
          primme->dynamicMethodSwitch = 3;   /* Start GD+k for 1st pair */
@@ -709,7 +711,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* we are in case a), and otherwise we are in case b).            */
 
             if (i >= maxNumRandoms) {
-               if (availableBlockSize > 0 && blockSize0 <= 0) {
+               if (availableBlockSize > 0 && blockSize0 <= 0 && reset == 0) {
                   wholeSpace = 1;
                } else {
                   reset = 2;
@@ -1910,8 +1912,13 @@ STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
    HREAL ratio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */
-   /* do not include restart costs. Remain with GD+k until a restart occurs */
-   if (primme->stats.numRestarts == 0) return 0;
+   /* do not include restart costs. Remain with GD+k until a restart occurs. */
+   /* If search space is going to saturate, just use GD for ever.            */
+   if (primme->stats.numRestarts == 0 ||
+         primme->maxBasisSize + (primme->locking ? primme->numEvals : 0) >=
+               primme->n) {
+      return 0;
+   }
 
    /* Select method to switch to if needed: 1->2 and 3->4 */
    switch (primme->dynamicMethodSwitch) {
