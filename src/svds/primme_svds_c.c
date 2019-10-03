@@ -1673,9 +1673,9 @@ STATIC void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,
    double sval = eval ? sqrt(fabs(*eval)) : 0.0;
    double srNorm = (rNorm && eval) ? *rNorm / sval : 0.0;
    CHKERRA(convTestFunSVDS_Sprimme(sval,
-                 (method == primme_svds_op_AAt && evec) ? evec : NULL,
+                 (method == primme_svds_op_AAt && evec) ? (SCALAR *)evec : NULL,
                  method == primme_svds_op_AAt,
-                 (method == primme_svds_op_AtA && evec) ? evec : NULL,
+                 (method == primme_svds_op_AtA && evec) ? (SCALAR *)evec : NULL,
                  method == primme_svds_op_AtA, srNorm, method, isConv, ctx),
          *ierr = 1);
 
@@ -1731,8 +1731,8 @@ STATIC void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,
    double srNorm = rNorm ? *rNorm * sqrt(2.0) : 0.0;
    CHKERRA(convTestFunSVDS_Sprimme(sval,
                  evec ? &((SCALAR *)evec)[primme_svds->nLocal] : NULL,
-                 1 /* vector given */, evec, 1 /* vector given */, srNorm,
-                 method, isConv, ctx),
+                 1 /* vector given */, (SCALAR *)evec, 1 /* vector given */,
+                 srNorm, method, isConv, ctx),
          *ierr = 1);
 
    /* Restore aNorm */
