@@ -583,7 +583,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                /* Report for non adaptive inner iterations */
                int ZERO = 0, UNCO = UNCONVERGED;
                CHKERR(monitorFun_Sprimme(&eval[p[i]], 1, &UNCO, &ZERO, 1,
-                     &rnorm[p[i]], -1, NULL, -1, NULL, NULL, numIts, tau[p[i]],
+                     &rnorm[p[i]], 0, NULL, 0, NULL, NULL, numIts, tau[p[i]],
                      NULL, 0.0, primme_event_inner_iteration, startTime, ctx));
             }
          }

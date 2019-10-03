@@ -130,7 +130,7 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       ldy0 = (ldy ? *ldy : 1);
    }
 
-   if (do_copy) {
+   if (do_copy && x != NULL) {
       CHKERR(Num_copy_Tmatrix_Sprimme(x, xt, m, n, ldx, y0, ldy0, ctx));
    }
 
@@ -196,7 +196,7 @@ int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       ldy0 = (ldy ? *ldy : 1);
    }
 
-   if (do_copy) {
+   if (do_copy && x != NULL) {
       CHKERR(Num_copy_Tmatrix_iprimme(x, xt, m, n, ldx, y0, ldy0, ctx));
    }
 
