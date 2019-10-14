@@ -208,7 +208,7 @@ cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ld
         if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
         n = primme_params_get_int(primme, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:])
+        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -845,9 +845,9 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
         if transpose[0] == 0:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:]).astype(get_np_type(x), order='F', copy=False)
         else:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
