@@ -208,7 +208,7 @@ cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ld
         if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
         n = primme_params_get_int(primme, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:])
+        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -442,6 +442,15 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
     >>> evals # doctest: +SKIP
     array([1.0035e-07, 1.0204e-02, 2.0618e-02])
+    >>> Adiag = np.arange(0, 100).reshape((100,1))
+    >>> def Amatmat(x):
+    ...    if len(x.shape) == 1: x = x.reshape((100,1))
+    ...    return Adiag * x   # equivalent to diag(Adiag).dot(x)
+    ...
+    >>> A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat)
+    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
+    >>> evals
+    array([99., 98., 97.])
     """
 
     A = aslinearoperator(A)
@@ -845,9 +854,9 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
         if transpose[0] == 0:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:]).astype(get_np_type(x), order='F', copy=False)
         else:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -1062,6 +1071,21 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
     >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
     ['4.57263', '4.78752', '4.82229']
+
+    >>> import primme, scipy.sparse, numpy as np
+    >>> Bdiag = np.arange(0, 100).reshape((100,1))
+    >>> Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
+    >>> def Bmatmat(x):
+    ...    if len(x.shape) == 1: x = x.reshape((100,1))
+    ...    return np.vstack((Bdiag * x, np.zeros((100, x.shape[1]), dtype=np.float32)))
+    ...
+    >>> def Brmatmat(x):
+    ...    if len(x.shape) == 1: x = x.reshape((200,1))
+    ...    return (Bdiagr * x)[0:100,:]
+    ...
+    >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
+    >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
+    >>> svals # the three largest singular values of B
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
