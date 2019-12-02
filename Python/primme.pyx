@@ -99,7 +99,7 @@ def __primme_params_get(PrimmeParams pp_, field_):
     cdef int arity
     primme_member_info(&l, <const char **>&field, &t, &arity)
     if l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef void *v_pvoid
@@ -153,26 +153,26 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
     if r != 0 or l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef int i
     if t == primme_pointer:
         r = primme_set_member(primme, l, <void*>value)
-        assert r == 0, "Invalid field '%s'" % field_ 
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_int:
         if isinstance(value, (bytesp23,str)):
             value = bytesp23(value, 'ASCII')
             r = primme_constant_info(<const char*>value, &i)
-            assert r == 0, "Invalid field '%s'" % field_ 
+            if r != 0: raise ValueError("Invalid value '%s' for field '%s'" % (value, field_))
             value = i
         v_int = value
         r = primme_set_member(primme, l, &v_int)
-        assert r == 0, "Invalid field '%s'" % field_ 
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_double:
         v_double = value
         r = primme_set_member(primme, l, &v_double)
-        assert r == 0, "Invalid field '%s'" % field_ 
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     else:
         raise ValueError("Not supported type for member '%s'" % field_)
    
@@ -442,6 +442,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
     >>> evals # doctest: +SKIP
     array([1.0035e-07, 1.0204e-02, 2.0618e-02])
+
+    >>> # Giving the matvec as a function
+    >>> import primme, scipy.sparse, numpy as np
     >>> Adiag = np.arange(0, 100).reshape((100,1))
     >>> def Amatmat(x):
     ...    if len(x.shape) == 1: x = x.reshape((100,1))
@@ -743,7 +746,7 @@ def __primme_svds_params_get(PrimmeSvdsParams pp_, field_):
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
     if r != 0 or l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef void *v_pvoid
@@ -797,26 +800,26 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
     if r != 0 or l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef int i
     if t == primme_pointer:
         r = primme_svds_set_member(primme_svds, l, <void*>value)
-        assert(r == 0, "Invalid field '%s'" % field_)
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_int:
         if isinstance(value, (bytesp23,str)):
             value = bytesp23(value, 'ASCII')
             r = primme_svds_constant_info(<const char*>value, &i)
-            assert(r == 0, "Invalid field '%s'" % field_)
+            if r != 0: raise ValueError("Invalid value '%s' for field '%s'" % (value, field_))
             value = i
         v_int = value
         r = primme_svds_set_member(primme_svds, l, &v_int)
-        assert(r == 0, "Invalid field '%s'" % field_)
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_double:
         v_double = value
         r = primme_svds_set_member(primme_svds, l, &v_double)
-        assert(r == 0, "Invalid field '%s'" % field_)
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     else:
         raise ValueError("Not supported type for member '%s'" % field_)
    
@@ -877,11 +880,11 @@ cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldy[0]:1, :blockSize[0]]> x
         if mode[0] == primme_svds_op_AtA:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = precond(x_view[:n,:], mode[0])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = np.ndarray((n,blockSize[0]), buffer=precond(x_view[:n,:], mode[0]), dtype=get_np_type(x), order='F')
         elif mode[0] == primme_svds_op_AAt:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = precond(x_view[:m,:], mode[0])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = np.ndarray((m,blockSize[0]), buffer=precond(x_view[:m,:], mode[0]), dtype=get_np_type(x), order='F')
         elif mode[0] == primme_svds_op_augmented:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = precond(x_view[:m+n,:], mode[0])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = np.ndarray((m+n,blockSize[0]), buffer=precond(x_view[:m+n,:], mode[0]), dtype=get_np_type(x), order='F')
         else:
             return
         ierr[0] = 0
@@ -1072,6 +1075,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
     ['4.57263', '4.78752', '4.82229']
 
+    >>> # Giving the matvecs as functions
     >>> import primme, scipy.sparse, numpy as np
     >>> Bdiag = np.arange(0, 100).reshape((100,1))
     >>> Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
@@ -1085,7 +1089,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     ...
     >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
     >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
-    >>> svals # the three largest singular values of B
+    >>> svals # doctest: +SKIP
+    array([99., 98., 97., 96., 95.])
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
