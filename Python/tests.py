@@ -15,6 +15,7 @@ import math
 import primme
 from primme import eigsh, svds
 from compare import stats as st
+from builtins import str
 
 #
 # Collection of problems
@@ -128,7 +129,7 @@ def select_pairs_eigsh(k, sigma, which, evals):
    return np.array(sorted(evals, key=f)[0:k])
 
 def to_primme_datatype(dtype):
-   if isinstance(dtype, (str,unicode,bytes)):
+   if isinstance(dtype, (str,bytes)):
       return dtype
    if dtype == np.float16:
       return 'primme_op_half'
@@ -137,6 +138,16 @@ def to_primme_datatype(dtype):
    else:
       return 'primme_op_double'
 
+def dtype_to_str(precision, complexity):
+    if complexity == np.float64:
+        return str(precision)
+    if precision == np.float16:
+        return "<class 'numpy.complex32'>"
+    if precision == np.float32:
+        return "<class 'numpy.complex64'>"
+    if precision == np.float64:
+        return "<class 'numpy.complex128'>"
+    
 def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
                 exact_evals, dtype, case_desc, add_stats=True):
    """
@@ -167,7 +178,7 @@ def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
    if add_stats:
       st.add("eigsh: " + case_desc, ("eigsh",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
 
-def notest_primme_eigsh():
+def test_primme_eigsh():
    """
    Test cases for primme.eighs for standard problems.
    """
@@ -195,8 +206,8 @@ def notest_primme_eigsh():
                   for prec in precs:
                      for k in (1, 2, 3, 5, 10, 70):
                         if k > n: continue
-                        case_desc = ("A=%s(%d, %s, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                              (gen.__name__, n, complexity, precision, k, prec is not None, which, sigma))
+                        case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
+                              (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma))
                         yield (eigsh_check, eigsh, A0, None, 1, k, prec, which, sigma, tol, evals0, precision, case_desc)
 
 def test_primme_eigsh_gen():
@@ -230,8 +241,8 @@ def test_primme_eigsh_gen():
                   for prec in precs:
                      for k in (1, 2, 3, 5, 10, 50):
                         if k > n: continue
-                        case_desc = ("A,B=%s(%d, %s, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                              (gen.__name__, n, complexity, precision, k, prec is not None, which, sigma))
+                        case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
+                              (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma))
                         yield (eigsh_check, eigsh, A0, B, normInvB, k, prec, which, sigma, tol, evals0, precision, case_desc)
 
 def test_primme_eigsh_matrix_types():
@@ -302,30 +313,33 @@ def test_primme_svds():
    """
 
    for n in (2, 3, 5, 10, 50, 100):
-      for gen_name, gen in (("MikotaPair", (lambda n, d: toStandardProblem(MikotaPair(n, dtype=d)))),
+      for precision in (np.float16, np.float32, np.float64):
+         c = np.finfo(precision).eps**.333
+         for gen_name, gen in (("MikotaPair", (lambda n, d: toStandardProblem(MikotaPair(n, dtype=d)))),
                             ("Lauchli_like_vert", (lambda n, d: Lauchli_like(n*2, n, c, dtype=d))),
                             ("Lauchli_like_hori", (lambda n, d: Lauchli_like(n, n*2, c, dtype=d)))):
-         sva = np.linalg.svd(gen(n, np.float64), full_matrices=False, compute_uv=False)
-         sigma0 = sva[0]*.51 + sva[-1]*.49
-         for complexity in (np.float64, np.complex128):
-            A = gen(n, complexity)
-            for precision in (np.float16, np.float32, np.float64):
+            sva = np.linalg.svd(gen(n, np.float64), full_matrices=False, compute_uv=False)
+            sigma0 = sva[0]*.51 + sva[-1]*.49
+            for complexity in (np.float64, np.complex128):
+               A = gen(n, complexity)
                tol = np.finfo(precision).eps**.5 * 0.1
-               c = np.finfo(precision).eps**.333
                for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
                   for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
                      # If the condition number is too large, the first stage may end
                      # with approximations of larger values than the actual smallest
                      if (gen_name == "MikotaPair" and n > 50
-                              and (dtype is np.float32 or dtype is np.complex64)
+                              and (precision is np.float32 or precision is np.complex64)
                               and which != 'LM'):
                         continue
                      if precision is np.float16 and which != 'LM':
                         continue
+                     if (n >= 50 and
+                         precision is np.float16 and which == 'LM'):
+                        continue
                      for k in (1, 2, 3, 5, 10, 15):
                         if k > n: continue
-                        case_desc = ("A=%s(%d, %s, %s), k=%d, M=%s, which=%s, tol=%g" %
-                              (gen_name, n, complexity, precision, k, bool(prec), which, tol))
+                        case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
+                              (gen_name, n, dtype_to_str(precision, complexity), k, bool(prec), which, tol))
                         yield (svds_check, svds, A, k, prec, which, tol, sva, precision, case_desc)
 
 def test_primme_svds_matrix_types():
@@ -344,14 +358,11 @@ def test_primme_svds_matrix_types():
          k = 2
          case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
                       ("Lauchli_like_vert", n, dtype, k, bool(prec), which))
-         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, case_desc, False)
+         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, dtype, case_desc, False)
 
 def test_examples_from_doc():
    import doctest
    doctest.testmod(primme, raise_on_error=True, optionflags=doctest.NORMALIZE_WHITESPACE)
-
-def test_examples():
-    exec(compile(open("examples.py").read(), "examples.py", "exec"))
 
 def test_return_stats():
     A, _ = diagonal(100)
