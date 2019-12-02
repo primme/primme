@@ -1509,7 +1509,6 @@ STATIC int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
       primme_context ctx) {
 
    primme_svds_params *primme_svds = ctx.primme_svds;
-   int one = 1, notrans = 0, trans = 1, ierr;
    PRIMME_INT nLocal = primme_svds->mLocal+primme_svds->nLocal;
    SCALAR *Atu;
    CHKERR(Num_malloc_Sprimme(nLocal, &Atu, ctx));
@@ -1517,14 +1516,10 @@ STATIC int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
 
    /* Av = A * v; Atu = A'u */
 
-   CHKERR((primme_svds->matrixMatvec(leftsvec, &primme_svds->mLocal, Atu,
-                 &primme_svds->nLocal, &one, &trans, primme_svds, &ierr),
-         ierr));
-   primme_svds->stats.numMatvecs++;
-   CHKERR((primme_svds->matrixMatvec(rightsvec, &primme_svds->nLocal, Av,
-                 &primme_svds->mLocal, &one, &notrans, primme_svds, &ierr),
-         ierr));
-   primme_svds->stats.numMatvecs++;
+   CHKERR(matrixMatvecSVDS_Sprimme(leftsvec, primme_svds->mLocal, Atu,
+         primme_svds->nLocal, 0, 1, 1 /* trans */, ctx));
+   CHKERR(matrixMatvecSVDS_Sprimme(rightsvec, primme_svds->nLocal, Av,
+         primme_svds->mLocal, 0, 1, 0 /* notrans */, ctx));
 
    /* ip[0] = ||v|| */
    /* ip[1] = ||u|| */

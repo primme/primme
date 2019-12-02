@@ -175,6 +175,9 @@ TEMPLATE_PLEASE
 int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       HREAL *resNorms, double startTime, int *ret, primme_context ctx) {
 
+   /* Default error is something is wrong in this function */
+   *ret = PRIMME_MAIN_ITER_FAILURE;
+
    primme_params *primme = ctx.primme;
                             /* primme parameters */
    int i;                   /* Loop variable                                 */
