@@ -569,7 +569,9 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
 #ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   primme->matrixMatvec = matrixMatvec_eigs_Shprimme; break;
 #endif
+#ifndef PRIMME_WITHOUT_FLOAT
       case primme_op_float:  primme->matrixMatvec = matrixMatvec_eigs_Ssprimme; break;
+#endif
       case primme_op_double: primme->matrixMatvec = matrixMatvec_eigs_Sdprimme; break;
 #ifdef PRIMME_WITH_NATIVE_QUAD
       case primme_op_quad:   primme->matrixMatvec = matrixMatvec_eigs_Sqprimme; break;
@@ -584,7 +586,9 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
 #ifdef SUPPORTED_HALF_TYPE
       case primme_op_half:   primme->applyPreconditioner = applyPreconditioner_eigs_Shprimme; break;
 #endif
+#ifndef PRIMME_WITHOUT_FLOAT
       case primme_op_float:  primme->applyPreconditioner = applyPreconditioner_eigs_Ssprimme; break;
+#endif
       case primme_op_double: primme->applyPreconditioner = applyPreconditioner_eigs_Sdprimme; break;
 #ifdef PRIMME_WITH_NATIVE_QUAD
       case primme_op_quad:   primme->applyPreconditioner = applyPreconditioner_eigs_Sqprimme; break;
@@ -1083,7 +1087,6 @@ STATIC int primme_svds_check_input(void *svals, void *svecs, void *resNorms,
       ret = -18;
    else if (resNorms == NULL)
       ret = -19;
-   /* Booked -20 and -21*/
 
    return ret;
    /***************************************************************************/
