@@ -353,7 +353,9 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
       primme->convTestFun = convTestFunAbsolute;
       primme->convTestFun_type = PRIMME_OP_SCALAR;
       if (primme->eps == 0.0) {
-         primme->eps = MACHINE_EPSILON*1e4;
+         primme->eps = MACHINE_EPSILON * 1e4;
+         /* The default value of eps is too much for half precision */
+         if (primme->eps >= 1.0) primme->eps = 0.1;
       }
    }
 
@@ -452,7 +454,8 @@ STATIC int check_input(
       ret = -10;
    else if (primme->numEvals < 0)
       ret = -11;
-   else if (fabs(primme->eps) != 0.0L && primme->eps < MACHINE_EPSILON )
+   else if (primme->convTestFun != NULL && fabs(primme->eps) != 0.0L &&
+            primme->eps < MACHINE_EPSILON)
       ret = -12;
    else if ( primme->target != primme_smallest  &&
              primme->target != primme_largest  &&
@@ -507,7 +510,6 @@ STATIC int check_input(
       ret = -34;
    else if (primme->ldOPs != 0 && primme->ldOPs < primme->nLocal)
       ret = -35;
-   /* Booked -36 and -37 */
    else if (primme->locking == 0
          && (primme->target == primme_closest_leq
             || primme->target == primme_closest_geq))
