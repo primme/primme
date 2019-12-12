@@ -1352,10 +1352,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
 _PRIMMEErrors = {
 0: "success",
-1: "reported only amount of required memory",
--1: "failed in allocating int or real workspace",
--2: "malloc failed in allocating a permutation integer array",
--3: "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+-1: "unexpected internal error; please consider to set 'printLevel' to a value larger than 0 to see the call stack and to report these errors because they may be bugs",
+-2: "memory allocation failure",
+-3: "maximum iterations or matvecs reached",
 -4: "argument 'primme' is NULL",
 -5: "'n' < 0 or 'nLocal' < 0 or 'nLocal' > 'n'",
 -6: "'numProcs' < 1",
@@ -1382,28 +1381,25 @@ _PRIMMEErrors = {
 -27: "'printLevel' < 0 or 'printLevel' > 5",
 -28: "'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
 -29: "'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
--30: "'evals' is NULL, but not 'evecs' and 'resNorms'",
--31: "'evecs' is NULL, but not 'evals' and 'resNorms'",
--32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
+-30: "'evals' is NULL",
+-31: "'evecs' is NULL",
+-32: "'resNorms' is NULL",
 -33: "'locking' == 0 and 'minRestartSize' < 'numEvals'",
 -34: "'ldevecs' is less than 'nLocal'",
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
--36 : "not enough memory for realWork",
--37 : "not enough memory for intWork",
--38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
--40 : 'factorization failure',
--41 : 'user cancelled execution',
--42 : 'orthogonalization failure',
--43 : 'parallel failure',
--44 : 'unavailable functionality'
+-38: "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
+-40: "some LAPACK function performing a factorization returned an error code; set 'printLevel' > 0 to see the error code and the call stack",
+-41: "error happened at the matvec or applying the preconditioner",
+-42: "the matrix provided in 'lock' is not full rank",
+-43: "parallel failure",
+-44: "unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs"
 }
 
 _PRIMMESvdsErrors = {
 0   : "success",
-1   : "reported only amount of required memory",
--1  : "failed in allocating int or real workspace",
--2  : "malloc failed in allocating a permutation integer array",
--3  : "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+-1  : "unexpected internal error; please consider to set 'printLevel' to a value larger than 0 to see the call stack and to report these errors because they may be bugs",
+-2  : "memory allocation failure",
+-3  : "maximum iterations or matvecs reached",
 -4  : "primme_svds is NULL",
 -5  : "Wrong value for m or n or mLocal or nLocal",
 -6  : "Wrong value for numProcs",
@@ -1419,13 +1415,11 @@ _PRIMMESvdsErrors = {
 -17 : "svals is not set",
 -18 : "svecs is not set",
 -19 : "resNorms is not set",
--20 : "not enough memory for realWork",
--21 : "not enough memory for intWork",
--40 : 'factorization failure',
--41 : 'user cancelled execution',
--42 : 'orthogonalization failure',
--43 : 'parallel failure',
--44 : 'unavailable functionality'
+-40 : "some LAPACK function performing a factorization returned an error code; set 'printLevel' > 0 to see the error code and the call stack",
+-41 : "error happened at the matvec or applying the preconditioner",
+-42 : "the matrix provided in 'lock' is not full rank",
+-43 : "parallel failure",
+-44 : "unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs"
 }
 
 

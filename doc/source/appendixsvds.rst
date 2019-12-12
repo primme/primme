@@ -1078,30 +1078,33 @@ Preset Methods
 Error Codes
 -----------
 
-The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of the next values:
+The functions :c:func:`dprimme_svds` and :c:func:`zprimme_svds` return one of the following error codes.
+Some of the error codes have a macro associated which is indicated in brackets.
 
-*  0: success,
-*  1: reported only amount of required memory,
-* -1: failed in allocating int or real workspace,
-* -2: malloc failed in allocating a permutation integer array,
-* -3: main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr',
-* -4: ``primme_svds`` is NULL,
-* -5: Wrong value for |Sm| or |Sn| or |SmLocal| or |SnLocal|,
-* -6: Wrong value for |SnumProcs|,
-* -7: |SmatrixMatvec| is not set,
-* -8: |SapplyPreconditioner| is not set but |Sprecondition| == 1 ,
-* -9: |SnumProcs| >1 but |SglobalSumReal| is not set,
-* -10: Wrong value for |SnumSvals|, it's larger than min(|Sm|, |Sn|),
-* -11: Wrong value for |SnumSvals|, it's smaller than 1,
-* -13: Wrong value for |Starget|,
-* -14: Wrong value for |Smethod|,
-* -15: Not supported combination of method and |SmethodStage2|,
-* -16: Wrong value for |SprintLevel|,
+*  0: success; usually all requested singular triplets have converged.
+* -1: (``PRIMME_UNEXPECTED_FAILURE``) unexpected internal error; please consider to set |SprintLevel| to a value larger than 0 to see the call stack and to report these errors because they may be bugs.
+* -2: (``PRIMME_MALLOC_FAILURE``) failure in allocating memory; it can be either CPU or GPU.
+* -3: (``PRIMME_MAIN_ITER_FAILURE``) maximum number of matvecs |SmaxMatvecs| reached.
+* -4: ``primme_svds`` is NULL.
+* -5: Wrong value for |Sm| or |Sn| or |SmLocal| or |SnLocal|.
+* -6: Wrong value for |SnumProcs|.
+* -7: |SmatrixMatvec| is not set.
+* -8: |SapplyPreconditioner| is not set but |Sprecondition| == 1.
+* -9: |SnumProcs| >1 but |SglobalSumReal| is not set.
+* -10: Wrong value for |SnumSvals|, it's larger than min(|Sm|, |Sn|).
+* -11: Wrong value for |SnumSvals|, it's smaller than 1.
+* -13: Wrong value for |Starget|.
+* -14: Wrong value for |Smethod|.
+* -15: Not supported combination of method and |SmethodStage2|.
+* -16: Wrong value for |SprintLevel|.
 * -17: ``svals`` is not set.
 * -18: ``svecs`` is not set.
 * -19: ``resNorms`` is not set.
-* -20: deprecated.
-* -21: deprecated.
+* -40: (``PRIMME_LAPACK_FAILURE``) some LAPACK function performing a factorization returned an error code; set |SprintLevel| > 0 to see the error code and the call stack.
+* -41: (``PRIMME_USER_FAILURE``) some of the user-defined functions (|SmatrixMatvec|, |SapplyPreconditioner|, ...) returned a non-zero error code; set |SprintLevel| > 0 to see the call stack that produced the error.
+* -42: (``PRIMME_ORTHO_CONST_FAILURE``) the provided orthogonal constraints (see |SnumOrthoConst|) are not full rank.
+* -43: (``PRIMME_PARALLEL_FAILURE``) some process has a different value in an input option than the process zero, or it is not acting coherently; set |SprintLevel| > 0 to see the call stack that produced the error.
+* -44: (``PRIMME_FUNCTION_UNAVAILABLE``) PRIMME was not compiled with support for the requesting precision or for GPUs.
 * -100 up to -199: eigensolver error from first stage; see the value plus 100 in :ref:`error-codes`.
 * -200 up to -299: eigensolver error from second stage; see the value plus 200 in :ref:`error-codes`.
 

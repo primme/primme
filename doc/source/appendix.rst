@@ -40,6 +40,26 @@ The following data types are macros used in PRIMME as followed.
 
    .. versionadded:: 2.0
 
+Other macros
+""""""""""""
+
+.. c:macro:: PRIMME_VERSION_MAJOR
+
+   Constant ``int`` with the major version number.
+
+   For instance, the value of the macro is ``3`` for version 3.0.
+
+   .. versionadded:: 3.0
+
+.. c:macro:: PRIMME_VERSION_MINOR
+
+   Constant ``int`` with the minor version number.
+
+   For instance, the value of the macro is ``0`` for version 3.0.
+
+   .. versionadded:: 3.0
+
+
 primme_params
 """""""""""""
 
@@ -1703,23 +1723,21 @@ Preset Methods
 Error Codes
 -----------
 
-The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next values:
+The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the following error codes.
+Some of the error codes have a macro associated which is indicated in brackets.
 
-*  0: success.
-*  1: reported only amount of required memory.
-* -1: failed in allocating int or real workspace.
-* -2: malloc failed in allocating a permutation integer array.
-* -3: main_iter() encountered problem; the calling stack of the
-  functions where the error occurred was printed in ``stderr``.
+*  0: success; usually all requested eigenpairs have converged.
+* -1: (``PRIMME_UNEXPECTED_FAILURE``) unexpected internal error; please consider to set |printLevel| to a value larger than 0 to see the call stack and to report these errors because they may be bugs.
+* -2: (``PRIMME_MALLOC_FAILURE``) failure in allocating memory; it can be either CPU or GPU.
+* -3: (``PRIMME_MAIN_ITER_FAILURE``) maximum number of outer iterations |maxOuterIterations| or matvecs |maxMatvecs| reached.
 * -4: if argument ``primme`` is NULL.
 * -5: if |n| < 0 or |nLocal| < 0 or |nLocal| > |n|.
 * -6: if |numProcs| < 1.
 * -7: if |matrixMatvec| is NULL.
 * -8: if |applyPreconditioner| is NULL and |precondition| > 0.
-* -9: if |massMatrixMatvec| is not NULL (generalized Hermitian problem is not supported yet).
 * -10: if |numEvals| > |n|.
 * -11: if |numEvals| < 0.
-* -12: if |eps| > 0 and |eps| < machine precision.
+* -12: if |convTestFun| is not NULL and |eps| > 0 and |eps| < machine precision given by |internalPrecision| and the precision of PRIMME call (:c:func:`sprimme`, :c:func:`dprimme`...).
 * -13: if |target| is not properly defined.
 * -14: if |target| is one of |primme_closest_geq|,
   |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs| but
@@ -1729,30 +1747,31 @@ The functions :c:func:`dprimme` and :c:func:`zprimme` return one of the next val
   |targetShifts| is NULL  (no shifts array).
 * -16: if |numOrthoConst| < 0 or |numOrthoConst| > |n|.
   (no free dimensions left).
-* -17: if |maxBasisSize| < 2.
-* -18: if |minRestartSize| < 0 or |minRestartSize| shouldn't be zero.
-* -19: if |maxBlockSize| < 0 or |maxBlockSize| shouldn't be zero.
+* -17: if |maxBasisSize| < 2 and |n| > 2.
+* -18: if |minRestartSize| < 0, or |minRestartSize| is zero but |n| > 2 and |numEvals| > 0.
+* -19: if |maxBlockSize| < 0, or |maxBlockSize| is zero but |numEvals| > 0.
 * -20: if |maxPrevRetain| < 0.
-* -21: deprecated
 * -22: if |initSize| < 0.
 * -23: if |locking| == 0 and |initSize| > |maxBasisSize|.
 * -24: if |locking| and |initSize| > |numEvals|.
-* -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|.
-* -26: if |minRestartSize| >= |n|.
+* -25: if |maxPrevRetain| + |minRestartSize| >= |maxBasisSize|, and |n| > |maxBasisSize|.
+* -26: if |minRestartSize| >= |n|, and |n| > 2.
 * -27: if |printLevel| < 0 or |printLevel| > 5.
 * -28: if |convTest| is not one of
   |primme_full_LTolerance|, |primme_decreasing_LTolerance|,
   |primme_adaptive_ETolerance| or |primme_adaptive|.
 * -29: if |convTest| == |primme_decreasing_LTolerance| and |relTolBase| <= 1.
-* -30: if ``evals`` is NULL, but not ``evecs`` and ``resNorms``.
-* -31: if ``evecs`` is NULL, but not ``evals`` and ``resNorms``.
-* -32: if ``resNorms`` is NULL, but not ``evecs`` and ``evals``.
-* -33: if |locking| == 0 and |minRestartSize| < |numEvals|.
+* -30: if ``evals`` is NULL.
+* -31: if ``evecs`` is NULL, or is not a GPU pointer when calling a GPU variant (for instance ``magma_dprimme``).
+* -32: if ``resNorms`` is NULL.
+* -33: if |locking| == 0 and |minRestartSize| < |numEvals| and |n| > 2.
 * -34: if |ldevecs| < |nLocal|.
 * -35: if |ldOPs| is not zero and less than |nLocal|.
-* -36: deprecated.
-* -37: deprecated.
 * -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
-
+* -40: (``PRIMME_LAPACK_FAILURE``) some LAPACK function performing a factorization returned an error code; set |printLevel| > 0 to see the error code and the call stack.
+* -41: (``PRIMME_USER_FAILURE``) some of the user-defined functions (|matrixMatvec|, |applyPreconditioner|, ...) returned a non-zero error code; set |printLevel| > 0 to see the call stack that produced the error.
+* -42: (``PRIMME_ORTHO_CONST_FAILURE``) the provided orthogonal constraints (see |numOrthoConst|) are not full rank.
+* -43: (``PRIMME_PARALLEL_FAILURE``) some process has a different value in an input option than the process zero, or it is not acting coherently; set |printLevel| > 0 to see the call stack that produced the error.
+* -44: (``PRIMME_FUNCTION_UNAVAILABLE``) PRIMME was not compiled with support for the requesting precision or for GPUs.
 
 .. include:: epilog.inc

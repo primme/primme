@@ -749,10 +749,9 @@ function s = primme_error_msg(errorCode)
 
    msg = {};
    msg{45+  0} = 'success';
-   msg{45+  1} = 'reported only amount of required memory';
-   msg{45+ -1} = 'unexpected failure';
+   msg{45+ -1} = 'unexpected internal error; please consider to set "printLevel" to a value larger than 0 to see the call stack and to report these errors because they may be bugs';
    msg{45+ -2} = 'memory allocation failure';
-   msg{45+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
+   msg{45+ -3} = 'maximum iterations or matvecs reached';
    msg{45+ -4} = 'argument primme is NULL';
    msg{45+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
    msg{45+ -6} = 'numProcs' < 1';
@@ -788,11 +787,11 @@ function s = primme_error_msg(errorCode)
    msg{45+-36} = 'not enough memory for realWork';
    msg{45+-37} = 'not enough memory for intWork';
    msg{45+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
-   msg{45+-40} = 'factorization failure';
+   msg{45+-40} = 'some LAPACK function performing a factorization returned an error code; set "printLevel" > 0 to see the error code and the call stack';
    msg{45+-41} = 'user cancelled execution';
-   msg{45+-42} = 'orthogonalization failure';
+   msg{45+-42} = 'the matrix provided in "orthoConst" is not full rank';
    msg{45+-43} = 'parallel failure';
-   msg{45+-44} = 'unavailable functionality';
+   msg{45+-44} = 'unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs';
 
    errorCode = errorCode + 45;
    if errorCode > 0 && errorCode <= numel(msg)
