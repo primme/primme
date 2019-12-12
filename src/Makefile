@@ -75,14 +75,14 @@ $(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c tools/AUTO_HEADER
 	cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" >> $@; \
 	echo "#define $(*F)_H" >> $@; \
-	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
+	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
 	echo "#endif" >> $@
 
 $(AUTOMATED_HEADERS_OTHERS): %.h : %.c tools/AUTO_HEADER
 	cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" >> $@; \
 	echo "#define $(*F)_H" >> $@; \
-	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
+	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
 	echo "#endif" >> $@
 
 auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_OTHERS)
