@@ -980,38 +980,6 @@ int Num_scal_Sprimme(
 }
 
 /*******************************************************************************
- * Subroutine Num_swap_Sprimme - swap x(0:n*incx-1:incx) and y(0:n*incy-1:incy)
- ******************************************************************************/
- 
-TEMPLATE_PLEASE
-int Num_swap_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
-      primme_context ctx) {
-
-   (void)ctx;
-#if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
-   PRIMME_BLASINT ln = n;
-   PRIMME_BLASINT lincx = incx;
-   PRIMME_BLASINT lincy = incy;
-
-   while(n > 0) {
-      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
-      XSWAP(&ln, x, &lincx, y, &lincy);
-      n -= (PRIMME_INT)ln;
-      x += ln;
-      y += ln;
-   }
-#else
-   PRIMME_INT i;
-   for (i = 0; i < n; i++) {
-      HSCALAR a = TO_COMPLEX(x[incx * i]);
-      x[incx * i] = y[incy * i];
-      SET_COMPLEX(y[incy * i], a);
-   }
-#endif
-   return 0;
-}
-
-/*******************************************************************************
  * Subroutines for dense eigenvalue decomposition
  * NOTE: xheevx is used instead of xheev because xheev is not in ESSL
  ******************************************************************************/
