@@ -159,8 +159,8 @@ int switch_from_GDpkdprimme(void *model_, primme_context ctx);
 #  define update_statistics CONCAT(update_statistics,WITH_KIND(SCALAR_SUF))
 #endif
 int update_statisticsdprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 #if !defined(CHECK_TEMPLATE) && !defined(ratio_JDQMR_GDpk)
 #  define ratio_JDQMR_GDpk CONCAT(ratio_JDQMR_GDpk,WITH_KIND(SCALAR_SUF))
 #endif
@@ -195,8 +195,8 @@ int verify_normshprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_hprimm
 int switch_from_JDQMRhprimme(void *model_, primme_context ctx);
 int switch_from_GDpkhprimme(void *model_, primme_context ctx);
 int update_statisticshprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkhprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownhprimme(void *model_);
@@ -222,8 +222,8 @@ int verify_normskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type
 int switch_from_JDQMRkprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkkprimme_normal(void *model_, primme_context ctx);
 int update_statisticskprimme_normal(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkkprimme_normal(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownkprimme_normal(void *model_);
@@ -249,8 +249,8 @@ int verify_normskprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimm
 int switch_from_JDQMRkprimme(void *model_, primme_context ctx);
 int switch_from_GDpkkprimme(void *model_, primme_context ctx);
 int update_statisticskprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkkprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownkprimme(void *model_);
@@ -276,8 +276,8 @@ int verify_normssprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimm
 int switch_from_JDQMRsprimme(void *model_, primme_context ctx);
 int switch_from_GDpksprimme(void *model_, primme_context ctx);
 int update_statisticssprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpksprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownsprimme(void *model_);
@@ -303,8 +303,8 @@ int verify_normscprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type
 int switch_from_JDQMRcprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkcprimme_normal(void *model_, primme_context ctx);
 int update_statisticscprimme_normal(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkcprimme_normal(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdowncprimme_normal(void *model_);
@@ -330,8 +330,8 @@ int verify_normscprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimm
 int switch_from_JDQMRcprimme(void *model_, primme_context ctx);
 int switch_from_GDpkcprimme(void *model_, primme_context ctx);
 int update_statisticscprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkcprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdowncprimme(void *model_);
@@ -357,8 +357,8 @@ int verify_normszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type
 int switch_from_JDQMRzprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkzprimme_normal(void *model_, primme_context ctx);
 int update_statisticszprimme_normal(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkzprimme_normal(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownzprimme_normal(void *model_);
@@ -384,8 +384,8 @@ int verify_normszprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimm
 int switch_from_JDQMRzprimme(void *model_, primme_context ctx);
 int switch_from_GDpkzprimme(void *model_, primme_context ctx);
 int update_statisticszprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkzprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownzprimme(void *model_);
@@ -411,8 +411,8 @@ int verify_normsmagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy
 int switch_from_JDQMRmagma_hprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_hprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_hprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_hprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_hprimme(void *model_);
@@ -438,8 +438,8 @@ int verify_normsmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV
 int switch_from_JDQMRmagma_kprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_kprimme_normal(void *model_, primme_context ctx);
 int update_statisticsmagma_kprimme_normal(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_kprimme_normal(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_kprimme_normal(void *model_);
@@ -465,8 +465,8 @@ int verify_normsmagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy
 int switch_from_JDQMRmagma_kprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_kprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_kprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_kprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_kprimme(void *model_);
@@ -492,8 +492,8 @@ int verify_normsmagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy
 int switch_from_JDQMRmagma_sprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_sprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_sprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_sprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_sprimme(void *model_);
@@ -519,8 +519,8 @@ int verify_normsmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV
 int switch_from_JDQMRmagma_cprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_cprimme_normal(void *model_, primme_context ctx);
 int update_statisticsmagma_cprimme_normal(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_cprimme_normal(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_cprimme_normal(void *model_);
@@ -546,8 +546,8 @@ int verify_normsmagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy
 int switch_from_JDQMRmagma_cprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_cprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_cprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_cprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_cprimme(void *model_);
@@ -573,8 +573,8 @@ int verify_normsmagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy
 int switch_from_JDQMRmagma_dprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_dprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_dprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_dprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_dprimme(void *model_);
@@ -600,8 +600,8 @@ int verify_normsmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV
 int switch_from_JDQMRmagma_zprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_zprimme_normal(void *model_, primme_context ctx);
 int update_statisticsmagma_zprimme_normal(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_zprimme_normal(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_zprimme_normal(void *model_);
@@ -627,8 +627,8 @@ int verify_normsmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy
 int switch_from_JDQMRmagma_zprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_zprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_zprimme(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged,
-   double currentResNorm, double aNormEst);
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
 double ratio_JDQMR_GDpkmagma_zprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_zprimme(void *model_);

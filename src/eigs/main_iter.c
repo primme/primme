@@ -607,9 +607,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                {
                   CostModel.MV =
                      primme->stats.timeMatvec/primme->stats.numMatvecs;
-                  int ret0 = update_statistics(&CostModel, primme, tstart, 
-                        recentlyConverged, 0, numConverged, blockNorms[0], 
-                        primme->stats.estimateLargestSVal); 
+                  int ret0 = update_statistics(&CostModel, primme, tstart,
+                        recentlyConverged, 0, numConverged, blockNorms[0]);
 
                   if (ret0) switch (primme->dynamicMethodSwitch) {
                      /* for few evals (dyn=1) evaluate GD+k only at restart*/
@@ -1180,7 +1179,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             tstart = primme_wTimer();
             CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
             update_statistics(&CostModel, primme, tstart, 0, 1,
-               numConverged, blockNorms[0], primme->stats.estimateMaxEVal); 
+               numConverged, blockNorms[0]); 
             CHKERR(switch_from_GDpk(&CostModel, ctx));
          } /* ---------------------------------------------------------- */
 
@@ -2040,7 +2039,6 @@ STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
  * calledAtRestart  True if update_statistics is called at restart by dyn=1
  * numConverged     Total number of converged pairs
  * currentResNorm   Residual norm of the next unconverged epair
- * aNormEst         Estimate of ||A||_2. Conv Tolerance = aNormEst*primme.eps
  *
  * INPUT/OUTPUT
  * ------------
@@ -2053,8 +2051,8 @@ STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
  *
  ******************************************************************************/
 STATIC int update_statistics(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged, 
-   double currentResNorm, double aNormEst) {
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm) {
 
    primme_CostModel *model = (primme_CostModel *)model_;
    double low_res, elapsed_time, time_in_outer, kinn;
@@ -2088,11 +2086,8 @@ STATIC int update_statistics(void *model_, primme_params *primme,
    /* Also, update how many evals each method found since last reset  */
    /* --------------------------------------------------------------- */
    if (recentConv > 0) {
-      /* Use tolerance as the lowest residual norm to estimate conv rate */
-      if (primme->aNorm > 0.0L) 
-         low_res = primme->eps*primme->aNorm;
-      else 
-         low_res = primme->eps*aNormEst;
+      /* Use tolerance as the largest residual norm of the converged pairs */
+      low_res = primme->stats.maxConvTol;
       /* Update num of evals found */
       if (primme->correctionParams.maxInnerIterations == -1)
           model->nevals_by_jdq += recentConv;
