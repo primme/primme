@@ -309,7 +309,7 @@ Changes in PRIMME 1.2.1 (released on September 7, 2015):
 Changes in PRIMME 1.2 (released on December 21, 2014):
 
 * A Fortran compiler is no longer required for building the PRIMME
-  library. Fortran programs can still be linked to PRIMME's F77
+  library. Fortran programs can still be linked to PRIMME’s F77
   interface.
 
 * Fixed some uncommon issues with the F77 interface.
@@ -364,8 +364,8 @@ Please cite (find the BibTeX in "doc/primme.doc"):
 
 [r6] L. Wu, E. Romero and A. Stathopoulos, *PRIMME_SVDS: A High-
      Performance Preconditioned SVD Solver for Accurate Large-Scale
-     Computations*, J. Sci. Comput., Vol. 39, No. 5, (2017), S248--
-     S271.
+     Computations*, J. Sci. Comput., Vol. 39, No. 5, (2017),
+     S248–S271.
 
 More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
@@ -373,8 +373,8 @@ supported by a number of grants from the National Science Foundation.
 
 [r2] A. Stathopoulos, *Nearly optimal preconditioned methods for
      Hermitian eigenproblems under limited memory. Part I: Seeking one
-     eigenvalue*, SIAM J. Sci. Comput., Vol. 29, No. 2, (2007), 481--
-     514.
+     eigenvalue*, SIAM J. Sci. Comput., Vol. 29, No. 2, (2007),
+     481–514.
 
 [r3] A. Stathopoulos and J. R. McCombs, *Nearly optimal
      preconditioned methods for Hermitian eigenproblems under limited
@@ -496,7 +496,7 @@ values:
 
 Note: When "-DPRIMME_BLASINT_SIZE=64" is set the code uses the type
   "int64_t" supported by the C99 standard. In case the compiler
-  doesn't honor the standard, you can set the corresponding type name
+  doesn’t honor the standard, you can set the corresponding type name
   supported, for instance "-DPRIMME_BLASINT_SIZE=__int64".
 
 After customizing "Make_flags", type this to generate "libprimme.a":
@@ -647,7 +647,7 @@ precisions:
 
 +-------------+----------------------+----------------------+
 | Precision   | Real                 | Complex              |
-+=============+======================+======================+
+|=============|======================|======================|
 | half        | "hprimme()"          | "kprimme()"          |
 |             | "hsprimme()"         | "ksprimme()"         |
 +-------------+----------------------+----------------------+
@@ -667,7 +667,7 @@ precisions:
 
 +-------------+-----------------------------+
 | Precision   | Complex                     |
-+=============+=============================+
+|=============|=============================|
 | half        | "kprimme_normal()"          |
 |             | "kcprimme_normal()"         |
 +-------------+-----------------------------+
@@ -2628,6 +2628,26 @@ PRIMME_COMPLEX_DOUBLE
    New in version 2.0.
 
 
+Other macros
+============
+
+PRIMME_VERSION_MAJOR
+
+   Constant "int" with the major version number.
+
+   For instance, the value of the macro is "3" for version 3.0.
+
+   New in version 3.0.
+
+PRIMME_VERSION_MINOR
+
+   Constant "int" with the minor version number.
+
+   For instance, the value of the macro is "0" for version 3.0.
+
+   New in version 3.0.
+
+
 primme_params
 =============
 
@@ -3673,7 +3693,7 @@ primme_params
 
       +----------+---------+------------------------------------------------------------+
       | RightX   | SkewX   | D                                                          |
-      +==========+=========+============================================================+
+      |==========|=========|============================================================|
       | 0        | 0       | M^{-1}R (Classic GD)                                       |
       +----------+---------+------------------------------------------------------------+
       | 1        | 0       | M^{-1}(R-Delta X) (cheap Olsen’s Method)                   |
@@ -3710,7 +3730,7 @@ primme_params
 
       +----------+---------+---------------------------------+
       | RightQ   | SkewQ   | P_Q^r                           |
-      +==========+=========+=================================+
+      |==========|=========|=================================|
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - QQ^*                        |
@@ -3724,7 +3744,7 @@ primme_params
 
       +----------+---------+---------------------------------+
       | RightX   | SkewX   | P_X^r                           |
-      +==========+=========+=================================+
+      |==========|=========|=================================|
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - XX^*                        |
@@ -4499,19 +4519,21 @@ primme_preset_method
 Error Codes
 ***********
 
-The functions "dprimme()" and "zprimme()" return one of the next
-values:
+The functions "dprimme()" and "zprimme()" return one of the following
+error codes. Some of the error codes have a macro associated which is
+indicated in brackets.
 
-* 0: success.
+* 0: success; usually all requested eigenpairs have converged.
 
-* 1: reported only amount of required memory.
+* -1: ("PRIMME_UNEXPECTED_FAILURE") unexpected internal error;
+  please consider to set "printLevel" to a value larger than 0 to see
+  the call stack and to report these errors because they may be bugs.
 
-* -1: failed in allocating int or real workspace.
+* -2: ("PRIMME_MALLOC_FAILURE") failure in allocating memory; it can
+  be either CPU or GPU.
 
-* -2: malloc failed in allocating a permutation integer array.
-
-* -3: main_iter() encountered problem; the calling stack of the
-  functions where the error occurred was printed in "stderr".
+* -3: ("PRIMME_MAIN_ITER_FAILURE") maximum number of outer
+  iterations "maxOuterIterations" or matvecs "maxMatvecs" reached.
 
 * -4: if argument "primme" is NULL.
 
@@ -4523,14 +4545,13 @@ values:
 
 * -8: if "applyPreconditioner" is NULL and "precondition" > 0.
 
-* -9: if "massMatrixMatvec" is not NULL (generalized Hermitian
-  problem is not supported yet).
-
 * -10: if "numEvals" > "n".
 
 * -11: if "numEvals" < 0.
 
-* -12: if "eps" > 0 and "eps" < machine precision.
+* -12: if "convTestFun" is not NULL and "eps" > 0 and "eps" <
+  machine precision given by "internalPrecision" and the precision of
+  PRIMME call ("sprimme()", "dprimme()"…).
 
 * -13: if "target" is not properly defined.
 
@@ -4545,16 +4566,15 @@ values:
 * -16: if "numOrthoConst" < 0 or "numOrthoConst" > "n". (no free
   dimensions left).
 
-* -17: if "maxBasisSize" < 2.
+* -17: if "maxBasisSize" < 2 and "n" > 2.
 
-* -18: if "minRestartSize" < 0 or "minRestartSize" shouldn’t be
-  zero.
+* -18: if "minRestartSize" < 0, or "minRestartSize" is zero but "n"
+  > 2 and "numEvals" > 0.
 
-* -19: if "maxBlockSize" < 0 or "maxBlockSize" shouldn’t be zero.
+* -19: if "maxBlockSize" < 0, or "maxBlockSize" is zero but
+  "numEvals" > 0.
 
 * -20: if "maxPrevRetain" < 0.
-
-* -21: deprecated
 
 * -22: if "initSize" < 0.
 
@@ -4562,9 +4582,10 @@ values:
 
 * -24: if "locking" and "initSize" > "numEvals".
 
-* -25: if "maxPrevRetain" + "minRestartSize" >= "maxBasisSize".
+* -25: if "maxPrevRetain" + "minRestartSize" >= "maxBasisSize", and
+  "n" > "maxBasisSize".
 
-* -26: if "minRestartSize" >= "n".
+* -26: if "minRestartSize" >= "n", and "n" > 2.
 
 * -27: if "printLevel" < 0 or "printLevel" > 5.
 
@@ -4575,24 +4596,42 @@ values:
 * -29: if "convTest" == "primme_decreasing_LTolerance" and
   "relTolBase" <= 1.
 
-* -30: if "evals" is NULL, but not "evecs" and "resNorms".
+* -30: if "evals" is NULL.
 
-* -31: if "evecs" is NULL, but not "evals" and "resNorms".
+* -31: if "evecs" is NULL, or is not a GPU pointer when calling a
+  GPU variant (for instance "magma_dprimme").
 
-* -32: if "resNorms" is NULL, but not "evecs" and "evals".
+* -32: if "resNorms" is NULL.
 
-* -33: if "locking" == 0 and "minRestartSize" < "numEvals".
+* -33: if "locking" == 0 and "minRestartSize" < "numEvals" and "n" >
+  2.
 
 * -34: if "ldevecs" < "nLocal".
 
 * -35: if "ldOPs" is not zero and less than "nLocal".
 
-* -36: deprecated.
-
-* -37: deprecated.
-
 * -38: if "locking" == 0 and "target" is "primme_closest_leq" or
   "primme_closest_geq".
+
+* -40: ("PRIMME_LAPACK_FAILURE") some LAPACK function performing a
+  factorization returned an error code; set "printLevel" > 0 to see
+  the error code and the call stack.
+
+* -41: ("PRIMME_USER_FAILURE") some of the user-defined functions
+  ("matrixMatvec", "applyPreconditioner", …) returned a non-zero error
+  code; set "printLevel" > 0 to see the call stack that produced the
+  error.
+
+* -42: ("PRIMME_ORTHO_CONST_FAILURE") the provided orthogonal
+  constraints (see "numOrthoConst") are not full rank.
+
+* -43: ("PRIMME_PARALLEL_FAILURE") some process has a different
+  value in an input option than the process zero, or it is not acting
+  coherently; set "printLevel" > 0 to see the call stack that produced
+  the error.
+
+* -44: ("PRIMME_FUNCTION_UNAVAILABLE") PRIMME was not compiled with
+  support for the requesting precision or for GPUs.
 
 Python Interface
 ****************
@@ -4611,14 +4650,14 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
    Parameters:
       * **A** (*An N x N matrix**, **array**, **sparse matrix**, or
-        **LinearOperator*) -- the operation A * x, where A is a real
+        **LinearOperator*) – the operation A * x, where A is a real
         symmetric matrix or complex Hermitian.
 
-      * **k** (*int**, **optional*) -- The number of eigenvalues and
+      * **k** (*int**, **optional*) – The number of eigenvalues and
         eigenvectors to be computed. Must be 1 <= k < min(A.shape).
 
       * **M** (*An N x N matrix**, **array**, **sparse matrix**, or
-        **LinearOperator*) --
+        **LinearOperator*) –
 
         the operation M * x for the generalized eigenvalue problem
 
@@ -4629,43 +4668,43 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         For best results, the data type of M should be the same as
         that of A.
 
-      * **sigma** (*real**, **optional*) -- Find eigenvalues near
+      * **sigma** (*real**, **optional*) – Find eigenvalues near
         sigma.
 
-      * **v0** (*N x i**, **ndarray**, **optional*) -- Initial
+      * **v0** (*N x i**, **ndarray**, **optional*) – Initial
         guesses to the eigenvectors.
 
-      * **ncv** (*int**, **optional*) -- The maximum size of the
+      * **ncv** (*int**, **optional*) – The maximum size of the
         basis
 
       * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA' | number**]*)
-        --
+        –
 
         Which *k* eigenvectors and eigenvalues to find:
 
-           'LM' : Largest in magnitude eigenvalues; the farthest from
+           ’LM’ : Largest in magnitude eigenvalues; the farthest from
            sigma
 
-           'SM' : Smallest in magnitude eigenvalues; the closest to
+           ’SM’ : Smallest in magnitude eigenvalues; the closest to
            sigma
 
-           'LA' : Largest algebraic eigenvalues
+           ’LA’ : Largest algebraic eigenvalues
 
-           'SA' : Smallest algebraic eigenvalues
+           ’SA’ : Smallest algebraic eigenvalues
 
-           'CLT' : closest but left to sigma
+           ’CLT’ : closest but left to sigma
 
-           'CGT' : closest but greater than sigma
+           ’CGT’ : closest but greater than sigma
 
            number : the closest to which
 
-        When sigma == None, 'LM', 'SM', 'CLT', and 'CGT' treat sigma
+        When sigma == None, ‘LM’, ‘SM’, ‘CLT’, and ‘CGT’ treat sigma
         as zero.
 
-      * **maxiter** (*int**, **optional*) -- Maximum number of
+      * **maxiter** (*int**, **optional*) – Maximum number of
         iterations.
 
-      * **tol** (*float*) --
+      * **tol** (*float*) –
 
         Tolerance for eigenpairs (stopping criterion). The default
         value is sqrt of machine precision.
@@ -4675,36 +4714,36 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
         The value is ignored if convtest is provided.
 
-      * **Minv** (*(**not supported yet**)*) -- The inverse of M in
+      * **Minv** (*(**not supported yet**)*) – The inverse of M in
         the generalized eigenproblem.
 
       * **OPinv** (*N x N matrix**, **array**, **sparse matrix**, or
-        **LinearOperator**, **optional*) -- Preconditioner to
+        **LinearOperator**, **optional*) – Preconditioner to
         accelerate the convergence. Usually it is an approximation of
         the inverse of (A - sigma*M).
 
-      * **return_eigenvectors** (*bool**, **optional*) -- Return
+      * **return_eigenvectors** (*bool**, **optional*) – Return
         eigenvectors (True) in addition to eigenvalues
 
       * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*)
-        -- Only 'normal' mode is supported.
+        – Only ‘normal’ mode is supported.
 
-      * **lock** (*N x i**, **ndarray**, **optional*) -- Seek the
+      * **lock** (*N x i**, **ndarray**, **optional*) – Seek the
         eigenvectors orthogonal to these ones. The provided vectors
         *should* be orthonormal. Useful to avoid converging to
         previously computed solutions.
 
-      * **maxBlockSize** (*int**, **optional*) -- Maximum number of
+      * **maxBlockSize** (*int**, **optional*) – Maximum number of
         vectors added at every iteration.
 
-      * **minRestartSize** (*int**, **optional*) -- Number of
+      * **minRestartSize** (*int**, **optional*) – Number of
         approximate eigenvectors kept during restart.
 
-      * **maxPrevRetain** (*int**, **optional*) -- Number of
+      * **maxPrevRetain** (*int**, **optional*) – Number of
         approximate eigenvectors kept from previous iteration in
         restart. Also referred as +k vectors in GD+k.
 
-      * **method** (*int**, **optional*) --
+      * **method** (*int**, **optional*) –
 
         Preset method, one of:
 
@@ -4718,7 +4757,7 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         See a detailed description of the methods and other possible
         values in [2].
 
-      * **convtest** (*callable*) --
+      * **convtest** (*callable*) –
 
         User-defined function to mark an approximate eigenpair as
         converged.
@@ -4727,57 +4766,57 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         returns True if the eigenpair with value *eval*, vector *evec*
         and residual norm *resNorm* is considered converged.
 
-      * **return_stats** (*bool**, **optional*) -- If True, the
+      * **return_stats** (*bool**, **optional*) – If True, the
         function returns extra information (see stats in Returns).
 
-      * **return_history** (*bool**, **optional*) -- If True, the
+      * **return_history** (*bool**, **optional*) – If True, the
         function returns performance information at every iteration
         (see hist in Returns).
 
    Returns:
-      * **w** (*array*) -- Array of k eigenvalues ordered to best
-        satisfy "which".
+      * **w** (*array*) – Array of k eigenvalues ordered to best
+        satisfy “which”.
 
-      * **v** (*array*) -- An array representing the *k*
+      * **v** (*array*) – An array representing the *k*
         eigenvectors. The column "v[:, i]" is the eigenvector
         corresponding to the eigenvalue "w[i]".
 
-      * **stats** (*dict, optional (if return_stats)*) -- Extra
+      * **stats** (*dict, optional (if return_stats)*) – Extra
         information reported by PRIMME:
 
-        * "numOuterIterations": number of outer iterations
+        * ”numOuterIterations”: number of outer iterations
 
-        * "numRestarts": number of restarts
+        * ”numRestarts”: number of restarts
 
-        * "numMatvecs": number of A*v
+        * ”numMatvecs”: number of A*v
 
-        * "numPreconds": number of OPinv*v
+        * ”numPreconds”: number of OPinv*v
 
-        * "elapsedTime": time that took
+        * ”elapsedTime”: time that took
 
-        * "estimateMinEVal": the leftmost Ritz value seen
+        * ”estimateMinEVal”: the leftmost Ritz value seen
 
-        * "estimateMaxEVal": the rightmost Ritz value seen
+        * ”estimateMaxEVal”: the rightmost Ritz value seen
 
-        * "estimateLargestSVal": the largest singular value seen
+        * ”estimateLargestSVal”: the largest singular value seen
 
-        * "rnorms" : ||A*x[i] - x[i]*w[i]||
+        * ”rnorms” : ||A*x[i] - x[i]*w[i]||
 
-        * "hist" : (if return_history) report at every outer
+        * ”hist” : (if return_history) report at every outer
           iteration of:
 
-          * "elapsedTime": time spent up to now
+          * ”elapsedTime”: time spent up to now
 
-          * "numMatvecs": number of A*v spent up to now
+          * ”numMatvecs”: number of A*v spent up to now
 
-          * "nconv": number of converged pair
+          * ”nconv”: number of converged pair
 
-          * "eval": eigenvalue of the first unconverged pair
+          * ”eval”: eigenvalue of the first unconverged pair
 
-          * "resNorm": residual norm of the first unconverged pair
+          * ”resNorm”: residual norm of the first unconverged pair
 
    Raises:
-      **PrimmeError** -- When the requested convergence is not
+      **PrimmeError** – When the requested convergence is not
       obtained.          The PRIMME error code can be found as "err"
       attribute of the exception     object.
 
@@ -4824,8 +4863,20 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
    >>> # the smallest eigenvalues of the eigenproblem (A,M)
    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-   >>> evals # doctest: +SKIP
+   >>> evals 
    array([1.0035e-07, 1.0204e-02, 2.0618e-02])
+
+   >>> # Giving the matvec as a function
+   >>> import primme, scipy.sparse, numpy as np
+   >>> Adiag = np.arange(0, 100).reshape((100,1))
+   >>> def Amatmat(x):
+   ...    if len(x.shape) == 1: x = x.reshape((100,1))
+   ...    return Adiag * x   # equivalent to diag(Adiag).dot(x)
+   ...
+   >>> A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat)
+   >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
+   >>> evals
+   array([99., 98., 97.])
 
 MATLAB Interface
 ****************
@@ -4836,7 +4887,7 @@ function [varargout] = primme_eigs(varargin)
    eigenvectors of a symmetric/Hermitian matrix, "A", or of a
    generalized problem "(A,B)", by calling PRIMME.
 
-   "D = primme_eigs(A)" returns a vector of "A"'s 6 largest magnitude
+   "D = primme_eigs(A)" returns a vector of "A"’s 6 largest magnitude
    eigenvalues.
 
    "D = primme_eigs(A,B)" returns a vector of the 6 largest magnitude
@@ -4966,49 +5017,49 @@ function [varargout] = primme_eigs(varargin)
    "D = primme_eigs(A,k,target,OPTS,METHOD)" specifies the eigensolver
    method. METHOD can be one of the next strings:
 
-      * '"PRIMME_DYNAMIC"', (default)        switches dynamically to
+      * ‘"PRIMME_DYNAMIC"’, (default)        switches dynamically to
         the best method
 
-      * '"PRIMME_DEFAULT_MIN_TIME"',         best method for low-
+      * ‘"PRIMME_DEFAULT_MIN_TIME"’,         best method for low-
         cost matrix-vector product
 
-      * '"PRIMME_DEFAULT_MIN_MATVECS"',      best method for heavy
+      * ‘"PRIMME_DEFAULT_MIN_MATVECS"’,      best method for heavy
         matvec/preconditioner
 
-      * '"PRIMME_Arnoldi"',                  Arnoldi not implemented
+      * ‘"PRIMME_Arnoldi"’,                  Arnoldi not implemented
         efficiently
 
-      * '"PRIMME_GD"',                       classical block
+      * ‘"PRIMME_GD"’,                       classical block
         Generalized Davidson
 
-      * '"PRIMME_GD_plusK"',                 GD+k block GD with
+      * ‘"PRIMME_GD_plusK"’,                 GD+k block GD with
         recurrence restarting
 
-      * '"PRIMME_GD_Olsen_plusK"',           GD+k with approximate
+      * ‘"PRIMME_GD_Olsen_plusK"’,           GD+k with approximate
         Olsen precond.
 
-      * '"PRIMME_JD_Olsen_plusK"',           GD+k, exact Olsen (two
+      * ‘"PRIMME_JD_Olsen_plusK"’,           GD+k, exact Olsen (two
         precond per step)
 
-      * '"PRIMME_RQI"',                      Rayleigh Quotient
+      * ‘"PRIMME_RQI"’,                      Rayleigh Quotient
         Iteration. Also INVIT, but for INVIT provide OPTS.targetShifts
 
-      * '"PRIMME_JDQR"',                     Original block, Jacobi
+      * ‘"PRIMME_JDQR"’,                     Original block, Jacobi
         Davidson
 
-      * '"PRIMME_JDQMR"',                    Our block JDQMR method
+      * ‘"PRIMME_JDQMR"’,                    Our block JDQMR method
         (similar to JDCG)
 
-      * '"PRIMME_JDQMR_ETol"',               Slight, but efficient
+      * ‘"PRIMME_JDQMR_ETol"’,               Slight, but efficient
         JDQMR modification
 
-      * '"PRIMME_STEEPEST_DESCENT"',         equivalent to
+      * ‘"PRIMME_STEEPEST_DESCENT"’,         equivalent to
         GD(block,2*block)
 
-      * '"PRIMME_LOBPCG_OrthoBasis"',        equivalent to
+      * ‘"PRIMME_LOBPCG_OrthoBasis"’,        equivalent to
         GD(nev,3*nev)+nev
 
-      * '"PRIMME_LOBPCG_OrthoBasis_Window"'  equivalent to
+      * ‘"PRIMME_LOBPCG_OrthoBasis_Window"’  equivalent to
         GD(block,3*block)+block nev>block
 
    "D = primme_eigs(A,k,target,OPTS,METHOD,P)"
@@ -5137,7 +5188,7 @@ precisions:
 
 +-------------+---------------------------+---------------------------+
 | Precision   | Real                      | Complex                   |
-+=============+===========================+===========================+
+|=============|===========================|===========================|
 | half        | "hprimme_svds()"          | "kprimme_svds()"          |
 |             | "hsprimme_svds()"         | "ksprimme_svds()"         |
 +-------------+---------------------------+---------------------------+
@@ -7871,42 +7922,45 @@ Error Codes
 ***********
 
 The functions "dprimme_svds()" and "zprimme_svds()" return one of the
-next values:
+following error codes. Some of the error codes have a macro associated
+which is indicated in brackets.
 
-* 0: success,
+* 0: success; usually all requested singular triplets have
+  converged.
 
-* 1: reported only amount of required memory,
+* -1: ("PRIMME_UNEXPECTED_FAILURE") unexpected internal error;
+  please consider to set "printLevel" to a value larger than 0 to see
+  the call stack and to report these errors because they may be bugs.
 
-* -1: failed in allocating int or real workspace,
+* -2: ("PRIMME_MALLOC_FAILURE") failure in allocating memory; it can
+  be either CPU or GPU.
 
-* -2: malloc failed in allocating a permutation integer array,
+* -3: ("PRIMME_MAIN_ITER_FAILURE") maximum number of matvecs
+  "maxMatvecs" reached.
 
-* -3: main_iter() encountered problem; the calling stack of the
-  functions where the error occurred was printed in ‘stderr’,
+* -4: "primme_svds" is NULL.
 
-* -4: "primme_svds" is NULL,
+* -5: Wrong value for "m" or "n" or "mLocal" or "nLocal".
 
-* -5: Wrong value for "m" or "n" or "mLocal" or "nLocal",
+* -6: Wrong value for "numProcs".
 
-* -6: Wrong value for "numProcs",
+* -7: "matrixMatvec" is not set.
 
-* -7: "matrixMatvec" is not set,
+* -8: "applyPreconditioner" is not set but "precondition" == 1.
 
-* -8: "applyPreconditioner" is not set but "precondition" == 1 ,
+* -9: "numProcs" >1 but "globalSumReal" is not set.
 
-* -9: "numProcs" >1 but "globalSumReal" is not set,
+* -10: Wrong value for "numSvals", it’s larger than min("m", "n").
 
-* -10: Wrong value for "numSvals", it’s larger than min("m", "n"),
+* -11: Wrong value for "numSvals", it’s smaller than 1.
 
-* -11: Wrong value for "numSvals", it’s smaller than 1,
+* -13: Wrong value for "target".
 
-* -13: Wrong value for "target",
+* -14: Wrong value for "method".
 
-* -14: Wrong value for "method",
+* -15: Not supported combination of method and "methodStage2".
 
-* -15: Not supported combination of method and "methodStage2",
-
-* -16: Wrong value for "printLevel",
+* -16: Wrong value for "printLevel".
 
 * -17: "svals" is not set.
 
@@ -7914,9 +7968,25 @@ next values:
 
 * -19: "resNorms" is not set.
 
-* -20: deprecated.
+* -40: ("PRIMME_LAPACK_FAILURE") some LAPACK function performing a
+  factorization returned an error code; set "printLevel" > 0 to see
+  the error code and the call stack.
 
-* -21: deprecated.
+* -41: ("PRIMME_USER_FAILURE") some of the user-defined functions
+  ("matrixMatvec", "applyPreconditioner", …) returned a non-zero error
+  code; set "printLevel" > 0 to see the call stack that produced the
+  error.
+
+* -42: ("PRIMME_ORTHO_CONST_FAILURE") the provided orthogonal
+  constraints (see "numOrthoConst") are not full rank.
+
+* -43: ("PRIMME_PARALLEL_FAILURE") some process has a different
+  value in an input option than the process zero, or it is not acting
+  coherently; set "printLevel" > 0 to see the call stack that produced
+  the error.
+
+* -44: ("PRIMME_FUNCTION_UNAVAILABLE") PRIMME was not compiled with
+  support for the requesting precision or for GPUs.
 
 * -100 up to -199: eigensolver error from first stage; see the value
   plus 100 in Error Codes.
@@ -7932,40 +8002,40 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    Compute k singular values and vectors of the matrix A.
 
    Parameters:
-      * **A** (*{sparse matrix**, **LinearOperator}*) -- Array to
+      * **A** (*{sparse matrix**, **LinearOperator}*) – Array to
         compute the SVD on, of shape (M, N)
 
-      * **k** (*int**, **optional*) -- Number of singular values and
+      * **k** (*int**, **optional*) – Number of singular values and
         vectors to compute. Must be 1 <= k < min(A.shape).
 
-      * **ncv** (*int**, **optional*) -- The maximum size of the
+      * **ncv** (*int**, **optional*) – The maximum size of the
         basis
 
-      * **tol** (*float**, **optional*) --
+      * **tol** (*float**, **optional*) –
 
         Tolerance for singular values. Zero (default) means 10**4
         times the machine precision.
 
         A triplet "(u,sigma,v)" is marked as converged when (||A*v -
-        sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5 is less than "tol"
+        sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5 is less than “tol”
         * ||A||, or close to the minimum tolerance that the method can
         achieve. See the note.
 
         The value is ignored if convtest is provided.
 
       * **which** (*str** [**'LM' | 'SM'**] or **number**,
-        **optional*) --
+        **optional*) –
 
         Which *k* singular values to find:
 
-           * 'LM' : largest singular values
+           * ’LM’ : largest singular values
 
-           * 'SM' : smallest singular values
+           * ’SM’ : smallest singular values
 
            * number : closest singular values to (referred as sigma
              later)
 
-      * **u0** (*ndarray**, **optional*) --
+      * **u0** (*ndarray**, **optional*) –
 
         Initial guesses for the left singular vectors.
 
@@ -7973,28 +8043,28 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         are provided, u0 and v0 should have the same number of
         columns.
 
-      * **v0** (*ndarray**, **optional*) -- Initial guesses for the
+      * **v0** (*ndarray**, **optional*) – Initial guesses for the
         right singular vectors.
 
-      * **maxiter** (*int**, **optional*) -- Maximum number of
+      * **maxiter** (*int**, **optional*) – Maximum number of
         matvecs with A and A.H.
 
       * **precAHA** (*{N x N matrix**, **array**, **sparse matrix**,
-        **LinearOperator}**, **optional*) -- Approximate inverse of
+        **LinearOperator}**, **optional*) – Approximate inverse of
         (A.H*A - sigma**2*I). If provided and M>=N, it usually
         accelerates the convergence.
 
       * **precAAH** (*{M x M matrix**, **array**, **sparse matrix**,
-        **LinearOperator}**, **optional*) -- Approximate inverse of
+        **LinearOperator}**, **optional*) – Approximate inverse of
         (A*A.H - sigma**2*I). If provided and M<N, it usually
         accelerates the convergence.
 
       * **precAug** (*{**(**M+N**) **x** (**M+N**) **matrix**,
         **array**, **sparse matrix**, **LinearOperator}**,
-        **optional*) -- Approximate inverse of ([zeros() A.H; zeros()
+        **optional*) – Approximate inverse of ([zeros() A.H; zeros()
         A] - sigma*I).
 
-      * **orthou0** (*ndarray**, **optional*) --
+      * **orthou0** (*ndarray**, **optional*) –
 
         Left orthogonal vector constrain.
 
@@ -8003,13 +8073,13 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         orthov0 is provided, the other is computed. Useful to avoid
         converging to previously computed solutions.
 
-      * **orthov0** (*ndarray**, **optional*) -- Right orthogonal
+      * **orthov0** (*ndarray**, **optional*) – Right orthogonal
         vector constrain. See orthou0.
 
-      * **maxBlockSize** (*int**, **optional*) -- Maximum number of
+      * **maxBlockSize** (*int**, **optional*) – Maximum number of
         vectors added at every iteration.
 
-      * **convtest** (*callable*) --
+      * **convtest** (*callable*) –
 
         User-defined function to mark an approximate singular triplet
         as converged.
@@ -8019,52 +8089,52 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         left vector *svecleft*, right vector *svecright*, and residual
         norm *resNorm* is considered converged.
 
-      * **return_stats** (*bool**, **optional*) -- If True, the
+      * **return_stats** (*bool**, **optional*) – If True, the
         function returns extra information (see stats in Returns).
 
-      * **return_history** (*bool**, **optional*) -- If True, the
+      * **return_history** (*bool**, **optional*) – If True, the
         function returns performance information at every iteration
 
    Returns:
-      * **u** (*ndarray, shape=(M, k), optional*) -- Unitary matrix
+      * **u** (*ndarray, shape=(M, k), optional*) – Unitary matrix
         having left singular vectors as columns. Returned if
         *return_singular_vectors* is True.
 
-      * **s** (*ndarray, shape=(k,)*) -- The singular values.
+      * **s** (*ndarray, shape=(k,)*) – The singular values.
 
-      * **vt** (*ndarray, shape=(k, N), optional*) -- Unitary matrix
+      * **vt** (*ndarray, shape=(k, N), optional*) – Unitary matrix
         having right singular vectors as rows. Returned if
         *return_singular_vectors* is True.
 
-      * **stats** (*dict, optional (if return_stats)*) -- Extra
+      * **stats** (*dict, optional (if return_stats)*) – Extra
         information reported by PRIMME:
 
-        * "numOuterIterations": number of outer iterations
+        * ”numOuterIterations”: number of outer iterations
 
-        * "numRestarts": number of restarts
+        * ”numRestarts”: number of restarts
 
-        * "numMatvecs": number of matvecs with A and A.H
+        * ”numMatvecs”: number of matvecs with A and A.H
 
-        * "numPreconds": cumulative number of applications of
+        * ”numPreconds”: cumulative number of applications of
           precAHA, precAAH and precAug
 
-        * "elapsedTime": time that took
+        * ”elapsedTime”: time that took
 
-        * "rnorms" : (||A*v[:,i] - sigma[i]*u[:,i]||**2 +
+        * ”rnorms” : (||A*v[:,i] - sigma[i]*u[:,i]||**2 +
           ||A.H*u[:,i] - sigma[i]*v[:,i]||**2)**.5
 
-        * "hist" : (if return_history) report at every outer
+        * ”hist” : (if return_history) report at every outer
           iteration of:
 
-          * "elapsedTime": time spent up to now
+          * ”elapsedTime”: time spent up to now
 
-          * "numMatvecs": number of A*v and A.H*v spent up to now
+          * ”numMatvecs”: number of A*v and A.H*v spent up to now
 
-          * "nconv": number of converged triplets
+          * ”nconv”: number of converged triplets
 
-          * "sval": singular value of the first unconverged triplet
+          * ”sval”: singular value of the first unconverged triplet
 
-          * "resNorm": residual norm of the first unconverged
+          * ”resNorm”: residual norm of the first unconverged
             triplet
 
    -[ Notes ]-
@@ -8074,7 +8144,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    and then refines the solution solving the augmented problem. The
    minimum tolerance that this method can achieve is ||A||*epsilon,
    where epsilon is the machine precision. However it may not return
-   triplets with singular values smaller than ||A||*epsilon if "tol"
+   triplets with singular values smaller than ||A||*epsilon if “tol”
    is smaller than ||A||*epsilon/sigma.
 
    This function is a wrapper to PRIMME functions to find singular
@@ -8112,8 +8182,25 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...           [0], 100, 100) # square diag. preconditioner
    >>> # the three smallest singular values of A, using preconditioning
    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
-   >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
+   >>> ["%.5f" % x for x in svals.flat] 
    ['4.57263', '4.78752', '4.82229']
+
+   >>> # Giving the matvecs as functions
+   >>> import primme, scipy.sparse, numpy as np
+   >>> Bdiag = np.arange(0, 100).reshape((100,1))
+   >>> Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
+   >>> def Bmatmat(x):
+   ...    if len(x.shape) == 1: x = x.reshape((100,1))
+   ...    return np.vstack((Bdiag * x, np.zeros((100, x.shape[1]), dtype=np.float32)))
+   ...
+   >>> def Brmatmat(x):
+   ...    if len(x.shape) == 1: x = x.reshape((200,1))
+   ...    return (Bdiagr * x)[0:100,:]
+   ...
+   >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
+   >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
+   >>> svals 
+   array([99., 98., 97., 96., 95.])
 
 MATLAB Interface
 ****************
@@ -8163,19 +8250,19 @@ function [varargout] = primme_svds(varargin)
 
       * "disp":    level of reporting 0-3 (see HIST) {0: no output}
 
-      * "isreal":  if 0, the matrix is complex; else it's real {0:
+      * "isreal":  if 0, the matrix is complex; else it’s real {0:
         complex}
 
-      * "isdouble": if 0, the matrix is single; else it's double {1:
+      * "isdouble": if 0, the matrix is single; else it’s double {1:
         double}
 
       * "method":  which equivalent eigenproblem to solve
 
-           * '"primme_svds_normalequations"': "A'*A" or "A*A'"
+           * ‘"primme_svds_normalequations"’: "A'*A" or "A*A'"
 
-           * '"primme_svds_augmented"': "[0 A';A 0]"
+           * ‘"primme_svds_augmented"’: "[0 A';A 0]"
 
-           * '"primme_svds_hybrid"': first normal equations and then
+           * ‘"primme_svds_hybrid"’: first normal equations and then
              augmented (default)
 
       * "u0":       initial guesses to the left singular vectors
@@ -8235,7 +8322,7 @@ function [varargout] = primme_svds(varargin)
       * If "P1" is "[]" and "P2" is nonempty, then "(P2'*P2)\X"
         approximates "A'*A". "P2" can be the R factor of an
         (incomplete) QR factorization of "A" or the L factor of an
-        (incomplete) LL' factorization of "A'*A" (RIF).
+        (incomplete) LL’ factorization of "A'*A" (RIF).
 
       * If both "P1" and "P2" are "[]" then no preconditioner is
         applied.
