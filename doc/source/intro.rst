@@ -56,7 +56,7 @@ From PRIMME 1.x to 2.0:
 Changelog
 ^^^^^^^^^
 
-Changes in PRIMME 3.0 (released on July 24, 2019):
+Changes in PRIMME 3.0 (released on December 14, 2019):
 
 * Added support for the generalized Hermitian eigenvalue problem (see |massMatrixMatvec|) and the standard normal eigenvalue problem (see :c:func:`zprimme_normal`).
 
