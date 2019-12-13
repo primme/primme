@@ -1,0 +1,408 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python Interface &mdash; PRIMME 3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MATLAB Interface" href="mateigs.html" />
+    <link rel="prev" title="FORTRAN 90 Library Interface" href="primmef90.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+          
+
+          
+            <a href="readme.html">
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html#support">Support</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="primmec.html">C Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="primmef77.html">FORTRAN 77 Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="primmef90.html">FORTRAN 90 Library Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Python Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mateigs.html">MATLAB Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html">Parameters Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#preset-methods">Preset Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#error-codes">Error Codes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="readme.html">PRIMME</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="readme.html">Docs</a> &raquo;</li>
+        
+          <li><a href="apieigs.html">Eigenvalue Problems</a> &raquo;</li>
+        
+      <li>Python Interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pyeigsh.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="mateigs.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="primmef90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="python-interface">
+<h1>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="primme.eigsh">
+<code class="sig-prename descclassname">primme.</code><code class="sig-name descname">eigsh</code><span class="sig-paren">(</span><em class="sig-param">A</em>, <em class="sig-param">k=6</em>, <em class="sig-param">M=None</em>, <em class="sig-param">sigma=None</em>, <em class="sig-param">which='LM'</em>, <em class="sig-param">v0=None</em>, <em class="sig-param">ncv=None</em>, <em class="sig-param">maxiter=None</em>, <em class="sig-param">tol=0</em>, <em class="sig-param">return_eigenvectors=True</em>, <em class="sig-param">Minv=None</em>, <em class="sig-param">OPinv=None</em>, <em class="sig-param">mode='normal'</em>, <em class="sig-param">lock=None</em>, <em class="sig-param">return_stats=False</em>, <em class="sig-param">maxBlockSize=0</em>, <em class="sig-param">minRestartSize=0</em>, <em class="sig-param">maxPrevRetain=0</em>, <em class="sig-param">method=None</em>, <em class="sig-param">return_history=False</em>, <em class="sig-param">convtest=None</em>, <em class="sig-param">**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#primme.eigsh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find k eigenvalues and eigenvectors of the real symmetric square matrix
+or complex Hermitian matrix A.</p>
+<p>Solves <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">*</span> <span class="pre">x[i]</span> <span class="pre">=</span> <span class="pre">w[i]</span> <span class="pre">*</span> <span class="pre">x[i]</span></code>, the standard eigenvalue problem for
+w[i] eigenvalues with corresponding eigenvectors x[i].</p>
+<p>If M is specified, solves <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">*</span> <span class="pre">x[i]</span> <span class="pre">=</span> <span class="pre">w[i]</span> <span class="pre">*</span> <span class="pre">M</span> <span class="pre">*</span> <span class="pre">x[i]</span></code>, the
+generalized eigenvalue problem for w[i] eigenvalues
+with corresponding eigenvectors x[i]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>An N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em>) – the operation A * x, where A is a real symmetric matrix or complex
+Hermitian.</p></li>
+<li><p><strong>k</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of eigenvalues and eigenvectors to be computed. Must be
+1 &lt;= k &lt; min(A.shape).</p></li>
+<li><p><strong>M</strong> (<em>An N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em>) – <p>the operation M * x for the generalized eigenvalue problem</p>
+<blockquote>
+<div><p>A * x = w * M * x.</p>
+</div></blockquote>
+<p>M must represent a real, symmetric matrix if A is real, and must
+represent a complex, Hermitian matrix if A is complex. For best
+results, the data type of M should be the same as that of A.</p>
+</p></li>
+<li><p><strong>sigma</strong> (<em>real</em><em>, </em><em>optional</em>) – Find eigenvalues near sigma.</p></li>
+<li><p><strong>v0</strong> (<em>N x i</em><em>, </em><em>ndarray</em><em>, </em><em>optional</em>) – Initial guesses to the eigenvectors.</p></li>
+<li><p><strong>ncv</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum size of the basis</p></li>
+<li><p><strong>which</strong> (<em>str</em><em> [</em><em>'LM' | 'SM' | 'LA' | 'SA' | number</em><em>]</em>) – <p>Which <cite>k</cite> eigenvectors and eigenvalues to find:</p>
+<blockquote>
+<div><p>’LM’ : Largest in magnitude eigenvalues; the farthest from sigma</p>
+<p>’SM’ : Smallest in magnitude eigenvalues; the closest to sigma</p>
+<p>’LA’ : Largest algebraic eigenvalues</p>
+<p>’SA’ : Smallest algebraic eigenvalues</p>
+<p>’CLT’ : closest but left to sigma</p>
+<p>’CGT’ : closest but greater than sigma</p>
+<p>number : the closest to which</p>
+</div></blockquote>
+<p>When sigma == None, ‘LM’, ‘SM’, ‘CLT’, and ‘CGT’ treat sigma as zero.</p>
+</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations.</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – <p>Tolerance for eigenpairs (stopping criterion). The default value is sqrt of machine precision.</p>
+<p>An eigenpair <code class="docutils literal notranslate"><span class="pre">(lamba,v)</span></code> is marked as converged when ||A*v - lambda*B*v|| &lt; max(<a href="#id6"><span class="problematic" id="id7">|eig(A,B)|</span></a>)*tol.</p>
+<p>The value is ignored if convtest is provided.</p>
+</p></li>
+<li><p><strong>Minv</strong> (<em>(</em><em>not supported yet</em><em>)</em>) – The inverse of M in the generalized eigenproblem.</p></li>
+<li><p><strong>OPinv</strong> (<em>N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em><em>, </em><em>optional</em>) – Preconditioner to accelerate the convergence. Usually it is an
+approximation of the inverse of (A - sigma*M).</p></li>
+<li><p><strong>return_eigenvectors</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return eigenvectors (True) in addition to eigenvalues</p></li>
+<li><p><strong>mode</strong> (<em>string</em><em> [</em><em>'normal' | 'buckling' | 'cayley'</em><em>]</em>) – Only ‘normal’ mode is supported.</p></li>
+<li><p><strong>lock</strong> (<em>N x i</em><em>, </em><em>ndarray</em><em>, </em><em>optional</em>) – Seek the eigenvectors orthogonal to these ones. The provided
+vectors <em>should</em> be orthonormal. Useful to avoid converging to previously
+computed solutions.</p></li>
+<li><p><strong>maxBlockSize</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of vectors added at every iteration.</p></li>
+<li><p><strong>minRestartSize</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of approximate eigenvectors kept during restart.</p></li>
+<li><p><strong>maxPrevRetain</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of approximate eigenvectors kept from previous iteration in
+restart. Also referred as +k vectors in GD+k.</p></li>
+<li><p><strong>method</strong> (<em>int</em><em>, </em><em>optional</em>) – <p>Preset method, one of:</p>
+<ul>
+<li><p>DEFAULT_MIN_TIME : a variant of JDQMR,</p></li>
+<li><p>DEFAULT_MIN_MATVECS : GD+k</p></li>
+<li><p>DYNAMIC : choose dynamically between these previous methods.</p></li>
+</ul>
+<p>See a detailed description of the methods and other possible values
+in <a class="footnote-reference brackets" href="#id4" id="id1">2</a>.</p>
+</p></li>
+<li><p><strong>convtest</strong> (<em>callable</em>) – <p>User-defined function to mark an approximate eigenpair as converged.</p>
+<p>The function is called as convtest(eval, evec, resNorm) and returns
+True if the eigenpair with value <cite>eval</cite>, vector <cite>evec</cite> and residual
+norm <cite>resNorm</cite> is considered converged.</p>
+</p></li>
+<li><p><strong>return_stats</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function returns extra information (see stats in Returns).</p></li>
+<li><p><strong>return_history</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function returns performance information at every iteration
+(see hist in Returns).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>w</strong> (<em>array</em>) – Array of k eigenvalues ordered to best satisfy “which”.</p></li>
+<li><p><strong>v</strong> (<em>array</em>) – An array representing the <cite>k</cite> eigenvectors.  The column <code class="docutils literal notranslate"><span class="pre">v[:,</span> <span class="pre">i]</span></code> is
+the eigenvector corresponding to the eigenvalue <code class="docutils literal notranslate"><span class="pre">w[i]</span></code>.</p></li>
+<li><p><strong>stats</strong> (<em>dict, optional (if return_stats)</em>) – Extra information reported by PRIMME:</p>
+<ul>
+<li><p>”numOuterIterations”: number of outer iterations</p></li>
+<li><p>”numRestarts”: number of restarts</p></li>
+<li><p>”numMatvecs”: number of A*v</p></li>
+<li><p>”numPreconds”: number of OPinv*v</p></li>
+<li><p>”elapsedTime”: time that took</p></li>
+<li><p>”estimateMinEVal”: the leftmost Ritz value seen</p></li>
+<li><p>”estimateMaxEVal”: the rightmost Ritz value seen</p></li>
+<li><p>”estimateLargestSVal”: the largest singular value seen</p></li>
+<li><p>”rnorms” : ||A*x[i] - x[i]*w[i]||</p></li>
+<li><p>”hist” : (if return_history) report at every outer iteration of:</p>
+<ul>
+<li><p>”elapsedTime”: time spent up to now</p></li>
+<li><p>”numMatvecs”: number of A*v spent up to now</p></li>
+<li><p>”nconv”: number of converged pair</p></li>
+<li><p>”eval”: eigenvalue of the first unconverged pair</p></li>
+<li><p>”resNorm”: residual norm of the first unconverged pair</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>PrimmeError</strong> – When the requested convergence is not obtained.
+    
+    The PRIMME error code can be found as <code class="docutils literal notranslate"><span class="pre">err</span></code> attribute of the exception
+    object.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.sparse.linalg.eigs()</span></code></dt><dd><p>eigenvalues and eigenvectors for a general (nonsymmetric) matrix A</p>
+</dd>
+<dt><a class="reference internal" href="pysvds.html#primme.svds" title="primme.svds"><code class="xref py py-func docutils literal notranslate"><span class="pre">primme.svds()</span></code></a></dt><dd><p>singular value decomposition for a matrix A</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>This function is a wrapper to PRIMME functions to find the eigenvalues and
+eigenvectors <a class="footnote-reference brackets" href="#id3" id="id2">1</a>.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id3"><span class="brackets"><a class="fn-backref" href="#id2">1</a></span></dt>
+<dd><p>PRIMME Software, <a class="reference external" href="https://github.com/primme/primme">https://github.com/primme/primme</a></p>
+</dd>
+<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id1">2</a></span></dt>
+<dd><p>Preset Methods, <a class="reference external" href="http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods">http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods</a></p>
+</dd>
+<dt class="label" id="id5"><span class="brackets">3</span></dt>
+<dd><p>A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
+Iterative MultiMethod Eigensolver: Methods and software
+description, ACM Transaction on Mathematical Software Vol. 37,
+No. 2, (2010), 21:1-21:30.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="c1"># sparse diag. matrix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LA&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span> <span class="c1"># the three largest eigenvalues of A</span>
+<span class="go">array([99., 98., 97.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_evals</span><span class="p">,</span> <span class="n">new_evecs</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LA&#39;</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">evecs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_evals</span> <span class="c1"># the next three largest eigenvalues</span>
+<span class="go">array([96., 95., 94.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="mf">50.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span> <span class="c1"># the three closest eigenvalues to 50.1</span>
+<span class="go">array([50.,  51.,  49.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># the smallest eigenvalues of the eigenproblem (A,M)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;SA&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span> 
+<span class="go">array([1.0035e-07, 1.0204e-02, 2.0618e-02])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Giving the matvec as a function</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Adiag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">Amatmat</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="n">Adiag</span> <span class="o">*</span> <span class="n">x</span>   <span class="c1"># equivalent to diag(Adiag).dot(x)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="n">matvec</span><span class="o">=</span><span class="n">Amatmat</span><span class="p">,</span> <span class="n">matmat</span><span class="o">=</span><span class="n">Amatmat</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">eigsh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LA&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span>
+<span class="go">array([99., 98., 97.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mateigs.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="primmef90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, College of William &amp; Mary
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

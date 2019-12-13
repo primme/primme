@@ -1,0 +1,1485 @@
+ABS	src/include/template.h	191;"	d
+ABS	src/include/template.h	196;"	d
+ABS	src/include/template.h	202;"	d
+ABS	src/include/template_undef.h	51;"	d
+ARITH	src/include/template.h	117;"	d
+ARITH	src/include/template.h	120;"	d
+ARITH	src/include/template.h	123;"	d
+ARITH	src/include/template.h	126;"	d
+ARITH	src/include/template.h	129;"	d
+ARITH	src/include/template.h	132;"	d
+ARITH	src/include/template.h	135;"	d
+ARITH	src/include/template.h	138;"	d
+ARITH	src/include/template_undef.h	46;"	d
+AS_FORTRAN	src/include/common.h	646;"	d
+B	src/eigs/ortho.c	/^   void *B;$/;"	m	struct:local_matvec_ctx	file:
+B_matvec	src/eigs/ortho.c	/^STATIC int B_matvec(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Bortho_block_RHprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_Rprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_SHprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_Sprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_cprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_dprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_RHprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_Rprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_SHprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_Sprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_cprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_dprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_sprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_gen_zprimme	src/eigs/ortho.c	/^STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_sprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_block_zprimme	src/eigs/ortho.c	/^int Bortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+Bortho_gen_RHprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_Rprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_SHprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_Sprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_cprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_dprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_sprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_gen_zprimme	src/eigs/ortho.c	/^int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,$/;"	f
+Bortho_local_RHprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_Rprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_SHprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_Sprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_cprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_dprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_sprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+Bortho_local_zprimme	src/eigs/ortho.c	/^int Bortho_local_Sprimme(HSCALAR *V, int ldV, HSCALAR *R,$/;"	f
+CAST	src/linalg/blaslapack.c	388;"	d	file:
+CAST	src/linalg/blaslapack.c	403;"	d	file:
+CHKERR	src/include/common.h	459;"	d
+CHKERRA	src/include/common.h	519;"	d
+CHKERRM	src/include/common.h	491;"	d
+CHKERRVAL	src/include/common.h	544;"	d
+COMMON_EIGS_H	src/eigs/common_eigs.h	37;"	d
+COMMON_H	src/include/common.h	39;"	d
+CONCAT	src/include/common.h	69;"	d
+CONCATX	src/include/common.h	70;"	d
+CONJ	src/include/template.h	192;"	d
+CONJ	src/include/template.h	197;"	d
+CONJ	src/include/template.h	203;"	d
+CONJ	src/include/template_undef.h	52;"	d
+CONVERGED	src/eigs/common_eigs.h	/^   CONVERGED,$/;"	e	enum:conv_flags
+EVAL	src/eigs/common_eigs.h	48;"	d
+EVAL_ABS	src/eigs/common_eigs.h	51;"	d
+EVAL_IMAGINARY_PART	src/eigs/common_eigs.h	53;"	d
+EVAL_REAL_PART	src/eigs/common_eigs.h	52;"	d
+EXTERN_C	src/include/common.h	641;"	d
+EXTERN_C	src/include/common.h	643;"	d
+FORTRAN_FUNCTION	src/include/common.h	625;"	d
+FORTRAN_FUNCTION	src/include/common.h	627;"	d
+HEVAL	src/eigs/common_eigs.h	50;"	d
+HOST_REAL_SUF	src/include/common.h	139;"	d
+HOST_SCALAR_SUF	src/include/common.h	131;"	d
+HOST_STEM	src/include/template.h	80;"	d
+HOST_STEM	src/include/template_undef.h	39;"	d
+HREAL	src/include/common.h	143;"	d
+HSCALAR	src/include/common.h	135;"	d
+I	src/include/common.h	167;"	d
+IF_IS	src/eigs/primme_interface.c	1409;"	d	file:
+IF_IS	src/eigs/primme_interface.c	1503;"	d	file:
+IF_IS	src/eigs/primme_interface.c	1654;"	d	file:
+IF_IS	src/eigs/primme_interface.c	1720;"	d	file:
+IF_IS	src/svds/primme_svds_interface.c	1045;"	d	file:
+IF_IS	src/svds/primme_svds_interface.c	1113;"	d	file:
+IF_IS	src/svds/primme_svds_interface.c	1237;"	d	file:
+IF_IS	src/svds/primme_svds_interface.c	1255;"	d	file:
+IMAGINARY_PART	src/include/template.h	190;"	d
+IMAGINARY_PART	src/include/template.h	195;"	d
+IMAGINARY_PART	src/include/template.h	201;"	d
+IMAGINARY_PART	src/include/template_undef.h	50;"	d
+IMPL	src/include/template.h	87;"	d
+IMPL	src/include/template.h	93;"	d
+IMPL	src/include/template_undef.h	43;"	d
+ISFINITE	src/include/common.h	188;"	d
+ISFINITE	src/include/common.h	190;"	d
+JDQMR_slowdown	src/eigs/main_iter.c	/^   double JDQMR_slowdown; \/* log(gdRate)\/log(jdRate) restricted in [1.1, 2.5] *\/$/;"	m	struct:__anon1	file:
+KIND	src/eigs/template_normal.h	65;"	d
+KIND	src/eigs/template_normal.h	76;"	d
+KIND	src/eigs/template_normal.h	79;"	d
+KIND	src/eigs/template_normal.h	86;"	d
+KIND_C	src/eigs/template_normal.h	62;"	d
+MACHINE_EPSILON	src/include/common.h	145;"	d
+MACHINE_MAX	src/include/common.h	149;"	d
+MAGMA_SCALAR	src/linalg/magma_wrapper.c	94;"	d	file:
+MAGMA_WITH_HALF	src/include/common.h	51;"	d
+MAGMA_WRAPPER_PRIVATE	src/linalg/magma_wrapper.c	92;"	d	file:
+MAGMA_WRAPPER_PRIVATE_HALF	src/linalg/magma_wrapper.c	62;"	d	file:
+MAIN_ITER_PRIVATE_H	src/eigs/main_iter.c	66;"	d	file:
+MALLOC_PRIMME	src/include/common.h	581;"	d
+MEM_POP_FRAME	src/include/common.h	236;"	d
+MEM_POP_FRAME	src/include/common.h	249;"	d
+MEM_PUSH_FRAME	src/include/common.h	223;"	d
+MSolve_RHprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_Rprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_SHprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_Sprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_cprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_dprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_sprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MSolve_zprimme	src/eigs/factorize.c	/^int MSolve_Sprimme(SCALAR *Mfact, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+MULT_EQUAL	src/include/template.h	228;"	d
+MULT_EQUAL	src/include/template.h	240;"	d
+MULT_EQUAL	src/include/template.h	244;"	d
+MULT_EQUAL	src/include/template_undef.h	57;"	d
+MV	src/eigs/main_iter.c	/^   double MV;             \/* MV time only                                     *\/$/;"	m	struct:__anon1	file:
+MV_PR	src/eigs/main_iter.c	/^   double MV_PR;          \/* OPp operator MV+PR time                          *\/$/;"	m	struct:__anon1	file:
+Mem_debug_frame	src/linalg/memman.c	/^int Mem_debug_frame(const char *debug, primme_context ctx) {$/;"	f
+Mem_deregister_alloc	src/linalg/memman.c	/^int Mem_deregister_alloc(void *p, primme_context ctx) {$/;"	f
+Mem_keep_frame	src/linalg/memman.c	/^int Mem_keep_frame(primme_context ctx) {$/;"	f
+Mem_pop_clean_frame	src/linalg/memman.c	/^int Mem_pop_clean_frame(primme_context ctx) {$/;"	f
+Mem_pop_frame	src/linalg/memman.c	/^int Mem_pop_frame(primme_context *ctx) {$/;"	f
+Mem_push_frame	src/linalg/memman.c	/^int Mem_push_frame(primme_context *ctx) {$/;"	f
+Mem_register_alloc	src/linalg/memman.c	/^int Mem_register_alloc(void *p, free_fn_type free_fn, primme_context ctx) {$/;"	f
+Num_aux_update_VWXR_RHprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_Rprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_SHprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_Sprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_cprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_dprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_sprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_aux_update_VWXR_zprimme	src/eigs/restart.c	/^int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,$/;"	f
+Num_axpy_RHprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_RHprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_Rprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_Rprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_SHprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_SHprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_Sprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_Sprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_cprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_cprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_dprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_dprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_sprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_sprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_zprimme	src/linalg/blaslapack.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_axpy_zprimme	src/linalg/magma_wrapper.c	/^int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, $/;"	f
+Num_check_pointer_RHprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_RHprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_Rprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_Rprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_SHprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_SHprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_Sprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_Sprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_cprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_cprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_dprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_dprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_sprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_sprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_zprimme	src/linalg/blaslapack.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_check_pointer_zprimme	src/linalg/magma_wrapper.c	/^int Num_check_pointer_Sprimme(void *x) {$/;"	f
+Num_compact_vecs_RHprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_Rprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_SHprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_Sprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_cprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_dprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_sprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compact_vecs_zprimme	src/linalg/auxiliary.c	/^SCALAR* Num_compact_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, $/;"	f
+Num_compute_gramm_RHprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_Rprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_SHprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_Sprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_cprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_RHprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_RHprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_Rprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_Rprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_SHprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_SHprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_Sprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_Sprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_cprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_cprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_dprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_dprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_sprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_sprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_zprimme	src/linalg/blaslapack.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_ddh_zprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_dprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_sprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_gramm_zprimme	src/linalg/magma_wrapper.c	/^int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,$/;"	f
+Num_compute_residuals_RHprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_Rprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_SHprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_Sprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_cprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_dprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_sprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_compute_residuals_zprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,$/;"	f
+Num_copy_RHprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_RHprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_Rprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_Rprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_SHprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_SHprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_Sprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_Sprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_Tmatrix_RHprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_RHprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_Rprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_Rprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_SHprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_SHprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_Sprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_Sprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_cprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_cprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_dprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_dprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_iprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_iprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_sprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_sprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_zprimme	src/linalg/blaslapack.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_Tmatrix_zprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_copy_compact_trimatrix_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_cprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_dprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_sprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_compact_trimatrix_zprimme	src/linalg/auxiliary.c	/^int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,$/;"	f
+Num_copy_cprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_cprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_dprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_dprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_matrix_RHprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_RHprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_Rprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_Rprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_SHprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_SHprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_Sprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_Sprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_Tprimme	src/linalg/blaslapack.c	304;"	d	file:
+Num_copy_matrix_astype_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_cprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_dprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_astype_zprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_astype_Sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,$/;"	f
+Num_copy_matrix_columns_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_cprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_dprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_columns_zprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_columns_Sprimme(SCALAR *x, PRIMME_INT m, int *xin, int n,$/;"	f
+Num_copy_matrix_conj_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_cprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_dprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_conj_zprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_conj_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_cprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_cprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_dprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_dprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_rows_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_cprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_dprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_sprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_rows_zprimme	src/linalg/auxiliary.c	/^int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,$/;"	f
+Num_copy_matrix_sprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_sprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_zprimme	src/linalg/blaslapack.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_matrix_zprimme	src/linalg/magma_wrapper.c	/^int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_copy_sprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_sprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_trimatrix_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_compact_RHprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_Rprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_SHprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_Sprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_cprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_dprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_sprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_compact_zprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,$/;"	f
+Num_copy_trimatrix_cprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_dprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_sprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_trimatrix_zprimme	src/linalg/auxiliary.c	/^int Num_copy_trimatrix_Sprimme(SCALAR *x, int m, int n, int ldx, int ul,$/;"	f
+Num_copy_zprimme	src/linalg/blaslapack.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_copy_zprimme	src/linalg/magma_wrapper.c	/^int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dist_dots_RHprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_Rprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_SHprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_Sprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_cprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_dprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_real_RHprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_Rprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_SHprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_Sprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_cprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_dprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_sprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_real_zprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_real_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y,$/;"	f
+Num_dist_dots_sprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dist_dots_zprimme	src/eigs/auxiliary_eigs.c	/^int Num_dist_dots_Sprimme(SCALAR *x, PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,$/;"	f
+Num_dot_RHprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_RHprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_Rprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_Rprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_SHprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_SHprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_Sprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_Sprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_cprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_cprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_dprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_dprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_sprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_sprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_zprimme	src/linalg/blaslapack.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_dot_zprimme	src/linalg/magma_wrapper.c	/^HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,$/;"	f
+Num_free_RHprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_RHprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_Rprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_Rprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_SHprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_SHprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_Sprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_Sprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_cprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_cprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_dprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_dprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_iblasprimme	src/linalg/blaslapack.c	/^static int Num_free_iblasprimme(PRIMME_BLASINT *x, primme_context ctx) {$/;"	f	file:
+Num_free_iprimme	src/linalg/blaslapack.c	/^int Num_free_iprimme(int *x, primme_context ctx) {$/;"	f
+Num_free_sprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_sprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_zprimme	src/linalg/blaslapack.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_free_zprimme	src/linalg/magma_wrapper.c	/^int Num_free_Sprimme(SCALAR *x, primme_context ctx) {$/;"	f
+Num_gees_RHprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_Rprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_SHprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_Sprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_cprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_dprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_sprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gees_zprimme	src/linalg/blaslapack.c	/^int Num_gees_Sprimme(const char *jobvs, int n, SCALAR *a, int lda, SCALAR *w,$/;"	f
+Num_gemm_RHprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_RHprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_Rprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_Rprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_SHprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_SHprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_Sprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_Sprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_cprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_cprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_RHprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_RHprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_Rprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_Rprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_SHprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_SHprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_Sprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_Sprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_cprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_cprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_dprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_dprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_sprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_sprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_zprimme	src/linalg/blaslapack.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_ddh_zprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_RHprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_RHprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_Rprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_Rprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_SHprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_SHprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_Sprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_Sprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_cprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_cprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_dprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_dprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_sprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_sprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_zprimme	src/linalg/blaslapack.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dhd_zprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_dprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_sprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_sprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_zprimme	src/linalg/blaslapack.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemm_zprimme	src/linalg/magma_wrapper.c	/^int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,$/;"	f
+Num_gemv_RHprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_RHprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_Rprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_Rprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_SHprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_SHprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_Sprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_Sprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_cprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_cprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_RHprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_RHprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_Rprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_Rprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_SHprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_SHprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_Sprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_Sprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_cprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_cprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_dprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_dprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_sprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_sprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_zprimme	src/linalg/blaslapack.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_ddh_zprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_RHprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_RHprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_Rprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_Rprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_SHprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_SHprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_Sprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_Sprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_cprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_cprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_dprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_dprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_sprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_sprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_zprimme	src/linalg/blaslapack.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dhd_zprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_dprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_sprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_sprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_zprimme	src/linalg/blaslapack.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gemv_zprimme	src/linalg/magma_wrapper.c	/^int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,$/;"	f
+Num_gesvd_RHprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_Rprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_SHprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_Sprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_cprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_dprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_sprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_gesvd_zprimme	src/linalg/blaslapack.c	/^int Num_gesvd_Sprimme(const char *jobu, const char *jobvt, int m, int n,$/;"	f
+Num_getrf_RHprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_Rprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_SHprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_Sprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_cprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_dprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_sprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrf_zprimme	src/linalg/blaslapack.c	/^int Num_getrf_Sprimme($/;"	f
+Num_getrs_RHprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_Rprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_SHprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_Sprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_cprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_dprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_sprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_getrs_zprimme	src/linalg/blaslapack.c	/^int Num_getrs_Sprimme(const char *trans, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_heev_RHprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_Rprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_SHprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_Sprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_cprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_dprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_sprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_heev_zprimme	src/linalg/blaslapack.c	/^int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_RHprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_Rprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_SHprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_Sprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_cprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_dprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_sprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hegv_zprimme	src/linalg/blaslapack.c	/^int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,$/;"	f
+Num_hemm_RHprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_Rprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_SHprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_Sprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_cprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_dprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_sprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hemm_zprimme	src/linalg/blaslapack.c	/^int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,$/;"	f
+Num_hetrf_RHprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_Rprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_SHprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_Sprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_cprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_dprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_sprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrf_zprimme	src/linalg/blaslapack.c	/^int Num_hetrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *ipivot,$/;"	f
+Num_hetrs_RHprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_Rprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_SHprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_Sprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_cprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_dprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_sprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_hetrs_zprimme	src/linalg/blaslapack.c	/^int Num_hetrs_Sprimme(const char *uplo, int n, int nrhs, SCALAR *a, int lda,$/;"	f
+Num_larnv_RHprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_RHprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_Rprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_Rprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_SHprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_SHprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_Sprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_Sprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_cprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_cprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_dprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_dprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_sprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_sprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_zprimme	src/linalg/blaslapack.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_larnv_zprimme	src/linalg/magma_wrapper.c	/^int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,$/;"	f
+Num_machine_epsilon_RHprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_Rprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_SHprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_Sprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_cprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_dprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_sprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_machine_epsilon_zprimme	src/linalg/auxiliary.c	/^int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {$/;"	f
+Num_malloc_RHprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_RHprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_Rprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_Rprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_SHprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_SHprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_Sprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_Sprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_cprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_cprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_dprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_dprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_iblasprimme	src/linalg/blaslapack.c	/^static int Num_malloc_iblasprimme($/;"	f	file:
+Num_malloc_iprimme	src/linalg/blaslapack.c	/^int Num_malloc_iprimme(PRIMME_INT n, int **x, primme_context ctx) {$/;"	f
+Num_malloc_sprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_sprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_zprimme	src/linalg/blaslapack.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_malloc_zprimme	src/linalg/magma_wrapper.c	/^int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {$/;"	f
+Num_matrix_astype_RHprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_Rprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_SHprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_Sprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_cprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_dprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_iprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_iprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_sprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_matrix_astype_zprimme	src/linalg/auxiliary.c	/^int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_ortho_kernel	src/eigs/ortho.c	/^STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,$/;"	f
+Num_potrf_RHprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_Rprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_SHprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_Sprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_cprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_dprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_sprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_potrf_zprimme	src/linalg/blaslapack.c	/^int Num_potrf_Sprimme(const char *uplo, int n, SCALAR *a, int lda, int *info,$/;"	f
+Num_scalInv_Smatrix	src/svds/primme_svds_c.c	/^STATIC int Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,$/;"	f
+Num_scal_RHprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_RHprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scal_Rprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_Rprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scal_SHprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_SHprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scal_Sprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_Sprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scal_cprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_cprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scal_dprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_dprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scale_matrix_RHprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_Rprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_SHprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_Sprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_cprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_dprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_sprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scale_matrix_zprimme	src/linalg/auxiliary.c	/^int Num_scale_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_scal_sprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_sprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_scal_zprimme	src/linalg/blaslapack.c	/^int Num_scal_Sprimme($/;"	f
+Num_scal_zprimme	src/linalg/magma_wrapper.c	/^int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,$/;"	f
+Num_sizeof_RHprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_Rprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_SHprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_Sprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_cprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_dprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_sprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_sizeof_zprimme	src/linalg/auxiliary.c	/^int Num_sizeof_Sprimme(primme_op_datatype t, size_t *s) {$/;"	f
+Num_trmm_RHprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_Rprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_SHprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_Sprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_cprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_dprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_sprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trmm_zprimme	src/linalg/blaslapack.c	/^int Num_trmm_Sprimme(const char *side, const char *uplo,$/;"	f
+Num_trsm_RHprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_Rprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_SHprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_Sprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_cprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_dprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_RHprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_RHprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_Rprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_Rprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_SHprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_SHprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_Sprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_Sprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_cprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_cprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_dprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_dprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_sprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_sprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_zprimme	src/linalg/blaslapack.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_hd_zprimme	src/linalg/magma_wrapper.c	/^int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_sprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_trsm_zprimme	src/linalg/blaslapack.c	/^int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,$/;"	f
+Num_update_VWXR_RHprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_Rprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_SHprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_Sprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_cprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_dprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_sprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_update_VWXR_zprimme	src/eigs/auxiliary_eigs_normal.c	/^int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,$/;"	f
+Num_zero_matrix_RHprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_RHprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_Rprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_Rprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_SHprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_SHprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_Sprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_Sprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_Tprimme	src/linalg/auxiliary.c	/^int Num_zero_matrix_Tprimme(void *x, primme_op_datatype xt, PRIMME_INT m,$/;"	f
+Num_zero_matrix_cprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_cprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_dprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_dprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_sprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_sprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_zprimme	src/linalg/blaslapack.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+Num_zero_matrix_zprimme	src/linalg/magma_wrapper.c	/^int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,$/;"	f
+ORTHO__PRIVATE_H	src/eigs/ortho.c	376;"	d	file:
+Olsen_preconditioner_block	src/eigs/correction.c	/^STATIC int Olsen_preconditioner_block(SCALAR *r, PRIMME_INT ldr, SCALAR *x,$/;"	f
+PARALLEL_CHECK	src/include/common.h	406;"	d
+PLUS_EQUAL	src/include/template.h	227;"	d
+PLUS_EQUAL	src/include/template.h	239;"	d
+PLUS_EQUAL	src/include/template.h	243;"	d
+PLUS_EQUAL	src/include/template_undef.h	56;"	d
+PR	src/eigs/main_iter.c	/^   double PR;             \/* PRecond only                                     *\/$/;"	m	struct:__anon1	file:
+PRACTICALLY_CONVERGED	src/eigs/common_eigs.h	/^   PRACTICALLY_CONVERGED$/;"	e	enum:conv_flags
+PRIMME_BLOCK_SIZE	src/include/common.h	638;"	d
+PRIMME_COMPLEX_DOUBLE	src/include/template.h	299;"	d
+PRIMME_COMPLEX_FLOAT	src/include/template.h	298;"	d
+PRIMME_COMPLEX_HALF	src/include/template.h	297;"	d
+PRIMME_COMPLEX_QUAD	src/include/template.h	301;"	d
+PRIMME_HALF	src/include/template.h	296;"	d
+PRIMME_INT	src/include/template.h	302;"	d
+PRIMME_INTERFACE_H	src/include/primme_interface.h	37;"	d
+PRIMME_OP_HREAL	src/include/common.h	163;"	d
+PRIMME_OP_HSCALAR	src/include/common.h	159;"	d
+PRIMME_OP_REAL	src/include/common.h	157;"	d
+PRIMME_OP_SCALAR	src/include/common.h	153;"	d
+PRIMME_QUAD	src/include/template.h	300;"	d
+PRIMME_SVDS_INTERFACE_H	src/svds/primme_svds_interface.h	38;"	d
+PRINT	src/eigs/primme_interface.c	640;"	d	file:
+PRINT	src/eigs/primme_interface.c	735;"	d	file:
+PRINT	src/svds/primme_svds_interface.c	408;"	d	file:
+PRINTF	src/include/common.h	324;"	d
+PRINTFALL	src/include/common.h	307;"	d
+PRINTFALLCTX	src/include/common.h	281;"	d
+PRINTIF	src/eigs/primme_interface.c	641;"	d	file:
+PRINTIF	src/eigs/primme_interface.c	736;"	d	file:
+PRINTIF	src/svds/primme_svds_interface.c	409;"	d	file:
+PRINT_PRIMME_INT	src/eigs/primme_interface.c	646;"	d	file:
+PRINT_PRIMME_INT	src/svds/primme_svds_interface.c	414;"	d	file:
+PRINTParams	src/eigs/primme_interface.c	642;"	d	file:
+PRINTParams	src/eigs/primme_interface.c	737;"	d	file:
+PRINTParams	src/svds/primme_svds_interface.c	410;"	d	file:
+PRINTParamsIF	src/eigs/primme_interface.c	644;"	d	file:
+PRINTParamsIF	src/eigs/primme_interface.c	738;"	d	file:
+PRINTParamsIF	src/svds/primme_svds_interface.c	412;"	d	file:
+PROFILE_BEGIN	src/include/common.h	346;"	d
+PROFILE_BEGIN	src/include/common.h	372;"	d
+PROFILE_END	src/include/common.h	357;"	d
+PROFILE_END	src/include/common.h	373;"	d
+REAL	src/include/common.h	141;"	d
+REAL_ARITH	src/include/template.h	118;"	d
+REAL_ARITH	src/include/template.h	121;"	d
+REAL_ARITH	src/include/template.h	124;"	d
+REAL_ARITH	src/include/template.h	127;"	d
+REAL_ARITH	src/include/template.h	130;"	d
+REAL_ARITH	src/include/template.h	133;"	d
+REAL_ARITH	src/include/template.h	136;"	d
+REAL_ARITH	src/include/template.h	139;"	d
+REAL_ARITH	src/include/template_undef.h	47;"	d
+REAL_PART	src/include/template.h	189;"	d
+REAL_PART	src/include/template.h	194;"	d
+REAL_PART	src/include/template.h	200;"	d
+REAL_PART	src/include/template_undef.h	49;"	d
+REAL_SUF	src/include/common.h	137;"	d
+RHprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+RHprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+RHprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+Rprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+Rprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+Rprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+SCALAR	src/include/common.h	133;"	d
+SCALAR_SUF	src/include/common.h	129;"	d
+SET_COMPLEX	src/include/template.h	221;"	d
+SET_COMPLEX	src/include/template.h	236;"	d
+SET_COMPLEX	src/include/template_undef.h	54;"	d
+SET_ZERO	src/include/template.h	220;"	d
+SET_ZERO	src/include/template.h	235;"	d
+SET_ZERO	src/include/template_undef.h	53;"	d
+SHprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+SHprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+SHprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+SKIP_UNTIL_RESTART	src/eigs/common_eigs.h	/^   SKIP_UNTIL_RESTART,$/;"	e	enum:conv_flags
+STATIC	src/eigs/template_normal.h	47;"	d
+STATIC	src/eigs/template_normal.h	60;"	d
+STATIC	src/include/template.h	285;"	d
+STATIC	src/include/template.h	289;"	d
+STATIC	src/include/template_undef.h	59;"	d
+STEM	src/include/template.h	86;"	d
+STEM	src/include/template.h	92;"	d
+STEM	src/include/template_undef.h	42;"	d
+STEM_C	src/include/template.h	99;"	d
+STR	src/include/common.h	71;"	d
+STR0	src/include/common.h	72;"	d
+SUPPORTED_HALF_TYPE	src/include/template.h	157;"	d
+SUPPORTED_TYPE	src/include/template.h	166;"	d
+SUPPORTED_TYPE	src/include/template.h	178;"	d
+SUPPORTED_TYPE	src/include/template_undef.h	48;"	d
+Sprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+Sprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+Sprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+TEMPLATE_H	src/include/template.h	56;"	d
+TEMPLATE_H	src/include/template_undef.h	38;"	d
+TEMPLATE_H_PRIVATE	src/include/template.h	260;"	d
+TEMPLATE_NORMAL_H	src/eigs/template_normal.h	37;"	d
+TEMPLATE_NORMAL_H	src/eigs/template_normal.h	91;"	d
+TEMPLATE_PLEASE	src/eigs/template_normal.h	46;"	d
+TEMPLATE_PLEASE	src/eigs/template_normal.h	48;"	d
+TEMPLATE_PLEASE	src/include/template.h	277;"	d
+TEMPLATE_PLEASE	src/include/template.h	288;"	d
+TEMPLATE_PLEASE	src/include/template_undef.h	58;"	d
+TEMPLATE_TYPES	src/include/template_types.h	38;"	d
+THIS_FILE	src/eigs/auxiliary_eigs.c	38;"	d	file:
+THIS_FILE	src/eigs/auxiliary_eigs_normal.c	38;"	d	file:
+THIS_FILE	src/eigs/convergence.c	37;"	d	file:
+THIS_FILE	src/eigs/correction.c	37;"	d	file:
+THIS_FILE	src/eigs/factorize.c	38;"	d	file:
+THIS_FILE	src/eigs/init.c	38;"	d	file:
+THIS_FILE	src/eigs/inner_solve.c	37;"	d	file:
+THIS_FILE	src/eigs/main_iter.c	37;"	d	file:
+THIS_FILE	src/eigs/ortho.c	66;"	d	file:
+THIS_FILE	src/eigs/primme_c.c	58;"	d	file:
+THIS_FILE	src/eigs/primme_f77.c	37;"	d	file:
+THIS_FILE	src/eigs/primme_interface.c	40;"	d	file:
+THIS_FILE	src/eigs/restart.c	37;"	d	file:
+THIS_FILE	src/eigs/solve_projection.c	37;"	d	file:
+THIS_FILE	src/eigs/update_W.c	38;"	d	file:
+THIS_FILE	src/eigs/update_projection.c	37;"	d	file:
+THIS_FILE	src/linalg/auxiliary.c	37;"	d	file:
+THIS_FILE	src/linalg/blaslapack.c	37;"	d	file:
+THIS_FILE	src/linalg/magma_wrapper.c	38;"	d	file:
+THIS_FILE	src/linalg/memman.c	38;"	d	file:
+THIS_FILE	src/linalg/wtime.c	36;"	d	file:
+THIS_FILE	src/svds/primme_svds_c.c	37;"	d	file:
+THIS_FILE	src/svds/primme_svds_f77.c	37;"	d	file:
+THIS_FILE	src/svds/primme_svds_interface.c	37;"	d	file:
+TO_COMPLEX	src/include/template.h	223;"	d
+TO_COMPLEX	src/include/template.h	225;"	d
+TO_COMPLEX	src/include/template.h	238;"	d
+TO_COMPLEX	src/include/template.h	242;"	d
+TO_COMPLEX	src/include/template_undef.h	55;"	d
+TO_INT	src/include/common.h	622;"	d
+UDUDecompose_RHprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_Rprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_SHprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_Sprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_cprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_dprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_sprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUDecompose_zprimme	src/eigs/factorize.c	/^int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,$/;"	f
+UDUSolve_RHprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_Rprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_SHprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_Sprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_cprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_dprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_sprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UDUSolve_zprimme	src/eigs/factorize.c	/^int UDUSolve_Sprimme(SCALAR *UDU, int *ipivot, int dim, SCALAR *rhs, int nrhs,$/;"	f
+UNCONVERGED	src/eigs/common_eigs.h	/^   UNCONVERGED,$/;"	e	enum:conv_flags
+UPDATE_STATS	src/svds/primme_svds_c.c	53;"	d	file:
+USE_ARITH	src/include/template.h	262;"	d
+USE_COMPLEX	src/include/template.h	111;"	d
+USE_COMPLEX	src/include/template_undef.h	45;"	d
+USE_CUBLAS	src/linalg/magma_wrapper.c	1080;"	d	file:
+USE_CUBLAS	src/linalg/magma_wrapper.c	48;"	d	file:
+USE_DOUBLE	src/include/template_types.h	51;"	d
+USE_DOUBLE	src/include/template_types.h	54;"	d
+USE_DOUBLECOMPLEX	src/include/template_types.h	91;"	d
+USE_DOUBLECOMPLEX	src/include/template_types.h	94;"	d
+USE_DOUBLECOMPLEX_MAGMA	src/include/template_types.h	151;"	d
+USE_DOUBLE_MAGMA	src/include/template_types.h	143;"	d
+USE_DOUBLE_MAGMA	src/include/template_types.h	146;"	d
+USE_FLOAT	src/include/template_types.h	75;"	d
+USE_FLOAT	src/include/template_types.h	78;"	d
+USE_FLOATCOMPLEX	src/include/template_types.h	83;"	d
+USE_FLOATCOMPLEX	src/include/template_types.h	86;"	d
+USE_FLOATCOMPLEX_MAGMA	src/include/template_types.h	135;"	d
+USE_FLOATCOMPLEX_MAGMA	src/include/template_types.h	138;"	d
+USE_FLOAT_MAGMA	src/include/template_types.h	127;"	d
+USE_FLOAT_MAGMA	src/include/template_types.h	130;"	d
+USE_HALF	src/include/template_types.h	59;"	d
+USE_HALF	src/include/template_types.h	62;"	d
+USE_HALFCOMPLEX	src/include/template_types.h	67;"	d
+USE_HALFCOMPLEX	src/include/template_types.h	70;"	d
+USE_HALFCOMPLEX_MAGMA	src/include/template_types.h	119;"	d
+USE_HALFCOMPLEX_MAGMA	src/include/template_types.h	122;"	d
+USE_HALF_MAGMA	src/include/template_types.h	111;"	d
+USE_HALF_MAGMA	src/include/template_types.h	114;"	d
+USE_HERMITIAN	src/eigs/template_normal.h	66;"	d
+USE_HERMITIAN	src/eigs/template_normal.h	85;"	d
+USE_HOST	src/include/template.h	85;"	d
+USE_HOST	src/include/template_undef.h	40;"	d
+USE_MAGMA	src/include/template.h	91;"	d
+USE_MAGMA	src/include/template_undef.h	41;"	d
+USE_NORMAL	src/eigs/template_normal.h	67;"	d
+USE_NORMAL	src/eigs/template_normal.h	75;"	d
+USE_NORMAL	src/eigs/template_normal.h	78;"	d
+USE_REAL	src/include/template.h	106;"	d
+USE_REAL	src/include/template_undef.h	44;"	d
+USE_SR	src/include/template.h	264;"	d
+USE_TYPE	src/include/template.h	268;"	d
+WITH_KIND	src/eigs/template_normal.h	40;"	d
+WITH_KIND	src/include/primme_interface.h	42;"	d
+XAXPY	src/linalg/magma_wrapper.c	102;"	d	file:
+XCOPY	src/linalg/magma_wrapper.c	99;"	d	file:
+XDOT	src/linalg/magma_wrapper.c	103;"	d	file:
+XEVAL	src/eigs/common_eigs.h	49;"	d
+XGEMM	src/linalg/magma_wrapper.c	100;"	d	file:
+XGEMV	src/linalg/magma_wrapper.c	101;"	d	file:
+XLASET	src/linalg/magma_wrapper.c	97;"	d	file:
+XREAL	src/include/common.h	142;"	d
+XREAL_SUF	src/include/common.h	138;"	d
+XSCAL	src/linalg/magma_wrapper.c	104;"	d	file:
+XSCALAR	src/include/common.h	134;"	d
+XSCALAR_SUF	src/include/common.h	130;"	d
+XTRSM	src/linalg/magma_wrapper.c	105;"	d	file:
+Xprimme	src/eigs/primme_c.c	/^int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,$/;"	f
+Xprimme	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(Xprimme)(XEVAL *evals, XSCALAR *evecs, XREAL *rnorms,$/;"	f
+Xprimme	src/include/primme_interface.h	44;"	d
+Xprimme_aux_RHprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_Rprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_SHprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_Sprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_cprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_dprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_sprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_aux_zprimme	src/eigs/primme_c.c	/^int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+Xprimme_svds_aux	src/svds/primme_svds_c.c	/^STATIC int Xprimme_svds_aux(void *svals, XSCALAR *svecs, void *resNorms, $/;"	f
+Xsprimme	src/eigs/primme_c.c	117;"	d	file:
+Xsprimme	src/eigs/primme_c.c	120;"	d	file:
+Xsprimme	src/eigs/primme_c.c	130;"	d	file:
+Xsprimme_svds	src/svds/primme_svds_c.c	232;"	d	file:
+Xsprimme_svds	src/svds/primme_svds_c.c	241;"	d	file:
+Xsprimme_svds	src/svds/primme_svds_c.c	/^int Xsprimme_svds(float *svals, XSCALAR *svecs, float *resNorms,$/;"	f
+a	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_FLOAT a; } dummy_type_magma_cprimme;$/;"	m	struct:__anon5
+a	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_HALF a; }  dummy_type_magma_kprimme;$/;"	m	struct:__anon3
+a	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;$/;"	m	struct:__anon9
+a	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_zprimme;$/;"	m	struct:__anon7
+a	src/include/common.h	/^typedef struct { PRIMME_HALF a; }          dummy_type_magma_hprimme;$/;"	m	struct:__anon2
+a	src/include/common.h	/^typedef struct { PRIMME_QUAD a; }          dummy_type_magma_qprimme;$/;"	m	struct:__anon8
+a	src/include/common.h	/^typedef struct { double a; }               dummy_type_magma_dprimme;$/;"	m	struct:__anon6
+a	src/include/common.h	/^typedef struct { float a; }                dummy_type_magma_sprimme;$/;"	m	struct:__anon4
+accum_gdk	src/eigs/main_iter.c	/^   double accum_gdk;      \/* Accumulates gdk_times += gdk+MV+PR               *\/$/;"	m	struct:__anon1	file:
+accum_jdq	src/eigs/main_iter.c	/^   double accum_jdq;      \/* Accumulates jdq_times += ratio*(gdk+MV+PR)       *\/$/;"	m	struct:__anon1	file:
+accum_jdq_gdk	src/eigs/main_iter.c	/^   double accum_jdq_gdk;  \/*Expected ratio of accumulative times of JDQMR\/GD+k*\/$/;"	m	struct:__anon1	file:
+applyPreconditioner_RHprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_Rprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_SHprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_Sprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_cprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_dprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_eigs_RHprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_Rprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_SHprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_Sprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_cprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_dprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_sprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_eigs_zprimme	src/svds/primme_svds_c.c	/^void applyPreconditioner_eigs_Sprimme(void *x, PRIMME_INT *ldx, void *y,$/;"	f
+applyPreconditioner_sprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+applyPreconditioner_zprimme	src/eigs/auxiliary_eigs.c	/^int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+apply_projected_matrix	src/eigs/inner_solve.c	/^STATIC int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,$/;"	f
+apply_projected_preconditioner	src/eigs/inner_solve.c	/^STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,$/;"	f
+apply_skew_projector	src/eigs/inner_solve.c	/^STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,$/;"	f
+bcast	src/include/common.h	/^   int (*bcast)(void *buffer, primme_op_datatype buffer_type, int count,$/;"	m	struct:primme_context_str
+broadcast_RHprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcastRealSvds	src/svds/primme_svds_interface.c	/^static void broadcastRealSvds($/;"	f	file:
+broadcast_Rprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_SHprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_Sprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_Tprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Tprimme($/;"	f
+broadcast_cprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_dprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_iprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_iprimme(int *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_sprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+broadcast_zprimme	src/eigs/auxiliary_eigs.c	/^int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+check_convergence_RHprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_Rprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_SHprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_Sprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_cprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_dprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_sprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_convergence_zprimme	src/eigs/convergence.c	/^int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,$/;"	f
+check_input	src/eigs/primme_c.c	/^STATIC int check_input($/;"	f
+check_params_coherence	src/eigs/primme_c.c	/^STATIC int check_params_coherence(primme_context ctx) {$/;"	f
+check_practical_convergence	src/eigs/convergence.c	/^STATIC int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,$/;"	f
+comp_double	src/svds/primme_svds_c.c	/^STATIC int comp_double(const void *a, const void *b)$/;"	f
+__compose_function_name	src/include/common.h	/^static inline const char *__compose_function_name(const char *path,$/;"	f
+computeRobustShift	src/eigs/correction.c	/^STATIC HREAL computeRobustShift(int blockIndex, double resNorm, $/;"	f
+compute_resNorm	src/svds/primme_svds_c.c	/^STATIC int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,$/;"	f
+compute_residual_columns	src/eigs/restart.c	/^STATIC int compute_residual_columns(PRIMME_INT m, HEVAL *evals, SCALAR *x,$/;"	f
+compute_submatrix_RHprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_Rprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_SHprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_Sprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_cprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_dprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_sprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+compute_submatrix_zprimme	src/linalg/auxiliary.c	/^int compute_submatrix_Sprimme(SCALAR *X, int nX, int ldX, SCALAR *H, int nH,$/;"	f
+convTestFunATA	src/svds/primme_svds_c.c	/^STATIC void convTestFunATA(double *eval, void *evec, double *rNorm, int *isConv,$/;"	f
+convTestFunAbsolute	src/eigs/primme_c.c	/^STATIC void convTestFunAbsolute(double *eval, void *evec, double *rNorm,$/;"	f
+convTestFunAug	src/svds/primme_svds_c.c	/^STATIC void convTestFunAug(double *eval, void *evec, double *rNorm, int *isConv,$/;"	f
+convTestFun_RHprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFun_Rprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFun_SHprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFunSVDS_RHprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_Rprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_SHprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_Sprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_cprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_dprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_sprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFunSVDS_zprimme	src/svds/primme_svds_c.c	/^int convTestFunSVDS_Sprimme(HREAL sval, SCALAR *leftsvec, int givenLeftSvec,$/;"	f
+convTestFun_Sprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFun_cprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFun_dprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFun_sprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+convTestFun_zprimme	src/eigs/auxiliary_eigs_normal.c	/^int convTestFun_Sprimme(HEVAL eval, SCALAR *evec, int givenEvec, HREAL rNorm,$/;"	f
+conv_flags	src/eigs/common_eigs.h	/^enum conv_flags {$/;"	g
+coordinated_exit	src/eigs/primme_c.c	/^STATIC int coordinated_exit(int ret, primme_context ctx) {$/;"	f
+copy_last_params_from_svds	src/svds/primme_svds_c.c	/^STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,$/;"	f
+copy_last_params_to_svds	src/svds/primme_svds_c.c	/^STATIC int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,$/;"	f
+copy_params_from_svds	src/svds/primme_svds_interface.c	/^static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {$/;"	f	file:
+cprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+cprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+cprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+ctx	src/eigs/ortho.c	/^   primme_context ctx;$/;"	m	struct:local_matvec_ctx	file:
+debug	src/include/memman.h	/^   const char* debug;               \/* String identifying the code that *\/$/;"	m	struct:primme_alloc_str
+decomposition	src/eigs/ortho.c	/^STATIC int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,$/;"	f
+default_convTestFun	src/svds/primme_svds_c.c	/^STATIC void default_convTestFun(double *sval, void *leftsvec_, void *rightsvec_,$/;"	f
+default_monitor	src/eigs/primme_c.c	/^STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,$/;"	f
+default_monitor_svds	src/svds/primme_svds_c.c	/^STATIC void default_monitor_svds(void *basisSvals_, int *basisSize, int *basisFlags,$/;"	f
+deltaEig_RHprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_Rprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_SHprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_Sprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_cprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_dprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_sprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+deltaEig_zprimme	src/eigs/auxiliary_eigs.c	/^HREAL deltaEig_Sprimme($/;"	f
+dprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+dprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+dprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+dummy_type_cprimme	src/include/common.h	/^typedef PRIMME_COMPLEX_FLOAT               dummy_type_cprimme;$/;"	t
+dummy_type_dprimme	src/include/common.h	/^typedef double                             dummy_type_dprimme;$/;"	t
+dummy_type_hprimme	src/include/common.h	/^typedef PRIMME_HALF                        dummy_type_hprimme;$/;"	t
+dummy_type_kprimme	src/include/common.h	/^typedef PRIMME_COMPLEX_HALF                dummy_type_kprimme;$/;"	t
+dummy_type_magma_cprimme	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_FLOAT a; } dummy_type_magma_cprimme;$/;"	t	typeref:struct:__anon5
+dummy_type_magma_dprimme	src/include/common.h	/^typedef struct { double a; }               dummy_type_magma_dprimme;$/;"	t	typeref:struct:__anon6
+dummy_type_magma_hprimme	src/include/common.h	/^typedef struct { PRIMME_HALF a; }          dummy_type_magma_hprimme;$/;"	t	typeref:struct:__anon2
+dummy_type_magma_kprimme	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_HALF a; }  dummy_type_magma_kprimme;$/;"	t	typeref:struct:__anon3
+dummy_type_magma_qprimme	src/include/common.h	/^typedef struct { PRIMME_QUAD a; }          dummy_type_magma_qprimme;$/;"	t	typeref:struct:__anon8
+dummy_type_magma_sprimme	src/include/common.h	/^typedef struct { float a; }                dummy_type_magma_sprimme;$/;"	t	typeref:struct:__anon4
+dummy_type_magma_wprimme	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;$/;"	t	typeref:struct:__anon9
+dummy_type_magma_zprimme	src/include/common.h	/^typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_zprimme;$/;"	t	typeref:struct:__anon7
+dummy_type_qprimme	src/include/common.h	/^typedef PRIMME_QUAD                        dummy_type_qprimme;$/;"	t
+dummy_type_sprimme	src/include/common.h	/^typedef float                              dummy_type_sprimme;$/;"	t
+dummy_type_wprimme	src/include/common.h	/^typedef PRIMME_COMPLEX_QUAD                dummy_type_wprimme;$/;"	t
+dummy_type_zprimme	src/include/common.h	/^typedef PRIMME_COMPLEX_DOUBLE              dummy_type_zprimme;$/;"	t
+evecs	src/eigs/primme_c.c	/^int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,$/;"	v
+exp	src/include/common.h	181;"	d
+free_dummy	src/linalg/memman.c	/^static int free_dummy(void *p, primme_context ctx) {$/;"	f	file:
+free_fn	src/include/memman.h	/^   int (*free_fn)(void *, struct primme_context_str);$/;"	m	struct:primme_alloc_str
+free_fn_dummy	src/linalg/blaslapack.c	/^static int free_fn_dummy (void *p, primme_context ctx) {$/;"	f	file:
+free_fn_dummy	src/linalg/magma_wrapper.c	/^static int free_fn_dummy (void *p, primme_context ctx) {$/;"	f	file:
+free_fn_type	src/include/memman.h	/^typedef int (*free_fn_type)(void *, struct primme_context_str);$/;"	t
+gdk_conv_rate	src/eigs/main_iter.c	/^   double gdk_conv_rate;  \/* convergence rate of all (|r|\/|r0|) seen for GD+k *\/$/;"	m	struct:__anon1	file:
+gdk_plus_MV	src/eigs/main_iter.c	/^   double gdk_plus_MV;    \/* b_m GD plus MV (i.e., GD without correction)     *\/$/;"	m	struct:__anon1	file:
+gdk_plus_MV_PR	src/eigs/main_iter.c	/^   double gdk_plus_MV_PR; \/* b   GD plus operators                            *\/$/;"	m	struct:__anon1	file:
+gdk_sum_MV	src/eigs/main_iter.c	/^   double gdk_sum_MV;     \/* Total num of MV resulting in these GD reductions *\/$/;"	m	struct:__anon1	file:
+gdk_sum_logResReductions	src/eigs/main_iter.c	/^   double gdk_sum_logResReductions;\/* Sumof all log(residual reductions) in GD*\/$/;"	m	struct:__anon1	file:
+globalSum	src/include/common.h	/^   int (*globalSum)(void *buffer, primme_op_datatype buffer_type, int count,$/;"	m	struct:primme_context_str
+globalSum_RHprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSumRealSvds	src/svds/primme_svds_interface.c	/^static void globalSumRealSvds(void *sendBuf, void *recvBuf, int *count, $/;"	f	file:
+globalSum_Rprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSum_Rprimme_svds	src/svds/primme_svds_c.c	/^STATIC int globalSum_Rprimme_svds($/;"	f
+globalSum_SHprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSum_Sprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSum_Tprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Tprimme($/;"	f
+globalSum_cprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSum_dprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSum_sprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+globalSum_zprimme	src/eigs/auxiliary_eigs.c	/^int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {$/;"	f
+hash_call	src/include/common.h	/^static inline uint32_t hash_call(const char *str, double value) {$/;"	f
+init_basis_RHprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_Rprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_SHprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_Sprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_cprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_dprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_sprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_basis_zprimme	src/eigs/init.c	/^int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,$/;"	f
+init_block_krylov	src/eigs/init.c	/^STATIC int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+initializeModel	src/eigs/main_iter.c	/^STATIC void initializeModel(void *model_, primme_params *primme) {$/;"	f
+inner_solve_RHprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_Rprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_SHprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_Sprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_cprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_dprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_sprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+inner_solve_zprimme	src/eigs/inner_solve.c	/^int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+insertionSort_RHprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_Rprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_SHprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_Sprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_cprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_dprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_sprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+insertionSort_zprimme	src/eigs/auxiliary_eigs_normal.c	/^TEMPLATE_PLEASE int insertionSort_Sprimme(HEVAL newVal, HEVAL *evals,$/;"	f
+jdq_conv_rate	src/eigs/main_iter.c	/^   double jdq_conv_rate;  \/* convergence rate of all (|r|\/|r0|) seen for JDQMR*\/$/;"	m	struct:__anon1	file:
+jdq_sum_MV	src/eigs/main_iter.c	/^   double jdq_sum_MV;     \/* Total num of MV resulting in these JD reductions *\/$/;"	m	struct:__anon1	file:
+jdq_sum_logResReductions	src/eigs/main_iter.c	/^   double jdq_sum_logResReductions;\/* Sumof all log(residual reductions) in JD*\/$/;"	m	struct:__anon1	file:
+keep_frame	src/include/memman.h	/^   int keep_frame;                  \/* Flag to merge allocation in this frame *\/$/;"	m	struct:primme_frame_str
+ldB	src/eigs/ortho.c	/^   int n, ldB;$/;"	m	struct:local_matvec_ctx	file:
+local_matvec	src/eigs/ortho.c	/^STATIC int local_matvec(HSCALAR *x, PRIMME_INT ldx, HSCALAR *y, PRIMME_INT ldy,$/;"	f
+local_matvec_ctx	src/eigs/ortho.c	/^struct local_matvec_ctx { \/* HSCALAR *\/$/;"	s	file:
+log	src/include/common.h	184;"	d
+machineEpsMatrix_RHprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_Rprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_SHprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_Sprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_cprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_dprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_sprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsMatrix_zprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_RHprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_Rprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_SHprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_Sprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_cprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_dprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_sprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+machineEpsOrth_zprimme	src/eigs/auxiliary_eigs.c	/^int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {$/;"	f
+main_iter_RHprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_Rprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_SHprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_Sprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_cprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_dprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_sprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+main_iter_zprimme	src/eigs/main_iter.c	/^int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,$/;"	f
+map_vecs_RHprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_Rprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_SHprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_Sprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_cprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_dprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_sprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+map_vecs_zprimme	src/eigs/solve_projection.c	/^int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,$/;"	f
+massMatrixMatvec_RHprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_Rprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_SHprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_Sprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_cprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_dprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_sprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+massMatrixMatvec_zprimme	src/eigs/auxiliary_eigs.c	/^int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_RHprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_Rprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_SHprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvecSVDS_RHprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_Rprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_SHprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_Sprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_cprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_dprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_sprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvecSVDS_zprimme	src/svds/primme_svds_c.c	/^int matrixMatvecSVDS_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+matrixMatvec_Sprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_cprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_dprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_eigs_RHprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_Rprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_SHprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_Sprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_cprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_dprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_sprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_eigs_zprimme	src/svds/primme_svds_c.c	/^void matrixMatvec_eigs_Sprimme(void *x_, PRIMME_INT *ldx, void *y_,$/;"	f
+matrixMatvec_sprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+matrixMatvec_zprimme	src/eigs/auxiliary_eigs.c	/^int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,$/;"	f
+max	src/include/common.h	631;"	d
+memman_H	src/include/memman.h	38;"	d
+mergeSort	src/eigs/correction.c	/^STATIC void mergeSort(HREAL *lockedEvals, int numLocked, HREAL *ritzVals, $/;"	f
+min	src/include/common.h	634;"	d
+mm	src/include/common.h	/^   primme_frame *mm;$/;"	m	struct:primme_context_str
+monitorFun_RHprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_Rprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_SHprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_RHprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_Rprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_SHprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_Sprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_cprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_dprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_sprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFunSVDS_zprimme	src/svds/primme_svds_c.c	/^int monitorFunSVDS_Sprimme(HREAL *basisSvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_Sprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_cprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_dprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_sprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitorFun_zprimme	src/eigs/auxiliary_eigs_normal.c	/^int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,$/;"	f
+monitor_report	src/eigs/auxiliary_eigs.c	/^static int monitor_report(const char *fun, double time, primme_context ctx) {$/;"	f	file:
+monitor_report	src/svds/primme_svds_c.c	/^static int monitor_report(const char *fun, double time, primme_context ctx) {$/;"	f	file:
+monitor_single_stage	src/svds/primme_svds_c.c	/^STATIC void monitor_single_stage(void *basisEvals_, int *basisSize,$/;"	f
+monitor_stage1	src/svds/primme_svds_c.c	/^STATIC void monitor_stage1(void *basisEvals_, int *basisSize, int *basisFlags,$/;"	f
+monitor_stage2	src/svds/primme_svds_c.c	/^STATIC void monitor_stage2(void *basisEvals_, int *basisSize, int *basisFlags,$/;"	f
+mpicomm	src/include/common.h	/^   void *mpicomm;    \/* MPI communicator *\/$/;"	m	struct:primme_context_str
+n	src/eigs/ortho.c	/^   int n, ldB;$/;"	m	struct:local_matvec_ctx	file:
+nevals_by_gdk	src/eigs/main_iter.c	/^   int nevals_by_gdk;     \/* Number of evals found by GD+k since last reset   *\/$/;"	m	struct:__anon1	file:
+nevals_by_jdq	src/eigs/main_iter.c	/^   int nevals_by_jdq;     \/* Number of evals found by JDQMR since last reset  *\/$/;"	m	struct:__anon1	file:
+nextReset	src/eigs/main_iter.c	/^   int    nextReset;      \/* When to reset the following averaging sums       *\/$/;"	m	struct:__anon1	file:
+numIt_0	src/eigs/main_iter.c	/^   int numIt_0;           \/*Remembers starting outer its\/MVs since switched   *\/$/;"	m	struct:__anon1	file:
+numMV_0	src/eigs/main_iter.c	/^   int numMV_0;           \/*   to current method, or since an epair converged *\/$/;"	m	struct:__anon1	file:
+numProcs	src/include/common.h	/^   int numProcs;     \/* number of processes *\/$/;"	m	struct:primme_context_str
+ortho_RHprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_Rprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_SHprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_Sprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_block_RHprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_Rprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_SHprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_Sprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_cprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_dprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_sprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_block_zprimme	src/eigs/ortho.c	/^int ortho_block_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,$/;"	f
+ortho_coefficient_vectors_RHprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_Rprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_SHprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_Sprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_cprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_dprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_sprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_coefficient_vectors_zprimme	src/eigs/restart.c	/^STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,$/;"	f
+ortho_cprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_dprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_single_iteration_RHprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_Rprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_SHprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_Sprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_cprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_dprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_sprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_single_iteration_zprimme	src/eigs/ortho.c	/^int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,$/;"	f
+ortho_sprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+ortho_zprimme	src/eigs/ortho.c	/^int ortho_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR, int b1, int b2,$/;"	f
+outputFile	src/include/common.h	/^   FILE *outputFile;$/;"	m	struct:primme_context_str
+p	src/include/memman.h	/^   void *p;                         \/* Allocated pointer *\/$/;"	m	struct:primme_alloc_str
+path	src/include/common.h	/^   const char *path; \/* Path of the current function *\/$/;"	m	struct:primme_context_str
+perm_set_value_on_pos	src/eigs/inner_solve.c	/^STATIC int perm_set_value_on_pos(int *p, int val, int pos, int n) {$/;"	f
+permute_vecs_RHprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_Rprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_SHprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_Sprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_cprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_dprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_iprimme	src/linalg/auxiliary.c	/^int permute_vecs_iprimme(int *vecs, int n, int *perm_, primme_context ctx) {$/;"	f
+permute_vecs_sprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+permute_vecs_zprimme	src/linalg/auxiliary.c	/^int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,$/;"	f
+pow	src/include/common.h	178;"	d
+prepare_candidates	src/eigs/main_iter.c	/^STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+prepare_vecs_RHprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_Rprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_SHprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_Sprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_cprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_dprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_sprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prepare_vecs_zprimme	src/eigs/solve_projection.c	/^int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,$/;"	f
+prev	src/include/memman.h	/^   struct primme_alloc_str *prev;   \/* Previous allocation *\/$/;"	m	struct:primme_alloc_str	typeref:struct:primme_alloc_str::primme_alloc_str
+prev	src/include/memman.h	/^   struct primme_frame_str *prev;   \/* Pointer to previous frame *\/$/;"	m	struct:primme_frame_str	typeref:struct:primme_frame_str::primme_frame_str
+prev_alloc	src/include/memman.h	/^   primme_alloc *prev_alloc;        \/* Pointer to last allocation *\/$/;"	m	struct:primme_frame_str
+primme	src/include/common.h	/^   primme_params *primme;$/;"	m	struct:primme_context_str
+primme_CostModel	src/eigs/main_iter.c	/^} primme_CostModel;$/;"	t	typeref:struct:__anon1	file:
+primme_alloc	src/include/memman.h	/^} primme_alloc;$/;"	t	typeref:struct:primme_alloc_str
+primme_alloc_str	src/include/memman.h	/^typedef struct primme_alloc_str {$/;"	s
+primme_constant_info	src/eigs/primme_interface.c	/^int primme_constant_info(const char* label_name, int *value) {$/;"	f
+primme_context	src/include/common.h	/^} primme_context;$/;"	t	typeref:struct:primme_context_str
+primme_context_str	src/include/common.h	/^typedef struct primme_context_str {$/;"	s
+primme_display_params	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_display_params)(primme_params **primme) {$/;"	f
+primme_display_params	src/eigs/primme_interface.c	/^void primme_display_params(primme_params primme) {$/;"	f
+primme_display_params_prefix	src/eigs/primme_interface.c	/^void primme_display_params_prefix(const char* prefix, primme_params primme) {$/;"	f
+primme_frame	src/include/memman.h	/^} primme_frame;$/;"	t	typeref:struct:primme_frame_str
+primme_frame_str	src/include/memman.h	/^typedef struct primme_frame_str {$/;"	s
+primme_free	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_free)(primme_params **primme) {$/;"	f
+primme_free	src/eigs/primme_interface.c	/^void primme_free(primme_params *primme) {$/;"	f
+primme_free_context	src/eigs/auxiliary_eigs.c	/^void primme_free_context(primme_context ctx) {$/;"	f
+primme_get_context	src/eigs/auxiliary_eigs.c	/^primme_context primme_get_context(primme_params *primme) {$/;"	f
+primme_get_member	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,$/;"	f
+primme_get_member	src/eigs/primme_interface.c	/^int primme_get_member(primme_params *primme, primme_params_label label,$/;"	f
+primme_get_prec_shift	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i,$/;"	f
+primme_initialize	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_initialize)(primme_params **primme) {$/;"	f
+primme_initialize	src/eigs/primme_interface.c	/^void primme_initialize(primme_params *primme) {$/;"	f
+primme_member_info	src/eigs/primme_interface.c	/^int primme_member_info(primme_params_label *label_, const char** label_name_,$/;"	f
+primme_params_create	src/eigs/primme_interface.c	/^primme_params * primme_params_create(void) {$/;"	f
+primme_params_destroy	src/eigs/primme_interface.c	/^int primme_params_destroy(primme_params *primme) {$/;"	f
+primme_set_defaults	src/eigs/primme_interface.c	/^void primme_set_defaults(primme_params *primme) {$/;"	f
+primme_set_member	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,$/;"	f
+primme_set_member	src/eigs/primme_interface.c	/^int primme_set_member(primme_params *primme, primme_params_label label,$/;"	f
+primme_set_method	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primme_set_method)(primme_params **primme,$/;"	f
+primme_set_method	src/eigs/primme_interface.c	/^int primme_set_method(primme_preset_method method, primme_params *primme) {$/;"	f
+primme_svds	src/include/common.h	/^   primme_svds_params *primme_svds;$/;"	m	struct:primme_context_str
+primme_svds_check_input	src/svds/primme_svds_c.c	/^STATIC int primme_svds_check_input(void *svals, void *svecs, void *resNorms, $/;"	f
+primme_svds_constant_info	src/svds/primme_svds_interface.c	/^int primme_svds_constant_info(const char* label_name, int *value) {$/;"	f
+primme_svds_display_params	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svds_display_params)(primme_svds_params **primme_svds) {$/;"	f
+primme_svds_display_params	src/svds/primme_svds_interface.c	/^void primme_svds_display_params(primme_svds_params primme_svds) {$/;"	f
+primme_svds_free	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds) {$/;"	f
+primme_svds_free	src/svds/primme_svds_interface.c	/^void primme_svds_free(primme_svds_params *primme) {$/;"	f
+primme_svds_free_context	src/svds/primme_svds_c.c	/^static void primme_svds_free_context(primme_context ctx) {$/;"	f	file:
+primme_svds_get_context	src/svds/primme_svds_c.c	/^static primme_context primme_svds_get_context(primme_svds_params *primme_svds) {$/;"	f	file:
+primme_svds_get_member	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds,$/;"	f
+primme_svds_get_member	src/svds/primme_svds_interface.c	/^int primme_svds_get_member(primme_svds_params *primme_svds,$/;"	f
+primme_svds_initialize	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svds_initialize)(primme_svds_params **primme_svds) {$/;"	f
+primme_svds_initialize	src/svds/primme_svds_interface.c	/^void primme_svds_initialize(primme_svds_params *primme_svds) {$/;"	f
+primme_svds_member_info	src/svds/primme_svds_interface.c	/^int primme_svds_member_info(primme_svds_params_label *label_,$/;"	f
+primme_svds_params_create	src/svds/primme_svds_interface.c	/^primme_svds_params * primme_svds_params_create(void) {$/;"	f
+primme_svds_params_destroy	src/svds/primme_svds_interface.c	/^int primme_svds_params_destroy(primme_svds_params *primme_svds) {$/;"	f
+primme_svds_set_defaults	src/svds/primme_svds_interface.c	/^void primme_svds_set_defaults(primme_svds_params *primme_svds) {$/;"	f
+primme_svds_set_member	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds,$/;"	f
+primme_svds_set_member	src/svds/primme_svds_interface.c	/^int primme_svds_set_member(primme_svds_params *primme_svds,$/;"	f
+primme_svds_set_method	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svds_set_method)(primme_svds_preset_method *method,$/;"	f
+primme_svds_set_method	src/svds/primme_svds_interface.c	/^int primme_svds_set_method(primme_svds_preset_method method,$/;"	f
+primme_svdstop_get_member	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(primme_svdstop_get_member)($/;"	f
+primmetop_get_member	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primmetop_get_member)(primme_params **primme, int *label,$/;"	f
+primmetop_get_prec_shift	src/eigs/primme_f77.c	/^EXTERN_C void AS_FORTRAN(primmetop_get_prec_shift)(primme_params **primme, int *i,$/;"	f
+primme_wTimer	src/linalg/wtime.c	/^double primme_wTimer() {$/;"	f
+printLevel	src/include/common.h	/^   int printLevel;$/;"	m	struct:primme_context_str
+problemNorm_RHprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_Rprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_SHprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_Sprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_cprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_dprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_sprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+problemNorm_zprimme	src/eigs/auxiliary_eigs.c	/^HREAL problemNorm_Sprimme($/;"	f
+procID	src/include/common.h	/^   int procID;       \/* process id *\/$/;"	m	struct:primme_context_str
+profile	src/include/common.h	/^   regex_t profile;  \/* Pattern of the functions to profile *\/$/;"	m	struct:primme_context_str
+project_locked	src/eigs/main_iter.c	/^   double project_locked; \/* c_p projection time per locked eigenvector in QMR*\/$/;"	m	struct:__anon1	file:
+qmr_only	src/eigs/main_iter.c	/^   double qmr_only;       \/* c_q only the QMR iteration                       *\/$/;"	m	struct:__anon1	file:
+qmr_plus_MV_PR	src/eigs/main_iter.c	/^   double qmr_plus_MV_PR; \/* a   QMR plus operators                           *\/$/;"	m	struct:__anon1	file:
+queue	src/include/common.h	/^   void *queue;      \/* magma device queue (magma_queue_t*) *\/$/;"	m	struct:primme_context_str
+rank_estimation	src/eigs/ortho.c	/^STATIC int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {$/;"	f
+ratio_JDQMR_GDpk	src/eigs/main_iter.c	/^STATIC double ratio_JDQMR_GDpk(void *model_, int numLocked,$/;"	f
+ratio_MV_outer	src/eigs/main_iter.c	/^   double ratio_MV_outer; \/* TotalMV\/outerIts (average of last two updates)   *\/$/;"	m	struct:__anon1	file:
+reortho_locked	src/eigs/main_iter.c	/^   double reortho_locked; \/* c_g (usu 2*c_p) ortho per locked vector in outer *\/$/;"	m	struct:__anon1	file:
+report	src/include/common.h	/^   int (*report)(const char *fun, double time, struct primme_context_str ctx);$/;"	m	struct:primme_context_str
+resNorms	src/eigs/primme_c.c	/^      float *resNorms, primme_params *primme) {$/;"	v
+resid_0	src/eigs/main_iter.c	/^   double resid_0;        \/*First residual norm of the convergence of a method*\/$/;"	m	struct:__anon1	file:
+restart_RHprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_RR	src/eigs/restart.c	/^STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,$/;"	f
+restart_Rprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_SHprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_Sprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_cprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_dprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_harmonic	src/eigs/restart.c	/^STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_locking_RHprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_Rprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_SHprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_Sprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_cprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_dprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_sprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_locking_zprimme	src/eigs/restart.c	/^STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_projection_RHprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_Rprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_SHprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_Sprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_cprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_dprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_sprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_projection_zprimme	src/eigs/restart.c	/^STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+restart_refined	src/eigs/restart.c	/^STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+restart_soft_locking_RHprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_Rprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_SHprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_Sprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_cprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_dprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_sprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_soft_locking_zprimme	src/eigs/restart.c	/^STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,$/;"	f
+restart_sprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+restart_zprimme	src/eigs/restart.c	/^int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,$/;"	f
+setup_JD_projectors	src/eigs/correction.c	/^STATIC int setup_JD_projectors(SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,$/;"	f
+solve_H_Harm_RHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_Rprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_SHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_Sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_cprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_dprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_Harm_zprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,$/;"	f
+solve_H_RHprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_RHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_Rprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_SHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_Sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_cprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_dprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_RR_zprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_Ref_RHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_Rprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_SHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_Sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_cprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_dprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Ref_zprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,$/;"	f
+solve_H_Rprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_SHprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_Sprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_brcast_RHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_Rprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_SHprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_Sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_cprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_dprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_sprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_brcast_zprimme	src/eigs/solve_projection.c	/^STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,$/;"	f
+solve_H_cprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_dprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_sprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_H_zprimme	src/eigs/solve_projection.c	/^int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,$/;"	f
+solve_correction_RHprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_Rprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_SHprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_Sprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_cprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_dprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_sprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+solve_correction_zprimme	src/eigs/correction.c	/^int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,$/;"	f
+sprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+sprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+sprimme_svds	src/svds/primme_svds_interface.h	41;"	d
+switch_from_GDpk	src/eigs/main_iter.c	/^STATIC int switch_from_GDpk(void *model_, primme_context ctx) {$/;"	f
+switch_from_JDQMR	src/eigs/main_iter.c	/^STATIC int switch_from_JDQMR(void *model_, primme_context ctx) {$/;"	f
+time_in_inner	src/eigs/main_iter.c	/^   double time_in_inner;  \/*Accumulative time spent in inner iterations       *\/$/;"	m	struct:__anon1	file:
+timeoff	src/include/common.h	/^   double *timeoff;  \/* Accumulated overhead of profiling and reporting *\/$/;"	m	struct:primme_context_str
+timer_0	src/eigs/main_iter.c	/^   double timer_0;        \/*Remembers starting time since switched to a method*\/$/;"	m	struct:__anon1	file:
+update_Q_RHprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_Rprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_SHprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_Sprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_cprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_dprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_sprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_Q_zprimme	src/eigs/update_W.c	/^int update_Q_Sprimme(SCALAR *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, SCALAR *W,$/;"	f
+update_XKinvBX_RHprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_Rprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_SHprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_Sprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_cprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_dprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_sprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_XKinvBX_zprimme	src/eigs/factorize.c	/^int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,$/;"	f
+update_cholesky_RHprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_Rprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_SHprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_Sprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_cprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_dprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_sprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_cholesky_zprimme	src/eigs/ortho.c	/^int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,$/;"	f
+update_projection_RHprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_Rprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_SHprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_Sprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_cprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_dprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_sprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_projection_zprimme	src/eigs/update_projection.c	/^int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,$/;"	f
+update_slowdown	src/eigs/main_iter.c	/^STATIC void update_slowdown(void *model_) {$/;"	f
+update_statistics	src/eigs/main_iter.c	/^STATIC int update_statistics(void *model_, primme_params *primme,$/;"	f
+verify_norms	src/eigs/main_iter.c	/^STATIC int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,$/;"	f
+wrapper_RHprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_Rprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_SHprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_Sprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_cprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_dprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_sprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+wrapper_svds_RHprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_Rprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_SHprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_Sprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_cprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_dprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_sprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_svds_zprimme	src/svds/primme_svds_c.c	/^int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,$/;"	f
+wrapper_zprimme	src/eigs/primme_c.c	/^int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,$/;"	f
+zprimme_svds	src/svds/primme_svds_c.c	/^int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms, $/;"	f
+zprimme_svds	src/svds/primme_svds_f77.c	/^EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,$/;"	f
+zprimme_svds	src/svds/primme_svds_interface.h	41;"	d
