@@ -29,8 +29,8 @@ solib:
 ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
 	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
 endif
-ifneq ($(MAJORVERSION),)
-	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+ifneq ($(SONAMELIBRARYMAJOR),$(SONAMELIBRARY))
+	@cd lib; ln -fs $(SONAMELIBRARY) $(SONAMELIBRARYMAJOR)
 endif
 
 
@@ -79,15 +79,18 @@ install: solib
 		$(includedir)
 	install -d $(libdir)
 	install -m 644 lib/$(SONAMELIBRARY) $(libdir)
+ifeq ($(UNAME), Darwin)
+	$(INSTALL_NAME_TOOL) -id $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SONAMELIBRARY) || echo Failed install_name_tool
+endif
 ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
 	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
 endif
-ifneq ($(MAJORVERSION),)
-	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+ifneq ($(SONAMELIBRARYMAJOR),$(SONAMELIBRARY))
+	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SONAMELIBRARYMAJOR)
 endif
 
 uninstall:
-	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY)
+	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY) $(libdir)/$(SONAMELIBRARYMAJOR)
 	rm -f $(includedir)/primme_eigs_f77.h $(includedir)/primme_eigs_f90.inc \
 	      $(includedir)/primme_eigs.h $(includedir)/primme_f77.h \
 	      $(includedir)/primme_f90.inc $(includedir)/primme.h \
