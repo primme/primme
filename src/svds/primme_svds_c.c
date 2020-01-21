@@ -225,10 +225,11 @@ int Sprimme_svds(XREAL *svals, XSCALAR *svecs, XREAL *resNorms,
 
 // Definition for *hsprimme_svds and *ksprimme_primme
 
-#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                      \
-              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                           \
+      defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA) ||             \
+      defined(USE_HALF_CUBLAS) || defined(USE_HALFCOMPLEX_CUBLAS)
 
-   // Expand the terms {,magma_}{hs,ks}primme
+// Expand the terms {,magma_}{hs,ks}primme
 #  define Xsprimme_svds CONCAT(CONCAT(STEM, USE_ARITH(hs, ks)), primme_svds)
 
 int Xsprimme_svds(float *svals, XSCALAR *svecs, float *resNorms,
@@ -1777,6 +1778,9 @@ STATIC void default_monitor_svds(void *basisSvals_, int *basisSize, int *basisFl
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, int *stage, primme_svds_params *primme_svds,
       int *err) {
+
+   (void)basisSize;
+   (void)basisFlags;
 
    XREAL *basisSvals = (XREAL*)basisSvals_, *basisNorms = (XREAL*)basisNorms_,
          *lockedSvals = (XREAL*)lockedSvals_, *lockedNorms = (XREAL*)lockedNorms_,

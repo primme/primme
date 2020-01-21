@@ -293,6 +293,8 @@ int Mem_debug_frame(const char *debug, primme_context ctx) {
       if (!a->debug) a->debug = debug;
       a = a->prev;
    }
+#else
+   (void)debug;
 #endif
 
    return 0;

@@ -129,14 +129,14 @@ int update_projection_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *Y,
       HSCALAR *rwork;
       CHKERR(Num_malloc_SHprimme((numCols+blockSize)*blockSize, &rwork, ctx));
       int count;
-      Num_copy_trimatrix_compact_SHprimme(&Z[ldZ*numCols], m, blockSize, ldZ,
-            numCols, rwork, &count);
+      CHKERR(Num_copy_trimatrix_compact_SHprimme(
+            &Z[ldZ * numCols], m, blockSize, ldZ, numCols, rwork, &count));
       assert(count <= (numCols+blockSize)*blockSize);
 
       CHKERR(globalSum_SHprimme(rwork, count, ctx));
 
-      Num_copy_compact_trimatrix_SHprimme(rwork, m, blockSize, numCols,
-            &Z[ldZ*numCols], ldZ);
+      CHKERR(Num_copy_compact_trimatrix_SHprimme(
+            rwork, m, blockSize, numCols, &Z[ldZ * numCols], ldZ));
       CHKERR(Num_free_SHprimme(rwork, ctx));
    }
    else if (primme->numProcs > 1 && !isSymmetric) {

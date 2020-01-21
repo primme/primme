@@ -38,5 +38,6 @@
 #ifndef CHECK_TEMPLATE
 #include "blaslapack.h"
 #include "magma_wrapper.h"
+#include "cublas_wrapper.h"
 #include "auxiliary.h"
 #endif

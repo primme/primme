@@ -109,8 +109,9 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
 
 // Definition for *hsprimme, *ksprimme, and *kcprimme
 
-#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                      \
-              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)
+#if defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                           \
+      defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA) ||             \
+      defined(USE_HALF_CUBLAS) || defined(USE_HALFCOMPLEX_CUBLAS)
 
 #  ifdef USE_HERMITIAN
       // Expand the terms {,magma_}{hs,ks}primme
@@ -603,6 +604,9 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err) {
+
+   (void)basisSize;
+   (void)basisFlags;
 
    XEVAL *basisEvals = (XEVAL *)basisEvals_,
          *lockedEvals = (XEVAL *)lockedEvals_;

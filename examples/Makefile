@@ -35,8 +35,13 @@ endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
   EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
-  override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
+  override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include
 endif
+ifeq ($(PRIMME_WITH_CUDA),yes)
+  EXAMPLES_C += ex_eigs_dcublas
+  override INCLUDE += -I$(CUDADIR)/include
+endif
+
 
 $(EXAMPLES_C): %: %.o
 	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 

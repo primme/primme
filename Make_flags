@@ -45,9 +45,13 @@ endif
 #---------------------------------------------------------------
 # MAGMADIR = /usr/local/magma-2.5.0
 PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
-CUDADIR  ?= /usr/local/cuda
-ifeq ($(PRIMME_WITH_MAGMA), yes)
-    override CFLAGS += -I$(MAGMADIR)/include -I$(CUDADIR)/include -DPRIMME_WITH_MAGMA
+# CUDADIR  ?= /usr/local/cuda
+PRIMME_WITH_CUDA ?= $(if $(findstring undefined,$(origin CUDADIR)),no,yes)
+ifeq ($(PRIMME_WITH_CUDA), yes)
+    ifeq ($(PRIMME_WITH_MAGMA), yes)
+        override CFLAGS += -I$(MAGMADIR)/include -DPRIMME_WITH_MAGMA
+    endif
+    override CFLAGS += -I$(CUDADIR)/include -DPRIMME_WITH_CUBLAS
 endif
 
 #---------------------------------------------------------------

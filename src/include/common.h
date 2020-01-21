@@ -97,6 +97,18 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_zprimme;
 typedef struct { PRIMME_QUAD a; }          dummy_type_magma_qprimme;
 typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 
+/* CUBLAS types: not allowed arithmetic on cpu */
+
+typedef struct { PRIMME_HALF a; }          dummy_type_cublas_hprimme;
+typedef struct { PRIMME_COMPLEX_HALF a; }  dummy_type_cublas_kprimme;
+typedef struct { float a; }                dummy_type_cublas_sprimme;
+typedef struct { PRIMME_COMPLEX_FLOAT a; } dummy_type_cublas_cprimme;
+typedef struct { double a; }               dummy_type_cublas_dprimme;
+typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_cublas_zprimme;
+typedef struct { PRIMME_QUAD a; }          dummy_type_cublas_qprimme;
+typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_cublas_wprimme;
+
+
 
 /**********************************************************************
  *

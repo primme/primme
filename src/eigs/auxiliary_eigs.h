@@ -1708,4 +1708,112 @@ int Num_dist_dots_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT ldx, dum
       PRIMME_INT m, int n, dummy_type_zprimme *result, primme_context ctx);
 int Num_dist_dots_real_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *y,
       PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
+int matrixMatvec_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_hprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int applyPreconditioner_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_cublas_hprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cublas_hprimme(double *eps, primme_context ctx);
+dummy_type_sprimme problemNorm_cublas_hprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_cublas_hprimme(
+      int overrideUserEstimations, primme_context ctx);
+int Num_dist_dots_cublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT ldx, dummy_type_cublas_hprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int Num_dist_dots_real_cublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT ldx, dummy_type_cublas_hprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int matrixMatvec_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_kprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int applyPreconditioner_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_cublas_kprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cublas_kprimme(double *eps, primme_context ctx);
+dummy_type_sprimme problemNorm_cublas_kprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_cublas_kprimme(
+      int overrideUserEstimations, primme_context ctx);
+int Num_dist_dots_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT ldx, dummy_type_cublas_kprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
+int Num_dist_dots_real_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT ldx, dummy_type_cublas_kprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int matrixMatvec_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_sprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int applyPreconditioner_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_cublas_sprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cublas_sprimme(double *eps, primme_context ctx);
+dummy_type_sprimme problemNorm_cublas_sprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_cublas_sprimme(
+      int overrideUserEstimations, primme_context ctx);
+int Num_dist_dots_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT ldx, dummy_type_cublas_sprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int Num_dist_dots_real_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT ldx, dummy_type_cublas_sprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int matrixMatvec_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_cprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int applyPreconditioner_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_cublas_cprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cublas_cprimme(double *eps, primme_context ctx);
+dummy_type_sprimme problemNorm_cublas_cprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_sprimme deltaEig_cublas_cprimme(
+      int overrideUserEstimations, primme_context ctx);
+int Num_dist_dots_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT ldx, dummy_type_cublas_cprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_cprimme *result, primme_context ctx);
+int Num_dist_dots_real_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT ldx, dummy_type_cublas_cprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_sprimme *result, primme_context ctx);
+int matrixMatvec_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_dprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int applyPreconditioner_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_cublas_dprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cublas_dprimme(double *eps, primme_context ctx);
+dummy_type_dprimme problemNorm_cublas_dprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_dprimme deltaEig_cublas_dprimme(
+      int overrideUserEstimations, primme_context ctx);
+int Num_dist_dots_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT ldx, dummy_type_cublas_dprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
+int Num_dist_dots_real_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT ldx, dummy_type_cublas_dprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
+int matrixMatvec_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_zprimme *W, PRIMME_INT ldW, int basisSize, int blockSize,
+      primme_context ctx);
+int massMatrixMatvec_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, int basisSize, int blockSize,
+      primme_context ctx);
+int applyPreconditioner_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int machineEpsMatrix_cublas_zprimme(double *eps, primme_context ctx);
+int machineEpsOrth_cublas_zprimme(double *eps, primme_context ctx);
+dummy_type_dprimme problemNorm_cublas_zprimme(
+      int overrideUserEstimations, struct primme_params *primme);
+dummy_type_dprimme deltaEig_cublas_zprimme(
+      int overrideUserEstimations, primme_context ctx);
+int Num_dist_dots_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT ldx, dummy_type_cublas_zprimme *y, PRIMME_INT ldy,
+      PRIMME_INT m, int n, dummy_type_zprimme *result, primme_context ctx);
+int Num_dist_dots_real_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT ldx, dummy_type_cublas_zprimme *y,
+      PRIMME_INT ldy, PRIMME_INT m, int n, dummy_type_dprimme *result, primme_context ctx);
 #endif

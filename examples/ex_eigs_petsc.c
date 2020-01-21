@@ -40,9 +40,15 @@
 #include <petscmat.h>
 #include "primme.h"   /* header file is required to run primme */ 
 
+#ifdef PETSC_HAVE_CUDA
+#  include <petsccublas.h>
+#endif
+
 PetscErrorCode generateLaplacian1D(int n, Mat *A);
 void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 void ApplyPCPrecPETSC(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void PETScMatvecCUDA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void ApplyPCPrecPETSCCUDA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
                          primme_params *primme, int *ierr);
 
@@ -65,7 +71,11 @@ int main (int argc, char *argv[]) {
    PC pc;            /* preconditioner */
    PetscErrorCode ierr;
    PetscInt n, nLocal;
+   PetscBool withgpu = PETSC_FALSE;
    MPI_Comm comm;
+#ifdef PETSC_HAVE_CUDA
+   cublasHandle_t cublas_handle;
+#endif
 
    PetscInitialize(&argc, &argv, NULL, NULL);
 
@@ -75,11 +85,18 @@ int main (int argc, char *argv[]) {
 
    /* Set problem matrix */
    ierr = generateLaplacian1D(100, &A); CHKERRQ(ierr);
+#ifdef PETSC_HAVE_CUDA
+   ierr = PetscObjectTypeCompareAny((PetscObject)A, &withgpu, MATSEQDENSECUDA,
+         MATAIJCUSPARSE, MATMPIAIJCUSPARSE, MATSEQAIJCUSPARSE, "");
+   CHKERRQ(ierr);
+#endif  
+
    primme.matrix = &A;
-   primme.matrixMatvec = PETScMatvec;
-                           /* Function that implements the matrix-vector product
-                              A*x for solving the problem A*x = l*x */
-  
+   primme.matrixMatvec = withgpu ? PETScMatvecCUDA : PETScMatvec;
+
+   /* Function that implements the matrix-vector product
+      A*x for solving the problem A*x = l*x */
+
    /* Set problem parameters */
    ierr = MatGetSize(A, &n, NULL); CHKERRQ(ierr);
    primme.n = (PRIMME_INT)n; /* set problem dimension */
@@ -95,7 +112,8 @@ int main (int argc, char *argv[]) {
    ierr = PCSetFromOptions(pc); CHKERRQ(ierr);
    ierr = PCSetUp(pc); CHKERRQ(ierr);
    primme.preconditioner = &pc;
-   primme.applyPreconditioner = ApplyPCPrecPETSC;
+   primme.applyPreconditioner =
+         withgpu ? ApplyPCPrecPETSCCUDA : ApplyPCPrecPETSC;
    primme.correctionParams.precondition = 1;
 
    /* Set advanced parameters if you know what are you doing (optional) */
@@ -112,6 +130,18 @@ int main (int argc, char *argv[]) {
        PRIMME_DEFAULT_MIN_TIME and PRIMME_DEFAULT_MIN_MATVECS. But you can
        set another method, such as PRIMME_LOBPCG_OrthoBasis_Window, directly */
 
+#ifdef PETSC_HAVE_CUDA
+   /* Set GPU device */
+   if (withgpu) {
+      ierr = PetscCUBLASGetHandle(&cublas_handle); CHKERRQ(ierr);
+      if (cublasCreate(&cublas_handle) != CUBLAS_STATUS_SUCCESS) {
+         printf("Error creating CUBLAS handle!\n");
+         return -1;
+      }
+      primme.queue = &cublas_handle;
+   }
+#endif
+
    /* Set parallel parameters */
    ierr = MatGetLocalSize(A, &nLocal, NULL); CHKERRQ(ierr);
    primme.nLocal = (PRIMME_INT)nLocal;
@@ -126,19 +156,26 @@ int main (int argc, char *argv[]) {
       primme_display_params(primme);
 
    /* Allocate space for converged Ritz values and residual norms */
-   evals = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
-   evecs = (PetscScalar*)malloc(primme.n*primme.numEvals*sizeof(PetscScalar));
-   rnorms = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
+   ierr = PetscMalloc1(primme.numEvals, &evals); CHKERRQ(ierr);
+   ierr = PetscMalloc1(primme.numEvals, &rnorms); CHKERRQ(ierr);
+   if (withgpu) {
+      if (cudaMalloc((void**)&evecs, sizeof(PetscScalar)*primme.numEvals*nLocal) != cudaSuccess) {
+          printf("Error allocating GPU memory!\n");
+          return -1;
+      }
+   } else {
+      ierr = PetscMalloc1(primme.numEvals*nLocal, &evecs); CHKERRQ(ierr);
+   }
 
    /* Call primme  */
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
-   ret = cprimme(evals, evecs, rnorms, &primme);
+   ret = (withgpu ? cublas_cprimme : cprimme)(evals, evecs, rnorms, &primme);
 #elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
-   ret = zprimme(evals, evecs, rnorms, &primme);
+   ret = (withgpu ? cublas_zprimme : zprimme)(evals, evecs, rnorms, &primme);
 #elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
-   ret = sprimme(evals, evecs, rnorms, &primme);
+   ret = (withgpu ? cublas_sprimme : sprimme)(evals, evecs, rnorms, &primme);
 #elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
-   ret = dprimme(evals, evecs, rnorms, &primme);
+   ret = (withgpu ? cublas_dprimme : dprimme)(evals, evecs, rnorms, &primme);
 #endif
 
    if (ret != 0) {
@@ -180,10 +217,17 @@ int main (int argc, char *argv[]) {
    }
 
    primme_free(&primme);
-   free(evals);
-   free(evecs);
-   free(rnorms);
-
+   ierr = PetscFree(evals); CHKERRQ(ierr);
+   ierr = PetscFree(rnorms); CHKERRQ(ierr);
+   if (withgpu) {
+      if (cudaFree(evecs) != cudaSuccess) {
+          printf("Error freeing GPU memory!\n");
+          return -1;
+      }
+   } else {
+      ierr = PetscFree(evecs); CHKERRQ(ierr);
+   }
+ 
    ierr = PetscFinalize(); CHKERRQ(ierr);
 
   return(0);
@@ -257,6 +301,28 @@ void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockS
    *err = 0; 
 }
 
+void PETScMatvecCUDA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
+   int i;
+   Mat *matrix;
+   Vec xvec, yvec;
+   PetscErrorCode ierr;
+
+   matrix = (Mat *)primme->matrix;
+
+   ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   for (i=0; i<*blockSize; i++) {
+      ierr = VecCUDAPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecCUDAPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = MatMult(*matrix, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecCUDAResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecCUDAResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   }
+   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   *err = 0; 
+}
+
+
 /* This performs Y = M^{-1} * X, where
 
    - X, input dense matrix of size primme.n x blockSize;
@@ -285,6 +351,29 @@ void ApplyPCPrecPETSC(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *b
    ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
 }
+
+void ApplyPCPrecPETSCCUDA(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
+   int i;
+   Mat *matrix;
+   PC *pc;
+   Vec xvec, yvec;
+   PetscErrorCode ierr;
+   
+   matrix = (Mat *)primme->matrix;
+   pc = (PC *)primme->preconditioner;
+
+   ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   for (i=0; i<*blockSize; i++) {
+      ierr = VecCUDAPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecCUDAPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = PCApply(*pc, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecCUDAResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+      ierr = VecCUDAResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   }
+   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
+}
+
 
 static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count, 
                          primme_params *primme, int *ierr) {

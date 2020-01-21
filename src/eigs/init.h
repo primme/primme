@@ -258,4 +258,70 @@ int init_block_krylovmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLoca
       dummy_type_magma_zprimme *W, PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
       dummy_type_magma_zprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_zprimme *VtBV,
       int ldVtBV, dummy_type_zprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
+int init_basis_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_cublas_hprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, dummy_type_cublas_hprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cublas_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cublas_hprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_sprimme *M, int ldM, dummy_type_sprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx);
+int init_block_krylovcublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_hprimme *W, PRIMME_INT ldW, dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
+      dummy_type_cublas_hprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_sprimme *VtBV,
+      int ldVtBV, dummy_type_sprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
+int init_basis_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, dummy_type_cublas_kprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cublas_kprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *M, int ldM, dummy_type_cprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx);
+int init_block_krylovcublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_kprimme *W, PRIMME_INT ldW, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
+      dummy_type_cublas_kprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_cprimme *VtBV,
+      int ldVtBV, dummy_type_cprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
+int init_basis_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_cublas_sprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, dummy_type_cublas_sprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cublas_sprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cublas_sprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_sprimme *M, int ldM, dummy_type_sprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx);
+int init_block_krylovcublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_sprimme *W, PRIMME_INT ldW, dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
+      dummy_type_cublas_sprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_sprimme *VtBV,
+      int ldVtBV, dummy_type_sprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
+int init_basis_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, dummy_type_cublas_cprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cublas_cprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_cprimme *M, int ldM, dummy_type_cprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx);
+int init_block_krylovcublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_cprimme *W, PRIMME_INT ldW, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
+      dummy_type_cublas_cprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_cprimme *VtBV,
+      int ldVtBV, dummy_type_cprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
+int init_basis_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_cublas_dprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, dummy_type_cublas_dprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cublas_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cublas_dprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_dprimme *M, int ldM, dummy_type_dprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_dprimme *VtBV, int ldVtBV, dummy_type_dprimme *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx);
+int init_block_krylovcublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_dprimme *W, PRIMME_INT ldW, dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
+      dummy_type_cublas_dprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_dprimme *VtBV,
+      int ldVtBV, dummy_type_dprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
+int init_basis_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, dummy_type_cublas_zprimme *evecs,
+      PRIMME_INT ldevecs, dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cublas_zprimme *evecsHat,
+      PRIMME_INT ldevecsHat, dummy_type_zprimme *M, int ldM, dummy_type_zprimme *Mfact, int ldMfact,
+      int *ipivot, dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *fVtBV, int ldfVtBV,
+      int maxRank, int *basisSize, int *nextGuess, int *numGuesses,
+      primme_context ctx);
+int init_block_krylovcublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
+      dummy_type_cublas_zprimme *W, PRIMME_INT ldW, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, int dv1, int dv2,
+      dummy_type_cublas_zprimme *locked, PRIMME_INT ldlocked, int numLocked, dummy_type_zprimme *VtBV,
+      int ldVtBV, dummy_type_zprimme *fVtBV, int ldfVtBV, int maxRank, primme_context ctx);
 #endif
