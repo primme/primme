@@ -1,10 +1,10 @@
 include ../Make_flags
 
 all:
-	./setup.py build_ext -i
+	$(PYTHON) ./setup.py build_ext -i
 
 install:
-	./setup.py install
+	$(PYTHON) ./setup.py install
 
 # Test target: run the tests
 test: examples.py

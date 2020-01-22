@@ -8,13 +8,18 @@ MAJORVERSION := 3
 VERSION := 3.0
 UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
-    SLIB = dylib
+    SLIB ?= dylib
+    SONAMELIBRARY ?= libprimme.$(VERSION).$(SLIB)
+    SONAMELIBRARYMAJOR ?= libprimme.$(MAJORVERSION).$(SLIB)
+    SOFLAGS ?= -dynamiclib -Wl,-install_name,$(SONAMELIBRARY) -current_version $(VERSION) -compatibility_version $(VERSION) -Wl,-undefined -Wl,dynamic_lookup
 else
-    SLIB = so
+    SLIB ?= so
+    SONAMELIBRARY ?= libprimme.$(SLIB).$(VERSION)
+    SONAMELIBRARYMAJOR ?= libprimme.$(SLIB).$(MAJORVERSION)
+    SOFLAGS ?= -shared -Wl,-soname,$(SONAMELIBRARYMAJOR)
 endif
 LIBRARY = libprimme.a
 SOLIBRARY = libprimme.$(SLIB)
-SONAMELIBRARY = libprimme.$(SLIB).$(VERSION)
 
 
 # Define compilers and flags
@@ -83,6 +88,7 @@ R ?= R
 PYTHON ?= $(if $(findstring 1984, $(shell python -c 'print(1984)')), \
   python, \
   $(if $(findstring 1984, $(shell python2 -c 'print(1984)')),python2,python3))
+INSTALL_NAME_TOOL ?= /usr/bin/install_name_tool
 
 #---------------------------------------------------------------
 #  Installation

@@ -99,7 +99,7 @@ def __primme_params_get(PrimmeParams pp_, field_):
     cdef int arity
     primme_member_info(&l, <const char **>&field, &t, &arity)
     if l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef void *v_pvoid
@@ -153,26 +153,26 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
     if r != 0 or l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef int i
     if t == primme_pointer:
         r = primme_set_member(primme, l, <void*>value)
-        assert r == 0, "Invalid field '%s'" % field_ 
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_int:
         if isinstance(value, (bytesp23,str)):
             value = bytesp23(value, 'ASCII')
             r = primme_constant_info(<const char*>value, &i)
-            assert r == 0, "Invalid field '%s'" % field_ 
+            if r != 0: raise ValueError("Invalid value '%s' for field '%s'" % (value, field_))
             value = i
         v_int = value
         r = primme_set_member(primme, l, &v_int)
-        assert r == 0, "Invalid field '%s'" % field_ 
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_double:
         v_double = value
         r = primme_set_member(primme, l, &v_double)
-        assert r == 0, "Invalid field '%s'" % field_ 
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     else:
         raise ValueError("Not supported type for member '%s'" % field_)
    
@@ -208,7 +208,7 @@ cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ld
         if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
         n = primme_params_get_int(primme, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:])
+        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -287,7 +287,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         The number of eigenvalues and eigenvectors to be computed. Must be
         1 <= k < min(A.shape).
     M : An N x N matrix, array, sparse matrix, or LinearOperator
-        (not supported yet)
         the operation M * x for the generalized eigenvalue problem
 
             A * x = w * M * x.
@@ -443,6 +442,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
     >>> evals # doctest: +SKIP
     array([1.0035e-07, 1.0204e-02, 2.0618e-02])
+
+    >>> # Giving the matvec as a function
+    >>> import primme, scipy.sparse, numpy as np
+    >>> Adiag = np.arange(0, 100).reshape((100,1))
+    >>> def Amatmat(x):
+    ...    if len(x.shape) == 1: x = x.reshape((100,1))
+    ...    return Adiag * x   # equivalent to diag(Adiag).dot(x)
+    ...
+    >>> A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat)
+    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
+    >>> evals
+    array([99., 98., 97.])
     """
 
     A = aslinearoperator(A)
@@ -735,7 +746,7 @@ def __primme_svds_params_get(PrimmeSvdsParams pp_, field_):
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
     if r != 0 or l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef void *v_pvoid
@@ -789,26 +800,26 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
     if r != 0 or l < 0 or l >= 1000 or arity != 1:
-        raise "Invalid field '%s'" % field_
+        raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
     cdef int i
     if t == primme_pointer:
         r = primme_svds_set_member(primme_svds, l, <void*>value)
-        assert(r == 0, "Invalid field '%s'" % field_)
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_int:
         if isinstance(value, (bytesp23,str)):
             value = bytesp23(value, 'ASCII')
             r = primme_svds_constant_info(<const char*>value, &i)
-            assert(r == 0, "Invalid field '%s'" % field_)
+            if r != 0: raise ValueError("Invalid value '%s' for field '%s'" % (value, field_))
             value = i
         v_int = value
         r = primme_svds_set_member(primme_svds, l, &v_int)
-        assert(r == 0, "Invalid field '%s'" % field_)
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_double:
         v_double = value
         r = primme_svds_set_member(primme_svds, l, &v_double)
-        assert(r == 0, "Invalid field '%s'" % field_)
+        if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     else:
         raise ValueError("Not supported type for member '%s'" % field_)
    
@@ -846,9 +857,9 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
         if transpose[0] == 0:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:]).astype(get_np_type(x), order='F', copy=False)
         else:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -869,11 +880,11 @@ cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldy[0]:1, :blockSize[0]]> x
         if mode[0] == primme_svds_op_AtA:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = precond(x_view[:n,:], mode[0])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = np.ndarray((n,blockSize[0]), buffer=precond(x_view[:n,:], mode[0]), dtype=get_np_type(x), order='F')
         elif mode[0] == primme_svds_op_AAt:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = precond(x_view[:m,:], mode[0])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = np.ndarray((m,blockSize[0]), buffer=precond(x_view[:m,:], mode[0]), dtype=get_np_type(x), order='F')
         elif mode[0] == primme_svds_op_augmented:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = precond(x_view[:m+n,:], mode[0])
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = np.ndarray((m+n,blockSize[0]), buffer=precond(x_view[:m+n,:], mode[0]), dtype=get_np_type(x), order='F')
         else:
             return
         ierr[0] = 0
@@ -1063,6 +1074,23 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
     >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
     ['4.57263', '4.78752', '4.82229']
+
+    >>> # Giving the matvecs as functions
+    >>> import primme, scipy.sparse, numpy as np
+    >>> Bdiag = np.arange(0, 100).reshape((100,1))
+    >>> Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
+    >>> def Bmatmat(x):
+    ...    if len(x.shape) == 1: x = x.reshape((100,1))
+    ...    return np.vstack((Bdiag * x, np.zeros((100, x.shape[1]), dtype=np.float32)))
+    ...
+    >>> def Brmatmat(x):
+    ...    if len(x.shape) == 1: x = x.reshape((200,1))
+    ...    return (Bdiagr * x)[0:100,:]
+    ...
+    >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
+    >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
+    >>> svals # doctest: +SKIP
+    array([99., 98., 97., 96., 95.])
     """
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
@@ -1324,10 +1352,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
 _PRIMMEErrors = {
 0: "success",
-1: "reported only amount of required memory",
--1: "failed in allocating int or real workspace",
--2: "malloc failed in allocating a permutation integer array",
--3: "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+-1: "unexpected internal error; please consider to set 'printLevel' to a value larger than 0 to see the call stack and to report these errors because they may be bugs",
+-2: "memory allocation failure",
+-3: "maximum iterations or matvecs reached",
 -4: "argument 'primme' is NULL",
 -5: "'n' < 0 or 'nLocal' < 0 or 'nLocal' > 'n'",
 -6: "'numProcs' < 1",
@@ -1354,28 +1381,25 @@ _PRIMMEErrors = {
 -27: "'printLevel' < 0 or 'printLevel' > 5",
 -28: "'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
 -29: "'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
--30: "'evals' is NULL, but not 'evecs' and 'resNorms'",
--31: "'evecs' is NULL, but not 'evals' and 'resNorms'",
--32: "'resNorms' is NULL, but not 'evecs' and 'evals'",
+-30: "'evals' is NULL",
+-31: "'evecs' is NULL",
+-32: "'resNorms' is NULL",
 -33: "'locking' == 0 and 'minRestartSize' < 'numEvals'",
 -34: "'ldevecs' is less than 'nLocal'",
 -35: "'ldOPs' is non-zero and less than 'nLocal'",
--36 : "not enough memory for realWork",
--37 : "not enough memory for intWork",
--38 : "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
--40 : 'factorization failure',
--41 : 'user cancelled execution',
--42 : 'orthogonalization failure',
--43 : 'parallel failure',
--44 : 'unavailable functionality'
+-38: "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
+-40: "some LAPACK function performing a factorization returned an error code; set 'printLevel' > 0 to see the error code and the call stack",
+-41: "error happened at the matvec or applying the preconditioner",
+-42: "the matrix provided in 'lock' is not full rank",
+-43: "parallel failure",
+-44: "unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs"
 }
 
 _PRIMMESvdsErrors = {
 0   : "success",
-1   : "reported only amount of required memory",
--1  : "failed in allocating int or real workspace",
--2  : "malloc failed in allocating a permutation integer array",
--3  : "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+-1  : "unexpected internal error; please consider to set 'printLevel' to a value larger than 0 to see the call stack and to report these errors because they may be bugs",
+-2  : "memory allocation failure",
+-3  : "maximum iterations or matvecs reached",
 -4  : "primme_svds is NULL",
 -5  : "Wrong value for m or n or mLocal or nLocal",
 -6  : "Wrong value for numProcs",
@@ -1391,13 +1415,11 @@ _PRIMMESvdsErrors = {
 -17 : "svals is not set",
 -18 : "svecs is not set",
 -19 : "resNorms is not set",
--20 : "not enough memory for realWork",
--21 : "not enough memory for intWork",
--40 : 'factorization failure',
--41 : 'user cancelled execution',
--42 : 'orthogonalization failure',
--43 : 'parallel failure',
--44 : 'unavailable functionality'
+-40 : "some LAPACK function performing a factorization returned an error code; set 'printLevel' > 0 to see the error code and the call stack",
+-41 : "error happened at the matvec or applying the preconditioner",
+-42 : "the matrix provided in 'lock' is not full rank",
+-43 : "parallel failure",
+-44 : "unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs"
 }
 
 

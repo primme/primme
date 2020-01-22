@@ -475,7 +475,7 @@ int monitorFun_Sprimme(HEVAL *basisEvals, int basisSize, int *basisFlags,
    /* Call the user-defined functions */
 
    primme->stats.elapsedTime = primme_wTimer() - startTime;
-   int err;
+   int err = 0;
    CHKERRM(
          (primme->monitorFun(basisEvals0, &basisSize, basisFlags, iblock,
                 &blockSize, basisNorms0, &numConverged, lockedEvals0, &numLocked,

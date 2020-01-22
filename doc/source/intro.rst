@@ -3,12 +3,12 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
 
-PRIMME, pronounced as *prime*, computes
-a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. 
-It can also compute singular values and vectors of a square or rectangular matrix. 
-It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
-It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
+PRIMME, pronounced as *prime*, is a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
+PRIMME is especially optimized for large, difficult problems.
+Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
+Besides standard eigenvalue problems with a normal matrix are supported.
+It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence. 
+PRIMME is written in C99, but complete interfaces are provided for Fortran, MATLAB, Python, and R.
 
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
@@ -25,7 +25,7 @@ From PRIMME 2.2 to 3.0:
 
 * Changed callbacks |monitorFun| and |SmonitorFun|.
 
-* Changed the value all constants; see :c:func:`primme_get_member_f77`, :c:func:`primme_set_member_f77`, :c:func:`primme_svds_get_member_f77`, and :c:func:`primme_svds_set_member_f77`.
+* Changed the value of all constants; see :c:func:`primme_get_member_f77`, :c:func:`primme_set_member_f77`, :c:func:`primme_svds_get_member_f77`, and :c:func:`primme_svds_set_member_f77`.
 
 * Removed ``intWorkSize``, ``realWorkSize``, ``intWork``, ``realWork`` from :c:type:`primme_params` and :c:type:`primme_svds_params`.
 
@@ -56,7 +56,7 @@ From PRIMME 1.x to 2.0:
 Changelog
 ^^^^^^^^^
 
-Changes in PRIMME 3.0 (released on July 24, 2019):
+Changes in PRIMME 3.0 (released on December 14, 2019):
 
 * Added support for the generalized Hermitian eigenvalue problem (see |massMatrixMatvec|) and the standard normal eigenvalue problem (see :c:func:`zprimme_normal`).
 
@@ -65,6 +65,10 @@ Changes in PRIMME 3.0 (released on July 24, 2019):
 * Added support for half precision (see :c:func:`hprimme` and :c:func:`kprimme`, and other variants for normal eigenproblems and singular value problems).
 
 * Added block orthogonalization (see |orth|).
+
+* Resolution of all linear system of equations simultaneously in Jacobi-Davidson.
+
+* Added interface for Fortran 90.
 
 * Added an optional callback for broadcasting (see |broadcastReal| and |SbroadcastReal|).
 

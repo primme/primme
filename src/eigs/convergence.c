@@ -103,8 +103,10 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
    /* Tolerance based on our dynamic norm estimate */
    /* -------------------------------------------- */
 
-   tol = max(MACHINE_EPSILON * problemNorm_Sprimme(1, primme),
-         primme->stats.maxConvTol);
+   double eps_matrix;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
+   tol = max(
+         eps_matrix * problemNorm_Sprimme(1, primme), primme->stats.maxConvTol);
 
    /* ---------------------------------------------------------------------- */
    /* If locking, set tol beyond which we need to check for accuracy problem */

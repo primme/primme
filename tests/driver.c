@@ -122,12 +122,6 @@ int main (int argc, char *argv[]) {
 #define __FUNCT__ "real_main"
 static int real_main (int argc, char *argv[]) {
 
-   /* Timing vars */
-   double wt1,wt2;
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-   double ut1,ut2,st1,st2;
-#endif
-
    /* Files */
    char *DriverConfigFileName=NULL, *SolverConfigFileName=NULL;
    
@@ -318,7 +312,7 @@ static int real_main (int argc, char *argv[]) {
       }
 
       fprintf(primme.outputFile, "\n\n#,%" PRIMME_INT_P ",%.1f\n\n", primme.stats.numMatvecs,
-         wt2-wt1); 
+         primme.stats.elapsedTime); 
 
       switch (primme.dynamicMethodSwitch) {
          case -1: fprintf(primme.outputFile,

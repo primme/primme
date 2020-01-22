@@ -5,8 +5,9 @@ PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 PRIMME, pronounced as *prime*, is a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
 PRIMME is especially optimized for large, difficult problems.
 Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
+Besides, standard eigenvalue problems with a normal matrix are supported.
 It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence. 
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
+PRIMME is written in C99, but complete interfaces are provided for Fortran, MATLAB, Python, and R.
 
 Making and Linking
 ------------------

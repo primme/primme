@@ -175,6 +175,9 @@ TEMPLATE_PLEASE
 int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       HREAL *resNorms, double startTime, int *ret, primme_context ctx) {
 
+   /* Default error is something is wrong in this function */
+   *ret = PRIMME_MAIN_ITER_FAILURE;
+
    primme_params *primme = ctx.primme;
                             /* primme parameters */
    int i;                   /* Loop variable                                 */
@@ -423,7 +426,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    if (primme->dynamicMethodSwitch > 0) {
       initializeModel(&CostModel, primme);
       CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
-      if (primme->numEvals < 5)
+      if (primme->numEvals < 5 ||
+            primme->maxBasisSize + (primme->locking ? primme->numEvals : 0) >=
+                  primme->n)
          primme->dynamicMethodSwitch = 1;   /* Start tentatively GD+k */
       else
          primme->dynamicMethodSwitch = 3;   /* Start GD+k for 1st pair */
@@ -602,9 +607,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                {
                   CostModel.MV =
                      primme->stats.timeMatvec/primme->stats.numMatvecs;
-                  int ret0 = update_statistics(&CostModel, primme, tstart, 
-                        recentlyConverged, 0, numConverged, blockNorms[0], 
-                        primme->stats.estimateLargestSVal); 
+                  int ret0 = update_statistics(&CostModel, primme, tstart,
+                        recentlyConverged, 0, numConverged, blockNorms[0]);
 
                   if (ret0) switch (primme->dynamicMethodSwitch) {
                      /* for few evals (dyn=1) evaluate GD+k only at restart*/
@@ -709,7 +713,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* we are in case a), and otherwise we are in case b).            */
 
             if (i >= maxNumRandoms) {
-               if (availableBlockSize > 0 && blockSize0 <= 0) {
+               if (availableBlockSize > 0 && blockSize0 <= 0 && reset == 0) {
                   wholeSpace = 1;
                } else {
                   reset = 2;
@@ -858,6 +862,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* than s_0 after resetting. The condition restartsSinceReset > 0 */
             /* avoids infinite loop in those cases.                           */
 
+            double eps_orth;
+            CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
             if (primme->projectionParams.projection == primme_proj_refined &&
                   basisSize > 0 && restartsSinceReset > 1 &&
                   targetShiftIndex >= 0 &&
@@ -865,7 +871,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                         hVals[0]) -
                               max(primme->aNorm,
                                     primme->stats.estimateLargestSVal) *
-                                    MACHINE_EPSILON >
+                                    eps_orth >
                         hSVals[0]) {
 
                reset = 2;
@@ -1173,7 +1179,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             tstart = primme_wTimer();
             CostModel.MV = primme->stats.timeMatvec/primme->stats.numMatvecs;
             update_statistics(&CostModel, primme, tstart, 0, 1,
-               numConverged, blockNorms[0], primme->stats.estimateMaxEVal); 
+               numConverged, blockNorms[0]); 
             CHKERR(switch_from_GDpk(&CostModel, ctx));
          } /* ---------------------------------------------------------- */
 
@@ -1908,8 +1914,13 @@ STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
    HREAL ratio;
 
    /* if no restart has occurred (only possible under dyn=3) current timings */
-   /* do not include restart costs. Remain with GD+k until a restart occurs */
-   if (primme->stats.numRestarts == 0) return 0;
+   /* do not include restart costs. Remain with GD+k until a restart occurs. */
+   /* If search space is going to saturate, just use GD for ever.            */
+   if (primme->stats.numRestarts == 0 ||
+         primme->maxBasisSize + (primme->locking ? primme->numEvals : 0) >=
+               primme->n) {
+      return 0;
+   }
 
    /* Select method to switch to if needed: 1->2 and 3->4 */
    switch (primme->dynamicMethodSwitch) {
@@ -2028,7 +2039,6 @@ STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
  * calledAtRestart  True if update_statistics is called at restart by dyn=1
  * numConverged     Total number of converged pairs
  * currentResNorm   Residual norm of the next unconverged epair
- * aNormEst         Estimate of ||A||_2. Conv Tolerance = aNormEst*primme.eps
  *
  * INPUT/OUTPUT
  * ------------
@@ -2041,8 +2051,8 @@ STATIC int switch_from_GDpk(void *model_, primme_context ctx) {
  *
  ******************************************************************************/
 STATIC int update_statistics(void *model_, primme_params *primme,
-   double current_time, int recentConv, int calledAtRestart, int numConverged, 
-   double currentResNorm, double aNormEst) {
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm) {
 
    primme_CostModel *model = (primme_CostModel *)model_;
    double low_res, elapsed_time, time_in_outer, kinn;
@@ -2076,11 +2086,8 @@ STATIC int update_statistics(void *model_, primme_params *primme,
    /* Also, update how many evals each method found since last reset  */
    /* --------------------------------------------------------------- */
    if (recentConv > 0) {
-      /* Use tolerance as the lowest residual norm to estimate conv rate */
-      if (primme->aNorm > 0.0L) 
-         low_res = primme->eps*primme->aNorm;
-      else 
-         low_res = primme->eps*aNormEst;
+      /* Use tolerance as the largest residual norm of the converged pairs */
+      low_res = primme->stats.maxConvTol;
       /* Update num of evals found */
       if (primme->correctionParams.maxInnerIterations == -1)
           model->nevals_by_jdq += recentConv;

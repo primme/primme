@@ -75,14 +75,14 @@ $(AUTOMATED_HEADERS_LINALG): include/%.h : linalg/%.c tools/AUTO_HEADER
 	cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" >> $@; \
 	echo "#define $(*F)_H" >> $@; \
-	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
+	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
 	echo "#endif" >> $@
 
 $(AUTOMATED_HEADERS_OTHERS): %.h : %.c tools/AUTO_HEADER
 	cat tools/AUTO_HEADER > $@; \
 	echo "#ifndef $(*F)_H" >> $@; \
 	echo "#define $(*F)_H" >> $@; \
-	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(CFLAGS) $(DEFINES) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
+	$(CC) $(CPPFLAGS_ONLY_PREPROCESS) $(INCLUDE) -DCHECK_TEMPLATE $< | $(PYTHON) tools/ctemplate >> $@; \
 	echo "#endif" >> $@
 
 auto_headers: $(AUTOMATED_HEADERS_LINALG) $(AUTOMATED_HEADERS_OTHERS)
@@ -104,20 +104,20 @@ UNAME ?= $(shell uname)
 	@mkdir -p ../lib
 	@rm -f $@
 ifeq ($(UNAME), Darwin)
-	@libtool -static -o $@ $(OBJS) -no_warning_for_no_symbols
+	libtool -static -o $@ $(OBJS) -no_warning_for_no_symbols
 else
-	@$(AR) r $@ $(OBJS)
-	@$(RANLIB) $@
+	$(AR) r $@ $(OBJS)
+	$(RANLIB) $@
 endif
 
 ifeq ($(UNAME), Darwin)
 ../lib/$(SONAMELIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -Wl,-install_name,libprimme.so.$(MAJORVERSION) -Wl,-undefined -Wl,dynamic_lookup $(OBJS) -o ../lib/$(SONAMELIBRARY) $(LDFLAGS)
+	$(CC) $(SOFLAGS) $(OBJS) -o ../lib/$(SONAMELIBRARY) $(LDFLAGS)
 else
 ../lib/$(SONAMELIBRARY): $(OBJS)
 	@mkdir -p ../lib
-	@$(CC) -shared -Wl,-soname,libprimme.so.$(MAJORVERSION) -o ../lib/$(SONAMELIBRARY) -Wl,--whole-archive $(OBJS) -Wl,--no-whole-archive $(LDFLAGS)
+	$(CC) $(SOFLAGS) -o ../lib/$(SONAMELIBRARY) -Wl,--whole-archive $(OBJS) -Wl,--no-whole-archive $(LDFLAGS)
 endif
 
 #

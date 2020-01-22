@@ -210,7 +210,10 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
    /* NOTE: In any case stop when linear system residual is less than         */
    /*       max(machEps,eps)*aNorm.                                           */
-   LTolerance = MACHINE_EPSILON * problemNorm_Sprimme(1, primme);
+   double eps_matrix, eps_orth;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+   LTolerance = max(eps_matrix, eps_orth) * problemNorm_Sprimme(1, primme);
    LTolerance_factor = 1.0;
    ETolerance = 0.0;
    ETolerance_factor = 0.0;
@@ -580,7 +583,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                /* Report for non adaptive inner iterations */
                int ZERO = 0, UNCO = UNCONVERGED;
                CHKERR(monitorFun_Sprimme(&eval[p[i]], 1, &UNCO, &ZERO, 1,
-                     &rnorm[p[i]], -1, NULL, -1, NULL, NULL, numIts, tau[p[i]],
+                     &rnorm[p[i]], 0, NULL, 0, NULL, NULL, numIts, tau[p[i]],
                      NULL, 0.0, primme_event_inner_iteration, startTime, ctx));
             }
          }

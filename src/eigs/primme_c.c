@@ -103,7 +103,7 @@
 int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
             primme_params *primme) {
 
-   return Xprimme_aux((void *)evals, (void *)evecs, (void *)resNorms, primme,
+   return Xprimme_aux_Sprimme((void *)evals, (void *)evecs, (void *)resNorms, primme,
          PRIMME_OP_SCALAR);
 }
 
@@ -123,7 +123,7 @@ int Xprimme(XEVAL *evals, XSCALAR *evecs, XREAL *resNorms,
 int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,
       float *resNorms, primme_params *primme) {
 
-   return Xprimme_aux((void *)evals, (void *)evecs, (void *)resNorms, primme,
+   return Xprimme_aux_Sprimme((void *)evals, (void *)evecs, (void *)resNorms, primme,
          primme_op_float);
 }
 
@@ -154,7 +154,8 @@ int Xsprimme(KIND(float, PRIMME_COMPLEX_FLOAT) * evals, XSCALAR *evecs,
  * return  error code
  ******************************************************************************/
 
-STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
+TEMPLATE_PLEASE
+int Xprimme_aux_Sprimme(void *evals, void *evecs, void *resNorms,
             primme_params *primme, primme_op_datatype evals_resNorms_type) {
 
 #ifdef SUPPORTED_TYPE
@@ -233,6 +234,7 @@ STATIC int Xprimme_aux(void *evals, void *evecs, void *resNorms,
    (void)evals;
    (void)evecs;
    (void)resNorms;
+   (void)evals_resNorms_type;
 
    primme->initSize = 0;
    return PRIMME_FUNCTION_UNAVAILABLE;
@@ -351,7 +353,9 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
       primme->convTestFun = convTestFunAbsolute;
       primme->convTestFun_type = PRIMME_OP_SCALAR;
       if (primme->eps == 0.0) {
-         primme->eps = MACHINE_EPSILON*1e4;
+         primme->eps = MACHINE_EPSILON * 1e4;
+         /* The default value of eps is too much for half precision */
+         if (primme->eps >= 1.0) primme->eps = 0.1;
       }
    }
 
@@ -450,7 +454,8 @@ STATIC int check_input(
       ret = -10;
    else if (primme->numEvals < 0)
       ret = -11;
-   else if (fabs(primme->eps) != 0.0L && primme->eps < MACHINE_EPSILON )
+   else if (primme->convTestFun != NULL && fabs(primme->eps) != 0.0L &&
+            primme->eps < MACHINE_EPSILON)
       ret = -12;
    else if ( primme->target != primme_smallest  &&
              primme->target != primme_largest  &&
@@ -505,7 +510,6 @@ STATIC int check_input(
       ret = -34;
    else if (primme->ldOPs != 0 && primme->ldOPs < primme->nLocal)
       ret = -35;
-   /* Booked -36 and -37 */
    else if (primme->locking == 0
          && (primme->target == primme_closest_leq
             || primme->target == primme_closest_geq))
@@ -737,7 +741,7 @@ STATIC int check_params_coherence(primme_context ctx) {
 
    /* Check broadcast */
 
-   HREAL val = 1234, val0 = val;
+   HREAL val = 123, val0 = val;
    CHKERR(broadcast_RHprimme(&val, 1, ctx));
    CHKERRM(fabs(val - val0) > val0 * MACHINE_EPSILON * 1.3, -1,
          "broadcast function does not work properly");

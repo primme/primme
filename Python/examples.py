@@ -59,7 +59,17 @@ def convtest_lm(eval, evecl, rnorm):
 eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
 
+# User-defined matvec: implicit diagonal matrix
+Adiag = np.arange(0, 100).reshape((100,1))
+def Amatmat(x):
+   if len(x.shape) == 1: x = x.reshape((100,1))
+   return Adiag * x   # equivalent to diag(Adiag).dot(x)
+A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat)
+evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
+
 # Sparse singular mass matrix
+A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
 M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1), dtype=np.float32), [0], 100, 100)
 evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
 assert_allclose(evals, [ 0./99.,  1./98.,  2./97.], atol=1e-6*100)
@@ -101,3 +111,17 @@ def convtest_sm(sval, svecl, svecr, rnorm):
 svec_left, sval, svec_right, stats = primme.svds(A, 1, which='SM',
                         convtest=convtest_sm, return_stats=True)
 assert_allclose(sval, [ 1.], atol=.1)
+
+# User-defined matvec: implicit rectangular matrix with nonzero elements on the diagonal only
+Bdiag = np.arange(0, 100).reshape((100,1))
+Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
+def Bmatmat(x):
+   if len(x.shape) == 1: x = x.reshape((100,1))
+   return np.vstack((Bdiag * x, np.zeros((100, x.shape[1]), dtype=np.float32)))
+def Brmatmat(x):
+   if len(x.shape) == 1: x = x.reshape((200,1))
+   return (Bdiagr * x)[0:100,:]
+
+B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
+svecs_left, svals, svecs_right = primme.svds(B, 3, which='LM', tol=1e-6)
+assert_allclose(svals, [ 99.,  98.,  97.], atol=1e-6*100)

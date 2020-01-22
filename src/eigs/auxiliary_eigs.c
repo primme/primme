@@ -63,7 +63,7 @@
 
 static int monitor_report(const char *fun, double time, primme_context ctx) {
    if (ctx.primme && ctx.primme->monitorFun) {
-      int err;
+      int err = 0;
       primme_event event =
             (time >= -.5 ? primme_event_profile : primme_event_message);
 
@@ -484,6 +484,73 @@ int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
 #endif /* USE_HOST */
 
 /*******************************************************************************
+ * Subroutine machineEpsMatrix - return the machine epsilon considering the
+ *    precision of the matrixMatvec and massMatrixMatvec, and the working
+ *    precision.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------------
+ * eps      return machine epsilon
+ *
+ * ctx      primme context
+ * 
+ * OUTPUT
+ * ------
+ * return   error code
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {
+   primme_params *primme = ctx.primme;
+
+   double eps_matvec = MACHINE_EPSILON, eps_massmatvec = MACHINE_EPSILON;
+   CHKERR(Num_machine_epsilon_Sprimme(primme->matrixMatvec_type, &eps_matvec));
+   if (primme && primme->massMatrixMatvec) {
+      CHKERR(Num_machine_epsilon_Sprimme(
+            primme->massMatrixMatvec_type, &eps_massmatvec));
+   }
+
+   *eps = max(max(MACHINE_EPSILON, eps_matvec), eps_massmatvec);
+
+   return 0;
+}
+
+/*******************************************************************************
+ * Subroutine machineEpsOrth - return the machine epsilon considering the
+ *    precision of the globalSumReal and broadcastReal, and the working
+ *    precision.
+ * 
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------------
+ * eps      return machine epsilon
+ *
+ * ctx      primme context
+ * 
+ * OUTPUT
+ * ------
+ * return   error code
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {
+   primme_params *primme = ctx.primme;
+
+   double eps_globalsum = MACHINE_EPSILON, eps_broadcast = MACHINE_EPSILON;
+   if (primme && primme->numProcs > 1) {
+      CHKERR(Num_machine_epsilon_Sprimme(
+            primme->globalSumReal_type, &eps_globalsum));
+      if (primme->broadcastReal) {
+         CHKERR(Num_machine_epsilon_Sprimme(
+               primme->broadcastReal_type, &eps_broadcast));
+      }
+   }
+
+   *eps = max(max(MACHINE_EPSILON, eps_globalsum), eps_broadcast);
+
+   return 0;
+}
+
+/*******************************************************************************
  * Subroutine problemNorm - return an estimation of |B\A|
  * 
  * INPUT PARAMETERS
@@ -553,8 +620,9 @@ HREAL problemNorm_Sprimme(
 
 TEMPLATE_PLEASE
 HREAL deltaEig_Sprimme(
-      int overrideUserEstimations, struct primme_params *primme)
-{
+      int overrideUserEstimations, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
    HREAL BNorm;
 
    if (overrideUserEstimations) {
@@ -565,8 +633,10 @@ HREAL deltaEig_Sprimme(
             (primme->BNorm > 0.0 ? primme->BNorm : primme->stats.estimateBNorm);
    }
 
+   double eps_matrix;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
    return problemNorm_Sprimme(overrideUserEstimations, primme) /
-          sqrt(BNorm) * MACHINE_EPSILON;
+          sqrt(BNorm) * eps_matrix;
 }
 
 /*******************************************************************************

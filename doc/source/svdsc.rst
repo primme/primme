@@ -7,6 +7,8 @@
 C Library Interface
 -------------------
 
+.. versionadded:: 2.0
+
 The PRIMME SVDS interface is composed of the following functions.
 To solve real and complex singular value problems call respectively:
 
@@ -29,10 +31,18 @@ To solve real and complex singular value problems call respectively:
       int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, 
                   primme_svds_params *primme);
 
-There are versions for single precision, :c:func:`sprimme_svds` and
-:c:func:`cprimme_svds`, and for half precision :c:func:`hprimme_svds`, :c:func:`kprimme_svds`,
-:c:func:`hsprimme_svds`, :c:func:`ksprimme_svds`.
+There are more versions for matrix problems working in other precisions:
 
++-----------+-------------------------+-------------------------+
+| Precision |        Real             |       Complex           |
++===========+=========================+=========================+
+| half      | :c:func:`hprimme_svds`  | :c:func:`kprimme_svds`  |
+|           | :c:func:`hsprimme_svds` | :c:func:`ksprimme_svds` |
++-----------+-------------------------+-------------------------+
+| single    | :c:func:`sprimme_svds`  | :c:func:`cprimme_svds`  |
++-----------+-------------------------+-------------------------+
+| double    | :c:func:`dprimme_svds`  | :c:func:`zprimme_svds`  |
++-----------+-------------------------+-------------------------+
 
 Other useful functions:
 
@@ -308,21 +318,27 @@ The next enumerations and functions are declared in ``primme.h``.
 """"""""""""
 
 .. c:function:: int hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+   .. versionadded:: 3.0
 .. c:function:: int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+   .. versionadded:: 2.0
 .. c:function:: int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
 
    Solve a real singular value problem.
 
-   All arrays are stored on CPU, and also the computations are done on CPU (see :c:func:`magma_dprimme_svds` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_dprimme_svds` for using GPUs).
 
    :param svals: array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
 
    :param svecs: array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
 
    :param resNorms: array at least of size |SnumSvals| to store the
@@ -341,14 +357,19 @@ The next enumerations and functions are declared in ``primme.h``.
    The i-th right singular vector starts at svecs[( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| +i)\* |SnLocal| ].
    The first vector has i=0.
  
-   The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+   The functions :c:func:`hsprimme_svds` and :c:func:`ksprimme_svds` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
+
+   The type and precision of the callbacks depends on the type and precision of ``svecs``. Although this can be changed. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
 
 `magma_?primme_svds`
 """"""""""""""""""""
 
 .. c:function:: int magma_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int magma_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int magma_ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
@@ -356,13 +377,13 @@ The next enumerations and functions are declared in ``primme.h``.
 
    Solve a real singular value problem.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`dprimme` for using only the CPU).
+   Most of the computations are performed on GPU (see :c:func:`dprimme_svds` for using only the CPU).
 
    :param svals: CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
 
    :param svecs: GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
-      to store columnwise the (local part of the) computed left singular vectors
+      to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
 
    :param resNorms: CPU array at least of size |SnumSvals| to store the
@@ -381,17 +402,38 @@ The next enumerations and functions are declared in ``primme.h``.
    The i-th right singular vector starts at svecs[( |SnumOrthoConst| + |SinitSize| )\* |SmLocal| + ( |SnumOrthoConst| +i)\* |SnLocal| ].
    The first vector has i=0.
  
-   The type and precision of the callbacks depends on the type and precision of `svecs`. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
+   All internal operations are performed at the same precision than ``svecs`` unless the user sets |SinternalPrecision| otherwise.
+   The functions :c:func:`magma_hsprimme_svds` and :c:func:`magma_ksprimme_svds` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
 
+   The type and precision of the callbacks depends on the type and precision of ``svecs``. Although this can be changed. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
+
+   .. versionadded:: 3.0
 
 primme_svds_initialize
 """"""""""""""""""""""
 
 .. c:function:: void primme_svds_initialize(primme_svds_params *primme_svds)
 
-   Set PRIMME SVDS parameters structure to the default values.
+   Initialize PRIMME SVDS parameters structure to the default values.
+
+   After calling :c:func:`dprimme_svds` (or a variant), call :c:func:`primme_svds_free` to release allocated resources by PRIMME.
 
    :param primme_svds: parameters structure.
+
+   Example::
+
+      primme_svds_params primme_svds;
+      primme_svds_initialize(&primme_svds);
+
+      primme_svds.n = 100;
+      ...
+      dprimme_svds(svals, svecs, rnorms, &primme_svds);
+      ...
+
+      primme_svds_free(&primme_svds);
+
+   See the alternative function :c:func:`primme_svds_params_create` that also allocates the structure.
+
 
 primme_svds_create
 """"""""""""""""""
@@ -400,9 +442,24 @@ primme_svds_create
 
    Allocate and initialize a parameters structure to the default values.
 
-   Eventually call :c:func:`primme_svds_params_destroy` to release allocated resources by PRIMME.
+   After calling :c:func:`dprimme_svds` (or a variant), call :c:func:`primme_svds_params_destroy` to release allocated resources by PRIMME.
 
    :param primme_sv: parameters structure.
+
+   Example::
+
+      primme_svds_params *primme_svds = primme_svds_params_create();
+
+      primme_svds->n = 100;
+      ...
+      dprimme_svds(svals, svecs, rnorms, primme_svds);
+      ...
+
+      primme_svds_params_destroy(primme_svds);
+
+   See the alternative function :c:func:`primme_svds_initialize` that only initializes the structure.
+
+   .. versionadded:: 3.0
 
 primme_svds_set_method
 """"""""""""""""""""""
@@ -458,5 +515,7 @@ primme_svds_params_destroy
    :param primme_svds: parameters structure.
 
    :return: nonzero value if the call is not successful.
+
+   .. versionadded:: 3.0
 
 .. include:: epilog.inc

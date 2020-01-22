@@ -404,6 +404,97 @@ int Num_copy_matrix_astype_dprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
 #  define Num_sizeof_RHqprimme CONCAT(Num_sizeof_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int Num_sizeof_dprimme(primme_op_datatype t, size_t *s);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Sprimme)
+#  define Num_machine_epsilon_Sprimme CONCAT(Num_machine_epsilon_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Rprimme)
+#  define Num_machine_epsilon_Rprimme CONCAT(Num_machine_epsilon_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SHprimme)
+#  define Num_machine_epsilon_SHprimme CONCAT(Num_machine_epsilon_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RHprimme)
+#  define Num_machine_epsilon_RHprimme CONCAT(Num_machine_epsilon_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SXprimme)
+#  define Num_machine_epsilon_SXprimme CONCAT(Num_machine_epsilon_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RXprimme)
+#  define Num_machine_epsilon_RXprimme CONCAT(Num_machine_epsilon_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Shprimme)
+#  define Num_machine_epsilon_Shprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Rhprimme)
+#  define Num_machine_epsilon_Rhprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Ssprimme)
+#  define Num_machine_epsilon_Ssprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Rsprimme)
+#  define Num_machine_epsilon_Rsprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Sdprimme)
+#  define Num_machine_epsilon_Sdprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Rdprimme)
+#  define Num_machine_epsilon_Rdprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Sqprimme)
+#  define Num_machine_epsilon_Sqprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_Rqprimme)
+#  define Num_machine_epsilon_Rqprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SXhprimme)
+#  define Num_machine_epsilon_SXhprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RXhprimme)
+#  define Num_machine_epsilon_RXhprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SXsprimme)
+#  define Num_machine_epsilon_SXsprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RXsprimme)
+#  define Num_machine_epsilon_RXsprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SXdprimme)
+#  define Num_machine_epsilon_SXdprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RXdprimme)
+#  define Num_machine_epsilon_RXdprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SXqprimme)
+#  define Num_machine_epsilon_SXqprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RXqprimme)
+#  define Num_machine_epsilon_RXqprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SHhprimme)
+#  define Num_machine_epsilon_SHhprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RHhprimme)
+#  define Num_machine_epsilon_RHhprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SHsprimme)
+#  define Num_machine_epsilon_SHsprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RHsprimme)
+#  define Num_machine_epsilon_RHsprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SHdprimme)
+#  define Num_machine_epsilon_SHdprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RHdprimme)
+#  define Num_machine_epsilon_RHdprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_SHqprimme)
+#  define Num_machine_epsilon_SHqprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_machine_epsilon_RHqprimme)
+#  define Num_machine_epsilon_RHqprimme CONCAT(Num_machine_epsilon_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_machine_epsilon_dprimme(primme_op_datatype t, double *eps);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_copy_matrix_conj_Sprimme)
 #  define Num_copy_matrix_conj_Sprimme CONCAT(Num_copy_matrix_conj_,SCALAR_SUF)
 #endif
@@ -1518,6 +1609,7 @@ int Num_copy_matrix_astype_hprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
       void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
       primme_op_datatype yt, primme_context ctx);
 int Num_sizeof_hprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_hprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_conj_hprimme(dummy_type_hprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_hprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_copy_trimatrix_hprimme(dummy_type_hprimme *x, int m, int n, int ldx, int ul,
@@ -1547,6 +1639,7 @@ int Num_copy_matrix_astype_kprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
       void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
       primme_op_datatype yt, primme_context ctx);
 int Num_sizeof_kprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_kprimme(primme_op_datatype t, double *eps);
 int Num_copy_trimatrix_kprimme(dummy_type_kprimme *x, int m, int n, int ldx, int ul,
       int i0, dummy_type_kprimme *y, int ldy, int zero);
 int Num_copy_trimatrix_compact_kprimme(dummy_type_kprimme *x, PRIMME_INT m, int n,
@@ -1574,6 +1667,7 @@ int Num_copy_matrix_astype_sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
       void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
       primme_op_datatype yt, primme_context ctx);
 int Num_sizeof_sprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_sprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_conj_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_copy_trimatrix_sprimme(dummy_type_sprimme *x, int m, int n, int ldx, int ul,
@@ -1605,6 +1699,7 @@ int Num_copy_matrix_astype_cprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
       void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
       primme_op_datatype yt, primme_context ctx);
 int Num_sizeof_cprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_conj_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_copy_trimatrix_cprimme(dummy_type_cprimme *x, int m, int n, int ldx, int ul,
@@ -1636,6 +1731,7 @@ int Num_copy_matrix_astype_zprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
       void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
       primme_op_datatype yt, primme_context ctx);
 int Num_sizeof_zprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_zprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_conj_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_zprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_copy_trimatrix_zprimme(dummy_type_zprimme *x, int m, int n, int ldx, int ul,
@@ -1662,6 +1758,12 @@ int Num_scale_matrix_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
 int Num_matrix_astype_magma_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_magma_hprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_magma_hprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_magma_hprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_columns_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, dummy_type_magma_hprimme *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -1678,6 +1780,12 @@ int Num_scale_matrix_magma_hprimme(dummy_type_magma_hprimme *x, PRIMME_INT m, PR
 int Num_matrix_astype_magma_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_magma_kprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_magma_kprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_magma_kprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_columns_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, dummy_type_magma_kprimme *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -1694,6 +1802,12 @@ int Num_scale_matrix_magma_kprimme(dummy_type_magma_kprimme *x, PRIMME_INT m, PR
 int Num_matrix_astype_magma_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_magma_sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_magma_sprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_magma_sprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_columns_magma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, dummy_type_magma_sprimme *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -1710,6 +1824,12 @@ int Num_scale_matrix_magma_sprimme(dummy_type_magma_sprimme *x, PRIMME_INT m, PR
 int Num_matrix_astype_magma_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_magma_cprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_magma_cprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_magma_cprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_columns_magma_cprimme(dummy_type_magma_cprimme *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, dummy_type_magma_cprimme *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -1726,6 +1846,12 @@ int Num_scale_matrix_magma_cprimme(dummy_type_magma_cprimme *x, PRIMME_INT m, PR
 int Num_matrix_astype_magma_dprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_magma_dprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_magma_dprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_magma_dprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_columns_magma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, dummy_type_magma_dprimme *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);
@@ -1742,6 +1868,12 @@ int Num_scale_matrix_magma_dprimme(dummy_type_magma_dprimme *x, PRIMME_INT m, PR
 int Num_matrix_astype_magma_zprimme(void *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
       primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_magma_zprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_magma_zprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_magma_zprimme(primme_op_datatype t, double *eps);
 int Num_copy_matrix_columns_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT m, int *xin, int n,
                                      PRIMME_INT ldx, dummy_type_magma_zprimme *y, int *yin,
                                      PRIMME_INT ldy, primme_context ctx);

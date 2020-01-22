@@ -38,10 +38,14 @@
 
 void primme_set_defaults(primme_params *params);
 void primme_display_params_prefix(const char* prefix, primme_params primme);
-#ifdef WITH_KIND
-#  define Xprimme WITH_KIND(SCALAR_SUF)
-#else
-#  define Xprimme SCALAR_SUF
+#ifndef WITH_KIND
+#  define WITH_KIND(X) X
+#endif
+#define Xprimme WITH_KIND(SCALAR_SUF)
+
+/* Keep automatically generated headers under this section  */
+#ifndef CHECK_TEMPLATE
+#include "../eigs/primme_c.h"
 #endif
 
 #endif
